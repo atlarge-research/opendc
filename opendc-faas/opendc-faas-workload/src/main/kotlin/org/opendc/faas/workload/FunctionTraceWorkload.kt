@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.serverless.trace
+package org.opendc.faas.workload
 
 import org.opendc.faas.simulator.workload.SimFaaSWorkload
 import org.opendc.simulator.compute.workload.SimTrace
@@ -31,7 +31,7 @@ import org.opendc.simulator.compute.workload.SimWorkload
 /**
  * A [SimFaaSWorkload] for a [FunctionTrace].
  */
-class FunctionTraceWorkload(trace: FunctionTrace) :
+public class FunctionTraceWorkload(trace: FunctionTrace) :
     SimFaaSWorkload, SimWorkload by SimTraceWorkload(SimTrace.ofFragments(trace.samples.map { SimTraceFragment(it.timestamp, it.duration, it.cpuUsage, 1) })) {
     override suspend fun invoke() {}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,9 @@
  * SOFTWARE.
  */
 
-description = "Experiments for OpenDC Serverless"
+package org.opendc.faas.workload
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
-
-dependencies {
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcFaas.opendcFaasService)
-    implementation(projects.opendcFaas.opendcFaasSimulator)
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
-}
+/**
+ * A trace for a single function
+ */
+public data class FunctionTrace(val id: String, val maxMemory: Int, val samples: List<FunctionSample>)

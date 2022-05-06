@@ -20,9 +20,25 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.serverless.trace
+package org.opendc.faas.workload
 
 /**
- * A trace for a single function
+ * A sample of a single function.
+ *
+ * @param timestamp The timestamp of the function.
+ * @param duration The average execution time of the function.
+ * @param invocations The number of invocations.
+ * @param provisionedCpu The provisioned CPU for this function in MHz.
+ * @param provisionedMem The amount of memory provisioned for this function in MB.
+ * @param cpuUsage The actual CPU usage in MHz.
+ * @param memUsage The actual memory usage in MB.
  */
-public data class FunctionTrace(val id: String, val maxMemory: Int, val samples: List<FunctionSample>)
+public data class FunctionSample(
+    val timestamp: Long,
+    val duration: Long,
+    val invocations: Int,
+    val provisionedCpu: Int,
+    val provisionedMem: Int,
+    val cpuUsage: Double,
+    val memUsage: Double
+)
