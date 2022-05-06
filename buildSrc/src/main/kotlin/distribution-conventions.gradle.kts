@@ -45,17 +45,7 @@ distributions {
             getTasksByName("assembleDist", true)
                 .filter { it.project != project }
                 .map { it.project.name to it.project.the<DistributionContainer>() }
-                .forEach { (name, dist) ->
-                    dist.findByName("main")?.let { with(it.contents) }
-
-                    // Include experiments if they exist
-                    val experiment = dist.findByName("experiment")
-                    if (experiment != null) {
-                        into("experiments/${name.removePrefix("opendc-experiments-")}") {
-                            with(experiment.contents)
-                        }
-                    }
-                }
+                .forEach { (name, dist) -> dist.findByName("main")?.let { with(it.contents) } }
         }
     }
 }

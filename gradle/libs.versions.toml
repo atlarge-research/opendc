@@ -13,7 +13,6 @@ jline = "3.21.0"
 jmh-gradle = "0.6.6"
 jakarta-validation = "2.0.2"
 junit-jupiter = "5.8.2"
-junit-platform = "1.8.2"
 kotlin = "1.6.21"
 kotlin-logging = "2.1.21"
 kotlinx-coroutines = "1.6.1"
@@ -26,7 +25,6 @@ progressbar = "0.9.2"
 quarkus = "2.8.1.Final"
 quarkus-junit5-mockk = "0.3.0"
 sentry = "5.7.2"
-shadow = "7.1.2"
 slf4j = "1.7.36"
 
 [libraries]
@@ -46,8 +44,6 @@ sentry-log4j2 = { module = "io.sentry:sentry-log4j2", version.ref = "sentry" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
-junit-platform-commons = { module = "org.junit.platform:junit-platform-commons", version.ref = "junit-platform" }
-junit-platform-engine = { module = "org.junit.platform:junit-platform-engine", version.ref = "junit-platform" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 # CLI
@@ -112,4 +108,3 @@ gradle-node = { module = "com.github.node-gradle:gradle-node-plugin", version.re
 jandex-gradle = { module = "org.kordamp.gradle:jandex-gradle-plugin", version.ref = "jandex-gradle" }
 ktlint-gradle = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint-gradle" }
 jmh-gradle = { module = "me.champeau.jmh:jmh-gradle-plugin", version.ref = "jmh-gradle" }
-shadow = { module = "gradle.plugin.com.github.johnrengelman:shadow", version.ref = "shadow" }

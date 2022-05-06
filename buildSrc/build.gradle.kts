@@ -37,7 +37,6 @@ dependencies {
     implementation(libs.ktlint.gradle)
     implementation(libs.jmh.gradle)
     implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
 
     implementation(libs.jandex.gradle)
     implementation(libs.quarkus.gradle.application)
