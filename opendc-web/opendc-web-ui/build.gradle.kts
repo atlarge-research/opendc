@@ -38,6 +38,10 @@ sourceSets {
     }
 }
 
+node {
+    download.set(true)
+}
+
 val formatTask = tasks.register<NpmTask>("format") {
     args.set(listOf("run", "format"))
     dependsOn(tasks.npmInstall)
