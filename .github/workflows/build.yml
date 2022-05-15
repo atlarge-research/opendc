@@ -56,3 +56,17 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
+  build-docker:
+      name: Build Docker Images
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+        - name: Build Runner
+          uses: docker/build-push-action@v3
+          with:
+            file: opendc-web/opendc-web-runner/Dockerfile
+        - name: Build API
+          uses: docker/build-push-action@v3
+          with:
+            file: opendc-web/opendc-web-api/Dockerfile
