@@ -20,7 +20,8 @@
  * SOFTWARE.
  */
 
-.contextSelector {
+.contextSelector.contextSelector {
+    // Ensure this selector has precedence over the default one
     margin-right: 20px;
 
     --pf-c-context-selector__toggle--PaddingTop: var(--pf-global--spacer--sm);

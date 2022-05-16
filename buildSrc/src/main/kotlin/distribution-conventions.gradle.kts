@@ -44,8 +44,8 @@ distributions {
             // Include distributions of the subprojects
             getTasksByName("assembleDist", true)
                 .filter { it.project != project }
-                .map { it.project.name to it.project.the<DistributionContainer>() }
-                .forEach { (name, dist) -> dist.findByName("main")?.let { with(it.contents) } }
+                .map { it.project.the<DistributionContainer>() }
+                .forEach { dist -> dist.findByName("main")?.let { with(it.contents) } }
         }
     }
 }

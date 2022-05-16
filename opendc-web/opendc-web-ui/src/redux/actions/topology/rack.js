@@ -1,4 +1,4 @@
-import { uuid } from 'uuidv4'
+import { v4 as uuid } from 'uuid'
 
 export const EDIT_RACK_NAME = 'EDIT_RACK_NAME'
 export const DELETE_RACK = 'DELETE_RACK'
