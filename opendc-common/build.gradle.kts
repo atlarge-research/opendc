@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+group = "org.opendc"
 description = "Common functionality used across OpenDC modules"
 
 /* Build configuration */
