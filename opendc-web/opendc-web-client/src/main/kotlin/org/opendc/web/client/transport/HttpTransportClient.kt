@@ -42,7 +42,7 @@ import java.nio.file.Paths
  */
 public class HttpTransportClient(
     private val baseUrl: URI,
-    private val auth: AuthController,
+    private val auth: AuthController?,
     private val client: HttpClient = HttpClient.newHttpClient()
 ) : TransportClient {
     /**
@@ -58,15 +58,20 @@ public class HttpTransportClient(
     override fun <T> get(path: String, targetType: TypeReference<T>): T? {
         val request = HttpRequest.newBuilder(buildUri(path))
             .GET()
-            .also { auth.injectToken(it) }
+            .also { auth?.injectToken(it) }
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
         return when (val code = response.statusCode()) {
             in 200..299 -> mapper.readValue(response.body(), targetType)
             401 -> {
-                auth.refreshToken()
-                get(path, targetType)
+                val auth = auth
+                if (auth != null) {
+                    auth.refreshToken()
+                    get(path, targetType)
+                } else {
+                    throw IllegalStateException("Authorization required")
+                }
             }
             404 -> null
             else -> throw IllegalStateException("Invalid response $code")
@@ -80,15 +85,20 @@ public class HttpTransportClient(
         val request = HttpRequest.newBuilder(buildUri(path))
             .POST(HttpRequest.BodyPublishers.ofByteArray(mapper.writeValueAsBytes(body)))
             .header("Content-Type", "application/json")
-            .also { auth.injectToken(it) }
+            .also { auth?.injectToken(it) }
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
         return when (val code = response.statusCode()) {
             in 200..299 -> mapper.readValue(response.body(), targetType)
             401 -> {
-                auth.refreshToken()
-                post(path, body, targetType)
+                val auth = auth
+                if (auth != null) {
+                    auth.refreshToken()
+                    post(path, body, targetType)
+                } else {
+                    throw IllegalStateException("Authorization required")
+                }
             }
             404 -> null
             else -> throw IllegalStateException("Invalid response $code")
@@ -102,15 +112,20 @@ public class HttpTransportClient(
         val request = HttpRequest.newBuilder(buildUri(path))
             .PUT(HttpRequest.BodyPublishers.ofByteArray(mapper.writeValueAsBytes(body)))
             .header("Content-Type", "application/json")
-            .also { auth.injectToken(it) }
+            .also { auth?.injectToken(it) }
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
         return when (val code = response.statusCode()) {
             in 200..299 -> mapper.readValue(response.body(), targetType)
             401 -> {
-                auth.refreshToken()
-                put(path, body, targetType)
+                val auth = auth
+                if (auth != null) {
+                    auth.refreshToken()
+                    put(path, body, targetType)
+                } else {
+                    throw IllegalStateException("Authorization required")
+                }
             }
             404 -> null
             else -> throw IllegalStateException("Invalid response $code")
@@ -123,15 +138,20 @@ public class HttpTransportClient(
     override fun <T> delete(path: String, targetType: TypeReference<T>): T? {
         val request = HttpRequest.newBuilder(buildUri(path))
             .DELETE()
-            .also { auth.injectToken(it) }
+            .also { auth?.injectToken(it) }
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
         return when (val code = response.statusCode()) {
             in 200..299 -> mapper.readValue(response.body(), targetType)
             401 -> {
-                auth.refreshToken()
-                delete(path, targetType)
+                val auth = auth
+                if (auth != null) {
+                    auth.refreshToken()
+                    delete(path, targetType)
+                } else {
+                    throw IllegalStateException("Authorization required")
+                }
             }
             404 -> null
             else -> throw IllegalStateException("Invalid response $code")

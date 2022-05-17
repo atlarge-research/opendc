@@ -39,7 +39,7 @@ public class OpenDCClient(client: TransportClient) {
      * @param baseUrl The base url of the API.
      * @param auth Helper class for managing authentication.
      */
-    public constructor(baseUrl: URI, auth: AuthController) : this(HttpTransportClient(baseUrl, auth))
+    public constructor(baseUrl: URI, auth: AuthController? = null) : this(HttpTransportClient(baseUrl, auth))
 
     /**
      * A resource for the available projects.
