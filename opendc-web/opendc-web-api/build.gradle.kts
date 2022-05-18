@@ -32,7 +32,9 @@ dependencies {
 
     implementation(projects.opendcWeb.opendcWebProto)
     compileOnly(projects.opendcWeb.opendcWebUiQuarkusDeployment) /* Temporary fix for Quarkus/Gradle issues */
+    compileOnly(projects.opendcWeb.opendcWebRunnerQuarkusDeployment)
     implementation(projects.opendcWeb.opendcWebUiQuarkus)
+    implementation(projects.opendcWeb.opendcWebRunnerQuarkus)
 
     implementation(libs.quarkus.kotlin)
     implementation(libs.quarkus.resteasy.core)
