@@ -25,6 +25,7 @@ description = "REST API for the OpenDC website"
 /* Build configuration */
 plugins {
     `quarkus-conventions`
+    distribution
 }
 
 dependencies {
@@ -57,4 +58,31 @@ dependencies {
     testImplementation(libs.restassured.kotlin)
     testImplementation(libs.quarkus.test.security)
     testImplementation(libs.quarkus.jdbc.h2)
+}
+
+val createStartScripts by tasks.creating(CreateStartScripts::class) {
+    applicationName = "opendc-server"
+    mainClass.set("io.quarkus.bootstrap.runner.QuarkusEntryPoint")
+    classpath = files("lib/quarkus-run.jar")
+    outputDir = project.buildDir.resolve("scripts")
+}
+
+distributions {
+    create("server") {
+        distributionBaseName.set("opendc-server")
+
+        contents {
+            from("../../LICENSE.txt")
+            from("config") {
+                into("config")
+            }
+
+            from(createStartScripts) {
+                into("bin")
+            }
+            from(tasks.quarkusBuild) {
+                into("lib")
+            }
+        }
+    }
 }
