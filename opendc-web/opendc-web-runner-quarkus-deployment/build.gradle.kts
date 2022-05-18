@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-description = "Quarkus extension for serving OpenDC web interface"
+description = "Quarkus extension for the OpenDC experiment runner"
 
 /* Build configuration */
 plugins {
@@ -28,12 +28,8 @@ plugins {
 }
 
 dependencies {
-    implementation(enforcedPlatform(libs.quarkus.bom))
+    implementation(projects.opendcWeb.opendcWebRunnerQuarkus)
 
-    implementation(projects.opendcWeb.opendcWebUi)
-    implementation(projects.opendcWeb.opendcWebUiQuarkus.runtime)
-
+    implementation(platform(libs.quarkus.bom))
     implementation(libs.quarkus.core.deployment)
-    implementation(libs.quarkus.vertx.http.deployment)
-    implementation(libs.quarkus.arc.deployment)
 }

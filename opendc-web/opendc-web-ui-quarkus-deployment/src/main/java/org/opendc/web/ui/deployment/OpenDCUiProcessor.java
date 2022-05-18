@@ -58,7 +58,7 @@ import java.util.regex.Pattern;
 public class OpenDCUiProcessor {
 
     private static final String FEATURE = "opendc-ui";
-    private static final GACT OPENDC_UI_WEBJAR_ARTIFACT_KEY = new GACT("org.opendc", "opendc-web-ui", null, "jar");
+    private static final GACT OPENDC_UI_WEBJAR_ARTIFACT_KEY = new GACT("org.opendc.web", "opendc-web-ui", null, "jar");
     private static final String OPENDC_UI_WEBJAR_STATIC_RESOURCES_PATH = "META-INF/resources/opendc-web-ui";
     private static final Pattern PATH_PARAM_PATTERN = Pattern.compile("\\[(\\w+)]");
 

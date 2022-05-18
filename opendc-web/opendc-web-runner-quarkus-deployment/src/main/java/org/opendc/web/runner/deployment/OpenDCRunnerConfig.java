@@ -20,23 +20,19 @@
  * SOFTWARE.
  */
 
-description = "Quarkus extension for serving OpenDC web interface"
+package org.opendc.web.runner.deployment;
 
-plugins {
-    `java-library-conventions`
-    id("io.quarkus.extension")
+import io.quarkus.runtime.annotations.ConfigItem;
+import io.quarkus.runtime.annotations.ConfigRoot;
+
+/**
+ * Build-time configuration for the OpenDC web runner extension.
+ */
+@ConfigRoot(name = "opendc-runner")
+public class OpenDCRunnerConfig {
+    /**
+     * A flag to include the OpenDC web runner extension into the build.
+     */
+    @ConfigItem(defaultValue = "true")
+    boolean include;
 }
-
-quarkusExtension {
-    deploymentModule = "opendc-web-ui-quarkus-deployment"
-}
-
-dependencies {
-    implementation(platform(libs.quarkus.bom))
-
-    implementation(libs.quarkus.core.runtime)
-    implementation(libs.quarkus.vertx.http.runtime)
-    implementation(libs.quarkus.arc.runtime)
-}
-
-evaluationDependsOn(projects.opendcWeb.opendcWebUiQuarkusDeployment.dependencyProject.path)

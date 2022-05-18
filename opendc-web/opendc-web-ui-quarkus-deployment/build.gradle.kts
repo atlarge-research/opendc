@@ -22,21 +22,18 @@
 
 description = "Quarkus extension for serving OpenDC web interface"
 
+/* Build configuration */
 plugins {
     `java-library-conventions`
-    id("io.quarkus.extension")
-}
-
-quarkusExtension {
-    deploymentModule = "opendc-web-ui-quarkus-deployment"
 }
 
 dependencies {
     implementation(platform(libs.quarkus.bom))
 
-    implementation(libs.quarkus.core.runtime)
-    implementation(libs.quarkus.vertx.http.runtime)
-    implementation(libs.quarkus.arc.runtime)
-}
+    implementation(projects.opendcWeb.opendcWebUi)
+    implementation(projects.opendcWeb.opendcWebUiQuarkus)
 
-evaluationDependsOn(projects.opendcWeb.opendcWebUiQuarkusDeployment.dependencyProject.path)
+    implementation(libs.quarkus.core.deployment)
+    implementation(libs.quarkus.vertx.http.deployment)
+    implementation(libs.quarkus.arc.deployment)
+}

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-description = "Quarkus extension for serving OpenDC web interface"
+description = "Quarkus extension for the OpenDC experiment runner"
 
 plugins {
     `java-library-conventions`
@@ -28,15 +28,20 @@ plugins {
 }
 
 quarkusExtension {
-    deploymentModule = "opendc-web-ui-quarkus-deployment"
+    deploymentModule = "opendc-web-runner-quarkus-deployment"
 }
 
 dependencies {
-    implementation(platform(libs.quarkus.bom))
+    modules {
+        module("javax.annotation:javax.annotation-api") {
+            replacedBy("jakarta.annotation:jakarta.annotation-api", "javax has been replaced by Jakarta")
+        }
+    }
 
+    api(projects.opendcWeb.opendcWebRunner)
+
+    implementation(platform(libs.quarkus.bom))
     implementation(libs.quarkus.core.runtime)
-    implementation(libs.quarkus.vertx.http.runtime)
-    implementation(libs.quarkus.arc.runtime)
 }
 
-evaluationDependsOn(projects.opendcWeb.opendcWebUiQuarkusDeployment.dependencyProject.path)
+evaluationDependsOn(projects.opendcWeb.opendcWebRunnerQuarkusDeployment.dependencyProject.path)

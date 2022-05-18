@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,67 @@ description = "Experiment runner for OpenDC"
 
 /* Build configuration */
 plugins {
-    `kotlin-conventions`
-    `testing-conventions`
-    application
+    `kotlin-library-conventions`
+    distribution
 }
 
-application {
-    mainClass.set("org.opendc.web.runner.MainKt")
+val cli: SourceSet by sourceSets.creating {
+    compileClasspath += sourceSets["main"].output
+    runtimeClasspath += sourceSets["main"].output
+}
+
+val cliImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations["implementation"])
+}
+val cliRuntimeOnly: Configuration by configurations.getting
+val cliRuntimeClasspath: Configuration by configurations.getting {
+    extendsFrom(configurations["runtimeClasspath"])
+}
+
+val cliJar by tasks.creating(Jar::class) {
+    from(cli.output)
+
+    archiveBaseName.set("${project.name}-cli")
 }
 
 dependencies {
+    api(projects.opendcWeb.opendcWebClient)
     implementation(projects.opendcCompute.opendcComputeSimulator)
     implementation(projects.opendcCompute.opendcComputeWorkload)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcTrace.opendcTraceApi)
-    implementation(projects.opendcWeb.opendcWebClient)
 
     implementation(libs.kotlin.logging)
-    implementation(libs.clikt)
-    implementation(libs.sentry.log4j2)
-    implementation(kotlin("reflect"))
-
     runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
-    runtimeOnly(libs.log4j.slf4j)
+    runtimeOnly(projects.opendcTrace.opendcTraceBitbrains)
+
+    cliImplementation(libs.clikt)
+    cliImplementation(libs.sentry.log4j2)
+
+    cliRuntimeOnly(projects.opendcTrace.opendcTraceOpendc)
+    cliRuntimeOnly(libs.log4j.slf4j)
+}
+
+val createCli by tasks.creating(CreateStartScripts::class) {
+    dependsOn(cliJar)
+
+    applicationName = "opendc-runner"
+    mainClass.set("org.opendc.web.runner.cli.MainKt")
+    classpath = cliJar.outputs.files + cliRuntimeClasspath
+    outputDir = project.buildDir.resolve("scripts")
+}
+
+distributions {
+    main {
+        contents {
+            into("bin") {
+                from(createCli)
+            }
+
+            into("lib") {
+                from(cliJar)
+                from(cliRuntimeClasspath) // Also includes main classpath
+            }
+        }
+    }
 }

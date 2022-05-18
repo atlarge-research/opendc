@@ -20,17 +20,23 @@
  * SOFTWARE.
  */
 
-description = "Quarkus extension for serving OpenDC web interface"
+package org.opendc.web.runner.deployment;
 
-plugins {
-    `java-library-conventions`
-    id("io.quarkus.extension")
-}
+import io.quarkus.builder.item.SimpleBuildItem;
+import io.quarkus.runtime.RuntimeValue;
+import org.opendc.web.runner.OpenDCRunner;
 
-dependencies {
-    implementation(enforcedPlatform(libs.quarkus.bom))
+/**
+ * A {@link SimpleBuildItem} that produces an {@link OpenDCRunner} instance.
+ */
+public final class OpenDCRunnerBuildItem extends SimpleBuildItem {
+    private final RuntimeValue<OpenDCRunner> runner;
 
-    implementation(libs.quarkus.core.runtime)
-    implementation(libs.quarkus.vertx.http.runtime)
-    implementation(libs.quarkus.arc.runtime)
+    public OpenDCRunnerBuildItem(RuntimeValue<OpenDCRunner> runner) {
+        this.runner = runner;
+    }
+
+    public RuntimeValue<OpenDCRunner> getRunner() {
+        return runner;
+    }
 }

@@ -43,6 +43,7 @@ dependencies {
         exclude(group = "org.apache.htrace")
         exclude(group = "commons-cli")
         exclude(group = "javax.servlet")
+        exclude(group = "javax.servlet.jsp")
         exclude(group = "org.eclipse.jetty")
         exclude(group = "com.sun.jersey")
         exclude(group = "com.jcraft")
