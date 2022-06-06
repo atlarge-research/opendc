@@ -26,9 +26,13 @@ import org.opendc.trace.*
 import org.opendc.trace.conv.INTERFERENCE_GROUP_MEMBERS
 import org.opendc.trace.conv.INTERFERENCE_GROUP_SCORE
 import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
+import org.opendc.trace.util.convertTo
 import shaded.parquet.com.fasterxml.jackson.core.JsonParseException
 import shaded.parquet.com.fasterxml.jackson.core.JsonParser
 import shaded.parquet.com.fasterxml.jackson.core.JsonToken
+import java.time.Duration
+import java.time.Instant
+import java.util.*
 
 /**
  * A [TableReader] implementation for the OpenDC VM interference JSON format.
@@ -59,8 +63,14 @@ internal class OdcVmInterferenceJsonTableReader(private val parser: JsonParser) 
         }
     }
 
-    override fun resolve(column: TableColumn<*>): Int {
-        return when (column) {
+    private val COL_MEMBERS = 0
+    private val COL_TARGET = 1
+    private val COL_SCORE = 2
+
+    private val TYPE_MEMBERS = TableColumnType.Set(TableColumnType.String)
+
+    override fun resolve(name: String): Int {
+        return when (name) {
             INTERFERENCE_GROUP_MEMBERS -> COL_MEMBERS
             INTERFERENCE_GROUP_TARGET -> COL_TARGET
             INTERFERENCE_GROUP_SCORE -> COL_SCORE
@@ -72,15 +82,6 @@ internal class OdcVmInterferenceJsonTableReader(private val parser: JsonParser) 
         return when (index) {
             COL_MEMBERS, COL_TARGET, COL_SCORE -> false
             else -> throw IllegalArgumentException("Invalid column index $index")
-        }
-    }
-
-    override fun get(index: Int): Any {
-        return when (index) {
-            COL_MEMBERS -> members
-            COL_TARGET -> targetLoad
-            COL_SCORE -> score
-            else -> throw IllegalArgumentException("Invalid column $index")
         }
     }
 
@@ -96,6 +97,10 @@ internal class OdcVmInterferenceJsonTableReader(private val parser: JsonParser) 
         throw IllegalArgumentException("Invalid column $index")
     }
 
+    override fun getFloat(index: Int): Float {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
     override fun getDouble(index: Int): Double {
         return when (index) {
             COL_TARGET -> targetLoad
@@ -104,13 +109,40 @@ internal class OdcVmInterferenceJsonTableReader(private val parser: JsonParser) 
         }
     }
 
+    override fun getString(index: Int): String? {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
+    override fun getUUID(index: Int): UUID? {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
+    override fun getInstant(index: Int): Instant? {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
+    override fun getDuration(index: Int): Duration? {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
+    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
+    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        return when (index) {
+            COL_MEMBERS -> TYPE_MEMBERS.convertTo(members, elementType)
+            else -> throw IllegalArgumentException("Invalid column $index")
+        }
+    }
+
+    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
     override fun close() {
         parser.close()
     }
-
-    private val COL_MEMBERS = 0
-    private val COL_TARGET = 1
-    private val COL_SCORE = 2
 
     private var members = emptySet<String>()
     private var targetLoad = Double.POSITIVE_INFINITY

@@ -22,47 +22,15 @@
 
 package org.opendc.trace
 
-import java.util.*
-
 /**
- * A column in a trace table.
+ * A column in a [Table].
  *
- * @param name The universal name of this column.
+ * @property name The universal name of this column.
+ * @property type The type of the column.
+ * @property isNullable A flag to indicate that the column is nullable.
  */
-public class TableColumn<out T>(public val name: String, type: Class<T>) {
-    /**
-     * The type of the column.
-     */
-    public val type: Class<*> = type
-
-    /**
-     * Determine whether the type of the column is a subtype of [column].
-     */
-    public fun isAssignableTo(column: TableColumn<*>): Boolean {
-        return name == column.name && type.isAssignableFrom(column.type)
-    }
-
-    /**
-     * Compute a hash code for this column.
-     */
-    public override fun hashCode(): Int = Objects.hash(name, type)
-
-    /**
-     * Determine whether this column is equal to [other].
-     */
-    public override fun equals(other: Any?): Boolean {
-        // Fast-path: reference equality
-        if (this === other) {
-            return true
-        } else if (other == null || other !is TableColumn<*>) {
-            return false
-        }
-
-        return name == other.name && type == other.type
-    }
-
-    /**
-     * Return a string representation of this column.
-     */
-    public override fun toString(): String = "TableColumn[$name,$type]"
-}
+public data class TableColumn(
+    public val name: String,
+    public val type: TableColumnType,
+    public val isNullable: Boolean = false
+)

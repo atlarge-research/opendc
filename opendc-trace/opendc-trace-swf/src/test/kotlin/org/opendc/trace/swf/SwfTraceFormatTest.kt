@@ -62,10 +62,10 @@ internal class SwfTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1", reader.get(TASK_ID)) },
+            { assertEquals("1", reader.getString(TASK_ID)) },
             { assertEquals(306, reader.getInt(TASK_ALLOC_NCPUS)) },
             { assertTrue(reader.nextRow()) },
-            { assertEquals("2", reader.get(TASK_ID)) },
+            { assertEquals("2", reader.getString(TASK_ID)) },
             { assertEquals(17, reader.getInt(TASK_ALLOC_NCPUS)) },
         )
 

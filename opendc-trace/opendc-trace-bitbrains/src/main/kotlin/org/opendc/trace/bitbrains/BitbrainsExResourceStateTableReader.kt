@@ -25,7 +25,9 @@ package org.opendc.trace.bitbrains
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
 import java.io.BufferedReader
+import java.time.Duration
 import java.time.Instant
+import java.util.*
 
 /**
  * A [TableReader] for the Bitbrains resource state table.
@@ -89,23 +91,27 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
         return true
     }
 
-    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
-
-    override fun isNull(index: Int): Boolean {
-        require(index in 0..COL_MAX) { "Invalid column index" }
-        return false
+    override fun resolve(name: String): Int {
+        return when (name) {
+            RESOURCE_ID -> COL_ID
+            RESOURCE_CLUSTER_ID -> COL_CLUSTER_ID
+            RESOURCE_STATE_TIMESTAMP -> COL_TIMESTAMP
+            RESOURCE_CPU_COUNT -> COL_NCPUS
+            RESOURCE_CPU_CAPACITY -> COL_CPU_CAPACITY
+            RESOURCE_STATE_CPU_USAGE -> COL_CPU_USAGE
+            RESOURCE_STATE_CPU_USAGE_PCT -> COL_CPU_USAGE_PCT
+            RESOURCE_STATE_CPU_DEMAND -> COL_CPU_DEMAND
+            RESOURCE_STATE_CPU_READY_PCT -> COL_CPU_READY_PCT
+            RESOURCE_MEM_CAPACITY -> COL_MEM_CAPACITY
+            RESOURCE_STATE_DISK_READ -> COL_DISK_READ
+            RESOURCE_STATE_DISK_WRITE -> COL_DISK_WRITE
+            else -> -1
+        }
     }
 
-    override fun get(index: Int): Any? {
-        return when (index) {
-            COL_ID -> id
-            COL_CLUSTER_ID -> cluster
-            COL_TIMESTAMP -> timestamp
-            COL_NCPUS -> getInt(index)
-            COL_POWERED_ON -> getInt(index)
-            COL_CPU_CAPACITY, COL_CPU_USAGE, COL_CPU_USAGE_PCT, COL_CPU_READY_PCT, COL_CPU_DEMAND, COL_MEM_CAPACITY, COL_DISK_READ, COL_DISK_WRITE -> getDouble(index)
-            else -> throw IllegalArgumentException("Invalid column")
-        }
+    override fun isNull(index: Int): Boolean {
+        require(index in 0 until COL_MAX) { "Invalid column index" }
+        return false
     }
 
     override fun getBoolean(index: Int): Boolean {
@@ -126,6 +132,10 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
         throw IllegalArgumentException("Invalid column")
     }
 
+    override fun getFloat(index: Int): Float {
+        throw IllegalArgumentException("Invalid column")
+    }
+
     override fun getDouble(index: Int): Double {
         return when (index) {
             COL_CPU_CAPACITY -> cpuCapacity
@@ -138,6 +148,41 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
             COL_DISK_WRITE -> diskWrite
             else -> throw IllegalArgumentException("Invalid column")
         }
+    }
+
+    override fun getString(index: Int): String? {
+        return when (index) {
+            COL_ID -> id
+            COL_CLUSTER_ID -> cluster
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getUUID(index: Int): UUID? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getInstant(index: Int): Instant? {
+        return when (index) {
+            COL_TIMESTAMP -> timestamp
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getDuration(index: Int): Duration? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+        throw IllegalArgumentException("Invalid column")
     }
 
     override fun close() {
@@ -195,19 +240,4 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     private val COL_MEM_CAPACITY = 20
     private val COL_CPU_USAGE_PCT = 21
     private val COL_MAX = COL_CPU_USAGE_PCT + 1
-
-    private val columns = mapOf(
-        RESOURCE_ID to COL_ID,
-        RESOURCE_CLUSTER_ID to COL_CLUSTER_ID,
-        RESOURCE_STATE_TIMESTAMP to COL_TIMESTAMP,
-        RESOURCE_CPU_COUNT to COL_NCPUS,
-        RESOURCE_CPU_CAPACITY to COL_CPU_CAPACITY,
-        RESOURCE_STATE_CPU_USAGE to COL_CPU_USAGE,
-        RESOURCE_STATE_CPU_USAGE_PCT to COL_CPU_USAGE_PCT,
-        RESOURCE_STATE_CPU_DEMAND to COL_CPU_DEMAND,
-        RESOURCE_STATE_CPU_READY_PCT to COL_CPU_READY_PCT,
-        RESOURCE_MEM_CAPACITY to COL_MEM_CAPACITY,
-        RESOURCE_STATE_DISK_READ to COL_DISK_READ,
-        RESOURCE_STATE_DISK_WRITE to COL_DISK_WRITE
-    )
 }

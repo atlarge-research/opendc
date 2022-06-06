@@ -24,10 +24,10 @@ package org.opendc.trace.calcite
 
 import org.apache.calcite.linq4j.Enumerator
 import org.opendc.trace.TableColumn
+import org.opendc.trace.TableColumnType
 import org.opendc.trace.TableReader
-import java.sql.Timestamp
-import java.time.Duration
-import java.time.Instant
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -35,10 +35,10 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 internal class TraceReaderEnumerator<E>(
     private val reader: TableReader,
-    private val columns: List<TableColumn<*>>,
+    private val columns: List<TableColumn>,
     private val cancelFlag: AtomicBoolean
 ) : Enumerator<E> {
-    private val columnIndices = columns.map { reader.resolve(it) }.toIntArray()
+    private val columnIndices = columns.map { reader.resolve(it.name) }.toIntArray()
     private var current: E? = null
 
     override fun moveNext(): Boolean {
@@ -80,14 +80,35 @@ internal class TraceReaderEnumerator<E>(
         return res
     }
 
-    private fun convertColumn(reader: TableReader, column: TableColumn<*>, columnIndex: Int): Any? {
-        val value = reader.get(columnIndex)
-
+    private fun convertColumn(reader: TableReader, column: TableColumn, columnIndex: Int): Any? {
         return when (column.type) {
-            Instant::class.java -> Timestamp.from(value as Instant)
-            Duration::class.java -> (value as Duration).toMillis()
-            Set::class.java -> (value as Set<*>).toTypedArray()
-            else -> value
+            is TableColumnType.Boolean -> reader.getBoolean(columnIndex)
+            is TableColumnType.Int -> reader.getInt(columnIndex)
+            is TableColumnType.Long -> reader.getLong(columnIndex)
+            is TableColumnType.Float -> reader.getFloat(columnIndex)
+            is TableColumnType.Double -> reader.getDouble(columnIndex)
+            is TableColumnType.String -> reader.getString(columnIndex)
+            is TableColumnType.UUID -> {
+                val uuid = reader.getUUID(columnIndex)
+
+                if (uuid != null) {
+                    val uuidBytes = ByteArray(16)
+
+                    ByteBuffer.wrap(uuidBytes)
+                        .order(ByteOrder.BIG_ENDIAN)
+                        .putLong(uuid.mostSignificantBits)
+                        .putLong(uuid.leastSignificantBits)
+
+                    uuidBytes
+                } else {
+                    null
+                }
+            }
+            is TableColumnType.Instant -> reader.getInstant(columnIndex)?.toEpochMilli()
+            is TableColumnType.Duration -> reader.getDuration(columnIndex)?.toMillis() ?: 0
+            is TableColumnType.List -> reader.getList(columnIndex, Any::class.java)?.toTypedArray()
+            is TableColumnType.Set -> reader.getSet(columnIndex, Any::class.java)?.toTypedArray()
+            is TableColumnType.Map -> reader.getMap(columnIndex, Any::class.java, Any::class.java)
         }
     }
 }

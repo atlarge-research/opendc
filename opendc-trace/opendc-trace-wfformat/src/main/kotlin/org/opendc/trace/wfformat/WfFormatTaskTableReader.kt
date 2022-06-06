@@ -27,7 +27,10 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonToken
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
+import org.opendc.trace.util.convertTo
 import java.time.Duration
+import java.time.Instant
+import java.util.*
 import kotlin.math.roundToInt
 
 /**
@@ -95,23 +98,21 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
         return hasJob
     }
 
-    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
-
-    override fun isNull(index: Int): Boolean {
-        check(index in 0..columns.size) { "Invalid column value" }
-        return false
+    override fun resolve(name: String): Int {
+        return when (name) {
+            TASK_ID -> COL_ID
+            TASK_WORKFLOW_ID -> COL_WORKFLOW_ID
+            TASK_RUNTIME -> COL_RUNTIME
+            TASK_REQ_NCPUS -> COL_NPROC
+            TASK_PARENTS -> COL_PARENTS
+            TASK_CHILDREN -> COL_CHILDREN
+            else -> -1
+        }
     }
 
-    override fun get(index: Int): Any? {
-        return when (index) {
-            COL_ID -> id
-            COL_WORKFLOW_ID -> workflowId
-            COL_RUNTIME -> runtime
-            COL_PARENTS -> parents
-            COL_CHILDREN -> children
-            COL_NPROC -> getInt(index)
-            else -> throw IllegalArgumentException("Invalid column")
-        }
+    override fun isNull(index: Int): Boolean {
+        check(index in 0..COL_CHILDREN) { "Invalid column value" }
+        return false
     }
 
     override fun getBoolean(index: Int): Boolean {
@@ -129,7 +130,50 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
         throw IllegalArgumentException("Invalid column")
     }
 
+    override fun getFloat(index: Int): Float {
+        throw IllegalArgumentException("Invalid column")
+    }
+
     override fun getDouble(index: Int): Double {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getString(index: Int): String? {
+        return when (index) {
+            COL_ID -> id
+            COL_WORKFLOW_ID -> workflowId
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getUUID(index: Int): UUID? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getInstant(index: Int): Instant? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getDuration(index: Int): Duration? {
+        return when (index) {
+            COL_RUNTIME -> runtime
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        return when (index) {
+            COL_PARENTS -> TYPE_PARENTS.convertTo(parents, elementType)
+            COL_CHILDREN -> TYPE_CHILDREN.convertTo(children, elementType)
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
         throw IllegalArgumentException("Invalid column")
     }
 
@@ -232,12 +276,6 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
     private val COL_PARENTS = 5
     private val COL_CHILDREN = 6
 
-    private val columns = mapOf(
-        TASK_ID to COL_ID,
-        TASK_WORKFLOW_ID to COL_WORKFLOW_ID,
-        TASK_RUNTIME to COL_RUNTIME,
-        TASK_REQ_NCPUS to COL_NPROC,
-        TASK_PARENTS to COL_PARENTS,
-        TASK_CHILDREN to COL_CHILDREN,
-    )
+    private val TYPE_PARENTS = TableColumnType.Set(TableColumnType.String)
+    private val TYPE_CHILDREN = TableColumnType.Set(TableColumnType.String)
 }

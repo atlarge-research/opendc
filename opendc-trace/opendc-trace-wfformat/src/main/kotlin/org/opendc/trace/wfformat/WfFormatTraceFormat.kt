@@ -50,20 +50,19 @@ public class WfFormatTraceFormat : TraceFormat {
         return when (table) {
             TABLE_TASKS -> TableDetails(
                 listOf(
-                    TASK_ID,
-                    TASK_WORKFLOW_ID,
-                    TASK_RUNTIME,
-                    TASK_REQ_NCPUS,
-                    TASK_PARENTS,
-                    TASK_CHILDREN
-                ),
-                emptyList()
+                    TableColumn(TASK_ID, TableColumnType.String),
+                    TableColumn(TASK_WORKFLOW_ID, TableColumnType.String),
+                    TableColumn(TASK_RUNTIME, TableColumnType.Duration),
+                    TableColumn(TASK_REQ_NCPUS, TableColumnType.Int),
+                    TableColumn(TASK_PARENTS, TableColumnType.Set(TableColumnType.String)),
+                    TableColumn(TASK_CHILDREN, TableColumnType.Set(TableColumnType.String))
+                )
             )
             else -> throw IllegalArgumentException("Table $table not supported")
         }
     }
 
-    override fun newReader(path: Path, table: String, projection: List<TableColumn<*>>?): TableReader {
+    override fun newReader(path: Path, table: String, projection: List<String>?): TableReader {
         return when (table) {
             TABLE_TASKS -> WfFormatTaskTableReader(factory.createParser(path.toFile()))
             else -> throw IllegalArgumentException("Table $table not supported")

@@ -27,6 +27,9 @@ import org.opendc.trace.conv.INTERFERENCE_GROUP_MEMBERS
 import org.opendc.trace.conv.INTERFERENCE_GROUP_SCORE
 import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
 import shaded.parquet.com.fasterxml.jackson.core.JsonGenerator
+import java.time.Duration
+import java.time.Instant
+import java.util.*
 
 /**
  * A [TableWriter] implementation for the OpenDC VM interference JSON format.
@@ -65,24 +68,12 @@ internal class OdcVmInterferenceJsonTableWriter(private val generator: JsonGener
         generator.writeEndObject()
     }
 
-    override fun resolve(column: TableColumn<*>): Int {
-        return when (column) {
+    override fun resolve(name: String): Int {
+        return when (name) {
             INTERFERENCE_GROUP_MEMBERS -> COL_MEMBERS
             INTERFERENCE_GROUP_TARGET -> COL_TARGET
             INTERFERENCE_GROUP_SCORE -> COL_SCORE
             else -> -1
-        }
-    }
-
-    override fun set(index: Int, value: Any) {
-        check(isRowActive) { "No active row" }
-
-        @Suppress("UNCHECKED_CAST")
-        when (index) {
-            COL_MEMBERS -> members = value as Set<String>
-            COL_TARGET -> targetLoad = (value as Number).toDouble()
-            COL_SCORE -> score = (value as Number).toDouble()
-            else -> throw IllegalArgumentException("Invalid column index $index")
         }
     }
 
@@ -98,6 +89,10 @@ internal class OdcVmInterferenceJsonTableWriter(private val generator: JsonGener
         throw IllegalArgumentException("Invalid column $index")
     }
 
+    override fun setFloat(index: Int, value: Float) {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
     override fun setDouble(index: Int, value: Double) {
         check(isRowActive) { "No active row" }
 
@@ -106,6 +101,40 @@ internal class OdcVmInterferenceJsonTableWriter(private val generator: JsonGener
             COL_SCORE -> score = (value as Number).toDouble()
             else -> throw IllegalArgumentException("Invalid column $index")
         }
+    }
+
+    override fun setString(index: Int, value: String) {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
+    override fun setUUID(index: Int, value: UUID) {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
+    override fun setInstant(index: Int, value: Instant) {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
+    override fun setDuration(index: Int, value: Duration) {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
+    override fun <T> setList(index: Int, value: List<T>) {
+        throw IllegalArgumentException("Invalid column $index")
+    }
+
+    override fun <T> setSet(index: Int, value: Set<T>) {
+        check(isRowActive) { "No active row" }
+
+        @Suppress("UNCHECKED_CAST")
+        when (index) {
+            COL_MEMBERS -> members = value as Set<String>
+            else -> throw IllegalArgumentException("Invalid column index $index")
+        }
+    }
+
+    override fun <K, V> setMap(index: Int, value: Map<K, V>) {
+        throw IllegalArgumentException("Invalid column $index")
     }
 
     override fun flush() {

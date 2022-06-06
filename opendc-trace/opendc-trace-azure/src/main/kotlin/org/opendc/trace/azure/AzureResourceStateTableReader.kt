@@ -29,7 +29,9 @@ import org.opendc.trace.*
 import org.opendc.trace.conv.RESOURCE_ID
 import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
 import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
+import java.time.Duration
 import java.time.Instant
+import java.util.*
 
 /**
  * A [TableReader] for the Azure v1 VM resource state table.
@@ -63,20 +65,22 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
         return true
     }
 
-    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
+    private val COL_ID = 0
+    private val COL_TIMESTAMP = 1
+    private val COL_CPU_USAGE_PCT = 2
 
-    override fun isNull(index: Int): Boolean {
-        require(index in 0..columns.size) { "Invalid column index" }
-        return false
+    override fun resolve(name: String): Int {
+        return when (name) {
+            RESOURCE_ID -> COL_ID
+            RESOURCE_STATE_TIMESTAMP -> COL_TIMESTAMP
+            RESOURCE_STATE_CPU_USAGE_PCT -> COL_CPU_USAGE_PCT
+            else -> -1
+        }
     }
 
-    override fun get(index: Int): Any? {
-        return when (index) {
-            COL_ID -> id
-            COL_TIMESTAMP -> timestamp
-            COL_CPU_USAGE_PCT -> cpuUsagePct
-            else -> throw IllegalArgumentException("Invalid column index")
-        }
+    override fun isNull(index: Int): Boolean {
+        require(index in 0..COL_CPU_USAGE_PCT) { "Invalid column index" }
+        return false
     }
 
     override fun getBoolean(index: Int): Boolean {
@@ -91,11 +95,49 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
         throw IllegalArgumentException("Invalid column")
     }
 
+    override fun getFloat(index: Int): Float {
+        throw IllegalArgumentException("Invalid column")
+    }
+
     override fun getDouble(index: Int): Double {
         return when (index) {
             COL_CPU_USAGE_PCT -> cpuUsagePct
             else -> throw IllegalArgumentException("Invalid column")
         }
+    }
+
+    override fun getString(index: Int): String? {
+        return when (index) {
+            COL_ID -> id
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getUUID(index: Int): UUID? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getInstant(index: Int): Instant? {
+        return when (index) {
+            COL_TIMESTAMP -> timestamp
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getDuration(index: Int): Duration? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        throw IllegalArgumentException("Invalid column")
     }
 
     override fun close() {
@@ -130,15 +172,6 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
         timestamp = null
         cpuUsagePct = Double.NaN
     }
-
-    private val COL_ID = 0
-    private val COL_TIMESTAMP = 1
-    private val COL_CPU_USAGE_PCT = 2
-    private val columns = mapOf(
-        RESOURCE_ID to COL_ID,
-        RESOURCE_STATE_TIMESTAMP to COL_TIMESTAMP,
-        RESOURCE_STATE_CPU_USAGE_PCT to COL_CPU_USAGE_PCT
-    )
 
     companion object {
         /**

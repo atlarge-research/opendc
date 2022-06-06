@@ -60,7 +60,7 @@ class AzureTraceFormatTest {
         val reader = format.newReader(path, TABLE_RESOURCES, null)
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("x/XsOfHO4ocsV99i4NluqKDuxctW2MMVmwqOPAlg4wp8mqbBOe3wxBlQo0+Qx+uf", reader.get(RESOURCE_ID)) },
+            { assertEquals("x/XsOfHO4ocsV99i4NluqKDuxctW2MMVmwqOPAlg4wp8mqbBOe3wxBlQo0+Qx+uf", reader.getString(RESOURCE_ID)) },
             { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
             { assertEquals(1750000.0, reader.getDouble(RESOURCE_MEM_CAPACITY)) },
         )
@@ -75,8 +75,8 @@ class AzureTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("+ZcrOp5/c/fJ6mVgP5qMZlOAGDwyjaaDNM0WoWOt2IDb47gT0UwK9lFwkPQv3C7Q", reader.get(RESOURCE_ID)) },
-            { assertEquals(0, reader.get(RESOURCE_STATE_TIMESTAMP).epochSecond) },
+            { assertEquals("+ZcrOp5/c/fJ6mVgP5qMZlOAGDwyjaaDNM0WoWOt2IDb47gT0UwK9lFwkPQv3C7Q", reader.getString(RESOURCE_ID)) },
+            { assertEquals(0, reader.getInstant(RESOURCE_STATE_TIMESTAMP)?.epochSecond) },
             { assertEquals(0.0286979, reader.getDouble(RESOURCE_STATE_CPU_USAGE_PCT), 0.01) }
         )
 

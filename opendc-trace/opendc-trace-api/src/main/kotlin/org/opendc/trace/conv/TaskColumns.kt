@@ -23,78 +23,62 @@
 @file:JvmName("TaskColumns")
 package org.opendc.trace.conv
 
-import org.opendc.trace.TableColumn
-import java.time.Duration
-import java.time.Instant
-
 /**
  * A column containing the task identifier.
  */
-@JvmField
-public val TASK_ID: TableColumn<String> = column("id")
+public const val TASK_ID: String = "id"
 
 /**
  * A column containing the identifier of the workflow.
  */
-@JvmField
-public val TASK_WORKFLOW_ID: TableColumn<String> = column("workflow_id")
+public const val TASK_WORKFLOW_ID: String = "workflow_id"
 
 /**
  * A column containing the submission time of the task.
  */
-@JvmField
-public val TASK_SUBMIT_TIME: TableColumn<Instant> = column("submit_time")
+public const val TASK_SUBMIT_TIME: String = "submit_time"
 
 /**
  * A column containing the wait time of the task.
  */
-@JvmField
-public val TASK_WAIT_TIME: TableColumn<Instant> = column("wait_time")
+public const val TASK_WAIT_TIME: String = "wait_time"
 
 /**
  * A column containing the runtime time of the task.
  */
-@JvmField
-public val TASK_RUNTIME: TableColumn<Duration> = column("runtime")
+public const val TASK_RUNTIME: String = "runtime"
 
 /**
  * A column containing the parents of a task.
  */
-@JvmField
-public val TASK_PARENTS: TableColumn<Set<String>> = column("parents")
+public const val TASK_PARENTS: String = "parents"
 
 /**
  * A column containing the children of a task.
  */
-@JvmField
-public val TASK_CHILDREN: TableColumn<Set<String>> = column("children")
+public const val TASK_CHILDREN: String = "children"
 
 /**
  * A column containing the requested CPUs of a task.
  */
-@JvmField
-public val TASK_REQ_NCPUS: TableColumn<Int> = column("req_ncpus")
+public const val TASK_REQ_NCPUS: String = "req_ncpus"
 
 /**
  * A column containing the allocated CPUs of a task.
  */
-@JvmField
-public val TASK_ALLOC_NCPUS: TableColumn<Int> = column("alloc_ncpus")
+public const val TASK_ALLOC_NCPUS: String = "alloc_ncpus"
 
 /**
  * A column containing the status of a task.
  */
-@JvmField
-public val TASK_STATUS: TableColumn<Int> = column("status")
+public const val TASK_STATUS: String = "status"
 
 /**
  * A column containing the group id of a task.
  */
-@JvmField
-public val TASK_GROUP_ID: TableColumn<Int> = column("group_id")
+public const val TASK_GROUP_ID: String = "group_id"
 
 /**
  * A column containing the user id of a task.
  */
-@JvmField
-public val TASK_USER_ID: TableColumn<Int> = column("user_id")
+public const val TASK_USER_ID: String = "user_id"

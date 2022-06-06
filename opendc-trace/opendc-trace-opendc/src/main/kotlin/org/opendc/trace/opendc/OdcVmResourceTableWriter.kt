@@ -26,7 +26,9 @@ import org.apache.parquet.hadoop.ParquetWriter
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
 import org.opendc.trace.opendc.parquet.Resource
+import java.time.Duration
 import java.time.Instant
+import java.util.*
 
 /**
  * A [TableWriter] implementation for the OpenDC virtual machine trace format.
@@ -59,18 +61,15 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
         writer.write(Resource(_id, _startTime, _stopTime, _cpuCount, _cpuCapacity, _memCapacity))
     }
 
-    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
-
-    override fun set(index: Int, value: Any) {
-        check(_isActive) { "No active row" }
-        when (index) {
-            COL_ID -> _id = value as String
-            COL_START_TIME -> _startTime = value as Instant
-            COL_STOP_TIME -> _stopTime = value as Instant
-            COL_CPU_COUNT -> _cpuCount = value as Int
-            COL_CPU_CAPACITY -> _cpuCapacity = value as Double
-            COL_MEM_CAPACITY -> _memCapacity = value as Double
-            else -> throw IllegalArgumentException("Invalid column index $index")
+    override fun resolve(name: String): Int {
+        return when (name) {
+            RESOURCE_ID -> COL_ID
+            RESOURCE_START_TIME -> COL_START_TIME
+            RESOURCE_STOP_TIME -> COL_STOP_TIME
+            RESOURCE_CPU_COUNT -> COL_CPU_COUNT
+            RESOURCE_CPU_CAPACITY -> COL_CPU_CAPACITY
+            RESOURCE_MEM_CAPACITY -> COL_MEM_CAPACITY
+            else -> -1
         }
     }
 
@@ -90,6 +89,10 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
         throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
+    override fun setFloat(index: Int, value: Float) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
+    }
+
     override fun setDouble(index: Int, value: Double) {
         check(_isActive) { "No active row" }
         when (index) {
@@ -97,6 +100,43 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
             COL_MEM_CAPACITY -> _memCapacity = value
             else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
+    }
+
+    override fun setString(index: Int, value: String) {
+        check(_isActive) { "No active row" }
+        when (index) {
+            COL_ID -> _id = value
+            else -> throw IllegalArgumentException("Invalid column index $index")
+        }
+    }
+
+    override fun setUUID(index: Int, value: UUID) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
+    }
+
+    override fun setInstant(index: Int, value: Instant) {
+        check(_isActive) { "No active row" }
+        when (index) {
+            COL_START_TIME -> _startTime = value
+            COL_STOP_TIME -> _stopTime = value
+            else -> throw IllegalArgumentException("Invalid column index $index")
+        }
+    }
+
+    override fun setDuration(index: Int, value: Duration) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
+    }
+
+    override fun <T> setList(index: Int, value: List<T>) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
+    }
+
+    override fun <T> setSet(index: Int, value: Set<T>) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
+    }
+
+    override fun <K, V> setMap(index: Int, value: Map<K, V>) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
     override fun flush() {
@@ -113,13 +153,4 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
     private val COL_CPU_COUNT = 3
     private val COL_CPU_CAPACITY = 4
     private val COL_MEM_CAPACITY = 5
-
-    private val columns = mapOf(
-        RESOURCE_ID to COL_ID,
-        RESOURCE_START_TIME to COL_START_TIME,
-        RESOURCE_STOP_TIME to COL_STOP_TIME,
-        RESOURCE_CPU_COUNT to COL_CPU_COUNT,
-        RESOURCE_CPU_CAPACITY to COL_CPU_CAPACITY,
-        RESOURCE_MEM_CAPACITY to COL_MEM_CAPACITY,
-    )
 }

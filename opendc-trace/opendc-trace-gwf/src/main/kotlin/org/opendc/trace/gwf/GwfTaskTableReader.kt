@@ -27,8 +27,10 @@ import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
+import org.opendc.trace.util.convertTo
 import java.time.Duration
 import java.time.Instant
+import java.util.*
 import java.util.regex.Pattern
 
 /**
@@ -68,24 +70,22 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
         return true
     }
 
-    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
-
-    override fun isNull(index: Int): Boolean {
-        check(index in 0..columns.size) { "Invalid column" }
-        return false
+    override fun resolve(name: String): Int {
+        return when (name) {
+            TASK_ID -> COL_JOB_ID
+            TASK_WORKFLOW_ID -> COL_WORKFLOW_ID
+            TASK_SUBMIT_TIME -> COL_SUBMIT_TIME
+            TASK_RUNTIME -> COL_RUNTIME
+            TASK_ALLOC_NCPUS -> COL_NPROC
+            TASK_REQ_NCPUS -> COL_REQ_NPROC
+            TASK_PARENTS -> COL_DEPS
+            else -> -1
+        }
     }
 
-    override fun get(index: Int): Any? {
-        return when (index) {
-            COL_JOB_ID -> jobId
-            COL_WORKFLOW_ID -> workflowId
-            COL_SUBMIT_TIME -> submitTime
-            COL_RUNTIME -> runtime
-            COL_REQ_NPROC -> getInt(index)
-            COL_NPROC -> getInt(index)
-            COL_DEPS -> dependencies
-            else -> throw IllegalArgumentException("Invalid column")
-        }
+    override fun isNull(index: Int): Boolean {
+        check(index in 0..COL_DEPS) { "Invalid column" }
+        return false
     }
 
     override fun getBoolean(index: Int): Boolean {
@@ -104,8 +104,53 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
         throw IllegalArgumentException("Invalid column")
     }
 
+    override fun getFloat(index: Int): Float {
+        throw IllegalArgumentException("Invalid column")
+    }
+
     override fun getDouble(index: Int): Double {
         throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getString(index: Int): String? {
+        return when (index) {
+            COL_JOB_ID -> jobId
+            COL_WORKFLOW_ID -> workflowId
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getUUID(index: Int): UUID? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getInstant(index: Int): Instant? {
+        return when (index) {
+            COL_SUBMIT_TIME -> submitTime
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getDuration(index: Int): Duration? {
+        return when (index) {
+            COL_RUNTIME -> runtime
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        return when (index) {
+            COL_DEPS -> TYPE_DEPS.convertTo(dependencies, elementType)
+            else -> throw IllegalArgumentException("Invalid column")
+        }
     }
 
     override fun close() {
@@ -180,15 +225,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     private val COL_REQ_NPROC = 5
     private val COL_DEPS = 6
 
-    private val columns = mapOf(
-        TASK_ID to COL_JOB_ID,
-        TASK_WORKFLOW_ID to COL_WORKFLOW_ID,
-        TASK_SUBMIT_TIME to COL_SUBMIT_TIME,
-        TASK_RUNTIME to COL_RUNTIME,
-        TASK_ALLOC_NCPUS to COL_NPROC,
-        TASK_REQ_NCPUS to COL_REQ_NPROC,
-        TASK_PARENTS to COL_DEPS
-    )
+    private val TYPE_DEPS = TableColumnType.Set(TableColumnType.String)
 
     companion object {
         /**

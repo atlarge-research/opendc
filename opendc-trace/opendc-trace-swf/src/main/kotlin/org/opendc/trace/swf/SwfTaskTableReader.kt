@@ -27,6 +27,7 @@ import org.opendc.trace.conv.*
 import java.io.BufferedReader
 import java.time.Duration
 import java.time.Instant
+import java.util.*
 
 /**
  * A [TableReader] implementation for the SWF format.
@@ -70,25 +71,25 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
         return true
     }
 
-    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
-
-    override fun isNull(index: Int): Boolean {
-        require(index in columns.values) { "Invalid column index" }
-        return false
+    override fun resolve(name: String): Int {
+        return when (name) {
+            TASK_ID -> COL_JOB_ID
+            TASK_SUBMIT_TIME -> COL_SUBMIT_TIME
+            TASK_WAIT_TIME -> COL_WAIT_TIME
+            TASK_RUNTIME -> COL_RUN_TIME
+            TASK_ALLOC_NCPUS -> COL_ALLOC_NCPUS
+            TASK_REQ_NCPUS -> COL_REQ_NCPUS
+            TASK_STATUS -> COL_STATUS
+            TASK_USER_ID -> COL_USER_ID
+            TASK_GROUP_ID -> COL_GROUP_ID
+            TASK_PARENTS -> COL_PARENT_JOB
+            else -> -1
+        }
     }
 
-    override fun get(index: Int): Any? {
-        return when (index) {
-            COL_JOB_ID -> fields[index]
-            COL_SUBMIT_TIME -> Instant.ofEpochSecond(fields[index].toLong(10))
-            COL_WAIT_TIME, COL_RUN_TIME -> Duration.ofSeconds(fields[index].toLong(10))
-            COL_REQ_NCPUS, COL_ALLOC_NCPUS, COL_STATUS, COL_GROUP_ID, COL_USER_ID -> getInt(index)
-            COL_PARENT_JOB -> {
-                val parent = fields[index].toLong(10)
-                if (parent < 0) emptySet() else setOf(parent)
-            }
-            else -> throw IllegalArgumentException("Invalid column")
-        }
+    override fun isNull(index: Int): Boolean {
+        require(index in COL_JOB_ID..COL_PARENT_THINK_TIME) { "Invalid column index" }
+        return false
     }
 
     override fun getBoolean(index: Int): Boolean {
@@ -106,7 +107,56 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
         throw IllegalArgumentException("Invalid column")
     }
 
+    override fun getFloat(index: Int): Float {
+        throw IllegalArgumentException("Invalid column")
+    }
+
     override fun getDouble(index: Int): Double {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getString(index: Int): String {
+        return when (index) {
+            COL_JOB_ID -> fields[index]
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getUUID(index: Int): UUID? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getInstant(index: Int): Instant? {
+        return when (index) {
+            COL_SUBMIT_TIME -> Instant.ofEpochSecond(fields[index].toLong(10))
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getDuration(index: Int): Duration? {
+        return when (index) {
+            COL_WAIT_TIME, COL_RUN_TIME -> Duration.ofSeconds(fields[index].toLong(10))
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        @Suppress("UNCHECKED_CAST")
+        return when (index) {
+            COL_PARENT_JOB -> {
+                require(elementType.isAssignableFrom(String::class.java))
+                val parent = fields[index].toLong(10)
+                if (parent < 0) emptySet() else setOf(parent)
+            }
+            else -> throw IllegalArgumentException("Invalid column")
+        } as Set<T>?
+    }
+
+    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
         throw IllegalArgumentException("Invalid column")
     }
 
@@ -135,17 +185,4 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
     private val COL_PART_NUM = 15
     private val COL_PARENT_JOB = 16
     private val COL_PARENT_THINK_TIME = 17
-
-    private val columns = mapOf(
-        TASK_ID to COL_JOB_ID,
-        TASK_SUBMIT_TIME to COL_SUBMIT_TIME,
-        TASK_WAIT_TIME to COL_WAIT_TIME,
-        TASK_RUNTIME to COL_RUN_TIME,
-        TASK_ALLOC_NCPUS to COL_ALLOC_NCPUS,
-        TASK_REQ_NCPUS to COL_REQ_NCPUS,
-        TASK_STATUS to COL_STATUS,
-        TASK_USER_ID to COL_USER_ID,
-        TASK_GROUP_ID to COL_GROUP_ID,
-        TASK_PARENTS to COL_PARENT_JOB
-    )
 }

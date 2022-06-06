@@ -38,8 +38,11 @@ import org.apache.calcite.rex.RexNode
 import org.apache.calcite.schema.*
 import org.apache.calcite.schema.impl.AbstractTableQueryable
 import org.apache.calcite.sql.type.SqlTypeName
+import org.opendc.trace.TableColumnType
+import java.nio.ByteBuffer
 import java.time.Duration
 import java.time.Instant
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -70,7 +73,7 @@ internal class TraceTable(private val table: org.opendc.trace.Table) :
         val cancelFlag = DataContext.Variable.CANCEL_FLAG.get<AtomicBoolean>(root)
         return object : AbstractEnumerable<Array<Any?>>() {
             override fun enumerator(): Enumerator<Array<Any?>> =
-                TraceReaderEnumerator(table.newReader(projection), projection ?: table.columns, cancelFlag)
+                TraceReaderEnumerator(table.newReader(projection?.map { it.name }), projection ?: table.columns, cancelFlag)
         }
     }
 
@@ -78,7 +81,7 @@ internal class TraceTable(private val table: org.opendc.trace.Table) :
         val table = table
         val columns = table.columns
         val writer = table.newWriter()
-        val columnIndices = columns.map { writer.resolve(it) }.toIntArray()
+        val columnIndices = columns.map { writer.resolve(it.name) }.toIntArray()
         var rowCount = 0L
 
         try {
@@ -90,16 +93,24 @@ internal class TraceTable(private val table: org.opendc.trace.Table) :
                         continue
                     }
                     val columnType = columns[index].type
-
-                    writer.set(
-                        columnIndices[index],
-                        when (columnType) {
-                            Duration::class.java -> Duration.ofMillis(value as Long)
-                            Instant::class.java -> Instant.ofEpochMilli(value as Long)
-                            Set::class.java -> (value as List<*>).toSet()
-                            else -> value
+                    val columnIndex = columnIndices[index]
+                    when (columnType) {
+                        is TableColumnType.Boolean -> writer.setBoolean(columnIndex, value as Boolean)
+                        is TableColumnType.Int -> writer.setInt(columnIndex, value as Int)
+                        is TableColumnType.Long -> writer.setLong(columnIndex, value as Long)
+                        is TableColumnType.Float -> writer.setFloat(columnIndex, value as Float)
+                        is TableColumnType.Double -> writer.setDouble(columnIndex, value as Double)
+                        is TableColumnType.String -> writer.setString(columnIndex, value as String)
+                        is TableColumnType.UUID -> {
+                            val bb = ByteBuffer.wrap(value as ByteArray)
+                            writer.setUUID(columnIndex, UUID(bb.getLong(), bb.getLong()))
                         }
-                    )
+                        is TableColumnType.Instant -> writer.setInstant(columnIndex, Instant.ofEpochMilli(value as Long))
+                        is TableColumnType.Duration -> writer.setDuration(columnIndex, Duration.ofMillis(value as Long))
+                        is TableColumnType.List -> writer.setList(columnIndex, value as List<*>)
+                        is TableColumnType.Set -> writer.setSet(columnIndex, (value as List<*>).toSet())
+                        is TableColumnType.Map -> writer.setMap(columnIndex, value as Map<*, *>)
+                    }
                 }
 
                 writer.endRow()
@@ -161,16 +172,26 @@ internal class TraceTable(private val table: org.opendc.trace.Table) :
 
         for (column in table.columns) {
             names.add(column.name)
-            types.add(
-                when (column.type) {
-                    Instant::class.java -> typeFactory.createSqlType(SqlTypeName.TIMESTAMP)
-                    Duration::class.java -> typeFactory.createSqlType(SqlTypeName.BIGINT)
-                    Set::class.java -> typeFactory.createMultisetType(typeFactory.createSqlType(SqlTypeName.UNKNOWN), -1)
-                    else -> typeFactory.createType(column.type)
-                }
-            )
+            types.add(mapType(typeFactory, column.type))
         }
 
         return typeFactory.createStructType(types, names)
+    }
+
+    private fun mapType(typeFactory: JavaTypeFactory, type: TableColumnType): RelDataType {
+        return when (type) {
+            is TableColumnType.Boolean -> typeFactory.createSqlType(SqlTypeName.BOOLEAN)
+            is TableColumnType.Int -> typeFactory.createSqlType(SqlTypeName.INTEGER)
+            is TableColumnType.Long -> typeFactory.createSqlType(SqlTypeName.BIGINT)
+            is TableColumnType.Float -> typeFactory.createSqlType(SqlTypeName.FLOAT)
+            is TableColumnType.Double -> typeFactory.createSqlType(SqlTypeName.DOUBLE)
+            is TableColumnType.String -> typeFactory.createSqlType(SqlTypeName.VARCHAR)
+            is TableColumnType.UUID -> typeFactory.createSqlType(SqlTypeName.BINARY, 16)
+            is TableColumnType.Instant -> typeFactory.createSqlType(SqlTypeName.TIMESTAMP)
+            is TableColumnType.Duration -> typeFactory.createSqlType(SqlTypeName.BIGINT)
+            is TableColumnType.List -> typeFactory.createArrayType(mapType(typeFactory, type.elementType), -1)
+            is TableColumnType.Set -> typeFactory.createMultisetType(mapType(typeFactory, type.elementType), -1)
+            is TableColumnType.Map -> typeFactory.createMapType(mapType(typeFactory, type.keyType), mapType(typeFactory, type.valueType))
+        }
     }
 }

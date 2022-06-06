@@ -65,32 +65,28 @@ class WtfTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("362334516345962206", reader.get(TASK_ID)) },
-            { assertEquals("1078341553348591493", reader.get(TASK_WORKFLOW_ID)) },
-            { assertEquals(Instant.ofEpochMilli(245604), reader.get(TASK_SUBMIT_TIME)) },
-            { assertEquals(Duration.ofMillis(8163), reader.get(TASK_RUNTIME)) },
+            { assertEquals("362334516345962206", reader.getString(TASK_ID)) },
+            { assertEquals("1078341553348591493", reader.getString(TASK_WORKFLOW_ID)) },
+            { assertEquals(Instant.ofEpochMilli(245604), reader.getInstant(TASK_SUBMIT_TIME)) },
+            { assertEquals(Duration.ofMillis(8163), reader.getDuration(TASK_RUNTIME)) },
             {
                 assertEquals(
                     setOf("584055316413447529", "133113685133695608", "1008582348422865408"),
-                    reader.get(
-                        TASK_PARENTS
-                    )
+                    reader.getSet(TASK_PARENTS, String::class.java)
                 )
             },
         )
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("502010169100446658", reader.get(TASK_ID)) },
-            { assertEquals("1078341553348591493", reader.get(TASK_WORKFLOW_ID)) },
-            { assertEquals(Instant.ofEpochMilli(251325), reader.get(TASK_SUBMIT_TIME)) },
-            { assertEquals(Duration.ofMillis(8216), reader.get(TASK_RUNTIME)) },
+            { assertEquals("502010169100446658", reader.getString(TASK_ID)) },
+            { assertEquals("1078341553348591493", reader.getString(TASK_WORKFLOW_ID)) },
+            { assertEquals(Instant.ofEpochMilli(251325), reader.getInstant(TASK_SUBMIT_TIME)) },
+            { assertEquals(Duration.ofMillis(8216), reader.getDuration(TASK_RUNTIME)) },
             {
                 assertEquals(
                     setOf("584055316413447529", "133113685133695608", "1008582348422865408"),
-                    reader.get(
-                        TASK_PARENTS
-                    )
+                    reader.getSet(TASK_PARENTS, String::class.java)
                 )
             },
         )

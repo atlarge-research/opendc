@@ -49,16 +49,16 @@ public fun Trace.toJobs(): List<Job> {
     try {
         while (reader.nextRow()) {
             // Bag of tasks without workflow ID all share the same workflow
-            val workflowId = if (reader.hasColumn(TASK_WORKFLOW_ID)) reader.get(TASK_WORKFLOW_ID).toLong() else 0L
+            val workflowId = if (reader.resolve(TASK_WORKFLOW_ID) != -1) reader.getString(TASK_WORKFLOW_ID)!!.toLong() else 0L
             val workflow = jobs.computeIfAbsent(workflowId) { id -> Job(UUID(0L, id), "<unnamed>", HashSet(), HashMap()) }
 
-            val id = reader.get(TASK_ID).toLong()
-            val grantedCpus = if (reader.hasColumn(TASK_ALLOC_NCPUS))
+            val id = reader.getString(TASK_ID)!!.toLong()
+            val grantedCpus = if (reader.resolve(TASK_ALLOC_NCPUS) != 0)
                 reader.getInt(TASK_ALLOC_NCPUS)
             else
                 reader.getInt(TASK_REQ_NCPUS)
-            val submitTime = reader.get(TASK_SUBMIT_TIME)
-            val runtime = reader.get(TASK_RUNTIME)
+            val submitTime = reader.getInstant(TASK_SUBMIT_TIME)!!
+            val runtime = reader.getDuration(TASK_RUNTIME)!!
             val flops: Long = 4000 * runtime.seconds * grantedCpus
             val workload = SimFlopsWorkload(flops)
             val task = Task(
@@ -73,7 +73,7 @@ public fun Trace.toJobs(): List<Job> {
             )
 
             tasks[id] = task
-            taskDependencies[task] = reader.get(TASK_PARENTS).map { it.toLong() }.toSet()
+            taskDependencies[task] = reader.getSet(TASK_PARENTS, String::class.java)!!.map { it.toLong() }.toSet()
 
             (workflow.metadata as MutableMap<String, Any>).merge("WORKFLOW_SUBMIT_TIME", submitTime.toEpochMilli()) { a, b -> min(a as Long, b as Long) }
             (workflow.tasks as MutableSet<Task>).add(task)

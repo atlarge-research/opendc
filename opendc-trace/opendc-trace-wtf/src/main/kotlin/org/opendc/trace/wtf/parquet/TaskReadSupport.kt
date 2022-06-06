@@ -27,7 +27,6 @@ import org.apache.parquet.hadoop.api.InitContext
 import org.apache.parquet.hadoop.api.ReadSupport
 import org.apache.parquet.io.api.RecordMaterializer
 import org.apache.parquet.schema.*
-import org.opendc.trace.TableColumn
 import org.opendc.trace.conv.*
 
 /**
@@ -35,11 +34,11 @@ import org.opendc.trace.conv.*
  *
  * @param projection The projection of the table to read.
  */
-internal class TaskReadSupport(private val projection: List<TableColumn<*>>?) : ReadSupport<Task>() {
+internal class TaskReadSupport(private val projection: List<String>?) : ReadSupport<Task>() {
     /**
      * Mapping of table columns to their Parquet column names.
      */
-    private val colMap = mapOf<TableColumn<*>, String>(
+    private val colMap = mapOf(
         TASK_ID to "id",
         TASK_WORKFLOW_ID to "workflow_id",
         TASK_SUBMIT_TIME to "ts_submit",

@@ -24,8 +24,12 @@ package org.opendc.trace.wtf
 
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
+import org.opendc.trace.util.convertTo
 import org.opendc.trace.util.parquet.LocalParquetReader
 import org.opendc.trace.wtf.parquet.Task
+import java.time.Duration
+import java.time.Instant
+import java.util.*
 
 /**
  * A [TableReader] implementation for the WTF format.
@@ -48,26 +52,39 @@ internal class WtfTaskTableReader(private val reader: LocalParquetReader<Task>) 
         }
     }
 
-    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
+    private val COL_ID = 0
+    private val COL_WORKFLOW_ID = 1
+    private val COL_SUBMIT_TIME = 2
+    private val COL_WAIT_TIME = 3
+    private val COL_RUNTIME = 4
+    private val COL_REQ_NCPUS = 5
+    private val COL_PARENTS = 6
+    private val COL_CHILDREN = 7
+    private val COL_GROUP_ID = 8
+    private val COL_USER_ID = 9
 
-    override fun isNull(index: Int): Boolean {
-        check(index in 0..columns.size) { "Invalid column index" }
-        return get(index) == null
+    private val TYPE_PARENTS = TableColumnType.Set(TableColumnType.String)
+    private val TYPE_CHILDREN = TableColumnType.Set(TableColumnType.String)
+
+    override fun resolve(name: String): Int {
+        return when (name) {
+            TASK_ID -> COL_ID
+            TASK_WORKFLOW_ID -> COL_WORKFLOW_ID
+            TASK_SUBMIT_TIME -> COL_SUBMIT_TIME
+            TASK_WAIT_TIME -> COL_WAIT_TIME
+            TASK_RUNTIME -> COL_RUNTIME
+            TASK_REQ_NCPUS -> COL_REQ_NCPUS
+            TASK_PARENTS -> COL_PARENTS
+            TASK_CHILDREN -> COL_CHILDREN
+            TASK_GROUP_ID -> COL_GROUP_ID
+            TASK_USER_ID -> COL_USER_ID
+            else -> -1
+        }
     }
 
-    override fun get(index: Int): Any? {
-        val record = checkNotNull(record) { "Reader in invalid state" }
-        return when (index) {
-            COL_ID -> record.id
-            COL_WORKFLOW_ID -> record.workflowId
-            COL_SUBMIT_TIME -> record.submitTime
-            COL_WAIT_TIME -> record.waitTime
-            COL_RUNTIME -> record.runtime
-            COL_REQ_NCPUS, COL_GROUP_ID, COL_USER_ID -> getInt(index)
-            COL_PARENTS -> record.parents
-            COL_CHILDREN -> record.children
-            else -> throw IllegalArgumentException("Invalid column")
-        }
+    override fun isNull(index: Int): Boolean {
+        check(index in COL_ID..COL_USER_ID) { "Invalid column index" }
+        return false
     }
 
     override fun getBoolean(index: Int): Boolean {
@@ -89,35 +106,62 @@ internal class WtfTaskTableReader(private val reader: LocalParquetReader<Task>) 
         throw IllegalArgumentException("Invalid column")
     }
 
+    override fun getFloat(index: Int): Float {
+        throw IllegalArgumentException("Invalid column")
+    }
+
     override fun getDouble(index: Int): Double {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getString(index: Int): String {
+        val record = checkNotNull(record) { "Reader in invalid state" }
+        return when (index) {
+            COL_ID -> record.id
+            COL_WORKFLOW_ID -> record.workflowId
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getUUID(index: Int): UUID? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getInstant(index: Int): Instant {
+        val record = checkNotNull(record) { "Reader in invalid state" }
+        return when (index) {
+            COL_SUBMIT_TIME -> record.submitTime
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getDuration(index: Int): Duration {
+        val record = checkNotNull(record) { "Reader in invalid state" }
+        return when (index) {
+            COL_WAIT_TIME -> record.waitTime
+            COL_RUNTIME -> record.runtime
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        val record = checkNotNull(record) { "Reader in invalid state" }
+        return when (index) {
+            COL_PARENTS -> TYPE_PARENTS.convertTo(record.parents, elementType)
+            COL_CHILDREN -> TYPE_CHILDREN.convertTo(record.children, elementType)
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
         throw IllegalArgumentException("Invalid column")
     }
 
     override fun close() {
         reader.close()
     }
-
-    private val COL_ID = 0
-    private val COL_WORKFLOW_ID = 1
-    private val COL_SUBMIT_TIME = 2
-    private val COL_WAIT_TIME = 3
-    private val COL_RUNTIME = 4
-    private val COL_REQ_NCPUS = 5
-    private val COL_PARENTS = 6
-    private val COL_CHILDREN = 7
-    private val COL_GROUP_ID = 8
-    private val COL_USER_ID = 9
-
-    private val columns = mapOf(
-        TASK_ID to COL_ID,
-        TASK_WORKFLOW_ID to COL_WORKFLOW_ID,
-        TASK_SUBMIT_TIME to COL_SUBMIT_TIME,
-        TASK_WAIT_TIME to COL_WAIT_TIME,
-        TASK_RUNTIME to COL_RUNTIME,
-        TASK_REQ_NCPUS to COL_REQ_NCPUS,
-        TASK_PARENTS to COL_PARENTS,
-        TASK_CHILDREN to COL_CHILDREN,
-        TASK_GROUP_ID to COL_GROUP_ID,
-        TASK_USER_ID to COL_USER_ID,
-    )
 }

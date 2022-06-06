@@ -33,11 +33,11 @@ import org.opendc.trace.conv.*
 /**
  * A [ReadSupport] instance for [ResourceState] objects.
  */
-internal class ResourceStateReadSupport(private val projection: List<TableColumn<*>>?) : ReadSupport<ResourceState>() {
+internal class ResourceStateReadSupport(private val projection: List<String>?) : ReadSupport<ResourceState>() {
     /**
      * Mapping from field names to [TableColumn]s.
      */
-    private val fieldMap = mapOf<String, TableColumn<*>>(
+    private val fieldMap = mapOf(
         "id" to RESOURCE_ID,
         "time" to RESOURCE_STATE_TIMESTAMP,
         "timestamp" to RESOURCE_STATE_TIMESTAMP,

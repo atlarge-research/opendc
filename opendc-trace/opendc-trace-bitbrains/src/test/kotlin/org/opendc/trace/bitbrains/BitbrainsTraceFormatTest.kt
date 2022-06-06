@@ -61,7 +61,7 @@ class BitbrainsTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("bitbrains", reader.get(RESOURCE_ID)) },
+            { assertEquals("bitbrains", reader.getString(RESOURCE_ID)) },
             { assertFalse(reader.nextRow()) }
         )
 
@@ -75,7 +75,7 @@ class BitbrainsTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals(1376314846, reader.get(RESOURCE_STATE_TIMESTAMP).epochSecond) },
+            { assertEquals(1376314846, reader.getInstant(RESOURCE_STATE_TIMESTAMP)?.epochSecond) },
             { assertEquals(19.066, reader.getDouble(RESOURCE_STATE_CPU_USAGE), 0.01) }
         )
 

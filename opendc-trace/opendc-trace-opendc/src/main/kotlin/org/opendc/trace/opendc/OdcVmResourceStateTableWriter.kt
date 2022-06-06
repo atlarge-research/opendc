@@ -28,6 +28,7 @@ import org.opendc.trace.conv.*
 import org.opendc.trace.opendc.parquet.ResourceState
 import java.time.Duration
 import java.time.Instant
+import java.util.*
 
 /**
  * A [TableWriter] implementation for the OpenDC virtual machine trace format.
@@ -64,17 +65,14 @@ internal class OdcVmResourceStateTableWriter(private val writer: ParquetWriter<R
         lastTimestamp = _timestamp
     }
 
-    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
-
-    override fun set(index: Int, value: Any) {
-        check(_isActive) { "No active row" }
-
-        when (index) {
-            COL_ID -> _id = value as String
-            COL_TIMESTAMP -> _timestamp = value as Instant
-            COL_DURATION -> _duration = value as Duration
-            COL_CPU_COUNT -> _cpuCount = value as Int
-            COL_CPU_USAGE -> _cpuUsage = value as Double
+    override fun resolve(name: String): Int {
+        return when (name) {
+            RESOURCE_ID -> COL_ID
+            RESOURCE_STATE_TIMESTAMP -> COL_TIMESTAMP
+            RESOURCE_STATE_DURATION -> COL_DURATION
+            RESOURCE_CPU_COUNT -> COL_CPU_COUNT
+            RESOURCE_STATE_CPU_USAGE -> COL_CPU_USAGE
+            else -> -1
         }
     }
 
@@ -94,12 +92,57 @@ internal class OdcVmResourceStateTableWriter(private val writer: ParquetWriter<R
         throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
+    override fun setFloat(index: Int, value: Float) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
+    }
+
     override fun setDouble(index: Int, value: Double) {
         check(_isActive) { "No active row" }
         when (index) {
             COL_CPU_USAGE -> _cpuUsage = value
             else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
+    }
+
+    override fun setString(index: Int, value: String) {
+        check(_isActive) { "No active row" }
+
+        when (index) {
+            COL_ID -> _id = value
+        }
+    }
+
+    override fun setUUID(index: Int, value: UUID) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
+    }
+
+    override fun setInstant(index: Int, value: Instant) {
+        check(_isActive) { "No active row" }
+
+        when (index) {
+            COL_TIMESTAMP -> _timestamp = value
+            else -> throw IllegalArgumentException("Invalid column or type [index $index]")
+        }
+    }
+
+    override fun setDuration(index: Int, value: Duration) {
+        check(_isActive) { "No active row" }
+
+        when (index) {
+            COL_DURATION -> _duration = value
+        }
+    }
+
+    override fun <T> setList(index: Int, value: List<T>) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
+    }
+
+    override fun <T> setSet(index: Int, value: Set<T>) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
+    }
+
+    override fun <K, V> setMap(index: Int, value: Map<K, V>) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
     override fun flush() {
@@ -121,12 +164,4 @@ internal class OdcVmResourceStateTableWriter(private val writer: ParquetWriter<R
     private val COL_DURATION = 2
     private val COL_CPU_COUNT = 3
     private val COL_CPU_USAGE = 4
-
-    private val columns = mapOf(
-        RESOURCE_ID to COL_ID,
-        RESOURCE_STATE_TIMESTAMP to COL_TIMESTAMP,
-        RESOURCE_STATE_DURATION to COL_DURATION,
-        RESOURCE_CPU_COUNT to COL_CPU_COUNT,
-        RESOURCE_STATE_CPU_USAGE to COL_CPU_USAGE,
-    )
 }

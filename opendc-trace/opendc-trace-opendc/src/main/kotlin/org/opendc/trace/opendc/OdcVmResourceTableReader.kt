@@ -26,6 +26,9 @@ import org.opendc.trace.*
 import org.opendc.trace.conv.*
 import org.opendc.trace.opendc.parquet.Resource
 import org.opendc.trace.util.parquet.LocalParquetReader
+import java.time.Duration
+import java.time.Instant
+import java.util.*
 
 /**
  * A [TableReader] implementation for the "resources table" in the OpenDC virtual machine trace format.
@@ -48,25 +51,28 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         }
     }
 
-    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
+    private val COL_ID = 0
+    private val COL_START_TIME = 1
+    private val COL_STOP_TIME = 2
+    private val COL_CPU_COUNT = 3
+    private val COL_CPU_CAPACITY = 4
+    private val COL_MEM_CAPACITY = 5
 
-    override fun isNull(index: Int): Boolean {
-        check(index in 0..columns.size) { "Invalid column index" }
-        return get(index) == null
+    override fun resolve(name: String): Int {
+        return when (name) {
+            RESOURCE_ID -> COL_ID
+            RESOURCE_START_TIME -> COL_START_TIME
+            RESOURCE_STOP_TIME -> COL_STOP_TIME
+            RESOURCE_CPU_COUNT -> COL_CPU_COUNT
+            RESOURCE_CPU_CAPACITY -> COL_CPU_CAPACITY
+            RESOURCE_MEM_CAPACITY -> COL_MEM_CAPACITY
+            else -> -1
+        }
     }
 
-    override fun get(index: Int): Any? {
-        val record = checkNotNull(record) { "Reader in invalid state" }
-
-        return when (index) {
-            COL_ID -> record.id
-            COL_START_TIME -> record.startTime
-            COL_STOP_TIME -> record.stopTime
-            COL_CPU_COUNT -> getInt(index)
-            COL_CPU_CAPACITY -> getDouble(index)
-            COL_MEM_CAPACITY -> getDouble(index)
-            else -> throw IllegalArgumentException("Invalid column")
-        }
+    override fun isNull(index: Int): Boolean {
+        check(index in 0..COL_MEM_CAPACITY) { "Invalid column index" }
+        return false
     }
 
     override fun getBoolean(index: Int): Boolean {
@@ -86,6 +92,10 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         throw IllegalArgumentException("Invalid column")
     }
 
+    override fun getFloat(index: Int): Float {
+        throw IllegalArgumentException("Invalid column")
+    }
+
     override fun getDouble(index: Int): Double {
         val record = checkNotNull(record) { "Reader in invalid state" }
 
@@ -96,25 +106,48 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         }
     }
 
+    override fun getString(index: Int): String {
+        val record = checkNotNull(record) { "Reader in invalid state" }
+
+        return when (index) {
+            COL_ID -> record.id
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getUUID(index: Int): UUID? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getInstant(index: Int): Instant {
+        val record = checkNotNull(record) { "Reader in invalid state" }
+
+        return when (index) {
+            COL_START_TIME -> record.startTime
+            COL_STOP_TIME -> record.stopTime
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getDuration(index: Int): Duration? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
     override fun close() {
         reader.close()
     }
 
     override fun toString(): String = "OdcVmResourceTableReader"
-
-    private val COL_ID = 0
-    private val COL_START_TIME = 1
-    private val COL_STOP_TIME = 2
-    private val COL_CPU_COUNT = 3
-    private val COL_CPU_CAPACITY = 4
-    private val COL_MEM_CAPACITY = 5
-
-    private val columns = mapOf(
-        RESOURCE_ID to COL_ID,
-        RESOURCE_START_TIME to COL_START_TIME,
-        RESOURCE_STOP_TIME to COL_STOP_TIME,
-        RESOURCE_CPU_COUNT to COL_CPU_COUNT,
-        RESOURCE_CPU_CAPACITY to COL_CPU_CAPACITY,
-        RESOURCE_MEM_CAPACITY to COL_MEM_CAPACITY,
-    )
 }
