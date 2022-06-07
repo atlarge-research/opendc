@@ -1,0 +1,74 @@
+/*
+ * Copyright (c) 2022 AtLarge Research
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package org.opendc.trace.azure
+
+import org.opendc.trace.conv.*
+import org.opendc.trace.spi.TraceFormat
+import org.openjdk.jmh.annotations.*
+import org.openjdk.jmh.infra.Blackhole
+import java.nio.file.Path
+import java.util.concurrent.TimeUnit
+
+/**
+ * Benchmarks for parsing traces in the Azure VM format.
+ */
+@State(Scope.Thread)
+@Fork(1)
+@Warmup(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
+class AzureTraceBenchmarks {
+    private lateinit var path: Path
+    private lateinit var format: TraceFormat
+
+    @Setup
+    fun setUp() {
+        path = Path.of("src/test/resources/trace")
+        format = AzureTraceFormat()
+    }
+
+    @Benchmark
+    fun benchmarkResourcesReader(bh: Blackhole) {
+        val reader = format.newReader(path, TABLE_RESOURCES, null)
+        try {
+            val idColumn = reader.resolve(RESOURCE_ID)
+            while (reader.nextRow()) {
+                bh.consume(reader.getString(idColumn))
+            }
+        } finally {
+            reader.close()
+        }
+    }
+
+    @Benchmark
+    fun benchmarkResourceStatesReader(bh: Blackhole) {
+        val reader = format.newReader(path, TABLE_RESOURCE_STATES, null)
+        try {
+            val idColumn = reader.resolve(RESOURCE_ID)
+            while (reader.nextRow()) {
+                bh.consume(reader.getString(idColumn))
+            }
+        } finally {
+            reader.close()
+        }
+    }
+}
