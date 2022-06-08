@@ -37,15 +37,24 @@ import java.util.regex.Pattern
  * A [TableReader] implementation for the GWF format.
  */
 internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
+    /**
+     * A flag to indicate whether a single row has been read already.
+     */
+    private var isStarted = false
+
     init {
         parser.schema = schema
     }
 
     override fun nextRow(): Boolean {
+        if (!isStarted) {
+            isStarted = true
+        }
+
         // Reset the row state
         reset()
 
-        if (!nextStart()) {
+        if (parser.isClosed || !nextStart()) {
             return false
         }
 
@@ -84,7 +93,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     }
 
     override fun isNull(index: Int): Boolean {
-        check(index in 0..COL_DEPS) { "Invalid column" }
+        require(index in 0..COL_DEPS) { "Invalid column" }
         return false
     }
 
@@ -93,6 +102,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     }
 
     override fun getInt(index: Int): Int {
+        checkActive()
         return when (index) {
             COL_REQ_NPROC -> reqNProcs
             COL_NPROC -> nProcs
@@ -113,6 +123,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     }
 
     override fun getString(index: Int): String? {
+        checkActive()
         return when (index) {
             COL_JOB_ID -> jobId
             COL_WORKFLOW_ID -> workflowId
@@ -125,6 +136,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     }
 
     override fun getInstant(index: Int): Instant? {
+        checkActive()
         return when (index) {
             COL_SUBMIT_TIME -> submitTime
             else -> throw IllegalArgumentException("Invalid column")
@@ -132,6 +144,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     }
 
     override fun getDuration(index: Int): Duration? {
+        checkActive()
         return when (index) {
             COL_RUNTIME -> runtime
             else -> throw IllegalArgumentException("Invalid column")
@@ -147,6 +160,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     }
 
     override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        checkActive()
         return when (index) {
             COL_DEPS -> TYPE_DEPS.convertTo(dependencies, elementType)
             else -> throw IllegalArgumentException("Invalid column")
@@ -155,6 +169,13 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
 
     override fun close() {
         parser.close()
+    }
+
+    /**
+     * Helper method to check if the reader is active.
+     */
+    private fun checkActive() {
+        check(isStarted && !parser.isClosed) { "No active row. Did you call nextRow()?" }
     }
 
     /**

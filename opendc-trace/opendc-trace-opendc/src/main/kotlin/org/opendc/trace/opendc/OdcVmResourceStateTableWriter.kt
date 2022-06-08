@@ -109,6 +109,7 @@ internal class OdcVmResourceStateTableWriter(private val writer: ParquetWriter<R
 
         when (index) {
             COL_ID -> _id = value
+            else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
     }
 
@@ -130,6 +131,7 @@ internal class OdcVmResourceStateTableWriter(private val writer: ParquetWriter<R
 
         when (index) {
             COL_DURATION -> _duration = value
+            else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
     }
 

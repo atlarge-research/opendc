@@ -54,12 +54,13 @@ internal class OdcVmInterferenceJsonTableReader(private val parser: JsonParser) 
             }
         }
 
-        return if (parser.nextToken() != JsonToken.END_ARRAY) {
-            parseGroup(parser)
-            true
-        } else {
+        return if (parser.isClosed || parser.nextToken() == JsonToken.END_ARRAY) {
+            parser.close()
             reset()
             false
+        } else {
+            parseGroup(parser)
+            true
         }
     }
 
@@ -102,6 +103,7 @@ internal class OdcVmInterferenceJsonTableReader(private val parser: JsonParser) 
     }
 
     override fun getDouble(index: Int): Double {
+        checkActive()
         return when (index) {
             COL_TARGET -> targetLoad
             COL_SCORE -> score
@@ -130,6 +132,7 @@ internal class OdcVmInterferenceJsonTableReader(private val parser: JsonParser) 
     }
 
     override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        checkActive()
         return when (index) {
             COL_MEMBERS -> TYPE_MEMBERS.convertTo(members, elementType)
             else -> throw IllegalArgumentException("Invalid column $index")
@@ -147,6 +150,13 @@ internal class OdcVmInterferenceJsonTableReader(private val parser: JsonParser) 
     private var members = emptySet<String>()
     private var targetLoad = Double.POSITIVE_INFINITY
     private var score = 1.0
+
+    /**
+     * Helper method to check if the reader is active.
+     */
+    private fun checkActive() {
+        check(isStarted && !parser.isClosed) { "No active row. Did you call nextRow()?" }
+    }
 
     /**
      * Reset the state.

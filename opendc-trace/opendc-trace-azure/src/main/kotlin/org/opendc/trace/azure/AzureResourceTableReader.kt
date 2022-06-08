@@ -35,11 +35,20 @@ import java.util.*
  * A [TableReader] for the Azure v1 VM resources table.
  */
 internal class AzureResourceTableReader(private val parser: CsvParser) : TableReader {
+    /**
+     * A flag to indicate whether a single row has been read already.
+     */
+    private var isStarted = false
+
     init {
         parser.schema = schema
     }
 
     override fun nextRow(): Boolean {
+        if (!isStarted) {
+            isStarted = true
+        }
+
         reset()
 
         if (!nextStart()) {
@@ -92,6 +101,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     }
 
     override fun getInt(index: Int): Int {
+        checkActive()
         return when (index) {
             COL_CPU_COUNT -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
@@ -99,6 +109,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     }
 
     override fun getLong(index: Int): Long {
+        checkActive()
         return when (index) {
             COL_CPU_COUNT -> cpuCores.toLong()
             else -> throw IllegalArgumentException("Invalid column")
@@ -110,6 +121,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     }
 
     override fun getDouble(index: Int): Double {
+        checkActive()
         return when (index) {
             COL_MEM_CAPACITY -> memCapacity
             else -> throw IllegalArgumentException("Invalid column")
@@ -117,6 +129,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     }
 
     override fun getString(index: Int): String? {
+        checkActive()
         return when (index) {
             COL_ID -> id
             else -> throw IllegalArgumentException("Invalid column")
@@ -128,6 +141,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     }
 
     override fun getInstant(index: Int): Instant? {
+        checkActive()
         return when (index) {
             COL_START_TIME -> startTime
             COL_STOP_TIME -> stopTime
@@ -153,6 +167,13 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
 
     override fun close() {
         parser.close()
+    }
+
+    /**
+     * Helper method to check if the reader is active.
+     */
+    private fun checkActive() {
+        check(isStarted && !parser.isClosed) { "No active row. Did you call nextRow()?" }
     }
 
     /**

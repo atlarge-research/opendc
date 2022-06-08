@@ -24,7 +24,10 @@ package org.opendc.trace.gwf
 
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableReader
 import org.opendc.trace.conv.*
+import org.opendc.trace.testkit.TableReaderTestKit
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
@@ -32,6 +35,7 @@ import java.time.Instant
 /**
  * Test suite for the [GwfTraceFormat] class.
  */
+@DisplayName("GWF TraceFormat")
 internal class GwfTraceFormatTest {
     private val format = GwfTraceFormat()
 
@@ -87,5 +91,20 @@ internal class GwfTraceFormatTest {
             { assertEquals(Duration.ofSeconds(11), reader.getDuration(TASK_RUNTIME)) },
             { assertEquals(setOf("4", "5", "6"), reader.getSet(TASK_PARENTS, String::class.java)) },
         )
+    }
+
+    @DisplayName("TableReader for Tasks")
+    @Nested
+    inner class TasksTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get(checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf")).toURI())
+
+            columns = format.getDetails(path, TABLE_TASKS).columns
+            reader = format.newReader(path, TABLE_TASKS, null)
+        }
     }
 }

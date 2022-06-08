@@ -54,6 +54,7 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
 
                     // Check whether the document is not empty and starts with an object
                     if (token == null) {
+                        parser.close()
                         break
                     } else if (token != JsonToken.START_OBJECT) {
                         throw JsonParseException(parser, "Expected object", parser.currentLocation)
@@ -64,6 +65,7 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
                 ParserLevel.TRACE -> {
                     // Seek for the workflow object in the file
                     if (!seekWorkflow()) {
+                        parser.close()
                         break
                     } else if (!parser.isExpectedStartObjectToken) {
                         throw JsonParseException(parser, "Expected object", parser.currentLocation)
@@ -111,7 +113,7 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
     }
 
     override fun isNull(index: Int): Boolean {
-        check(index in 0..COL_CHILDREN) { "Invalid column value" }
+        require(index in 0..COL_CHILDREN) { "Invalid column value" }
         return false
     }
 
@@ -120,6 +122,7 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
     }
 
     override fun getInt(index: Int): Int {
+        checkActive()
         return when (index) {
             COL_NPROC -> cores
             else -> throw IllegalArgumentException("Invalid column")
@@ -139,6 +142,7 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
     }
 
     override fun getString(index: Int): String? {
+        checkActive()
         return when (index) {
             COL_ID -> id
             COL_WORKFLOW_ID -> workflowId
@@ -155,6 +159,7 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
     }
 
     override fun getDuration(index: Int): Duration? {
+        checkActive()
         return when (index) {
             COL_RUNTIME -> runtime
             else -> throw IllegalArgumentException("Invalid column")
@@ -166,6 +171,7 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
     }
 
     override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        checkActive()
         return when (index) {
             COL_PARENTS -> TYPE_PARENTS.convertTo(parents, elementType)
             COL_CHILDREN -> TYPE_CHILDREN.convertTo(children, elementType)
@@ -182,10 +188,17 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
     }
 
     /**
+     * Helper method to check if the reader is active.
+     */
+    private fun checkActive() {
+        check(level != ParserLevel.TOP && !parser.isClosed) { "No active row. Did you call nextRow()?" }
+    }
+
+    /**
      * Parse the trace and seek until the workflow description.
      */
     private fun seekWorkflow(): Boolean {
-        while (parser.nextValue() != JsonToken.END_OBJECT) {
+        while (parser.nextValue() != JsonToken.END_OBJECT && !parser.isClosed) {
             when (parser.currentName) {
                 "name" -> workflowId = parser.text
                 "workflow" -> return true

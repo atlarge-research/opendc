@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-description = "Support for GWF traces in OpenDC"
+description = "Reusable test suite for implementors"
 
 /* Build configuration */
 plugins {
@@ -29,8 +29,6 @@ plugins {
 
 dependencies {
     api(projects.opendcTrace.opendcTraceApi)
-
-    implementation(libs.jackson.dataformat.csv)
-
-    testImplementation(projects.opendcTrace.opendcTraceTestkit)
+    implementation(libs.junit.jupiter.api)
+    implementation(libs.junit.jupiter.params)
 }

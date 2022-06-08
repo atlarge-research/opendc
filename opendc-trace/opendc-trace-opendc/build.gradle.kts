@@ -33,5 +33,6 @@ dependencies {
 
     implementation(projects.opendcTrace.opendcTraceParquet)
 
+    testImplementation(projects.opendcTrace.opendcTraceTestkit)
     testRuntimeOnly(libs.slf4j.simple)
 }

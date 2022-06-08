@@ -22,10 +22,13 @@
 
 package org.opendc.trace.wtf
 
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.Assertions.assertAll
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableReader
 import org.opendc.trace.conv.*
+import org.opendc.trace.testkit.TableReaderTestKit
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
@@ -33,6 +36,7 @@ import java.time.Instant
 /**
  * Test suite for the [WtfTraceFormat] class.
  */
+@DisplayName("WTF TraceFormat")
 class WtfTraceFormatTest {
     private val format = WtfTraceFormat()
 
@@ -92,5 +96,20 @@ class WtfTraceFormatTest {
         )
 
         reader.close()
+    }
+
+    @DisplayName("TableReader for Tasks")
+    @Nested
+    inner class TasksTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get("src/test/resources/wtf-trace")
+
+            columns = format.getDetails(path, TABLE_TASKS).columns
+            reader = format.newReader(path, TABLE_TASKS, null)
+        }
     }
 }

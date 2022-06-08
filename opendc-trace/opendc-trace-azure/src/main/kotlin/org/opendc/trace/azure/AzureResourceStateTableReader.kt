@@ -37,11 +37,20 @@ import java.util.*
  * A [TableReader] for the Azure v1 VM resource state table.
  */
 internal class AzureResourceStateTableReader(private val parser: CsvParser) : TableReader {
+    /**
+     * A flag to indicate whether a single row has been read already.
+     */
+    private var isStarted = false
+
     init {
         parser.schema = schema
     }
 
     override fun nextRow(): Boolean {
+        if (!isStarted) {
+            isStarted = true
+        }
+
         reset()
 
         if (!nextStart()) {
@@ -100,6 +109,7 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
     }
 
     override fun getDouble(index: Int): Double {
+        checkActive()
         return when (index) {
             COL_CPU_USAGE_PCT -> cpuUsagePct
             else -> throw IllegalArgumentException("Invalid column")
@@ -107,6 +117,7 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
     }
 
     override fun getString(index: Int): String? {
+        checkActive()
         return when (index) {
             COL_ID -> id
             else -> throw IllegalArgumentException("Invalid column")
@@ -118,6 +129,7 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
     }
 
     override fun getInstant(index: Int): Instant? {
+        checkActive()
         return when (index) {
             COL_TIMESTAMP -> timestamp
             else -> throw IllegalArgumentException("Invalid column")
@@ -142,6 +154,13 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
 
     override fun close() {
         parser.close()
+    }
+
+    /**
+     * Helper method to check if the reader is active.
+     */
+    private fun checkActive() {
+        check(isStarted && !parser.isClosed) { "No active row. Did you call nextRow()?" }
     }
 
     /**

@@ -54,7 +54,7 @@ public class SwfTraceFormat : TraceFormat {
                     TableColumn(TASK_REQ_NCPUS, TableColumnType.Int),
                     TableColumn(TASK_ALLOC_NCPUS, TableColumnType.Int),
                     TableColumn(TASK_PARENTS, TableColumnType.Set(TableColumnType.String)),
-                    TableColumn(TASK_STATUS, TableColumnType.String),
+                    TableColumn(TASK_STATUS, TableColumnType.Int),
                     TableColumn(TASK_GROUP_ID, TableColumnType.Int),
                     TableColumn(TASK_USER_ID, TableColumnType.Int)
                 )

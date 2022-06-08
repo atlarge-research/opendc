@@ -33,14 +33,29 @@ import java.util.*
  * A [TableReader] for the Bitbrains resource state table.
  */
 internal class BitbrainsExResourceStateTableReader(private val reader: BufferedReader) : TableReader {
+    private var state = State.Pending
+
     override fun nextRow(): Boolean {
+        val state = state
+        if (state == State.Closed) {
+            return false
+        } else if (state == State.Pending) {
+            this.state = State.Active
+        }
+
         reset()
 
-        var line: String
+        var line: String?
         var num = 0
 
         while (true) {
-            line = reader.readLine() ?: return false
+            line = reader.readLine()
+
+            if (line == null) {
+                this.state = State.Closed
+                return false
+            }
+
             num++
 
             if (line[0] == '#' || line.isBlank()) {
@@ -51,7 +66,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
             break
         }
 
-        line = line.trim()
+        line = line!!.trim()
 
         val length = line.length
         var col = 0
@@ -115,6 +130,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     }
 
     override fun getBoolean(index: Int): Boolean {
+        check(state == State.Active) { "No active row" }
         return when (index) {
             COL_POWERED_ON -> poweredOn
             else -> throw IllegalArgumentException("Invalid column")
@@ -122,6 +138,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     }
 
     override fun getInt(index: Int): Int {
+        check(state == State.Active) { "No active row" }
         return when (index) {
             COL_NCPUS -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
@@ -137,6 +154,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     }
 
     override fun getDouble(index: Int): Double {
+        check(state == State.Active) { "No active row" }
         return when (index) {
             COL_CPU_CAPACITY -> cpuCapacity
             COL_CPU_USAGE -> cpuUsage
@@ -151,6 +169,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     }
 
     override fun getString(index: Int): String? {
+        check(state == State.Active) { "No active row" }
         return when (index) {
             COL_ID -> id
             COL_CLUSTER_ID -> cluster
@@ -163,6 +182,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     }
 
     override fun getInstant(index: Int): Instant? {
+        check(state == State.Active) { "No active row" }
         return when (index) {
             COL_TIMESTAMP -> timestamp
             else -> throw IllegalArgumentException("Invalid column")
@@ -187,6 +207,8 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
 
     override fun close() {
         reader.close()
+        reset()
+        state = State.Closed
     }
 
     /**
@@ -240,4 +262,8 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     private val COL_MEM_CAPACITY = 20
     private val COL_CPU_USAGE_PCT = 21
     private val COL_MAX = COL_CPU_USAGE_PCT + 1
+
+    private enum class State {
+        Pending, Active, Closed
+    }
 }

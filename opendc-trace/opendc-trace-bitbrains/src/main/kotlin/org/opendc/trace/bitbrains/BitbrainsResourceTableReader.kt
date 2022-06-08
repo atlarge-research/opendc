@@ -39,7 +39,16 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
      */
     private val it = vms.iterator()
 
+    /**
+     * The state of the reader.
+     */
+    private var state = State.Pending
+
     override fun nextRow(): Boolean {
+        if (state == State.Pending) {
+            state = State.Active
+        }
+
         reset()
 
         while (it.hasNext()) {
@@ -61,6 +70,7 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
             }
         }
 
+        state = State.Closed
         return false
     }
 
@@ -74,7 +84,7 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
     }
 
     override fun isNull(index: Int): Boolean {
-        check(index in 0..COL_ID) { "Invalid column index" }
+        require(index in 0..COL_ID) { "Invalid column index" }
         return false
     }
 
@@ -99,6 +109,7 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
     }
 
     override fun getString(index: Int): String? {
+        check(state == State.Active) { "No active row" }
         return when (index) {
             COL_ID -> id
             else -> throw IllegalArgumentException("Invalid column")
@@ -129,7 +140,10 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun close() {}
+    override fun close() {
+        reset()
+        state = State.Closed
+    }
 
     /**
      * State fields of the reader.
@@ -141,5 +155,9 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
      */
     private fun reset() {
         id = null
+    }
+
+    private enum class State {
+        Pending, Active, Closed
     }
 }

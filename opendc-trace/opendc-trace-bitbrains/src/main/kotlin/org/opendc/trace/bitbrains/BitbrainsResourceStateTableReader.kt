@@ -42,6 +42,11 @@ import java.util.*
  */
 internal class BitbrainsResourceStateTableReader(private val partition: String, private val parser: CsvParser) : TableReader {
     /**
+     * A flag to indicate whether a single row has been read already.
+     */
+    private var isStarted = false
+
+    /**
      * The [DateTimeFormatter] used to parse the timestamps in case of the Materna trace.
      */
     private val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
@@ -66,6 +71,10 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
     }
 
     override fun nextRow(): Boolean {
+        if (!isStarted) {
+            isStarted = true
+        }
+
         // Reset the row state
         reset()
 
@@ -145,7 +154,7 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
     }
 
     override fun isNull(index: Int): Boolean {
-        check(index in 0..COL_NET_TX) { "Invalid column index" }
+        require(index in 0..COL_ID) { "Invalid column index" }
         return false
     }
 
@@ -154,6 +163,7 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
     }
 
     override fun getInt(index: Int): Int {
+        checkActive()
         return when (index) {
             COL_CPU_COUNT -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
@@ -169,6 +179,7 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
     }
 
     override fun getDouble(index: Int): Double {
+        checkActive()
         return when (index) {
             COL_CPU_CAPACITY -> cpuCapacity
             COL_CPU_USAGE -> cpuUsage
@@ -184,6 +195,7 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
     }
 
     override fun getString(index: Int): String {
+        checkActive()
         return when (index) {
             COL_ID -> partition
             else -> throw IllegalArgumentException("Invalid column")
@@ -195,6 +207,7 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
     }
 
     override fun getInstant(index: Int): Instant? {
+        checkActive()
         return when (index) {
             COL_TIMESTAMP -> timestamp
             else -> throw IllegalArgumentException("Invalid column")
@@ -219,6 +232,13 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
 
     override fun close() {
         parser.close()
+    }
+
+    /**
+     * Helper method to check if the reader is active.
+     */
+    private fun checkActive() {
+        check(isStarted && !parser.isClosed) { "No active row. Did you call nextRow()?" }
     }
 
     /**

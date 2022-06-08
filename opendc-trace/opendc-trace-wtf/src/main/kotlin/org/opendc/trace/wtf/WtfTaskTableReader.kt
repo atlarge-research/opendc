@@ -83,7 +83,7 @@ internal class WtfTaskTableReader(private val reader: LocalParquetReader<Task>) 
     }
 
     override fun isNull(index: Int): Boolean {
-        check(index in COL_ID..COL_USER_ID) { "Invalid column index" }
+        require(index in COL_ID..COL_USER_ID) { "Invalid column index" }
         return false
     }
 

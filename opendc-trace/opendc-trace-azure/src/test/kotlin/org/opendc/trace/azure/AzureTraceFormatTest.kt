@@ -22,15 +22,19 @@
 
 package org.opendc.trace.azure
 
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.Assertions.assertAll
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableReader
 import org.opendc.trace.conv.*
+import org.opendc.trace.testkit.TableReaderTestKit
 import java.nio.file.Paths
 
 /**
  * Test suite for the [AzureTraceFormat] class.
  */
+@DisplayName("Azure VM TraceFormat")
 class AzureTraceFormatTest {
     private val format = AzureTraceFormat()
 
@@ -81,5 +85,35 @@ class AzureTraceFormatTest {
         )
 
         reader.close()
+    }
+
+    @DisplayName("TableReader for Resources")
+    @Nested
+    inner class ResourcesTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get("src/test/resources/trace")
+
+            columns = format.getDetails(path, TABLE_RESOURCES).columns
+            reader = format.newReader(path, TABLE_RESOURCES, null)
+        }
+    }
+
+    @DisplayName("TableReader for Resource States")
+    @Nested
+    inner class ResourceStatesTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get("src/test/resources/trace")
+
+            columns = format.getDetails(path, TABLE_RESOURCE_STATES).columns
+            reader = format.newReader(path, TABLE_RESOURCE_STATES, null)
+        }
     }
 }
