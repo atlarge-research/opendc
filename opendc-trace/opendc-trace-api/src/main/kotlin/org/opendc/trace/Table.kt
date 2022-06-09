@@ -32,21 +32,16 @@ public interface Table {
     public val name: String
 
     /**
-     * The list of columns supported in this table.
+     * The columns in this table.
      */
-    public val columns: List<TableColumn<*>>
-
-    /**
-     * The columns by which the table is partitioned.
-     */
-    public val partitionKeys: List<TableColumn<*>>
+    public val columns: List<TableColumn>
 
     /**
      * Open a [TableReader] for a projection of this table.
      *
-     * @param projection The list of columns to fetch from the table or `null` if no projection is performed.
+     * @param projection The names of the columns to fetch from the table or `null` if no projection is performed.
      */
-    public fun newReader(projection: List<TableColumn<*>>? = null): TableReader
+    public fun newReader(projection: List<String>? = null): TableReader
 
     /**
      * Open a [TableWriter] for this table.

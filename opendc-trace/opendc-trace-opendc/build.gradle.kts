@@ -25,6 +25,7 @@ description = "Support for OpenDC-specific trace formats"
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
+    `benchmark-conventions`
 }
 
 dependencies {
@@ -32,5 +33,6 @@ dependencies {
 
     implementation(projects.opendcTrace.opendcTraceParquet)
 
+    testImplementation(projects.opendcTrace.opendcTraceTestkit)
     testRuntimeOnly(libs.slf4j.simple)
 }

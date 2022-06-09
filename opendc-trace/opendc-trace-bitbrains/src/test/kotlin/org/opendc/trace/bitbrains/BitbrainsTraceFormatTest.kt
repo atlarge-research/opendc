@@ -22,10 +22,13 @@
 
 package org.opendc.trace.bitbrains
 
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.Assertions.assertAll
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableReader
 import org.opendc.trace.conv.*
+import org.opendc.trace.testkit.TableReaderTestKit
 import java.nio.file.Paths
 
 /**
@@ -61,7 +64,7 @@ class BitbrainsTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("bitbrains", reader.get(RESOURCE_ID)) },
+            { assertEquals("bitbrains", reader.getString(RESOURCE_ID)) },
             { assertFalse(reader.nextRow()) }
         )
 
@@ -75,10 +78,40 @@ class BitbrainsTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals(1376314846, reader.get(RESOURCE_STATE_TIMESTAMP).epochSecond) },
+            { assertEquals(1376314846, reader.getInstant(RESOURCE_STATE_TIMESTAMP)?.epochSecond) },
             { assertEquals(19.066, reader.getDouble(RESOURCE_STATE_CPU_USAGE), 0.01) }
         )
 
         reader.close()
+    }
+
+    @DisplayName("TableReader for Resources")
+    @Nested
+    inner class ResourcesTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get("src/test/resources/bitbrains.csv")
+
+            columns = format.getDetails(path, TABLE_RESOURCES).columns
+            reader = format.newReader(path, TABLE_RESOURCES, null)
+        }
+    }
+
+    @DisplayName("TableReader for Resource States")
+    @Nested
+    inner class ResourceStatesTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get("src/test/resources/bitbrains.csv")
+
+            columns = format.getDetails(path, TABLE_RESOURCE_STATES).columns
+            reader = format.newReader(path, TABLE_RESOURCE_STATES, null)
+        }
     }
 }

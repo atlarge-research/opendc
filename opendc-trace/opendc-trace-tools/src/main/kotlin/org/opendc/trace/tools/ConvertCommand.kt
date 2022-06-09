@@ -224,9 +224,9 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                 var stopTime = Long.MIN_VALUE
 
                 do {
-                    id = reader.get(idCol) as String
+                    id = reader.getString(idCol)!!
 
-                    val timestamp = (reader.get(timestampCol) as Instant).toEpochMilli()
+                    val timestamp = reader.getInstant(timestampCol)!!.toEpochMilli()
                     startTime = min(startTime, timestamp)
                     stopTime = max(stopTime, timestamp)
 
@@ -238,7 +238,7 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                     }
 
                     hasNextRow = reader.nextRow()
-                } while (hasNextRow && id == reader.get(RESOURCE_ID))
+                } while (hasNextRow && id == reader.getString(RESOURCE_ID))
 
                 // Sample only a fraction of the VMs
                 if (random != null && random.nextDouble() > samplingFraction) {
@@ -255,9 +255,9 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                 }
 
                 writer.startRow()
-                writer.set(RESOURCE_ID, id)
-                writer.set(RESOURCE_START_TIME, startInstant)
-                writer.set(RESOURCE_STOP_TIME, stopInstant)
+                writer.setString(RESOURCE_ID, id)
+                writer.setInstant(RESOURCE_START_TIME, startInstant)
+                writer.setInstant(RESOURCE_STOP_TIME, stopInstant)
                 writer.setInt(RESOURCE_CPU_COUNT, cpuCount)
                 writer.setDouble(RESOURCE_CPU_CAPACITY, cpuCapacity)
                 writer.setDouble(RESOURCE_MEM_CAPACITY, max(memCapacity, memUsage))
@@ -280,7 +280,7 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
             var count = 0
 
             while (hasNextRow) {
-                val id = reader.get(idCol) as String
+                val id = reader.getString(idCol)!!
                 val resource = selected[id]
                 if (resource == null) {
                     hasNextRow = reader.nextRow()
@@ -290,13 +290,13 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                 val cpuCount = reader.getInt(cpuCountCol)
                 val cpuUsage = reader.getDouble(cpuUsageCol)
 
-                val startTimestamp = (reader.get(timestampCol) as Instant).toEpochMilli()
+                val startTimestamp = reader.getInstant(timestampCol)!!.toEpochMilli()
                 var timestamp: Long = startTimestamp
                 var duration: Long = sampleInterval
 
                 // Attempt to cascade further samples into one if they share the same CPU usage
                 while (reader.nextRow().also { hasNextRow = it }) {
-                    val shouldCascade = id == reader.get(idCol) &&
+                    val shouldCascade = id == reader.getString(idCol) &&
                         abs(cpuUsage - reader.getDouble(cpuUsageCol)) < SAMPLE_CASCADE_DIFF &&
                         cpuCount == reader.getInt(cpuCountCol)
 
@@ -308,7 +308,7 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                         break
                     }
 
-                    val nextTimestamp = (reader.get(timestampCol) as Instant).toEpochMilli()
+                    val nextTimestamp = reader.getInstant(timestampCol)!!.toEpochMilli()
 
                     // Check whether the interval between both samples is not higher than `SAMPLE_INTERVAL`
                     if ((nextTimestamp - timestamp) > sampleInterval) {
@@ -320,9 +320,9 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                 }
 
                 writer.startRow()
-                writer.set(RESOURCE_ID, id)
-                writer.set(RESOURCE_STATE_TIMESTAMP, Instant.ofEpochMilli(timestamp))
-                writer.set(RESOURCE_STATE_DURATION, Duration.ofMillis(duration))
+                writer.setString(RESOURCE_ID, id)
+                writer.setInstant(RESOURCE_STATE_TIMESTAMP, Instant.ofEpochMilli(timestamp))
+                writer.setDuration(RESOURCE_STATE_DURATION, Duration.ofMillis(duration))
                 writer.setInt(RESOURCE_CPU_COUNT, cpuCount)
                 writer.setDouble(RESOURCE_STATE_CPU_USAGE, cpuUsage)
                 writer.endRow()
@@ -377,9 +377,9 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                     continue
                 }
 
-                val id = reader.get(idCol) as String
-                val startTime = (reader.get(startTimeCol) as Instant).toEpochMilli()
-                val stopTime = (reader.get(stopTimeCol) as Instant).toEpochMilli()
+                val id = reader.getString(idCol)!!
+                val startTime = reader.getInstant(startTimeCol)!!.toEpochMilli()
+                val stopTime = reader.getInstant(stopTimeCol)!!.toEpochMilli()
                 val cpuCount = reader.getInt(cpuCountCol)
                 val memCapacity = reader.getDouble(memCapacityCol)
 
@@ -394,9 +394,9 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                 }
 
                 writer.startRow()
-                writer.set(RESOURCE_ID, id)
-                writer.set(RESOURCE_START_TIME, startInstant)
-                writer.set(RESOURCE_STOP_TIME, stopInstant)
+                writer.setString(RESOURCE_ID, id)
+                writer.setInstant(RESOURCE_START_TIME, startInstant)
+                writer.setInstant(RESOURCE_STOP_TIME, stopInstant)
                 writer.setInt(RESOURCE_CPU_COUNT, cpuCount)
                 writer.setDouble(RESOURCE_CPU_CAPACITY, cpuCapacity)
                 writer.setDouble(RESOURCE_MEM_CAPACITY, memCapacity)
@@ -418,12 +418,12 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
             var count = 0
 
             while (reader.nextRow()) {
-                val id = reader.get(idCol) as String
+                val id = reader.getString(idCol)!!
                 val resource = selected[id] ?: continue
 
                 val cpuUsage = reader.getDouble(cpuUsageCol) * resource.cpuCapacity // MHz
                 val state = states.computeIfAbsent(id) { State(resource, cpuUsage, sampleInterval) }
-                val timestamp = (reader.get(timestampCol) as Instant).toEpochMilli()
+                val timestamp = reader.getInstant(timestampCol)!!.toEpochMilli()
                 val delta = (timestamp - state.time)
 
                 // Check whether the next sample can be cascaded with the current sample:
@@ -463,9 +463,9 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                 lastWrite = time
 
                 writer.startRow()
-                writer.set(RESOURCE_ID, resource.id)
-                writer.set(RESOURCE_STATE_TIMESTAMP, Instant.ofEpochMilli(time))
-                writer.set(RESOURCE_STATE_DURATION, Duration.ofMillis(duration))
+                writer.setString(RESOURCE_ID, resource.id)
+                writer.setInstant(RESOURCE_STATE_TIMESTAMP, Instant.ofEpochMilli(time))
+                writer.setDuration(RESOURCE_STATE_DURATION, Duration.ofMillis(duration))
                 writer.setDouble(RESOURCE_STATE_CPU_USAGE, cpuUsage)
                 writer.setInt(RESOURCE_CPU_COUNT, resource.cpuCount)
                 writer.endRow()

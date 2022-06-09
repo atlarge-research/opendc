@@ -27,17 +27,28 @@ import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
+import java.time.Duration
 import java.time.Instant
+import java.util.*
 
 /**
  * A [TableReader] for the Azure v1 VM resources table.
  */
 internal class AzureResourceTableReader(private val parser: CsvParser) : TableReader {
+    /**
+     * A flag to indicate whether a single row has been read already.
+     */
+    private var isStarted = false
+
     init {
         parser.schema = schema
     }
 
     override fun nextRow(): Boolean {
+        if (!isStarted) {
+            isStarted = true
+        }
+
         reset()
 
         if (!nextStart()) {
@@ -63,22 +74,26 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
         return true
     }
 
-    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
+    private val COL_ID = 0
+    private val COL_START_TIME = 1
+    private val COL_STOP_TIME = 2
+    private val COL_CPU_COUNT = 3
+    private val COL_MEM_CAPACITY = 4
 
-    override fun isNull(index: Int): Boolean {
-        require(index in 0..columns.size) { "Invalid column index" }
-        return false
+    override fun resolve(name: String): Int {
+        return when (name) {
+            RESOURCE_ID -> COL_ID
+            RESOURCE_START_TIME -> COL_START_TIME
+            RESOURCE_STOP_TIME -> COL_STOP_TIME
+            RESOURCE_CPU_COUNT -> COL_CPU_COUNT
+            RESOURCE_MEM_CAPACITY -> COL_MEM_CAPACITY
+            else -> -1
+        }
     }
 
-    override fun get(index: Int): Any? {
-        return when (index) {
-            COL_ID -> id
-            COL_START_TIME -> startTime
-            COL_STOP_TIME -> stopTime
-            COL_CPU_COUNT -> getInt(index)
-            COL_MEM_CAPACITY -> getDouble(index)
-            else -> throw IllegalArgumentException("Invalid column")
-        }
+    override fun isNull(index: Int): Boolean {
+        require(index in 0..COL_MEM_CAPACITY) { "Invalid column index" }
+        return false
     }
 
     override fun getBoolean(index: Int): Boolean {
@@ -86,6 +101,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     }
 
     override fun getInt(index: Int): Int {
+        checkActive()
         return when (index) {
             COL_CPU_COUNT -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
@@ -93,18 +109,71 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     }
 
     override fun getLong(index: Int): Long {
+        checkActive()
+        return when (index) {
+            COL_CPU_COUNT -> cpuCores.toLong()
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getFloat(index: Int): Float {
         throw IllegalArgumentException("Invalid column")
     }
 
     override fun getDouble(index: Int): Double {
+        checkActive()
         return when (index) {
             COL_MEM_CAPACITY -> memCapacity
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
 
+    override fun getString(index: Int): String? {
+        checkActive()
+        return when (index) {
+            COL_ID -> id
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getUUID(index: Int): UUID? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getInstant(index: Int): Instant? {
+        checkActive()
+        return when (index) {
+            COL_START_TIME -> startTime
+            COL_STOP_TIME -> stopTime
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getDuration(index: Int): Duration? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
     override fun close() {
         parser.close()
+    }
+
+    /**
+     * Helper method to check if the reader is active.
+     */
+    private fun checkActive() {
+        check(isStarted && !parser.isClosed) { "No active row. Did you call nextRow()?" }
     }
 
     /**
@@ -139,19 +208,6 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
         cpuCores = -1
         memCapacity = Double.NaN
     }
-
-    private val COL_ID = 0
-    private val COL_START_TIME = 1
-    private val COL_STOP_TIME = 2
-    private val COL_CPU_COUNT = 3
-    private val COL_MEM_CAPACITY = 4
-    private val columns = mapOf(
-        RESOURCE_ID to COL_ID,
-        RESOURCE_START_TIME to COL_START_TIME,
-        RESOURCE_STOP_TIME to COL_STOP_TIME,
-        RESOURCE_CPU_COUNT to COL_CPU_COUNT,
-        RESOURCE_MEM_CAPACITY to COL_MEM_CAPACITY
-    )
 
     companion object {
         /**

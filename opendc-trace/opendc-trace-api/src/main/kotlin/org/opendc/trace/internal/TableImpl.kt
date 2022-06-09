@@ -37,13 +37,10 @@ internal class TableImpl(val trace: TraceImpl, override val name: String) : Tabl
      */
     private val details = trace.format.getDetails(trace.path, name)
 
-    override val columns: List<TableColumn<*>>
+    override val columns: List<TableColumn>
         get() = details.columns
 
-    override val partitionKeys: List<TableColumn<*>>
-        get() = details.partitionKeys
-
-    override fun newReader(projection: List<TableColumn<*>>?): TableReader {
+    override fun newReader(projection: List<String>?): TableReader {
         return trace.format.newReader(trace.path, name, projection)
     }
 

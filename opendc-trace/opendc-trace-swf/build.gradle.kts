@@ -29,4 +29,6 @@ plugins {
 
 dependencies {
     api(projects.opendcTrace.opendcTraceApi)
+
+    testImplementation(projects.opendcTrace.opendcTraceTestkit)
 }

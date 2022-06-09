@@ -210,7 +210,7 @@ internal class WfFormatTaskTableReaderTest {
         val reader = WfFormatTaskTableReader(parser)
 
         assertTrue(reader.nextRow())
-        assertEquals("test", reader.get(TASK_ID))
+        assertEquals("test", reader.getString(TASK_ID))
         assertFalse(reader.nextRow())
 
         reader.close()
@@ -281,7 +281,7 @@ internal class WfFormatTaskTableReaderTest {
         val reader = WfFormatTaskTableReader(parser)
 
         assertTrue(reader.nextRow())
-        assertEquals(setOf("1"), reader.get(TASK_PARENTS))
+        assertEquals(setOf("1"), reader.getSet(TASK_PARENTS, String::class.java))
         assertFalse(reader.nextRow())
 
         reader.close()
@@ -337,7 +337,7 @@ internal class WfFormatTaskTableReaderTest {
 
         assertTrue(reader.nextRow())
         assertTrue(reader.nextRow())
-        assertEquals("test2", reader.get(TASK_ID))
+        assertEquals("test2", reader.getString(TASK_ID))
         assertFalse(reader.nextRow())
 
         reader.close()

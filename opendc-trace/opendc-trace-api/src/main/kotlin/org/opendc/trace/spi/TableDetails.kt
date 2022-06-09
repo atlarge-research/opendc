@@ -29,9 +29,5 @@ import org.opendc.trace.TableColumn
  * A class used by the [TraceFormat] interface for describing the metadata of a [Table].
  *
  * @param columns The available columns in the table.
- * @param partitionKeys The table columns that act as partition keys for the table.
  */
-public data class TableDetails(
-    val columns: List<TableColumn<*>>,
-    val partitionKeys: List<TableColumn<*>> = emptyList()
-)
+public data class TableDetails(val columns: List<TableColumn>)

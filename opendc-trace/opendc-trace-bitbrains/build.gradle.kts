@@ -30,4 +30,6 @@ plugins {
 dependencies {
     api(projects.opendcTrace.opendcTraceApi)
     implementation(libs.jackson.dataformat.csv)
+
+    testImplementation(projects.opendcTrace.opendcTraceTestkit)
 }

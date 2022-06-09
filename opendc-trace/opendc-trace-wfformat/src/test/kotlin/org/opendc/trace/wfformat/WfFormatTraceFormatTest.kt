@@ -22,17 +22,20 @@
 
 package org.opendc.trace.wfformat
 
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableReader
 import org.opendc.trace.conv.*
+import org.opendc.trace.testkit.TableReaderTestKit
 import java.nio.file.Paths
 
 /**
  * Test suite for the [WfFormatTraceFormat] class.
  */
+@DisplayName("WfFormat TraceFormat")
 class WfFormatTraceFormatTest {
     private val format = WfFormatTraceFormat()
 
@@ -66,18 +69,18 @@ class WfFormatTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("makebwaindex_mammoth_mt_krause.fasta", reader.get(TASK_ID)) },
-            { assertEquals("eager-nextflow-chameleon", reader.get(TASK_WORKFLOW_ID)) },
-            { assertEquals(172000, reader.get(TASK_RUNTIME).toMillis()) },
-            { assertEquals(emptySet<String>(), reader.get(TASK_PARENTS)) },
+            { assertEquals("makebwaindex_mammoth_mt_krause.fasta", reader.getString(TASK_ID)) },
+            { assertEquals("eager-nextflow-chameleon", reader.getString(TASK_WORKFLOW_ID)) },
+            { assertEquals(172000, reader.getDuration(TASK_RUNTIME)?.toMillis()) },
+            { assertEquals(emptySet<String>(), reader.getSet(TASK_PARENTS, String::class.java)) },
         )
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("makeseqdict_mammoth_mt_krause.fasta", reader.get(TASK_ID)) },
-            { assertEquals("eager-nextflow-chameleon", reader.get(TASK_WORKFLOW_ID)) },
-            { assertEquals(175000, reader.get(TASK_RUNTIME).toMillis()) },
-            { assertEquals(setOf("makebwaindex_mammoth_mt_krause.fasta"), reader.get(TASK_PARENTS)) },
+            { assertEquals("makeseqdict_mammoth_mt_krause.fasta", reader.getString(TASK_ID)) },
+            { assertEquals("eager-nextflow-chameleon", reader.getString(TASK_WORKFLOW_ID)) },
+            { assertEquals(175000, reader.getDuration(TASK_RUNTIME)?.toMillis()) },
+            { assertEquals(setOf("makebwaindex_mammoth_mt_krause.fasta"), reader.getSet(TASK_PARENTS, String::class.java)) },
         )
 
         reader.close()
@@ -96,6 +99,21 @@ class WfFormatTraceFormatTest {
                 // reader.get(TASK_ID)
             }
             reader.close()
+        }
+    }
+
+    @DisplayName("TableReader for Tasks")
+    @Nested
+    inner class TasksTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get("src/test/resources/trace.json")
+
+            columns = format.getDetails(path, TABLE_TASKS).columns
+            reader = format.newReader(path, TABLE_TASKS, null)
         }
     }
 }

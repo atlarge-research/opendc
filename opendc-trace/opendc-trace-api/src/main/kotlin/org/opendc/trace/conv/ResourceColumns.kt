@@ -23,47 +23,44 @@
 @file:JvmName("ResourceColumns")
 package org.opendc.trace.conv
 
-import org.opendc.trace.TableColumn
-import java.time.Instant
-
 /**
  * Identifier of the resource.
  */
 @JvmField
-public val RESOURCE_ID: TableColumn<String> = column("id")
+public val RESOURCE_ID: String = "id"
 
 /**
  * The cluster to which the resource belongs.
  */
 @JvmField
-public val RESOURCE_CLUSTER_ID: TableColumn<String> = column("cluster_id")
+public val RESOURCE_CLUSTER_ID: String = "cluster_id"
 
 /**
  * Start time for the resource.
  */
 @JvmField
-public val RESOURCE_START_TIME: TableColumn<Instant> = column("start_time")
+public val RESOURCE_START_TIME: String = "start_time"
 
 /**
  * End time for the resource.
  */
 @JvmField
-public val RESOURCE_STOP_TIME: TableColumn<Instant> = column("stop_time")
+public val RESOURCE_STOP_TIME: String = "stop_time"
 
 /**
  * Number of CPUs for the resource.
  */
 @JvmField
-public val RESOURCE_CPU_COUNT: TableColumn<Int> = column("cpu_count")
+public val RESOURCE_CPU_COUNT: String = "cpu_count"
 
 /**
  * Total CPU capacity of the resource in MHz.
  */
 @JvmField
-public val RESOURCE_CPU_CAPACITY: TableColumn<Double> = column("cpu_capacity")
+public val RESOURCE_CPU_CAPACITY: String = "cpu_capacity"
 
 /**
  * Memory capacity for the resource in KB.
  */
 @JvmField
-public val RESOURCE_MEM_CAPACITY: TableColumn<Double> = column("mem_capacity")
+public val RESOURCE_MEM_CAPACITY: String = "mem_capacity"

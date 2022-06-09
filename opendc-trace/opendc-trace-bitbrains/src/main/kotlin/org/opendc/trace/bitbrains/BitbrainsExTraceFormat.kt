@@ -53,26 +53,25 @@ public class BitbrainsExTraceFormat : TraceFormat {
         return when (table) {
             TABLE_RESOURCE_STATES -> TableDetails(
                 listOf(
-                    RESOURCE_ID,
-                    RESOURCE_CLUSTER_ID,
-                    RESOURCE_STATE_TIMESTAMP,
-                    RESOURCE_CPU_COUNT,
-                    RESOURCE_CPU_CAPACITY,
-                    RESOURCE_STATE_CPU_USAGE,
-                    RESOURCE_STATE_CPU_USAGE_PCT,
-                    RESOURCE_STATE_CPU_DEMAND,
-                    RESOURCE_STATE_CPU_READY_PCT,
-                    RESOURCE_MEM_CAPACITY,
-                    RESOURCE_STATE_DISK_READ,
-                    RESOURCE_STATE_DISK_WRITE
-                ),
-                listOf(RESOURCE_ID, RESOURCE_STATE_TIMESTAMP)
+                    TableColumn(RESOURCE_ID, TableColumnType.String),
+                    TableColumn(RESOURCE_CLUSTER_ID, TableColumnType.String),
+                    TableColumn(RESOURCE_STATE_TIMESTAMP, TableColumnType.Instant),
+                    TableColumn(RESOURCE_CPU_COUNT, TableColumnType.Int),
+                    TableColumn(RESOURCE_CPU_CAPACITY, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_CPU_USAGE, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_CPU_USAGE_PCT, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_CPU_DEMAND, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_CPU_READY_PCT, TableColumnType.Double),
+                    TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_DISK_READ, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_DISK_WRITE, TableColumnType.Double),
+                )
             )
             else -> throw IllegalArgumentException("Table $table not supported")
         }
     }
 
-    override fun newReader(path: Path, table: String, projection: List<TableColumn<*>>?): TableReader {
+    override fun newReader(path: Path, table: String, projection: List<String>?): TableReader {
         return when (table) {
             TABLE_RESOURCE_STATES -> newResourceStateReader(path)
             else -> throw IllegalArgumentException("Table $table not supported")

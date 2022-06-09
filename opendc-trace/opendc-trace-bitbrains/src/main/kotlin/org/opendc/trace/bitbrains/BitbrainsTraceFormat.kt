@@ -59,29 +59,32 @@ public class BitbrainsTraceFormat : TraceFormat {
 
     override fun getDetails(path: Path, table: String): TableDetails {
         return when (table) {
-            TABLE_RESOURCES -> TableDetails(listOf(RESOURCE_ID))
+            TABLE_RESOURCES -> TableDetails(
+                listOf(
+                    TableColumn(RESOURCE_ID, TableColumnType.String)
+                )
+            )
             TABLE_RESOURCE_STATES -> TableDetails(
                 listOf(
-                    RESOURCE_ID,
-                    RESOURCE_STATE_TIMESTAMP,
-                    RESOURCE_CPU_COUNT,
-                    RESOURCE_CPU_CAPACITY,
-                    RESOURCE_STATE_CPU_USAGE,
-                    RESOURCE_STATE_CPU_USAGE_PCT,
-                    RESOURCE_MEM_CAPACITY,
-                    RESOURCE_STATE_MEM_USAGE,
-                    RESOURCE_STATE_DISK_READ,
-                    RESOURCE_STATE_DISK_WRITE,
-                    RESOURCE_STATE_NET_RX,
-                    RESOURCE_STATE_NET_TX,
+                    TableColumn(RESOURCE_ID, TableColumnType.String),
+                    TableColumn(RESOURCE_STATE_TIMESTAMP, TableColumnType.Instant),
+                    TableColumn(RESOURCE_CPU_COUNT, TableColumnType.Int),
+                    TableColumn(RESOURCE_CPU_CAPACITY, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_CPU_USAGE, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_CPU_USAGE_PCT, TableColumnType.Double),
+                    TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_MEM_USAGE, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_DISK_READ, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_DISK_WRITE, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_NET_RX, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_NET_TX, TableColumnType.Double),
                 ),
-                listOf(RESOURCE_ID, RESOURCE_STATE_TIMESTAMP)
             )
             else -> throw IllegalArgumentException("Table $table not supported")
         }
     }
 
-    override fun newReader(path: Path, table: String, projection: List<TableColumn<*>>?): TableReader {
+    override fun newReader(path: Path, table: String, projection: List<String>?): TableReader {
         return when (table) {
             TABLE_RESOURCES -> {
                 val vms = Files.walk(path, 1)

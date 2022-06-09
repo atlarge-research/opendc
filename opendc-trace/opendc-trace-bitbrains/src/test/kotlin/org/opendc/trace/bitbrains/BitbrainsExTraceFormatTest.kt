@@ -22,12 +22,15 @@
 
 package org.opendc.trace.bitbrains
 
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.Assertions.assertAll
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableReader
 import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
 import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.testkit.TableReaderTestKit
 import java.nio.file.Paths
 
 /**
@@ -63,10 +66,25 @@ internal class BitbrainsExTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals(1631911500, reader.get(RESOURCE_STATE_TIMESTAMP).epochSecond) },
+            { assertEquals(1631911500, reader.getInstant(RESOURCE_STATE_TIMESTAMP)?.epochSecond) },
             { assertEquals(21.2, reader.getDouble(RESOURCE_STATE_CPU_USAGE), 0.01) }
         )
 
         reader.close()
+    }
+
+    @DisplayName("TableReader for Resource States")
+    @Nested
+    inner class ResourceStatesTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get("src/test/resources/vm.txt")
+
+            columns = format.getDetails(path, TABLE_RESOURCE_STATES).columns
+            reader = format.newReader(path, TABLE_RESOURCE_STATES, null)
+        }
     }
 }

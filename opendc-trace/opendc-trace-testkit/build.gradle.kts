@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,15 @@
  * SOFTWARE.
  */
 
-@file:JvmName("TableColumns")
-package org.opendc.trace.conv
+description = "Reusable test suite for implementors"
 
-import org.opendc.trace.TableColumn
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
+}
 
-/**
- * Construct a [TableColumn] with the specified [name] and type [T].
- */
-public inline fun <reified T> column(name: String): TableColumn<T> = column(name, T::class.java)
-
-/**
- * Construct a [TableColumn] with the specified [name] and [type].
- */
-public fun <T> column(name: String, type: Class<T>): TableColumn<T> = TableColumn(name, type)
+dependencies {
+    api(projects.opendcTrace.opendcTraceApi)
+    implementation(libs.junit.jupiter.api)
+    implementation(libs.junit.jupiter.params)
+}

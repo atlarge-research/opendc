@@ -24,14 +24,18 @@ package org.opendc.trace.swf
 
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableReader
 import org.opendc.trace.conv.TABLE_TASKS
 import org.opendc.trace.conv.TASK_ALLOC_NCPUS
 import org.opendc.trace.conv.TASK_ID
+import org.opendc.trace.testkit.TableReaderTestKit
 import java.nio.file.Paths
 
 /**
  * Test suite for the [SwfTraceFormat] class.
  */
+@DisplayName("SWF TraceFormat")
 internal class SwfTraceFormatTest {
     private val format = SwfTraceFormat()
 
@@ -62,13 +66,28 @@ internal class SwfTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1", reader.get(TASK_ID)) },
+            { assertEquals("1", reader.getString(TASK_ID)) },
             { assertEquals(306, reader.getInt(TASK_ALLOC_NCPUS)) },
             { assertTrue(reader.nextRow()) },
-            { assertEquals("2", reader.get(TASK_ID)) },
+            { assertEquals("2", reader.getString(TASK_ID)) },
             { assertEquals(17, reader.getInt(TASK_ALLOC_NCPUS)) },
         )
 
         reader.close()
+    }
+
+    @DisplayName("TableReader for Tasks")
+    @Nested
+    inner class TasksTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get(checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf")).toURI())
+
+            columns = format.getDetails(path, TABLE_TASKS).columns
+            reader = format.newReader(path, TABLE_TASKS, null)
+        }
     }
 }

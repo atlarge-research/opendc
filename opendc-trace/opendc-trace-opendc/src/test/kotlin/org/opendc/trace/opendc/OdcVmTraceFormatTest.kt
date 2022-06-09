@@ -23,12 +23,20 @@
 package org.opendc.trace.opendc
 
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableReader
+import org.opendc.trace.TableWriter
 import org.opendc.trace.conv.*
+import org.opendc.trace.testkit.TableReaderTestKit
+import org.opendc.trace.testkit.TableWriterTestKit
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.Instant
@@ -36,6 +44,7 @@ import java.time.Instant
 /**
  * Test suite for the [OdcVmTraceFormat] implementation.
  */
+@DisplayName("OdcVmTraceFormat")
 internal class OdcVmTraceFormatTest {
     private val format = OdcVmTraceFormat()
 
@@ -67,14 +76,14 @@ internal class OdcVmTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1019", reader.get(RESOURCE_ID)) },
-            { assertEquals(Instant.ofEpochMilli(1376314846000), reader.get(RESOURCE_START_TIME)) },
+            { assertEquals("1019", reader.getString(RESOURCE_ID)) },
+            { assertEquals(Instant.ofEpochMilli(1376314846000), reader.getInstant(RESOURCE_START_TIME)) },
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1023", reader.get(RESOURCE_ID)) },
+            { assertEquals("1023", reader.getString(RESOURCE_ID)) },
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1052", reader.get(RESOURCE_ID)) },
+            { assertEquals("1052", reader.getString(RESOURCE_ID)) },
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1073", reader.get(RESOURCE_ID)) },
+            { assertEquals("1073", reader.getString(RESOURCE_ID)) },
             { assertFalse(reader.nextRow()) }
         )
 
@@ -87,9 +96,9 @@ internal class OdcVmTraceFormatTest {
         val writer = format.newWriter(path, TABLE_RESOURCES)
 
         writer.startRow()
-        writer.set(RESOURCE_ID, "1019")
-        writer.set(RESOURCE_START_TIME, Instant.EPOCH)
-        writer.set(RESOURCE_STOP_TIME, Instant.EPOCH)
+        writer.setString(RESOURCE_ID, "1019")
+        writer.setInstant(RESOURCE_START_TIME, Instant.EPOCH)
+        writer.setInstant(RESOURCE_STOP_TIME, Instant.EPOCH)
         writer.setInt(RESOURCE_CPU_COUNT, 1)
         writer.setDouble(RESOURCE_CPU_CAPACITY, 1024.0)
         writer.setDouble(RESOURCE_MEM_CAPACITY, 1024.0)
@@ -100,9 +109,9 @@ internal class OdcVmTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1019", reader.get(RESOURCE_ID)) },
-            { assertEquals(Instant.EPOCH, reader.get(RESOURCE_START_TIME)) },
-            { assertEquals(Instant.EPOCH, reader.get(RESOURCE_STOP_TIME)) },
+            { assertEquals("1019", reader.getString(RESOURCE_ID)) },
+            { assertEquals(Instant.EPOCH, reader.getInstant(RESOURCE_START_TIME)) },
+            { assertEquals(Instant.EPOCH, reader.getInstant(RESOURCE_STOP_TIME)) },
             { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
             { assertEquals(1024.0, reader.getDouble(RESOURCE_CPU_CAPACITY)) },
             { assertEquals(1024.0, reader.getDouble(RESOURCE_MEM_CAPACITY)) },
@@ -124,8 +133,8 @@ internal class OdcVmTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1019", reader.get(RESOURCE_ID)) },
-            { assertEquals(1376314846, reader.get(RESOURCE_STATE_TIMESTAMP).epochSecond) },
+            { assertEquals("1019", reader.getString(RESOURCE_ID)) },
+            { assertEquals(1376314846, reader.getInstant(RESOURCE_STATE_TIMESTAMP)?.epochSecond) },
             { assertEquals(0.0, reader.getDouble(RESOURCE_STATE_CPU_USAGE), 0.01) }
         )
 
@@ -138,8 +147,8 @@ internal class OdcVmTraceFormatTest {
         val writer = format.newWriter(path, TABLE_RESOURCE_STATES)
 
         writer.startRow()
-        writer.set(RESOURCE_ID, "1019")
-        writer.set(RESOURCE_STATE_TIMESTAMP, Instant.EPOCH)
+        writer.setString(RESOURCE_ID, "1019")
+        writer.setInstant(RESOURCE_STATE_TIMESTAMP, Instant.EPOCH)
         writer.setDouble(RESOURCE_STATE_CPU_USAGE, 23.0)
         writer.setInt(RESOURCE_CPU_COUNT, 1)
         writer.endRow()
@@ -149,8 +158,8 @@ internal class OdcVmTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1019", reader.get(RESOURCE_ID)) },
-            { assertEquals(Instant.EPOCH, reader.get(RESOURCE_STATE_TIMESTAMP)) },
+            { assertEquals("1019", reader.getString(RESOURCE_ID)) },
+            { assertEquals(Instant.EPOCH, reader.getInstant(RESOURCE_STATE_TIMESTAMP)) },
             { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
             { assertEquals(23.0, reader.getDouble(RESOURCE_STATE_CPU_USAGE)) },
             { assertFalse(reader.nextRow()) },
@@ -170,13 +179,13 @@ internal class OdcVmTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals(setOf("1019", "1023", "1052"), reader.get(INTERFERENCE_GROUP_MEMBERS)) },
-            { assertEquals(0.0, reader.get(INTERFERENCE_GROUP_TARGET)) },
-            { assertEquals(0.8830158730158756, reader.get(INTERFERENCE_GROUP_SCORE)) },
+            { assertEquals(setOf("1019", "1023", "1052"), reader.getSet(INTERFERENCE_GROUP_MEMBERS, String::class.java)) },
+            { assertEquals(0.0, reader.getDouble(INTERFERENCE_GROUP_TARGET)) },
+            { assertEquals(0.8830158730158756, reader.getDouble(INTERFERENCE_GROUP_SCORE)) },
             { assertTrue(reader.nextRow()) },
-            { assertEquals(setOf("1023", "1052", "1073"), reader.get(INTERFERENCE_GROUP_MEMBERS)) },
-            { assertEquals(0.0, reader.get(INTERFERENCE_GROUP_TARGET)) },
-            { assertEquals(0.7133055555552751, reader.get(INTERFERENCE_GROUP_SCORE)) },
+            { assertEquals(setOf("1023", "1052", "1073"), reader.getSet(INTERFERENCE_GROUP_MEMBERS, String::class.java)) },
+            { assertEquals(0.0, reader.getDouble(INTERFERENCE_GROUP_TARGET)) },
+            { assertEquals(0.7133055555552751, reader.getDouble(INTERFERENCE_GROUP_SCORE)) },
             { assertFalse(reader.nextRow()) }
         )
 
@@ -190,5 +199,131 @@ internal class OdcVmTraceFormatTest {
 
         assertFalse(reader.nextRow())
         reader.close()
+    }
+
+    @Test
+    fun testInterferenceGroupsWrite() {
+        val path = Files.createTempDirectory("opendc")
+        val writer = format.newWriter(path, TABLE_INTERFERENCE_GROUPS)
+
+        writer.startRow()
+        writer.setSet(INTERFERENCE_GROUP_MEMBERS, setOf("a", "b", "c"))
+        writer.setDouble(INTERFERENCE_GROUP_TARGET, 0.5)
+        writer.setDouble(INTERFERENCE_GROUP_SCORE, 0.8)
+        writer.endRow()
+        writer.flush()
+
+        writer.startRow()
+        writer.setSet(INTERFERENCE_GROUP_MEMBERS, setOf("a", "b", "d"))
+        writer.setDouble(INTERFERENCE_GROUP_TARGET, 0.5)
+        writer.setDouble(INTERFERENCE_GROUP_SCORE, 0.9)
+        writer.endRow()
+        writer.close()
+
+        val reader = format.newReader(path, TABLE_INTERFERENCE_GROUPS, null)
+
+        assertAll(
+            { assertTrue(reader.nextRow()) },
+            { assertEquals(setOf("a", "b", "c"), reader.getSet(INTERFERENCE_GROUP_MEMBERS, String::class.java)) },
+            { assertEquals(0.5, reader.getDouble(INTERFERENCE_GROUP_TARGET)) },
+            { assertEquals(0.8, reader.getDouble(INTERFERENCE_GROUP_SCORE)) },
+            { assertTrue(reader.nextRow()) },
+            { assertEquals(setOf("a", "b", "d"), reader.getSet(INTERFERENCE_GROUP_MEMBERS, String::class.java)) },
+            { assertEquals(0.5, reader.getDouble(INTERFERENCE_GROUP_TARGET)) },
+            { assertEquals(0.9, reader.getDouble(INTERFERENCE_GROUP_SCORE)) },
+            { assertFalse(reader.nextRow()) },
+        )
+
+        reader.close()
+    }
+
+    @DisplayName("TableReader for Resources")
+    @Nested
+    inner class ResourcesTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get("src/test/resources/trace-v2.1")
+
+            columns = format.getDetails(path, TABLE_RESOURCES).columns
+            reader = format.newReader(path, TABLE_RESOURCES, null)
+        }
+    }
+
+    @DisplayName("TableWriter for Resources")
+    @Nested
+    inner class ResourcesTableWriterTest : TableWriterTestKit() {
+        override lateinit var writer: TableWriter
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Files.createTempDirectory("opendc")
+
+            columns = format.getDetails(Paths.get("src/test/resources/trace-v2.1"), TABLE_RESOURCES).columns
+            writer = format.newWriter(path, TABLE_RESOURCES)
+        }
+    }
+
+    @DisplayName("TableReader for Resource States")
+    @Nested
+    inner class ResourceStatesTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get("src/test/resources/trace-v2.1")
+
+            columns = format.getDetails(path, TABLE_RESOURCE_STATES).columns
+            reader = format.newReader(path, TABLE_RESOURCE_STATES, null)
+        }
+    }
+
+    @DisplayName("TableWriter for Resource States")
+    @Nested
+    inner class ResourceStatesTableWriterTest : TableWriterTestKit() {
+        override lateinit var writer: TableWriter
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Files.createTempDirectory("opendc")
+
+            columns = format.getDetails(Paths.get("src/test/resources/trace-v2.1"), TABLE_RESOURCE_STATES).columns
+            writer = format.newWriter(path, TABLE_RESOURCE_STATES)
+        }
+    }
+
+    @DisplayName("TableReader for Interference Groups")
+    @Nested
+    inner class InterferenceGroupsTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get("src/test/resources/trace-v2.1")
+
+            columns = format.getDetails(path, TABLE_INTERFERENCE_GROUPS).columns
+            reader = format.newReader(path, TABLE_INTERFERENCE_GROUPS, null)
+        }
+    }
+
+    @DisplayName("TableWriter for Interference Groups")
+    @Nested
+    inner class InterferenceGroupsTableWriterTest : TableWriterTestKit() {
+        override lateinit var writer: TableWriter
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Files.createTempDirectory("opendc")
+
+            columns = format.getDetails(Paths.get("src/test/resources/trace-v2.1"), TABLE_INTERFERENCE_GROUPS).columns
+            writer = format.newWriter(path, TABLE_INTERFERENCE_GROUPS)
+        }
     }
 }

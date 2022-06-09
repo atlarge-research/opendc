@@ -22,8 +22,10 @@
 
 package org.opendc.trace.util
 
-import org.opendc.trace.TableColumn
 import org.opendc.trace.TableReader
+import java.time.Duration
+import java.time.Instant
+import java.util.*
 
 /**
  * A helper class to chain multiple [TableReader]s.
@@ -63,21 +65,16 @@ public abstract class CompositeTableReader : TableReader {
         return delegate != null
     }
 
-    override fun resolve(column: TableColumn<*>): Int {
+    override fun resolve(name: String): Int {
         tryStart()
 
         val delegate = delegate
-        return delegate?.resolve(column) ?: -1
+        return delegate?.resolve(name) ?: -1
     }
 
     override fun isNull(index: Int): Boolean {
         val delegate = checkNotNull(delegate) { "Invalid reader state" }
         return delegate.isNull(index)
-    }
-
-    override fun get(index: Int): Any? {
-        val delegate = checkNotNull(delegate) { "Invalid reader state" }
-        return delegate.get(index)
     }
 
     override fun getBoolean(index: Int): Boolean {
@@ -95,9 +92,49 @@ public abstract class CompositeTableReader : TableReader {
         return delegate.getLong(index)
     }
 
+    override fun getFloat(index: Int): Float {
+        val delegate = checkNotNull(delegate) { "Invalid reader state" }
+        return delegate.getFloat(index)
+    }
+
     override fun getDouble(index: Int): Double {
         val delegate = checkNotNull(delegate) { "Invalid reader state" }
         return delegate.getDouble(index)
+    }
+
+    override fun getString(index: Int): String? {
+        val delegate = checkNotNull(delegate) { "Invalid reader state" }
+        return delegate.getString(index)
+    }
+
+    override fun getUUID(index: Int): UUID? {
+        val delegate = checkNotNull(delegate) { "Invalid reader state" }
+        return delegate.getUUID(index)
+    }
+
+    override fun getInstant(index: Int): Instant? {
+        val delegate = checkNotNull(delegate) { "Invalid reader state" }
+        return delegate.getInstant(index)
+    }
+
+    override fun getDuration(index: Int): Duration? {
+        val delegate = checkNotNull(delegate) { "Invalid reader state" }
+        return delegate.getDuration(index)
+    }
+
+    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+        val delegate = checkNotNull(delegate) { "Invalid reader state" }
+        return delegate.getList(index, elementType)
+    }
+
+    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        val delegate = checkNotNull(delegate) { "Invalid reader state" }
+        return delegate.getSet(index, elementType)
+    }
+
+    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+        val delegate = checkNotNull(delegate) { "Invalid reader state" }
+        return delegate.getMap(index, keyType, valueType)
     }
 
     override fun close() {

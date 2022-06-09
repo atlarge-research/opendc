@@ -25,20 +25,37 @@ package org.opendc.trace.bitbrains
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
 import java.io.BufferedReader
+import java.time.Duration
 import java.time.Instant
+import java.util.*
 
 /**
  * A [TableReader] for the Bitbrains resource state table.
  */
 internal class BitbrainsExResourceStateTableReader(private val reader: BufferedReader) : TableReader {
+    private var state = State.Pending
+
     override fun nextRow(): Boolean {
+        val state = state
+        if (state == State.Closed) {
+            return false
+        } else if (state == State.Pending) {
+            this.state = State.Active
+        }
+
         reset()
 
-        var line: String
+        var line: String?
         var num = 0
 
         while (true) {
-            line = reader.readLine() ?: return false
+            line = reader.readLine()
+
+            if (line == null) {
+                this.state = State.Closed
+                return false
+            }
+
             num++
 
             if (line[0] == '#' || line.isBlank()) {
@@ -49,7 +66,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
             break
         }
 
-        line = line.trim()
+        line = line!!.trim()
 
         val length = line.length
         var col = 0
@@ -89,26 +106,31 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
         return true
     }
 
-    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
-
-    override fun isNull(index: Int): Boolean {
-        require(index in 0..COL_MAX) { "Invalid column index" }
-        return false
-    }
-
-    override fun get(index: Int): Any? {
-        return when (index) {
-            COL_ID -> id
-            COL_CLUSTER_ID -> cluster
-            COL_TIMESTAMP -> timestamp
-            COL_NCPUS -> getInt(index)
-            COL_POWERED_ON -> getInt(index)
-            COL_CPU_CAPACITY, COL_CPU_USAGE, COL_CPU_USAGE_PCT, COL_CPU_READY_PCT, COL_CPU_DEMAND, COL_MEM_CAPACITY, COL_DISK_READ, COL_DISK_WRITE -> getDouble(index)
-            else -> throw IllegalArgumentException("Invalid column")
+    override fun resolve(name: String): Int {
+        return when (name) {
+            RESOURCE_ID -> COL_ID
+            RESOURCE_CLUSTER_ID -> COL_CLUSTER_ID
+            RESOURCE_STATE_TIMESTAMP -> COL_TIMESTAMP
+            RESOURCE_CPU_COUNT -> COL_NCPUS
+            RESOURCE_CPU_CAPACITY -> COL_CPU_CAPACITY
+            RESOURCE_STATE_CPU_USAGE -> COL_CPU_USAGE
+            RESOURCE_STATE_CPU_USAGE_PCT -> COL_CPU_USAGE_PCT
+            RESOURCE_STATE_CPU_DEMAND -> COL_CPU_DEMAND
+            RESOURCE_STATE_CPU_READY_PCT -> COL_CPU_READY_PCT
+            RESOURCE_MEM_CAPACITY -> COL_MEM_CAPACITY
+            RESOURCE_STATE_DISK_READ -> COL_DISK_READ
+            RESOURCE_STATE_DISK_WRITE -> COL_DISK_WRITE
+            else -> -1
         }
     }
 
+    override fun isNull(index: Int): Boolean {
+        require(index in 0 until COL_MAX) { "Invalid column index" }
+        return false
+    }
+
     override fun getBoolean(index: Int): Boolean {
+        check(state == State.Active) { "No active row" }
         return when (index) {
             COL_POWERED_ON -> poweredOn
             else -> throw IllegalArgumentException("Invalid column")
@@ -116,6 +138,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     }
 
     override fun getInt(index: Int): Int {
+        check(state == State.Active) { "No active row" }
         return when (index) {
             COL_NCPUS -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
@@ -126,7 +149,12 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
         throw IllegalArgumentException("Invalid column")
     }
 
+    override fun getFloat(index: Int): Float {
+        throw IllegalArgumentException("Invalid column")
+    }
+
     override fun getDouble(index: Int): Double {
+        check(state == State.Active) { "No active row" }
         return when (index) {
             COL_CPU_CAPACITY -> cpuCapacity
             COL_CPU_USAGE -> cpuUsage
@@ -140,8 +168,47 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
         }
     }
 
+    override fun getString(index: Int): String? {
+        check(state == State.Active) { "No active row" }
+        return when (index) {
+            COL_ID -> id
+            COL_CLUSTER_ID -> cluster
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getUUID(index: Int): UUID? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getInstant(index: Int): Instant? {
+        check(state == State.Active) { "No active row" }
+        return when (index) {
+            COL_TIMESTAMP -> timestamp
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getDuration(index: Int): Duration? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
     override fun close() {
         reader.close()
+        reset()
+        state = State.Closed
     }
 
     /**
@@ -196,18 +263,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     private val COL_CPU_USAGE_PCT = 21
     private val COL_MAX = COL_CPU_USAGE_PCT + 1
 
-    private val columns = mapOf(
-        RESOURCE_ID to COL_ID,
-        RESOURCE_CLUSTER_ID to COL_CLUSTER_ID,
-        RESOURCE_STATE_TIMESTAMP to COL_TIMESTAMP,
-        RESOURCE_CPU_COUNT to COL_NCPUS,
-        RESOURCE_CPU_CAPACITY to COL_CPU_CAPACITY,
-        RESOURCE_STATE_CPU_USAGE to COL_CPU_USAGE,
-        RESOURCE_STATE_CPU_USAGE_PCT to COL_CPU_USAGE_PCT,
-        RESOURCE_STATE_CPU_DEMAND to COL_CPU_DEMAND,
-        RESOURCE_STATE_CPU_READY_PCT to COL_CPU_READY_PCT,
-        RESOURCE_MEM_CAPACITY to COL_MEM_CAPACITY,
-        RESOURCE_STATE_DISK_READ to COL_DISK_READ,
-        RESOURCE_STATE_DISK_WRITE to COL_DISK_WRITE
-    )
+    private enum class State {
+        Pending, Active, Closed
+    }
 }

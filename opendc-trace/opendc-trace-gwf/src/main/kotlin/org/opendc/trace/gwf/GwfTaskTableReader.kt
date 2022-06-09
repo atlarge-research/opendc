@@ -27,23 +27,34 @@ import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
+import org.opendc.trace.util.convertTo
 import java.time.Duration
 import java.time.Instant
+import java.util.*
 import java.util.regex.Pattern
 
 /**
  * A [TableReader] implementation for the GWF format.
  */
 internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
+    /**
+     * A flag to indicate whether a single row has been read already.
+     */
+    private var isStarted = false
+
     init {
         parser.schema = schema
     }
 
     override fun nextRow(): Boolean {
+        if (!isStarted) {
+            isStarted = true
+        }
+
         // Reset the row state
         reset()
 
-        if (!nextStart()) {
+        if (parser.isClosed || !nextStart()) {
             return false
         }
 
@@ -68,24 +79,22 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
         return true
     }
 
-    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
-
-    override fun isNull(index: Int): Boolean {
-        check(index in 0..columns.size) { "Invalid column" }
-        return false
+    override fun resolve(name: String): Int {
+        return when (name) {
+            TASK_ID -> COL_JOB_ID
+            TASK_WORKFLOW_ID -> COL_WORKFLOW_ID
+            TASK_SUBMIT_TIME -> COL_SUBMIT_TIME
+            TASK_RUNTIME -> COL_RUNTIME
+            TASK_ALLOC_NCPUS -> COL_NPROC
+            TASK_REQ_NCPUS -> COL_REQ_NPROC
+            TASK_PARENTS -> COL_DEPS
+            else -> -1
+        }
     }
 
-    override fun get(index: Int): Any? {
-        return when (index) {
-            COL_JOB_ID -> jobId
-            COL_WORKFLOW_ID -> workflowId
-            COL_SUBMIT_TIME -> submitTime
-            COL_RUNTIME -> runtime
-            COL_REQ_NPROC -> getInt(index)
-            COL_NPROC -> getInt(index)
-            COL_DEPS -> dependencies
-            else -> throw IllegalArgumentException("Invalid column")
-        }
+    override fun isNull(index: Int): Boolean {
+        require(index in 0..COL_DEPS) { "Invalid column" }
+        return false
     }
 
     override fun getBoolean(index: Int): Boolean {
@@ -93,6 +102,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     }
 
     override fun getInt(index: Int): Int {
+        checkActive()
         return when (index) {
             COL_REQ_NPROC -> reqNProcs
             COL_NPROC -> nProcs
@@ -104,12 +114,68 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
         throw IllegalArgumentException("Invalid column")
     }
 
+    override fun getFloat(index: Int): Float {
+        throw IllegalArgumentException("Invalid column")
+    }
+
     override fun getDouble(index: Int): Double {
         throw IllegalArgumentException("Invalid column")
     }
 
+    override fun getString(index: Int): String? {
+        checkActive()
+        return when (index) {
+            COL_JOB_ID -> jobId
+            COL_WORKFLOW_ID -> workflowId
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getUUID(index: Int): UUID? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getInstant(index: Int): Instant? {
+        checkActive()
+        return when (index) {
+            COL_SUBMIT_TIME -> submitTime
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getDuration(index: Int): Duration? {
+        checkActive()
+        return when (index) {
+            COL_RUNTIME -> runtime
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+        checkActive()
+        return when (index) {
+            COL_DEPS -> TYPE_DEPS.convertTo(dependencies, elementType)
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
     override fun close() {
         parser.close()
+    }
+
+    /**
+     * Helper method to check if the reader is active.
+     */
+    private fun checkActive() {
+        check(isStarted && !parser.isClosed) { "No active row. Did you call nextRow()?" }
     }
 
     /**
@@ -180,15 +246,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     private val COL_REQ_NPROC = 5
     private val COL_DEPS = 6
 
-    private val columns = mapOf(
-        TASK_ID to COL_JOB_ID,
-        TASK_WORKFLOW_ID to COL_WORKFLOW_ID,
-        TASK_SUBMIT_TIME to COL_SUBMIT_TIME,
-        TASK_RUNTIME to COL_RUNTIME,
-        TASK_ALLOC_NCPUS to COL_NPROC,
-        TASK_REQ_NCPUS to COL_REQ_NPROC,
-        TASK_PARENTS to COL_DEPS
-    )
+    private val TYPE_DEPS = TableColumnType.Set(TableColumnType.String)
 
     companion object {
         /**

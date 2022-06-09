@@ -29,8 +29,6 @@ import org.opendc.trace.*
 import org.opendc.trace.conv.*
 import java.io.File
 import java.lang.ref.SoftReference
-import java.time.Duration
-import java.time.Instant
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.max
@@ -68,9 +66,9 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
 
         return try {
             while (reader.nextRow()) {
-                val id = reader.get(idCol) as String
-                val time = reader.get(timestampCol) as Instant
-                val duration = reader.get(durationCol) as Duration
+                val id = reader.getString(idCol)!!
+                val time = reader.getInstant(timestampCol)!!
+                val duration = reader.getDuration(durationCol)!!
                 val cores = reader.getInt(coresCol)
                 val cpuUsage = reader.getDouble(usageCol)
 
@@ -105,13 +103,13 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         return try {
             while (reader.nextRow()) {
 
-                val id = reader.get(idCol) as String
+                val id = reader.getString(idCol)!!
                 if (!fragments.containsKey(id)) {
                     continue
                 }
 
-                val submissionTime = reader.get(startTimeCol) as Instant
-                val endTime = reader.get(stopTimeCol) as Instant
+                val submissionTime = reader.getInstant(startTimeCol)!!
+                val endTime = reader.getInstant(stopTimeCol)!!
                 val cpuCount = reader.getInt(cpuCountCol)
                 val cpuCapacity = reader.getDouble(cpuCapacityCol)
                 val memCapacity = reader.getDouble(memCol) / 1000.0 // Convert from KB to MB
@@ -162,7 +160,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
 
             while (reader.nextRow()) {
                 @Suppress("UNCHECKED_CAST")
-                val members = reader.get(membersCol) as Set<String>
+                val members = reader.getSet(membersCol, String::class.java)!!
                 val target = reader.getDouble(targetCol)
                 val score = reader.getDouble(scoreCol)
 

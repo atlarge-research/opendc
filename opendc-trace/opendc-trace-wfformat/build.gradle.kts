@@ -31,4 +31,6 @@ dependencies {
     api(projects.opendcTrace.opendcTraceApi)
 
     implementation(libs.jackson.core)
+
+    testImplementation(projects.opendcTrace.opendcTraceTestkit)
 }

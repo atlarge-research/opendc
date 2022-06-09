@@ -62,26 +62,25 @@ public class AzureTraceFormat : TraceFormat {
         return when (table) {
             TABLE_RESOURCES -> TableDetails(
                 listOf(
-                    RESOURCE_ID,
-                    RESOURCE_START_TIME,
-                    RESOURCE_STOP_TIME,
-                    RESOURCE_CPU_COUNT,
-                    RESOURCE_MEM_CAPACITY
+                    TableColumn(RESOURCE_ID, TableColumnType.String),
+                    TableColumn(RESOURCE_START_TIME, TableColumnType.Instant),
+                    TableColumn(RESOURCE_STOP_TIME, TableColumnType.Instant),
+                    TableColumn(RESOURCE_CPU_COUNT, TableColumnType.Int),
+                    TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double),
                 )
             )
             TABLE_RESOURCE_STATES -> TableDetails(
                 listOf(
-                    RESOURCE_ID,
-                    RESOURCE_STATE_TIMESTAMP,
-                    RESOURCE_STATE_CPU_USAGE_PCT
-                ),
-                listOf(RESOURCE_STATE_TIMESTAMP)
+                    TableColumn(RESOURCE_ID, TableColumnType.String),
+                    TableColumn(RESOURCE_STATE_TIMESTAMP, TableColumnType.Instant),
+                    TableColumn(RESOURCE_STATE_CPU_USAGE_PCT, TableColumnType.Double),
+                )
             )
             else -> throw IllegalArgumentException("Table $table not supported")
         }
     }
 
-    override fun newReader(path: Path, table: String, projection: List<TableColumn<*>>?): TableReader {
+    override fun newReader(path: Path, table: String, projection: List<String>?): TableReader {
         return when (table) {
             TABLE_RESOURCES -> {
                 val stream = GZIPInputStream(path.resolve("vmtable/vmtable.csv.gz").inputStream())

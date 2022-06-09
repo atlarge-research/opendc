@@ -77,6 +77,7 @@ internal class ParquetTest {
     }
 
     private val readSupport = object : ReadSupport<Int>() {
+        @Suppress("OVERRIDE_DEPRECATION")
         override fun init(
             configuration: Configuration,
             keyValueMetaData: Map<String, String>,

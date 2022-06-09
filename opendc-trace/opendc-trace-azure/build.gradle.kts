@@ -25,9 +25,12 @@ description = "Support for Azure VM traces in OpenDC"
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
+    `benchmark-conventions`
 }
 
 dependencies {
     api(projects.opendcTrace.opendcTraceApi)
     implementation(libs.jackson.dataformat.csv)
+
+    testImplementation(projects.opendcTrace.opendcTraceTestkit)
 }
