@@ -69,7 +69,7 @@ internal class SimTFDeviceTest {
 
         assertAll(
             { assertEquals(3681, clock.millis()) },
-            { assertEquals(325.75, stats.energyUsage) }
+            { assertEquals(749.25, stats.energyUsage) }
         )
     }
 }

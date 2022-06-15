@@ -91,8 +91,9 @@ public class SimBareMetalMachine(
         if (duration > 0) {
             // Compute the power and energy usage of the machine
             computeEnergyUsage(now)
-            _powerUsage = powerDriverLogic.computePower()
         }
+
+        _powerUsage = powerDriverLogic.computePower()
     }
 
     init {
