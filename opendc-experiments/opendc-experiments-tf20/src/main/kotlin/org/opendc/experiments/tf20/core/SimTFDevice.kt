@@ -68,13 +68,6 @@ public class SimTFDevice(
     )
 
     /**
-     * Metrics collected by the device.
-     */
-    private var _resourceUsage = 0.0
-    private var _powerUsage = 0.0
-    private var _energyUsage = 0.0
-
-    /**
      * The workload that will be run by the device.
      */
     private val workload = object : SimWorkload, FlowSource {
@@ -121,7 +114,7 @@ public class SimTFDevice(
             ctx = conn
             capacity = conn.capacity
             lastPull = now
-            conn.shouldSourceConverge = true
+            conn.shouldSourceConverge = false
         }
 
         override fun onPull(conn: FlowConnection, now: Long): Long {
@@ -156,12 +149,6 @@ public class SimTFDevice(
                 Long.MAX_VALUE
             }
         }
-
-        override fun onConverge(conn: FlowConnection, now: Long) {
-            _resourceUsage = conn.rate
-            _powerUsage = machine.powerUsage
-            _energyUsage = machine.energyUsage
-        }
     }
 
     init {
@@ -183,7 +170,8 @@ public class SimTFDevice(
     }
 
     override fun getDeviceStats(): TFDeviceStats {
-        return TFDeviceStats(_resourceUsage, _powerUsage, _energyUsage)
+        val resourceUsage = machine.cpus.sumOf { it.rate }
+        return TFDeviceStats(resourceUsage, machine.powerUsage, machine.energyUsage)
     }
 
     override fun close() {

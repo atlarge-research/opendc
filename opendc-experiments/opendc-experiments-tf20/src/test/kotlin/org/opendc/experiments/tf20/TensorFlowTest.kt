@@ -26,10 +26,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.experiments.tf20.core.SimTFDevice
+import org.opendc.experiments.tf20.distribute.MirroredStrategy
 import org.opendc.experiments.tf20.distribute.OneDeviceStrategy
 import org.opendc.experiments.tf20.util.MLEnvironmentReader
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.core.runBlockingSimulation
+import java.util.*
 
 /**
  * Integration test suite for the TensorFlow application model in OpenDC.
@@ -61,7 +63,7 @@ class TensorFlowTest {
         val stats = device.getDeviceStats()
         assertAll(
             { assertEquals(3309694252, clock.millis()) },
-            { assertEquals(8.2520933087E8, stats.energyUsage) }
+            { assertEquals(8.27423563E8, stats.energyUsage) }
         )
     }
 
@@ -91,7 +93,46 @@ class TensorFlowTest {
         val stats = device.getDeviceStats()
         assertAll(
             { assertEquals(176230322904, clock.millis()) },
-            { assertEquals(4.296544914744E10, stats.energyUsage) }
+            { assertEquals(4.4057580726E10, stats.energyUsage) }
+        )
+    }
+
+    /**
+     * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
+     */
+    @Test
+    fun testSmokeDistribute() = runBlockingSimulation {
+        val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
+        val def = MLEnvironmentReader().readEnvironment(envInput).first()
+
+        val deviceA = SimTFDevice(
+            def.uid, def.meta["gpu"] as Boolean, coroutineContext, clock, def.model.cpus[0], def.model.memory[0],
+            LinearPowerModel(250.0, 60.0)
+        )
+
+        val deviceB = SimTFDevice(
+            UUID.randomUUID(), def.meta["gpu"] as Boolean, coroutineContext, clock, def.model.cpus[0], def.model.memory[0],
+            LinearPowerModel(250.0, 60.0)
+        )
+
+        val strategy = MirroredStrategy(listOf(deviceA, deviceB))
+        val batchSize = 32
+        val model = AlexNet(batchSize.toLong())
+        model.use {
+            it.compile(strategy)
+
+            it.fit(epochs = 9088 / batchSize, batchSize = batchSize)
+        }
+
+        deviceA.close()
+        deviceB.close()
+
+        val statsA = deviceA.getDeviceStats()
+        val statsB = deviceB.getDeviceStats()
+        assertAll(
+            { assertEquals(1704994000, clock.millis()) },
+            { assertEquals(4.262485E8, statsA.energyUsage) },
+            { assertEquals(4.262485E8, statsB.energyUsage) }
         )
     }
 }

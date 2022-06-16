@@ -55,6 +55,7 @@ public class SimTrace(
         /**
          * Construct a [SimTrace] with the specified fragments.
          */
+        @JvmStatic
         public fun ofFragments(fragments: List<SimTraceFragment>): SimTrace {
             val size = fragments.size
             val usageCol = DoubleArray(size)
@@ -180,7 +181,7 @@ public class SimTrace(
          */
         private fun grow() {
             val arraySize = usageCol.size
-            val newSize = arraySize * 2
+            val newSize = arraySize + (arraySize shr 1)
 
             usageCol = usageCol.copyOf(newSize)
             timestampCol = timestampCol.copyOf(newSize)
