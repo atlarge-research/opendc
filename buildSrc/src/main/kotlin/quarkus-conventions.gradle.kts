@@ -51,7 +51,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
 /* Launch Quarkus dev mode from project root directory */
 tasks.quarkusDev {
-    workingDir = rootProject.projectDir.toString()
+    workingDirectory.set(rootProject.projectDir)
 }
 
 /* Make sure the jacoco-report-aggregation plugin picks up the Quarkus coverage data */

@@ -27,12 +27,12 @@ import java.nio.ByteBuffer
 import java.util.UUID
 
 /**
- *
- * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ * Helper method to convert a [UUID] into a [Binary] object consumed by Parquet.
  */
 internal fun UUID.toBinary(): Binary {
-    val bb = ByteBuffer.wrap(ByteArray(16))
+    val bb = ByteBuffer.allocate(16)
     bb.putLong(mostSignificantBits)
     bb.putLong(leastSignificantBits)
+    bb.rewind()
     return Binary.fromConstantByteBuffer(bb)
 }

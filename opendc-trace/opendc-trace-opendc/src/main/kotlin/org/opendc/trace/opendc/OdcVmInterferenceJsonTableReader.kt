@@ -22,14 +22,14 @@
 
 package org.opendc.trace.opendc
 
+import com.fasterxml.jackson.core.JsonParseException
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.JsonToken
 import org.opendc.trace.*
 import org.opendc.trace.conv.INTERFERENCE_GROUP_MEMBERS
 import org.opendc.trace.conv.INTERFERENCE_GROUP_SCORE
 import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
 import org.opendc.trace.util.convertTo
-import shaded.parquet.com.fasterxml.jackson.core.JsonParseException
-import shaded.parquet.com.fasterxml.jackson.core.JsonParser
-import shaded.parquet.com.fasterxml.jackson.core.JsonToken
 import java.time.Duration
 import java.time.Instant
 import java.util.*
