@@ -22,6 +22,8 @@
 
 package org.opendc.trace.opendc
 
+import com.fasterxml.jackson.core.JsonEncoding
+import com.fasterxml.jackson.core.JsonFactory
 import org.apache.parquet.column.ParquetProperties
 import org.apache.parquet.hadoop.ParquetFileWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
@@ -35,8 +37,6 @@ import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.parquet.LocalParquetReader
 import org.opendc.trace.util.parquet.LocalParquetWriter
-import shaded.parquet.com.fasterxml.jackson.core.JsonEncoding
-import shaded.parquet.com.fasterxml.jackson.core.JsonFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists

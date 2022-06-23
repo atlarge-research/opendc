@@ -28,7 +28,7 @@ plugins {
 }
 
 quarkusExtension {
-    deploymentModule = "opendc-web-runner-quarkus-deployment"
+    deploymentModule.set("opendc-web-runner-quarkus-deployment")
 }
 
 dependencies {
