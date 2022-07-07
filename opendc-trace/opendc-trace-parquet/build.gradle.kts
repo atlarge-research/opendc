@@ -33,8 +33,8 @@ dependencies {
         exclude(group = "org.apache.hadoop")
     }
     api(libs.hadoop.common) {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
+        exclude(group = "org.slf4j", module = "slf4j-reload4j")
+        exclude(group = "ch.qos.reload4j", module = "reload4j")
         exclude(group = "org.apache.hadoop")
         exclude(group = "org.apache.curator")
         exclude(group = "org.apache.zookeeper")
