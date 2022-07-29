@@ -90,18 +90,20 @@ public interface TraceFormat {
      */
     public companion object {
         /**
-         * A list of [TraceFormat] that are available on this system.
+         * Obtain a list of [TraceFormat] that are available in the current thread context.
          */
         @JvmStatic
-        public val installedProviders: List<TraceFormat> by lazy {
-            val loader = ServiceLoader.load(TraceFormat::class.java)
-            loader.toList()
+        public fun getInstalledProviders(): Iterable<TraceFormat> {
+            return ServiceLoader.load(TraceFormat::class.java)
         }
 
         /**
          * Obtain a [TraceFormat] implementation by [name].
          */
         @JvmStatic
-        public fun byName(name: String): TraceFormat? = installedProviders.find { it.name == name }
+        public fun byName(name: String): TraceFormat? {
+            val loader = ServiceLoader.load(TraceFormat::class.java)
+            return loader.find { it.name == name }
+        }
     }
 }
