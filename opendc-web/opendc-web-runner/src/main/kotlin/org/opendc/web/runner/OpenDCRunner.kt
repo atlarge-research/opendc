@@ -45,6 +45,7 @@ import java.io.File
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.*
+import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory
 
 /**
  * Class to execute the pending jobs via the OpenDC web API.
@@ -81,7 +82,7 @@ public class OpenDCRunner(
     /**
      * The [ForkJoinPool] that is used to execute the simulation jobs.
      */
-    private val pool = ForkJoinPool(parallelism)
+    private val pool = ForkJoinPool(parallelism, RunnerThreadFactory(Thread.currentThread().contextClassLoader), null, false)
 
     /**
      * A [ScheduledExecutorService] to manage the heartbeat of simulation jobs as well as tracking the deadline of
@@ -301,6 +302,17 @@ public class OpenDCRunner(
             }
 
             override fun toString(): String = "WebRunnerTopologyFactory"
+        }
+    }
+
+    /**
+     * A custom [ForkJoinWorkerThreadFactory] that uses the [ClassLoader] of specified by the runner.
+     */
+    private class RunnerThreadFactory(private val classLoader: ClassLoader) : ForkJoinWorkerThreadFactory {
+        override fun newThread(pool: ForkJoinPool): ForkJoinWorkerThread = object : ForkJoinWorkerThread(pool) {
+            init {
+                contextClassLoader = classLoader
+            }
         }
     }
 }
