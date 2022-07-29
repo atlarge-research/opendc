@@ -26,11 +26,17 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.*;
+import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
+import io.quarkus.deployment.util.ServiceUtil;
 import io.quarkus.runtime.RuntimeValue;
+import org.opendc.trace.spi.TraceFormat;
 import org.opendc.web.runner.OpenDCRunner;
 import org.opendc.web.runner.runtime.OpenDCRunnerRecorder;
 import org.opendc.web.runner.runtime.OpenDCRunnerRuntimeConfig;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 
 import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
@@ -51,12 +57,18 @@ public class OpenDCRunnerProcessor {
     }
 
     /**
-     * Build step to index the necessary dependencies for the OpenDC runner.
+     * Build step to register the trace formats used by OpenDC.
      */
     @BuildStep
-    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
-        indexDependency.produce(new IndexDependencyBuildItem("org.opendc.trace", "opendc-trace-opendc"));
-        indexDependency.produce(new IndexDependencyBuildItem("org.opendc.trace", "opendc-trace-bitbrains"));
+    void registerTraceFormats(BuildProducer<ServiceProviderBuildItem> services) throws IOException {
+        String service = "META-INF/services/" + TraceFormat.class.getName();
+
+        Set<String> implementations = ServiceUtil.classNamesNamedIn(Thread.currentThread().getContextClassLoader(),
+                service);
+
+        services.produce(
+            new ServiceProviderBuildItem(TraceFormat.class.getName(),
+                implementations.toArray(new String[0])));
     }
 
     /**

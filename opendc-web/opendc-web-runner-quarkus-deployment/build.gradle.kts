@@ -29,6 +29,7 @@ plugins {
 
 dependencies {
     implementation(projects.opendcWeb.opendcWebRunnerQuarkus)
+    implementation(projects.opendcTrace.opendcTraceApi)
 
     implementation(platform(libs.quarkus.bom))
     implementation(libs.quarkus.core.deployment)
