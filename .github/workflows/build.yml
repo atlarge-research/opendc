@@ -62,11 +62,16 @@ jobs:
       steps:
         - name: Checkout repository
           uses: actions/checkout@v3
-        - name: Build Runner
+        - name: Build UI
           uses: docker/build-push-action@v3
           with:
-            file: opendc-web/opendc-web-runner/Dockerfile
+            context: opendc-web/opendc-web-ui
+            file: opendc-web/opendc-web-ui/Dockerfile
         - name: Build Web Server
           uses: docker/build-push-action@v3
           with:
             file: opendc-web/opendc-web-server/Dockerfile
+        - name: Build Runner
+          uses: docker/build-push-action@v3
+          with:
+            file: opendc-web/opendc-web-runner/Dockerfile
