@@ -1,7 +1,5 @@
 # Deploying OpenDC
-This document explains how you can deploy OpenDC in your local environment.
-The official way to run OpenDC is using Docker. Other options include building and running locally, and building and
-running to deploy on a server.
+This document explains how you can deploy a multi-tenant instance of OpenDC using Docker.
 
 ## Contents
 
@@ -30,13 +28,6 @@ create:
 
    Once your application has been created, you should have a _Domain_ and _Client ID_ which we need to pass to the
    frontend application (as `OPENDC_AUTH0_DOMAIN` and `OPENDC_AUTH0_CLIENT_ID` respectively).
-3. **A Machine to Machine Application (M2M)**  
-   You need to define a Machine to Machine application in Auth0 so that the simulator can communicate with the OpenDC API.
-   Please refer to the [following guide](https://auth0.com/docs/get-started/auth0-overview/create-applications/machine-to-machine-apps)
-   on how to create such an application.
-
-   Once your application has been created, you should have a _Client ID_ and _Client Secret_ which we need to pass to the
-   simulator (as `OPENDC_AUTH0_CLIENT_ID_RUNNER` and `OPENDC_AUTH0_CLIENT_SECRET_RUNNER` respectively).
 
 
 ## Installing Docker
@@ -61,23 +52,16 @@ called `.env` in the `opendc` folder. In this file, replace `your-auth0-*` with 
 step. For a standard setup, you can leave the other settings as-is.
 
 ```.env
-MONGO_INITDB_ROOT_USERNAME=root
-MONGO_INITDB_ROOT_PASSWORD=rootpassword
-MONGO_INITDB_DATABASE=admin
-OPENDC_DB=opendc
 OPENDC_DB_USERNAME=opendc
 OPENDC_DB_PASSWORD=opendcpassword
-OPENDC_FLASK_SECRET="This is a secret flask key, please change"
 OPENDC_AUTH0_DOMAIN=your-auth0-domain
 OPENDC_AUTH0_CLIENT_ID=your-auth0-client-id
 OPENDC_AUTH0_AUDIENCE=your-auth0-api-identifier
-OPENDC_AUTH0_CLIENT_ID_RUNNER=your-auth0-client-id-for-runner
-OPENDC_AUTH0_CLIENT_SECRET_RUNNER=your-auth0-client-secret-for-runner
 OPENDC_API_BASE_URL=http://web
 ```
 
 We provide a set of default traces for you to experiment with. If you want to add others, place them in the `traces`
-directory and add entries to the database (see also [the database folder](../database/mongo-init-opendc-db.sh))
+directory and add entries to the database (see also [the SQL init script](../opendc-web/opendc-web-server/src/main/resources/db/migration/V1.0.0__core.sql))
 
 If you plan to deploy publicly, please also tweak the other settings. In that case, also check the `docker-compose.yml`
 and `docker-compose.prod.yml` for further instructions.
@@ -93,4 +77,4 @@ docker-compose up
 ```
 
 Wait a few seconds and open `http://localhost:8080` in your browser to use OpenDC. We recommend Google Chrome for the
-best development experience.
+best user experience.
