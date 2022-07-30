@@ -2,8 +2,8 @@ FROM node:16 AS staging
 MAINTAINER OpenDC Maintainers <opendc@atlarge-research.com>
 
 # Copy package details
-COPY ./package.json ./yarn.lock /opendc/
-RUN cd /opendc && yarn install --frozen-lockfile
+COPY ./package.json ./package-lock.json /opendc/
+RUN cd /opendc && npm ci
 
 # Build frontend
 FROM node:16 AS build
@@ -17,12 +17,12 @@ RUN cd /opendc/ \
               NEXT_PUBLIC_AUTH0_DOMAIN="%%NEXT_PUBLIC_AUTH0_DOMAIN%%" \
               NEXT_PUBLIC_AUTH0_CLIENT_ID="%%NEXT_PUBLIC_AUTH0_CLIENT_ID%%" \
               NEXT_PUBLIC_AUTH0_AUDIENCE="%%NEXT_PUBLIC_AUTH0_AUDIENCE%%" \
-    && yarn build \
-    && yarn cache clean --all \
-    && mv .next .next.template
+    && npm run build \
+    && npm cache clean --force \
+    && mv build/next build/next.template
 
 
 FROM node:16-slim
 COPY --from=build /opendc /opendc
 WORKDIR /opendc
-CMD ./scripts/envsubst.sh; yarn start
+CMD ./scripts/envsubst.sh; npm run start
