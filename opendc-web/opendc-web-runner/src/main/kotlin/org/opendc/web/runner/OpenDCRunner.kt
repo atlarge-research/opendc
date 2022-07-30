@@ -98,11 +98,6 @@ public class OpenDCRunner(
     override fun run() {
         try {
             while (true) {
-                // Check if anyone has interrupted the thread
-                if (Thread.interrupted()) {
-                    throw InterruptedException()
-                }
-
                 val job = manager.findNext()
                 if (job == null) {
                     Thread.sleep(pollInterval.toMillis())
@@ -120,6 +115,8 @@ public class OpenDCRunner(
 
                 pool.submit(JobAction(job))
             }
+        } catch (_: InterruptedException) {
+            // Gracefully exit when the thread is interrupted
         } finally {
             workloadLoader.reset()
 
