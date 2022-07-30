@@ -33,4 +33,5 @@ dependencies {
 
     implementation(platform(libs.quarkus.bom))
     implementation(libs.quarkus.core.deployment)
+    implementation(libs.quarkus.arc.deployment)
 }

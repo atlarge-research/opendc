@@ -22,6 +22,7 @@
 
 package org.opendc.web.runner.deployment;
 
+import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Record;
@@ -30,6 +31,7 @@ import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 import io.quarkus.deployment.util.ServiceUtil;
 import io.quarkus.runtime.RuntimeValue;
 import org.opendc.trace.spi.TraceFormat;
+import org.opendc.web.runner.JobManager;
 import org.opendc.web.runner.OpenDCRunner;
 import org.opendc.web.runner.runtime.OpenDCRunnerRecorder;
 import org.opendc.web.runner.runtime.OpenDCRunnerRuntimeConfig;
@@ -69,6 +71,14 @@ public class OpenDCRunnerProcessor {
         services.produce(
             new ServiceProviderBuildItem(TraceFormat.class.getName(),
                 implementations.toArray(new String[0])));
+    }
+
+    /**
+     * Mark {@link JobManager} as unremoveable, since we look up this service dynamically in {@link OpenDCRunnerRecorder}.
+     */
+    @BuildStep
+    UnremovableBeanBuildItem unremovableBeans() {
+        return UnremovableBeanBuildItem.beanTypes(JobManager.class);
     }
 
     /**

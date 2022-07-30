@@ -40,12 +40,6 @@ public class OpenDCRunnerRuntimeConfig {
     public boolean enable;
 
     /**
-     * The URI to the (local) API to communicate with.
-     */
-    @ConfigItem(defaultValue = "http://${quarkus.http.host}:${quarkus.http.port}${quarkus.resteasy.path:}")
-    public String apiUrl;
-
-    /**
      * The path where the workload traces are located.
      */
     @ConfigItem(defaultValue = "traces")
