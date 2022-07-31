@@ -44,11 +44,19 @@ public class OpenDCRunnerRecorder {
      */
     public RuntimeValue<OpenDCRunner> createRunner(OpenDCRunnerRuntimeConfig config) {
         URI apiUrl = URI.create(config.apiUrl);
+
+        int parallelism = config.parallelism;
+        if (parallelism < 0) {
+            throw new IllegalArgumentException("Parallelism must be non-negative");
+        } else if (parallelism == 0) {
+            parallelism = Math.min(1, Runtime.getRuntime().availableProcessors() - 1);
+        }
+
         OpenDCRunnerClient client = new OpenDCRunnerClient(apiUrl, null);
         OpenDCRunner runner = new OpenDCRunner(
             client,
             new File(config.tracePath),
-            config.parallelism,
+            parallelism,
             config.jobTimeout,
             config.pollInterval,
             config.heartbeatInterval
