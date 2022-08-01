@@ -48,6 +48,7 @@ dependencies {
 
     implementation(libs.quarkus.hibernate.orm)
     implementation(libs.quarkus.hibernate.validator)
+    implementation(libs.quarkus.flyway)
     implementation(libs.quarkus.jdbc.postgresql)
     implementation(libs.quarkus.jdbc.h2)
 
