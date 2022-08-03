@@ -114,7 +114,8 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
         logger.info { "Starting OpenDC web runner" }
 
         val client = OpenDCRunnerClient(baseUrl = apiUrl, OpenIdAuthController(authDomain, authClientId, authClientSecret, authAudience))
-        val runner = OpenDCRunner(client, tracePath, parallelism = parallelism)
+        val manager = JobManager(client)
+        val runner = OpenDCRunner(manager, tracePath, parallelism = parallelism)
 
         logger.info { "Watching for queued scenarios" }
         runner.run()

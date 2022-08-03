@@ -60,6 +60,13 @@ class JobResource @Inject constructor(private val jobService: JobService) {
     @Path("{job}")
     @Transactional
     fun update(@PathParam("job") id: Long, @Valid update: Job.Update): Job {
-        return jobService.updateState(id, update.state, update.results) ?: throw WebApplicationException("Job not found", 404)
+        return try {
+            jobService.updateState(id, update.state, update.results)
+                ?: throw WebApplicationException("Job not found", 404)
+        } catch (e: IllegalArgumentException) {
+            throw WebApplicationException(e, 400)
+        } catch (e: IllegalStateException) {
+            throw WebApplicationException(e, 409)
+        }
     }
 }

@@ -27,6 +27,7 @@ import io.quarkus.runtime.ShutdownContext;
 import io.quarkus.runtime.annotations.Recorder;
 import org.jboss.logging.Logger;
 import org.opendc.web.client.runner.OpenDCRunnerClient;
+import org.opendc.web.runner.JobManager;
 import org.opendc.web.runner.OpenDCRunner;
 
 import java.io.File;
@@ -54,7 +55,7 @@ public class OpenDCRunnerRecorder {
 
         OpenDCRunnerClient client = new OpenDCRunnerClient(apiUrl, null);
         OpenDCRunner runner = new OpenDCRunner(
-            client,
+            JobManager.create(client),
             new File(config.tracePath),
             parallelism,
             config.jobTimeout,
@@ -77,7 +78,7 @@ public class OpenDCRunnerRecorder {
             Thread thread = new Thread(() -> {
                 try {
                     // Wait for some time to allow Vert.x to bind to the local port
-                    Thread.sleep(1000);
+                    Thread.sleep(4000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }

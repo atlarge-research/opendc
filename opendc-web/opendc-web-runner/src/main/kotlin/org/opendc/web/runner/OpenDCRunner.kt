@@ -36,10 +36,8 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.web.client.runner.OpenDCRunnerClient
 import org.opendc.web.proto.runner.Job
 import org.opendc.web.proto.runner.Scenario
-import org.opendc.web.runner.internal.JobManager
 import org.opendc.web.runner.internal.WebComputeMonitor
 import java.io.File
 import java.time.Duration
@@ -50,14 +48,14 @@ import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory
 /**
  * Class to execute the pending jobs via the OpenDC web API.
  *
- * @param client The [OpenDCRunnerClient] to connect to the OpenDC web API.
+ * @param manager The underlying [JobManager] to manage the available jobs.
  * @param tracePath The directory where the traces are located.
  * @param jobTimeout The maximum duration of a simulation job.
  * @param pollInterval The interval to poll the API with.
  * @param heartbeatInterval The interval to send a heartbeat to the API server.
  */
 public class OpenDCRunner(
-    client: OpenDCRunnerClient,
+    private val manager: JobManager,
     private val tracePath: File,
     parallelism: Int = Runtime.getRuntime().availableProcessors(),
     private val jobTimeout: Duration = Duration.ofMillis(10),
@@ -68,11 +66,6 @@ public class OpenDCRunner(
      * Logging instance for this runner.
      */
     private val logger = KotlinLogging.logger {}
-
-    /**
-     * Helper class to manage the available jobs.
-     */
-    private val manager = JobManager(client)
 
     /**
      * Helper class to load the workloads.
@@ -142,12 +135,32 @@ public class OpenDCRunner(
             try {
                 val topology = convertTopology(scenario.topology)
                 val jobs = (0 until scenario.portfolio.targets.repeats).map { repeat -> SimulationTask(scenario, repeat, topology) }
-                val results = invokeAll(jobs)
+                val results = invokeAll(jobs).map { it.rawResult }
 
                 logger.info { "Finished simulation for job $id" }
 
                 heartbeat.cancel(true)
-                manager.finish(id, results.map { it.rawResult })
+
+                manager.finish(
+                    id,
+                    mapOf(
+                        "total_requested_burst" to results.map { it.totalActiveTime + it.totalIdleTime },
+                        "total_granted_burst" to results.map { it.totalActiveTime },
+                        "total_overcommitted_burst" to results.map { it.totalStealTime },
+                        "total_interfered_burst" to results.map { it.totalLostTime },
+                        "mean_cpu_usage" to results.map { it.meanCpuUsage },
+                        "mean_cpu_demand" to results.map { it.meanCpuDemand },
+                        "mean_num_deployed_images" to results.map { it.meanNumDeployedImages },
+                        "max_num_deployed_images" to results.map { it.maxNumDeployedImages },
+                        "total_power_draw" to results.map { it.totalPowerDraw },
+                        "total_failure_slices" to results.map { it.totalFailureSlices },
+                        "total_failure_vm_slices" to results.map { it.totalFailureVmSlices },
+                        "total_vms_submitted" to results.map { it.totalVmsSubmitted },
+                        "total_vms_queued" to results.map { it.totalVmsQueued },
+                        "total_vms_finished" to results.map { it.totalVmsFinished },
+                        "total_vms_failed" to results.map { it.totalVmsFailed }
+                    )
+                )
             } catch (e: Exception) {
                 // Check whether the job failed due to exceeding its time budget
                 if (Thread.interrupted()) {
