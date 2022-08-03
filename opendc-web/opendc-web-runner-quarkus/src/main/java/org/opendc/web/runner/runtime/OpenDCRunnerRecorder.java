@@ -26,11 +26,11 @@ import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.ShutdownContext;
 import io.quarkus.runtime.annotations.Recorder;
 import org.jboss.logging.Logger;
-import org.opendc.web.client.runner.OpenDCRunnerClient;
+import org.opendc.web.runner.JobManager;
 import org.opendc.web.runner.OpenDCRunner;
 
+import javax.enterprise.inject.spi.CDI;
 import java.io.File;
-import java.net.URI;
 
 /**
  * Helper class for starting the OpenDC web runner.
@@ -43,12 +43,18 @@ public class OpenDCRunnerRecorder {
      * Helper method to create an {@link OpenDCRunner} instance.
      */
     public RuntimeValue<OpenDCRunner> createRunner(OpenDCRunnerRuntimeConfig config) {
-        URI apiUrl = URI.create(config.apiUrl);
-        OpenDCRunnerClient client = new OpenDCRunnerClient(apiUrl, null);
+        int parallelism = config.parallelism;
+        if (parallelism < 0) {
+            throw new IllegalArgumentException("Parallelism must be non-negative");
+        } else if (parallelism == 0) {
+            parallelism = Math.min(1, Runtime.getRuntime().availableProcessors() - 1);
+        }
+
+        JobManager manager = CDI.current().select(JobManager.class).get();
         OpenDCRunner runner = new OpenDCRunner(
-            client,
+            manager,
             new File(config.tracePath),
-            config.parallelism,
+            parallelism,
             config.jobTimeout,
             config.pollInterval,
             config.heartbeatInterval
@@ -64,18 +70,10 @@ public class OpenDCRunnerRecorder {
                             OpenDCRunnerRuntimeConfig config,
                             ShutdownContext shutdownContext) {
         if (config.enable) {
-            LOGGER.info("Starting OpenDC Runner in background (polling " + config.apiUrl + ")");
+            LOGGER.info("Starting OpenDC Runner in background (polling every " + config.pollInterval + ")");
 
-            Thread thread = new Thread(() -> {
-                try {
-                    // Wait for some time to allow Vert.x to bind to the local port
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
-                runner.getValue().run();
-            });
+            Thread thread = new Thread(runner.getValue());
+            thread.setName("opendc-runner");
             thread.start();
 
             shutdownContext.addShutdownTask(thread::interrupt);
