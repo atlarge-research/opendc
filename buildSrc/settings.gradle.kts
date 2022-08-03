@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+rootProject.name = "buildSrc"
 
 dependencyResolutionManagement {
     versionCatalogs {

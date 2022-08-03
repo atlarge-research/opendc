@@ -31,8 +31,6 @@ services:
       OPENDC_AUTH0_DOMAIN: ${OPENDC_AUTH0_DOMAIN:?No Auth0 domain specified}
       OPENDC_AUTH0_AUDIENCE: ${OPENDC_AUTH0_AUDIENCE:?No Auth0 audience specified}
       OPENDC_API_URL: ${OPENDC_API_BASE_URL:-http://web:8080}
-      OPENDC_AUTH0_CLIENT_ID_RUNNER: ${OPENDC_AUTH0_CLIENT_ID_RUNNER:?No client id for runner}
-      OPENDC_AUTH0_CLIENT_SECRET_RUNNER: ${OPENDC_AUTH0_CLIENT_SECRET_RUNNER:?No client secret for runner}
       SENTRY_DSN: ${OPENDC_SERVER_SENTRY_DSN-}
 
   postgres:

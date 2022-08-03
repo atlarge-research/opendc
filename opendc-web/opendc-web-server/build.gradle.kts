@@ -84,6 +84,10 @@ distributions {
             from(tasks.quarkusBuild) {
                 into("lib")
             }
+
+            from("../../traces") {
+                into("traces")
+            }
         }
     }
 }
