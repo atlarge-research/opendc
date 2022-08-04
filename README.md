@@ -7,7 +7,7 @@
 Collaborative Datacenter Simulation and Exploration for Everybody
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](/LICENSE.txt)
-[![Documentation](https://img.shields.io/badge/docs-master-green.svg)](./docs)
+[![Documentation](https://img.shields.io/badge/docs-master-green.svg)](https://opendc.org)
 [![GitHub release](https://img.shields.io/github/release/atlarge-research/opendc)](https://github.com/atlarge-research/opendc/releases)
 [![Build](https://github.com/atlarge-research/opendc/actions/workflows/build.yml/badge.svg)](https://github.com/atlarge-research/opendc/actions/workflows/build.yml)
 
@@ -15,15 +15,15 @@ Collaborative Datacenter Simulation and Exploration for Everybody
 
 OpenDC is a free and open-source platform for datacenter simulation aimed at both research and education.
 
-![Datacenter construction in OpenDC](docs/images/screenshot-construction.png)
+![Datacenter construction in OpenDC](site/src/components/HomepageFeatures/screenshot-construction.png)
 
 Users can construct datacenters (see above) and define portfolios of scenarios (experiments) to see how these
 datacenters perform under different workloads and schedulers (see below).
 
-![Datacenter simulation in OpenDC](docs/images/screenshot-simulation.png)
+![Datacenter simulation in OpenDC](site/src/components/HomepageFeatures/screenshot-construction.png))
 
-The simulator is accessible both as a ready-to-use website hosted by us at [opendc.org](https://opendc.org), and as
-source code that users can run locally on their own machine, through Docker.
+The simulator is accessible both as a ready-to-use website hosted by us at [app.opendc.org](https://app.opendc.org), and
+as source code that users can run locally on their own machine or via Docker.
 
 To learn more
 about OpenDC, have a look through our paper [OpenDC 2.0](https://atlarge-research.com/pdfs/ccgrid21-opendc-paper.pdf)
@@ -38,13 +38,19 @@ use and extend Capelin coming soon!
 
 ## Documentation
 
-The documentation is located in the [docs/](docs) directory and is divided as follows:
+You can find the OpenDC documentation [on the website](https://opendc.org/).
 
-1. [Deployment Guide](docs/deploy.md)
-1. [Architectural Overview](docs/architecture.md)
-1. [Toolchain Setup](docs/toolchain.md)
-1. [Research with OpenDC](docs/research.md)
-1. [Contributing Guide](CONTRIBUTING.md)
+Check out the [Getting Started](https://opendc.org/docs/getting-started.html) page for a quick overview.
+
+The documentation is divided into several sections:
+
+* [Main Concepts](https://opendc.org/docs/category/getting-started)
+* [Tutorials](https://opendc.org/docs/category/tutorials)
+* [Advanced Guides](https://opendc.org/docs/category/advanced-guides)
+* [Where to Get Support](https://opendc.org/community/support)
+* [Contributing Guide](https://opendc.org/community/contributing)
+
+The source code for the documentation is located in [site](site).
 
 ## Contributing
 

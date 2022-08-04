@@ -1,0 +1,154 @@
+---
+description: How to design a virtual datacenter in OpenDC from scratch.
+---
+
+# Design a Datacenter
+
+Now that you have installed OpenDC (or are using the hosted version), we will start designing a (virtual) datacenter
+in OpenDC.
+
+## Before we start
+
+There are a couple of steps we need to perform before we can start designing a datacenter in OpenDC. First, we need to
+enter the OpenDC web application. This done as follows:
+
+<div className="container">
+    <div className="row">
+        <div className="col col--6">
+            <div className="card">
+                <div className="card__body">
+                    <h4>Hosted Deployment</h4>
+                    <small>
+                        To enter the hosted version of OpenDC, you need a user account. User management is provided
+                        by <a href="https://auth0.com">Auth0</a>, which allows you to login with social accounts or via
+                        email.
+                    </small>
+                </div>
+                <div className="card__footer">
+                    <a href="https://app.opendc.org" className="button button--primary button--block">Login to OpenDC</a>
+                </div>
+            </div>
+        </div>
+        <div className="col col--6">
+            <div className="card">
+                <div className="card__body">
+                    <h4>Local Deployment</h4>
+                    <small>
+                        The local distribution of OpenDC runs in single-user mode by default, which does not require
+                        authentication. This allows you to quickly start designing and experimenting with new
+                        datacenters.
+                    </small>
+                </div>
+                <div className="card__footer">
+                    <a href="http://localhost:8080" className="button button--secondary button--block">Launch OpenDC (local)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+### Create a Project
+
+Next, we need to create a new project. Projects allow you to organize your designs and experiments together.
+Click on ‘+ New Project’ in the right corner to open the project creation dialog.
+Give your project a name and save it. You can now open it by clicking on it in the project table. If all went well,
+you’re redirected to your new project, and are presented with an empty project overview.
+
+### Create a Topology
+
+In OpenDC, the datacenter design is also called a **topology**. This topology represents the physical layout of a
+datacenter and specifies everything from the architectural layout of the datacenter’s rooms to which CPUs are in a
+particular machine.
+
+To create a design (topology), click on ‘+ New Topology’ in the top right corner of the topology table.
+Once you have created the topology, it will appear the topology table. By clicking on the topology, you will be
+redirected to a (still empty) overview of the topology. From here, we'll start designing a datacenter.
+
+### Terminology
+
+Here’s an overview of some of the language you’ll find when designing a datacenter in OpenDC:
+
+- **Topology**: the physical layout of your datacenter
+- **Room**: a room in the datacenter
+- **Tile**: one of the tiles that forms a room
+- **Rack**: a rack of servers that stands on top of a tile
+- **Machine**: a machine that takes up a single slot in a server rack, containing several components such as CPUs, GPUs,
+               network interfaces and storage drives.
+
+## Build the datacenter
+
+Open the project and topology that you have created and click on the 'Floor Plan' tab (see [Figure 1](#floor-plan)).
+We’re now in datacenter construction mode. Notice the grid on the canvas? That’s where you’ll place tiles, in order to
+build rooms. Let’s take a moment to familiarize ourselves with the interface.
+
+If you dismiss the sidebar on your left, you have controls for zooming in and out. Next to the zooming buttons, you also
+have a ‘Screenshot’ button, in case you want to record the state of the canvas and export it to an image file. On the
+right side of the screen, you have the context menu. This menu changes depending on your zoom level.
+
+As there are currently no rooms, we are in ‘Building’ mode, and our only option is to ‘Construct a new room’. Click on
+that button to build a first datacenter room - once you’ve clicked on it, every tile of the canvas that you click on
+becomes a tile of that room. There is one restriction though: Each tile that you add must be adjacent to any previous
+tiles that you have added. You can see for yourself which tile positions are clickable through the highlight color that
+is shown on hovering over them.
+
+<figure className="figure" id="floor-plan">
+    <img src={require("@site/src/components/HomepageFeatures/screenshot-construction.png").default} alt="Analysis of results reported by OpenDC" />
+    <figcaption>The floor plan of a (virtual) datacenter in OpenDC.</figcaption>
+</figure>
+
+### Create a Room
+
+:::note Action
+
+Create at least a single room, with help of the above instructions.
+
+:::
+
+Once you’ve placed the tiles, you can give the room a name, if you want to. To do this, click on the room you want to
+edit. You’ll notice the application going into ‘Room’ mode, allowing you to manipulate the topology of the datacenter at
+a more fine-grained level. In the context menu, change the room name, and click on the ‘Save’ button. You can exit
+‘Room’ mode by clicking on any of the darkened areas outside of the selected room. This will bring you back to
+‘Building’ mode.
+
+### Place Server Racks
+
+:::note Action
+
+Add at least a single rack in the room.
+
+:::
+
+Empty rooms are of no use to the stakeholders of a datacenter. They want machines! Let’s place some racks in the room
+to fulfill this demand. Click on the room and add some racks. To stop adding racks, click on the blue element in the
+sidebar, again.
+
+### Fill the Racks with Servers
+
+:::note Action
+
+Add a couple of servers to the rack.
+
+:::
+
+To add actual servers to the empty racks, we’ll need to go one level deeper in the topological hierarchy of the
+datacenter. Clicking on a rack lets you do just that. Once you’ve clicked on it, you’ll notice the context menu now
+displaying slots. In each slot fits exactly one server unit. To add such a server unit, click on the ‘Add machine’
+button of that slot.
+Just like in ‘Room’ mode, you can exit ‘Rack’ mode by clicking on any of the darkened tiles around the currently
+selected rack.
+
+### Add Resources to the Servers
+
+We’re almost done creating our datacenter! The only problem we have is that the machines / servers we just added lack
+any real resources (such as CPUs, GPUs, memory cards, and disk storage).
+
+:::note Action
+
+Populate the machines with CPU and memory resources.
+
+:::
+
+To do this, click on any machine you want to edit. Notice the context menu changing, with tabs to add different kinds of
+units to your machine. Have a look around as to what can be added.
+
+Once you are satisfied with the datacenter design, we will experiment with the design in the next chapter.
