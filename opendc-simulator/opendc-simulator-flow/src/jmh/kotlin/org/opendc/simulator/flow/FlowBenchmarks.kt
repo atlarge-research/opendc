@@ -47,7 +47,7 @@ class FlowBenchmarks {
     @Setup
     fun setUp() {
         val random = ThreadLocalRandom.current()
-        val entries = List(10000) { TraceFlowSource.Fragment(1000, random.nextDouble(0.0, 4500.0)) }
+        val entries = List(1000000) { TraceFlowSource.Fragment(1000, random.nextDouble(0.0, 4500.0)) }
         trace = entries.asSequence()
     }
 

@@ -21,6 +21,7 @@ indent_size = 2
 
 [*.java]
 ij_java_packages_to_use_import_on_demand = unset
+ij_java_class_count_to_use_import_on_demand = 2147483647
 
 # ktlint
 [*.{kt, kts}]
