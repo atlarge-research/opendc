@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,26 +22,32 @@
 
 package org.opendc.simulator.network
 
-import org.opendc.simulator.flow.FlowConnection
-import org.opendc.simulator.flow.FlowConsumer
-import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.FlowSink
-import org.opendc.simulator.flow.FlowSource
+import io.mockk.spyk
+import org.opendc.simulator.flow2.FlowGraph
+import org.opendc.simulator.flow2.FlowStage
+import org.opendc.simulator.flow2.FlowStageLogic
+import org.opendc.simulator.flow2.InPort
+import org.opendc.simulator.flow2.Inlet
+import org.opendc.simulator.flow2.OutPort
+import org.opendc.simulator.flow2.Outlet
 
 /**
- * A network sink which discards all received traffic and does not generate any traffic itself.
+ * A [SimNetworkPort] that acts as a test source.
  */
-public class SimNetworkSink(
-    engine: FlowEngine,
-    public val capacity: Double
-) : SimNetworkPort() {
-    override fun createConsumer(): FlowSource = object : FlowSource {
-        override fun onPull(conn: FlowConnection, now: Long): Long = Long.MAX_VALUE
+class TestSource(graph: FlowGraph) : SimNetworkPort(), FlowStageLogic {
+    val logic = spyk(this)
+    private val stage = graph.newStage(logic)
 
-        override fun toString(): String = "SimNetworkSink.Consumer"
+    val outlet: OutPort = stage.getOutlet("out")
+    val inlet: InPort = stage.getInlet("in")
+
+    init {
+        outlet.push(80.0f)
     }
 
-    override val provider: FlowConsumer = FlowSink(engine, capacity)
+    override fun onUpdate(ctx: FlowStage, now: Long): Long = Long.MAX_VALUE
 
-    override fun toString(): String = "SimNetworkSink[capacity=$capacity]"
+    override fun getOutlet(): Outlet = outlet
+
+    override fun getInlet(): Inlet = inlet
 }

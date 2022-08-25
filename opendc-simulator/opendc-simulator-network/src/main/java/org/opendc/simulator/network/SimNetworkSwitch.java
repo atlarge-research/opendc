@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,30 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.network
+package org.opendc.simulator.network;
+
+import java.util.List;
 
 /**
- * A physical bi-directional communication link between two [SimNetworkPort]s.
- *
- * @param left The first port of the link.
- * @param right The second port of the link.
+ * A network device connects devices on a network by switching the traffic over its ports.
  */
-public class SimNetworkLink(public val left: SimNetworkPort, public val right: SimNetworkPort) {
+public interface SimNetworkSwitch {
     /**
-     * Determine whether the specified [port] participates in this network link.
+     * Return the ports of the switch.
      */
-    public operator fun contains(port: SimNetworkPort): Boolean = port == left || port == right
-
-    /**
-     * Obtain the opposite port to which the specified [port] is connected through this link.
-     */
-    public fun opposite(port: SimNetworkPort): SimNetworkPort {
-        return when (port) {
-            left -> right
-            right -> left
-            else -> throw IllegalArgumentException("Invalid port given")
-        }
-    }
-
-    override fun toString(): String = "SimNetworkLink[left=$left,right=$right]"
+    List<SimNetworkPort> getPorts();
 }
