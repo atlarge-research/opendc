@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,33 +22,27 @@
 
 package org.opendc.simulator.power
 
-import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.FlowSink
+import io.mockk.spyk
+import org.opendc.simulator.flow2.FlowGraph
+import org.opendc.simulator.flow2.FlowStage
+import org.opendc.simulator.flow2.FlowStageLogic
+import org.opendc.simulator.flow2.Outlet
 
 /**
- * A [SimPowerOutlet] that represents a source of electricity.
- *
- * @param engine The underlying [FlowEngine] to drive the simulation under the hood.
+ * A test inlet.
  */
-public class SimPowerSource(engine: FlowEngine, public val capacity: Double) : SimPowerOutlet() {
-    /**
-     * The resource source that drives this power source.
-     */
-    private val source = FlowSink(engine, capacity)
+class TestInlet(graph: FlowGraph) : SimPowerInlet(), FlowStageLogic {
+    val logic = spyk(this)
+    private val stage = graph.newStage(logic)
+    val flowOutlet = stage.getOutlet("out")
 
-    /**
-     * The power draw at this instant.
-     */
-    public val powerDraw: Double
-        get() = source.rate
-
-    override fun onConnect(inlet: SimPowerInlet) {
-        source.startConsumer(inlet.createSource())
+    init {
+        flowOutlet.push(100.0f)
     }
 
-    override fun onDisconnect(inlet: SimPowerInlet) {
-        source.cancel()
-    }
+    override fun onUpdate(ctx: FlowStage, now: Long): Long = Long.MAX_VALUE
 
-    override fun toString(): String = "SimPowerSource"
+    override fun getFlowOutlet(): Outlet {
+        return flowOutlet
+    }
 }

@@ -22,14 +22,11 @@
 
 package org.opendc.simulator.power
 
-import io.mockk.spyk
-import io.mockk.verify
+import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.FlowSource
-import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.flow2.FlowEngine
 import org.opendc.simulator.kotlin.runSimulation
 
 /**
@@ -38,82 +35,93 @@ import org.opendc.simulator.kotlin.runSimulation
 internal class SimPduTest {
     @Test
     fun testZeroOutlets() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
-        val pdu = SimPdu(engine)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
+        val pdu = SimPdu(graph)
         source.connect(pdu)
 
-        assertEquals(0.0, source.powerDraw)
+        yield()
+
+        assertEquals(0.0f, source.powerDraw)
     }
 
     @Test
     fun testSingleOutlet() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
-        val pdu = SimPdu(engine)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
+        val pdu = SimPdu(graph)
         source.connect(pdu)
-        pdu.newOutlet().connect(SimpleInlet())
+        pdu.newOutlet().connect(TestInlet(graph))
 
-        assertEquals(50.0, source.powerDraw)
+        yield()
+
+        assertEquals(100.0f, source.powerDraw)
     }
 
     @Test
     fun testDoubleOutlet() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
-        val pdu = SimPdu(engine)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 200.0f)
+        val pdu = SimPdu(graph)
         source.connect(pdu)
 
-        pdu.newOutlet().connect(SimpleInlet())
-        pdu.newOutlet().connect(SimpleInlet())
+        pdu.newOutlet().connect(TestInlet(graph))
+        pdu.newOutlet().connect(TestInlet(graph))
 
-        assertEquals(100.0, source.powerDraw)
+        yield()
+
+        assertEquals(200.0f, source.powerDraw)
     }
 
     @Test
     fun testDisconnect() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
-        val pdu = SimPdu(engine)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 300.0f)
+        val pdu = SimPdu(graph)
         source.connect(pdu)
-        val consumer = spyk(FixedFlowSource(100.0, utilization = 1.0))
-        val inlet = object : SimPowerInlet() {
-            override fun createSource(): FlowSource = consumer
-        }
 
         val outlet = pdu.newOutlet()
-        outlet.connect(inlet)
+        outlet.connect(TestInlet(graph))
         outlet.disconnect()
 
-        verify { consumer.onStop(any(), any()) }
+        yield()
+
+        assertEquals(0.0f, source.powerDraw)
     }
 
     @Test
     fun testLoss() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 500.0f)
         // https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
-        val pdu = SimPdu(engine, idlePower = 1.5, lossCoefficient = 0.015)
+        val pdu = SimPdu(graph, /*idlePower*/ 1.5f, /*lossCoefficient*/ 0.015f)
         source.connect(pdu)
-        pdu.newOutlet().connect(SimpleInlet())
-        assertEquals(89.0, source.powerDraw, 0.01)
+        pdu.newOutlet().connect(TestInlet(graph))
+
+        yield()
+
+        assertEquals(251.5f, source.powerDraw, 0.01f)
     }
 
     @Test
     fun testOutletClose() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
-        val pdu = SimPdu(engine)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
+        val pdu = SimPdu(graph)
         source.connect(pdu)
         val outlet = pdu.newOutlet()
         outlet.close()
 
-        assertThrows<IllegalStateException> {
-            outlet.connect(SimpleInlet())
-        }
-    }
+        yield()
 
-    class SimpleInlet : SimPowerInlet() {
-        override fun createSource(): FlowSource = FixedFlowSource(100.0, utilization = 0.5)
+        assertThrows<IllegalStateException> {
+            outlet.connect(TestInlet(graph))
+        }
     }
 }

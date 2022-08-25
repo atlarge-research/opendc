@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,34 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.power
+package org.opendc.simulator.power;
 
-import org.opendc.simulator.flow.FlowSource
+import org.opendc.simulator.flow2.Outlet;
 
 /**
  * An abstract inlet that consumes electricity from a power outlet.
  */
 public abstract class SimPowerInlet {
-    /**
-     * A flag to indicate that the inlet is currently connected to an outlet.
-     */
-    public val isConnected: Boolean
-        get() = _outlet != null
+    SimPowerOutlet outlet;
 
     /**
-     * The [SimPowerOutlet] to which the inlet is connected.
+     * Determine whether the inlet is connected to a {@link SimPowerOutlet}.
+     *
+     * @return <code>true</code> if the inlet is connected to an outlet, <code>false</code> otherwise.
      */
-    public val outlet: SimPowerOutlet?
-        get() = _outlet
-    internal var _outlet: SimPowerOutlet? = null
+    public boolean isConnected() {
+        return outlet != null;
+    }
 
     /**
-     * Create a [FlowSource] which represents the consumption of electricity from the power outlet.
+     * Return the {@link SimPowerOutlet} to which the inlet is connected.
      */
-    public abstract fun createSource(): FlowSource
+    public SimPowerOutlet getOutlet() {
+        return outlet;
+    }
+
+    /**
+     * Return the flow {@link Outlet} that models the consumption of a power inlet as flow output.
+     */
+    protected abstract Outlet getFlowOutlet();
 }

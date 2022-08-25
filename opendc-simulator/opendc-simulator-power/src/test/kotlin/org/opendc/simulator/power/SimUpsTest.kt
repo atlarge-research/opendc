@@ -22,14 +22,11 @@
 
 package org.opendc.simulator.power
 
-import io.mockk.spyk
-import io.mockk.verify
+import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.FlowSource
-import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.flow2.FlowEngine
 import org.opendc.simulator.kotlin.runSimulation
 
 /**
@@ -38,64 +35,70 @@ import org.opendc.simulator.kotlin.runSimulation
 internal class SimUpsTest {
     @Test
     fun testSingleInlet() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
-        val ups = SimUps(engine)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 200.0f)
+        val ups = SimUps(graph)
         source.connect(ups.newInlet())
-        ups.connect(SimpleInlet())
+        ups.connect(TestInlet(graph))
 
-        assertEquals(50.0, source.powerDraw)
+        yield()
+
+        assertEquals(100.0f, source.powerDraw)
     }
 
     @Test
     fun testDoubleInlet() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source1 = SimPowerSource(engine, capacity = 100.0)
-        val source2 = SimPowerSource(engine, capacity = 100.0)
-        val ups = SimUps(engine)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source1 = SimPowerSource(graph, /*capacity*/ 200.0f)
+        val source2 = SimPowerSource(graph, /*capacity*/ 200.0f)
+        val ups = SimUps(graph)
         source1.connect(ups.newInlet())
         source2.connect(ups.newInlet())
 
-        ups.connect(SimpleInlet())
+        ups.connect(TestInlet(graph))
+
+        yield()
 
         assertAll(
-            { assertEquals(50.0, source1.powerDraw) },
-            { assertEquals(50.0, source2.powerDraw) }
+            { assertEquals(50.0f, source1.powerDraw) },
+            { assertEquals(50.0f, source2.powerDraw) }
         )
     }
 
     @Test
     fun testLoss() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 500.0f)
         // https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
-        val ups = SimUps(engine, idlePower = 4.0, lossCoefficient = 0.05)
+        val ups = SimUps(graph, /*idlePower*/ 4.0f, /*lossCoefficient*/ 0.05f)
         source.connect(ups.newInlet())
-        ups.connect(SimpleInlet())
+        ups.connect(TestInlet(graph))
 
-        assertEquals(56.5, source.powerDraw)
+        yield()
+
+        assertEquals(108.99f, source.powerDraw, 0.01f)
     }
 
     @Test
     fun testDisconnect() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source1 = SimPowerSource(engine, capacity = 100.0)
-        val source2 = SimPowerSource(engine, capacity = 100.0)
-        val ups = SimUps(engine)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source1 = SimPowerSource(graph, /*capacity*/ 200.0f)
+        val source2 = SimPowerSource(graph, /*capacity*/ 200.0f)
+        val ups = SimUps(graph)
         source1.connect(ups.newInlet())
         source2.connect(ups.newInlet())
-        val consumer = spyk(FixedFlowSource(100.0, utilization = 1.0))
-        val inlet = object : SimPowerInlet() {
-            override fun createSource(): FlowSource = consumer
-        }
+
+        val inlet = TestInlet(graph)
 
         ups.connect(inlet)
         ups.disconnect()
 
-        verify { consumer.onStop(any(), any()) }
-    }
+        yield()
 
-    class SimpleInlet : SimPowerInlet() {
-        override fun createSource(): FlowSource = FixedFlowSource(100.0, utilization = 0.5)
+        assertEquals(0.0f, inlet.flowOutlet.capacity)
     }
 }
