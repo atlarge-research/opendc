@@ -26,6 +26,8 @@ import kotlinx.coroutines.launch
 import org.opendc.simulator.flow2.mux.MaxMinFlowMultiplexer
 import org.opendc.simulator.flow2.sink.SimpleFlowSink
 import org.opendc.simulator.flow2.source.TraceFlowSource
+import org.opendc.simulator.flow2.util.FlowTransformer
+import org.opendc.simulator.flow2.util.FlowTransforms
 import org.opendc.simulator.kotlin.runSimulation
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Fork
@@ -63,6 +65,20 @@ class FlowBenchmarks {
             val sink = SimpleFlowSink(graph, 4200.0f)
             val source = TraceFlowSource(graph, trace)
             graph.connect(source.output, sink.input)
+        }
+    }
+
+    @Benchmark
+    fun benchmarkForward() {
+        return runSimulation {
+            val engine = FlowEngine.create(coroutineContext, clock)
+            val graph = engine.newGraph()
+            val sink = SimpleFlowSink(graph, 4200.0f)
+            val source = TraceFlowSource(graph, trace)
+            val forwarder = FlowTransformer(graph, FlowTransforms.noop())
+
+            graph.connect(source.output, forwarder.input)
+            graph.connect(forwarder.output, sink.input)
         }
     }
 
