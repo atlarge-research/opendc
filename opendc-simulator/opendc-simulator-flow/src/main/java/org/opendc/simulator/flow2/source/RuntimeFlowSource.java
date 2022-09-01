@@ -22,14 +22,13 @@
 
 package org.opendc.simulator.flow2.source;
 
+import java.util.function.Consumer;
 import org.opendc.simulator.flow2.FlowGraph;
 import org.opendc.simulator.flow2.FlowStage;
 import org.opendc.simulator.flow2.FlowStageLogic;
 import org.opendc.simulator.flow2.OutHandler;
 import org.opendc.simulator.flow2.OutPort;
 import org.opendc.simulator.flow2.Outlet;
-
-import java.util.function.Consumer;
 
 /**
  * A {@link FlowSource} that ensures a flow is emitted for a specified amount of time at some utilization.
@@ -53,7 +52,7 @@ public class RuntimeFlowSource implements FlowSource, FlowStageLogic {
      * @param completionHandler A callback invoked when the source completes.
      */
     public RuntimeFlowSource(
-        FlowGraph graph, long duration, float utilization, Consumer<RuntimeFlowSource> completionHandler) {
+            FlowGraph graph, long duration, float utilization, Consumer<RuntimeFlowSource> completionHandler) {
         if (duration <= 0) {
             throw new IllegalArgumentException("Duration must be positive and non-zero");
         }

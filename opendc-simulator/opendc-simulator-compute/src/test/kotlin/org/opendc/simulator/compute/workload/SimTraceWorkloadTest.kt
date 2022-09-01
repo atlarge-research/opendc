@@ -31,10 +31,8 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.power.ConstantPowerModel
-import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.runWorkload
-import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow2.FlowEngine
 import org.opendc.simulator.kotlin.runSimulation
 
 /**
@@ -48,28 +46,28 @@ class SimTraceWorkloadTest {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
         machineModel = MachineModel(
-            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
-            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
+            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
     }
 
     @Test
     fun testSmoke() = runSimulation {
-        val machine = SimBareMetalMachine(
-            FlowEngine(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
-        val workload = SimTraceWorkload(
+        val workload =
             SimTrace.ofFragments(
                 SimTraceFragment(0, 1000, 2 * 28.0, 2),
                 SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
                 SimTraceFragment(2000, 1000, 0.0, 2),
                 SimTraceFragment(3000, 1000, 2 * 73.0, 2)
-            ),
-            offset = 0
-        )
+            ).createWorkload(0)
 
         machine.runWorkload(workload)
 
@@ -78,21 +76,21 @@ class SimTraceWorkloadTest {
 
     @Test
     fun testOffset() = runSimulation {
-        val machine = SimBareMetalMachine(
-            FlowEngine(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
-        val workload = SimTraceWorkload(
+        val workload =
             SimTrace.ofFragments(
                 SimTraceFragment(0, 1000, 2 * 28.0, 2),
                 SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
                 SimTraceFragment(2000, 1000, 0.0, 2),
                 SimTraceFragment(3000, 1000, 2 * 73.0, 2)
-            ),
-            offset = 1000
-        )
+            ).createWorkload(1000)
 
         machine.runWorkload(workload)
 
@@ -101,21 +99,21 @@ class SimTraceWorkloadTest {
 
     @Test
     fun testSkipFragment() = runSimulation {
-        val machine = SimBareMetalMachine(
-            FlowEngine(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
-        val workload = SimTraceWorkload(
+        val workload =
             SimTrace.ofFragments(
                 SimTraceFragment(0, 1000, 2 * 28.0, 2),
                 SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
                 SimTraceFragment(2000, 1000, 0.0, 2),
                 SimTraceFragment(3000, 1000, 2 * 73.0, 2)
-            ),
-            offset = 0
-        )
+            ).createWorkload(0)
 
         delay(1000L)
         machine.runWorkload(workload)
@@ -125,21 +123,21 @@ class SimTraceWorkloadTest {
 
     @Test
     fun testZeroCores() = runSimulation {
-        val machine = SimBareMetalMachine(
-            FlowEngine(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
-        val workload = SimTraceWorkload(
+        val workload =
             SimTrace.ofFragments(
                 SimTraceFragment(0, 1000, 2 * 28.0, 2),
                 SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
                 SimTraceFragment(2000, 1000, 0.0, 0),
                 SimTraceFragment(3000, 1000, 2 * 73.0, 2)
-            ),
-            offset = 0
-        )
+            ).createWorkload(0)
 
         machine.runWorkload(workload)
 

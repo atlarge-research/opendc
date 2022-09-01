@@ -29,7 +29,7 @@ import org.opendc.experiments.tf20.core.SimTFDevice
 import org.opendc.experiments.tf20.distribute.MirroredStrategy
 import org.opendc.experiments.tf20.distribute.OneDeviceStrategy
 import org.opendc.experiments.tf20.util.MLEnvironmentReader
-import org.opendc.simulator.compute.power.LinearPowerModel
+import org.opendc.simulator.compute.power.CpuPowerModels
 import org.opendc.simulator.kotlin.runSimulation
 import java.util.UUID
 
@@ -52,7 +52,7 @@ class TensorFlowTest {
             clock,
             def.model.cpus[0],
             def.model.memory[0],
-            LinearPowerModel(250.0, 60.0)
+            CpuPowerModels.linear(250.0, 60.0)
         )
         val strategy = OneDeviceStrategy(device)
         val batchSize = 32
@@ -87,7 +87,7 @@ class TensorFlowTest {
             clock,
             def.model.cpus[0],
             def.model.memory[0],
-            LinearPowerModel(250.0, 60.0)
+            CpuPowerModels.linear(250.0, 60.0)
         )
         val strategy = OneDeviceStrategy(device)
         val batchSize = 128
@@ -102,8 +102,8 @@ class TensorFlowTest {
 
         val stats = device.getDeviceStats()
         assertAll(
-            { assertEquals(176230322904, clock.millis()) },
-            { assertEquals(4.4057580726E10, stats.energyUsage) }
+            { assertEquals(176230328513, clock.millis()) },
+            { assertEquals(4.405758212825E10, stats.energyUsage) }
         )
     }
 
@@ -122,7 +122,7 @@ class TensorFlowTest {
             clock,
             def.model.cpus[0],
             def.model.memory[0],
-            LinearPowerModel(250.0, 60.0)
+            CpuPowerModels.linear(250.0, 60.0)
         )
 
         val deviceB = SimTFDevice(
@@ -132,7 +132,7 @@ class TensorFlowTest {
             clock,
             def.model.cpus[0],
             def.model.memory[0],
-            LinearPowerModel(250.0, 60.0)
+            CpuPowerModels.linear(250.0, 60.0)
         )
 
         val strategy = MirroredStrategy(listOf(deviceA, deviceB))

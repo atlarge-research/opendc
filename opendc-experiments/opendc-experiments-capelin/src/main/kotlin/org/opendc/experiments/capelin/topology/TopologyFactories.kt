@@ -25,13 +25,13 @@
 package org.opendc.experiments.capelin.topology
 
 import org.opendc.experiments.compute.topology.HostSpec
+import org.opendc.simulator.compute.SimPsuFactories
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.power.LinearPowerModel
-import org.opendc.simulator.compute.power.PowerModel
-import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.power.CpuPowerModel
+import org.opendc.simulator.compute.power.CpuPowerModels
 import java.io.File
 import java.io.InputStream
 import java.util.Random
@@ -48,7 +48,7 @@ private val reader = ClusterSpecReader()
  */
 fun clusterTopology(
     file: File,
-    powerModel: PowerModel = LinearPowerModel(350.0, idlePower = 200.0),
+    powerModel: CpuPowerModel = CpuPowerModels.linear(350.0, 200.0),
     random: Random = Random(0)
 ): List<HostSpec> {
     return clusterTopology(reader.read(file), powerModel, random)
@@ -59,7 +59,7 @@ fun clusterTopology(
  */
 fun clusterTopology(
     input: InputStream,
-    powerModel: PowerModel = LinearPowerModel(350.0, idlePower = 200.0),
+    powerModel: CpuPowerModel = CpuPowerModels.linear(350.0, 200.0),
     random: Random = Random(0)
 ): List<HostSpec> {
     return clusterTopology(reader.read(input), powerModel, random)
@@ -68,14 +68,14 @@ fun clusterTopology(
 /**
  * Construct a topology from the given list of [clusters].
  */
-fun clusterTopology(clusters: List<ClusterSpec>, powerModel: PowerModel, random: Random = Random(0)): List<HostSpec> {
+fun clusterTopology(clusters: List<ClusterSpec>, powerModel: CpuPowerModel, random: Random = Random(0)): List<HostSpec> {
     return clusters.flatMap { it.toHostSpecs(random, powerModel) }
 }
 
 /**
  * Helper method to convert a [ClusterSpec] into a list of [HostSpec]s.
  */
-private fun ClusterSpec.toHostSpecs(random: Random, powerModel: PowerModel): List<HostSpec> {
+private fun ClusterSpec.toHostSpecs(random: Random, powerModel: CpuPowerModel): List<HostSpec> {
     val cpuSpeed = cpuSpeed
     val memoryPerHost = memCapacityPerHost.roundToLong()
 
@@ -92,7 +92,7 @@ private fun ClusterSpec.toHostSpecs(random: Random, powerModel: PowerModel): Lis
             "node-$name-$it",
             mapOf("cluster" to id),
             machineModel,
-            SimplePowerDriver(powerModel)
+            SimPsuFactories.simple(powerModel)
         )
     }
 }

@@ -41,13 +41,12 @@ import org.opendc.experiments.workflow.WorkflowSchedulerSpec
 import org.opendc.experiments.workflow.replay
 import org.opendc.experiments.workflow.setupWorkflowService
 import org.opendc.experiments.workflow.toJobs
+import org.opendc.simulator.compute.SimPsuFactories
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.power.ConstantPowerModel
-import org.opendc.simulator.compute.power.SimplePowerDriver
-import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
+import org.opendc.simulator.flow2.mux.FlowMultiplexerFactory
 import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.trace.Trace
 import org.opendc.workflow.service.scheduler.job.NullJobAdmissionPolicy
@@ -120,7 +119,7 @@ internal class WorkflowServiceTest {
                 },
                 { assertEquals(0, metrics.tasksRunning, "Not all started tasks finished") },
                 { assertEquals(metrics.tasksSubmitted, metrics.tasksFinished, "Not all started tasks finished") },
-                { assertEquals(32649883L, clock.millis()) { "Total duration incorrect" } }
+                { assertEquals(46102707L, clock.millis()) { "Total duration incorrect" } }
             )
         }
     }
@@ -141,7 +140,7 @@ internal class WorkflowServiceTest {
             "host-$uid",
             emptyMap(),
             machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0)),
+            SimPsuFactories.noop(),
             FlowMultiplexerFactory.forwardingMultiplexer()
         )
     }

@@ -43,5 +43,15 @@ public data class ServiceData(
  * Convert a [ServiceTableReader] into a persistent object.
  */
 public fun ServiceTableReader.toServiceData(): ServiceData {
-    return ServiceData(timestamp, hostsUp, hostsDown, serversTotal, serversPending, serversActive, attemptsSuccess, attemptsFailure, attemptsError)
+    return ServiceData(
+        timestamp,
+        hostsUp,
+        hostsDown,
+        serversTotal,
+        serversPending,
+        serversActive,
+        attemptsSuccess,
+        attemptsFailure,
+        attemptsError
+    )
 }

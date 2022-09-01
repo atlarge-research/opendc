@@ -31,16 +31,17 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimMachineContext
+import org.opendc.simulator.compute.SimPsuFactories
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.power.PowerModel
-import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.power.CpuPowerModel
 import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.flow.FlowConnection
-import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.FlowSource
+import org.opendc.simulator.flow2.FlowEngine
+import org.opendc.simulator.flow2.FlowStage
+import org.opendc.simulator.flow2.FlowStageLogic
+import org.opendc.simulator.flow2.OutPort
 import java.time.Clock
 import java.util.ArrayDeque
 import java.util.UUID
@@ -60,7 +61,7 @@ public class SimTFDevice(
     clock: Clock,
     pu: ProcessingUnit,
     private val memory: MemoryUnit,
-    powerModel: PowerModel
+    powerModel: CpuPowerModel
 ) : TFDevice {
     /**
      * The scope in which the device runs.
@@ -70,25 +71,25 @@ public class SimTFDevice(
     /**
      * The [SimMachine] representing the device.
      */
-    private val machine = SimBareMetalMachine(
-        FlowEngine(scope.coroutineContext, clock),
+    private val machine = SimBareMetalMachine.create(
+        FlowEngine.create(context, clock).newGraph(),
         MachineModel(listOf(pu), listOf(memory)),
-        SimplePowerDriver(powerModel)
+        SimPsuFactories.simple(powerModel)
     )
 
     /**
      * The workload that will be run by the device.
      */
-    private val workload = object : SimWorkload, FlowSource {
+    private val workload = object : SimWorkload, FlowStageLogic {
         /**
-         * The resource context to interrupt the workload with.
+         * The [FlowStage] of the workload.
          */
-        var ctx: FlowConnection? = null
+        var stage: FlowStage? = null
 
         /**
-         * The capacity of the device.
+         * The output of the workload.
          */
-        private var capacity: Double = 0.0
+        private var output: OutPort? = null
 
         /**
          * The queue of work to run.
@@ -112,37 +113,35 @@ public class SimTFDevice(
         private var lastPull: Long = 0L
 
         override fun onStart(ctx: SimMachineContext) {
-            for (cpu in ctx.cpus) {
-                cpu.startConsumer(this)
-            }
+            val stage = ctx.graph.newStage(this)
+            this.stage = stage
+            output = stage.getOutlet("out")
+            lastPull = ctx.graph.engine.clock.millis()
+
+            ctx.graph.connect(output, ctx.cpus[0].input)
         }
 
-        override fun onStop(ctx: SimMachineContext) {}
-
-        override fun onStart(conn: FlowConnection, now: Long) {
-            ctx = conn
-            capacity = conn.capacity
-            lastPull = now
-            conn.shouldSourceConverge = false
+        override fun onStop(ctx: SimMachineContext) {
+            stage?.close()
+            stage = null
+            output = null
         }
 
-        override fun onPull(conn: FlowConnection, now: Long): Long {
+        override fun onUpdate(ctx: FlowStage, now: Long): Long {
+            val output = output ?: return Long.MAX_VALUE
             val lastPull = lastPull
             this.lastPull = now
             val delta = (now - lastPull).coerceAtLeast(0)
-
-            val consumedWork = conn.rate * delta / 1000.0
-
-            capacity = conn.capacity
+            val consumedWork = output.rate * delta / 1000.0
 
             val activeWork = activeWork
             if (activeWork != null) {
                 if (activeWork.consume(consumedWork)) {
                     this.activeWork = null
                 } else {
-                    val duration = ceil(activeWork.flops / conn.capacity * 1000).toLong()
-                    conn.push(conn.capacity)
-                    return duration
+                    val duration = ceil(activeWork.flops / output.capacity * 1000).toLong()
+                    output.push(output.capacity)
+                    return now + duration
                 }
             }
 
@@ -150,11 +149,11 @@ public class SimTFDevice(
             val head = queue.poll()
             return if (head != null) {
                 this.activeWork = head
-                val duration = (head.flops / conn.capacity * 1000).roundToLong()
-                conn.push(conn.capacity)
-                duration
+                val duration = (head.flops / output.capacity * 1000).roundToLong()
+                output.push(output.capacity)
+                now + duration
             } else {
-                conn.push(0.0)
+                output.push(0.0f)
                 Long.MAX_VALUE
             }
         }
@@ -174,13 +173,12 @@ public class SimTFDevice(
     override suspend fun compute(flops: Double) = suspendCancellableCoroutine<Unit> { cont ->
         workload.queue.add(Work(flops, cont))
         if (workload.isIdle) {
-            workload.ctx?.pull()
+            workload.stage?.invalidate()
         }
     }
 
     override fun getDeviceStats(): TFDeviceStats {
-        val resourceUsage = machine.cpus.sumOf { it.rate }
-        return TFDeviceStats(resourceUsage, machine.powerUsage, machine.energyUsage)
+        return TFDeviceStats(machine.cpuUsage, machine.psu.powerUsage, machine.psu.energyUsage)
     }
 
     override fun close() {

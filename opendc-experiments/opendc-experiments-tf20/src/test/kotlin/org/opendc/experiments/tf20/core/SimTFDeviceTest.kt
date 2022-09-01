@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.power.LinearPowerModel
+import org.opendc.simulator.compute.power.CpuPowerModels
 import org.opendc.simulator.kotlin.runSimulation
 import java.util.UUID
 
@@ -51,7 +51,7 @@ internal class SimTFDeviceTest {
             clock,
             pu,
             memory,
-            LinearPowerModel(250.0, 100.0)
+            CpuPowerModels.linear(250.0, 100.0)
         )
 
         // Load 1 GiB into GPU memory

@@ -22,11 +22,10 @@
 
 package org.opendc.experiments.compute.topology
 
+import org.opendc.simulator.compute.SimPsuFactories
+import org.opendc.simulator.compute.SimPsuFactory
 import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.compute.power.LinearPowerModel
-import org.opendc.simulator.compute.power.PowerDriver
-import org.opendc.simulator.compute.power.SimplePowerDriver
-import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
+import org.opendc.simulator.flow2.mux.FlowMultiplexerFactory
 import java.util.UUID
 
 /**
@@ -36,7 +35,7 @@ import java.util.UUID
  * @param name The name of the host.
  * @param meta The metadata of the host.
  * @param model The physical model of the machine.
- * @param powerDriver The [PowerDriver] to model the power consumption of the machine.
+ * @param psuFactory The [SimPsuFactory] to construct the PSU that models the power consumption of the machine.
  * @param multiplexerFactory The [FlowMultiplexerFactory] that is used to multiplex the virtual machines over the host.
  */
 public data class HostSpec(
@@ -44,6 +43,6 @@ public data class HostSpec(
     val name: String,
     val meta: Map<String, Any>,
     val model: MachineModel,
-    val powerDriver: PowerDriver = SimplePowerDriver(LinearPowerModel(350.0, idlePower = 200.0)),
+    val psuFactory: SimPsuFactory = SimPsuFactories.noop(),
     val multiplexerFactory: FlowMultiplexerFactory = FlowMultiplexerFactory.maxMinMultiplexer()
 )

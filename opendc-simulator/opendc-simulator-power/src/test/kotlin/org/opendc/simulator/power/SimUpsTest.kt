@@ -79,7 +79,7 @@ internal class SimUpsTest {
 
         yield()
 
-        assertEquals(108.99f, source.powerDraw, 0.01f)
+        assertEquals(109.0f, source.powerDraw, 0.01f)
     }
 
     @Test

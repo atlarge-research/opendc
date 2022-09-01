@@ -22,14 +22,13 @@
 
 package org.opendc.simulator.flow2.source;
 
+import java.util.function.Consumer;
 import org.opendc.simulator.flow2.FlowGraph;
 import org.opendc.simulator.flow2.FlowStage;
 import org.opendc.simulator.flow2.FlowStageLogic;
 import org.opendc.simulator.flow2.OutHandler;
 import org.opendc.simulator.flow2.OutPort;
 import org.opendc.simulator.flow2.Outlet;
-
-import java.util.function.Consumer;
 
 /**
  * A flow source that replays a sequence of fragments, each indicating the flow rate for some period of time.

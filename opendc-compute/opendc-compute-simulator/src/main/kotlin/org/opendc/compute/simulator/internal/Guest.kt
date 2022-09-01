@@ -161,7 +161,7 @@ internal class Guest(
      */
     fun getCpuStats(): GuestCpuStats {
         val counters = machine.counters
-        counters.flush()
+        counters.sync()
 
         return GuestCpuStats(
             counters.cpuActiveTime / 1000L,

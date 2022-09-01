@@ -22,14 +22,13 @@
 
 package org.opendc.simulator.flow2.source;
 
+import java.util.function.Consumer;
 import org.opendc.simulator.flow2.FlowGraph;
 import org.opendc.simulator.flow2.FlowStage;
 import org.opendc.simulator.flow2.FlowStageLogic;
 import org.opendc.simulator.flow2.OutHandler;
 import org.opendc.simulator.flow2.OutPort;
 import org.opendc.simulator.flow2.Outlet;
-
-import java.util.function.Consumer;
 
 /**
  * A flow source that contains a fixed amount and is pushed with a given utilization.
@@ -52,7 +51,7 @@ public final class SimpleFlowSource implements FlowSource, FlowStageLogic {
      * @param completionHandler A callback invoked when the source completes.
      */
     public SimpleFlowSource(
-        FlowGraph graph, float amount, float utilization, Consumer<SimpleFlowSource> completionHandler) {
+            FlowGraph graph, float amount, float utilization, Consumer<SimpleFlowSource> completionHandler) {
         if (amount < 0.0) {
             throw new IllegalArgumentException("Amount must be non-negative");
         }

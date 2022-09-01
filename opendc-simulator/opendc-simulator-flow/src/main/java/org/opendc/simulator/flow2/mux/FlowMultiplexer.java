@@ -31,6 +31,16 @@ import org.opendc.simulator.flow2.Outlet;
  */
 public interface FlowMultiplexer {
     /**
+     * Return maximum number of inputs supported by the multiplexer.
+     */
+    int getMaxInputs();
+
+    /**
+     * Return maximum number of outputs supported by the multiplexer.
+     */
+    int getMaxOutputs();
+
+    /**
      * Return the number of active inputs on this multiplexer.
      */
     int getInputCount();

@@ -32,7 +32,7 @@ class SimFlopsWorkloadTest {
     @Test
     fun testFlopsNonNegative() {
         assertThrows<IllegalArgumentException>("FLOPs must be non-negative") {
-            SimFlopsWorkload(-1)
+            SimFlopsWorkload(-1, 1.0)
         }
     }
 

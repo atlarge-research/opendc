@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.flow2.mux;
 
+import java.util.Arrays;
+import java.util.BitSet;
 import org.opendc.simulator.flow2.FlowGraph;
 import org.opendc.simulator.flow2.FlowStage;
 import org.opendc.simulator.flow2.FlowStageLogic;
@@ -32,9 +34,6 @@ import org.opendc.simulator.flow2.OutHandler;
 import org.opendc.simulator.flow2.OutPort;
 import org.opendc.simulator.flow2.Outlet;
 
-import java.util.Arrays;
-import java.util.BitSet;
-
 /**
  * A {@link FlowMultiplexer} implementation that distributes the available capacity of the outputs over the inputs
  * using max-min fair sharing.
@@ -43,6 +42,11 @@ import java.util.BitSet;
  * output capacity, but allows individual inputs to use more capacity if there is still capacity left.
  */
 public final class MaxMinFlowMultiplexer implements FlowMultiplexer, FlowStageLogic {
+    /**
+     * Factory implementation for this implementation.
+     */
+    static FlowMultiplexerFactory FACTORY = MaxMinFlowMultiplexer::new;
+
     private final FlowStage stage;
     private final BitSet activeInputs;
     private final BitSet activeOutputs;
@@ -88,6 +92,16 @@ public final class MaxMinFlowMultiplexer implements FlowMultiplexer, FlowStageLo
     @Override
     public float getRate() {
         return rate;
+    }
+
+    @Override
+    public int getMaxInputs() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public int getMaxOutputs() {
+        return Integer.MAX_VALUE;
     }
 
     @Override

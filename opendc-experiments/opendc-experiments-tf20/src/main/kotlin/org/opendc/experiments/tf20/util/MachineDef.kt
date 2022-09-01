@@ -23,7 +23,7 @@
 package org.opendc.experiments.tf20.util
 
 import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.compute.power.PowerModel
+import org.opendc.simulator.compute.power.CpuPowerModel
 import java.util.UUID
 
 /**
@@ -34,5 +34,5 @@ public data class MachineDef(
     val name: String,
     val meta: Map<String, Any>,
     val model: MachineModel,
-    val powerModel: PowerModel
+    val powerModel: CpuPowerModel
 )

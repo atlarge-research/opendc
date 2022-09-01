@@ -40,6 +40,11 @@ import org.opendc.simulator.flow2.Outlet;
  * inputs as outputs.
  */
 public final class ForwardingFlowMultiplexer implements FlowMultiplexer, FlowStageLogic {
+    /**
+     * Factory implementation for this implementation.
+     */
+    static FlowMultiplexerFactory FACTORY = ForwardingFlowMultiplexer::new;
+
     public final IdleInHandler IDLE_IN_HANDLER = new IdleInHandler();
     public final IdleOutHandler IDLE_OUT_HANDLER = new IdleOutHandler();
 
@@ -83,6 +88,16 @@ public final class ForwardingFlowMultiplexer implements FlowMultiplexer, FlowSta
             rate += outlets[i].getRate();
         }
         return rate;
+    }
+
+    @Override
+    public int getMaxInputs() {
+        return getOutputCount();
+    }
+
+    @Override
+    public int getMaxOutputs() {
+        return Integer.MAX_VALUE;
     }
 
     @Override

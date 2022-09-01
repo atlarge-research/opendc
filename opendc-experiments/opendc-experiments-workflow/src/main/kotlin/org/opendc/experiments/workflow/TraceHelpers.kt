@@ -74,7 +74,7 @@ public fun Trace.toJobs(): List<Job> {
             val submitTime = reader.getInstant(TASK_SUBMIT_TIME)!!
             val runtime = reader.getDuration(TASK_RUNTIME)!!
             val flops: Long = 4000 * runtime.seconds * grantedCpus
-            val workload = SimFlopsWorkload(flops)
+            val workload = SimFlopsWorkload(flops, 1.0)
             val task = Task(
                 UUID(0L, id),
                 "<unnamed>",

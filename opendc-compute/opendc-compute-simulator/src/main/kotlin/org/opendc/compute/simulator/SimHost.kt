@@ -41,8 +41,10 @@ import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
-import java.time.Clock
+import org.opendc.simulator.flow2.FlowGraph
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
@@ -56,12 +58,17 @@ public class SimHost(
     override val name: String,
     override val meta: Map<String, Any>,
     private val context: CoroutineContext,
-    private val clock: Clock,
+    graph: FlowGraph,
     private val machine: SimBareMetalMachine,
     private val hypervisor: SimHypervisor,
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
     private val optimize: Boolean = false
 ) : Host, AutoCloseable {
+    /**
+     * The clock instance used by the host.
+     */
+    private val clock = graph.engine.clock
+
     /**
      * The event listeners registered with this host.
      */
@@ -201,8 +208,8 @@ public class SimHost(
             Duration.ofMillis(_uptime),
             Duration.ofMillis(_downtime),
             _bootTime,
-            machine.powerUsage,
-            machine.energyUsage,
+            machine.psu.powerUsage,
+            machine.psu.energyUsage,
             terminated,
             running,
             error,
@@ -217,7 +224,7 @@ public class SimHost(
 
     override fun getCpuStats(): HostCpuStats {
         val counters = hypervisor.counters
-        counters.flush()
+        counters.sync()
 
         return HostCpuStats(
             counters.cpuActiveTime / 1000L,
@@ -277,27 +284,30 @@ public class SimHost(
         check(_ctx == null) { "Concurrent hypervisor running" }
 
         // Launch hypervisor onto machine
-        _ctx = machine.startWorkload(object : SimWorkload {
-            override fun onStart(ctx: SimMachineContext) {
-                try {
-                    _bootTime = clock.instant()
-                    _state = HostState.UP
-                    hypervisor.onStart(ctx)
-                } catch (cause: Throwable) {
-                    _state = HostState.ERROR
-                    _ctx = null
-                    throw cause
+        _ctx = machine.startWorkload(
+            object : SimWorkload {
+                override fun onStart(ctx: SimMachineContext) {
+                    try {
+                        _bootTime = clock.instant()
+                        _state = HostState.UP
+                        hypervisor.onStart(ctx)
+                    } catch (cause: Throwable) {
+                        _state = HostState.ERROR
+                        _ctx = null
+                        throw cause
+                    }
                 }
-            }
 
-            override fun onStop(ctx: SimMachineContext) {
-                try {
-                    hypervisor.onStop(ctx)
-                } finally {
-                    _ctx = null
+                override fun onStop(ctx: SimMachineContext) {
+                    try {
+                        hypervisor.onStop(ctx)
+                    } finally {
+                        _ctx = null
+                    }
                 }
-            }
-        })
+            },
+            emptyMap()
+        )
     }
 
     /**
@@ -307,7 +317,7 @@ public class SimHost(
         updateUptime()
 
         // Stop the hypervisor
-        _ctx?.close()
+        _ctx?.shutdown()
         _state = state
     }
 
@@ -316,9 +326,10 @@ public class SimHost(
      */
     private fun Flavor.toMachineModel(): MachineModel {
         val originalCpu = machine.model.cpus[0]
+        val originalNode = originalCpu.node
         val cpuCapacity = (this.meta["cpu-capacity"] as? Double ?: Double.MAX_VALUE).coerceAtMost(originalCpu.frequency)
-        val processingNode = originalCpu.node.copy(coreCount = cpuCount)
-        val processingUnits = (0 until cpuCount).map { originalCpu.copy(id = it, node = processingNode, frequency = cpuCapacity) }
+        val processingNode = ProcessingNode(originalNode.vendor, originalNode.modelName, originalNode.architecture, cpuCount)
+        val processingUnits = (0 until cpuCount).map { ProcessingUnit(processingNode, it, cpuCapacity) }
         val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
 
         val model = MachineModel(processingUnits, memoryUnits)

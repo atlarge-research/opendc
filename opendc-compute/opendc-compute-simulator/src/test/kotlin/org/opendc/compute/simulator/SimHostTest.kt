@@ -43,13 +43,10 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.power.ConstantPowerModel
-import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.compute.workload.SimTraceFragment
-import org.opendc.simulator.compute.workload.SimTraceWorkload
-import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
+import org.opendc.simulator.flow2.FlowEngine
+import org.opendc.simulator.flow2.mux.FlowMultiplexerFactory
 import org.opendc.simulator.kotlin.runSimulation
 import java.time.Instant
 import java.util.SplittableRandom
@@ -67,8 +64,8 @@ internal class SimHostTest {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
         machineModel = MachineModel(
-            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
-            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
+            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
     }
 
@@ -78,15 +75,19 @@ internal class SimHostTest {
     @Test
     fun testOvercommitted() = runSimulation {
         val duration = 5 * 60L
-        val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
+
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1))
+
         val host = SimHost(
             uid = UUID.randomUUID(),
             name = "test",
             meta = emptyMap(),
             coroutineContext,
-            clock,
+            graph,
             machine,
             hypervisor
         )
@@ -95,15 +96,13 @@ internal class SimHostTest {
             "<unnamed>",
             emptyMap(),
             mapOf(
-                "workload" to SimTraceWorkload(
+                "workload" to
                     SimTrace.ofFragments(
                         SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
                         SimTraceFragment(duration * 1000, duration * 1000, 2 * 3500.0, 2),
                         SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
                         SimTraceFragment(duration * 3000, duration * 1000, 2 * 183.0, 2)
-                    ),
-                    offset = 1
-                )
+                    ).createWorkload(1)
             )
         )
         val vmImageB = MockImage(
@@ -111,15 +110,13 @@ internal class SimHostTest {
             "<unnamed>",
             emptyMap(),
             mapOf(
-                "workload" to SimTraceWorkload(
+                "workload" to
                     SimTrace.ofFragments(
                         SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
                         SimTraceFragment(duration * 1000, duration * 1000, 2 * 3100.0, 2),
                         SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
                         SimTraceFragment(duration * 3000, duration * 1000, 2 * 73.0, 2)
-                    ),
-                    offset = 1
-                )
+                    ).createWorkload(1)
             )
         )
 
@@ -129,7 +126,7 @@ internal class SimHostTest {
             launch { host.spawn(MockServer(UUID.randomUUID(), "a", flavor, vmImageA)) }
             launch { host.spawn(MockServer(UUID.randomUUID(), "b", flavor, vmImageB)) }
 
-            suspendCancellableCoroutine<Unit> { cont ->
+            suspendCancellableCoroutine { cont ->
                 host.addListener(object : HostListener {
                     private var finished = 0
 
@@ -162,15 +159,18 @@ internal class SimHostTest {
     @Test
     fun testFailure() = runSimulation {
         val duration = 5 * 60L
-        val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
+
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1))
         val host = SimHost(
             uid = UUID.randomUUID(),
             name = "test",
             meta = emptyMap(),
             coroutineContext,
-            clock,
+            graph,
             machine,
             hypervisor
         )
@@ -179,15 +179,13 @@ internal class SimHostTest {
             "<unnamed>",
             emptyMap(),
             mapOf(
-                "workload" to SimTraceWorkload(
+                "workload" to
                     SimTrace.ofFragments(
                         SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
                         SimTraceFragment(duration * 1000L, duration * 1000, 2 * 3500.0, 2),
                         SimTraceFragment(duration * 2000L, duration * 1000, 0.0, 2),
                         SimTraceFragment(duration * 3000L, duration * 1000, 2 * 183.0, 2)
-                    ),
-                    offset = 1
-                )
+                    ).createWorkload(1)
             )
         )
         val flavor = MockFlavor(2, 0)
@@ -220,7 +218,7 @@ internal class SimHostTest {
         val guestSysStats = host.getSystemStats(server)
 
         assertAll(
-            { assertEquals(1775, cpuStats.idleTime, "Idle time does not match") },
+            { assertEquals(1175, cpuStats.idleTime, "Idle time does not match") },
             { assertEquals(624, cpuStats.activeTime, "Active time does not match") },
             { assertEquals(900001, sysStats.uptime.toMillis(), "Uptime does not match") },
             { assertEquals(300000, sysStats.downtime.toMillis(), "Downtime does not match") },
