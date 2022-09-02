@@ -34,23 +34,20 @@ public class MutableFlowCounters : FlowCounters {
         get() = _counters[1]
     override val remaining: Double
         get() = _counters[2]
-    override val interference: Double
-        get() = _counters[3]
-    private val _counters = DoubleArray(4)
+    private val _counters = DoubleArray(3)
 
     override fun reset() {
         _counters.fill(0.0)
     }
 
-    public fun increment(demand: Double, actual: Double, remaining: Double, interference: Double) {
+    public fun increment(demand: Double, actual: Double, remaining: Double) {
         val counters = _counters
         counters[0] += demand
         counters[1] += actual
         counters[2] += remaining
-        counters[3] += interference
     }
 
     override fun toString(): String {
-        return "FlowCounters[demand=$demand,actual=$actual,remaining=$remaining,interference=$interference]"
+        return "FlowCounters[demand=$demand,actual=$actual,remaining=$remaining]"
     }
 }

@@ -258,6 +258,6 @@ public class FlowForwarder(
         val work = _demand * deltaS
         val actualWork = ctx.rate * deltaS
 
-        counters.increment(work, actualWork, (total - actualWork), 0.0)
+        counters.increment(work, actualWork, (total - actualWork))
     }
 }

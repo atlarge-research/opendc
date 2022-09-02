@@ -47,7 +47,6 @@ import org.opendc.simulator.flow.FlowEngine
 /**
  * Test suite for the [SimHypervisor] class.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class SimFairShareHypervisorTest {
     private lateinit var model: MachineModel
 

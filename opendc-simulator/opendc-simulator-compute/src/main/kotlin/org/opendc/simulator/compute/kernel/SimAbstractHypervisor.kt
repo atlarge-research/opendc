@@ -30,7 +30,7 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow.*
-import org.opendc.simulator.flow.interference.InterferenceKey
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceKey
 import org.opendc.simulator.flow.mux.FlowMultiplexer
 import kotlin.math.roundToLong
 
@@ -144,6 +144,10 @@ public abstract class SimAbstractHypervisor(
 
         if (delta > 0) {
             _counters.record()
+
+            for (vm in _vms) {
+                vm._counters.record()
+            }
         }
 
         val load = cpuDemand / cpuCapacity
@@ -171,19 +175,19 @@ public abstract class SimAbstractHypervisor(
         /**
          * The interference key of this virtual machine.
          */
-        private val interferenceKey: InterferenceKey? = interferenceId?.let { interferenceDomain?.createKey(it) }
+        private val interferenceKey: VmInterferenceKey? = interferenceId?.let { interferenceDomain?.createKey(it) }
 
         /**
          * The vCPUs of the machine.
          */
-        override val cpus = model.cpus.map { cpu -> VCpu(mux, mux.newInput(cpu.frequency, interferenceKey), cpu) }
+        override val cpus = model.cpus.map { cpu -> VCpu(mux, mux.newInput(cpu.frequency), cpu) }
 
         /**
          * The resource counters associated with the hypervisor.
          */
         override val counters: SimHypervisorCounters
             get() = _counters
-        private val _counters = VmCountersImpl(cpus)
+        @JvmField val _counters = VmCountersImpl(cpus, interferenceDomain, interferenceKey)
 
         /**
          * The CPU capacity of the hypervisor in MHz.
@@ -317,8 +321,8 @@ public abstract class SimAbstractHypervisor(
         override val cpuLostTime: Long
             get() = _cpuTime[3]
 
-        private val _cpuTime = LongArray(4)
-        private val _previous = DoubleArray(4)
+        val _cpuTime = LongArray(4)
+        private val _previous = DoubleArray(3)
 
         /**
          * Record the CPU time of the hypervisor.
@@ -331,22 +335,18 @@ public abstract class SimAbstractHypervisor(
             val demand = counters.demand
             val actual = counters.actual
             val remaining = counters.remaining
-            val interference = counters.interference
 
             val demandDelta = demand - previous[0]
             val actualDelta = actual - previous[1]
             val remainingDelta = remaining - previous[2]
-            val interferenceDelta = interference - previous[3]
 
             previous[0] = demand
             previous[1] = actual
             previous[2] = remaining
-            previous[3] = interference
 
             cpuTime[0] += (actualDelta * d).roundToLong()
             cpuTime[1] += (remainingDelta * d).roundToLong()
             cpuTime[2] += ((demandDelta - actualDelta) * d).roundToLong()
-            cpuTime[3] += (interferenceDelta * d).roundToLong()
         }
 
         override fun flush() {
@@ -358,17 +358,71 @@ public abstract class SimAbstractHypervisor(
     /**
      * A [SimHypervisorCounters] implementation for a virtual machine.
      */
-    private class VmCountersImpl(private val cpus: List<VCpu>) : SimHypervisorCounters {
+    private inner class VmCountersImpl(
+        private val cpus: List<VCpu>,
+        private val interferenceDomain: VmInterferenceDomain?,
+        private val key: VmInterferenceKey?
+    ) : SimHypervisorCounters {
         private val d = cpus.size / cpus.sumOf { it.model.frequency } * 1000
 
         override val cpuActiveTime: Long
-            get() = (cpus.sumOf { it.counters.actual } * d).roundToLong()
+            get() = _cpuTime[0]
         override val cpuIdleTime: Long
-            get() = (cpus.sumOf { it.counters.remaining } * d).roundToLong()
+            get() = _cpuTime[1]
         override val cpuStealTime: Long
-            get() = (cpus.sumOf { it.counters.demand - it.counters.actual } * d).roundToLong()
+            get() = _cpuTime[2]
         override val cpuLostTime: Long
-            get() = (cpus.sumOf { it.counters.interference } * d).roundToLong()
+            get() = _cpuTime[3]
+
+        private val _cpuTime = LongArray(4)
+        private val _previous = DoubleArray(3)
+
+        /**
+         * Record the CPU time of the hypervisor.
+         */
+        fun record() {
+            val cpuTime = _cpuTime
+            val previous = _previous
+
+            var demand = 0.0
+            var actual = 0.0
+            var remaining = 0.0
+
+            for (cpu in cpus) {
+                val counters = cpu.counters
+
+                actual += counters.actual
+                demand += counters.demand
+                remaining += counters.remaining
+            }
+
+            val demandDelta = demand - previous[0]
+            val actualDelta = actual - previous[1]
+            val remainingDelta = remaining - previous[2]
+
+            previous[0] = demand
+            previous[1] = actual
+            previous[2] = remaining
+
+            val d = d
+            cpuTime[0] += (actualDelta * d).roundToLong()
+            cpuTime[1] += (remainingDelta * d).roundToLong()
+            cpuTime[2] += ((demandDelta - actualDelta) * d).roundToLong()
+
+            // Compute the performance penalty due to flow interference
+            val interferenceDomain = interferenceDomain
+            if (interferenceDomain != null) {
+                val mux = mux
+                val load = mux.rate / mux.capacity.coerceAtLeast(1.0)
+                val penalty = 1 - interferenceDomain.apply(key, load)
+                val interference = (actualDelta * d * penalty).roundToLong()
+
+                if (interference > 0) {
+                    cpuTime[3] += interference
+                    _counters._cpuTime[3] += interference
+                }
+            }
+        }
 
         override fun flush() {
             for (cpu in cpus) {

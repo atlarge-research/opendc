@@ -209,7 +209,7 @@ class CapelinIntegrationTest {
             { assertEquals(6028050, this@CapelinIntegrationTest.monitor.idleTime) { "Idle time incorrect" } },
             { assertEquals(14712749, this@CapelinIntegrationTest.monitor.activeTime) { "Active time incorrect" } },
             { assertEquals(12532907, this@CapelinIntegrationTest.monitor.stealTime) { "Steal time incorrect" } },
-            { assertEquals(467963, this@CapelinIntegrationTest.monitor.lostTime) { "Lost time incorrect" } }
+            { assertEquals(477068, this@CapelinIntegrationTest.monitor.lostTime) { "Lost time incorrect" } }
         )
     }
 

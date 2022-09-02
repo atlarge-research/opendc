@@ -20,9 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.flow.interference
+package org.opendc.simulator.compute.kernel.interference
 
 /**
  * A key that uniquely identifies a participant of an interference domain.
  */
-public interface InterferenceKey
+public interface VmInterferenceKey

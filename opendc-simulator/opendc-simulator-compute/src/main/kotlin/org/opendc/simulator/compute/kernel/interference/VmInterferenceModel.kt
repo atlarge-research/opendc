@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.compute.kernel.interference
 
-import org.opendc.simulator.flow.interference.InterferenceKey
 import java.util.*
 
 /**
@@ -215,12 +214,12 @@ public class VmInterferenceModel private constructor(
          */
         private val activeKeys = ArrayList<InterferenceKeyImpl>()
 
-        override fun createKey(id: String): InterferenceKey? {
+        override fun createKey(id: String): VmInterferenceKey? {
             val intId = idMapping[id] ?: return null
             return keys.computeIfAbsent(intId) { InterferenceKeyImpl(intId) }
         }
 
-        override fun removeKey(key: InterferenceKey) {
+        override fun removeKey(key: VmInterferenceKey) {
             if (key !is InterferenceKeyImpl) {
                 return
             }
@@ -232,7 +231,7 @@ public class VmInterferenceModel private constructor(
             keys.remove(key.id)
         }
 
-        override fun join(key: InterferenceKey) {
+        override fun join(key: VmInterferenceKey) {
             if (key !is InterferenceKeyImpl) {
                 return
             }
@@ -246,14 +245,14 @@ public class VmInterferenceModel private constructor(
             }
         }
 
-        override fun leave(key: InterferenceKey) {
+        override fun leave(key: VmInterferenceKey) {
             if (key is InterferenceKeyImpl && key.release()) {
                 activeKeys.remove(key)
                 computeActiveGroups(key.id)
             }
         }
 
-        override fun apply(key: InterferenceKey?, load: Double): Double {
+        override fun apply(key: VmInterferenceKey?, load: Double): Double {
             if (key == null || key !is InterferenceKeyImpl) {
                 return 1.0
             }
@@ -367,7 +366,7 @@ public class VmInterferenceModel private constructor(
      *
      * @param id The identifier of the member.
      */
-    private class InterferenceKeyImpl(@JvmField val id: Int) : InterferenceKey, Comparable<InterferenceKeyImpl> {
+    private class InterferenceKeyImpl(@JvmField val id: Int) : VmInterferenceKey, Comparable<InterferenceKeyImpl> {
         /**
          * The active groups to which the key belongs.
          */

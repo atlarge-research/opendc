@@ -50,7 +50,7 @@ public class SimFairShareHypervisor(
     /**
      * The multiplexer that distributes the computing capacity.
      */
-    override val mux: FlowMultiplexer = MaxMinFlowMultiplexer(engine, this, interferenceDomain)
+    override val mux: FlowMultiplexer = MaxMinFlowMultiplexer(engine, this)
 
     override fun canFit(model: MachineModel): Boolean = true
 }

@@ -25,7 +25,6 @@ package org.opendc.simulator.flow.mux
 import org.opendc.simulator.flow.FlowConsumer
 import org.opendc.simulator.flow.FlowCounters
 import org.opendc.simulator.flow.FlowSource
-import org.opendc.simulator.flow.interference.InterferenceKey
 
 /**
  * A [FlowMultiplexer] enables multiplexing multiple [FlowSource]s over possibly multiple [FlowConsumer]s.
@@ -63,18 +62,15 @@ public interface FlowMultiplexer {
 
     /**
      * Create a new input on this multiplexer with a coupled capacity.
-     *
-     * @param key The key of the interference member to which the input belongs.
      */
-    public fun newInput(key: InterferenceKey? = null): FlowConsumer
+    public fun newInput(): FlowConsumer
 
     /**
      * Create a new input on this multiplexer with the specified [capacity].
      *
      * @param capacity The capacity of the input.
-     * @param key The key of the interference member to which the input belongs.
      */
-    public fun newInput(capacity: Double, key: InterferenceKey? = null): FlowConsumer
+    public fun newInput(capacity: Double): FlowConsumer
 
     /**
      * Remove [input] from this multiplexer.
