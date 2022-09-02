@@ -101,7 +101,7 @@ public abstract class SimAbstractMachine(
          */
         private var isClosed = false
 
-        override val engine: FlowEngine = this@SimAbstractMachine.engine
+        val engine: FlowEngine = this@SimAbstractMachine.engine
 
         /**
          * Start this context.
