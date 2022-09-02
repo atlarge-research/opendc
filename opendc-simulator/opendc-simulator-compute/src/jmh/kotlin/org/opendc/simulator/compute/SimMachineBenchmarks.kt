@@ -45,7 +45,6 @@ import java.util.concurrent.TimeUnit
 @Fork(1)
 @Warmup(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
-@OptIn(ExperimentalCoroutinesApi::class)
 class SimMachineBenchmarks {
     private lateinit var machineModel: MachineModel
     private lateinit var trace: SimTrace
@@ -87,7 +86,7 @@ class SimMachineBenchmarks {
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimSpaceSharedHypervisor(engine, null, null)
+            val hypervisor = SimSpaceSharedHypervisor(engine, null)
 
             launch { machine.runWorkload(hypervisor) }
 
@@ -109,7 +108,7 @@ class SimMachineBenchmarks {
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimFairShareHypervisor(engine, null, null, null)
+            val hypervisor = SimFairShareHypervisor(engine, null, null)
 
             launch { machine.runWorkload(hypervisor) }
 
@@ -131,7 +130,7 @@ class SimMachineBenchmarks {
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimFairShareHypervisor(engine, null, null, null)
+            val hypervisor = SimFairShareHypervisor(engine, null, null)
 
             launch { machine.runWorkload(hypervisor) }
 

@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
-import org.opendc.simulator.flow.FlowConvergenceListener
 import org.opendc.simulator.flow.FlowEngine
 
 /**
@@ -35,8 +34,7 @@ public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
 
     override fun create(
         engine: FlowEngine,
-        listener: FlowConvergenceListener?,
         scalingGovernor: ScalingGovernor?,
         interferenceDomain: VmInterferenceDomain?,
-    ): SimHypervisor = SimSpaceSharedHypervisor(engine, listener, scalingGovernor)
+    ): SimHypervisor = SimSpaceSharedHypervisor(engine, scalingGovernor)
 }

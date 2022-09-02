@@ -77,7 +77,7 @@ internal class SimFairShareHypervisorTest {
 
         val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(platform, null, PerformanceScalingGovernor(), null)
+        val hypervisor = SimFairShareHypervisor(platform, PerformanceScalingGovernor(), null)
 
         launch {
             machine.runWorkload(hypervisor)
@@ -128,7 +128,7 @@ internal class SimFairShareHypervisorTest {
         val machine = SimBareMetalMachine(
             platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimFairShareHypervisor(platform, null, null, null)
+        val hypervisor = SimFairShareHypervisor(platform, null, null)
 
         launch {
             machine.runWorkload(hypervisor)
@@ -167,7 +167,7 @@ internal class SimFairShareHypervisorTest {
 
         val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(platform, null, null, null)
+        val hypervisor = SimFairShareHypervisor(platform, null, null)
 
         assertDoesNotThrow {
             launch {
@@ -196,7 +196,7 @@ internal class SimFairShareHypervisorTest {
         val machine = SimBareMetalMachine(
             platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimFairShareHypervisor(platform, null, null, interferenceModel.newDomain())
+        val hypervisor = SimFairShareHypervisor(platform, null, interferenceModel.newDomain())
 
         val duration = 5 * 60L
         val workloadA =

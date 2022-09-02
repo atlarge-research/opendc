@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.flow.FlowConvergenceListener
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexer
 import org.opendc.simulator.flow.mux.ForwardingFlowMultiplexer
@@ -34,9 +33,8 @@ import org.opendc.simulator.flow.mux.ForwardingFlowMultiplexer
  */
 public class SimSpaceSharedHypervisor(
     engine: FlowEngine,
-    listener: FlowConvergenceListener?,
     scalingGovernor: ScalingGovernor?,
-) : SimAbstractHypervisor(engine, listener, scalingGovernor) {
+) : SimAbstractHypervisor(engine, scalingGovernor) {
     override val mux: FlowMultiplexer = ForwardingFlowMultiplexer(engine, this)
 
     override fun canFit(model: MachineModel): Boolean {

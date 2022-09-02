@@ -27,7 +27,6 @@ import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.flow.FlowConvergenceListener
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexer
 import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
@@ -43,10 +42,9 @@ import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
  */
 public class SimFairShareHypervisor(
     engine: FlowEngine,
-    listener: FlowConvergenceListener?,
     scalingGovernor: ScalingGovernor?,
     interferenceDomain: VmInterferenceDomain?,
-) : SimAbstractHypervisor(engine, listener, scalingGovernor, interferenceDomain) {
+) : SimAbstractHypervisor(engine, scalingGovernor, interferenceDomain) {
     /**
      * The multiplexer that distributes the computing capacity.
      */

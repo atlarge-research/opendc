@@ -26,11 +26,11 @@ import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingPolicy
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceKey
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow.*
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceKey
 import org.opendc.simulator.flow.mux.FlowMultiplexer
 import kotlin.math.roundToLong
 
@@ -42,7 +42,6 @@ import kotlin.math.roundToLong
  */
 public abstract class SimAbstractHypervisor(
     protected val engine: FlowEngine,
-    private val listener: FlowConvergenceListener?,
     private val scalingGovernor: ScalingGovernor?,
     protected val interferenceDomain: VmInterferenceDomain? = null
 ) : SimHypervisor, FlowConvergenceListener {
@@ -154,8 +153,6 @@ public abstract class SimAbstractHypervisor(
         for (governor in governors) {
             governor.onLimit(load)
         }
-
-        listener?.onConverge(now)
     }
 
     /**
@@ -166,7 +163,7 @@ public abstract class SimAbstractHypervisor(
     private inner class VirtualMachine(
         model: MachineModel,
         interferenceId: String? = null
-    ) : SimAbstractMachine(engine, parent = null, model), SimVirtualMachine, AutoCloseable {
+    ) : SimAbstractMachine(engine, model), SimVirtualMachine, AutoCloseable {
         /**
          * A flag to indicate that the machine is closed.
          */
