@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.compute
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.opendc.simulator.compute.kernel.SimFairShareHypervisor
@@ -63,7 +62,7 @@ class SimMachineBenchmarks {
         repeat(10000) {
             val timestamp = it.toLong()
             val deadline = timestamp + 1000
-            builder.add(timestamp, deadline, random.nextDouble(0.0, 4500.0), 1)
+            builder.add(deadline, random.nextDouble(0.0, 4500.0), 1)
         }
         trace = builder.build()
     }

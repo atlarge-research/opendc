@@ -223,6 +223,11 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         private val builder = SimTrace.builder()
 
         /**
+         * The deadline of the previous fragment.
+         */
+        private var previousDeadline = Long.MIN_VALUE
+
+        /**
          * Add a fragment to the trace.
          *
          * @param timestamp Timestamp at which the fragment starts (in epoch millis).
@@ -233,7 +238,14 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         fun add(timestamp: Long, deadline: Long, usage: Double, cores: Int) {
             val duration = max(0, deadline - timestamp)
             totalLoad += (usage * duration) / 1000.0 // avg MHz * duration = MFLOPs
-            builder.add(timestamp, deadline, usage, cores)
+
+            if (timestamp != previousDeadline) {
+                // There is a gap between the previous and current fragment; fill the gap
+                builder.add(timestamp, 0.0, cores)
+            }
+
+            builder.add(deadline, usage, cores)
+            previousDeadline = deadline
         }
 
         /**
