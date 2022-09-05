@@ -93,9 +93,9 @@ public abstract class SimAbstractHypervisor(
     private val governors = mutableListOf<ScalingGovernor.Logic>()
 
     /* SimHypervisor */
-    override fun newMachine(model: MachineModel, interferenceId: String?): SimVirtualMachine {
+    override fun newMachine(model: MachineModel, interferenceKey: VmInterferenceKey?): SimVirtualMachine {
         require(canFit(model)) { "Machine does not fit" }
-        val vm = VirtualMachine(model, interferenceId)
+        val vm = VirtualMachine(model, interferenceKey)
         _vms.add(vm)
         return vm
     }
@@ -159,20 +159,16 @@ public abstract class SimAbstractHypervisor(
      * A virtual machine running on the hypervisor.
      *
      * @param model The machine model of the virtual machine.
+     * @param interferenceKey The interference key of this virtual machine.
      */
     private inner class VirtualMachine(
         model: MachineModel,
-        interferenceId: String? = null
+        private val interferenceKey: VmInterferenceKey? = null
     ) : SimAbstractMachine(engine, model), SimVirtualMachine, AutoCloseable {
         /**
          * A flag to indicate that the machine is closed.
          */
         private var isClosed = false
-
-        /**
-         * The interference key of this virtual machine.
-         */
-        private val interferenceKey: VmInterferenceKey? = interferenceId?.let { interferenceDomain?.createKey(it) }
 
         /**
          * The vCPUs of the machine.

@@ -65,7 +65,7 @@ public class SimHost(
     scalingGovernor: ScalingGovernor = PerformanceScalingGovernor(),
     powerDriver: PowerDriver = SimplePowerDriver(ConstantPowerModel(0.0)),
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
-    interferenceDomain: VmInterferenceDomain? = null,
+    private val interferenceDomain: VmInterferenceDomain? = null,
     private val optimize: Boolean = false
 ) : Host, AutoCloseable {
     /**
@@ -144,7 +144,8 @@ public class SimHost(
         val guest = guests.computeIfAbsent(server) { key ->
             require(canFit(key)) { "Server does not fit" }
 
-            val machine = hypervisor.newMachine(key.flavor.toMachineModel(), key.name)
+            val interferenceKey = interferenceDomain?.createKey(key.name)
+            val machine = hypervisor.newMachine(key.flavor.toMachineModel(), interferenceKey)
             val newGuest = Guest(
                 scope.coroutineContext,
                 clock,

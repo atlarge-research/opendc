@@ -191,12 +191,13 @@ internal class SimFairShareHypervisorTest {
             .addGroup(targetLoad = 0.0, score = 0.6, members = setOf("a", "c"))
             .addGroup(targetLoad = 0.1, score = 0.8, members = setOf("a", "n"))
             .build()
+        val interferenceDomain = interferenceModel.newDomain()
 
         val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
             platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimFairShareHypervisor(platform, null, interferenceModel.newDomain())
+        val hypervisor = SimFairShareHypervisor(platform, null, interferenceDomain)
 
         val duration = 5 * 60L
         val workloadA =
@@ -224,11 +225,11 @@ internal class SimFairShareHypervisorTest {
 
         coroutineScope {
             launch {
-                val vm = hypervisor.newMachine(model, "a")
+                val vm = hypervisor.newMachine(model, interferenceDomain.createKey("a"))
                 vm.runWorkload(workloadA)
                 hypervisor.removeMachine(vm)
             }
-            val vm = hypervisor.newMachine(model, "b")
+            val vm = hypervisor.newMachine(model, interferenceDomain.createKey("b"))
             vm.runWorkload(workloadB)
             hypervisor.removeMachine(vm)
         }
