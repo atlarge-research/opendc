@@ -23,7 +23,6 @@
 package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.flow.FlowEngine
 
 /**
@@ -41,9 +40,5 @@ public interface SimHypervisorProvider {
     /**
      * Create a new [SimHypervisor] instance.
      */
-    public fun create(
-        engine: FlowEngine,
-        scalingGovernor: ScalingGovernor? = null,
-        interferenceDomain: VmInterferenceDomain? = null,
-    ): SimHypervisor
+    public fun create(engine: FlowEngine, scalingGovernor: ScalingGovernor? = null): SimHypervisor
 }

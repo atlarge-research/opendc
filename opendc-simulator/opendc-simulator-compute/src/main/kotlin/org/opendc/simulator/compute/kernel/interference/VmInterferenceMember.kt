@@ -23,6 +23,25 @@
 package org.opendc.simulator.compute.kernel.interference
 
 /**
- * A key that uniquely identifies a participant of an interference domain.
+ * A participant of an interference domain.
  */
-public interface VmInterferenceKey
+public interface VmInterferenceMember {
+    /**
+     * Mark this member as active in this interference domain.
+     */
+    public fun activate()
+
+    /**
+     * Mark this member as inactive in this interference domain.
+     */
+    public fun deactivate()
+
+    /**
+     * Compute the performance score of the member in this interference domain.
+     *
+     * @param load The overall load on the interference domain.
+     * @return A score representing the performance score to be applied to the member, with 1
+     * meaning no influence, <1 means that performance degrades, and >1 means that performance improves.
+     */
+    public fun apply(load: Double): Double
+}

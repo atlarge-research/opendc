@@ -92,7 +92,7 @@ public class SimHost(
      * The hypervisor to run multiple workloads.
      */
     private val hypervisor: SimHypervisor = hypervisorProvider
-        .create(engine, scalingGovernor = scalingGovernor, interferenceDomain = interferenceDomain)
+        .create(engine, scalingGovernor = scalingGovernor)
 
     /**
      * The virtual machines running on the hypervisor.
@@ -144,7 +144,7 @@ public class SimHost(
         val guest = guests.computeIfAbsent(server) { key ->
             require(canFit(key)) { "Server does not fit" }
 
-            val interferenceKey = interferenceDomain?.createKey(key.name)
+            val interferenceKey = interferenceDomain?.getMember(key.name)
             val machine = hypervisor.newMachine(key.flavor.toMachineModel(), interferenceKey)
             val newGuest = Guest(
                 scope.coroutineContext,

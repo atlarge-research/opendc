@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow.FlowEngine
@@ -36,15 +35,12 @@ import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
  * concurrently using weighted fair sharing.
  *
  * @param engine The [FlowEngine] to manage the machine's resources.
- * @param listener The listener for the convergence of the system.
  * @param scalingGovernor The CPU frequency scaling governor to use for the hypervisor.
- * @param interferenceDomain The resource interference domain to which the hypervisor belongs.
  */
 public class SimFairShareHypervisor(
     engine: FlowEngine,
-    scalingGovernor: ScalingGovernor?,
-    interferenceDomain: VmInterferenceDomain?,
-) : SimAbstractHypervisor(engine, scalingGovernor, interferenceDomain) {
+    scalingGovernor: ScalingGovernor?
+) : SimAbstractHypervisor(engine, scalingGovernor) {
     /**
      * The multiplexer that distributes the computing capacity.
      */

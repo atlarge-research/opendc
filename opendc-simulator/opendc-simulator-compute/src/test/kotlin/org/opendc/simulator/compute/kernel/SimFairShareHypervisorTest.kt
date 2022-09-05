@@ -77,7 +77,7 @@ internal class SimFairShareHypervisorTest {
 
         val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(platform, PerformanceScalingGovernor(), null)
+        val hypervisor = SimFairShareHypervisor(platform, PerformanceScalingGovernor())
 
         launch {
             machine.runWorkload(hypervisor)
@@ -128,7 +128,7 @@ internal class SimFairShareHypervisorTest {
         val machine = SimBareMetalMachine(
             platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimFairShareHypervisor(platform, null, null)
+        val hypervisor = SimFairShareHypervisor(platform, null)
 
         launch {
             machine.runWorkload(hypervisor)
@@ -167,7 +167,7 @@ internal class SimFairShareHypervisorTest {
 
         val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(platform, null, null)
+        val hypervisor = SimFairShareHypervisor(platform, null)
 
         assertDoesNotThrow {
             launch {
@@ -197,7 +197,7 @@ internal class SimFairShareHypervisorTest {
         val machine = SimBareMetalMachine(
             platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimFairShareHypervisor(platform, null, interferenceDomain)
+        val hypervisor = SimFairShareHypervisor(platform, null)
 
         val duration = 5 * 60L
         val workloadA =
@@ -225,11 +225,11 @@ internal class SimFairShareHypervisorTest {
 
         coroutineScope {
             launch {
-                val vm = hypervisor.newMachine(model, interferenceDomain.createKey("a"))
+                val vm = hypervisor.newMachine(model, interferenceDomain.getMember("a"))
                 vm.runWorkload(workloadA)
                 hypervisor.removeMachine(vm)
             }
-            val vm = hypervisor.newMachine(model, interferenceDomain.createKey("b"))
+            val vm = hypervisor.newMachine(model, interferenceDomain.getMember("b"))
             vm.runWorkload(workloadB)
             hypervisor.removeMachine(vm)
         }

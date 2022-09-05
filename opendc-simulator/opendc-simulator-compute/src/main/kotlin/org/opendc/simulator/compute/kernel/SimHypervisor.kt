@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceKey
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceMember
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
 
@@ -68,7 +68,7 @@ public interface SimHypervisor : SimWorkload {
      * @param model The machine to create.
      * @param interferenceKey The key of the machine in the interference model.
      */
-    public fun newMachine(model: MachineModel, interferenceKey: VmInterferenceKey? = null): SimVirtualMachine
+    public fun newMachine(model: MachineModel, interferenceKey: VmInterferenceMember? = null): SimVirtualMachine
 
     /**
      * Remove the specified [machine] from the hypervisor.
