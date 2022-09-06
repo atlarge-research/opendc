@@ -221,7 +221,7 @@ public class VmInterferenceModel private constructor(
 
         override fun getMember(id: String): VmInterferenceMember? {
             val intId = idMapping[id] ?: return null
-            return keys.computeIfAbsent(intId) { InterferenceMemberImpl(it, this, members, targets, scores, random) }
+            return keys.computeIfAbsent(intId) { InterferenceMemberImpl(it, this, membership[it], members, targets, scores, random) }
         }
 
         override fun toString(): String = "VmInterferenceDomain"
@@ -233,24 +233,24 @@ public class VmInterferenceModel private constructor(
                 activeKeys.add(-pos - 1, key)
             }
 
-            computeActiveGroups(activeKeys, key.id)
+            computeActiveGroups(activeKeys, key)
         }
 
         fun leave(key: InterferenceMemberImpl) {
             val activeKeys = activeKeys
             activeKeys.remove(key)
-            computeActiveGroups(activeKeys, key.id)
+            computeActiveGroups(activeKeys, key)
         }
 
         /**
          * (Re-)compute the active groups.
          */
-        private fun computeActiveGroups(activeKeys: ArrayList<InterferenceMemberImpl>, id: Int) {
+        private fun computeActiveGroups(activeKeys: ArrayList<InterferenceMemberImpl>, key: InterferenceMemberImpl) {
             if (activeKeys.isEmpty()) {
                 return
             }
 
-            val groups = membership[id]
+            val groups = key.membership
             val members = members
             val participants = participants
 
@@ -272,8 +272,11 @@ public class VmInterferenceModel private constructor(
                     } else if (l > r) {
                         j++
                     } else {
-                        participants.add(rightEntry)
-                        intersection++
+                        if (++intersection > 1) {
+                            rightEntry.addGroup(group)
+                        } else {
+                            participants.add(rightEntry)
+                        }
 
                         i++
                         j++
@@ -282,14 +285,11 @@ public class VmInterferenceModel private constructor(
 
                 while (true) {
                     val participant = participants.poll() ?: break
-                    val participantGroups = participant.groups
+
                     if (intersection <= 1) {
-                        participantGroups.remove(group)
+                        participant.removeGroup(group)
                     } else {
-                        val pos = participantGroups.binarySearch(group)
-                        if (pos < 0) {
-                            participantGroups.add(-pos - 1, group)
-                        }
+                        participant.addGroup(group)
                     }
                 }
             }
@@ -304,6 +304,7 @@ public class VmInterferenceModel private constructor(
     private class InterferenceMemberImpl(
         @JvmField val id: Int,
         private val domain: InterferenceDomainImpl,
+        @JvmField val membership: IntArray,
         private val members: Array<IntArray>,
         private val targets: DoubleArray,
         private val scores: DoubleArray,
@@ -312,7 +313,8 @@ public class VmInterferenceModel private constructor(
         /**
          * The active groups to which the key belongs.
          */
-        @JvmField val groups: MutableList<Int> = ArrayList()
+        private var groups: IntArray = IntArray(2)
+        private var groupsSize: Int = 0
 
         /**
          * The number of users of the interference key.
@@ -332,18 +334,17 @@ public class VmInterferenceModel private constructor(
         }
 
         override fun apply(load: Double): Double {
-            val groups = groups
-            val groupSize = groups.size
+            val groupsSize = groupsSize
 
-            if (groupSize == 0) {
+            if (groupsSize == 0) {
                 return 1.0
             }
 
+            val groups = groups
             val targets = targets
-            val scores = scores
-            var low = 0
-            var high = groups.size - 1
 
+            var low = 0
+            var high = groupsSize - 1
             var group = -1
 
             // Perform binary search over the groups based on target load
@@ -368,6 +369,47 @@ public class VmInterferenceModel private constructor(
             } else {
                 1.0
             }
+        }
+
+        /**
+         * Add an active group to this member.
+         */
+        fun addGroup(group: Int) {
+            var groups = groups
+            val groupsSize = groupsSize
+            val pos = groups.binarySearch(group, toIndex = groupsSize)
+
+            if (pos >= 0) {
+                return
+            }
+
+            val idx = -pos - 1
+
+            if (groups.size == groupsSize) {
+                val newSize = groupsSize + (groupsSize shr 1)
+                groups = groups.copyOf(newSize)
+                this.groups = groups
+            }
+
+            groups.copyInto(groups, idx + 1, idx, groupsSize)
+            groups[idx] = group
+            this.groupsSize += 1
+        }
+
+        /**
+         * Remove an active group from this member.
+         */
+        fun removeGroup(group: Int) {
+            val groups = groups
+            val groupsSize = groupsSize
+            val pos = groups.binarySearch(group, toIndex = groupsSize)
+
+            if (pos < 0) {
+                return
+            }
+
+            groups.copyInto(groups, pos, pos + 1, groupsSize)
+            this.groupsSize -= 1
         }
 
         override fun compareTo(other: InterferenceMemberImpl): Int = id.compareTo(other.id)
