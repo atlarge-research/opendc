@@ -1,5 +1,7 @@
 // @ts-check
-// Note: type annotations allow type checking and IDEs autocompletion
+
+const organizationName = "atlarge-research";
+const projectName = "opendc";
 
 const lightCodeTheme = require("prism-react-renderer/themes/github");
 const darkCodeTheme = require("prism-react-renderer/themes/dracula");
@@ -8,13 +10,13 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 const config = {
     title: "OpenDC",
     tagline: "Collaborative Datacenter Simulation and Exploration for Everybody",
-    url: "https://opendc.org",
-    baseUrl: "/",
+    url: process.env.DOCUSAURUS_URL || `https://${organizationName}.github.io`,
+    baseUrl: process.env.DOCUSAURUS_BASE_PATH || `/${projectName}/`,
     onBrokenLinks: "throw",
     onBrokenMarkdownLinks: "warn",
     favicon: "img/favicon.ico",
-    organizationName: "atlarge-research",
-    projectName: "opendc",
+    organizationName,
+    projectName,
 
     i18n: {
         defaultLocale: "en",
@@ -28,7 +30,7 @@ const config = {
             ({
                 docs: {
                     sidebarPath: require.resolve("./sidebars.js"),
-                    editUrl: "https://github.com/atlarge-research/opendc/tree/master/site/"
+                    editUrl: `https://github.com/${organizationName}/${projectName}/tree/master/site/`
                 },
                 theme: {
                     customCss: require.resolve("./src/css/custom.css")
@@ -45,7 +47,7 @@ const config = {
                 id: "community",
                 path: "community",
                 routeBasePath: "community",
-                editUrl: "https://github.com/atlarge-research/opendc/tree/master/site/",
+                editUrl: `https://github.com/${organizationName}/${projectName}/tree/master/site/`,
                 sidebarPath: require.resolve("./sidebars.js")
             })
         ]
@@ -58,7 +60,7 @@ const config = {
                 title: "OpenDC",
                 logo: {
                     alt: "OpenDC logo",
-                    src: "img/logo.svg"
+                    src: "/img/logo.svg"
                 },
                 items: [
                     {
@@ -81,7 +83,7 @@ const config = {
                         "aria-label": "OpenDC web application",
                     },
                     {
-                        href: "https://github.com/atlarge-research/opendc",
+                        href: `https://github.com/${organizationName}/${projectName}`,
                         position: "right",
                         className: "header-github-link",
                         "aria-label": "GitHub repository",
@@ -121,7 +123,7 @@ const config = {
                             },
                             {
                                 label: "GitHub Discussions",
-                                href: "https://github.com/atlarge-research/opendc/discussions"
+                                href: `https://github.com/${organizationName}/${projectName}/discussions`
                             }
                         ]
                     },
@@ -130,7 +132,7 @@ const config = {
                         items: [
                             {
                                 label: "GitHub",
-                                href: "https://github.com/atlarge-research/opendc"
+                                href: `https://github.com/${organizationName}/${projectName}`
                             }
                         ]
                     }
