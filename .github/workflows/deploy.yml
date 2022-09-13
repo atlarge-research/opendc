@@ -1,12 +1,11 @@
-name: Deploy to opendc.org
+name: Deploy app.opendc.org
 
 on:
   push:
-    branches:
-      - prod
+    branches: ["prod"]
 
 jobs:
-  deploy:
+  deploy-app:
     runs-on: ubuntu-latest
     steps:
       - name: Create SSH key

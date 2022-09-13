@@ -2,9 +2,9 @@ name: Build
 
 on:
   pull_request:
-    branches: [master]
+    branches: [ master ]
   push:
-    branches: [master]
+    branches: [ master ]
 
 jobs:
   build:
@@ -12,8 +12,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        java: [11, 17, 18]
+        os: [ ubuntu-latest ]
+        java: [ 11, 17, 18 ]
         include:
           - os: windows-latest
             java: 18
@@ -57,21 +57,50 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
   build-docker:
-      name: Build Docker Images
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v3
-        - name: Build UI
-          uses: docker/build-push-action@v3
-          with:
-            context: opendc-web/opendc-web-ui
-            file: opendc-web/opendc-web-ui/Dockerfile
-        - name: Build Web Server
-          uses: docker/build-push-action@v3
-          with:
-            file: opendc-web/opendc-web-server/Dockerfile
-        - name: Build Runner
-          uses: docker/build-push-action@v3
-          with:
-            file: opendc-web/opendc-web-runner/Dockerfile
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Build UI
+        uses: docker/build-push-action@v3
+        with:
+          context: opendc-web/opendc-web-ui
+          file: opendc-web/opendc-web-ui/Dockerfile
+      - name: Build Web Server
+        uses: docker/build-push-action@v3
+        with:
+          file: opendc-web/opendc-web-server/Dockerfile
+      - name: Build Runner
+        uses: docker/build-push-action@v3
+        with:
+          file: opendc-web/opendc-web-runner/Dockerfile
+  build-docs:
+    defaults:
+      run:
+        working-directory: site
+    name: Build Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: 'npm'
+          cache-dependency-path: site/package-lock.json
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v1
+      - name: Install dependencies
+        run: npm ci
+      - name: Build with Docusaurus
+        run: npm run build
+        env:
+          DOCUSAURUS_URL: ${{ steps.pages.outputs.origin }}
+          DOCUSAURUS_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./site/build

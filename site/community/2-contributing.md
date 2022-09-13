@@ -1,3 +1,9 @@
+---
+title: Contributing
+hide_title: true
+sidebar_label: Contributing
+---
+
 # Contributing to OpenDC
 
 First of all, thank you for wanting to contribute to OpenDC!
@@ -28,4 +34,3 @@ about.
 
 A quick note on commit messages: Please follow common Git standards when writing commit messages,
 see [this post](https://cbea.ms/git-commit/) for details.
-

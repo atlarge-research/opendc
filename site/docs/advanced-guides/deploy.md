@@ -1,3 +1,7 @@
+---
+sidebar_position: 3
+---
+
 # Deploying OpenDC
 This document explains how you can deploy a multi-tenant instance of OpenDC using Docker.
 
@@ -9,7 +13,7 @@ This document explains how you can deploy a multi-tenant instance of OpenDC usin
 
 ## Setting up Auth0
 
-OpenDC uses [Auth0](https://auth0.com) as Identity Provider so that OpenDC does not have to manage user data itself, 
+OpenDC uses [Auth0](https://auth0.com) as Identity Provider so that OpenDC does not have to manage user data itself,
 which greatly simplifies our frontend and backend implementation. We have chosen to use Auth0 as it is a well-known
 Identity Provider with good software support and a free tier for users to experiment with.
 
@@ -61,7 +65,7 @@ OPENDC_API_BASE_URL=http://web
 ```
 
 We provide a set of default traces for you to experiment with. If you want to add others, place them in the `traces`
-directory and add entries to the database (see also [the SQL init script](../opendc-web/opendc-web-server/src/main/resources/db/migration/V1.0.0__core.sql))
+directory and add entries to the database (see also [the SQL init script](https://github.com/atlarge-research/opendc/tree/master/opendc-web/opendc-web-server/src/main/resources/db/migration/V1.0.0__core.sql))
 
 If you plan to deploy publicly, please also tweak the other settings. In that case, also check the `docker-compose.yml`
 and `docker-compose.prod.yml` for further instructions.
