@@ -40,7 +40,6 @@ import {
 import { AppPage } from '../../../../components/AppPage'
 import ContextSelectionSection from '../../../../components/context/ContextSelectionSection'
 import PortfolioSelector from '../../../../components/context/PortfolioSelector'
-import ProjectSelector from '../../../../components/context/ProjectSelector'
 import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
 import PortfolioOverview from '../../../../components/portfolios/PortfolioOverview'
 import { usePortfolio } from '../../../../data/project'
@@ -81,7 +80,6 @@ function Portfolio() {
 
     const contextSelectors = (
         <ContextSelectionSection>
-            <ProjectSelector activeProject={project} />
             <PortfolioSelector activePortfolio={portfolio} />
         </ContextSelectionSection>
     )

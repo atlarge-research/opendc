@@ -20,24 +20,44 @@
  * SOFTWARE.
  */
 
-import { PageHeader } from '@patternfly/react-core'
 import React from 'react'
+import {
+    Masthead,
+    MastheadMain,
+    MastheadBrand,
+    MastheadContent,
+    Toolbar,
+    ToolbarContent,
+    ToolbarItem,
+} from '@patternfly/react-core'
+import Link from "next/link";
 import AppHeaderTools from './AppHeaderTools'
-import { AppNavigation } from './AppNavigation'
-import AppLogo from './AppLogo'
+import AppHeaderUser from './AppHeaderUser'
+import ProjectSelector from './context/ProjectSelector'
+
+import styles from './AppHeader.module.scss'
 
 export function AppHeader() {
-    // eslint-disable-next-line @next/next/no-img-element
-    const logo = <img src="/img/logo.png" width={30} height={30} alt="OpenDC" />
-
     return (
-        <PageHeader
-            logo={logo}
-            logoProps={{ href: '/' }}
-            logoComponent={AppLogo}
-            headerTools={<AppHeaderTools />}
-            topNav={<AppNavigation />}
-        />
+        <Masthead id="app-header">
+            <MastheadMain>
+                <MastheadBrand className={styles.logo} component={props => <Link href="/projects"><a {...props} /></Link>}>
+                    <img src="/img/logo.svg" alt="OpenDC logo" width={30} height={30} />
+                    <span>OpenDC</span>
+                </MastheadBrand>
+            </MastheadMain>
+            <MastheadContent>
+                <Toolbar id="toolbar" isFullHeight isStatic>
+                    <ToolbarContent>
+                        <ToolbarItem>
+                            <ProjectSelector />
+                        </ToolbarItem>
+                        <AppHeaderTools />
+                        <AppHeaderUser />
+                    </ToolbarContent>
+                </Toolbar>
+            </MastheadContent>
+        </Masthead>
     )
 }
 

@@ -23,9 +23,9 @@
 import PropTypes from 'prop-types'
 import { ContextSelector as PFContextSelector, ContextSelectorItem } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
-import { contextSelector } from './ContextSelector.module.scss'
+import styles from './ContextSelector.module.scss'
 
-function ContextSelector({ activeItem, items, onSelect, onToggle, isOpen, label }) {
+function ContextSelector({ activeItem, items, onSelect, onToggle, isOpen, label, isFullHeight, type = 'page' }) {
     const [searchValue, setSearchValue] = useState('')
     const filteredItems = useMemo(
         () => items.filter(({ name }) => name.toLowerCase().indexOf(searchValue.toLowerCase()) !== -1) || items,
@@ -34,7 +34,7 @@ function ContextSelector({ activeItem, items, onSelect, onToggle, isOpen, label 
 
     return (
         <PFContextSelector
-            className={contextSelector}
+            className={type === 'page' && styles.pageSelector}
             toggleText={activeItem ? `${label}: ${activeItem.name}` : label}
             onSearchInputChange={(value) => setSearchValue(value)}
             searchInputValue={searchValue}
@@ -47,6 +47,7 @@ function ContextSelector({ activeItem, items, onSelect, onToggle, isOpen, label 
                 onSelect(target)
                 onToggle(!isOpen)
             }}
+            isFullHeight={isFullHeight}
         >
             {filteredItems.map((item) => (
                 <ContextSelectorItem key={item.id} value={item.id}>
@@ -69,6 +70,8 @@ ContextSelector.propTypes = {
     onToggle: PropTypes.func.isRequired,
     isOpen: PropTypes.bool,
     label: PropTypes.string,
+    isFullHeight: PropTypes.bool,
+    type: PropTypes.oneOf(['app', 'page']),
 }
 
 export default ContextSelector

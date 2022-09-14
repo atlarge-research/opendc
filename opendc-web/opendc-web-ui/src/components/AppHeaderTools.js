@@ -21,29 +21,19 @@
  */
 
 import {
-    Avatar,
     Button,
     ButtonVariant,
     Dropdown,
-    DropdownGroup,
     DropdownItem,
-    DropdownToggle,
     KebabToggle,
-    PageHeaderTools,
-    PageHeaderToolsGroup,
-    PageHeaderToolsItem,
-    Skeleton,
+    ToolbarGroup,
+    ToolbarItem,
 } from '@patternfly/react-core'
-import { useState } from 'react'
-import { useAuth } from '../auth'
+import { useReducer } from 'react'
 import { GithubIcon, HelpIcon } from '@patternfly/react-icons'
 
 function AppHeaderTools() {
-    const { logout, user, isAuthenticated, isLoading } = useAuth()
-    const username = isAuthenticated || isLoading ? user?.name : 'Anonymous'
-    const avatar = isAuthenticated || isLoading ? user?.picture : '/img/avatar.svg'
-
-    const [isKebabDropdownOpen, setKebabDropdownOpen] = useState(false)
+    const [isKebabDropdownOpen, toggleKebabDropdown] = useReducer((t) => !t, false)
     const kebabDropdownItems = [
         <DropdownItem
             key={0}
@@ -55,23 +45,14 @@ function AppHeaderTools() {
         />,
     ]
 
-    const [isDropdownOpen, setDropdownOpen] = useState(false)
-    const userDropdownItems = [
-        <DropdownGroup key="group 2">
-            <DropdownItem
-                key="group 2 logout"
-                isDisabled={!isAuthenticated}
-                onClick={() => logout({ returnTo: window.location.origin })}
-            >
-                Logout
-            </DropdownItem>
-        </DropdownGroup>,
-    ]
-
     return (
-        <PageHeaderTools>
-            <PageHeaderToolsGroup visibility={{ default: 'hidden', lg: 'visible' }}>
-                <PageHeaderToolsItem>
+        <ToolbarGroup
+            variant="icon-button-group"
+            alignment={{ default: 'alignRight' }}
+            spacer={{ default: 'spacerNone', md: 'spacerMd' }}
+        >
+            <ToolbarGroup variant="icon-button-group" visibility={{ default: 'hidden', lg: 'visible' }}>
+                <ToolbarItem>
                     <Button
                         component="a"
                         href="https://github.com/atlarge-research/opendc"
@@ -81,8 +62,8 @@ function AppHeaderTools() {
                     >
                         <GithubIcon />
                     </Button>
-                </PageHeaderToolsItem>
-                <PageHeaderToolsItem>
+                </ToolbarItem>
+                <ToolbarItem>
                     <Button
                         component="a"
                         href="https://opendc.org/"
@@ -92,45 +73,18 @@ function AppHeaderTools() {
                     >
                         <HelpIcon />
                     </Button>
-                </PageHeaderToolsItem>
-            </PageHeaderToolsGroup>
-            <PageHeaderToolsGroup>
-                <PageHeaderToolsItem visibility={{ lg: 'hidden' }}>
-                    <Dropdown
-                        isPlain
-                        position="right"
-                        toggle={<KebabToggle onToggle={() => setKebabDropdownOpen(!isKebabDropdownOpen)} />}
-                        isOpen={isKebabDropdownOpen}
-                        dropdownItems={kebabDropdownItems}
-                    />
-                </PageHeaderToolsItem>
-                <PageHeaderToolsItem visibility={{ default: 'hidden', md: 'visible' }}>
-                    <Dropdown
-                        isPlain
-                        position="right"
-                        isOpen={isDropdownOpen}
-                        toggle={
-                            <DropdownToggle onToggle={() => setDropdownOpen(!isDropdownOpen)}>
-                                {username ?? (
-                                    <Skeleton
-                                        fontSize="xs"
-                                        width="150px"
-                                        className="pf-u-display-inline-flex"
-                                        screenreaderText="Loading username"
-                                    />
-                                )}
-                            </DropdownToggle>
-                        }
-                        dropdownItems={userDropdownItems}
-                    />
-                </PageHeaderToolsItem>
-            </PageHeaderToolsGroup>
-            {avatar ? (
-                <Avatar src={avatar} alt="Avatar image" />
-            ) : (
-                <Skeleton className="pf-c-avatar" shape="circle" width="2.25rem" screenreaderText="Loading avatar" />
-            )}
-        </PageHeaderTools>
+                </ToolbarItem>
+            </ToolbarGroup>
+            <ToolbarItem visibility={{ lg: 'hidden' }}>
+                <Dropdown
+                    isPlain
+                    position="right"
+                    toggle={<KebabToggle onToggle={toggleKebabDropdown} />}
+                    isOpen={isKebabDropdownOpen}
+                    dropdownItems={kebabDropdownItems}
+                />
+            </ToolbarItem>
+        </ToolbarGroup>
     )
 }
 

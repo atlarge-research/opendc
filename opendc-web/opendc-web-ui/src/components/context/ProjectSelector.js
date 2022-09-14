@@ -22,14 +22,16 @@
 
 import { useRouter } from 'next/router'
 import { useState } from 'react'
-import { useProjects } from '../../data/project'
+import { useProjects, useProject } from '../../data/project'
 import { Project } from '../../shapes'
 import ContextSelector from './ContextSelector'
 
-function ProjectSelector({ activeProject }) {
+function ProjectSelector() {
     const router = useRouter()
+    const projectId = +router.query['project']
 
     const [isOpen, setOpen] = useState(false)
+    const { data: activeProject } = useProject(+projectId)
     const { data: projects = [] } = useProjects({ enabled: isOpen })
 
     return (
@@ -40,6 +42,8 @@ function ProjectSelector({ activeProject }) {
             onSelect={(project) => router.push(`/projects/${project.id}`)}
             onToggle={setOpen}
             isOpen={isOpen}
+            isFullHeight
+            type="app"
         />
     )
 }
