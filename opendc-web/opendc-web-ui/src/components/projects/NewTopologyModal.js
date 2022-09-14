@@ -57,9 +57,10 @@ const NewTopologyModal = ({ projectId, isOpen, onSubmit: onSubmitUpstream, onCan
             setErrors({ name: true })
             return false
         } else {
-            const candidate = topologies.find((topology) => topology.id === originTopology) || { projectId, rooms: [] }
+            const candidate = topologies.find((topology) => topology.id === originTopology) || { rooms: [] }
             const topology = produce(candidate, (draft) => {
-                delete draft.id
+                delete draft.project
+                draft.projectId = projectId
                 draft.name = name
             })
             onSubmitUpstream(topology)
@@ -87,7 +88,12 @@ const NewTopologyModal = ({ projectId, isOpen, onSubmit: onSubmitUpstream, onCan
                     <TextInput id="name" name="name" type="text" isRequired ref={nameInput} />
                 </FormGroup>
                 <FormGroup label="Topology to duplicate" fieldId="origin" isRequired>
-                    <FormSelect id="origin" name="origin" value={originTopology} onChange={setOriginTopology}>
+                    <FormSelect
+                        id="origin"
+                        name="origin"
+                        value={originTopology}
+                        onChange={(v) => setOriginTopology(+v)}
+                    >
                         <FormSelectOption value={-1} key={-1} label="None - start from scratch" />
                         {topologies.map((topology) => (
                             <FormSelectOption value={topology.id} key={topology.id} label={topology.name} />
