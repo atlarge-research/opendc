@@ -27,15 +27,12 @@
         no-repeat;
 }
 
-.header-app-link {
-    color: var(--ifm-button-color);
-}
-
 .header-app-link.navbar__item {
+    color: var(--ifm-button-color);
     margin-top: 2px;
 }
 
-.header-app-link:hover {
+.header-app-link.navbar__item:hover {
     color: var(--ifm-button-color);
 }
 
