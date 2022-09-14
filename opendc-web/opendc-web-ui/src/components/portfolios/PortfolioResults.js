@@ -20,10 +20,10 @@
  * SOFTWARE.
  */
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { Bar, CartesianGrid, ComposedChart, ErrorBar, ResponsiveContainer, Scatter, XAxis, YAxis } from 'recharts'
-import { AVAILABLE_METRICS, METRIC_NAMES, METRIC_UNITS } from '../../util/available-metrics'
+import { METRIC_NAMES, METRIC_UNITS } from '../../util/available-metrics'
 import { mean, std } from 'mathjs'
 import approx from 'approximate-number'
 import {
@@ -46,10 +46,9 @@ import { usePortfolio } from '../../data/project'
 import PortfolioResultInfo from './PortfolioResultInfo'
 import NewScenario from './NewScenario'
 
-const PortfolioResults = ({ projectId, portfolioId }) => {
-    const { status, data: scenarios = [] } = usePortfolio(projectId, portfolioId, {
-        select: (portfolio) => portfolio.scenarios,
-    })
+function PortfolioResults({ projectId, portfolioId }) {
+    const { status, data: portfolio } = usePortfolio(projectId, portfolioId)
+    const scenarios = portfolio?.scenarios ?? []
 
     if (status === 'loading') {
         return (
@@ -94,21 +93,24 @@ const PortfolioResults = ({ projectId, portfolioId }) => {
         )
     }
 
-    const dataPerMetric = {}
-
-    AVAILABLE_METRICS.forEach((metric) => {
-        dataPerMetric[metric] = scenarios
-            .filter((scenario) => scenario.job?.results)
-            .map((scenario) => ({
-                name: scenario.name,
-                value: mean(scenario.job.results[metric]),
-                errorX: std(scenario.job.results[metric]),
-            }))
-    })
+    const metrics = portfolio?.targets?.metrics ?? []
+    const dataPerMetric = useMemo(() => {
+        const dataPerMetric = {}
+        metrics.forEach((metric) => {
+            dataPerMetric[metric] = scenarios
+                .filter((scenario) => scenario.job?.results)
+                .map((scenario) => ({
+                    name: scenario.name,
+                    value: mean(scenario.job.results[metric]),
+                    errorX: std(scenario.job.results[metric]),
+                }))
+        })
+        return dataPerMetric
+    }, [scenarios, metrics])
 
     return (
         <Grid hasGutter>
-            {AVAILABLE_METRICS.map((metric) => (
+            {metrics.map((metric) => (
                 <GridItem xl={6} lg={12} key={metric}>
                     <Card>
                         <CardHeader>

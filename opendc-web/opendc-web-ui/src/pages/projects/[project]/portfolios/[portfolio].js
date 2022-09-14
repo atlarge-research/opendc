@@ -45,7 +45,7 @@ import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
 import PortfolioOverview from '../../../../components/portfolios/PortfolioOverview'
 import { usePortfolio } from '../../../../data/project'
 
-const PortfolioResults = dynamic(() => import('../../../../components/portfolios/PortfolioResults'))
+const PortfolioResults = dynamic(() => import('../../../../components/portfolios/PortfolioResults'), { ssr: false })
 
 /**
  * Page that displays the results in a portfolio.
