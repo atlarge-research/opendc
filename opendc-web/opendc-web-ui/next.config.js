@@ -29,9 +29,6 @@ const withConfig = withGlobalCss()
 module.exports = (phase) => withConfig({
     basePath: process.env.NEXT_BASE_PATH && '/' + process.env.NEXT_BASE_PATH,
     reactStrictMode: true,
-    experimental: {
-        eslint: true
-    },
     distDir: phase === PHASE_DEVELOPMENT_SERVER ? 'build/next-dev' : 'build/next',
     async redirects() {
         return [

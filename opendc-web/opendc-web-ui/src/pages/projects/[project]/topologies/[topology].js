@@ -48,7 +48,7 @@ import { useTopology } from '../../../../data/topology'
 import { goToRoom } from '../../../../redux/actions/interaction-level'
 import { openTopology } from '../../../../redux/actions/topology'
 
-const TopologyMap = dynamic(() => import('../../../../components/topologies/TopologyMap'))
+const TopologyMap = dynamic(() => import('../../../../components/topologies/TopologyMap'), { ssr: false })
 
 /**
  * Page that displays a datacenter topology.
