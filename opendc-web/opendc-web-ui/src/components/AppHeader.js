@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+import Image from 'next/image'
+import PropTypes from 'prop-types'
 import React from 'react'
 import {
     Masthead,
@@ -30,19 +32,26 @@ import {
     ToolbarContent,
     ToolbarItem,
 } from '@patternfly/react-core'
-import Link from "next/link";
+import Link from 'next/link'
 import AppHeaderTools from './AppHeaderTools'
 import AppHeaderUser from './AppHeaderUser'
 import ProjectSelector from './context/ProjectSelector'
 
 import styles from './AppHeader.module.scss'
 
-export function AppHeader() {
+export default function AppHeader({ nav }) {
     return (
-        <Masthead id="app-header">
+        <Masthead id="app-header" className={styles.header}>
             <MastheadMain>
-                <MastheadBrand className={styles.logo} component={props => <Link href="/projects"><a {...props} /></Link>}>
-                    <img src="/img/logo.svg" alt="OpenDC logo" width={30} height={30} />
+                <MastheadBrand
+                    className={styles.logo}
+                    component={(props) => (
+                        <Link href="/projects">
+                            <a {...props} />
+                        </Link>
+                    )}
+                >
+                    <Image src="/img/logo.svg" alt="OpenDC logo" width={25} height={25} />
                     <span>OpenDC</span>
                 </MastheadBrand>
             </MastheadMain>
@@ -52,6 +61,7 @@ export function AppHeader() {
                         <ToolbarItem>
                             <ProjectSelector />
                         </ToolbarItem>
+                        {nav && <ToolbarItem>{nav}</ToolbarItem>}
                         <AppHeaderTools />
                         <AppHeaderUser />
                     </ToolbarContent>
@@ -61,4 +71,6 @@ export function AppHeader() {
     )
 }
 
-AppHeader.propTypes = {}
+AppHeader.propTypes = {
+    nav: PropTypes.node,
+}

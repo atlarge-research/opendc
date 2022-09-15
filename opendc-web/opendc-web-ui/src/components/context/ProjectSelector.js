@@ -36,14 +36,14 @@ function ProjectSelector() {
 
     return (
         <ContextSelector
-            label="Project"
-            activeItem={activeProject}
+            id="project"
+            type="app"
+            toggleText={activeProject ? activeProject.name : 'Select project'}
             items={projects}
             onSelect={(project) => router.push(`/projects/${project.id}`)}
             onToggle={setOpen}
             isOpen={isOpen}
             isFullHeight
-            type="app"
         />
     )
 }

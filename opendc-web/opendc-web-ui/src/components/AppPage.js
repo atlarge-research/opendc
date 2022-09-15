@@ -21,7 +21,7 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
+import AppHeader from './AppHeader'
 import React from 'react'
 import { Page, PageGroup, PageBreadcrumb } from '@patternfly/react-core'
 

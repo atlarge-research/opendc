@@ -51,9 +51,9 @@ export default function AppHeaderUser() {
     ]
 
     const avatarComponent = avatar ? (
-        <Avatar src={avatar} alt="Avatar image" />
+        <Avatar src={avatar} alt="Avatar image" size="sm" />
     ) : (
-        <Skeleton className="pf-c-avatar" shape="circle" width="2.25rem" screenreaderText="Loading avatar" />
+        <Skeleton className="pf-c-avatar" shape="circle" width="24px" screenreaderText="Loading avatar" />
     )
 
     return (

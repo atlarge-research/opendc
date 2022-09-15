@@ -23,9 +23,10 @@
 import PropTypes from 'prop-types'
 import { ContextSelector as PFContextSelector, ContextSelectorItem } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
+
 import styles from './ContextSelector.module.scss'
 
-function ContextSelector({ activeItem, items, onSelect, onToggle, isOpen, label, isFullHeight, type = 'page' }) {
+function ContextSelector({ id, type = 'page', toggleText, items, onSelect, onToggle, isOpen, isFullHeight }) {
     const [searchValue, setSearchValue] = useState('')
     const filteredItems = useMemo(
         () => items.filter(({ name }) => name.toLowerCase().indexOf(searchValue.toLowerCase()) !== -1) || items,
@@ -34,11 +35,11 @@ function ContextSelector({ activeItem, items, onSelect, onToggle, isOpen, label,
 
     return (
         <PFContextSelector
+            id={id}
             className={type === 'page' && styles.pageSelector}
-            toggleText={activeItem ? `${label}: ${activeItem.name}` : label}
+            toggleText={toggleText}
             onSearchInputChange={(value) => setSearchValue(value)}
             searchInputValue={searchValue}
-            isOpen={isOpen}
             onToggle={(_, isOpen) => onToggle(isOpen)}
             onSelect={(event) => {
                 const targetId = +event.target.value
@@ -47,6 +48,7 @@ function ContextSelector({ activeItem, items, onSelect, onToggle, isOpen, label,
                 onSelect(target)
                 onToggle(!isOpen)
             }}
+            isOpen={isOpen}
             isFullHeight={isFullHeight}
         >
             {filteredItems.map((item) => (
@@ -64,14 +66,14 @@ const Item = PropTypes.shape({
 })
 
 ContextSelector.propTypes = {
-    activeItem: Item,
+    id: PropTypes.string,
+    type: PropTypes.oneOf(['app', 'page']),
     items: PropTypes.arrayOf(Item).isRequired,
+    toggleText: PropTypes.string,
     onSelect: PropTypes.func.isRequired,
     onToggle: PropTypes.func.isRequired,
     isOpen: PropTypes.bool,
-    label: PropTypes.string,
     isFullHeight: PropTypes.bool,
-    type: PropTypes.oneOf(['app', 'page']),
 }
 
 export default ContextSelector

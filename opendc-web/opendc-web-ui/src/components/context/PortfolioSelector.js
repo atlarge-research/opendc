@@ -34,7 +34,8 @@ function PortfolioSelector({ activePortfolio }) {
 
     return (
         <ContextSelector
-            label="Portfolio"
+            id="portfolio"
+            toggleText={activePortfolio ? `Portfolio: ${activePortfolio.name}` : 'Select portfolio'}
             activeItem={activePortfolio}
             items={portfolios}
             onSelect={(portfolio) => router.push(`/projects/${portfolio.project.id}/portfolios/${portfolio.number}`)}
