@@ -58,7 +58,6 @@ function Portfolio() {
     const resultsRef = useRef(null)
 
     const { data: portfolio } = usePortfolio(projectId, portfolioNumber)
-    const project = portfolio?.project
 
     const breadcrumb = (
         <Breadcrumb>
@@ -94,7 +93,7 @@ function Portfolio() {
                     <Text component="h1">Portfolio</Text>
                 </TextContent>
             </PageSection>
-            <PageSection type="none" variant={PageSectionVariants.light} className="pf-c-page__main-tabs" sticky="top">
+            <PageSection type="tabs" variant={PageSectionVariants.light} stickyOnBreakpoint={{ default: 'top' }}>
                 <Divider component="div" />
                 <Tabs defaultActiveKey={0} className="pf-m-page-insets">
                     <Tab

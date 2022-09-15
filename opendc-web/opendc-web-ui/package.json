@@ -24,9 +24,9 @@
         "@patternfly/react-core": "^4.235.7",
         "@patternfly/react-icons": "^4.86.7",
         "@patternfly/react-table": "^4.104.7",
+        "@patternfly/react-charts": "^6.88.7",
         "@sentry/react": "^6.19.7",
         "@sentry/tracing": "^6.19.7",
-        "approximate-number": "^2.1.0",
         "clsx": "^1.2.1",
         "immer": "^9.0.15",
         "konva": "^8.3.12",
@@ -42,7 +42,6 @@
         "react-konva": "^17.0.2-6",
         "react-query": "^3.39.2",
         "react-redux": "^8.0.2",
-        "recharts": "^2.1.14",
         "redux": "^4.2.0",
         "redux-logger": "^3.0.6",
         "redux-saga": "^1.2.1",
@@ -50,7 +49,8 @@
         "sass": "^1.54.9",
         "svgsaver": "^0.9.0",
         "use-resize-observer": "^9.0.2",
-        "uuid": "^8.3.2"
+        "uuid": "^8.3.2",
+        "victory-errorbar": "^36.6.7"
     },
     "devDependencies": {
         "eslint": "^8.23.1",
