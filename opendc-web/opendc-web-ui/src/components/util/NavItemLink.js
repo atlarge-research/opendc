@@ -23,11 +23,13 @@
 import Link from 'next/link'
 import PropTypes from 'prop-types'
 
-const NavItemLink = ({ children, href, ...props }) => (
-    <Link href={href}>
-        <a {...props}>{children}</a>
-    </Link>
-)
+function NavItemLink({ children, href, ...props }) {
+    return (
+        <Link href={href}>
+            <a {...props}>{children}</a>
+        </Link>
+    )
+}
 
 NavItemLink.propTypes = {
     children: PropTypes.node,
