@@ -20,10 +20,21 @@
  * SOFTWARE.
  */
 
-.appLogo {
+.header.header {
+    /* Increase precedence */
+    --pf-c-masthead--m-display-inline__content--MinHeight: 3rem;
+    --pf-c-masthead--m-display-inline__main--MinHeight: 3rem;
+
+    --pf-c-masthead--c-context-selector--Width: 200px;
+}
+
+.logo {
     span {
-        margin-left: 4px;
+        margin-left: 8px;
         color: #fff;
+        align-self: center;
+        font-weight: 600;
+        font-size: 0.9rem;
     }
 
     &:hover,

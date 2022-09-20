@@ -20,12 +20,11 @@
  * SOFTWARE.
  */
 
-import React from 'react'
-import PropTypes from 'prop-types'
-import { Bar, CartesianGrid, ComposedChart, ErrorBar, ResponsiveContainer, Scatter, XAxis, YAxis } from 'recharts'
-import { AVAILABLE_METRICS, METRIC_NAMES, METRIC_UNITS } from '../../util/available-metrics'
 import { mean, std } from 'mathjs'
-import approx from 'approximate-number'
+import React, { useMemo } from 'react'
+import PropTypes from 'prop-types'
+import { VictoryErrorBar } from 'victory-errorbar'
+import { METRIC_NAMES, METRIC_UNITS, AVAILABLE_METRICS } from '../../util/available-metrics'
 import {
     Bullseye,
     Card,
@@ -41,15 +40,36 @@ import {
     Spinner,
     Title,
 } from '@patternfly/react-core'
+import { Chart, ChartAxis, ChartBar, ChartTooltip } from '@patternfly/react-charts'
 import { ErrorCircleOIcon, CubesIcon } from '@patternfly/react-icons'
 import { usePortfolio } from '../../data/project'
 import PortfolioResultInfo from './PortfolioResultInfo'
 import NewScenario from './NewScenario'
 
-const PortfolioResults = ({ projectId, portfolioId }) => {
-    const { status, data: scenarios = [] } = usePortfolio(projectId, portfolioId, {
-        select: (portfolio) => portfolio.scenarios,
-    })
+function PortfolioResults({ projectId, portfolioId }) {
+    const { status, data: portfolio } = usePortfolio(projectId, portfolioId)
+    const scenarios = useMemo(() => portfolio?.scenarios ?? [], [portfolio])
+
+    const label = ({ datum }) =>
+        `${datum.x}: ${datum.y.toLocaleString()} ± ${datum.errorY.toLocaleString()} ${METRIC_UNITS[datum.metric]}`
+    const selectedMetrics = new Set(portfolio?.targets?.metrics ?? [])
+    const dataPerMetric = useMemo(() => {
+        const dataPerMetric = {}
+        AVAILABLE_METRICS.forEach((metric) => {
+            dataPerMetric[metric] = scenarios
+                .filter((scenario) => scenario.job?.results)
+                .map((scenario) => ({
+                    metric,
+                    x: scenario.name,
+                    y: mean(scenario.job.results[metric]),
+                    errorY: std(scenario.job.results[metric]),
+                    label,
+                }))
+        })
+        return dataPerMetric
+    }, [scenarios])
+
+    const categories = useMemo(() => ({ x: scenarios.map((s) => s.name).reverse() }), [scenarios])
 
     if (status === 'loading') {
         return (
@@ -94,59 +114,57 @@ const PortfolioResults = ({ projectId, portfolioId }) => {
         )
     }
 
-    const dataPerMetric = {}
-
-    AVAILABLE_METRICS.forEach((metric) => {
-        dataPerMetric[metric] = scenarios
-            .filter((scenario) => scenario.job?.results)
-            .map((scenario) => ({
-                name: scenario.name,
-                value: mean(scenario.job.results[metric]),
-                errorX: std(scenario.job.results[metric]),
-            }))
-    })
-
     return (
         <Grid hasGutter>
-            {AVAILABLE_METRICS.map((metric) => (
-                <GridItem xl={6} lg={12} key={metric}>
-                    <Card>
-                        <CardHeader>
-                            <CardActions>
-                                <PortfolioResultInfo metric={metric} />
-                            </CardActions>
-                            <CardTitle>{METRIC_NAMES[metric]}</CardTitle>
-                        </CardHeader>
-                        <CardBody>
-                            <ResponsiveContainer aspect={16 / 9} width="100%">
-                                <ComposedChart
-                                    data={dataPerMetric[metric]}
-                                    margin={{ left: 35, bottom: 15 }}
-                                    layout="vertical"
-                                >
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis
-                                        tickFormatter={(tick) => approx(tick)}
-                                        label={{ value: METRIC_UNITS[metric], position: 'bottom', offset: 0 }}
-                                        type="number"
-                                    />
-                                    <YAxis dataKey="name" type="category" />
-                                    <Bar dataKey="value" fill="#3399FF" isAnimationActive={false} />
-                                    <Scatter dataKey="value" opacity={0} isAnimationActive={false}>
-                                        <ErrorBar
-                                            dataKey="errorX"
-                                            width={10}
-                                            strokeWidth={3}
-                                            stroke="#FF6600"
-                                            direction="x"
+            {AVAILABLE_METRICS.map(
+                (metric) =>
+                    selectedMetrics.has(metric) && (
+                        <GridItem xl={6} lg={12} key={metric}>
+                            <Card>
+                                <CardHeader>
+                                    <CardActions>
+                                        <PortfolioResultInfo metric={metric} />
+                                    </CardActions>
+                                    <CardTitle>{METRIC_NAMES[metric]}</CardTitle>
+                                </CardHeader>
+                                <CardBody>
+                                    <Chart
+                                        width={650}
+                                        height={250}
+                                        padding={{
+                                            top: 10,
+                                            bottom: 60,
+                                            left: 130,
+                                        }}
+                                        domainPadding={25}
+                                    >
+                                        <ChartAxis />
+                                        <ChartAxis
+                                            dependentAxis
+                                            showGrid
+                                            label={METRIC_UNITS[metric]}
+                                            fixLabelOverlap
                                         />
-                                    </Scatter>
-                                </ComposedChart>
-                            </ResponsiveContainer>
-                        </CardBody>
-                    </Card>
-                </GridItem>
-            ))}
+                                        <ChartBar
+                                            categories={categories}
+                                            data={dataPerMetric[metric]}
+                                            labelComponent={<ChartTooltip constrainToVisibleArea />}
+                                            barWidth={25}
+                                            horizontal
+                                        />
+                                        <VictoryErrorBar
+                                            categories={categories}
+                                            data={dataPerMetric[metric]}
+                                            errorY={(d) => d.errorY}
+                                            labelComponent={<></>}
+                                            horizontal
+                                        />
+                                    </Chart>
+                                </CardBody>
+                            </Card>
+                        </GridItem>
+                    )
+            )}
         </Grid>
     )
 }

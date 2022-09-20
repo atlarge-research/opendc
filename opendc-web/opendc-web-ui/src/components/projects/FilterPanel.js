@@ -6,7 +6,7 @@ import { filterPanel } from './FilterPanel.module.scss'
 export const FILTERS = { SHOW_ALL: 'All Projects', SHOW_OWN: 'My Projects', SHOW_SHARED: 'Shared with me' }
 
 const FilterPanel = ({ onSelect, activeFilter = 'SHOW_ALL' }) => (
-    <ToggleGroup className={`${filterPanel} mb-2`}>
+    <ToggleGroup className={`${filterPanel} pf-u-mb-sm`}>
         {Object.keys(FILTERS).map((filter) => (
             <ToggleGroupItem
                 key={filter}

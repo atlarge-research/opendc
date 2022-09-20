@@ -20,64 +20,75 @@
  * SOFTWARE.
  */
 
+import { Bullseye } from '@patternfly/react-core'
 import PropTypes from 'prop-types'
 import Link from 'next/link'
-import { Table, TableBody, TableHeader } from '@patternfly/react-table'
+import { TableComposable, Thead, Tbody, Tr, Th, Td, ActionsColumn } from '@patternfly/react-table'
 import React from 'react'
 import TableEmptyState from '../util/TableEmptyState'
 import { usePortfolios, useDeletePortfolio } from '../../data/project'
 
-const PortfolioTable = ({ projectId }) => {
+function PortfolioTable({ projectId }) {
     const { status, data: portfolios = [] } = usePortfolios(projectId)
     const { mutate: deletePortfolio } = useDeletePortfolio()
 
-    const columns = ['Name', 'Scenarios', 'Metrics', 'Repeats']
-    const rows =
-        portfolios.length > 0
-            ? portfolios.map((portfolio) => [
-                  {
-                      title: (
-                          <Link href={`/projects/${projectId}/portfolios/${portfolio.number}`}>{portfolio.name}</Link>
-                      ),
-                  },
-                  portfolio.scenarios.length === 1 ? '1 scenario' : `${portfolio.scenarios.length} scenarios`,
-                  portfolio.targets.metrics.length === 1 ? '1 metric' : `${portfolio.targets.metrics.length} metrics`,
-                  portfolio.targets.repeats === 1 ? '1 repeat' : `${portfolio.targets.repeats} repeats`,
-              ])
-            : [
-                  {
-                      heightAuto: true,
-                      cells: [
-                          {
-                              props: { colSpan: 4 },
-                              title: (
-                                  <TableEmptyState
-                                      status={status}
-                                      loadingTitle="Loading portfolios"
-                                      emptyTitle="No portfolios"
-                                      emptyText="You have not created any portfolio for this project yet. Click the New Portfolio button to create one."
-                                  />
-                              ),
-                          },
-                      ],
-                  },
-              ]
-
-    const actions =
-        portfolios.length > 0
-            ? [
-                  {
-                      title: 'Delete Portfolio',
-                      onClick: (_, rowId) => deletePortfolio({ projectId, number: portfolios[rowId].number }),
-                  },
-              ]
-            : []
+    const actions = (portfolio) => [
+        {
+            title: 'Delete Portfolio',
+            onClick: () => deletePortfolio({ projectId, number: portfolio.number }),
+        },
+    ]
 
     return (
-        <Table aria-label="Portfolio List" variant="compact" cells={columns} rows={rows} actions={actions}>
-            <TableHeader />
-            <TableBody />
-        </Table>
+        <TableComposable aria-label="Portfolio List" variant="compact">
+            <Thead>
+                <Tr>
+                    <Th>Name</Th>
+                    <Th>Scenarios</Th>
+                    <Th>Metrics</Th>
+                    <Th>Repeats</Th>
+                </Tr>
+            </Thead>
+            <Tbody>
+                {portfolios.map((portfolio) => (
+                    <Tr key={portfolio.id}>
+                        <Td dataLabel="Name">
+                            <Link href={`/projects/${projectId}/portfolios/${portfolio.number}`}>{portfolio.name}</Link>
+                        </Td>
+                        <Td dataLabel="Scenarios">
+                            {portfolio.scenarios.length === 1
+                                ? '1 scenario'
+                                : `${portfolio.scenarios.length} scenarios`}
+                        </Td>
+                        <Td dataLabel="Metrics">
+                            {portfolio.targets.metrics.length === 1
+                                ? '1 metric'
+                                : `${portfolio.targets.metrics.length} metrics`}
+                        </Td>
+                        <Td dataLabel="Repeats">
+                            {portfolio.targets.repeats === 1 ? '1 repeat' : `${portfolio.targets.repeats} repeats`}
+                        </Td>
+                        <Td isActionCell>
+                            <ActionsColumn items={actions(portfolio)} />
+                        </Td>
+                    </Tr>
+                ))}
+                {portfolios.length === 0 && (
+                    <Tr>
+                        <Td colSpan={4}>
+                            <Bullseye>
+                                <TableEmptyState
+                                    status={status}
+                                    loadingTitle="Loading portfolios"
+                                    emptyTitle="No portfolios"
+                                    emptyText="You have not created any portfolio for this project yet. Click the New Portfolio button to create one."
+                                />
+                            </Bullseye>
+                        </Td>
+                    </Tr>
+                )}
+            </Tbody>
+        </TableComposable>
     )
 }
 

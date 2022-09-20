@@ -25,13 +25,18 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import RackFillBar from './elements/RackFillBar'
 
-function RackSpaceFillContainer({ tileId, ...props }) {
-    const rack = useSelector((state) => state.topology.racks[state.topology.tiles[tileId].rack])
+function RackSpaceFillContainer({ rackId, ...props }) {
+    const rack = useSelector((state) => state.topology.racks[rackId])
+
+    if (!rack) {
+        return null
+    }
+
     return <RackFillBar {...props} type="space" fillFraction={rack.machines.length / rack.capacity} />
 }
 
 RackSpaceFillContainer.propTypes = {
-    tileId: PropTypes.string.isRequired,
+    rackId: PropTypes.string.isRequired,
 }
 
 export default RackSpaceFillContainer

@@ -20,14 +20,25 @@
  * SOFTWARE.
  */
 
+import { PlusIcon } from '@patternfly/react-icons'
 import React, { useMemo, useState } from 'react'
 import Head from 'next/head'
 import ProjectFilterPanel from '../../components/projects/FilterPanel'
 import { AppPage } from '../../components/AppPage'
-import { PageSection, PageSectionVariants, Text, TextContent } from '@patternfly/react-core'
-import { useProjects, useDeleteProject } from '../../data/project'
-import ProjectTable from '../../components/projects/ProjectTable'
-import NewProject from '../../components/projects/NewProject'
+import {
+    PageSection,
+    PageSectionVariants,
+    Title,
+    Toolbar,
+    ToolbarItem,
+    ToolbarContent,
+    Button,
+    TextContent,
+    Text,
+} from '@patternfly/react-core'
+import ProjectCollection from '../../components/projects/ProjectCollection'
+import TextInputModal from '../../components/util/modals/TextInputModal'
+import { useProjects, useDeleteProject, useNewProject } from '../../data/project'
 
 const getVisibleProjects = (projects, filter) => {
     switch (filter) {
@@ -48,26 +59,55 @@ function Projects() {
     const visibleProjects = useMemo(() => getVisibleProjects(projects ?? [], filter), [projects, filter])
 
     const { mutate: deleteProject } = useDeleteProject()
+    const { mutate: addProject } = useNewProject()
+
+    const [isProjectCreationModalVisible, setProjectCreationModalVisible] = useState(false)
+    const onProjectCreation = (name) => {
+        if (name) {
+            addProject({ name })
+        }
+        setProjectCreationModalVisible(false)
+    }
 
     return (
         <AppPage>
             <Head>
                 <title>My Projects - OpenDC</title>
             </Head>
-            <PageSection variant={PageSectionVariants.light}>
-                <TextContent>
-                    <Text component="h1">My Projects</Text>
-                </TextContent>
-            </PageSection>
             <PageSection variant={PageSectionVariants.light} isFilled>
-                <ProjectFilterPanel onSelect={setFilter} activeFilter={filter} />
-                <ProjectTable
-                    status={status}
-                    isFiltering={filter !== 'SHOW_ALL'}
-                    projects={visibleProjects}
-                    onDelete={(project) => deleteProject(project.id)}
-                />
-                <NewProject />
+                <div className="pf-u-mx-auto pf-u-max-width" style={{ '--pf-u-max-width--MaxWidth': '100ch' }}>
+                    <Title className="pf-u-mt-xl-on-md" headingLevel="h1" size="4xl">
+                        Welcome
+                    </Title>
+                    <TextContent>
+                        <Text component="p">Find all your personal and shared projects</Text>
+                    </TextContent>
+                    <Toolbar inset={{ default: 'insetNone' }}>
+                        <ToolbarContent>
+                            <ToolbarItem>
+                                <ProjectFilterPanel onSelect={setFilter} activeFilter={filter} />
+                            </ToolbarItem>
+                            <ToolbarItem alignment={{ default: 'alignRight' }}>
+                                <Button icon={<PlusIcon />} onClick={() => setProjectCreationModalVisible(true)}>
+                                    Create Project
+                                </Button>
+                            </ToolbarItem>
+                        </ToolbarContent>
+                    </Toolbar>
+                    <ProjectCollection
+                        status={status}
+                        isFiltering={filter !== 'SHOW_ALL'}
+                        projects={visibleProjects}
+                        onDelete={(project) => deleteProject(project.id)}
+                        onCreate={() => setProjectCreationModalVisible(true)}
+                    />
+                    <TextInputModal
+                        title="New Project"
+                        label="Project name"
+                        isOpen={isProjectCreationModalVisible}
+                        callback={onProjectCreation}
+                    />
+                </div>
             </PageSection>
         </AppPage>
     )

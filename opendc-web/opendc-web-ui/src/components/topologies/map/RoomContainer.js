@@ -27,15 +27,24 @@ import { goFromBuildingToRoom } from '../../../redux/actions/interaction-level'
 import RoomGroup from './groups/RoomGroup'
 
 function RoomContainer({ roomId, ...props }) {
-    const state = useSelector((state) => {
-        return {
-            interactionLevel: state.interactionLevel,
-            currentRoomInConstruction: state.construction.currentRoomInConstruction,
-            room: state.topology.rooms[roomId],
-        }
-    })
+    const interactionLevel = useSelector((state) => state.interactionLevel)
+    const currentRoomInConstruction = useSelector((state) => state.construction.currentRoomInConstruction)
+    const room = useSelector((state) => state.topology.rooms[roomId])
     const dispatch = useDispatch()
-    return <RoomGroup {...props} {...state} onClick={() => dispatch(goFromBuildingToRoom(roomId))} />
+
+    if (!room) {
+        return null
+    }
+
+    return (
+        <RoomGroup
+            {...props}
+            interactionLevel={interactionLevel}
+            currentRoomInConstruction={currentRoomInConstruction}
+            room={room}
+            onClick={() => dispatch(goFromBuildingToRoom(roomId))}
+        />
+    )
 }
 
 RoomContainer.propTypes = {

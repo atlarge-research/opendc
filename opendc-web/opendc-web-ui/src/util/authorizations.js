@@ -8,8 +8,14 @@ export const AUTH_ICON_MAP = {
     VIEWER: EyeIcon,
 }
 
+export const AUTH_NAME_MAP = {
+    OWNER: 'Owner',
+    EDITOR: 'Editor',
+    VIEWER: 'Viewer',
+}
+
 export const AUTH_DESCRIPTION_MAP = {
-    OWNER: 'Own',
-    EDITOR: 'Can Edit',
-    VIEWER: 'Can View',
+    OWNER: 'You own this project',
+    EDITOR: 'You can edit this project',
+    VIEWER: 'You can view this project',
 }

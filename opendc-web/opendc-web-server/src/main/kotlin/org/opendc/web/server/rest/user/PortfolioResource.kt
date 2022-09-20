@@ -71,6 +71,7 @@ class PortfolioResource @Inject constructor(
      */
     @DELETE
     @Path("{portfolio}")
+    @Transactional
     fun delete(@PathParam("project") projectId: Long, @PathParam("portfolio") number: Int): Portfolio {
         return portfolioService.delete(identity.principal.name, projectId, number) ?: throw WebApplicationException("Portfolio not found", 404)
     }

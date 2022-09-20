@@ -20,25 +20,57 @@
  * SOFTWARE.
  */
 
-import { PageHeader } from '@patternfly/react-core'
+import Image from 'next/image'
+import PropTypes from 'prop-types'
 import React from 'react'
+import {
+    Masthead,
+    MastheadMain,
+    MastheadBrand,
+    MastheadContent,
+    Toolbar,
+    ToolbarContent,
+    ToolbarItem,
+} from '@patternfly/react-core'
+import Link from 'next/link'
 import AppHeaderTools from './AppHeaderTools'
-import { AppNavigation } from './AppNavigation'
-import AppLogo from './AppLogo'
+import AppHeaderUser from './AppHeaderUser'
+import ProjectSelector from './context/ProjectSelector'
 
-export function AppHeader() {
-    // eslint-disable-next-line @next/next/no-img-element
-    const logo = <img src="/img/logo.png" width={30} height={30} alt="OpenDC" />
+import styles from './AppHeader.module.scss'
 
+export default function AppHeader({ nav }) {
     return (
-        <PageHeader
-            logo={logo}
-            logoProps={{ href: '/' }}
-            logoComponent={AppLogo}
-            headerTools={<AppHeaderTools />}
-            topNav={<AppNavigation />}
-        />
+        <Masthead id="app-header" className={styles.header}>
+            <MastheadMain>
+                <MastheadBrand
+                    className={styles.logo}
+                    component={(props) => (
+                        <Link href="/projects">
+                            <a {...props} />
+                        </Link>
+                    )}
+                >
+                    <Image src="/img/logo.svg" alt="OpenDC logo" width={25} height={25} />
+                    <span>OpenDC</span>
+                </MastheadBrand>
+            </MastheadMain>
+            <MastheadContent>
+                <Toolbar id="toolbar" isFullHeight isStatic>
+                    <ToolbarContent>
+                        <ToolbarItem>
+                            <ProjectSelector />
+                        </ToolbarItem>
+                        {nav && <ToolbarItem>{nav}</ToolbarItem>}
+                        <AppHeaderTools />
+                        <AppHeaderUser />
+                    </ToolbarContent>
+                </Toolbar>
+            </MastheadContent>
+        </Masthead>
     )
 }
 
-AppHeader.propTypes = {}
+AppHeader.propTypes = {
+    nav: PropTypes.node,
+}

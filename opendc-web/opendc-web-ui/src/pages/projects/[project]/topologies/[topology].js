@@ -23,7 +23,6 @@
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import ContextSelectionSection from '../../../../components/context/ContextSelectionSection'
-import ProjectSelector from '../../../../components/context/ProjectSelector'
 import TopologySelector from '../../../../components/context/TopologySelector'
 import TopologyOverview from '../../../../components/topologies/TopologyOverview'
 import { useDispatch } from 'react-redux'
@@ -48,7 +47,7 @@ import { useTopology } from '../../../../data/topology'
 import { goToRoom } from '../../../../redux/actions/interaction-level'
 import { openTopology } from '../../../../redux/actions/topology'
 
-const TopologyMap = dynamic(() => import('../../../../components/topologies/TopologyMap'))
+const TopologyMap = dynamic(() => import('../../../../components/topologies/TopologyMap'), { ssr: false })
 
 /**
  * Page that displays a datacenter topology.
@@ -90,7 +89,6 @@ function Topology() {
 
     const contextSelectors = (
         <ContextSelectionSection>
-            <ProjectSelector activeProject={project} />
             <TopologySelector activeTopology={topology} />
         </ContextSelectionSection>
     )

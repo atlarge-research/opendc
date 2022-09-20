@@ -55,9 +55,9 @@ function TopologyMap() {
             </EmptyState>
         </Bullseye>
     ) : (
-        <Drawer isExpanded={isExpanded} className="full-height">
+        <Drawer isExpanded={isExpanded}>
             <DrawerContent panelContent={panelContent}>
-                <DrawerContentBody>
+                <DrawerContentBody style={{ position: 'relative' }}>
                     <MapStage hotkeysRef={hotkeysRef} />
                     <Collapse onClick={() => setExpanded(true)} />
                 </DrawerContentBody>

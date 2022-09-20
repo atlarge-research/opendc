@@ -49,7 +49,7 @@ export function configureTopologyClient(queryClient, auth) {
         },
     })
     queryClient.setMutationDefaults('deleteTopology', {
-        mutationFn: ({ projectId, id }) => deleteTopology(auth, projectId, id),
+        mutationFn: ({ projectId, number }) => deleteTopology(auth, projectId, number),
         onSuccess: (result) => {
             queryClient.setQueryData(['topologies', result.project.id], (old = []) =>
                 old.filter((topology) => topology.id !== result.id)

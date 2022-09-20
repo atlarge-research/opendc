@@ -34,7 +34,8 @@ function TopologySelector({ activeTopology }) {
 
     return (
         <ContextSelector
-            label="Topology"
+            id="topology"
+            toggleText={activeTopology ? `Topology: ${activeTopology.name}` : 'Select topology'}
             activeItem={activeTopology}
             items={topologies}
             onSelect={(topology) => router.push(`/projects/${topology.project.id}/topologies/${topology.number}`)}

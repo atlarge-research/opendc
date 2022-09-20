@@ -40,12 +40,11 @@ import {
 import { AppPage } from '../../../../components/AppPage'
 import ContextSelectionSection from '../../../../components/context/ContextSelectionSection'
 import PortfolioSelector from '../../../../components/context/PortfolioSelector'
-import ProjectSelector from '../../../../components/context/ProjectSelector'
 import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
 import PortfolioOverview from '../../../../components/portfolios/PortfolioOverview'
 import { usePortfolio } from '../../../../data/project'
 
-const PortfolioResults = dynamic(() => import('../../../../components/portfolios/PortfolioResults'))
+const PortfolioResults = dynamic(() => import('../../../../components/portfolios/PortfolioResults'), { ssr: false })
 
 /**
  * Page that displays the results in a portfolio.
@@ -59,7 +58,6 @@ function Portfolio() {
     const resultsRef = useRef(null)
 
     const { data: portfolio } = usePortfolio(projectId, portfolioNumber)
-    const project = portfolio?.project
 
     const breadcrumb = (
         <Breadcrumb>
@@ -81,7 +79,6 @@ function Portfolio() {
 
     const contextSelectors = (
         <ContextSelectionSection>
-            <ProjectSelector activeProject={project} />
             <PortfolioSelector activePortfolio={portfolio} />
         </ContextSelectionSection>
     )
@@ -96,7 +93,7 @@ function Portfolio() {
                     <Text component="h1">Portfolio</Text>
                 </TextContent>
             </PageSection>
-            <PageSection type="none" variant={PageSectionVariants.light} className="pf-c-page__main-tabs" sticky="top">
+            <PageSection type="tabs" variant={PageSectionVariants.light} stickyOnBreakpoint={{ default: 'top' }}>
                 <Divider component="div" />
                 <Tabs defaultActiveKey={0} className="pf-m-page-insets">
                     <Tab

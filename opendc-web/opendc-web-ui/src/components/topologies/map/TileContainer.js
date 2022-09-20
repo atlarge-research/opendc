@@ -28,9 +28,13 @@ import TileGroup from './groups/TileGroup'
 
 function TileContainer({ tileId, ...props }) {
     const interactionLevel = useSelector((state) => state.interactionLevel)
+    const dispatch = useDispatch()
     const tile = useSelector((state) => state.topology.tiles[tileId])
 
-    const dispatch = useDispatch()
+    if (!tile) {
+        return null
+    }
+
     const onClick = (tile) => {
         if (tile.rack) {
             dispatch(goFromRoomToRack(tile.id))

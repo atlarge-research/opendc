@@ -20,10 +20,11 @@
  * SOFTWARE.
  */
 
-.contextSelector.contextSelector {
+.pageSelector.pageSelector {
     // Ensure this selector has precedence over the default one
     margin-right: 20px;
 
+    --pf-c-context-selector__menu--ZIndex: var(--pf-global--ZIndex--lg);
     --pf-c-context-selector__toggle--PaddingTop: var(--pf-global--spacer--sm);
     --pf-c-context-selector__toggle--PaddingRight: 0;
     --pf-c-context-selector__toggle--PaddingBottom: var(--pf-global--spacer--sm);

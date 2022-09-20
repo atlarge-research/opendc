@@ -21,9 +21,7 @@
  */
 
 import { useRouter } from 'next/router'
-import ContextSelectionSection from '../../../components/context/ContextSelectionSection'
 import ProjectOverview from '../../../components/projects/ProjectOverview'
-import ProjectSelector from '../../../components/context/ProjectSelector'
 import { useProject } from '../../../data/project'
 import { AppPage } from '../../../components/AppPage'
 import Head from 'next/head'
@@ -55,14 +53,8 @@ function Project() {
         </Breadcrumb>
     )
 
-    const contextSelectors = (
-        <ContextSelectionSection>
-            <ProjectSelector activeProject={project} />
-        </ContextSelectionSection>
-    )
-
     return (
-        <AppPage breadcrumb={breadcrumb} contextSelectors={contextSelectors}>
+        <AppPage breadcrumb={breadcrumb}>
             <Head>
                 <title>{project?.name ?? 'Project'} - OpenDC</title>
             </Head>
