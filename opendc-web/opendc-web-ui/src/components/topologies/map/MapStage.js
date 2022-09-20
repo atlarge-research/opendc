@@ -15,7 +15,7 @@ import Toolbar from './controls/Toolbar'
 function MapStage({ hotkeysRef }) {
     const reduxContext = useContext(ReactReduxContext)
     const stageRef = useRef(null)
-    const { width = 100, height = 100 } = useResizeObserver({ ref: stageRef.current?.attrs?.container })
+    const { width = 500, height = 500 } = useResizeObserver({ ref: stageRef.current?.attrs?.container })
     const [[x, y], setPos] = useState([0, 0])
     const [scale, setScale] = useState(1)
 

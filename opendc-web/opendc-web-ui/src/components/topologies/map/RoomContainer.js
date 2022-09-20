@@ -36,7 +36,15 @@ function RoomContainer({ roomId, ...props }) {
         return null
     }
 
-    return <RoomGroup {...props} interactionLevel={interactionLevel} currentRoomInConstruction={currentRoomInConstruction} room={room} onClick={() => dispatch(goFromBuildingToRoom(roomId))} />
+    return (
+        <RoomGroup
+            {...props}
+            interactionLevel={interactionLevel}
+            currentRoomInConstruction={currentRoomInConstruction}
+            room={room}
+            onClick={() => dispatch(goFromBuildingToRoom(roomId))}
+        />
+    )
 }
 
 RoomContainer.propTypes = {
