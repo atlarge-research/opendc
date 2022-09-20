@@ -3,24 +3,26 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import RackFillBar from './elements/RackFillBar'
 
-function RackSpaceFillContainer({ tileId, ...props }) {
+function RackSpaceFillContainer({ rackId, ...props }) {
     const fillFraction = useSelector((state) => {
+        const rack = state.topology.racks[rackId]
+        if (!rack) {
+            return 0
+        }
+
+        const { machines, cpus, gpus, memories, storages } = state.topology
         let energyConsumptionTotal = 0
-        const rack = state.topology.racks[state.topology.tiles[tileId].rack]
-        const machineIds = rack.machines
-        machineIds.forEach((machineId) => {
-            if (machineId !== null) {
-                const machine = state.topology.machines[machineId]
-                machine.cpus.forEach((id) => (energyConsumptionTotal += state.topology.cpus[id].energyConsumptionW))
-                machine.gpus.forEach((id) => (energyConsumptionTotal += state.topology.gpus[id].energyConsumptionW))
-                machine.memories.forEach(
-                    (id) => (energyConsumptionTotal += state.topology.memories[id].energyConsumptionW)
-                )
-                machine.storages.forEach(
-                    (id) => (energyConsumptionTotal += state.topology.storages[id].energyConsumptionW)
-                )
+
+        for (const machineId of rack.machines) {
+            if (!machineId) {
+                continue
             }
-        })
+            const machine = machines[machineId]
+            machine.cpus.forEach((id) => (energyConsumptionTotal += cpus[id].energyConsumptionW))
+            machine.gpus.forEach((id) => (energyConsumptionTotal += gpus[id].energyConsumptionW))
+            machine.memories.forEach((id) => (energyConsumptionTotal += memories[id].energyConsumptionW))
+            machine.storages.forEach((id) => (energyConsumptionTotal += storages[id].energyConsumptionW))
+        }
 
         return Math.min(1, energyConsumptionTotal / rack.powerCapacityW)
     })
@@ -28,7 +30,7 @@ function RackSpaceFillContainer({ tileId, ...props }) {
 }
 
 RackSpaceFillContainer.propTypes = {
-    tileId: PropTypes.string.isRequired,
+    rackId: PropTypes.string.isRequired,
 }
 
 export default RackSpaceFillContainer

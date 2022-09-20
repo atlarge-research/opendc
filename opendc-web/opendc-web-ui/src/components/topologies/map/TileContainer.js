@@ -31,6 +31,10 @@ function TileContainer({ tileId, ...props }) {
     const dispatch = useDispatch()
     const tile = useSelector((state) => state.topology.tiles[tileId])
 
+    if (!tile) {
+        return null
+    }
+
     const onClick = (tile) => {
         if (tile.rack) {
             dispatch(goFromRoomToRack(tile.id))

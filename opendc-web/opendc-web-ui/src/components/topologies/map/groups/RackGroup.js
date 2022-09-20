@@ -11,8 +11,8 @@ function RackGroup({ tile }) {
         <Group>
             <TileObject positionX={tile.positionX} positionY={tile.positionY} color={RACK_BACKGROUND_COLOR} />
             <Group>
-                <RackSpaceFillContainer tileId={tile.id} positionX={tile.positionX} positionY={tile.positionY} />
-                <RackEnergyFillContainer tileId={tile.id} positionX={tile.positionX} positionY={tile.positionY} />
+                <RackSpaceFillContainer rackId={tile.rack} positionX={tile.positionX} positionY={tile.positionY} />
+                <RackEnergyFillContainer rackId={tile.rack} positionX={tile.positionX} positionY={tile.positionY} />
             </Group>
         </Group>
     )

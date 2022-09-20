@@ -27,7 +27,7 @@ import WallGroup from './groups/WallGroup'
 
 function WallContainer({ roomId, ...props }) {
     const tiles = useSelector((state) => {
-        return state.topology.rooms[roomId].tiles.map((tileId) => state.topology.tiles[tileId])
+        return state.topology.rooms[roomId]?.tiles.map((tileId) => state.topology.tiles[tileId]) ?? []
     })
     return <WallGroup {...props} tiles={tiles} />
 }
