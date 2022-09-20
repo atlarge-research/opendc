@@ -20,8 +20,9 @@
  * SOFTWARE.
  */
 
+import { Bullseye } from '@patternfly/react-core'
 import Link from 'next/link'
-import { Table, TableBody, TableHeader } from '@patternfly/react-table'
+import { TableComposable, Thead, Tr, Th, Tbody, Td, ActionsColumn } from '@patternfly/react-table'
 import React from 'react'
 import { Portfolio, Status } from '../../shapes'
 import TableEmptyState from '../util/TableEmptyState'
@@ -33,65 +34,65 @@ function ScenarioTable({ portfolio, status }) {
     const projectId = portfolio?.project?.id
     const scenarios = portfolio?.scenarios ?? []
 
-    const columns = ['Name', 'Topology', 'Trace', 'State']
-    const rows =
-        scenarios.length > 0
-            ? scenarios.map((scenario) => {
-                  const topology = scenario.topology
-
-                  return [
-                      scenario.name,
-                      {
-                          title: topology ? (
-                              <Link href={`/projects/${projectId}/topologies/${topology.number}`}>
-                                  <a>{topology.name}</a>
-                              </Link>
-                          ) : (
-                              'Unknown Topology'
-                          ),
-                      },
-                      `${scenario.workload.trace.name} (${scenario.workload.samplingFraction * 100}%)`,
-                      { title: <ScenarioState state={scenario.job.state} /> },
-                  ]
-              })
-            : [
-                  {
-                      heightAuto: true,
-                      cells: [
-                          {
-                              props: { colSpan: 4 },
-                              title: (
-                                  <TableEmptyState
-                                      status={status}
-                                      loadingTitle="Loading Scenarios"
-                                      emptyTitle="No scenarios"
-                                      emptyText="You have not created any scenario for this portfolio yet. Click the New Scenario button to create one."
-                                  />
-                              ),
-                          },
-                      ],
-                  },
-              ]
-
-    const actionResolver = (_, { rowIndex }) => [
+    const actions = ({ number }) => [
         {
             title: 'Delete Scenario',
-            onClick: (_, rowId) => deleteScenario({ projectId: projectId, number: scenarios[rowId].number }),
-            isDisabled: rowIndex === 0,
+            onClick: () => deleteScenario({ projectId: projectId, number }),
+            isDisabled: number === 0,
         },
     ]
 
     return (
-        <Table
-            aria-label="Scenario List"
-            variant="compact"
-            cells={columns}
-            rows={rows}
-            actionResolver={scenarios.length > 0 ? actionResolver : undefined}
-        >
-            <TableHeader />
-            <TableBody />
-        </Table>
+        <TableComposable aria-label="Scenario List" variant="compact">
+            <Thead>
+                <Tr>
+                    <Th>Name</Th>
+                    <Th>Topology</Th>
+                    <Th>Trace</Th>
+                    <Th>State</Th>
+                </Tr>
+            </Thead>
+            <Tbody>
+                {scenarios.map((scenario) => (
+                    <Tr key={scenario.id}>
+                        <Td dataLabel="Name">{scenario.name}</Td>
+                        <Td dataLabel="Topology">
+                            {scenario.topology ? (
+                                <Link href={`/projects/${projectId}/topologies/${scenario.topology.number}`}>
+                                    <a>{scenario.topology.name}</a>
+                                </Link>
+                            ) : (
+                                'Unknown Topology'
+                            )}
+                            ,
+                        </Td>
+                        <Td dataLabel="Workload">{`${scenario.workload.trace.name} (${
+                            scenario.workload.samplingFraction * 100
+                        }%)`}</Td>
+                        <Td dataLabel="State">
+                            <ScenarioState state={scenario.job.state} />
+                        </Td>
+                        <Td isActionCell>
+                            <ActionsColumn items={actions(scenario)} />
+                        </Td>
+                    </Tr>
+                ))}
+                {scenarios.length === 0 && (
+                    <Tr>
+                        <Td colSpan={4}>
+                            <Bullseye>
+                                <TableEmptyState
+                                    status={status}
+                                    loadingTitle="Loading Scenarios"
+                                    emptyTitle="No scenarios"
+                                    emptyText="You have not created any scenario for this portfolio yet. Click the New Scenario button to create one."
+                                />
+                            </Bullseye>
+                        </Td>
+                    </Tr>
+                )}
+            </Tbody>
+        </TableComposable>
     )
 }
 
