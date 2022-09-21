@@ -323,6 +323,84 @@ internal class FilterSchedulerTest {
     }
 
     @Test
+    fun testAffinityFilter() {
+        val scheduler = FilterScheduler(
+            filters = listOf(SameHostFilter()),
+            weighers = emptyList(),
+        )
+
+        val serverA = mockk<Server>()
+        every { serverA.uid } returns UUID.randomUUID()
+        every { serverA.flavor.cpuCount } returns 2
+        every { serverA.flavor.memorySize } returns 1024
+
+        val hostA = mockk<HostView>()
+        every { hostA.host.state } returns HostState.UP
+        every { hostA.host.model } returns HostModel(4 * 2600.0, 4, 2048)
+        every { hostA.host.instances } returns emptySet()
+        every { hostA.provisionedCores } returns 3
+
+        val hostB = mockk<HostView>()
+        every { hostB.host.state } returns HostState.UP
+        every { hostB.host.model } returns HostModel(4 * 2600.0, 4, 2048)
+        every { hostB.host.instances } returns setOf(serverA)
+        every { hostB.provisionedCores } returns 0
+
+        scheduler.addHost(hostA)
+        scheduler.addHost(hostB)
+
+        val serverB = mockk<Server>()
+        every { serverB.flavor.cpuCount } returns 2
+        every { serverB.flavor.memorySize } returns 1024
+        every { serverB.meta } returns emptyMap()
+
+        assertEquals(hostA, scheduler.select(serverB))
+
+        every { serverB.meta } returns mapOf("scheduler_hint:same_host" to setOf(serverA.uid))
+
+        assertEquals(hostB, scheduler.select(serverB))
+    }
+
+    @Test
+    fun testAntiAffinityFilter() {
+        val scheduler = FilterScheduler(
+            filters = listOf(DifferentHostFilter()),
+            weighers = emptyList(),
+        )
+
+        val serverA = mockk<Server>()
+        every { serverA.uid } returns UUID.randomUUID()
+        every { serverA.flavor.cpuCount } returns 2
+        every { serverA.flavor.memorySize } returns 1024
+
+        val hostA = mockk<HostView>()
+        every { hostA.host.state } returns HostState.UP
+        every { hostA.host.model } returns HostModel(4 * 2600.0, 4, 2048)
+        every { hostA.host.instances } returns setOf(serverA)
+        every { hostA.provisionedCores } returns 3
+
+        val hostB = mockk<HostView>()
+        every { hostB.host.state } returns HostState.UP
+        every { hostB.host.model } returns HostModel(4 * 2600.0, 4, 2048)
+        every { hostB.host.instances } returns emptySet()
+        every { hostB.provisionedCores } returns 0
+
+        scheduler.addHost(hostA)
+        scheduler.addHost(hostB)
+
+        val serverB = mockk<Server>()
+        every { serverB.flavor.cpuCount } returns 2
+        every { serverB.flavor.memorySize } returns 1024
+        every { serverB.meta } returns emptyMap()
+
+        assertEquals(hostA, scheduler.select(serverB))
+
+        every { serverB.meta } returns mapOf("scheduler_hint:different_host" to setOf(serverA.uid))
+
+        assertEquals(hostB, scheduler.select(serverB))
+    }
+
+    @Test
     fun testRamWeigher() {
         val scheduler = FilterScheduler(
             filters = emptyList(),
