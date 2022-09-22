@@ -411,7 +411,7 @@ internal class ComputeServiceImpl(
                 // Re-schedule on the new machine
                 requestSchedulingCycle()
             }
-            HostState.DOWN -> {
+            else -> {
                 logger.debug { "[${clock.instant()}] Host ${host.uid} state changed: $newState" }
 
                 val hv = hostToView[host] ?: return

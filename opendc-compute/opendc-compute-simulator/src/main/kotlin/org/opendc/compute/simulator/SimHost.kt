@@ -59,7 +59,7 @@ public class SimHost(
     override val name: String,
     model: MachineModel,
     override val meta: Map<String, Any>,
-    context: CoroutineContext,
+    private val context: CoroutineContext,
     engine: FlowEngine,
     hypervisorProvider: SimHypervisorProvider,
     random: SplittableRandom,
@@ -69,11 +69,6 @@ public class SimHost(
     private val interferenceDomain: VmInterferenceDomain? = null,
     private val optimize: Boolean = false
 ) : Host, AutoCloseable {
-    /**
-     * The [CoroutineScope] of the host bounded by the lifecycle of the host.
-     */
-    private val scope: CoroutineScope = CoroutineScope(context + Job())
-
     /**
      * The clock instance used by the host.
      */
@@ -148,7 +143,7 @@ public class SimHost(
             val interferenceKey = interferenceDomain?.getMember(key.name)
             val machine = hypervisor.newMachine(key.flavor.toMachineModel(), interferenceKey)
             val newGuest = Guest(
-                scope.coroutineContext,
+                context,
                 clock,
                 this,
                 hypervisor,
@@ -195,8 +190,7 @@ public class SimHost(
     }
 
     override fun close() {
-        reset()
-        scope.cancel()
+        reset(HostState.DOWN)
         machine.cancel()
     }
 
@@ -271,7 +265,7 @@ public class SimHost(
     override fun toString(): String = "SimHost[uid=$uid,name=$name,model=$model]"
 
     public suspend fun fail() {
-        reset()
+        reset(HostState.ERROR)
 
         for (guest in _guests) {
             guest.fail()
@@ -310,7 +304,7 @@ public class SimHost(
                     _state = HostState.UP
                     hypervisor.onStart(ctx)
                 } catch (cause: Throwable) {
-                    _state = HostState.DOWN
+                    _state = HostState.ERROR
                     _ctx = null
                     throw cause
                 }
@@ -320,7 +314,6 @@ public class SimHost(
                 try {
                     hypervisor.onStop(ctx)
                 } finally {
-                    _state = HostState.DOWN
                     _ctx = null
                 }
             }
@@ -330,12 +323,12 @@ public class SimHost(
     /**
      * Reset the machine.
      */
-    private fun reset() {
+    private fun reset(state: HostState) {
         updateUptime()
 
         // Stop the hypervisor
         _ctx?.close()
-        _state = HostState.DOWN
+        _state = state
     }
 
     /**
@@ -386,7 +379,7 @@ public class SimHost(
 
         if (_state == HostState.UP) {
             _uptime += duration
-        } else if (_state == HostState.DOWN && scope.isActive) {
+        } else if (_state == HostState.ERROR) {
             // Only increment downtime if the machine is in a failure state
             _downtime += duration
         }
