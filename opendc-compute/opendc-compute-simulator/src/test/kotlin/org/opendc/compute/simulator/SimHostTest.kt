@@ -67,6 +67,7 @@ internal class SimHostTest {
     fun testOvercommitted() = runBlockingSimulation {
         val duration = 5 * 60L
         val engine = FlowEngine(coroutineContext, clock)
+        val random = SplittableRandom(1)
         val host = SimHost(
             uid = UUID.randomUUID(),
             name = "test",
@@ -74,7 +75,8 @@ internal class SimHostTest {
             meta = emptyMap(),
             coroutineContext,
             engine,
-            SimFairShareHypervisorProvider()
+            SimFairShareHypervisorProvider(),
+            random,
         )
         val vmImageA = MockImage(
             UUID.randomUUID(),
@@ -149,6 +151,7 @@ internal class SimHostTest {
     fun testFailure() = runBlockingSimulation {
         val duration = 5 * 60L
         val engine = FlowEngine(coroutineContext, clock)
+        val random = SplittableRandom(1)
         val host = SimHost(
             uid = UUID.randomUUID(),
             name = "test",
@@ -156,7 +159,8 @@ internal class SimHostTest {
             meta = emptyMap(),
             coroutineContext,
             engine,
-            SimFairShareHypervisorProvider()
+            SimFairShareHypervisorProvider(),
+            random
         )
         val image = MockImage(
             UUID.randomUUID(),

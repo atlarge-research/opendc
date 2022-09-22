@@ -62,6 +62,7 @@ public class SimHost(
     context: CoroutineContext,
     engine: FlowEngine,
     hypervisorProvider: SimHypervisorProvider,
+    random: SplittableRandom,
     scalingGovernor: ScalingGovernor = PerformanceScalingGovernor(),
     powerDriver: PowerDriver = SimplePowerDriver(ConstantPowerModel(0.0)),
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
@@ -92,7 +93,7 @@ public class SimHost(
      * The hypervisor to run multiple workloads.
      */
     private val hypervisor: SimHypervisor = hypervisorProvider
-        .create(engine, scalingGovernor = scalingGovernor)
+        .create(engine, random, scalingGovernor = scalingGovernor)
 
     /**
      * The virtual machines running on the hypervisor.

@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.compute.kernel.interference
 
+import java.util.*
+
 /**
  * A participant of an interference domain.
  */
@@ -39,9 +41,10 @@ public interface VmInterferenceMember {
     /**
      * Compute the performance score of the member in this interference domain.
      *
+     * @param random The source of randomness to apply when computing the performance score.
      * @param load The overall load on the interference domain.
      * @return A score representing the performance score to be applied to the member, with 1
      * meaning no influence, <1 means that performance degrades, and >1 means that performance improves.
      */
-    public fun apply(load: Double): Double
+    public fun apply(random: SplittableRandom, load: Double): Double
 }

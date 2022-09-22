@@ -31,6 +31,7 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow.*
 import org.opendc.simulator.flow.mux.FlowMultiplexer
+import java.util.SplittableRandom
 import kotlin.math.roundToLong
 
 /**
@@ -38,10 +39,12 @@ import kotlin.math.roundToLong
  *
  * @param engine The [FlowEngine] to drive the simulation.
  * @param scalingGovernor The scaling governor to use for scaling the CPU frequency of the underlying hardware.
+ * @param random A randomness generator for the interference calculations.
  */
 public abstract class SimAbstractHypervisor(
     protected val engine: FlowEngine,
-    private val scalingGovernor: ScalingGovernor?
+    private val scalingGovernor: ScalingGovernor?,
+    private val random: SplittableRandom
 ) : SimHypervisor, FlowConvergenceListener {
     /**
      * The machine on which the hypervisor runs.
@@ -142,8 +145,12 @@ public abstract class SimAbstractHypervisor(
         if (delta > 0) {
             _counters.record()
 
+            val mux = mux
+            val load = mux.rate / mux.capacity.coerceAtLeast(1.0)
+            val random = random
+
             for (vm in _vms) {
-                vm._counters.record()
+                vm._counters.record(random, load)
             }
         }
 
@@ -351,7 +358,7 @@ public abstract class SimAbstractHypervisor(
         /**
          * Record the CPU time of the hypervisor.
          */
-        fun record() {
+        fun record(random: SplittableRandom, load: Double) {
             val cpuTime = _cpuTime
             val previous = _previous
 
@@ -383,9 +390,7 @@ public abstract class SimAbstractHypervisor(
             // Compute the performance penalty due to flow interference
             val key = key
             if (key != null) {
-                val mux = mux
-                val load = mux.rate / mux.capacity.coerceAtLeast(1.0)
-                val penalty = 1 - key.apply(load)
+                val penalty = 1 - key.apply(random, load)
                 val interference = (actualDelta * d * penalty).roundToLong()
 
                 if (interference > 0) {

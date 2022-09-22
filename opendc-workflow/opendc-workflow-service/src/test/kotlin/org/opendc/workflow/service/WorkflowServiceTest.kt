@@ -73,6 +73,7 @@ internal class WorkflowServiceTest {
             coroutineContext,
             clock,
             computeScheduler,
+            seed = 0,
             schedulingQuantum = Duration.ofSeconds(1)
         )
 

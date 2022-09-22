@@ -54,6 +54,7 @@ public class ComputeServiceHelper(
     private val context: CoroutineContext,
     private val clock: Clock,
     scheduler: ComputeScheduler,
+    seed: Long,
     private val failureModel: FailureModel? = null,
     private val interferenceModel: VmInterferenceModel? = null,
     schedulingQuantum: Duration = Duration.ofMinutes(5)
@@ -66,12 +67,17 @@ public class ComputeServiceHelper(
     /**
      * The [FlowEngine] to simulate the hosts.
      */
-    private val _engine = FlowEngine(context, clock)
+    private val engine = FlowEngine(context, clock)
 
     /**
      * The hosts that belong to this class.
      */
-    private val _hosts = mutableSetOf<SimHost>()
+    private val hosts = mutableSetOf<SimHost>()
+
+    /**
+     * The source of randomness.
+     */
+    private val random = SplittableRandom(seed)
 
     init {
         val service = createService(scheduler, schedulingQuantum)
@@ -82,18 +88,15 @@ public class ComputeServiceHelper(
      * Run a simulation of the [ComputeService] by replaying the workload trace given by [trace].
      *
      * @param trace The trace to simulate.
-     * @param seed The seed for the simulation.
      * @param servers A list to which the created servers is added.
      * @param submitImmediately A flag to indicate that the servers are scheduled immediately (so not at their start time).
      */
     public suspend fun run(
         trace: List<VirtualMachine>,
-        seed: Long,
         servers: MutableList<Server>? = null,
         submitImmediately: Boolean = false
     ) {
-        val random = Random(seed)
-        val injector = failureModel?.createInjector(context, clock, service, random)
+        val injector = failureModel?.createInjector(context, clock, service, Random(random.nextLong()))
         val client = service.newClient()
 
         // Create new image for the virtual machine
@@ -170,14 +173,15 @@ public class ComputeServiceHelper(
             spec.model,
             spec.meta,
             context,
-            _engine,
+            engine,
             spec.hypervisor,
+            random,
             powerDriver = spec.powerDriver,
             interferenceDomain = interferenceModel?.newDomain(),
             optimize = optimize
         )
 
-        require(_hosts.add(host)) { "Host with uid ${spec.uid} already exists" }
+        require(hosts.add(host)) { "Host with uid ${spec.uid} already exists" }
         service.addHost(host)
 
         return host
@@ -186,11 +190,11 @@ public class ComputeServiceHelper(
     override fun close() {
         service.close()
 
-        for (host in _hosts) {
+        for (host in hosts) {
             host.close()
         }
 
-        _hosts.clear()
+        hosts.clear()
     }
 
     /**

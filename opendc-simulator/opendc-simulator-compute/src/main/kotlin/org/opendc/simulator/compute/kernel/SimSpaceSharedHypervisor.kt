@@ -27,14 +27,20 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexer
 import org.opendc.simulator.flow.mux.ForwardingFlowMultiplexer
+import java.util.SplittableRandom
 
 /**
  * A [SimHypervisor] that allocates its sub-resources exclusively for the virtual machine that it hosts.
+ *
+ * @param engine The [FlowEngine] to manage the machine's resources.
+ * @param scalingGovernor The CPU frequency scaling governor to use for the hypervisor.
+ * @param random A randomness generator for the interference calculations.
  */
 public class SimSpaceSharedHypervisor(
     engine: FlowEngine,
     scalingGovernor: ScalingGovernor?,
-) : SimAbstractHypervisor(engine, scalingGovernor) {
+    random: SplittableRandom
+) : SimAbstractHypervisor(engine, scalingGovernor, random) {
     override val mux: FlowMultiplexer = ForwardingFlowMultiplexer(engine, this)
 
     override fun canFit(model: MachineModel): Boolean {

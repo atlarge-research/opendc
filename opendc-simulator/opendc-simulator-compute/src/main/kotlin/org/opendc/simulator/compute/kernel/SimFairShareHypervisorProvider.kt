@@ -24,6 +24,7 @@ package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.flow.FlowEngine
+import java.util.*
 
 /**
  * A [SimHypervisorProvider] for the [SimFairShareHypervisor] implementation.
@@ -33,6 +34,7 @@ public class SimFairShareHypervisorProvider : SimHypervisorProvider {
 
     override fun create(
         engine: FlowEngine,
+        random: SplittableRandom,
         scalingGovernor: ScalingGovernor?,
-    ): SimHypervisor = SimFairShareHypervisor(engine, scalingGovernor)
+    ): SimHypervisor = SimFairShareHypervisor(engine, scalingGovernor, random)
 }

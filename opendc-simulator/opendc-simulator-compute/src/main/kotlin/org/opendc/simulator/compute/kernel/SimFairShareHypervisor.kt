@@ -29,6 +29,7 @@ import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexer
 import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
+import java.util.SplittableRandom
 
 /**
  * A [SimHypervisor] that distributes the computing requirements of multiple [SimWorkload]s on a single [SimMachine]
@@ -36,11 +37,13 @@ import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
  *
  * @param engine The [FlowEngine] to manage the machine's resources.
  * @param scalingGovernor The CPU frequency scaling governor to use for the hypervisor.
+ * @param random A randomness generator for the interference calculations.
  */
 public class SimFairShareHypervisor(
     engine: FlowEngine,
-    scalingGovernor: ScalingGovernor?
-) : SimAbstractHypervisor(engine, scalingGovernor) {
+    scalingGovernor: ScalingGovernor?,
+    random: SplittableRandom
+) : SimAbstractHypervisor(engine, scalingGovernor, random) {
     /**
      * The multiplexer that distributes the computing capacity.
      */

@@ -73,8 +73,9 @@ public class CapelinRunner(
             coroutineContext,
             clock,
             computeScheduler,
+            seed,
             failureModel,
-            interferenceModel?.withSeed(seed)
+            interferenceModel?.takeIf { operationalPhenomena.hasInterference }
         )
 
         val topology = clusterTopology(File(envPath, "${scenario.topology.name}.txt"))
@@ -104,7 +105,7 @@ public class CapelinRunner(
             runner.apply(topology, optimize = true)
 
             // Run the workload trace
-            runner.run(vms, seeder.nextLong(), servers)
+            runner.run(vms, servers)
 
             // Stop the metric collection
             exporter?.close()

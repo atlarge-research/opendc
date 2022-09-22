@@ -220,6 +220,7 @@ public class OpenDCRunner(
                         coroutineContext,
                         clock,
                         computeScheduler,
+                        seed = 0L,
                         failureModel,
                         interferenceModel.takeIf { phenomena.interference }
                     )
@@ -230,7 +231,7 @@ public class OpenDCRunner(
                         // Instantiate the topology onto the simulator
                         simulator.apply(topology)
                         // Run workload trace
-                        simulator.run(vms, seeder.nextLong(), servers)
+                        simulator.run(vms, servers)
 
                         val serviceMetrics = simulator.service.getSchedulerStats()
                         logger.debug {

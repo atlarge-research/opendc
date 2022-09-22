@@ -32,7 +32,6 @@ import java.util.*
  * @param members The members belonging to each group.
  * @param membership The identifier of each key.
  * @param size The number of groups.
- * @param seed The seed to use for randomly selecting the virtual machines that are affected.
  */
 public class VmInterferenceModel private constructor(
     private val idMapping: Map<String, Int>,
@@ -40,25 +39,12 @@ public class VmInterferenceModel private constructor(
     private val membership: Array<IntArray>,
     private val targets: DoubleArray,
     private val scores: DoubleArray,
-    private val size: Int,
-    seed: Long,
+    private val size: Int
 ) {
-    /**
-     * A [SplittableRandom] used for selecting the virtual machines that are affected.
-     */
-    private val random = SplittableRandom(seed)
-
     /**
      * Construct a new [VmInterferenceDomain].
      */
-    public fun newDomain(): VmInterferenceDomain = InterferenceDomainImpl(idMapping, members, membership, targets, scores, random)
-
-    /**
-     * Create a copy of this model with a different seed.
-     */
-    public fun withSeed(seed: Long): VmInterferenceModel {
-        return VmInterferenceModel(idMapping, members, membership, targets, scores, size, seed)
-    }
+    public fun newDomain(): VmInterferenceDomain = InterferenceDomainImpl(idMapping, members, membership, targets, scores)
 
     public companion object {
         /**
@@ -72,11 +58,6 @@ public class VmInterferenceModel private constructor(
      * Builder class for a [VmInterferenceModel]
      */
     public class Builder internal constructor() {
-        /**
-         * The initial capacity of the builder.
-         */
-        private val INITIAL_CAPACITY = 256
-
         /**
          * The target load of each group.
          */
@@ -125,7 +106,7 @@ public class VmInterferenceModel private constructor(
         /**
          * Build the [VmInterferenceModel].
          */
-        public fun build(seed: Long = 0): VmInterferenceModel {
+        public fun build(): VmInterferenceModel {
             val size = size
             val targets = _targets
             val scores = _scores
@@ -176,8 +157,7 @@ public class VmInterferenceModel private constructor(
                 membership.map { it.value.toIntArray() }.toTypedArray(),
                 newTargets,
                 newScores,
-                size,
-                seed
+                size
             )
         }
 
@@ -191,6 +171,13 @@ public class VmInterferenceModel private constructor(
             _targets = _targets.copyOf(newSize)
             _scores = _scores.copyOf(newSize)
         }
+
+        private companion object {
+            /**
+             * The initial capacity of the builder.
+             */
+            const val INITIAL_CAPACITY = 256
+        }
     }
 
     /**
@@ -202,7 +189,6 @@ public class VmInterferenceModel private constructor(
         private val membership: Array<IntArray>,
         private val targets: DoubleArray,
         private val scores: DoubleArray,
-        private val random: SplittableRandom
     ) : VmInterferenceDomain {
         /**
          * Keys registered with this domain.
@@ -221,7 +207,7 @@ public class VmInterferenceModel private constructor(
 
         override fun getMember(id: String): VmInterferenceMember? {
             val intId = idMapping[id] ?: return null
-            return keys.computeIfAbsent(intId) { InterferenceMemberImpl(it, this, membership[it], members, targets, scores, random) }
+            return keys.computeIfAbsent(intId) { InterferenceMemberImpl(it, this, membership[it], members, targets, scores) }
         }
 
         override fun toString(): String = "VmInterferenceDomain"
@@ -307,8 +293,7 @@ public class VmInterferenceModel private constructor(
         @JvmField val membership: IntArray,
         private val members: Array<IntArray>,
         private val targets: DoubleArray,
-        private val scores: DoubleArray,
-        private val random: SplittableRandom
+        private val scores: DoubleArray
     ) : VmInterferenceMember, Comparable<InterferenceMemberImpl> {
         /**
          * The active groups to which the key belongs.
@@ -333,7 +318,7 @@ public class VmInterferenceModel private constructor(
             }
         }
 
-        override fun apply(load: Double): Double {
+        override fun apply(random: SplittableRandom, load: Double): Double {
             val groupsSize = groupsSize
 
             if (groupsSize == 0) {

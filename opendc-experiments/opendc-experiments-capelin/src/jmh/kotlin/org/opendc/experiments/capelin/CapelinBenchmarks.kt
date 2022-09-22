@@ -68,12 +68,13 @@ class CapelinBenchmarks {
         val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
-            computeScheduler
+            computeScheduler,
+            seed = 0L,
         )
 
         try {
             runner.apply(topology, isOptimized)
-            runner.run(vms, 0)
+            runner.run(vms)
         } finally {
             runner.close()
         }

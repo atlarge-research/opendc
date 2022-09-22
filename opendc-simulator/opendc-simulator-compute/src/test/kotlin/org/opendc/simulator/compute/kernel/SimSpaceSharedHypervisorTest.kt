@@ -40,6 +40,7 @@ import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.compute.workload.*
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
+import java.util.*
 
 /**
  * A test suite for the [SimSpaceSharedHypervisor].
@@ -75,7 +76,8 @@ internal class SimSpaceSharedHypervisorTest {
 
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimSpaceSharedHypervisor(engine, null)
+        val random = SplittableRandom(1)
+        val hypervisor = SimSpaceSharedHypervisor(engine, null, random)
 
         launch { machine.runWorkload(hypervisor) }
         val vm = hypervisor.newMachine(machineModel)
@@ -97,7 +99,8 @@ internal class SimSpaceSharedHypervisorTest {
         val workload = SimRuntimeWorkload(duration)
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimSpaceSharedHypervisor(engine, null)
+        val random = SplittableRandom(1)
+        val hypervisor = SimSpaceSharedHypervisor(engine, null, random)
 
         launch { machine.runWorkload(hypervisor) }
         yield()
@@ -121,7 +124,8 @@ internal class SimSpaceSharedHypervisorTest {
         val machine = SimBareMetalMachine(
             engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimSpaceSharedHypervisor(engine, null)
+        val random = SplittableRandom(1)
+        val hypervisor = SimSpaceSharedHypervisor(engine, null, random)
 
         launch { machine.runWorkload(hypervisor) }
         yield()
@@ -142,7 +146,8 @@ internal class SimSpaceSharedHypervisorTest {
         val machine = SimBareMetalMachine(
             engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimSpaceSharedHypervisor(engine, null)
+        val random = SplittableRandom(1)
+        val hypervisor = SimSpaceSharedHypervisor(engine, null, random)
 
         launch { machine.runWorkload(hypervisor) }
         yield()
@@ -169,7 +174,8 @@ internal class SimSpaceSharedHypervisorTest {
     fun testConcurrentWorkloadFails() = runBlockingSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimSpaceSharedHypervisor(engine, null)
+        val random = SplittableRandom(1)
+        val hypervisor = SimSpaceSharedHypervisor(engine, null, random)
 
         launch { machine.runWorkload(hypervisor) }
         yield()
@@ -193,7 +199,8 @@ internal class SimSpaceSharedHypervisorTest {
         val machine = SimBareMetalMachine(
             interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimSpaceSharedHypervisor(interpreter, null)
+        val random = SplittableRandom(1)
+        val hypervisor = SimSpaceSharedHypervisor(interpreter, null, random)
 
         launch { machine.runWorkload(hypervisor) }
         yield()

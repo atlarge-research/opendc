@@ -37,6 +37,7 @@ import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 import org.openjdk.jmh.annotations.*
+import java.util.SplittableRandom
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
@@ -85,7 +86,8 @@ class SimMachineBenchmarks {
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimSpaceSharedHypervisor(engine, null)
+            val random = SplittableRandom(1)
+            val hypervisor = SimSpaceSharedHypervisor(engine, null, random)
 
             launch { machine.runWorkload(hypervisor) }
 
@@ -107,7 +109,8 @@ class SimMachineBenchmarks {
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimFairShareHypervisor(engine, null)
+            val random = SplittableRandom(1)
+            val hypervisor = SimFairShareHypervisor(engine, null, random)
 
             launch { machine.runWorkload(hypervisor) }
 
@@ -129,7 +132,8 @@ class SimMachineBenchmarks {
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimFairShareHypervisor(engine, null)
+            val random = SplittableRandom(1)
+            val hypervisor = SimFairShareHypervisor(engine, null, random)
 
             launch { machine.runWorkload(hypervisor) }
 

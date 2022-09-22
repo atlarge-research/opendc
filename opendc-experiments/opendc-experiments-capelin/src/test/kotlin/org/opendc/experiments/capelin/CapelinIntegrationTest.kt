@@ -81,11 +81,13 @@ class CapelinIntegrationTest {
      */
     @Test
     fun testLarge() = runBlockingSimulation {
-        val (workload, _) = createTestWorkload(1.0)
+        val seed = 0L
+        val (workload, _) = createTestWorkload(1.0, seed)
         val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
-            computeScheduler
+            computeScheduler,
+            seed,
         )
         val topology = createTopology()
 
@@ -94,7 +96,7 @@ class CapelinIntegrationTest {
 
         try {
             runner.apply(topology)
-            runner.run(workload, 0, servers)
+            runner.run(workload, servers)
 
             val serviceMetrics = runner.service.getSchedulerStats()
             println(
@@ -129,12 +131,13 @@ class CapelinIntegrationTest {
      */
     @Test
     fun testSmall() = runBlockingSimulation {
-        val seed = 1
+        val seed = 1L
         val (workload, _) = createTestWorkload(0.25, seed)
         val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
-            computeScheduler
+            computeScheduler,
+            seed,
         )
         val topology = createTopology("single")
         val servers = mutableListOf<Server>()
@@ -142,7 +145,7 @@ class CapelinIntegrationTest {
 
         try {
             runner.apply(topology)
-            runner.run(workload, seed.toLong(), servers)
+            runner.run(workload, servers)
 
             val serviceMetrics = runner.service.getSchedulerStats()
             println(
@@ -173,14 +176,15 @@ class CapelinIntegrationTest {
      */
     @Test
     fun testInterference() = runBlockingSimulation {
-        val seed = 0
+        val seed = 0L
         val (workload, interferenceModel) = createTestWorkload(1.0, seed)
 
         val simulator = ComputeServiceHelper(
             coroutineContext,
             clock,
             computeScheduler,
-            interferenceModel = interferenceModel?.withSeed(seed.toLong())
+            seed,
+            interferenceModel = interferenceModel
         )
         val topology = createTopology("single")
         val servers = mutableListOf<Server>()
@@ -188,7 +192,7 @@ class CapelinIntegrationTest {
 
         try {
             simulator.apply(topology)
-            simulator.run(workload, seed.toLong(), servers)
+            simulator.run(workload, servers)
 
             val serviceMetrics = simulator.service.getSchedulerStats()
             println(
@@ -218,11 +222,12 @@ class CapelinIntegrationTest {
      */
     @Test
     fun testFailures() = runBlockingSimulation {
-        val seed = 1
+        val seed = 0L
         val simulator = ComputeServiceHelper(
             coroutineContext,
             clock,
             computeScheduler,
+            seed,
             grid5000(Duration.ofDays(7))
         )
         val topology = createTopology("single")
@@ -232,7 +237,7 @@ class CapelinIntegrationTest {
 
         try {
             simulator.apply(topology)
-            simulator.run(workload, seed.toLong(), servers)
+            simulator.run(workload, servers)
 
             val serviceMetrics = simulator.service.getSchedulerStats()
             println(
@@ -250,20 +255,20 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(10867345, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(9607095, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(10982026, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(9740058, monitor.activeTime) { "Active time incorrect" } },
             { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
             { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-            { assertEquals(2559305056, monitor.uptime) { "Uptime incorrect" } }
+            { assertEquals(2590260605, monitor.uptime) { "Uptime incorrect" } },
         )
     }
 
     /**
      * Obtain the trace reader for the test.
      */
-    private fun createTestWorkload(fraction: Double, seed: Int = 0): ComputeWorkload.Resolved {
+    private fun createTestWorkload(fraction: Double, seed: Long): ComputeWorkload.Resolved {
         val source = trace("bitbrains-small").sampleByLoad(fraction)
-        return source.resolve(workloadLoader, Random(seed.toLong()))
+        return source.resolve(workloadLoader, Random(seed))
     }
 
     /**
