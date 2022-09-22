@@ -37,6 +37,12 @@ public class ForwardingFlowMultiplexer(
     private val engine: FlowEngine,
     private val listener: FlowConvergenceListener? = null
 ) : FlowMultiplexer, FlowConvergenceListener {
+
+    override val maxInputs: Int
+        get() = _outputs.size
+
+    override val maxOutputs: Int = Int.MAX_VALUE
+
     override val inputs: Set<FlowConsumer>
         get() = _inputs
     private val _inputs = mutableSetOf<Input>()

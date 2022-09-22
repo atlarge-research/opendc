@@ -31,6 +31,16 @@ import org.opendc.simulator.flow.FlowSource
  */
 public interface FlowMultiplexer {
     /**
+     * The maximum number of inputs supported by the multiplexer.
+     */
+    public val maxInputs: Int
+
+    /**
+     * The maximum number of outputs supported by the multiplexer.
+     */
+    public val maxOutputs: Int
+
+    /**
      * The inputs of the multiplexer that can be used to consume sources.
      */
     public val inputs: Set<FlowConsumer>

@@ -31,7 +31,7 @@ import org.opendc.compute.api.*
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.simulator.compute.SimBareMetalMachine
-import org.opendc.simulator.compute.kernel.SimFairShareHypervisor
+import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -43,6 +43,7 @@ import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
 import java.time.Instant
 import java.util.*
 import kotlin.coroutines.resume
@@ -71,7 +72,7 @@ internal class SimHostTest {
         val duration = 5 * 60L
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(engine, SplittableRandom(1), null)
+        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
         val host = SimHost(
             uid = UUID.randomUUID(),
             name = "test",
@@ -155,7 +156,7 @@ internal class SimHostTest {
         val duration = 5 * 60L
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(engine, SplittableRandom(1), null)
+        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
         val host = SimHost(
             uid = UUID.randomUUID(),
             name = "test",

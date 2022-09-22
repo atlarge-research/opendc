@@ -32,7 +32,7 @@ import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.simulator.compute.SimBareMetalMachine
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
+import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.flow.FlowEngine
 import java.time.Clock
@@ -175,7 +175,7 @@ public class ComputeServiceHelper(
      */
     public fun registerHost(spec: HostSpec, optimize: Boolean = false): SimHost {
         val machine = SimBareMetalMachine(engine, spec.model, spec.powerDriver)
-        val hypervisor = spec.hypervisor.create(engine, random, interferenceDomain = VmInterferenceDomain())
+        val hypervisor = SimHypervisor(engine, spec.multiplexerFactory, random)
 
         val host = SimHost(
             spec.uid,

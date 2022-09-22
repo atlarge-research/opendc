@@ -37,6 +37,11 @@ public class MaxMinFlowMultiplexer(
     private val engine: FlowEngine,
     parent: FlowConvergenceListener? = null
 ) : FlowMultiplexer {
+
+    override val maxInputs: Int = Int.MAX_VALUE
+
+    override val maxOutputs: Int = Int.MAX_VALUE
+
     /**
      * The inputs of the multiplexer.
      */

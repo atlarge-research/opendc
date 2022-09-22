@@ -24,8 +24,7 @@ package org.opendc.simulator.compute
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import org.opendc.simulator.compute.kernel.SimFairShareHypervisor
-import org.opendc.simulator.compute.kernel.SimSpaceSharedHypervisor
+import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -36,6 +35,7 @@ import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
 import org.openjdk.jmh.annotations.*
 import java.util.SplittableRandom
 import java.util.concurrent.ThreadLocalRandom
@@ -83,11 +83,8 @@ class SimMachineBenchmarks {
     fun benchmarkSpaceSharedHypervisor() {
         return runBlockingSimulation {
             val engine = FlowEngine(coroutineContext, clock)
-            val machine = SimBareMetalMachine(
-                engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
-            )
-            val random = SplittableRandom(1)
-            val hypervisor = SimSpaceSharedHypervisor(engine, random, null)
+            val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
+            val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(1), null)
 
             launch { machine.runWorkload(hypervisor) }
 
@@ -106,11 +103,8 @@ class SimMachineBenchmarks {
     fun benchmarkFairShareHypervisorSingle() {
         return runBlockingSimulation {
             val engine = FlowEngine(coroutineContext, clock)
-            val machine = SimBareMetalMachine(
-                engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
-            )
-            val random = SplittableRandom(1)
-            val hypervisor = SimFairShareHypervisor(engine, random, null)
+            val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
+            val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
 
             launch { machine.runWorkload(hypervisor) }
 
@@ -129,11 +123,8 @@ class SimMachineBenchmarks {
     fun benchmarkFairShareHypervisorDouble() {
         return runBlockingSimulation {
             val engine = FlowEngine(coroutineContext, clock)
-            val machine = SimBareMetalMachine(
-                engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
-            )
-            val random = SplittableRandom(1)
-            val hypervisor = SimFairShareHypervisor(engine, random, null)
+            val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
+            val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
 
             launch { machine.runWorkload(hypervisor) }
 

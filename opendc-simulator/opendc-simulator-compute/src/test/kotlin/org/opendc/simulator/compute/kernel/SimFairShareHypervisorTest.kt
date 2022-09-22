@@ -43,6 +43,7 @@ import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
 import java.util.*
 
 /**
@@ -76,10 +77,9 @@ internal class SimFairShareHypervisorTest {
                 ),
             )
 
-        val platform = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val random = SplittableRandom(1)
-        val hypervisor = SimFairShareHypervisor(platform, random, PerformanceScalingGovernor())
+        val engine = FlowEngine(coroutineContext, clock)
+        val machine = SimBareMetalMachine(engine, model, SimplePowerDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), PerformanceScalingGovernor())
 
         launch {
             machine.runWorkload(hypervisor)
@@ -126,12 +126,9 @@ internal class SimFairShareHypervisorTest {
                 )
             )
 
-        val platform = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(
-            platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
-        )
-        val random = SplittableRandom(1)
-        val hypervisor = SimFairShareHypervisor(platform, random, null)
+        val engine = FlowEngine(coroutineContext, clock)
+        val machine = SimBareMetalMachine(engine, model, SimplePowerDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
 
         launch {
             machine.runWorkload(hypervisor)
@@ -168,10 +165,9 @@ internal class SimFairShareHypervisorTest {
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
 
-        val platform = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val random = SplittableRandom(1)
-        val hypervisor = SimFairShareHypervisor(platform, random, null)
+        val engine = FlowEngine(coroutineContext, clock)
+        val machine = SimBareMetalMachine(engine, model, SimplePowerDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
 
         assertDoesNotThrow {
             launch {
@@ -197,11 +193,8 @@ internal class SimFairShareHypervisorTest {
             .build()
 
         val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(
-            engine, model, SimplePowerDriver(ConstantPowerModel(0.0))
-        )
-        val random = SplittableRandom(1)
-        val hypervisor = SimFairShareHypervisor(engine, random, null)
+        val machine = SimBareMetalMachine(engine, model, SimplePowerDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
 
         val duration = 5 * 60L
         val workloadA =
