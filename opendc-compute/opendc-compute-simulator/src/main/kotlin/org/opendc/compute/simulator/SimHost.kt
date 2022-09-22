@@ -35,17 +35,11 @@ import org.opendc.compute.simulator.internal.Guest
 import org.opendc.compute.simulator.internal.GuestListener
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.kernel.SimHypervisor
-import org.opendc.simulator.compute.kernel.SimHypervisorProvider
-import org.opendc.simulator.compute.kernel.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.power.ConstantPowerModel
-import org.opendc.simulator.compute.power.PowerDriver
-import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.flow.FlowEngine
+import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -57,38 +51,19 @@ import kotlin.coroutines.CoroutineContext
 public class SimHost(
     override val uid: UUID,
     override val name: String,
-    model: MachineModel,
     override val meta: Map<String, Any>,
     private val context: CoroutineContext,
-    engine: FlowEngine,
-    hypervisorProvider: SimHypervisorProvider,
-    random: SplittableRandom,
-    scalingGovernor: ScalingGovernor = PerformanceScalingGovernor(),
-    powerDriver: PowerDriver = SimplePowerDriver(ConstantPowerModel(0.0)),
+    private val clock: Clock,
+    private val machine: SimBareMetalMachine,
+    private val hypervisor: SimHypervisor,
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
     private val interferenceDomain: VmInterferenceDomain? = null,
     private val optimize: Boolean = false
 ) : Host, AutoCloseable {
     /**
-     * The clock instance used by the host.
-     */
-    private val clock = engine.clock
-
-    /**
      * The event listeners registered with this host.
      */
     private val listeners = mutableListOf<HostListener>()
-
-    /**
-     * The machine to run on.
-     */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(engine, model.optimize(), powerDriver)
-
-    /**
-     * The hypervisor to run multiple workloads.
-     */
-    private val hypervisor: SimHypervisor = hypervisorProvider
-        .create(engine, random, scalingGovernor = scalingGovernor)
 
     /**
      * The virtual machines running on the hypervisor.
@@ -109,7 +84,11 @@ public class SimHost(
             field = value
         }
 
-    override val model: HostModel = HostModel(model.cpus.sumOf { it.frequency }, model.cpus.size, model.memory.sumOf { it.size })
+    override val model: HostModel = HostModel(
+        machine.model.cpus.sumOf { it.frequency },
+        machine.model.cpus.size,
+        machine.model.memory.sumOf { it.size }
+    )
 
     /**
      * The [GuestListener] that listens for guest events.
@@ -341,26 +320,8 @@ public class SimHost(
         val processingUnits = (0 until cpuCount).map { originalCpu.copy(id = it, node = processingNode, frequency = cpuCapacity) }
         val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
 
-        return MachineModel(processingUnits, memoryUnits).optimize()
-    }
-
-    /**
-     * Optimize the [MachineModel] for simulation.
-     */
-    private fun MachineModel.optimize(): MachineModel {
-        if (!optimize) {
-            return this
-        }
-
-        val originalCpu = cpus[0]
-        val freq = cpus.sumOf { it.frequency }
-        val processingNode = originalCpu.node.copy(coreCount = 1)
-        val processingUnits = listOf(originalCpu.copy(frequency = freq, node = processingNode))
-
-        val memorySize = memory.sumOf { it.size }
-        val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
-
-        return MachineModel(processingUnits, memoryUnits)
+        val model = MachineModel(processingUnits, memoryUnits)
+        return if (optimize) model.optimize() else model
     }
 
     private var _lastReport = clock.millis()
