@@ -221,7 +221,6 @@ public class OpenDCRunner(
                         clock,
                         computeScheduler,
                         seed = 0L,
-                        failureModel
                     )
                     val servers = mutableListOf<Server>()
                     val reader = ComputeMetricReader(this, clock, simulator.service, servers, monitor)
@@ -230,7 +229,7 @@ public class OpenDCRunner(
                         // Instantiate the topology onto the simulator
                         simulator.apply(topology)
                         // Run workload trace
-                        simulator.run(vms, servers, interference = phenomena.interference)
+                        simulator.run(vms, servers, failureModel = failureModel, interference = phenomena.interference)
 
                         val serviceMetrics = simulator.service.getSchedulerStats()
                         logger.debug {

@@ -47,7 +47,6 @@ import kotlin.math.max
  * @param context [CoroutineContext] to run the simulation in.
  * @param clock [Clock] instance tracking simulation time.
  * @param scheduler [ComputeScheduler] implementation to use for the service.
- * @param failureModel A failure model to use for injecting failures.
  * @param schedulingQuantum The scheduling quantum of the scheduler.
  */
 public class ComputeServiceHelper(
@@ -55,7 +54,6 @@ public class ComputeServiceHelper(
     private val clock: Clock,
     scheduler: ComputeScheduler,
     seed: Long,
-    private val failureModel: FailureModel? = null,
     schedulingQuantum: Duration = Duration.ofMinutes(5)
 ) : AutoCloseable {
     /**
@@ -89,12 +87,14 @@ public class ComputeServiceHelper(
      * @param trace The trace to simulate.
      * @param servers A list to which the created servers is added.
      * @param submitImmediately A flag to indicate that the servers are scheduled immediately (so not at their start time).
+     * @param failureModel A failure model to use for injecting failures.
      * @param interference A flag to indicate that VM interference needs to be enabled.
      */
     public suspend fun run(
         trace: List<VirtualMachine>,
         servers: MutableList<Server>? = null,
         submitImmediately: Boolean = false,
+        failureModel: FailureModel? = null,
         interference: Boolean = false,
     ) {
         val injector = failureModel?.createInjector(context, clock, service, Random(random.nextLong()))

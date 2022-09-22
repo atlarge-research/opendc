@@ -226,8 +226,7 @@ class CapelinIntegrationTest {
             coroutineContext,
             clock,
             computeScheduler,
-            seed,
-            grid5000(Duration.ofDays(7))
+            seed
         )
         val topology = createTopology("single")
         val workload = createTestWorkload(0.25, seed)
@@ -236,7 +235,7 @@ class CapelinIntegrationTest {
 
         try {
             simulator.apply(topology)
-            simulator.run(workload, servers)
+            simulator.run(workload, servers, failureModel = grid5000(Duration.ofDays(7)))
 
             val serviceMetrics = simulator.service.getSchedulerStats()
             println(

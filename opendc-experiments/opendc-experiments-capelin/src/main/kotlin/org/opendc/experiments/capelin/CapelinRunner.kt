@@ -74,7 +74,6 @@ public class CapelinRunner(
             clock,
             computeScheduler,
             seed,
-            failureModel
         )
 
         val topology = clusterTopology(File(envPath, "${scenario.topology.name}.txt"))
@@ -104,7 +103,7 @@ public class CapelinRunner(
             runner.apply(topology, optimize = true)
 
             // Run the workload trace
-            runner.run(vms, servers, interference = operationalPhenomena.hasInterference)
+            runner.run(vms, servers, failureModel = failureModel, interference = operationalPhenomena.hasInterference)
 
             // Stop the metric collection
             exporter?.close()
