@@ -48,7 +48,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     /**
      * The cache of workloads.
      */
-    private val cache = ConcurrentHashMap<String, SoftReference<ComputeWorkload.Resolved>>()
+    private val cache = ConcurrentHashMap<String, SoftReference<List<VirtualMachine>>>()
 
     /**
      * Read the fragments into memory.
@@ -87,7 +87,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     /**
      * Read the metadata into a workload.
      */
-    private fun parseMeta(trace: Trace, fragments: Map<String, Builder>): List<VirtualMachine> {
+    private fun parseMeta(trace: Trace, fragments: Map<String, Builder>, interferenceModel: VmInterferenceModel): List<VirtualMachine> {
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCES)).newReader()
 
         val idCol = reader.resolve(RESOURCE_ID)
@@ -128,7 +128,8 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                         totalLoad,
                         submissionTime,
                         endTime,
-                        builder.build()
+                        builder.build(),
+                        interferenceModel.getProfile(id)
                     )
                 )
             }
@@ -159,7 +160,6 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
             val modelBuilder = VmInterferenceModel.builder()
 
             while (reader.nextRow()) {
-                @Suppress("UNCHECKED_CAST")
                 val members = reader.getSet(membersCol, String::class.java)!!
                 val target = reader.getDouble(targetCol)
                 val score = reader.getDouble(scoreCol)
@@ -177,7 +177,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     /**
      * Load the trace with the specified [name] and [format].
      */
-    public fun get(name: String, format: String): ComputeWorkload.Resolved {
+    public fun get(name: String, format: String): List<VirtualMachine> {
         val ref = cache.compute(name) { key, oldVal ->
             val inst = oldVal?.get()
             if (inst == null) {
@@ -188,11 +188,10 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
 
                 val trace = Trace.open(path, format)
                 val fragments = parseFragments(trace)
-                val vms = parseMeta(trace, fragments)
                 val interferenceModel = parseInterferenceModel(trace)
-                val instance = ComputeWorkload.Resolved(vms, interferenceModel)
+                val vms = parseMeta(trace, fragments, interferenceModel)
 
-                SoftReference(instance)
+                SoftReference(vms)
             } else {
                 oldVal
             }

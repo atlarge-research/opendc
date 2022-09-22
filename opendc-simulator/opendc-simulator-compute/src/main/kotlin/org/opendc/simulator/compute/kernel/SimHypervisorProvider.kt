@@ -23,6 +23,7 @@
 package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.flow.FlowEngine
 import java.util.SplittableRandom
 
@@ -41,5 +42,10 @@ public interface SimHypervisorProvider {
     /**
      * Create a new [SimHypervisor] instance.
      */
-    public fun create(engine: FlowEngine, random: SplittableRandom, scalingGovernor: ScalingGovernor? = null): SimHypervisor
+    public fun create(
+        engine: FlowEngine,
+        random: SplittableRandom,
+        scalingGovernor: ScalingGovernor? = null,
+        interferenceDomain: VmInterferenceDomain
+    ): SimHypervisor
 }

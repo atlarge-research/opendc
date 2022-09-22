@@ -37,17 +37,17 @@ internal class CompositeComputeWorkload(val sources: Map<ComputeWorkload, Double
      */
     private val logger = KotlinLogging.logger {}
 
-    override fun resolve(loader: ComputeWorkloadLoader, random: Random): ComputeWorkload.Resolved {
+    override fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine> {
         val traces = sources.map { (source, fraction) -> fraction to source.resolve(loader, random) }
 
-        val totalLoad = traces.sumOf { (_, w) -> w.vms.sumOf { it.totalLoad } }
+        val totalLoad = traces.sumOf { (_, vms) -> vms.sumOf { it.totalLoad } }
 
         val res = mutableListOf<VirtualMachine>()
 
-        for ((fraction, w) in traces) {
+        for ((fraction, vms) in traces) {
             var currentLoad = 0.0
 
-            for (entry in w.vms) {
+            for (entry in vms) {
                 val entryLoad = entry.totalLoad
                 if ((currentLoad + entryLoad) / totalLoad > fraction) {
                     break
@@ -58,9 +58,9 @@ internal class CompositeComputeWorkload(val sources: Map<ComputeWorkload, Double
             }
         }
 
-        val vmCount = traces.sumOf { (_, w) -> w.vms.size }
+        val vmCount = traces.sumOf { (_, vms) -> vms.size }
         logger.info { "Sampled $vmCount VMs into subset of ${res.size} VMs" }
 
-        return ComputeWorkload.Resolved(res, null)
+        return res
     }
 }

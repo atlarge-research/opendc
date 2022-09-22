@@ -79,7 +79,7 @@ internal class SimFairShareHypervisorTest {
         val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
         val random = SplittableRandom(1)
-        val hypervisor = SimFairShareHypervisor(platform, PerformanceScalingGovernor(), random)
+        val hypervisor = SimFairShareHypervisor(platform, random, PerformanceScalingGovernor())
 
         launch {
             machine.runWorkload(hypervisor)
@@ -131,7 +131,7 @@ internal class SimFairShareHypervisorTest {
             platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
         val random = SplittableRandom(1)
-        val hypervisor = SimFairShareHypervisor(platform, null, random)
+        val hypervisor = SimFairShareHypervisor(platform, random, null)
 
         launch {
             machine.runWorkload(hypervisor)
@@ -171,7 +171,7 @@ internal class SimFairShareHypervisorTest {
         val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
         val random = SplittableRandom(1)
-        val hypervisor = SimFairShareHypervisor(platform, null, random)
+        val hypervisor = SimFairShareHypervisor(platform, random, null)
 
         assertDoesNotThrow {
             launch {
@@ -195,14 +195,13 @@ internal class SimFairShareHypervisorTest {
             .addGroup(targetLoad = 0.0, score = 0.6, members = setOf("a", "c"))
             .addGroup(targetLoad = 0.1, score = 0.8, members = setOf("a", "n"))
             .build()
-        val interferenceDomain = interferenceModel.newDomain()
 
-        val platform = FlowEngine(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
+            engine, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
         val random = SplittableRandom(1)
-        val hypervisor = SimFairShareHypervisor(platform, null, random)
+        val hypervisor = SimFairShareHypervisor(engine, random, null)
 
         val duration = 5 * 60L
         val workloadA =
@@ -230,12 +229,12 @@ internal class SimFairShareHypervisorTest {
 
         coroutineScope {
             launch {
-                val vm = hypervisor.newMachine(model, interferenceDomain.getMember("a"))
-                vm.runWorkload(workloadA)
+                val vm = hypervisor.newMachine(model)
+                vm.runWorkload(workloadA, meta = mapOf("interference-model" to interferenceModel.getProfile("a")!!))
                 hypervisor.removeMachine(vm)
             }
-            val vm = hypervisor.newMachine(model, interferenceDomain.getMember("b"))
-            vm.runWorkload(workloadB)
+            val vm = hypervisor.newMachine(model)
+            vm.runWorkload(workloadB, meta = mapOf("interference-model" to interferenceModel.getProfile("b")!!))
             hypervisor.removeMachine(vm)
         }
 

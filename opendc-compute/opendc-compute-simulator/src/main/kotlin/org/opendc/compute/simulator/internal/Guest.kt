@@ -217,7 +217,7 @@ internal class Guest(
      */
     private suspend fun runMachine(workload: SimWorkload) {
         delay(1) // TODO Introduce model for boot time
-        machine.runWorkload(workload, mapOf("driver" to host, "server" to server))
+        machine.runWorkload(workload, mapOf("driver" to host, "server" to server) + server.meta)
     }
 
     /**

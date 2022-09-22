@@ -25,7 +25,9 @@ package org.opendc.simulator.compute.kernel
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingPolicy
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceMember
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceProfile
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
@@ -38,13 +40,15 @@ import kotlin.math.roundToLong
  * Abstract implementation of the [SimHypervisor] interface.
  *
  * @param engine The [FlowEngine] to drive the simulation.
- * @param scalingGovernor The scaling governor to use for scaling the CPU frequency of the underlying hardware.
  * @param random A randomness generator for the interference calculations.
+ * @param scalingGovernor The scaling governor to use for scaling the CPU frequency of the underlying hardware.
+ * @param interferenceDomain The interference domain to which the hypervisor belongs.
  */
 public abstract class SimAbstractHypervisor(
     protected val engine: FlowEngine,
+    private val random: SplittableRandom,
     private val scalingGovernor: ScalingGovernor?,
-    private val random: SplittableRandom
+    private val interferenceDomain: VmInterferenceDomain
 ) : SimHypervisor, FlowConvergenceListener {
     /**
      * The machine on which the hypervisor runs.
@@ -94,9 +98,9 @@ public abstract class SimAbstractHypervisor(
     private val governors = mutableListOf<ScalingGovernor.Logic>()
 
     /* SimHypervisor */
-    override fun newMachine(model: MachineModel, interferenceKey: VmInterferenceMember?): SimVirtualMachine {
+    override fun newMachine(model: MachineModel): SimVirtualMachine {
         require(canFit(model)) { "Machine does not fit" }
-        val vm = VirtualMachine(model, interferenceKey)
+        val vm = VirtualMachine(model)
         _vms.add(vm)
         return vm
     }
@@ -164,12 +168,8 @@ public abstract class SimAbstractHypervisor(
      * A virtual machine running on the hypervisor.
      *
      * @param model The machine model of the virtual machine.
-     * @param interferenceKey The interference key of this virtual machine.
      */
-    private inner class VirtualMachine(
-        model: MachineModel,
-        private val interferenceKey: VmInterferenceMember? = null
-    ) : SimAbstractMachine(engine, model), SimVirtualMachine, AutoCloseable {
+    private inner class VirtualMachine(model: MachineModel) : SimAbstractMachine(engine, model), SimVirtualMachine, AutoCloseable {
         /**
          * A flag to indicate that the machine is closed.
          */
@@ -185,7 +185,7 @@ public abstract class SimAbstractHypervisor(
          */
         override val counters: SimHypervisorCounters
             get() = _counters
-        @JvmField val _counters = VmCountersImpl(cpus, interferenceKey)
+        @JvmField val _counters = VmCountersImpl(cpus, null)
 
         /**
          * The CPU capacity of the hypervisor in MHz.
@@ -208,21 +208,27 @@ public abstract class SimAbstractHypervisor(
         override fun startWorkload(workload: SimWorkload, meta: Map<String, Any>): SimMachineContext {
             check(!isClosed) { "Machine is closed" }
 
+            val profile = meta["interference-profile"] as? VmInterferenceProfile
+            val interferenceMember = if (profile != null) interferenceDomain.join(profile) else null
+
+            val counters = _counters
+            counters.member = interferenceMember
+
             return super.startWorkload(
                 object : SimWorkload {
                     override fun onStart(ctx: SimMachineContext) {
-                        val interferenceKey = interferenceKey
                         try {
-                            interferenceKey?.activate()
+                            interferenceMember?.activate()
                             workload.onStart(ctx)
                         } catch (cause: Throwable) {
-                            interferenceKey?.deactivate()
+                            interferenceMember?.deactivate()
                             throw cause
                         }
                     }
 
                     override fun onStop(ctx: SimMachineContext) {
-                        interferenceKey?.deactivate()
+                        interferenceMember?.deactivate()
+                        counters.member = null
                         workload.onStop(ctx)
                     }
                 },
@@ -339,7 +345,7 @@ public abstract class SimAbstractHypervisor(
      */
     private inner class VmCountersImpl(
         private val cpus: List<VCpu>,
-        private val key: VmInterferenceMember?
+        @JvmField var member: VmInterferenceMember?
     ) : SimHypervisorCounters {
         private val d = cpus.size / cpus.sumOf { it.model.frequency } * 1000
 
@@ -388,9 +394,9 @@ public abstract class SimAbstractHypervisor(
             cpuTime[2] += ((demandDelta - actualDelta) * d).roundToLong()
 
             // Compute the performance penalty due to flow interference
-            val key = key
-            if (key != null) {
-                val penalty = 1 - key.apply(random, load)
+            val member = member
+            if (member != null) {
+                val penalty = 1 - member.apply(random, load)
                 val interference = (actualDelta * d * penalty).roundToLong()
 
                 if (interference > 0) {

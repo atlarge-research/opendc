@@ -87,7 +87,7 @@ class SimMachineBenchmarks {
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
             val random = SplittableRandom(1)
-            val hypervisor = SimSpaceSharedHypervisor(engine, null, random)
+            val hypervisor = SimSpaceSharedHypervisor(engine, random, null)
 
             launch { machine.runWorkload(hypervisor) }
 
@@ -110,7 +110,7 @@ class SimMachineBenchmarks {
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
             val random = SplittableRandom(1)
-            val hypervisor = SimFairShareHypervisor(engine, null, random)
+            val hypervisor = SimFairShareHypervisor(engine, random, null)
 
             launch { machine.runWorkload(hypervisor) }
 
@@ -133,7 +133,7 @@ class SimMachineBenchmarks {
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
             val random = SplittableRandom(1)
-            val hypervisor = SimFairShareHypervisor(engine, null, random)
+            val hypervisor = SimFairShareHypervisor(engine, random, null)
 
             launch { machine.runWorkload(hypervisor) }
 

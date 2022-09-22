@@ -68,14 +68,13 @@ public class CapelinRunner(
                 grid5000(Duration.ofSeconds((operationalPhenomena.failureFrequency * 60).roundToLong()))
             else
                 null
-        val (vms, interferenceModel) = scenario.workload.source.resolve(workloadLoader, seeder)
+        val vms = scenario.workload.source.resolve(workloadLoader, seeder)
         val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
             computeScheduler,
             seed,
-            failureModel,
-            interferenceModel?.takeIf { operationalPhenomena.hasInterference }
+            failureModel
         )
 
         val topology = clusterTopology(File(envPath, "${scenario.topology.name}.txt"))
@@ -105,7 +104,7 @@ public class CapelinRunner(
             runner.apply(topology, optimize = true)
 
             // Run the workload trace
-            runner.run(vms, servers)
+            runner.run(vms, servers, interference = operationalPhenomena.hasInterference)
 
             // Stop the metric collection
             exporter?.close()

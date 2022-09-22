@@ -71,7 +71,7 @@ internal class SimHostTest {
         val duration = 5 * 60L
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(engine, null, SplittableRandom(1))
+        val hypervisor = SimFairShareHypervisor(engine, SplittableRandom(1), null)
         val host = SimHost(
             uid = UUID.randomUUID(),
             name = "test",
@@ -155,7 +155,7 @@ internal class SimHostTest {
         val duration = 5 * 60L
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(engine, null, SplittableRandom(1))
+        val hypervisor = SimFairShareHypervisor(engine, SplittableRandom(1), null)
         val host = SimHost(
             uid = UUID.randomUUID(),
             name = "test",

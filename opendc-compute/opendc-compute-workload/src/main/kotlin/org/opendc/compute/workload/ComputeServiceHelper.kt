@@ -32,7 +32,7 @@ import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.simulator.compute.SimBareMetalMachine
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.flow.FlowEngine
 import java.time.Clock
@@ -48,7 +48,6 @@ import kotlin.math.max
  * @param clock [Clock] instance tracking simulation time.
  * @param scheduler [ComputeScheduler] implementation to use for the service.
  * @param failureModel A failure model to use for injecting failures.
- * @param interferenceModel The model to use for performance interference.
  * @param schedulingQuantum The scheduling quantum of the scheduler.
  */
 public class ComputeServiceHelper(
@@ -57,7 +56,6 @@ public class ComputeServiceHelper(
     scheduler: ComputeScheduler,
     seed: Long,
     private val failureModel: FailureModel? = null,
-    private val interferenceModel: VmInterferenceModel? = null,
     schedulingQuantum: Duration = Duration.ofMinutes(5)
 ) : AutoCloseable {
     /**
@@ -91,11 +89,13 @@ public class ComputeServiceHelper(
      * @param trace The trace to simulate.
      * @param servers A list to which the created servers is added.
      * @param submitImmediately A flag to indicate that the servers are scheduled immediately (so not at their start time).
+     * @param interference A flag to indicate that VM interference needs to be enabled.
      */
     public suspend fun run(
         trace: List<VirtualMachine>,
         servers: MutableList<Server>? = null,
-        submitImmediately: Boolean = false
+        submitImmediately: Boolean = false,
+        interference: Boolean = false,
     ) {
         val injector = failureModel?.createInjector(context, clock, service, Random(random.nextLong()))
         val client = service.newClient()
@@ -125,10 +125,16 @@ public class ComputeServiceHelper(
                         delay(max(0, (start - offset) - now))
                     }
 
-                    launch {
-                        val workloadOffset = -offset + 300001
-                        val workload = SimTraceWorkload(entry.trace, workloadOffset)
+                    val workloadOffset = -offset + 300001
+                    val workload = SimTraceWorkload(entry.trace, workloadOffset)
+                    val meta = mutableMapOf<String, Any>("workload" to workload)
 
+                    val interferenceProfile = entry.interferenceProfile
+                    if (interference && interferenceProfile != null) {
+                        meta["interference-profile"] = interferenceProfile
+                    }
+
+                    launch {
                         val server = client.newServer(
                             entry.name,
                             image,
@@ -138,7 +144,7 @@ public class ComputeServiceHelper(
                                 entry.memCapacity,
                                 meta = if (entry.cpuCapacity > 0.0) mapOf("cpu-capacity" to entry.cpuCapacity) else emptyMap()
                             ),
-                            meta = mapOf("workload" to workload)
+                            meta = meta
                         )
 
                         servers?.add(server)
@@ -169,7 +175,7 @@ public class ComputeServiceHelper(
      */
     public fun registerHost(spec: HostSpec, optimize: Boolean = false): SimHost {
         val machine = SimBareMetalMachine(engine, spec.model, spec.powerDriver)
-        val hypervisor = spec.hypervisor.create(engine, random)
+        val hypervisor = spec.hypervisor.create(engine, random, interferenceDomain = VmInterferenceDomain())
 
         val host = SimHost(
             spec.uid,
@@ -179,7 +185,6 @@ public class ComputeServiceHelper(
             clock,
             machine,
             hypervisor,
-            interferenceDomain = interferenceModel?.newDomain(),
             optimize = optimize
         )
 

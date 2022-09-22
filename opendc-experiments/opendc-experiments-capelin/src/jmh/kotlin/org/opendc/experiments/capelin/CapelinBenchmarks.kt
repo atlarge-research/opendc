@@ -55,7 +55,7 @@ class CapelinBenchmarks {
     fun setUp() {
         val loader = ComputeWorkloadLoader(File("src/test/resources/trace"))
         val source = trace("bitbrains-small")
-        vms = source.resolve(loader, Random(1L)).vms
+        vms = trace("bitbrains-small").resolve(loader, Random(1L))
         topology = checkNotNull(object {}.javaClass.getResourceAsStream("/topology.txt")).use { clusterTopology(it) }
     }
 
@@ -69,12 +69,12 @@ class CapelinBenchmarks {
             coroutineContext,
             clock,
             computeScheduler,
-            seed = 0L,
+            seed = 0L
         )
 
         try {
             runner.apply(topology, isOptimized)
-            runner.run(vms)
+            runner.run(vms, interference = true)
         } finally {
             runner.close()
         }

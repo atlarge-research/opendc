@@ -27,7 +27,7 @@ import java.util.*
 /**
  * An interference model that models the resource interference between virtual machines on a host.
  *
- * @param targets The target load of each group.
+ * @param members The target load of each group.
  * @param scores The performance score of each group.
  * @param members The members belonging to each group.
  * @param membership The identifier of each key.
@@ -42,9 +42,16 @@ public class VmInterferenceModel private constructor(
     private val size: Int
 ) {
     /**
-     * Construct a new [VmInterferenceDomain].
+     * Return the [VmInterferenceProfile] associated with the specified [id].
+     *
+     * @param id The identifier of the virtual machine.
+     * @return A [VmInterferenceProfile] representing the virtual machine as part of interference model or `null` if
+     *         there is no profile for the virtual machine.
      */
-    public fun newDomain(): VmInterferenceDomain = InterferenceDomainImpl(idMapping, members, membership, targets, scores)
+    public fun getProfile(id: String): VmInterferenceProfile? {
+        val intId = idMapping[id] ?: return null
+        return VmInterferenceProfile(this, intId, membership[intId], members, targets, scores)
+    }
 
     public companion object {
         /**
@@ -112,8 +119,8 @@ public class VmInterferenceModel private constructor(
             val scores = _scores
             val members = _members
 
-            val indices = Array(size) { it }
-            indices.sortWith(
+            val indices = IntArray(size) { it }
+            indices.sortedWith(
                 Comparator { l, r ->
                     var cmp = targets[l].compareTo(targets[r]) // Order by target load
                     if (cmp != 0) {
@@ -178,225 +185,5 @@ public class VmInterferenceModel private constructor(
              */
             const val INITIAL_CAPACITY = 256
         }
-    }
-
-    /**
-     * Internal implementation of [VmInterferenceDomain].
-     */
-    private class InterferenceDomainImpl(
-        private val idMapping: Map<String, Int>,
-        private val members: Array<IntArray>,
-        private val membership: Array<IntArray>,
-        private val targets: DoubleArray,
-        private val scores: DoubleArray,
-    ) : VmInterferenceDomain {
-        /**
-         * Keys registered with this domain.
-         */
-        private val keys = HashMap<Int, InterferenceMemberImpl>()
-
-        /**
-         * The set of keys active in this domain.
-         */
-        private val activeKeys = ArrayList<InterferenceMemberImpl>()
-
-        /**
-         * Queue of participants that will be removed or added to the active groups.
-         */
-        private val participants = ArrayDeque<InterferenceMemberImpl>()
-
-        override fun getMember(id: String): VmInterferenceMember? {
-            val intId = idMapping[id] ?: return null
-            return keys.computeIfAbsent(intId) { InterferenceMemberImpl(it, this, membership[it], members, targets, scores) }
-        }
-
-        override fun toString(): String = "VmInterferenceDomain"
-
-        fun join(key: InterferenceMemberImpl) {
-            val activeKeys = activeKeys
-            val pos = activeKeys.binarySearch(key)
-            if (pos < 0) {
-                activeKeys.add(-pos - 1, key)
-            }
-
-            computeActiveGroups(activeKeys, key)
-        }
-
-        fun leave(key: InterferenceMemberImpl) {
-            val activeKeys = activeKeys
-            activeKeys.remove(key)
-            computeActiveGroups(activeKeys, key)
-        }
-
-        /**
-         * (Re-)compute the active groups.
-         */
-        private fun computeActiveGroups(activeKeys: ArrayList<InterferenceMemberImpl>, key: InterferenceMemberImpl) {
-            if (activeKeys.isEmpty()) {
-                return
-            }
-
-            val groups = key.membership
-            val members = members
-            val participants = participants
-
-            for (group in groups) {
-                val groupMembers = members[group]
-
-                var i = 0
-                var j = 0
-                var intersection = 0
-
-                // Compute the intersection of the group members and the current active members
-                while (i < groupMembers.size && j < activeKeys.size) {
-                    val l = groupMembers[i]
-                    val rightEntry = activeKeys[j]
-                    val r = rightEntry.id
-
-                    if (l < r) {
-                        i++
-                    } else if (l > r) {
-                        j++
-                    } else {
-                        if (++intersection > 1) {
-                            rightEntry.addGroup(group)
-                        } else {
-                            participants.add(rightEntry)
-                        }
-
-                        i++
-                        j++
-                    }
-                }
-
-                while (true) {
-                    val participant = participants.poll() ?: break
-
-                    if (intersection <= 1) {
-                        participant.removeGroup(group)
-                    } else {
-                        participant.addGroup(group)
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * An interference key.
-     *
-     * @param id The identifier of the member.
-     */
-    private class InterferenceMemberImpl(
-        @JvmField val id: Int,
-        private val domain: InterferenceDomainImpl,
-        @JvmField val membership: IntArray,
-        private val members: Array<IntArray>,
-        private val targets: DoubleArray,
-        private val scores: DoubleArray
-    ) : VmInterferenceMember, Comparable<InterferenceMemberImpl> {
-        /**
-         * The active groups to which the key belongs.
-         */
-        private var groups: IntArray = IntArray(2)
-        private var groupsSize: Int = 0
-
-        /**
-         * The number of users of the interference key.
-         */
-        private var refCount: Int = 0
-
-        override fun activate() {
-            if (refCount++ <= 0) {
-                domain.join(this)
-            }
-        }
-
-        override fun deactivate() {
-            if (--refCount <= 0) {
-                domain.leave(this)
-            }
-        }
-
-        override fun apply(random: SplittableRandom, load: Double): Double {
-            val groupsSize = groupsSize
-
-            if (groupsSize == 0) {
-                return 1.0
-            }
-
-            val groups = groups
-            val targets = targets
-
-            var low = 0
-            var high = groupsSize - 1
-            var group = -1
-
-            // Perform binary search over the groups based on target load
-            while (low <= high) {
-                val mid = low + high ushr 1
-                val midGroup = groups[mid]
-                val target = targets[midGroup]
-
-                if (target < load) {
-                    low = mid + 1
-                    group = midGroup
-                } else if (target > load) {
-                    high = mid - 1
-                } else {
-                    group = midGroup
-                    break
-                }
-            }
-
-            return if (group >= 0 && random.nextInt(members[group].size) == 0) {
-                scores[group]
-            } else {
-                1.0
-            }
-        }
-
-        /**
-         * Add an active group to this member.
-         */
-        fun addGroup(group: Int) {
-            var groups = groups
-            val groupsSize = groupsSize
-            val pos = groups.binarySearch(group, toIndex = groupsSize)
-
-            if (pos >= 0) {
-                return
-            }
-
-            val idx = -pos - 1
-
-            if (groups.size == groupsSize) {
-                val newSize = groupsSize + (groupsSize shr 1)
-                groups = groups.copyOf(newSize)
-                this.groups = groups
-            }
-
-            groups.copyInto(groups, idx + 1, idx, groupsSize)
-            groups[idx] = group
-            this.groupsSize += 1
-        }
-
-        /**
-         * Remove an active group from this member.
-         */
-        fun removeGroup(group: Int) {
-            val groups = groups
-            val groupsSize = groupsSize
-            val pos = groups.binarySearch(group, toIndex = groupsSize)
-
-            if (pos < 0) {
-                return
-            }
-
-            groups.copyInto(groups, pos, pos + 1, groupsSize)
-            this.groupsSize -= 1
-        }
-
-        override fun compareTo(other: InterferenceMemberImpl): Int = id.compareTo(other.id)
     }
 }

@@ -23,6 +23,7 @@
 package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.flow.FlowEngine
 import java.util.*
 
@@ -36,5 +37,6 @@ public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
         engine: FlowEngine,
         random: SplittableRandom,
         scalingGovernor: ScalingGovernor?,
-    ): SimHypervisor = SimSpaceSharedHypervisor(engine, scalingGovernor, random)
+        interferenceDomain: VmInterferenceDomain,
+    ): SimHypervisor = SimSpaceSharedHypervisor(engine, random, scalingGovernor, interferenceDomain)
 }

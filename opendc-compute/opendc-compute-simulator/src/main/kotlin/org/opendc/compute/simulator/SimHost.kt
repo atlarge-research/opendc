@@ -35,7 +35,6 @@ import org.opendc.compute.simulator.internal.Guest
 import org.opendc.compute.simulator.internal.GuestListener
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.kernel.SimHypervisor
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.workload.SimWorkload
@@ -57,7 +56,6 @@ public class SimHost(
     private val machine: SimBareMetalMachine,
     private val hypervisor: SimHypervisor,
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
-    private val interferenceDomain: VmInterferenceDomain? = null,
     private val optimize: Boolean = false
 ) : Host, AutoCloseable {
     /**
@@ -119,8 +117,7 @@ public class SimHost(
         val guest = guests.computeIfAbsent(server) { key ->
             require(canFit(key)) { "Server does not fit" }
 
-            val interferenceKey = interferenceDomain?.getMember(key.name)
-            val machine = hypervisor.newMachine(key.flavor.toMachineModel(), interferenceKey)
+            val machine = hypervisor.newMachine(key.flavor.toMachineModel())
             val newGuest = Guest(
                 context,
                 clock,
