@@ -40,15 +40,13 @@ import kotlin.math.max
  * @param model The machine model to simulate.
  * @param powerDriver The power driver to use.
  * @param psu The power supply of the machine.
- * @param parent The parent simulation system.
  */
 public class SimBareMetalMachine(
     engine: FlowEngine,
     model: MachineModel,
     powerDriver: PowerDriver,
     public val psu: SimPsu = SimPsu(500.0, mapOf(1.0 to 1.0)),
-    parent: FlowConvergenceListener? = null,
-) : SimAbstractMachine(engine, parent, model) {
+) : SimAbstractMachine(engine, model) {
     /**
      * The current power usage of the machine (without PSU loss) in W.
      */

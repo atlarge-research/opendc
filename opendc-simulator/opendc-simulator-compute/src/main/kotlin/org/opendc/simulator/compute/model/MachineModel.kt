@@ -35,4 +35,20 @@ public data class MachineModel(
     public val memory: List<MemoryUnit>,
     public val net: List<NetworkAdapter> = emptyList(),
     public val storage: List<StorageDevice> = emptyList()
-)
+) {
+    /**
+     * Optimize the [MachineModel] by merging all resources of the same type into a single resource with the combined
+     * capacity. Such configurations can be simulated more efficiently by OpenDC.
+     */
+    public fun optimize(): MachineModel {
+        val originalCpu = cpus[0]
+        val freq = cpus.sumOf { it.frequency }
+        val processingNode = originalCpu.node.copy(coreCount = 1)
+        val processingUnits = listOf(originalCpu.copy(frequency = freq, node = processingNode))
+
+        val memorySize = memory.sumOf { it.size }
+        val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
+
+        return MachineModel(processingUnits, memoryUnits)
+    }
+}

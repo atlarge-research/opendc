@@ -22,7 +22,6 @@
 
 package org.opendc.compute.workload
 
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import java.util.*
 
 /**
@@ -32,10 +31,5 @@ public interface ComputeWorkload {
     /**
      * Resolve the workload into a list of [VirtualMachine]s to simulate.
      */
-    public fun resolve(loader: ComputeWorkloadLoader, random: Random): Resolved
-
-    /**
-     * A concrete instance of a workload.
-     */
-    public data class Resolved(val vms: List<VirtualMachine>, val interferenceModel: VmInterferenceModel?)
+    public fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine>
 }

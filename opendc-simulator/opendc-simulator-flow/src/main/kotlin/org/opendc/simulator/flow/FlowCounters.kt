@@ -42,11 +42,6 @@ public interface FlowCounters {
     public val remaining: Double
 
     /**
-     * The accumulated flow lost due to interference between sources.
-     */
-    public val interference: Double
-
-    /**
      * Reset the flow counters.
      */
     public fun reset()

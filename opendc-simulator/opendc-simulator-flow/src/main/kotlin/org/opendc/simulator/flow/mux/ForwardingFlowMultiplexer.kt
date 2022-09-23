@@ -23,7 +23,6 @@
 package org.opendc.simulator.flow.mux
 
 import org.opendc.simulator.flow.*
-import org.opendc.simulator.flow.interference.InterferenceKey
 import java.util.ArrayDeque
 
 /**
@@ -38,6 +37,12 @@ public class ForwardingFlowMultiplexer(
     private val engine: FlowEngine,
     private val listener: FlowConvergenceListener? = null
 ) : FlowMultiplexer, FlowConvergenceListener {
+
+    override val maxInputs: Int
+        get() = _outputs.size
+
+    override val maxOutputs: Int = Int.MAX_VALUE
+
     override val inputs: Set<FlowConsumer>
         get() = _inputs
     private val _inputs = mutableSetOf<Input>()
@@ -54,8 +59,6 @@ public class ForwardingFlowMultiplexer(
             get() = _outputs.sumOf { it.forwarder.counters.actual }
         override val remaining: Double
             get() = _outputs.sumOf { it.forwarder.counters.remaining }
-        override val interference: Double
-            get() = _outputs.sumOf { it.forwarder.counters.interference }
 
         override fun reset() {
             for (output in _outputs) {
@@ -75,14 +78,14 @@ public class ForwardingFlowMultiplexer(
     override val capacity: Double
         get() = _outputs.sumOf { it.forwarder.capacity }
 
-    override fun newInput(key: InterferenceKey?): FlowConsumer {
+    override fun newInput(): FlowConsumer {
         val output = checkNotNull(_availableOutputs.poll()) { "No capacity to serve request" }
         val input = Input(output)
         _inputs += input
         return input
     }
 
-    override fun newInput(capacity: Double, key: InterferenceKey?): FlowConsumer = newInput(key)
+    override fun newInput(capacity: Double): FlowConsumer = newInput()
 
     override fun removeInput(input: FlowConsumer) {
         if (!_inputs.remove(input)) {

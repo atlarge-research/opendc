@@ -22,6 +22,7 @@
 
 package org.opendc.compute.workload
 
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceProfile
 import org.opendc.simulator.compute.workload.SimTrace
 import java.time.Instant
 import java.util.*
@@ -37,6 +38,7 @@ import java.util.*
  * @param startTime The start time of the VM.
  * @param stopTime The stop time of the VM.
  * @param trace The trace that belong to this VM.
+ * @param interferenceProfile The interference profile of this virtual machine.
  */
 public data class VirtualMachine(
     val uid: UUID,
@@ -48,4 +50,5 @@ public data class VirtualMachine(
     val startTime: Instant,
     val stopTime: Instant,
     val trace: SimTrace,
+    val interferenceProfile: VmInterferenceProfile?
 )

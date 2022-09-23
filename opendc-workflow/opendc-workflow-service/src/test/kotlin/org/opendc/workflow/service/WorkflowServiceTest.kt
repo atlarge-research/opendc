@@ -33,7 +33,6 @@ import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.VCpuWeigher
 import org.opendc.compute.workload.ComputeServiceHelper
 import org.opendc.compute.workload.topology.HostSpec
-import org.opendc.simulator.compute.kernel.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -41,6 +40,7 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
 import org.opendc.trace.Trace
 import org.opendc.workflow.service.scheduler.job.NullJobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.SubmissionTimeJobOrderPolicy
@@ -73,6 +73,7 @@ internal class WorkflowServiceTest {
             coroutineContext,
             clock,
             computeScheduler,
+            seed = 0,
             schedulingQuantum = Duration.ofSeconds(1)
         )
 
@@ -130,7 +131,7 @@ internal class WorkflowServiceTest {
             emptyMap(),
             machineModel,
             SimplePowerDriver(ConstantPowerModel(0.0)),
-            SimSpaceSharedHypervisorProvider()
+            FlowMultiplexerFactory.forwardingMultiplexer()
         )
     }
 }

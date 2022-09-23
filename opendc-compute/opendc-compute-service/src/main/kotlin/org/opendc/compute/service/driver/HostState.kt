@@ -27,12 +27,17 @@ package org.opendc.compute.service.driver
  */
 public enum class HostState {
     /**
-     * The host is up.
+     * The host is up and able to host guests.
      */
     UP,
 
     /**
-     * The host is down.
+     * The host is in a (forced) down state and unable to host any guests.
      */
-    DOWN
+    DOWN,
+
+    /**
+     * The host is in an error state and unable to host any guests.
+     */
+    ERROR,
 }

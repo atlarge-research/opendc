@@ -36,12 +36,10 @@ import org.opendc.simulator.flow.*
  * Abstract implementation of the [SimMachine] interface.
  *
  * @param engine The engine to manage the machine's resources.
- * @param parent The parent simulation system.
  * @param model The model of the machine.
  */
 public abstract class SimAbstractMachine(
     protected val engine: FlowEngine,
-    private val parent: FlowConvergenceListener?,
     final override val model: MachineModel
 ) : SimMachine, FlowConvergenceListener {
     /**
@@ -86,9 +84,7 @@ public abstract class SimAbstractMachine(
         _ctx?.close()
     }
 
-    override fun onConverge(now: Long) {
-        parent?.onConverge(now)
-    }
+    override fun onConverge(now: Long) {}
 
     /**
      * The execution context in which the workload runs.
@@ -105,7 +101,7 @@ public abstract class SimAbstractMachine(
          */
         private var isClosed = false
 
-        override val engine: FlowEngine = this@SimAbstractMachine.engine
+        val engine: FlowEngine = this@SimAbstractMachine.engine
 
         /**
          * Start this context.

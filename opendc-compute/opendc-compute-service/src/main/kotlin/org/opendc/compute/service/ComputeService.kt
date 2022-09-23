@@ -37,6 +37,11 @@ import kotlin.coroutines.CoroutineContext
  */
 public interface ComputeService : AutoCloseable {
     /**
+     * The servers that are registered with the "compute" service.
+     */
+    public val servers: List<Server>
+
+    /**
      * The hosts that are registered with the "compute" service.
      */
     public val hosts: Set<Host>

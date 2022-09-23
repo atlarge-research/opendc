@@ -22,10 +22,9 @@
 
 package org.opendc.compute.workload.topology
 
-import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
-import org.opendc.simulator.compute.kernel.SimHypervisorProvider
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.power.PowerDriver
+import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
 import java.util.*
 
 /**
@@ -36,7 +35,7 @@ import java.util.*
  * @param meta The metadata of the host.
  * @param model The physical model of the machine.
  * @param powerDriver The [PowerDriver] to model the power consumption of the machine.
- * @param hypervisor The hypervisor implementation to use.
+ * @param multiplexerFactory The [FlowMultiplexerFactory] that is used to multiplex the virtual machines over the host.
  */
 public data class HostSpec(
     val uid: UUID,
@@ -44,5 +43,5 @@ public data class HostSpec(
     val meta: Map<String, Any>,
     val model: MachineModel,
     val powerDriver: PowerDriver,
-    val hypervisor: SimHypervisorProvider = SimFairShareHypervisorProvider()
+    val multiplexerFactory: FlowMultiplexerFactory = FlowMultiplexerFactory.maxMinMultiplexer()
 )

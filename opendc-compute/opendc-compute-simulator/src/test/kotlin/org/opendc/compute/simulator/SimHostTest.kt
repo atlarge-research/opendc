@@ -30,16 +30,20 @@ import org.junit.jupiter.api.assertAll
 import org.opendc.compute.api.*
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
-import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
+import org.opendc.simulator.compute.SimBareMetalMachine
+import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.power.ConstantPowerModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
 import java.time.Instant
 import java.util.*
 import kotlin.coroutines.resume
@@ -67,14 +71,16 @@ internal class SimHostTest {
     fun testOvercommitted() = runBlockingSimulation {
         val duration = 5 * 60L
         val engine = FlowEngine(coroutineContext, clock)
+        val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
         val host = SimHost(
             uid = UUID.randomUUID(),
             name = "test",
-            model = machineModel,
             meta = emptyMap(),
             coroutineContext,
-            engine,
-            SimFairShareHypervisorProvider()
+            clock,
+            machine,
+            hypervisor
         )
         val vmImageA = MockImage(
             UUID.randomUUID(),
@@ -149,14 +155,16 @@ internal class SimHostTest {
     fun testFailure() = runBlockingSimulation {
         val duration = 5 * 60L
         val engine = FlowEngine(coroutineContext, clock)
+        val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
         val host = SimHost(
             uid = UUID.randomUUID(),
             name = "test",
-            model = machineModel,
             meta = emptyMap(),
             coroutineContext,
-            engine,
-            SimFairShareHypervisorProvider()
+            clock,
+            machine,
+            hypervisor
         )
         val image = MockImage(
             UUID.randomUUID(),

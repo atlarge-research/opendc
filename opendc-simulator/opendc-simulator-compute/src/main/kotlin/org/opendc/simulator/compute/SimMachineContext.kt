@@ -22,19 +22,12 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.flow.FlowEngine
-
 /**
  * A simulated execution context in which a bootable image runs. This interface represents the
  * firmware interface between the running image (e.g. operating system) and the physical or virtual firmware on
  * which the image runs.
  */
 public interface SimMachineContext : AutoCloseable {
-    /**
-     * The [FlowEngine] that simulates the machine.
-     */
-    public val engine: FlowEngine
-
     /**
      * The metadata associated with the context.
      */

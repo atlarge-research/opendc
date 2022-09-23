@@ -35,17 +35,10 @@ import org.opendc.compute.simulator.internal.Guest
 import org.opendc.compute.simulator.internal.GuestListener
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.kernel.SimHypervisor
-import org.opendc.simulator.compute.kernel.SimHypervisorProvider
-import org.opendc.simulator.compute.kernel.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.power.ConstantPowerModel
-import org.opendc.simulator.compute.power.PowerDriver
-import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.flow.FlowEngine
+import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -57,42 +50,18 @@ import kotlin.coroutines.CoroutineContext
 public class SimHost(
     override val uid: UUID,
     override val name: String,
-    model: MachineModel,
     override val meta: Map<String, Any>,
-    context: CoroutineContext,
-    engine: FlowEngine,
-    hypervisorProvider: SimHypervisorProvider,
-    scalingGovernor: ScalingGovernor = PerformanceScalingGovernor(),
-    powerDriver: PowerDriver = SimplePowerDriver(ConstantPowerModel(0.0)),
+    private val context: CoroutineContext,
+    private val clock: Clock,
+    private val machine: SimBareMetalMachine,
+    private val hypervisor: SimHypervisor,
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
-    interferenceDomain: VmInterferenceDomain? = null,
     private val optimize: Boolean = false
 ) : Host, AutoCloseable {
-    /**
-     * The [CoroutineScope] of the host bounded by the lifecycle of the host.
-     */
-    private val scope: CoroutineScope = CoroutineScope(context + Job())
-
-    /**
-     * The clock instance used by the host.
-     */
-    private val clock = engine.clock
-
     /**
      * The event listeners registered with this host.
      */
     private val listeners = mutableListOf<HostListener>()
-
-    /**
-     * The machine to run on.
-     */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(engine, model.optimize(), powerDriver)
-
-    /**
-     * The hypervisor to run multiple workloads.
-     */
-    private val hypervisor: SimHypervisor = hypervisorProvider
-        .create(engine, scalingGovernor = scalingGovernor, interferenceDomain = interferenceDomain)
 
     /**
      * The virtual machines running on the hypervisor.
@@ -113,7 +82,11 @@ public class SimHost(
             field = value
         }
 
-    override val model: HostModel = HostModel(model.cpus.sumOf { it.frequency }, model.cpus.size, model.memory.sumOf { it.size })
+    override val model: HostModel = HostModel(
+        machine.model.cpus.sumOf { it.frequency },
+        machine.model.cpus.size,
+        machine.model.memory.sumOf { it.size }
+    )
 
     /**
      * The [GuestListener] that listens for guest events.
@@ -144,9 +117,9 @@ public class SimHost(
         val guest = guests.computeIfAbsent(server) { key ->
             require(canFit(key)) { "Server does not fit" }
 
-            val machine = hypervisor.newMachine(key.flavor.toMachineModel(), key.name)
+            val machine = hypervisor.newMachine(key.flavor.toMachineModel())
             val newGuest = Guest(
-                scope.coroutineContext,
+                context,
                 clock,
                 this,
                 hypervisor,
@@ -193,8 +166,7 @@ public class SimHost(
     }
 
     override fun close() {
-        reset()
-        scope.cancel()
+        reset(HostState.DOWN)
         machine.cancel()
     }
 
@@ -269,7 +241,7 @@ public class SimHost(
     override fun toString(): String = "SimHost[uid=$uid,name=$name,model=$model]"
 
     public suspend fun fail() {
-        reset()
+        reset(HostState.ERROR)
 
         for (guest in _guests) {
             guest.fail()
@@ -308,7 +280,7 @@ public class SimHost(
                     _state = HostState.UP
                     hypervisor.onStart(ctx)
                 } catch (cause: Throwable) {
-                    _state = HostState.DOWN
+                    _state = HostState.ERROR
                     _ctx = null
                     throw cause
                 }
@@ -318,7 +290,6 @@ public class SimHost(
                 try {
                     hypervisor.onStop(ctx)
                 } finally {
-                    _state = HostState.DOWN
                     _ctx = null
                 }
             }
@@ -328,12 +299,12 @@ public class SimHost(
     /**
      * Reset the machine.
      */
-    private fun reset() {
+    private fun reset(state: HostState) {
         updateUptime()
 
         // Stop the hypervisor
         _ctx?.close()
-        _state = HostState.DOWN
+        _state = state
     }
 
     /**
@@ -346,26 +317,8 @@ public class SimHost(
         val processingUnits = (0 until cpuCount).map { originalCpu.copy(id = it, node = processingNode, frequency = cpuCapacity) }
         val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
 
-        return MachineModel(processingUnits, memoryUnits).optimize()
-    }
-
-    /**
-     * Optimize the [MachineModel] for simulation.
-     */
-    private fun MachineModel.optimize(): MachineModel {
-        if (!optimize) {
-            return this
-        }
-
-        val originalCpu = cpus[0]
-        val freq = cpus.sumOf { it.frequency }
-        val processingNode = originalCpu.node.copy(coreCount = 1)
-        val processingUnits = listOf(originalCpu.copy(frequency = freq, node = processingNode))
-
-        val memorySize = memory.sumOf { it.size }
-        val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
-
-        return MachineModel(processingUnits, memoryUnits)
+        val model = MachineModel(processingUnits, memoryUnits)
+        return if (optimize) model.optimize() else model
     }
 
     private var _lastReport = clock.millis()
@@ -384,7 +337,7 @@ public class SimHost(
 
         if (_state == HostState.UP) {
             _uptime += duration
-        } else if (_state == HostState.DOWN && scope.isActive) {
+        } else if (_state == HostState.ERROR) {
             // Only increment downtime if the machine is in a failure state
             _downtime += duration
         }

@@ -22,43 +22,35 @@
 
 package org.opendc.simulator.compute.kernel.interference
 
-import org.opendc.simulator.flow.interference.InterferenceKey
 import java.util.*
 
 /**
  * An interference model that models the resource interference between virtual machines on a host.
  *
- * @param targets The target load of each group.
+ * @param members The target load of each group.
  * @param scores The performance score of each group.
  * @param members The members belonging to each group.
  * @param membership The identifier of each key.
  * @param size The number of groups.
- * @param seed The seed to use for randomly selecting the virtual machines that are affected.
  */
 public class VmInterferenceModel private constructor(
-    private val targets: DoubleArray,
-    private val scores: DoubleArray,
     private val idMapping: Map<String, Int>,
     private val members: Array<IntArray>,
     private val membership: Array<IntArray>,
-    private val size: Int,
-    seed: Long,
+    private val targets: DoubleArray,
+    private val scores: DoubleArray,
+    private val size: Int
 ) {
     /**
-     * A [SplittableRandom] used for selecting the virtual machines that are affected.
+     * Return the [VmInterferenceProfile] associated with the specified [id].
+     *
+     * @param id The identifier of the virtual machine.
+     * @return A [VmInterferenceProfile] representing the virtual machine as part of interference model or `null` if
+     *         there is no profile for the virtual machine.
      */
-    private val random = SplittableRandom(seed)
-
-    /**
-     * Construct a new [VmInterferenceDomain].
-     */
-    public fun newDomain(): VmInterferenceDomain = InterferenceDomainImpl(targets, scores, idMapping, members, membership, random)
-
-    /**
-     * Create a copy of this model with a different seed.
-     */
-    public fun withSeed(seed: Long): VmInterferenceModel {
-        return VmInterferenceModel(targets, scores, idMapping, members, membership, size, seed)
+    public fun getProfile(id: String): VmInterferenceProfile? {
+        val intId = idMapping[id] ?: return null
+        return VmInterferenceProfile(this, intId, membership[intId], members, targets, scores)
     }
 
     public companion object {
@@ -73,11 +65,6 @@ public class VmInterferenceModel private constructor(
      * Builder class for a [VmInterferenceModel]
      */
     public class Builder internal constructor() {
-        /**
-         * The initial capacity of the builder.
-         */
-        private val INITIAL_CAPACITY = 256
-
         /**
          * The target load of each group.
          */
@@ -126,14 +113,14 @@ public class VmInterferenceModel private constructor(
         /**
          * Build the [VmInterferenceModel].
          */
-        public fun build(seed: Long = 0): VmInterferenceModel {
+        public fun build(): VmInterferenceModel {
             val size = size
             val targets = _targets
             val scores = _scores
             val members = _members
 
-            val indices = Array(size) { it }
-            indices.sortWith(
+            val indices = IntArray(size) { it }
+            indices.sortedWith(
                 Comparator { l, r ->
                     var cmp = targets[l].compareTo(targets[r]) // Order by target load
                     if (cmp != 0) {
@@ -172,13 +159,12 @@ public class VmInterferenceModel private constructor(
 
             @Suppress("UNCHECKED_CAST")
             return VmInterferenceModel(
-                newTargets,
-                newScores,
                 idMapping,
                 newMembers as Array<IntArray>,
                 membership.map { it.value.toIntArray() }.toTypedArray(),
-                size,
-                seed
+                newTargets,
+                newScores,
+                size
             )
         }
 
@@ -192,202 +178,12 @@ public class VmInterferenceModel private constructor(
             _targets = _targets.copyOf(newSize)
             _scores = _scores.copyOf(newSize)
         }
-    }
 
-    /**
-     * Internal implementation of [VmInterferenceDomain].
-     */
-    private class InterferenceDomainImpl(
-        private val targets: DoubleArray,
-        private val scores: DoubleArray,
-        private val idMapping: Map<String, Int>,
-        private val members: Array<IntArray>,
-        private val membership: Array<IntArray>,
-        private val random: SplittableRandom
-    ) : VmInterferenceDomain {
-        /**
-         * Keys registered with this domain.
-         */
-        private val keys = HashMap<Int, InterferenceKeyImpl>()
-
-        /**
-         * The set of keys active in this domain.
-         */
-        private val activeKeys = ArrayList<InterferenceKeyImpl>()
-
-        override fun createKey(id: String): InterferenceKey? {
-            val intId = idMapping[id] ?: return null
-            return keys.computeIfAbsent(intId) { InterferenceKeyImpl(intId) }
+        private companion object {
+            /**
+             * The initial capacity of the builder.
+             */
+            const val INITIAL_CAPACITY = 256
         }
-
-        override fun removeKey(key: InterferenceKey) {
-            if (key !is InterferenceKeyImpl) {
-                return
-            }
-
-            if (activeKeys.remove(key)) {
-                computeActiveGroups(key.id)
-            }
-
-            keys.remove(key.id)
-        }
-
-        override fun join(key: InterferenceKey) {
-            if (key !is InterferenceKeyImpl) {
-                return
-            }
-
-            if (key.acquire()) {
-                val pos = activeKeys.binarySearch(key)
-                if (pos < 0) {
-                    activeKeys.add(-pos - 1, key)
-                }
-                computeActiveGroups(key.id)
-            }
-        }
-
-        override fun leave(key: InterferenceKey) {
-            if (key is InterferenceKeyImpl && key.release()) {
-                activeKeys.remove(key)
-                computeActiveGroups(key.id)
-            }
-        }
-
-        override fun apply(key: InterferenceKey?, load: Double): Double {
-            if (key == null || key !is InterferenceKeyImpl) {
-                return 1.0
-            }
-
-            val groups = key.groups
-            val groupSize = groups.size
-
-            if (groupSize == 0) {
-                return 1.0
-            }
-
-            val targets = targets
-            val scores = scores
-            var low = 0
-            var high = groups.size - 1
-
-            var group = -1
-            var score = 1.0
-
-            // Perform binary search over the groups based on target load
-            while (low <= high) {
-                val mid = low + high ushr 1
-                val midGroup = groups[mid]
-                val target = targets[midGroup]
-
-                if (target < load) {
-                    low = mid + 1
-                    group = midGroup
-                    score = scores[midGroup]
-                } else if (target > load) {
-                    high = mid - 1
-                } else {
-                    group = midGroup
-                    score = scores[midGroup]
-                    break
-                }
-            }
-
-            return if (group >= 0 && random.nextInt(members[group].size) == 0) {
-                score
-            } else {
-                1.0
-            }
-        }
-
-        override fun toString(): String = "VmInterferenceDomain"
-
-        /**
-         * Queue of participants that will be removed or added to the active groups.
-         */
-        private val _participants = ArrayDeque<InterferenceKeyImpl>()
-
-        /**
-         * (Re-)Compute the active groups.
-         */
-        private fun computeActiveGroups(id: Int) {
-            val activeKeys = activeKeys
-            val groups = membership[id]
-
-            if (activeKeys.isEmpty()) {
-                return
-            }
-
-            val members = members
-            val participants = _participants
-
-            for (group in groups) {
-                val groupMembers = members[group]
-
-                var i = 0
-                var j = 0
-                var intersection = 0
-
-                // Compute the intersection of the group members and the current active members
-                while (i < groupMembers.size && j < activeKeys.size) {
-                    val l = groupMembers[i]
-                    val rightEntry = activeKeys[j]
-                    val r = rightEntry.id
-
-                    if (l < r) {
-                        i++
-                    } else if (l > r) {
-                        j++
-                    } else {
-                        participants.add(rightEntry)
-                        intersection++
-
-                        i++
-                        j++
-                    }
-                }
-
-                while (true) {
-                    val participant = participants.poll() ?: break
-                    val participantGroups = participant.groups
-                    if (intersection <= 1) {
-                        participantGroups.remove(group)
-                    } else {
-                        val pos = participantGroups.binarySearch(group)
-                        if (pos < 0) {
-                            participantGroups.add(-pos - 1, group)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * An interference key.
-     *
-     * @param id The identifier of the member.
-     */
-    private class InterferenceKeyImpl(@JvmField val id: Int) : InterferenceKey, Comparable<InterferenceKeyImpl> {
-        /**
-         * The active groups to which the key belongs.
-         */
-        @JvmField val groups: MutableList<Int> = ArrayList()
-
-        /**
-         * The number of users of the interference key.
-         */
-        private var refCount: Int = 0
-
-        /**
-         * Join the domain.
-         */
-        fun acquire(): Boolean = refCount++ <= 0
-
-        /**
-         * Leave the domain.
-         */
-        fun release(): Boolean = --refCount <= 0
-
-        override fun compareTo(other: InterferenceKeyImpl): Int = id.compareTo(other.id)
     }
 }

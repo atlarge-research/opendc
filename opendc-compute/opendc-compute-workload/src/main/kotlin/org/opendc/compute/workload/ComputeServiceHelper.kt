@@ -26,12 +26,12 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import org.opendc.compute.api.Server
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.workload.topology.HostSpec
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
+import org.opendc.simulator.compute.SimBareMetalMachine
+import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.flow.FlowEngine
 import java.time.Clock
@@ -46,55 +46,52 @@ import kotlin.math.max
  * @param context [CoroutineContext] to run the simulation in.
  * @param clock [Clock] instance tracking simulation time.
  * @param scheduler [ComputeScheduler] implementation to use for the service.
- * @param failureModel A failure model to use for injecting failures.
- * @param interferenceModel The model to use for performance interference.
  * @param schedulingQuantum The scheduling quantum of the scheduler.
  */
 public class ComputeServiceHelper(
     private val context: CoroutineContext,
     private val clock: Clock,
     scheduler: ComputeScheduler,
-    private val failureModel: FailureModel? = null,
-    private val interferenceModel: VmInterferenceModel? = null,
+    seed: Long,
     schedulingQuantum: Duration = Duration.ofMinutes(5)
 ) : AutoCloseable {
     /**
      * The [ComputeService] that has been configured by the manager.
      */
-    public val service: ComputeService
+    public val service: ComputeService = ComputeService(context, clock, scheduler, schedulingQuantum)
 
     /**
      * The [FlowEngine] to simulate the hosts.
      */
-    private val _engine = FlowEngine(context, clock)
+    private val engine = FlowEngine(context, clock)
 
     /**
      * The hosts that belong to this class.
      */
-    private val _hosts = mutableSetOf<SimHost>()
+    private val hosts = mutableSetOf<SimHost>()
 
-    init {
-        val service = createService(scheduler, schedulingQuantum)
-        this.service = service
-    }
+    /**
+     * The source of randomness.
+     */
+    private val random = SplittableRandom(seed)
 
     /**
      * Run a simulation of the [ComputeService] by replaying the workload trace given by [trace].
      *
      * @param trace The trace to simulate.
-     * @param seed The seed for the simulation.
-     * @param servers A list to which the created servers is added.
      * @param submitImmediately A flag to indicate that the servers are scheduled immediately (so not at their start time).
+     * @param failureModel A failure model to use for injecting failures.
+     * @param interference A flag to indicate that VM interference needs to be enabled.
      */
     public suspend fun run(
         trace: List<VirtualMachine>,
-        seed: Long,
-        servers: MutableList<Server>? = null,
-        submitImmediately: Boolean = false
+        submitImmediately: Boolean = false,
+        failureModel: FailureModel? = null,
+        interference: Boolean = false,
     ) {
-        val random = Random(seed)
-        val injector = failureModel?.createInjector(context, clock, service, random)
+        val injector = failureModel?.createInjector(context, clock, service, Random(random.nextLong()))
         val client = service.newClient()
+        val clock = clock
 
         // Create new image for the virtual machine
         val image = client.newImage("vm-image")
@@ -121,10 +118,16 @@ public class ComputeServiceHelper(
                         delay(max(0, (start - offset) - now))
                     }
 
-                    launch {
-                        val workloadOffset = -offset + 300001
-                        val workload = SimTraceWorkload(entry.trace, workloadOffset)
+                    val workloadOffset = -offset + 300001
+                    val workload = SimTraceWorkload(entry.trace, workloadOffset)
+                    val meta = mutableMapOf<String, Any>("workload" to workload)
 
+                    val interferenceProfile = entry.interferenceProfile
+                    if (interference && interferenceProfile != null) {
+                        meta["interference-profile"] = interferenceProfile
+                    }
+
+                    launch {
                         val server = client.newServer(
                             entry.name,
                             image,
@@ -134,10 +137,8 @@ public class ComputeServiceHelper(
                                 entry.memCapacity,
                                 meta = if (entry.cpuCapacity > 0.0) mapOf("cpu-capacity" to entry.cpuCapacity) else emptyMap()
                             ),
-                            meta = mapOf("workload" to workload)
+                            meta = meta
                         )
-
-                        servers?.add(server)
 
                         // Wait for the server reach its end time
                         val endTime = entry.stopTime.toEpochMilli()
@@ -164,20 +165,21 @@ public class ComputeServiceHelper(
      * @return The [SimHost] that has been constructed by the runner.
      */
     public fun registerHost(spec: HostSpec, optimize: Boolean = false): SimHost {
+        val machine = SimBareMetalMachine(engine, spec.model, spec.powerDriver)
+        val hypervisor = SimHypervisor(engine, spec.multiplexerFactory, random)
+
         val host = SimHost(
             spec.uid,
             spec.name,
-            spec.model,
             spec.meta,
             context,
-            _engine,
-            spec.hypervisor,
-            powerDriver = spec.powerDriver,
-            interferenceDomain = interferenceModel?.newDomain(),
+            clock,
+            machine,
+            hypervisor,
             optimize = optimize
         )
 
-        require(_hosts.add(host)) { "Host with uid ${spec.uid} already exists" }
+        require(hosts.add(host)) { "Host with uid ${spec.uid} already exists" }
         service.addHost(host)
 
         return host
@@ -186,11 +188,11 @@ public class ComputeServiceHelper(
     override fun close() {
         service.close()
 
-        for (host in _hosts) {
+        for (host in hosts) {
             host.close()
         }
 
-        _hosts.clear()
+        hosts.clear()
     }
 
     /**

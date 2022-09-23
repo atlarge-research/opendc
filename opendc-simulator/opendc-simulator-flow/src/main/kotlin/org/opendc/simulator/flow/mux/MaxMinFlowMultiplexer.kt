@@ -23,11 +23,8 @@
 package org.opendc.simulator.flow.mux
 
 import org.opendc.simulator.flow.*
-import org.opendc.simulator.flow.interference.InterferenceDomain
-import org.opendc.simulator.flow.interference.InterferenceKey
 import org.opendc.simulator.flow.internal.D_MS_TO_S
 import org.opendc.simulator.flow.internal.MutableFlowCounters
-import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -35,13 +32,16 @@ import kotlin.math.min
  *
  * @param engine The [FlowEngine] to drive the flow simulation.
  * @param parent The parent flow system of the multiplexer.
- * @param interferenceDomain The interference domain of the multiplexer.
  */
 public class MaxMinFlowMultiplexer(
     private val engine: FlowEngine,
-    parent: FlowConvergenceListener? = null,
-    private val interferenceDomain: InterferenceDomain? = null
+    parent: FlowConvergenceListener? = null
 ) : FlowMultiplexer {
+
+    override val maxInputs: Int = Int.MAX_VALUE
+
+    override val maxOutputs: Int = Int.MAX_VALUE
+
     /**
      * The inputs of the multiplexer.
      */
@@ -85,16 +85,16 @@ public class MaxMinFlowMultiplexer(
      */
     private val scheduler = Scheduler(engine, parent)
 
-    override fun newInput(key: InterferenceKey?): FlowConsumer {
-        return newInput(isCoupled = true, Double.POSITIVE_INFINITY, key)
+    override fun newInput(): FlowConsumer {
+        return newInput(isCoupled = true, Double.POSITIVE_INFINITY)
     }
 
-    override fun newInput(capacity: Double, key: InterferenceKey?): FlowConsumer {
-        return newInput(isCoupled = false, capacity, key)
+    override fun newInput(capacity: Double): FlowConsumer {
+        return newInput(isCoupled = false, capacity)
     }
 
-    private fun newInput(isCoupled: Boolean, initialCapacity: Double, key: InterferenceKey?): FlowConsumer {
-        val provider = Input(engine, scheduler, interferenceDomain, key, isCoupled, initialCapacity)
+    private fun newInput(isCoupled: Boolean, initialCapacity: Double): FlowConsumer {
+        val provider = Input(engine, scheduler, isCoupled, initialCapacity)
         _inputs.add(provider)
         return provider
     }
@@ -499,8 +499,7 @@ public class MaxMinFlowMultiplexer(
             counters.increment(
                 demand = demand * deltaS,
                 actual = rate * deltaS,
-                remaining = (previousCapacity - rate) * deltaS,
-                interference = 0.0
+                remaining = (previousCapacity - rate) * deltaS
             )
         }
     }
@@ -511,8 +510,6 @@ public class MaxMinFlowMultiplexer(
     private class Input(
         private val engine: FlowEngine,
         private val scheduler: Scheduler,
-        private val interferenceDomain: InterferenceDomain?,
-        @JvmField val key: InterferenceKey?,
         @JvmField val isCoupled: Boolean,
         initialCapacity: Double,
     ) : FlowConsumer, FlowConsumerLogic, Comparable<Input> {
@@ -693,24 +690,15 @@ public class MaxMinFlowMultiplexer(
                 return
             }
 
-            // Compute the performance penalty due to flow interference
-            val perfScore = if (interferenceDomain != null) {
-                val load = scheduler.rate / scheduler.capacity
-                interferenceDomain.apply(key, load)
-            } else {
-                1.0
-            }
-
             val actualRate = actualRate
 
             val deltaS = delta * D_MS_TO_S
             val demand = limit * deltaS
             val actual = actualRate * deltaS
             val remaining = (_capacity - actualRate) * deltaS
-            val interference = actual * max(0.0, 1 - perfScore)
 
-            _counters.increment(demand, actual, remaining, interference)
-            scheduler.counters.increment(0.0, 0.0, 0.0, interference)
+            _counters.increment(demand, actual, remaining)
+            scheduler.counters.increment(0.0, 0.0, 0.0)
         }
     }
 

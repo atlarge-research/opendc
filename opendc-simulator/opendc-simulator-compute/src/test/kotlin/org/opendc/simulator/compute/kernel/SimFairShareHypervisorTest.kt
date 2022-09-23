@@ -43,11 +43,12 @@ import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
+import java.util.*
 
 /**
  * Test suite for the [SimHypervisor] class.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class SimFairShareHypervisorTest {
     private lateinit var model: MachineModel
 
@@ -76,9 +77,9 @@ internal class SimFairShareHypervisorTest {
                 ),
             )
 
-        val platform = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(platform, null, PerformanceScalingGovernor(), null)
+        val engine = FlowEngine(coroutineContext, clock)
+        val machine = SimBareMetalMachine(engine, model, SimplePowerDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), PerformanceScalingGovernor())
 
         launch {
             machine.runWorkload(hypervisor)
@@ -125,11 +126,9 @@ internal class SimFairShareHypervisorTest {
                 )
             )
 
-        val platform = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(
-            platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
-        )
-        val hypervisor = SimFairShareHypervisor(platform, null, null, null)
+        val engine = FlowEngine(coroutineContext, clock)
+        val machine = SimBareMetalMachine(engine, model, SimplePowerDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
 
         launch {
             machine.runWorkload(hypervisor)
@@ -166,9 +165,9 @@ internal class SimFairShareHypervisorTest {
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
 
-        val platform = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(platform, null, null, null)
+        val engine = FlowEngine(coroutineContext, clock)
+        val machine = SimBareMetalMachine(engine, model, SimplePowerDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
 
         assertDoesNotThrow {
             launch {
@@ -193,11 +192,9 @@ internal class SimFairShareHypervisorTest {
             .addGroup(targetLoad = 0.1, score = 0.8, members = setOf("a", "n"))
             .build()
 
-        val platform = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(
-            platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
-        )
-        val hypervisor = SimFairShareHypervisor(platform, null, null, interferenceModel.newDomain())
+        val engine = FlowEngine(coroutineContext, clock)
+        val machine = SimBareMetalMachine(engine, model, SimplePowerDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1), null)
 
         val duration = 5 * 60L
         val workloadA =
@@ -225,12 +222,12 @@ internal class SimFairShareHypervisorTest {
 
         coroutineScope {
             launch {
-                val vm = hypervisor.newMachine(model, "a")
-                vm.runWorkload(workloadA)
+                val vm = hypervisor.newMachine(model)
+                vm.runWorkload(workloadA, meta = mapOf("interference-model" to interferenceModel.getProfile("a")!!))
                 hypervisor.removeMachine(vm)
             }
-            val vm = hypervisor.newMachine(model, "b")
-            vm.runWorkload(workloadB)
+            val vm = hypervisor.newMachine(model)
+            vm.runWorkload(workloadB, meta = mapOf("interference-model" to interferenceModel.getProfile("b")!!))
             hypervisor.removeMachine(vm)
         }
 

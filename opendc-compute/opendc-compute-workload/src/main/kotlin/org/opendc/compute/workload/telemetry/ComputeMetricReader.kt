@@ -42,7 +42,6 @@ import java.time.Instant
  * @param scope The [CoroutineScope] to run the reader in.
  * @param clock The virtual clock.
  * @param service The [ComputeService] to monitor.
- * @param servers The [Server]s to monitor.
  * @param monitor The monitor to export the metrics to.
  * @param exportInterval The export interval.
  */
@@ -50,7 +49,6 @@ public class ComputeMetricReader(
     scope: CoroutineScope,
     clock: Clock,
     private val service: ComputeService,
-    private val servers: List<Server>,
     private val monitor: ComputeMonitor,
     private val exportInterval: Duration = Duration.ofMinutes(5)
 ) : AutoCloseable {
@@ -76,6 +74,11 @@ public class ComputeMetricReader(
      */
     private val job = scope.launch {
         val intervalMs = exportInterval.toMillis()
+        val service = service
+        val monitor = monitor
+        val hostTableReaders = hostTableReaders
+        val serverTableReaders = serverTableReaders
+        val serviceTableReader = serviceTableReader
 
         try {
             while (isActive) {
@@ -91,7 +94,7 @@ public class ComputeMetricReader(
                         reader.reset()
                     }
 
-                    for (server in servers) {
+                    for (server in service.servers) {
                         val reader = serverTableReaders.computeIfAbsent(server) { ServerTableReaderImpl(service, it) }
                         reader.record(now)
                         monitor.record(reader)
