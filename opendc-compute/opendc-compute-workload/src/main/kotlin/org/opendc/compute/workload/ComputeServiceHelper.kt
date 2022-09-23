@@ -26,7 +26,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import org.opendc.compute.api.Server
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.SimHost
@@ -59,7 +58,7 @@ public class ComputeServiceHelper(
     /**
      * The [ComputeService] that has been configured by the manager.
      */
-    public val service: ComputeService
+    public val service: ComputeService = ComputeService(context, clock, scheduler, schedulingQuantum)
 
     /**
      * The [FlowEngine] to simulate the hosts.
@@ -76,29 +75,23 @@ public class ComputeServiceHelper(
      */
     private val random = SplittableRandom(seed)
 
-    init {
-        val service = createService(scheduler, schedulingQuantum)
-        this.service = service
-    }
-
     /**
      * Run a simulation of the [ComputeService] by replaying the workload trace given by [trace].
      *
      * @param trace The trace to simulate.
-     * @param servers A list to which the created servers is added.
      * @param submitImmediately A flag to indicate that the servers are scheduled immediately (so not at their start time).
      * @param failureModel A failure model to use for injecting failures.
      * @param interference A flag to indicate that VM interference needs to be enabled.
      */
     public suspend fun run(
         trace: List<VirtualMachine>,
-        servers: MutableList<Server>? = null,
         submitImmediately: Boolean = false,
         failureModel: FailureModel? = null,
         interference: Boolean = false,
     ) {
         val injector = failureModel?.createInjector(context, clock, service, Random(random.nextLong()))
         val client = service.newClient()
+        val clock = clock
 
         // Create new image for the virtual machine
         val image = client.newImage("vm-image")
@@ -146,8 +139,6 @@ public class ComputeServiceHelper(
                             ),
                             meta = meta
                         )
-
-                        servers?.add(server)
 
                         // Wait for the server reach its end time
                         val endTime = entry.stopTime.toEpochMilli()

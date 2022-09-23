@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.api.Server
 import org.opendc.compute.service.scheduler.FilterScheduler
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
@@ -90,13 +89,11 @@ class CapelinIntegrationTest {
             seed,
         )
         val topology = createTopology()
-
-        val servers = mutableListOf<Server>()
-        val reader = ComputeMetricReader(this, clock, runner.service, servers, monitor)
+        val reader = ComputeMetricReader(this, clock, runner.service, monitor)
 
         try {
             runner.apply(topology)
-            runner.run(workload, servers)
+            runner.run(workload)
 
             val serviceMetrics = runner.service.getSchedulerStats()
             println(
@@ -140,12 +137,11 @@ class CapelinIntegrationTest {
             seed,
         )
         val topology = createTopology("single")
-        val servers = mutableListOf<Server>()
-        val reader = ComputeMetricReader(this, clock, runner.service, servers, monitor)
+        val reader = ComputeMetricReader(this, clock, runner.service, monitor)
 
         try {
             runner.apply(topology)
-            runner.run(workload, servers)
+            runner.run(workload)
 
             val serviceMetrics = runner.service.getSchedulerStats()
             println(
@@ -186,12 +182,11 @@ class CapelinIntegrationTest {
             seed
         )
         val topology = createTopology("single")
-        val servers = mutableListOf<Server>()
-        val reader = ComputeMetricReader(this, clock, simulator.service, servers, monitor)
+        val reader = ComputeMetricReader(this, clock, simulator.service, monitor)
 
         try {
             simulator.apply(topology)
-            simulator.run(workload, servers, interference = true)
+            simulator.run(workload, interference = true)
 
             val serviceMetrics = simulator.service.getSchedulerStats()
             println(
@@ -230,12 +225,11 @@ class CapelinIntegrationTest {
         )
         val topology = createTopology("single")
         val workload = createTestWorkload(0.25, seed)
-        val servers = mutableListOf<Server>()
-        val reader = ComputeMetricReader(this, clock, simulator.service, servers, monitor)
+        val reader = ComputeMetricReader(this, clock, simulator.service, monitor)
 
         try {
             simulator.apply(topology)
-            simulator.run(workload, servers, failureModel = grid5000(Duration.ofDays(7)))
+            simulator.run(workload, failureModel = grid5000(Duration.ofDays(7)))
 
             val serviceMetrics = simulator.service.getSchedulerStats()
             println(

@@ -23,7 +23,6 @@
 package org.opendc.web.runner
 
 import mu.KotlinLogging
-import org.opendc.compute.api.Server
 import org.opendc.compute.workload.*
 import org.opendc.compute.workload.telemetry.ComputeMetricReader
 import org.opendc.compute.workload.topology.HostSpec
@@ -222,14 +221,13 @@ public class OpenDCRunner(
                         computeScheduler,
                         seed = 0L,
                     )
-                    val servers = mutableListOf<Server>()
-                    val reader = ComputeMetricReader(this, clock, simulator.service, servers, monitor)
+                    val reader = ComputeMetricReader(this, clock, simulator.service, monitor)
 
                     try {
                         // Instantiate the topology onto the simulator
                         simulator.apply(topology)
                         // Run workload trace
-                        simulator.run(vms, servers, failureModel = failureModel, interference = phenomena.interference)
+                        simulator.run(vms, failureModel = failureModel, interference = phenomena.interference)
 
                         val serviceMetrics = simulator.service.getSchedulerStats()
                         logger.debug {
