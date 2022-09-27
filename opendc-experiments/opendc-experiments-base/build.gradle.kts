@@ -30,4 +30,7 @@ plugins {
 }
 
 dependencies {
+    api(libs.microprofile.config)
+
+    implementation(projects.opendcSimulator.opendcSimulatorCore)
 }

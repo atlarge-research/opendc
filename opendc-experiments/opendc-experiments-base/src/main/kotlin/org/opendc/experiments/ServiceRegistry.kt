@@ -22,10 +22,8 @@
 
 package org.opendc.experiments
 
-import org.opendc.experiments.broker.Broker
-
 /**
- * A read-only registry of services accessible by a [Broker] during an experiment.
+ * A read-only registry of services used during experiments to resolve services.
  *
  * The service registry is similar conceptually to the Domain Name System (DNS), which is a naming system used to
  * identify computers reachable via the Internet. The service registry should be used in a similar fashion.
@@ -39,4 +37,9 @@ public interface ServiceRegistry {
      * @return The service with specified [name] and implementing [type] or `null` if it does not exist.
      */
     public fun <T : Any> resolve(name: String, type: Class<T>): T?
+
+    /**
+     * Create a copy of the registry.
+     */
+    public fun clone(): ServiceRegistry
 }

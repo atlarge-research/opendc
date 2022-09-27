@@ -20,39 +20,36 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments
+package org.opendc.experiments.provisioner
+
+import org.opendc.experiments.MutableServiceRegistry
+import java.time.Clock
+import java.util.*
+import kotlin.coroutines.CoroutineContext
 
 /**
- * A mutable [ServiceRegistry].
+ * The [ProvisioningContext] class provides access to shared state between subsequent [ProvisioningStep]s, as well as
+ * access to the simulation dispatcher (via [CoroutineContext]), the virtual clock, and a randomness seeder to allow
+ * the provisioning steps to initialize the (simulated) resources.
  */
-public interface MutableServiceRegistry : ServiceRegistry {
+public interface ProvisioningContext {
     /**
-     * Register [service] for the specified [name] in this registry.
-     *
-     * @param name The name of the service to register, which should follow the rules for domain names as defined by
-     *             DNS.
-     * @param type The interface provided by the service.
-     * @param service A reference to the actual implementation of the service.
+     * The [CoroutineContext] in which the provisioner runs.
      */
-    public fun <T : Any> register(name: String, type: Class<T>, service: T)
+    public val coroutineContext: CoroutineContext
 
     /**
-     * Remove the service with [name] and [type] from this registry.
-     *
-     * @param name The name of the service to remove, which should follow the rules for domain names as defined by DNS.
-     * @param type The type of the service to remove.
+     * The [Clock] tracking the virtual simulation time.
      */
-    public fun remove(name: String, type: Class<*>)
+    public val clock: Clock
 
     /**
-     * Remove all services registered with [name].
-     *
-     * @param name The name of the services to remove, which should follow the rules for domain names as defined by DNS.
+     * A [SplittableRandom] instance used to seed the provisioners.
      */
-    public fun remove(name: String)
+    public val seeder: SplittableRandom
 
     /**
-     * Create a copy of the registry.
+     * A [MutableServiceRegistry] where the provisioned services are registered.
      */
-    public override fun clone(): MutableServiceRegistry
+    public val registry: MutableServiceRegistry
 }
