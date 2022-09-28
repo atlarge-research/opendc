@@ -20,9 +20,26 @@
  * SOFTWARE.
  */
 
-package org.opendc.faas.workload
+package org.opendc.experiments.faas
+
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
+import java.io.File
 
 /**
- * A trace for a single function
+ * Test suite for [ServerlessTraceReader].
  */
-public data class FunctionTrace(val id: String, val maxMemory: Int, val samples: List<FunctionSample>)
+class ServerlessTraceReaderTest {
+    @Test
+    fun testSmoke() {
+        val path = File("src/test/resources/trace")
+        val trace = ServerlessTraceReader().parse(path)
+
+        assertAll(
+            { assertEquals(2, trace.size) },
+            { assertEquals("004c1ea5eb15978682b00ab659aed21e2835d5287668da8d5267f751fdfbdd78", trace[0].id) },
+            { assertEquals(256, trace[0].maxMemory) }
+        )
+    }
+}

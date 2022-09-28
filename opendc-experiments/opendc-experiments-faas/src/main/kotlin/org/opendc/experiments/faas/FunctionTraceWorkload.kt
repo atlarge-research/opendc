@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.faas.service.deployer
+package org.opendc.experiments.faas
 
-import org.opendc.faas.service.FunctionObject
+import org.opendc.faas.simulator.workload.SimFaaSWorkload
+import org.opendc.simulator.compute.workload.SimTrace
+import org.opendc.simulator.compute.workload.SimTraceFragment
+import org.opendc.simulator.compute.workload.SimTraceWorkload
+import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
- * A [FunctionDeployer] is responsible for ensuring that an instance of an arbitrary function, a [FunctionInstance],
- * is deployed.
- *
- * The function deployer should combine the configuration stored in the function registry, the parameters supplied by
- * the requester, and other factors into a decision of how the function should be deployed, including how many and
- * what kind of resources it should receive.
- *
- * Though it decides how the function instance should be deployed, the deployment of the function instance itself is
- * delegated to the Resource Orchestration Layer.
+ * A [SimFaaSWorkload] for a [FunctionTrace].
  */
-public interface FunctionDeployer {
-    /**
-     * Deploy the specified [function].
-     */
-    public fun deploy(function: FunctionObject, listener: FunctionInstanceListener): FunctionInstance
+public class FunctionTraceWorkload(trace: FunctionTrace) :
+    SimFaaSWorkload, SimWorkload by SimTraceWorkload(SimTrace.ofFragments(trace.samples.map { SimTraceFragment(it.timestamp, it.duration, it.cpuUsage, 1) })) {
+    override suspend fun invoke() {}
 }

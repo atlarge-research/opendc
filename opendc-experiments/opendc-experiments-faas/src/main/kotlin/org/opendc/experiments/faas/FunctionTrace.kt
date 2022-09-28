@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.faas.workload
+package org.opendc.experiments.faas
 
 /**
- * A sample of a single function.
- *
- * @param timestamp The timestamp of the function.
- * @param duration The average execution time of the function.
- * @param invocations The number of invocations.
- * @param provisionedCpu The provisioned CPU for this function in MHz.
- * @param provisionedMem The amount of memory provisioned for this function in MB.
- * @param cpuUsage The actual CPU usage in MHz.
- * @param memUsage The actual memory usage in MB.
+ * A trace for a single function
  */
-public data class FunctionSample(
-    val timestamp: Long,
-    val duration: Long,
-    val invocations: Int,
-    val provisionedCpu: Int,
-    val provisionedMem: Int,
-    val cpuUsage: Double,
-    val memUsage: Double
-)
+public data class FunctionTrace(val id: String, val maxMemory: Int, val samples: List<FunctionSample>)

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.faas.workload
+package org.opendc.experiments.faas
 
 import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.dataformat.csv.CsvFactory

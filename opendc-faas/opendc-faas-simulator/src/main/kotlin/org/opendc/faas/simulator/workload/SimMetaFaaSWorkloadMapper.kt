@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,15 @@
  * SOFTWARE.
  */
 
-package org.opendc.faas.workload
+package org.opendc.faas.simulator.workload
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
-import java.io.File
+import org.opendc.faas.service.FunctionObject
 
 /**
- * Test suite for [ServerlessTraceReader].
+ * A [SimFaaSWorkloadMapper] that maps a [FunctionObject] to a workload via the meta-data.
  */
-class ServerlessTraceReaderTest {
-    @Test
-    fun testSmoke() {
-        val path = File("src/test/resources/trace")
-        val trace = ServerlessTraceReader().parse(path)
-
-        assertAll(
-            { assertEquals(2, trace.size) },
-            { assertEquals("004c1ea5eb15978682b00ab659aed21e2835d5287668da8d5267f751fdfbdd78", trace[0].id) },
-            { assertEquals(256, trace[0].maxMemory) }
-        )
+public class SimMetaFaaSWorkloadMapper(private val key: String = "workload") : SimFaaSWorkloadMapper {
+    override fun createWorkload(function: FunctionObject): SimFaaSWorkload {
+        return requireNotNull(function.meta[key]) as SimFaaSWorkload
     }
 }

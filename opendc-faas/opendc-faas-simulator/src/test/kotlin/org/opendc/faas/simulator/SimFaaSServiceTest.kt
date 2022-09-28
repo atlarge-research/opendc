@@ -24,7 +24,6 @@ package org.opendc.faas.simulator
 
 import io.mockk.coVerify
 import io.mockk.spyk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -50,7 +49,6 @@ import java.util.*
 /**
  * A test suite for the [FaaSService] implementation under simulated conditions.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class SimFaaSServiceTest {
 
     private lateinit var machineModel: MachineModel
@@ -75,7 +73,7 @@ internal class SimFaaSServiceTest {
         })
 
         val delayInjector = StochasticDelayInjector(ColdStartModel.GOOGLE, random)
-        val deployer = SimFunctionDeployer(clock, this, machineModel, delayInjector) { workload }
+        val deployer = SimFunctionDeployer(coroutineContext, clock, machineModel, delayInjector) { workload }
         val service = FaaSService(
             coroutineContext,
             clock,
@@ -91,6 +89,7 @@ internal class SimFaaSServiceTest {
         delay(2000)
 
         service.close()
+        deployer.close()
 
         yield()
 

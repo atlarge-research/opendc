@@ -20,11 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.faas.workload
+package org.opendc.experiments.faas
 
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
+import org.opendc.experiments.provisioner.Provisioner
+import org.opendc.faas.service.FaaSService
 import org.opendc.faas.service.autoscaler.FunctionTerminationPolicyFixed
 import org.opendc.faas.service.router.RandomRoutingPolicy
 import org.opendc.faas.simulator.delay.ColdStartModel
@@ -37,37 +39,40 @@ import java.io.File
 import java.time.Duration
 
 /**
- * Integration test suite for the [FaaSServiceHelper] class.
+ * Integration test to demonstrate a FaaS experiment.
  */
-class FaaSServiceHelperTest {
+class FaaSExperiment {
     /**
      * Smoke test that simulates a small trace.
      */
     @Test
     fun testSmoke() = runBlockingSimulation {
-        val trace = ServerlessTraceReader().parse(File("src/test/resources/trace"))
-        val runner = FaaSServiceHelper(
-            coroutineContext,
-            clock,
-            createMachineModel(),
-            RandomRoutingPolicy(),
-            FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = Duration.ofMinutes(10)),
-            coldStartModel = ColdStartModel.GOOGLE
-        )
+        val faasService = "faas.opendc.org"
 
-        try {
-            runner.run(trace)
-        } finally {
-            runner.close()
+        Provisioner(coroutineContext, clock, seed = 0L).use { provisioner ->
+            provisioner.runStep(
+                setupFaaSService(
+                    faasService,
+                    { RandomRoutingPolicy() },
+                    { FunctionTerminationPolicyFixed(it.coroutineContext, it.clock, timeout = Duration.ofMinutes(10)) },
+                    createMachineModel(),
+                    coldStartModel = ColdStartModel.GOOGLE
+                )
+            )
+
+            val service = provisioner.registry.resolve(faasService, FaaSService::class.java)!!
+
+            val trace = ServerlessTraceReader().parse(File("src/test/resources/trace"))
+            service.replay(clock, trace)
+
+            val stats = service.getSchedulerStats()
+
+            assertAll(
+                { assertEquals(14, stats.totalInvocations) },
+                { assertEquals(2, stats.timelyInvocations) },
+                { assertEquals(12, stats.delayedInvocations) },
+            )
         }
-
-        val stats = runner.service.getSchedulerStats()
-
-        assertAll(
-            { assertEquals(14, stats.totalInvocations) },
-            { assertEquals(2, stats.timelyInvocations) },
-            { assertEquals(12, stats.delayedInvocations) },
-        )
     }
 
     /**
