@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +20,21 @@
  * SOFTWARE.
  */
 
-description = "Workflow orchestration service for OpenDC"
+package org.opendc.experiments.workflow
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+import org.opendc.workflow.service.scheduler.job.JobAdmissionPolicy
+import org.opendc.workflow.service.scheduler.job.JobOrderPolicy
+import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
+import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
+import java.time.Duration
 
-dependencies {
-    api(projects.opendcWorkflow.opendcWorkflowApi)
-    api(projects.opendcCompute.opendcComputeApi)
-    implementation(projects.opendcCommon)
-    implementation(libs.kotlin.logging)
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testImplementation(projects.opendcExperiments.opendcExperimentsCompute)
-    testImplementation(projects.opendcExperiments.opendcExperimentsWorkflow)
-    testImplementation(projects.opendcTrace.opendcTraceApi)
-    testRuntimeOnly(projects.opendcTrace.opendcTraceGwf)
-    testRuntimeOnly(libs.log4j.slf4j)
-}
+/**
+ * Specification of the scheduling policies of the workflow scheduler.
+ */
+public data class WorkflowSchedulerSpec(
+    val schedulingQuantum: Duration,
+    val jobAdmissionPolicy: JobAdmissionPolicy,
+    val jobOrderPolicy: JobOrderPolicy,
+    val taskEligibilityPolicy: TaskEligibilityPolicy,
+    val taskOrderPolicy: TaskOrderPolicy,
+)

@@ -31,6 +31,5 @@ plugins {
 
 dependencies {
     api(projects.opendcExperiments.opendcExperimentsBase)
-
-    implementation(projects.opendcCompute.opendcComputeWorkload)
+    api(projects.opendcCompute.opendcComputeWorkload)
 }

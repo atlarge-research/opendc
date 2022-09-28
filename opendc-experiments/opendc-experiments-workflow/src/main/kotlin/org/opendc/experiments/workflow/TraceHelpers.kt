@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,11 @@
  */
 
 @file:JvmName("TraceHelpers")
-package org.opendc.workflow.workload
+package org.opendc.experiments.workflow
 
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
@@ -30,6 +33,8 @@ import org.opendc.workflow.api.Job
 import org.opendc.workflow.api.Task
 import org.opendc.workflow.api.WORKFLOW_TASK_CORES
 import org.opendc.workflow.api.WORKFLOW_TASK_DEADLINE
+import org.opendc.workflow.service.WorkflowService
+import java.time.Clock
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
@@ -91,4 +96,35 @@ public fun Trace.toJobs(): List<Job> {
     }
 
     return jobs.values.toList()
+}
+
+/**
+ * Helper method to replay the specified list of [jobs] and suspend execution util all jobs have finished.
+ */
+public suspend fun WorkflowService.replay(clock: Clock, jobs: List<Job>) {
+    // Sort jobs by their arrival time
+    val orderedJobs = jobs.sortedBy { it.metadata.getOrDefault("WORKFLOW_SUBMIT_TIME", Long.MAX_VALUE) as Long }
+    if (orderedJobs.isEmpty()) {
+        return
+    }
+
+    // Wait until the trace is started
+    val startTime = orderedJobs[0].metadata.getOrDefault("WORKFLOW_SUBMIT_TIME", Long.MAX_VALUE) as Long
+    var offset = 0L
+
+    if (startTime != Long.MAX_VALUE) {
+        offset = startTime - clock.millis()
+        delay(offset.coerceAtLeast(0))
+    }
+
+    coroutineScope {
+        for (job in orderedJobs) {
+            val submitTime = job.metadata.getOrDefault("WORKFLOW_SUBMIT_TIME", Long.MAX_VALUE) as Long
+            if (submitTime != Long.MAX_VALUE) {
+                delay(((submitTime - offset) - clock.millis()).coerceAtLeast(0))
+            }
+
+            launch { invoke(job) }
+        }
+    }
 }

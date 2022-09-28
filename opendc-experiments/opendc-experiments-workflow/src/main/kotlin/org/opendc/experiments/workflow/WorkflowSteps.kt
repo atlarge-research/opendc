@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.workflow.workload
+@file:JvmName("WorkflowSteps")
+package org.opendc.experiments.workflow
 
-import org.opendc.workflow.service.scheduler.job.JobAdmissionPolicy
-import org.opendc.workflow.service.scheduler.job.JobOrderPolicy
-import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
-import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
+import org.opendc.experiments.provisioner.ProvisioningStep
+import org.opendc.workflow.service.WorkflowService
 import java.time.Duration
 
 /**
- * Specification of the scheduling policies of the workflow scheduler.
+ * Return a [ProvisioningStep] that sets up a [WorkflowService].
  */
-public data class WorkflowSchedulerSpec(
-    val schedulingQuantum: Duration,
-    val jobAdmissionPolicy: JobAdmissionPolicy,
-    val jobOrderPolicy: JobOrderPolicy,
-    val taskEligibilityPolicy: TaskEligibilityPolicy,
-    val taskOrderPolicy: TaskOrderPolicy,
-)
+public fun setupWorkflowService(
+    serviceDomain: String,
+    computeService: String,
+    scheduler: WorkflowSchedulerSpec,
+    schedulingQuantum: Duration = Duration.ofMinutes(5)
+): ProvisioningStep {
+    return WorkflowServiceProvisioningStep(serviceDomain, computeService, scheduler, schedulingQuantum)
+}

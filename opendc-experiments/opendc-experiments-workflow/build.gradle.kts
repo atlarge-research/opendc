@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,17 @@ description = "Support library for simulating workflows with OpenDC"
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
+    `testing-conventions`
+    `jacoco-conventions`
 }
 
 dependencies {
-    api(projects.opendcWorkflow.opendcWorkflowService)
+    api(projects.opendcExperiments.opendcExperimentsBase)
+    api(projects.opendcWorkflow.opendcWorkflowApi)
 
+    implementation(libs.kotlinx.coroutines)
+    implementation(projects.opendcCompute.opendcComputeService)
+    implementation(projects.opendcWorkflow.opendcWorkflowService)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcTrace.opendcTraceApi)
 }
