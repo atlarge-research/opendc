@@ -22,23 +22,17 @@
 
 package org.opendc.compute.workload
 
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.kernel.SimHypervisor
-import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.flow.FlowEngine
 import java.time.Clock
 import java.time.Duration
 import java.util.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.max
 
 /**
  * Helper class to simulate VM-based workloads in OpenDC.
@@ -89,72 +83,7 @@ public class ComputeServiceHelper(
         failureModel: FailureModel? = null,
         interference: Boolean = false,
     ) {
-        val injector = failureModel?.createInjector(context, clock, service, Random(random.nextLong()))
-        val client = service.newClient()
-        val clock = clock
-
-        // Create new image for the virtual machine
-        val image = client.newImage("vm-image")
-
-        try {
-            coroutineScope {
-                // Start the fault injector
-                injector?.start()
-
-                var offset = Long.MIN_VALUE
-
-                for (entry in trace.sortedBy { it.startTime }) {
-                    val now = clock.millis()
-                    val start = entry.startTime.toEpochMilli()
-
-                    if (offset < 0) {
-                        offset = start - now
-                    }
-
-                    // Make sure the trace entries are ordered by submission time
-                    assert(start - offset >= 0) { "Invalid trace order" }
-
-                    if (!submitImmediately) {
-                        delay(max(0, (start - offset) - now))
-                    }
-
-                    val workloadOffset = -offset + 300001
-                    val workload = SimTraceWorkload(entry.trace, workloadOffset)
-                    val meta = mutableMapOf<String, Any>("workload" to workload)
-
-                    val interferenceProfile = entry.interferenceProfile
-                    if (interference && interferenceProfile != null) {
-                        meta["interference-profile"] = interferenceProfile
-                    }
-
-                    launch {
-                        val server = client.newServer(
-                            entry.name,
-                            image,
-                            client.newFlavor(
-                                entry.name,
-                                entry.cpuCount,
-                                entry.memCapacity,
-                                meta = if (entry.cpuCapacity > 0.0) mapOf("cpu-capacity" to entry.cpuCapacity) else emptyMap()
-                            ),
-                            meta = meta
-                        )
-
-                        // Wait for the server reach its end time
-                        val endTime = entry.stopTime.toEpochMilli()
-                        delay(endTime + workloadOffset - clock.millis() + 5 * 60 * 1000)
-
-                        // Stop the server after reaching the end-time of the virtual machine
-                        server.stop()
-                    }
-                }
-            }
-
-            yield()
-        } finally {
-            injector?.close()
-            client.close()
-        }
+        service.replay(clock, trace, random.nextLong(), submitImmediately, failureModel, interference)
     }
 
     /**
@@ -193,12 +122,5 @@ public class ComputeServiceHelper(
         }
 
         hosts.clear()
-    }
-
-    /**
-     * Construct a [ComputeService] instance.
-     */
-    private fun createService(scheduler: ComputeScheduler, schedulingQuantum: Duration): ComputeService {
-        return ComputeService(context, clock, scheduler, schedulingQuantum)
     }
 }
