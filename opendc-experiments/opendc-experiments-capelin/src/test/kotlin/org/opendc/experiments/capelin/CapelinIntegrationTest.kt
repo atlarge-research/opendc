@@ -26,18 +26,20 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.FilterScheduler
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.workload.*
-import org.opendc.compute.workload.telemetry.ComputeMetricReader
 import org.opendc.compute.workload.telemetry.ComputeMonitor
 import org.opendc.compute.workload.telemetry.table.HostTableReader
+import org.opendc.compute.workload.telemetry.table.ServiceTableReader
 import org.opendc.compute.workload.topology.Topology
-import org.opendc.compute.workload.topology.apply
 import org.opendc.experiments.capelin.topology.clusterTopology
+import org.opendc.experiments.compute.*
+import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.core.runBlockingSimulation
 import java.io.File
 import java.time.Duration
@@ -82,45 +84,41 @@ class CapelinIntegrationTest {
     fun testLarge() = runBlockingSimulation {
         val seed = 0L
         val workload = createTestWorkload(1.0, seed)
-        val runner = ComputeServiceHelper(
-            coroutineContext,
-            clock,
-            computeScheduler,
-            seed,
-        )
         val topology = createTopology()
-        val reader = ComputeMetricReader(this, clock, runner.service, monitor)
+        val monitor = monitor
 
-        try {
-            runner.apply(topology)
-            runner.run(workload)
-
-            val serviceMetrics = runner.service.getSchedulerStats()
-            println(
-                "Scheduler " +
-                    "Success=${serviceMetrics.attemptsSuccess} " +
-                    "Failure=${serviceMetrics.attemptsFailure} " +
-                    "Error=${serviceMetrics.attemptsError} " +
-                    "Pending=${serviceMetrics.serversPending} " +
-                    "Active=${serviceMetrics.serversActive}"
+        Provisioner(coroutineContext, clock, seed).use { provisioner ->
+            provisioner.runSteps(
+                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
+                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
+                setupHosts(serviceDomain = "compute.opendc.org", topology.resolve()),
             )
 
-            // Note that these values have been verified beforehand
-            assertAll(
-                { assertEquals(50, serviceMetrics.attemptsSuccess, "The scheduler should schedule 50 VMs") },
-                { assertEquals(0, serviceMetrics.serversActive, "All VMs should finish after a run") },
-                { assertEquals(0, serviceMetrics.attemptsFailure, "No VM should be unscheduled") },
-                { assertEquals(0, serviceMetrics.serversPending, "No VM should not be in the queue") },
-                { assertEquals(223393683, this@CapelinIntegrationTest.monitor.idleTime) { "Incorrect idle time" } },
-                { assertEquals(66977508, this@CapelinIntegrationTest.monitor.activeTime) { "Incorrect active time" } },
-                { assertEquals(3160381, this@CapelinIntegrationTest.monitor.stealTime) { "Incorrect steal time" } },
-                { assertEquals(0, this@CapelinIntegrationTest.monitor.lostTime) { "Incorrect lost time" } },
-                { assertEquals(5.840939264814157E9, this@CapelinIntegrationTest.monitor.energyUsage, 0.01) { "Incorrect power draw" } },
-            )
-        } finally {
-            runner.close()
-            reader.close()
+            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
+            service.replay(clock, workload, seed)
         }
+
+        println(
+            "Scheduler " +
+                "Success=${monitor.attemptsSuccess} " +
+                "Failure=${monitor.attemptsFailure} " +
+                "Error=${monitor.attemptsError} " +
+                "Pending=${monitor.serversPending} " +
+                "Active=${monitor.serversActive}"
+        )
+
+        // Note that these values have been verified beforehand
+        assertAll(
+            { assertEquals(50, monitor.attemptsSuccess, "The scheduler should schedule 50 VMs") },
+            { assertEquals(0, monitor.serversActive, "All VMs should finish after a run") },
+            { assertEquals(0, monitor.attemptsFailure, "No VM should be unscheduled") },
+            { assertEquals(0, monitor.serversPending, "No VM should not be in the queue") },
+            { assertEquals(223393683, monitor.idleTime) { "Incorrect idle time" } },
+            { assertEquals(66977508, monitor.activeTime) { "Incorrect active time" } },
+            { assertEquals(3160381, monitor.stealTime) { "Incorrect steal time" } },
+            { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
+            { assertEquals(5.840939264814157E9, monitor.energyUsage, 0.01) { "Incorrect power draw" } },
+        )
     }
 
     /**
@@ -130,40 +128,36 @@ class CapelinIntegrationTest {
     fun testSmall() = runBlockingSimulation {
         val seed = 1L
         val workload = createTestWorkload(0.25, seed)
-        val runner = ComputeServiceHelper(
-            coroutineContext,
-            clock,
-            computeScheduler,
-            seed,
-        )
         val topology = createTopology("single")
-        val reader = ComputeMetricReader(this, clock, runner.service, monitor)
+        val monitor = monitor
 
-        try {
-            runner.apply(topology)
-            runner.run(workload)
-
-            val serviceMetrics = runner.service.getSchedulerStats()
-            println(
-                "Scheduler " +
-                    "Success=${serviceMetrics.attemptsSuccess} " +
-                    "Failure=${serviceMetrics.attemptsFailure} " +
-                    "Error=${serviceMetrics.attemptsError} " +
-                    "Pending=${serviceMetrics.serversPending} " +
-                    "Active=${serviceMetrics.serversActive}"
+        Provisioner(coroutineContext, clock, seed).use { provisioner ->
+            provisioner.runSteps(
+                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
+                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
+                setupHosts(serviceDomain = "compute.opendc.org", topology.resolve()),
             )
-        } finally {
-            runner.close()
-            reader.close()
+
+            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
+            service.replay(clock, workload, seed)
         }
+
+        println(
+            "Scheduler " +
+                "Success=${monitor.attemptsSuccess} " +
+                "Failure=${monitor.attemptsFailure} " +
+                "Error=${monitor.attemptsError} " +
+                "Pending=${monitor.serversPending} " +
+                "Active=${monitor.serversActive}"
+        )
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(10999592, this@CapelinIntegrationTest.monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(9741207, this@CapelinIntegrationTest.monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(0, this@CapelinIntegrationTest.monitor.stealTime) { "Steal time incorrect" } },
-            { assertEquals(0, this@CapelinIntegrationTest.monitor.lostTime) { "Lost time incorrect" } },
-            { assertEquals(7.011676470304312E8, this@CapelinIntegrationTest.monitor.energyUsage, 0.01) { "Incorrect power draw" } }
+            { assertEquals(10999592, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(9741207, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
+            { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
+            { assertEquals(7.011676470304312E8, monitor.energyUsage, 0.01) { "Incorrect power draw" } }
         )
     }
 
@@ -174,40 +168,34 @@ class CapelinIntegrationTest {
     fun testInterference() = runBlockingSimulation {
         val seed = 0L
         val workload = createTestWorkload(1.0, seed)
-
-        val simulator = ComputeServiceHelper(
-            coroutineContext,
-            clock,
-            computeScheduler,
-            seed
-        )
         val topology = createTopology("single")
-        val reader = ComputeMetricReader(this, clock, simulator.service, monitor)
 
-        try {
-            simulator.apply(topology)
-            simulator.run(workload, interference = true)
-
-            val serviceMetrics = simulator.service.getSchedulerStats()
-            println(
-                "Scheduler " +
-                    "Success=${serviceMetrics.attemptsSuccess} " +
-                    "Failure=${serviceMetrics.attemptsFailure} " +
-                    "Error=${serviceMetrics.attemptsError} " +
-                    "Pending=${serviceMetrics.serversPending} " +
-                    "Active=${serviceMetrics.serversActive}"
+        Provisioner(coroutineContext, clock, seed).use { provisioner ->
+            provisioner.runSteps(
+                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
+                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
+                setupHosts(serviceDomain = "compute.opendc.org", topology.resolve()),
             )
-        } finally {
-            simulator.close()
-            reader.close()
+
+            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
+            service.replay(clock, workload, seed, interference = true)
         }
+
+        println(
+            "Scheduler " +
+                "Success=${monitor.attemptsSuccess} " +
+                "Failure=${monitor.attemptsFailure} " +
+                "Error=${monitor.attemptsError} " +
+                "Pending=${monitor.serversPending} " +
+                "Active=${monitor.serversActive}"
+        )
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(6028050, this@CapelinIntegrationTest.monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(14712749, this@CapelinIntegrationTest.monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(12532907, this@CapelinIntegrationTest.monitor.stealTime) { "Steal time incorrect" } },
-            { assertEquals(485510, this@CapelinIntegrationTest.monitor.lostTime) { "Lost time incorrect" } }
+            { assertEquals(6028050, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(14712749, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(12532907, monitor.stealTime) { "Steal time incorrect" } },
+            { assertEquals(470593, monitor.lostTime) { "Lost time incorrect" } }
         )
     }
 
@@ -217,41 +205,28 @@ class CapelinIntegrationTest {
     @Test
     fun testFailures() = runBlockingSimulation {
         val seed = 0L
-        val simulator = ComputeServiceHelper(
-            coroutineContext,
-            clock,
-            computeScheduler,
-            seed
-        )
         val topology = createTopology("single")
         val workload = createTestWorkload(0.25, seed)
-        val reader = ComputeMetricReader(this, clock, simulator.service, monitor)
+        val monitor = monitor
 
-        try {
-            simulator.apply(topology)
-            simulator.run(workload, failureModel = grid5000(Duration.ofDays(7)))
-
-            val serviceMetrics = simulator.service.getSchedulerStats()
-            println(
-                "Scheduler " +
-                    "Success=${serviceMetrics.attemptsSuccess} " +
-                    "Failure=${serviceMetrics.attemptsFailure} " +
-                    "Error=${serviceMetrics.attemptsError} " +
-                    "Pending=${serviceMetrics.serversPending} " +
-                    "Active=${serviceMetrics.serversActive}"
+        Provisioner(coroutineContext, clock, seed).use { provisioner ->
+            provisioner.runSteps(
+                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
+                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
+                setupHosts(serviceDomain = "compute.opendc.org", topology.resolve()),
             )
-        } finally {
-            simulator.close()
-            reader.close()
+
+            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
+            service.replay(clock, workload, seed, failureModel = grid5000(Duration.ofDays(7)))
         }
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(10982026, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(9740058, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(10085158, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(8539158, monitor.activeTime) { "Active time incorrect" } },
             { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
             { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-            { assertEquals(2590260605, monitor.uptime) { "Uptime incorrect" } },
+            { assertEquals(2328039558, monitor.uptime) { "Uptime incorrect" } },
         )
     }
 
@@ -272,6 +247,20 @@ class CapelinIntegrationTest {
     }
 
     class TestComputeMonitor : ComputeMonitor {
+        var attemptsSuccess = 0
+        var attemptsFailure = 0
+        var attemptsError = 0
+        var serversPending = 0
+        var serversActive = 0
+
+        override fun record(reader: ServiceTableReader) {
+            attemptsSuccess = reader.attemptsSuccess
+            attemptsFailure = reader.attemptsFailure
+            attemptsError = reader.attemptsError
+            serversPending = reader.serversPending
+            serversActive = reader.serversActive
+        }
+
         var idleTime = 0L
         var activeTime = 0L
         var stealTime = 0L

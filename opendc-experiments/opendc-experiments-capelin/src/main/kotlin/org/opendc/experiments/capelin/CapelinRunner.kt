@@ -22,15 +22,16 @@
 
 package org.opendc.experiments.capelin
 
-import org.opendc.compute.workload.ComputeServiceHelper
+import org.opendc.compute.service.ComputeService
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.createComputeScheduler
 import org.opendc.compute.workload.export.parquet.ParquetComputeMonitor
 import org.opendc.compute.workload.grid5000
-import org.opendc.compute.workload.telemetry.ComputeMetricReader
-import org.opendc.compute.workload.topology.apply
+import org.opendc.compute.workload.replay
 import org.opendc.experiments.capelin.model.Scenario
 import org.opendc.experiments.capelin.topology.clusterTopology
+import org.opendc.experiments.compute.*
+import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.core.runBlockingSimulation
 import java.io.File
 import java.time.Duration
@@ -58,54 +59,41 @@ public class CapelinRunner(
      * Run a single [scenario] with the specified seed.
      */
     fun runScenario(scenario: Scenario, seed: Long) = runBlockingSimulation {
-        val seeder = Random(seed)
-
-        val operationalPhenomena = scenario.operationalPhenomena
-        val computeScheduler = createComputeScheduler(scenario.allocationPolicy, seeder)
-        val failureModel =
-            if (operationalPhenomena.failureFrequency > 0)
-                grid5000(Duration.ofSeconds((operationalPhenomena.failureFrequency * 60).roundToLong()))
-            else
-                null
-        val vms = scenario.workload.source.resolve(workloadLoader, seeder)
-        val runner = ComputeServiceHelper(
-            coroutineContext,
-            clock,
-            computeScheduler,
-            seed,
-        )
-
+        val serviceDomain = "compute.opendc.org"
         val topology = clusterTopology(File(envPath, "${scenario.topology.name}.txt"))
 
-        val partitions = scenario.partitions + ("seed" to seed.toString())
-        val partition = partitions.map { (k, v) -> "$k=$v" }.joinToString("/")
-        val exporter = if (outputPath != null) {
-            ComputeMetricReader(
-                this,
-                clock,
-                runner.service,
-                ParquetComputeMonitor(
-                    outputPath,
-                    partition,
-                    bufferSize = 4096
-                ),
-                exportInterval = Duration.ofMinutes(5)
+        Provisioner(coroutineContext, clock, seed).use { provisioner ->
+            provisioner.runSteps(
+                setupComputeService(serviceDomain, { createComputeScheduler(scenario.allocationPolicy, Random(it.seeder.nextLong())) }),
+                setupHosts(serviceDomain, topology.resolve(), optimize = true)
             )
-        } else {
-            null
-        }
 
-        try {
-            // Instantiate the desired topology
-            runner.apply(topology, optimize = true)
+            if (outputPath != null) {
+                val partitions = scenario.partitions + ("seed" to seed.toString())
+                val partition = partitions.map { (k, v) -> "$k=$v" }.joinToString("/")
 
-            // Run the workload trace
-            runner.run(vms, failureModel = failureModel, interference = operationalPhenomena.hasInterference)
+                provisioner.runStep(
+                    registerComputeMonitor(
+                        serviceDomain,
+                        ParquetComputeMonitor(
+                            outputPath,
+                            partition,
+                            bufferSize = 4096
+                        )
+                    )
+                )
+            }
 
-            // Stop the metric collection
-            exporter?.close()
-        } finally {
-            runner.close()
+            val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
+            val vms = scenario.workload.source.resolve(workloadLoader, Random(seed))
+            val operationalPhenomena = scenario.operationalPhenomena
+            val failureModel =
+                if (operationalPhenomena.failureFrequency > 0)
+                    grid5000(Duration.ofSeconds((operationalPhenomena.failureFrequency * 60).roundToLong()))
+                else
+                    null
+
+            service.replay(clock, vms, seed, failureModel = failureModel, interference = operationalPhenomena.hasInterference)
         }
     }
 }
