@@ -20,14 +20,51 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.model
+package org.opendc.experiments.compute.telemetry.table
 
-import org.opendc.experiments.compute.ComputeWorkload
+import java.time.Instant
 
 /**
- * A single workload originating from a trace.
- *
- * @param name the name of the workload.
- * @param source The source of the workload data.
+ * An interface that is used to read a row of a service trace entry.
  */
-data class Workload(val name: String, val source: ComputeWorkload)
+public interface ServiceTableReader {
+    /**
+     * The timestamp of the current entry of the reader.
+     */
+    public val timestamp: Instant
+
+    /**
+     * The number of hosts that are up at this instant.
+     */
+    public val hostsUp: Int
+
+    /**
+     * The number of hosts that are down at this instant.
+     */
+    public val hostsDown: Int
+
+    /**
+     * The number of servers that are pending to be scheduled.
+     */
+    public val serversPending: Int
+
+    /**
+     * The number of servers that are currently active.
+     */
+    public val serversActive: Int
+
+    /**
+     * The scheduling attempts that were successful.
+     */
+    public val attemptsSuccess: Int
+
+    /**
+     * The scheduling attempts that were unsuccessful due to client error.
+     */
+    public val attemptsFailure: Int
+
+    /**
+     * The scheduling attempts that were unsuccessful due to scheduler error.
+     */
+    public val attemptsError: Int
+}

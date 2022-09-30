@@ -24,7 +24,7 @@ package org.opendc.experiments.compute
 
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.simulator.SimHost
-import org.opendc.compute.workload.topology.HostSpec
+import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.experiments.provisioner.ProvisioningContext
 import org.opendc.experiments.provisioner.ProvisioningStep
 import org.opendc.simulator.compute.SimBareMetalMachine

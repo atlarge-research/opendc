@@ -20,26 +20,28 @@
  * SOFTWARE.
  */
 
-description = "Support library for simulating VM-based workloads with OpenDC"
+package org.opendc.experiments.compute.telemetry
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
+import org.opendc.experiments.compute.telemetry.table.HostTableReader
+import org.opendc.experiments.compute.telemetry.table.ServerTableReader
+import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
 
-dependencies {
-    api(projects.opendcCompute.opendcComputeService)
-    api(projects.opendcExperiments.opendcExperimentsBase)
-    api(projects.opendcCompute.opendcComputeSimulator)
+/**
+ * A monitor that tracks the metrics and events of the OpenDC Compute service.
+ */
+public interface ComputeMonitor {
+    /**
+     * Record an entry with the specified [reader].
+     */
+    public fun record(reader: ServerTableReader) {}
 
-    implementation(projects.opendcTrace.opendcTraceApi)
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
+    /**
+     * Record an entry with the specified [reader].
+     */
+    public fun record(reader: HostTableReader) {}
 
-    implementation(libs.kotlin.logging)
-
-    testImplementation(libs.slf4j.simple)
+    /**
+     * Record an entry with the specified [reader].
+     */
+    public fun record(reader: ServiceTableReader) {}
 }

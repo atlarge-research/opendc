@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,27 @@
  * SOFTWARE.
  */
 
-description = "Support library for simulating VM-based workloads with OpenDC"
+package org.opendc.experiments.compute.telemetry.table
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
+import java.time.Instant
 
-dependencies {
-    api(projects.opendcCompute.opendcComputeService)
-    api(projects.opendcExperiments.opendcExperimentsBase)
-    api(projects.opendcCompute.opendcComputeSimulator)
+/**
+ * A trace entry for the compute service.
+ */
+public data class ServiceData(
+    val timestamp: Instant,
+    val hostsUp: Int,
+    val hostsDown: Int,
+    val serversPending: Int,
+    val serversActive: Int,
+    val attemptsSuccess: Int,
+    val attemptsFailure: Int,
+    val attemptsError: Int
+)
 
-    implementation(projects.opendcTrace.opendcTraceApi)
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-
-    implementation(libs.kotlin.logging)
-
-    testImplementation(libs.slf4j.simple)
+/**
+ * Convert a [ServiceTableReader] into a persistent object.
+ */
+public fun ServiceTableReader.toServiceData(): ServiceData {
+    return ServiceData(timestamp, hostsUp, hostsDown, serversPending, serversActive, attemptsSuccess, attemptsFailure, attemptsError)
 }

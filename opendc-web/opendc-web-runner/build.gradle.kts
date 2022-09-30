@@ -49,8 +49,6 @@ val cliJar by tasks.creating(Jar::class) {
 
 dependencies {
     api(projects.opendcWeb.opendcWebClient)
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcCompute.opendcComputeWorkload)
     implementation(projects.opendcExperiments.opendcExperimentsCompute)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcTrace.opendcTraceApi)

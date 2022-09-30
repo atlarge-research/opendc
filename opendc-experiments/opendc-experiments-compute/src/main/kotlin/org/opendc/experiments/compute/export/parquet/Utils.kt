@@ -20,26 +20,19 @@
  * SOFTWARE.
  */
 
-description = "Support library for simulating VM-based workloads with OpenDC"
+package org.opendc.experiments.compute.export.parquet
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
+import org.apache.parquet.io.api.Binary
+import java.nio.ByteBuffer
+import java.util.UUID
 
-dependencies {
-    api(projects.opendcCompute.opendcComputeService)
-    api(projects.opendcExperiments.opendcExperimentsBase)
-    api(projects.opendcCompute.opendcComputeSimulator)
-
-    implementation(projects.opendcTrace.opendcTraceApi)
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-
-    implementation(libs.kotlin.logging)
-
-    testImplementation(libs.slf4j.simple)
+/**
+ * Helper method to convert a [UUID] into a [Binary] object consumed by Parquet.
+ */
+internal fun UUID.toBinary(): Binary {
+    val bb = ByteBuffer.allocate(16)
+    bb.putLong(mostSignificantBits)
+    bb.putLong(leastSignificantBits)
+    bb.rewind()
+    return Binary.fromConstantByteBuffer(bb)
 }

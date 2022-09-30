@@ -20,14 +20,42 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.model
+package org.opendc.experiments.compute.internal
 
+import mu.KotlinLogging
 import org.opendc.experiments.compute.ComputeWorkload
+import org.opendc.experiments.compute.ComputeWorkloadLoader
+import org.opendc.experiments.compute.VirtualMachine
+import java.util.*
 
 /**
- * A single workload originating from a trace.
- *
- * @param name the name of the workload.
- * @param source The source of the workload data.
+ * A [ComputeWorkload] that is sampled based on total load.
  */
-data class Workload(val name: String, val source: ComputeWorkload)
+internal class LoadSampledComputeWorkload(val source: ComputeWorkload, val fraction: Double) : ComputeWorkload {
+    /**
+     * The logging instance of this class.
+     */
+    private val logger = KotlinLogging.logger {}
+
+    override fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine> {
+        val vms = source.resolve(loader, random)
+        val res = mutableListOf<VirtualMachine>()
+
+        val totalLoad = vms.sumOf { it.totalLoad }
+        var currentLoad = 0.0
+
+        for (entry in vms) {
+            val entryLoad = entry.totalLoad
+            if ((currentLoad + entryLoad) / totalLoad > fraction) {
+                break
+            }
+
+            currentLoad += entryLoad
+            res += entry
+        }
+
+        logger.info { "Sampled ${vms.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
+
+        return res
+    }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,16 @@
  * SOFTWARE.
  */
 
-description = "Support library for simulating VM-based workloads with OpenDC"
+package org.opendc.experiments.compute
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
+import java.util.*
 
-dependencies {
-    api(projects.opendcCompute.opendcComputeService)
-    api(projects.opendcExperiments.opendcExperimentsBase)
-    api(projects.opendcCompute.opendcComputeSimulator)
-
-    implementation(projects.opendcTrace.opendcTraceApi)
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-
-    implementation(libs.kotlin.logging)
-
-    testImplementation(libs.slf4j.simple)
+/**
+ * An interface that describes how a workload is resolved.
+ */
+public interface ComputeWorkload {
+    /**
+     * Resolve the workload into a list of [VirtualMachine]s to simulate.
+     */
+    public fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine>
 }

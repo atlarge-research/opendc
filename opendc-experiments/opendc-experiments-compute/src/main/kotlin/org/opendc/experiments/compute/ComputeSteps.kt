@@ -25,9 +25,9 @@ package org.opendc.experiments.compute
 
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
-import org.opendc.compute.workload.telemetry.ComputeMetricReader
-import org.opendc.compute.workload.telemetry.ComputeMonitor
-import org.opendc.compute.workload.topology.HostSpec
+import org.opendc.experiments.compute.telemetry.ComputeMonitor
+import org.opendc.experiments.compute.telemetry.ComputeMonitorProvisioningStep
+import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.experiments.provisioner.ProvisioningContext
 import org.opendc.experiments.provisioner.ProvisioningStep
 import java.time.Duration

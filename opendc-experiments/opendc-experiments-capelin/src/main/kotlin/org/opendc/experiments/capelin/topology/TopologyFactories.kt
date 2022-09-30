@@ -23,8 +23,8 @@
 @file:JvmName("TopologyFactories")
 package org.opendc.experiments.capelin.topology
 
-import org.opendc.compute.workload.topology.HostSpec
-import org.opendc.compute.workload.topology.Topology
+import org.opendc.experiments.compute.topology.HostSpec
+import org.opendc.experiments.compute.topology.Topology
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode

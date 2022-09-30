@@ -28,11 +28,9 @@ import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
-import org.opendc.compute.workload.*
-import org.opendc.compute.workload.topology.Topology
 import org.opendc.experiments.capelin.topology.clusterTopology
-import org.opendc.experiments.compute.setupComputeService
-import org.opendc.experiments.compute.setupHosts
+import org.opendc.experiments.compute.*
+import org.opendc.experiments.compute.topology.Topology
 import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.core.runBlockingSimulation
 import org.openjdk.jmh.annotations.*

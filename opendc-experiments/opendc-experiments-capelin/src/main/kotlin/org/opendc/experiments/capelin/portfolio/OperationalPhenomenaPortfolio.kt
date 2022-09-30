@@ -22,12 +22,12 @@
 
 package org.opendc.experiments.capelin.portfolio
 
-import org.opendc.compute.workload.sampleByLoad
-import org.opendc.compute.workload.trace
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Scenario
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
+import org.opendc.experiments.compute.sampleByLoad
+import org.opendc.experiments.compute.trace
 
 /**
  * A [Portfolio] that explores the effect of operational phenomena on metrics.
