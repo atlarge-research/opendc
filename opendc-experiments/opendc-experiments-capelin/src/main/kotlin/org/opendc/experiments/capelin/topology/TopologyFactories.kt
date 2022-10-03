@@ -24,7 +24,6 @@
 package org.opendc.experiments.capelin.topology
 
 import org.opendc.experiments.compute.topology.HostSpec
-import org.opendc.experiments.compute.topology.Topology
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -43,61 +42,55 @@ import kotlin.math.roundToLong
 private val reader = ClusterSpecReader()
 
 /**
- * Construct a [Topology] from the specified [file].
+ * Construct a topology from the specified [file].
  */
 fun clusterTopology(
     file: File,
     powerModel: PowerModel = LinearPowerModel(350.0, idlePower = 200.0),
     random: Random = Random(0)
-): Topology = clusterTopology(reader.read(file), powerModel, random)
+): List<HostSpec> {
+    return clusterTopology(reader.read(file), powerModel, random)
+}
 
 /**
- * Construct a [Topology] from the specified [input].
+ * Construct a topology from the specified [input].
  */
 fun clusterTopology(
     input: InputStream,
     powerModel: PowerModel = LinearPowerModel(350.0, idlePower = 200.0),
     random: Random = Random(0)
-): Topology = clusterTopology(reader.read(input), powerModel, random)
+): List<HostSpec> {
+    return clusterTopology(reader.read(input), powerModel, random)
+}
 
 /**
- * Construct a [Topology] from the given list of [clusters].
+ * Construct a topology from the given list of [clusters].
  */
-fun clusterTopology(
-    clusters: List<ClusterSpec>,
-    powerModel: PowerModel,
-    random: Random = Random(0)
-): Topology {
-    return object : Topology {
-        override fun resolve(): List<HostSpec> {
-            val hosts = mutableListOf<HostSpec>()
-            for (cluster in clusters) {
-                val cpuSpeed = cluster.cpuSpeed
-                val memoryPerHost = cluster.memCapacityPerHost.roundToLong()
+fun clusterTopology(clusters: List<ClusterSpec>, powerModel: PowerModel, random: Random = Random(0)): List<HostSpec> {
+    return clusters.flatMap { it.toHostSpecs(random, powerModel) }
+}
 
-                val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cluster.cpuCountPerHost)
-                val unknownMemoryUnit = MemoryUnit("unknown", "unknown", -1.0, memoryPerHost)
-                val machineModel = MachineModel(
-                    List(cluster.cpuCountPerHost) { coreId -> ProcessingUnit(unknownProcessingNode, coreId, cpuSpeed) },
-                    listOf(unknownMemoryUnit)
-                )
+/**
+ * Helper method to convert a [ClusterSpec] into a list of [HostSpec]s.
+ */
+private fun ClusterSpec.toHostSpecs(random: Random, powerModel: PowerModel): List<HostSpec> {
+    val cpuSpeed = cpuSpeed
+    val memoryPerHost = memCapacityPerHost.roundToLong()
 
-                repeat(cluster.hostCount) {
-                    val spec = HostSpec(
-                        UUID(random.nextLong(), it.toLong()),
-                        "node-${cluster.name}-$it",
-                        mapOf("cluster" to cluster.id),
-                        machineModel,
-                        SimplePowerDriver(powerModel)
-                    )
+    val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cpuCountPerHost)
+    val unknownMemoryUnit = MemoryUnit("unknown", "unknown", -1.0, memoryPerHost)
+    val machineModel = MachineModel(
+        List(cpuCountPerHost) { coreId -> ProcessingUnit(unknownProcessingNode, coreId, cpuSpeed) },
+        listOf(unknownMemoryUnit)
+    )
 
-                    hosts += spec
-                }
-            }
-
-            return hosts
-        }
-
-        override fun toString(): String = "ClusterSpecTopology"
+    return List(hostCount) {
+        HostSpec(
+            UUID(random.nextLong(), it.toLong()),
+            "node-$name-$it",
+            mapOf("cluster" to id),
+            machineModel,
+            SimplePowerDriver(powerModel)
+        )
     }
 }

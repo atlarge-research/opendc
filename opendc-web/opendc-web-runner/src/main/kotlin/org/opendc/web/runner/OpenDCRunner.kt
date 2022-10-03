@@ -26,7 +26,6 @@ import mu.KotlinLogging
 import org.opendc.compute.service.ComputeService
 import org.opendc.experiments.compute.*
 import org.opendc.experiments.compute.topology.HostSpec
-import org.opendc.experiments.compute.topology.Topology
 import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -37,6 +36,7 @@ import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.web.proto.runner.Job
 import org.opendc.web.proto.runner.Scenario
+import org.opendc.web.proto.runner.Topology
 import org.opendc.web.runner.internal.WebComputeMonitor
 import java.io.File
 import java.time.Duration
@@ -200,7 +200,7 @@ public class OpenDCRunner(
     private inner class SimulationTask(
         private val scenario: Scenario,
         private val repeat: Int,
-        private val topology: Topology,
+        private val topology: List<HostSpec>,
     ) : RecursiveTask<WebComputeMonitor.Results>() {
         override fun compute(): WebComputeMonitor.Results {
             val monitor = WebComputeMonitor()
@@ -235,7 +235,7 @@ public class OpenDCRunner(
                         { createComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong())) }
                     ),
                     registerComputeMonitor(serviceDomain, monitor),
-                    setupHosts(serviceDomain, topology.resolve())
+                    setupHosts(serviceDomain, topology)
                 )
 
                 val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
@@ -270,62 +270,56 @@ public class OpenDCRunner(
     /**
      * Convert the specified [topology] into an [Topology] understood by OpenDC.
      */
-    private fun convertTopology(topology: org.opendc.web.proto.runner.Topology): Topology {
-        return object : Topology {
+    private fun convertTopology(topology: Topology): List<HostSpec> {
+        val res = mutableListOf<HostSpec>()
+        val random = Random(0)
 
-            override fun resolve(): List<HostSpec> {
-                val res = mutableListOf<HostSpec>()
-                val random = Random(0)
-
-                val machines = topology.rooms.asSequence()
-                    .flatMap { room ->
-                        room.tiles.flatMap { tile ->
-                            val rack = tile.rack
-                            rack?.machines?.map { machine -> rack to machine } ?: emptyList()
-                        }
-                    }
-                for ((rack, machine) in machines) {
-                    val clusterId = rack.id
-                    val position = machine.position
-
-                    val processors = machine.cpus.flatMap { cpu ->
-                        val cores = cpu.numberOfCores
-                        val speed = cpu.clockRateMhz
-                        // TODO Remove hard coding of vendor
-                        val node = ProcessingNode("Intel", "amd64", cpu.name, cores)
-                        List(cores) { coreId ->
-                            ProcessingUnit(node, coreId, speed)
-                        }
-                    }
-                    val memoryUnits = machine.memory.map { memory ->
-                        MemoryUnit(
-                            "Samsung",
-                            memory.name,
-                            memory.speedMbPerS,
-                            memory.sizeMb.toLong()
-                        )
-                    }
-
-                    val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
-                    val powerModel = LinearPowerModel(2 * energyConsumptionW, energyConsumptionW * 0.5)
-                    val powerDriver = SimplePowerDriver(powerModel)
-
-                    val spec = HostSpec(
-                        UUID(random.nextLong(), random.nextLong()),
-                        "node-$clusterId-$position",
-                        mapOf("cluster" to clusterId),
-                        MachineModel(processors, memoryUnits),
-                        powerDriver
-                    )
-
-                    res += spec
+        val machines = topology.rooms.asSequence()
+            .flatMap { room ->
+                room.tiles.flatMap { tile ->
+                    val rack = tile.rack
+                    rack?.machines?.map { machine -> rack to machine } ?: emptyList()
                 }
-
-                return res
             }
 
-            override fun toString(): String = "WebRunnerTopologyFactory"
+        for ((rack, machine) in machines) {
+            val clusterId = rack.id
+            val position = machine.position
+
+            val processors = machine.cpus.flatMap { cpu ->
+                val cores = cpu.numberOfCores
+                val speed = cpu.clockRateMhz
+                // TODO Remove hard coding of vendor
+                val node = ProcessingNode("Intel", "amd64", cpu.name, cores)
+                List(cores) { coreId ->
+                    ProcessingUnit(node, coreId, speed)
+                }
+            }
+            val memoryUnits = machine.memory.map { memory ->
+                MemoryUnit(
+                    "Samsung",
+                    memory.name,
+                    memory.speedMbPerS,
+                    memory.sizeMb.toLong()
+                )
+            }
+
+            val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
+            val powerModel = LinearPowerModel(2 * energyConsumptionW, energyConsumptionW * 0.5)
+            val powerDriver = SimplePowerDriver(powerModel)
+
+            val spec = HostSpec(
+                UUID(random.nextLong(), random.nextLong()),
+                "node-$clusterId-$position",
+                mapOf("cluster" to clusterId),
+                MachineModel(processors, memoryUnits),
+                powerDriver
+            )
+
+            res += spec
         }
+
+        return res
     }
 
     /**

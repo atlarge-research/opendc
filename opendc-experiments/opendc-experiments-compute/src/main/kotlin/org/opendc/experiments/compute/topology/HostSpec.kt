@@ -23,7 +23,9 @@
 package org.opendc.experiments.compute.topology
 
 import org.opendc.simulator.compute.model.MachineModel
+import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.compute.power.PowerDriver
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
 import java.util.*
 
@@ -42,6 +44,6 @@ public data class HostSpec(
     val name: String,
     val meta: Map<String, Any>,
     val model: MachineModel,
-    val powerDriver: PowerDriver,
+    val powerDriver: PowerDriver = SimplePowerDriver(LinearPowerModel(350.0, idlePower = 200.0)),
     val multiplexerFactory: FlowMultiplexerFactory = FlowMultiplexerFactory.maxMinMultiplexer()
 )

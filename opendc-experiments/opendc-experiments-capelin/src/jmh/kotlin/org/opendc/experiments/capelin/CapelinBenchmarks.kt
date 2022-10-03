@@ -30,7 +30,7 @@ import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.experiments.compute.*
-import org.opendc.experiments.compute.topology.Topology
+import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.core.runBlockingSimulation
 import org.openjdk.jmh.annotations.*
@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 5, time = 5, timeUnit = TimeUnit.SECONDS)
 class CapelinBenchmarks {
     private lateinit var vms: List<VirtualMachine>
-    private lateinit var topology: Topology
+    private lateinit var topology: List<HostSpec>
 
     @Param("true", "false")
     private var isOptimized: Boolean = false
@@ -71,7 +71,7 @@ class CapelinBenchmarks {
 
             provisioner.runSteps(
                 setupComputeService(serviceDomain, { computeScheduler }),
-                setupHosts(serviceDomain, topology.resolve(), optimize = isOptimized)
+                setupHosts(serviceDomain, topology, optimize = isOptimized)
             )
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!

@@ -37,7 +37,7 @@ import org.opendc.experiments.compute.*
 import org.opendc.experiments.compute.telemetry.ComputeMonitor
 import org.opendc.experiments.compute.telemetry.table.HostTableReader
 import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
-import org.opendc.experiments.compute.topology.Topology
+import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.core.runBlockingSimulation
 import java.io.File
@@ -90,7 +90,7 @@ class CapelinIntegrationTest {
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology.resolve()),
+                setupHosts(serviceDomain = "compute.opendc.org", topology),
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
@@ -134,7 +134,7 @@ class CapelinIntegrationTest {
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology.resolve()),
+                setupHosts(serviceDomain = "compute.opendc.org", topology),
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
@@ -173,7 +173,7 @@ class CapelinIntegrationTest {
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology.resolve()),
+                setupHosts(serviceDomain = "compute.opendc.org", topology),
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
@@ -212,7 +212,7 @@ class CapelinIntegrationTest {
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology.resolve()),
+                setupHosts(serviceDomain = "compute.opendc.org", topology),
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
@@ -240,7 +240,7 @@ class CapelinIntegrationTest {
     /**
      * Obtain the topology factory for the test.
      */
-    private fun createTopology(name: String = "topology"): Topology {
+    private fun createTopology(name: String = "topology"): List<HostSpec> {
         val stream = checkNotNull(object {}.javaClass.getResourceAsStream("/env/$name.txt"))
         return stream.use { clusterTopology(stream) }
     }
