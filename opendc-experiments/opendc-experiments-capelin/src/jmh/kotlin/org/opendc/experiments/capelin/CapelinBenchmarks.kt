@@ -22,15 +22,16 @@
 
 package org.opendc.experiments.capelin
 
+import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.FilterScheduler
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
-import org.opendc.compute.workload.*
-import org.opendc.compute.workload.topology.Topology
-import org.opendc.compute.workload.topology.apply
 import org.opendc.experiments.capelin.topology.clusterTopology
+import org.opendc.experiments.compute.*
+import org.opendc.experiments.compute.topology.HostSpec
+import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.core.runBlockingSimulation
 import org.openjdk.jmh.annotations.*
 import java.io.File
@@ -46,7 +47,7 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 5, time = 5, timeUnit = TimeUnit.SECONDS)
 class CapelinBenchmarks {
     private lateinit var vms: List<VirtualMachine>
-    private lateinit var topology: Topology
+    private lateinit var topology: List<HostSpec>
 
     @Param("true", "false")
     private var isOptimized: Boolean = false
@@ -54,29 +55,27 @@ class CapelinBenchmarks {
     @Setup
     fun setUp() {
         val loader = ComputeWorkloadLoader(File("src/test/resources/trace"))
-        val source = trace("bitbrains-small")
         vms = trace("bitbrains-small").resolve(loader, Random(1L))
         topology = checkNotNull(object {}.javaClass.getResourceAsStream("/topology.txt")).use { clusterTopology(it) }
     }
 
     @Benchmark
     fun benchmarkCapelin() = runBlockingSimulation {
-        val computeScheduler = FilterScheduler(
-            filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
-            weighers = listOf(CoreRamWeigher(multiplier = 1.0))
-        )
-        val runner = ComputeServiceHelper(
-            coroutineContext,
-            clock,
-            computeScheduler,
-            seed = 0L
-        )
+        val serviceDomain = "compute.opendc.org"
 
-        try {
-            runner.apply(topology, isOptimized)
-            runner.run(vms, interference = true)
-        } finally {
-            runner.close()
+        Provisioner(coroutineContext, clock, seed = 0).use { provisioner ->
+            val computeScheduler = FilterScheduler(
+                filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
+                weighers = listOf(CoreRamWeigher(multiplier = 1.0))
+            )
+
+            provisioner.runSteps(
+                setupComputeService(serviceDomain, { computeScheduler }),
+                setupHosts(serviceDomain, topology, optimize = isOptimized)
+            )
+
+            val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
+            service.replay(clock, vms, 0L, interference = true)
         }
     }
 }

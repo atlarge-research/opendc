@@ -31,6 +31,7 @@ import org.opendc.faas.service.deployer.FunctionInstanceListener
 import org.opendc.faas.service.deployer.FunctionInstanceState
 import org.opendc.faas.simulator.delay.DelayInjector
 import org.opendc.faas.simulator.workload.SimFaaSWorkloadMapper
+import org.opendc.faas.simulator.workload.SimMetaFaaSWorkloadMapper
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.model.MachineModel
@@ -41,6 +42,7 @@ import org.opendc.simulator.flow.FlowEngine
 import java.time.Clock
 import java.util.ArrayDeque
 import kotlin.coroutines.Continuation
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -48,12 +50,16 @@ import kotlin.coroutines.resumeWithException
  * A [FunctionDeployer] that uses that simulates the [FunctionInstance]s.
  */
 public class SimFunctionDeployer(
+    context: CoroutineContext,
     private val clock: Clock,
-    private val scope: CoroutineScope,
     private val model: MachineModel,
     private val delayInjector: DelayInjector,
-    private val mapper: SimFaaSWorkloadMapper
-) : FunctionDeployer {
+    private val mapper: SimFaaSWorkloadMapper = SimMetaFaaSWorkloadMapper()
+) : FunctionDeployer, AutoCloseable {
+    /**
+     * The [CoroutineScope] of this deployer.
+     */
+    private val scope = CoroutineScope(context + Job())
 
     override fun deploy(function: FunctionObject, listener: FunctionInstanceListener): Instance {
         val instance = Instance(function, listener)
@@ -170,6 +176,10 @@ public class SimFunctionDeployer(
                 job.cancel()
             }
         }
+    }
+
+    override fun close() {
+        scope.cancel()
     }
 
     /**

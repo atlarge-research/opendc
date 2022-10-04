@@ -23,6 +23,6 @@
 package org.opendc.experiments.capelin.model
 
 /**
- * The topology topology on which we test the workload.
+ * The topology on which we simulate the workload.
  */
 public data class Topology(val name: String)

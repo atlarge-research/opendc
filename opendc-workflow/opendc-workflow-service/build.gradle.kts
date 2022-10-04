@@ -33,9 +33,9 @@ dependencies {
     implementation(projects.opendcCommon)
     implementation(libs.kotlin.logging)
 
-    testImplementation(projects.opendcWorkflow.opendcWorkflowWorkload)
-    testImplementation(projects.opendcCompute.opendcComputeWorkload)
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
+    testImplementation(projects.opendcExperiments.opendcExperimentsCompute)
+    testImplementation(projects.opendcExperiments.opendcExperimentsWorkflow)
     testImplementation(projects.opendcTrace.opendcTraceApi)
     testRuntimeOnly(projects.opendcTrace.opendcTraceGwf)
     testRuntimeOnly(libs.log4j.slf4j)

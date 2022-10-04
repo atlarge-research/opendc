@@ -22,9 +22,9 @@
 
 package org.opendc.web.runner.internal
 
-import org.opendc.compute.workload.telemetry.ComputeMonitor
-import org.opendc.compute.workload.telemetry.table.HostTableReader
-import org.opendc.compute.workload.telemetry.table.ServiceTableReader
+import org.opendc.experiments.compute.telemetry.ComputeMonitor
+import org.opendc.experiments.compute.telemetry.table.HostTableReader
+import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
 import kotlin.math.max
 import kotlin.math.roundToLong
 

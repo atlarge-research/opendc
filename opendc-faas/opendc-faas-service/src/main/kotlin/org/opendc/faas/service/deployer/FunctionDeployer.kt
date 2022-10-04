@@ -28,7 +28,7 @@ import org.opendc.faas.service.FunctionObject
  * A [FunctionDeployer] is responsible for ensuring that an instance of an arbitrary function, a [FunctionInstance],
  * is deployed.
  *
- * The function deployer should combines the configuration stored in the function registry, the parameters supplied by
+ * The function deployer should combine the configuration stored in the function registry, the parameters supplied by
  * the requester, and other factors into a decision of how the function should be deployed, including how many and
  * what kind of resources it should receive.
  *

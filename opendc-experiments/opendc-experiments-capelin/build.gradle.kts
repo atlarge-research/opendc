@@ -32,7 +32,7 @@ plugins {
 }
 
 dependencies {
-    api(projects.opendcCompute.opendcComputeWorkload)
+    api(projects.opendcExperiments.opendcExperimentsCompute)
 
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)

@@ -22,13 +22,13 @@
 
 package org.opendc.experiments.capelin.portfolio
 
-import org.opendc.compute.workload.sampleByHpc
-import org.opendc.compute.workload.sampleByHpcLoad
-import org.opendc.compute.workload.trace
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Scenario
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
+import org.opendc.experiments.compute.sampleByHpc
+import org.opendc.experiments.compute.sampleByHpcLoad
+import org.opendc.experiments.compute.trace
 
 /**
  * A [Portfolio] to explore the effect of HPC workloads.

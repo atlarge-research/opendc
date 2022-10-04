@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.capelin.model
 
-import org.opendc.compute.workload.ComputeWorkload
+import org.opendc.experiments.compute.ComputeWorkload
 
 /**
  * A single workload originating from a trace.
