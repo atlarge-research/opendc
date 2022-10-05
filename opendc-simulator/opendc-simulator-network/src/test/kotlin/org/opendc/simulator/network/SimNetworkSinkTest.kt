@@ -30,9 +30,9 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.*
 import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.kotlin.runBlockingSimulation
 
 /**
  * Test suite for the [SimNetworkSink] class.

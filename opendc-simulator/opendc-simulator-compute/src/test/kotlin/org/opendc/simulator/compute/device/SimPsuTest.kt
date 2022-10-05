@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.compute.power.PowerDriver
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import org.opendc.simulator.power.SimPowerSource
 
 /**

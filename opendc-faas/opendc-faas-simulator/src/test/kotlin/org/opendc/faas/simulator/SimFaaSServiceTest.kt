@@ -42,7 +42,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import java.time.Duration
 import java.util.*
 

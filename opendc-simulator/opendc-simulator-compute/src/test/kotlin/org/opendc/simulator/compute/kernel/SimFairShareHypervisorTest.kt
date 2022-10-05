@@ -41,9 +41,9 @@ import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.compute.workload.SimTraceWorkload
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import java.util.*
 
 /**

@@ -31,7 +31,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.LinearPowerModel
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import java.util.*
 
 /**

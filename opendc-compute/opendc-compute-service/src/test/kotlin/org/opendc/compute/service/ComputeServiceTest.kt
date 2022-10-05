@@ -39,8 +39,8 @@ import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.RamWeigher
-import org.opendc.simulator.core.SimulationCoroutineScope
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.SimulationCoroutineScope
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import java.util.*
 
 /**

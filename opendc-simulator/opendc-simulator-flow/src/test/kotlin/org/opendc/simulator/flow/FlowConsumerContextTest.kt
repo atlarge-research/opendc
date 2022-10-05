@@ -24,9 +24,9 @@ package org.opendc.simulator.flow
 
 import io.mockk.*
 import org.junit.jupiter.api.*
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.internal.FlowConsumerContextImpl
 import org.opendc.simulator.flow.internal.FlowEngineImpl
+import org.opendc.simulator.kotlin.runBlockingSimulation
 
 /**
  * A test suite for the [FlowConsumerContextImpl] class.

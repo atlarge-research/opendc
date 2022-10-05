@@ -33,9 +33,9 @@ import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.compute.workload.SimWorkloadLifecycle
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import org.opendc.simulator.network.SimNetworkSink
 import org.opendc.simulator.power.SimPowerSource
 

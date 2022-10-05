@@ -28,7 +28,7 @@ import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.experiments.compute.*
 import org.opendc.experiments.compute.export.parquet.ParquetComputeMonitor
 import org.opendc.experiments.provisioner.Provisioner
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import java.io.File
 import java.time.Duration
 import java.util.*

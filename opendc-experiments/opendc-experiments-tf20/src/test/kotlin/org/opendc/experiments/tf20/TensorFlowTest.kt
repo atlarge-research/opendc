@@ -30,7 +30,7 @@ import org.opendc.experiments.tf20.distribute.MirroredStrategy
 import org.opendc.experiments.tf20.distribute.OneDeviceStrategy
 import org.opendc.experiments.tf20.util.MLEnvironmentReader
 import org.opendc.simulator.compute.power.LinearPowerModel
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import java.util.*
 
 /**

@@ -27,10 +27,10 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.kotlin.runBlockingSimulation
 
 /**
  * Test suite for the [SimPdu] class.

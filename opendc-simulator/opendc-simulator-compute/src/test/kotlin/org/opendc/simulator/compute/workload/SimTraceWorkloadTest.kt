@@ -31,8 +31,8 @@ import org.opendc.simulator.compute.model.*
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.runWorkload
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.kotlin.runBlockingSimulation
 
 /**
  * Test suite for the [SimTraceWorkloadTest] class.

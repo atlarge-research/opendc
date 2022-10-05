@@ -28,9 +28,9 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.internal.FlowEngineImpl
 import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.kotlin.runBlockingSimulation
 
 /**
  * A test suite for the [FlowForwarder] class.

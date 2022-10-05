@@ -44,8 +44,8 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import org.opendc.trace.Trace
 import org.opendc.workflow.service.scheduler.job.NullJobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.SubmissionTimeJobOrderPolicy

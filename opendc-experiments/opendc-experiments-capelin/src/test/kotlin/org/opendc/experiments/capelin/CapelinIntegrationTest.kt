@@ -39,7 +39,7 @@ import org.opendc.experiments.compute.telemetry.table.HostTableReader
 import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
 import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.experiments.provisioner.Provisioner
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import java.io.File
 import java.time.Duration
 import java.util.*

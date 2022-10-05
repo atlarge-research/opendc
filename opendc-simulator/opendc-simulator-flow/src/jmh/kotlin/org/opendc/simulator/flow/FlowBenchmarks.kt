@@ -24,10 +24,10 @@ package org.opendc.simulator.flow
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.mux.ForwardingFlowMultiplexer
 import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 import org.opendc.simulator.flow.source.TraceFlowSource
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit

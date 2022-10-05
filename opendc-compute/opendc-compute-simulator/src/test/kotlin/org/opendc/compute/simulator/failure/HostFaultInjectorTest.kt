@@ -29,7 +29,7 @@ import org.apache.commons.math3.distribution.LogNormalDistribution
 import org.apache.commons.math3.random.Well19937c
 import org.junit.jupiter.api.Test
 import org.opendc.compute.simulator.SimHost
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import java.time.Clock
 import java.time.Duration
 import kotlin.coroutines.CoroutineContext

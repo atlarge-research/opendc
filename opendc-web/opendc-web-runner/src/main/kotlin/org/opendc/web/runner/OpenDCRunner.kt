@@ -33,7 +33,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import org.opendc.web.proto.runner.Job
 import org.opendc.web.proto.runner.Scenario
 import org.opendc.web.proto.runner.Topology

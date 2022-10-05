@@ -27,10 +27,10 @@ import io.mockk.verify
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.internal.FlowEngineImpl
 import org.opendc.simulator.flow.source.FixedFlowSource
 import org.opendc.simulator.flow.source.FlowSourceRateAdapter
+import org.opendc.simulator.kotlin.runBlockingSimulation
 
 /**
  * A test suite for the [FlowSink] class.

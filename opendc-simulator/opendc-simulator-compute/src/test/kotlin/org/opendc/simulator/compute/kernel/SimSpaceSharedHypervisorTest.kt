@@ -37,9 +37,9 @@ import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.compute.workload.*
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import java.util.*
 
 /**

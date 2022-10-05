@@ -34,7 +34,7 @@ import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.internal.InternalFlavor
 import org.opendc.compute.service.internal.InternalImage
 import org.opendc.compute.service.internal.InternalServer
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import java.util.*
 
 /**

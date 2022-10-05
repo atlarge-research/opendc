@@ -20,9 +20,10 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.core
+package org.opendc.simulator.kotlin
 
 import kotlinx.coroutines.CoroutineDispatcher
+import org.opendc.simulator.SimulationScheduler
 import java.time.Clock
 
 /**
@@ -33,6 +34,11 @@ public interface SimulationController {
      * The current virtual clock as it is known to this Dispatcher.
      */
     public val clock: Clock
+
+    /**
+     * The [SimulationScheduler] driving the simulation.
+     */
+    public val scheduler: SimulationScheduler
 
     /**
      * Immediately execute all pending tasks and advance the virtual clock-time to the last delay.

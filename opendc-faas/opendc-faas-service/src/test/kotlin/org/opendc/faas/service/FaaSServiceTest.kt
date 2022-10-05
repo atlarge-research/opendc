@@ -31,7 +31,7 @@ import org.opendc.faas.api.FaaSFunction
 import org.opendc.faas.service.deployer.FunctionDeployer
 import org.opendc.faas.service.deployer.FunctionInstance
 import org.opendc.faas.service.deployer.FunctionInstanceState
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import java.util.*
 
 /**

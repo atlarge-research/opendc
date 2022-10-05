@@ -26,7 +26,7 @@ import kotlinx.coroutines.delay
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runBlockingSimulation
 import java.time.Clock
 import kotlin.coroutines.EmptyCoroutineContext
 

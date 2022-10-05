@@ -27,12 +27,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.*
 import org.opendc.simulator.flow.internal.FlowEngineImpl
 import org.opendc.simulator.flow.source.FixedFlowSource
 import org.opendc.simulator.flow.source.FlowSourceRateAdapter
 import org.opendc.simulator.flow.source.TraceFlowSource
+import org.opendc.simulator.kotlin.runBlockingSimulation
 
 /**
  * Test suite for the [ForwardingFlowMultiplexer] class.

@@ -24,10 +24,10 @@ package org.opendc.simulator.flow.source
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowSink
 import org.opendc.simulator.flow.consume
 import org.opendc.simulator.flow.internal.FlowEngineImpl
+import org.opendc.simulator.kotlin.runBlockingSimulation
 
 /**
  * A test suite for the [FixedFlowSource] class.

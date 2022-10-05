@@ -27,12 +27,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowSink
 import org.opendc.simulator.flow.consume
 import org.opendc.simulator.flow.internal.FlowEngineImpl
 import org.opendc.simulator.flow.source.FixedFlowSource
 import org.opendc.simulator.flow.source.TraceFlowSource
+import org.opendc.simulator.kotlin.runBlockingSimulation
 
 /**
  * Test suite for the [FlowMultiplexer] implementations
