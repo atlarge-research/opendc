@@ -31,8 +31,8 @@ import org.opendc.simulator.compute.model.*
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.runWorkload
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.kotlin.runSimulation
 
 /**
  * Test suite for the [SimTraceWorkloadTest] class.
@@ -51,7 +51,7 @@ class SimTraceWorkloadTest {
     }
 
     @Test
-    fun testSmoke() = runBlockingSimulation {
+    fun testSmoke() = runSimulation {
         val machine = SimBareMetalMachine(
             FlowEngine(coroutineContext, clock),
             machineModel,
@@ -74,7 +74,7 @@ class SimTraceWorkloadTest {
     }
 
     @Test
-    fun testOffset() = runBlockingSimulation {
+    fun testOffset() = runSimulation {
         val machine = SimBareMetalMachine(
             FlowEngine(coroutineContext, clock),
             machineModel,
@@ -97,7 +97,7 @@ class SimTraceWorkloadTest {
     }
 
     @Test
-    fun testSkipFragment() = runBlockingSimulation {
+    fun testSkipFragment() = runSimulation {
         val machine = SimBareMetalMachine(
             FlowEngine(coroutineContext, clock),
             machineModel,
@@ -121,7 +121,7 @@ class SimTraceWorkloadTest {
     }
 
     @Test
-    fun testZeroCores() = runBlockingSimulation {
+    fun testZeroCores() = runSimulation {
         val machine = SimBareMetalMachine(
             FlowEngine(coroutineContext, clock),
             machineModel,

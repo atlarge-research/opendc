@@ -31,7 +31,7 @@ import org.opendc.faas.api.FaaSFunction
 import org.opendc.faas.service.deployer.FunctionDeployer
 import org.opendc.faas.service.deployer.FunctionInstance
 import org.opendc.faas.service.deployer.FunctionInstanceState
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import java.util.*
 
 /**
@@ -40,7 +40,7 @@ import java.util.*
 internal class FaaSServiceTest {
 
     @Test
-    fun testClientState() = runBlockingSimulation {
+    fun testClientState() = runSimulation {
         val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = assertDoesNotThrow { service.newClient() }
@@ -54,7 +54,7 @@ internal class FaaSServiceTest {
     }
 
     @Test
-    fun testClientInvokeUnknown() = runBlockingSimulation {
+    fun testClientInvokeUnknown() = runSimulation {
         val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
@@ -63,7 +63,7 @@ internal class FaaSServiceTest {
     }
 
     @Test
-    fun testClientFunctionCreation() = runBlockingSimulation {
+    fun testClientFunctionCreation() = runSimulation {
         val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
@@ -74,7 +74,7 @@ internal class FaaSServiceTest {
     }
 
     @Test
-    fun testClientFunctionQuery() = runBlockingSimulation {
+    fun testClientFunctionQuery() = runSimulation {
         val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
@@ -87,7 +87,7 @@ internal class FaaSServiceTest {
     }
 
     @Test
-    fun testClientFunctionFindById() = runBlockingSimulation {
+    fun testClientFunctionFindById() = runSimulation {
         val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
@@ -100,7 +100,7 @@ internal class FaaSServiceTest {
     }
 
     @Test
-    fun testClientFunctionFindByName() = runBlockingSimulation {
+    fun testClientFunctionFindByName() = runSimulation {
         val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
@@ -113,7 +113,7 @@ internal class FaaSServiceTest {
     }
 
     @Test
-    fun testClientFunctionDuplicateName() = runBlockingSimulation {
+    fun testClientFunctionDuplicateName() = runSimulation {
         val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
@@ -124,7 +124,7 @@ internal class FaaSServiceTest {
     }
 
     @Test
-    fun testClientFunctionDelete() = runBlockingSimulation {
+    fun testClientFunctionDelete() = runSimulation {
         val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
@@ -138,7 +138,7 @@ internal class FaaSServiceTest {
     }
 
     @Test
-    fun testClientFunctionCannotInvokeDeleted() = runBlockingSimulation {
+    fun testClientFunctionCannotInvokeDeleted() = runSimulation {
         val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
@@ -150,7 +150,7 @@ internal class FaaSServiceTest {
     }
 
     @Test
-    fun testClientFunctionInvoke() = runBlockingSimulation {
+    fun testClientFunctionInvoke() = runSimulation {
         val deployer = mockk<FunctionDeployer>()
         val service = FaaSService(coroutineContext, clock, deployer, mockk(), mockk(relaxUnitFun = true))
 

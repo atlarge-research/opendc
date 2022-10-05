@@ -34,7 +34,7 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
 import java.time.Duration
 
@@ -46,7 +46,7 @@ class FaaSExperiment {
      * Smoke test that simulates a small trace.
      */
     @Test
-    fun testSmoke() = runBlockingSimulation {
+    fun testSmoke() = runSimulation {
         val faasService = "faas.opendc.org"
 
         Provisioner(coroutineContext, clock, seed = 0L).use { provisioner ->

@@ -32,7 +32,7 @@ import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.experiments.compute.*
 import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.experiments.provisioner.Provisioner
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import org.openjdk.jmh.annotations.*
 import java.io.File
 import java.util.*
@@ -60,7 +60,7 @@ class CapelinBenchmarks {
     }
 
     @Benchmark
-    fun benchmarkCapelin() = runBlockingSimulation {
+    fun benchmarkCapelin() = runSimulation {
         val serviceDomain = "compute.opendc.org"
 
         Provisioner(coroutineContext, clock, seed = 0).use { provisioner ->

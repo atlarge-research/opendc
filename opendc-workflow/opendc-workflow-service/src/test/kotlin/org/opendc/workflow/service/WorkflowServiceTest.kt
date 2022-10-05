@@ -44,8 +44,8 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
+import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.trace.Trace
 import org.opendc.workflow.service.scheduler.job.NullJobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.SubmissionTimeJobOrderPolicy
@@ -64,7 +64,7 @@ internal class WorkflowServiceTest {
      * A large integration test where we check whether all tasks in some trace are executed correctly.
      */
     @Test
-    fun testTrace() = runBlockingSimulation {
+    fun testTrace() = runSimulation {
         val computeService = "compute.opendc.org"
         val workflowService = "workflow.opendc.org"
 

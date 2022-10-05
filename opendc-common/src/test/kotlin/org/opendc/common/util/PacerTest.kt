@@ -26,7 +26,7 @@ import kotlinx.coroutines.delay
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import java.time.Clock
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -43,7 +43,7 @@ class PacerTest {
     fun testSingleEnqueue() {
         var count = 0
 
-        runBlockingSimulation {
+        runSimulation {
             val pacer = Pacer(coroutineContext, clock, quantum = 100) {
                 count++
             }
@@ -58,7 +58,7 @@ class PacerTest {
     fun testCascade() {
         var count = 0
 
-        runBlockingSimulation {
+        runSimulation {
             val pacer = Pacer(coroutineContext, clock, quantum = 100) {
                 count++
             }
@@ -76,7 +76,7 @@ class PacerTest {
     fun testCancel() {
         var count = 0
 
-        runBlockingSimulation {
+        runSimulation {
             val pacer = Pacer(coroutineContext, clock, quantum = 100) {
                 count++
             }
@@ -94,7 +94,7 @@ class PacerTest {
     fun testCancelWithoutPending() {
         var count = 0
 
-        runBlockingSimulation {
+        runSimulation {
             val pacer = Pacer(coroutineContext, clock, quantum = 100) {
                 count++
             }
@@ -112,7 +112,7 @@ class PacerTest {
     fun testSubsequent() {
         var count = 0
 
-        runBlockingSimulation {
+        runSimulation {
             val pacer = Pacer(coroutineContext, clock, quantum = 100) {
                 count++
             }

@@ -27,16 +27,16 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.*
 import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.kotlin.runSimulation
 
 /**
  * Test suite for the [SimNetworkSwitchVirtual] class.
  */
 class SimNetworkSwitchVirtualTest {
     @Test
-    fun testConnect() = runBlockingSimulation {
+    fun testConnect() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val sink = SimNetworkSink(engine, capacity = 100.0)
         val source = spyk(Source(engine))
@@ -54,7 +54,7 @@ class SimNetworkSwitchVirtualTest {
     }
 
     @Test
-    fun testConnectClosedPort() = runBlockingSimulation {
+    fun testConnectClosedPort() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val sink = SimNetworkSink(engine, capacity = 100.0)
         val switch = SimNetworkSwitchVirtual(engine)

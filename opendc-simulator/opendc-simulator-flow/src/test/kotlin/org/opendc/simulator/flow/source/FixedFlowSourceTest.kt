@@ -24,17 +24,17 @@ package org.opendc.simulator.flow.source
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowSink
 import org.opendc.simulator.flow.consume
 import org.opendc.simulator.flow.internal.FlowEngineImpl
+import org.opendc.simulator.kotlin.runSimulation
 
 /**
  * A test suite for the [FixedFlowSource] class.
  */
 internal class FixedFlowSourceTest {
     @Test
-    fun testSmoke() = runBlockingSimulation {
+    fun testSmoke() = runSimulation {
         val scheduler = FlowEngineImpl(coroutineContext, clock)
         val provider = FlowSink(scheduler, 1.0)
 
@@ -45,7 +45,7 @@ internal class FixedFlowSourceTest {
     }
 
     @Test
-    fun testUtilization() = runBlockingSimulation {
+    fun testUtilization() = runSimulation {
         val scheduler = FlowEngineImpl(coroutineContext, clock)
         val provider = FlowSink(scheduler, 1.0)
 

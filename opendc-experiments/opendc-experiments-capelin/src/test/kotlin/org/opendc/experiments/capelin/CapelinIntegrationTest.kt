@@ -39,7 +39,7 @@ import org.opendc.experiments.compute.telemetry.table.HostTableReader
 import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
 import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.experiments.provisioner.Provisioner
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
 import java.time.Duration
 import java.util.*
@@ -80,7 +80,7 @@ class CapelinIntegrationTest {
      * Test a large simulation setup.
      */
     @Test
-    fun testLarge() = runBlockingSimulation {
+    fun testLarge() = runSimulation {
         val seed = 0L
         val workload = createTestWorkload(1.0, seed)
         val topology = createTopology()
@@ -124,7 +124,7 @@ class CapelinIntegrationTest {
      * Test a small simulation setup.
      */
     @Test
-    fun testSmall() = runBlockingSimulation {
+    fun testSmall() = runSimulation {
         val seed = 1L
         val workload = createTestWorkload(0.25, seed)
         val topology = createTopology("single")
@@ -164,7 +164,7 @@ class CapelinIntegrationTest {
      * Test a small simulation setup with interference.
      */
     @Test
-    fun testInterference() = runBlockingSimulation {
+    fun testInterference() = runSimulation {
         val seed = 0L
         val workload = createTestWorkload(1.0, seed)
         val topology = createTopology("single")
@@ -202,7 +202,7 @@ class CapelinIntegrationTest {
      * Test a small simulation setup with failures.
      */
     @Test
-    fun testFailures() = runBlockingSimulation {
+    fun testFailures() = runSimulation {
         val seed = 0L
         val topology = createTopology("single")
         val workload = createTestWorkload(0.25, seed)

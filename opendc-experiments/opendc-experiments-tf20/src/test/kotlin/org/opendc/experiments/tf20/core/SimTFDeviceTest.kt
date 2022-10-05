@@ -31,7 +31,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.LinearPowerModel
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import java.util.*
 
 /**
@@ -39,7 +39,7 @@ import java.util.*
  */
 internal class SimTFDeviceTest {
     @Test
-    fun testSmoke() = runBlockingSimulation {
+    fun testSmoke() = runSimulation {
         val puNode = ProcessingNode("NVIDIA", "Tesla V100", "unknown", 1)
         val pu = ProcessingUnit(puNode, 0, 960 * 1230.0)
         val memory = MemoryUnit("NVIDIA", "Tesla V100", 877.0, 32_000)

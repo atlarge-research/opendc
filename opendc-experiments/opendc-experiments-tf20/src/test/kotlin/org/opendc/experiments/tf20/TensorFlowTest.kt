@@ -30,7 +30,7 @@ import org.opendc.experiments.tf20.distribute.MirroredStrategy
 import org.opendc.experiments.tf20.distribute.OneDeviceStrategy
 import org.opendc.experiments.tf20.util.MLEnvironmentReader
 import org.opendc.simulator.compute.power.LinearPowerModel
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import java.util.*
 
 /**
@@ -41,7 +41,7 @@ class TensorFlowTest {
      * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
      */
     @Test
-    fun testSmokeAlexNet() = runBlockingSimulation {
+    fun testSmokeAlexNet() = runSimulation {
         val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
         val def = MLEnvironmentReader().readEnvironment(envInput).first()
 
@@ -71,7 +71,7 @@ class TensorFlowTest {
      * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
      */
     @Test
-    fun testSmokeVGG() = runBlockingSimulation {
+    fun testSmokeVGG() = runSimulation {
         val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
         val def = MLEnvironmentReader().readEnvironment(envInput).first()
 
@@ -101,7 +101,7 @@ class TensorFlowTest {
      * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
      */
     @Test
-    fun testSmokeDistribute() = runBlockingSimulation {
+    fun testSmokeDistribute() = runSimulation {
         val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
         val def = MLEnvironmentReader().readEnvironment(envInput).first()
 

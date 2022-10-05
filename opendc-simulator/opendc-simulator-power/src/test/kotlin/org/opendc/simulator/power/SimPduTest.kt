@@ -27,17 +27,17 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.kotlin.runSimulation
 
 /**
  * Test suite for the [SimPdu] class.
  */
 internal class SimPduTest {
     @Test
-    fun testZeroOutlets() = runBlockingSimulation {
+    fun testZeroOutlets() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val source = SimPowerSource(engine, capacity = 100.0)
         val pdu = SimPdu(engine)
@@ -47,7 +47,7 @@ internal class SimPduTest {
     }
 
     @Test
-    fun testSingleOutlet() = runBlockingSimulation {
+    fun testSingleOutlet() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val source = SimPowerSource(engine, capacity = 100.0)
         val pdu = SimPdu(engine)
@@ -58,7 +58,7 @@ internal class SimPduTest {
     }
 
     @Test
-    fun testDoubleOutlet() = runBlockingSimulation {
+    fun testDoubleOutlet() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val source = SimPowerSource(engine, capacity = 100.0)
         val pdu = SimPdu(engine)
@@ -71,7 +71,7 @@ internal class SimPduTest {
     }
 
     @Test
-    fun testDisconnect() = runBlockingSimulation {
+    fun testDisconnect() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val source = SimPowerSource(engine, capacity = 100.0)
         val pdu = SimPdu(engine)
@@ -89,7 +89,7 @@ internal class SimPduTest {
     }
 
     @Test
-    fun testLoss() = runBlockingSimulation {
+    fun testLoss() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val source = SimPowerSource(engine, capacity = 100.0)
         // https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
@@ -100,7 +100,7 @@ internal class SimPduTest {
     }
 
     @Test
-    fun testOutletClose() = runBlockingSimulation {
+    fun testOutletClose() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val source = SimPowerSource(engine, capacity = 100.0)
         val pdu = SimPdu(engine)

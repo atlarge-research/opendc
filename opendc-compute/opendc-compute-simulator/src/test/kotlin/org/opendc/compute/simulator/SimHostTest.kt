@@ -41,9 +41,9 @@ import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.compute.workload.SimTraceWorkload
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
+import org.opendc.simulator.kotlin.runSimulation
 import java.time.Instant
 import java.util.*
 import kotlin.coroutines.resume
@@ -68,7 +68,7 @@ internal class SimHostTest {
      * Test overcommitting of resources by the hypervisor.
      */
     @Test
-    fun testOvercommitted() = runBlockingSimulation {
+    fun testOvercommitted() = runSimulation {
         val duration = 5 * 60L
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
@@ -152,7 +152,7 @@ internal class SimHostTest {
      * Test failure of the host.
      */
     @Test
-    fun testFailure() = runBlockingSimulation {
+    fun testFailure() = runSimulation {
         val duration = 5 * 60L
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))

@@ -34,7 +34,7 @@ import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.internal.InternalFlavor
 import org.opendc.compute.service.internal.InternalImage
 import org.opendc.compute.service.internal.InternalServer
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import java.util.*
 
 /**
@@ -94,7 +94,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStartTerminatedServer() = runBlockingSimulation {
+    fun testStartTerminatedServer() = runSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
@@ -110,7 +110,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStartDeletedServer() = runBlockingSimulation {
+    fun testStartDeletedServer() = runSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
@@ -123,7 +123,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStartProvisioningServer() = runBlockingSimulation {
+    fun testStartProvisioningServer() = runSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
@@ -138,7 +138,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStartRunningServer() = runBlockingSimulation {
+    fun testStartRunningServer() = runSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
@@ -153,7 +153,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStopProvisioningServer() = runBlockingSimulation {
+    fun testStopProvisioningServer() = runSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
@@ -171,7 +171,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStopTerminatedServer() = runBlockingSimulation {
+    fun testStopTerminatedServer() = runSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
@@ -185,7 +185,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStopDeletedServer() = runBlockingSimulation {
+    fun testStopDeletedServer() = runSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
@@ -199,7 +199,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStopRunningServer() = runBlockingSimulation {
+    fun testStopRunningServer() = runSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
@@ -216,7 +216,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testDeleteProvisioningServer() = runBlockingSimulation {
+    fun testDeleteProvisioningServer() = runSimulation {
         val service = mockk<ComputeServiceImpl>(relaxUnitFun = true)
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
@@ -235,7 +235,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testDeleteTerminatedServer() = runBlockingSimulation {
+    fun testDeleteTerminatedServer() = runSimulation {
         val service = mockk<ComputeServiceImpl>(relaxUnitFun = true)
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
@@ -251,7 +251,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testDeleteDeletedServer() = runBlockingSimulation {
+    fun testDeleteDeletedServer() = runSimulation {
         val service = mockk<ComputeServiceImpl>(relaxUnitFun = true)
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
@@ -265,7 +265,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testDeleteRunningServer() = runBlockingSimulation {
+    fun testDeleteRunningServer() = runSimulation {
         val service = mockk<ComputeServiceImpl>(relaxUnitFun = true)
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()

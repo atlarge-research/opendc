@@ -33,9 +33,9 @@ import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.compute.workload.SimWorkloadLifecycle
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.simulator.network.SimNetworkSink
 import org.opendc.simulator.power.SimPowerSource
 
@@ -58,7 +58,7 @@ class SimMachineTest {
     }
 
     @Test
-    fun testFlopsWorkload() = runBlockingSimulation {
+    fun testFlopsWorkload() = runSimulation {
         val machine = SimBareMetalMachine(
             FlowEngine(coroutineContext, clock),
             machineModel,
@@ -72,7 +72,7 @@ class SimMachineTest {
     }
 
     @Test
-    fun testDualSocketMachine() = runBlockingSimulation {
+    fun testDualSocketMachine() = runSimulation {
         val cpuNode = machineModel.cpus[0].node
         val machineModel = MachineModel(
             cpus = List(cpuNode.coreCount * 2) { ProcessingUnit(cpuNode, it % 2, 1000.0) },
@@ -91,7 +91,7 @@ class SimMachineTest {
     }
 
     @Test
-    fun testPower() = runBlockingSimulation {
+    fun testPower() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
             engine,
@@ -111,7 +111,7 @@ class SimMachineTest {
     }
 
     @Test
-    fun testCapacityClamp() = runBlockingSimulation {
+    fun testCapacityClamp() = runSimulation {
         val machine = SimBareMetalMachine(
             FlowEngine(coroutineContext, clock),
             machineModel,
@@ -135,7 +135,7 @@ class SimMachineTest {
     }
 
     @Test
-    fun testMemory() = runBlockingSimulation {
+    fun testMemory() = runSimulation {
         val machine = SimBareMetalMachine(
             FlowEngine(coroutineContext, clock),
             machineModel,
@@ -153,7 +153,7 @@ class SimMachineTest {
     }
 
     @Test
-    fun testMemoryUsage() = runBlockingSimulation {
+    fun testMemoryUsage() = runSimulation {
         val machine = SimBareMetalMachine(
             FlowEngine(coroutineContext, clock),
             machineModel,
@@ -173,7 +173,7 @@ class SimMachineTest {
     }
 
     @Test
-    fun testNetUsage() = runBlockingSimulation {
+    fun testNetUsage() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
             engine,
@@ -198,7 +198,7 @@ class SimMachineTest {
     }
 
     @Test
-    fun testDiskReadUsage() = runBlockingSimulation {
+    fun testDiskReadUsage() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
             engine,
@@ -220,7 +220,7 @@ class SimMachineTest {
     }
 
     @Test
-    fun testDiskWriteUsage() = runBlockingSimulation {
+    fun testDiskWriteUsage() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
             engine,
@@ -242,7 +242,7 @@ class SimMachineTest {
     }
 
     @Test
-    fun testCancellation() = runBlockingSimulation {
+    fun testCancellation() = runSimulation {
         val machine = SimBareMetalMachine(
             FlowEngine(coroutineContext, clock),
             machineModel,
@@ -262,7 +262,7 @@ class SimMachineTest {
     }
 
     @Test
-    fun testConcurrentRuns() = runBlockingSimulation {
+    fun testConcurrentRuns() = runSimulation {
         val machine = SimBareMetalMachine(
             FlowEngine(coroutineContext, clock),
             machineModel,

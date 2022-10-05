@@ -27,17 +27,17 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.kotlin.runSimulation
 
 /**
  * Test suite for the [SimUps] class.
  */
 internal class SimUpsTest {
     @Test
-    fun testSingleInlet() = runBlockingSimulation {
+    fun testSingleInlet() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val source = SimPowerSource(engine, capacity = 100.0)
         val ups = SimUps(engine)
@@ -48,7 +48,7 @@ internal class SimUpsTest {
     }
 
     @Test
-    fun testDoubleInlet() = runBlockingSimulation {
+    fun testDoubleInlet() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val source1 = SimPowerSource(engine, capacity = 100.0)
         val source2 = SimPowerSource(engine, capacity = 100.0)
@@ -65,7 +65,7 @@ internal class SimUpsTest {
     }
 
     @Test
-    fun testLoss() = runBlockingSimulation {
+    fun testLoss() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val source = SimPowerSource(engine, capacity = 100.0)
         // https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
@@ -77,7 +77,7 @@ internal class SimUpsTest {
     }
 
     @Test
-    fun testDisconnect() = runBlockingSimulation {
+    fun testDisconnect() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val source1 = SimPowerSource(engine, capacity = 100.0)
         val source2 = SimPowerSource(engine, capacity = 100.0)

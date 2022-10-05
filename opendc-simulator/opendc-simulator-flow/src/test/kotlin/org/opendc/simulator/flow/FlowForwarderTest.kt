@@ -28,16 +28,16 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.internal.FlowEngineImpl
 import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.kotlin.runSimulation
 
 /**
  * A test suite for the [FlowForwarder] class.
  */
 internal class FlowForwarderTest {
     @Test
-    fun testCancelImmediately() = runBlockingSimulation {
+    fun testCancelImmediately() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
         val source = FlowSink(engine, 2000.0)
@@ -56,7 +56,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testCancel() = runBlockingSimulation {
+    fun testCancel() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
         val source = FlowSink(engine, 2000.0)
@@ -83,7 +83,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testState() = runBlockingSimulation {
+    fun testState() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
         val consumer = object : FlowSource {
@@ -108,7 +108,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testCancelPendingDelegate() = runBlockingSimulation {
+    fun testCancelPendingDelegate() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
 
@@ -126,7 +126,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testCancelStartedDelegate() = runBlockingSimulation {
+    fun testCancelStartedDelegate() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
         val source = FlowSink(engine, 2000.0)
@@ -144,7 +144,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testCancelPropagation() = runBlockingSimulation {
+    fun testCancelPropagation() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
         val source = FlowSink(engine, 2000.0)
@@ -162,7 +162,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testExitPropagation() = runBlockingSimulation {
+    fun testExitPropagation() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine, isCoupled = true)
         val source = FlowSink(engine, 2000.0)
@@ -183,7 +183,7 @@ internal class FlowForwarderTest {
 
     @Test
     @Disabled // Due to Kotlin bug: https://github.com/mockk/mockk/issues/368
-    fun testAdjustCapacity() = runBlockingSimulation {
+    fun testAdjustCapacity() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
         val sink = FlowSink(engine, 1.0)
@@ -202,7 +202,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testCounters() = runBlockingSimulation {
+    fun testCounters() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
         val source = FlowSink(engine, 1.0)
@@ -224,7 +224,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testCoupledExit() = runBlockingSimulation {
+    fun testCoupledExit() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine, isCoupled = true)
         val source = FlowSink(engine, 2000.0)
@@ -239,7 +239,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testPullFailureCoupled() = runBlockingSimulation {
+    fun testPullFailureCoupled() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine, isCoupled = true)
         val source = FlowSink(engine, 2000.0)
@@ -262,7 +262,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testStartFailure() = runBlockingSimulation {
+    fun testStartFailure() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
         val source = FlowSink(engine, 2000.0)
@@ -290,7 +290,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testConvergeFailure() = runBlockingSimulation {
+    fun testConvergeFailure() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
         val source = FlowSink(engine, 2000.0)

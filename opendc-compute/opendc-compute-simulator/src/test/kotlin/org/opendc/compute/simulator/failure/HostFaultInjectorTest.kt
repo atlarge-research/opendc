@@ -29,7 +29,7 @@ import org.apache.commons.math3.distribution.LogNormalDistribution
 import org.apache.commons.math3.random.Well19937c
 import org.junit.jupiter.api.Test
 import org.opendc.compute.simulator.SimHost
-import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import java.time.Clock
 import java.time.Duration
 import kotlin.coroutines.CoroutineContext
@@ -43,7 +43,7 @@ internal class HostFaultInjectorTest {
      * Simple test case to test that nothing happens when the injector is not started.
      */
     @Test
-    fun testInjectorNotStarted() = runBlockingSimulation {
+    fun testInjectorNotStarted() = runSimulation {
         val host = mockk<SimHost>(relaxUnitFun = true)
 
         val injector = createSimpleInjector(coroutineContext, clock, setOf(host))
@@ -58,7 +58,7 @@ internal class HostFaultInjectorTest {
      * Simple test case to test a start stop fault where the machine is stopped and started after some time.
      */
     @Test
-    fun testInjectorStopsMachine() = runBlockingSimulation {
+    fun testInjectorStopsMachine() = runSimulation {
         val host = mockk<SimHost>(relaxUnitFun = true)
 
         val injector = createSimpleInjector(coroutineContext, clock, setOf(host))
@@ -77,7 +77,7 @@ internal class HostFaultInjectorTest {
      * Simple test case to test a start stop fault where multiple machines are stopped.
      */
     @Test
-    fun testInjectorStopsMultipleMachines() = runBlockingSimulation {
+    fun testInjectorStopsMultipleMachines() = runSimulation {
         val hosts = listOf<SimHost>(
             mockk(relaxUnitFun = true),
             mockk(relaxUnitFun = true)

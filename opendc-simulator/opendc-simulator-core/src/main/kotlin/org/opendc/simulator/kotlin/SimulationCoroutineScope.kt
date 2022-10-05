@@ -20,16 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.core
+package org.opendc.simulator.kotlin
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import org.opendc.simulator.SimulationScheduler
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- *  A scope which provides detailed control over the execution of coroutines for simulations.
+ * A scope which provides detailed control over the execution of coroutines for simulations.
  */
 public interface SimulationCoroutineScope : CoroutineScope, SimulationController
 
@@ -46,9 +47,12 @@ private class SimulationCoroutineScopeImpl(
  * scope adds [SimulationCoroutineDispatcher] automatically.
  */
 @Suppress("FunctionName")
-public fun SimulationCoroutineScope(context: CoroutineContext = EmptyCoroutineContext): SimulationCoroutineScope {
+public fun SimulationCoroutineScope(
+    context: CoroutineContext = EmptyCoroutineContext,
+    scheduler: SimulationScheduler = SimulationScheduler()
+): SimulationCoroutineScope {
     var safeContext = context
-    if (context[ContinuationInterceptor] == null) safeContext += SimulationCoroutineDispatcher()
+    if (context[ContinuationInterceptor] == null) safeContext += SimulationCoroutineDispatcher(scheduler)
     return SimulationCoroutineScopeImpl(safeContext)
 }
 

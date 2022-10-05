@@ -20,19 +20,46 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.core
+package org.opendc.simulator.kotlin
 
 import kotlinx.coroutines.*
+import org.opendc.simulator.SimulationScheduler
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * Executes a [body] inside an immediate execution dispatcher.
+ * Executes [body] as a simulation in a new coroutine.
+ *
+ * This function behaves similarly to [runBlocking], with the difference that the code that it runs will skip delays.
+ * This allows to use [delay] in without causing the simulation to take more time than necessary.
+ *
+ * ```
+ * @Test
+ * fun exampleSimulation() = runSimulation {
+ *     val deferred = async {
+ *         delay(1_000)
+ *         async {
+ *             delay(1_000)
+ *         }.await()
+ *     }
+ *
+ *     deferred.await() // result available immediately
+ * }
+ * ```
+ *
+ * The simulation is run in a single thread, unless other [CoroutineDispatcher] are used for child coroutines.
+ * Because of this, child coroutines are not executed in parallel to [body].
+ * In order for the spawned-off asynchronous code to actually be executed, one must either [yield] or suspend the
+ * body some other way, or use commands that control scheduling (see [SimulationScheduler]).
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public fun runBlockingSimulation(context: CoroutineContext = EmptyCoroutineContext, body: suspend SimulationCoroutineScope.() -> Unit) {
-    val (safeContext, dispatcher) = context.checkArguments()
+public fun runSimulation(
+    context: CoroutineContext = EmptyCoroutineContext,
+    scheduler: SimulationScheduler = SimulationScheduler(),
+    body: suspend SimulationCoroutineScope.() -> Unit
+) {
+    val (safeContext, dispatcher) = context.checkArguments(scheduler)
     val startingJobs = safeContext.activeJobs()
     val scope = SimulationCoroutineScope(safeContext)
     val deferred = scope.async {
@@ -49,21 +76,21 @@ public fun runBlockingSimulation(context: CoroutineContext = EmptyCoroutineConte
 }
 
 /**
- * Convenience method for calling [runBlockingSimulation] on an existing [SimulationCoroutineScope].
+ * Convenience method for calling [runSimulation] on an existing [SimulationCoroutineScope].
  */
-public fun SimulationCoroutineScope.runBlockingSimulation(block: suspend SimulationCoroutineScope.() -> Unit): Unit =
-    runBlockingSimulation(coroutineContext, block)
+public fun SimulationCoroutineScope.runSimulation(block: suspend SimulationCoroutineScope.() -> Unit): Unit =
+    runSimulation(coroutineContext, scheduler, block)
 
 /**
- * Convenience method for calling [runBlockingSimulation] on an existing [SimulationCoroutineDispatcher].
+ * Convenience method for calling [runSimulation] on an existing [SimulationCoroutineDispatcher].
  */
-public fun SimulationCoroutineDispatcher.runBlockingSimulation(block: suspend SimulationCoroutineScope.() -> Unit): Unit =
-    runBlockingSimulation(this, block)
+public fun SimulationCoroutineDispatcher.runSimulation(block: suspend SimulationCoroutineScope.() -> Unit): Unit =
+    runSimulation(this, scheduler, block)
 
-private fun CoroutineContext.checkArguments(): Pair<CoroutineContext, SimulationController> {
+private fun CoroutineContext.checkArguments(scheduler: SimulationScheduler): Pair<CoroutineContext, SimulationController> {
     val dispatcher = get(ContinuationInterceptor).run {
         this?.let { require(this is SimulationController) { "Dispatcher must implement SimulationController: $this" } }
-        this ?: SimulationCoroutineDispatcher()
+        this ?: SimulationCoroutineDispatcher(scheduler)
     }
 
     val job = get(Job) ?: SupervisorJob()
