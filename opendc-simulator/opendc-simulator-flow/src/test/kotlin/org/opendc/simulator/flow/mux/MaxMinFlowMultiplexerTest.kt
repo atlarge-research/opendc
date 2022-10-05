@@ -32,14 +32,14 @@ import org.opendc.simulator.flow.consume
 import org.opendc.simulator.flow.internal.FlowEngineImpl
 import org.opendc.simulator.flow.source.FixedFlowSource
 import org.opendc.simulator.flow.source.TraceFlowSource
-import org.opendc.simulator.kotlin.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 
 /**
  * Test suite for the [FlowMultiplexer] implementations
  */
 internal class MaxMinFlowMultiplexerTest {
     @Test
-    fun testSmoke() = runBlockingSimulation {
+    fun testSmoke() = runSimulation {
         val scheduler = FlowEngineImpl(coroutineContext, clock)
         val switch = MaxMinFlowMultiplexer(scheduler)
 
@@ -61,7 +61,7 @@ internal class MaxMinFlowMultiplexerTest {
      * Test overcommitting of resources via the hypervisor with a single VM.
      */
     @Test
-    fun testOvercommittedSingle() = runBlockingSimulation {
+    fun testOvercommittedSingle() = runSimulation {
         val scheduler = FlowEngineImpl(coroutineContext, clock)
 
         val duration = 5 * 60L
@@ -99,7 +99,7 @@ internal class MaxMinFlowMultiplexerTest {
      * Test overcommitting of resources via the hypervisor with two VMs.
      */
     @Test
-    fun testOvercommittedDual() = runBlockingSimulation {
+    fun testOvercommittedDual() = runSimulation {
         val scheduler = FlowEngineImpl(coroutineContext, clock)
 
         val duration = 5 * 60L

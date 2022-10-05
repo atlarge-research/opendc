@@ -26,7 +26,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.kotlin.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import java.time.Clock
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -42,7 +42,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testBasicTimer() {
-        runBlockingSimulation {
+        runSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) {
@@ -56,7 +56,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testCancelNonExisting() {
-        runBlockingSimulation {
+        runSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.cancel(1)
@@ -65,7 +65,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testCancelExisting() {
-        runBlockingSimulation {
+        runSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) {
@@ -82,7 +82,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testCancelAll() {
-        runBlockingSimulation {
+        runSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) { fail() }
@@ -93,7 +93,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testOverride() {
-        runBlockingSimulation {
+        runSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) { fail() }
@@ -107,7 +107,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testOverrideBlock() {
-        runBlockingSimulation {
+        runSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) { fail() }
@@ -120,7 +120,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testNegativeDelay() {
-        runBlockingSimulation {
+        runSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             assertThrows<IllegalArgumentException> {

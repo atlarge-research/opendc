@@ -26,14 +26,14 @@ import io.mockk.*
 import org.junit.jupiter.api.*
 import org.opendc.simulator.flow.internal.FlowConsumerContextImpl
 import org.opendc.simulator.flow.internal.FlowEngineImpl
-import org.opendc.simulator.kotlin.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 
 /**
  * A test suite for the [FlowConsumerContextImpl] class.
  */
 class FlowConsumerContextTest {
     @Test
-    fun testFlushWithoutCommand() = runBlockingSimulation {
+    fun testFlushWithoutCommand() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val consumer = object : FlowSource {
             override fun onPull(conn: FlowConnection, now: Long): Long {
@@ -54,7 +54,7 @@ class FlowConsumerContextTest {
     }
 
     @Test
-    fun testDoubleStart() = runBlockingSimulation {
+    fun testDoubleStart() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val consumer = object : FlowSource {
             override fun onPull(conn: FlowConnection, now: Long): Long {
@@ -79,7 +79,7 @@ class FlowConsumerContextTest {
     }
 
     @Test
-    fun testIdempotentCapacityChange() = runBlockingSimulation {
+    fun testIdempotentCapacityChange() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val consumer = spyk(object : FlowSource {
             override fun onPull(conn: FlowConnection, now: Long): Long {

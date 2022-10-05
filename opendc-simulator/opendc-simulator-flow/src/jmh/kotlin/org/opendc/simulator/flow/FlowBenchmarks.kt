@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 import org.opendc.simulator.flow.mux.ForwardingFlowMultiplexer
 import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 import org.opendc.simulator.flow.source.TraceFlowSource
-import org.opendc.simulator.kotlin.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
@@ -49,27 +49,27 @@ class FlowBenchmarks {
 
     @Benchmark
     fun benchmarkSink() {
-        return runBlockingSimulation {
+        return runSimulation {
             val engine = FlowEngine(coroutineContext, clock)
             val provider = FlowSink(engine, 4200.0)
-            return@runBlockingSimulation provider.consume(TraceFlowSource(trace))
+            return@runSimulation provider.consume(TraceFlowSource(trace))
         }
     }
 
     @Benchmark
     fun benchmarkForward() {
-        return runBlockingSimulation {
+        return runSimulation {
             val engine = FlowEngine(coroutineContext, clock)
             val provider = FlowSink(engine, 4200.0)
             val forwarder = FlowForwarder(engine)
             provider.startConsumer(forwarder)
-            return@runBlockingSimulation forwarder.consume(TraceFlowSource(trace))
+            return@runSimulation forwarder.consume(TraceFlowSource(trace))
         }
     }
 
     @Benchmark
     fun benchmarkMuxMaxMinSingleSource() {
-        return runBlockingSimulation {
+        return runSimulation {
             val engine = FlowEngine(coroutineContext, clock)
             val switch = MaxMinFlowMultiplexer(engine)
 
@@ -77,13 +77,13 @@ class FlowBenchmarks {
             FlowSink(engine, 3000.0).startConsumer(switch.newOutput())
 
             val provider = switch.newInput()
-            return@runBlockingSimulation provider.consume(TraceFlowSource(trace))
+            return@runSimulation provider.consume(TraceFlowSource(trace))
         }
     }
 
     @Benchmark
     fun benchmarkMuxMaxMinTripleSource() {
-        return runBlockingSimulation {
+        return runSimulation {
             val engine = FlowEngine(coroutineContext, clock)
             val switch = MaxMinFlowMultiplexer(engine)
 
@@ -101,7 +101,7 @@ class FlowBenchmarks {
 
     @Benchmark
     fun benchmarkMuxExclusiveSingleSource() {
-        return runBlockingSimulation {
+        return runSimulation {
             val engine = FlowEngine(coroutineContext, clock)
             val switch = ForwardingFlowMultiplexer(engine)
 
@@ -109,13 +109,13 @@ class FlowBenchmarks {
             FlowSink(engine, 3000.0).startConsumer(switch.newOutput())
 
             val provider = switch.newInput()
-            return@runBlockingSimulation provider.consume(TraceFlowSource(trace))
+            return@runSimulation provider.consume(TraceFlowSource(trace))
         }
     }
 
     @Benchmark
     fun benchmarkMuxExclusiveTripleSource() {
-        return runBlockingSimulation {
+        return runSimulation {
             val engine = FlowEngine(coroutineContext, clock)
             val switch = ForwardingFlowMultiplexer(engine)
 

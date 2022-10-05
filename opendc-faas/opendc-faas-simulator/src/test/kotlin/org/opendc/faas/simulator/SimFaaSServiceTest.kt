@@ -42,7 +42,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.kotlin.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import java.time.Duration
 import java.util.*
 
@@ -64,7 +64,7 @@ internal class SimFaaSServiceTest {
     }
 
     @Test
-    fun testSmoke() = runBlockingSimulation {
+    fun testSmoke() = runSimulation {
         val random = Random(0)
         val workload = spyk(object : SimFaaSWorkload, SimWorkload by SimRuntimeWorkload(1000) {
             override suspend fun invoke() {

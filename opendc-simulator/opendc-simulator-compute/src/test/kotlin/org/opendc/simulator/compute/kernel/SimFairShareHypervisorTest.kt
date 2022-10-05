@@ -43,7 +43,7 @@ import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
-import org.opendc.simulator.kotlin.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import java.util.*
 
 /**
@@ -65,7 +65,7 @@ internal class SimFairShareHypervisorTest {
      * Test overcommitting of resources via the hypervisor with a single VM.
      */
     @Test
-    fun testOvercommittedSingle() = runBlockingSimulation {
+    fun testOvercommittedSingle() = runSimulation {
         val duration = 5 * 60L
         val workloadA =
             SimTraceWorkload(
@@ -105,7 +105,7 @@ internal class SimFairShareHypervisorTest {
      * Test overcommitting of resources via the hypervisor with two VMs.
      */
     @Test
-    fun testOvercommittedDual() = runBlockingSimulation {
+    fun testOvercommittedDual() = runSimulation {
         val duration = 5 * 60L
         val workloadA =
             SimTraceWorkload(
@@ -158,7 +158,7 @@ internal class SimFairShareHypervisorTest {
     }
 
     @Test
-    fun testMultipleCPUs() = runBlockingSimulation {
+    fun testMultipleCPUs() = runSimulation {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
         val model = MachineModel(
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
@@ -179,7 +179,7 @@ internal class SimFairShareHypervisorTest {
     }
 
     @Test
-    fun testInterference() = runBlockingSimulation {
+    fun testInterference() = runSimulation {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
         val model = MachineModel(
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },

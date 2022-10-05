@@ -32,7 +32,7 @@ import org.opendc.simulator.flow.internal.FlowEngineImpl
 import org.opendc.simulator.flow.source.FixedFlowSource
 import org.opendc.simulator.flow.source.FlowSourceRateAdapter
 import org.opendc.simulator.flow.source.TraceFlowSource
-import org.opendc.simulator.kotlin.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 
 /**
  * Test suite for the [ForwardingFlowMultiplexer] class.
@@ -42,7 +42,7 @@ internal class ForwardingFlowMultiplexerTest {
      * Test a trace workload.
      */
     @Test
-    fun testTrace() = runBlockingSimulation {
+    fun testTrace() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
 
         val speed = mutableListOf<Double>()
@@ -79,7 +79,7 @@ internal class ForwardingFlowMultiplexerTest {
      * Test runtime workload on hypervisor.
      */
     @Test
-    fun testRuntimeWorkload() = runBlockingSimulation {
+    fun testRuntimeWorkload() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
@@ -101,7 +101,7 @@ internal class ForwardingFlowMultiplexerTest {
      * Test two workloads running sequentially.
      */
     @Test
-    fun testTwoWorkloads() = runBlockingSimulation {
+    fun testTwoWorkloads() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
@@ -140,7 +140,7 @@ internal class ForwardingFlowMultiplexerTest {
      * Test concurrent workloads on the machine.
      */
     @Test
-    fun testConcurrentWorkloadFails() = runBlockingSimulation {
+    fun testConcurrentWorkloadFails() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
 
         val switch = ForwardingFlowMultiplexer(engine)

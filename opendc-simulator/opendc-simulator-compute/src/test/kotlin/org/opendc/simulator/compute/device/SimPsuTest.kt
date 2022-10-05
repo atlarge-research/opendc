@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.kotlin.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.simulator.power.SimPowerSource
 
 /**
@@ -51,7 +51,7 @@ internal class SimPsuTest {
     }
 
     @Test
-    fun testPsuIdle() = runBlockingSimulation {
+    fun testPsuIdle() = runSimulation {
         val ratedOutputPower = 240.0
         val energyEfficiency = mapOf(0.0 to 1.0)
 
@@ -69,7 +69,7 @@ internal class SimPsuTest {
     }
 
     @Test
-    fun testPsuPowerLoss() = runBlockingSimulation {
+    fun testPsuPowerLoss() = runSimulation {
         val ratedOutputPower = 240.0
         // Efficiency of 80 Plus Titanium PSU
         val energyEfficiency = sortedMapOf(

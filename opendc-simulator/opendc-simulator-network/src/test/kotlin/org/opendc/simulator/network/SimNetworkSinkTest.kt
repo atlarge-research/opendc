@@ -32,14 +32,14 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.flow.*
 import org.opendc.simulator.flow.source.FixedFlowSource
-import org.opendc.simulator.kotlin.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 
 /**
  * Test suite for the [SimNetworkSink] class.
  */
 class SimNetworkSinkTest {
     @Test
-    fun testInitialState() = runBlockingSimulation {
+    fun testInitialState() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val sink = SimNetworkSink(engine, capacity = 100.0)
 
@@ -49,7 +49,7 @@ class SimNetworkSinkTest {
     }
 
     @Test
-    fun testDisconnectIdempotent() = runBlockingSimulation {
+    fun testDisconnectIdempotent() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val sink = SimNetworkSink(engine, capacity = 100.0)
 
@@ -58,7 +58,7 @@ class SimNetworkSinkTest {
     }
 
     @Test
-    fun testConnectCircular() = runBlockingSimulation {
+    fun testConnectCircular() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val sink = SimNetworkSink(engine, capacity = 100.0)
 
@@ -68,7 +68,7 @@ class SimNetworkSinkTest {
     }
 
     @Test
-    fun testConnectAlreadyConnectedTarget() = runBlockingSimulation {
+    fun testConnectAlreadyConnectedTarget() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val sink = SimNetworkSink(engine, capacity = 100.0)
         val source = mockk<SimNetworkPort>(relaxUnitFun = true)
@@ -80,7 +80,7 @@ class SimNetworkSinkTest {
     }
 
     @Test
-    fun testConnectAlreadyConnected() = runBlockingSimulation {
+    fun testConnectAlreadyConnected() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val sink = SimNetworkSink(engine, capacity = 100.0)
         val source1 = Source(engine)
@@ -96,7 +96,7 @@ class SimNetworkSinkTest {
     }
 
     @Test
-    fun testConnect() = runBlockingSimulation {
+    fun testConnect() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val sink = SimNetworkSink(engine, capacity = 100.0)
         val source = spyk(Source(engine))
@@ -112,7 +112,7 @@ class SimNetworkSinkTest {
     }
 
     @Test
-    fun testDisconnect() = runBlockingSimulation {
+    fun testDisconnect() = runSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val sink = SimNetworkSink(engine, capacity = 100.0)
         val source = spyk(Source(engine))

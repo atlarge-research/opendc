@@ -30,14 +30,14 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.opendc.simulator.flow.internal.FlowEngineImpl
 import org.opendc.simulator.flow.source.FixedFlowSource
 import org.opendc.simulator.flow.source.FlowSourceRateAdapter
-import org.opendc.simulator.kotlin.runBlockingSimulation
+import org.opendc.simulator.kotlin.runSimulation
 
 /**
  * A test suite for the [FlowSink] class.
  */
 internal class FlowSinkTest {
     @Test
-    fun testSpeed() = runBlockingSimulation {
+    fun testSpeed() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = FlowSink(engine, capacity)
@@ -53,7 +53,7 @@ internal class FlowSinkTest {
     }
 
     @Test
-    fun testAdjustCapacity() = runBlockingSimulation {
+    fun testAdjustCapacity() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val provider = FlowSink(engine, 1.0)
 
@@ -69,7 +69,7 @@ internal class FlowSinkTest {
     }
 
     @Test
-    fun testSpeedLimit() = runBlockingSimulation {
+    fun testSpeedLimit() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = FlowSink(engine, capacity)
@@ -89,7 +89,7 @@ internal class FlowSinkTest {
      * [FlowSource.onPull].
      */
     @Test
-    fun testIntermediateInterrupt() = runBlockingSimulation {
+    fun testIntermediateInterrupt() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = FlowSink(engine, capacity)
@@ -109,7 +109,7 @@ internal class FlowSinkTest {
     }
 
     @Test
-    fun testInterrupt() = runBlockingSimulation {
+    fun testInterrupt() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = FlowSink(engine, capacity)
@@ -144,7 +144,7 @@ internal class FlowSinkTest {
     }
 
     @Test
-    fun testFailure() = runBlockingSimulation {
+    fun testFailure() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = FlowSink(engine, capacity)
@@ -165,7 +165,7 @@ internal class FlowSinkTest {
     }
 
     @Test
-    fun testExceptionPropagationOnNext() = runBlockingSimulation {
+    fun testExceptionPropagationOnNext() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = FlowSink(engine, capacity)
@@ -190,7 +190,7 @@ internal class FlowSinkTest {
     }
 
     @Test
-    fun testConcurrentConsumption() = runBlockingSimulation {
+    fun testConcurrentConsumption() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = FlowSink(engine, capacity)
@@ -206,7 +206,7 @@ internal class FlowSinkTest {
     }
 
     @Test
-    fun testCancelDuringConsumption() = runBlockingSimulation {
+    fun testCancelDuringConsumption() = runSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = FlowSink(engine, capacity)
@@ -225,7 +225,7 @@ internal class FlowSinkTest {
     @Test
     fun testInfiniteSleep() {
         assertThrows<IllegalStateException> {
-            runBlockingSimulation {
+            runSimulation {
                 val engine = FlowEngineImpl(coroutineContext, clock)
                 val capacity = 4200.0
                 val provider = FlowSink(engine, capacity)
