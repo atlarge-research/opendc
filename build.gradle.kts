@@ -26,5 +26,5 @@ plugins {
 }
 
 allprojects {
-    version = "2.1-rc1"
+    version = "3.0-rc1"
 }
