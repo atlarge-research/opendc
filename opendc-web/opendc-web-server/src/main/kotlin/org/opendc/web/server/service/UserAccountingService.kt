@@ -31,6 +31,7 @@ import java.time.temporal.TemporalAdjusters
 import javax.enterprise.context.ApplicationScoped
 import javax.inject.Inject
 import javax.persistence.EntityExistsException
+import org.opendc.web.proto.user.UserAccounting as UserAccountingDto
 
 /**
  * Service for tracking the simulation budget of users.
@@ -44,6 +45,19 @@ class UserAccountingService @Inject constructor(
     @ConfigProperty(name = "opendc.accounting.simulation-budget", defaultValue = "2000m")
     private val simulationBudget: Duration
 ) {
+    /**
+     * Return the [UserAccountingDto] object for the user with the specified [userId]. If the object does not exist in the
+     * database, a default value is constructed.
+     */
+    fun getAccounting(userId: String): UserAccountingDto {
+        val accounting = repository.findForUser(userId)
+        return if (accounting != null) {
+            UserAccountingDto(accounting.periodEnd, accounting.simulationTime, accounting.simulationTimeBudget)
+        } else {
+            UserAccountingDto(getNextAccountingPeriod(), 0, simulationBudget.toSeconds().toInt())
+        }
+    }
+
     /**
      * Determine whether the user with [userId] has any remaining simulation budget.
      *
@@ -67,7 +81,7 @@ class UserAccountingService @Inject constructor(
      */
     fun consumeSimulationBudget(userId: String, seconds: Int): Boolean {
         val today = LocalDate.now()
-        val nextAccountingPeriod = today.with(TemporalAdjusters.firstDayOfNextMonth())
+        val nextAccountingPeriod = getNextAccountingPeriod(today)
         val repository = repository
 
         // We need to be careful to prevent conflicts in case of concurrency
@@ -103,5 +117,12 @@ class UserAccountingService @Inject constructor(
         }
 
         throw IllegalStateException("Failed to allocate consume budget due to conflict")
+    }
+
+    /**
+     * Helper method to find next accounting period.
+     */
+    private fun getNextAccountingPeriod(today: LocalDate = LocalDate.now()): LocalDate {
+        return today.with(TemporalAdjusters.firstDayOfNextMonth())
     }
 }
