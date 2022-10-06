@@ -30,7 +30,7 @@ import org.opendc.experiments.provisioner.ProvisioningStep
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.flow.FlowEngine
-import java.util.*
+import java.util.SplittableRandom
 
 /**
  * A [ProvisioningStep] that provisions a list of hosts for a [ComputeService].

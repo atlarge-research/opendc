@@ -22,7 +22,11 @@
 
 package org.opendc.compute.simulator.internal
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.apache.commons.math3.distribution.RealDistribution
 import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.simulator.failure.HostFault

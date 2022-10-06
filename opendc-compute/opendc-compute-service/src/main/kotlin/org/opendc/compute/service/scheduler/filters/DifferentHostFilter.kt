@@ -24,7 +24,7 @@ package org.opendc.compute.service.scheduler.filters
 
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
-import java.util.*
+import java.util.UUID
 
 /**
  * A [HostFilter] that ensures an instance is scheduled on a different host from a set of instances.

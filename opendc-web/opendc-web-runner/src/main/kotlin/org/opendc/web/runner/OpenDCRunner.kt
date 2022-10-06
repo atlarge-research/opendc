@@ -24,8 +24,16 @@ package org.opendc.web.runner
 
 import mu.KotlinLogging
 import org.opendc.compute.service.ComputeService
-import org.opendc.experiments.compute.*
+import org.opendc.experiments.compute.ComputeWorkloadLoader
+import org.opendc.experiments.compute.createComputeScheduler
+import org.opendc.experiments.compute.grid5000
+import org.opendc.experiments.compute.registerComputeMonitor
+import org.opendc.experiments.compute.replay
+import org.opendc.experiments.compute.sampleByLoad
+import org.opendc.experiments.compute.setupComputeService
+import org.opendc.experiments.compute.setupHosts
 import org.opendc.experiments.compute.topology.HostSpec
+import org.opendc.experiments.compute.trace
 import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -40,9 +48,16 @@ import org.opendc.web.proto.runner.Topology
 import org.opendc.web.runner.internal.WebComputeMonitor
 import java.io.File
 import java.time.Duration
-import java.util.*
-import java.util.concurrent.*
+import java.util.Random
+import java.util.UUID
+import java.util.concurrent.Executors
+import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory
+import java.util.concurrent.ForkJoinWorkerThread
+import java.util.concurrent.RecursiveAction
+import java.util.concurrent.RecursiveTask
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 
 /**
  * Class to execute the pending jobs via the OpenDC web API.
@@ -200,7 +215,7 @@ public class OpenDCRunner(
     private inner class SimulationTask(
         private val scenario: Scenario,
         private val repeat: Int,
-        private val topology: List<HostSpec>,
+        private val topology: List<HostSpec>
     ) : RecursiveTask<WebComputeMonitor.Results>() {
         override fun compute(): WebComputeMonitor.Results {
             val monitor = WebComputeMonitor()
@@ -246,10 +261,11 @@ public class OpenDCRunner(
 
                 val phenomena = scenario.phenomena
                 val failureModel =
-                    if (phenomena.failures)
+                    if (phenomena.failures) {
                         grid5000(Duration.ofDays(7))
-                    else
+                    } else {
                         null
+                    }
 
                 // Run workload trace
                 service.replay(clock, vms, seed, failureModel = failureModel, interference = phenomena.interference)

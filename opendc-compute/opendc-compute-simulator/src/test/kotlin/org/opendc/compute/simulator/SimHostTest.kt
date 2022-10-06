@@ -22,12 +22,19 @@
 
 package org.opendc.compute.simulator
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.api.*
+import org.opendc.compute.api.Flavor
+import org.opendc.compute.api.Image
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
+import org.opendc.compute.api.ServerWatcher
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.simulator.compute.SimBareMetalMachine
@@ -45,7 +52,8 @@ import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
 import org.opendc.simulator.kotlin.runSimulation
 import java.time.Instant
-import java.util.*
+import java.util.SplittableRandom
+import java.util.UUID
 import kotlin.coroutines.resume
 
 /**
@@ -217,7 +225,7 @@ internal class SimHostTest {
             { assertEquals(900001, sysStats.uptime.toMillis(), "Uptime does not match") },
             { assertEquals(300000, sysStats.downtime.toMillis(), "Downtime does not match") },
             { assertEquals(900001, guestSysStats.uptime.toMillis(), "Guest uptime does not match") },
-            { assertEquals(300000, guestSysStats.downtime.toMillis(), "Guest downtime does not match") },
+            { assertEquals(300000, guestSysStats.downtime.toMillis(), "Guest downtime does not match") }
         )
     }
 

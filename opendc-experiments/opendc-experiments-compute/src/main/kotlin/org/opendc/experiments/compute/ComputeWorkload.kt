@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.compute
 
-import java.util.*
+import java.util.Random
 
 /**
  * An interface that describes how a workload is resolved.

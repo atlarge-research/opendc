@@ -76,10 +76,10 @@ val buildTask = tasks.register<NpmTask>("buildNext") {
         "NEXT_PUBLIC_SENTRY_DSN",
         "NEXT_PUBLIC_AUTH0_DOMAIN",
         "NEXT_PUBLIC_AUTH0_CLIENT_ID",
-        "NEXT_PUBLIC_AUTH0_AUDIENCE",
+        "NEXT_PUBLIC_AUTH0_AUDIENCE"
     )
     for (envvar in env) {
-        environment.put(envvar, "%%${envvar}%%")
+        environment.put(envvar, "%%$envvar%%")
     }
 
     dependsOn(tasks.npmInstall)

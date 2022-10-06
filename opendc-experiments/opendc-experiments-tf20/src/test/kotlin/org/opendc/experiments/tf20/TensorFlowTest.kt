@@ -31,7 +31,7 @@ import org.opendc.experiments.tf20.distribute.OneDeviceStrategy
 import org.opendc.experiments.tf20.util.MLEnvironmentReader
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.kotlin.runSimulation
-import java.util.*
+import java.util.UUID
 
 /**
  * Integration test suite for the TensorFlow application model in OpenDC.
@@ -46,7 +46,12 @@ class TensorFlowTest {
         val def = MLEnvironmentReader().readEnvironment(envInput).first()
 
         val device = SimTFDevice(
-            def.uid, def.meta["gpu"] as Boolean, coroutineContext, clock, def.model.cpus[0], def.model.memory[0],
+            def.uid,
+            def.meta["gpu"] as Boolean,
+            coroutineContext,
+            clock,
+            def.model.cpus[0],
+            def.model.memory[0],
             LinearPowerModel(250.0, 60.0)
         )
         val strategy = OneDeviceStrategy(device)
@@ -76,7 +81,12 @@ class TensorFlowTest {
         val def = MLEnvironmentReader().readEnvironment(envInput).first()
 
         val device = SimTFDevice(
-            def.uid, def.meta["gpu"] as Boolean, coroutineContext, clock, def.model.cpus[0], def.model.memory[0],
+            def.uid,
+            def.meta["gpu"] as Boolean,
+            coroutineContext,
+            clock,
+            def.model.cpus[0],
+            def.model.memory[0],
             LinearPowerModel(250.0, 60.0)
         )
         val strategy = OneDeviceStrategy(device)
@@ -106,12 +116,22 @@ class TensorFlowTest {
         val def = MLEnvironmentReader().readEnvironment(envInput).first()
 
         val deviceA = SimTFDevice(
-            def.uid, def.meta["gpu"] as Boolean, coroutineContext, clock, def.model.cpus[0], def.model.memory[0],
+            def.uid,
+            def.meta["gpu"] as Boolean,
+            coroutineContext,
+            clock,
+            def.model.cpus[0],
+            def.model.memory[0],
             LinearPowerModel(250.0, 60.0)
         )
 
         val deviceB = SimTFDevice(
-            UUID.randomUUID(), def.meta["gpu"] as Boolean, coroutineContext, clock, def.model.cpus[0], def.model.memory[0],
+            UUID.randomUUID(),
+            def.meta["gpu"] as Boolean,
+            coroutineContext,
+            clock,
+            def.model.cpus[0],
+            def.model.memory[0],
             LinearPowerModel(250.0, 60.0)
         )
 

@@ -23,12 +23,12 @@
 package org.opendc.trace.bitbrains
 
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
-import org.opendc.trace.*
+import org.opendc.trace.TableReader
 import org.opendc.trace.conv.RESOURCE_ID
 import java.nio.file.Path
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /**
  * A [TableReader] for the Bitbrains resource table.

@@ -32,7 +32,10 @@ import org.hibernate.type.descriptor.java.JavaTypeDescriptor
 import org.hibernate.type.descriptor.sql.BasicBinder
 import org.hibernate.type.descriptor.sql.BasicExtractor
 import org.hibernate.type.descriptor.sql.SqlTypeDescriptor
-import java.sql.*
+import java.sql.CallableStatement
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.Types
 
 /**
  * A [SqlTypeDescriptor] that automatically selects the correct implementation for the database dialect.

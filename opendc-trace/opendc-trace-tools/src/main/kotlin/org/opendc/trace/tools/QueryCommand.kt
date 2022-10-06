@@ -40,7 +40,7 @@ import java.nio.charset.StandardCharsets
 import java.sql.DriverManager
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
-import java.util.*
+import java.util.Properties
 
 /**
  * A [CliktCommand] that allows users to query workload traces using SQL.
@@ -121,7 +121,7 @@ internal class QueryCommand : CliktCommand(name = "query", help = "Query workloa
 
         val options = mapOf(
             Printer.COLUMNS to List(meta.columnCount) { meta.getColumnName(it + 1) },
-            Printer.BORDER to "|",
+            Printer.BORDER to "|"
         )
         val data = mutableListOf<Map<String, Any>>()
 

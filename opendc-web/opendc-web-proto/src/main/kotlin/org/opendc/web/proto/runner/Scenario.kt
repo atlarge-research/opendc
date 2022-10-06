@@ -23,7 +23,8 @@
 package org.opendc.web.proto.runner
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.*
+import org.opendc.web.proto.OperationalPhenomena
+import org.opendc.web.proto.Workload
 
 /**
  * A [Scenario] that is exposed to an OpenDC runner.

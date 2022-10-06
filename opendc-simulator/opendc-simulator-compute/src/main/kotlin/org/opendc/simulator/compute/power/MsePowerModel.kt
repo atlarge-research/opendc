@@ -37,7 +37,7 @@ import kotlin.math.pow
 public class MsePowerModel(
     private val maxPower: Double,
     private val idlePower: Double,
-    private val calibrationParam: Double,
+    private val calibrationParam: Double
 ) : PowerModel {
     private val factor: Double = (maxPower - idlePower) / 100
 

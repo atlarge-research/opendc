@@ -21,6 +21,7 @@
  */
 
 @file:JvmName("ComputeSchedulers")
+
 package org.opendc.experiments.compute
 
 import org.opendc.compute.service.scheduler.ComputeScheduler
@@ -33,7 +34,7 @@ import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.service.scheduler.weights.InstanceCountWeigher
 import org.opendc.compute.service.scheduler.weights.RamWeigher
 import org.opendc.compute.service.scheduler.weights.VCpuWeigher
-import java.util.*
+import java.util.Random
 
 /**
  * Create a [ComputeScheduler] for the experiment.

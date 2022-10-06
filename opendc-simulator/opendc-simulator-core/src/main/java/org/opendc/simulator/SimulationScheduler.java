@@ -67,7 +67,7 @@ public final class SimulationScheduler implements Executor {
      * @param initialTimeMs The initial virtual time of the scheduler in milliseconds since epoch.
      */
     public SimulationScheduler(long initialTimeMs) {
-       this.currentTime = initialTimeMs;
+        this.currentTime = initialTimeMs;
     }
 
     /**
@@ -104,7 +104,8 @@ public final class SimulationScheduler implements Executor {
      */
     public int schedule(long delayMs, Runnable task) {
         if (delayMs < 0) {
-            throw new IllegalArgumentException("Attempted scheduling an event earlier in time (delay " + delayMs + " ms)");
+            throw new IllegalArgumentException(
+                    "Attempted scheduling an event earlier in time (delay " + delayMs + " ms)");
         }
 
         long target = currentTime + delayMs;

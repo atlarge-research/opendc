@@ -25,12 +25,11 @@ package org.opendc.web.runner.runtime;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.ShutdownContext;
 import io.quarkus.runtime.annotations.Recorder;
+import java.io.File;
+import javax.enterprise.inject.spi.CDI;
 import org.jboss.logging.Logger;
 import org.opendc.web.runner.JobManager;
 import org.opendc.web.runner.OpenDCRunner;
-
-import javax.enterprise.inject.spi.CDI;
-import java.io.File;
 
 /**
  * Helper class for starting the OpenDC web runner.
@@ -52,13 +51,12 @@ public class OpenDCRunnerRecorder {
 
         JobManager manager = CDI.current().select(JobManager.class).get();
         OpenDCRunner runner = new OpenDCRunner(
-            manager,
-            new File(config.tracePath),
-            parallelism,
-            config.jobTimeout,
-            config.pollInterval,
-            config.heartbeatInterval
-        );
+                manager,
+                new File(config.tracePath),
+                parallelism,
+                config.jobTimeout,
+                config.pollInterval,
+                config.heartbeatInterval);
 
         return new RuntimeValue<>(runner);
     }
@@ -66,9 +64,8 @@ public class OpenDCRunnerRecorder {
     /**
      * Helper method to start the OpenDC runner service.
      */
-    public void startRunner(RuntimeValue<OpenDCRunner> runner,
-                            OpenDCRunnerRuntimeConfig config,
-                            ShutdownContext shutdownContext) {
+    public void startRunner(
+            RuntimeValue<OpenDCRunner> runner, OpenDCRunnerRuntimeConfig config, ShutdownContext shutdownContext) {
         if (config.enable) {
             LOGGER.info("Starting OpenDC Runner in background (polling every " + config.pollInterval + ")");
 

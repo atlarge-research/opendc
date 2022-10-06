@@ -22,8 +22,15 @@
 
 package org.opendc.faas.simulator
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.opendc.faas.service.FunctionObject
 import org.opendc.faas.service.deployer.FunctionDeployer
 import org.opendc.faas.service.deployer.FunctionInstance

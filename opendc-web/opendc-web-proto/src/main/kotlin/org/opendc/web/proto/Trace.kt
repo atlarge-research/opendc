@@ -32,5 +32,5 @@ package org.opendc.web.proto
 public data class Trace(
     val id: String,
     val name: String,
-    val type: String,
+    val type: String
 )

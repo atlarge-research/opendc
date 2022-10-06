@@ -26,8 +26,19 @@ import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.TableReader
+import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
+import org.opendc.trace.conv.RESOURCE_CPU_COUNT
+import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
+import org.opendc.trace.conv.RESOURCE_STATE_DISK_READ
+import org.opendc.trace.conv.RESOURCE_STATE_DISK_WRITE
+import org.opendc.trace.conv.RESOURCE_STATE_MEM_USAGE
+import org.opendc.trace.conv.RESOURCE_STATE_NET_RX
+import org.opendc.trace.conv.RESOURCE_STATE_NET_TX
+import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
 import java.text.NumberFormat
 import java.time.Duration
 import java.time.Instant
@@ -35,7 +46,8 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import java.util.*
+import java.util.Locale
+import java.util.UUID
 
 /**
  * A [TableReader] for the Bitbrains resource state table.

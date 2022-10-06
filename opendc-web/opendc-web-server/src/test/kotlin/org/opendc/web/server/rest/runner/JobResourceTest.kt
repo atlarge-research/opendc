@@ -35,8 +35,11 @@ import io.restassured.module.kotlin.extensions.When
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.opendc.web.proto.*
+import org.opendc.web.proto.JobState
+import org.opendc.web.proto.OperationalPhenomena
 import org.opendc.web.proto.Targets
+import org.opendc.web.proto.Trace
+import org.opendc.web.proto.Workload
 import org.opendc.web.proto.runner.Job
 import org.opendc.web.proto.runner.Portfolio
 import org.opendc.web.proto.runner.Scenario
@@ -59,7 +62,7 @@ class JobResourceTest {
     private val dummyPortfolio = Portfolio(1, 1, "test", Targets(emptySet()))
     private val dummyTopology = Topology(1, 1, "test", emptyList(), Instant.now(), Instant.now())
     private val dummyTrace = Trace("bitbrains", "Bitbrains", "vm")
-    private val dummyScenario = Scenario(1, 1, dummyPortfolio, "test", Workload(dummyTrace, 1.0), dummyTopology, OperationalPhenomena(false, false), "test",)
+    private val dummyScenario = Scenario(1, 1, dummyPortfolio, "test", Workload(dummyTrace, 1.0), dummyTopology, OperationalPhenomena(false, false), "test")
     private val dummyJob = Job(1, dummyScenario, JobState.PENDING, Instant.now(), Instant.now())
 
     @BeforeEach

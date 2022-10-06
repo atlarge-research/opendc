@@ -27,7 +27,7 @@ import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
-import java.util.*
+import java.util.UUID
 
 /**
  * Description of a physical host that will be simulated by OpenDC and host the virtual machines.

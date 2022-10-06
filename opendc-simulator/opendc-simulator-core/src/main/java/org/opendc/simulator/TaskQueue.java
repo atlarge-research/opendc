@@ -193,7 +193,8 @@ final class TaskQueue {
     /**
      * Sift up an entry in the heap.
      */
-    private static void siftUp(long[] deadlines, int[] ids, Runnable[] tasks, int k, long deadline, int id, Runnable task) {
+    private static void siftUp(
+            long[] deadlines, int[] ids, Runnable[] tasks, int k, long deadline, int id, Runnable task) {
         while (k > 0) {
             int parent = (k - 1) >>> 1;
             long parentDeadline = deadlines[parent];
@@ -218,11 +219,12 @@ final class TaskQueue {
     /**
      * Sift down an entry in the heap.
      */
-    private static void siftDown(long[] deadlines, int[] ids, Runnable[] tasks, int k, int n, long deadline, int id, Runnable task) {
-        int half = n >>> 1;           // loop while a non-leaf
+    private static void siftDown(
+            long[] deadlines, int[] ids, Runnable[] tasks, int k, int n, long deadline, int id, Runnable task) {
+        int half = n >>> 1; // loop while a non-leaf
 
         while (k < half) {
-            int child = (k << 1) + 1;  // assume left child is least
+            int child = (k << 1) + 1; // assume left child is least
 
             long childDeadline = deadlines[child];
             int childId = ids[child];

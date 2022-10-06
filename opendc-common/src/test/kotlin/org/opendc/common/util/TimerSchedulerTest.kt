@@ -22,8 +22,10 @@
 
 package org.opendc.common.util
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.kotlin.runSimulation
@@ -33,7 +35,6 @@ import kotlin.coroutines.EmptyCoroutineContext
 /**
  * A test suite for the [TimerScheduler] class.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class TimerSchedulerTest {
     @Test
     fun testEmptyContext() {
@@ -99,7 +100,6 @@ internal class TimerSchedulerTest {
             scheduler.startSingleTimer(0, 1000) { fail() }
 
             scheduler.startSingleTimer(0, 200) {
-
                 assertEquals(200, clock.millis())
             }
         }

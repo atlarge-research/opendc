@@ -35,10 +35,11 @@ public data class LimitJobAdmissionPolicy(public val limit: Int) : JobAdmissionP
         override fun invoke(
             job: JobState
         ): JobAdmissionPolicy.Advice =
-            if (scheduler.activeJobs.size < limit)
+            if (scheduler.activeJobs.size < limit) {
                 JobAdmissionPolicy.Advice.ADMIT
-            else
+            } else {
                 JobAdmissionPolicy.Advice.STOP
+            }
     }
 
     override fun toString(): String = "Limit-Active($limit)"

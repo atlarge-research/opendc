@@ -24,7 +24,7 @@ package org.opendc.experiments.tf20.util
 
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.power.PowerModel
-import java.util.*
+import java.util.UUID
 
 /**
  * A definition of a machine in a cluster.

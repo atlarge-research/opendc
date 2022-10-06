@@ -34,7 +34,7 @@ dependencies {
     implementation(libs.kotlin.gradle)
     implementation(libs.kotlin.allopen)
     implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
+    implementation(libs.spotless.gradle)
     implementation(libs.jmh.gradle)
     implementation(libs.dokka.gradle)
 

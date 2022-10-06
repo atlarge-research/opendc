@@ -30,7 +30,13 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.NetworkAdapter
 import org.opendc.simulator.compute.model.StorageDevice
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.FlowConsumer
+import org.opendc.simulator.flow.FlowConvergenceListener
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowForwarder
+import org.opendc.simulator.flow.FlowSink
+import org.opendc.simulator.flow.FlowSource
+import org.opendc.simulator.flow.batch
 
 /**
  * Abstract implementation of the [SimMachine] interface.

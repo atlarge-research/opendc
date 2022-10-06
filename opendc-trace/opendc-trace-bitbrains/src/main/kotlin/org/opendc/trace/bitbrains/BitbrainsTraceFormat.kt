@@ -24,8 +24,24 @@ package org.opendc.trace.bitbrains
 
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
 import com.fasterxml.jackson.dataformat.csv.CsvParser
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableColumnType
+import org.opendc.trace.TableReader
+import org.opendc.trace.TableWriter
+import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
+import org.opendc.trace.conv.RESOURCE_CPU_COUNT
+import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
+import org.opendc.trace.conv.RESOURCE_STATE_DISK_READ
+import org.opendc.trace.conv.RESOURCE_STATE_DISK_WRITE
+import org.opendc.trace.conv.RESOURCE_STATE_MEM_USAGE
+import org.opendc.trace.conv.RESOURCE_STATE_NET_RX
+import org.opendc.trace.conv.RESOURCE_STATE_NET_TX
+import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
+import org.opendc.trace.conv.TABLE_RESOURCES
+import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.CompositeTableReader
@@ -77,8 +93,8 @@ public class BitbrainsTraceFormat : TraceFormat {
                     TableColumn(RESOURCE_STATE_DISK_READ, TableColumnType.Double),
                     TableColumn(RESOURCE_STATE_DISK_WRITE, TableColumnType.Double),
                     TableColumn(RESOURCE_STATE_NET_RX, TableColumnType.Double),
-                    TableColumn(RESOURCE_STATE_NET_TX, TableColumnType.Double),
-                ),
+                    TableColumn(RESOURCE_STATE_NET_TX, TableColumnType.Double)
+                )
             )
             else -> throw IllegalArgumentException("Table $table not supported")
         }

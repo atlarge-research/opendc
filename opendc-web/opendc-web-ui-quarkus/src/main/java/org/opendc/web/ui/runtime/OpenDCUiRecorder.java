@@ -29,7 +29,6 @@ import io.quarkus.vertx.http.runtime.webjar.WebJarNotFoundHandler;
 import io.quarkus.vertx.http.runtime.webjar.WebJarStaticHandler;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,16 +41,11 @@ public class OpenDCUiRecorder {
      * Construct a {@link Handler} for serving a page of the OpenDC web interface.
      */
     public Handler<RoutingContext> pageHandler(
-        String finalDestination,
-        String page,
-        OpenDCUiRuntimeConfig runtimeConfig
-    ) {
+            String finalDestination, String page, OpenDCUiRuntimeConfig runtimeConfig) {
         if (runtimeConfig.enable) {
             String pageDirectory = finalDestination + "/pages";
             return (event) -> {
-                event.response()
-                    .setStatusCode(200)
-                    .sendFile(pageDirectory + page + ".html");
+                event.response().setStatusCode(200).sendFile(pageDirectory + page + ".html");
             };
         }
 
@@ -62,19 +56,16 @@ public class OpenDCUiRecorder {
      * Construct a {@link Handler} for handling redirects in the OpenDC web interface.
      */
     public Handler<RoutingContext> redirectHandler(
-        String destination,
-        int statusCode,
-        OpenDCUiRuntimeConfig runtimeConfig
-    ) {
+            String destination, int statusCode, OpenDCUiRuntimeConfig runtimeConfig) {
         if (runtimeConfig.enable) {
             return (event) -> {
                 String query = event.request().query();
                 String fullDestination = query != null ? destination + "?" + query : destination;
 
                 event.response()
-                    .setStatusCode(statusCode)
-                    .putHeader("Location", fullDestination)
-                    .end();
+                        .setStatusCode(statusCode)
+                        .putHeader("Location", fullDestination)
+                        .end();
             };
         }
 
@@ -85,19 +76,19 @@ public class OpenDCUiRecorder {
      * Construct a {@link Handler} for serving the static files of the OpenDC web interface.
      */
     public Handler<RoutingContext> staticHandler(
-        String finalDestination,
-        String path,
-        List<FileSystemStaticHandler.StaticWebRootConfiguration> webRootConfigurations,
-        OpenDCUiRuntimeConfig runtimeConfig,
-        ShutdownContext shutdownContext
-    ) {
+            String finalDestination,
+            String path,
+            List<FileSystemStaticHandler.StaticWebRootConfiguration> webRootConfigurations,
+            OpenDCUiRuntimeConfig runtimeConfig,
+            ShutdownContext shutdownContext) {
         if (runtimeConfig.enable) {
-            var augmentedWebRootConfigurations = webRootConfigurations
-                .stream()
-                .map(c -> new FileSystemStaticHandler.StaticWebRootConfiguration(c.getFileSystem(), c.getWebRoot().isEmpty() ? "static" : c.getWebRoot() + "/static"))
-                .collect(Collectors.toList());
+            var augmentedWebRootConfigurations = webRootConfigurations.stream()
+                    .map(c -> new FileSystemStaticHandler.StaticWebRootConfiguration(
+                            c.getFileSystem(), c.getWebRoot().isEmpty() ? "static" : c.getWebRoot() + "/static"))
+                    .collect(Collectors.toList());
 
-            WebJarStaticHandler handler = new WebJarStaticHandler(finalDestination + "/static", path, augmentedWebRootConfigurations);
+            WebJarStaticHandler handler =
+                    new WebJarStaticHandler(finalDestination + "/static", path, augmentedWebRootConfigurations);
             shutdownContext.addShutdownTask(new ShutdownContext.CloseRunnable(handler));
             return handler;
         }

@@ -26,9 +26,16 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.api.InitContext
 import org.apache.parquet.hadoop.api.ReadSupport
 import org.apache.parquet.io.api.RecordMaterializer
-import org.apache.parquet.schema.*
+import org.apache.parquet.schema.LogicalTypeAnnotation
+import org.apache.parquet.schema.MessageType
+import org.apache.parquet.schema.PrimitiveType
+import org.apache.parquet.schema.Types
 import org.opendc.trace.TableColumn
-import org.opendc.trace.conv.*
+import org.opendc.trace.conv.RESOURCE_CPU_COUNT
+import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
+import org.opendc.trace.conv.RESOURCE_STATE_DURATION
+import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
 
 /**
  * A [ReadSupport] instance for [ResourceState] objects.
@@ -45,7 +52,7 @@ internal class ResourceStateReadSupport(private val projection: List<String>?) :
         "cores" to RESOURCE_CPU_COUNT,
         "cpu_count" to RESOURCE_CPU_COUNT,
         "cpuUsage" to RESOURCE_STATE_CPU_USAGE,
-        "cpu_usage" to RESOURCE_STATE_CPU_USAGE,
+        "cpu_usage" to RESOURCE_STATE_CPU_USAGE
     )
 
     override fun init(context: InitContext): ReadContext {

@@ -21,6 +21,7 @@
  */
 
 @file:JvmName("TableColumnConversions")
+
 package org.opendc.trace.util
 
 import org.opendc.trace.TableColumnType

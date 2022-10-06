@@ -22,12 +22,19 @@
 
 package org.opendc.workflow.service.internal
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.opendc.common.util.Pacer
-import org.opendc.compute.api.*
+import org.opendc.compute.api.ComputeClient
+import org.opendc.compute.api.Image
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
+import org.opendc.compute.api.ServerWatcher
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.api.WORKFLOW_TASK_CORES
-import org.opendc.workflow.service.*
+import org.opendc.workflow.service.WorkflowService
 import org.opendc.workflow.service.scheduler.job.JobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.JobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
@@ -35,7 +42,8 @@ import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
 import org.opendc.workflow.service.scheduler.telemetry.SchedulerStats
 import java.time.Clock
 import java.time.Duration
-import java.util.*
+import java.util.PriorityQueue
+import java.util.Queue
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 
@@ -56,7 +64,7 @@ public class WorkflowServiceImpl(
     /**
      * The [CoroutineScope] of the service bounded by the lifecycle of the service.
      */
-    private val scope = CoroutineScope(context + Job())
+    private val scope = CoroutineScope(context + kotlinx.coroutines.Job())
 
     /**
      * The incoming jobs ready to be processed by the scheduler.

@@ -22,7 +22,14 @@
 
 package org.opendc.simulator.flow.mux
 
-import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.FlowConnection
+import org.opendc.simulator.flow.FlowConsumer
+import org.opendc.simulator.flow.FlowConsumerContext
+import org.opendc.simulator.flow.FlowConsumerLogic
+import org.opendc.simulator.flow.FlowConvergenceListener
+import org.opendc.simulator.flow.FlowCounters
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.flow.internal.D_MS_TO_S
 import org.opendc.simulator.flow.internal.MutableFlowCounters
 import kotlin.math.min
@@ -248,7 +255,6 @@ public class MaxMinFlowMultiplexer(
          * This method is invoked when one of the inputs converges.
          */
         fun convergeInput(input: Input, now: Long) {
-
             val lastConverge = _lastConverge
             val lastConvergeInput = _lastConvergeInput
             val parent = parent
@@ -511,7 +517,7 @@ public class MaxMinFlowMultiplexer(
         private val engine: FlowEngine,
         private val scheduler: Scheduler,
         @JvmField val isCoupled: Boolean,
-        initialCapacity: Double,
+        initialCapacity: Double
     ) : FlowConsumer, FlowConsumerLogic, Comparable<Input> {
         /**
          * A flag to indicate that the consumer is active.
@@ -780,10 +786,11 @@ public class MaxMinFlowMultiplexer(
             return if (_isActivationOutput) {
                 // If this output is the activation output, synchronously run the scheduler and return the new deadline
                 val deadline = scheduler.runScheduler(now)
-                if (deadline == Long.MAX_VALUE)
+                if (deadline == Long.MAX_VALUE) {
                     deadline
-                else
+                } else {
                     deadline - now
+                }
             } else {
                 // Output is not the activation output, so trigger activation output and do not install timer for this
                 // output (by returning `Long.MAX_VALUE`)

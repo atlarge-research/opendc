@@ -26,7 +26,7 @@ import org.opendc.workflow.api.WORKFLOW_TASK_DEADLINE
 import org.opendc.workflow.service.internal.TaskState
 import org.opendc.workflow.service.internal.WorkflowSchedulerListener
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
-import java.util.*
+import java.util.UUID
 import kotlin.collections.HashMap
 import kotlin.collections.getValue
 import kotlin.collections.set

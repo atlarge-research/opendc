@@ -25,7 +25,7 @@ package org.opendc.trace.spi
 import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
 import java.nio.file.Path
-import java.util.*
+import java.util.ServiceLoader
 
 /**
  * A service-provider class for parsing trace formats.

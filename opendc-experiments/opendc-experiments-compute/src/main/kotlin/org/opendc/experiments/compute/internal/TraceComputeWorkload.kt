@@ -25,7 +25,7 @@ package org.opendc.experiments.compute.internal
 import org.opendc.experiments.compute.ComputeWorkload
 import org.opendc.experiments.compute.ComputeWorkloadLoader
 import org.opendc.experiments.compute.VirtualMachine
-import java.util.*
+import java.util.Random
 
 /**
  * A [ComputeWorkload] from a trace.

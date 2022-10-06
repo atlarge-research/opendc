@@ -28,7 +28,7 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /**
  * A [Server] implementation that is passed to clients but delegates its implementation to another class.

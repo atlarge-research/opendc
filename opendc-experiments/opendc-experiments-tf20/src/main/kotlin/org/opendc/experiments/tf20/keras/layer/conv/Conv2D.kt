@@ -39,7 +39,7 @@ public class Conv2D(
     public val strides: LongArray = LongArray(4), // [1, stride_h, stride_w, 1]
     public val activation: Activation = Activation.Relu,
     public val padding: ConvPadding = ConvPadding.VALID,
-    name: String = "",
+    name: String = ""
 ) : Layer(name) {
 
     private var padHeight: Double = 0.0

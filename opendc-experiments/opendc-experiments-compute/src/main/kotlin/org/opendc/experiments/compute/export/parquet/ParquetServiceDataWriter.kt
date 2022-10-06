@@ -25,7 +25,10 @@ package org.opendc.experiments.compute.export.parquet
 import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.io.api.RecordConsumer
-import org.apache.parquet.schema.*
+import org.apache.parquet.schema.LogicalTypeAnnotation
+import org.apache.parquet.schema.MessageType
+import org.apache.parquet.schema.PrimitiveType
+import org.apache.parquet.schema.Types
 import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
 import java.io.File
 
@@ -121,7 +124,7 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
                     .named("attempts_failure"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("attempts_error"),
+                    .named("attempts_error")
             )
             .named("service")
     }

@@ -26,7 +26,10 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.io.api.Binary
 import org.apache.parquet.io.api.RecordConsumer
-import org.apache.parquet.schema.*
+import org.apache.parquet.schema.LogicalTypeAnnotation
+import org.apache.parquet.schema.MessageType
+import org.apache.parquet.schema.PrimitiveType
+import org.apache.parquet.schema.Types
 import kotlin.math.roundToLong
 
 /**
@@ -107,7 +110,7 @@ internal class ResourceWriteSupport : WriteSupport<Resource>() {
                     .named("cpu_capacity"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("mem_capacity"),
+                    .named("mem_capacity")
             )
             .named("resource")
     }

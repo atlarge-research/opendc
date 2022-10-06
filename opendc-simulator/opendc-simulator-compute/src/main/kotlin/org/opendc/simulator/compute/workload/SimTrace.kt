@@ -39,7 +39,7 @@ public class SimTrace(
     private val usageCol: DoubleArray,
     private val deadlineCol: LongArray,
     private val coresCol: IntArray,
-    private val size: Int,
+    private val size: Int
 ) {
     init {
         require(size >= 0) { "Invalid trace size" }

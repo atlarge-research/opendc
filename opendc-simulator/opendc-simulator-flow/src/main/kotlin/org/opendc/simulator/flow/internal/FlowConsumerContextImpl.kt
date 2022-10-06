@@ -23,8 +23,11 @@
 package org.opendc.simulator.flow.internal
 
 import mu.KotlinLogging
-import org.opendc.simulator.flow.*
-import java.util.*
+import org.opendc.simulator.flow.FlowConsumerContext
+import org.opendc.simulator.flow.FlowConsumerLogic
+import org.opendc.simulator.flow.FlowSource
+import org.opendc.simulator.flow.batch
+import java.util.ArrayDeque
 import kotlin.math.min
 
 /**
@@ -84,19 +87,21 @@ internal class FlowConsumerContextImpl(
         get() = _flags and ConnConvergeSource == ConnConvergeSource
         set(value) {
             _flags =
-                if (value)
+                if (value) {
                     _flags or ConnConvergeSource
-                else
+                } else {
                     _flags and ConnConvergeSource.inv()
+                }
         }
     override var shouldConsumerConverge: Boolean
         get() = _flags and ConnConvergeConsumer == ConnConvergeConsumer
         set(value) {
             _flags =
-                if (value)
+                if (value) {
                     _flags or ConnConvergeConsumer
-                else
+                } else {
                     _flags and ConnConvergeConsumer.inv()
+                }
         }
 
     /**
@@ -106,10 +111,11 @@ internal class FlowConsumerContextImpl(
         get() = _flags and ConnDisableTimers != ConnDisableTimers
         set(value) {
             _flags =
-                if (!value)
+                if (!value) {
                     _flags or ConnDisableTimers
-                else
+                } else {
                     _flags and ConnDisableTimers.inv()
+                }
         }
 
     /**
@@ -238,10 +244,11 @@ internal class FlowConsumerContextImpl(
                 // IMPORTANT: Re-fetch the flags after the callback might have changed those
                 flags = _flags
 
-                if (duration != Long.MAX_VALUE)
+                if (duration != Long.MAX_VALUE) {
                     now + duration
-                else
+                } else {
                     duration
+                }
             } else {
                 deadline
             }

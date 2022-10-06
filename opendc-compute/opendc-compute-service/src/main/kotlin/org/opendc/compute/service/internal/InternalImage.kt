@@ -23,7 +23,7 @@
 package org.opendc.compute.service.internal
 
 import org.opendc.compute.api.Image
-import java.util.*
+import java.util.UUID
 
 /**
  * Internal stateful representation of an [Image].

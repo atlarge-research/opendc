@@ -26,7 +26,7 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
 import org.opendc.compute.service.scheduler.filters.HostFilter
 import org.opendc.compute.service.scheduler.weights.HostWeigher
-import java.util.*
+import java.util.Random
 import kotlin.math.min
 
 /**

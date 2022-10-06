@@ -26,7 +26,7 @@ import org.opendc.trace.Table
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
-import java.util.*
+import java.util.Objects
 
 /**
  * Internal implementation of [Table].

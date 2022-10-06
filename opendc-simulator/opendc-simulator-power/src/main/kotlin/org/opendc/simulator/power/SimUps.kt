@@ -22,7 +22,10 @@
 
 package org.opendc.simulator.power
 
-import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowForwarder
+import org.opendc.simulator.flow.FlowMapper
+import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 
 /**
@@ -37,7 +40,7 @@ import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 public class SimUps(
     private val engine: FlowEngine,
     private val idlePower: Double = 0.0,
-    private val lossCoefficient: Double = 0.0,
+    private val lossCoefficient: Double = 0.0
 ) : SimPowerOutlet() {
     /**
      * The resource aggregator used to combine the input sources.

@@ -28,15 +28,34 @@ import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.defaultByName
 import com.github.ajalt.clikt.parameters.groups.groupChoice
-import com.github.ajalt.clikt.parameters.options.*
-import com.github.ajalt.clikt.parameters.types.*
+import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.defaultLazy
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.double
+import com.github.ajalt.clikt.parameters.types.file
+import com.github.ajalt.clikt.parameters.types.long
+import com.github.ajalt.clikt.parameters.types.restrictTo
 import mu.KotlinLogging
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.TableWriter
+import org.opendc.trace.Trace
+import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
+import org.opendc.trace.conv.RESOURCE_CPU_COUNT
+import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
+import org.opendc.trace.conv.RESOURCE_START_TIME
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
+import org.opendc.trace.conv.RESOURCE_STATE_DURATION
+import org.opendc.trace.conv.RESOURCE_STATE_MEM_USAGE
+import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
+import org.opendc.trace.conv.RESOURCE_STOP_TIME
+import org.opendc.trace.conv.TABLE_RESOURCES
+import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import java.io.File
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.Random
 import kotlin.collections.HashMap
 import kotlin.math.abs
 import kotlin.math.max
@@ -86,7 +105,7 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
      */
     private val converter by option("-c", "--converter", help = "converter strategy to use").groupChoice(
         "default" to DefaultTraceConverter(),
-        "azure" to AzureTraceConverter(),
+        "azure" to AzureTraceConverter()
     ).defaultByName("default")
 
     override fun run() {

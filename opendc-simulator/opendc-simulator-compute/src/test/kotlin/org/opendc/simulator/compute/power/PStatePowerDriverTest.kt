@@ -41,7 +41,7 @@ internal class PStatePowerDriverTest {
             sortedMapOf(
                 2800.0 to ConstantPowerModel(200.0),
                 3300.0 to ConstantPowerModel(300.0),
-                3600.0 to ConstantPowerModel(350.0),
+                3600.0 to ConstantPowerModel(350.0)
             )
         )
 
@@ -61,7 +61,7 @@ internal class PStatePowerDriverTest {
             sortedMapOf(
                 2800.0 to ConstantPowerModel(200.0),
                 3300.0 to ConstantPowerModel(300.0),
-                3600.0 to ConstantPowerModel(350.0),
+                3600.0 to ConstantPowerModel(350.0)
             )
         )
 
@@ -86,7 +86,7 @@ internal class PStatePowerDriverTest {
             sortedMapOf(
                 2800.0 to ConstantPowerModel(200.0),
                 3300.0 to ConstantPowerModel(300.0),
-                3600.0 to ConstantPowerModel(350.0),
+                3600.0 to ConstantPowerModel(350.0)
             )
         )
 
@@ -106,7 +106,7 @@ internal class PStatePowerDriverTest {
             sortedMapOf(
                 2800.0 to LinearPowerModel(200.0, 100.0),
                 3300.0 to LinearPowerModel(250.0, 150.0),
-                4000.0 to LinearPowerModel(300.0, 200.0),
+                4000.0 to LinearPowerModel(300.0, 200.0)
             )
         )
 

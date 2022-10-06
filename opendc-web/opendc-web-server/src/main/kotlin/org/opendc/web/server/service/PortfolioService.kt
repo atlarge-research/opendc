@@ -23,7 +23,6 @@
 package org.opendc.web.server.service
 
 import org.opendc.web.proto.user.Portfolio
-import org.opendc.web.server.model.*
 import org.opendc.web.server.repository.PortfolioRepository
 import org.opendc.web.server.repository.ProjectRepository
 import java.time.Instant

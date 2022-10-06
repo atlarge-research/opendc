@@ -66,7 +66,7 @@ internal class WebComputeMonitor : ComputeMonitor {
         val totalLostTime: Long = 0L,
         val totalPowerDraw: Double = 0.0,
         val totalFailureSlices: Double = 0.0,
-        val totalFailureVmSlices: Double = 0.0,
+        val totalFailureVmSlices: Double = 0.0
     )
 
     private data class HostMetrics(
@@ -84,7 +84,7 @@ internal class WebComputeMonitor : ComputeMonitor {
             max(reader.serversPending, serviceMetrics.vmWaitingCount),
             max(reader.serversActive, serviceMetrics.vmActiveCount),
             max(0, serviceMetrics.vmInactiveCount),
-            max(reader.attemptsFailure, serviceMetrics.vmFailedCount),
+            max(reader.attemptsFailure, serviceMetrics.vmFailedCount)
         )
     }
 
@@ -115,7 +115,7 @@ internal class WebComputeMonitor : ComputeMonitor {
             serviceMetrics.vmTotalCount,
             serviceMetrics.vmWaitingCount,
             serviceMetrics.vmInactiveCount,
-            serviceMetrics.vmFailedCount,
+            serviceMetrics.vmFailedCount
         )
     }
 

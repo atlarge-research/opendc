@@ -27,8 +27,25 @@ import com.fasterxml.jackson.core.JsonFactory
 import org.apache.parquet.column.ParquetProperties
 import org.apache.parquet.hadoop.ParquetFileWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableColumnType
+import org.opendc.trace.TableReader
+import org.opendc.trace.TableWriter
+import org.opendc.trace.conv.INTERFERENCE_GROUP_MEMBERS
+import org.opendc.trace.conv.INTERFERENCE_GROUP_SCORE
+import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
+import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
+import org.opendc.trace.conv.RESOURCE_CPU_COUNT
+import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
+import org.opendc.trace.conv.RESOURCE_START_TIME
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
+import org.opendc.trace.conv.RESOURCE_STATE_DURATION
+import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
+import org.opendc.trace.conv.RESOURCE_STOP_TIME
+import org.opendc.trace.conv.TABLE_INTERFERENCE_GROUPS
+import org.opendc.trace.conv.TABLE_RESOURCES
+import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.opendc.parquet.ResourceReadSupport
 import org.opendc.trace.opendc.parquet.ResourceStateReadSupport
 import org.opendc.trace.opendc.parquet.ResourceStateWriteSupport
@@ -78,7 +95,7 @@ public class OdcVmTraceFormat : TraceFormat {
                     TableColumn(RESOURCE_STOP_TIME, TableColumnType.Instant),
                     TableColumn(RESOURCE_CPU_COUNT, TableColumnType.Int),
                     TableColumn(RESOURCE_CPU_CAPACITY, TableColumnType.Double),
-                    TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double),
+                    TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double)
                 )
             )
             TABLE_RESOURCE_STATES -> TableDetails(
@@ -87,14 +104,14 @@ public class OdcVmTraceFormat : TraceFormat {
                     TableColumn(RESOURCE_STATE_TIMESTAMP, TableColumnType.Instant),
                     TableColumn(RESOURCE_STATE_DURATION, TableColumnType.Duration),
                     TableColumn(RESOURCE_CPU_COUNT, TableColumnType.Int),
-                    TableColumn(RESOURCE_STATE_CPU_USAGE, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_CPU_USAGE, TableColumnType.Double)
                 )
             )
             TABLE_INTERFERENCE_GROUPS -> TableDetails(
                 listOf(
                     TableColumn(INTERFERENCE_GROUP_MEMBERS, TableColumnType.Set(TableColumnType.String)),
                     TableColumn(INTERFERENCE_GROUP_TARGET, TableColumnType.Double),
-                    TableColumn(INTERFERENCE_GROUP_SCORE, TableColumnType.Double),
+                    TableColumn(INTERFERENCE_GROUP_SCORE, TableColumnType.Double)
                 )
             )
             else -> throw IllegalArgumentException("Table $table not supported")
@@ -113,10 +130,11 @@ public class OdcVmTraceFormat : TraceFormat {
             }
             TABLE_INTERFERENCE_GROUPS -> {
                 val modelPath = path.resolve("interference-model.json")
-                val parser = if (modelPath.exists())
+                val parser = if (modelPath.exists()) {
                     jsonFactory.createParser(modelPath.toFile())
-                else
+                } else {
                     jsonFactory.createParser("[]") // If model does not exist, return empty model
+                }
 
                 OdcVmInterferenceJsonTableReader(parser)
             }

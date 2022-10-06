@@ -23,13 +23,13 @@
 package org.opendc.trace.opendc
 
 import com.fasterxml.jackson.core.JsonGenerator
-import org.opendc.trace.*
+import org.opendc.trace.TableWriter
 import org.opendc.trace.conv.INTERFERENCE_GROUP_MEMBERS
 import org.opendc.trace.conv.INTERFERENCE_GROUP_SCORE
 import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /**
  * A [TableWriter] implementation for the OpenDC VM interference JSON format.

@@ -21,21 +21,29 @@
  */
 
 @file:JvmName("TraceHelpers")
+
 package org.opendc.experiments.workflow
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.Trace
+import org.opendc.trace.conv.TABLE_TASKS
+import org.opendc.trace.conv.TASK_ALLOC_NCPUS
+import org.opendc.trace.conv.TASK_ID
+import org.opendc.trace.conv.TASK_PARENTS
+import org.opendc.trace.conv.TASK_REQ_NCPUS
+import org.opendc.trace.conv.TASK_RUNTIME
+import org.opendc.trace.conv.TASK_SUBMIT_TIME
+import org.opendc.trace.conv.TASK_WORKFLOW_ID
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.api.Task
 import org.opendc.workflow.api.WORKFLOW_TASK_CORES
 import org.opendc.workflow.api.WORKFLOW_TASK_DEADLINE
 import org.opendc.workflow.service.WorkflowService
 import java.time.Clock
-import java.util.*
+import java.util.UUID
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 import kotlin.math.min
@@ -58,10 +66,11 @@ public fun Trace.toJobs(): List<Job> {
             val workflow = jobs.computeIfAbsent(workflowId) { id -> Job(UUID(0L, id), "<unnamed>", HashSet(), HashMap()) }
 
             val id = reader.getString(TASK_ID)!!.toLong()
-            val grantedCpus = if (reader.resolve(TASK_ALLOC_NCPUS) != 0)
+            val grantedCpus = if (reader.resolve(TASK_ALLOC_NCPUS) != 0) {
                 reader.getInt(TASK_ALLOC_NCPUS)
-            else
+            } else {
                 reader.getInt(TASK_REQ_NCPUS)
+            }
             val submitTime = reader.getInstant(TASK_SUBMIT_TIME)!!
             val runtime = reader.getDuration(TASK_RUNTIME)!!
             val flops: Long = 4000 * runtime.seconds * grantedCpus
@@ -74,7 +83,7 @@ public fun Trace.toJobs(): List<Job> {
                     "workload" to workload,
                     WORKFLOW_TASK_CORES to grantedCpus,
                     WORKFLOW_TASK_DEADLINE to runtime.toMillis()
-                ),
+                )
             )
 
             tasks[id] = task

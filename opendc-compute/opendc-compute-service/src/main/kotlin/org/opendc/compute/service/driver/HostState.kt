@@ -39,5 +39,5 @@ public enum class HostState {
     /**
      * The host is in an error state and unable to host any guests.
      */
-    ERROR,
+    ERROR
 }

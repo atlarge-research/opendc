@@ -26,9 +26,17 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.api.InitContext
 import org.apache.parquet.hadoop.api.ReadSupport
 import org.apache.parquet.io.api.RecordMaterializer
-import org.apache.parquet.schema.*
+import org.apache.parquet.schema.LogicalTypeAnnotation
+import org.apache.parquet.schema.MessageType
+import org.apache.parquet.schema.PrimitiveType
+import org.apache.parquet.schema.Types
 import org.opendc.trace.TableColumn
-import org.opendc.trace.conv.*
+import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
+import org.opendc.trace.conv.RESOURCE_CPU_COUNT
+import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
+import org.opendc.trace.conv.RESOURCE_START_TIME
+import org.opendc.trace.conv.RESOURCE_STOP_TIME
 
 /**
  * A [ReadSupport] instance for [Resource] objects.
@@ -47,7 +55,7 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
         "cpu_count" to RESOURCE_CPU_COUNT,
         "cpu_capacity" to RESOURCE_CPU_CAPACITY,
         "requiredMemory" to RESOURCE_MEM_CAPACITY,
-        "mem_capacity" to RESOURCE_MEM_CAPACITY,
+        "mem_capacity" to RESOURCE_MEM_CAPACITY
     )
 
     override fun init(context: InitContext): ReadContext {
@@ -103,7 +111,7 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
                     .named("maxCores"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("requiredMemory"),
+                    .named("requiredMemory")
             )
             .named("resource")
 
@@ -133,7 +141,7 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
                     .named("cpu_capacity"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("mem_capacity"),
+                    .named("mem_capacity")
             )
             .named("resource")
 

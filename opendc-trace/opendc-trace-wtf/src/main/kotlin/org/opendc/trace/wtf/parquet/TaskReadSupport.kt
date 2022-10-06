@@ -26,8 +26,21 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.api.InitContext
 import org.apache.parquet.hadoop.api.ReadSupport
 import org.apache.parquet.io.api.RecordMaterializer
-import org.apache.parquet.schema.*
-import org.opendc.trace.conv.*
+import org.apache.parquet.schema.LogicalTypeAnnotation
+import org.apache.parquet.schema.MessageType
+import org.apache.parquet.schema.PrimitiveType
+import org.apache.parquet.schema.Type
+import org.apache.parquet.schema.Types
+import org.opendc.trace.conv.TASK_CHILDREN
+import org.opendc.trace.conv.TASK_GROUP_ID
+import org.opendc.trace.conv.TASK_ID
+import org.opendc.trace.conv.TASK_PARENTS
+import org.opendc.trace.conv.TASK_REQ_NCPUS
+import org.opendc.trace.conv.TASK_RUNTIME
+import org.opendc.trace.conv.TASK_SUBMIT_TIME
+import org.opendc.trace.conv.TASK_USER_ID
+import org.opendc.trace.conv.TASK_WAIT_TIME
+import org.opendc.trace.conv.TASK_WORKFLOW_ID
 
 /**
  * A [ReadSupport] instance for [Task] objects.
@@ -126,7 +139,7 @@ internal class TaskReadSupport(private val projection: List<String>?) : ReadSupp
                             .named("list")
                     )
                     .`as`(LogicalTypeAnnotation.listType())
-                    .named("parents"),
+                    .named("parents")
             )
             .named("task")
     }

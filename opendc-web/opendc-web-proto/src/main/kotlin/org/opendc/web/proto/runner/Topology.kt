@@ -23,7 +23,7 @@
 package org.opendc.web.proto.runner
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.*
+import org.opendc.web.proto.Room
 import java.time.Instant
 
 /**
@@ -36,5 +36,5 @@ public data class Topology(
     val name: String,
     val rooms: List<Room>,
     val createdAt: Instant,
-    val updatedAt: Instant,
+    val updatedAt: Instant
 )

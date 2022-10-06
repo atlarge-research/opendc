@@ -25,12 +25,18 @@ package org.opendc.trace.wfformat
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonToken
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.TableColumnType
+import org.opendc.trace.TableReader
+import org.opendc.trace.conv.TASK_CHILDREN
+import org.opendc.trace.conv.TASK_ID
+import org.opendc.trace.conv.TASK_PARENTS
+import org.opendc.trace.conv.TASK_REQ_NCPUS
+import org.opendc.trace.conv.TASK_RUNTIME
+import org.opendc.trace.conv.TASK_WORKFLOW_ID
 import org.opendc.trace.util.convertTo
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 import kotlin.math.roundToInt
 
 /**

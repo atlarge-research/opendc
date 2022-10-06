@@ -21,6 +21,7 @@
  */
 
 @file:JvmName("TopologyFactories")
+
 package org.opendc.experiments.capelin.topology
 
 import org.opendc.experiments.compute.topology.HostSpec
@@ -33,7 +34,8 @@ import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import java.io.File
 import java.io.InputStream
-import java.util.*
+import java.util.Random
+import java.util.UUID
 import kotlin.math.roundToLong
 
 /**

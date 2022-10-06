@@ -19,6 +19,11 @@ trim_trailing_whitespace = false
 [*.{yml,yaml}]
 indent_size = 2
 
+[*.java]
+ij_java_packages_to_use_import_on_demand = unset
+
 # ktlint
 [*.{kt, kts}]
-disabled_rules = no-wildcard-imports
+ij_kotlin_name_count_to_use_star_import = 2147483647
+ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
+ij_kotlin_packages_to_use_import_on_demand = unset

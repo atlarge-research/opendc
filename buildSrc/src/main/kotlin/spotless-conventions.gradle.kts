@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,40 @@
  * SOFTWARE.
  */
 
-import org.gradle.api.distribution.DistributionContainer
-
-
 plugins {
-    distribution
+    id("com.diffplug.spotless")
 }
 
-tasks.named("assembleDist") {
-    val tasks = getTasksByName("assembleDist", true).filter { it.project != project }
-    dependsOn(tasks)
-}
+spotless {
+    pluginManager.withPlugin("java") {
+        java {
+            importOrder()
+            removeUnusedImports()
 
-distributions {
-    main {
-        contents {
-            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            palantirJavaFormat()
 
-            from("README.md")
-            from("LICENSE.txt")
-            from("docs") { into("docs") }
+            trimTrailingWhitespace()
+            endWithNewline()
 
-            // Include distributions of the subprojects
-            getTasksByName("assembleDist", true)
-                .filter { it.project != project }
-                .map { it.project.the<DistributionContainer>() }
-                .forEach { dist -> dist.findByName("main")?.let { with(it.contents) } }
+            licenseHeaderFile(rootProject.file("buildSrc/src/main/kotlin/license.kt"))
         }
+    }
+
+    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+        kotlin {
+            ktlint()
+                .setUseExperimental(false)
+            trimTrailingWhitespace()
+            endWithNewline()
+
+            licenseHeaderFile(rootProject.file("buildSrc/src/main/kotlin/license.kt"))
+        }
+    }
+
+    kotlinGradle {
+        ktlint()
+
+        trimTrailingWhitespace()
+        endWithNewline()
     }
 }

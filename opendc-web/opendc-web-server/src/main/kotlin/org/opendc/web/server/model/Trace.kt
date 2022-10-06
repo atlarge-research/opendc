@@ -22,7 +22,12 @@
 
 package org.opendc.web.server.model
 
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.NamedQueries
+import javax.persistence.NamedQuery
+import javax.persistence.Table
 
 /**
  * A workload trace available for simulation.
@@ -38,7 +43,7 @@ import javax.persistence.*
         NamedQuery(
             name = "Trace.findAll",
             query = "SELECT t FROM Trace t"
-        ),
+        )
     ]
 )
 class Trace(
@@ -49,7 +54,7 @@ class Trace(
     val name: String,
 
     @Column(nullable = false, updatable = false)
-    val type: String,
+    val type: String
 ) {
     /**
      * Return a string representation of this trace.

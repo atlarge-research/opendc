@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute.kernel.interference
 
-import java.util.*
+import java.util.SplittableRandom
 
 /**
  * A participant of an interference domain.

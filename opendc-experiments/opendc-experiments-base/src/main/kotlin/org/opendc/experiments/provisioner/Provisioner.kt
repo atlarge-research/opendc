@@ -26,8 +26,8 @@ import org.opendc.experiments.MutableServiceRegistry
 import org.opendc.experiments.ServiceRegistry
 import org.opendc.experiments.internal.ServiceRegistryImpl
 import java.time.Clock
-import java.util.*
 import java.util.ArrayDeque
+import java.util.SplittableRandom
 import kotlin.coroutines.CoroutineContext
 
 /**

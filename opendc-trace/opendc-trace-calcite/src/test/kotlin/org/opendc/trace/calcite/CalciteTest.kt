@@ -25,7 +25,11 @@ package org.opendc.trace.calcite
 import io.mockk.every
 import io.mockk.mockk
 import org.apache.calcite.jdbc.CalciteConnection
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableColumnType
@@ -40,7 +44,8 @@ import java.sql.Statement
 import java.sql.Timestamp
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.Properties
+import java.util.UUID
 
 /**
  * Smoke test for Apache Calcite integration.
@@ -81,7 +86,7 @@ class CalciteTest {
                 { assertEquals(300000, rs.getLong("duration")) },
                 { assertEquals(0.0, rs.getDouble("cpu_usage")) },
                 { assertTrue(rs.next()) },
-                { assertEquals("1019", rs.getString("id")) },
+                { assertEquals("1019", rs.getString("id")) }
             )
         }
     }
@@ -93,7 +98,7 @@ class CalciteTest {
                 { assertTrue(rs.next()) },
                 { assertArrayEquals(arrayOf("1019", "1023", "1052"), rs.getArray("members").array as Array<*>) },
                 { assertEquals(0.0, rs.getDouble("target")) },
-                { assertEquals(0.8830158730158756, rs.getDouble("score")) },
+                { assertEquals(0.8830158730158756, rs.getDouble("score")) }
             )
         }
     }
@@ -104,7 +109,7 @@ class CalciteTest {
             assertAll(
                 { assertTrue(rs.next()) },
                 { assertEquals(249.59993808, rs.getDouble("max_cpu_usage")) },
-                { assertEquals(5.387240309118493, rs.getDouble("avg_cpu_usage")) },
+                { assertEquals(5.387240309118493, rs.getDouble("avg_cpu_usage")) }
             )
         }
     }
@@ -209,7 +214,7 @@ class CalciteTest {
         runQuery(trace, "SELECT id FROM trace.resources") { rs ->
             assertAll(
                 { assertTrue(rs.next()) },
-                { assertArrayEquals(byteArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2), rs.getBytes("id")) },
+                { assertArrayEquals(byteArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2), rs.getBytes("id")) }
             )
         }
     }

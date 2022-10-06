@@ -30,7 +30,11 @@ import mu.KotlinLogging
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
-import org.opendc.experiments.compute.telemetry.table.*
+import org.opendc.experiments.compute.telemetry.table.HostInfo
+import org.opendc.experiments.compute.telemetry.table.HostTableReader
+import org.opendc.experiments.compute.telemetry.table.ServerInfo
+import org.opendc.experiments.compute.telemetry.table.ServerTableReader
+import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant

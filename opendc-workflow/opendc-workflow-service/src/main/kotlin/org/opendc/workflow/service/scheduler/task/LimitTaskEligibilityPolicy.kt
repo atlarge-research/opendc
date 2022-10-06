@@ -33,10 +33,11 @@ public data class LimitTaskEligibilityPolicy(val limit: Int) : TaskEligibilityPo
         override fun invoke(
             task: TaskState
         ): TaskEligibilityPolicy.Advice =
-            if (scheduler.activeTasks.size < limit)
+            if (scheduler.activeTasks.size < limit) {
                 TaskEligibilityPolicy.Advice.ADMIT
-            else
+            } else {
                 TaskEligibilityPolicy.Advice.STOP
+            }
     }
 
     override fun toString(): String = "Limit-Active($limit)"

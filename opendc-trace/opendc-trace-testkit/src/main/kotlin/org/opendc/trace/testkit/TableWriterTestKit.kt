@@ -23,7 +23,8 @@
 package org.opendc.trace.testkit
 
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
@@ -32,7 +33,7 @@ import org.opendc.trace.TableColumnType
 import org.opendc.trace.TableWriter
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /**
  * A test suite for implementations of the [TableWriter] interface.
@@ -87,7 +88,7 @@ public abstract class TableWriterTestKit {
             { assertThrows<IllegalArgumentException> { writer.setDuration(-1, Duration.ofMinutes(5)) } },
             { assertThrows<IllegalArgumentException> { writer.setList(-1, listOf("test")) } },
             { assertThrows<IllegalArgumentException> { writer.setSet(-1, setOf("test")) } },
-            { assertThrows<IllegalArgumentException> { writer.setMap(-1, mapOf("test" to "test")) } },
+            { assertThrows<IllegalArgumentException> { writer.setMap(-1, mapOf("test" to "test")) } }
         )
     }
 

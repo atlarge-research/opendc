@@ -22,7 +22,8 @@
 
 package org.opendc.simulator.compute.kernel.interference
 
-import java.util.*
+import java.util.TreeMap
+import java.util.TreeSet
 
 /**
  * An interference model that models the resource interference between virtual machines on a host.
@@ -128,10 +129,11 @@ public class VmInterferenceModel private constructor(
                     }
 
                     cmp = scores[l].compareTo(scores[r]) // Higher penalty first (this means lower performance score first)
-                    if (cmp != 0)
+                    if (cmp != 0) {
                         cmp
-                    else
+                    } else {
                         l.compareTo(r)
+                    }
                 }
             )
 

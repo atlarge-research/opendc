@@ -89,7 +89,7 @@ public interface ComputeService : AutoCloseable {
             context: CoroutineContext,
             clock: Clock,
             scheduler: ComputeScheduler,
-            schedulingQuantum: Duration = Duration.ofMinutes(5),
+            schedulingQuantum: Duration = Duration.ofMinutes(5)
         ): ComputeService {
             return ComputeServiceImpl(context, clock, scheduler, schedulingQuantum)
         }

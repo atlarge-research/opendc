@@ -24,8 +24,18 @@ package org.opendc.trace.gwf
 
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
 import com.fasterxml.jackson.dataformat.csv.CsvParser
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableColumnType
+import org.opendc.trace.TableReader
+import org.opendc.trace.TableWriter
+import org.opendc.trace.conv.TABLE_TASKS
+import org.opendc.trace.conv.TASK_ALLOC_NCPUS
+import org.opendc.trace.conv.TASK_ID
+import org.opendc.trace.conv.TASK_PARENTS
+import org.opendc.trace.conv.TASK_REQ_NCPUS
+import org.opendc.trace.conv.TASK_RUNTIME
+import org.opendc.trace.conv.TASK_SUBMIT_TIME
+import org.opendc.trace.conv.TASK_WORKFLOW_ID
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import java.nio.file.Path
@@ -62,7 +72,7 @@ public class GwfTraceFormat : TraceFormat {
                     TableColumn(TASK_RUNTIME, TableColumnType.Duration),
                     TableColumn(TASK_REQ_NCPUS, TableColumnType.Int),
                     TableColumn(TASK_ALLOC_NCPUS, TableColumnType.Int),
-                    TableColumn(TASK_PARENTS, TableColumnType.Set(TableColumnType.String)),
+                    TableColumn(TASK_PARENTS, TableColumnType.Set(TableColumnType.String))
                 )
             )
             else -> throw IllegalArgumentException("Table $table not supported")

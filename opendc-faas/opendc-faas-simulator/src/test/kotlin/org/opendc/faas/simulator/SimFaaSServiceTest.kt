@@ -44,7 +44,7 @@ import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.kotlin.runSimulation
 import java.time.Duration
-import java.util.*
+import java.util.Random
 
 /**
  * A test suite for the [FaaSService] implementation under simulated conditions.
@@ -101,7 +101,7 @@ internal class SimFaaSServiceTest {
             { assertEquals(1, funcStats.delayedInvocations) },
             { assertEquals(0, funcStats.failedInvocations) },
             { assertEquals(100.0, funcStats.waitTime.mean) },
-            { assertEquals(1285.0, funcStats.activeTime.mean) },
+            { assertEquals(1285.0, funcStats.activeTime.mean) }
         )
     }
 }

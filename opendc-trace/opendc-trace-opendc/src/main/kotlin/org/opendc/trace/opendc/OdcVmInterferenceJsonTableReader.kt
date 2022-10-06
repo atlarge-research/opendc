@@ -25,14 +25,15 @@ package org.opendc.trace.opendc
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonToken
-import org.opendc.trace.*
+import org.opendc.trace.TableColumnType
+import org.opendc.trace.TableReader
 import org.opendc.trace.conv.INTERFERENCE_GROUP_MEMBERS
 import org.opendc.trace.conv.INTERFERENCE_GROUP_SCORE
 import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
 import org.opendc.trace.util.convertTo
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /**
  * A [TableReader] implementation for the OpenDC VM interference JSON format.

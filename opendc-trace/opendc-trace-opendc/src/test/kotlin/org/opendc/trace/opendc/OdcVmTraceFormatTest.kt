@@ -22,7 +22,10 @@
 
 package org.opendc.trace.opendc
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -34,7 +37,20 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
-import org.opendc.trace.conv.*
+import org.opendc.trace.conv.INTERFERENCE_GROUP_MEMBERS
+import org.opendc.trace.conv.INTERFERENCE_GROUP_SCORE
+import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
+import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
+import org.opendc.trace.conv.RESOURCE_CPU_COUNT
+import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
+import org.opendc.trace.conv.RESOURCE_START_TIME
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
+import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
+import org.opendc.trace.conv.RESOURCE_STOP_TIME
+import org.opendc.trace.conv.TABLE_INTERFERENCE_GROUPS
+import org.opendc.trace.conv.TABLE_RESOURCES
+import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.testkit.TableReaderTestKit
 import org.opendc.trace.testkit.TableWriterTestKit
 import java.nio.file.Files
@@ -115,7 +131,7 @@ internal class OdcVmTraceFormatTest {
             { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
             { assertEquals(1024.0, reader.getDouble(RESOURCE_CPU_CAPACITY)) },
             { assertEquals(1024.0, reader.getDouble(RESOURCE_MEM_CAPACITY)) },
-            { assertFalse(reader.nextRow()) },
+            { assertFalse(reader.nextRow()) }
         )
 
         reader.close()
@@ -162,7 +178,7 @@ internal class OdcVmTraceFormatTest {
             { assertEquals(Instant.EPOCH, reader.getInstant(RESOURCE_STATE_TIMESTAMP)) },
             { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
             { assertEquals(23.0, reader.getDouble(RESOURCE_STATE_CPU_USAGE)) },
-            { assertFalse(reader.nextRow()) },
+            { assertFalse(reader.nextRow()) }
         )
 
         reader.close()
@@ -231,7 +247,7 @@ internal class OdcVmTraceFormatTest {
             { assertEquals(setOf("a", "b", "d"), reader.getSet(INTERFERENCE_GROUP_MEMBERS, String::class.java)) },
             { assertEquals(0.5, reader.getDouble(INTERFERENCE_GROUP_TARGET)) },
             { assertEquals(0.9, reader.getDouble(INTERFERENCE_GROUP_SCORE)) },
-            { assertFalse(reader.nextRow()) },
+            { assertFalse(reader.nextRow()) }
         )
 
         reader.close()

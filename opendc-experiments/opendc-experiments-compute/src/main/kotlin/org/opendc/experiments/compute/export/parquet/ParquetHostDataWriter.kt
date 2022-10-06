@@ -26,11 +26,14 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.io.api.RecordConsumer
-import org.apache.parquet.schema.*
+import org.apache.parquet.schema.LogicalTypeAnnotation
+import org.apache.parquet.schema.MessageType
+import org.apache.parquet.schema.PrimitiveType
+import org.apache.parquet.schema.Types
 import org.opendc.experiments.compute.telemetry.table.HostTableReader
 import org.opendc.trace.util.parquet.LocalParquetWriter
 import java.io.File
-import java.util.*
+import java.util.UUID
 
 /**
  * A Parquet event writer for [HostTableReader]s.
@@ -203,7 +206,7 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                     .named("guests_error"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("guests_invalid"),
+                    .named("guests_invalid")
             )
             .named("host")
     }

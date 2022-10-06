@@ -27,7 +27,17 @@ import org.hibernate.annotations.TypeDef
 import org.opendc.web.proto.JobState
 import org.opendc.web.server.util.hibernate.json.JsonType
 import java.time.Instant
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.FetchType
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
+import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.NamedQueries
+import javax.persistence.NamedQuery
+import javax.persistence.OneToOne
+import javax.persistence.Table
 
 /**
  * A simulation job to be run by the simulator.

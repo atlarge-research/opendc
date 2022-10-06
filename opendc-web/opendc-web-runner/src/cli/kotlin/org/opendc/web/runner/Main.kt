@@ -23,7 +23,11 @@
 package org.opendc.web.runner
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.options.*
+import com.github.ajalt.clikt.parameters.options.convert
+import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.defaultLazy
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import mu.KotlinLogging
@@ -105,7 +109,7 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
      */
     private val parallelism by option(
         "--parallelism",
-        help = "maximum number of threads for simulations",
+        help = "maximum number of threads for simulations"
     )
         .int()
         .default(Runtime.getRuntime().availableProcessors() - 1)

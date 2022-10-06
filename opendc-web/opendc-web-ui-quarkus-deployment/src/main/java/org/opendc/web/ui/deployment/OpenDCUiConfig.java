@@ -24,7 +24,6 @@ package org.opendc.web.ui.deployment;
 
 import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigRoot;
-
 import java.util.Optional;
 
 /**

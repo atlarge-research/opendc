@@ -22,7 +22,7 @@
 
 package org.opendc.workflow.api
 
-import java.util.*
+import java.util.UUID
 
 /**
  * A workload that represents a directed acyclic graph (DAG) of tasks with control and data dependencies between tasks.

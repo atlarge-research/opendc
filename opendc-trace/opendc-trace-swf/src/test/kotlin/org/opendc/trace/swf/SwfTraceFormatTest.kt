@@ -22,8 +22,15 @@
 
 package org.opendc.trace.swf
 
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableReader
 import org.opendc.trace.conv.TABLE_TASKS
@@ -70,7 +77,7 @@ internal class SwfTraceFormatTest {
             { assertEquals(306, reader.getInt(TASK_ALLOC_NCPUS)) },
             { assertTrue(reader.nextRow()) },
             { assertEquals("2", reader.getString(TASK_ID)) },
-            { assertEquals(17, reader.getInt(TASK_ALLOC_NCPUS)) },
+            { assertEquals(17, reader.getInt(TASK_ALLOC_NCPUS)) }
         )
 
         reader.close()

@@ -22,6 +22,8 @@
 
 package org.opendc.web.runner.deployment;
 
+import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
+
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -30,18 +32,14 @@ import io.quarkus.deployment.builditem.*;
 import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 import io.quarkus.deployment.util.ServiceUtil;
 import io.quarkus.runtime.RuntimeValue;
+import java.io.IOException;
+import java.util.Set;
+import java.util.function.BooleanSupplier;
 import org.opendc.trace.spi.TraceFormat;
 import org.opendc.web.runner.JobManager;
 import org.opendc.web.runner.OpenDCRunner;
 import org.opendc.web.runner.runtime.OpenDCRunnerRecorder;
 import org.opendc.web.runner.runtime.OpenDCRunnerRuntimeConfig;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
-import java.util.function.BooleanSupplier;
-
-import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
 
 /**
  * Build processor for the OpenDC web runner Quarkus extension.
@@ -65,12 +63,11 @@ public class OpenDCRunnerProcessor {
     void registerTraceFormats(BuildProducer<ServiceProviderBuildItem> services) throws IOException {
         String service = "META-INF/services/" + TraceFormat.class.getName();
 
-        Set<String> implementations = ServiceUtil.classNamesNamedIn(Thread.currentThread().getContextClassLoader(),
-                service);
+        Set<String> implementations =
+                ServiceUtil.classNamesNamedIn(Thread.currentThread().getContextClassLoader(), service);
 
         services.produce(
-            new ServiceProviderBuildItem(TraceFormat.class.getName(),
-                implementations.toArray(new String[0])));
+                new ServiceProviderBuildItem(TraceFormat.class.getName(), implementations.toArray(new String[0])));
     }
 
     /**
@@ -86,9 +83,10 @@ public class OpenDCRunnerProcessor {
      */
     @BuildStep(onlyIf = IsIncluded.class)
     @Record(RUNTIME_INIT)
-    ServiceStartBuildItem createRunnerService(OpenDCRunnerRecorder recorder,
-                                              OpenDCRunnerRuntimeConfig config,
-                                              BuildProducer<OpenDCRunnerBuildItem> runnerBuildItem) {
+    ServiceStartBuildItem createRunnerService(
+            OpenDCRunnerRecorder recorder,
+            OpenDCRunnerRuntimeConfig config,
+            BuildProducer<OpenDCRunnerBuildItem> runnerBuildItem) {
         RuntimeValue<OpenDCRunner> runner = recorder.createRunner(config);
         runnerBuildItem.produce(new OpenDCRunnerBuildItem(runner));
         return new ServiceStartBuildItem("OpenDCRunnerService");
@@ -99,12 +97,13 @@ public class OpenDCRunnerProcessor {
      */
     @BuildStep(onlyIf = IsIncluded.class)
     @Record(RUNTIME_INIT)
-    void startRunnerService(ApplicationStartBuildItem start,
-                            OpenDCRunnerBuildItem runnerBuildItem,
-                            OpenDCRunnerRecorder recorder,
-                            OpenDCRunnerRuntimeConfig config,
-                            ShutdownContextBuildItem shutdownContextBuildItem) {
-        recorder.startRunner(runnerBuildItem.getRunner(), config,shutdownContextBuildItem);
+    void startRunnerService(
+            ApplicationStartBuildItem start,
+            OpenDCRunnerBuildItem runnerBuildItem,
+            OpenDCRunnerRecorder recorder,
+            OpenDCRunnerRuntimeConfig config,
+            ShutdownContextBuildItem shutdownContextBuildItem) {
+        recorder.startRunner(runnerBuildItem.getRunner(), config, shutdownContextBuildItem);
     }
 
     /**

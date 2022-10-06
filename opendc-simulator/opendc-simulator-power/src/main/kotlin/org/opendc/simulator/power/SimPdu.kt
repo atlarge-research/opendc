@@ -22,7 +22,10 @@
 
 package org.opendc.simulator.power
 
-import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.FlowConsumer
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowMapper
+import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.flow.mux.FlowMultiplexer
 import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 
@@ -36,7 +39,7 @@ import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 public class SimPdu(
     engine: FlowEngine,
     private val idlePower: Double = 0.0,
-    private val lossCoefficient: Double = 0.0,
+    private val lossCoefficient: Double = 0.0
 ) : SimPowerInlet() {
     /**
      * The [FlowMultiplexer] that distributes the electricity over the PDU outlets.

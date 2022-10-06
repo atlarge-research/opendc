@@ -22,10 +22,18 @@
 
 package org.opendc.compute.service.internal
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.common.util.Pacer
-import org.opendc.compute.api.*
+import org.opendc.compute.api.ComputeClient
+import org.opendc.compute.api.Flavor
+import org.opendc.compute.api.Image
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
@@ -35,7 +43,10 @@ import org.opendc.compute.service.telemetry.SchedulerStats
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.ArrayDeque
+import java.util.Deque
+import java.util.Random
+import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.max
 

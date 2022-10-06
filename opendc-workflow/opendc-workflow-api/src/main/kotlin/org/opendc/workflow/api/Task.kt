@@ -22,14 +22,13 @@
 
 package org.opendc.workflow.api
 
-import java.util.*
+import java.util.UUID
 
 /**
  * A stage of a [Job].
  *
  * @property uid A unique identified of this task.
  * @property name The name of this task.
- * @property image The application image to run as part of this workflow task.
  * @property dependencies The dependencies of this task in order for it to execute.
  * @property metadata Additional metadata for this task.
  */

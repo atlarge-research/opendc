@@ -22,13 +22,15 @@
 
 package org.opendc.web.server.service
 
-import org.opendc.web.proto.user.Project
 import org.opendc.web.proto.user.ProjectRole
-import org.opendc.web.server.model.*
+import org.opendc.web.server.model.Project
+import org.opendc.web.server.model.ProjectAuthorization
+import org.opendc.web.server.model.ProjectAuthorizationKey
 import org.opendc.web.server.repository.ProjectRepository
 import java.time.Instant
 import javax.enterprise.context.ApplicationScoped
 import javax.inject.Inject
+import org.opendc.web.proto.user.Project as ProjectDto
 
 /**
  * Service for managing [Project]s.
@@ -38,21 +40,21 @@ class ProjectService @Inject constructor(private val repository: ProjectReposito
     /**
      * List all projects for the user with the specified [userId].
      */
-    fun findWithUser(userId: String): List<Project> {
+    fun findWithUser(userId: String): List<ProjectDto> {
         return repository.findAll(userId).map { it.toUserDto() }
     }
 
     /**
      * Obtain the project with the specified [id] for the user with the specified [userId].
      */
-    fun findWithUser(userId: String, id: Long): Project? {
+    fun findWithUser(userId: String, id: Long): ProjectDto? {
         return repository.findOne(userId, id)?.toUserDto()
     }
 
     /**
      * Create a new [Project] for the user with the specified [userId].
      */
-    fun createForUser(userId: String, name: String): Project {
+    fun createForUser(userId: String, name: String): ProjectDto {
         val now = Instant.now()
         val entity = Project(0, name, now)
         repository.save(entity)
@@ -71,7 +73,7 @@ class ProjectService @Inject constructor(private val repository: ProjectReposito
      * @param userId The user that invokes the action.
      * @param id The identifier of the project.
      */
-    fun deleteWithUser(userId: String, id: Long): Project? {
+    fun deleteWithUser(userId: String, id: Long): ProjectDto? {
         val auth = repository.findOne(userId, id) ?: return null
 
         if (!auth.role.canDelete) {

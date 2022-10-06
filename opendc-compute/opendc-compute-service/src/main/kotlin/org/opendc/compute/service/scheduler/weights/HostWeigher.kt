@@ -70,6 +70,6 @@ public interface HostWeigher {
         public val weights: DoubleArray,
         public val min: Double,
         public val max: Double,
-        public val multiplier: Double,
+        public val multiplier: Double
     )
 }

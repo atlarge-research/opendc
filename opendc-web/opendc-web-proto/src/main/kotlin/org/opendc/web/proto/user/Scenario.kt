@@ -58,7 +58,7 @@ public data class Scenario(
         val workload: Workload.Spec,
         val topology: Long,
         val phenomena: OperationalPhenomena,
-        val schedulerName: String,
+        val schedulerName: String
     )
 
     /**

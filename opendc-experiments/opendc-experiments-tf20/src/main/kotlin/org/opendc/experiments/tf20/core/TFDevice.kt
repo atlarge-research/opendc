@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.tf20.core
 
-import java.util.*
+import java.util.UUID
 
 /**
  * A compute device on which tensor operations are performed.

@@ -39,15 +39,16 @@ public class AsymptoticPowerModel(
     private val maxPower: Double,
     private val idlePower: Double,
     private val asymUtil: Double,
-    private val isDvfsEnabled: Boolean,
+    private val isDvfsEnabled: Boolean
 ) : PowerModel {
     private val factor: Double = (maxPower - idlePower) / 100
 
     public override fun computePower(utilization: Double): Double =
-        if (isDvfsEnabled)
+        if (isDvfsEnabled) {
             idlePower + (factor * 100) / 2 * (1 + utilization.pow(3) - E.pow(-utilization.pow(3) / asymUtil))
-        else
+        } else {
             idlePower + (factor * 100) / 2 * (1 + utilization - E.pow(-utilization / asymUtil))
+        }
 
     override fun toString(): String = "AsymptoticPowerModel[max=$maxPower,idle=$idlePower,asymptotic=$asymUtil]"
 }

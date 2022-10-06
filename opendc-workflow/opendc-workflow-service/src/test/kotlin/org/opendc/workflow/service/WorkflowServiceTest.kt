@@ -37,7 +37,10 @@ import org.opendc.experiments.compute.setupHosts
 import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.experiments.provisioner.ProvisioningContext
-import org.opendc.experiments.workflow.*
+import org.opendc.experiments.workflow.WorkflowSchedulerSpec
+import org.opendc.experiments.workflow.replay
+import org.opendc.experiments.workflow.setupWorkflowService
+import org.opendc.experiments.workflow.toJobs
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -53,7 +56,7 @@ import org.opendc.workflow.service.scheduler.task.NullTaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.SubmissionTimeTaskOrderPolicy
 import java.nio.file.Paths
 import java.time.Duration
-import java.util.*
+import java.util.UUID
 
 /**
  * Integration test suite for the [WorkflowService].
@@ -90,7 +93,7 @@ internal class WorkflowServiceTest {
                         jobAdmissionPolicy = NullJobAdmissionPolicy,
                         jobOrderPolicy = SubmissionTimeJobOrderPolicy(),
                         taskEligibilityPolicy = NullTaskEligibilityPolicy,
-                        taskOrderPolicy = SubmissionTimeTaskOrderPolicy(),
+                        taskOrderPolicy = SubmissionTimeTaskOrderPolicy()
                     )
                 )
             )

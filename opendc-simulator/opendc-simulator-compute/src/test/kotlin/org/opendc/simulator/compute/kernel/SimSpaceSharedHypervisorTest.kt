@@ -24,7 +24,11 @@ package org.opendc.simulator.compute.kernel
 
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -36,11 +40,15 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.runWorkload
-import org.opendc.simulator.compute.workload.*
+import org.opendc.simulator.compute.workload.SimFlopsWorkload
+import org.opendc.simulator.compute.workload.SimRuntimeWorkload
+import org.opendc.simulator.compute.workload.SimTrace
+import org.opendc.simulator.compute.workload.SimTraceFragment
+import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
 import org.opendc.simulator.kotlin.runSimulation
-import java.util.*
+import java.util.SplittableRandom
 
 /**
  * A test suite for a space-shared [SimHypervisor].
@@ -70,7 +78,7 @@ internal class SimSpaceSharedHypervisorTest {
                     SimTraceFragment(duration * 1000, duration * 1000, 3500.0, 1),
                     SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
                     SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
-                ),
+                )
             )
 
         val engine = FlowEngine(coroutineContext, clock)

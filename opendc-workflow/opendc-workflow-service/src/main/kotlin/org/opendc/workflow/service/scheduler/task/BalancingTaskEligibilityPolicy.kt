@@ -65,10 +65,11 @@ public data class BalancingTaskEligibilityPolicy(public val tolerance: Double = 
                 val activeTasks = scheduler.activeTasks.size
                 val baseline = max(activeTasks / activeJobs.toDouble(), 1.0)
                 val activeForJob = active[task.job]!!
-                return if ((activeForJob + 1) / baseline < tolerance)
+                return if ((activeForJob + 1) / baseline < tolerance) {
                     TaskEligibilityPolicy.Advice.ADMIT
-                else
+                } else {
                     TaskEligibilityPolicy.Advice.DENY
+                }
             }
         }
 

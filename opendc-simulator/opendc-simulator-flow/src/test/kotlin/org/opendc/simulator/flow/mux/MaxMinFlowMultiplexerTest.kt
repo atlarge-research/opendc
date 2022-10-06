@@ -25,8 +25,9 @@ package org.opendc.simulator.flow.mux
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import org.opendc.simulator.flow.FlowSink
 import org.opendc.simulator.flow.consume
 import org.opendc.simulator.flow.internal.FlowEngineImpl
@@ -72,7 +73,7 @@ internal class MaxMinFlowMultiplexerTest {
                     TraceFlowSource.Fragment(duration * 1000, 3500.0),
                     TraceFlowSource.Fragment(duration * 1000, 0.0),
                     TraceFlowSource.Fragment(duration * 1000, 183.0)
-                ),
+                )
             )
 
         val switch = MaxMinFlowMultiplexer(scheduler)
@@ -110,7 +111,7 @@ internal class MaxMinFlowMultiplexerTest {
                     TraceFlowSource.Fragment(duration * 1000, 3500.0),
                     TraceFlowSource.Fragment(duration * 1000, 0.0),
                     TraceFlowSource.Fragment(duration * 1000, 183.0)
-                ),
+                )
             )
         val workloadB =
             TraceFlowSource(
