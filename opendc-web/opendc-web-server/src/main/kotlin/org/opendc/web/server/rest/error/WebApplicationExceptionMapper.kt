@@ -30,12 +30,12 @@ import javax.ws.rs.ext.ExceptionMapper
 import javax.ws.rs.ext.Provider
 
 /**
- * Helper class to transform an exception into an JSON error response.
+ * Helper class to transform a [WebApplicationException] into an JSON error response.
  */
 @Provider
-class GenericExceptionMapper : ExceptionMapper<Exception> {
-    override fun toResponse(exception: Exception): Response {
-        val code = if (exception is WebApplicationException) exception.response.status else 500
+class WebApplicationExceptionMapper : ExceptionMapper<WebApplicationException> {
+    override fun toResponse(exception: WebApplicationException): Response {
+        val code = exception.response.status
 
         return Response.status(code)
             .entity(ProtocolError(code, exception.message ?: "Unknown error"))
