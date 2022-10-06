@@ -33,12 +33,19 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.service.driver.HostModel
 import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.internal.HostView
-import org.opendc.compute.service.scheduler.filters.*
+import org.opendc.compute.service.scheduler.filters.ComputeFilter
+import org.opendc.compute.service.scheduler.filters.DifferentHostFilter
+import org.opendc.compute.service.scheduler.filters.InstanceCountFilter
+import org.opendc.compute.service.scheduler.filters.RamFilter
+import org.opendc.compute.service.scheduler.filters.SameHostFilter
+import org.opendc.compute.service.scheduler.filters.VCpuCapacityFilter
+import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.service.scheduler.weights.InstanceCountWeigher
 import org.opendc.compute.service.scheduler.weights.RamWeigher
 import org.opendc.compute.service.scheduler.weights.VCpuWeigher
-import java.util.*
+import java.util.Random
+import java.util.UUID
 
 /**
  * Test suite for the [FilterScheduler].

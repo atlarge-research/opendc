@@ -24,8 +24,19 @@ package org.opendc.trace.azure
 
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
 import com.fasterxml.jackson.dataformat.csv.CsvParser
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableColumnType
+import org.opendc.trace.TableReader
+import org.opendc.trace.TableWriter
+import org.opendc.trace.conv.RESOURCE_CPU_COUNT
+import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
+import org.opendc.trace.conv.RESOURCE_START_TIME
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
+import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
+import org.opendc.trace.conv.RESOURCE_STOP_TIME
+import org.opendc.trace.conv.TABLE_RESOURCES
+import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.CompositeTableReader

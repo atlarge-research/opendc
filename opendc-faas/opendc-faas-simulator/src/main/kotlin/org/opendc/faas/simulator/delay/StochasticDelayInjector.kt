@@ -23,7 +23,7 @@
 package org.opendc.faas.simulator.delay
 
 import org.opendc.faas.service.deployer.FunctionInstance
-import java.util.*
+import java.util.Random
 import kotlin.math.abs
 
 /*

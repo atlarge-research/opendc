@@ -27,7 +27,10 @@ import org.hibernate.type.descriptor.WrapperOptions
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor
 import org.hibernate.type.descriptor.sql.BasicBinder
 import java.io.UnsupportedEncodingException
-import java.sql.*
+import java.sql.CallableStatement
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.Types
 
 /**
  * A [AbstractJsonSqlTypeDescriptor] that stores the JSON as UTF-8 encoded bytes.

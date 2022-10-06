@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.flow.internal
 
-import java.util.*
+import java.util.ArrayDeque
 
 /**
  * A specialized [ArrayDeque] that tracks the [FlowConsumerContextImpl] instances that have updated in an interpreter

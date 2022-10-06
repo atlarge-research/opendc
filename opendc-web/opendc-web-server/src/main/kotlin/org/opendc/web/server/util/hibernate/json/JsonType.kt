@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.hibernate.type.AbstractSingleColumnStandardBasicType
 import org.hibernate.type.BasicType
 import org.hibernate.usertype.DynamicParameterizedType
-import java.util.*
+import java.util.Properties
 import javax.enterprise.inject.spi.CDI
 
 /**

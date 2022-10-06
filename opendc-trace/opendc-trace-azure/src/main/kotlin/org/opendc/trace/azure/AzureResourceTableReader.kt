@@ -25,11 +25,15 @@ package org.opendc.trace.azure
 import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.TableReader
+import org.opendc.trace.conv.RESOURCE_CPU_COUNT
+import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
+import org.opendc.trace.conv.RESOURCE_START_TIME
+import org.opendc.trace.conv.RESOURCE_STOP_TIME
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /**
  * A [TableReader] for the Azure v1 VM resources table.

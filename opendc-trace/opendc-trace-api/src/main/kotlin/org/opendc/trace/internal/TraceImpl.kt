@@ -26,7 +26,7 @@ import org.opendc.trace.Table
 import org.opendc.trace.Trace
 import org.opendc.trace.spi.TraceFormat
 import java.nio.file.Path
-import java.util.*
+import java.util.Objects
 import java.util.concurrent.ConcurrentHashMap
 
 /**

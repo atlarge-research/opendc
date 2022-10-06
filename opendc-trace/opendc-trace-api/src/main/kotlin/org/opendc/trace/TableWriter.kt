@@ -24,7 +24,7 @@ package org.opendc.trace
 
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /**
  * Base class for writing workload traces.

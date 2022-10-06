@@ -22,12 +22,23 @@
 
 package org.opendc.trace.wtf
 
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableReader
-import org.opendc.trace.conv.*
+import org.opendc.trace.conv.TABLE_TASKS
+import org.opendc.trace.conv.TASK_ID
+import org.opendc.trace.conv.TASK_PARENTS
+import org.opendc.trace.conv.TASK_RUNTIME
+import org.opendc.trace.conv.TASK_SUBMIT_TIME
+import org.opendc.trace.conv.TASK_WORKFLOW_ID
 import org.opendc.trace.testkit.TableReaderTestKit
 import java.nio.file.Paths
 import java.time.Duration

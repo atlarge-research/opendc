@@ -22,12 +22,18 @@
 
 package org.opendc.web.server.service
 
-import org.opendc.web.proto.user.Scenario
-import org.opendc.web.server.model.*
-import org.opendc.web.server.repository.*
+import org.opendc.web.server.model.Job
+import org.opendc.web.server.model.Scenario
+import org.opendc.web.server.model.Workload
+import org.opendc.web.server.repository.PortfolioRepository
+import org.opendc.web.server.repository.ProjectRepository
+import org.opendc.web.server.repository.ScenarioRepository
+import org.opendc.web.server.repository.TopologyRepository
+import org.opendc.web.server.repository.TraceRepository
 import java.time.Instant
 import javax.enterprise.context.ApplicationScoped
 import javax.inject.Inject
+import org.opendc.web.proto.user.Scenario as ScenarioDto
 
 /**
  * Service for managing [Scenario]s.
@@ -43,7 +49,7 @@ class ScenarioService @Inject constructor(
     /**
      * List all [Scenario]s that belong a certain portfolio.
      */
-    fun findAll(userId: String, projectId: Long, number: Int): List<Scenario> {
+    fun findAll(userId: String, projectId: Long, number: Int): List<ScenarioDto> {
         // User must have access to project
         val auth = projectRepository.findOne(userId, projectId) ?: return emptyList()
         val project = auth.toUserDto()
@@ -53,7 +59,7 @@ class ScenarioService @Inject constructor(
     /**
      * Obtain a [Scenario] by identifier.
      */
-    fun findOne(userId: String, projectId: Long, number: Int): Scenario? {
+    fun findOne(userId: String, projectId: Long, number: Int): ScenarioDto? {
         // User must have access to project
         val auth = projectRepository.findOne(userId, projectId) ?: return null
         val project = auth.toUserDto()
@@ -63,7 +69,7 @@ class ScenarioService @Inject constructor(
     /**
      * Delete the specified scenario.
      */
-    fun delete(userId: String, projectId: Long, number: Int): Scenario? {
+    fun delete(userId: String, projectId: Long, number: Int): ScenarioDto? {
         // User must have access to project
         val auth = projectRepository.findOne(userId, projectId)
 
@@ -82,7 +88,7 @@ class ScenarioService @Inject constructor(
     /**
      * Construct a new [Scenario] with the specified data.
      */
-    fun create(userId: String, projectId: Long, portfolioNumber: Int, request: Scenario.Create): Scenario? {
+    fun create(userId: String, projectId: Long, portfolioNumber: Int, request: ScenarioDto.Create): ScenarioDto? {
         // User must have access to project
         val auth = projectRepository.findOne(userId, projectId)
 

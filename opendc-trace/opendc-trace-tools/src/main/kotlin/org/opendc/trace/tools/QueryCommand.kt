@@ -40,7 +40,7 @@ import java.nio.charset.StandardCharsets
 import java.sql.DriverManager
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
-import java.util.*
+import java.util.Properties
 
 /**
  * A [CliktCommand] that allows users to query workload traces using SQL.

@@ -32,7 +32,7 @@ import org.opendc.faas.simulator.delay.ColdStartModel
 import org.opendc.faas.simulator.delay.StochasticDelayInjector
 import org.opendc.faas.simulator.delay.ZeroDelayInjector
 import org.opendc.simulator.compute.model.MachineModel
-import java.util.*
+import java.util.Random
 
 /**
  * A [ProvisioningStep] implementation for a [FaaSService].

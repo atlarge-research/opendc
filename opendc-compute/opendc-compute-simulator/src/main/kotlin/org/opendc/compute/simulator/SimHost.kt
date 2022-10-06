@@ -22,18 +22,22 @@
 
 package org.opendc.compute.simulator
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.yield
 import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
-import org.opendc.compute.service.driver.*
+import org.opendc.compute.service.driver.Host
+import org.opendc.compute.service.driver.HostListener
+import org.opendc.compute.service.driver.HostModel
+import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.driver.telemetry.GuestCpuStats
 import org.opendc.compute.service.driver.telemetry.GuestSystemStats
 import org.opendc.compute.service.driver.telemetry.HostCpuStats
 import org.opendc.compute.service.driver.telemetry.HostSystemStats
 import org.opendc.compute.simulator.internal.Guest
 import org.opendc.compute.simulator.internal.GuestListener
-import org.opendc.simulator.compute.*
+import org.opendc.simulator.compute.SimBareMetalMachine
+import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -41,7 +45,7 @@ import org.opendc.simulator.compute.workload.SimWorkload
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
 /**

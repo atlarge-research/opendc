@@ -35,8 +35,17 @@ import io.restassured.module.kotlin.extensions.When
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.opendc.web.proto.*
-import org.opendc.web.proto.user.*
+import org.opendc.web.proto.JobState
+import org.opendc.web.proto.OperationalPhenomena
+import org.opendc.web.proto.Targets
+import org.opendc.web.proto.Trace
+import org.opendc.web.proto.Workload
+import org.opendc.web.proto.user.Job
+import org.opendc.web.proto.user.Portfolio
+import org.opendc.web.proto.user.Project
+import org.opendc.web.proto.user.ProjectRole
+import org.opendc.web.proto.user.Scenario
+import org.opendc.web.proto.user.Topology
 import org.opendc.web.server.service.ScenarioService
 import java.time.Instant
 

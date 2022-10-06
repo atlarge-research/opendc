@@ -25,7 +25,7 @@ package org.opendc.faas.service
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import org.opendc.faas.service.deployer.FunctionInstance
 import org.opendc.faas.service.telemetry.FunctionStats
-import java.util.*
+import java.util.UUID
 
 /**
  * An [FunctionObject] represents the service's view of a serverless function.

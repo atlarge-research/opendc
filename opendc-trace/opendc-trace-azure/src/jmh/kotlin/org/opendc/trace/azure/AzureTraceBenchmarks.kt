@@ -22,9 +22,17 @@
 
 package org.opendc.trace.azure
 
-import org.opendc.trace.conv.*
+import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.TABLE_RESOURCES
+import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.spi.TraceFormat
-import org.openjdk.jmh.annotations.*
+import org.openjdk.jmh.annotations.Benchmark
+import org.openjdk.jmh.annotations.Fork
+import org.openjdk.jmh.annotations.Measurement
+import org.openjdk.jmh.annotations.Scope
+import org.openjdk.jmh.annotations.Setup
+import org.openjdk.jmh.annotations.State
+import org.openjdk.jmh.annotations.Warmup
 import org.openjdk.jmh.infra.Blackhole
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit

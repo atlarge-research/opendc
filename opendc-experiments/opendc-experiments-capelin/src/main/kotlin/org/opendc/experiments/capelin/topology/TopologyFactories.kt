@@ -33,7 +33,8 @@ import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import java.io.File
 import java.io.InputStream
-import java.util.*
+import java.util.Random
+import java.util.UUID
 import kotlin.math.roundToLong
 
 /**

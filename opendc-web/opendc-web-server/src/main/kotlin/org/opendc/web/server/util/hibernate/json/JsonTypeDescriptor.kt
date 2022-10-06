@@ -40,7 +40,8 @@ import java.io.InputStream
 import java.lang.reflect.Type
 import java.sql.Blob
 import java.sql.SQLException
-import java.util.*
+import java.util.Objects
+import java.util.Properties
 
 /**
  * An [AbstractTypeDescriptor] implementation for Hibernate JSON type.

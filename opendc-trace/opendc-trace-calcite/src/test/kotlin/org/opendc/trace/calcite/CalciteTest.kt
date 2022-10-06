@@ -25,7 +25,11 @@ package org.opendc.trace.calcite
 import io.mockk.every
 import io.mockk.mockk
 import org.apache.calcite.jdbc.CalciteConnection
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableColumnType
@@ -40,7 +44,8 @@ import java.sql.Statement
 import java.sql.Timestamp
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.Properties
+import java.util.UUID
 
 /**
  * Smoke test for Apache Calcite integration.

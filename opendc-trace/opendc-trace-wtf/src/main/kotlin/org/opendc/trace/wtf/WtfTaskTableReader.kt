@@ -22,14 +22,24 @@
 
 package org.opendc.trace.wtf
 
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.TableColumnType
+import org.opendc.trace.TableReader
+import org.opendc.trace.conv.TASK_CHILDREN
+import org.opendc.trace.conv.TASK_GROUP_ID
+import org.opendc.trace.conv.TASK_ID
+import org.opendc.trace.conv.TASK_PARENTS
+import org.opendc.trace.conv.TASK_REQ_NCPUS
+import org.opendc.trace.conv.TASK_RUNTIME
+import org.opendc.trace.conv.TASK_SUBMIT_TIME
+import org.opendc.trace.conv.TASK_USER_ID
+import org.opendc.trace.conv.TASK_WAIT_TIME
+import org.opendc.trace.conv.TASK_WORKFLOW_ID
 import org.opendc.trace.util.convertTo
 import org.opendc.trace.util.parquet.LocalParquetReader
 import org.opendc.trace.wtf.parquet.Task
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /**
  * A [TableReader] implementation for the WTF format.

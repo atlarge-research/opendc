@@ -22,7 +22,11 @@
 
 package org.opendc.simulator.network
 
-import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.FlowConnection
+import org.opendc.simulator.flow.FlowConsumer
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowSink
+import org.opendc.simulator.flow.FlowSource
 
 /**
  * A network sink which discards all received traffic and does not generate any traffic itself.

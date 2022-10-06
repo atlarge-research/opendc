@@ -25,7 +25,7 @@ package org.opendc.experiments.compute
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceProfile
 import org.opendc.simulator.compute.workload.SimTrace
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /**
  * A virtual machine workload.

@@ -22,7 +22,9 @@
 
 package org.opendc.simulator.network
 
-import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.FlowConsumer
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 
 /**

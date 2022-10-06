@@ -31,7 +31,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.LinearPowerModel
 import java.io.InputStream
-import java.util.*
+import java.util.UUID
 
 /**
  * An environment reader for the TensorFlow experiments.

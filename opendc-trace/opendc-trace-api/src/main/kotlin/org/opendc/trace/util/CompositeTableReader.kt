@@ -25,7 +25,7 @@ package org.opendc.trace.util
 import org.opendc.trace.TableReader
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /**
  * A helper class to chain multiple [TableReader]s.

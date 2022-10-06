@@ -23,7 +23,7 @@
 package org.opendc.compute.service.internal
 
 import org.opendc.compute.api.Image
-import java.util.*
+import java.util.UUID
 
 /**
  * An [Image] implementation that is passed to clients but delegates its implementation to another class.

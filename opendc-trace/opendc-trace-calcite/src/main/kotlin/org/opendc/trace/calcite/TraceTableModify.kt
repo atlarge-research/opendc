@@ -22,14 +22,22 @@
 
 package org.opendc.trace.calcite
 
-import org.apache.calcite.adapter.enumerable.*
+import org.apache.calcite.adapter.enumerable.EnumerableRel
 import org.apache.calcite.adapter.enumerable.EnumerableRel.Prefer
+import org.apache.calcite.adapter.enumerable.EnumerableRelImplementor
+import org.apache.calcite.adapter.enumerable.EnumerableTableScan
+import org.apache.calcite.adapter.enumerable.JavaRowFormat
+import org.apache.calcite.adapter.enumerable.PhysTypeImpl
 import org.apache.calcite.adapter.java.JavaTypeFactory
 import org.apache.calcite.linq4j.Enumerable
 import org.apache.calcite.linq4j.tree.BlockBuilder
 import org.apache.calcite.linq4j.tree.Expressions
 import org.apache.calcite.linq4j.tree.Types
-import org.apache.calcite.plan.*
+import org.apache.calcite.plan.RelOptCluster
+import org.apache.calcite.plan.RelOptCost
+import org.apache.calcite.plan.RelOptPlanner
+import org.apache.calcite.plan.RelOptTable
+import org.apache.calcite.plan.RelTraitSet
 import org.apache.calcite.prepare.Prepare
 import org.apache.calcite.rel.RelNode
 import org.apache.calcite.rel.core.TableModify

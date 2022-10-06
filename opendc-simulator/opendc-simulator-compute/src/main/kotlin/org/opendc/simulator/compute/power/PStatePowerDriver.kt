@@ -24,7 +24,7 @@ package org.opendc.simulator.compute.power
 
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimProcessingUnit
-import java.util.*
+import java.util.TreeMap
 import kotlin.math.max
 import kotlin.math.min
 

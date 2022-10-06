@@ -22,7 +22,9 @@
 
 package org.opendc.web.client
 
-import org.opendc.web.client.internal.*
+import org.opendc.web.client.internal.delete
+import org.opendc.web.client.internal.get
+import org.opendc.web.client.internal.post
 import org.opendc.web.client.transport.TransportClient
 import org.opendc.web.proto.user.Project
 

@@ -26,9 +26,17 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.api.InitContext
 import org.apache.parquet.hadoop.api.ReadSupport
 import org.apache.parquet.io.api.RecordMaterializer
-import org.apache.parquet.schema.*
+import org.apache.parquet.schema.LogicalTypeAnnotation
+import org.apache.parquet.schema.MessageType
+import org.apache.parquet.schema.PrimitiveType
+import org.apache.parquet.schema.Types
 import org.opendc.trace.TableColumn
-import org.opendc.trace.conv.*
+import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
+import org.opendc.trace.conv.RESOURCE_CPU_COUNT
+import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
+import org.opendc.trace.conv.RESOURCE_START_TIME
+import org.opendc.trace.conv.RESOURCE_STOP_TIME
 
 /**
  * A [ReadSupport] instance for [Resource] objects.

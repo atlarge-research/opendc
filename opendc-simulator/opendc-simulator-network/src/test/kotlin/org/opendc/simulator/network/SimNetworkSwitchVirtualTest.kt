@@ -27,7 +27,10 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.FlowConsumer
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowSink
+import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.flow.source.FixedFlowSource
 import org.opendc.simulator.kotlin.runSimulation
 

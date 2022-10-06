@@ -22,7 +22,8 @@
 
 package org.opendc.web.client.runner
 
-import org.opendc.web.client.internal.*
+import org.opendc.web.client.internal.get
+import org.opendc.web.client.internal.post
 import org.opendc.web.client.transport.TransportClient
 import org.opendc.web.proto.runner.Job
 

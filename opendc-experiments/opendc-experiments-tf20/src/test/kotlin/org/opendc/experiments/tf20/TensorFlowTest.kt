@@ -31,7 +31,7 @@ import org.opendc.experiments.tf20.distribute.OneDeviceStrategy
 import org.opendc.experiments.tf20.util.MLEnvironmentReader
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.kotlin.runSimulation
-import java.util.*
+import java.util.UUID
 
 /**
  * Integration test suite for the TensorFlow application model in OpenDC.

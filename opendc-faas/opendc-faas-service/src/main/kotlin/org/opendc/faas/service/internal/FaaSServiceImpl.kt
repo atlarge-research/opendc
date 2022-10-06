@@ -22,8 +22,12 @@
 
 package org.opendc.faas.service.internal
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.intrinsics.startCoroutineCancellable
+import kotlinx.coroutines.suspendCancellableCoroutine
 import mu.KotlinLogging
 import org.opendc.common.util.Pacer
 import org.opendc.faas.api.FaaSClient
@@ -41,7 +45,9 @@ import org.opendc.faas.service.telemetry.SchedulerStats
 import java.lang.IllegalStateException
 import java.time.Clock
 import java.time.Duration
-import java.util.*
+import java.util.ArrayDeque
+import java.util.Random
+import java.util.UUID
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resumeWithException

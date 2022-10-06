@@ -22,7 +22,8 @@
 
 package org.opendc.web.client.runner
 
-import org.opendc.web.client.*
+import org.opendc.web.client.SchedulerResource
+import org.opendc.web.client.TraceResource
 import org.opendc.web.client.auth.AuthController
 import org.opendc.web.client.transport.HttpTransportClient
 import org.opendc.web.client.transport.TransportClient

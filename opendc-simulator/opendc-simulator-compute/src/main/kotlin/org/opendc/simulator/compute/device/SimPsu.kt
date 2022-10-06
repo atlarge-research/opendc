@@ -26,7 +26,7 @@ import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.flow.FlowConnection
 import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.power.SimPowerInlet
-import java.util.*
+import java.util.TreeMap
 
 /**
  * A power supply of a [SimBareMetalMachine].

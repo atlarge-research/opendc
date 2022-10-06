@@ -26,8 +26,9 @@ import org.opendc.simulator.compute.device.SimPsu
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.PowerDriver
-import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.FlowConsumer
 import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowSink
 import kotlin.math.max
 
 /**

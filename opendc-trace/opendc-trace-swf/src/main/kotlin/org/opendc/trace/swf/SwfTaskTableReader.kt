@@ -22,12 +22,21 @@
 
 package org.opendc.trace.swf
 
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.TableReader
+import org.opendc.trace.conv.TASK_ALLOC_NCPUS
+import org.opendc.trace.conv.TASK_GROUP_ID
+import org.opendc.trace.conv.TASK_ID
+import org.opendc.trace.conv.TASK_PARENTS
+import org.opendc.trace.conv.TASK_REQ_NCPUS
+import org.opendc.trace.conv.TASK_RUNTIME
+import org.opendc.trace.conv.TASK_STATUS
+import org.opendc.trace.conv.TASK_SUBMIT_TIME
+import org.opendc.trace.conv.TASK_USER_ID
+import org.opendc.trace.conv.TASK_WAIT_TIME
 import java.io.BufferedReader
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /**
  * A [TableReader] implementation for the SWF format.

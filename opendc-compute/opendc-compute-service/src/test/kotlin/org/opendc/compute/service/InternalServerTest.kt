@@ -22,9 +22,14 @@
 
 package org.opendc.compute.service
 
-import io.mockk.*
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.yield
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.compute.api.Server
@@ -35,7 +40,7 @@ import org.opendc.compute.service.internal.InternalFlavor
 import org.opendc.compute.service.internal.InternalImage
 import org.opendc.compute.service.internal.InternalServer
 import org.opendc.simulator.kotlin.runSimulation
-import java.util.*
+import java.util.UUID
 
 /**
  * Test suite for the [InternalServer] implementation.

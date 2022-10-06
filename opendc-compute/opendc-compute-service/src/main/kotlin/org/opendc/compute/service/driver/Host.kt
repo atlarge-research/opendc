@@ -27,7 +27,7 @@ import org.opendc.compute.service.driver.telemetry.GuestCpuStats
 import org.opendc.compute.service.driver.telemetry.GuestSystemStats
 import org.opendc.compute.service.driver.telemetry.HostCpuStats
 import org.opendc.compute.service.driver.telemetry.HostSystemStats
-import java.util.*
+import java.util.UUID
 
 /**
  * Base interface for representing compute resources that host virtualized [Server] instances.

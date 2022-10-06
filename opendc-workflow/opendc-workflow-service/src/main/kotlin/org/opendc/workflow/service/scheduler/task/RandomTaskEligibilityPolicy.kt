@@ -24,7 +24,7 @@ package org.opendc.workflow.service.scheduler.task
 
 import org.opendc.workflow.service.internal.TaskState
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
-import java.util.*
+import java.util.Random
 
 /**
  * A [TaskEligibilityPolicy] that randomly accepts tasks in the system with some [probability].

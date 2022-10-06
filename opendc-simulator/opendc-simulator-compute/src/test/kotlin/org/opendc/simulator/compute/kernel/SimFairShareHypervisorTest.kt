@@ -22,7 +22,9 @@
 
 package org.opendc.simulator.compute.kernel
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -44,7 +46,7 @@ import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
 import org.opendc.simulator.kotlin.runSimulation
-import java.util.*
+import java.util.SplittableRandom
 
 /**
  * Test suite for the [SimHypervisor] class.

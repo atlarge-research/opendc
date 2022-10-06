@@ -26,7 +26,8 @@ import mu.KotlinLogging
 import org.opendc.experiments.compute.ComputeWorkload
 import org.opendc.experiments.compute.ComputeWorkloadLoader
 import org.opendc.experiments.compute.VirtualMachine
-import java.util.*
+import java.util.Random
+import java.util.UUID
 
 /**
  * A [ComputeWorkload] that samples HPC VMs in the workload.

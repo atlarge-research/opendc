@@ -22,7 +22,8 @@
 
 package org.opendc.simulator.compute.kernel.interference
 
-import java.util.*
+import java.util.TreeMap
+import java.util.TreeSet
 
 /**
  * An interference model that models the resource interference between virtual machines on a host.

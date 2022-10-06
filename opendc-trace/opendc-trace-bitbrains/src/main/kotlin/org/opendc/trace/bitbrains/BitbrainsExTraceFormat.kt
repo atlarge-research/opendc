@@ -22,8 +22,23 @@
 
 package org.opendc.trace.bitbrains
 
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableColumnType
+import org.opendc.trace.TableReader
+import org.opendc.trace.TableWriter
+import org.opendc.trace.conv.RESOURCE_CLUSTER_ID
+import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
+import org.opendc.trace.conv.RESOURCE_CPU_COUNT
+import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_DEMAND
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_READY_PCT
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
+import org.opendc.trace.conv.RESOURCE_STATE_DISK_READ
+import org.opendc.trace.conv.RESOURCE_STATE_DISK_WRITE
+import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
+import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.CompositeTableReader

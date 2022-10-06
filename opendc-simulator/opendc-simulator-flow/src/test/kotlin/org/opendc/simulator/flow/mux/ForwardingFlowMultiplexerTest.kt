@@ -27,7 +27,11 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.FlowConnection
+import org.opendc.simulator.flow.FlowForwarder
+import org.opendc.simulator.flow.FlowSink
+import org.opendc.simulator.flow.FlowSource
+import org.opendc.simulator.flow.consume
 import org.opendc.simulator.flow.internal.FlowEngineImpl
 import org.opendc.simulator.flow.source.FixedFlowSource
 import org.opendc.simulator.flow.source.FlowSourceRateAdapter

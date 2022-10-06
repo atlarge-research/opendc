@@ -22,8 +22,11 @@
 
 package org.opendc.simulator.flow
 
-import io.mockk.*
-import org.junit.jupiter.api.*
+import io.mockk.spyk
+import io.mockk.verify
+import net.bytebuddy.matcher.ElementMatchers.any
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.flow.internal.FlowConsumerContextImpl
 import org.opendc.simulator.flow.internal.FlowEngineImpl
 import org.opendc.simulator.kotlin.runSimulation

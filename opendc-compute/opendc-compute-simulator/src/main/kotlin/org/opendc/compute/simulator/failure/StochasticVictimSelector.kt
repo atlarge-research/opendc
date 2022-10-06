@@ -24,7 +24,7 @@ package org.opendc.compute.simulator.failure
 
 import org.apache.commons.math3.distribution.RealDistribution
 import org.opendc.compute.simulator.SimHost
-import java.util.*
+import java.util.Random
 import kotlin.math.roundToInt
 
 /**

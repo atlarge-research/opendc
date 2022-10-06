@@ -32,7 +32,7 @@ import org.opendc.compute.simulator.failure.StartStopHostFault
 import org.opendc.compute.simulator.failure.StochasticVictimSelector
 import java.time.Clock
 import java.time.Duration
-import java.util.*
+import java.util.Random
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ln
 

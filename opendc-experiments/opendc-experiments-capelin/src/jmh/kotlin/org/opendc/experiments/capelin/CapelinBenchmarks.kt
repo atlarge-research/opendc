@@ -29,13 +29,25 @@ import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.experiments.capelin.topology.clusterTopology
-import org.opendc.experiments.compute.*
+import org.opendc.experiments.compute.ComputeWorkloadLoader
+import org.opendc.experiments.compute.VirtualMachine
+import org.opendc.experiments.compute.replay
+import org.opendc.experiments.compute.setupComputeService
+import org.opendc.experiments.compute.setupHosts
 import org.opendc.experiments.compute.topology.HostSpec
+import org.opendc.experiments.compute.trace
 import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.kotlin.runSimulation
-import org.openjdk.jmh.annotations.*
+import org.openjdk.jmh.annotations.Benchmark
+import org.openjdk.jmh.annotations.Fork
+import org.openjdk.jmh.annotations.Measurement
+import org.openjdk.jmh.annotations.Param
+import org.openjdk.jmh.annotations.Scope
+import org.openjdk.jmh.annotations.Setup
+import org.openjdk.jmh.annotations.State
+import org.openjdk.jmh.annotations.Warmup
 import java.io.File
-import java.util.*
+import java.util.Random
 import java.util.concurrent.TimeUnit
 
 /**

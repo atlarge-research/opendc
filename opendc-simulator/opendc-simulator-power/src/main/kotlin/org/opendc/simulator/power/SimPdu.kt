@@ -22,7 +22,10 @@
 
 package org.opendc.simulator.power
 
-import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.FlowConsumer
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowMapper
+import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.flow.mux.FlowMultiplexer
 import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 

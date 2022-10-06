@@ -23,8 +23,17 @@
 package org.opendc.trace.wfformat
 
 import com.fasterxml.jackson.core.JsonFactory
-import org.opendc.trace.*
-import org.opendc.trace.conv.*
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableColumnType
+import org.opendc.trace.TableReader
+import org.opendc.trace.TableWriter
+import org.opendc.trace.conv.TABLE_TASKS
+import org.opendc.trace.conv.TASK_CHILDREN
+import org.opendc.trace.conv.TASK_ID
+import org.opendc.trace.conv.TASK_PARENTS
+import org.opendc.trace.conv.TASK_REQ_NCPUS
+import org.opendc.trace.conv.TASK_RUNTIME
+import org.opendc.trace.conv.TASK_WORKFLOW_ID
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import java.nio.file.Path

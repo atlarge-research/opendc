@@ -22,7 +22,10 @@
 
 package org.opendc.simulator.compute.kernel
 
-import org.opendc.simulator.compute.*
+import org.opendc.simulator.compute.SimAbstractMachine
+import org.opendc.simulator.compute.SimMachine
+import org.opendc.simulator.compute.SimMachineContext
+import org.opendc.simulator.compute.SimProcessingUnit
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingPolicy
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
@@ -31,7 +34,9 @@ import org.opendc.simulator.compute.kernel.interference.VmInterferenceProfile
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.FlowConsumer
+import org.opendc.simulator.flow.FlowConvergenceListener
+import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexer
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
 import java.util.SplittableRandom

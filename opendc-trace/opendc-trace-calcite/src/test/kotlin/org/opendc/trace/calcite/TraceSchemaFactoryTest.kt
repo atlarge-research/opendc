@@ -22,12 +22,14 @@
 
 package org.opendc.trace.calcite
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.sql.DriverManager
 import java.sql.Timestamp
-import java.util.*
+import java.util.Properties
 
 /**
  * Test suite for [TraceSchemaFactory].

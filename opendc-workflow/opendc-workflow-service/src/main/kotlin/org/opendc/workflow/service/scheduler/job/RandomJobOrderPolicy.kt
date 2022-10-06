@@ -26,7 +26,7 @@ import org.opendc.workflow.api.Job
 import org.opendc.workflow.service.internal.JobState
 import org.opendc.workflow.service.internal.WorkflowSchedulerListener
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
-import java.util.*
+import java.util.Random
 import kotlin.collections.HashMap
 
 /**

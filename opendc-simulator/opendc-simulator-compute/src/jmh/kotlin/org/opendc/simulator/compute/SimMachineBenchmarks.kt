@@ -36,7 +36,13 @@ import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
 import org.opendc.simulator.kotlin.runSimulation
-import org.openjdk.jmh.annotations.*
+import org.openjdk.jmh.annotations.Benchmark
+import org.openjdk.jmh.annotations.Fork
+import org.openjdk.jmh.annotations.Measurement
+import org.openjdk.jmh.annotations.Scope
+import org.openjdk.jmh.annotations.Setup
+import org.openjdk.jmh.annotations.State
+import org.openjdk.jmh.annotations.Warmup
 import java.util.SplittableRandom
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit

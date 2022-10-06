@@ -23,11 +23,14 @@
 @file:JvmName("TraceHelpers")
 package org.opendc.experiments.compute
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import org.opendc.compute.service.ComputeService
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import java.time.Clock
-import java.util.*
+import java.util.Random
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 

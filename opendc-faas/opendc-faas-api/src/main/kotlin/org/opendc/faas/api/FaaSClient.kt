@@ -22,7 +22,7 @@
 
 package org.opendc.faas.api
 
-import java.util.*
+import java.util.UUID
 
 /**
  * Client interface to the OpenDC FaaS platform.

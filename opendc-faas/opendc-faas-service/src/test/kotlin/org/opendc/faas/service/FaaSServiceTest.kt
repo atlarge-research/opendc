@@ -22,8 +22,11 @@
 
 package org.opendc.faas.service
 
-import io.mockk.*
-import org.junit.jupiter.api.Assertions.*
+import io.mockk.every
+import io.mockk.mockk
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -32,7 +35,7 @@ import org.opendc.faas.service.deployer.FunctionDeployer
 import org.opendc.faas.service.deployer.FunctionInstance
 import org.opendc.faas.service.deployer.FunctionInstanceState
 import org.opendc.simulator.kotlin.runSimulation
-import java.util.*
+import java.util.UUID
 
 /**
  * Test suite for the [FaaSService] implementation.

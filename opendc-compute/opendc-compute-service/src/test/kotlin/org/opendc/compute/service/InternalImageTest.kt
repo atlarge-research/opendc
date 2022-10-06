@@ -22,7 +22,8 @@
 
 package org.opendc.compute.service
 
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
@@ -30,7 +31,7 @@ import org.opendc.compute.api.Image
 import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.internal.InternalFlavor
 import org.opendc.compute.service.internal.InternalImage
-import java.util.*
+import java.util.UUID
 
 /**
  * Test suite for the [InternalFlavor] implementation.

@@ -25,7 +25,11 @@ package org.opendc.experiments.capelin
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.options.*
+import com.github.ajalt.clikt.parameters.options.associate
+import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.defaultLazy
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
@@ -33,7 +37,12 @@ import com.github.ajalt.clikt.parameters.types.long
 import me.tongfei.progressbar.ProgressBarBuilder
 import me.tongfei.progressbar.ProgressBarStyle
 import org.opendc.experiments.capelin.model.Scenario
-import org.opendc.experiments.capelin.portfolio.*
+import org.opendc.experiments.capelin.portfolio.CompositeWorkloadPortfolio
+import org.opendc.experiments.capelin.portfolio.HorVerPortfolio
+import org.opendc.experiments.capelin.portfolio.MoreHpcPortfolio
+import org.opendc.experiments.capelin.portfolio.MoreVelocityPortfolio
+import org.opendc.experiments.capelin.portfolio.OperationalPhenomenaPortfolio
+import org.opendc.experiments.capelin.portfolio.TestPortfolio
 import java.io.File
 import java.util.concurrent.ForkJoinPool
 import java.util.stream.LongStream

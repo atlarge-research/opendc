@@ -23,7 +23,13 @@
 package org.opendc.web.server.service
 
 import org.opendc.web.proto.user.Project
-import org.opendc.web.server.model.*
+import org.opendc.web.server.model.Job
+import org.opendc.web.server.model.Portfolio
+import org.opendc.web.server.model.ProjectAuthorization
+import org.opendc.web.server.model.Scenario
+import org.opendc.web.server.model.Topology
+import org.opendc.web.server.model.Trace
+import org.opendc.web.server.model.Workload
 
 /**
  * Conversions into DTOs provided to users.

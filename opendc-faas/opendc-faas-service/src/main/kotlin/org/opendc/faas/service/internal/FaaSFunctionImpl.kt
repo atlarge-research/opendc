@@ -24,7 +24,7 @@ package org.opendc.faas.service.internal
 
 import org.opendc.faas.api.FaaSFunction
 import org.opendc.faas.service.FunctionObject
-import java.util.*
+import java.util.UUID
 
 /**
  * A [FaaSFunction] implementation that is passed to clients.

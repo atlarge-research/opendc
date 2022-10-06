@@ -25,7 +25,11 @@ package org.opendc.trace.calcite
 import org.apache.calcite.DataContext
 import org.apache.calcite.adapter.java.AbstractQueryableTable
 import org.apache.calcite.adapter.java.JavaTypeFactory
-import org.apache.calcite.linq4j.*
+import org.apache.calcite.linq4j.AbstractEnumerable
+import org.apache.calcite.linq4j.Enumerable
+import org.apache.calcite.linq4j.Enumerator
+import org.apache.calcite.linq4j.QueryProvider
+import org.apache.calcite.linq4j.Queryable
 import org.apache.calcite.plan.RelOptCluster
 import org.apache.calcite.plan.RelOptTable
 import org.apache.calcite.prepare.Prepare.CatalogReader
@@ -35,14 +39,16 @@ import org.apache.calcite.rel.logical.LogicalTableModify
 import org.apache.calcite.rel.type.RelDataType
 import org.apache.calcite.rel.type.RelDataTypeFactory
 import org.apache.calcite.rex.RexNode
-import org.apache.calcite.schema.*
+import org.apache.calcite.schema.ModifiableTable
+import org.apache.calcite.schema.ProjectableFilterableTable
+import org.apache.calcite.schema.SchemaPlus
 import org.apache.calcite.schema.impl.AbstractTableQueryable
 import org.apache.calcite.sql.type.SqlTypeName
 import org.opendc.trace.TableColumnType
 import java.nio.ByteBuffer
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**

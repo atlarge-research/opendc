@@ -25,7 +25,7 @@ package org.opendc.experiments.compute
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.simulator.failure.HostFaultInjector
 import java.time.Clock
-import java.util.*
+import java.util.Random
 import kotlin.coroutines.CoroutineContext
 
 /**

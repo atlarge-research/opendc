@@ -25,7 +25,10 @@ package org.opendc.web.server.rest
 import org.opendc.web.proto.Trace
 import org.opendc.web.server.service.TraceService
 import javax.inject.Inject
-import javax.ws.rs.*
+import javax.ws.rs.GET
+import javax.ws.rs.Path
+import javax.ws.rs.PathParam
+import javax.ws.rs.WebApplicationException
 
 /**
  * A resource representing the workload traces available in the OpenDC instance.

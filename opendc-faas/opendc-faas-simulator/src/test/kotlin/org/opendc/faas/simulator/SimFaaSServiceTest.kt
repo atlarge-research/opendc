@@ -44,7 +44,7 @@ import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.kotlin.runSimulation
 import java.time.Duration
-import java.util.*
+import java.util.Random
 
 /**
  * A test suite for the [FaaSService] implementation under simulated conditions.
