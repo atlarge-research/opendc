@@ -36,5 +36,5 @@ public data class WorkflowSchedulerSpec(
     val jobAdmissionPolicy: JobAdmissionPolicy,
     val jobOrderPolicy: JobOrderPolicy,
     val taskEligibilityPolicy: TaskEligibilityPolicy,
-    val taskOrderPolicy: TaskOrderPolicy,
+    val taskOrderPolicy: TaskOrderPolicy
 )

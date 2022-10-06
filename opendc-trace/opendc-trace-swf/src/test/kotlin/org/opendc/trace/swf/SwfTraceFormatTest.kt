@@ -77,7 +77,7 @@ internal class SwfTraceFormatTest {
             { assertEquals(306, reader.getInt(TASK_ALLOC_NCPUS)) },
             { assertTrue(reader.nextRow()) },
             { assertEquals("2", reader.getString(TASK_ID)) },
-            { assertEquals(17, reader.getInt(TASK_ALLOC_NCPUS)) },
+            { assertEquals(17, reader.getInt(TASK_ALLOC_NCPUS)) }
         )
 
         reader.close()

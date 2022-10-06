@@ -89,7 +89,7 @@ class WtfTraceFormatTest {
                     setOf("584055316413447529", "133113685133695608", "1008582348422865408"),
                     reader.getSet(TASK_PARENTS, String::class.java)
                 )
-            },
+            }
         )
 
         assertAll(
@@ -103,7 +103,7 @@ class WtfTraceFormatTest {
                     setOf("584055316413447529", "133113685133695608", "1008582348422865408"),
                     reader.getSet(TASK_PARENTS, String::class.java)
                 )
-            },
+            }
         )
 
         reader.close()

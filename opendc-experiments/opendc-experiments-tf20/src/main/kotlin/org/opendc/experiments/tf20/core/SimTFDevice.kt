@@ -71,7 +71,8 @@ public class SimTFDevice(
      * The [SimMachine] representing the device.
      */
     private val machine = SimBareMetalMachine(
-        FlowEngine(scope.coroutineContext, clock), MachineModel(listOf(pu), listOf(memory)),
+        FlowEngine(scope.coroutineContext, clock),
+        MachineModel(listOf(pu), listOf(memory)),
         SimplePowerDriver(powerModel)
     )
 

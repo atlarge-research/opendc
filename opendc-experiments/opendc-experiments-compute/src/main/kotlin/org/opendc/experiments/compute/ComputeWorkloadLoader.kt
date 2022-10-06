@@ -116,7 +116,6 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
 
         return try {
             while (reader.nextRow()) {
-
                 val id = reader.getString(idCol)!!
                 if (!fragments.containsKey(id)) {
                     continue
@@ -195,7 +194,6 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         val ref = cache.compute(name) { key, oldVal ->
             val inst = oldVal?.get()
             if (inst == null) {
-
                 val path = baseDir.resolve(key)
 
                 logger.info { "Loading trace $key at $path" }

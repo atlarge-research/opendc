@@ -75,7 +75,7 @@ internal class SimPsuTest {
         val energyEfficiency = sortedMapOf(
             0.3 to 0.9,
             0.7 to 0.92,
-            1.0 to 0.94,
+            1.0 to 0.94
         )
 
         val engine = FlowEngine(coroutineContext, clock)

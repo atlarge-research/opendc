@@ -226,10 +226,11 @@ public class FlowForwarder(
      * Reset the delegate.
      */
     private fun reset() {
-        if (isCoupled)
+        if (isCoupled) {
             _innerCtx?.close()
-        else
+        } else {
             _innerCtx?.push(0.0)
+        }
 
         delegate = null
         hasDelegateStarted = false

@@ -109,7 +109,7 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
      */
     private val parallelism by option(
         "--parallelism",
-        help = "maximum number of threads for simulations",
+        help = "maximum number of threads for simulations"
     )
         .int()
         .default(Runtime.getRuntime().availableProcessors() - 1)

@@ -139,7 +139,7 @@ internal class TaskReadSupport(private val projection: List<String>?) : ReadSupp
                             .named("list")
                     )
                     .`as`(LogicalTypeAnnotation.listType())
-                    .named("parents"),
+                    .named("parents")
             )
             .named("task")
     }

@@ -21,6 +21,7 @@
  */
 
 @file:JvmName("TraceHelpers")
+
 package org.opendc.experiments.workflow
 
 import kotlinx.coroutines.coroutineScope
@@ -65,10 +66,11 @@ public fun Trace.toJobs(): List<Job> {
             val workflow = jobs.computeIfAbsent(workflowId) { id -> Job(UUID(0L, id), "<unnamed>", HashSet(), HashMap()) }
 
             val id = reader.getString(TASK_ID)!!.toLong()
-            val grantedCpus = if (reader.resolve(TASK_ALLOC_NCPUS) != 0)
+            val grantedCpus = if (reader.resolve(TASK_ALLOC_NCPUS) != 0) {
                 reader.getInt(TASK_ALLOC_NCPUS)
-            else
+            } else {
                 reader.getInt(TASK_REQ_NCPUS)
+            }
             val submitTime = reader.getInstant(TASK_SUBMIT_TIME)!!
             val runtime = reader.getDuration(TASK_RUNTIME)!!
             val flops: Long = 4000 * runtime.seconds * grantedCpus
@@ -81,7 +83,7 @@ public fun Trace.toJobs(): List<Job> {
                     "workload" to workload,
                     WORKFLOW_TASK_CORES to grantedCpus,
                     WORKFLOW_TASK_DEADLINE to runtime.toMillis()
-                ),
+                )
             )
 
             tasks[id] = task

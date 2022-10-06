@@ -72,7 +72,7 @@ internal class PowerModelTest {
             { assertEquals(189.0, powerModel.computePower(0.8)) },
             { assertEquals(189.0 + 0.7 * 10 * (205 - 189) / 10, powerModel.computePower(0.87)) },
             { assertEquals(205.0, powerModel.computePower(0.9)) },
-            { assertEquals(222.0, powerModel.computePower(1.0)) },
+            { assertEquals(222.0, powerModel.computePower(1.0)) }
         )
     }
 
@@ -87,7 +87,7 @@ internal class PowerModelTest {
             Arguments.of(SqrtPowerModel(350.0, 200.0), 342.302),
             Arguments.of(MsePowerModel(350.0, 200.0, 1.4), 340.571),
             Arguments.of(AsymptoticPowerModel(350.0, 200.0, 0.3, false), 338.765),
-            Arguments.of(AsymptoticPowerModel(350.0, 200.0, 0.3, true), 323.072),
+            Arguments.of(AsymptoticPowerModel(350.0, 200.0, 0.3, true), 323.072)
         )
     }
 }

@@ -57,10 +57,11 @@ public data class LimitPerJobTaskEligibilityPolicy(public val limit: Int) : Task
 
             override fun invoke(task: TaskState): TaskEligibilityPolicy.Advice {
                 val activeForJob = active[task.job]!!
-                return if (activeForJob <= limit)
+                return if (activeForJob <= limit) {
                     TaskEligibilityPolicy.Advice.ADMIT
-                else
+                } else {
                     TaskEligibilityPolicy.Advice.DENY
+                }
             }
         }
 

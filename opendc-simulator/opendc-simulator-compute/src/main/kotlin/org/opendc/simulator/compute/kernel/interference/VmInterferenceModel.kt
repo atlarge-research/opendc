@@ -129,10 +129,11 @@ public class VmInterferenceModel private constructor(
                     }
 
                     cmp = scores[l].compareTo(scores[r]) // Higher penalty first (this means lower performance score first)
-                    if (cmp != 0)
+                    if (cmp != 0) {
                         cmp
-                    else
+                    } else {
                         l.compareTo(r)
+                    }
                 }
             )
 

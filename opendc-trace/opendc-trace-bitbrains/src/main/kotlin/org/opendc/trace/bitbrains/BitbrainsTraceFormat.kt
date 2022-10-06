@@ -93,8 +93,8 @@ public class BitbrainsTraceFormat : TraceFormat {
                     TableColumn(RESOURCE_STATE_DISK_READ, TableColumnType.Double),
                     TableColumn(RESOURCE_STATE_DISK_WRITE, TableColumnType.Double),
                     TableColumn(RESOURCE_STATE_NET_RX, TableColumnType.Double),
-                    TableColumn(RESOURCE_STATE_NET_TX, TableColumnType.Double),
-                ),
+                    TableColumn(RESOURCE_STATE_NET_TX, TableColumnType.Double)
+                )
             )
             else -> throw IllegalArgumentException("Table $table not supported")
         }

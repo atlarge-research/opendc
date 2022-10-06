@@ -25,7 +25,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("java-conventions")
     kotlin("jvm")
-    id("org.jlleitschuh.gradle.ktlint")
+    id("spotless-conventions")
 }
 
 /* Project configuration */
@@ -33,10 +33,4 @@ tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = Libs.jvmTarget.toString()
     kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
     kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
-}
-
-configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-    // Higher versions currently have issues with formatting where wildcard imports are automatically removed,
-    // even when in use.
-    version.set("0.42.1")
 }

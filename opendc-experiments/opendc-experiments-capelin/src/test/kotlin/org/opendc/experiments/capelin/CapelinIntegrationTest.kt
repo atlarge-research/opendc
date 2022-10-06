@@ -98,7 +98,7 @@ class CapelinIntegrationTest {
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology),
+                setupHosts(serviceDomain = "compute.opendc.org", topology)
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
@@ -124,7 +124,7 @@ class CapelinIntegrationTest {
             { assertEquals(66977508, monitor.activeTime) { "Incorrect active time" } },
             { assertEquals(3160381, monitor.stealTime) { "Incorrect steal time" } },
             { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
-            { assertEquals(5.840939264814157E9, monitor.energyUsage, 0.01) { "Incorrect power draw" } },
+            { assertEquals(5.840939264814157E9, monitor.energyUsage, 0.01) { "Incorrect power draw" } }
         )
     }
 
@@ -142,7 +142,7 @@ class CapelinIntegrationTest {
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology),
+                setupHosts(serviceDomain = "compute.opendc.org", topology)
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
@@ -181,7 +181,7 @@ class CapelinIntegrationTest {
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology),
+                setupHosts(serviceDomain = "compute.opendc.org", topology)
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
@@ -220,7 +220,7 @@ class CapelinIntegrationTest {
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology),
+                setupHosts(serviceDomain = "compute.opendc.org", topology)
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
@@ -233,7 +233,7 @@ class CapelinIntegrationTest {
             { assertEquals(8539158, monitor.activeTime) { "Active time incorrect" } },
             { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
             { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-            { assertEquals(2328039558, monitor.uptime) { "Uptime incorrect" } },
+            { assertEquals(2328039558, monitor.uptime) { "Uptime incorrect" } }
         )
     }
 

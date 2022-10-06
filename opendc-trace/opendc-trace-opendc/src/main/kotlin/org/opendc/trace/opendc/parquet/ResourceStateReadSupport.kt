@@ -52,7 +52,7 @@ internal class ResourceStateReadSupport(private val projection: List<String>?) :
         "cores" to RESOURCE_CPU_COUNT,
         "cpu_count" to RESOURCE_CPU_COUNT,
         "cpuUsage" to RESOURCE_STATE_CPU_USAGE,
-        "cpu_usage" to RESOURCE_STATE_CPU_USAGE,
+        "cpu_usage" to RESOURCE_STATE_CPU_USAGE
     )
 
     override fun init(context: InitContext): ReadContext {

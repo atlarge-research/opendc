@@ -46,7 +46,7 @@ public class SimBareMetalMachine(
     engine: FlowEngine,
     model: MachineModel,
     powerDriver: PowerDriver,
-    public val psu: SimPsu = SimPsu(500.0, mapOf(1.0 to 1.0)),
+    public val psu: SimPsu = SimPsu(500.0, mapOf(1.0 to 1.0))
 ) : SimAbstractMachine(engine, model) {
     /**
      * The current power usage of the machine (without PSU loss) in W.

@@ -79,7 +79,9 @@ class SimMachineBenchmarks {
         return runSimulation {
             val engine = FlowEngine(coroutineContext, clock)
             val machine = SimBareMetalMachine(
-                engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
+                engine,
+                machineModel,
+                SimplePowerDriver(ConstantPowerModel(0.0))
             )
             return@runSimulation machine.runWorkload(SimTraceWorkload(trace))
         }

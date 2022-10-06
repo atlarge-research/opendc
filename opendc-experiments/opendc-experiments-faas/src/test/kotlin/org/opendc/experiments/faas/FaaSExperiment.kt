@@ -70,7 +70,7 @@ class FaaSExperiment {
             assertAll(
                 { assertEquals(14, stats.totalInvocations) },
                 { assertEquals(2, stats.timelyInvocations) },
-                { assertEquals(12, stats.delayedInvocations) },
+                { assertEquals(12, stats.delayedInvocations) }
             )
         }
     }

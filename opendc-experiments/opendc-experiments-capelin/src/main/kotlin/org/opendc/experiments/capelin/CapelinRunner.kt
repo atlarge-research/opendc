@@ -90,10 +90,11 @@ public class CapelinRunner(
             val vms = scenario.workload.source.resolve(workloadLoader, Random(seed))
             val operationalPhenomena = scenario.operationalPhenomena
             val failureModel =
-                if (operationalPhenomena.failureFrequency > 0)
+                if (operationalPhenomena.failureFrequency > 0) {
                     grid5000(Duration.ofSeconds((operationalPhenomena.failureFrequency * 60).roundToLong()))
-                else
+                } else {
                     null
+                }
 
             service.replay(clock, vms, seed, failureModel = failureModel, interference = operationalPhenomena.hasInterference)
         }

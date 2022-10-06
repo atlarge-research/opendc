@@ -211,6 +211,7 @@ public class SimHypervisor(
          */
         override val counters: SimHypervisorCounters
             get() = _counters
+
         @JvmField val _counters = VmCountersImpl(cpus, null)
 
         /**

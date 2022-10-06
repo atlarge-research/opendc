@@ -51,10 +51,11 @@ public class FaaSServiceProvisioningStep internal constructor(
     private val coldStartModel: ColdStartModel?
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
-        val delayInjector = if (coldStartModel != null)
+        val delayInjector = if (coldStartModel != null) {
             StochasticDelayInjector(coldStartModel, Random(ctx.seeder.nextLong()))
-        else
+        } else {
             ZeroDelayInjector
+        }
         val deployer = SimFunctionDeployer(ctx.coroutineContext, ctx.clock, machineModel, delayInjector)
         val service = FaaSService(
             ctx.coroutineContext,

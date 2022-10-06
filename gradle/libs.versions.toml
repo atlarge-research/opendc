@@ -14,7 +14,6 @@ junit-jupiter = "5.9.1"
 kotlin = "1.7.20"
 kotlin-logging = "3.0.0"
 kotlinx-coroutines = "1.6.4"
-ktlint-gradle = "11.0.0"
 log4j = "2.19.0"
 microprofile-openapi = "3.0"
 microprofile-config = "3.0.1"
@@ -25,6 +24,7 @@ quarkus = "2.13.1.Final"
 quarkus-junit5-mockk = "1.1.1"
 sentry = "6.4.3"
 slf4j = "2.0.3"
+spotless = "6.11.0"
 
 [libraries]
 # Kotlin
@@ -104,5 +104,5 @@ microprofile-config = { module = "org.eclipse.microprofile.config:microprofile-c
 dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 gradle-node = { module = "com.github.node-gradle:gradle-node-plugin", version.ref = "gradle-node" }
 jandex-gradle = { module = "org.kordamp.gradle:jandex-gradle-plugin", version.ref = "jandex-gradle" }
-ktlint-gradle = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint-gradle" }
 jmh-gradle = { module = "me.champeau.jmh:jmh-gradle-plugin", version.ref = "jmh-gradle" }
+spotless-gradle = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }

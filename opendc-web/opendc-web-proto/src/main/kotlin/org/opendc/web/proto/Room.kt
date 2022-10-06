@@ -29,5 +29,5 @@ public data class Room(
     val id: String,
     val name: String,
     val tiles: Set<RoomTile>,
-    val topologyId: String? = null,
+    val topologyId: String? = null
 )

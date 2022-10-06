@@ -22,6 +22,7 @@
 
 plugins {
     `java-library`
+    id("spotless-conventions")
 }
 
 /* Project configuration */

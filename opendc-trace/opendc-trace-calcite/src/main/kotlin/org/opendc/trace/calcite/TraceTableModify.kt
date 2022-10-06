@@ -126,7 +126,7 @@ internal class TraceTableModify(
                         Long::class.java,
                         expression,
                         INSERT_METHOD,
-                        convertedChildExpr,
+                        convertedChildExpr
                     )
                 )
             )

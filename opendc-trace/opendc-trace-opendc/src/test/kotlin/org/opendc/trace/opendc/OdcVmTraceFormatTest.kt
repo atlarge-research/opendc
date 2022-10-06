@@ -131,7 +131,7 @@ internal class OdcVmTraceFormatTest {
             { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
             { assertEquals(1024.0, reader.getDouble(RESOURCE_CPU_CAPACITY)) },
             { assertEquals(1024.0, reader.getDouble(RESOURCE_MEM_CAPACITY)) },
-            { assertFalse(reader.nextRow()) },
+            { assertFalse(reader.nextRow()) }
         )
 
         reader.close()
@@ -178,7 +178,7 @@ internal class OdcVmTraceFormatTest {
             { assertEquals(Instant.EPOCH, reader.getInstant(RESOURCE_STATE_TIMESTAMP)) },
             { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
             { assertEquals(23.0, reader.getDouble(RESOURCE_STATE_CPU_USAGE)) },
-            { assertFalse(reader.nextRow()) },
+            { assertFalse(reader.nextRow()) }
         )
 
         reader.close()
@@ -247,7 +247,7 @@ internal class OdcVmTraceFormatTest {
             { assertEquals(setOf("a", "b", "d"), reader.getSet(INTERFERENCE_GROUP_MEMBERS, String::class.java)) },
             { assertEquals(0.5, reader.getDouble(INTERFERENCE_GROUP_TARGET)) },
             { assertEquals(0.9, reader.getDouble(INTERFERENCE_GROUP_SCORE)) },
-            { assertFalse(reader.nextRow()) },
+            { assertFalse(reader.nextRow()) }
         )
 
         reader.close()

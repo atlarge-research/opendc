@@ -79,7 +79,7 @@ public class BitbrainsExTraceFormat : TraceFormat {
                     TableColumn(RESOURCE_STATE_CPU_READY_PCT, TableColumnType.Double),
                     TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double),
                     TableColumn(RESOURCE_STATE_DISK_READ, TableColumnType.Double),
-                    TableColumn(RESOURCE_STATE_DISK_WRITE, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_DISK_WRITE, TableColumnType.Double)
                 )
             )
             else -> throw IllegalArgumentException("Table $table not supported")

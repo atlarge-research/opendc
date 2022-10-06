@@ -67,6 +67,6 @@ public data class Portfolio(
         val id: Long,
         val number: Int,
         val name: String,
-        val targets: Targets,
+        val targets: Targets
     )
 }

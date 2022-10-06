@@ -55,7 +55,7 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
         "cpu_count" to RESOURCE_CPU_COUNT,
         "cpu_capacity" to RESOURCE_CPU_CAPACITY,
         "requiredMemory" to RESOURCE_MEM_CAPACITY,
-        "mem_capacity" to RESOURCE_MEM_CAPACITY,
+        "mem_capacity" to RESOURCE_MEM_CAPACITY
     )
 
     override fun init(context: InitContext): ReadContext {
@@ -111,7 +111,7 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
                     .named("maxCores"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("requiredMemory"),
+                    .named("requiredMemory")
             )
             .named("resource")
 
@@ -141,7 +141,7 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
                     .named("cpu_capacity"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("mem_capacity"),
+                    .named("mem_capacity")
             )
             .named("resource")
 

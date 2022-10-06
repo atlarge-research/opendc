@@ -72,7 +72,7 @@ public class GwfTraceFormat : TraceFormat {
                     TableColumn(TASK_RUNTIME, TableColumnType.Duration),
                     TableColumn(TASK_REQ_NCPUS, TableColumnType.Int),
                     TableColumn(TASK_ALLOC_NCPUS, TableColumnType.Int),
-                    TableColumn(TASK_PARENTS, TableColumnType.Set(TableColumnType.String)),
+                    TableColumn(TASK_PARENTS, TableColumnType.Set(TableColumnType.String))
                 )
             )
             else -> throw IllegalArgumentException("Table $table not supported")

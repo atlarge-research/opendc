@@ -100,7 +100,6 @@ internal class TimerSchedulerTest {
             scheduler.startSingleTimer(0, 1000) { fail() }
 
             scheduler.startSingleTimer(0, 200) {
-
                 assertEquals(200, clock.millis())
             }
         }

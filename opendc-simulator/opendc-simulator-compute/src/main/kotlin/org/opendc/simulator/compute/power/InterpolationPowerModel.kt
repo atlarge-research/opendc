@@ -44,10 +44,11 @@ public class InterpolationPowerModel(private val powerValues: List<Double>) : Po
         val powerCil: Double = getAveragePowerValue(utilizationCil)
         val delta = (powerCil - powerFlr) / 10
 
-        return if (utilization % 0.1 == 0.0)
+        return if (utilization % 0.1 == 0.0) {
             getAveragePowerValue((clampedUtilization * 10).toInt())
-        else
+        } else {
             powerFlr + delta * (clampedUtilization - utilizationFlr.toDouble() / 10) * 100
+        }
     }
 
     override fun toString(): String = "InterpolationPowerModel[entries=${powerValues.size}]"

@@ -46,14 +46,15 @@ public class LocalParquetReader<out T>(
     /**
      * The input files to process.
      */
-    private val filesIterator = if (path.isDirectory())
+    private val filesIterator = if (path.isDirectory()) {
         Files.list(path)
             .filter { !it.isDirectory() }
             .sorted()
             .map { LocalInputFile(it) }
             .iterator()
-    else
+    } else {
         listOf(LocalInputFile(path)).iterator()
+    }
 
     /**
      * The Parquet reader to use.
@@ -76,10 +77,11 @@ public class LocalParquetReader<out T>(
             } else {
                 initReader()
 
-                if (reader == null)
+                if (reader == null) {
                     null
-                else
+                } else {
                     read()
+                }
             }
         } catch (e: InterruptedException) {
             throw IOException(e)

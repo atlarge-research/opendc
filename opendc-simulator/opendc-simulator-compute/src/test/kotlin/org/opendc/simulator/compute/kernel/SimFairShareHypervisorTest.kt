@@ -76,7 +76,7 @@ internal class SimFairShareHypervisorTest {
                     SimTraceFragment(duration * 1000, duration * 1000, 3500.0, 1),
                     SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
                     SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
-                ),
+                )
             )
 
         val engine = FlowEngine(coroutineContext, clock)
@@ -116,7 +116,7 @@ internal class SimFairShareHypervisorTest {
                     SimTraceFragment(duration * 1000, duration * 1000, 3500.0, 1),
                     SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
                     SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
-                ),
+                )
             )
         val workloadB =
             SimTraceWorkload(
@@ -206,7 +206,7 @@ internal class SimFairShareHypervisorTest {
                     SimTraceFragment(duration * 1000, duration * 1000, 28.0, 1),
                     SimTraceFragment(duration * 2000, duration * 1000, 3500.0, 1),
                     SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
-                ),
+                )
             )
         val workloadB =
             SimTraceWorkload(

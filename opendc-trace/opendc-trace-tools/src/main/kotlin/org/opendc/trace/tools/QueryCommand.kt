@@ -121,7 +121,7 @@ internal class QueryCommand : CliktCommand(name = "query", help = "Query workloa
 
         val options = mapOf(
             Printer.COLUMNS to List(meta.columnCount) { meta.getColumnName(it + 1) },
-            Printer.BORDER to "|",
+            Printer.BORDER to "|"
         )
         val data = mutableListOf<Map<String, Any>>()
 

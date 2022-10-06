@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,40 @@
  * SOFTWARE.
  */
 
-package org.opendc.workflow.service.scheduler.task
+plugins {
+    id("com.diffplug.spotless")
+}
 
-import org.opendc.workflow.service.internal.TaskState
-import org.opendc.workflow.service.internal.WorkflowServiceImpl
-import java.util.Random
+spotless {
+    pluginManager.withPlugin("java") {
+        java {
+            importOrder()
+            removeUnusedImports()
 
-/**
- * A [TaskEligibilityPolicy] that randomly accepts tasks in the system with some [probability].
- */
-public data class RandomTaskEligibilityPolicy(val probability: Double = 0.5) : TaskEligibilityPolicy {
-    override fun invoke(scheduler: WorkflowServiceImpl): TaskEligibilityPolicy.Logic = object : TaskEligibilityPolicy.Logic {
-        val random = Random(123)
+            palantirJavaFormat()
 
-        override fun invoke(task: TaskState): TaskEligibilityPolicy.Advice =
-            if (random.nextDouble() <= probability || scheduler.activeTasks.isEmpty()) {
-                TaskEligibilityPolicy.Advice.ADMIT
-            } else {
-                TaskEligibilityPolicy.Advice.DENY
-            }
+            trimTrailingWhitespace()
+            endWithNewline()
+
+            licenseHeaderFile(rootProject.file("buildSrc/src/main/kotlin/license.kt"))
+        }
     }
 
-    override fun toString(): String = "Random($probability)"
+    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+        kotlin {
+            ktlint()
+                .setUseExperimental(false)
+            trimTrailingWhitespace()
+            endWithNewline()
+
+            licenseHeaderFile(rootProject.file("buildSrc/src/main/kotlin/license.kt"))
+        }
+    }
+
+    kotlinGradle {
+        ktlint()
+
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }

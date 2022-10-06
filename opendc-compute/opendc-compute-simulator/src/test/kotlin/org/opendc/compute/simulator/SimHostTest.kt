@@ -225,7 +225,7 @@ internal class SimHostTest {
             { assertEquals(900001, sysStats.uptime.toMillis(), "Uptime does not match") },
             { assertEquals(300000, sysStats.downtime.toMillis(), "Downtime does not match") },
             { assertEquals(900001, guestSysStats.uptime.toMillis(), "Guest uptime does not match") },
-            { assertEquals(300000, guestSysStats.downtime.toMillis(), "Guest downtime does not match") },
+            { assertEquals(300000, guestSysStats.downtime.toMillis(), "Guest downtime does not match") }
         )
     }
 

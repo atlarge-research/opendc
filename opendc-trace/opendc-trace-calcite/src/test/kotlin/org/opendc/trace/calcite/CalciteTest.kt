@@ -86,7 +86,7 @@ class CalciteTest {
                 { assertEquals(300000, rs.getLong("duration")) },
                 { assertEquals(0.0, rs.getDouble("cpu_usage")) },
                 { assertTrue(rs.next()) },
-                { assertEquals("1019", rs.getString("id")) },
+                { assertEquals("1019", rs.getString("id")) }
             )
         }
     }
@@ -98,7 +98,7 @@ class CalciteTest {
                 { assertTrue(rs.next()) },
                 { assertArrayEquals(arrayOf("1019", "1023", "1052"), rs.getArray("members").array as Array<*>) },
                 { assertEquals(0.0, rs.getDouble("target")) },
-                { assertEquals(0.8830158730158756, rs.getDouble("score")) },
+                { assertEquals(0.8830158730158756, rs.getDouble("score")) }
             )
         }
     }
@@ -109,7 +109,7 @@ class CalciteTest {
             assertAll(
                 { assertTrue(rs.next()) },
                 { assertEquals(249.59993808, rs.getDouble("max_cpu_usage")) },
-                { assertEquals(5.387240309118493, rs.getDouble("avg_cpu_usage")) },
+                { assertEquals(5.387240309118493, rs.getDouble("avg_cpu_usage")) }
             )
         }
     }
@@ -214,7 +214,7 @@ class CalciteTest {
         runQuery(trace, "SELECT id FROM trace.resources") { rs ->
             assertAll(
                 { assertTrue(rs.next()) },
-                { assertArrayEquals(byteArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2), rs.getBytes("id")) },
+                { assertArrayEquals(byteArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2), rs.getBytes("id")) }
             )
         }
     }

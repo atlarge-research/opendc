@@ -87,7 +87,7 @@ class Portfolio(
      */
     @Type(type = "json")
     @Column(columnDefinition = "jsonb", nullable = false, updatable = false)
-    val targets: Targets,
+    val targets: Targets
 ) {
     /**
      * The scenarios in this portfolio.

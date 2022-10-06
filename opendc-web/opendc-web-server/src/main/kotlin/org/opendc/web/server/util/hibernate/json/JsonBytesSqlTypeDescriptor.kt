@@ -77,10 +77,12 @@ internal object JsonBytesSqlTypeDescriptor : AbstractJsonSqlTypeDescriptor() {
     private fun fromJsonBytes(jsonBytes: ByteArray?): String? {
         return if (jsonBytes == null) {
             null
-        } else try {
-            String(jsonBytes, CHARSET)
-        } catch (e: UnsupportedEncodingException) {
-            throw IllegalStateException(e)
+        } else {
+            try {
+                String(jsonBytes, CHARSET)
+            } catch (e: UnsupportedEncodingException) {
+                throw IllegalStateException(e)
+            }
         }
     }
 }

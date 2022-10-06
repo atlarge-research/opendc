@@ -43,7 +43,7 @@ import javax.ws.rs.WebApplicationException
 @RolesAllowed("openid")
 class PortfolioResource @Inject constructor(
     private val portfolioService: PortfolioService,
-    private val identity: SecurityIdentity,
+    private val identity: SecurityIdentity
 ) {
     /**
      * Get all portfolios that belong to the specified project.

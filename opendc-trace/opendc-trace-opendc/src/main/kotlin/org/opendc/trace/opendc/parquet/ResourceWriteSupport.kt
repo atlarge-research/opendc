@@ -110,7 +110,7 @@ internal class ResourceWriteSupport : WriteSupport<Resource>() {
                     .named("cpu_capacity"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("mem_capacity"),
+                    .named("mem_capacity")
             )
             .named("resource")
     }

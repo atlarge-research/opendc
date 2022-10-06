@@ -76,13 +76,3 @@ configurations.create("coverageDataElementsForQuarkus") {
         }
     }
 }
-
-/* Fix for Quarkus/ktlint-gradle incompatibilities */
-tasks.named("runKtlintCheckOverMainSourceSet") {
-    mustRunAfter(tasks.quarkusGenerateCode)
-    mustRunAfter(tasks.quarkusGenerateCodeDev)
-}
-
-tasks.named("runKtlintCheckOverTestSourceSet") {
-    mustRunAfter(tasks.quarkusGenerateCodeTests)
-}

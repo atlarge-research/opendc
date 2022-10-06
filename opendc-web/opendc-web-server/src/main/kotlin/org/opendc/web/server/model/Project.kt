@@ -85,7 +85,7 @@ class Project(
     var name: String,
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    val createdAt: Instant,
+    val createdAt: Instant
 ) {
     /**
      * The instant at which the project was updated.

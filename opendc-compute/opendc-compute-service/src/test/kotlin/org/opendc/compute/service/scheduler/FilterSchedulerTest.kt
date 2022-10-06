@@ -74,7 +74,7 @@ internal class FilterSchedulerTest {
     fun testNoHosts() {
         val scheduler = FilterScheduler(
             filters = emptyList(),
-            weighers = emptyList(),
+            weighers = emptyList()
         )
 
         val server = mockk<Server>()
@@ -88,7 +88,7 @@ internal class FilterSchedulerTest {
     fun testNoFiltersAndSchedulers() {
         val scheduler = FilterScheduler(
             filters = emptyList(),
-            weighers = emptyList(),
+            weighers = emptyList()
         )
 
         val hostA = mockk<HostView>()
@@ -144,7 +144,7 @@ internal class FilterSchedulerTest {
     fun testHostIsDown() {
         val scheduler = FilterScheduler(
             filters = listOf(ComputeFilter()),
-            weighers = emptyList(),
+            weighers = emptyList()
         )
 
         val host = mockk<HostView>()
@@ -163,7 +163,7 @@ internal class FilterSchedulerTest {
     fun testHostIsUp() {
         val scheduler = FilterScheduler(
             filters = listOf(ComputeFilter()),
-            weighers = emptyList(),
+            weighers = emptyList()
         )
 
         val host = mockk<HostView>()
@@ -182,7 +182,7 @@ internal class FilterSchedulerTest {
     fun testRamFilter() {
         val scheduler = FilterScheduler(
             filters = listOf(RamFilter(1.0)),
-            weighers = emptyList(),
+            weighers = emptyList()
         )
 
         val hostA = mockk<HostView>()
@@ -209,7 +209,7 @@ internal class FilterSchedulerTest {
     fun testRamFilterOvercommit() {
         val scheduler = FilterScheduler(
             filters = listOf(RamFilter(1.5)),
-            weighers = emptyList(),
+            weighers = emptyList()
         )
 
         val host = mockk<HostView>()
@@ -230,7 +230,7 @@ internal class FilterSchedulerTest {
     fun testVCpuFilter() {
         val scheduler = FilterScheduler(
             filters = listOf(VCpuFilter(1.0)),
-            weighers = emptyList(),
+            weighers = emptyList()
         )
 
         val hostA = mockk<HostView>()
@@ -257,7 +257,7 @@ internal class FilterSchedulerTest {
     fun testVCpuFilterOvercommit() {
         val scheduler = FilterScheduler(
             filters = listOf(VCpuFilter(16.0)),
-            weighers = emptyList(),
+            weighers = emptyList()
         )
 
         val host = mockk<HostView>()
@@ -278,7 +278,7 @@ internal class FilterSchedulerTest {
     fun testVCpuCapacityFilter() {
         val scheduler = FilterScheduler(
             filters = listOf(VCpuCapacityFilter()),
-            weighers = emptyList(),
+            weighers = emptyList()
         )
 
         val hostA = mockk<HostView>()
@@ -306,7 +306,7 @@ internal class FilterSchedulerTest {
     fun testInstanceCountFilter() {
         val scheduler = FilterScheduler(
             filters = listOf(InstanceCountFilter(limit = 2)),
-            weighers = emptyList(),
+            weighers = emptyList()
         )
 
         val hostA = mockk<HostView>()
@@ -333,7 +333,7 @@ internal class FilterSchedulerTest {
     fun testAffinityFilter() {
         val scheduler = FilterScheduler(
             filters = listOf(SameHostFilter()),
-            weighers = emptyList(),
+            weighers = emptyList()
         )
 
         val serverA = mockk<Server>()
@@ -372,7 +372,7 @@ internal class FilterSchedulerTest {
     fun testAntiAffinityFilter() {
         val scheduler = FilterScheduler(
             filters = listOf(DifferentHostFilter()),
-            weighers = emptyList(),
+            weighers = emptyList()
         )
 
         val serverA = mockk<Server>()
@@ -411,7 +411,7 @@ internal class FilterSchedulerTest {
     fun testRamWeigher() {
         val scheduler = FilterScheduler(
             filters = emptyList(),
-            weighers = listOf(RamWeigher(1.5)),
+            weighers = listOf(RamWeigher(1.5))
         )
 
         val hostA = mockk<HostView>()
@@ -438,7 +438,7 @@ internal class FilterSchedulerTest {
     fun testCoreRamWeigher() {
         val scheduler = FilterScheduler(
             filters = emptyList(),
-            weighers = listOf(CoreRamWeigher(1.5)),
+            weighers = listOf(CoreRamWeigher(1.5))
         )
 
         val hostA = mockk<HostView>()
@@ -465,7 +465,7 @@ internal class FilterSchedulerTest {
     fun testVCpuWeigher() {
         val scheduler = FilterScheduler(
             filters = emptyList(),
-            weighers = listOf(VCpuWeigher(16.0)),
+            weighers = listOf(VCpuWeigher(16.0))
         )
 
         val hostA = mockk<HostView>()
@@ -492,7 +492,7 @@ internal class FilterSchedulerTest {
     fun testInstanceCountWeigher() {
         val scheduler = FilterScheduler(
             filters = emptyList(),
-            weighers = listOf(InstanceCountWeigher(multiplier = -1.0)),
+            weighers = listOf(InstanceCountWeigher(multiplier = -1.0))
         )
 
         val hostA = mockk<HostView>()

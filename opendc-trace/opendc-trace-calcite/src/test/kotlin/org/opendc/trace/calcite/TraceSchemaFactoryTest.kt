@@ -48,7 +48,7 @@ class TraceSchemaFactoryTest {
                 { assertEquals("1019", rs.getString("id")) },
                 { assertEquals(1, rs.getInt("cpu_count")) },
                 { assertEquals(Timestamp.valueOf("2013-08-12 13:40:46.0"), rs.getTimestamp("start_time")) },
-                { assertEquals(181352.0, rs.getDouble("mem_capacity")) },
+                { assertEquals(181352.0, rs.getDouble("mem_capacity")) }
             )
         } finally {
             rs.close()

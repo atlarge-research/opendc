@@ -37,7 +37,7 @@ public data class Topology(
     val name: String,
     val rooms: List<Room>,
     val createdAt: Instant,
-    val updatedAt: Instant,
+    val updatedAt: Instant
 ) {
     /**
      * Create a new topology for a project.
@@ -70,6 +70,6 @@ public data class Topology(
         val number: Int,
         val name: String,
         val createdAt: Instant,
-        val updatedAt: Instant,
+        val updatedAt: Instant
     )
 }

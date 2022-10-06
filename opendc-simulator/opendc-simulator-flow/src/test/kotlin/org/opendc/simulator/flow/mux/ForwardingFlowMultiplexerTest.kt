@@ -59,7 +59,7 @@ internal class ForwardingFlowMultiplexerTest {
                     TraceFlowSource.Fragment(duration * 1000, 3500.0),
                     TraceFlowSource.Fragment(duration * 1000, 0.0),
                     TraceFlowSource.Fragment(duration * 1000, 183.0)
-                ),
+                )
             )
 
         val switch = ForwardingFlowMultiplexer(engine)

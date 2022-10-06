@@ -36,7 +36,7 @@ import java.util.TreeMap
  */
 public class SimPsu(
     private val ratedOutputPower: Double,
-    energyEfficiency: Map<Double, Double>,
+    energyEfficiency: Map<Double, Double>
 ) : SimPowerInlet() {
     /**
      * The power draw of the machine at this instant.

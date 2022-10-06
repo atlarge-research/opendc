@@ -206,7 +206,7 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                     .named("guests_error"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("guests_invalid"),
+                    .named("guests_invalid")
             )
             .named("host")
     }

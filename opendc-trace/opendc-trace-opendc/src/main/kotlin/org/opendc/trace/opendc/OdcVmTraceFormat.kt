@@ -95,7 +95,7 @@ public class OdcVmTraceFormat : TraceFormat {
                     TableColumn(RESOURCE_STOP_TIME, TableColumnType.Instant),
                     TableColumn(RESOURCE_CPU_COUNT, TableColumnType.Int),
                     TableColumn(RESOURCE_CPU_CAPACITY, TableColumnType.Double),
-                    TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double),
+                    TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double)
                 )
             )
             TABLE_RESOURCE_STATES -> TableDetails(
@@ -104,14 +104,14 @@ public class OdcVmTraceFormat : TraceFormat {
                     TableColumn(RESOURCE_STATE_TIMESTAMP, TableColumnType.Instant),
                     TableColumn(RESOURCE_STATE_DURATION, TableColumnType.Duration),
                     TableColumn(RESOURCE_CPU_COUNT, TableColumnType.Int),
-                    TableColumn(RESOURCE_STATE_CPU_USAGE, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_CPU_USAGE, TableColumnType.Double)
                 )
             )
             TABLE_INTERFERENCE_GROUPS -> TableDetails(
                 listOf(
                     TableColumn(INTERFERENCE_GROUP_MEMBERS, TableColumnType.Set(TableColumnType.String)),
                     TableColumn(INTERFERENCE_GROUP_TARGET, TableColumnType.Double),
-                    TableColumn(INTERFERENCE_GROUP_SCORE, TableColumnType.Double),
+                    TableColumn(INTERFERENCE_GROUP_SCORE, TableColumnType.Double)
                 )
             )
             else -> throw IllegalArgumentException("Table $table not supported")
@@ -130,10 +130,11 @@ public class OdcVmTraceFormat : TraceFormat {
             }
             TABLE_INTERFERENCE_GROUPS -> {
                 val modelPath = path.resolve("interference-model.json")
-                val parser = if (modelPath.exists())
+                val parser = if (modelPath.exists()) {
                     jsonFactory.createParser(modelPath.toFile())
-                else
+                } else {
                     jsonFactory.createParser("[]") // If model does not exist, return empty model
+                }
 
                 OdcVmInterferenceJsonTableReader(parser)
             }

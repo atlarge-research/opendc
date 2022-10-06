@@ -62,7 +62,7 @@ class JobResourceTest {
     private val dummyPortfolio = Portfolio(1, 1, "test", Targets(emptySet()))
     private val dummyTopology = Topology(1, 1, "test", emptyList(), Instant.now(), Instant.now())
     private val dummyTrace = Trace("bitbrains", "Bitbrains", "vm")
-    private val dummyScenario = Scenario(1, 1, dummyPortfolio, "test", Workload(dummyTrace, 1.0), dummyTopology, OperationalPhenomena(false, false), "test",)
+    private val dummyScenario = Scenario(1, 1, dummyPortfolio, "test", Workload(dummyTrace, 1.0), dummyTopology, OperationalPhenomena(false, false), "test")
     private val dummyJob = Job(1, dummyScenario, JobState.PENDING, Instant.now(), Instant.now())
 
     @BeforeEach

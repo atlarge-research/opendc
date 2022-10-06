@@ -77,14 +77,14 @@ public class AzureTraceFormat : TraceFormat {
                     TableColumn(RESOURCE_START_TIME, TableColumnType.Instant),
                     TableColumn(RESOURCE_STOP_TIME, TableColumnType.Instant),
                     TableColumn(RESOURCE_CPU_COUNT, TableColumnType.Int),
-                    TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double),
+                    TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double)
                 )
             )
             TABLE_RESOURCE_STATES -> TableDetails(
                 listOf(
                     TableColumn(RESOURCE_ID, TableColumnType.String),
                     TableColumn(RESOURCE_STATE_TIMESTAMP, TableColumnType.Instant),
-                    TableColumn(RESOURCE_STATE_CPU_USAGE_PCT, TableColumnType.Double),
+                    TableColumn(RESOURCE_STATE_CPU_USAGE_PCT, TableColumnType.Double)
                 )
             )
             else -> throw IllegalArgumentException("Table $table not supported")

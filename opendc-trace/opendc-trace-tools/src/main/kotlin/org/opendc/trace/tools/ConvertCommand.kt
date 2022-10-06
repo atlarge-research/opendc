@@ -105,7 +105,7 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
      */
     private val converter by option("-c", "--converter", help = "converter strategy to use").groupChoice(
         "default" to DefaultTraceConverter(),
-        "azure" to AzureTraceConverter(),
+        "azure" to AzureTraceConverter()
     ).defaultByName("default")
 
     override fun run() {

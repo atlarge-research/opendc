@@ -44,7 +44,7 @@ class ScenarioService @Inject constructor(
     private val portfolioRepository: PortfolioRepository,
     private val topologyRepository: TopologyRepository,
     private val traceRepository: TraceRepository,
-    private val scenarioRepository: ScenarioRepository,
+    private val scenarioRepository: ScenarioRepository
 ) {
     /**
      * List all [Scenario]s that belong a certain portfolio.

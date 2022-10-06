@@ -215,7 +215,7 @@ public class OpenDCRunner(
     private inner class SimulationTask(
         private val scenario: Scenario,
         private val repeat: Int,
-        private val topology: List<HostSpec>,
+        private val topology: List<HostSpec>
     ) : RecursiveTask<WebComputeMonitor.Results>() {
         override fun compute(): WebComputeMonitor.Results {
             val monitor = WebComputeMonitor()
@@ -261,10 +261,11 @@ public class OpenDCRunner(
 
                 val phenomena = scenario.phenomena
                 val failureModel =
-                    if (phenomena.failures)
+                    if (phenomena.failures) {
                         grid5000(Duration.ofDays(7))
-                    else
+                    } else {
                         null
+                    }
 
                 // Run workload trace
                 service.replay(clock, vms, seed, failureModel = failureModel, interference = phenomena.interference)

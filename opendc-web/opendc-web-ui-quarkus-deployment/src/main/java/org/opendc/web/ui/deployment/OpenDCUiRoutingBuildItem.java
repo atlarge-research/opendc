@@ -23,7 +23,6 @@
 package org.opendc.web.ui.deployment;
 
 import io.quarkus.builder.item.SimpleBuildItem;
-
 import java.util.List;
 
 /**
@@ -57,7 +56,7 @@ public final class OpenDCUiRoutingBuildItem extends SimpleBuildItem {
     }
 
     public boolean hasCustom404() {
-        return  this.custom404;
+        return this.custom404;
     }
 
     /**

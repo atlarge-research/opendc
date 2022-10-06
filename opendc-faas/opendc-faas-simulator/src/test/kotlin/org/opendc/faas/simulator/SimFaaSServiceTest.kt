@@ -101,7 +101,7 @@ internal class SimFaaSServiceTest {
             { assertEquals(1, funcStats.delayedInvocations) },
             { assertEquals(0, funcStats.failedInvocations) },
             { assertEquals(100.0, funcStats.waitTime.mean) },
-            { assertEquals(1285.0, funcStats.activeTime.mean) },
+            { assertEquals(1285.0, funcStats.activeTime.mean) }
         )
     }
 }

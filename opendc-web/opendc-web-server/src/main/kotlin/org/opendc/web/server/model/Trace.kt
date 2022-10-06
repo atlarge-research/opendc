@@ -43,7 +43,7 @@ import javax.persistence.Table
         NamedQuery(
             name = "Trace.findAll",
             query = "SELECT t FROM Trace t"
-        ),
+        )
     ]
 )
 class Trace(
@@ -54,7 +54,7 @@ class Trace(
     val name: String,
 
     @Column(nullable = false, updatable = false)
-    val type: String,
+    val type: String
 ) {
     /**
      * Return a string representation of this trace.

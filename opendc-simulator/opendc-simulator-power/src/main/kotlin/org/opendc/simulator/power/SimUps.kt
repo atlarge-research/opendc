@@ -40,7 +40,7 @@ import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 public class SimUps(
     private val engine: FlowEngine,
     private val idlePower: Double = 0.0,
-    private val lossCoefficient: Double = 0.0,
+    private val lossCoefficient: Double = 0.0
 ) : SimPowerOutlet() {
     /**
      * The resource aggregator used to combine the input sources.

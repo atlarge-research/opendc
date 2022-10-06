@@ -89,7 +89,7 @@ public abstract class TableReaderTestKit {
             { assertThrows<IllegalArgumentException> { reader.getDuration(-1) } },
             { assertThrows<IllegalArgumentException> { reader.getList(-1, Any::class.java) } },
             { assertThrows<IllegalArgumentException> { reader.getSet(-1, Any::class.java) } },
-            { assertThrows<IllegalArgumentException> { reader.getMap(-1, Any::class.java, Any::class.java) } },
+            { assertThrows<IllegalArgumentException> { reader.getMap(-1, Any::class.java, Any::class.java) } }
         )
     }
 

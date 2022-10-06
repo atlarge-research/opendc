@@ -42,7 +42,7 @@ import javax.ws.rs.WebApplicationException
 @RolesAllowed("openid")
 class PortfolioScenarioResource @Inject constructor(
     private val scenarioService: ScenarioService,
-    private val identity: SecurityIdentity,
+    private val identity: SecurityIdentity
 ) {
     /**
      * Get all scenarios that belong to the specified portfolio.

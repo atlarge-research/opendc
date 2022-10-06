@@ -47,5 +47,5 @@ public data class HostSystemStats(
     val guestsTerminated: Int,
     val guestsRunning: Int,
     val guestsError: Int,
-    val guestsInvalid: Int,
+    val guestsInvalid: Int
 )

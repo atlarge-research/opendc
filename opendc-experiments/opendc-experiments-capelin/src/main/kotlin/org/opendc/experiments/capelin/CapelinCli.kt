@@ -21,6 +21,7 @@
  */
 
 @file:JvmName("CapelinCli")
+
 package org.opendc.experiments.capelin
 
 import com.github.ajalt.clikt.core.CliktCommand
@@ -113,7 +114,7 @@ internal class CapelinCommand : CliktCommand(name = "capelin") {
             "hor-ver" to { HorVerPortfolio() },
             "more-hpc" to { MoreHpcPortfolio() },
             "more-velocity" to { MoreVelocityPortfolio() },
-            "op-phen" to { OperationalPhenomenaPortfolio() },
+            "op-phen" to { OperationalPhenomenaPortfolio() }
         )
 
     /**

@@ -88,7 +88,7 @@ public abstract class TableWriterTestKit {
             { assertThrows<IllegalArgumentException> { writer.setDuration(-1, Duration.ofMinutes(5)) } },
             { assertThrows<IllegalArgumentException> { writer.setList(-1, listOf("test")) } },
             { assertThrows<IllegalArgumentException> { writer.setSet(-1, setOf("test")) } },
-            { assertThrows<IllegalArgumentException> { writer.setMap(-1, mapOf("test" to "test")) } },
+            { assertThrows<IllegalArgumentException> { writer.setMap(-1, mapOf("test" to "test")) } }
         )
     }
 

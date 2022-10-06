@@ -106,7 +106,7 @@ class Scenario(
     val phenomena: OperationalPhenomena,
 
     @Column(name = "scheduler_name", nullable = false, updatable = false)
-    val schedulerName: String,
+    val schedulerName: String
 ) {
     /**
      * The [Job] associated with the scenario.

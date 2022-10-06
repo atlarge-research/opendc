@@ -124,7 +124,7 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
                     .named("attempts_failure"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("attempts_error"),
+                    .named("attempts_error")
             )
             .named("service")
     }

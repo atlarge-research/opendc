@@ -93,7 +93,7 @@ internal class WorkflowServiceTest {
                         jobAdmissionPolicy = NullJobAdmissionPolicy,
                         jobOrderPolicy = SubmissionTimeJobOrderPolicy(),
                         taskEligibilityPolicy = NullTaskEligibilityPolicy,
-                        taskOrderPolicy = SubmissionTimeTaskOrderPolicy(),
+                        taskOrderPolicy = SubmissionTimeTaskOrderPolicy()
                     )
                 )
             )

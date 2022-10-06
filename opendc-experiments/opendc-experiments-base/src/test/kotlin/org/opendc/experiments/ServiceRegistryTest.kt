@@ -94,7 +94,7 @@ class ServiceRegistryTest {
 
         assertAll(
             { assertNull(registry.resolve("opendc.org", String::class.java)) },
-            { assertNull(registry.resolve("opendc.org", Int::class.java)) },
+            { assertNull(registry.resolve("opendc.org", Int::class.java)) }
         )
     }
 
