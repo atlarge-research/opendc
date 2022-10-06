@@ -79,12 +79,13 @@ class JobRepository @Inject constructor(private val em: EntityManager) {
      * @param results The results to possible set.
      * @return `true` when the update succeeded`, `false` when there was a conflict.
      */
-    fun updateOne(job: Job, newState: JobState, time: Instant, results: Map<String, Any>?): Boolean {
+    fun updateOne(job: Job, newState: JobState, time: Instant, runtime: Int, results: Map<String, Any>?): Boolean {
         val count = em.createNamedQuery("Job.updateOne")
             .setParameter("id", job.id)
             .setParameter("oldState", job.state)
             .setParameter("newState", newState)
             .setParameter("updatedAt", Instant.now())
+            .setParameter("runtime", runtime)
             .setParameter("results", results)
             .executeUpdate()
         em.refresh(job)

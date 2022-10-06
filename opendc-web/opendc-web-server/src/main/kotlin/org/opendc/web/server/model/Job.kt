@@ -55,7 +55,7 @@ import javax.persistence.Table
             name = "Job.updateOne",
             query = """
                 UPDATE Job j
-                SET j.state = :newState, j.updatedAt = :updatedAt, j.results = :results
+                SET j.state = :newState, j.updatedAt = :updatedAt, j.runtime = :runtime, j.results = :results
                 WHERE j.id = :id AND j.state = :oldState
             """
         )
@@ -65,6 +65,9 @@ class Job(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     val id: Long,
+
+    @Column(name = "created_by", nullable = false, updatable = false)
+    val createdBy: String,
 
     @OneToOne(optional = false, mappedBy = "job", fetch = FetchType.EAGER)
     @JoinColumn(name = "scenario_id", nullable = false)
@@ -90,6 +93,12 @@ class Job(
      */
     @Column(nullable = false)
     var state: JobState = JobState.PENDING
+
+    /**
+     * The runtime of the job (in seconds).
+     */
+    @Column(nullable = false)
+    var runtime: Int = 0
 
     /**
      * Experiment results in JSON

@@ -36,11 +36,16 @@ public data class Job(
     val state: JobState,
     val createdAt: Instant,
     val updatedAt: Instant,
+    val runtime: Int,
     val results: Map<String, Any>? = null
 ) {
     /**
      * A request to update the state of a job.
+     *
+     * @property state The next state of the job.
+     * @property runtime The runtime of the job (in seconds).
+     * @property results The results of the job.
      */
     @Schema(name = "Runner.Job.Update")
-    public data class Update(val state: JobState, val results: Map<String, Any>? = null)
+    public data class Update(val state: JobState, val runtime: Int, val results: Map<String, Any>? = null)
 }

@@ -63,7 +63,7 @@ class JobResourceTest {
     private val dummyTopology = Topology(1, 1, "test", emptyList(), Instant.now(), Instant.now())
     private val dummyTrace = Trace("bitbrains", "Bitbrains", "vm")
     private val dummyScenario = Scenario(1, 1, dummyPortfolio, "test", Workload(dummyTrace, 1.0), dummyTopology, OperationalPhenomena(false, false), "test")
-    private val dummyJob = Job(1, dummyScenario, JobState.PENDING, Instant.now(), Instant.now())
+    private val dummyJob = Job(1, dummyScenario, JobState.PENDING, Instant.now(), Instant.now(), 0)
 
     @BeforeEach
     fun setUp() {
@@ -151,10 +151,10 @@ class JobResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = ["runner"])
     fun testUpdateNonExistent() {
-        every { jobService.updateState(1, any(), any()) } returns null
+        every { jobService.updateState(1, any(), any(), any()) } returns null
 
         Given {
-            body(Job.Update(JobState.PENDING))
+            body(Job.Update(JobState.PENDING, 0))
             contentType(ContentType.JSON)
         } When {
             post("/1")
@@ -170,10 +170,10 @@ class JobResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = ["runner"])
     fun testUpdateState() {
-        every { jobService.updateState(1, any(), any()) } returns dummyJob.copy(state = JobState.CLAIMED)
+        every { jobService.updateState(1, any(), any(), any()) } returns dummyJob.copy(state = JobState.CLAIMED)
 
         Given {
-            body(Job.Update(JobState.CLAIMED))
+            body(Job.Update(JobState.CLAIMED, 0))
             contentType(ContentType.JSON)
         } When {
             post("/1")

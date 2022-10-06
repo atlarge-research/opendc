@@ -48,6 +48,8 @@ import org.opendc.web.proto.runner.Topology
 import org.opendc.web.runner.internal.WebComputeMonitor
 import java.io.File
 import java.time.Duration
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.Random
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -144,9 +146,15 @@ public class OpenDCRunner(
         override fun compute() {
             val id = job.id
             val scenario = job.scenario
+            val startTime = Instant.now()
+            val currentThread = Thread.currentThread()
 
             val heartbeat = scheduler.scheduleWithFixedDelay(
-                { manager.heartbeat(id) },
+                {
+                    if (!manager.heartbeat(id, startTime.secondsSince())) {
+                        currentThread.interrupt()
+                    }
+                },
                 0,
                 heartbeatInterval.toMillis(),
                 TimeUnit.MILLISECONDS
@@ -163,12 +171,14 @@ public class OpenDCRunner(
                 }
                 val results = invokeAll(jobs).map { it.rawResult }
 
-                logger.info { "Finished simulation for job $id" }
-
                 heartbeat.cancel(true)
+
+                val duration = startTime.secondsSince()
+                logger.info { "Finished simulation for job $id (in $duration seconds)" }
 
                 manager.finish(
                     id,
+                    duration,
                     mapOf(
                         "total_requested_burst" to results.map { it.totalActiveTime + it.totalIdleTime },
                         "total_granted_burst" to results.map { it.totalActiveTime },
@@ -190,18 +200,25 @@ public class OpenDCRunner(
             } catch (e: Exception) {
                 // Check whether the job failed due to exceeding its time budget
                 if (Thread.interrupted()) {
-                    logger.info { "Simulation job $id exceeded time limit" }
+                    logger.info { "Simulation job $id exceeded time limit (${startTime.secondsSince()} seconds)" }
                 } else {
                     logger.info(e) { "Simulation job $id failed" }
                 }
 
                 try {
                     heartbeat.cancel(true)
-                    manager.fail(id)
+                    manager.fail(id, startTime.secondsSince())
                 } catch (e: Throwable) {
                     logger.error(e) { "Failed to update job" }
                 }
             }
+        }
+
+        /**
+         * Calculate the seconds since the specified instant.
+         */
+        private fun Instant.secondsSince(): Int {
+            return ChronoUnit.SECONDS.between(this, Instant.now()).toInt()
         }
     }
 

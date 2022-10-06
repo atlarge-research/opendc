@@ -33,7 +33,10 @@ import javax.inject.Inject
  * Service for managing [Job]s.
  */
 @ApplicationScoped
-class JobService @Inject constructor(private val repository: JobRepository) {
+class JobService @Inject constructor(
+    private val repository: JobRepository,
+    private val accountingService: UserAccountingService
+) {
     /**
      * Query the pending simulation jobs.
      */
@@ -50,8 +53,13 @@ class JobService @Inject constructor(private val repository: JobRepository) {
 
     /**
      * Atomically update the state of a [Job].
+     *
+     * @param id The identifier of the job.
+     * @param newState The next state for the job.
+     * @param runtime The runtime of the job (in seconds).
+     * @param results The potential results of the job.
      */
-    fun updateState(id: Long, newState: JobState, results: Map<String, Any>?): Job? {
+    fun updateState(id: Long, newState: JobState, runtime: Int, results: Map<String, Any>?): Job? {
         val entity = repository.findOne(id) ?: return null
         val state = entity.state
         if (!state.isTransitionLegal(newState)) {
@@ -59,7 +67,15 @@ class JobService @Inject constructor(private val repository: JobRepository) {
         }
 
         val now = Instant.now()
-        if (!repository.updateOne(entity, newState, now, results)) {
+        var nextState = newState
+        val consumedBudget = (runtime - entity.runtime).coerceAtLeast(1)
+
+        // Check whether the user still has any simulation budget left
+        if (accountingService.consumeSimulationBudget(entity.createdBy, consumedBudget) && nextState == JobState.RUNNING) {
+            nextState = JobState.FAILED // User has consumed all their budget; cancel the job
+        }
+
+        if (!repository.updateOne(entity, nextState, now, runtime, results)) {
             throw IllegalStateException("Conflicting update")
         }
 

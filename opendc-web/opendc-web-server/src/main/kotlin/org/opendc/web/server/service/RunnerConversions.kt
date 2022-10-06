@@ -49,7 +49,7 @@ internal fun Portfolio.toRunnerDto(): org.opendc.web.proto.runner.Portfolio {
  * Convert a [Job] into a runner-facing DTO.
  */
 internal fun Job.toRunnerDto(): org.opendc.web.proto.runner.Job {
-    return org.opendc.web.proto.runner.Job(id, scenario.toRunnerDto(), state, createdAt, updatedAt, results)
+    return org.opendc.web.proto.runner.Job(id, scenario.toRunnerDto(), state, createdAt, updatedAt, runtime, results)
 }
 
 /**
