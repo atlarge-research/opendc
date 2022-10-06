@@ -34,3 +34,9 @@ tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
     kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
 }
+
+configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    // Higher versions currently have issues with formatting where wildcard imports are automatically removed,
+    // even when in use.
+    version.set("0.42.1")
+}

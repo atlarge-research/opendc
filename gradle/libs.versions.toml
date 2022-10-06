@@ -1,30 +1,30 @@
 [versions]
-calcite = "1.31.0"
+calcite = "1.32.0"
 clikt = "3.5.0"
 commons-math3 = "3.6.1"
-dokka = "1.6.21"
+dokka = "1.7.10"
 gradle-node = "3.4.0"
-hadoop = "3.3.3"
-jackson = "2.13.3"
+hadoop = "3.3.4"
+jackson = "2.13.4"
 jandex-gradle = "0.13.2"
 jline = "3.21.0"
-jmh-gradle = "0.6.6"
+jmh-gradle = "0.6.8"
 jakarta-validation = "2.0.2"
-junit-jupiter = "5.8.2"
-kotlin = "1.6.21"
-kotlin-logging = "2.1.23"
+junit-jupiter = "5.9.1"
+kotlin = "1.7.20"
+kotlin-logging = "3.0.0"
 kotlinx-coroutines = "1.6.4"
-ktlint-gradle = "10.3.0"
-log4j = "2.18.0"
+ktlint-gradle = "11.0.0"
+log4j = "2.19.0"
 microprofile-openapi = "3.0"
 microprofile-config = "3.0.1"
-mockk = "1.12.5"
+mockk = "1.13.2"
 parquet = "1.12.3"
 progressbar = "0.9.3"
-quarkus = "2.11.1.Final"
+quarkus = "2.13.1.Final"
 quarkus-junit5-mockk = "1.1.1"
-sentry = "6.3.0"
-slf4j = "1.7.36"
+sentry = "6.4.3"
+slf4j = "2.0.3"
 
 [libraries]
 # Kotlin
@@ -36,7 +36,7 @@ kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core",
 # Logging
 kotlin-logging = { module = "io.github.microutils:kotlin-logging", version.ref = "kotlin-logging" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
-log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
+log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
 sentry-log4j2 = { module = "io.sentry:sentry-log4j2", version.ref = "sentry" }
 
 # Testing
