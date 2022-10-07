@@ -64,7 +64,6 @@ function ScenarioTable({ portfolio, status }) {
                             ) : (
                                 'Unknown Topology'
                             )}
-                            ,
                         </Td>
                         <Td dataLabel="Workload">{`${scenario.workload.trace.name} (${
                             scenario.workload.samplingFraction * 100

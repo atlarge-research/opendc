@@ -28,26 +28,44 @@ import {
     DropdownItem,
     DropdownGroup,
     Avatar,
+    Progress,
+    ProgressSize,
+    DropdownSeparator,
 } from '@patternfly/react-core'
 import { useReducer } from 'react'
 import { useAuth } from '../auth'
+import useUser from '../data/user'
 
 export default function AppHeaderUser() {
     const { logout, user, isAuthenticated, isLoading } = useAuth()
     const username = isAuthenticated || isLoading ? user?.name : 'Anonymous'
     const avatar = isAuthenticated || isLoading ? user?.picture : '/img/avatar.svg'
 
+    const { data } = useUser()
+    const simulationBudget = data?.accounting?.simulationTimeBudget ?? 3600
+    const simulationTime = data?.accounting?.simulationTime | 0
+
     const [isDropdownOpen, toggleDropdown] = useReducer((t) => !t, false)
     const userDropdownItems = [
-        <DropdownGroup key="group 2">
-            <DropdownItem
-                key="group 2 logout"
-                isDisabled={!isAuthenticated}
-                onClick={() => logout({ returnTo: window.location.origin })}
-            >
-                Logout
+        <DropdownGroup key="budget" label="Monthly Simulation Budget">
+            <DropdownItem isDisabled>
+                <Progress
+                    min={0}
+                    max={simulationBudget}
+                    value={simulationTime}
+                    title={`${Math.ceil(simulationTime / 60)} of ${Math.ceil(simulationBudget / 60)} minutes`}
+                    size={ProgressSize.sm}
+                />
             </DropdownItem>
         </DropdownGroup>,
+        <DropdownSeparator key="separator" />,
+        <DropdownItem
+            key="group 2 logout"
+            isDisabled={!isAuthenticated}
+            onClick={() => logout({ returnTo: window.location.origin })}
+        >
+            Logout
+        </DropdownItem>,
     ]
 
     const avatarComponent = avatar ? (
