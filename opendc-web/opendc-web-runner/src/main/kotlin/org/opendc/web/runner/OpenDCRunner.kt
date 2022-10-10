@@ -74,7 +74,7 @@ public class OpenDCRunner(
     private val manager: JobManager,
     private val tracePath: File,
     parallelism: Int = Runtime.getRuntime().availableProcessors(),
-    private val jobTimeout: Duration = Duration.ofMillis(10),
+    private val jobTimeout: Duration = Duration.ofMinutes(10),
     private val pollInterval: Duration = Duration.ofSeconds(30),
     private val heartbeatInterval: Duration = Duration.ofMinutes(1)
 ) : Runnable {
