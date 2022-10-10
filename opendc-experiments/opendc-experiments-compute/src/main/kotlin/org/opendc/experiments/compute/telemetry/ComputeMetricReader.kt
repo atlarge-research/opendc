@@ -138,6 +138,10 @@ public class ComputeMetricReader(
             get() = _hostsDown
         private var _hostsDown = 0
 
+        override val serversTotal: Int
+            get() = _serversTotal
+        private var _serversTotal = 0
+
         override val serversPending: Int
             get() = _serversPending
         private var _serversPending = 0
@@ -167,6 +171,7 @@ public class ComputeMetricReader(
             val stats = service.getSchedulerStats()
             _hostsUp = stats.hostsAvailable
             _hostsDown = stats.hostsUnavailable
+            _serversTotal = stats.serversTotal
             _serversPending = stats.serversPending
             _serversActive = stats.serversActive
             _attemptsSuccess = stats.attemptsSuccess.toInt()

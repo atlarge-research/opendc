@@ -32,6 +32,7 @@ import org.opendc.compute.service.ComputeService
  * @property attemptsSuccess Scheduling attempts that resulted into an allocation onto a host.
  * @property attemptsFailure The number of failed scheduling attempt due to insufficient capacity at the moment.
  * @property attemptsError The number of scheduling attempts that failed due to system error.
+ * @property serversTotal The number of servers registered with the service.
  * @property serversPending The number of servers that are pending to be scheduled.
  * @property serversActive The number of servers that are currently managed by the service and running.
  */
@@ -41,6 +42,7 @@ public data class SchedulerStats(
     val attemptsSuccess: Long,
     val attemptsFailure: Long,
     val attemptsError: Long,
+    val serversTotal: Int,
     val serversPending: Int,
     val serversActive: Int
 )

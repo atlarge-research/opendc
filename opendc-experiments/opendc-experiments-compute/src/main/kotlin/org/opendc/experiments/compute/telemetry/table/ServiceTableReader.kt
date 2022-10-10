@@ -44,6 +44,11 @@ public interface ServiceTableReader {
     public val hostsDown: Int
 
     /**
+     * The number of servers that are registered with the compute service..
+     */
+    public val serversTotal: Int
+
+    /**
      * The number of servers that are pending to be scheduled.
      */
     public val serversPending: Int

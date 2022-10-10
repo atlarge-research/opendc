@@ -295,6 +295,7 @@ internal class ComputeServiceImpl(
             _attemptsSuccess,
             _attemptsFailure,
             _attemptsError,
+            servers.size,
             _serversPending,
             _serversActive
         )
