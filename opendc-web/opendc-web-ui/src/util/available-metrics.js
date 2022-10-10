@@ -42,10 +42,10 @@ export const METRIC_NAMES_SHORT = {
     mean_num_deployed_images: 'Mean Num. Deployed Images Per Host',
     max_num_deployed_images: 'Max. Num. Deployed Images Per Host',
     total_failure_vm_slices: 'Total Num. Failed VM Slices',
-    total_vms_submitted: 'Total Num. VMs Submitted',
-    total_vms_queued: 'Max. Num. VMs Queued',
-    total_vms_finished: 'Max. Num. VMs Finished',
-    total_vms_failed: 'Max. Num. VMs Failed',
+    total_vms_submitted: 'VMs Submitted',
+    total_vms_queued: 'VMs Queued',
+    total_vms_finished: 'VMs Finished',
+    total_vms_failed: 'VMs Failed',
 }
 
 export const METRIC_NAMES = {
@@ -58,11 +58,11 @@ export const METRIC_NAMES = {
     mean_cpu_demand: 'Mean Host CPU Demand',
     mean_num_deployed_images: 'Mean Number of Deployed Images Per Host',
     max_num_deployed_images: 'Maximum Number Deployed Images Per Host',
-    total_failure_vm_slices: 'Total Number Failed VM Slices',
-    total_vms_submitted: 'Total Number VMs Submitted',
-    total_vms_queued: 'Maximum Number VMs Queued',
-    total_vms_finished: 'Maximum Number VMs Finished',
-    total_vms_failed: 'Maximum Number VMs Failed',
+    total_failure_vm_slices: 'Failed VM Slices',
+    total_vms_submitted: 'VMs Submitted',
+    total_vms_queued: 'VMs Queued',
+    total_vms_finished: 'VMs Finished',
+    total_vms_failed: 'VMs Failed',
 }
 
 export const METRIC_UNITS = {
@@ -94,9 +94,8 @@ export const METRIC_DESCRIPTIONS = {
     mean_num_deployed_images: 'The average number of virtual machines deployed on a host.',
     max_num_deployed_images: 'The maximum number of virtual machines deployed at any time.',
     total_failure_vm_slices: 'The total amount of CPU clock cycles lost due to failure.',
-    total_vms_submitted: 'The total number of virtual machines scheduled by the compute service.',
-    total_vms_queued:
-        'The maximum number of virtual machines waiting to be scheduled by the compute service at any point.',
-    total_vms_finished: 'The total number of virtual machines that completed successfully.',
-    total_vms_failed: 'The total number of virtual machines that failed during execution.',
+    total_vms_submitted: 'The number of virtual machines scheduled by the compute service.',
+    total_vms_queued: 'The number of virtual machines still waiting to be scheduled by the compute service.',
+    total_vms_finished: 'The number of virtual machines that completed.',
+    total_vms_failed: 'The number of virtual machines that could not be scheduled.',
 }

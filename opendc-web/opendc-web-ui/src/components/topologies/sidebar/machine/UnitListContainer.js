@@ -25,6 +25,7 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import UnitListComponent from './UnitListComponent'
 import { deleteUnit } from '../../../../redux/actions/topology/machine'
+import UnitType from './UnitType'
 
 function UnitListContainer({ machineId, unitType }) {
     const dispatch = useDispatch()
@@ -40,7 +41,7 @@ function UnitListContainer({ machineId, unitType }) {
 
 UnitListContainer.propTypes = {
     machineId: PropTypes.string.isRequired,
-    unitType: PropTypes.string.isRequired,
+    unitType: UnitType.isRequired,
 }
 
 export default UnitListContainer

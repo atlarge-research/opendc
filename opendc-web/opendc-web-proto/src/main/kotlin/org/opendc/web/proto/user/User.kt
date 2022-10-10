@@ -20,32 +20,12 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.runner
-
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.JobState
-import java.time.Instant
+package org.opendc.web.proto.user
 
 /**
- * A simulation job to be simulated by a runner.
+ * A user of OpenDC.
  */
-@Schema(name = "Runner.Job")
-public data class Job(
-    val id: Long,
-    val scenario: Scenario,
-    val state: JobState,
-    val createdAt: Instant,
-    val updatedAt: Instant,
-    val runtime: Int,
-    val results: Map<String, Any>? = null
-) {
-    /**
-     * A request to update the state of a job.
-     *
-     * @property state The next state of the job.
-     * @property runtime The runtime of the job (in seconds).
-     * @property results The results of the job.
-     */
-    @Schema(name = "Runner.Job.Update")
-    public data class Update(val state: JobState, val runtime: Int, val results: Map<String, Any>? = null)
-}
+public data class User(
+    val userId: String,
+    val accounting: UserAccounting
+)

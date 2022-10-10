@@ -43,7 +43,7 @@ class QuarkusJobManager @Inject constructor(private val service: JobService) : J
     @Transactional
     override fun claim(id: Long): Boolean {
         return try {
-            service.updateState(id, JobState.CLAIMED, null)
+            service.updateState(id, JobState.CLAIMED, 0, null)
             true
         } catch (e: IllegalStateException) {
             false
@@ -51,17 +51,18 @@ class QuarkusJobManager @Inject constructor(private val service: JobService) : J
     }
 
     @Transactional
-    override fun heartbeat(id: Long) {
-        service.updateState(id, JobState.RUNNING, null)
+    override fun heartbeat(id: Long, runtime: Int): Boolean {
+        val res = service.updateState(id, JobState.RUNNING, runtime, null)
+        return res?.state != JobState.FAILED
     }
 
     @Transactional
-    override fun fail(id: Long) {
-        service.updateState(id, JobState.FAILED, null)
+    override fun fail(id: Long, runtime: Int) {
+        service.updateState(id, JobState.FAILED, runtime, null)
     }
 
     @Transactional
-    override fun finish(id: Long, results: Map<String, Any>) {
-        service.updateState(id, JobState.FINISHED, results)
+    override fun finish(id: Long, runtime: Int, results: Map<String, Any>) {
+        service.updateState(id, JobState.FINISHED, runtime, results)
     }
 }

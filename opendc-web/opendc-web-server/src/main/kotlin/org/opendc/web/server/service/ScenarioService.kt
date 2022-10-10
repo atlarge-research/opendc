@@ -22,6 +22,7 @@
 
 package org.opendc.web.server.service
 
+import org.opendc.web.proto.JobState
 import org.opendc.web.server.model.Job
 import org.opendc.web.server.model.Scenario
 import org.opendc.web.server.model.Workload
@@ -44,7 +45,8 @@ class ScenarioService @Inject constructor(
     private val portfolioRepository: PortfolioRepository,
     private val topologyRepository: TopologyRepository,
     private val traceRepository: TraceRepository,
-    private val scenarioRepository: ScenarioRepository
+    private val scenarioRepository: ScenarioRepository,
+    private val accountingService: UserAccountingService
 ) {
     /**
      * List all [Scenario]s that belong a certain portfolio.
@@ -123,7 +125,12 @@ class ScenarioService @Inject constructor(
             request.phenomena,
             request.schedulerName
         )
-        val job = Job(0, scenario, now, portfolio.targets.repeats)
+        val job = Job(0, userId, scenario, now, portfolio.targets.repeats)
+
+        // Fail the job if there is not enough budget for the simulation
+        if (!accountingService.hasSimulationBudget(userId)) {
+            job.state = JobState.FAILED
+        }
 
         scenario.job = job
         portfolio.scenarios.add(scenario)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.server.rest.error
-
-import org.opendc.web.proto.ProtocolError
-import javax.ws.rs.WebApplicationException
-import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.Response
-import javax.ws.rs.ext.ExceptionMapper
-import javax.ws.rs.ext.Provider
+import { request } from './index'
 
 /**
- * Helper class to transform an exception into an JSON error response.
+ * Fetch information about the user from the web server.
+ *
+ * @param auth The authentication object.
  */
-@Provider
-class GenericExceptionMapper : ExceptionMapper<Exception> {
-    override fun toResponse(exception: Exception): Response {
-        val code = if (exception is WebApplicationException) exception.response.status else 500
-
-        return Response.status(code)
-            .entity(ProtocolError(code, exception.message ?: "Unknown error"))
-            .type(MediaType.APPLICATION_JSON)
-            .build()
-    }
+export function fetchUser(auth) {
+    return request(auth, `users/me`)
 }

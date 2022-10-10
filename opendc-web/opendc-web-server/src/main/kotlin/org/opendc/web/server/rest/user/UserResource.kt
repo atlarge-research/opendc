@@ -20,32 +20,26 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.runner
+package org.opendc.web.server.rest.user
 
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.JobState
-import java.time.Instant
+import io.quarkus.security.identity.SecurityIdentity
+import org.opendc.web.proto.user.User
+import org.opendc.web.server.service.UserService
+import javax.annotation.security.RolesAllowed
+import javax.inject.Inject
+import javax.ws.rs.GET
+import javax.ws.rs.Path
 
 /**
- * A simulation job to be simulated by a runner.
+ * A resource representing the active user.
  */
-@Schema(name = "Runner.Job")
-public data class Job(
-    val id: Long,
-    val scenario: Scenario,
-    val state: JobState,
-    val createdAt: Instant,
-    val updatedAt: Instant,
-    val runtime: Int,
-    val results: Map<String, Any>? = null
-) {
+@Path("/users")
+@RolesAllowed("openid")
+class UserResource @Inject constructor(private val userService: UserService, private val identity: SecurityIdentity) {
     /**
-     * A request to update the state of a job.
-     *
-     * @property state The next state of the job.
-     * @property runtime The runtime of the job (in seconds).
-     * @property results The results of the job.
+     * Get the current active user data.
      */
-    @Schema(name = "Runner.Job.Update")
-    public data class Update(val state: JobState, val runtime: Int, val results: Map<String, Any>? = null)
+    @GET
+    @Path("me")
+    fun get(): User = userService.getUser(identity)
 }

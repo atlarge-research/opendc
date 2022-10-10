@@ -20,32 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.runner
-
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.JobState
-import java.time.Instant
+import { useQuery } from 'react-query'
+import { fetchUser } from '../api/users'
 
 /**
- * A simulation job to be simulated by a runner.
+ * Configure the query defaults for the user client.
  */
-@Schema(name = "Runner.Job")
-public data class Job(
-    val id: Long,
-    val scenario: Scenario,
-    val state: JobState,
-    val createdAt: Instant,
-    val updatedAt: Instant,
-    val runtime: Int,
-    val results: Map<String, Any>? = null
-) {
-    /**
-     * A request to update the state of a job.
-     *
-     * @property state The next state of the job.
-     * @property runtime The runtime of the job (in seconds).
-     * @property results The results of the job.
-     */
-    @Schema(name = "Runner.Job.Update")
-    public data class Update(val state: JobState, val runtime: Int, val results: Map<String, Any>? = null)
+export function configureUserClient(queryClient, auth) {
+    queryClient.setQueryDefaults('user', {
+        queryFn: () => fetchUser(auth),
+    })
+}
+
+/**
+ * Fetch the user data on the server.
+ */
+export default function useUser(options = {}) {
+    return useQuery('user', options)
 }

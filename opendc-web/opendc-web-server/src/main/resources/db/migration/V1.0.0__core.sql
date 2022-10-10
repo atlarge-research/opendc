@@ -65,13 +65,25 @@ create table scenarios
 
 create table jobs
 (
-    id         bigint    not null,
-    created_at timestamp not null,
-    repeats    integer   not null,
+    id         bigint       not null,
+    created_by varchar(255) not null,
+    created_at timestamp    not null,
+    repeats    integer      not null,
     results    jsonb,
-    state      integer   not null,
-    updated_at timestamp not null,
+    state      integer      not null,
+    runtime    integer      not null,
+    updated_at timestamp    not null,
     primary key (id)
+);
+
+-- User accounting
+create table user_accounting
+(
+    user_id                varchar(255) not null,
+    period_end             date         not null,
+    simulation_time        integer      not null,
+    simulation_time_budget integer      not null,
+    primary key (user_id)
 );
 
 -- Workload traces available to the user.

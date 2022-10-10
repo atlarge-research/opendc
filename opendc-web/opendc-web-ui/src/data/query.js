@@ -26,6 +26,7 @@ import { useAuth } from '../auth'
 import { configureExperimentClient } from './experiments'
 import { configureProjectClient } from './project'
 import { configureTopologyClient } from './topology'
+import { configureUserClient } from './user'
 
 let queryClient
 
@@ -34,6 +35,7 @@ function createQueryClient(auth) {
     configureProjectClient(client, auth)
     configureExperimentClient(client, auth)
     configureTopologyClient(client, auth)
+    configureUserClient(client, auth)
     return client
 }
 

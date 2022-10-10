@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,25 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.runner
+package org.opendc.web.server.service
 
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.JobState
-import java.time.Instant
+import io.quarkus.security.identity.SecurityIdentity
+import org.opendc.web.proto.user.User
+import javax.enterprise.context.ApplicationScoped
+import javax.inject.Inject
 
 /**
- * A simulation job to be simulated by a runner.
+ * Service for managing [User]s.
  */
-@Schema(name = "Runner.Job")
-public data class Job(
-    val id: Long,
-    val scenario: Scenario,
-    val state: JobState,
-    val createdAt: Instant,
-    val updatedAt: Instant,
-    val runtime: Int,
-    val results: Map<String, Any>? = null
-) {
+@ApplicationScoped
+class UserService @Inject constructor(private val accounting: UserAccountingService) {
     /**
-     * A request to update the state of a job.
-     *
-     * @property state The next state of the job.
-     * @property runtime The runtime of the job (in seconds).
-     * @property results The results of the job.
+     * Obtain the [User] object for the specified [identity].
      */
-    @Schema(name = "Runner.Job.Update")
-    public data class Update(val state: JobState, val runtime: Int, val results: Map<String, Any>? = null)
+    fun getUser(identity: SecurityIdentity): User {
+        val userId = identity.principal.name
+        val accounting = accounting.getAccounting(userId)
+
+        return User(userId, accounting)
+    }
 }

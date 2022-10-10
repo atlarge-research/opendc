@@ -31,6 +31,7 @@ public data class ServiceData(
     val timestamp: Instant,
     val hostsUp: Int,
     val hostsDown: Int,
+    val serversTotal: Int,
     val serversPending: Int,
     val serversActive: Int,
     val attemptsSuccess: Int,
@@ -42,5 +43,5 @@ public data class ServiceData(
  * Convert a [ServiceTableReader] into a persistent object.
  */
 public fun ServiceTableReader.toServiceData(): ServiceData {
-    return ServiceData(timestamp, hostsUp, hostsDown, serversPending, serversActive, attemptsSuccess, attemptsFailure, attemptsError)
+    return ServiceData(timestamp, hostsUp, hostsDown, serversTotal, serversPending, serversActive, attemptsSuccess, attemptsFailure, attemptsError)
 }

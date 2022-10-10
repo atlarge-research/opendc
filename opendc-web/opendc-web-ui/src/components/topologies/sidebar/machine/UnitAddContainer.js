@@ -25,6 +25,7 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import UnitAddComponent from './UnitAddComponent'
 import { addUnit } from '../../../../redux/actions/topology/machine'
+import UnitType from './UnitType'
 
 function UnitAddContainer({ machineId, unitType }) {
     const units = useSelector((state) => Object.values(state.topology[unitType]))
@@ -37,7 +38,7 @@ function UnitAddContainer({ machineId, unitType }) {
 
 UnitAddContainer.propTypes = {
     machineId: PropTypes.string.isRequired,
-    unitType: PropTypes.string.isRequired,
+    unitType: UnitType.isRequired,
 }
 
 export default UnitAddContainer

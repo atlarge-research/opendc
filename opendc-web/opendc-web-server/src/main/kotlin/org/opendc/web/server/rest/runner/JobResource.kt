@@ -65,7 +65,7 @@ class JobResource @Inject constructor(private val jobService: JobService) {
     @Transactional
     fun update(@PathParam("job") id: Long, @Valid update: Job.Update): Job {
         return try {
-            jobService.updateState(id, update.state, update.results)
+            jobService.updateState(id, update.state, update.runtime, update.results)
                 ?: throw WebApplicationException("Job not found", 404)
         } catch (e: IllegalArgumentException) {
             throw WebApplicationException(e, 400)
