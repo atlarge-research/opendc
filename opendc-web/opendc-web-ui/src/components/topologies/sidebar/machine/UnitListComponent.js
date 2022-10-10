@@ -20,9 +20,10 @@ import {
 } from '@patternfly/react-core'
 import { CubesIcon, InfoIcon, TrashIcon } from '@patternfly/react-icons'
 import { ProcessingUnit, StorageUnit } from '../../../../shapes'
+import UnitType from './UnitType'
 
 function UnitInfo({ unit, unitType }) {
-    if (unitType === 'cpu' || unitType === 'gpu') {
+    if (unitType === 'cpus' || unitType === 'gpus') {
         return (
             <DescriptionList>
                 <DescriptionListGroup>
@@ -60,7 +61,7 @@ function UnitInfo({ unit, unitType }) {
 }
 
 UnitInfo.propTypes = {
-    unitType: PropTypes.string.isRequired,
+    unitType: UnitType.isRequired,
     unit: PropTypes.oneOfType([ProcessingUnit, StorageUnit]).isRequired,
 }
 
@@ -104,7 +105,7 @@ function UnitListComponent({ unitType, units, onDelete }) {
 }
 
 UnitListComponent.propTypes = {
-    unitType: PropTypes.string.isRequired,
+    unitType: UnitType.isRequired,
     units: PropTypes.arrayOf(PropTypes.oneOfType([ProcessingUnit, StorageUnit])).isRequired,
     onDelete: PropTypes.func,
 }

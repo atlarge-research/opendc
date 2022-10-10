@@ -95,8 +95,7 @@ export const METRIC_DESCRIPTIONS = {
     max_num_deployed_images: 'The maximum number of virtual machines deployed at any time.',
     total_failure_vm_slices: 'The total amount of CPU clock cycles lost due to failure.',
     total_vms_submitted: 'The number of virtual machines scheduled by the compute service.',
-    total_vms_queued:
-        'The number of virtual machines still waiting to be scheduled by the compute service.',
+    total_vms_queued: 'The number of virtual machines still waiting to be scheduled by the compute service.',
     total_vms_finished: 'The number of virtual machines that completed.',
     total_vms_failed: 'The number of virtual machines that could not be scheduled.',
 }
