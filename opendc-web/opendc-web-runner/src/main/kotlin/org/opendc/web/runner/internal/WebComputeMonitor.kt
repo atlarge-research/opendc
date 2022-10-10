@@ -24,8 +24,9 @@ package org.opendc.web.runner.internal
 
 import org.opendc.experiments.compute.telemetry.ComputeMonitor
 import org.opendc.experiments.compute.telemetry.table.HostTableReader
+import org.opendc.experiments.compute.telemetry.table.ServiceData
 import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
-import kotlin.math.max
+import org.opendc.experiments.compute.telemetry.table.toServiceData
 import kotlin.math.roundToLong
 
 /**
@@ -76,30 +77,20 @@ internal class WebComputeMonitor : ComputeMonitor {
         val count: Long
     )
 
-    private var serviceMetrics: AggregateServiceMetrics = AggregateServiceMetrics()
+    private lateinit var serviceData: ServiceData
 
     override fun record(reader: ServiceTableReader) {
-        serviceMetrics = AggregateServiceMetrics(
-            max(reader.attemptsSuccess, serviceMetrics.vmTotalCount),
-            max(reader.serversPending, serviceMetrics.vmWaitingCount),
-            max(reader.serversActive, serviceMetrics.vmActiveCount),
-            max(0, serviceMetrics.vmInactiveCount),
-            max(reader.attemptsFailure, serviceMetrics.vmFailedCount)
-        )
+        serviceData = reader.toServiceData()
     }
-
-    private data class AggregateServiceMetrics(
-        val vmTotalCount: Int = 0,
-        val vmWaitingCount: Int = 0,
-        val vmActiveCount: Int = 0,
-        val vmInactiveCount: Int = 0,
-        val vmFailedCount: Int = 0
-    )
 
     /**
      * Collect the results of the simulation.
      */
     fun collectResults(): Results {
+        val hostAggregateMetrics = hostAggregateMetrics
+        val hostMetrics = hostMetrics
+        val serviceData = serviceData
+
         return Results(
             hostAggregateMetrics.totalActiveTime,
             hostAggregateMetrics.totalIdleTime,
@@ -112,10 +103,10 @@ internal class WebComputeMonitor : ComputeMonitor {
             hostAggregateMetrics.totalPowerDraw,
             hostAggregateMetrics.totalFailureSlices.roundToLong(),
             hostAggregateMetrics.totalFailureVmSlices.roundToLong(),
-            serviceMetrics.vmTotalCount,
-            serviceMetrics.vmWaitingCount,
-            serviceMetrics.vmInactiveCount,
-            serviceMetrics.vmFailedCount
+            serviceData.serversTotal,
+            serviceData.serversPending,
+            serviceData.serversTotal - serviceData.serversPending - serviceData.serversActive,
+            serviceData.attemptsError + serviceData.attemptsFailure
         )
     }
 
