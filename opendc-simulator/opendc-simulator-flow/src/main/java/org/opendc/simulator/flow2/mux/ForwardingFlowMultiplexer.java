@@ -51,6 +51,9 @@ public final class ForwardingFlowMultiplexer implements FlowMultiplexer, FlowSta
     private final BitSet activeOutputs;
     private final BitSet availableOutputs;
 
+    private float capacity = 0.f;
+    private float demand = 0.f;
+
     public ForwardingFlowMultiplexer(FlowGraph graph) {
         this.stage = graph.newStage(this);
 
@@ -59,6 +62,27 @@ public final class ForwardingFlowMultiplexer implements FlowMultiplexer, FlowSta
         this.outlets = new OutPort[4];
         this.activeOutputs = new BitSet();
         this.availableOutputs = new BitSet();
+    }
+
+    @Override
+    public float getCapacity() {
+        return capacity;
+    }
+
+    @Override
+    public float getDemand() {
+        return demand;
+    }
+
+    @Override
+    public float getRate() {
+        final BitSet activeOutputs = this.activeOutputs;
+        final OutPort[] outlets = this.outlets;
+        float rate = 0.f;
+        for (int i = activeOutputs.nextSetBit(0); i != -1; i = activeOutputs.nextSetBit(i + 1)) {
+            rate += outlets[i].getRate();
+        }
+        return rate;
     }
 
     @Override
@@ -176,11 +200,15 @@ public final class ForwardingFlowMultiplexer implements FlowMultiplexer, FlowSta
 
         @Override
         public void onPush(InPort port, float rate) {
+            ForwardingFlowMultiplexer.this.demand += -port.getDemand() + rate;
+
             output.push(rate);
         }
 
         @Override
         public void onUpstreamFinish(InPort port, Throwable cause) {
+            ForwardingFlowMultiplexer.this.demand -= port.getDemand();
+
             final OutPort output = this.output;
             output.push(0.f);
 
@@ -197,11 +225,15 @@ public final class ForwardingFlowMultiplexer implements FlowMultiplexer, FlowSta
 
         @Override
         public void onPull(OutPort port, float capacity) {
+            ForwardingFlowMultiplexer.this.capacity += -port.getCapacity() + capacity;
+
             input.pull(capacity);
         }
 
         @Override
         public void onDownstreamFinish(OutPort port, Throwable cause) {
+            ForwardingFlowMultiplexer.this.capacity -= port.getCapacity();
+
             input.cancel(cause);
 
             releaseOutput(port);

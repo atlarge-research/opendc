@@ -67,4 +67,19 @@ public interface FlowMultiplexer {
      * @param outlet The outlet to release.
      */
     void releaseOutput(Outlet outlet);
+
+    /**
+     * Return the total input capacity of the {@link FlowMultiplexer}.
+     */
+    float getCapacity();
+
+    /**
+     * Return the total input demand for the {@link FlowMultiplexer}.
+     */
+    float getDemand();
+
+    /**
+     * Return the total input rate for the {@link FlowMultiplexer}.
+     */
+    float getRate();
 }

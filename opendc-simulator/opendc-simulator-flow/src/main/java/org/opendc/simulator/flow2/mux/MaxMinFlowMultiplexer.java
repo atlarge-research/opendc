@@ -76,6 +76,21 @@ public final class MaxMinFlowMultiplexer implements FlowMultiplexer, FlowStageLo
     }
 
     @Override
+    public float getCapacity() {
+        return capacity;
+    }
+
+    @Override
+    public float getDemand() {
+        return demand;
+    }
+
+    @Override
+    public float getRate() {
+        return rate;
+    }
+
+    @Override
     public long onUpdate(FlowStage ctx, long now) {
         float capacity = this.capacity;
         float demand = this.demand;
