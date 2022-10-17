@@ -58,7 +58,6 @@ public class HostsProvisioningStep internal constructor(
                 spec.uid,
                 spec.name,
                 spec.meta,
-                ctx.coroutineContext,
                 graph,
                 machine,
                 hypervisor,

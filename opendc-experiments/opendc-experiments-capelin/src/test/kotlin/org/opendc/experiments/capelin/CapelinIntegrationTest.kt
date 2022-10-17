@@ -120,9 +120,9 @@ class CapelinIntegrationTest {
             { assertEquals(0, monitor.serversActive, "All VMs should finish after a run") },
             { assertEquals(0, monitor.attemptsFailure, "No VM should be unscheduled") },
             { assertEquals(0, monitor.serversPending, "No VM should not be in the queue") },
-            { assertEquals(223394204, monitor.idleTime) { "Incorrect idle time" } },
-            { assertEquals(66976984, monitor.activeTime) { "Incorrect active time" } },
-            { assertEquals(3160316, monitor.stealTime) { "Incorrect steal time" } },
+            { assertEquals(223394101, monitor.idleTime) { "Incorrect idle time" } },
+            { assertEquals(66977086, monitor.activeTime) { "Incorrect active time" } },
+            { assertEquals(3160276, monitor.stealTime) { "Incorrect steal time" } },
             { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
             { assertEquals(5.84093E9, monitor.energyUsage, 1E4) { "Incorrect power draw" } }
         )
@@ -160,8 +160,8 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(10999504, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(9741294, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(10999514, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(9741285, monitor.activeTime) { "Active time incorrect" } },
             { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
             { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
             { assertEquals(7.0116E8, monitor.energyUsage, 1E4) { "Incorrect power draw" } }
@@ -199,10 +199,10 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(6027979, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(14712820, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(12532979, monitor.stealTime) { "Steal time incorrect" } },
-            { assertEquals(445913, monitor.lostTime) { "Lost time incorrect" } }
+            { assertEquals(6028018, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(14712781, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(12532934, monitor.stealTime) { "Steal time incorrect" } },
+            { assertEquals(424267, monitor.lostTime) { "Lost time incorrect" } }
         )
     }
 
@@ -229,8 +229,8 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(10085103, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(8539212, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(10085111, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(8539204, monitor.activeTime) { "Active time incorrect" } },
             { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
             { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
             { assertEquals(2328039558, monitor.uptime) { "Uptime incorrect" } }

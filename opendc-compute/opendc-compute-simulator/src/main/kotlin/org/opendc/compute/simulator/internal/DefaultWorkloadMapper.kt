@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +20,25 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator
+package org.opendc.compute.simulator.internal
 
-import org.opendc.compute.api.Image
 import org.opendc.compute.api.Server
+import org.opendc.compute.simulator.SimMetaWorkloadMapper
+import org.opendc.compute.simulator.SimWorkloadMapper
 import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.simulator.compute.workload.SimWorkloads
+import java.time.Duration
 
 /**
- * A [SimWorkloadMapper] is responsible for mapping a [Server] and [Image] to a [SimWorkload] that can be simulated.
+ * A [SimWorkloadMapper] to introduces a boot delay of 1 ms. This object exists to retain the old behavior while
+ * introducing the possibility of adding custom boot delays.
  */
-public fun interface SimWorkloadMapper {
-    /**
-     * Map the specified [server] to a [SimWorkload] that can be simulated.
-     */
-    public fun createWorkload(server: Server): SimWorkload
+internal object DefaultWorkloadMapper : SimWorkloadMapper {
+    private val delegate = SimMetaWorkloadMapper()
+
+    override fun createWorkload(server: Server): SimWorkload {
+        val workload = delegate.createWorkload(server)
+        val bootWorkload = SimWorkloads.runtime(Duration.ofMillis(1), 0.8)
+        return SimWorkloads.chain(bootWorkload, workload)
+    }
 }

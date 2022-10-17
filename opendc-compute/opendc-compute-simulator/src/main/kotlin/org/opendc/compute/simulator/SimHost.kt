@@ -34,6 +34,7 @@ import org.opendc.compute.service.driver.telemetry.GuestCpuStats
 import org.opendc.compute.service.driver.telemetry.GuestSystemStats
 import org.opendc.compute.service.driver.telemetry.HostCpuStats
 import org.opendc.compute.service.driver.telemetry.HostSystemStats
+import org.opendc.compute.simulator.internal.DefaultWorkloadMapper
 import org.opendc.compute.simulator.internal.Guest
 import org.opendc.compute.simulator.internal.GuestListener
 import org.opendc.simulator.compute.SimBareMetalMachine
@@ -47,7 +48,6 @@ import org.opendc.simulator.flow2.FlowGraph
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
-import kotlin.coroutines.CoroutineContext
 
 /**
  * A [Host] that is simulates virtual machines on a physical machine using [SimHypervisor].
@@ -56,11 +56,10 @@ public class SimHost(
     override val uid: UUID,
     override val name: String,
     override val meta: Map<String, Any>,
-    private val context: CoroutineContext,
     graph: FlowGraph,
     private val machine: SimBareMetalMachine,
     private val hypervisor: SimHypervisor,
-    private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
+    private val mapper: SimWorkloadMapper = DefaultWorkloadMapper,
     private val optimize: Boolean = false
 ) : Host, AutoCloseable {
     /**
@@ -129,7 +128,6 @@ public class SimHost(
 
             val machine = hypervisor.newMachine(key.flavor.toMachineModel())
             val newGuest = Guest(
-                context,
                 clock,
                 this,
                 hypervisor,
@@ -250,7 +248,7 @@ public class SimHost(
 
     override fun toString(): String = "SimHost[uid=$uid,name=$name,model=$model]"
 
-    public suspend fun fail() {
+    public fun fail() {
         reset(HostState.ERROR)
 
         for (guest in _guests) {
@@ -272,7 +270,7 @@ public class SimHost(
     }
 
     /**
-     * The [Job] that represents the machine running the hypervisor.
+     * The [SimMachineContext] that represents the machine running the hypervisor.
      */
     private var _ctx: SimMachineContext? = null
 
