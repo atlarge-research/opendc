@@ -203,12 +203,8 @@ public final class SimTrace {
     /**
      * Implementation of {@link SimWorkload} that executes a trace.
      */
-    private static class Workload implements SimWorkload, FlowStageLogic {
-        private SimMachineContext ctx;
-        private FlowStage stage;
-        private OutPort[] outputs;
-        private int index;
-        private int coreCount;
+    private static class Workload implements SimWorkload {
+        private WorkloadStageLogic logic;
 
         private final long offset;
         private final double[] usageCol;
@@ -226,7 +222,137 @@ public final class SimTrace {
 
         @Override
         public void onStart(SimMachineContext ctx) {
+            final WorkloadStageLogic logic;
+            if (ctx.getCpus().size() == 1) {
+                logic = new SingleWorkloadLogic(ctx, offset, usageCol, deadlineCol, size);
+            } else {
+                logic = new MultiWorkloadLogic(ctx, offset, usageCol, deadlineCol, coresCol, size);
+            }
+            this.logic = logic;
+        }
+
+        @Override
+        public void onStop(SimMachineContext ctx) {
+            final WorkloadStageLogic logic = this.logic;
+
+            if (logic != null) {
+                this.logic = null;
+                logic.getStage().close();
+            }
+        }
+    }
+
+    /**
+     * Interface to represent the {@link FlowStage} that simulates the trace workload.
+     */
+    private interface WorkloadStageLogic extends FlowStageLogic {
+        /**
+         * Return the {@link FlowStage} belonging to this instance.
+         */
+        FlowStage getStage();
+    }
+
+    /**
+     * Implementation of {@link FlowStageLogic} for just a single CPU resource.
+     */
+    private static class SingleWorkloadLogic implements WorkloadStageLogic {
+        private final FlowStage stage;
+        private final OutPort output;
+        private int index;
+
+        private final long offset;
+        private final double[] usageCol;
+        private final long[] deadlineCol;
+        private final int size;
+
+        private final SimMachineContext ctx;
+
+        private SingleWorkloadLogic(
+                SimMachineContext ctx, long offset, double[] usageCol, long[] deadlineCol, int size) {
             this.ctx = ctx;
+            this.offset = offset;
+            this.usageCol = usageCol;
+            this.deadlineCol = deadlineCol;
+            this.size = size;
+
+            final FlowGraph graph = ctx.getGraph();
+            final List<? extends SimProcessingUnit> cpus = ctx.getCpus();
+
+            stage = graph.newStage(this);
+
+            final SimProcessingUnit cpu = cpus.get(0);
+            final OutPort output = stage.getOutlet("cpu");
+            this.output = output;
+
+            graph.connect(output, cpu.getInput());
+        }
+
+        @Override
+        public long onUpdate(FlowStage ctx, long now) {
+            int size = this.size;
+            long offset = this.offset;
+            long nowOffset = now - offset;
+
+            int index = this.index;
+
+            long[] deadlines = deadlineCol;
+            long deadline = deadlines[index];
+
+            while (deadline <= nowOffset) {
+                if (++index >= size) {
+                    return doStop(ctx);
+                }
+                deadline = deadlines[index];
+            }
+
+            this.index = index;
+            this.output.push((float) usageCol[index]);
+            return deadline + offset;
+        }
+
+        @Override
+        public FlowStage getStage() {
+            return stage;
+        }
+
+        /**
+         * Helper method to stop the execution of the workload.
+         */
+        private long doStop(FlowStage ctx) {
+            final SimMachineContext machineContext = this.ctx;
+            if (machineContext != null) {
+                machineContext.shutdown();
+            }
+            ctx.close();
+            return Long.MAX_VALUE;
+        }
+    }
+
+    /**
+     * Implementation of {@link FlowStageLogic} for multiple CPUs.
+     */
+    private static class MultiWorkloadLogic implements WorkloadStageLogic {
+        private final FlowStage stage;
+        private final OutPort[] outputs;
+        private int index;
+        private final int coreCount;
+
+        private final long offset;
+        private final double[] usageCol;
+        private final long[] deadlineCol;
+        private final int[] coresCol;
+        private final int size;
+
+        private final SimMachineContext ctx;
+
+        private MultiWorkloadLogic(
+                SimMachineContext ctx, long offset, double[] usageCol, long[] deadlineCol, int[] coresCol, int size) {
+            this.ctx = ctx;
+            this.offset = offset;
+            this.usageCol = usageCol;
+            this.deadlineCol = deadlineCol;
+            this.coresCol = coresCol;
+            this.size = size;
 
             final FlowGraph graph = ctx.getGraph();
             final List<? extends SimProcessingUnit> cpus = ctx.getCpus();
@@ -243,18 +369,6 @@ public final class SimTrace {
 
                 graph.connect(output, cpu.getInput());
                 outputs[i] = output;
-            }
-        }
-
-        @Override
-        public void onStop(SimMachineContext ctx) {
-            this.ctx = null;
-
-            final FlowStage stage = this.stage;
-
-            if (stage != null) {
-                this.stage = null;
-                stage.close();
             }
         }
 
@@ -298,6 +412,11 @@ public final class SimTrace {
             }
 
             return deadline + offset;
+        }
+
+        @Override
+        public FlowStage getStage() {
+            return stage;
         }
     }
 }
