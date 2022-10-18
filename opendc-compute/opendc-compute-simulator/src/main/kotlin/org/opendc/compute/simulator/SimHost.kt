@@ -44,28 +44,38 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.flow2.FlowGraph
+import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.simulator.compute.workload.SimWorkloads
+import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
+import java.util.function.Supplier
 
 /**
- * A [Host] that is simulates virtual machines on a physical machine using [SimHypervisor].
+ * A [Host] implementation that simulates virtual machines on a physical machine using [SimHypervisor].
+ *
+ * @param uid The unique identifier of the host.
+ * @param name The name of the host.
+ * @param meta The metadata of the host.
+ * @param clock The (virtual) clock used to track time.
+ * @param machine The [SimBareMetalMachine] on which the host runs.
+ * @param hypervisor The [SimHypervisor] to run on top of the machine.
+ * @param mapper A [SimWorkloadMapper] to map a [Server] to a [SimWorkload].
+ * @param bootModel A [Supplier] providing the [SimWorkload] to execute during the boot procedure of the hypervisor.
+ * @param optimize A flag to indicate to optimize the machine models of the virtual machines.
  */
 public class SimHost(
     override val uid: UUID,
     override val name: String,
     override val meta: Map<String, Any>,
-    graph: FlowGraph,
+    private val clock: Clock,
     private val machine: SimBareMetalMachine,
     private val hypervisor: SimHypervisor,
     private val mapper: SimWorkloadMapper = DefaultWorkloadMapper,
+    private val bootModel: Supplier<SimWorkload?> = Supplier { null },
     private val optimize: Boolean = false
 ) : Host, AutoCloseable {
-    /**
-     * The clock instance used by the host.
-     */
-    private val clock = graph.engine.clock
 
     /**
      * The event listeners registered with this host.
@@ -272,20 +282,39 @@ public class SimHost(
     /**
      * The [SimMachineContext] that represents the machine running the hypervisor.
      */
-    private var _ctx: SimMachineContext? = null
+    private var ctx: SimMachineContext? = null
 
     /**
      * Launch the hypervisor.
      */
     private fun launch() {
-        check(_ctx == null) { "Concurrent hypervisor running" }
+        check(ctx == null) { "Concurrent hypervisor running" }
+
+        val bootWorkload = bootModel.get()
+        val hypervisor = hypervisor
+        val hypervisorWorkload = object : SimWorkload {
+            override fun onStart(ctx: SimMachineContext) {
+                try {
+                    _bootTime = clock.instant()
+                    _state = HostState.UP
+                    hypervisor.onStart(ctx)
+                } catch (cause: Throwable) {
+                    _state = HostState.ERROR
+                    throw cause
+                }
+            }
+
+            override fun onStop(ctx: SimMachineContext) {
+                hypervisor.onStop(ctx)
+            }
+        }
+
+        val workload = if (bootWorkload != null) SimWorkloads.chain(bootWorkload, hypervisorWorkload) else hypervisorWorkload
 
         // Launch hypervisor onto machine
-        _bootTime = clock.instant()
-        _state = HostState.UP
-        _ctx = machine.startWorkload(hypervisor, emptyMap()) { cause ->
+        ctx = machine.startWorkload(workload, emptyMap()) { cause ->
             _state = if (cause != null) HostState.ERROR else HostState.DOWN
-            _ctx = null
+            ctx = null
         }
     }
 
@@ -296,7 +325,7 @@ public class SimHost(
         updateUptime()
 
         // Stop the hypervisor
-        _ctx?.shutdown()
+        ctx?.shutdown()
         _state = state
     }
 

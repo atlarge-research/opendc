@@ -86,7 +86,7 @@ internal class SimHostTest {
             uid = UUID.randomUUID(),
             name = "test",
             meta = emptyMap(),
-            graph,
+            clock,
             machine,
             hypervisor
         )
@@ -154,7 +154,7 @@ internal class SimHostTest {
             uid = UUID.randomUUID(),
             name = "test",
             meta = emptyMap(),
-            graph,
+            clock,
             machine,
             hypervisor
         )
@@ -236,7 +236,7 @@ internal class SimHostTest {
             uid = UUID.randomUUID(),
             name = "test",
             meta = emptyMap(),
-            graph,
+            clock,
             machine,
             hypervisor
         )
