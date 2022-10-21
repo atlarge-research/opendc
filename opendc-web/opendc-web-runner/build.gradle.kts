@@ -58,10 +58,11 @@ dependencies {
     runtimeOnly(projects.opendcTrace.opendcTraceBitbrains)
 
     cliImplementation(libs.clikt)
-    cliImplementation(libs.sentry.log4j2)
 
     cliRuntimeOnly(projects.opendcTrace.opendcTraceOpendc)
+    cliRuntimeOnly(libs.log4j.core)
     cliRuntimeOnly(libs.log4j.slf4j)
+    cliRuntimeOnly(libs.sentry.log4j2)
 }
 
 val createCli by tasks.creating(CreateStartScripts::class) {

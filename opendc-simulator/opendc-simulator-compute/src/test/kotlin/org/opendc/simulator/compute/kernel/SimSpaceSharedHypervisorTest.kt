@@ -37,16 +37,13 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.power.ConstantPowerModel
-import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.compute.workload.SimTraceFragment
-import org.opendc.simulator.compute.workload.SimTraceWorkload
-import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.mux.FlowMultiplexerFactory
+import org.opendc.simulator.flow2.FlowEngine
+import org.opendc.simulator.flow2.mux.FlowMultiplexerFactory
 import org.opendc.simulator.kotlin.runSimulation
 import java.util.SplittableRandom
 
@@ -60,8 +57,8 @@ internal class SimSpaceSharedHypervisorTest {
     fun setUp() {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 1)
         machineModel = MachineModel(
-            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
-            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
+            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
     }
 
@@ -72,18 +69,18 @@ internal class SimSpaceSharedHypervisorTest {
     fun testTrace() = runSimulation {
         val duration = 5 * 60L
         val workloadA =
-            SimTraceWorkload(
-                SimTrace.ofFragments(
-                    SimTraceFragment(0, duration * 1000, 28.0, 1),
-                    SimTraceFragment(duration * 1000, duration * 1000, 3500.0, 1),
-                    SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
-                    SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
-                )
-            )
+            SimTrace.ofFragments(
+                SimTraceFragment(0, duration * 1000, 28.0, 1),
+                SimTraceFragment(duration * 1000, duration * 1000, 3500.0, 1),
+                SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
+                SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
+            ).createWorkload(0)
 
-        val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(1), null)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
 
         launch { machine.runWorkload(hypervisor) }
         val vm = hypervisor.newMachine(machineModel)
@@ -102,10 +99,12 @@ internal class SimSpaceSharedHypervisorTest {
     @Test
     fun testRuntimeWorkload() = runSimulation {
         val duration = 5 * 60L * 1000
-        val workload = SimRuntimeWorkload(duration)
-        val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(1), null)
+        val workload = SimRuntimeWorkload(duration, 1.0)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
 
         launch { machine.runWorkload(hypervisor) }
         yield()
@@ -125,9 +124,11 @@ internal class SimSpaceSharedHypervisorTest {
     fun testFlopsWorkload() = runSimulation {
         val duration = 5 * 60L * 1000
         val workload = SimFlopsWorkload((duration * 3.2).toLong(), 1.0)
-        val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(1), null)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
 
         launch { machine.runWorkload(hypervisor) }
         yield()
@@ -144,21 +145,23 @@ internal class SimSpaceSharedHypervisorTest {
     @Test
     fun testTwoWorkloads() = runSimulation {
         val duration = 5 * 60L * 1000
-        val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(1), null)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
 
         launch { machine.runWorkload(hypervisor) }
         yield()
 
         val vm = hypervisor.newMachine(machineModel)
-        vm.runWorkload(SimRuntimeWorkload(duration))
+        vm.runWorkload(SimRuntimeWorkload(duration, 1.0))
         hypervisor.removeMachine(vm)
 
         yield()
 
         val vm2 = hypervisor.newMachine(machineModel)
-        vm2.runWorkload(SimRuntimeWorkload(duration))
+        vm2.runWorkload(SimRuntimeWorkload(duration, 1.0))
         hypervisor.removeMachine(vm2)
 
         machine.cancel()
@@ -171,14 +174,18 @@ internal class SimSpaceSharedHypervisorTest {
      */
     @Test
     fun testConcurrentWorkloadFails() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(1), null)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
 
         launch { machine.runWorkload(hypervisor) }
         yield()
 
-        hypervisor.newMachine(machineModel)
+        val vm = hypervisor.newMachine(machineModel)
+        launch { vm.runWorkload(SimFlopsWorkload(10_000, 1.0)) }
+        yield()
 
         assertAll(
             { assertFalse(hypervisor.canFit(machineModel)) },
@@ -186,6 +193,7 @@ internal class SimSpaceSharedHypervisorTest {
         )
 
         machine.cancel()
+        vm.cancel()
     }
 
     /**
@@ -193,9 +201,11 @@ internal class SimSpaceSharedHypervisorTest {
      */
     @Test
     fun testConcurrentWorkloadSucceeds() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimHypervisor(engine, FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(1), null)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
 
         launch { machine.runWorkload(hypervisor) }
         yield()

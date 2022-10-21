@@ -25,11 +25,10 @@ package org.opendc.simulator.compute.kernel.cpufreq
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
- * Test suite for the [ConservativeScalingGovernor]
+ * Test suite for the conservative [ScalingGovernor].
  */
 internal class ConservativeScalingGovernorTest {
     @Test
@@ -38,7 +37,7 @@ internal class ConservativeScalingGovernorTest {
         val minSpeed = cpuCapacity / 2
         val defaultThreshold = 0.8
         val defaultStepSize = 0.05 * cpuCapacity
-        val governor = ConservativeScalingGovernor()
+        val governor = ScalingGovernors.conservative(defaultThreshold)
 
         val policy = mockk<ScalingPolicy>(relaxUnitFun = true)
         every { policy.max } returns cpuCapacity
@@ -48,10 +47,8 @@ internal class ConservativeScalingGovernorTest {
         every { policy.target } answers { target }
         every { policy.target = any() } propertyType Double::class answers { target = value }
 
-        val logic = governor.createLogic(policy)
+        val logic = governor.newGovernor(policy)
         logic.onStart()
-        assertEquals(defaultThreshold, governor.threshold)
-
         logic.onLimit(0.5)
 
         /* Upwards scaling */
@@ -71,7 +68,7 @@ internal class ConservativeScalingGovernorTest {
         val minSpeed = firstPState
         val threshold = 0.5
         val stepSize = 0.02 * cpuCapacity
-        val governor = ConservativeScalingGovernor(threshold, stepSize)
+        val governor = ScalingGovernors.conservative(threshold, stepSize)
 
         val policy = mockk<ScalingPolicy>(relaxUnitFun = true)
         every { policy.max } returns cpuCapacity
@@ -81,9 +78,8 @@ internal class ConservativeScalingGovernorTest {
         every { policy.target } answers { target }
         every { policy.target = any() } propertyType Double::class answers { target = value }
 
-        val logic = governor.createLogic(policy)
+        val logic = governor.newGovernor(policy)
         logic.onStart()
-        assertEquals(threshold, governor.threshold)
         logic.onLimit(0.5)
 
         /* Upwards scaling */

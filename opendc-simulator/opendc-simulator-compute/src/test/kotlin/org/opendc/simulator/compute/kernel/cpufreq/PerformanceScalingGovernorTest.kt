@@ -34,7 +34,7 @@ internal class PerformanceScalingGovernorTest {
     @Test
     fun testSetStartLimit() {
         val policy = spyk<ScalingPolicy>()
-        val logic = PerformanceScalingGovernor().createLogic(policy)
+        val logic = ScalingGovernors.performance().newGovernor(policy)
 
         every { policy.max } returns 4100.0
 

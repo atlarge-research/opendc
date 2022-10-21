@@ -29,7 +29,7 @@ import org.opendc.experiments.provisioner.ProvisioningContext
 import org.opendc.experiments.provisioner.ProvisioningStep
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.kernel.SimHypervisor
-import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow2.FlowEngine
 import java.util.SplittableRandom
 
 /**
@@ -46,19 +46,20 @@ public class HostsProvisioningStep internal constructor(
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service = requireNotNull(ctx.registry.resolve(serviceDomain, ComputeService::class.java)) { "Compute service $serviceDomain does not exist" }
-        val engine = FlowEngine(ctx.coroutineContext, ctx.clock)
+        val engine = FlowEngine.create(ctx.coroutineContext, ctx.clock)
+        val graph = engine.newGraph()
         val hosts = mutableSetOf<SimHost>()
 
         for (spec in specs) {
-            val machine = SimBareMetalMachine(engine, spec.model, spec.powerDriver)
-            val hypervisor = SimHypervisor(engine, spec.multiplexerFactory, SplittableRandom(ctx.seeder.nextLong()))
+            val machine = SimBareMetalMachine.create(graph, spec.model, spec.psuFactory)
+            val hypervisor = SimHypervisor.create(spec.multiplexerFactory, SplittableRandom(ctx.seeder.nextLong()))
 
             val host = SimHost(
                 spec.uid,
                 spec.name,
                 spec.meta,
                 ctx.coroutineContext,
-                ctx.clock,
+                graph,
                 machine,
                 hypervisor,
                 optimize = optimize

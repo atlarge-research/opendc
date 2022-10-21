@@ -26,6 +26,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -38,17 +39,16 @@ import org.opendc.simulator.compute.model.NetworkAdapter
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.model.StorageDevice
-import org.opendc.simulator.compute.power.ConstantPowerModel
-import org.opendc.simulator.compute.power.LinearPowerModel
-import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.power.CpuPowerModels
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
+import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.compute.workload.SimWorkloadLifecycle
-import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.flow2.FlowEngine
+import org.opendc.simulator.flow2.source.SimpleFlowSource
 import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.simulator.network.SimNetworkSink
 import org.opendc.simulator.power.SimPowerSource
+import java.util.concurrent.ThreadLocalRandom
 
 /**
  * Test suite for the [SimBareMetalMachine] class.
@@ -61,41 +61,69 @@ class SimMachineTest {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
         machineModel = MachineModel(
-            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
-            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
-            net = listOf(NetworkAdapter("Mellanox", "ConnectX-5", 25000.0)),
-            storage = listOf(StorageDevice("Samsung", "EVO", 1000.0, 250.0, 250.0))
+            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
+            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+            /*net*/ listOf(NetworkAdapter("Mellanox", "ConnectX-5", 25000.0)),
+            /*storage*/ listOf(StorageDevice("Samsung", "EVO", 1000.0, 250.0, 250.0))
         )
     }
 
     @Test
     fun testFlopsWorkload() = runSimulation {
-        val machine = SimBareMetalMachine(
-            FlowEngine(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
-        machine.runWorkload(SimFlopsWorkload(2_000, utilization = 1.0))
+        machine.runWorkload(SimFlopsWorkload(2_000, /*utilization*/ 1.0))
 
         // Two cores execute 1000 MFlOps per second (1000 ms)
         assertEquals(1000, clock.millis())
     }
 
     @Test
-    fun testDualSocketMachine() = runSimulation {
-        val cpuNode = machineModel.cpus[0].node
-        val machineModel = MachineModel(
-            cpus = List(cpuNode.coreCount * 2) { ProcessingUnit(cpuNode, it % 2, 1000.0) },
-            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
-        )
-        val machine = SimBareMetalMachine(
-            FlowEngine(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+    fun testTraceWorkload() = runSimulation {
+        val random = ThreadLocalRandom.current()
+        val builder = SimTrace.builder()
+        repeat(1000000) {
+            val timestamp = it.toLong() * 1000
+            val deadline = timestamp + 1000
+            builder.add(deadline, random.nextDouble(0.0, 4500.0), 1)
+        }
+        val trace = builder.build()
+
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
-        machine.runWorkload(SimFlopsWorkload(2_000, utilization = 1.0))
+        machine.runWorkload(trace.createWorkload(0))
+
+        // Two cores execute 1000 MFlOps per second (1000 ms)
+        assertEquals(1000000000, clock.millis())
+    }
+
+    @Test
+    fun testDualSocketMachine() = runSimulation {
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val cpuNode = machineModel.cpus[0].node
+        val machineModel = MachineModel(
+            /*cpus*/ List(cpuNode.coreCount * 2) { ProcessingUnit(cpuNode, it % 2, 1000.0) },
+            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+        )
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
+        )
+
+        machine.runWorkload(SimFlopsWorkload(2_000, /*utilization*/ 1.0))
 
         // Two sockets with two cores execute 2000 MFlOps per second (500 ms)
         assertEquals(500, clock.millis())
@@ -103,42 +131,47 @@ class SimMachineTest {
 
     @Test
     fun testPower() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(
-            engine,
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val machine = SimBareMetalMachine.create(
+            graph,
             machineModel,
-            SimplePowerDriver(LinearPowerModel(100.0, 50.0))
+            SimPsuFactories.simple(CpuPowerModels.linear(100.0, 50.0))
         )
-        val source = SimPowerSource(engine, capacity = 1000.0)
+        val source = SimPowerSource(graph, /*capacity*/ 1000.0f)
         source.connect(machine.psu)
 
         coroutineScope {
-            launch { machine.runWorkload(SimFlopsWorkload(2_000, utilization = 1.0)) }
+            launch { machine.runWorkload(SimFlopsWorkload(2_000, /*utilization*/ 1.0)) }
+
+            yield()
             assertAll(
-                { assertEquals(100.0, machine.psu.powerDraw) },
-                { assertEquals(100.0, source.powerDraw) }
+                { assertEquals(100.0, machine.psu.powerUsage) },
+                { assertEquals(100.0f, source.powerDraw) }
             )
         }
     }
 
     @Test
     fun testCapacityClamp() = runSimulation {
-        val machine = SimBareMetalMachine(
-            FlowEngine(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
         machine.runWorkload(object : SimWorkload {
             override fun onStart(ctx: SimMachineContext) {
                 val cpu = ctx.cpus[0]
 
-                cpu.capacity = cpu.model.frequency + 1000.0
-                assertEquals(cpu.model.frequency, cpu.capacity)
-                cpu.capacity = -1.0
-                assertEquals(0.0, cpu.capacity)
+                cpu.frequency = (cpu.model.frequency + 1000.0)
+                assertEquals(cpu.model.frequency, cpu.frequency)
+                cpu.frequency = -1.0
+                assertEquals(0.0, cpu.frequency)
 
-                ctx.close()
+                ctx.shutdown()
             }
 
             override fun onStop(ctx: SimMachineContext) {}
@@ -147,16 +180,18 @@ class SimMachineTest {
 
     @Test
     fun testMemory() = runSimulation {
-        val machine = SimBareMetalMachine(
-            FlowEngine(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
         machine.runWorkload(object : SimWorkload {
             override fun onStart(ctx: SimMachineContext) {
                 assertEquals(32_000 * 4.0, ctx.memory.capacity)
-                ctx.close()
+                ctx.shutdown()
             }
 
             override fun onStop(ctx: SimMachineContext) {}
@@ -165,104 +200,111 @@ class SimMachineTest {
 
     @Test
     fun testMemoryUsage() = runSimulation {
-        val machine = SimBareMetalMachine(
-            FlowEngine(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
         machine.runWorkload(object : SimWorkload {
             override fun onStart(ctx: SimMachineContext) {
-                val lifecycle = SimWorkloadLifecycle(ctx)
-                ctx.memory.startConsumer(lifecycle.waitFor(FixedFlowSource(ctx.memory.capacity, utilization = 0.8)))
+                val source = SimpleFlowSource(ctx.graph, ctx.memory.capacity.toFloat(), 1.0f) { ctx.shutdown() }
+                ctx.graph.connect(source.output, ctx.memory.input)
             }
 
             override fun onStop(ctx: SimMachineContext) {}
         })
 
-        assertEquals(1250, clock.millis())
+        assertEquals(1000, clock.millis())
     }
 
     @Test
     fun testNetUsage() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(
-            engine,
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
         val adapter = (machine.peripherals[0] as SimNetworkAdapter)
-        adapter.connect(SimNetworkSink(engine, adapter.bandwidth))
+        adapter.connect(SimNetworkSink(graph, adapter.bandwidth.toFloat()))
 
         machine.runWorkload(object : SimWorkload {
             override fun onStart(ctx: SimMachineContext) {
-                val lifecycle = SimWorkloadLifecycle(ctx)
-                val iface = ctx.net[0]
-                iface.tx.startConsumer(lifecycle.waitFor(FixedFlowSource(iface.bandwidth, utilization = 0.8)))
+                val iface = ctx.networkInterfaces[0]
+                val source = SimpleFlowSource(ctx.graph, 800.0f, 0.8f) { ctx.shutdown(); it.close(); }
+                ctx.graph.connect(source.output, iface.tx)
             }
 
             override fun onStop(ctx: SimMachineContext) {}
         })
 
-        assertEquals(1250, clock.millis())
+        assertEquals(40, clock.millis())
     }
 
     @Test
     fun testDiskReadUsage() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(
-            engine,
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
         machine.runWorkload(object : SimWorkload {
             override fun onStart(ctx: SimMachineContext) {
-                val lifecycle = SimWorkloadLifecycle(ctx)
-                val disk = ctx.storage[0]
-                disk.read.startConsumer(lifecycle.waitFor(FixedFlowSource(disk.read.capacity, utilization = 0.8)))
+                val disk = ctx.storageInterfaces[0]
+                val source = SimpleFlowSource(ctx.graph, 800.0f, 0.8f) { ctx.shutdown() }
+                ctx.graph.connect(source.output, disk.read)
             }
 
             override fun onStop(ctx: SimMachineContext) {}
         })
 
-        assertEquals(1250, clock.millis())
+        assertEquals(4000, clock.millis())
     }
 
     @Test
     fun testDiskWriteUsage() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(
-            engine,
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
         machine.runWorkload(object : SimWorkload {
             override fun onStart(ctx: SimMachineContext) {
-                val lifecycle = SimWorkloadLifecycle(ctx)
-                val disk = ctx.storage[0]
-                disk.write.startConsumer(lifecycle.waitFor(FixedFlowSource(disk.write.capacity, utilization = 0.8)))
+                val disk = ctx.storageInterfaces[0]
+                val source = SimpleFlowSource(ctx.graph, 800.0f, 0.8f) { ctx.shutdown() }
+                ctx.graph.connect(source.output, disk.write)
             }
 
             override fun onStop(ctx: SimMachineContext) {}
         })
 
-        assertEquals(1250, clock.millis())
+        assertEquals(4000, clock.millis())
     }
 
     @Test
     fun testCancellation() = runSimulation {
-        val machine = SimBareMetalMachine(
-            FlowEngine(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
         try {
             coroutineScope {
-                launch { machine.runWorkload(SimFlopsWorkload(2_000, utilization = 1.0)) }
+                launch { machine.runWorkload(SimFlopsWorkload(2_000, /*utilization*/ 1.0)) }
                 cancel()
             }
         } catch (_: CancellationException) {
@@ -274,19 +316,21 @@ class SimMachineTest {
 
     @Test
     fun testConcurrentRuns() = runSimulation {
-        val machine = SimBareMetalMachine(
-            FlowEngine(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
         )
 
         coroutineScope {
             launch {
-                machine.runWorkload(SimFlopsWorkload(2_000, utilization = 1.0))
+                machine.runWorkload(SimFlopsWorkload(2_000, /*utilization*/ 1.0))
             }
 
             assertThrows<IllegalStateException> {
-                machine.runWorkload(SimFlopsWorkload(2_000, utilization = 1.0))
+                machine.runWorkload(SimFlopsWorkload(2_000, /*utilization*/ 1.0))
             }
         }
     }

@@ -35,12 +35,12 @@ import org.opendc.experiments.compute.setupHosts
 import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.experiments.compute.trace
 import org.opendc.experiments.provisioner.Provisioner
+import org.opendc.simulator.compute.SimPsuFactories
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.power.LinearPowerModel
-import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.power.CpuPowerModels
 import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.web.proto.runner.Job
 import org.opendc.web.proto.runner.Scenario
@@ -338,15 +338,14 @@ public class OpenDCRunner(
             }
 
             val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
-            val powerModel = LinearPowerModel(2 * energyConsumptionW, energyConsumptionW * 0.5)
-            val powerDriver = SimplePowerDriver(powerModel)
+            val powerModel = CpuPowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
 
             val spec = HostSpec(
                 UUID(random.nextLong(), random.nextLong()),
                 "node-$clusterId-$position",
                 mapOf("cluster" to clusterId),
                 MachineModel(processors, memoryUnits),
-                powerDriver
+                SimPsuFactories.simple(powerModel)
             )
 
             res += spec

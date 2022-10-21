@@ -25,11 +25,10 @@ package org.opendc.simulator.compute.kernel.cpufreq
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
- * Test suite for the [OnDemandScalingGovernor]
+ * Test suite for the on-demand [ScalingGovernor].
  */
 internal class OnDemandScalingGovernorTest {
     @Test
@@ -37,15 +36,14 @@ internal class OnDemandScalingGovernorTest {
         val cpuCapacity = 4100.0
         val minSpeed = cpuCapacity / 2
         val defaultThreshold = 0.8
-        val governor = OnDemandScalingGovernor()
+        val governor = ScalingGovernors.ondemand(defaultThreshold)
 
         val policy = mockk<ScalingPolicy>(relaxUnitFun = true)
         every { policy.min } returns minSpeed
         every { policy.max } returns cpuCapacity
 
-        val logic = governor.createLogic(policy)
+        val logic = governor.newGovernor(policy)
         logic.onStart()
-        assertEquals(defaultThreshold, governor.threshold)
         verify(exactly = 1) { policy.target = minSpeed }
 
         logic.onLimit(0.5)
@@ -60,16 +58,15 @@ internal class OnDemandScalingGovernorTest {
         val firstPState = 1000.0
         val cpuCapacity = 4100.0
         val threshold = 0.5
-        val governor = OnDemandScalingGovernor(threshold)
+        val governor = ScalingGovernors.ondemand(threshold)
 
         val policy = mockk<ScalingPolicy>(relaxUnitFun = true)
         every { policy.max } returns cpuCapacity
         every { policy.min } returns firstPState
 
-        val logic = governor.createLogic(policy)
+        val logic = governor.newGovernor(policy)
 
         logic.onStart()
-        assertEquals(threshold, governor.threshold)
         verify(exactly = 1) { policy.target = firstPState }
 
         logic.onLimit(0.1)

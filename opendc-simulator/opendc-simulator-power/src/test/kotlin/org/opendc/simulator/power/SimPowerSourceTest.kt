@@ -24,8 +24,8 @@ package org.opendc.simulator.power
 
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
+import kotlinx.coroutines.yield
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -33,9 +33,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.FlowSource
-import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.flow2.FlowEngine
 import org.opendc.simulator.kotlin.runSimulation
 
 /**
@@ -44,18 +42,24 @@ import org.opendc.simulator.kotlin.runSimulation
 internal class SimPowerSourceTest {
     @Test
     fun testInitialState() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
 
-        assertFalse(source.isConnected)
-        assertNull(source.inlet)
-        assertEquals(100.0, source.capacity)
+        yield()
+
+        assertAll(
+            { assertFalse(source.isConnected) },
+            { assertNull(source.inlet) },
+            { assertEquals(100.0f, source.capacity) }
+        )
     }
 
     @Test
     fun testDisconnectIdempotent() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
 
         assertDoesNotThrow { source.disconnect() }
         assertFalse(source.isConnected)
@@ -63,44 +67,51 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testConnect() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
-        val inlet = SimpleInlet()
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
+        val inlet = TestInlet(graph)
 
         source.connect(inlet)
 
-        assertTrue(source.isConnected)
-        assertEquals(inlet, source.inlet)
-        assertTrue(inlet.isConnected)
-        assertEquals(source, inlet.outlet)
-        assertEquals(100.0, source.powerDraw)
+        yield()
+
+        assertAll(
+            { assertTrue(source.isConnected) },
+            { assertEquals(inlet, source.inlet) },
+            { assertTrue(inlet.isConnected) },
+            { assertEquals(source, inlet.outlet) },
+            { assertEquals(100.0f, source.powerDraw) }
+        )
     }
 
     @Test
     fun testDisconnect() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
-        val consumer = spyk(FixedFlowSource(100.0, utilization = 1.0))
-        val inlet = object : SimPowerInlet() {
-            override fun createSource(): FlowSource = consumer
-        }
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
+        val inlet = TestInlet(graph)
 
         source.connect(inlet)
         source.disconnect()
 
-        verify { consumer.onStop(any(), any()) }
+        yield()
+
+        assertEquals(0.0f, inlet.flowOutlet.capacity)
     }
 
     @Test
     fun testDisconnectAssertion() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
+
         val inlet = mockk<SimPowerInlet>(relaxUnitFun = true)
         every { inlet.isConnected } returns false
-        every { inlet._outlet } returns null
-        every { inlet.createSource() } returns FixedFlowSource(100.0, utilization = 1.0)
+        every { inlet.flowOutlet } returns TestInlet(graph).flowOutlet
 
         source.connect(inlet)
+        inlet.outlet = null
 
         assertThrows<AssertionError> {
             source.disconnect()
@@ -109,13 +120,14 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testOutletAlreadyConnected() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
-        val inlet = SimpleInlet()
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
+        val inlet = TestInlet(graph)
 
         source.connect(inlet)
         assertThrows<IllegalStateException> {
-            source.connect(SimpleInlet())
+            source.connect(TestInlet(graph))
         }
 
         assertEquals(inlet, source.inlet)
@@ -123,17 +135,14 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testInletAlreadyConnected() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val source = SimPowerSource(engine, capacity = 100.0)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
         val inlet = mockk<SimPowerInlet>(relaxUnitFun = true)
         every { inlet.isConnected } returns true
 
         assertThrows<IllegalStateException> {
             source.connect(inlet)
         }
-    }
-
-    class SimpleInlet : SimPowerInlet() {
-        override fun createSource(): FlowSource = FixedFlowSource(100.0, utilization = 1.0)
     }
 }

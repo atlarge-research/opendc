@@ -29,7 +29,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import org.opendc.compute.service.ComputeService
-import org.opendc.simulator.compute.workload.SimTraceWorkload
 import java.time.Clock
 import java.util.Random
 import kotlin.coroutines.coroutineContext
@@ -82,7 +81,7 @@ public suspend fun ComputeService.replay(
                 }
 
                 val workloadOffset = -offset + 300001
-                val workload = SimTraceWorkload(entry.trace, workloadOffset)
+                val workload = entry.trace.createWorkload(workloadOffset)
                 val meta = mutableMapOf<String, Any>("workload" to workload)
 
                 val interferenceProfile = entry.interferenceProfile

@@ -46,5 +46,6 @@ dependencies {
     runtimeOnly(projects.opendcTrace.opendcTraceSwf)
     runtimeOnly(projects.opendcTrace.opendcTraceWfformat)
     runtimeOnly(projects.opendcTrace.opendcTraceWtf)
+    runtimeOnly(libs.log4j.core)
     runtimeOnly(libs.log4j.slf4j)
 }

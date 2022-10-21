@@ -22,16 +22,14 @@
 
 package org.opendc.simulator.network
 
-import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.yield
+import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.flow.FlowConsumer
-import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.FlowSink
-import org.opendc.simulator.flow.FlowSource
-import org.opendc.simulator.flow.source.FixedFlowSource
+import org.opendc.simulator.flow2.FlowEngine
 import org.opendc.simulator.kotlin.runSimulation
 
 /**
@@ -40,27 +38,32 @@ import org.opendc.simulator.kotlin.runSimulation
 class SimNetworkSwitchVirtualTest {
     @Test
     fun testConnect() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val sink = SimNetworkSink(engine, capacity = 100.0)
-        val source = spyk(Source(engine))
-        val switch = SimNetworkSwitchVirtual(engine)
-        val consumer = source.consumer
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
+        val source = TestSource(graph)
+        val switch = SimNetworkSwitchVirtual(graph)
 
         switch.newPort().connect(sink)
         switch.newPort().connect(source)
 
-        assertTrue(sink.isConnected)
-        assertTrue(source.isConnected)
+        yield()
 
-        verify { source.createConsumer() }
-        verify { consumer.onStart(any(), any()) }
+        assertAll(
+            { assertTrue(sink.isConnected) },
+            { assertTrue(source.isConnected) },
+            { assertEquals(100.0f, source.outlet.capacity) }
+        )
+
+        verify { source.logic.onUpdate(any(), any()) }
     }
 
     @Test
     fun testConnectClosedPort() = runSimulation {
-        val engine = FlowEngine(coroutineContext, clock)
-        val sink = SimNetworkSink(engine, capacity = 100.0)
-        val switch = SimNetworkSwitchVirtual(engine)
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+        val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
+        val switch = SimNetworkSwitchVirtual(graph)
 
         val port = switch.newPort()
         port.close()
@@ -68,13 +71,5 @@ class SimNetworkSwitchVirtualTest {
         assertThrows<IllegalStateException> {
             port.connect(sink)
         }
-    }
-
-    private class Source(engine: FlowEngine) : SimNetworkPort() {
-        val consumer = spyk(FixedFlowSource(Double.POSITIVE_INFINITY, utilization = 0.8))
-
-        public override fun createConsumer(): FlowSource = consumer
-
-        override val provider: FlowConsumer = FlowSink(engine, 0.0)
     }
 }

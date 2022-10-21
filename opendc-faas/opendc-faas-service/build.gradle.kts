@@ -34,5 +34,6 @@ dependencies {
     implementation(libs.kotlin.logging)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
+    testRuntimeOnly(libs.log4j.core)
     testRuntimeOnly(libs.log4j.slf4j)
 }

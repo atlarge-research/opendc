@@ -29,7 +29,7 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.power.LinearPowerModel
+import org.opendc.simulator.compute.power.CpuPowerModels
 import java.io.InputStream
 import java.util.UUID
 
@@ -102,7 +102,7 @@ public class MLEnvironmentReader {
                                 "node-${counter++}",
                                 mapOf("gpu" to isGpuFlag),
                                 MachineModel(cores, memories),
-                                LinearPowerModel(maxPower, minPower)
+                                CpuPowerModels.linear(maxPower, minPower)
                             )
                         }
                     }

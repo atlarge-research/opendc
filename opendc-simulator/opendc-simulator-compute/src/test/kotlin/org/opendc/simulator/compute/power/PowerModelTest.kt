@@ -38,7 +38,7 @@ internal class PowerModelTest {
     @ParameterizedTest
     @MethodSource("MachinePowerModelArgs")
     fun `compute power consumption given CPU loads`(
-        powerModel: PowerModel,
+        powerModel: CpuPowerModel,
         expectedPowerConsumption: Double
     ) {
         val computedPowerConsumption = powerModel.computePower(cpuUtil)
@@ -48,10 +48,10 @@ internal class PowerModelTest {
     @ParameterizedTest
     @MethodSource("MachinePowerModelArgs")
     fun `ignore idle power when computing power consumptions`(
-        powerModel: PowerModel,
+        powerModel: CpuPowerModel,
         expectedPowerConsumption: Double
     ) {
-        val zeroPowerModel = ZeroIdlePowerDecorator(powerModel)
+        val zeroPowerModel = CpuPowerModels.zeroIdle(powerModel)
 
         assertAll(
             { assertEquals(expectedPowerConsumption, zeroPowerModel.computePower(cpuUtil), epsilon) },
@@ -61,8 +61,9 @@ internal class PowerModelTest {
 
     @Test
     fun `compute power draw by the SPEC benchmark model`() {
-        val ibm = listOf(58.4, 98.0, 109.0, 118.0, 128.0, 140.0, 153.0, 170.0, 189.0, 205.0, 222.0)
-        val powerModel = InterpolationPowerModel(ibm)
+        val powerModel = CpuPowerModels.interpolate(
+            58.4, 98.0, 109.0, 118.0, 128.0, 140.0, 153.0, 170.0, 189.0, 205.0, 222.0
+        )
 
         assertAll(
             { assertEquals(58.4, powerModel.computePower(0.0)) },
@@ -80,14 +81,14 @@ internal class PowerModelTest {
     private companion object {
         @JvmStatic
         fun MachinePowerModelArgs(): Stream<Arguments> = Stream.of(
-            Arguments.of(ConstantPowerModel(0.0), 0.0),
-            Arguments.of(LinearPowerModel(350.0, 200.0), 335.0),
-            Arguments.of(SquarePowerModel(350.0, 200.0), 321.5),
-            Arguments.of(CubicPowerModel(350.0, 200.0), 309.35),
-            Arguments.of(SqrtPowerModel(350.0, 200.0), 342.302),
-            Arguments.of(MsePowerModel(350.0, 200.0, 1.4), 340.571),
-            Arguments.of(AsymptoticPowerModel(350.0, 200.0, 0.3, false), 338.765),
-            Arguments.of(AsymptoticPowerModel(350.0, 200.0, 0.3, true), 323.072)
+            Arguments.of(CpuPowerModels.constant(0.0), 0.0),
+            Arguments.of(CpuPowerModels.linear(350.0, 200.0), 335.0),
+            Arguments.of(CpuPowerModels.square(350.0, 200.0), 321.5),
+            Arguments.of(CpuPowerModels.cubic(350.0, 200.0), 309.35),
+            Arguments.of(CpuPowerModels.sqrt(350.0, 200.0), 342.302),
+            Arguments.of(CpuPowerModels.mse(350.0, 200.0, 1.4), 340.571),
+            Arguments.of(CpuPowerModels.asymptotic(350.0, 200.0, 0.3, false), 338.765),
+            Arguments.of(CpuPowerModels.asymptotic(350.0, 200.0, 0.3, true), 323.072)
         )
     }
 }

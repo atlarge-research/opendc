@@ -82,8 +82,8 @@ class FaaSExperiment {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
         return MachineModel(
-            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
-            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
+            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
     }
 }

@@ -35,5 +35,10 @@ public interface FailureModel {
     /**
      * Construct a [HostFaultInjector] for the specified [service].
      */
-    public fun createInjector(context: CoroutineContext, clock: Clock, service: ComputeService, random: Random): HostFaultInjector
+    public fun createInjector(
+        context: CoroutineContext,
+        clock: Clock,
+        service: ComputeService,
+        random: Random
+    ): HostFaultInjector
 }

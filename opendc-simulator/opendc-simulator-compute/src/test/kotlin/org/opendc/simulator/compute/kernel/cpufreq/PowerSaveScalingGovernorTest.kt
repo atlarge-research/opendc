@@ -36,7 +36,7 @@ internal class PowerSaveScalingGovernorTest {
         val cpuCapacity = 4100.0
         val minSpeed = cpuCapacity / 2
         val policy = mockk<ScalingPolicy>(relaxUnitFun = true)
-        val logic = PowerSaveScalingGovernor().createLogic(policy)
+        val logic = ScalingGovernors.powerSave().newGovernor(policy)
 
         every { policy.max } returns cpuCapacity
         every { policy.min } returns minSpeed
@@ -55,7 +55,7 @@ internal class PowerSaveScalingGovernorTest {
         val cpuCapacity = 4100.0
         val firstPState = 1000.0
         val policy = mockk<ScalingPolicy>(relaxUnitFun = true)
-        val logic = PowerSaveScalingGovernor().createLogic(policy)
+        val logic = ScalingGovernors.powerSave().newGovernor(policy)
 
         every { policy.max } returns cpuCapacity
         every { policy.min } returns firstPState
