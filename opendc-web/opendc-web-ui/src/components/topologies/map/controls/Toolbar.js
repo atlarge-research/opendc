@@ -2,9 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { control, toolBar } from './Toolbar.module.scss'
 import { Button } from '@patternfly/react-core'
-import { SearchPlusIcon, SearchMinusIcon } from '@patternfly/react-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCamera } from '@fortawesome/free-solid-svg-icons'
+import { SearchPlusIcon, SearchMinusIcon, CameraIcon } from '@patternfly/react-icons'
 
 function Toolbar({ onZoom, onExport }) {
     return (
@@ -21,7 +19,7 @@ function Toolbar({ onZoom, onExport }) {
                 onClick={() => onExport()}
                 className={control}
             >
-                <FontAwesomeIcon icon={faCamera} />
+                <CameraIcon />
             </Button>
         </div>
     )
