@@ -25,7 +25,7 @@ import com.github.gradle.node.npm.task.NpmTask
 description = "Web interface for OpenDC"
 
 plugins {
-    `java-library-conventions`
+    `java-conventions`
     id("com.github.node-gradle.node")
 }
 
@@ -43,7 +43,10 @@ node {
     version.set(libs.versions.node.get())
 }
 
-val formatTask = tasks.register<NpmTask>("format") {
+val formatTask = tasks.register<NpmTask>("prettierFormat") {
+    group = "formatting"
+    description = "Use Prettier to format the JavaScript codebase"
+
     args.set(listOf("run", "format"))
     dependsOn(tasks.npmInstall)
     inputs.dir("src")
@@ -51,7 +54,10 @@ val formatTask = tasks.register<NpmTask>("format") {
     outputs.upToDateWhen { true }
 }
 
-val lintTask = tasks.register<NpmTask>("lint") {
+val lintTask = tasks.register<NpmTask>("nextLint") {
+    group = "verification"
+    description = "Use ESLint to check for problems"
+
     args.set(listOf("run", "lint"))
     dependsOn(tasks.npmInstall)
     inputs.dir("src")
@@ -59,7 +65,10 @@ val lintTask = tasks.register<NpmTask>("lint") {
     outputs.upToDateWhen { true }
 }
 
-tasks.register<NpmTask>("dev") {
+tasks.register<NpmTask>("nextDev") {
+    group = "build"
+    description = "Run the Next.js project in development mode"
+
     args.set(listOf("run", "dev"))
     dependsOn(tasks.npmInstall)
     inputs.dir(project.fileTree("src"))
@@ -68,7 +77,10 @@ tasks.register<NpmTask>("dev") {
     outputs.upToDateWhen { true }
 }
 
-val buildTask = tasks.register<NpmTask>("buildNext") {
+val buildTask = tasks.register<NpmTask>("nextBuild") {
+    group = "build"
+    description = "Build the Next.js project"
+
     args.set(listOf("run", "build"))
 
     val env = listOf(
@@ -90,7 +102,10 @@ val buildTask = tasks.register<NpmTask>("buildNext") {
     outputs.dir(layout.buildDirectory.dir("next"))
 }
 
-tasks.register<NpmTask>("start") {
+tasks.register<NpmTask>("nextStart") {
+    group = "build"
+    description = "Build the Next.js project"
+
     args.set(listOf("run", "start"))
 
     dependsOn(buildTask)
