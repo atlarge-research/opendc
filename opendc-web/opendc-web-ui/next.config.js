@@ -38,5 +38,6 @@ module.exports = (phase) => withConfig({
                 permanent: false
             }
         ]
-    }
+    },
+    images: { unoptimized: true }
 })
