@@ -59,7 +59,7 @@ function ScenarioTable({ portfolio, status }) {
                         <Td dataLabel="Topology">
                             {scenario.topology ? (
                                 <Link href={`/projects/${projectId}/topologies/${scenario.topology.number}`}>
-                                    <a>{scenario.topology.name}</a>
+                                    scenario.topology.name
                                 </Link>
                             ) : (
                                 'Unknown Topology'

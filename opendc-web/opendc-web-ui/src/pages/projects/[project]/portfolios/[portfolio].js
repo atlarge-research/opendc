@@ -23,6 +23,7 @@
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
+import Link from 'next/link'
 import React, { useRef } from 'react'
 import {
     Breadcrumb,
@@ -40,7 +41,6 @@ import {
 import { AppPage } from '../../../../components/AppPage'
 import ContextSelectionSection from '../../../../components/context/ContextSelectionSection'
 import PortfolioSelector from '../../../../components/context/PortfolioSelector'
-import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
 import PortfolioOverview from '../../../../components/portfolios/PortfolioOverview'
 import { usePortfolio } from '../../../../data/project'
 
@@ -61,17 +61,13 @@ function Portfolio() {
 
     const breadcrumb = (
         <Breadcrumb>
-            <BreadcrumbItem to="/projects" component={BreadcrumbLink}>
+            <BreadcrumbItem to="/projects" component={Link}>
                 Projects
             </BreadcrumbItem>
-            <BreadcrumbItem to={`/projects/${projectId}`} component={BreadcrumbLink}>
+            <BreadcrumbItem to={`/projects/${projectId}`} component={Link}>
                 Project details
             </BreadcrumbItem>
-            <BreadcrumbItem
-                to={`/projects/${projectId}/portfolios/${portfolioNumber}`}
-                component={BreadcrumbLink}
-                isActive
-            >
+            <BreadcrumbItem to={`/projects/${projectId}/portfolios/${portfolioNumber}`} component={Link} isActive>
                 Portfolio
             </BreadcrumbItem>
         </Breadcrumb>

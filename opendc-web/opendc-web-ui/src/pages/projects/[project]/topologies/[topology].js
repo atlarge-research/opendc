@@ -22,12 +22,13 @@
 
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
+import Head from 'next/head'
+import Link from 'next/link'
 import ContextSelectionSection from '../../../../components/context/ContextSelectionSection'
 import TopologySelector from '../../../../components/context/TopologySelector'
 import TopologyOverview from '../../../../components/topologies/TopologyOverview'
 import { useDispatch } from 'react-redux'
 import React, { useEffect, useState } from 'react'
-import Head from 'next/head'
 import { AppPage } from '../../../../components/AppPage'
 import {
     Breadcrumb,
@@ -42,7 +43,6 @@ import {
     Text,
     TextContent,
 } from '@patternfly/react-core'
-import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
 import { useTopology } from '../../../../data/topology'
 import { goToRoom } from '../../../../redux/actions/interaction-level'
 import { openTopology } from '../../../../redux/actions/topology'
@@ -58,7 +58,6 @@ function Topology() {
     const topologyNumber = +router.query['topology']
 
     const { data: topology } = useTopology(projectId, topologyNumber)
-    const project = topology?.project
 
     const dispatch = useDispatch()
     useEffect(() => {
@@ -71,17 +70,13 @@ function Topology() {
 
     const breadcrumb = (
         <Breadcrumb>
-            <BreadcrumbItem to="/projects" component={BreadcrumbLink}>
+            <BreadcrumbItem to="/projects" component={Link}>
                 Projects
             </BreadcrumbItem>
-            <BreadcrumbItem to={`/projects/${projectId}`} component={BreadcrumbLink}>
+            <BreadcrumbItem to={`/projects/${projectId}`} component={Link}>
                 Project details
             </BreadcrumbItem>
-            <BreadcrumbItem
-                to={`/projects/${projectId}/topologies/${topologyNumber}`}
-                component={BreadcrumbLink}
-                isActive
-            >
+            <BreadcrumbItem to={`/projects/${projectId}/topologies/${topologyNumber}`} component={Link} isActive>
                 Topology
             </BreadcrumbItem>
         </Breadcrumb>
@@ -96,7 +91,7 @@ function Topology() {
     return (
         <AppPage breadcrumb={breadcrumb} contextSelectors={contextSelectors}>
             <Head>
-                <title>{project?.name ?? 'Topologies'} - OpenDC</title>
+                <title>{`${topology?.name ?? 'Topologies'} - OpenDC`}</title>
             </Head>
             <PageSection variant={PageSectionVariants.light}>
                 <TextContent>

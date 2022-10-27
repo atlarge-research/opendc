@@ -25,6 +25,7 @@ import ProjectOverview from '../../../components/projects/ProjectOverview'
 import { useProject } from '../../../data/project'
 import { AppPage } from '../../../components/AppPage'
 import Head from 'next/head'
+import Link from 'next/link'
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -34,7 +35,6 @@ import {
     Text,
     TextContent,
 } from '@patternfly/react-core'
-import BreadcrumbLink from '../../../components/util/BreadcrumbLink'
 
 function Project() {
     const router = useRouter()
@@ -44,10 +44,10 @@ function Project() {
 
     const breadcrumb = (
         <Breadcrumb>
-            <BreadcrumbItem to="/projects" component={BreadcrumbLink}>
+            <BreadcrumbItem to="/projects" component={Link}>
                 Projects
             </BreadcrumbItem>
-            <BreadcrumbItem to={`/projects/${projectId}`} component={BreadcrumbLink} isActive>
+            <BreadcrumbItem to={`/projects/${projectId}`} component={Link} isActive>
                 Project details
             </BreadcrumbItem>
         </Breadcrumb>
@@ -56,7 +56,7 @@ function Project() {
     return (
         <AppPage breadcrumb={breadcrumb}>
             <Head>
-                <title>{project?.name ?? 'Project'} - OpenDC</title>
+                <title>{`${project?.name ?? 'Project'} - OpenDC`}</title>
             </Head>
             <PageSection variant={PageSectionVariants.light}>
                 <TextContent>

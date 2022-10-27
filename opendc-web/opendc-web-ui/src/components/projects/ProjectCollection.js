@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import {
     Gallery,
     Bullseye,
@@ -25,7 +26,6 @@ import React, { useReducer, useMemo } from 'react'
 import { Project, Status } from '../../shapes'
 import { parseAndFormatDateTime } from '../../util/date-time'
 import { AUTH_DESCRIPTION_MAP, AUTH_ICON_MAP, AUTH_NAME_MAP } from '../../util/authorizations'
-import NavItemLink from '../util/NavItemLink'
 import TableEmptyState from '../util/TableEmptyState'
 
 function ProjectCard({ project, onDelete }) {
@@ -70,7 +70,7 @@ function ProjectCard({ project, onDelete }) {
                     />
                 </CardActions>
             </CardHeader>
-            <CardTitle component={NavItemLink} className="pf-u-pb-0" href={`/projects/${id}`}>
+            <CardTitle component={Link} className="pf-u-pb-0" href={`/projects/${id}`}>
                 {name}
             </CardTitle>
             <CardBody isFilled={false}>
