@@ -84,7 +84,6 @@ val buildTask = tasks.register<NpmTask>("nextBuild") {
     args.set(listOf("run", "build"))
 
     val env = listOf(
-        "NEXT_BASE_PATH",
         "NEXT_PUBLIC_API_BASE_URL",
         "NEXT_PUBLIC_SENTRY_DSN",
         "NEXT_PUBLIC_AUTH0_DOMAIN",

@@ -38,12 +38,6 @@ public class OpenDCUiConfig {
     boolean include;
 
     /**
-     * The path where the OpenDC UI is available.
-     */
-    @ConfigItem(defaultValue = "/")
-    String path;
-
-    /**
      * The base URL of the OpenDC API.
      */
     @ConfigItem(defaultValue = "/api")

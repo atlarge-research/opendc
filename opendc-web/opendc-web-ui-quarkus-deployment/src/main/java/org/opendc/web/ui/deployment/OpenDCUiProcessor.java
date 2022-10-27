@@ -75,13 +75,13 @@ public class OpenDCUiProcessor {
      * Build the WebJar that is used to serve the Next.js resources.
      */
     @BuildStep(onlyIf = IsIncluded.class)
-    public WebJarBuildItem buildWebJar(OpenDCUiConfig config, HttpRootPathBuildItem httpRootPathBuildItem) {
+    public WebJarBuildItem buildWebJar(OpenDCUiConfig config) {
         return WebJarBuildItem.builder()
                 .artifactKey(OPENDC_UI_WEBJAR_ARTIFACT_KEY)
                 .root(OPENDC_UI_WEBJAR_STATIC_RESOURCES_PATH)
                 .onlyCopyNonArtifactFiles(false)
                 .useDefaultQuarkusBranding(false)
-                .filter(new InsertVariablesResourcesFilter(config, httpRootPathBuildItem))
+                .filter(new InsertVariablesResourcesFilter(config))
                 .build();
     }
 
@@ -128,8 +128,8 @@ public class OpenDCUiProcessor {
             }
 
             int statusCode = redirect.get("statusCode").asInt();
-            String path = redirect.get("source").asText().replaceAll("/%%NEXT_BASE_PATH%%", "");
-            String destination = redirect.get("destination").asText().replaceAll("/%%NEXT_BASE_PATH%%", "");
+            String path = redirect.get("source").asText();
+            String destination = redirect.get("destination").asText();
 
             if (path.isEmpty()) {
                 path = "/";
@@ -154,7 +154,6 @@ public class OpenDCUiProcessor {
             WebJarResultsBuildItem webJarResultsBuildItem,
             OpenDCUiRoutingBuildItem openDCUiBuildItem,
             OpenDCUiRuntimeConfig runtimeConfig,
-            OpenDCUiConfig buildConfig,
             ShutdownContextBuildItem shutdownContext) {
 
         WebJarResultsBuildItem.WebJarResult result =
@@ -163,7 +162,7 @@ public class OpenDCUiProcessor {
             return;
         }
 
-        String basePath = httpRootPathBuildItem.resolvePath(buildConfig.path);
+        String basePath = httpRootPathBuildItem.getRootPath();
         String finalDestination = result.getFinalDestination();
 
         /* Construct dynamic routes */
@@ -192,15 +191,7 @@ public class OpenDCUiProcessor {
 
         routes.produce(httpRootPathBuildItem
                 .routeBuilder()
-                .route(buildConfig.path)
-                .displayOnNotFoundPage("OpenDC UI")
-                .routeConfigKey("quarkus.opendc-ui.path")
-                .handler(staticHandler)
-                .build());
-
-        routes.produce(httpRootPathBuildItem
-                .routeBuilder()
-                .route(buildConfig.path + "*")
+                .route("*")
                 .handler(staticHandler)
                 .build());
     }
@@ -215,11 +206,9 @@ public class OpenDCUiProcessor {
         private static final String JS = ".js";
 
         private final OpenDCUiConfig config;
-        private final HttpRootPathBuildItem httpRootPathBuildItem;
 
-        public InsertVariablesResourcesFilter(OpenDCUiConfig config, HttpRootPathBuildItem httpRootPathBuildItem) {
+        public InsertVariablesResourcesFilter(OpenDCUiConfig config) {
             this.config = config;
-            this.httpRootPathBuildItem = httpRootPathBuildItem;
         }
 
         @Override
@@ -247,9 +236,6 @@ public class OpenDCUiProcessor {
 
         private String substitute(String var) {
             switch (var) {
-                case "NEXT_BASE_PATH":
-                    String basePath = httpRootPathBuildItem.resolvePath(config.path);
-                    return basePath.equals("/") ? "" : basePath; // Base path must not end with trailing slash
                 case "NEXT_PUBLIC_API_BASE_URL":
                     return config.apiBaseUrl;
                 case "NEXT_PUBLIC_SENTRY_DSN":
@@ -271,7 +257,7 @@ public class OpenDCUiProcessor {
          * Be aware that to properly handle Next.js base path, we need to also match a possible forward slash in front
          * of the variable.
          */
-        private static final Pattern PATTERN = Pattern.compile("/?%%(\\w+)%%");
+        private static final Pattern PATTERN = Pattern.compile("%%(\\w+)%%");
 
         /**
          * Helper method to substitute variables in the OpenDC web UI.
