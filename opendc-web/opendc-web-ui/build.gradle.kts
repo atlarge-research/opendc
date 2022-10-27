@@ -40,6 +40,7 @@ sourceSets {
 
 node {
     download.set(true)
+    version.set(libs.versions.node.get())
 }
 
 val formatTask = tasks.register<NpmTask>("format") {
