@@ -35,7 +35,7 @@ module.exports = (phase) => withConfig({
             {
                 source: '/',
                 destination: '/projects',
-                permanent: true
+                permanent: false
             }
         ]
     }
