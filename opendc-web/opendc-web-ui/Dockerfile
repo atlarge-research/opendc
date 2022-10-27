@@ -1,4 +1,4 @@
-FROM node:16 AS staging
+FROM node:18 AS staging
 MAINTAINER OpenDC Maintainers <opendc@atlarge-research.com>
 
 # Copy package details
@@ -6,7 +6,7 @@ COPY ./package.json ./package-lock.json /opendc/
 RUN cd /opendc && npm ci
 
 # Build frontend
-FROM node:16 AS build
+FROM node:18 AS build
 
 COPY ./ /opendc
 COPY --from=staging /opendc/node_modules /opendc/node_modules
@@ -22,7 +22,7 @@ RUN cd /opendc/ \
     && mv build/next build/next.template
 
 
-FROM node:16-slim
+FROM node:18-slim
 COPY --from=build /opendc /opendc
 WORKDIR /opendc
 CMD ./scripts/envsubst.sh; npm run start

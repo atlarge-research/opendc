@@ -63,12 +63,6 @@ class OpenDCDocument extends Document {
                         content="OpenDC provides collaborative online datacenter modeling, diverse and effective datacenter simulation, and exploratory datacenter performance feedback."
                     />
                     <meta property="og:locale" content="en_US" />
-
-                    {/* CDN Dependencies */}
-                    <link
-                        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
-                        rel="stylesheet"
-                    />
                 </Head>
                 <body>
                     <Main />

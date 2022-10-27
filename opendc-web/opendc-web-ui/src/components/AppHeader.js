@@ -43,14 +43,7 @@ export default function AppHeader({ nav }) {
     return (
         <Masthead id="app-header" className={styles.header}>
             <MastheadMain>
-                <MastheadBrand
-                    className={styles.logo}
-                    component={(props) => (
-                        <Link href="/projects">
-                            <a {...props} />
-                        </Link>
-                    )}
-                >
+                <MastheadBrand className={styles.logo} component={(props) => <Link href="/projects" {...props} />}>
                     <Image src="/img/logo.svg" alt="OpenDC logo" width={25} height={25} />
                     <span>OpenDC</span>
                 </MastheadBrand>
