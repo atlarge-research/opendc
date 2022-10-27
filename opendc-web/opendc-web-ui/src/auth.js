@@ -27,10 +27,11 @@ import { auth } from './config'
 
 /**
  * Helper function to provide the authentication context in case Auth0 is not
- * configured.
+ * configured and the user is anonymous.
  */
-function useAuthDev() {
+function useAnonymousAuth() {
     return {
+        isAnonymous: true,
         isAuthenticated: false,
         isLoading: false,
         logout: () => {},
@@ -39,15 +40,17 @@ function useAuthDev() {
 }
 
 /**
- * Obtain the authentication context.
+ * Determine whether the auth domain is anonymous.
  */
-export const useAuth = auth.domain ? useAuth0 : useAuthDev
+function isAnonymousDomain(config) {
+    return !config.domain || config.domain === '%%NEXT_PUBLIC_AUTH0_DOMAIN%%'
+}
 
 /**
  * Force the user to be authenticated or redirect to the homepage.
  */
-export function useRequireAuth() {
-    const auth = useAuth()
+function useRequireAuth0() {
+    const auth = useAuth0()
     const { loginWithRedirect, isLoading, isAuthenticated } = auth
 
     useEffect(() => {
@@ -55,21 +58,31 @@ export function useRequireAuth() {
             loginWithRedirect()
         }
     }, [loginWithRedirect, isLoading, isAuthenticated])
-
-    return auth
 }
+
+/**
+ * Obtain the authentication context.
+ */
+export const useAuth = isAnonymousDomain(auth) ? useAnonymousAuth : useAuth0
+
+/**
+ * Force the user to be authenticated or redirect to the homepage.
+ */
+export const useRequireAuth = isAnonymousDomain(auth) ? () => {} : useRequireAuth0
 
 /**
  * AuthProvider which provides an authentication context.
  */
 export function AuthProvider({ children }) {
-    if (auth.domain) {
+    const authConfig = auth
+
+    if (!isAnonymousDomain(authConfig)) {
         return (
             <Auth0Provider
-                domain={auth.domain}
-                clientId={auth.clientId}
-                redirectUri={auth.redirectUri}
-                audience={auth.audience}
+                domain={authConfig.domain}
+                clientId={authConfig.clientId}
+                redirectUri={authConfig.redirectUri}
+                audience={authConfig.audience}
             >
                 {children}
             </Auth0Provider>
