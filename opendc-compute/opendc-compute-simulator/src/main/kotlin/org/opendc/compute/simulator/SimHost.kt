@@ -22,7 +22,6 @@
 
 package org.opendc.compute.simulator
 
-import kotlinx.coroutines.yield
 import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
@@ -132,8 +131,8 @@ public class SimHost(
         return sufficientMemory && enoughCpus && canFit
     }
 
-    override suspend fun spawn(server: Server, start: Boolean) {
-        val guest = guests.computeIfAbsent(server) { key ->
+    override fun spawn(server: Server) {
+        guests.computeIfAbsent(server) { key ->
             require(canFit(key)) { "Server does not fit" }
 
             val machine = hypervisor.newMachine(key.flavor.toMachineModel())
@@ -150,27 +149,23 @@ public class SimHost(
             _guests.add(newGuest)
             newGuest
         }
-
-        if (start) {
-            guest.start()
-        }
     }
 
     override fun contains(server: Server): Boolean {
         return server in guests
     }
 
-    override suspend fun start(server: Server) {
+    override fun start(server: Server) {
         val guest = requireNotNull(guests[server]) { "Unknown server ${server.uid} at host $uid" }
         guest.start()
     }
 
-    override suspend fun stop(server: Server) {
+    override fun stop(server: Server) {
         val guest = requireNotNull(guests[server]) { "Unknown server ${server.uid} at host $uid" }
         guest.stop()
     }
 
-    override suspend fun delete(server: Server) {
+    override fun delete(server: Server) {
         val guest = guests[server] ?: return
         guest.delete()
     }
@@ -266,17 +261,10 @@ public class SimHost(
         }
     }
 
-    public suspend fun recover() {
+    public fun recover() {
         updateUptime()
 
         launch()
-
-        // Wait for the hypervisor to launch before recovering the guests
-        yield()
-
-        for (guest in _guests) {
-            guest.recover()
-        }
     }
 
     /**
@@ -298,6 +286,11 @@ public class SimHost(
                     _bootTime = clock.instant()
                     _state = HostState.UP
                     hypervisor.onStart(ctx)
+
+                    // Recover the guests that were running on the hypervisor.
+                    for (guest in _guests) {
+                        guest.recover()
+                    }
                 } catch (cause: Throwable) {
                     _state = HostState.ERROR
                     throw cause

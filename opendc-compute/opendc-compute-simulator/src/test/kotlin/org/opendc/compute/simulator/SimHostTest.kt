@@ -24,7 +24,6 @@ package org.opendc.compute.simulator
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -107,20 +106,19 @@ internal class SimHostTest {
 
         val flavor = MockFlavor(2, 0)
 
-        coroutineScope {
-            launch { host.spawn(MockServer(UUID.randomUUID(), "a", flavor, vmImage)) }
+        suspendCancellableCoroutine { cont ->
+            host.addListener(object : HostListener {
+                private var finished = 0
 
-            suspendCancellableCoroutine { cont ->
-                host.addListener(object : HostListener {
-                    private var finished = 0
-
-                    override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
-                        if (newState == ServerState.TERMINATED && ++finished == 1) {
-                            cont.resume(Unit)
-                        }
+                override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
+                    if (newState == ServerState.TERMINATED && ++finished == 1) {
+                        cont.resume(Unit)
                     }
-                })
-            }
+                }
+            })
+            val server = MockServer(UUID.randomUUID(), "a", flavor, vmImage)
+            host.spawn(server)
+            host.start(server)
         }
 
         // Ensure last cycle is collected
@@ -190,9 +188,6 @@ internal class SimHostTest {
         val flavor = MockFlavor(2, 0)
 
         coroutineScope {
-            launch { host.spawn(MockServer(UUID.randomUUID(), "a", flavor, vmImageA)) }
-            launch { host.spawn(MockServer(UUID.randomUUID(), "b", flavor, vmImageB)) }
-
             suspendCancellableCoroutine { cont ->
                 host.addListener(object : HostListener {
                     private var finished = 0
@@ -203,6 +198,13 @@ internal class SimHostTest {
                         }
                     }
                 })
+                val serverA = MockServer(UUID.randomUUID(), "a", flavor, vmImageA)
+                host.spawn(serverA)
+                val serverB = MockServer(UUID.randomUUID(), "b", flavor, vmImageB)
+                host.spawn(serverB)
+
+                host.start(serverA)
+                host.start(serverB)
             }
         }
 
@@ -259,12 +261,13 @@ internal class SimHostTest {
 
         coroutineScope {
             host.spawn(server)
+            host.start(server)
             delay(5000L)
             host.fail()
             delay(duration * 1000)
             host.recover()
 
-            suspendCancellableCoroutine<Unit> { cont ->
+            suspendCancellableCoroutine { cont ->
                 host.addListener(object : HostListener {
                     override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
                         if (newState == ServerState.TERMINATED) {

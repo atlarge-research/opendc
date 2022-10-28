@@ -22,11 +22,6 @@
 
 package org.opendc.compute.service.internal
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.common.util.Pacer
 import org.opendc.compute.api.ComputeClient
@@ -53,22 +48,17 @@ import kotlin.math.max
 /**
  * Internal implementation of the OpenDC Compute service.
  *
- * @param context The [CoroutineContext] to use in the service.
+ * @param coroutineContext The [CoroutineContext] to use in the service.
  * @param clock The clock instance to use.
  * @param scheduler The scheduler implementation to use.
  * @param schedulingQuantum The interval between scheduling cycles.
  */
 internal class ComputeServiceImpl(
-    private val context: CoroutineContext,
+    coroutineContext: CoroutineContext,
     private val clock: Clock,
     private val scheduler: ComputeScheduler,
     schedulingQuantum: Duration
 ) : ComputeService, HostListener {
-    /**
-     * The [CoroutineScope] of the service bounded by the lifecycle of the service.
-     */
-    private val scope = CoroutineScope(context + Job())
-
     /**
      * The logger instance of this server.
      */
@@ -115,6 +105,9 @@ internal class ComputeServiceImpl(
     private val serverById = mutableMapOf<UUID, InternalServer>()
     override val servers: MutableList<Server> = mutableListOf()
 
+    override val hosts: Set<Host>
+        get() = hostToView.keys
+
     private var maxCores = 0
     private var maxMemory = 0L
     private var _attemptsSuccess = 0L
@@ -122,17 +115,15 @@ internal class ComputeServiceImpl(
     private var _attemptsError = 0L
     private var _serversPending = 0
     private var _serversActive = 0
+    private var isClosed = false
 
     /**
      * The [Pacer] to use for scheduling the scheduler cycles.
      */
-    private val pacer = Pacer(scope.coroutineContext, clock, schedulingQuantum.toMillis()) { doSchedule() }
-
-    override val hosts: Set<Host>
-        get() = hostToView.keys
+    private val pacer = Pacer(coroutineContext, clock, schedulingQuantum.toMillis()) { doSchedule() }
 
     override fun newClient(): ComputeClient {
-        check(scope.isActive) { "Service is already closed" }
+        check(!isClosed) { "Service is already closed" }
         return object : ComputeClient {
             private var isClosed: Boolean = false
 
@@ -285,7 +276,12 @@ internal class ComputeServiceImpl(
     }
 
     override fun close() {
-        scope.cancel()
+        if (isClosed) {
+            return
+        }
+
+        isClosed = true
+        pacer.cancel()
     }
 
     override fun getSchedulerStats(): SchedulerStats {
@@ -379,29 +375,23 @@ internal class ComputeServiceImpl(
 
             logger.info { "Assigned server $server to host $host." }
 
-            // Speculatively update the hypervisor view information to prevent other images in the queue from
-            // deciding on stale values.
-            hv.instanceCount++
-            hv.provisionedCores += server.flavor.cpuCount
-            hv.availableMemory -= server.flavor.memorySize // XXX Temporary hack
+            try {
+                server.host = host
 
-            scope.launch {
-                try {
-                    server.host = host
-                    host.spawn(server)
-                    activeServers[server] = host
+                host.spawn(server)
+                host.start(server)
 
-                    _serversActive++
-                    _attemptsSuccess++
-                } catch (e: Throwable) {
-                    logger.error(e) { "Failed to deploy VM" }
+                _serversActive++
+                _attemptsSuccess++
 
-                    hv.instanceCount--
-                    hv.provisionedCores -= server.flavor.cpuCount
-                    hv.availableMemory += server.flavor.memorySize
+                hv.instanceCount++
+                hv.provisionedCores += server.flavor.cpuCount
+                hv.availableMemory -= server.flavor.memorySize
 
-                    _attemptsError++
-                }
+                activeServers[server] = host
+            } catch (e: Throwable) {
+                logger.error(e) { "Failed to deploy VM" }
+                _attemptsError++
             }
         }
     }

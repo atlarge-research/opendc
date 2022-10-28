@@ -60,6 +60,7 @@ internal class Guest(
      * a server.
      */
     var state: ServerState = ServerState.TERMINATED
+        private set
 
     /**
      * Start the guest.

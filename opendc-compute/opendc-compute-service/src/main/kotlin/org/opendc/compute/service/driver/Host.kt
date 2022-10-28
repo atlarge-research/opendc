@@ -70,11 +70,8 @@ public interface Host {
 
     /**
      * Register the specified [instance][server] on the host.
-     *
-     * Once the method returns, the instance should be running if [start] is true or else the instance should be
-     * stopped.
      */
-    public suspend fun spawn(server: Server, start: Boolean = true)
+    public fun spawn(server: Server)
 
     /**
      * Determine whether the specified [instance][server] exists on the host.
@@ -86,19 +83,19 @@ public interface Host {
      *
      * @throws IllegalArgumentException if the server is not present on the host.
      */
-    public suspend fun start(server: Server)
+    public fun start(server: Server)
 
     /**
      * Stop the server [instance][server] if it is currently running on this host.
      *
      * @throws IllegalArgumentException if the server is not present on the host.
      */
-    public suspend fun stop(server: Server)
+    public fun stop(server: Server)
 
     /**
      * Delete the specified [instance][server] on this host and cleanup all resources associated with it.
      */
-    public suspend fun delete(server: Server)
+    public fun delete(server: Server)
 
     /**
      * Add a [HostListener] to this host.

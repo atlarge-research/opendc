@@ -348,7 +348,7 @@ internal class ComputeServiceTest {
         // Start server
         server.start()
         delay(5L * 60 * 1000)
-        coVerify { host.spawn(capture(slot), true) }
+        coVerify { host.spawn(capture(slot)) }
 
         listeners.forEach { it.onStateChanged(host, slot.captured, ServerState.RUNNING) }
 
@@ -376,7 +376,7 @@ internal class ComputeServiceTest {
         every { host.state } returns HostState.UP
         every { host.canFit(any()) } returns true
         every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
-        coEvery { host.spawn(any(), true) } throws IllegalStateException()
+        coEvery { host.spawn(any()) } throws IllegalStateException()
 
         service.addHost(host)
 
