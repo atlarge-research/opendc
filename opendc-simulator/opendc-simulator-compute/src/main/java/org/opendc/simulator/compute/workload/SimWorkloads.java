@@ -60,4 +60,11 @@ public class SimWorkloads {
     public static SimWorkload runtime(Duration duration, double utilization) {
         return runtime(duration.toMillis(), utilization);
     }
+
+    /**
+     * Chain the specified <code>workloads</code> into a single {@link SimWorkload}.
+     */
+    public static SimWorkload chain(SimWorkload... workloads) {
+        return new SimChainWorkload(workloads);
+    }
 }
