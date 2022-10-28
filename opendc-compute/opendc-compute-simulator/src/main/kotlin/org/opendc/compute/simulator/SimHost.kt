@@ -43,7 +43,6 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow2.FlowGraph
 import java.time.Duration
 import java.time.Instant
@@ -284,30 +283,12 @@ public class SimHost(
         check(_ctx == null) { "Concurrent hypervisor running" }
 
         // Launch hypervisor onto machine
-        _ctx = machine.startWorkload(
-            object : SimWorkload {
-                override fun onStart(ctx: SimMachineContext) {
-                    try {
-                        _bootTime = clock.instant()
-                        _state = HostState.UP
-                        hypervisor.onStart(ctx)
-                    } catch (cause: Throwable) {
-                        _state = HostState.ERROR
-                        _ctx = null
-                        throw cause
-                    }
-                }
-
-                override fun onStop(ctx: SimMachineContext) {
-                    try {
-                        hypervisor.onStop(ctx)
-                    } finally {
-                        _ctx = null
-                    }
-                }
-            },
-            emptyMap()
-        )
+        _bootTime = clock.instant()
+        _state = HostState.UP
+        _ctx = machine.startWorkload(hypervisor, emptyMap()) { cause ->
+            _state = if (cause != null) HostState.ERROR else HostState.DOWN
+            _ctx = null
+        }
     }
 
     /**

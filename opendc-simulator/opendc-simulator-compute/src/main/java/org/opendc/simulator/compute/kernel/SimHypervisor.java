@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SplittableRandom;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.opendc.simulator.compute.SimAbstractMachine;
 import org.opendc.simulator.compute.SimMachine;
@@ -471,7 +472,8 @@ public final class SimHypervisor implements SimWorkload {
         }
 
         @Override
-        protected Context createContext(SimWorkload workload, Map<String, Object> meta) {
+        protected Context createContext(
+                SimWorkload workload, Map<String, Object> meta, Consumer<Exception> completion) {
             if (isClosed) {
                 throw new IllegalStateException("Virtual machine does not exist anymore");
             }
@@ -482,7 +484,15 @@ public final class SimHypervisor implements SimWorkload {
             }
 
             return new VmContext(
-                    context, this, random, interferenceDomain, counters, SimHypervisor.this.counters, workload, meta);
+                    context,
+                    this,
+                    random,
+                    interferenceDomain,
+                    counters,
+                    SimHypervisor.this.counters,
+                    workload,
+                    meta,
+                    completion);
         }
 
         @Override
@@ -538,8 +548,9 @@ public final class SimHypervisor implements SimWorkload {
                 VmCounters vmCounters,
                 HvCounters hvCounters,
                 SimWorkload workload,
-                Map<String, Object> meta) {
-            super(machine, workload, meta);
+                Map<String, Object> meta,
+                Consumer<Exception> completion) {
+            super(machine, workload, meta, completion);
 
             this.context = context;
             this.random = random;

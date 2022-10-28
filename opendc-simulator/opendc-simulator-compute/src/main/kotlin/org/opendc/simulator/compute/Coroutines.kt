@@ -39,31 +39,8 @@ public suspend fun SimMachine.runWorkload(workload: SimWorkload, meta: Map<Strin
     return suspendCancellableCoroutine { cont ->
         cont.invokeOnCancellation { this@runWorkload.cancel() }
 
-        startWorkload(
-            object : SimWorkload {
-                override fun onStart(ctx: SimMachineContext) {
-                    try {
-                        workload.onStart(ctx)
-                    } catch (cause: Throwable) {
-                        cont.resumeWithException(cause)
-                        throw cause
-                    }
-                }
-
-                override fun onStop(ctx: SimMachineContext) {
-                    try {
-                        workload.onStop(ctx)
-
-                        if (!cont.isCompleted) {
-                            cont.resume(Unit)
-                        }
-                    } catch (cause: Throwable) {
-                        cont.resumeWithException(cause)
-                        throw cause
-                    }
-                }
-            },
-            meta
-        )
+        startWorkload(workload, meta) { cause ->
+            if (cause != null) cont.resumeWithException(cause) else cont.resume(Unit)
+        }
     }
 }

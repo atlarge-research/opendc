@@ -24,6 +24,7 @@ package org.opendc.simulator.compute;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.opendc.simulator.compute.device.SimPeripheral;
 import org.opendc.simulator.compute.model.MachineModel;
 import org.opendc.simulator.compute.workload.SimWorkload;
@@ -47,10 +48,11 @@ public interface SimMachine {
      *
      * @param workload The workload to start on the machine.
      * @param meta The metadata to pass to the workload.
+     * @param completion A block that is invoked when the workload completes carrying an exception if thrown by the workload.
      * @return A {@link SimMachineContext} that represents the execution context for the workload.
      * @throws IllegalStateException if a workload is already active on the machine or if the machine is closed.
      */
-    SimMachineContext startWorkload(SimWorkload workload, Map<String, Object> meta);
+    SimMachineContext startWorkload(SimWorkload workload, Map<String, Object> meta, Consumer<Exception> completion);
 
     /**
      * Cancel the active workload on this machine (if any).
