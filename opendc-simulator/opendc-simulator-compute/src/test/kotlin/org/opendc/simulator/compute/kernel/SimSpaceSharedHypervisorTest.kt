@@ -38,10 +38,9 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.runWorkload
-import org.opendc.simulator.compute.workload.SimFlopsWorkload
-import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.compute.workload.SimTraceFragment
+import org.opendc.simulator.compute.workload.SimWorkloads
 import org.opendc.simulator.flow2.FlowEngine
 import org.opendc.simulator.flow2.mux.FlowMultiplexerFactory
 import org.opendc.simulator.kotlin.runSimulation
@@ -99,7 +98,7 @@ internal class SimSpaceSharedHypervisorTest {
     @Test
     fun testRuntimeWorkload() = runSimulation {
         val duration = 5 * 60L * 1000
-        val workload = SimRuntimeWorkload(duration, 1.0)
+        val workload = SimWorkloads.runtime(duration, 1.0)
         val engine = FlowEngine.create(coroutineContext, clock)
         val graph = engine.newGraph()
 
@@ -123,7 +122,7 @@ internal class SimSpaceSharedHypervisorTest {
     @Test
     fun testFlopsWorkload() = runSimulation {
         val duration = 5 * 60L * 1000
-        val workload = SimFlopsWorkload((duration * 3.2).toLong(), 1.0)
+        val workload = SimWorkloads.flops((duration * 3.2).toLong(), 1.0)
         val engine = FlowEngine.create(coroutineContext, clock)
         val graph = engine.newGraph()
 
@@ -155,13 +154,13 @@ internal class SimSpaceSharedHypervisorTest {
         yield()
 
         val vm = hypervisor.newMachine(machineModel)
-        vm.runWorkload(SimRuntimeWorkload(duration, 1.0))
+        vm.runWorkload(SimWorkloads.runtime(duration, 1.0))
         hypervisor.removeMachine(vm)
 
         yield()
 
         val vm2 = hypervisor.newMachine(machineModel)
-        vm2.runWorkload(SimRuntimeWorkload(duration, 1.0))
+        vm2.runWorkload(SimWorkloads.runtime(duration, 1.0))
         hypervisor.removeMachine(vm2)
 
         machine.cancel()
@@ -184,7 +183,7 @@ internal class SimSpaceSharedHypervisorTest {
         yield()
 
         val vm = hypervisor.newMachine(machineModel)
-        launch { vm.runWorkload(SimFlopsWorkload(10_000, 1.0)) }
+        launch { vm.runWorkload(SimWorkloads.runtime(10_000, 1.0)) }
         yield()
 
         assertAll(

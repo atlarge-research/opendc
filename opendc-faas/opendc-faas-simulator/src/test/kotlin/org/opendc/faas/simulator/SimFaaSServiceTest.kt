@@ -40,8 +40,8 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.simulator.compute.workload.SimWorkloads
 import org.opendc.simulator.kotlin.runSimulation
 import java.time.Duration
 import java.util.Random
@@ -66,7 +66,7 @@ internal class SimFaaSServiceTest {
     @Test
     fun testSmoke() = runSimulation {
         val random = Random(0)
-        val workload = spyk(object : SimFaaSWorkload, SimWorkload by SimRuntimeWorkload(1000, 1.0) {
+        val workload = spyk(object : SimFaaSWorkload, SimWorkload by SimWorkloads.runtime(1000, 1.0) {
             override suspend fun invoke() {
                 delay(random.nextInt(1000).toLong())
             }

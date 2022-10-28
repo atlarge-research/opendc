@@ -27,7 +27,7 @@ package org.opendc.experiments.workflow
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.opendc.simulator.compute.workload.SimFlopsWorkload
+import org.opendc.simulator.compute.workload.SimWorkloads
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.TABLE_TASKS
 import org.opendc.trace.conv.TASK_ALLOC_NCPUS
@@ -74,7 +74,7 @@ public fun Trace.toJobs(): List<Job> {
             val submitTime = reader.getInstant(TASK_SUBMIT_TIME)!!
             val runtime = reader.getDuration(TASK_RUNTIME)!!
             val flops: Long = 4000 * runtime.seconds * grantedCpus
-            val workload = SimFlopsWorkload(flops, 1.0)
+            val workload = SimWorkloads.flops(flops, 1.0)
             val task = Task(
                 UUID(0L, id),
                 "<unnamed>",

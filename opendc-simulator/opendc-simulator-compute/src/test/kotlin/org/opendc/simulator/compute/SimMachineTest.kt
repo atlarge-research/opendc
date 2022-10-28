@@ -40,9 +40,9 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.model.StorageDevice
 import org.opendc.simulator.compute.power.CpuPowerModels
-import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.simulator.compute.workload.SimWorkloads
 import org.opendc.simulator.flow2.FlowEngine
 import org.opendc.simulator.flow2.source.SimpleFlowSource
 import org.opendc.simulator.kotlin.runSimulation
@@ -78,7 +78,7 @@ class SimMachineTest {
             machineModel
         )
 
-        machine.runWorkload(SimFlopsWorkload(2_000, /*utilization*/ 1.0))
+        machine.runWorkload(SimWorkloads.flops(2_000, /*utilization*/ 1.0))
 
         // Two cores execute 1000 MFlOps per second (1000 ms)
         assertEquals(1000, clock.millis())
@@ -123,7 +123,7 @@ class SimMachineTest {
             machineModel
         )
 
-        machine.runWorkload(SimFlopsWorkload(2_000, /*utilization*/ 1.0))
+        machine.runWorkload(SimWorkloads.flops(2_000, /*utilization*/ 1.0))
 
         // Two sockets with two cores execute 2000 MFlOps per second (500 ms)
         assertEquals(500, clock.millis())
@@ -142,7 +142,7 @@ class SimMachineTest {
         source.connect(machine.psu)
 
         coroutineScope {
-            launch { machine.runWorkload(SimFlopsWorkload(2_000, /*utilization*/ 1.0)) }
+            launch { machine.runWorkload(SimWorkloads.flops(2_000, /*utilization*/ 1.0)) }
 
             yield()
             assertAll(
@@ -304,7 +304,7 @@ class SimMachineTest {
 
         try {
             coroutineScope {
-                launch { machine.runWorkload(SimFlopsWorkload(2_000, /*utilization*/ 1.0)) }
+                launch { machine.runWorkload(SimWorkloads.flops(2_000, /*utilization*/ 1.0)) }
                 cancel()
             }
         } catch (_: CancellationException) {
@@ -326,11 +326,11 @@ class SimMachineTest {
 
         coroutineScope {
             launch {
-                machine.runWorkload(SimFlopsWorkload(2_000, /*utilization*/ 1.0))
+                machine.runWorkload(SimWorkloads.flops(2_000, /*utilization*/ 1.0))
             }
 
             assertThrows<IllegalStateException> {
-                machine.runWorkload(SimFlopsWorkload(2_000, /*utilization*/ 1.0))
+                machine.runWorkload(SimWorkloads.flops(2_000, /*utilization*/ 1.0))
             }
         }
     }
