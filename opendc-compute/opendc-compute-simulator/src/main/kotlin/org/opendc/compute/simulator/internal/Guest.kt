@@ -49,11 +49,6 @@ internal class Guest(
     val machine: SimVirtualMachine
 ) {
     /**
-     * The logger instance of this guest.
-     */
-    private val logger = KotlinLogging.logger {}
-
-    /**
      * The state of the [Guest].
      *
      * [ServerState.PROVISIONING] is an invalid value for a guest, since it applies before the host is selected for
@@ -68,12 +63,12 @@ internal class Guest(
     fun start() {
         when (state) {
             ServerState.TERMINATED, ServerState.ERROR -> {
-                logger.info { "User requested to start server ${server.uid}" }
+                LOGGER.info { "User requested to start server ${server.uid}" }
                 doStart()
             }
             ServerState.RUNNING -> return
             ServerState.DELETED -> {
-                logger.warn { "User tried to start deleted server" }
+                LOGGER.warn { "User tried to start deleted server" }
                 throw IllegalArgumentException("Server is deleted")
             }
             else -> assert(false) { "Invalid state transition" }
@@ -238,5 +233,10 @@ internal class Guest(
         } else if (state == ServerState.ERROR) {
             _downtime += duration
         }
+    }
+
+    private companion object {
+        @JvmStatic
+        private val LOGGER = KotlinLogging.logger {}
     }
 }
