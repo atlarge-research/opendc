@@ -68,6 +68,11 @@ public interface SimMachineContext {
     List<? extends SimStorageInterface> getStorageInterfaces();
 
     /**
+     * Reset all resources of the machine.
+     */
+    void reset();
+
+    /**
      * Shutdown the workload.
      */
     void shutdown();

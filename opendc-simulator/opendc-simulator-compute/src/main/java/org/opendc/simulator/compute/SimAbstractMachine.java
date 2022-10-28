@@ -135,6 +135,28 @@ public abstract class SimAbstractMachine implements SimMachine {
         }
 
         @Override
+        public void reset() {
+            final FlowGraph graph = getMemory().getInput().getGraph();
+
+            for (SimProcessingUnit cpu : getCpus()) {
+                final Inlet inlet = cpu.getInput();
+                graph.disconnect(inlet);
+            }
+
+            graph.disconnect(getMemory().getInput());
+
+            for (SimNetworkInterface ifx : getNetworkInterfaces()) {
+                ((NetworkAdapter) ifx).disconnect();
+            }
+
+            for (SimStorageInterface storage : getStorageInterfaces()) {
+                StorageDevice impl = (StorageDevice) storage;
+                graph.disconnect(impl.getRead());
+                graph.disconnect(impl.getWrite());
+            }
+        }
+
+        @Override
         public final void shutdown() {
             if (isClosed) {
                 return;
@@ -180,24 +202,7 @@ public abstract class SimAbstractMachine implements SimMachine {
          * Run the stop procedures for the resources associated with the machine.
          */
         protected void doCancel() {
-            final FlowGraph graph = getMemory().getInput().getGraph();
-
-            for (SimProcessingUnit cpu : getCpus()) {
-                final Inlet inlet = cpu.getInput();
-                graph.disconnect(inlet);
-            }
-
-            graph.disconnect(getMemory().getInput());
-
-            for (SimNetworkInterface ifx : getNetworkInterfaces()) {
-                ((NetworkAdapter) ifx).disconnect();
-            }
-
-            for (SimStorageInterface storage : getStorageInterfaces()) {
-                StorageDevice impl = (StorageDevice) storage;
-                graph.disconnect(impl.getRead());
-                graph.disconnect(impl.getWrite());
-            }
+            reset();
         }
 
         @Override
