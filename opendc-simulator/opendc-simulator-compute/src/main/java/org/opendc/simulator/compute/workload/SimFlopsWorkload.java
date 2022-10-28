@@ -49,9 +49,9 @@ public class SimFlopsWorkload implements SimWorkload, FlowStageLogic {
      * Construct a new {@link SimFlopsWorkload}.
      *
      * @param flops The number of floating point operations to perform for this task in MFLOPs.
-     * @param utilization A model of the CPU utilization of the application.
+     * @param utilization The CPU utilization of the workload.
      */
-    public SimFlopsWorkload(long flops, double utilization) {
+    SimFlopsWorkload(long flops, double utilization) {
         if (flops < 0) {
             throw new IllegalArgumentException("Number of FLOPs must be positive");
         } else if (utilization <= 0.0 || utilization > 1.0) {

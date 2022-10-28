@@ -24,7 +24,6 @@ package org.opendc.compute.simulator
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -70,6 +69,73 @@ internal class SimHostTest {
     }
 
     /**
+     * Test a single virtual machine hosted by the hypervisor.
+     */
+    @Test
+    fun testSingle() = runSimulation {
+        val duration = 5 * 60L
+
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1))
+
+        val host = SimHost(
+            uid = UUID.randomUUID(),
+            name = "test",
+            meta = emptyMap(),
+            clock,
+            machine,
+            hypervisor
+        )
+        val vmImage = MockImage(
+            UUID.randomUUID(),
+            "<unnamed>",
+            emptyMap(),
+            mapOf(
+                "workload" to
+                    SimTrace.ofFragments(
+                        SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
+                        SimTraceFragment(duration * 1000, duration * 1000, 2 * 3500.0, 2),
+                        SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
+                        SimTraceFragment(duration * 3000, duration * 1000, 2 * 183.0, 2)
+                    ).createWorkload(1)
+            )
+        )
+
+        val flavor = MockFlavor(2, 0)
+
+        suspendCancellableCoroutine { cont ->
+            host.addListener(object : HostListener {
+                private var finished = 0
+
+                override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
+                    if (newState == ServerState.TERMINATED && ++finished == 1) {
+                        cont.resume(Unit)
+                    }
+                }
+            })
+            val server = MockServer(UUID.randomUUID(), "a", flavor, vmImage)
+            host.spawn(server)
+            host.start(server)
+        }
+
+        // Ensure last cycle is collected
+        delay(1000L * duration)
+        host.close()
+
+        val cpuStats = host.getCpuStats()
+
+        assertAll(
+            { assertEquals(639, cpuStats.activeTime, "Active time does not match") },
+            { assertEquals(2360, cpuStats.idleTime, "Idle time does not match") },
+            { assertEquals(56, cpuStats.stealTime, "Steal time does not match") },
+            { assertEquals(1500001, clock.millis()) }
+        )
+    }
+
+    /**
      * Test overcommitting of resources by the hypervisor.
      */
     @Test
@@ -86,8 +152,7 @@ internal class SimHostTest {
             uid = UUID.randomUUID(),
             name = "test",
             meta = emptyMap(),
-            coroutineContext,
-            graph,
+            clock,
             machine,
             hypervisor
         )
@@ -123,9 +188,6 @@ internal class SimHostTest {
         val flavor = MockFlavor(2, 0)
 
         coroutineScope {
-            launch { host.spawn(MockServer(UUID.randomUUID(), "a", flavor, vmImageA)) }
-            launch { host.spawn(MockServer(UUID.randomUUID(), "b", flavor, vmImageB)) }
-
             suspendCancellableCoroutine { cont ->
                 host.addListener(object : HostListener {
                     private var finished = 0
@@ -136,6 +198,13 @@ internal class SimHostTest {
                         }
                     }
                 })
+                val serverA = MockServer(UUID.randomUUID(), "a", flavor, vmImageA)
+                host.spawn(serverA)
+                val serverB = MockServer(UUID.randomUUID(), "b", flavor, vmImageB)
+                host.spawn(serverB)
+
+                host.start(serverA)
+                host.start(serverB)
             }
         }
 
@@ -169,8 +238,7 @@ internal class SimHostTest {
             uid = UUID.randomUUID(),
             name = "test",
             meta = emptyMap(),
-            coroutineContext,
-            graph,
+            clock,
             machine,
             hypervisor
         )
@@ -193,12 +261,13 @@ internal class SimHostTest {
 
         coroutineScope {
             host.spawn(server)
+            host.start(server)
             delay(5000L)
             host.fail()
             delay(duration * 1000)
             host.recover()
 
-            suspendCancellableCoroutine<Unit> { cont ->
+            suspendCancellableCoroutine { cont ->
                 host.addListener(object : HostListener {
                     override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
                         if (newState == ServerState.TERMINATED) {

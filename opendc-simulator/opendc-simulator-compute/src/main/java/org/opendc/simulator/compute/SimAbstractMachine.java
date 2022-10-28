@@ -25,6 +25,7 @@ package org.opendc.simulator.compute;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.opendc.simulator.compute.device.SimNetworkAdapter;
 import org.opendc.simulator.compute.model.MachineModel;
 import org.opendc.simulator.compute.model.MemoryUnit;
@@ -62,12 +63,13 @@ public abstract class SimAbstractMachine implements SimMachine {
     }
 
     @Override
-    public final SimMachineContext startWorkload(SimWorkload workload, Map<String, Object> meta) {
+    public final SimMachineContext startWorkload(
+            SimWorkload workload, Map<String, Object> meta, Consumer<Exception> completion) {
         if (activeContext != null) {
             throw new IllegalStateException("A machine cannot run multiple workloads concurrently");
         }
 
-        final Context ctx = createContext(workload, new HashMap<>(meta));
+        final Context ctx = createContext(workload, new HashMap<>(meta), completion);
         ctx.start();
         return ctx;
     }
@@ -83,10 +85,12 @@ public abstract class SimAbstractMachine implements SimMachine {
     /**
      * Construct a new {@link Context} instance representing the active execution.
      *
-     * @param workload The workload to start on the machine.
-     * @param meta The metadata to pass to the workload.
+     * @param workload   The workload to start on the machine.
+     * @param meta       The metadata to pass to the workload.
+     * @param completion A block that is invoked when the workload completes carrying an exception if thrown by the workload.
      */
-    protected abstract Context createContext(SimWorkload workload, Map<String, Object> meta);
+    protected abstract Context createContext(
+            SimWorkload workload, Map<String, Object> meta, Consumer<Exception> completion);
 
     /**
      * Return the active {@link Context} instance (if any).
@@ -102,7 +106,9 @@ public abstract class SimAbstractMachine implements SimMachine {
         private final SimAbstractMachine machine;
         private final SimWorkload workload;
         private final Map<String, Object> meta;
+        private final Consumer<Exception> completion;
         private boolean isClosed;
+        private Exception cause;
 
         /**
          * Construct a new {@link Context} instance.
@@ -110,11 +116,17 @@ public abstract class SimAbstractMachine implements SimMachine {
          * @param machine The {@link SimAbstractMachine} to which the context belongs.
          * @param workload The {@link SimWorkload} to which the context belongs.
          * @param meta The metadata passed to the context.
+         * @param completion A block that is invoked when the workload completes carrying an exception if thrown by the workload.
          */
-        public Context(SimAbstractMachine machine, SimWorkload workload, Map<String, Object> meta) {
+        public Context(
+                SimAbstractMachine machine,
+                SimWorkload workload,
+                Map<String, Object> meta,
+                Consumer<Exception> completion) {
             this.machine = machine;
             this.workload = workload;
             this.meta = meta;
+            this.completion = completion;
         }
 
         @Override
@@ -123,43 +135,7 @@ public abstract class SimAbstractMachine implements SimMachine {
         }
 
         @Override
-        public final void shutdown() {
-            if (isClosed) {
-                return;
-            }
-
-            isClosed = true;
-            final SimAbstractMachine machine = this.machine;
-            assert machine.activeContext == this : "Invariant violation: multiple contexts active for a single machine";
-            machine.activeContext = null;
-
-            // Cancel all the resources associated with the machine
-            doCancel();
-
-            try {
-                workload.onStop(this);
-            } catch (Exception cause) {
-                LOGGER.warn("Workload failed during onStop callback", cause);
-            }
-        }
-
-        /**
-         * Start this context.
-         */
-        final void start() {
-            try {
-                machine.activeContext = this;
-                workload.onStart(this);
-            } catch (Exception cause) {
-                LOGGER.warn("Workload failed during onStart callback", cause);
-                shutdown();
-            }
-        }
-
-        /**
-         * Run the stop procedures for the resources associated with the machine.
-         */
-        protected void doCancel() {
+        public void reset() {
             final FlowGraph graph = getMemory().getInput().getGraph();
 
             for (SimProcessingUnit cpu : getCpus()) {
@@ -178,6 +154,55 @@ public abstract class SimAbstractMachine implements SimMachine {
                 graph.disconnect(impl.getRead());
                 graph.disconnect(impl.getWrite());
             }
+        }
+
+        @Override
+        public final void shutdown() {
+            if (isClosed) {
+                return;
+            }
+
+            isClosed = true;
+            final SimAbstractMachine machine = this.machine;
+            assert machine.activeContext == this : "Invariant violation: multiple contexts active for a single machine";
+            machine.activeContext = null;
+
+            // Cancel all the resources associated with the machine
+            doCancel();
+
+            Exception e = this.cause;
+
+            try {
+                workload.onStop(this);
+            } catch (Exception cause) {
+                if (e != null) {
+                    e.addSuppressed(cause);
+                } else {
+                    e = cause;
+                }
+            }
+
+            completion.accept(e);
+        }
+
+        /**
+         * Start this context.
+         */
+        final void start() {
+            try {
+                machine.activeContext = this;
+                workload.onStart(this);
+            } catch (Exception cause) {
+                this.cause = cause;
+                shutdown();
+            }
+        }
+
+        /**
+         * Run the stop procedures for the resources associated with the machine.
+         */
+        protected void doCancel() {
+            reset();
         }
 
         @Override

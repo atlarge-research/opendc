@@ -58,8 +58,7 @@ public class HostsProvisioningStep internal constructor(
                 spec.uid,
                 spec.name,
                 spec.meta,
-                ctx.coroutineContext,
-                graph,
+                ctx.clock,
                 machine,
                 hypervisor,
                 optimize = optimize

@@ -22,12 +22,6 @@
 
 package org.opendc.compute.simulator.internal
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
@@ -35,20 +29,17 @@ import org.opendc.compute.service.driver.telemetry.GuestCpuStats
 import org.opendc.compute.service.driver.telemetry.GuestSystemStats
 import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.simulator.SimWorkloadMapper
+import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.kernel.SimVirtualMachine
-import org.opendc.simulator.compute.runWorkload
-import org.opendc.simulator.compute.workload.SimWorkload
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import kotlin.coroutines.CoroutineContext
 
 /**
  * A virtual machine instance that is managed by a [SimHost].
  */
 internal class Guest(
-    context: CoroutineContext,
     private val clock: Clock,
     val host: SimHost,
     private val hypervisor: SimHypervisor,
@@ -58,35 +49,26 @@ internal class Guest(
     val machine: SimVirtualMachine
 ) {
     /**
-     * The [CoroutineScope] of the guest.
-     */
-    private val scope: CoroutineScope = CoroutineScope(context + Job())
-
-    /**
-     * The logger instance of this guest.
-     */
-    private val logger = KotlinLogging.logger {}
-
-    /**
      * The state of the [Guest].
      *
      * [ServerState.PROVISIONING] is an invalid value for a guest, since it applies before the host is selected for
      * a server.
      */
     var state: ServerState = ServerState.TERMINATED
+        private set
 
     /**
      * Start the guest.
      */
-    suspend fun start() {
+    fun start() {
         when (state) {
             ServerState.TERMINATED, ServerState.ERROR -> {
-                logger.info { "User requested to start server ${server.uid}" }
+                LOGGER.info { "User requested to start server ${server.uid}" }
                 doStart()
             }
             ServerState.RUNNING -> return
             ServerState.DELETED -> {
-                logger.warn { "User tried to start deleted server" }
+                LOGGER.warn { "User tried to start deleted server" }
                 throw IllegalArgumentException("Server is deleted")
             }
             else -> assert(false) { "Invalid state transition" }
@@ -96,7 +78,7 @@ internal class Guest(
     /**
      * Stop the guest.
      */
-    suspend fun stop() {
+    fun stop() {
         when (state) {
             ServerState.RUNNING -> doStop(ServerState.TERMINATED)
             ServerState.ERROR -> doRecover()
@@ -111,12 +93,11 @@ internal class Guest(
      * This operation will stop the guest if it is running on the host and remove all resources associated with the
      * guest.
      */
-    suspend fun delete() {
+    fun delete() {
         stop()
 
         state = ServerState.DELETED
         hypervisor.removeMachine(machine)
-        scope.cancel()
     }
 
     /**
@@ -124,7 +105,7 @@ internal class Guest(
      *
      * This operation forcibly stops the guest and puts the server into an error state.
      */
-    suspend fun fail() {
+    fun fail() {
         if (state != ServerState.RUNNING) {
             return
         }
@@ -135,7 +116,7 @@ internal class Guest(
     /**
      * Recover the guest if it is in an error state.
      */
-    suspend fun recover() {
+    fun recover() {
         if (state != ServerState.ERROR) {
             return
         }
@@ -175,37 +156,34 @@ internal class Guest(
     }
 
     /**
-     * The [Job] representing the current active virtual machine instance or `null` if no virtual machine is active.
+     * The [SimMachineContext] representing the current active virtual machine instance or `null` if no virtual machine
+     * is active.
      */
-    private var job: Job? = null
+    private var ctx: SimMachineContext? = null
 
     /**
      * Launch the guest on the simulated
      */
-    private suspend fun doStart() {
-        assert(job == null) { "Concurrent job running" }
-        val workload = mapper.createWorkload(server)
+    private fun doStart() {
+        assert(ctx == null) { "Concurrent job running" }
 
-        val job = scope.launch { runMachine(workload) }
-        this.job = job
-
-        state = ServerState.RUNNING
         onStart()
 
-        job.invokeOnCompletion { cause ->
-            this.job = null
-            onStop(if (cause != null && cause !is CancellationException) ServerState.ERROR else ServerState.TERMINATED)
+        val workload = mapper.createWorkload(server)
+        val meta = mapOf("driver" to host, "server" to server) + server.meta
+        ctx = machine.startWorkload(workload, meta) { cause ->
+            onStop(if (cause != null) ServerState.ERROR else ServerState.TERMINATED)
+            ctx = null
         }
     }
 
     /**
      * Attempt to stop the server and put it into [target] state.
      */
-    private suspend fun doStop(target: ServerState) {
-        assert(job != null) { "Invalid job state" }
-        val job = job ?: return
-        job.cancel()
-        job.join()
+    private fun doStop(target: ServerState) {
+        assert(ctx != null) { "Invalid job state" }
+        val ctx = ctx ?: return
+        ctx.shutdown()
 
         state = target
     }
@@ -215,14 +193,6 @@ internal class Guest(
      */
     private fun doRecover() {
         state = ServerState.TERMINATED
-    }
-
-    /**
-     * Converge the process that models the virtual machine lifecycle as a coroutine.
-     */
-    private suspend fun runMachine(workload: SimWorkload) {
-        delay(1) // TODO Introduce model for boot time
-        machine.runWorkload(workload, mapOf("driver" to host, "server" to server) + server.meta)
     }
 
     /**
@@ -263,5 +233,10 @@ internal class Guest(
         } else if (state == ServerState.ERROR) {
             _downtime += duration
         }
+    }
+
+    private companion object {
+        @JvmStatic
+        private val LOGGER = KotlinLogging.logger {}
     }
 }

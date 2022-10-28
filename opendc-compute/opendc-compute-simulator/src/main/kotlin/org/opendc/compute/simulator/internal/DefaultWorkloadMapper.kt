@@ -20,41 +20,25 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.workload;
+package org.opendc.compute.simulator.internal
 
-import java.util.HashSet;
-import org.opendc.simulator.compute.SimMachineContext;
+import org.opendc.compute.api.Server
+import org.opendc.compute.simulator.SimMetaWorkloadMapper
+import org.opendc.compute.simulator.SimWorkloadMapper
+import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.simulator.compute.workload.SimWorkloads
+import java.time.Duration
 
 /**
- * A helper class to manage the lifecycle of a {@link SimWorkload}.
+ * A [SimWorkloadMapper] to introduces a boot delay of 1 ms. This object exists to retain the old behavior while
+ * introducing the possibility of adding custom boot delays.
  */
-public final class SimWorkloadLifecycle {
-    private final SimMachineContext ctx;
-    private final HashSet<Runnable> waiting = new HashSet<>();
+internal object DefaultWorkloadMapper : SimWorkloadMapper {
+    private val delegate = SimMetaWorkloadMapper()
 
-    /**
-     * Construct a {@link SimWorkloadLifecycle} instance.
-     *
-     * @param ctx The {@link SimMachineContext} of the workload.
-     */
-    public SimWorkloadLifecycle(SimMachineContext ctx) {
-        this.ctx = ctx;
-    }
-
-    /**
-     * Register a "completer" callback that must be invoked before ending the lifecycle of the workload.
-     */
-    public Runnable newCompleter() {
-        Runnable completer = new Runnable() {
-            @Override
-            public void run() {
-                final HashSet<Runnable> waiting = SimWorkloadLifecycle.this.waiting;
-                if (waiting.remove(this) && waiting.isEmpty()) {
-                    ctx.shutdown();
-                }
-            }
-        };
-        waiting.add(completer);
-        return completer;
+    override fun createWorkload(server: Server): SimWorkload {
+        val workload = delegate.createWorkload(server)
+        val bootWorkload = SimWorkloads.runtime(Duration.ofMillis(1), 0.8)
+        return SimWorkloads.chain(bootWorkload, workload)
     }
 }

@@ -34,3 +34,7 @@ java {
     sourceCompatibility = Libs.jvmTarget
     targetCompatibility = Libs.jvmTarget
 }
+
+tasks.withType<JavaCompile> {
+    options.compilerArgs.add("-parameters")
+}

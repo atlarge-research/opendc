@@ -48,9 +48,9 @@ public class SimRuntimeWorkload implements SimWorkload, FlowStageLogic {
      * Construct a new {@link SimRuntimeWorkload}.
      *
      * @param duration The duration of the workload in milliseconds.
-     * @param utilization A model of the CPU utilization of the application.
+     * @param utilization The CPU utilization of the workload.
      */
-    public SimRuntimeWorkload(long duration, double utilization) {
+    SimRuntimeWorkload(long duration, double utilization) {
         if (duration < 0) {
             throw new IllegalArgumentException("Duration must be positive");
         } else if (utilization <= 0.0 || utilization > 1.0) {

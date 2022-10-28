@@ -22,6 +22,7 @@
 
 package org.opendc.compute.simulator
 
+import org.opendc.compute.api.Image
 import org.opendc.compute.api.Server
 import org.opendc.simulator.compute.workload.SimWorkload
 
