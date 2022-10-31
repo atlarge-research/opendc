@@ -59,6 +59,7 @@ public class SimRuntimeWorkload implements SimWorkload, FlowStageLogic {
 
         this.duration = duration;
         this.utilization = utilization;
+        this.remainingDuration = duration;
     }
 
     @Override
@@ -95,6 +96,16 @@ public class SimRuntimeWorkload implements SimWorkload, FlowStageLogic {
             this.outputs = null;
             stage.close();
         }
+    }
+
+    @Override
+    public SimRuntimeWorkload snapshot() {
+        final FlowStage stage = this.stage;
+        if (stage != null) {
+            stage.sync();
+        }
+
+        return new SimRuntimeWorkload(remainingDuration, utilization);
     }
 
     @Override

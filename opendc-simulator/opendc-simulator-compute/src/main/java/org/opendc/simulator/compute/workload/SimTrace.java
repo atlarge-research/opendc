@@ -71,7 +71,7 @@ public final class SimTrace {
      * @param offset The offset for the timestamps.
      */
     public SimWorkload createWorkload(long offset) {
-        return new Workload(offset, usageCol, deadlineCol, coresCol, size);
+        return new Workload(offset, usageCol, deadlineCol, coresCol, size, 0);
     }
 
     /**
@@ -211,22 +211,24 @@ public final class SimTrace {
         private final long[] deadlineCol;
         private final int[] coresCol;
         private final int size;
+        private final int index;
 
-        private Workload(long offset, double[] usageCol, long[] deadlineCol, int[] coresCol, int size) {
+        private Workload(long offset, double[] usageCol, long[] deadlineCol, int[] coresCol, int size, int index) {
             this.offset = offset;
             this.usageCol = usageCol;
             this.deadlineCol = deadlineCol;
             this.coresCol = coresCol;
             this.size = size;
+            this.index = index;
         }
 
         @Override
         public void onStart(SimMachineContext ctx) {
             final WorkloadStageLogic logic;
             if (ctx.getCpus().size() == 1) {
-                logic = new SingleWorkloadLogic(ctx, offset, usageCol, deadlineCol, size);
+                logic = new SingleWorkloadLogic(ctx, offset, usageCol, deadlineCol, size, index);
             } else {
-                logic = new MultiWorkloadLogic(ctx, offset, usageCol, deadlineCol, coresCol, size);
+                logic = new MultiWorkloadLogic(ctx, offset, usageCol, deadlineCol, coresCol, size, index);
             }
             this.logic = logic;
         }
@@ -240,6 +242,18 @@ public final class SimTrace {
                 logic.getStage().close();
             }
         }
+
+        @Override
+        public SimWorkload snapshot() {
+            final WorkloadStageLogic logic = this.logic;
+            int index = this.index;
+
+            if (logic != null) {
+                index = logic.getIndex();
+            }
+
+            return new Workload(offset, usageCol, deadlineCol, coresCol, size, index);
+        }
     }
 
     /**
@@ -250,6 +264,11 @@ public final class SimTrace {
          * Return the {@link FlowStage} belonging to this instance.
          */
         FlowStage getStage();
+
+        /**
+         * Return the current index of the workload.
+         */
+        int getIndex();
     }
 
     /**
@@ -268,12 +287,13 @@ public final class SimTrace {
         private final SimMachineContext ctx;
 
         private SingleWorkloadLogic(
-                SimMachineContext ctx, long offset, double[] usageCol, long[] deadlineCol, int size) {
+                SimMachineContext ctx, long offset, double[] usageCol, long[] deadlineCol, int size, int index) {
             this.ctx = ctx;
             this.offset = offset;
             this.usageCol = usageCol;
             this.deadlineCol = deadlineCol;
             this.size = size;
+            this.index = index;
 
             final FlowGraph graph = ctx.getGraph();
             final List<? extends SimProcessingUnit> cpus = ctx.getCpus();
@@ -315,6 +335,11 @@ public final class SimTrace {
             return stage;
         }
 
+        @Override
+        public int getIndex() {
+            return index;
+        }
+
         /**
          * Helper method to stop the execution of the workload.
          */
@@ -346,13 +371,20 @@ public final class SimTrace {
         private final SimMachineContext ctx;
 
         private MultiWorkloadLogic(
-                SimMachineContext ctx, long offset, double[] usageCol, long[] deadlineCol, int[] coresCol, int size) {
+                SimMachineContext ctx,
+                long offset,
+                double[] usageCol,
+                long[] deadlineCol,
+                int[] coresCol,
+                int size,
+                int index) {
             this.ctx = ctx;
             this.offset = offset;
             this.usageCol = usageCol;
             this.deadlineCol = deadlineCol;
             this.coresCol = coresCol;
             this.size = size;
+            this.index = index;
 
             final FlowGraph graph = ctx.getGraph();
             final List<? extends SimProcessingUnit> cpus = ctx.getCpus();
@@ -417,6 +449,11 @@ public final class SimTrace {
         @Override
         public FlowStage getStage() {
             return stage;
+        }
+
+        @Override
+        public int getIndex() {
+            return index;
         }
     }
 }

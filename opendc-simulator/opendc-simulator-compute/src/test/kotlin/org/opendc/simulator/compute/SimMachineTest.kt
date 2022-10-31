@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.compute
 
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
@@ -175,6 +177,8 @@ class SimMachineTest {
             }
 
             override fun onStop(ctx: SimMachineContext) {}
+
+            override fun snapshot(): SimWorkload = TODO()
         })
     }
 
@@ -195,6 +199,8 @@ class SimMachineTest {
             }
 
             override fun onStop(ctx: SimMachineContext) {}
+
+            override fun snapshot(): SimWorkload = TODO()
         })
     }
 
@@ -215,6 +221,8 @@ class SimMachineTest {
             }
 
             override fun onStop(ctx: SimMachineContext) {}
+
+            override fun snapshot(): SimWorkload = TODO()
         })
 
         assertEquals(1000, clock.millis())
@@ -241,6 +249,8 @@ class SimMachineTest {
             }
 
             override fun onStop(ctx: SimMachineContext) {}
+
+            override fun snapshot(): SimWorkload = TODO()
         })
 
         assertEquals(40, clock.millis())
@@ -264,6 +274,8 @@ class SimMachineTest {
             }
 
             override fun onStop(ctx: SimMachineContext) {}
+
+            override fun snapshot(): SimWorkload = TODO()
         })
 
         assertEquals(4000, clock.millis())
@@ -287,6 +299,8 @@ class SimMachineTest {
             }
 
             override fun onStop(ctx: SimMachineContext) {}
+
+            override fun snapshot(): SimWorkload = TODO()
         })
 
         assertEquals(4000, clock.millis())
@@ -333,5 +347,72 @@ class SimMachineTest {
                 machine.runWorkload(SimWorkloads.flops(2_000, /*utilization*/ 1.0))
             }
         }
+    }
+
+    @Test
+    fun testCatchStartFailure() = runSimulation {
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
+        )
+
+        val workload = mockk<SimWorkload>()
+        every { workload.onStart(any()) } throws IllegalStateException()
+
+        assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+    }
+
+    @Test
+    fun testCatchStopFailure() = runSimulation {
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
+        )
+
+        val workload = mockk<SimWorkload>()
+        every { workload.onStart(any()) } answers { (it.invocation.args[0] as SimMachineContext).shutdown() }
+        every { workload.onStop(any()) } throws IllegalStateException()
+
+        assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+    }
+
+    @Test
+    fun testCatchShutdownFailure() = runSimulation {
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
+        )
+
+        val workload = mockk<SimWorkload>()
+        every { workload.onStart(any()) } answers { (it.invocation.args[0] as SimMachineContext).shutdown(IllegalStateException()) }
+
+        assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+    }
+
+    @Test
+    fun testCatchNestedFailure() = runSimulation {
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
+        )
+
+        val workload = mockk<SimWorkload>()
+        every { workload.onStart(any()) } answers { (it.invocation.args[0] as SimMachineContext).shutdown(IllegalStateException()) }
+        every { workload.onStop(any()) } throws IllegalStateException()
+
+        val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+        assertEquals(1, exc.cause!!.suppressedExceptions.size)
     }
 }

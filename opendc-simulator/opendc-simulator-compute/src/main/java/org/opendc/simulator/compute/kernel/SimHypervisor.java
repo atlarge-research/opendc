@@ -240,6 +240,11 @@ public final class SimHypervisor implements SimWorkload {
         }
     }
 
+    @Override
+    public SimWorkload snapshot() {
+        throw new UnsupportedOperationException("Unable to snapshot hypervisor");
+    }
+
     /**
      * The context which carries the state when the hypervisor is running on a machine.
      */

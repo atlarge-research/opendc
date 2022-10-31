@@ -280,7 +280,7 @@ public class SimHost(
 
         val bootWorkload = bootModel.get()
         val hypervisor = hypervisor
-        val hypervisorWorkload = object : SimWorkload {
+        val hypervisorWorkload = object : SimWorkload by hypervisor {
             override fun onStart(ctx: SimMachineContext) {
                 try {
                     _bootTime = clock.instant()
@@ -295,10 +295,6 @@ public class SimHost(
                     _state = HostState.ERROR
                     throw cause
                 }
-            }
-
-            override fun onStop(ctx: SimMachineContext) {
-                hypervisor.onStop(ctx)
             }
         }
 
