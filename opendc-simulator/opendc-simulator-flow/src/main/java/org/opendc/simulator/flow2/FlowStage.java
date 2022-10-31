@@ -152,6 +152,15 @@ public final class FlowStage {
     }
 
     /**
+     * Synchronously update the {@link FlowStage} at the current timestamp.
+     */
+    public void sync() {
+        this.flags |= STAGE_INVALIDATE;
+        onUpdate(clock.millis());
+        engine.scheduleDelayed(this);
+    }
+
+    /**
      * Close the {@link FlowStage} and disconnect all inlets and outlets.
      */
     public void close() {
