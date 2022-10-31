@@ -30,15 +30,11 @@ import org.opendc.simulator.compute.SimNetworkInterface;
 import org.opendc.simulator.compute.SimProcessingUnit;
 import org.opendc.simulator.compute.SimStorageInterface;
 import org.opendc.simulator.flow2.FlowGraph;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A {@link SimWorkload} that composes two {@link SimWorkload}s.
  */
 final class SimChainWorkload implements SimWorkload {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimChainWorkload.class);
-
     private final SimWorkload[] workloads;
     private int activeWorkloadIndex;
 
@@ -65,9 +61,7 @@ final class SimChainWorkload implements SimWorkload {
         final Context context = new Context(ctx);
         activeContext = context;
 
-        if (!context.doStart(workloads[activeWorkloadIndex])) {
-            ctx.shutdown();
-        }
+        tryThrow(context.doStart(workloads[activeWorkloadIndex]));
     }
 
     @Override
@@ -82,7 +76,7 @@ final class SimChainWorkload implements SimWorkload {
         final Context context = activeContext;
         activeContext = null;
 
-        context.doStop(workloads[activeWorkloadIndex]);
+        tryThrow(context.doStop(workloads[activeWorkloadIndex]));
     }
 
     /**
@@ -132,51 +126,80 @@ final class SimChainWorkload implements SimWorkload {
 
         @Override
         public void shutdown() {
+            shutdown(null);
+        }
+
+        @Override
+        public void shutdown(Exception cause) {
             final SimWorkload[] workloads = SimChainWorkload.this.workloads;
             final int activeWorkloadIndex = ++SimChainWorkload.this.activeWorkloadIndex;
 
-            if (doStop(workloads[activeWorkloadIndex - 1]) && activeWorkloadIndex < workloads.length) {
+            final Exception stopException = doStop(workloads[activeWorkloadIndex - 1]);
+            if (cause == null) {
+                cause = stopException;
+            } else if (stopException != null) {
+                cause.addSuppressed(stopException);
+            }
+
+            if (stopException == null && activeWorkloadIndex < workloads.length) {
                 ctx.reset();
 
-                if (doStart(workloads[activeWorkloadIndex])) {
+                final Exception startException = doStart(workloads[activeWorkloadIndex]);
+
+                if (startException == null) {
                     return;
+                } else if (cause == null) {
+                    cause = startException;
+                } else {
+                    cause.addSuppressed(startException);
                 }
             }
 
-            ctx.shutdown();
+            ctx.shutdown(cause);
         }
 
         /**
          * Start the specified workload.
          *
-         * @return <code>true</code> if the workload started successfully, <code>false</code> otherwise.
+         * @return The {@link Exception} that occurred while starting the workload or <code>null</code> if the workload
+         *         started successfully.
          */
-        private boolean doStart(SimWorkload workload) {
+        private Exception doStart(SimWorkload workload) {
             try {
                 workload.onStart(this);
             } catch (Exception cause) {
-                LOGGER.warn("Workload failed during onStart callback", cause);
-                doStop(workload);
-                return false;
+                final Exception stopException = doStop(workload);
+                if (stopException != null) {
+                    cause.addSuppressed(stopException);
+                }
+                return cause;
             }
 
-            return true;
+            return null;
         }
 
         /**
          * Stop the specified workload.
          *
-         * @return <code>true</code> if the workload stopped successfully, <code>false</code> otherwise.
+         * @return The {@link Exception} that occurred while stopping the workload or <code>null</code> if the workload
+         *         stopped successfully.
          */
-        private boolean doStop(SimWorkload workload) {
+        private Exception doStop(SimWorkload workload) {
             try {
                 workload.onStop(this);
             } catch (Exception cause) {
-                LOGGER.warn("Workload failed during onStop callback", cause);
-                return false;
+                return cause;
             }
 
-            return true;
+            return null;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Throwable> void tryThrow(Throwable e) throws T {
+        if (e == null) {
+            return;
+        }
+        throw (T) e;
     }
 }

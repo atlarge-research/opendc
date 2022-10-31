@@ -36,14 +36,11 @@ import org.opendc.simulator.flow2.Outlet;
 import org.opendc.simulator.flow2.sink.SimpleFlowSink;
 import org.opendc.simulator.flow2.util.FlowTransformer;
 import org.opendc.simulator.flow2.util.FlowTransforms;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Abstract implementation of the {@link SimMachine} interface.
  */
 public abstract class SimAbstractMachine implements SimMachine {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimAbstractMachine.class);
     private final MachineModel model;
 
     private Context activeContext;
@@ -108,7 +105,6 @@ public abstract class SimAbstractMachine implements SimMachine {
         private final Map<String, Object> meta;
         private final Consumer<Exception> completion;
         private boolean isClosed;
-        private Exception cause;
 
         /**
          * Construct a new {@link Context} instance.
@@ -158,6 +154,11 @@ public abstract class SimAbstractMachine implements SimMachine {
 
         @Override
         public final void shutdown() {
+            shutdown(null);
+        }
+
+        @Override
+        public final void shutdown(Exception cause) {
             if (isClosed) {
                 return;
             }
@@ -170,19 +171,17 @@ public abstract class SimAbstractMachine implements SimMachine {
             // Cancel all the resources associated with the machine
             doCancel();
 
-            Exception e = this.cause;
-
             try {
                 workload.onStop(this);
-            } catch (Exception cause) {
-                if (e != null) {
-                    e.addSuppressed(cause);
+            } catch (Exception e) {
+                if (cause == null) {
+                    cause = e;
                 } else {
-                    e = cause;
+                    cause.addSuppressed(e);
                 }
             }
 
-            completion.accept(e);
+            completion.accept(cause);
         }
 
         /**
@@ -193,8 +192,7 @@ public abstract class SimAbstractMachine implements SimMachine {
                 machine.activeContext = this;
                 workload.onStart(this);
             } catch (Exception cause) {
-                this.cause = cause;
-                shutdown();
+                shutdown(cause);
             }
         }
 

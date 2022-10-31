@@ -24,6 +24,7 @@ package org.opendc.simulator.compute;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.flow2.FlowGraph;
 
@@ -43,7 +44,7 @@ public interface SimMachineContext {
     /**
      * Return the metadata associated with the context.
      * <p>
-     * Users can pass this metadata to the workload via {@link SimMachine#startWorkload(SimWorkload, Map)}.
+     * Users can pass this metadata to the workload via {@link SimMachine#startWorkload(SimWorkload, Map, Consumer)}.
      */
     Map<String, Object> getMeta();
 
@@ -76,4 +77,11 @@ public interface SimMachineContext {
      * Shutdown the workload.
      */
     void shutdown();
+
+    /**
+     * Shutdown the workload due to failure.
+     *
+     * @param cause The cause for shutting down the workload.
+     */
+    void shutdown(Exception cause);
 }

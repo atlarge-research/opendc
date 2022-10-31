@@ -28,7 +28,9 @@ import io.mockk.spyk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.compute.SimBareMetalMachine
+import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -94,7 +96,7 @@ class SimChainWorkloadTest {
                 SimRuntimeWorkload(1000, 1.0)
             )
 
-        machine.runWorkload(workload)
+        assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
         assertEquals(0, clock.millis())
     }
@@ -120,7 +122,7 @@ class SimChainWorkloadTest {
                 SimRuntimeWorkload(1000, 1.0)
             )
 
-        machine.runWorkload(workload)
+        assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
         assertEquals(1000, clock.millis())
     }
@@ -144,7 +146,7 @@ class SimChainWorkloadTest {
                 SimRuntimeWorkload(1000, 1.0)
             )
 
-        machine.runWorkload(workload)
+        assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
         assertEquals(1000, clock.millis())
     }
@@ -169,8 +171,88 @@ class SimChainWorkloadTest {
                 SimRuntimeWorkload(1000, 1.0)
             )
 
-        machine.runWorkload(workload)
+        assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
         assertEquals(2000, clock.millis())
+    }
+
+    @Test
+    fun testStartAndStopFailure() = runSimulation {
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
+        )
+
+        val workloadA = mockk<SimWorkload>()
+        every { workloadA.onStart(any()) } throws IllegalStateException()
+        every { workloadA.onStop(any()) } throws IllegalStateException()
+
+        val workload =
+            SimWorkloads.chain(
+                SimRuntimeWorkload(1000, 1.0),
+                workloadA
+            )
+
+        val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+
+        assertEquals(2, exc.cause!!.suppressedExceptions.size)
+        assertEquals(1000, clock.millis())
+    }
+
+    @Test
+    fun testShutdownAndStopFailure() = runSimulation {
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
+        )
+
+        val workloadA = mockk<SimWorkload>()
+        every { workloadA.onStart(any()) } answers { (it.invocation.args[0] as SimMachineContext).shutdown(IllegalStateException()) }
+        every { workloadA.onStop(any()) } throws IllegalStateException()
+
+        val workload =
+            SimWorkloads.chain(
+                SimRuntimeWorkload(1000, 1.0),
+                workloadA
+            )
+
+        val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+
+        assertEquals(1, exc.cause!!.suppressedExceptions.size)
+        assertEquals(1000, clock.millis())
+    }
+
+    @Test
+    fun testShutdownAndStartFailure() = runSimulation {
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(
+            graph,
+            machineModel
+        )
+
+        val workloadA = mockk<SimWorkload>(relaxUnitFun = true)
+        every { workloadA.onStart(any()) } answers { (it.invocation.args[0] as SimMachineContext).shutdown(IllegalStateException()) }
+
+        val workloadB = mockk<SimWorkload>(relaxUnitFun = true)
+        every { workloadB.onStart(any()) } throws IllegalStateException()
+
+        val workload =
+            SimWorkloads.chain(
+                SimRuntimeWorkload(1000, 1.0),
+                workloadA,
+                workloadB
+            )
+
+        val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+        assertEquals(1, exc.cause!!.suppressedExceptions.size)
+        assertEquals(1000, clock.millis())
     }
 }
