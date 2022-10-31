@@ -127,6 +127,8 @@ public class SimTFDevice(
             output = null
         }
 
+        override fun snapshot(): SimWorkload = throw UnsupportedOperationException()
+
         override fun onUpdate(ctx: FlowStage, now: Long): Long {
             val output = output ?: return Long.MAX_VALUE
             val lastPull = lastPull

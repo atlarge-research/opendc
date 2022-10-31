@@ -44,9 +44,20 @@ final class SimChainWorkload implements SimWorkload {
      * Construct a {@link SimChainWorkload} instance.
      *
      * @param workloads The workloads to chain.
+     * @param activeWorkloadIndex The index of the active workload.
+     */
+    SimChainWorkload(SimWorkload[] workloads, int activeWorkloadIndex) {
+        this.workloads = workloads;
+        this.activeWorkloadIndex = activeWorkloadIndex;
+    }
+
+    /**
+     * Construct a {@link SimChainWorkload} instance.
+     *
+     * @param workloads The workloads to chain.
      */
     SimChainWorkload(SimWorkload... workloads) {
-        this.workloads = workloads;
+        this(workloads, 0);
     }
 
     @Override
@@ -77,6 +88,19 @@ final class SimChainWorkload implements SimWorkload {
         activeContext = null;
 
         tryThrow(context.doStop(workloads[activeWorkloadIndex]));
+    }
+
+    @Override
+    public SimChainWorkload snapshot() {
+        final int activeWorkloadIndex = this.activeWorkloadIndex;
+        final SimWorkload[] workloads = this.workloads;
+        final SimWorkload[] newWorkloads = new SimWorkload[workloads.length - activeWorkloadIndex];
+
+        for (int i = 0; i < newWorkloads.length; i++) {
+            newWorkloads[i] = workloads[activeWorkloadIndex + i].snapshot();
+        }
+
+        return new SimChainWorkload(newWorkloads, 0);
     }
 
     /**
@@ -117,6 +141,12 @@ final class SimChainWorkload implements SimWorkload {
         @Override
         public List<? extends SimStorageInterface> getStorageInterfaces() {
             return ctx.getStorageInterfaces();
+        }
+
+        @Override
+        public SimWorkload snapshot() {
+            final SimWorkload workload = workloads[activeWorkloadIndex];
+            return workload.snapshot();
         }
 
         @Override

@@ -131,6 +131,11 @@ public abstract class SimAbstractMachine implements SimMachine {
         }
 
         @Override
+        public SimWorkload snapshot() {
+            return workload.snapshot();
+        }
+
+        @Override
         public void reset() {
             final FlowGraph graph = getMemory().getInput().getGraph();
 

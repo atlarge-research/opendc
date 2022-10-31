@@ -45,4 +45,9 @@ public interface SimWorkload {
      * @param ctx The execution context in which the machine runs.
      */
     void onStop(SimMachineContext ctx);
+
+    /**
+     * Create a snapshot of this workload.
+     */
+    SimWorkload snapshot();
 }

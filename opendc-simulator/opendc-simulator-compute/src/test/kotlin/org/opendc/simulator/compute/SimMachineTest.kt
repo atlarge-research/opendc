@@ -177,6 +177,8 @@ class SimMachineTest {
             }
 
             override fun onStop(ctx: SimMachineContext) {}
+
+            override fun snapshot(): SimWorkload = TODO()
         })
     }
 
@@ -197,6 +199,8 @@ class SimMachineTest {
             }
 
             override fun onStop(ctx: SimMachineContext) {}
+
+            override fun snapshot(): SimWorkload = TODO()
         })
     }
 
@@ -217,6 +221,8 @@ class SimMachineTest {
             }
 
             override fun onStop(ctx: SimMachineContext) {}
+
+            override fun snapshot(): SimWorkload = TODO()
         })
 
         assertEquals(1000, clock.millis())
@@ -243,6 +249,8 @@ class SimMachineTest {
             }
 
             override fun onStop(ctx: SimMachineContext) {}
+
+            override fun snapshot(): SimWorkload = TODO()
         })
 
         assertEquals(40, clock.millis())
@@ -266,6 +274,8 @@ class SimMachineTest {
             }
 
             override fun onStop(ctx: SimMachineContext) {}
+
+            override fun snapshot(): SimWorkload = TODO()
         })
 
         assertEquals(4000, clock.millis())
@@ -289,6 +299,8 @@ class SimMachineTest {
             }
 
             override fun onStop(ctx: SimMachineContext) {}
+
+            override fun snapshot(): SimWorkload = TODO()
         })
 
         assertEquals(4000, clock.millis())

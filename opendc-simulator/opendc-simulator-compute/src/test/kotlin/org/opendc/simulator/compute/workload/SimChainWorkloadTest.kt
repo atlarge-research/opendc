@@ -25,6 +25,8 @@ package org.opendc.simulator.compute.workload
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -67,8 +69,8 @@ class SimChainWorkloadTest {
 
         val workload =
             SimWorkloads.chain(
-                SimRuntimeWorkload(1000, 1.0),
-                SimRuntimeWorkload(1000, 1.0)
+                SimWorkloads.runtime(1000, 1.0),
+                SimWorkloads.runtime(1000, 1.0)
             )
 
         machine.runWorkload(workload)
@@ -93,7 +95,7 @@ class SimChainWorkloadTest {
         val workload =
             SimWorkloads.chain(
                 workloadA,
-                SimRuntimeWorkload(1000, 1.0)
+                SimWorkloads.runtime(1000, 1.0)
             )
 
         assertThrows<IllegalStateException> { machine.runWorkload(workload) }
@@ -117,9 +119,9 @@ class SimChainWorkloadTest {
 
         val workload =
             SimWorkloads.chain(
-                SimRuntimeWorkload(1000, 1.0),
+                SimWorkloads.runtime(1000, 1.0),
                 workloadA,
-                SimRuntimeWorkload(1000, 1.0)
+                SimWorkloads.runtime(1000, 1.0)
             )
 
         assertThrows<IllegalStateException> { machine.runWorkload(workload) }
@@ -143,7 +145,7 @@ class SimChainWorkloadTest {
         val workload =
             SimWorkloads.chain(
                 workloadA,
-                SimRuntimeWorkload(1000, 1.0)
+                SimWorkloads.runtime(1000, 1.0)
             )
 
         assertThrows<IllegalStateException> { machine.runWorkload(workload) }
@@ -166,9 +168,9 @@ class SimChainWorkloadTest {
 
         val workload =
             SimWorkloads.chain(
-                SimRuntimeWorkload(1000, 1.0),
+                SimWorkloads.runtime(1000, 1.0),
                 workloadA,
-                SimRuntimeWorkload(1000, 1.0)
+                SimWorkloads.runtime(1000, 1.0)
             )
 
         assertThrows<IllegalStateException> { machine.runWorkload(workload) }
@@ -254,5 +256,30 @@ class SimChainWorkloadTest {
         val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
         assertEquals(1, exc.cause!!.suppressedExceptions.size)
         assertEquals(1000, clock.millis())
+    }
+
+    @Test
+    fun testSnapshot() = runSimulation {
+        val engine = FlowEngine.create(coroutineContext, clock)
+        val graph = engine.newGraph()
+
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val workload =
+            SimWorkloads.chain(
+                SimWorkloads.runtime(1000, 1.0),
+                SimWorkloads.runtime(1000, 1.0)
+            )
+
+        val job = launch { machine.runWorkload(workload) }
+        delay(500L)
+        val snapshot = workload.snapshot()
+
+        job.join()
+
+        assertEquals(2000, clock.millis())
+
+        machine.runWorkload(snapshot)
+
+        assertEquals(3500, clock.millis())
     }
 }

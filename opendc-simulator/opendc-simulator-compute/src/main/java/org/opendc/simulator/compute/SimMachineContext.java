@@ -69,6 +69,13 @@ public interface SimMachineContext {
     List<? extends SimStorageInterface> getStorageInterfaces();
 
     /**
+     * Create a snapshot of the {@link SimWorkload} running on this machine.
+     *
+     * @throws UnsupportedOperationException if the workload does not support snapshotting.
+     */
+    SimWorkload snapshot();
+
+    /**
      * Reset all resources of the machine.
      */
     void reset();

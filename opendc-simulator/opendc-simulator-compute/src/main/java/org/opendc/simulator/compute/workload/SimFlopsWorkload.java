@@ -60,6 +60,7 @@ public class SimFlopsWorkload implements SimWorkload, FlowStageLogic {
 
         this.flops = flops;
         this.utilization = utilization;
+        this.remainingAmount = flops;
     }
 
     @Override
@@ -98,8 +99,13 @@ public class SimFlopsWorkload implements SimWorkload, FlowStageLogic {
     }
 
     @Override
-    public String toString() {
-        return "SimFlopsWorkload[FLOPs=" + flops + ",utilization=" + utilization + "]";
+    public SimFlopsWorkload snapshot() {
+        final FlowStage stage = this.stage;
+        if (stage != null) {
+            stage.sync();
+        }
+
+        return new SimFlopsWorkload((long) remainingAmount, utilization);
     }
 
     @Override
@@ -137,5 +143,10 @@ public class SimFlopsWorkload implements SimWorkload, FlowStageLogic {
         }
 
         return now + duration;
+    }
+
+    @Override
+    public String toString() {
+        return "SimFlopsWorkload[FLOPs=" + flops + ",utilization=" + utilization + "]";
     }
 }
