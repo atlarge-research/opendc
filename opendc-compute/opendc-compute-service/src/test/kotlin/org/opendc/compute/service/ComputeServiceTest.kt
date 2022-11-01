@@ -302,6 +302,7 @@ internal class ComputeServiceTest {
     @Test
     fun testServerInvalidType() = scope.runSimulation {
         val host = mockk<Host>(relaxUnitFun = true)
+        val server = mockk<Server>(relaxUnitFun = true)
         val listeners = mutableListOf<HostListener>()
 
         every { host.uid } returns UUID.randomUUID()
@@ -311,11 +312,6 @@ internal class ComputeServiceTest {
         every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
 
         service.addHost(host)
-
-        val client = service.newClient()
-        val flavor = client.newFlavor("test", 1, 1024)
-        val image = client.newImage("test")
-        val server = client.newServer("test", image, flavor, start = false)
 
         assertThrows<IllegalArgumentException> {
             listeners.forEach { it.onStateChanged(host, server, ServerState.RUNNING) }
