@@ -40,13 +40,13 @@ internal class ClientImage(private val delegate: Image) : Image {
     override var meta: Map<String, Any> = delegate.meta.toMap()
         private set
 
-    override suspend fun delete() {
+    override fun delete() {
         delegate.delete()
-        refresh()
+        reload()
     }
 
-    override suspend fun refresh() {
-        delegate.refresh()
+    override fun reload() {
+        delegate.reload()
 
         name = delegate.name
         labels = delegate.labels

@@ -59,19 +59,19 @@ internal class ClientServer(private val delegate: Server) : Server, ServerWatche
     override var launchedAt: Instant? = null
         private set
 
-    override suspend fun start() {
+    override fun start() {
         delegate.start()
-        refresh()
+        reload()
     }
 
-    override suspend fun stop() {
+    override fun stop() {
         delegate.stop()
-        refresh()
+        reload()
     }
 
-    override suspend fun delete() {
+    override fun delete() {
         delegate.delete()
-        refresh()
+        reload()
     }
 
     override fun watch(watcher: ServerWatcher) {
@@ -90,8 +90,8 @@ internal class ClientServer(private val delegate: Server) : Server, ServerWatche
         }
     }
 
-    override suspend fun refresh() {
-        delegate.refresh()
+    override fun reload() {
+        delegate.reload()
 
         name = delegate.name
         flavor = delegate.flavor

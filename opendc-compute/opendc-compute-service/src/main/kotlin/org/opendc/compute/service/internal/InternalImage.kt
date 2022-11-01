@@ -40,11 +40,11 @@ internal class InternalImage(
 
     override val meta: MutableMap<String, Any> = meta.toMutableMap()
 
-    override suspend fun refresh() {
+    override fun reload() {
         // No-op: this object is the source-of-truth
     }
 
-    override suspend fun delete() {
+    override fun delete() {
         service.delete(this)
     }
 

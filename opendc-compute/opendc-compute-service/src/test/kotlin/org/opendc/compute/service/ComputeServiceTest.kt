@@ -170,7 +170,7 @@ internal class ComputeServiceTest {
 
         server.start()
         delay(5L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.TERMINATED, server.state)
     }
 
@@ -183,7 +183,7 @@ internal class ComputeServiceTest {
 
         server.start()
         delay(5L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.TERMINATED, server.state)
     }
 
@@ -196,7 +196,7 @@ internal class ComputeServiceTest {
 
         server.start()
         delay(5L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.TERMINATED, server.state)
     }
 
@@ -210,7 +210,7 @@ internal class ComputeServiceTest {
         server.start()
         server.stop()
         delay(5L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.TERMINATED, server.state)
     }
 
@@ -231,7 +231,7 @@ internal class ComputeServiceTest {
 
         server.start()
         delay(10L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.PROVISIONING, server.state)
 
         verify { host.canFit(server) }
@@ -262,7 +262,7 @@ internal class ComputeServiceTest {
         listeners.forEach { it.onStateChanged(host, HostState.UP) }
 
         delay(5L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.PROVISIONING, server.state)
 
         verify { host.canFit(server) }
@@ -293,7 +293,7 @@ internal class ComputeServiceTest {
 
         server.start()
         delay(5L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.PROVISIONING, server.state)
 
         verify(exactly = 0) { host.canFit(server) }
@@ -351,7 +351,7 @@ internal class ComputeServiceTest {
 
         listeners.forEach { it.onStateChanged(host, slot.captured, ServerState.RUNNING) }
 
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.RUNNING, server.state)
 
         verify { watcher.onStateChanged(server, ServerState.RUNNING) }
@@ -359,7 +359,7 @@ internal class ComputeServiceTest {
         // Stop server
         listeners.forEach { it.onStateChanged(host, slot.captured, ServerState.TERMINATED) }
 
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.TERMINATED, server.state)
 
         verify { watcher.onStateChanged(server, ServerState.TERMINATED) }
@@ -387,7 +387,7 @@ internal class ComputeServiceTest {
         server.start()
         delay(5L * 60 * 1000)
 
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.PROVISIONING, server.state)
     }
 }

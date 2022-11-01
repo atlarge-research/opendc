@@ -305,11 +305,11 @@ internal class SimHostTest {
         override val labels: Map<String, String> = emptyMap()
         override val meta: Map<String, Any> = emptyMap()
 
-        override suspend fun delete() {
+        override fun delete() {
             throw NotImplementedError()
         }
 
-        override suspend fun refresh() {
+        override fun reload() {
             throw NotImplementedError()
         }
     }
@@ -320,11 +320,11 @@ internal class SimHostTest {
         override val labels: Map<String, String>,
         override val meta: Map<String, Any>
     ) : Image {
-        override suspend fun delete() {
+        override fun delete() {
             throw NotImplementedError()
         }
 
-        override suspend fun refresh() {
+        override fun reload() {
             throw NotImplementedError()
         }
     }
@@ -343,16 +343,16 @@ internal class SimHostTest {
 
         override val launchedAt: Instant? = null
 
-        override suspend fun start() {}
+        override fun start() {}
 
-        override suspend fun stop() {}
+        override fun stop() {}
 
-        override suspend fun delete() {}
+        override fun delete() {}
 
         override fun watch(watcher: ServerWatcher) {}
 
         override fun unwatch(watcher: ServerWatcher) {}
 
-        override suspend fun refresh() {}
+        override fun reload() {}
     }
 }

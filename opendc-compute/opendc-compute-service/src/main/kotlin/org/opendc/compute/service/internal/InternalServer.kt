@@ -67,7 +67,7 @@ internal class InternalServer(
      */
     private var request: ComputeServiceImpl.SchedulingRequest? = null
 
-    override suspend fun start() {
+    override fun start() {
         when (state) {
             ServerState.RUNNING -> {
                 logger.debug { "User tried to start server but server is already running" }
@@ -90,7 +90,7 @@ internal class InternalServer(
         }
     }
 
-    override suspend fun stop() {
+    override fun stop() {
         when (state) {
             ServerState.PROVISIONING -> {
                 cancelProvisioningRequest()
@@ -104,7 +104,7 @@ internal class InternalServer(
         }
     }
 
-    override suspend fun delete() {
+    override fun delete() {
         when (state) {
             ServerState.PROVISIONING, ServerState.TERMINATED -> {
                 cancelProvisioningRequest()
@@ -129,7 +129,7 @@ internal class InternalServer(
         watchers -= watcher
     }
 
-    override suspend fun refresh() {
+    override fun reload() {
         // No-op: this object is the source-of-truth
     }
 

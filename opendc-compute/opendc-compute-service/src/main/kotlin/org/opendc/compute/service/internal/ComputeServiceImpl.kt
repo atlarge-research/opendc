@@ -122,118 +122,7 @@ internal class ComputeServiceImpl(
 
     override fun newClient(): ComputeClient {
         check(!isClosed) { "Service is already closed" }
-        return object : ComputeClient {
-            private var isClosed: Boolean = false
-
-            override suspend fun queryFlavors(): List<Flavor> {
-                check(!isClosed) { "Client is already closed" }
-
-                return flavorById.values.map { ClientFlavor(it) }
-            }
-
-            override suspend fun findFlavor(id: UUID): Flavor? {
-                check(!isClosed) { "Client is already closed" }
-
-                return flavorById[id]?.let { ClientFlavor(it) }
-            }
-
-            override suspend fun newFlavor(
-                name: String,
-                cpuCount: Int,
-                memorySize: Long,
-                labels: Map<String, String>,
-                meta: Map<String, Any>
-            ): Flavor {
-                check(!isClosed) { "Client is already closed" }
-
-                val uid = UUID(clock.millis(), random.nextLong())
-                val flavor = InternalFlavor(
-                    this@ComputeServiceImpl,
-                    uid,
-                    name,
-                    cpuCount,
-                    memorySize,
-                    labels,
-                    meta
-                )
-
-                flavorById[uid] = flavor
-
-                return ClientFlavor(flavor)
-            }
-
-            override suspend fun queryImages(): List<Image> {
-                check(!isClosed) { "Client is already closed" }
-
-                return imageById.values.map { ClientImage(it) }
-            }
-
-            override suspend fun findImage(id: UUID): Image? {
-                check(!isClosed) { "Client is already closed" }
-
-                return imageById[id]?.let { ClientImage(it) }
-            }
-
-            override suspend fun newImage(name: String, labels: Map<String, String>, meta: Map<String, Any>): Image {
-                check(!isClosed) { "Client is already closed" }
-
-                val uid = UUID(clock.millis(), random.nextLong())
-                val image = InternalImage(this@ComputeServiceImpl, uid, name, labels, meta)
-
-                imageById[uid] = image
-
-                return ClientImage(image)
-            }
-
-            override suspend fun newServer(
-                name: String,
-                image: Image,
-                flavor: Flavor,
-                labels: Map<String, String>,
-                meta: Map<String, Any>,
-                start: Boolean
-            ): Server {
-                check(!isClosed) { "Client is closed" }
-
-                val uid = UUID(clock.millis(), random.nextLong())
-                val server = InternalServer(
-                    this@ComputeServiceImpl,
-                    uid,
-                    name,
-                    requireNotNull(flavorById[flavor.uid]) { "Unknown flavor" },
-                    requireNotNull(imageById[image.uid]) { "Unknown image" },
-                    labels.toMutableMap(),
-                    meta.toMutableMap()
-                )
-
-                serverById[uid] = server
-                servers.add(server)
-
-                if (start) {
-                    server.start()
-                }
-
-                return ClientServer(server)
-            }
-
-            override suspend fun findServer(id: UUID): Server? {
-                check(!isClosed) { "Client is already closed" }
-
-                return serverById[id]?.let { ClientServer(it) }
-            }
-
-            override suspend fun queryServers(): List<Server> {
-                check(!isClosed) { "Client is already closed" }
-
-                return serverById.values.map { ClientServer(it) }
-            }
-
-            override fun close() {
-                isClosed = true
-            }
-
-            override fun toString(): String = "ComputeClient"
-        }
+        return Client(this)
     }
 
     override fun addHost(host: Host) {
@@ -459,5 +348,121 @@ internal class ComputeServiceImpl(
             // Try to reschedule if needed
             requestSchedulingCycle()
         }
+    }
+
+    /**
+     * Implementation of [ComputeClient] using a [ComputeService].
+     */
+    private class Client(private val service: ComputeServiceImpl) : ComputeClient {
+        private var isClosed: Boolean = false
+
+        override fun queryFlavors(): List<Flavor> {
+            check(!isClosed) { "Client is already closed" }
+
+            return service.flavorById.values.map { ClientFlavor(it) }
+        }
+
+        override fun findFlavor(id: UUID): Flavor? {
+            check(!isClosed) { "Client is already closed" }
+
+            return service.flavorById[id]?.let { ClientFlavor(it) }
+        }
+
+        override fun newFlavor(
+            name: String,
+            cpuCount: Int,
+            memorySize: Long,
+            labels: Map<String, String>,
+            meta: Map<String, Any>
+        ): Flavor {
+            check(!isClosed) { "Client is already closed" }
+
+            val uid = UUID(service.clock.millis(), service.random.nextLong())
+            val flavor = InternalFlavor(
+                service,
+                uid,
+                name,
+                cpuCount,
+                memorySize,
+                labels,
+                meta
+            )
+
+            service.flavorById[uid] = flavor
+
+            return ClientFlavor(flavor)
+        }
+
+        override fun queryImages(): List<Image> {
+            check(!isClosed) { "Client is already closed" }
+
+            return service.imageById.values.map { ClientImage(it) }
+        }
+
+        override fun findImage(id: UUID): Image? {
+            check(!isClosed) { "Client is already closed" }
+
+            return service.imageById[id]?.let { ClientImage(it) }
+        }
+
+        override fun newImage(name: String, labels: Map<String, String>, meta: Map<String, Any>): Image {
+            check(!isClosed) { "Client is already closed" }
+
+            val uid = UUID(service.clock.millis(), service.random.nextLong())
+            val image = InternalImage(service, uid, name, labels, meta)
+
+            service.imageById[uid] = image
+
+            return ClientImage(image)
+        }
+
+        override fun newServer(
+            name: String,
+            image: Image,
+            flavor: Flavor,
+            labels: Map<String, String>,
+            meta: Map<String, Any>,
+            start: Boolean
+        ): Server {
+            check(!isClosed) { "Client is closed" }
+
+            val uid = UUID(service.clock.millis(), service.random.nextLong())
+            val server = InternalServer(
+                service,
+                uid,
+                name,
+                requireNotNull(service.flavorById[flavor.uid]) { "Unknown flavor" },
+                requireNotNull(service.imageById[image.uid]) { "Unknown image" },
+                labels.toMutableMap(),
+                meta.toMutableMap()
+            )
+
+            service.serverById[uid] = server
+            service.servers.add(server)
+
+            if (start) {
+                server.start()
+            }
+
+            return ClientServer(server)
+        }
+
+        override fun findServer(id: UUID): Server? {
+            check(!isClosed) { "Client is already closed" }
+
+            return service.serverById[id]?.let { ClientServer(it) }
+        }
+
+        override fun queryServers(): List<Server> {
+            check(!isClosed) { "Client is already closed" }
+
+            return service.serverById.values.map { ClientServer(it) }
+        }
+
+        override fun close() {
+            isClosed = true
+        }
+
+        override fun toString(): String = "ComputeService.Client"
     }
 }

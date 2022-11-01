@@ -29,9 +29,6 @@ public interface ServerWatcher {
     /**
      * This method is invoked when the state of a [Server] changes.
      *
-     * Note that the state of [server] might not reflect the state as reported by the invocation, as a call to
-     * [Server.refresh] is required to update its state.
-     *
      * @param server The server whose state has changed.
      * @param newState The new state of the server.
      */

@@ -50,27 +50,13 @@ public interface Server : Resource {
 
     /**
      * Request the server to be started.
-     *
-     * This method is guaranteed to return after the request was acknowledged, but might return before the server was
-     * started.
      */
-    public suspend fun start()
+    public fun start()
 
     /**
      * Request the server to be stopped.
-     *
-     * This method is guaranteed to return after the request was acknowledged, but might return before the server was
-     * stopped.
      */
-    public suspend fun stop()
-
-    /**
-     * Request the server to be deleted.
-     *
-     * This method is guaranteed to return after the request was acknowledged, but might return before the server was
-     * deleted.
-     */
-    public suspend fun delete()
+    public fun stop()
 
     /**
      * Register the specified [ServerWatcher] to watch the state of the server.

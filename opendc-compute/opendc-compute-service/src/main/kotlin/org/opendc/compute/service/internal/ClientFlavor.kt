@@ -46,12 +46,12 @@ internal class ClientFlavor(private val delegate: Flavor) : Flavor {
     override var meta: Map<String, Any> = delegate.meta.toMap()
         private set
 
-    override suspend fun delete() {
+    override fun delete() {
         delegate.delete()
     }
 
-    override suspend fun refresh() {
-        delegate.refresh()
+    override fun reload() {
+        delegate.reload()
 
         name = delegate.name
         cpuCount = delegate.cpuCount

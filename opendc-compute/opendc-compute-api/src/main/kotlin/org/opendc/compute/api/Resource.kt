@@ -49,7 +49,12 @@ public interface Resource {
     public val meta: Map<String, Any>
 
     /**
-     * Refresh the local state of the resource.
+     * Reload the attributes of the resource.
      */
-    public suspend fun refresh()
+    public fun reload()
+
+    /**
+     * Delete the resource.
+     */
+    public fun delete()
 }
