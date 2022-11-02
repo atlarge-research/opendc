@@ -24,7 +24,7 @@ package org.opendc.compute.service.scheduler
 
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.internal.HostView
+import org.opendc.compute.service.HostView
 
 /**
  * A generic scheduler interface used by the [ComputeService] to select hosts to place [Server]s on.

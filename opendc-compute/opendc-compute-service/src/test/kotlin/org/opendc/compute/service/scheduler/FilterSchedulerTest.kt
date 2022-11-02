@@ -30,9 +30,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.opendc.compute.api.Server
+import org.opendc.compute.service.HostView
 import org.opendc.compute.service.driver.HostModel
 import org.opendc.compute.service.driver.HostState
-import org.opendc.compute.service.internal.HostView
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.DifferentHostFilter
 import org.opendc.compute.service.scheduler.filters.InstanceCountFilter

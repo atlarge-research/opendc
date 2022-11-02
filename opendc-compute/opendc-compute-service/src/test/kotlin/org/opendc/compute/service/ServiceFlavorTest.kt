@@ -27,45 +27,30 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
-import org.opendc.compute.api.Image
-import org.opendc.compute.service.internal.ComputeServiceImpl
-import org.opendc.compute.service.internal.InternalFlavor
-import org.opendc.compute.service.internal.InternalImage
+import org.opendc.compute.api.Flavor
 import java.util.UUID
 
 /**
- * Test suite for the [InternalFlavor] implementation.
+ * Test suite for the [ServiceFlavor] implementation.
  */
-class InternalImageTest {
+class ServiceFlavorTest {
     @Test
     fun testEquality() {
-        val service = mockk<ComputeServiceImpl>()
+        val service = mockk<ComputeService>()
         val uid = UUID.randomUUID()
-        val a = InternalImage(service, uid, "test", mutableMapOf(), mutableMapOf())
-        val b = InternalImage(service, uid, "test", mutableMapOf(), mutableMapOf())
-
-        assertEquals(a, b)
-    }
-
-    @Test
-    fun testEqualityWithDifferentType() {
-        val service = mockk<ComputeServiceImpl>()
-        val uid = UUID.randomUUID()
-        val a = InternalImage(service, uid, "test", mutableMapOf(), mutableMapOf())
-
-        val b = mockk<Image>(relaxUnitFun = true)
-        every { b.uid } returns uid
+        val a = ServiceFlavor(service, uid, "test", 1, 1024, mutableMapOf(), mutableMapOf<String, Any>())
+        val b = ServiceFlavor(service, uid, "test", 1, 1024, mutableMapOf(), mutableMapOf<String, Any>())
 
         assertEquals(a, b)
     }
 
     @Test
     fun testInequalityWithDifferentType() {
-        val service = mockk<ComputeServiceImpl>()
+        val service = mockk<ComputeService>()
         val uid = UUID.randomUUID()
-        val a = InternalImage(service, uid, "test", mutableMapOf(), mutableMapOf())
+        val a = ServiceFlavor(service, uid, "test", 1, 1024, mutableMapOf(), mutableMapOf<String, Any>())
 
-        val b = mockk<Image>(relaxUnitFun = true)
+        val b = mockk<Flavor>(relaxUnitFun = true)
         every { b.uid } returns UUID.randomUUID()
 
         assertNotEquals(a, b)
@@ -73,9 +58,9 @@ class InternalImageTest {
 
     @Test
     fun testInequalityWithIncorrectType() {
-        val service = mockk<ComputeServiceImpl>()
+        val service = mockk<ComputeService>()
         val uid = UUID.randomUUID()
-        val a = InternalImage(service, uid, "test", mutableMapOf(), mutableMapOf())
+        val a = ServiceFlavor(service, uid, "test", 1, 1024, mutableMapOf(), mutableMapOf<String, Any>())
 
         assertNotEquals(a, Unit)
     }

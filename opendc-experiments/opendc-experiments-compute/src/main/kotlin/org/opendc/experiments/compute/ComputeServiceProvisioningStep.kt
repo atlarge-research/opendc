@@ -41,7 +41,9 @@ public class ComputeServiceProvisioningStep internal constructor(
     private val schedulingQuantum: Duration
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
-        val service = ComputeService(ctx.dispatcher, scheduler(ctx), schedulingQuantum)
+        val service = ComputeService.builder(ctx.dispatcher, scheduler(ctx))
+            .withQuantum(schedulingQuantum)
+            .build()
         ctx.registry.register(serviceDomain, ComputeService::class.java, service)
 
         return AutoCloseable { service.close() }

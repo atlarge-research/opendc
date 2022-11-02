@@ -23,8 +23,8 @@
 package org.opendc.compute.service.scheduler.filters
 
 import org.opendc.compute.api.Server
+import org.opendc.compute.service.HostView
 import org.opendc.compute.service.driver.HostState
-import org.opendc.compute.service.internal.HostView
 
 /**
  * A [HostFilter] that filters on active hosts.

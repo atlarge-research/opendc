@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.driver
+package org.opendc.compute.service.driver;
 
 /**
- * The state of a host.
+ * Record describing the static machine properties of the host.
+ *
+ * @param cpuCapacity The total CPU capacity of the host in MHz.
+ * @param cpuCount The number of logical processing cores available for this host.
+ * @param memoryCapacity The amount of memory available for this host in MB.
  */
-public enum class HostState {
-    /**
-     * The host is up and able to host guests.
-     */
-    UP,
-
-    /**
-     * The host is in a (forced) down state and unable to host any guests.
-     */
-    DOWN,
-
-    /**
-     * The host is in an error state and unable to host any guests.
-     */
-    ERROR
-}
+public record HostModel(double cpuCapacity, int cpuCount, long memoryCapacity) {}

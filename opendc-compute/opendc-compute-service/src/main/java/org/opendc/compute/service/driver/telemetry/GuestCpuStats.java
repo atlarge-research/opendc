@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.internal
-
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.driver.Host
-import java.util.UUID
+package org.opendc.compute.service.driver.telemetry;
 
 /**
- * A view of a [Host] as seen from the [ComputeService]
+ * Statistics about the CPUs of a guest.
+ *
+ * @param activeTime The cumulative time (in seconds) that the CPUs of the guest were actively running.
+ * @param idleTime The cumulative time (in seconds) the CPUs of the guest were idle.
+ * @param stealTime The cumulative CPU time (in seconds) that the guest was ready to run, but not granted time by the host.
+ * @param lostTime The cumulative CPU time (in seconds) that was lost due to interference with other machines.
+ * @param capacity The available CPU capacity of the guest (in MHz).
+ * @param usage Amount of CPU resources (in MHz) actually used by the guest.
+ * @param utilization The utilization of the CPU resources (in %) relative to the total CPU capacity.
  */
-public class HostView(public val host: Host) {
-    /**
-     * The unique identifier of the host.
-     */
-    public val uid: UUID
-        get() = host.uid
-
-    public var instanceCount: Int = 0
-    public var availableMemory: Long = host.model.memoryCapacity
-    public var provisionedCores: Int = 0
-
-    override fun toString(): String = "HostView[host=$host]"
-}
+public record GuestCpuStats(
+        long activeTime,
+        long idleTime,
+        long stealTime,
+        long lostTime,
+        double capacity,
+        double usage,
+        double utilization) {}

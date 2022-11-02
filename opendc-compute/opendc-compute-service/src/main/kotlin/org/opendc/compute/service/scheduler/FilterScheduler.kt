@@ -23,7 +23,7 @@
 package org.opendc.compute.service.scheduler
 
 import org.opendc.compute.api.Server
-import org.opendc.compute.service.internal.HostView
+import org.opendc.compute.service.HostView
 import org.opendc.compute.service.scheduler.filters.HostFilter
 import org.opendc.compute.service.scheduler.weights.HostWeigher
 import java.util.SplittableRandom

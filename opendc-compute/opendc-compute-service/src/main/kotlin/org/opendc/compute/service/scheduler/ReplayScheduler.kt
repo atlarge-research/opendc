@@ -24,7 +24,7 @@ package org.opendc.compute.service.scheduler
 
 import mu.KotlinLogging
 import org.opendc.compute.api.Server
-import org.opendc.compute.service.internal.HostView
+import org.opendc.compute.service.HostView
 
 /**
  * Policy replaying VM-cluster assignment.

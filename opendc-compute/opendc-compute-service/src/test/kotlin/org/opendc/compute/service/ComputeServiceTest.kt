@@ -50,6 +50,7 @@ import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.RamWeigher
 import org.opendc.simulator.kotlin.SimulationCoroutineScope
 import org.opendc.simulator.kotlin.runSimulation
+import java.time.Duration
 import java.util.UUID
 
 /**
@@ -66,7 +67,7 @@ internal class ComputeServiceTest {
             filters = listOf(ComputeFilter(), VCpuFilter(allocationRatio = 1.0), RamFilter(allocationRatio = 1.0)),
             weighers = listOf(RamWeigher())
         )
-        service = ComputeService(scope.dispatcher, computeScheduler)
+        service = ComputeService(scope.dispatcher, computeScheduler, Duration.ofMinutes(5))
     }
 
     @Test
@@ -297,25 +298,6 @@ internal class ComputeServiceTest {
         assertEquals(ServerState.PROVISIONING, server.state)
 
         verify(exactly = 0) { host.canFit(server) }
-    }
-
-    @Test
-    fun testServerInvalidType() = scope.runSimulation {
-        val host = mockk<Host>(relaxUnitFun = true)
-        val server = mockk<Server>(relaxUnitFun = true)
-        val listeners = mutableListOf<HostListener>()
-
-        every { host.uid } returns UUID.randomUUID()
-        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
-        every { host.state } returns HostState.UP
-        every { host.canFit(any()) } returns true
-        every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
-
-        service.addHost(host)
-
-        assertThrows<IllegalArgumentException> {
-            listeners.forEach { it.onStateChanged(host, server, ServerState.RUNNING) }
-        }
     }
 
     @Test

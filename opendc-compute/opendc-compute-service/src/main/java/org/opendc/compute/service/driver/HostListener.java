@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,22 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.driver
+package org.opendc.compute.service.driver;
 
-import org.opendc.compute.api.Server
-import org.opendc.compute.api.ServerState
+import org.opendc.compute.api.Server;
+import org.opendc.compute.api.ServerState;
 
 /**
- * Listener interface for events originating from a [Host].
+ * Listener interface for events originating from a {@link Host}.
  */
 public interface HostListener {
     /**
-     * This method is invoked when the state of an [instance][server] on [host] changes.
+     * This method is invoked when the state of <code>server</code> on <code>host</code> changes.
      */
-    public fun onStateChanged(host: Host, server: Server, newState: ServerState) {}
+    default void onStateChanged(Host host, Server server, ServerState newState) {}
 
     /**
-     * This method is invoked when the state of a [Host] has changed.
+     * This method is invoked when the state of a {@link Host} has changed.
      */
-    public fun onStateChanged(host: Host, newState: HostState) {}
+    default void onStateChanged(Host host, HostState newState) {}
 }

@@ -65,9 +65,9 @@ import java.util.function.Supplier
  * @param optimize A flag to indicate to optimize the machine models of the virtual machines.
  */
 public class SimHost(
-    override val uid: UUID,
-    override val name: String,
-    override val meta: Map<String, Any>,
+    private val uid: UUID,
+    private val name: String,
+    private val meta: Map<String, Any>,
     private val clock: InstantSource,
     private val machine: SimBareMetalMachine,
     private val hypervisor: SimHypervisor,
@@ -87,11 +87,6 @@ public class SimHost(
     private val guests = HashMap<Server, Guest>()
     private val _guests = mutableListOf<Guest>()
 
-    override val instances: Set<Server>
-        get() = guests.keys
-
-    override val state: HostState
-        get() = _state
     private var _state: HostState = HostState.DOWN
         set(value) {
             if (value != field) {
@@ -100,7 +95,7 @@ public class SimHost(
             field = value
         }
 
-    override val model: HostModel = HostModel(
+    private val model: HostModel = HostModel(
         machine.model.cpus.sumOf { it.frequency },
         machine.model.cpus.size,
         machine.model.memory.sumOf { it.size }
@@ -121,6 +116,30 @@ public class SimHost(
 
     init {
         launch()
+    }
+
+    override fun getUid(): UUID {
+        return uid
+    }
+
+    override fun getName(): String {
+        return name
+    }
+
+    override fun getModel(): HostModel {
+        return model
+    }
+
+    override fun getMeta(): Map<String, *> {
+        return meta
+    }
+
+    override fun getState(): HostState {
+        return _state
+    }
+
+    override fun getInstances(): Set<Server> {
+        return guests.keys
     }
 
     override fun canFit(server: Server): Boolean {
