@@ -26,7 +26,6 @@ jobs:
         with:
           arguments: publish
         env:
-          ORG_GRADLE_PROJECT_signingKeyId: F8134F9C
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
           ORG_GRADLE_PROJECT_ossrhUsername: ${{ secrets.OSSRH_USERNAME }}

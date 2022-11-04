@@ -14,7 +14,7 @@ quicker.
 1. **Supported Platforms**  
    OpenDC is actively tested on Windows, macOS and GNU/Linux.
 2. **Required Software**  
-   A Java installation of version 11 or higher is required for OpenDC. You may download the
+   A Java installation of version 17 or higher is required for OpenDC. You may download the
    [Java distribution from Oracle](https://www.oracle.com/java/technologies/downloads/) or use the distribution provided
    by your package manager.
 
