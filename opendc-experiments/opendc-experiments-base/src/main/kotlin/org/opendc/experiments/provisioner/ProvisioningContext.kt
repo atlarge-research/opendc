@@ -25,6 +25,7 @@ package org.opendc.experiments.provisioner
 import org.opendc.experiments.MutableServiceRegistry
 import java.time.Clock
 import java.util.SplittableRandom
+import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -46,7 +47,7 @@ public interface ProvisioningContext {
     /**
      * A [SplittableRandom] instance used to seed the provisioners.
      */
-    public val seeder: SplittableRandom
+    public val seeder: RandomGenerator
 
     /**
      * A [MutableServiceRegistry] where the provisioned services are registered.

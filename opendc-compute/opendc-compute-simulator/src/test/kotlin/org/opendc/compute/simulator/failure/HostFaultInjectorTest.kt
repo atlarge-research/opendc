@@ -38,7 +38,7 @@ import kotlin.math.ln
 /**
  * Test suite for [HostFaultInjector] class.
  */
-internal class HostFaultInjectorTest {
+class HostFaultInjectorTest {
     /**
      * Simple test case to test that nothing happens when the injector is not started.
      */

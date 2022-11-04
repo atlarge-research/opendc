@@ -26,7 +26,7 @@ import mu.KotlinLogging
 import org.opendc.experiments.compute.ComputeWorkload
 import org.opendc.experiments.compute.ComputeWorkloadLoader
 import org.opendc.experiments.compute.VirtualMachine
-import java.util.Random
+import java.util.random.RandomGenerator
 
 /**
  * A [ComputeWorkload] that samples multiple workloads based on the total load of all workloads.
@@ -37,7 +37,7 @@ internal class CompositeComputeWorkload(val sources: Map<ComputeWorkload, Double
      */
     private val logger = KotlinLogging.logger {}
 
-    override fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine> {
+    override fun resolve(loader: ComputeWorkloadLoader, random: RandomGenerator): List<VirtualMachine> {
         val traces = sources.map { (source, fraction) -> fraction to source.resolve(loader, random) }
 
         val totalLoad = traces.sumOf { (_, vms) -> vms.sumOf { it.totalLoad } }

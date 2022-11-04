@@ -34,8 +34,9 @@ import org.opendc.simulator.compute.power.CpuPowerModel
 import org.opendc.simulator.compute.power.CpuPowerModels
 import java.io.File
 import java.io.InputStream
-import java.util.Random
+import java.util.SplittableRandom
 import java.util.UUID
+import java.util.random.RandomGenerator
 import kotlin.math.roundToLong
 
 /**
@@ -49,7 +50,7 @@ private val reader = ClusterSpecReader()
 fun clusterTopology(
     file: File,
     powerModel: CpuPowerModel = CpuPowerModels.linear(350.0, 200.0),
-    random: Random = Random(0)
+    random: RandomGenerator = SplittableRandom(0)
 ): List<HostSpec> {
     return clusterTopology(reader.read(file), powerModel, random)
 }
@@ -60,7 +61,7 @@ fun clusterTopology(
 fun clusterTopology(
     input: InputStream,
     powerModel: CpuPowerModel = CpuPowerModels.linear(350.0, 200.0),
-    random: Random = Random(0)
+    random: RandomGenerator = SplittableRandom(0)
 ): List<HostSpec> {
     return clusterTopology(reader.read(input), powerModel, random)
 }
@@ -68,14 +69,14 @@ fun clusterTopology(
 /**
  * Construct a topology from the given list of [clusters].
  */
-fun clusterTopology(clusters: List<ClusterSpec>, powerModel: CpuPowerModel, random: Random = Random(0)): List<HostSpec> {
+fun clusterTopology(clusters: List<ClusterSpec>, powerModel: CpuPowerModel, random: RandomGenerator = SplittableRandom(0)): List<HostSpec> {
     return clusters.flatMap { it.toHostSpecs(random, powerModel) }
 }
 
 /**
  * Helper method to convert a [ClusterSpec] into a list of [HostSpec]s.
  */
-private fun ClusterSpec.toHostSpecs(random: Random, powerModel: CpuPowerModel): List<HostSpec> {
+private fun ClusterSpec.toHostSpecs(random: RandomGenerator, powerModel: CpuPowerModel): List<HostSpec> {
     val cpuSpeed = cpuSpeed
     val memoryPerHost = memCapacityPerHost.roundToLong()
 

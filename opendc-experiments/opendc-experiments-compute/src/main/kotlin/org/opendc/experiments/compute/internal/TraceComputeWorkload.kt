@@ -25,13 +25,13 @@ package org.opendc.experiments.compute.internal
 import org.opendc.experiments.compute.ComputeWorkload
 import org.opendc.experiments.compute.ComputeWorkloadLoader
 import org.opendc.experiments.compute.VirtualMachine
-import java.util.Random
+import java.util.random.RandomGenerator
 
 /**
  * A [ComputeWorkload] from a trace.
  */
 internal class TraceComputeWorkload(val name: String, val format: String) : ComputeWorkload {
-    override fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine> {
+    override fun resolve(loader: ComputeWorkloadLoader, random: RandomGenerator): List<VirtualMachine> {
         return loader.get(name, format)
     }
 }
