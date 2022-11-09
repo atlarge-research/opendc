@@ -26,6 +26,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.opendc.common.Dispatcher
+import org.opendc.common.asCoroutineDispatcher
 import org.opendc.common.util.Pacer
 import org.opendc.compute.api.ComputeClient
 import org.opendc.compute.api.Image
@@ -44,7 +46,6 @@ import java.time.Duration
 import java.time.InstantSource
 import java.util.PriorityQueue
 import java.util.Queue
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 
 /**
@@ -52,8 +53,7 @@ import kotlin.coroutines.resume
  * Datacenter Scheduling.
  */
 public class WorkflowServiceImpl(
-    context: CoroutineContext,
-    private val clock: InstantSource,
+    dispatcher: Dispatcher,
     private val computeClient: ComputeClient,
     schedulingQuantum: Duration,
     jobAdmissionPolicy: JobAdmissionPolicy,
@@ -64,7 +64,12 @@ public class WorkflowServiceImpl(
     /**
      * The [CoroutineScope] of the service bounded by the lifecycle of the service.
      */
-    private val scope = CoroutineScope(context + kotlinx.coroutines.Job())
+    private val scope = CoroutineScope(dispatcher.asCoroutineDispatcher() + kotlinx.coroutines.Job())
+
+    /**
+     * The [InstantSource] representing the clock of this service.
+     */
+    private val clock = dispatcher.timeSource
 
     /**
      * The incoming jobs ready to be processed by the scheduler.
@@ -149,7 +154,7 @@ public class WorkflowServiceImpl(
     /**
      * The [Pacer] to use for scheduling the scheduler cycles.
      */
-    private val pacer = Pacer(scope.coroutineContext, clock, schedulingQuantum.toMillis()) { doSchedule() }
+    private val pacer = Pacer(dispatcher, schedulingQuantum.toMillis()) { doSchedule() }
 
     private val jobAdmissionPolicy: JobAdmissionPolicy.Logic
     private val taskEligibilityPolicy: TaskEligibilityPolicy.Logic

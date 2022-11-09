@@ -49,12 +49,12 @@ class FaaSExperiment {
     fun testSmoke() = runSimulation {
         val faasService = "faas.opendc.org"
 
-        Provisioner(coroutineContext, timeSource, seed = 0L).use { provisioner ->
+        Provisioner(dispatcher, seed = 0L).use { provisioner ->
             provisioner.runStep(
                 setupFaaSService(
                     faasService,
                     { RandomRoutingPolicy() },
-                    { FunctionTerminationPolicyFixed(it.coroutineContext, it.clock, timeout = Duration.ofMinutes(10)) },
+                    { FunctionTerminationPolicyFixed(it.dispatcher, timeout = Duration.ofMinutes(10)) },
                     createMachineModel(),
                     coldStartModel = ColdStartModel.GOOGLE
                 )

@@ -74,7 +74,7 @@ internal class SimFairShareHypervisorTest {
                 SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
             ).createWorkload(0)
 
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, model)
@@ -118,7 +118,7 @@ internal class SimFairShareHypervisorTest {
                 SimTraceFragment(duration * 3000, duration * 1000, 73.0, 1)
             ).createWorkload(0)
 
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, model)
@@ -157,7 +157,7 @@ internal class SimFairShareHypervisorTest {
             /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
 
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, model)
@@ -184,7 +184,7 @@ internal class SimFairShareHypervisorTest {
             .addGroup(setOf("a", "n"), 0.1, 0.8)
             .build()
 
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, model)

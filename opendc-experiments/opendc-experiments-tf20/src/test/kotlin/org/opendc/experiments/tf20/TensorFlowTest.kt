@@ -48,8 +48,7 @@ class TensorFlowTest {
         val device = SimTFDevice(
             def.uid,
             def.meta["gpu"] as Boolean,
-            coroutineContext,
-            timeSource,
+            dispatcher,
             def.model.cpus[0],
             def.model.memory[0],
             CpuPowerModels.linear(250.0, 60.0)
@@ -83,8 +82,7 @@ class TensorFlowTest {
         val device = SimTFDevice(
             def.uid,
             def.meta["gpu"] as Boolean,
-            coroutineContext,
-            timeSource,
+            dispatcher,
             def.model.cpus[0],
             def.model.memory[0],
             CpuPowerModels.linear(250.0, 60.0)
@@ -118,8 +116,7 @@ class TensorFlowTest {
         val deviceA = SimTFDevice(
             def.uid,
             def.meta["gpu"] as Boolean,
-            coroutineContext,
-            timeSource,
+            dispatcher,
             def.model.cpus[0],
             def.model.memory[0],
             CpuPowerModels.linear(250.0, 60.0)
@@ -128,8 +125,7 @@ class TensorFlowTest {
         val deviceB = SimTFDevice(
             UUID.randomUUID(),
             def.meta["gpu"] as Boolean,
-            coroutineContext,
-            timeSource,
+            dispatcher,
             def.model.cpus[0],
             def.model.memory[0],
             CpuPowerModels.linear(250.0, 60.0)

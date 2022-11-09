@@ -59,7 +59,7 @@ class SimChainWorkloadTest {
 
     @Test
     fun testMultipleWorkloads() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -80,7 +80,7 @@ class SimChainWorkloadTest {
 
     @Test
     fun testStartFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -105,7 +105,7 @@ class SimChainWorkloadTest {
 
     @Test
     fun testStartFailureSecond() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -131,7 +131,7 @@ class SimChainWorkloadTest {
 
     @Test
     fun testStopFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -155,7 +155,7 @@ class SimChainWorkloadTest {
 
     @Test
     fun testStopFailureSecond() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -180,7 +180,7 @@ class SimChainWorkloadTest {
 
     @Test
     fun testStartAndStopFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -206,7 +206,7 @@ class SimChainWorkloadTest {
 
     @Test
     fun testShutdownAndStopFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -232,7 +232,7 @@ class SimChainWorkloadTest {
 
     @Test
     fun testShutdownAndStartFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -260,7 +260,7 @@ class SimChainWorkloadTest {
 
     @Test
     fun testSnapshot() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)

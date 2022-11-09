@@ -75,7 +75,7 @@ internal class SimSpaceSharedHypervisorTest {
                 SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
             ).createWorkload(0)
 
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -99,7 +99,7 @@ internal class SimSpaceSharedHypervisorTest {
     fun testRuntimeWorkload() = runSimulation {
         val duration = 5 * 60L * 1000
         val workload = SimWorkloads.runtime(duration, 1.0)
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -123,7 +123,7 @@ internal class SimSpaceSharedHypervisorTest {
     fun testFlopsWorkload() = runSimulation {
         val duration = 5 * 60L * 1000
         val workload = SimWorkloads.flops((duration * 3.2).toLong(), 1.0)
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -144,7 +144,7 @@ internal class SimSpaceSharedHypervisorTest {
     @Test
     fun testTwoWorkloads() = runSimulation {
         val duration = 5 * 60L * 1000
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -173,7 +173,7 @@ internal class SimSpaceSharedHypervisorTest {
      */
     @Test
     fun testConcurrentWorkloadFails() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -200,7 +200,7 @@ internal class SimSpaceSharedHypervisorTest {
      */
     @Test
     fun testConcurrentWorkloadSucceeds() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)

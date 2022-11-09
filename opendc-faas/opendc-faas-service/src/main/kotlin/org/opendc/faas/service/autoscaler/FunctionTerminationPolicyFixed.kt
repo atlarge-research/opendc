@@ -22,12 +22,11 @@
 
 package org.opendc.faas.service.autoscaler
 
+import org.opendc.common.Dispatcher
 import org.opendc.common.util.TimerScheduler
 import org.opendc.faas.service.deployer.FunctionInstance
 import org.opendc.faas.service.deployer.FunctionInstanceState
 import java.time.Duration
-import java.time.InstantSource
-import kotlin.coroutines.CoroutineContext
 
 /**
  * A [FunctionTerminationPolicy] that terminates idle function instances after a fixed keep-alive time.
@@ -35,14 +34,13 @@ import kotlin.coroutines.CoroutineContext
  * @param timeout The idle timeout after which the function instance is terminated.
  */
 public class FunctionTerminationPolicyFixed(
-    context: CoroutineContext,
-    clock: InstantSource,
+    dispatcher: Dispatcher,
     public val timeout: Duration
 ) : FunctionTerminationPolicy {
     /**
      * The [TimerScheduler] used to schedule the function terminations.
      */
-    private val scheduler = TimerScheduler<FunctionInstance>(context, clock)
+    private val scheduler = TimerScheduler<FunctionInstance>(dispatcher)
 
     override fun enqueue(instance: FunctionInstance) {
         // Cancel the existing timeout timer
@@ -61,6 +59,6 @@ public class FunctionTerminationPolicyFixed(
      * Schedule termination for the specified [instance].
      */
     private fun schedule(instance: FunctionInstance) {
-        scheduler.startSingleTimer(instance, delay = timeout.toMillis()) { instance.close() }
+        scheduler.startSingleTimer(instance, timeout.toMillis()) { instance.close() }
     }
 }

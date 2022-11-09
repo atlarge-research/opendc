@@ -27,6 +27,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import org.opendc.common.Dispatcher
+import org.opendc.common.asCoroutineDispatcher
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
@@ -37,26 +39,25 @@ import org.opendc.experiments.compute.telemetry.table.ServerTableReader
 import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
 import java.time.Duration
 import java.time.Instant
-import java.time.InstantSource
 
 /**
  * A helper class to collect metrics from a [ComputeService] instance and automatically export the metrics every
  * export interval.
  *
- * @param scope The [CoroutineScope] to run the reader in.
- * @param clock The virtual clock.
+ * @param dispatcher A [Dispatcher] for scheduling the future events.
  * @param service The [ComputeService] to monitor.
  * @param monitor The monitor to export the metrics to.
  * @param exportInterval The export interval.
  */
 public class ComputeMetricReader(
-    scope: CoroutineScope,
-    clock: InstantSource,
+    dispatcher: Dispatcher,
     private val service: ComputeService,
     private val monitor: ComputeMonitor,
     private val exportInterval: Duration = Duration.ofMinutes(5)
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
+    private val scope = CoroutineScope(dispatcher.asCoroutineDispatcher())
+    private val clock = dispatcher.timeSource
 
     /**
      * Aggregator for service metrics.

@@ -53,7 +53,7 @@ class SimTraceWorkloadTest {
 
     @Test
     fun testSmoke() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -76,7 +76,7 @@ class SimTraceWorkloadTest {
 
     @Test
     fun testOffset() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -99,7 +99,7 @@ class SimTraceWorkloadTest {
 
     @Test
     fun testSkipFragment() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -123,7 +123,7 @@ class SimTraceWorkloadTest {
 
     @Test
     fun testZeroCores() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(

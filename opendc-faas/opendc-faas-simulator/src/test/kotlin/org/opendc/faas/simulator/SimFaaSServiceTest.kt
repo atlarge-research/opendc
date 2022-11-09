@@ -73,13 +73,12 @@ internal class SimFaaSServiceTest {
         })
 
         val delayInjector = StochasticDelayInjector(ColdStartModel.GOOGLE, random)
-        val deployer = SimFunctionDeployer(coroutineContext, timeSource, machineModel, delayInjector) { workload }
+        val deployer = SimFunctionDeployer(dispatcher, machineModel, delayInjector) { workload }
         val service = FaaSService(
-            coroutineContext,
-            timeSource,
+            dispatcher,
             deployer,
             RandomRoutingPolicy(),
-            FunctionTerminationPolicyFixed(coroutineContext, timeSource, timeout = Duration.ofMillis(10000))
+            FunctionTerminationPolicyFixed(dispatcher, timeout = Duration.ofMillis(10000))
         )
 
         val client = service.newClient()

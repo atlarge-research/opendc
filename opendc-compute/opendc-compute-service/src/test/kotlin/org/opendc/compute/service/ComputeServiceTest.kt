@@ -62,12 +62,11 @@ internal class ComputeServiceTest {
     @BeforeEach
     fun setUp() {
         scope = SimulationCoroutineScope()
-        val clock = scope.timeSource
         val computeScheduler = FilterScheduler(
             filters = listOf(ComputeFilter(), VCpuFilter(allocationRatio = 1.0), RamFilter(allocationRatio = 1.0)),
             weighers = listOf(RamWeigher())
         )
-        service = ComputeService(scope.coroutineContext, clock, computeScheduler)
+        service = ComputeService(scope.dispatcher, computeScheduler)
     }
 
     @Test

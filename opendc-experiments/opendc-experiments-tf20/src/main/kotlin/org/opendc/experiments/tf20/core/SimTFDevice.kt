@@ -22,12 +22,9 @@
 
 package org.opendc.experiments.tf20.core
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.opendc.common.Dispatcher
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimMachineContext
@@ -36,17 +33,14 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.CpuPowerModel
-import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow2.FlowEngine
 import org.opendc.simulator.flow2.FlowStage
 import org.opendc.simulator.flow2.FlowStageLogic
 import org.opendc.simulator.flow2.OutPort
-import java.time.InstantSource
 import java.util.ArrayDeque
 import java.util.UUID
 import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.math.ceil
 import kotlin.math.roundToLong
@@ -57,22 +51,16 @@ import kotlin.math.roundToLong
 public class SimTFDevice(
     override val uid: UUID,
     override val isGpu: Boolean,
-    context: CoroutineContext,
-    clock: InstantSource,
+    dispatcher: Dispatcher,
     pu: ProcessingUnit,
     private val memory: MemoryUnit,
     powerModel: CpuPowerModel
 ) : TFDevice {
     /**
-     * The scope in which the device runs.
-     */
-    private val scope = CoroutineScope(context + Job())
-
-    /**
      * The [SimMachine] representing the device.
      */
     private val machine = SimBareMetalMachine.create(
-        FlowEngine.create(context, clock).newGraph(),
+        FlowEngine.create(dispatcher).newGraph(),
         MachineModel(listOf(pu), listOf(memory)),
         SimPsuFactories.simple(powerModel)
     )
@@ -162,9 +150,7 @@ public class SimTFDevice(
     }
 
     init {
-        scope.launch {
-            machine.runWorkload(workload)
-        }
+        machine.startWorkload(workload, emptyMap()) {}
     }
 
     override suspend fun load(dataSize: Long) {
@@ -185,7 +171,6 @@ public class SimTFDevice(
 
     override fun close() {
         machine.cancel()
-        scope.cancel()
     }
 
     private data class Work(var flops: Double, val cont: Continuation<Unit>) {

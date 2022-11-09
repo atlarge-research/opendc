@@ -44,7 +44,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientState() = runSimulation {
-        val service = FaaSService(coroutineContext, timeSource, mockk(), mockk(), mockk())
+        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
 
         val client = assertDoesNotThrow { service.newClient() }
         assertDoesNotThrow { client.close() }
@@ -58,7 +58,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientInvokeUnknown() = runSimulation {
-        val service = FaaSService(coroutineContext, timeSource, mockk(), mockk(), mockk())
+        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
 
         val client = service.newClient()
 
@@ -67,7 +67,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionCreation() = runSimulation {
-        val service = FaaSService(coroutineContext, timeSource, mockk(), mockk(), mockk())
+        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
 
         val client = service.newClient()
 
@@ -78,7 +78,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionQuery() = runSimulation {
-        val service = FaaSService(coroutineContext, timeSource, mockk(), mockk(), mockk())
+        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
 
         val client = service.newClient()
 
@@ -91,7 +91,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionFindById() = runSimulation {
-        val service = FaaSService(coroutineContext, timeSource, mockk(), mockk(), mockk())
+        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
 
         val client = service.newClient()
 
@@ -104,7 +104,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionFindByName() = runSimulation {
-        val service = FaaSService(coroutineContext, timeSource, mockk(), mockk(), mockk())
+        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
 
         val client = service.newClient()
 
@@ -117,7 +117,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionDuplicateName() = runSimulation {
-        val service = FaaSService(coroutineContext, timeSource, mockk(), mockk(), mockk())
+        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
 
         val client = service.newClient()
 
@@ -128,7 +128,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionDelete() = runSimulation {
-        val service = FaaSService(coroutineContext, timeSource, mockk(), mockk(), mockk())
+        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
 
         val client = service.newClient()
         val function = client.newFunction("test", 128)
@@ -142,7 +142,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionCannotInvokeDeleted() = runSimulation {
-        val service = FaaSService(coroutineContext, timeSource, mockk(), mockk(), mockk())
+        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
 
         val client = service.newClient()
         val function = client.newFunction("test", 128)
@@ -155,7 +155,7 @@ internal class FaaSServiceTest {
     @Test
     fun testClientFunctionInvoke() = runSimulation {
         val deployer = mockk<FunctionDeployer>()
-        val service = FaaSService(coroutineContext, timeSource, deployer, mockk(), mockk(relaxUnitFun = true))
+        val service = FaaSService(dispatcher, deployer, mockk(), mockk(relaxUnitFun = true))
 
         every { deployer.deploy(any(), any()) } answers {
             object : FunctionInstance {

@@ -38,7 +38,7 @@ import org.opendc.simulator.kotlin.runSimulation
 class FlowEngineTest {
     @Test
     fun testSmoke() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val multiplexer = MaxMinFlowMultiplexer(graph)
@@ -55,7 +55,7 @@ class FlowEngineTest {
 
     @Test
     fun testConnectInvalidInlet() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val inlet = mockk<Inlet>()
@@ -65,7 +65,7 @@ class FlowEngineTest {
 
     @Test
     fun testConnectInvalidOutlet() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val outlet = mockk<Outlet>()
@@ -75,7 +75,7 @@ class FlowEngineTest {
 
     @Test
     fun testConnectInletBelongsToDifferentGraph() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graphA = engine.newGraph()
         val graphB = engine.newGraph()
 
@@ -87,7 +87,7 @@ class FlowEngineTest {
 
     @Test
     fun testConnectOutletBelongsToDifferentGraph() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graphA = engine.newGraph()
         val graphB = engine.newGraph()
 
@@ -99,7 +99,7 @@ class FlowEngineTest {
 
     @Test
     fun testConnectInletAlreadyConnected() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val sink = SimpleFlowSink(graph, 2.0f)
@@ -112,7 +112,7 @@ class FlowEngineTest {
 
     @Test
     fun testConnectOutletAlreadyConnected() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val sinkA = SimpleFlowSink(graph, 2.0f)
@@ -125,7 +125,7 @@ class FlowEngineTest {
 
     @Test
     fun testDisconnectInletInvalid() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val inlet = mockk<Inlet>()
@@ -134,7 +134,7 @@ class FlowEngineTest {
 
     @Test
     fun testDisconnectOutletInvalid() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val outlet = mockk<Outlet>()
@@ -143,7 +143,7 @@ class FlowEngineTest {
 
     @Test
     fun testDisconnectInletInvalidGraph() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graphA = engine.newGraph()
         val graphB = engine.newGraph()
 
@@ -154,7 +154,7 @@ class FlowEngineTest {
 
     @Test
     fun testDisconnectOutletInvalidGraph() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graphA = engine.newGraph()
         val graphB = engine.newGraph()
 
@@ -165,7 +165,7 @@ class FlowEngineTest {
 
     @Test
     fun testInletEquality() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val sinkA = SimpleFlowSink(graph, 2.0f)
@@ -181,7 +181,7 @@ class FlowEngineTest {
 
     @Test
     fun testOutletEquality() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val sourceA = SimpleFlowSource(graph, 2000.0f, 0.8f)

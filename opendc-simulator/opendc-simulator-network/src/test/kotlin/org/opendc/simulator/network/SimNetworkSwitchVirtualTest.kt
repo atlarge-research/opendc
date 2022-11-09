@@ -38,7 +38,7 @@ import org.opendc.simulator.kotlin.runSimulation
 class SimNetworkSwitchVirtualTest {
     @Test
     fun testConnect() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
         val source = TestSource(graph)
@@ -60,7 +60,7 @@ class SimNetworkSwitchVirtualTest {
 
     @Test
     fun testConnectClosedPort() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
         val switch = SimNetworkSwitchVirtual(graph)

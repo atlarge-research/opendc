@@ -39,7 +39,7 @@ class ForwardingFlowMultiplexerTest {
      */
     @Test
     fun testTrace() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val switch = ForwardingFlowMultiplexer(graph)

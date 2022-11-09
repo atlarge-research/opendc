@@ -94,7 +94,7 @@ class CapelinIntegrationTest {
         val topology = createTopology()
         val monitor = monitor
 
-        Provisioner(coroutineContext, timeSource, seed).use { provisioner ->
+        Provisioner(dispatcher, seed).use { provisioner ->
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
@@ -138,7 +138,7 @@ class CapelinIntegrationTest {
         val topology = createTopology("single")
         val monitor = monitor
 
-        Provisioner(coroutineContext, timeSource, seed).use { provisioner ->
+        Provisioner(dispatcher, seed).use { provisioner ->
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
@@ -177,7 +177,7 @@ class CapelinIntegrationTest {
         val workload = createTestWorkload(1.0, seed)
         val topology = createTopology("single")
 
-        Provisioner(coroutineContext, timeSource, seed).use { provisioner ->
+        Provisioner(dispatcher, seed).use { provisioner ->
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
@@ -216,7 +216,7 @@ class CapelinIntegrationTest {
         val workload = createTestWorkload(0.25, seed)
         val monitor = monitor
 
-        Provisioner(coroutineContext, timeSource, seed).use { provisioner ->
+        Provisioner(dispatcher, seed).use { provisioner ->
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),

@@ -22,13 +22,12 @@
 
 package org.opendc.experiments.provisioner
 
+import org.opendc.common.Dispatcher
 import org.opendc.experiments.MutableServiceRegistry
 import org.opendc.experiments.ServiceRegistry
 import org.opendc.experiments.internal.ServiceRegistryImpl
-import java.time.InstantSource
 import java.util.ArrayDeque
 import java.util.SplittableRandom
-import kotlin.coroutines.CoroutineContext
 
 /**
  * A helper class to set up the experimental environment in a reproducible manner.
@@ -37,17 +36,15 @@ import kotlin.coroutines.CoroutineContext
  * [ProvisioningStep]s are executed sequentially and ensure that the necessary infrastructure is configured and teared
  * down after the simulation completes.
  *
- * @param coroutineContext The [CoroutineContext] in which the environment is set up.
- * @param clock The simulation clock represented as [InstantSource].
+ * @param dispatcher The [Dispatcher] implementation for scheduling future tasks.
  * @param seed A seed for initializing the randomness of the environment.
  */
-public class Provisioner(coroutineContext: CoroutineContext, clock: InstantSource, seed: Long) : AutoCloseable {
+public class Provisioner(dispatcher: Dispatcher, seed: Long) : AutoCloseable {
     /**
      * Implementation of [ProvisioningContext].
      */
     private val context = object : ProvisioningContext {
-        override val clock: InstantSource = clock
-        override val coroutineContext: CoroutineContext = coroutineContext
+        override val dispatcher: Dispatcher = dispatcher
         override val seeder: SplittableRandom = SplittableRandom(seed)
         override val registry: MutableServiceRegistry = ServiceRegistryImpl()
 

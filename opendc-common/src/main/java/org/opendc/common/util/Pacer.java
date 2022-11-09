@@ -20,75 +20,75 @@
  * SOFTWARE.
  */
 
-package org.opendc.common.util
+package org.opendc.common.util;
 
-import kotlinx.coroutines.Delay
-import kotlinx.coroutines.DisposableHandle
-import kotlinx.coroutines.InternalCoroutinesApi
-import java.lang.Runnable
-import java.time.InstantSource
-import kotlin.coroutines.ContinuationInterceptor
-import kotlin.coroutines.CoroutineContext
+import java.util.function.LongConsumer;
+import org.opendc.common.Dispatcher;
+import org.opendc.common.DispatcherHandle;
 
 /**
  * Helper class to pace the incoming scheduling requests.
- *
- * @param context The [CoroutineContext] in which the pacer runs.
- * @param clock The virtual simulation clock.
- * @param quantum The scheduling quantum.
- * @param process The process to invoke for the incoming requests.
  */
-public class Pacer(
-    private val context: CoroutineContext,
-    private val clock: InstantSource,
-    private val quantum: Long,
-    private val process: (Long) -> Unit
-) {
-    /**
-     * The [Delay] instance that provides scheduled execution of [Runnable]s.
-     */
-    @OptIn(InternalCoroutinesApi::class)
-    private val delay =
-        requireNotNull(context[ContinuationInterceptor] as? Delay) { "Invalid CoroutineDispatcher: no delay implementation" }
+public final class Pacer {
+    private final Dispatcher dispatcher;
+    private final long quantumMs;
+    private final LongConsumer process;
 
     /**
-     * The current [DisposableHandle] representing the pending scheduling cycle.
+     * The current {@link DispatcherHandle} representing the pending scheduling cycle.
      */
-    private var handle: DisposableHandle? = null
+    private DispatcherHandle handle;
+
+    /**
+     * Construct a {@link Pacer} instance.
+     *
+     * @param dispatcher The {@link Dispatcher} to schedule future invocations.
+     * @param quantumMs The scheduling quantum in milliseconds.
+     * @param process The process to invoke for the incoming requests.
+     */
+    public Pacer(Dispatcher dispatcher, long quantumMs, LongConsumer process) {
+        this.dispatcher = dispatcher;
+        this.quantumMs = quantumMs;
+        this.process = process;
+    }
 
     /**
      * Determine whether a scheduling cycle is pending.
      */
-    public val isPending: Boolean get() = handle != null
+    public boolean isPending() {
+        return handle != null;
+    }
 
     /**
      * Enqueue a new scheduling cycle.
      */
-    public fun enqueue() {
+    public void enqueue() {
         if (handle != null) {
-            return
+            return;
         }
 
-        val quantum = quantum
-        val now = clock.millis()
+        final Dispatcher dispatcher = this.dispatcher;
+        long quantumMs = this.quantumMs;
+        long now = dispatcher.getTimeSource().millis();
 
         // We assume that the scheduler runs at a fixed slot every time quantum (e.g t=0, t=60, t=120).
         // We calculate here the delay until the next scheduling slot.
-        val timeUntilNextSlot = quantum - (now % quantum)
+        long timeUntilNextSlot = quantumMs - (now % quantumMs);
 
-        @OptIn(InternalCoroutinesApi::class)
-        handle = delay.invokeOnTimeout(timeUntilNextSlot, {
-            process(now + timeUntilNextSlot)
-            handle = null
-        }, context)
+        handle = dispatcher.scheduleCancellable(timeUntilNextSlot, () -> {
+            process.accept(now + timeUntilNextSlot);
+            handle = null;
+        });
     }
 
     /**
      * Cancel the currently pending scheduling cycle.
      */
-    public fun cancel() {
-        val handle = handle ?: return
-        this.handle = null
-        handle.dispose()
+    public void cancel() {
+        final DispatcherHandle handle = this.handle;
+        if (handle != null) {
+            this.handle = null;
+            handle.cancel();
+        }
     }
 }

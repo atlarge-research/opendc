@@ -35,7 +35,7 @@ import org.opendc.simulator.kotlin.runSimulation
 class MaxMinFlowMultiplexerTest {
     @Test
     fun testSmoke() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val switch = MaxMinFlowMultiplexer(graph)
 

@@ -28,8 +28,8 @@ plugins {
 }
 
 dependencies {
-    api(libs.kotlinx.coroutines)
-    implementation(libs.kotlin.logging)
+    api(projects.opendc.opendcCommon)
+    implementation(libs.slf4j.api)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(libs.slf4j.simple)

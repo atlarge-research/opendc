@@ -260,7 +260,7 @@ public class OpenDCRunner(
 
             val scenario = scenario
 
-            Provisioner(coroutineContext, timeSource, seed).use { provisioner ->
+            Provisioner(dispatcher, seed).use { provisioner ->
                 provisioner.runSteps(
                     setupComputeService(
                         serviceDomain,

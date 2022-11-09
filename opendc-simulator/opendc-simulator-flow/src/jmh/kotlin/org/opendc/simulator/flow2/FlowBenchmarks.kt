@@ -60,7 +60,7 @@ class FlowBenchmarks {
     @Benchmark
     fun benchmarkSink() {
         return runSimulation {
-            val engine = FlowEngine.create(coroutineContext, timeSource)
+            val engine = FlowEngine.create(dispatcher)
             val graph = engine.newGraph()
             val sink = SimpleFlowSink(graph, 4200.0f)
             val source = TraceFlowSource(graph, trace)
@@ -71,7 +71,7 @@ class FlowBenchmarks {
     @Benchmark
     fun benchmarkForward() {
         return runSimulation {
-            val engine = FlowEngine.create(coroutineContext, timeSource)
+            val engine = FlowEngine.create(dispatcher)
             val graph = engine.newGraph()
             val sink = SimpleFlowSink(graph, 4200.0f)
             val source = TraceFlowSource(graph, trace)
@@ -85,7 +85,7 @@ class FlowBenchmarks {
     @Benchmark
     fun benchmarkMuxMaxMinSingleSource() {
         return runSimulation {
-            val engine = FlowEngine.create(coroutineContext, timeSource)
+            val engine = FlowEngine.create(dispatcher)
             val graph = engine.newGraph()
             val switch = MaxMinFlowMultiplexer(graph)
 
@@ -103,7 +103,7 @@ class FlowBenchmarks {
     @Benchmark
     fun benchmarkMuxMaxMinTripleSource() {
         return runSimulation {
-            val engine = FlowEngine.create(coroutineContext, timeSource)
+            val engine = FlowEngine.create(dispatcher)
             val graph = engine.newGraph()
             val switch = MaxMinFlowMultiplexer(graph)
 

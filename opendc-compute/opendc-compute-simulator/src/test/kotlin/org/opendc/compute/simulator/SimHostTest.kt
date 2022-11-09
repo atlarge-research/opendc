@@ -75,7 +75,7 @@ internal class SimHostTest {
     fun testSingle() = runSimulation {
         val duration = 5 * 60L
 
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -142,7 +142,7 @@ internal class SimHostTest {
     fun testOvercommitted() = runSimulation {
         val duration = 5 * 60L
 
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -229,7 +229,7 @@ internal class SimHostTest {
     fun testFailure() = runSimulation {
         val duration = 5 * 60L
 
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)

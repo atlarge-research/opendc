@@ -22,6 +22,7 @@
 
 package org.opendc.workflow.service
 
+import org.opendc.common.Dispatcher
 import org.opendc.compute.api.ComputeClient
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
@@ -31,8 +32,6 @@ import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
 import org.opendc.workflow.service.scheduler.telemetry.SchedulerStats
 import java.time.Duration
-import java.time.InstantSource
-import kotlin.coroutines.CoroutineContext
 
 /**
  * A service for cloud workflow execution.
@@ -59,9 +58,7 @@ public interface WorkflowService : AutoCloseable {
         /**
          * Construct a new [WorkflowService] implementation.
          *
-         * @param context The [CoroutineContext] to use in the service.
-         * @param clock The clock instance to use.
-         * @param meterProvider The meter provider to use.
+         * @param dispatcher A [Dispatcher] to schedule future events.
          * @param compute The "Compute" client to use.
          * @param schedulingQuantum The scheduling quantum to use (minimum duration between scheduling cycles).
          * @param jobAdmissionPolicy The job admission policy to use.
@@ -70,8 +67,7 @@ public interface WorkflowService : AutoCloseable {
          * @param taskOrderPolicy The task order policy to use.
          */
         public operator fun invoke(
-            context: CoroutineContext,
-            clock: InstantSource,
+            dispatcher: Dispatcher,
             compute: ComputeClient,
             schedulingQuantum: Duration,
             jobAdmissionPolicy: JobAdmissionPolicy,
@@ -80,8 +76,7 @@ public interface WorkflowService : AutoCloseable {
             taskOrderPolicy: TaskOrderPolicy
         ): WorkflowService {
             return WorkflowServiceImpl(
-                context,
-                clock,
+                dispatcher,
                 compute,
                 schedulingQuantum,
                 jobAdmissionPolicy,

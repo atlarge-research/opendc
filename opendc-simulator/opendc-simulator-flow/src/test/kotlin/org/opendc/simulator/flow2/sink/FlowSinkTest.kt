@@ -37,7 +37,7 @@ import java.util.concurrent.ThreadLocalRandom
 class FlowSinkTest {
     @Test
     fun testSmoke() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val sink = SimpleFlowSink(graph, 1.0f)
@@ -51,7 +51,7 @@ class FlowSinkTest {
 
     @Test
     fun testAdjustCapacity() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val sink = SimpleFlowSink(graph, 1.0f)
@@ -69,7 +69,7 @@ class FlowSinkTest {
 
     @Test
     fun testUtilization() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val sink = SimpleFlowSink(graph, 1.0f)
@@ -83,7 +83,7 @@ class FlowSinkTest {
 
     @Test
     fun testFragments() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val sink = SimpleFlowSink(graph, 1.0f)
@@ -114,7 +114,7 @@ class FlowSinkTest {
         )
 
         return runSimulation {
-            val engine = FlowEngine.create(coroutineContext, timeSource)
+            val engine = FlowEngine.create(dispatcher)
             val graph = engine.newGraph()
             val sink = SimpleFlowSink(graph, 4200.0f)
             val source = TraceFlowSource(graph, trace)

@@ -22,13 +22,11 @@
 
 package org.opendc.faas.service.internal
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import kotlinx.coroutines.suspendCancellableCoroutine
 import mu.KotlinLogging
+import org.opendc.common.Dispatcher
 import org.opendc.common.util.Pacer
 import org.opendc.faas.api.FaaSClient
 import org.opendc.faas.api.FaaSFunction
@@ -49,7 +47,6 @@ import java.util.ArrayDeque
 import java.util.Random
 import java.util.UUID
 import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resumeWithException
 
 /**
@@ -60,18 +57,12 @@ import kotlin.coroutines.resumeWithException
  * this component queues the events to await the deployment of new instances.
  */
 internal class FaaSServiceImpl(
-    context: CoroutineContext,
-    private val clock: InstantSource,
+    dispatcher: Dispatcher,
     private val deployer: FunctionDeployer,
     private val routingPolicy: RoutingPolicy,
     private val terminationPolicy: FunctionTerminationPolicy,
     quantum: Duration
 ) : FaaSService, FunctionInstanceListener {
-    /**
-     * The [CoroutineScope] of the service bounded by the lifecycle of the service.
-     */
-    private val scope = CoroutineScope(context + Job())
-
     /**
      * The logger instance of this server.
      */
@@ -80,7 +71,12 @@ internal class FaaSServiceImpl(
     /**
      * The [Pacer] to use for scheduling the scheduler cycles.
      */
-    private val pacer = Pacer(scope.coroutineContext, clock, quantum = quantum.toMillis()) { doSchedule() }
+    private val pacer = Pacer(dispatcher, quantum.toMillis()) { doSchedule() }
+
+    /**
+     * The [InstantSource] instance representing the clock.
+     */
+    private val clock = dispatcher.timeSource
 
     /**
      * The [Random] instance used to generate unique identifiers for the objects.
@@ -266,8 +262,6 @@ internal class FaaSServiceImpl(
     }
 
     override fun close() {
-        scope.cancel()
-
         // Stop all function instances
         for ((_, function) in functions) {
             function.close()

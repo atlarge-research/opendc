@@ -43,7 +43,7 @@ import org.opendc.simulator.kotlin.runSimulation
 class SimNetworkSinkTest {
     @Test
     fun testInitialState() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
 
@@ -56,7 +56,7 @@ class SimNetworkSinkTest {
 
     @Test
     fun testDisconnectIdempotent() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
 
@@ -66,7 +66,7 @@ class SimNetworkSinkTest {
 
     @Test
     fun testConnectCircular() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
 
@@ -77,7 +77,7 @@ class SimNetworkSinkTest {
 
     @Test
     fun testConnectAlreadyConnectedTarget() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
         val source = mockk<SimNetworkPort>(relaxUnitFun = true)
@@ -90,7 +90,7 @@ class SimNetworkSinkTest {
 
     @Test
     fun testConnectAlreadyConnected() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
         val source1 = TestSource(graph)
@@ -107,7 +107,7 @@ class SimNetworkSinkTest {
 
     @Test
     fun testConnect() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
         val source = TestSource(graph)
@@ -127,7 +127,7 @@ class SimNetworkSinkTest {
 
     @Test
     fun testDisconnect() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, timeSource)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
         val source = TestSource(graph)

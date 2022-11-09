@@ -47,8 +47,7 @@ internal class SimTFDeviceTest {
         val device = SimTFDevice(
             UUID.randomUUID(),
             isGpu = true,
-            coroutineContext,
-            timeSource,
+            dispatcher,
             pu,
             memory,
             CpuPowerModels.linear(250.0, 100.0)

@@ -70,7 +70,7 @@ internal class WorkflowServiceTest {
         val computeService = "compute.opendc.org"
         val workflowService = "workflow.opendc.org"
 
-        Provisioner(coroutineContext, timeSource, seed = 0L).use { provisioner ->
+        Provisioner(dispatcher, seed = 0L).use { provisioner ->
             val scheduler: (ProvisioningContext) -> ComputeScheduler = {
                 FilterScheduler(
                     filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
