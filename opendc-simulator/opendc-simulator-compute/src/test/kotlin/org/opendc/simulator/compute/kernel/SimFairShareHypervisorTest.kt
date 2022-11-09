@@ -74,7 +74,7 @@ internal class SimFairShareHypervisorTest {
                 SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
             ).createWorkload(0)
 
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, model)
@@ -93,7 +93,7 @@ internal class SimFairShareHypervisorTest {
             { assertEquals(319781, hypervisor.counters.cpuActiveTime, "Active time does not match") },
             { assertEquals(880219, hypervisor.counters.cpuIdleTime, "Idle time does not match") },
             { assertEquals(28125, hypervisor.counters.cpuStealTime, "Steal time does not match") },
-            { assertEquals(1200000, clock.millis()) { "Current time is correct" } }
+            { assertEquals(1200000, timeSource.millis()) { "Current time is correct" } }
         )
     }
 
@@ -118,7 +118,7 @@ internal class SimFairShareHypervisorTest {
                 SimTraceFragment(duration * 3000, duration * 1000, 73.0, 1)
             ).createWorkload(0)
 
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, model)
@@ -145,7 +145,7 @@ internal class SimFairShareHypervisorTest {
             { assertEquals(329250, hypervisor.counters.cpuActiveTime, "Active time does not match") },
             { assertEquals(870750, hypervisor.counters.cpuIdleTime, "Idle time does not match") },
             { assertEquals(318750, hypervisor.counters.cpuStealTime, "Steal time does not match") },
-            { assertEquals(1200000, clock.millis()) }
+            { assertEquals(1200000, timeSource.millis()) }
         )
     }
 
@@ -157,7 +157,7 @@ internal class SimFairShareHypervisorTest {
             /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
 
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, model)
@@ -184,7 +184,7 @@ internal class SimFairShareHypervisorTest {
             .addGroup(setOf("a", "n"), 0.1, 0.8)
             .build()
 
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, model)

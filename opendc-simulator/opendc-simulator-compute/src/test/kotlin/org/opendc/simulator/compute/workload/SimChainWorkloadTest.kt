@@ -59,7 +59,7 @@ class SimChainWorkloadTest {
 
     @Test
     fun testMultipleWorkloads() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -75,12 +75,12 @@ class SimChainWorkloadTest {
 
         machine.runWorkload(workload)
 
-        assertEquals(2000, clock.millis())
+        assertEquals(2000, timeSource.millis())
     }
 
     @Test
     fun testStartFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -100,12 +100,12 @@ class SimChainWorkloadTest {
 
         assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
-        assertEquals(0, clock.millis())
+        assertEquals(0, timeSource.millis())
     }
 
     @Test
     fun testStartFailureSecond() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -126,12 +126,12 @@ class SimChainWorkloadTest {
 
         assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
-        assertEquals(1000, clock.millis())
+        assertEquals(1000, timeSource.millis())
     }
 
     @Test
     fun testStopFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -150,12 +150,12 @@ class SimChainWorkloadTest {
 
         assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
-        assertEquals(1000, clock.millis())
+        assertEquals(1000, timeSource.millis())
     }
 
     @Test
     fun testStopFailureSecond() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -175,12 +175,12 @@ class SimChainWorkloadTest {
 
         assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
-        assertEquals(2000, clock.millis())
+        assertEquals(2000, timeSource.millis())
     }
 
     @Test
     fun testStartAndStopFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -201,12 +201,12 @@ class SimChainWorkloadTest {
         val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
         assertEquals(2, exc.cause!!.suppressedExceptions.size)
-        assertEquals(1000, clock.millis())
+        assertEquals(1000, timeSource.millis())
     }
 
     @Test
     fun testShutdownAndStopFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -227,12 +227,12 @@ class SimChainWorkloadTest {
         val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
         assertEquals(1, exc.cause!!.suppressedExceptions.size)
-        assertEquals(1000, clock.millis())
+        assertEquals(1000, timeSource.millis())
     }
 
     @Test
     fun testShutdownAndStartFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -255,12 +255,12 @@ class SimChainWorkloadTest {
 
         val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
         assertEquals(1, exc.cause!!.suppressedExceptions.size)
-        assertEquals(1000, clock.millis())
+        assertEquals(1000, timeSource.millis())
     }
 
     @Test
     fun testSnapshot() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -276,10 +276,10 @@ class SimChainWorkloadTest {
 
         job.join()
 
-        assertEquals(2000, clock.millis())
+        assertEquals(2000, timeSource.millis())
 
         machine.runWorkload(snapshot)
 
-        assertEquals(3500, clock.millis())
+        assertEquals(3500, timeSource.millis())
     }
 }

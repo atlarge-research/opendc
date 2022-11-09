@@ -24,7 +24,8 @@ package org.opendc.simulator.kotlin
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import org.opendc.simulator.SimulationScheduler
+import org.opendc.common.asCoroutineDispatcher
+import org.opendc.simulator.SimulationDispatcher
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -34,33 +35,28 @@ import kotlin.coroutines.EmptyCoroutineContext
  */
 public interface SimulationCoroutineScope : CoroutineScope, SimulationController
 
-private class SimulationCoroutineScopeImpl(
-    override val coroutineContext: CoroutineContext
-) :
-    SimulationCoroutineScope,
-    SimulationController by coroutineContext.simulationController
-
 /**
  * A scope which provides detailed control over the execution of coroutines for simulations.
  *
  * If the provided context does not provide a [ContinuationInterceptor] (Dispatcher) or [CoroutineExceptionHandler], the
- * scope adds [SimulationCoroutineDispatcher] automatically.
+ * scope adds a dispatcher automatically.
  */
-@Suppress("FunctionName")
 public fun SimulationCoroutineScope(
     context: CoroutineContext = EmptyCoroutineContext,
-    scheduler: SimulationScheduler = SimulationScheduler()
+    scheduler: SimulationDispatcher = SimulationDispatcher()
 ): SimulationCoroutineScope {
     var safeContext = context
-    if (context[ContinuationInterceptor] == null) safeContext += SimulationCoroutineDispatcher(scheduler)
-    return SimulationCoroutineScopeImpl(safeContext)
-}
+    val simulationDispatcher: SimulationDispatcher
+    val interceptor = context[ContinuationInterceptor]
 
-private inline val CoroutineContext.simulationController: SimulationController
-    get() {
-        val handler = this[ContinuationInterceptor]
-        return handler as? SimulationController ?: throw IllegalArgumentException(
-            "SimulationCoroutineScope requires a SimulationController such as SimulatorCoroutineDispatcher as " +
-                "the ContinuationInterceptor (Dispatcher)"
-        )
+    if (interceptor != null) {
+        simulationDispatcher = interceptor.asSimulationDispatcher()
+    } else {
+        simulationDispatcher = scheduler
+        safeContext += scheduler.asCoroutineDispatcher()
     }
+
+    return object : SimulationCoroutineScope, SimulationController by simulationDispatcher.asController() {
+        override val coroutineContext: CoroutineContext = safeContext
+    }
+}

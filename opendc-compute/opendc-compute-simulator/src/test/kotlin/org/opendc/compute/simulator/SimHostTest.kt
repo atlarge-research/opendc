@@ -75,7 +75,7 @@ internal class SimHostTest {
     fun testSingle() = runSimulation {
         val duration = 5 * 60L
 
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -85,7 +85,7 @@ internal class SimHostTest {
             uid = UUID.randomUUID(),
             name = "test",
             meta = emptyMap(),
-            clock,
+            timeSource,
             machine,
             hypervisor
         )
@@ -131,7 +131,7 @@ internal class SimHostTest {
             { assertEquals(639, cpuStats.activeTime, "Active time does not match") },
             { assertEquals(2360, cpuStats.idleTime, "Idle time does not match") },
             { assertEquals(56, cpuStats.stealTime, "Steal time does not match") },
-            { assertEquals(1500001, clock.millis()) }
+            { assertEquals(1500001, timeSource.millis()) }
         )
     }
 
@@ -142,7 +142,7 @@ internal class SimHostTest {
     fun testOvercommitted() = runSimulation {
         val duration = 5 * 60L
 
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -152,7 +152,7 @@ internal class SimHostTest {
             uid = UUID.randomUUID(),
             name = "test",
             meta = emptyMap(),
-            clock,
+            timeSource,
             machine,
             hypervisor
         )
@@ -218,7 +218,7 @@ internal class SimHostTest {
             { assertEquals(658, cpuStats.activeTime, "Active time does not match") },
             { assertEquals(2341, cpuStats.idleTime, "Idle time does not match") },
             { assertEquals(637, cpuStats.stealTime, "Steal time does not match") },
-            { assertEquals(1500001, clock.millis()) }
+            { assertEquals(1500001, timeSource.millis()) }
         )
     }
 
@@ -229,7 +229,7 @@ internal class SimHostTest {
     fun testFailure() = runSimulation {
         val duration = 5 * 60L
 
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -238,7 +238,7 @@ internal class SimHostTest {
             uid = UUID.randomUUID(),
             name = "test",
             meta = emptyMap(),
-            clock,
+            timeSource,
             machine,
             hypervisor
         )

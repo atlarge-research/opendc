@@ -72,7 +72,7 @@ class SimMachineTest {
 
     @Test
     fun testFlopsWorkload() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -83,7 +83,7 @@ class SimMachineTest {
         machine.runWorkload(SimWorkloads.flops(2_000, /*utilization*/ 1.0))
 
         // Two cores execute 1000 MFlOps per second (1000 ms)
-        assertEquals(1000, clock.millis())
+        assertEquals(1000, timeSource.millis())
     }
 
     @Test
@@ -97,7 +97,7 @@ class SimMachineTest {
         }
         val trace = builder.build()
 
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
         val machine = SimBareMetalMachine.create(
             graph,
@@ -107,12 +107,12 @@ class SimMachineTest {
         machine.runWorkload(trace.createWorkload(0))
 
         // Two cores execute 1000 MFlOps per second (1000 ms)
-        assertEquals(1000000000, clock.millis())
+        assertEquals(1000000000, timeSource.millis())
     }
 
     @Test
     fun testDualSocketMachine() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val cpuNode = machineModel.cpus[0].node
@@ -128,12 +128,12 @@ class SimMachineTest {
         machine.runWorkload(SimWorkloads.flops(2_000, /*utilization*/ 1.0))
 
         // Two sockets with two cores execute 2000 MFlOps per second (500 ms)
-        assertEquals(500, clock.millis())
+        assertEquals(500, timeSource.millis())
     }
 
     @Test
     fun testPower() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
         val machine = SimBareMetalMachine.create(
             graph,
@@ -156,7 +156,7 @@ class SimMachineTest {
 
     @Test
     fun testCapacityClamp() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -184,7 +184,7 @@ class SimMachineTest {
 
     @Test
     fun testMemory() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -206,7 +206,7 @@ class SimMachineTest {
 
     @Test
     fun testMemoryUsage() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -225,12 +225,12 @@ class SimMachineTest {
             override fun snapshot(): SimWorkload = TODO()
         })
 
-        assertEquals(1000, clock.millis())
+        assertEquals(1000, timeSource.millis())
     }
 
     @Test
     fun testNetUsage() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -253,12 +253,12 @@ class SimMachineTest {
             override fun snapshot(): SimWorkload = TODO()
         })
 
-        assertEquals(40, clock.millis())
+        assertEquals(40, timeSource.millis())
     }
 
     @Test
     fun testDiskReadUsage() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -278,12 +278,12 @@ class SimMachineTest {
             override fun snapshot(): SimWorkload = TODO()
         })
 
-        assertEquals(4000, clock.millis())
+        assertEquals(4000, timeSource.millis())
     }
 
     @Test
     fun testDiskWriteUsage() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -303,12 +303,12 @@ class SimMachineTest {
             override fun snapshot(): SimWorkload = TODO()
         })
 
-        assertEquals(4000, clock.millis())
+        assertEquals(4000, timeSource.millis())
     }
 
     @Test
     fun testCancellation() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -325,12 +325,12 @@ class SimMachineTest {
             // Ignore
         }
 
-        assertEquals(0, clock.millis())
+        assertEquals(0, timeSource.millis())
     }
 
     @Test
     fun testConcurrentRuns() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -351,7 +351,7 @@ class SimMachineTest {
 
     @Test
     fun testCatchStartFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -367,7 +367,7 @@ class SimMachineTest {
 
     @Test
     fun testCatchStopFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -384,7 +384,7 @@ class SimMachineTest {
 
     @Test
     fun testCatchShutdownFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(
@@ -400,7 +400,7 @@ class SimMachineTest {
 
     @Test
     fun testCatchNestedFailure() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(

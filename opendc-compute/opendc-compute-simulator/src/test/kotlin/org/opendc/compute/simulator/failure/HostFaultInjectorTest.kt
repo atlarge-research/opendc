@@ -46,7 +46,7 @@ class HostFaultInjectorTest {
     fun testInjectorNotStarted() = runSimulation {
         val host = mockk<SimHost>(relaxUnitFun = true)
 
-        val injector = createSimpleInjector(coroutineContext, clock, setOf(host))
+        val injector = createSimpleInjector(coroutineContext, timeSource, setOf(host))
 
         coVerify(exactly = 0) { host.fail() }
         coVerify(exactly = 0) { host.recover() }
@@ -61,7 +61,7 @@ class HostFaultInjectorTest {
     fun testInjectorStopsMachine() = runSimulation {
         val host = mockk<SimHost>(relaxUnitFun = true)
 
-        val injector = createSimpleInjector(coroutineContext, clock, setOf(host))
+        val injector = createSimpleInjector(coroutineContext, timeSource, setOf(host))
 
         injector.start()
 
@@ -83,7 +83,7 @@ class HostFaultInjectorTest {
             mockk(relaxUnitFun = true)
         )
 
-        val injector = createSimpleInjector(coroutineContext, clock, hosts.toSet())
+        val injector = createSimpleInjector(coroutineContext, timeSource, hosts.toSet())
 
         injector.start()
 

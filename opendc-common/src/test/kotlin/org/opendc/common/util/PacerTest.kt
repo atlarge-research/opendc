@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.kotlin.runSimulation
-import java.time.Clock
+import java.time.InstantSource
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
@@ -39,7 +39,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 class PacerTest {
     @Test
     fun testEmptyContext() {
-        assertThrows<IllegalArgumentException> { Pacer(EmptyCoroutineContext, Clock.systemUTC(), 100) {} }
+        assertThrows<IllegalArgumentException> { Pacer(EmptyCoroutineContext, InstantSource.system(), 100) {} }
     }
 
     @Test
@@ -47,7 +47,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(coroutineContext, clock, quantum = 100) {
+            val pacer = Pacer(coroutineContext, timeSource, quantum = 100) {
                 count++
             }
 
@@ -62,7 +62,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(coroutineContext, clock, quantum = 100) {
+            val pacer = Pacer(coroutineContext, timeSource, quantum = 100) {
                 count++
             }
 
@@ -80,7 +80,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(coroutineContext, clock, quantum = 100) {
+            val pacer = Pacer(coroutineContext, timeSource, quantum = 100) {
                 count++
             }
 
@@ -98,7 +98,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(coroutineContext, clock, quantum = 100) {
+            val pacer = Pacer(coroutineContext, timeSource, quantum = 100) {
                 count++
             }
 
@@ -116,7 +116,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(coroutineContext, clock, quantum = 100) {
+            val pacer = Pacer(coroutineContext, timeSource, quantum = 100) {
                 count++
             }
 

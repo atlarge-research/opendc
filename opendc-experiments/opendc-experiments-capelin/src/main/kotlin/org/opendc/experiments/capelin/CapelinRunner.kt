@@ -64,7 +64,7 @@ public class CapelinRunner(
         val serviceDomain = "compute.opendc.org"
         val topology = clusterTopology(File(envPath, "${scenario.topology.name}.txt"))
 
-        Provisioner(coroutineContext, clock, seed).use { provisioner ->
+        Provisioner(coroutineContext, timeSource, seed).use { provisioner ->
             provisioner.runSteps(
                 setupComputeService(serviceDomain, { createComputeScheduler(scenario.allocationPolicy, Random(it.seeder.nextLong())) }),
                 setupHosts(serviceDomain, topology, optimize = true)
@@ -96,7 +96,7 @@ public class CapelinRunner(
                     null
                 }
 
-            service.replay(clock, vms, seed, failureModel = failureModel, interference = operationalPhenomena.hasInterference)
+            service.replay(timeSource, vms, seed, failureModel = failureModel, interference = operationalPhenomena.hasInterference)
         }
     }
 }

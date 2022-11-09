@@ -22,11 +22,18 @@
 
 package org.opendc.simulator.kotlin
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable.children
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
-import org.opendc.simulator.SimulationScheduler
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import org.opendc.common.DispatcherProvider
+import org.opendc.common.asCoroutineDispatcher
+import org.opendc.simulator.SimulationDispatcher
+import java.time.InstantSource
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -54,16 +61,16 @@ import kotlin.coroutines.EmptyCoroutineContext
  * The simulation is run in a single thread, unless other [CoroutineDispatcher] are used for child coroutines.
  * Because of this, child coroutines are not executed in parallel to [body].
  * In order for the spawned-off asynchronous code to actually be executed, one must either [yield] or suspend the
- * body some other way, or use commands that control scheduling (see [SimulationScheduler]).
+ * body some other way, or use commands that control scheduling (see [SimulationDispatcher]).
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 public fun runSimulation(
     context: CoroutineContext = EmptyCoroutineContext,
-    scheduler: SimulationScheduler = SimulationScheduler(),
+    scheduler: SimulationDispatcher = SimulationDispatcher(),
     body: suspend SimulationCoroutineScope.() -> Unit
 ) {
-    val (safeContext, dispatcher) = context.checkArguments(scheduler)
-    val startingJobs = safeContext.activeJobs()
+    val (safeContext, job, dispatcher) = context.checkArguments(scheduler)
+    val startingJobs = job.activeJobs()
     val scope = SimulationCoroutineScope(safeContext)
     val deferred = scope.async {
         body(scope)
@@ -72,7 +79,7 @@ public fun runSimulation(
     deferred.getCompletionExceptionOrNull()?.let {
         throw it
     }
-    val endingJobs = safeContext.activeJobs()
+    val endingJobs = job.activeJobs()
     if ((endingJobs - startingJobs).isNotEmpty()) {
         throw IllegalStateException("Test finished with active jobs: $endingJobs")
     }
@@ -82,24 +89,51 @@ public fun runSimulation(
  * Convenience method for calling [runSimulation] on an existing [SimulationCoroutineScope].
  */
 public fun SimulationCoroutineScope.runSimulation(block: suspend SimulationCoroutineScope.() -> Unit): Unit =
-    runSimulation(coroutineContext, scheduler, block)
+    runSimulation(coroutineContext, dispatcher, block)
 
-/**
- * Convenience method for calling [runSimulation] on an existing [SimulationCoroutineDispatcher].
- */
-public fun SimulationCoroutineDispatcher.runSimulation(block: suspend SimulationCoroutineScope.() -> Unit): Unit =
-    runSimulation(this, scheduler, block)
-
-private fun CoroutineContext.checkArguments(scheduler: SimulationScheduler): Pair<CoroutineContext, SimulationController> {
-    val dispatcher = get(ContinuationInterceptor).run {
-        this?.let { require(this is SimulationController) { "Dispatcher must implement SimulationController: $this" } }
-        this ?: SimulationCoroutineDispatcher(scheduler)
-    }
-
+private fun CoroutineContext.checkArguments(scheduler: SimulationDispatcher): Triple<CoroutineContext, Job, SimulationController> {
     val job = get(Job) ?: SupervisorJob()
-    return Pair(this + dispatcher + job, dispatcher as SimulationController)
+    val dispatcher = get(ContinuationInterceptor) ?: scheduler.asCoroutineDispatcher()
+    val simulationDispatcher = dispatcher.asSimulationDispatcher()
+    return Triple(this + dispatcher + job, job, simulationDispatcher.asController())
 }
 
-private fun CoroutineContext.activeJobs(): Set<Job> {
-    return checkNotNull(this[Job]).children.filter { it.isActive }.toSet()
+private fun Job.activeJobs(): Set<Job> {
+    return children.filter { it.isActive }.toSet()
+}
+
+/**
+ * Convert a [ContinuationInterceptor] into a [SimulationDispatcher] if possible.
+ */
+internal fun ContinuationInterceptor.asSimulationDispatcher(): SimulationDispatcher {
+    val provider = this as? DispatcherProvider ?: throw IllegalArgumentException(
+        "DispatcherProvider such as SimulatorCoroutineDispatcher as the ContinuationInterceptor(Dispatcher) is required"
+    )
+
+    return provider.dispatcher as? SimulationDispatcher ?: throw IllegalArgumentException("Active dispatcher is not a SimulationDispatcher")
+}
+
+/**
+ * Helper method to convert a [SimulationDispatcher] into a [SimulationController].
+ */
+internal fun SimulationDispatcher.asController(): SimulationController {
+    return object : SimulationController {
+        override val dispatcher: SimulationDispatcher
+            get() = this@asController
+
+        override val timeSource: InstantSource
+            get() = this@asController.timeSource
+
+        override fun advanceUntilIdle() {
+            dispatcher.advanceUntilIdle()
+        }
+
+        override fun advanceBy(delayMs: Long) {
+            dispatcher.advanceBy(delayMs)
+        }
+
+        override fun runCurrent() {
+            dispatcher.runCurrent()
+        }
+    }
 }

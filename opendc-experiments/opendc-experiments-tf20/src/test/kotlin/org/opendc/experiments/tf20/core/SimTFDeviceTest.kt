@@ -48,7 +48,7 @@ internal class SimTFDeviceTest {
             UUID.randomUUID(),
             isGpu = true,
             coroutineContext,
-            clock,
+            timeSource,
             pu,
             memory,
             CpuPowerModels.linear(250.0, 100.0)
@@ -56,7 +56,7 @@ internal class SimTFDeviceTest {
 
         // Load 1 GiB into GPU memory
         device.load(1000)
-        assertEquals(1140, clock.millis())
+        assertEquals(1140, timeSource.millis())
 
         coroutineScope {
             launch { device.compute(1e6) }
@@ -68,7 +68,7 @@ internal class SimTFDeviceTest {
         val stats = device.getDeviceStats()
 
         assertAll(
-            { assertEquals(3681, clock.millis()) },
+            { assertEquals(3681, timeSource.millis()) },
             { assertEquals(749.25, stats.energyUsage) }
         )
     }

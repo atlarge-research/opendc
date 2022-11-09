@@ -49,7 +49,7 @@ class FaaSExperiment {
     fun testSmoke() = runSimulation {
         val faasService = "faas.opendc.org"
 
-        Provisioner(coroutineContext, clock, seed = 0L).use { provisioner ->
+        Provisioner(coroutineContext, timeSource, seed = 0L).use { provisioner ->
             provisioner.runStep(
                 setupFaaSService(
                     faasService,
@@ -63,7 +63,7 @@ class FaaSExperiment {
             val service = provisioner.registry.resolve(faasService, FaaSService::class.java)!!
 
             val trace = ServerlessTraceReader().parse(File("src/test/resources/trace"))
-            service.replay(clock, trace)
+            service.replay(timeSource, trace)
 
             val stats = service.getSchedulerStats()
 

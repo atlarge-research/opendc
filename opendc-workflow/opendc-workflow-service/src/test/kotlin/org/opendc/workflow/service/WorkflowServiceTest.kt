@@ -70,7 +70,7 @@ internal class WorkflowServiceTest {
         val computeService = "compute.opendc.org"
         val workflowService = "workflow.opendc.org"
 
-        Provisioner(coroutineContext, clock, seed = 0L).use { provisioner ->
+        Provisioner(coroutineContext, timeSource, seed = 0L).use { provisioner ->
             val scheduler: (ProvisioningContext) -> ComputeScheduler = {
                 FilterScheduler(
                     filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
@@ -103,7 +103,7 @@ internal class WorkflowServiceTest {
                 Paths.get(checkNotNull(WorkflowServiceTest::class.java.getResource("/trace.gwf")).toURI()),
                 format = "gwf"
             )
-            service.replay(clock, trace.toJobs())
+            service.replay(timeSource, trace.toJobs())
 
             val metrics = service.getSchedulerStats()
 
@@ -119,7 +119,7 @@ internal class WorkflowServiceTest {
                 },
                 { assertEquals(0, metrics.tasksRunning, "Not all started tasks finished") },
                 { assertEquals(metrics.tasksSubmitted, metrics.tasksFinished, "Not all started tasks finished") },
-                { assertEquals(45977707L, clock.millis()) { "Total duration incorrect" } }
+                { assertEquals(45977707L, timeSource.millis()) { "Total duration incorrect" } }
             )
         }
     }

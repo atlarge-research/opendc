@@ -22,17 +22,17 @@
 
 package org.opendc.simulator;
 
-import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.util.concurrent.Executor;
+import java.time.InstantSource;
+import org.opendc.common.Dispatcher;
+import org.opendc.common.DispatcherHandle;
 
 /**
- * A scheduler is used by simulations to manage execution of (future) tasks, providing a controllable (virtual) clock to
- * skip over delays.
+ * A {@link Dispatcher} used by simulations to manage execution of (future) tasks, providing a controllable (virtual)
+ * clock to skip over delays.
  *
  * <p>
- * The scheduler can be queried to advance the time (via {@link #advanceBy}), run all the scheduled tasks advancing the
+ * The dispatcher can be queried to advance the time (via {@link #advanceBy}), run all the scheduled tasks advancing the
  * virtual time as needed (via {@link #advanceUntilIdle}), or run the tasks that are scheduled to run as soon as
  * possible but have not yet been dispatched (via {@link #runCurrent}). These methods execute the pending tasks using
  * a single thread.
@@ -40,7 +40,7 @@ import java.util.concurrent.Executor;
  * <p>
  * This class is not thread-safe and must not be used concurrently by multiple threads.
  */
-public final class SimulationScheduler implements Executor {
+public final class SimulationDispatcher implements Dispatcher {
     /**
      * The {@link TaskQueue} containing the pending tasks.
      */
@@ -57,33 +57,24 @@ public final class SimulationScheduler implements Executor {
     private int count = 0;
 
     /**
-     * The {@link Clock} instance linked to this scheduler.
+     * The {@link InstantSource} instance linked to this scheduler.
      */
-    private final SimulationClock clock = new SimulationClock(this, ZoneId.systemDefault());
+    private final SimulationClock timeSource = new SimulationClock(this);
 
     /**
-     * Construct a {@link SimulationScheduler} instance with the specified initial time.
+     * Construct a {@link SimulationDispatcher} instance with the specified initial time.
      *
      * @param initialTimeMs The initial virtual time of the scheduler in milliseconds since epoch.
      */
-    public SimulationScheduler(long initialTimeMs) {
+    public SimulationDispatcher(long initialTimeMs) {
         this.currentTime = initialTimeMs;
     }
 
     /**
-     * Construct a {@link SimulationScheduler} instance with the initial time set to UNIX Epoch 0.
+     * Construct a {@link SimulationDispatcher} instance with the initial time set to UNIX Epoch 0.
      */
-    public SimulationScheduler() {
+    public SimulationDispatcher() {
         this(0);
-    }
-
-    /**
-     * Return the virtual clock associated with this dispatcher.
-     *
-     * @return A {@link Clock} tracking the virtual time of the dispatcher.
-     */
-    public Clock getClock() {
-        return clock;
     }
 
     /**
@@ -96,37 +87,30 @@ public final class SimulationScheduler implements Executor {
     }
 
     /**
-     * Schedule a <code>task</code> that executes after the specified <code>delayMs</code>.
+     * Return the virtual time source associated with this dispatcher.
      *
-     * @param delayMs The time from now until the execution of the task (in milliseconds).
-     * @param task The task to execute after the delay.
-     * @return The identifier of the task that can be used together with the timestamp of the task to cancel it.
+     * @return A {@link InstantSource} tracking the virtual time of the dispatcher.
      */
-    public int schedule(long delayMs, Runnable task) {
-        if (delayMs < 0) {
-            throw new IllegalArgumentException(
-                    "Attempted scheduling an event earlier in time (delay " + delayMs + " ms)");
-        }
+    @Override
+    public InstantSource getTimeSource() {
+        return timeSource;
+    }
 
+    @Override
+    public void schedule(long delayMs, Runnable command) {
+        internalSchedule(delayMs, command);
+    }
+
+    @Override
+    public DispatcherHandle scheduleCancellable(long delayMs, Runnable command) {
         long target = currentTime + delayMs;
         if (target < 0) {
             target = Long.MAX_VALUE;
         }
 
-        int id = count++;
-        queue.add(target, id, task);
-        return id;
-    }
-
-    /**
-     * Cancel a pending task.
-     *
-     * @param deadline The deadline of the task.
-     * @param id The identifier of the task (returned by {@link #schedule(long, Runnable)}).
-     * @return A boolean indicating whether a task was actually cancelled.
-     */
-    public boolean cancel(long deadline, int id) {
-        return queue.remove(deadline, id);
+        long deadline = target;
+        int id = internalSchedule(delayMs, command);
+        return () -> internalCancel(deadline, id);
     }
 
     /**
@@ -198,50 +182,62 @@ public final class SimulationScheduler implements Executor {
     }
 
     /**
-     * Schedule the specified command to run at this moment of virtual time.
+     * Schedule a <code>task</code> that executes after the specified <code>delayMs</code>.
      *
-     * @param command The command to execute.
+     * @param delayMs The time from now until the execution of the task (in milliseconds).
+     * @param task The task to execute after the delay.
+     * @return The identifier of the task that can be used together with the timestamp of the task to cancel it.
      */
-    @Override
-    public void execute(Runnable command) {
-        schedule(0, command);
+    private int internalSchedule(long delayMs, Runnable task) {
+        if (delayMs < 0) {
+            throw new IllegalArgumentException(
+                    "Attempted scheduling an event earlier in time (delay " + delayMs + " ms)");
+        }
+
+        long target = currentTime + delayMs;
+        if (target < 0) {
+            target = Long.MAX_VALUE;
+        }
+
+        int id = count++;
+        queue.add(target, id, task);
+        return id;
     }
 
     /**
-     * A {@link Clock} implementation for a {@link SimulationScheduler}.
+     * Cancel a pending task.
+     *
+     * @param deadline The deadline of the task.
+     * @param id The identifier of the task (returned by {@link #internalSchedule(long, Runnable)}).
+     * @return A boolean indicating whether a task was actually cancelled.
      */
-    private static class SimulationClock extends Clock {
-        private final SimulationScheduler scheduler;
-        private final ZoneId zone;
+    private boolean internalCancel(long deadline, int id) {
+        return queue.remove(deadline, id);
+    }
 
-        SimulationClock(SimulationScheduler scheduler, ZoneId zone) {
-            this.scheduler = scheduler;
-            this.zone = zone;
-        }
+    /**
+     * A {@link InstantSource} implementation for a {@link SimulationDispatcher}.
+     */
+    private static class SimulationClock implements InstantSource {
+        private final SimulationDispatcher dispatcher;
 
-        @Override
-        public ZoneId getZone() {
-            return zone;
-        }
-
-        @Override
-        public Clock withZone(ZoneId zoneId) {
-            return new SimulationClock(scheduler, zone);
+        SimulationClock(SimulationDispatcher dispatcher) {
+            this.dispatcher = dispatcher;
         }
 
         @Override
         public Instant instant() {
-            return Instant.ofEpochMilli(scheduler.currentTime);
+            return Instant.ofEpochMilli(dispatcher.currentTime);
         }
 
         @Override
         public long millis() {
-            return scheduler.currentTime;
+            return dispatcher.currentTime;
         }
 
         @Override
         public String toString() {
-            return "SimulationClock[time=" + millis() + "ms]";
+            return "SimulationDispatcher.InstantSource[time=" + millis() + "ms]";
         }
     }
 }

@@ -94,7 +94,7 @@ class CapelinIntegrationTest {
         val topology = createTopology()
         val monitor = monitor
 
-        Provisioner(coroutineContext, clock, seed).use { provisioner ->
+        Provisioner(coroutineContext, timeSource, seed).use { provisioner ->
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
@@ -102,7 +102,7 @@ class CapelinIntegrationTest {
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-            service.replay(clock, workload, seed)
+            service.replay(timeSource, workload, seed)
         }
 
         println(
@@ -138,7 +138,7 @@ class CapelinIntegrationTest {
         val topology = createTopology("single")
         val monitor = monitor
 
-        Provisioner(coroutineContext, clock, seed).use { provisioner ->
+        Provisioner(coroutineContext, timeSource, seed).use { provisioner ->
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
@@ -146,7 +146,7 @@ class CapelinIntegrationTest {
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-            service.replay(clock, workload, seed)
+            service.replay(timeSource, workload, seed)
         }
 
         println(
@@ -177,7 +177,7 @@ class CapelinIntegrationTest {
         val workload = createTestWorkload(1.0, seed)
         val topology = createTopology("single")
 
-        Provisioner(coroutineContext, clock, seed).use { provisioner ->
+        Provisioner(coroutineContext, timeSource, seed).use { provisioner ->
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
@@ -185,7 +185,7 @@ class CapelinIntegrationTest {
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-            service.replay(clock, workload, seed, interference = true)
+            service.replay(timeSource, workload, seed, interference = true)
         }
 
         println(
@@ -216,7 +216,7 @@ class CapelinIntegrationTest {
         val workload = createTestWorkload(0.25, seed)
         val monitor = monitor
 
-        Provisioner(coroutineContext, clock, seed).use { provisioner ->
+        Provisioner(coroutineContext, timeSource, seed).use { provisioner ->
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
@@ -224,7 +224,7 @@ class CapelinIntegrationTest {
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-            service.replay(clock, workload, seed, failureModel = grid5000(Duration.ofDays(7)))
+            service.replay(timeSource, workload, seed, failureModel = grid5000(Duration.ofDays(7)))
         }
 
         // Note that these values have been verified beforehand

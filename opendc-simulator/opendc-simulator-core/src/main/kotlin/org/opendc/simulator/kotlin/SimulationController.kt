@@ -23,30 +23,48 @@
 package org.opendc.simulator.kotlin
 
 import kotlinx.coroutines.CoroutineDispatcher
-import org.opendc.simulator.SimulationScheduler
-import java.time.Clock
+import org.opendc.simulator.SimulationDispatcher
+import java.time.InstantSource
 
 /**
- * Control the virtual clock of a [CoroutineDispatcher].
+ * Interface to control the virtual clock of a [CoroutineDispatcher].
  */
 public interface SimulationController {
     /**
      * The current virtual clock as it is known to this Dispatcher.
      */
-    public val clock: Clock
+    public val timeSource: InstantSource
 
     /**
-     * The [SimulationScheduler] driving the simulation.
+     * The current virtual timestamp of the dispatcher (in milliseconds since epoch).
      */
-    public val scheduler: SimulationScheduler
+    public val currentTime: Long
+        get() = timeSource.millis()
+
+    /**
+     * Return the [SimulationDispatcher] driving the simulation.
+     */
+    public val dispatcher: SimulationDispatcher
 
     /**
      * Immediately execute all pending tasks and advance the virtual clock-time to the last delay.
      *
      * If new tasks are scheduled due to advancing virtual time, they will be executed before `advanceUntilIdle`
      * returns.
-     *
-     * @return the amount of delay-time that this Dispatcher's clock has been forwarded in milliseconds.
      */
-    public fun advanceUntilIdle(): Long
+    public fun advanceUntilIdle()
+
+    /**
+     * Move the virtual clock of this dispatcher forward by the specified amount, running the scheduled tasks in the
+     * meantime.
+     *
+     * @param delayMs The amount of time to move the virtual clock forward (in milliseconds).
+     * @throws IllegalStateException if passed a negative <code>delay</code>.
+     */
+    public fun advanceBy(delayMs: Long)
+
+    /**
+     * Execute the tasks that are scheduled to execute at this moment of virtual time.
+     */
+    public fun runCurrent()
 }

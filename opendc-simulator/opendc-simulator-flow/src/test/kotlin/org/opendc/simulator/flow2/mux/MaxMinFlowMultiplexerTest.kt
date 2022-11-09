@@ -35,7 +35,7 @@ import org.opendc.simulator.kotlin.runSimulation
 class MaxMinFlowMultiplexerTest {
     @Test
     fun testSmoke() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(coroutineContext, timeSource)
         val graph = engine.newGraph()
         val switch = MaxMinFlowMultiplexer(graph)
 
@@ -49,6 +49,6 @@ class MaxMinFlowMultiplexerTest {
 
         advanceUntilIdle()
 
-        assertEquals(500, clock.millis())
+        assertEquals(500, timeSource.millis())
     }
 }

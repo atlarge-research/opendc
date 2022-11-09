@@ -44,10 +44,10 @@ internal class TimerSchedulerTest {
     @Test
     fun testBasicTimer() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, timeSource)
 
             scheduler.startSingleTimer(0, 1000) {
-                assertEquals(1000, clock.millis())
+                assertEquals(1000, timeSource.millis())
             }
 
             assertTrue(scheduler.isTimerActive(0))
@@ -58,7 +58,7 @@ internal class TimerSchedulerTest {
     @Test
     fun testCancelNonExisting() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, timeSource)
 
             scheduler.cancel(1)
         }
@@ -67,7 +67,7 @@ internal class TimerSchedulerTest {
     @Test
     fun testCancelExisting() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, timeSource)
 
             scheduler.startSingleTimer(0, 1000) {
                 fail()
@@ -76,7 +76,7 @@ internal class TimerSchedulerTest {
             scheduler.startSingleTimer(1, 100) {
                 scheduler.cancel(0)
 
-                assertEquals(100, clock.millis())
+                assertEquals(100, timeSource.millis())
             }
         }
     }
@@ -84,7 +84,7 @@ internal class TimerSchedulerTest {
     @Test
     fun testCancelAll() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, timeSource)
 
             scheduler.startSingleTimer(0, 1000) { fail() }
             scheduler.startSingleTimer(1, 100) { fail() }
@@ -95,12 +95,12 @@ internal class TimerSchedulerTest {
     @Test
     fun testOverride() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, timeSource)
 
             scheduler.startSingleTimer(0, 1000) { fail() }
 
             scheduler.startSingleTimer(0, 200) {
-                assertEquals(200, clock.millis())
+                assertEquals(200, timeSource.millis())
             }
         }
     }
@@ -108,12 +108,12 @@ internal class TimerSchedulerTest {
     @Test
     fun testOverrideBlock() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, timeSource)
 
             scheduler.startSingleTimer(0, 1000) { fail() }
 
             scheduler.startSingleTimer(0, 1000) {
-                assertEquals(1000, clock.millis())
+                assertEquals(1000, timeSource.millis())
             }
         }
     }
@@ -121,7 +121,7 @@ internal class TimerSchedulerTest {
     @Test
     fun testNegativeDelay() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, timeSource)
 
             assertThrows<IllegalArgumentException> {
                 scheduler.startSingleTimer(1, -1) {
