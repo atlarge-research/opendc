@@ -44,7 +44,7 @@ import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.flow2.FlowEngine
-import java.time.Clock
+import java.time.InstantSource
 import java.util.ArrayDeque
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -56,7 +56,7 @@ import kotlin.coroutines.resumeWithException
  */
 public class SimFunctionDeployer(
     context: CoroutineContext,
-    private val clock: Clock,
+    private val clock: InstantSource,
     private val model: MachineModel,
     private val delayInjector: DelayInjector,
     private val mapper: SimFaaSWorkloadMapper = SimMetaFaaSWorkloadMapper()

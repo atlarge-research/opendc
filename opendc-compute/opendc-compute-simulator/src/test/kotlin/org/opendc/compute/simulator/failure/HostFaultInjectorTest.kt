@@ -30,8 +30,8 @@ import org.apache.commons.math3.random.Well19937c
 import org.junit.jupiter.api.Test
 import org.opendc.compute.simulator.SimHost
 import org.opendc.simulator.kotlin.runSimulation
-import java.time.Clock
 import java.time.Duration
+import java.time.InstantSource
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ln
 
@@ -100,7 +100,7 @@ class HostFaultInjectorTest {
     /**
      * Create a simple start stop fault injector.
      */
-    private fun createSimpleInjector(context: CoroutineContext, clock: Clock, hosts: Set<SimHost>): HostFaultInjector {
+    private fun createSimpleInjector(context: CoroutineContext, clock: InstantSource, hosts: Set<SimHost>): HostFaultInjector {
         val rng = Well19937c(0)
         val iat = LogNormalDistribution(rng, ln(24 * 7.0), 1.03)
         val selector = StochasticVictimSelector(LogNormalDistribution(rng, 1.88, 1.25))

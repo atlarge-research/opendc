@@ -23,6 +23,7 @@
 package org.opendc.simulator.flow2;
 
 import java.time.Clock;
+import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.List;
 import kotlin.coroutines.ContinuationInterceptor;
@@ -57,17 +58,17 @@ public final class FlowEngine implements Runnable {
     private boolean active;
 
     private final CoroutineContext coroutineContext;
-    private final Clock clock;
+    private final InstantSource clock;
     private final Delay delay;
 
     /**
-     * Create a new {@link FlowEngine} instance using the specified {@link CoroutineContext} and {@link Clock}.
+     * Create a new {@link FlowEngine} instance using the specified {@link CoroutineContext} and {@link InstantSource}.
      */
-    public static FlowEngine create(CoroutineContext coroutineContext, Clock clock) {
+    public static FlowEngine create(CoroutineContext coroutineContext, InstantSource clock) {
         return new FlowEngine(coroutineContext, clock);
     }
 
-    FlowEngine(CoroutineContext coroutineContext, Clock clock) {
+    FlowEngine(CoroutineContext coroutineContext, InstantSource clock) {
         this.coroutineContext = coroutineContext;
         this.clock = clock;
 
@@ -78,7 +79,7 @@ public final class FlowEngine implements Runnable {
     /**
      * Obtain the (virtual) {@link Clock} driving the simulation.
      */
-    public Clock getClock() {
+    public InstantSource getClock() {
         return clock;
     }
 

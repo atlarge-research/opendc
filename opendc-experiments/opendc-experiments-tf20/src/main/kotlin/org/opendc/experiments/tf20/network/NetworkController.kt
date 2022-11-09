@@ -24,14 +24,14 @@ package org.opendc.experiments.tf20.network
 
 import kotlinx.coroutines.channels.Channel
 import org.opendc.common.util.TimerScheduler
-import java.time.Clock
+import java.time.InstantSource
 import kotlin.coroutines.CoroutineContext
 
 /**
  * The network controller represents a simple network model between the worker and master nodes during
  * TensorFlow execution.
  */
-public class NetworkController(context: CoroutineContext, clock: Clock) : AutoCloseable {
+public class NetworkController(context: CoroutineContext, clock: InstantSource) : AutoCloseable {
     /**
      * The scheduler for the message.
      */

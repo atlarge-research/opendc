@@ -43,8 +43,8 @@ import org.opendc.faas.service.router.RoutingPolicy
 import org.opendc.faas.service.telemetry.FunctionStats
 import org.opendc.faas.service.telemetry.SchedulerStats
 import java.lang.IllegalStateException
-import java.time.Clock
 import java.time.Duration
+import java.time.InstantSource
 import java.util.ArrayDeque
 import java.util.Random
 import java.util.UUID
@@ -61,7 +61,7 @@ import kotlin.coroutines.resumeWithException
  */
 internal class FaaSServiceImpl(
     context: CoroutineContext,
-    private val clock: Clock,
+    private val clock: InstantSource,
     private val deployer: FunctionDeployer,
     private val routingPolicy: RoutingPolicy,
     private val terminationPolicy: FunctionTerminationPolicy,

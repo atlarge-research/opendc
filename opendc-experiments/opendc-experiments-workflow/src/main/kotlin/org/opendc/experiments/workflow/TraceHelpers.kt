@@ -42,7 +42,7 @@ import org.opendc.workflow.api.Task
 import org.opendc.workflow.api.WORKFLOW_TASK_CORES
 import org.opendc.workflow.api.WORKFLOW_TASK_DEADLINE
 import org.opendc.workflow.service.WorkflowService
-import java.time.Clock
+import java.time.InstantSource
 import java.util.UUID
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
@@ -110,7 +110,7 @@ public fun Trace.toJobs(): List<Job> {
 /**
  * Helper method to replay the specified list of [jobs] and suspend execution util all jobs have finished.
  */
-public suspend fun WorkflowService.replay(clock: Clock, jobs: List<Job>) {
+public suspend fun WorkflowService.replay(clock: InstantSource, jobs: List<Job>) {
     // Sort jobs by their arrival time
     val orderedJobs = jobs.sortedBy { it.metadata.getOrDefault("WORKFLOW_SUBMIT_TIME", Long.MAX_VALUE) as Long }
     if (orderedJobs.isEmpty()) {

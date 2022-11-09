@@ -28,8 +28,8 @@ import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.service.telemetry.SchedulerStats
-import java.time.Clock
 import java.time.Duration
+import java.time.InstantSource
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -87,7 +87,7 @@ public interface ComputeService : AutoCloseable {
          */
         public operator fun invoke(
             context: CoroutineContext,
-            clock: Clock,
+            clock: InstantSource,
             scheduler: ComputeScheduler,
             schedulingQuantum: Duration = Duration.ofMinutes(5)
         ): ComputeService {

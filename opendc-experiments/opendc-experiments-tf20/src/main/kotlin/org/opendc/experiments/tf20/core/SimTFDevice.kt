@@ -42,7 +42,7 @@ import org.opendc.simulator.flow2.FlowEngine
 import org.opendc.simulator.flow2.FlowStage
 import org.opendc.simulator.flow2.FlowStageLogic
 import org.opendc.simulator.flow2.OutPort
-import java.time.Clock
+import java.time.InstantSource
 import java.util.ArrayDeque
 import java.util.UUID
 import kotlin.coroutines.Continuation
@@ -58,7 +58,7 @@ public class SimTFDevice(
     override val uid: UUID,
     override val isGpu: Boolean,
     context: CoroutineContext,
-    clock: Clock,
+    clock: InstantSource,
     pu: ProcessingUnit,
     private val memory: MemoryUnit,
     powerModel: CpuPowerModel

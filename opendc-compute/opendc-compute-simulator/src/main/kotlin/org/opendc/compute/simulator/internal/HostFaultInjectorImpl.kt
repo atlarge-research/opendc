@@ -32,7 +32,7 @@ import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.simulator.failure.HostFault
 import org.opendc.compute.simulator.failure.HostFaultInjector
 import org.opendc.compute.simulator.failure.VictimSelector
-import java.time.Clock
+import java.time.InstantSource
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToLong
 
@@ -40,7 +40,7 @@ import kotlin.math.roundToLong
  * Internal implementation of the [HostFaultInjector] interface.
  *
  * @param context The scope to run the fault injector in.
- * @param clock The [Clock] to keep track of simulation time.
+ * @param clock The [InstantSource] to keep track of simulation time.
  * @param hosts The set of hosts to inject faults into.
  * @param iat The inter-arrival time distribution of the failures (in hours).
  * @param selector The [VictimSelector] to select the host victims.
@@ -48,7 +48,7 @@ import kotlin.math.roundToLong
  */
 internal class HostFaultInjectorImpl(
     private val context: CoroutineContext,
-    private val clock: Clock,
+    private val clock: InstantSource,
     private val hosts: Set<SimHost>,
     private val iat: RealDistribution,
     private val selector: VictimSelector,

@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute;
 
-import java.time.Clock;
+import java.time.InstantSource;
 import org.jetbrains.annotations.NotNull;
 import org.opendc.simulator.compute.model.ProcessingUnit;
 import org.opendc.simulator.compute.power.CpuPowerModel;
@@ -117,7 +117,7 @@ public class SimPsuFactories {
         private final FlowStage stage;
         private final OutPort out;
         private final CpuPowerModel model;
-        private final Clock clock;
+        private final InstantSource clock;
 
         private double targetFreq;
         private double totalUsage;

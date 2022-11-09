@@ -45,9 +45,9 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.compute.workload.SimWorkloads
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
+import java.time.InstantSource
 import java.util.UUID
 import java.util.function.Supplier
 
@@ -68,7 +68,7 @@ public class SimHost(
     override val uid: UUID,
     override val name: String,
     override val meta: Map<String, Any>,
-    private val clock: Clock,
+    private val clock: InstantSource,
     private val machine: SimBareMetalMachine,
     private val hypervisor: SimHypervisor,
     private val mapper: SimWorkloadMapper = DefaultWorkloadMapper,

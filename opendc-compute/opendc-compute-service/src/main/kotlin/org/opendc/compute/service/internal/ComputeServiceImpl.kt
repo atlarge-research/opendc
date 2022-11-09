@@ -35,9 +35,9 @@ import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.service.telemetry.SchedulerStats
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
+import java.time.InstantSource
 import java.util.ArrayDeque
 import java.util.Deque
 import java.util.Random
@@ -55,7 +55,7 @@ import kotlin.math.max
  */
 internal class ComputeServiceImpl(
     coroutineContext: CoroutineContext,
-    private val clock: Clock,
+    private val clock: InstantSource,
     private val scheduler: ComputeScheduler,
     schedulingQuantum: Duration
 ) : ComputeService, HostListener {

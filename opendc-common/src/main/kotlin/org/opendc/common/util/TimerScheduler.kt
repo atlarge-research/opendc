@@ -25,7 +25,7 @@ package org.opendc.common.util
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.InternalCoroutinesApi
-import java.time.Clock
+import java.time.InstantSource
 import java.util.ArrayDeque
 import java.util.PriorityQueue
 import kotlin.coroutines.ContinuationInterceptor
@@ -37,7 +37,7 @@ import kotlin.coroutines.CoroutineContext
  * @param context The [CoroutineContext] to run the tasks with.
  * @param clock The clock to keep track of the time.
  */
-public class TimerScheduler<T>(private val context: CoroutineContext, private val clock: Clock) {
+public class TimerScheduler<T>(private val context: CoroutineContext, private val clock: InstantSource) {
     /**
      * The [Delay] instance that provides scheduled execution of [Runnable]s.
      */

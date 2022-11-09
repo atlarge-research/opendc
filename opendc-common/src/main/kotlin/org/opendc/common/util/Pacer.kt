@@ -26,7 +26,7 @@ import kotlinx.coroutines.Delay
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.InternalCoroutinesApi
 import java.lang.Runnable
-import java.time.Clock
+import java.time.InstantSource
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 
@@ -40,7 +40,7 @@ import kotlin.coroutines.CoroutineContext
  */
 public class Pacer(
     private val context: CoroutineContext,
-    private val clock: Clock,
+    private val clock: InstantSource,
     private val quantum: Long,
     private val process: (Long) -> Unit
 ) {

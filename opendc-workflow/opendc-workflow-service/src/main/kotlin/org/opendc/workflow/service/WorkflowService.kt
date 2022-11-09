@@ -30,8 +30,8 @@ import org.opendc.workflow.service.scheduler.job.JobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
 import org.opendc.workflow.service.scheduler.telemetry.SchedulerStats
-import java.time.Clock
 import java.time.Duration
+import java.time.InstantSource
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -71,7 +71,7 @@ public interface WorkflowService : AutoCloseable {
          */
         public operator fun invoke(
             context: CoroutineContext,
-            clock: Clock,
+            clock: InstantSource,
             compute: ComputeClient,
             schedulingQuantum: Duration,
             jobAdmissionPolicy: JobAdmissionPolicy,

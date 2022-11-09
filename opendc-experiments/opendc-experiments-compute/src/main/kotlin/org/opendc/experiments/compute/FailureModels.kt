@@ -31,8 +31,8 @@ import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.simulator.failure.HostFaultInjector
 import org.opendc.compute.simulator.failure.StartStopHostFault
 import org.opendc.compute.simulator.failure.StochasticVictimSelector
-import java.time.Clock
 import java.time.Duration
+import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ln
@@ -47,7 +47,7 @@ public fun grid5000(failureInterval: Duration): FailureModel {
     return object : FailureModel {
         override fun createInjector(
             context: CoroutineContext,
-            clock: Clock,
+            clock: InstantSource,
             service: ComputeService,
             random: RandomGenerator
         ): HostFaultInjector {

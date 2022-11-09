@@ -25,8 +25,8 @@ package org.opendc.faas.service.autoscaler
 import org.opendc.common.util.TimerScheduler
 import org.opendc.faas.service.deployer.FunctionInstance
 import org.opendc.faas.service.deployer.FunctionInstanceState
-import java.time.Clock
 import java.time.Duration
+import java.time.InstantSource
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -36,7 +36,7 @@ import kotlin.coroutines.CoroutineContext
  */
 public class FunctionTerminationPolicyFixed(
     context: CoroutineContext,
-    clock: Clock,
+    clock: InstantSource,
     public val timeout: Duration
 ) : FunctionTerminationPolicy {
     /**

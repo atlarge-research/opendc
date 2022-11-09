@@ -29,7 +29,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import org.opendc.compute.service.ComputeService
-import java.time.Clock
+import java.time.InstantSource
 import java.util.Random
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
@@ -45,7 +45,7 @@ import kotlin.math.max
  * @param interference A flag to indicate that VM interference needs to be enabled.
  */
 public suspend fun ComputeService.replay(
-    clock: Clock,
+    clock: InstantSource,
     trace: List<VirtualMachine>,
     seed: Long,
     submitImmediately: Boolean = false,

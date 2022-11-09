@@ -35,9 +35,9 @@ import org.opendc.experiments.compute.telemetry.table.HostTableReader
 import org.opendc.experiments.compute.telemetry.table.ServerInfo
 import org.opendc.experiments.compute.telemetry.table.ServerTableReader
 import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
+import java.time.InstantSource
 
 /**
  * A helper class to collect metrics from a [ComputeService] instance and automatically export the metrics every
@@ -51,7 +51,7 @@ import java.time.Instant
  */
 public class ComputeMetricReader(
     scope: CoroutineScope,
-    clock: Clock,
+    clock: InstantSource,
     private val service: ComputeService,
     private val monitor: ComputeMonitor,
     private val exportInterval: Duration = Duration.ofMinutes(5)

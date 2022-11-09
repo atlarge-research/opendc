@@ -40,8 +40,8 @@ import org.opendc.workflow.service.scheduler.job.JobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
 import org.opendc.workflow.service.scheduler.telemetry.SchedulerStats
-import java.time.Clock
 import java.time.Duration
+import java.time.InstantSource
 import java.util.PriorityQueue
 import java.util.Queue
 import kotlin.coroutines.CoroutineContext
@@ -53,7 +53,7 @@ import kotlin.coroutines.resume
  */
 public class WorkflowServiceImpl(
     context: CoroutineContext,
-    private val clock: Clock,
+    private val clock: InstantSource,
     private val computeClient: ComputeClient,
     schedulingQuantum: Duration,
     jobAdmissionPolicy: JobAdmissionPolicy,

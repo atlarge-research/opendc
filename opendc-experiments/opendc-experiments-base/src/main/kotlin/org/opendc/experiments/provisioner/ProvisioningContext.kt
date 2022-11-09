@@ -23,7 +23,7 @@
 package org.opendc.experiments.provisioner
 
 import org.opendc.experiments.MutableServiceRegistry
-import java.time.Clock
+import java.time.InstantSource
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
@@ -40,9 +40,9 @@ public interface ProvisioningContext {
     public val coroutineContext: CoroutineContext
 
     /**
-     * The [Clock] tracking the virtual simulation time.
+     * The [InstantSource] tracking the virtual simulation time.
      */
-    public val clock: Clock
+    public val clock: InstantSource
 
     /**
      * A [SplittableRandom] instance used to seed the provisioners.

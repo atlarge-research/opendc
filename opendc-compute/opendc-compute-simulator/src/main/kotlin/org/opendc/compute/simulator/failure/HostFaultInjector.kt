@@ -26,6 +26,7 @@ import org.apache.commons.math3.distribution.RealDistribution
 import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.simulator.internal.HostFaultInjectorImpl
 import java.time.Clock
+import java.time.InstantSource
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -55,7 +56,7 @@ public interface HostFaultInjector : AutoCloseable {
          */
         public operator fun invoke(
             context: CoroutineContext,
-            clock: Clock,
+            clock: InstantSource,
             hosts: Set<SimHost>,
             iat: RealDistribution,
             selector: VictimSelector,

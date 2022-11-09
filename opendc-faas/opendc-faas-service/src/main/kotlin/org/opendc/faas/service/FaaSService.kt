@@ -30,8 +30,8 @@ import org.opendc.faas.service.internal.FaaSServiceImpl
 import org.opendc.faas.service.router.RoutingPolicy
 import org.opendc.faas.service.telemetry.FunctionStats
 import org.opendc.faas.service.telemetry.SchedulerStats
-import java.time.Clock
 import java.time.Duration
+import java.time.InstantSource
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -71,7 +71,7 @@ public interface FaaSService : AutoCloseable {
          */
         public operator fun invoke(
             context: CoroutineContext,
-            clock: Clock,
+            clock: InstantSource,
             deployer: FunctionDeployer,
             routingPolicy: RoutingPolicy,
             terminationPolicy: FunctionTerminationPolicy,
