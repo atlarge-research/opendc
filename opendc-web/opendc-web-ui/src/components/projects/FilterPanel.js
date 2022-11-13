@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
-import { filterPanel } from './FilterPanel.module.scss'
+import { filterPanel } from './FilterPanel.module.css'
 
 export const FILTERS = { SHOW_ALL: 'All Projects', SHOW_OWN: 'My Projects', SHOW_SHARED: 'Shared with me' }
 

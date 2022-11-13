@@ -20,36 +20,16 @@
  * SOFTWARE.
  */
 
-.collapseContainer {
-    position: absolute;
-    right: var(--pf-global--spacer--xs);
-    top: 0;
-    bottom: 10%;
-    margin: auto 0;
-    height: 50px;
+.backButton:global(.pf-c-button) {
+    align-self: center;
+    --pf-c-button--after--BorderColor: var(--pf-global--BorderColor--light-100);
+    color: var(--pf-global--Color--400);
 
-    button:global(.pf-m-tertiary) {
-        height: 100%;
-        padding: 2px;
+    --pf-c-button--PaddingRight: var(--pf-global--spacer--sm);
+    --pf-c-button--PaddingLeft: var(--pf-global--spacer--sm);
+}
 
-        margin-right: var(--pf-global--spacer--xs);
-        margin-top: var(--pf-global--spacer--xs);
-        background-color: var(--pf-global--BackgroundColor--100);
-        border: none;
-        border-radius: var(--pf-global--BorderRadius--sm);
-        box-shadow: var(--pf-global--BoxShadow--sm);
-
-        &:not(:global(.pf-m-disabled)) {
-            background-color: var(--pf-global--BackgroundColor--100);
-        }
-
-        &:after {
-            display: none;
-        }
-
-        &:hover {
-            border: none;
-            box-shadow: var(--pf-global--BoxShadow--md);
-        }
-    }
+.backButton:hover,
+.backButton:global(.pf-c-button):focus {
+    --pf-c-button--after--BorderColor: var(--pf-global--BorderColor--100);
 }

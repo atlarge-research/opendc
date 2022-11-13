@@ -43,7 +43,7 @@ import '@patternfly/react-styles/css/utilities/Sizing/sizing.css'
 import '@patternfly/react-styles/css/utilities/Spacing/spacing.css'
 import '@patternfly/react-styles/css/utilities/Text/text.css'
 import '@patternfly/react-styles/css/components/InlineEdit/inline-edit.css'
-import '../style/index.scss'
+import '../style/index.css'
 
 // This setup is necessary to forward the Auth0 context to the Redux context
 function Inner({ Component, pageProps }) {

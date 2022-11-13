@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { control, toolBar } from './Toolbar.module.scss'
+import { control, toolBar } from './Toolbar.module.css'
 import { Button } from '@patternfly/react-core'
 import { SearchPlusIcon, SearchMinusIcon, CameraIcon } from '@patternfly/react-icons'
 

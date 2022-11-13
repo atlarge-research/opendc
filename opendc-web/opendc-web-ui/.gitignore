@@ -24,7 +24,4 @@ yarn-error.log*
 # Environment variables
 .env.local
 
-# Sass output
-*.css
-
 /.next

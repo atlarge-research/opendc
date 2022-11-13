@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { TILE_SIZE_IN_METERS, TILE_SIZE_IN_PIXELS } from '../MapConstants'
-import { scaleIndicator } from './ScaleIndicator.module.scss'
+import { scaleIndicator } from './ScaleIndicator.module.css'
 
 function ScaleIndicator({ scale }) {
     return (

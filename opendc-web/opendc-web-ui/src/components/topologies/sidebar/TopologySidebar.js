@@ -14,7 +14,7 @@ import {
 } from '@patternfly/react-core'
 import { AngleLeftIcon } from '@patternfly/react-icons'
 import { useDispatch } from 'react-redux'
-import { backButton } from './TopologySidebar.module.scss'
+import { backButton } from './TopologySidebar.module.css'
 import RoomSidebar from './room/RoomSidebar'
 import RackSidebar from './rack/RackSidebar'
 import MachineSidebar from './machine/MachineSidebar'

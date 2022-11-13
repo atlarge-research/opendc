@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { machineListContainer, sidebarContainer } from './RackSidebar.module.scss'
+import { machineListContainer, sidebarContainer } from './RackSidebar.module.css'
 import RackNameContainer from './RackNameContainer'
 import AddPrefab from './AddPrefab'
 import DeleteRackContainer from './DeleteRackContainer'

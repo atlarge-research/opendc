@@ -21,7 +21,7 @@
  */
 
 import PropTypes from 'prop-types'
-import { contextSelectionSection } from './ContextSelectionSection.module.scss'
+import { contextSelectionSection } from './ContextSelectionSection.module.css'
 
 function ContextSelectionSection({ children }) {
     return <section className={contextSelectionSection}>{children}</section>

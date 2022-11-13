@@ -22,7 +22,7 @@
 
 import PropTypes from 'prop-types'
 import { ChevronLeftIcon } from '@patternfly/react-icons'
-import { collapseContainer } from './Collapse.module.scss'
+import { collapseContainer } from './Collapse.module.css'
 import { Button } from '@patternfly/react-core'
 
 function Collapse({ onClick }) {
