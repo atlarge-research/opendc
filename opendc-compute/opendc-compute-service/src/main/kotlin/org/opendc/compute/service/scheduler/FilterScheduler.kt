@@ -26,7 +26,8 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
 import org.opendc.compute.service.scheduler.filters.HostFilter
 import org.opendc.compute.service.scheduler.weights.HostWeigher
-import java.util.Random
+import java.util.SplittableRandom
+import java.util.random.RandomGenerator
 import kotlin.math.min
 
 /**
@@ -39,13 +40,13 @@ import kotlin.math.min
  * @param filters The list of filters to apply when searching for an appropriate host.
  * @param weighers The list of weighers to apply when searching for an appropriate host.
  * @param subsetSize The size of the subset of best hosts from which a target is randomly chosen.
- * @param random A [Random] instance for selecting
+ * @param random A [RandomGenerator] instance for selecting
  */
 public class FilterScheduler(
     private val filters: List<HostFilter>,
     private val weighers: List<HostWeigher>,
     private val subsetSize: Int = 1,
-    private val random: Random = Random(0)
+    private val random: RandomGenerator = SplittableRandom(0)
 ) : ComputeScheduler {
     /**
      * The pool of hosts available to the scheduler.

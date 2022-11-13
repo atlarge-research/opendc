@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.compute
 
-import java.util.Random
+import java.util.random.RandomGenerator
 
 /**
  * An interface that describes how a workload is resolved.
@@ -31,5 +31,5 @@ public interface ComputeWorkload {
     /**
      * Resolve the workload into a list of [VirtualMachine]s to simulate.
      */
-    public fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine>
+    public fun resolve(loader: ComputeWorkloadLoader, random: RandomGenerator): List<VirtualMachine>
 }

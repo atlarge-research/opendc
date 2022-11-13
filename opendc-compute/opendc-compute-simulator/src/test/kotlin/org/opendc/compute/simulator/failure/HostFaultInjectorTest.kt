@@ -30,15 +30,15 @@ import org.apache.commons.math3.random.Well19937c
 import org.junit.jupiter.api.Test
 import org.opendc.compute.simulator.SimHost
 import org.opendc.simulator.kotlin.runSimulation
-import java.time.Clock
 import java.time.Duration
+import java.time.InstantSource
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ln
 
 /**
  * Test suite for [HostFaultInjector] class.
  */
-internal class HostFaultInjectorTest {
+class HostFaultInjectorTest {
     /**
      * Simple test case to test that nothing happens when the injector is not started.
      */
@@ -46,7 +46,7 @@ internal class HostFaultInjectorTest {
     fun testInjectorNotStarted() = runSimulation {
         val host = mockk<SimHost>(relaxUnitFun = true)
 
-        val injector = createSimpleInjector(coroutineContext, clock, setOf(host))
+        val injector = createSimpleInjector(coroutineContext, timeSource, setOf(host))
 
         coVerify(exactly = 0) { host.fail() }
         coVerify(exactly = 0) { host.recover() }
@@ -61,7 +61,7 @@ internal class HostFaultInjectorTest {
     fun testInjectorStopsMachine() = runSimulation {
         val host = mockk<SimHost>(relaxUnitFun = true)
 
-        val injector = createSimpleInjector(coroutineContext, clock, setOf(host))
+        val injector = createSimpleInjector(coroutineContext, timeSource, setOf(host))
 
         injector.start()
 
@@ -83,7 +83,7 @@ internal class HostFaultInjectorTest {
             mockk(relaxUnitFun = true)
         )
 
-        val injector = createSimpleInjector(coroutineContext, clock, hosts.toSet())
+        val injector = createSimpleInjector(coroutineContext, timeSource, hosts.toSet())
 
         injector.start()
 
@@ -100,7 +100,7 @@ internal class HostFaultInjectorTest {
     /**
      * Create a simple start stop fault injector.
      */
-    private fun createSimpleInjector(context: CoroutineContext, clock: Clock, hosts: Set<SimHost>): HostFaultInjector {
+    private fun createSimpleInjector(context: CoroutineContext, clock: InstantSource, hosts: Set<SimHost>): HostFaultInjector {
         val rng = Well19937c(0)
         val iat = LogNormalDistribution(rng, ln(24 * 7.0), 1.03)
         val selector = StochasticVictimSelector(LogNormalDistribution(rng, 1.88, 1.25))

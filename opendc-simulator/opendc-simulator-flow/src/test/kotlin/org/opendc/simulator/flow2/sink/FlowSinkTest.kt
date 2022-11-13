@@ -37,7 +37,7 @@ import java.util.concurrent.ThreadLocalRandom
 class FlowSinkTest {
     @Test
     fun testSmoke() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val sink = SimpleFlowSink(graph, 1.0f)
@@ -46,12 +46,12 @@ class FlowSinkTest {
         graph.connect(source.output, sink.input)
         advanceUntilIdle()
 
-        assertEquals(2000, clock.millis())
+        assertEquals(2000, timeSource.millis())
     }
 
     @Test
     fun testAdjustCapacity() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val sink = SimpleFlowSink(graph, 1.0f)
@@ -64,12 +64,12 @@ class FlowSinkTest {
 
         advanceUntilIdle()
 
-        assertEquals(3000, clock.millis())
+        assertEquals(3000, timeSource.millis())
     }
 
     @Test
     fun testUtilization() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val sink = SimpleFlowSink(graph, 1.0f)
@@ -78,12 +78,12 @@ class FlowSinkTest {
         graph.connect(source.output, sink.input)
         advanceUntilIdle()
 
-        assertEquals(4000, clock.millis())
+        assertEquals(4000, timeSource.millis())
     }
 
     @Test
     fun testFragments() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val sink = SimpleFlowSink(graph, 1.0f)
@@ -100,7 +100,7 @@ class FlowSinkTest {
         graph.connect(source.output, sink.input)
         advanceUntilIdle()
 
-        assertEquals(4000, clock.millis())
+        assertEquals(4000, timeSource.millis())
     }
 
     @Test
@@ -114,7 +114,7 @@ class FlowSinkTest {
         )
 
         return runSimulation {
-            val engine = FlowEngine.create(coroutineContext, clock)
+            val engine = FlowEngine.create(dispatcher)
             val graph = engine.newGraph()
             val sink = SimpleFlowSink(graph, 4200.0f)
             val source = TraceFlowSource(graph, trace)

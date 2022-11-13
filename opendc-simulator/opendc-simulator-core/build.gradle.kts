@@ -28,5 +28,6 @@ plugins {
 }
 
 dependencies {
+    api(projects.opendc.opendcCommon)
     api(libs.kotlinx.coroutines)
 }

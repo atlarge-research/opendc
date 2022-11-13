@@ -47,8 +47,7 @@ public class WorkflowServiceProvisioningStep internal constructor(
 
         val client = computeService.newClient()
         val service = WorkflowService(
-            ctx.coroutineContext,
-            ctx.clock,
+            ctx.dispatcher,
             client,
             scheduler.schedulingQuantum,
             jobAdmissionPolicy = scheduler.jobAdmissionPolicy,

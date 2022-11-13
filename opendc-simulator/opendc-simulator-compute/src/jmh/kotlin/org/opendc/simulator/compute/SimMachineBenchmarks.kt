@@ -74,7 +74,7 @@ class SimMachineBenchmarks {
     @Benchmark
     fun benchmarkBareMetal() {
         return runSimulation {
-            val engine = FlowEngine.create(coroutineContext, clock)
+            val engine = FlowEngine.create(dispatcher)
             val graph = engine.newGraph()
             val machine = SimBareMetalMachine.create(graph, machineModel)
             return@runSimulation machine.runWorkload(trace.createWorkload(0))
@@ -84,7 +84,7 @@ class SimMachineBenchmarks {
     @Benchmark
     fun benchmarkSpaceSharedHypervisor() {
         return runSimulation {
-            val engine = FlowEngine.create(coroutineContext, clock)
+            val engine = FlowEngine.create(dispatcher)
             val graph = engine.newGraph()
             val machine = SimBareMetalMachine.create(graph, machineModel)
             val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(1))
@@ -105,7 +105,7 @@ class SimMachineBenchmarks {
     @Benchmark
     fun benchmarkFairShareHypervisorSingle() {
         return runSimulation {
-            val engine = FlowEngine.create(coroutineContext, clock)
+            val engine = FlowEngine.create(dispatcher)
             val graph = engine.newGraph()
             val machine = SimBareMetalMachine.create(graph, machineModel)
             val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1))
@@ -126,7 +126,7 @@ class SimMachineBenchmarks {
     @Benchmark
     fun benchmarkFairShareHypervisorDouble() {
         return runSimulation {
-            val engine = FlowEngine.create(coroutineContext, clock)
+            val engine = FlowEngine.create(dispatcher)
             val graph = engine.newGraph()
             val machine = SimBareMetalMachine.create(graph, machineModel)
             val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1))

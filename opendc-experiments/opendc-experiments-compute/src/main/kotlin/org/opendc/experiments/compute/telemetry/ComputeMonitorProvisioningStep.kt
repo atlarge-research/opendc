@@ -22,9 +22,6 @@
 
 package org.opendc.experiments.compute.telemetry
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import org.opendc.compute.service.ComputeService
 import org.opendc.experiments.provisioner.ProvisioningContext
 import org.opendc.experiments.provisioner.ProvisioningStep
@@ -40,13 +37,8 @@ public class ComputeMonitorProvisioningStep internal constructor(
     private val exportInterval: Duration
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
-        val scope = CoroutineScope(ctx.coroutineContext + Job())
         val service = requireNotNull(ctx.registry.resolve(serviceDomain, ComputeService::class.java)) { "Compute service $serviceDomain does not exist" }
-        val metricReader = ComputeMetricReader(scope, ctx.clock, service, monitor, exportInterval)
-
-        return AutoCloseable {
-            metricReader.close()
-            scope.cancel()
-        }
+        val metricReader = ComputeMetricReader(ctx.dispatcher, service, monitor, exportInterval)
+        return AutoCloseable { metricReader.close() }
     }
 }

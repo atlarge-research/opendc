@@ -28,15 +28,15 @@ import org.junit.jupiter.api.assertThrows
 import java.time.Instant
 
 /**
- * Test suite for the [SimulationScheduler] class.
+ * Test suite for the [SimulationDispatcher] class.
  */
-class SimulationSchedulerTest {
+class SimulationDispatcherTest {
     /**
-     * Test the basic functionality of [SimulationScheduler.runCurrent].
+     * Test the basic functionality of [SimulationDispatcher.runCurrent].
      */
     @Test
     fun testRunCurrent() {
-        val scheduler = SimulationScheduler()
+        val scheduler = SimulationDispatcher()
         var count = 0
 
         scheduler.schedule(1) { count += 1 }
@@ -58,11 +58,11 @@ class SimulationSchedulerTest {
     }
 
     /**
-     * Test the clock of the [SimulationScheduler].
+     * Test the clock of the [SimulationDispatcher].
      */
     @Test
     fun testClock() {
-        val scheduler = SimulationScheduler()
+        val scheduler = SimulationDispatcher()
         var count = 0
 
         scheduler.schedule(1) { count += 1 }
@@ -70,8 +70,8 @@ class SimulationSchedulerTest {
 
         scheduler.advanceBy(2)
         assertEquals(2, scheduler.currentTime)
-        assertEquals(2, scheduler.clock.millis())
-        assertEquals(Instant.ofEpochMilli(2), scheduler.clock.instant())
+        assertEquals(2, scheduler.timeSource.millis())
+        assertEquals(Instant.ofEpochMilli(2), scheduler.timeSource.instant())
     }
 
     /**
@@ -79,7 +79,7 @@ class SimulationSchedulerTest {
      */
     @Test
     fun testAdvanceByLargeDelays() {
-        val scheduler = SimulationScheduler()
+        val scheduler = SimulationDispatcher()
         var count = 0
 
         scheduler.schedule(1) { count += 1 }
@@ -87,10 +87,11 @@ class SimulationSchedulerTest {
         scheduler.advanceBy(10)
 
         scheduler.schedule(Long.MAX_VALUE) { count += 1 }
+        scheduler.scheduleCancellable(Long.MAX_VALUE) { count += 1 }
         scheduler.schedule(100_000_000) { count += 1 }
 
         scheduler.advanceUntilIdle()
-        assertEquals(3, count)
+        assertEquals(4, count)
     }
 
     /**
@@ -98,7 +99,7 @@ class SimulationSchedulerTest {
      */
     @Test
     fun testNegativeDelays() {
-        val scheduler = SimulationScheduler()
+        val scheduler = SimulationDispatcher()
 
         assertThrows<IllegalArgumentException> { scheduler.schedule(-100) { } }
         assertThrows<IllegalArgumentException> { scheduler.advanceBy(-100) }

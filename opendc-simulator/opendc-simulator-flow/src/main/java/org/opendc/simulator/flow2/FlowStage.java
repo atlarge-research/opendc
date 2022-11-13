@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.flow2;
 
-import java.time.Clock;
+import java.time.InstantSource;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -67,7 +67,7 @@ public final class FlowStage {
      */
     int timerIndex = -1;
 
-    final Clock clock;
+    final InstantSource clock;
     private final FlowStageLogic logic;
     final FlowGraphInternal parentGraph;
     private final FlowEngine engine;

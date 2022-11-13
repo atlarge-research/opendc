@@ -24,32 +24,27 @@
 
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.getByType
 
 /**
- * This class makes the version catalog accessible for the build scripts until Gradle adds support for it.
- *
- * See https://github.com/gradle/gradle/issues/15383
+ * Obtain the default [VersionCatalog] of the project.
  */
-public class Libs(project: Project) {
-    /**
-     * The version catalog of the project.
-     */
-    private val versionCatalog = project.extensions.getByType(VersionCatalogsExtension::class).named("libs")
+public val Project.defaultVersionCatalog: VersionCatalog
+    get() = project.extensions.getByType(VersionCatalogsExtension::class).named("libs")
 
-    /**
-     * Obtain the version for the specified [dependency][name].
-     */
-    operator fun get(name: String): String {
-        val dep = versionCatalog.findLibrary(name).get().get()
-        return "${dep.module.group}:${dep.module.name}:${dep.versionConstraint.displayName}"
-    }
+/**
+ * Obtain the dependency string for the specified [name].
+ */
+public operator fun VersionCatalog.get(name: String): String {
+    val dep = findLibrary(name).get().get()
+    return "${dep.module.group}:${dep.module.name}:${dep.versionConstraint.displayName}"
+}
 
-    companion object {
-        /**
-         * The JVM version to target.
-         */
-        val jvmTarget = JavaVersion.VERSION_11
-    }
+/**
+ * Obtain the string representation of the version with the given [name].
+ */
+public fun VersionCatalog.getVersion(name: String): String {
+    return findVersion(name).get().displayName
 }

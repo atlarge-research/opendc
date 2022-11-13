@@ -28,26 +28,18 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.kotlin.runSimulation
-import java.time.Clock
-import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Test suite for the [Pacer] class.
  */
 class PacerTest {
     @Test
-    fun testEmptyContext() {
-        assertThrows<IllegalArgumentException> { Pacer(EmptyCoroutineContext, Clock.systemUTC(), 100) {} }
-    }
-
-    @Test
     fun testSingleEnqueue() {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(coroutineContext, clock, quantum = 100) {
+            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
                 count++
             }
 
@@ -62,7 +54,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(coroutineContext, clock, quantum = 100) {
+            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
                 count++
             }
 
@@ -80,7 +72,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(coroutineContext, clock, quantum = 100) {
+            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
                 count++
             }
 
@@ -98,7 +90,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(coroutineContext, clock, quantum = 100) {
+            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
                 count++
             }
 
@@ -116,7 +108,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(coroutineContext, clock, quantum = 100) {
+            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
                 count++
             }
 

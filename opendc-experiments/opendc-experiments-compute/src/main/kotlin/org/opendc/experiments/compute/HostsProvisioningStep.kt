@@ -46,7 +46,7 @@ public class HostsProvisioningStep internal constructor(
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service = requireNotNull(ctx.registry.resolve(serviceDomain, ComputeService::class.java)) { "Compute service $serviceDomain does not exist" }
-        val engine = FlowEngine.create(ctx.coroutineContext, ctx.clock)
+        val engine = FlowEngine.create(ctx.dispatcher)
         val graph = engine.newGraph()
         val hosts = mutableSetOf<SimHost>()
 
@@ -58,7 +58,7 @@ public class HostsProvisioningStep internal constructor(
                 spec.uid,
                 spec.name,
                 spec.meta,
-                ctx.clock,
+                ctx.dispatcher.timeSource,
                 machine,
                 hypervisor,
                 optimize = optimize

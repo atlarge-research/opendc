@@ -32,15 +32,15 @@ import org.opendc.compute.simulator.SimWorkloadMapper
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.kernel.SimVirtualMachine
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
+import java.time.InstantSource
 
 /**
  * A virtual machine instance that is managed by a [SimHost].
  */
 internal class Guest(
-    private val clock: Clock,
+    private val clock: InstantSource,
     val host: SimHost,
     private val hypervisor: SimHypervisor,
     private val mapper: SimWorkloadMapper,

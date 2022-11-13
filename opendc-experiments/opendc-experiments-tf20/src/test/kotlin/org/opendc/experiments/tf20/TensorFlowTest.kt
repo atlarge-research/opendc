@@ -48,8 +48,7 @@ class TensorFlowTest {
         val device = SimTFDevice(
             def.uid,
             def.meta["gpu"] as Boolean,
-            coroutineContext,
-            clock,
+            dispatcher,
             def.model.cpus[0],
             def.model.memory[0],
             CpuPowerModels.linear(250.0, 60.0)
@@ -67,7 +66,7 @@ class TensorFlowTest {
 
         val stats = device.getDeviceStats()
         assertAll(
-            { assertEquals(3309694252, clock.millis()) },
+            { assertEquals(3309694252, timeSource.millis()) },
             { assertEquals(8.27423563E8, stats.energyUsage) }
         )
     }
@@ -83,8 +82,7 @@ class TensorFlowTest {
         val device = SimTFDevice(
             def.uid,
             def.meta["gpu"] as Boolean,
-            coroutineContext,
-            clock,
+            dispatcher,
             def.model.cpus[0],
             def.model.memory[0],
             CpuPowerModels.linear(250.0, 60.0)
@@ -102,7 +100,7 @@ class TensorFlowTest {
 
         val stats = device.getDeviceStats()
         assertAll(
-            { assertEquals(176230328513, clock.millis()) },
+            { assertEquals(176230328513, timeSource.millis()) },
             { assertEquals(4.405758212825E10, stats.energyUsage) }
         )
     }
@@ -118,8 +116,7 @@ class TensorFlowTest {
         val deviceA = SimTFDevice(
             def.uid,
             def.meta["gpu"] as Boolean,
-            coroutineContext,
-            clock,
+            dispatcher,
             def.model.cpus[0],
             def.model.memory[0],
             CpuPowerModels.linear(250.0, 60.0)
@@ -128,8 +125,7 @@ class TensorFlowTest {
         val deviceB = SimTFDevice(
             UUID.randomUUID(),
             def.meta["gpu"] as Boolean,
-            coroutineContext,
-            clock,
+            dispatcher,
             def.model.cpus[0],
             def.model.memory[0],
             CpuPowerModels.linear(250.0, 60.0)
@@ -150,7 +146,7 @@ class TensorFlowTest {
         val statsA = deviceA.getDeviceStats()
         val statsB = deviceB.getDeviceStats()
         assertAll(
-            { assertEquals(1704994000, clock.millis()) },
+            { assertEquals(1704994000, timeSource.millis()) },
             { assertEquals(4.262485E8, statsA.energyUsage) },
             { assertEquals(4.262485E8, statsB.energyUsage) }
         )

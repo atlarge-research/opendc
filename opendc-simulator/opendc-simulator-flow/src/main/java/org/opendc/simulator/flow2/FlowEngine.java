@@ -23,11 +23,11 @@
 package org.opendc.simulator.flow2;
 
 import java.time.Clock;
+import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.List;
-import kotlin.coroutines.ContinuationInterceptor;
 import kotlin.coroutines.CoroutineContext;
-import kotlinx.coroutines.Delay;
+import org.opendc.common.Dispatcher;
 
 /**
  * A {@link FlowEngine} simulates a generic flow network.
@@ -56,29 +56,25 @@ public final class FlowEngine implements Runnable {
      */
     private boolean active;
 
-    private final CoroutineContext coroutineContext;
-    private final Clock clock;
-    private final Delay delay;
+    private final Dispatcher dispatcher;
+    private final InstantSource clock;
 
     /**
-     * Create a new {@link FlowEngine} instance using the specified {@link CoroutineContext} and {@link Clock}.
+     * Create a new {@link FlowEngine} instance using the specified {@link CoroutineContext} and {@link InstantSource}.
      */
-    public static FlowEngine create(CoroutineContext coroutineContext, Clock clock) {
-        return new FlowEngine(coroutineContext, clock);
+    public static FlowEngine create(Dispatcher dispatcher) {
+        return new FlowEngine(dispatcher);
     }
 
-    FlowEngine(CoroutineContext coroutineContext, Clock clock) {
-        this.coroutineContext = coroutineContext;
-        this.clock = clock;
-
-        CoroutineContext.Key<? extends ContinuationInterceptor> key = ContinuationInterceptor.Key;
-        this.delay = (Delay) coroutineContext.get(key);
+    FlowEngine(Dispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+        this.clock = dispatcher.getTimeSource();
     }
 
     /**
      * Obtain the (virtual) {@link Clock} driving the simulation.
      */
-    public Clock getClock() {
+    public InstantSource getClock() {
         return clock;
     }
 
@@ -204,7 +200,7 @@ public final class FlowEngine implements Runnable {
         // Only schedule a new scheduler invocation in case the target is earlier than all other pending
         // scheduler invocations
         if (scheduled.tryAdd(target)) {
-            delay.invokeOnTimeout(target - now, this, coroutineContext);
+            dispatcher.schedule(target - now, this);
         }
     }
 

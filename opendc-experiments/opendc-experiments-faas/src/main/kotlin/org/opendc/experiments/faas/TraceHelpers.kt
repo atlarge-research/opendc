@@ -28,16 +28,16 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.opendc.faas.service.FaaSService
-import java.time.Clock
+import java.time.InstantSource
 import kotlin.math.max
 
 /**
  * Run a simulation of the [FaaSService] by replaying the workload trace given by [trace].
  *
- * @param clock A [Clock] instance tracking simulation time.
+ * @param clock An [InstantSource] instance tracking simulation time.
  * @param trace The trace to simulate.
  */
-public suspend fun FaaSService.replay(clock: Clock, trace: List<FunctionTrace>) {
+public suspend fun FaaSService.replay(clock: InstantSource, trace: List<FunctionTrace>) {
     val client = newClient()
     try {
         coroutineScope {

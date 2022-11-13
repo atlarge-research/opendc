@@ -22,31 +22,26 @@
 
 package org.opendc.experiments.provisioner
 
+import org.opendc.common.Dispatcher
 import org.opendc.experiments.MutableServiceRegistry
-import java.time.Clock
 import java.util.SplittableRandom
-import kotlin.coroutines.CoroutineContext
+import java.util.random.RandomGenerator
 
 /**
  * The [ProvisioningContext] class provides access to shared state between subsequent [ProvisioningStep]s, as well as
- * access to the simulation dispatcher (via [CoroutineContext]), the virtual clock, and a randomness seeder to allow
+ * access to the simulation dispatcher, the virtual clock, and a randomness seeder to allow
  * the provisioning steps to initialize the (simulated) resources.
  */
 public interface ProvisioningContext {
     /**
-     * The [CoroutineContext] in which the provisioner runs.
+     * The [Dispatcher] provided by the provisioner to schedule future events during the simulation.
      */
-    public val coroutineContext: CoroutineContext
-
-    /**
-     * The [Clock] tracking the virtual simulation time.
-     */
-    public val clock: Clock
+    public val dispatcher: Dispatcher
 
     /**
      * A [SplittableRandom] instance used to seed the provisioners.
      */
-    public val seeder: SplittableRandom
+    public val seeder: RandomGenerator
 
     /**
      * A [MutableServiceRegistry] where the provisioned services are registered.

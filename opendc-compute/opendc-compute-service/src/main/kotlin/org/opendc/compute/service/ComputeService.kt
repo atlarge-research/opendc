@@ -22,15 +22,14 @@
 
 package org.opendc.compute.service
 
+import org.opendc.common.Dispatcher
 import org.opendc.compute.api.ComputeClient
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.service.telemetry.SchedulerStats
-import java.time.Clock
 import java.time.Duration
-import kotlin.coroutines.CoroutineContext
 
 /**
  * The [ComputeService] hosts the API implementation of the OpenDC Compute service.
@@ -80,18 +79,16 @@ public interface ComputeService : AutoCloseable {
         /**
          * Construct a new [ComputeService] implementation.
          *
-         * @param context The [CoroutineContext] to use in the service.
-         * @param clock The clock instance to use.
+         * @param dispatcher The [Dispatcher] for scheduling future events.
          * @param scheduler The scheduler implementation to use.
          * @param schedulingQuantum The interval between scheduling cycles.
          */
         public operator fun invoke(
-            context: CoroutineContext,
-            clock: Clock,
+            dispatcher: Dispatcher,
             scheduler: ComputeScheduler,
             schedulingQuantum: Duration = Duration.ofMinutes(5)
         ): ComputeService {
-            return ComputeServiceImpl(context, clock, scheduler, schedulingQuantum)
+            return ComputeServiceImpl(dispatcher, scheduler, schedulingQuantum)
         }
     }
 }

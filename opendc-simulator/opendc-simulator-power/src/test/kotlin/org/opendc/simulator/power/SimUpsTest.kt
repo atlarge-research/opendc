@@ -35,7 +35,7 @@ import org.opendc.simulator.kotlin.runSimulation
 internal class SimUpsTest {
     @Test
     fun testSingleInlet() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 200.0f)
         val ups = SimUps(graph)
@@ -49,7 +49,7 @@ internal class SimUpsTest {
 
     @Test
     fun testDoubleInlet() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source1 = SimPowerSource(graph, /*capacity*/ 200.0f)
         val source2 = SimPowerSource(graph, /*capacity*/ 200.0f)
@@ -69,7 +69,7 @@ internal class SimUpsTest {
 
     @Test
     fun testLoss() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 500.0f)
         // https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
@@ -84,7 +84,7 @@ internal class SimUpsTest {
 
     @Test
     fun testDisconnect() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source1 = SimPowerSource(graph, /*capacity*/ 200.0f)
         val source2 = SimPowerSource(graph, /*capacity*/ 200.0f)

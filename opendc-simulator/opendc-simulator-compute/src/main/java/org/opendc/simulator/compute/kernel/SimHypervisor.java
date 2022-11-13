@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute.kernel;
 
-import java.time.Clock;
+import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -253,7 +253,7 @@ public final class SimHypervisor implements SimWorkload {
         private final FlowMultiplexer multiplexer;
         private final FlowStage stage;
         private final List<ScalingGovernor> scalingGovernors;
-        private final Clock clock;
+        private final InstantSource clock;
         private final HvCounters counters;
 
         private long lastCounterUpdate;
@@ -526,7 +526,7 @@ public final class SimHypervisor implements SimWorkload {
         private final VmInterferenceMember interferenceMember;
         private final FlowStage stage;
         private final FlowMultiplexer multiplexer;
-        private final Clock clock;
+        private final InstantSource clock;
 
         private final List<VCpu> cpus;
         private final SimAbstractMachine.Memory memory;

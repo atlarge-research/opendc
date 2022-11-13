@@ -31,6 +31,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.opendc.common.Dispatcher
+import org.opendc.common.asCoroutineDispatcher
 import org.opendc.faas.service.FunctionObject
 import org.opendc.faas.service.deployer.FunctionDeployer
 import org.opendc.faas.service.deployer.FunctionInstance
@@ -44,10 +46,8 @@ import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.flow2.FlowEngine
-import java.time.Clock
 import java.util.ArrayDeque
 import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -55,8 +55,7 @@ import kotlin.coroutines.resumeWithException
  * A [FunctionDeployer] that uses that simulates the [FunctionInstance]s.
  */
 public class SimFunctionDeployer(
-    context: CoroutineContext,
-    private val clock: Clock,
+    private val dispatcher: Dispatcher,
     private val model: MachineModel,
     private val delayInjector: DelayInjector,
     private val mapper: SimFaaSWorkloadMapper = SimMetaFaaSWorkloadMapper()
@@ -64,7 +63,7 @@ public class SimFunctionDeployer(
     /**
      * The [CoroutineScope] of this deployer.
      */
-    private val scope = CoroutineScope(context + Job())
+    private val scope = CoroutineScope(dispatcher.asCoroutineDispatcher() + Job())
 
     override fun deploy(function: FunctionObject, listener: FunctionInstanceListener): Instance {
         val instance = Instance(function, listener)
@@ -86,7 +85,7 @@ public class SimFunctionDeployer(
          * The machine that will execute the workloads.
          */
         public val machine: SimMachine = SimBareMetalMachine.create(
-            FlowEngine.create(scope.coroutineContext, clock).newGraph(),
+            FlowEngine.create(dispatcher).newGraph(),
             model
         )
 

@@ -24,13 +24,15 @@ package org.opendc.faas.service.router
 
 import org.opendc.faas.service.FunctionObject
 import org.opendc.faas.service.deployer.FunctionInstance
-import kotlin.random.Random
+import java.util.SplittableRandom
+import java.util.random.RandomGenerator
 
 /**
  * A [RoutingPolicy] that selects a random function instance.
  */
-public class RandomRoutingPolicy(private val random: Random = Random(0)) : RoutingPolicy {
+public class RandomRoutingPolicy(private val random: RandomGenerator = SplittableRandom(0)) : RoutingPolicy {
     override fun select(instances: List<FunctionInstance>, function: FunctionObject): FunctionInstance {
-        return instances.random(random)
+        val idx = random.nextInt(instances.size)
+        return instances.elementAt(idx)
     }
 }

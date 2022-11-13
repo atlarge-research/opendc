@@ -24,7 +24,9 @@ package org.opendc.compute.simulator.failure
 
 import org.apache.commons.math3.distribution.RealDistribution
 import org.opendc.compute.simulator.SimHost
-import java.util.Random
+import java.util.ArrayList
+import java.util.SplittableRandom
+import java.util.random.RandomGenerator
 import kotlin.math.roundToInt
 
 /**
@@ -32,12 +34,30 @@ import kotlin.math.roundToInt
  */
 public class StochasticVictimSelector(
     private val size: RealDistribution,
-    private val random: Random = Random(0)
+    private val random: RandomGenerator = SplittableRandom(0)
 ) : VictimSelector {
 
     override fun select(hosts: Set<SimHost>): List<SimHost> {
         val n = size.sample().roundToInt()
-        return hosts.shuffled(random).take(n)
+        val result = ArrayList<SimHost>(n)
+
+        val random = random
+        var samplesNeeded = n
+        var remainingHosts = hosts.size
+        val iterator = hosts.iterator()
+
+        while (iterator.hasNext() && samplesNeeded > 0) {
+            val host = iterator.next()
+
+            if (random.nextInt(remainingHosts) < samplesNeeded) {
+                result.add(host)
+                samplesNeeded--
+            }
+
+            remainingHosts--
+        }
+
+        return result
     }
 
     override fun toString(): String = "StochasticVictimSelector[$size]"

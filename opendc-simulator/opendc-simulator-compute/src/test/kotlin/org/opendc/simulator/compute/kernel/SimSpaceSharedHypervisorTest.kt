@@ -75,7 +75,7 @@ internal class SimSpaceSharedHypervisorTest {
                 SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
             ).createWorkload(0)
 
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -89,7 +89,7 @@ internal class SimSpaceSharedHypervisorTest {
         hypervisor.removeMachine(vm)
         machine.cancel()
 
-        assertEquals(5 * 60L * 4000, clock.millis()) { "Took enough time" }
+        assertEquals(5 * 60L * 4000, timeSource.millis()) { "Took enough time" }
     }
 
     /**
@@ -99,7 +99,7 @@ internal class SimSpaceSharedHypervisorTest {
     fun testRuntimeWorkload() = runSimulation {
         val duration = 5 * 60L * 1000
         val workload = SimWorkloads.runtime(duration, 1.0)
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -113,7 +113,7 @@ internal class SimSpaceSharedHypervisorTest {
 
         machine.cancel()
 
-        assertEquals(duration, clock.millis()) { "Took enough time" }
+        assertEquals(duration, timeSource.millis()) { "Took enough time" }
     }
 
     /**
@@ -123,7 +123,7 @@ internal class SimSpaceSharedHypervisorTest {
     fun testFlopsWorkload() = runSimulation {
         val duration = 5 * 60L * 1000
         val workload = SimWorkloads.flops((duration * 3.2).toLong(), 1.0)
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -135,7 +135,7 @@ internal class SimSpaceSharedHypervisorTest {
         vm.runWorkload(workload)
         machine.cancel()
 
-        assertEquals(duration, clock.millis()) { "Took enough time" }
+        assertEquals(duration, timeSource.millis()) { "Took enough time" }
     }
 
     /**
@@ -144,7 +144,7 @@ internal class SimSpaceSharedHypervisorTest {
     @Test
     fun testTwoWorkloads() = runSimulation {
         val duration = 5 * 60L * 1000
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -165,7 +165,7 @@ internal class SimSpaceSharedHypervisorTest {
 
         machine.cancel()
 
-        assertEquals(duration * 2, clock.millis()) { "Took enough time" }
+        assertEquals(duration * 2, timeSource.millis()) { "Took enough time" }
     }
 
     /**
@@ -173,7 +173,7 @@ internal class SimSpaceSharedHypervisorTest {
      */
     @Test
     fun testConcurrentWorkloadFails() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)
@@ -200,7 +200,7 @@ internal class SimSpaceSharedHypervisorTest {
      */
     @Test
     fun testConcurrentWorkloadSucceeds() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
 
         val machine = SimBareMetalMachine.create(graph, machineModel)

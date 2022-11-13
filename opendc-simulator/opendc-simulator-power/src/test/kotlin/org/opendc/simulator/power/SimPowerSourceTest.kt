@@ -42,7 +42,7 @@ import org.opendc.simulator.kotlin.runSimulation
 internal class SimPowerSourceTest {
     @Test
     fun testInitialState() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 100.0f)
 
@@ -57,7 +57,7 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testDisconnectIdempotent() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 100.0f)
 
@@ -67,7 +67,7 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testConnect() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 100.0f)
         val inlet = TestInlet(graph)
@@ -87,7 +87,7 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testDisconnect() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 100.0f)
         val inlet = TestInlet(graph)
@@ -102,7 +102,7 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testDisconnectAssertion() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 100.0f)
 
@@ -120,7 +120,7 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testOutletAlreadyConnected() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 100.0f)
         val inlet = TestInlet(graph)
@@ -135,7 +135,7 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testInletAlreadyConnected() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 100.0f)
         val inlet = mockk<SimPowerInlet>(relaxUnitFun = true)

@@ -34,12 +34,13 @@ import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.service.scheduler.weights.InstanceCountWeigher
 import org.opendc.compute.service.scheduler.weights.RamWeigher
 import org.opendc.compute.service.scheduler.weights.VCpuWeigher
-import java.util.Random
+import java.util.SplittableRandom
+import java.util.random.RandomGenerator
 
 /**
  * Create a [ComputeScheduler] for the experiment.
  */
-public fun createComputeScheduler(name: String, seeder: Random, placements: Map<String, String> = emptyMap()): ComputeScheduler {
+public fun createComputeScheduler(name: String, seeder: RandomGenerator, placements: Map<String, String> = emptyMap()): ComputeScheduler {
     val cpuAllocationRatio = 16.0
     val ramAllocationRatio = 1.5
     return when (name) {
@@ -79,7 +80,7 @@ public fun createComputeScheduler(name: String, seeder: Random, placements: Map<
             filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
             weighers = emptyList(),
             subsetSize = Int.MAX_VALUE,
-            random = Random(seeder.nextLong())
+            random = SplittableRandom(seeder.nextLong())
         )
         "replay" -> ReplayScheduler(placements)
         else -> throw IllegalArgumentException("Unknown policy $name")

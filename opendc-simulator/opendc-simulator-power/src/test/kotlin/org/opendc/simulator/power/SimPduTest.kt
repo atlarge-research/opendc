@@ -35,7 +35,7 @@ import org.opendc.simulator.kotlin.runSimulation
 internal class SimPduTest {
     @Test
     fun testZeroOutlets() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 100.0f)
         val pdu = SimPdu(graph)
@@ -48,7 +48,7 @@ internal class SimPduTest {
 
     @Test
     fun testSingleOutlet() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 100.0f)
         val pdu = SimPdu(graph)
@@ -62,7 +62,7 @@ internal class SimPduTest {
 
     @Test
     fun testDoubleOutlet() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 200.0f)
         val pdu = SimPdu(graph)
@@ -78,7 +78,7 @@ internal class SimPduTest {
 
     @Test
     fun testDisconnect() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 300.0f)
         val pdu = SimPdu(graph)
@@ -95,7 +95,7 @@ internal class SimPduTest {
 
     @Test
     fun testLoss() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 500.0f)
         // https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
@@ -110,7 +110,7 @@ internal class SimPduTest {
 
     @Test
     fun testOutletClose() = runSimulation {
-        val engine = FlowEngine.create(coroutineContext, clock)
+        val engine = FlowEngine.create(dispatcher)
         val graph = engine.newGraph()
         val source = SimPowerSource(graph, /*capacity*/ 100.0f)
         val pdu = SimPdu(graph)

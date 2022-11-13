@@ -50,7 +50,7 @@ tasks.named("jmh", JMHTask::class) {
 
 dependencies {
     constraints {
-        val libs = Libs(project)
-        jmh(libs["commons.math3"]) // XXX Force JMH to use the same commons-math3 version as OpenDC
+        val versionCatalog = project.defaultVersionCatalog
+        jmh(versionCatalog["commons.math3"]) // XXX Force JMH to use the same commons-math3 version as OpenDC
     }
 }

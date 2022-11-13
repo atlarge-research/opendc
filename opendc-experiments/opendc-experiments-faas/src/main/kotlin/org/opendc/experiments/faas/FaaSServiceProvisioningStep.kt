@@ -56,10 +56,9 @@ public class FaaSServiceProvisioningStep internal constructor(
         } else {
             ZeroDelayInjector
         }
-        val deployer = SimFunctionDeployer(ctx.coroutineContext, ctx.clock, machineModel, delayInjector)
+        val deployer = SimFunctionDeployer(ctx.dispatcher, machineModel, delayInjector)
         val service = FaaSService(
-            ctx.coroutineContext,
-            ctx.clock,
+            ctx.dispatcher,
             deployer,
             routingPolicy(ctx),
             terminationPolicy(ctx)

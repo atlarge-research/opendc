@@ -23,13 +23,13 @@
 package org.opendc.faas.simulator.delay
 
 import org.opendc.faas.service.deployer.FunctionInstance
-import java.util.Random
+import java.util.random.RandomGenerator
 import kotlin.math.abs
 
 /*
  * Interface for instance deployment delay estimation.
  */
-public class StochasticDelayInjector(private val model: ColdStartModel, private val random: Random) : DelayInjector {
+public class StochasticDelayInjector(private val model: ColdStartModel, private val random: RandomGenerator) : DelayInjector {
     override fun getColdStartDelay(instance: FunctionInstance): Long {
         val (mean, sd) = model.coldStartParam(instance.function.memorySize.toInt())
         return abs(random.nextGaussian() * sd + mean).toLong()

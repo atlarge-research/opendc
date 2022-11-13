@@ -23,7 +23,7 @@
 package org.opendc.compute.simulator.failure
 
 import org.opendc.compute.simulator.SimHost
-import java.time.Clock
+import java.time.InstantSource
 
 /**
  * Interface responsible for applying the fault to a host.
@@ -32,5 +32,5 @@ public interface HostFault {
     /**
      * Apply the fault to the specified [victims].
      */
-    public suspend fun apply(clock: Clock, victims: List<SimHost>)
+    public suspend fun apply(clock: InstantSource, victims: List<SimHost>)
 }

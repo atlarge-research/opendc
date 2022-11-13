@@ -22,6 +22,7 @@
 
 package org.opendc.faas.service
 
+import org.opendc.common.Dispatcher
 import org.opendc.faas.api.FaaSClient
 import org.opendc.faas.api.FaaSFunction
 import org.opendc.faas.service.autoscaler.FunctionTerminationPolicy
@@ -30,9 +31,7 @@ import org.opendc.faas.service.internal.FaaSServiceImpl
 import org.opendc.faas.service.router.RoutingPolicy
 import org.opendc.faas.service.telemetry.FunctionStats
 import org.opendc.faas.service.telemetry.SchedulerStats
-import java.time.Clock
 import java.time.Duration
-import kotlin.coroutines.CoroutineContext
 
 /**
  * The [FaaSService] hosts the service implementation of the OpenDC FaaS platform.
@@ -62,22 +61,20 @@ public interface FaaSService : AutoCloseable {
         /**
          * Construct a new [FaaSService] implementation.
          *
-         * @param context The [CoroutineContext] to use in the service.
-         * @param clock The clock instance to use.
+         * @param dispatcher The [Dispatcher] used for scheduling events.
          * @param deployer the [FunctionDeployer] to use for deploying function instances.
          * @param routingPolicy The policy to route function invocations.
          * @param terminationPolicy The policy for terminating function instances.
          * @param quantum The scheduling quantum of the service (100 ms default)
          */
         public operator fun invoke(
-            context: CoroutineContext,
-            clock: Clock,
+            dispatcher: Dispatcher,
             deployer: FunctionDeployer,
             routingPolicy: RoutingPolicy,
             terminationPolicy: FunctionTerminationPolicy,
             quantum: Duration = Duration.ofMillis(100)
         ): FaaSService {
-            return FaaSServiceImpl(context, clock, deployer, routingPolicy, terminationPolicy, quantum)
+            return FaaSServiceImpl(dispatcher, deployer, routingPolicy, terminationPolicy, quantum)
         }
     }
 }

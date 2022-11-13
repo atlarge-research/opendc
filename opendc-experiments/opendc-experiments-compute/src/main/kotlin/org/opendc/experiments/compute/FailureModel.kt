@@ -24,8 +24,8 @@ package org.opendc.experiments.compute
 
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.simulator.failure.HostFaultInjector
-import java.time.Clock
-import java.util.Random
+import java.time.InstantSource
+import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -37,8 +37,8 @@ public interface FailureModel {
      */
     public fun createInjector(
         context: CoroutineContext,
-        clock: Clock,
+        clock: InstantSource,
         service: ComputeService,
-        random: Random
+        random: RandomGenerator
     ): HostFaultInjector
 }

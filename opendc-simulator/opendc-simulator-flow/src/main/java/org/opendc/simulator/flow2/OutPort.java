@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.flow2;
 
-import java.time.Clock;
+import java.time.InstantSource;
 import java.util.Objects;
 
 /**
@@ -42,7 +42,7 @@ public final class OutPort implements Outlet {
     private OutHandler handler = OutHandlers.noop();
     private final String name;
     private final FlowStage stage;
-    private final Clock clock;
+    private final InstantSource clock;
 
     OutPort(FlowStage stage, String name, int id) {
         this.name = name;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.kotlin
+package org.opendc.common
 
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
@@ -28,61 +28,37 @@ import kotlinx.coroutines.Delay
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
-import org.opendc.simulator.SimulationScheduler
-import java.lang.Runnable
-import java.time.Clock
 import kotlin.coroutines.CoroutineContext
 
 /**
- * A [CoroutineDispatcher] that performs both immediate execution of coroutines on the main thread and uses a virtual
- * clock for time management.
+ * A [CoroutineDispatcher] that uses a [Dispatcher] to dispatch pending co-routines.
  *
- * @param scheduler The [SimulationScheduler] used to manage the execution of future tasks.
+ * @param dispatcher The [Dispatcher] used to manage the execution of future tasks.
  */
 @OptIn(InternalCoroutinesApi::class)
-public class SimulationCoroutineDispatcher(
-    override val scheduler: SimulationScheduler = SimulationScheduler()
-) : CoroutineDispatcher(), SimulationController, Delay {
-    /**
-     * The virtual clock of this dispatcher.
-     */
-    override val clock: Clock = scheduler.clock
-
+internal class DispatcherCoroutineDispatcher(private val dispatcher: Dispatcher) : CoroutineDispatcher(), Delay, DispatcherProvider {
     override fun dispatch(context: CoroutineContext, block: Runnable) {
         block.run()
     }
 
     override fun dispatchYield(context: CoroutineContext, block: Runnable) {
-        scheduler.execute(block)
+        dispatcher.schedule(block)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {
-        scheduler.schedule(timeMillis, CancellableContinuationRunnable(continuation) { resumeUndispatched(Unit) })
+        dispatcher.schedule(timeMillis, CancellableContinuationRunnable(continuation) { resumeUndispatched(Unit) })
     }
 
     override fun invokeOnTimeout(timeMillis: Long, block: Runnable, context: CoroutineContext): DisposableHandle {
-        return object : DisposableHandle {
-            private val deadline = (scheduler.currentTime + timeMillis).let { if (it >= 0) it else Long.MAX_VALUE }
-            private val id = scheduler.schedule(timeMillis, block)
-
-            override fun dispose() {
-                scheduler.cancel(deadline, id)
-            }
-        }
+        val handle = dispatcher.scheduleCancellable(timeMillis, block)
+        return DisposableHandle { handle.cancel() }
     }
+
+    override fun getDispatcher(): Dispatcher = dispatcher
 
     override fun toString(): String {
-        return "SimulationCoroutineDispatcher[time=${scheduler.currentTime}ms]"
-    }
-
-    override fun advanceUntilIdle(): Long {
-        val scheduler = scheduler
-        val oldTime = scheduler.currentTime
-
-        scheduler.advanceUntilIdle()
-
-        return scheduler.currentTime - oldTime
+        return "DispatcherCoroutineDispatcher[dispatcher=$dispatcher]"
     }
 
     /**

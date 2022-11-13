@@ -26,8 +26,8 @@ import mu.KotlinLogging
 import org.opendc.experiments.compute.ComputeWorkload
 import org.opendc.experiments.compute.ComputeWorkloadLoader
 import org.opendc.experiments.compute.VirtualMachine
-import java.util.Random
 import java.util.UUID
+import java.util.random.RandomGenerator
 
 /**
  * A [ComputeWorkload] that samples HPC VMs in the workload.
@@ -46,7 +46,7 @@ internal class HpcSampledComputeWorkload(val source: ComputeWorkload, val fracti
      */
     private val pattern = Regex("^(ComputeNode|cn).*")
 
-    override fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine> {
+    override fun resolve(loader: ComputeWorkloadLoader, random: RandomGenerator): List<VirtualMachine> {
         val vms = source.resolve(loader, random)
 
         val (hpc, nonHpc) = vms.partition { entry ->
@@ -58,7 +58,6 @@ internal class HpcSampledComputeWorkload(val source: ComputeWorkload, val fracti
             .map { index ->
                 val res = mutableListOf<VirtualMachine>()
                 hpc.mapTo(res) { sample(it, index) }
-                res.shuffle(random)
                 res
             }
             .flatten()
@@ -67,7 +66,6 @@ internal class HpcSampledComputeWorkload(val source: ComputeWorkload, val fracti
             .map { index ->
                 val res = mutableListOf<VirtualMachine>()
                 nonHpc.mapTo(res) { sample(it, index) }
-                res.shuffle(random)
                 res
             }
             .flatten()

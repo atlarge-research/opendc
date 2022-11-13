@@ -75,7 +75,7 @@ class CapelinBenchmarks {
     fun benchmarkCapelin() = runSimulation {
         val serviceDomain = "compute.opendc.org"
 
-        Provisioner(coroutineContext, clock, seed = 0).use { provisioner ->
+        Provisioner(dispatcher, seed = 0).use { provisioner ->
             val computeScheduler = FilterScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
                 weighers = listOf(CoreRamWeigher(multiplier = 1.0))
@@ -87,7 +87,7 @@ class CapelinBenchmarks {
             )
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
-            service.replay(clock, vms, 0L, interference = true)
+            service.replay(timeSource, vms, 0L, interference = true)
         }
     }
 }

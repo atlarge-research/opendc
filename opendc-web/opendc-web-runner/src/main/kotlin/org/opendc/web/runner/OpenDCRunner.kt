@@ -260,7 +260,7 @@ public class OpenDCRunner(
 
             val scenario = scenario
 
-            Provisioner(coroutineContext, clock, seed).use { provisioner ->
+            Provisioner(dispatcher, seed).use { provisioner ->
                 provisioner.runSteps(
                     setupComputeService(
                         serviceDomain,
@@ -285,7 +285,7 @@ public class OpenDCRunner(
                     }
 
                 // Run workload trace
-                service.replay(clock, vms, seed, failureModel = failureModel, interference = phenomena.interference)
+                service.replay(timeSource, vms, seed, failureModel = failureModel, interference = phenomena.interference)
 
                 val serviceMetrics = service.getSchedulerStats()
                 logger.debug {

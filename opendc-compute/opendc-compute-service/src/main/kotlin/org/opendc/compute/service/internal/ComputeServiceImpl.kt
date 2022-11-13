@@ -23,6 +23,7 @@
 package org.opendc.compute.service.internal
 
 import mu.KotlinLogging
+import org.opendc.common.Dispatcher
 import org.opendc.common.util.Pacer
 import org.opendc.compute.api.ComputeClient
 import org.opendc.compute.api.Flavor
@@ -35,27 +36,23 @@ import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.service.telemetry.SchedulerStats
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.ArrayDeque
 import java.util.Deque
 import java.util.Random
 import java.util.UUID
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.max
 
 /**
  * Internal implementation of the OpenDC Compute service.
  *
- * @param coroutineContext The [CoroutineContext] to use in the service.
- * @param clock The clock instance to use.
+ * @param dispatcher The [Dispatcher] for scheduling future events.
  * @param scheduler The scheduler implementation to use.
  * @param schedulingQuantum The interval between scheduling cycles.
  */
 internal class ComputeServiceImpl(
-    coroutineContext: CoroutineContext,
-    private val clock: Clock,
+    private val dispatcher: Dispatcher,
     private val scheduler: ComputeScheduler,
     schedulingQuantum: Duration
 ) : ComputeService, HostListener {
@@ -108,6 +105,7 @@ internal class ComputeServiceImpl(
     override val hosts: Set<Host>
         get() = hostToView.keys
 
+    private val clock = dispatcher.timeSource
     private var maxCores = 0
     private var maxMemory = 0L
     private var _attemptsSuccess = 0L
@@ -120,7 +118,7 @@ internal class ComputeServiceImpl(
     /**
      * The [Pacer] to use for scheduling the scheduler cycles.
      */
-    private val pacer = Pacer(coroutineContext, clock, schedulingQuantum.toMillis()) { doSchedule() }
+    private val pacer = Pacer(dispatcher, schedulingQuantum.toMillis()) { doSchedule() }
 
     override fun newClient(): ComputeClient {
         check(!isClosed) { "Service is already closed" }

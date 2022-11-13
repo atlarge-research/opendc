@@ -31,8 +31,10 @@ repositories {
 }
 
 java {
-    sourceCompatibility = Libs.jvmTarget
-    targetCompatibility = Libs.jvmTarget
+    toolchain {
+        val javaVersion = project.defaultVersionCatalog.getVersion("java")
+        languageVersion.set(JavaLanguageVersion.of(javaVersion))
+    }
 }
 
 tasks.withType<JavaCompile> {
