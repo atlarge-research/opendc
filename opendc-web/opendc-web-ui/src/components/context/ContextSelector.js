@@ -24,7 +24,7 @@ import PropTypes from 'prop-types'
 import { ContextSelector as PFContextSelector, ContextSelectorItem } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 
-import styles from './ContextSelector.module.scss'
+import styles from './ContextSelector.module.css'
 
 function ContextSelector({ id, type = 'page', toggleText, items, onSelect, onToggle, isOpen, isFullHeight }) {
     const [searchValue, setSearchValue] = useState('')

@@ -21,7 +21,7 @@
  */
 
 .pageSelector.pageSelector {
-    // Ensure this selector has precedence over the default one
+    /* Ensure this selector has precedence over the default one */
     margin-right: 20px;
 
     --pf-c-context-selector__menu--ZIndex: var(--pf-global--ZIndex--lg);
@@ -31,16 +31,14 @@
     --pf-c-context-selector__toggle--PaddingLeft: 0;
     --pf-c-context-selector__toggle--BorderWidth: 0;
     --pf-c-context-selector__toggle-text--FontSize: var(--pf-global--FontSize--sm);
+}
 
-    & :global(.pf-c-context-selector__toggle) {
-        &:active,
-        &:focus-within,
-        &:global(.pf-m-active) {
-            --pf-c-context-selector__toggle--after--BorderBottomWidth: 0;
-        }
-    }
+.pageSelector.pageSelector :global(.pf-c-context-selector__toggle):active,
+.pageSelector.pageSelector :global(.pf-c-context-selector__toggle):focus-within,
+.pageSelector.pageSelector :global(.pf-c-context-selector__toggle):global(.pf-m-active) {
+    --pf-c-context-selector__toggle--after--BorderBottomWidth: 0;
+}
 
-    &:global(.pf-m-expanded) > :global(.pf-c-context-selector__toggle) {
-        --pf-c-context-selector__toggle--after--BorderBottomWidth: 0;
-    }
+.pageSelector.pageSelector:global(.pf-m-expanded) > :global(.pf-c-context-selector__toggle) {
+    --pf-c-context-selector__toggle--after--BorderBottomWidth: 0;
 }

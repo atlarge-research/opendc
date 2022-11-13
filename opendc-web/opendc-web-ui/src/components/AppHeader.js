@@ -37,7 +37,7 @@ import AppHeaderTools from './AppHeaderTools'
 import AppHeaderUser from './AppHeaderUser'
 import ProjectSelector from './context/ProjectSelector'
 
-import styles from './AppHeader.module.scss'
+import styles from './AppHeader.module.css'
 
 export default function AppHeader({ nav }) {
     return (

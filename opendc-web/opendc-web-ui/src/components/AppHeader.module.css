@@ -28,17 +28,15 @@
     --pf-c-masthead--c-context-selector--Width: 200px;
 }
 
-.logo {
-    span {
-        margin-left: 8px;
-        color: #fff;
-        align-self: center;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
+.logo > span {
+    margin-left: 8px;
+    color: #fff;
+    align-self: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
 
-    &:hover,
-    &:focus {
-        text-decoration: none;
-    }
+.logo:hover,
+.logo:focus > span {
+    --pf-global--link--TextDecoration: none;
 }

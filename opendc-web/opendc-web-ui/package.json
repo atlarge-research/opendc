@@ -43,7 +43,6 @@
         "redux-logger": "^3.0.6",
         "redux-saga": "^1.2.1",
         "redux-thunk": "^2.4.1",
-        "sass": "^1.55.0",
         "svgsaver": "^0.9.0",
         "use-resize-observer": "^9.0.2",
         "uuid": "^9.0.0",
