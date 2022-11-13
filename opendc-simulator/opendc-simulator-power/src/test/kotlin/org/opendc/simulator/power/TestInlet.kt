@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.power
 
-import io.mockk.spyk
 import org.opendc.simulator.flow2.FlowGraph
 import org.opendc.simulator.flow2.FlowStage
 import org.opendc.simulator.flow2.FlowStageLogic
@@ -32,8 +31,7 @@ import org.opendc.simulator.flow2.Outlet
  * A test inlet.
  */
 class TestInlet(graph: FlowGraph) : SimPowerInlet(), FlowStageLogic {
-    val logic = spyk(this)
-    private val stage = graph.newStage(logic)
+    private val stage = graph.newStage(this)
     val flowOutlet = stage.getOutlet("out")
 
     init {
