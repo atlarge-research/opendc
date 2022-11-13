@@ -8,9 +8,6 @@ jobs:
   build:
     name: Build OpenDC
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: [ 17 ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -20,7 +17,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: ${{ matrix.java }}
+          java-version: 17
       - name: Publish with Gradle
         uses: gradle/gradle-build-action@v2
         with:

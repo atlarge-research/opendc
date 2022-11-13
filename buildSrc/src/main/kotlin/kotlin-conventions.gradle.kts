@@ -29,8 +29,15 @@ plugins {
 }
 
 /* Project configuration */
+
+kotlin {
+    jvmToolchain {
+        val javaVersion = project.defaultVersionCatalog.getVersion("java")
+        languageVersion.set(JavaLanguageVersion.of(javaVersion))
+    }
+}
+
 tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = Libs.jvmTarget.toString()
     kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
     kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
 }

@@ -34,10 +34,26 @@ tasks.test {
 }
 
 dependencies {
-    val libs = Libs(project)
+    val versionCatalog = project.defaultVersionCatalog
 
-    testImplementation(libs["junit.jupiter.api"])
-    testImplementation(libs["junit.jupiter.params"])
-    testImplementation(libs["mockk"])
-    testRuntimeOnly(libs["junit.jupiter.engine"])
+    testImplementation(versionCatalog["junit.jupiter.api"])
+    testImplementation(versionCatalog["junit.jupiter.params"])
+    testImplementation(versionCatalog["mockk"])
+    testRuntimeOnly(versionCatalog["junit.jupiter.engine"])
+}
+
+tasks.register<Test>("testsOn18") {
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(18))
+    })
+
+    useJUnitPlatform()
+}
+
+tasks.register<Test>("testsOn19") {
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(19))
+    })
+
+    useJUnitPlatform()
 }
