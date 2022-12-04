@@ -23,7 +23,7 @@
 package org.opendc.compute.service.scheduler.filters
 
 import org.opendc.compute.api.Server
-import org.opendc.compute.service.internal.HostView
+import org.opendc.compute.service.HostView
 
 /**
  * A [HostFilter] that filters hosts based on the vCPU requirements of a [Server] and the available vCPUs on the host.

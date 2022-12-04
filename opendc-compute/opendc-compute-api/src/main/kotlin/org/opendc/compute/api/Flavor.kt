@@ -36,9 +36,4 @@ public interface Flavor : Resource {
      * The amount of RAM available to the server (in MB).
      */
     public val memorySize: Long
-
-    /**
-     * Delete the flavor instance.
-     */
-    public suspend fun delete()
 }

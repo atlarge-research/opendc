@@ -25,9 +25,4 @@ package org.opendc.compute.api
 /**
  * An image containing a bootable operating system that can directly be executed by physical or virtual server.
  */
-public interface Image : Resource {
-    /**
-     * Delete the image instance.
-     */
-    public suspend fun delete()
-}
+public interface Image : Resource

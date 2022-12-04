@@ -23,7 +23,7 @@
 package org.opendc.compute.service.scheduler.weights
 
 import org.opendc.compute.api.Server
-import org.opendc.compute.service.internal.HostView
+import org.opendc.compute.service.HostView
 
 /**
  * A [HostWeigher] that weighs the hosts based on the number of instances on the host.

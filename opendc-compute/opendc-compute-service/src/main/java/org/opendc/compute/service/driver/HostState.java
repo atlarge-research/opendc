@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,37 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.internal
-
-import org.opendc.compute.api.Image
-import java.util.UUID
+package org.opendc.compute.service.driver;
 
 /**
- * Internal stateful representation of an [Image].
+ * The state of a host.
  */
-internal class InternalImage(
-    private val service: ComputeServiceImpl,
-    override val uid: UUID,
-    override val name: String,
-    labels: Map<String, String>,
-    meta: Map<String, Any>
-) : Image {
+public enum HostState {
+    /**
+     * The host is up and able to host guests.
+     */
+    UP,
 
-    override val labels: MutableMap<String, String> = labels.toMutableMap()
+    /**
+     * The host is in a (forced) down state and unable to host any guests.
+     */
+    DOWN,
 
-    override val meta: MutableMap<String, Any> = meta.toMutableMap()
-
-    override suspend fun refresh() {
-        // No-op: this object is the source-of-truth
-    }
-
-    override suspend fun delete() {
-        service.delete(this)
-    }
-
-    override fun equals(other: Any?): Boolean = other is Image && uid == other.uid
-
-    override fun hashCode(): Int = uid.hashCode()
-
-    override fun toString(): String = "Image[uid=$uid,name=$name]"
+    /**
+     * The host is in an error state and unable to host any guests.
+     */
+    ERROR
 }

@@ -20,32 +20,26 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.driver.telemetry
-
-import java.time.Duration
-import java.time.Instant
+package org.opendc.compute.service.telemetry;
 
 /**
- * System-level statistics of a host.
-
- * @property uptime The cumulative uptime of the host since last boot (in ms).
- * @property downtime The cumulative downtime of the host since last boot (in ms).
- * @property bootTime The time at which the server started.
- * @property powerUsage Instantaneous power usage of the system (in W).
- * @property energyUsage The cumulative energy usage of the system (in J).
- * @property guestsTerminated The number of guests that are in a terminated state.
- * @property guestsRunning The number of guests that are in a running state.
- * @property guestsError The number of guests that are in an error state.
- * @property guestsInvalid The number of guests that are in an unknown state.
+ * Statistics about the scheduling component of the [ComputeService].
+ *
+ * @param hostsAvailable The number of hosts currently available for scheduling.
+ * @param hostsUnavailable The number of hosts unavailable for scheduling.
+ * @param attemptsSuccess Scheduling attempts that resulted into an allocation onto a host.
+ * @param attemptsFailure The number of failed scheduling attempt due to insufficient capacity at the moment.
+ * @param attemptsError The number of scheduling attempts that failed due to system error.
+ * @param serversTotal The number of servers registered with the service.
+ * @param serversPending The number of servers that are pending to be scheduled.
+ * @param serversActive The number of servers that are currently managed by the service and running.
  */
-public data class HostSystemStats(
-    val uptime: Duration,
-    val downtime: Duration,
-    val bootTime: Instant?,
-    val powerUsage: Double,
-    val energyUsage: Double,
-    val guestsTerminated: Int,
-    val guestsRunning: Int,
-    val guestsError: Int,
-    val guestsInvalid: Int
-)
+public record SchedulerStats(
+        int hostsAvailable,
+        int hostsUnavailable,
+        long attemptsSuccess,
+        long attemptsFailure,
+        long attemptsError,
+        int serversTotal,
+        int serversPending,
+        int serversActive) {}

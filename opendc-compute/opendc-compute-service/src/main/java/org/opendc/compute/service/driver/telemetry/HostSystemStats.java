@@ -20,20 +20,31 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.driver.telemetry
+package org.opendc.compute.service.driver.telemetry;
 
-import java.time.Duration
-import java.time.Instant
+import java.time.Duration;
+import java.time.Instant;
 
 /**
- * System-level statistics of a guest.
+ * System-level statistics of a host.
  *
- * @property uptime The cumulative uptime of the guest since last boot (in ms).
- * @property downtime The cumulative downtime of the guest since last boot (in ms).
- * @property bootTime The time at which the guest booted.
+ * @param uptime The cumulative uptime of the host since last boot (in ms).
+ * @param downtime The cumulative downtime of the host since last boot (in ms).
+ * @param bootTime The time at which the server started.
+ * @param powerUsage Instantaneous power usage of the system (in W).
+ * @param energyUsage The cumulative energy usage of the system (in J).
+ * @param guestsTerminated The number of guests that are in a terminated state.
+ * @param guestsRunning The number of guests that are in a running state.
+ * @param guestsError The number of guests that are in an error state.
+ * @param guestsInvalid The number of guests that are in an unknown state.
  */
-public data class GuestSystemStats(
-    val uptime: Duration,
-    val downtime: Duration,
-    val bootTime: Instant?
-)
+public record HostSystemStats(
+        Duration uptime,
+        Duration downtime,
+        Instant bootTime,
+        double powerUsage,
+        double energyUsage,
+        int guestsTerminated,
+        int guestsRunning,
+        int guestsError,
+        int guestsInvalid) {}

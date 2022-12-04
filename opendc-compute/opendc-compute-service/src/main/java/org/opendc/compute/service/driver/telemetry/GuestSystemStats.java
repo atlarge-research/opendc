@@ -20,25 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.driver.telemetry
+package org.opendc.compute.service.driver.telemetry;
+
+import java.time.Duration;
+import java.time.Instant;
 
 /**
- * Statistics about the CPUs of a guest.
+ * System-level statistics of a guest.
  *
- * @property activeTime The cumulative time (in seconds) that the CPUs of the guest were actively running.
- * @property idleTime The cumulative time (in seconds) the CPUs of the guest were idle.
- * @property stealTime The cumulative CPU time (in seconds) that the guest was ready to run, but not granted time by the host.
- * @property lostTime The cumulative CPU time (in seconds) that was lost due to interference with other machines.
- * @property capacity The available CPU capacity of the guest (in MHz).
- * @property usage Amount of CPU resources (in MHz) actually used by the guest.
- * @property utilization Utilization of the CPU resources (in %) relative to the total CPU capacity.
+ * @param uptime The cumulative uptime of the guest since last boot (in ms).
+ * @param downtime The cumulative downtime of the guest since last boot (in ms).
+ * @param bootTime The time at which the guest booted.
  */
-public data class GuestCpuStats(
-    val activeTime: Long,
-    val idleTime: Long,
-    val stealTime: Long,
-    val lostTime: Long,
-    val capacity: Double,
-    val usage: Double,
-    val utilization: Double
-)
+public record GuestSystemStats(Duration uptime, Duration downtime, Instant bootTime) {}

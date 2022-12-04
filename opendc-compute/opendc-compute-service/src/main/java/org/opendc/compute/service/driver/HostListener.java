@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,42 +20,22 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.internal
+package org.opendc.compute.service.driver;
 
-import org.opendc.compute.api.Image
-import java.util.UUID
+import org.opendc.compute.api.Server;
+import org.opendc.compute.api.ServerState;
 
 /**
- * An [Image] implementation that is passed to clients but delegates its implementation to another class.
+ * Listener interface for events originating from a {@link Host}.
  */
-internal class ClientImage(private val delegate: Image) : Image {
-    override val uid: UUID = delegate.uid
+public interface HostListener {
+    /**
+     * This method is invoked when the state of <code>server</code> on <code>host</code> changes.
+     */
+    default void onStateChanged(Host host, Server server, ServerState newState) {}
 
-    override var name: String = delegate.name
-        private set
-
-    override var labels: Map<String, String> = delegate.labels.toMap()
-        private set
-
-    override var meta: Map<String, Any> = delegate.meta.toMap()
-        private set
-
-    override suspend fun delete() {
-        delegate.delete()
-        refresh()
-    }
-
-    override suspend fun refresh() {
-        delegate.refresh()
-
-        name = delegate.name
-        labels = delegate.labels
-        meta = delegate.meta
-    }
-
-    override fun equals(other: Any?): Boolean = other is Image && other.uid == uid
-
-    override fun hashCode(): Int = uid.hashCode()
-
-    override fun toString(): String = "Image[uid=$uid,name=$name]"
+    /**
+     * This method is invoked when the state of a {@link Host} has changed.
+     */
+    default void onStateChanged(Host host, HostState newState) {}
 }

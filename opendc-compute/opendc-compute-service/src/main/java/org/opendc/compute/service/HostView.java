@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,41 +20,59 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.api
+package org.opendc.compute.service;
 
-import java.util.UUID
+import org.opendc.compute.service.driver.Host;
 
 /**
- * A generic resource provided by the OpenDC Compute service.
+ * A view of a {@link Host} as seen from the {@link ComputeService}.
  */
-public interface Resource {
-    /**
-     * The unique identifier of the resource.
-     */
-    public val uid: UUID
+public class HostView {
+    private final Host host;
+    int instanceCount;
+    long availableMemory;
+    int provisionedCores;
 
     /**
-     * The name of the resource.
+     * Construct a {@link HostView} instance.
+     *
+     * @param host The host to create a view of.
      */
-    public val name: String
+    public HostView(Host host) {
+        this.host = host;
+        this.availableMemory = host.getModel().memoryCapacity();
+    }
 
     /**
-     * The identifying labels attached to the resource.
+     * The {@link Host} this is a view of.
      */
-    public val labels: Map<String, String>
+    public Host getHost() {
+        return host;
+    }
 
     /**
-     * The non-identifying metadata attached to the resource.
+     * Return the number of instances on this host.
      */
-    public val meta: Map<String, Any>
+    public int getInstanceCount() {
+        return instanceCount;
+    }
 
     /**
-     * Reload the attributes of the resource.
+     * Return the available memory of the host.
      */
-    public fun reload()
+    public long getAvailableMemory() {
+        return availableMemory;
+    }
 
     /**
-     * Delete the resource.
+     * Return the provisioned cores on the host.
      */
-    public fun delete()
+    public int getProvisionedCores() {
+        return provisionedCores;
+    }
+
+    @Override
+    public String toString() {
+        return "HostView[host=" + host + "]";
+    }
 }

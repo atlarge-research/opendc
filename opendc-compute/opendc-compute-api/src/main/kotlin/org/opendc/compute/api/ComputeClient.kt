@@ -31,14 +31,14 @@ public interface ComputeClient : AutoCloseable {
     /**
      * Obtain the list of [Flavor]s accessible by the requesting user.
      */
-    public suspend fun queryFlavors(): List<Flavor>
+    public fun queryFlavors(): List<Flavor>
 
     /**
      * Obtain a [Flavor] by its unique identifier.
      *
      * @param id The identifier of the flavor.
      */
-    public suspend fun findFlavor(id: UUID): Flavor?
+    public fun findFlavor(id: UUID): Flavor?
 
     /**
      * Create a new [Flavor] instance at this compute service.
@@ -49,7 +49,7 @@ public interface ComputeClient : AutoCloseable {
      * @param labels The identifying labels of the image.
      * @param meta The non-identifying meta-data of the image.
      */
-    public suspend fun newFlavor(
+    public fun newFlavor(
         name: String,
         cpuCount: Int,
         memorySize: Long,
@@ -60,14 +60,14 @@ public interface ComputeClient : AutoCloseable {
     /**
      * Obtain the list of [Image]s accessible by the requesting user.
      */
-    public suspend fun queryImages(): List<Image>
+    public fun queryImages(): List<Image>
 
     /**
      * Obtain a [Image] by its unique identifier.
      *
      * @param id The identifier of the image.
      */
-    public suspend fun findImage(id: UUID): Image?
+    public fun findImage(id: UUID): Image?
 
     /**
      * Create a new [Image] instance at this compute service.
@@ -76,7 +76,7 @@ public interface ComputeClient : AutoCloseable {
      * @param labels The identifying labels of the image.
      * @param meta The non-identifying meta-data of the image.
      */
-    public suspend fun newImage(
+    public fun newImage(
         name: String,
         labels: Map<String, String> = emptyMap(),
         meta: Map<String, Any> = emptyMap()
@@ -85,14 +85,14 @@ public interface ComputeClient : AutoCloseable {
     /**
      * Obtain the list of [Server]s accessible by the requesting user.
      */
-    public suspend fun queryServers(): List<Server>
+    public fun queryServers(): List<Server>
 
     /**
      * Obtain a [Server] by its unique identifier.
      *
      * @param id The identifier of the server.
      */
-    public suspend fun findServer(id: UUID): Server?
+    public fun findServer(id: UUID): Server?
 
     /**
      * Create a new [Server] instance at this compute service.
@@ -104,7 +104,7 @@ public interface ComputeClient : AutoCloseable {
      * @param meta The non-identifying meta-data of the server.
      * @param start A flag to indicate that the server should be started immediately.
      */
-    public suspend fun newServer(
+    public fun newServer(
         name: String,
         image: Image,
         flavor: Flavor,

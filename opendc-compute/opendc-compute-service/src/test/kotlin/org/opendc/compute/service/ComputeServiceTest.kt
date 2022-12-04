@@ -50,6 +50,7 @@ import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.RamWeigher
 import org.opendc.simulator.kotlin.SimulationCoroutineScope
 import org.opendc.simulator.kotlin.runSimulation
+import java.time.Duration
 import java.util.UUID
 
 /**
@@ -66,7 +67,7 @@ internal class ComputeServiceTest {
             filters = listOf(ComputeFilter(), VCpuFilter(allocationRatio = 1.0), RamFilter(allocationRatio = 1.0)),
             weighers = listOf(RamWeigher())
         )
-        service = ComputeService(scope.dispatcher, computeScheduler)
+        service = ComputeService(scope.dispatcher, computeScheduler, Duration.ofMinutes(5))
     }
 
     @Test
@@ -170,7 +171,7 @@ internal class ComputeServiceTest {
 
         server.start()
         delay(5L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.TERMINATED, server.state)
     }
 
@@ -183,7 +184,7 @@ internal class ComputeServiceTest {
 
         server.start()
         delay(5L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.TERMINATED, server.state)
     }
 
@@ -196,7 +197,7 @@ internal class ComputeServiceTest {
 
         server.start()
         delay(5L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.TERMINATED, server.state)
     }
 
@@ -210,7 +211,7 @@ internal class ComputeServiceTest {
         server.start()
         server.stop()
         delay(5L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.TERMINATED, server.state)
     }
 
@@ -231,7 +232,7 @@ internal class ComputeServiceTest {
 
         server.start()
         delay(10L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.PROVISIONING, server.state)
 
         verify { host.canFit(server) }
@@ -262,7 +263,7 @@ internal class ComputeServiceTest {
         listeners.forEach { it.onStateChanged(host, HostState.UP) }
 
         delay(5L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.PROVISIONING, server.state)
 
         verify { host.canFit(server) }
@@ -293,33 +294,10 @@ internal class ComputeServiceTest {
 
         server.start()
         delay(5L * 60 * 1000)
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.PROVISIONING, server.state)
 
         verify(exactly = 0) { host.canFit(server) }
-    }
-
-    @Test
-    fun testServerInvalidType() = scope.runSimulation {
-        val host = mockk<Host>(relaxUnitFun = true)
-        val listeners = mutableListOf<HostListener>()
-
-        every { host.uid } returns UUID.randomUUID()
-        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
-        every { host.state } returns HostState.UP
-        every { host.canFit(any()) } returns true
-        every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
-
-        service.addHost(host)
-
-        val client = service.newClient()
-        val flavor = client.newFlavor("test", 1, 1024)
-        val image = client.newImage("test")
-        val server = client.newServer("test", image, flavor, start = false)
-
-        assertThrows<IllegalArgumentException> {
-            listeners.forEach { it.onStateChanged(host, server, ServerState.RUNNING) }
-        }
     }
 
     @Test
@@ -351,7 +329,7 @@ internal class ComputeServiceTest {
 
         listeners.forEach { it.onStateChanged(host, slot.captured, ServerState.RUNNING) }
 
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.RUNNING, server.state)
 
         verify { watcher.onStateChanged(server, ServerState.RUNNING) }
@@ -359,7 +337,7 @@ internal class ComputeServiceTest {
         // Stop server
         listeners.forEach { it.onStateChanged(host, slot.captured, ServerState.TERMINATED) }
 
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.TERMINATED, server.state)
 
         verify { watcher.onStateChanged(server, ServerState.TERMINATED) }
@@ -387,7 +365,7 @@ internal class ComputeServiceTest {
         server.start()
         delay(5L * 60 * 1000)
 
-        server.refresh()
+        server.reload()
         assertEquals(ServerState.PROVISIONING, server.state)
     }
 }
