@@ -36,7 +36,7 @@ public data class Task(
     val uid: UUID,
     val name: String,
     val dependencies: Set<Task>,
-    val metadata: Map<String, Any> = emptyMap()
+    val metadata: MutableMap<String, Any> = LinkedHashMap()
 ) {
     override fun equals(other: Any?): Boolean = other is Task && uid == other.uid
 

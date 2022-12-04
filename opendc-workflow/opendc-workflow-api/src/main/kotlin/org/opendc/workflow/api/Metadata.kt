@@ -31,3 +31,14 @@ public const val WORKFLOW_TASK_DEADLINE: String = "workflow:task:deadline"
  * Meta-data key for the number of cores needed for a task.
  */
 public const val WORKFLOW_TASK_CORES: String = "workflow:task:cores"
+
+/**
+ * Meta-data key for the earliest start time of a task.
+ */
+public const val WORKFLOW_TASK_EARLIEST_START_TIME: String = "workflow:task:earliestStartTime"
+
+/**
+ * Meta-data key for the slack of a task.
+ * TODO add more explain
+ */
+public const val WORKFLOW_TASK_SLACK: String = "workflow:task:slack"
