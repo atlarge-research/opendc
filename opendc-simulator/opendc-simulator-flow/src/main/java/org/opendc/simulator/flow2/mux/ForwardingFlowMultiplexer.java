@@ -182,6 +182,9 @@ public final class ForwardingFlowMultiplexer implements FlowMultiplexer, FlowSta
 
         activeOutputs.set(slot);
         availableOutputs.set(slot);
+
+        port.setHandler(IDLE_OUT_HANDLER);
+
         return port;
     }
 
@@ -270,11 +273,15 @@ public final class ForwardingFlowMultiplexer implements FlowMultiplexer, FlowSta
         public void onUpstreamFinish(InPort port, Throwable cause) {}
     }
 
-    private static class IdleOutHandler implements OutHandler {
+    private class IdleOutHandler implements OutHandler {
         @Override
-        public void onPull(OutPort port, float capacity) {}
+        public void onPull(OutPort port, float capacity) {
+            ForwardingFlowMultiplexer.this.capacity += -port.getCapacity() + capacity;
+        }
 
         @Override
-        public void onDownstreamFinish(OutPort port, Throwable cause) {}
+        public void onDownstreamFinish(OutPort port, Throwable cause) {
+            ForwardingFlowMultiplexer.this.capacity -= port.getCapacity();
+        }
     }
 }
