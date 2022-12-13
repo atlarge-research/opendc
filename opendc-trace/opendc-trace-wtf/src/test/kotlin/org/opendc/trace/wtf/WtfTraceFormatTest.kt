@@ -123,4 +123,19 @@ class WtfTraceFormatTest {
             reader = format.newReader(path, TABLE_TASKS, null)
         }
     }
+
+    @DisplayName("TableReader for Tasks (Shell trace)")
+    @Nested
+    inner class ShellTasksTableReaderTest : TableReaderTestKit() {
+        override lateinit var reader: TableReader
+        override lateinit var columns: List<TableColumn>
+
+        @BeforeEach
+        fun setUp() {
+            val path = Paths.get("src/test/resources/shell")
+
+            columns = format.getDetails(path, TABLE_TASKS).columns
+            reader = format.newReader(path, TABLE_TASKS, null)
+        }
+    }
 }

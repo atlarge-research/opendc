@@ -30,6 +30,7 @@ import org.apache.parquet.schema.MessageType
 import java.time.Duration
 import java.time.Instant
 import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 /**
  * A [RecordMaterializer] for [Task] records.
@@ -144,6 +145,10 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
         private val entryConverter = object : PrimitiveConverter() {
             override fun addLong(value: Long) {
                 relations.add(value.toString())
+            }
+
+            override fun addDouble(value: Double) {
+                relations.add(value.roundToLong().toString())
             }
         }
 

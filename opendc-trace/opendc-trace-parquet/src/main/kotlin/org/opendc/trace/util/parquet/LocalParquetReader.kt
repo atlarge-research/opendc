@@ -38,10 +38,12 @@ import kotlin.io.path.isDirectory
  *
  * @param path The path to the Parquet file or directory to read.
  * @param readSupport Helper class to perform conversion from Parquet to [T].
+ * @param strictTyping A flag to disable strict typing of primitive types.
  */
 public class LocalParquetReader<out T>(
     path: Path,
-    private val readSupport: ReadSupport<T>
+    private val readSupport: ReadSupport<T>,
+    private val strictTyping: Boolean = true
 ) : AutoCloseable {
     /**
      * The input files to process.
@@ -119,6 +121,8 @@ public class LocalParquetReader<out T>(
     private fun createReader(input: InputFile): ParquetReader<T> {
         return object : ParquetReader.Builder<T>(input) {
             override fun getReadSupport(): ReadSupport<@UnsafeVariance T> = this@LocalParquetReader.readSupport
-        }.build()
+        }
+            .set("parquet.strict.typing", strictTyping.toString())
+            .build()
     }
 }
