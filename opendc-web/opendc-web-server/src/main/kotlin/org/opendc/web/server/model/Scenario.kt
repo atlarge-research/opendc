@@ -23,9 +23,7 @@
 package org.opendc.web.server.model
 
 import org.hibernate.annotations.Type
-import org.hibernate.annotations.TypeDef
 import org.opendc.web.proto.OperationalPhenomena
-import org.opendc.web.server.util.hibernate.json.JsonType
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Embedded
@@ -45,7 +43,6 @@ import javax.persistence.UniqueConstraint
 /**
  * A single scenario to be explored by the simulator.
  */
-@TypeDef(name = "json", typeClass = JsonType::class)
 @Entity
 @Table(
     name = "scenarios",
@@ -101,7 +98,7 @@ class Scenario(
     @ManyToOne(optional = false)
     val topology: Topology,
 
-    @Type(type = "json")
+    @Type(type = "io.hypersistence.utils.hibernate.type.json.JsonType")
     @Column(columnDefinition = "jsonb", nullable = false, updatable = false)
     val phenomena: OperationalPhenomena,
 

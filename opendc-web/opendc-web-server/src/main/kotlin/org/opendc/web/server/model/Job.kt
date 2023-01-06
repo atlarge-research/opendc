@@ -23,9 +23,7 @@
 package org.opendc.web.server.model
 
 import org.hibernate.annotations.Type
-import org.hibernate.annotations.TypeDef
 import org.opendc.web.proto.JobState
-import org.opendc.web.server.util.hibernate.json.JsonType
 import java.time.Instant
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -42,7 +40,6 @@ import javax.persistence.Table
 /**
  * A simulation job to be run by the simulator.
  */
-@TypeDef(name = "json", typeClass = JsonType::class)
 @Entity
 @Table(name = "jobs")
 @NamedQueries(
@@ -103,7 +100,7 @@ class Job(
     /**
      * Experiment results in JSON
      */
-    @Type(type = "json")
+    @Type(type = "io.hypersistence.utils.hibernate.type.json.JsonType")
     @Column(columnDefinition = "jsonb")
     var results: Map<String, Any>? = null
 

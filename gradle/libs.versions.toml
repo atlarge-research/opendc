@@ -5,6 +5,7 @@ commons-math3 = "3.6.1"
 dokka = "1.7.10"
 gradle-node = "3.5.0"
 hadoop = "3.3.4"
+hypersistence-utils = "3.0.1"
 jackson = "2.14.0"
 jandex-gradle = "1.0.0"
 java = "17"
@@ -83,6 +84,7 @@ quarkus-hibernate-validator = { module = "io.quarkus:quarkus-hibernate-validator
 quarkus-jdbc-h2 = { module = "io.quarkus:quarkus-jdbc-h2" }
 quarkus-jdbc-postgresql = { module = "io.quarkus:quarkus-jdbc-postgresql" }
 quarkus-flyway = { module = "io.quarkus:quarkus-flyway" }
+hypersistence-utils-hibernate = { module = "io.hypersistence:hypersistence-utils-hibernate-55", version.ref = "hypersistence-utils" }
 
 # Quarkus (Testing)
 quarkus-junit5-core = { module = "io.quarkus:quarkus-junit5" }

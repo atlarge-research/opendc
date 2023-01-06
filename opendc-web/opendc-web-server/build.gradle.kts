@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.quarkus.flyway)
     implementation(libs.quarkus.jdbc.postgresql)
     implementation(libs.quarkus.jdbc.h2)
+    implementation(libs.hypersistence.utils.hibernate)
 
     testImplementation(libs.quarkus.junit5.core)
     testImplementation(libs.quarkus.junit5.mockk)

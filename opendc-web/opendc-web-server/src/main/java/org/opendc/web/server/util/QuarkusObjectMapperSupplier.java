@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,20 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.server.util.hibernate.json
+package org.opendc.web.server.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import org.hibernate.type.AbstractSingleColumnStandardBasicType
-import org.hibernate.type.BasicType
-import org.hibernate.usertype.DynamicParameterizedType
-import java.util.Properties
-import javax.enterprise.inject.spi.CDI
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.hypersistence.utils.hibernate.type.util.ObjectMapperSupplier;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import javax.enterprise.inject.spi.CDI;
 
 /**
- * A [BasicType] that contains JSON.
+ * A supplier for an {@link ObjectMapper} used by the Hypersistence utilities.
  */
-class JsonType(objectMapper: ObjectMapper) : AbstractSingleColumnStandardBasicType<Any>(JsonSqlTypeDescriptor, JsonTypeDescriptor(objectMapper)), DynamicParameterizedType {
-    /**
-     * No-arg constructor for Hibernate to instantiate.
-     */
-    constructor() : this(CDI.current().select(ObjectMapper::class.java).get())
-
-    override fun getName(): String = "json"
-
-    override fun registerUnderJavaType(): Boolean = true
-
-    override fun setParameterValues(parameters: Properties) {
-        (javaTypeDescriptor as JsonTypeDescriptor).setParameterValues(parameters)
+@RegisterForReflection
+public class QuarkusObjectMapperSupplier implements ObjectMapperSupplier {
+    @Override
+    public ObjectMapper get() {
+        return CDI.current().select(ObjectMapper.class).get();
     }
 }
