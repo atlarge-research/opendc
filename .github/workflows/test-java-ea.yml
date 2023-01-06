@@ -5,7 +5,7 @@ on:
 
 jobs:
   java-ea:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3

@@ -7,7 +7,7 @@ on:
 jobs:
   push-simulator:
     name: Push Simulator
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Prepare
         id: prep
@@ -32,7 +32,7 @@ jobs:
           tags: ${{ steps.prep.outputs.tags }}
   push-api:
     name: Push API
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Prepare
         id: prep
@@ -56,7 +56,7 @@ jobs:
           tags: ${{ steps.prep.outputs.tags }}
   push-ui:
     name: Push UI
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Prepare
         id: prep
