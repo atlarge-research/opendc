@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,15 +20,15 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.server.util
+package org.opendc.web.server.util;
 
-import io.quarkus.arc.properties.IfBuildProperty
-import java.security.Principal
-import javax.ws.rs.container.ContainerRequestContext
-import javax.ws.rs.container.ContainerRequestFilter
-import javax.ws.rs.container.PreMatching
-import javax.ws.rs.core.SecurityContext
-import javax.ws.rs.ext.Provider
+import io.quarkus.arc.properties.IfBuildProperty;
+import java.security.Principal;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.PreMatching;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.ext.Provider;
 
 /**
  * Helper class to disable security for the OpenDC web API when in development mode.
@@ -36,16 +36,29 @@ import javax.ws.rs.ext.Provider
 @Provider
 @PreMatching
 @IfBuildProperty(name = "opendc.security.enabled", stringValue = "false")
-class DevSecurityOverrideFilter : ContainerRequestFilter {
-    override fun filter(requestContext: ContainerRequestContext) {
-        requestContext.securityContext = object : SecurityContext {
-            override fun getUserPrincipal(): Principal = Principal { "anon" }
+public class DevSecurityOverrideFilter implements ContainerRequestFilter {
+    @Override
+    public void filter(ContainerRequestContext requestContext) {
+        requestContext.setSecurityContext(new SecurityContext() {
+            @Override
+            public Principal getUserPrincipal() {
+                return () -> "anon";
+            }
 
-            override fun isSecure(): Boolean = false
+            @Override
+            public boolean isUserInRole(String role) {
+                return true;
+            }
 
-            override fun isUserInRole(role: String): Boolean = true
+            @Override
+            public boolean isSecure() {
+                return false;
+            }
 
-            override fun getAuthenticationScheme(): String = "basic"
-        }
+            @Override
+            public String getAuthenticationScheme() {
+                return "basic";
+            }
+        });
     }
 }
