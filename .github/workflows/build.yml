@@ -30,7 +30,7 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: build codeCoverageReport
+          arguments: build assembleDist codeCoverageReport
           # Only write to the cache for builds on the 'master' branch.
           # Builds on other branches will only read existing entries from the cache.
           cache-read-only: ${{ github.ref != 'refs/heads/master' }}
@@ -41,7 +41,7 @@ jobs:
           check_name: test (Java ${{ matrix.java }})
           report_paths: '**/build/test-results/test/TEST-*.xml'
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload artifacts
+      - name: Upload reports
         if: always()
         continue-on-error: true # See https://github.com/actions/upload-artifact/issues/270
         uses: actions/upload-artifact@v3
@@ -50,6 +50,14 @@ jobs:
           path: |
             ./**/build/reports/**/*
             ./**/build/test-results/**/*
+          retention-days: 5
+      - name: Upload build
+        continue-on-error: true
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ matrix.os }}-jdk${{ matrix.java }}
+          path: |
+            ./**/build/distributions/**/*.zip
           retention-days: 5
       - name: Upload code coverage
         uses: codecov/codecov-action@v3
