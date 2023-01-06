@@ -17,8 +17,7 @@ jobs:
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
           fi
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
-          echo ::set-output name=tags::${TAGS}
+          echo "tags=${DOCKER_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
@@ -43,8 +42,7 @@ jobs:
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
           fi
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
-          echo ::set-output name=tags::${TAGS}
+          echo "tags=${DOCKER_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
@@ -54,8 +52,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          file: opendc-web/opendc-web-api/Dockerfile
-          repository: atlargeresearch/opendc-web-api
+          file: opendc-web/opendc-web-server/Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
   push-ui:
     name: Push UI
@@ -69,8 +66,7 @@ jobs:
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
           fi
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
-          echo ::set-output name=tags::${TAGS}
+          echo "tags=${DOCKER_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
@@ -81,5 +77,4 @@ jobs:
         with:
           push: true
           context: opendc-web/opendc-web-ui
-          repository: atlargeresearch/opendc-web-ui
           tags: ${{ steps.prep.outputs.tags }}
