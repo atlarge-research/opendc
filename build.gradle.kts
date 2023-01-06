@@ -24,7 +24,3 @@ plugins {
     `dokka-conventions`
     `jacoco-aggregation`
 }
-
-allprojects {
-    version = "3.0-rc1"
-}
