@@ -50,7 +50,7 @@ class ProjectResource @Inject constructor(
      */
     @GET
     fun getAll(): List<Project> {
-        return projectService.findWithUser(identity.principal.name)
+        return projectService.findByUser(identity.principal.name)
     }
 
     /**
@@ -59,7 +59,7 @@ class ProjectResource @Inject constructor(
     @POST
     @Transactional
     fun create(@Valid request: Project.Create): Project {
-        return projectService.createForUser(identity.principal.name, request.name)
+        return projectService.create(identity.principal.name, request.name)
     }
 
     /**
@@ -68,7 +68,7 @@ class ProjectResource @Inject constructor(
     @GET
     @Path("{project}")
     fun get(@PathParam("project") id: Long): Project {
-        return projectService.findWithUser(identity.principal.name, id) ?: throw WebApplicationException("Project not found", 404)
+        return projectService.findByUser(identity.principal.name, id) ?: throw WebApplicationException("Project not found", 404)
     }
 
     /**
@@ -79,7 +79,7 @@ class ProjectResource @Inject constructor(
     @Transactional
     fun delete(@PathParam("project") id: Long): Project {
         try {
-            return projectService.deleteWithUser(identity.principal.name, id) ?: throw WebApplicationException("Project not found", 404)
+            return projectService.delete(identity.principal.name, id) ?: throw WebApplicationException("Project not found", 404)
         } catch (e: IllegalArgumentException) {
             throw WebApplicationException(e.message, 403)
         }

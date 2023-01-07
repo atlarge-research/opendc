@@ -79,7 +79,8 @@ quarkus-resteasy-jackson = { module = "io.quarkus:quarkus-resteasy-jackson" }
 quarkus-smallrye-openapi = { module = "io.quarkus:quarkus-smallrye-openapi" }
 quarkus-security = { module = "io.quarkus:quarkus-security" }
 quarkus-oidc = { module = "io.quarkus:quarkus-oidc" }
-quarkus-hibernate-orm = { module = "io.quarkus:quarkus-hibernate-orm" }
+quarkus-hibernate-orm-core = { module = "io.quarkus:quarkus-hibernate-orm" }
+quarkus-hibernate-orm-panache = { module = "io.quarkus:quarkus-hibernate-orm-panache" }
 quarkus-hibernate-validator = { module = "io.quarkus:quarkus-hibernate-validator" }
 quarkus-jdbc-h2 = { module = "io.quarkus:quarkus-jdbc-h2" }
 quarkus-jdbc-postgresql = { module = "io.quarkus:quarkus-jdbc-postgresql" }
@@ -90,6 +91,7 @@ hypersistence-utils-hibernate = { module = "io.hypersistence:hypersistence-utils
 quarkus-junit5-core = { module = "io.quarkus:quarkus-junit5" }
 quarkus-junit5-mockk = { module = "io.quarkiverse.mockk:quarkus-junit5-mockk", version.ref = "quarkus-junit5-mockk" }
 quarkus-jacoco = { module = "io.quarkus:quarkus-jacoco" }
+quarkus-panache-mock = { module = "io.quarkus:quarkus-panache-mock" }
 quarkus-test-security = { module = "io.quarkus:quarkus-test-security" }
 restassured-core = { module = "io.rest-assured:rest-assured" }
 restassured-kotlin = { module = "io.rest-assured:kotlin-extensions" }

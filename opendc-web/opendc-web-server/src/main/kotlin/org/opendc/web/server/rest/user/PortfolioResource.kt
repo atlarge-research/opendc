@@ -50,7 +50,7 @@ class PortfolioResource @Inject constructor(
      */
     @GET
     fun getAll(@PathParam("project") projectId: Long): List<Portfolio> {
-        return portfolioService.findAll(identity.principal.name, projectId)
+        return portfolioService.findByUser(identity.principal.name, projectId)
     }
 
     /**
@@ -68,7 +68,7 @@ class PortfolioResource @Inject constructor(
     @GET
     @Path("{portfolio}")
     fun get(@PathParam("project") projectId: Long, @PathParam("portfolio") number: Int): Portfolio {
-        return portfolioService.findOne(identity.principal.name, projectId, number) ?: throw WebApplicationException("Portfolio not found", 404)
+        return portfolioService.findByUser(identity.principal.name, projectId, number) ?: throw WebApplicationException("Portfolio not found", 404)
     }
 
     /**

@@ -91,7 +91,7 @@ class ProjectResourceTest {
     @TestSecurity(user = "testUser", roles = ["openid"])
     fun testGetAll() {
         val projects = listOf(dummyProject)
-        every { projectService.findWithUser("testUser") } returns projects
+        every { projectService.findByUser("testUser") } returns projects
 
         When {
             get()
@@ -108,7 +108,7 @@ class ProjectResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = ["openid"])
     fun testGetNonExisting() {
-        every { projectService.findWithUser("testUser", 1) } returns null
+        every { projectService.findByUser("testUser", 1) } returns null
 
         When {
             get("/1")
@@ -124,7 +124,7 @@ class ProjectResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = ["openid"])
     fun testGetExisting() {
-        every { projectService.findWithUser("testUser", 1) } returns dummyProject
+        every { projectService.findByUser("testUser", 1) } returns dummyProject
 
         When {
             get("/1")
@@ -141,7 +141,7 @@ class ProjectResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = ["openid"])
     fun testCreate() {
-        every { projectService.createForUser("testUser", "test") } returns dummyProject
+        every { projectService.create("testUser", "test") } returns dummyProject
 
         Given {
             body(Project.Create("test"))
@@ -196,7 +196,7 @@ class ProjectResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = ["openid"])
     fun testDeleteNonExistent() {
-        every { projectService.deleteWithUser("testUser", 1) } returns null
+        every { projectService.delete("testUser", 1) } returns null
 
         When {
             delete("/1")
@@ -212,7 +212,7 @@ class ProjectResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = ["openid"])
     fun testDelete() {
-        every { projectService.deleteWithUser("testUser", 1) } returns dummyProject
+        every { projectService.delete("testUser", 1) } returns dummyProject
 
         When {
             delete("/1")
@@ -228,7 +228,7 @@ class ProjectResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = ["openid"])
     fun testDeleteNonOwner() {
-        every { projectService.deleteWithUser("testUser", 1) } throws IllegalArgumentException("User does not own project")
+        every { projectService.delete("testUser", 1) } throws IllegalArgumentException("User does not own project")
 
         When {
             delete("/1")

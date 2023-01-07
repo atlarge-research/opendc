@@ -101,7 +101,7 @@ class JobResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = ["runner"])
     fun testQuery() {
-        every { jobService.queryPending() } returns listOf(dummyJob)
+        every { jobService.listPending() } returns listOf(dummyJob)
 
         When {
             get()

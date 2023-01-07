@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,36 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.server.service
+package org.opendc.web.server.service;
 
-import org.opendc.web.proto.user.ProjectRole
+import java.util.List;
+import javax.enterprise.context.ApplicationScoped;
+import org.opendc.web.server.model.Trace;
 
 /**
- * Flag to indicate that the user can edit a project.
+ * Service for managing {@link Trace}s.
  */
-internal val ProjectRole.canEdit: Boolean
-    get() = when (this) {
-        ProjectRole.OWNER, ProjectRole.EDITOR -> true
-        ProjectRole.VIEWER -> false
+@ApplicationScoped
+public final class TraceService {
+    /**
+     * Obtain all available workload traces.
+     */
+    public List<org.opendc.web.proto.Trace> findAll() {
+        List<Trace> entities = Trace.listAll();
+        return entities.stream().map(TraceService::toUserDto).toList();
     }
 
-/**
- * Flag to indicate that the user can delete a project.
- */
-internal val ProjectRole.canDelete: Boolean
-    get() = this == ProjectRole.OWNER
+    /**
+     * Obtain a workload trace by identifier.
+     */
+    public org.opendc.web.proto.Trace findById(String id) {
+        return toUserDto(Trace.findById(id));
+    }
+
+    /**
+     * Convert a {@link Trace] entity into a {@link org.opendc.web.proto.Trace} DTO.
+     */
+    public static org.opendc.web.proto.Trace toUserDto(Trace trace) {
+        return new org.opendc.web.proto.Trace(trace.id, trace.name, trace.type);
+    }
+}

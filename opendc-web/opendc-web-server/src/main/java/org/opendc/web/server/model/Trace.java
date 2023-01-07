@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,51 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.server.model
+package org.opendc.web.server.model;
 
-import javax.persistence.Column
-import javax.persistence.Embeddable
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
- * Key for representing a [ProjectAuthorization] object.
+ * A workload trace available for simulation.
  */
-@Embeddable
-data class ProjectAuthorizationKey(
-    @Column(name = "user_id", nullable = false)
-    val userId: String,
+@Entity
+public class Trace extends PanacheEntityBase {
+    /**
+     * The unique identifier of the trace.
+     */
+    @Id
+    public String id;
 
-    @Column(name = "project_id", nullable = false)
-    val projectId: Long
-) : java.io.Serializable
+    /**
+     * The name of the trace.
+     */
+    @Column(nullable = false, updatable = false)
+    public String name;
+
+    /**
+     * The type of trace.
+     */
+    @Column(nullable = false, updatable = false)
+    public String type;
+
+    /**
+     * Construct a {@link Trace}.
+     *
+     * @param id The unique identifier of the trace.
+     * @param name The name of the trace.
+     * @param type The type of trace.
+     */
+    public Trace(String id, String name, String type) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+    }
+
+    /**
+     * JPA constructor.
+     */
+    protected Trace() {}
+}

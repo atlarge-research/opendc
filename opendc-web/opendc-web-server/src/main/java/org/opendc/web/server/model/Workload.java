@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,44 +20,42 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.server.model
+package org.opendc.web.server.model;
 
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.NamedQueries
-import javax.persistence.NamedQuery
-import javax.persistence.Table
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.ManyToOne;
 
 /**
- * A workload trace available for simulation.
- *
- * @param id The unique identifier of the trace.
- * @param name The name of the trace.
- * @param type The type of trace.
+ * Specification of the workload for a {@link Scenario}
  */
-@Entity
-@Table(name = "traces")
-@NamedQueries(
-    value = [
-        NamedQuery(
-            name = "Trace.findAll",
-            query = "SELECT t FROM Trace t"
-        )
-    ]
-)
-class Trace(
-    @Id
-    val id: String,
-
-    @Column(nullable = false, updatable = false)
-    val name: String,
-
-    @Column(nullable = false, updatable = false)
-    val type: String
-) {
+@Embeddable
+public class Workload {
     /**
-     * Return a string representation of this trace.
+     * The {@link Trace} that the workload runs.
      */
-    override fun toString(): String = "Trace[id=$id,name=$name,type=$type]"
+    @ManyToOne(optional = false)
+    public Trace trace;
+
+    /**
+     * The percentage of the trace that should be sampled.
+     */
+    @Column(name = "sampling_fraction", nullable = false, updatable = false)
+    public double samplingFraction;
+
+    /**
+     * Construct a {@link Workload} object.
+     *
+     * @param trace The {@link Trace} to run as workload.
+     * @param samplingFraction The percentage of the workload to sample.
+     */
+    public Workload(Trace trace, double samplingFraction) {
+        this.trace = trace;
+        this.samplingFraction = samplingFraction;
+    }
+
+    /**
+     * JPA constructor.
+     */
+    protected Workload() {}
 }

@@ -47,7 +47,7 @@ public class QuarkusJobManager implements JobManager {
     @Nullable
     @Override
     public Job findNext() {
-        var pending = jobService.queryPending();
+        var pending = jobService.listPending();
         if (pending.isEmpty()) {
             return null;
         }

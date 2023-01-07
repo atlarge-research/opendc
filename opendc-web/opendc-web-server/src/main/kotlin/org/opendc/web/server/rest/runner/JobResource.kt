@@ -45,7 +45,7 @@ class JobResource @Inject constructor(private val jobService: JobService) {
      */
     @GET
     fun queryPending(): List<Job> {
-        return jobService.queryPending()
+        return jobService.listPending()
     }
 
     /**

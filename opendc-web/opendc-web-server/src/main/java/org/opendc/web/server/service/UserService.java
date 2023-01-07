@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,39 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.server.service
+package org.opendc.web.server.service;
 
-import io.quarkus.security.identity.SecurityIdentity
-import org.opendc.web.proto.user.User
-import javax.enterprise.context.ApplicationScoped
-import javax.inject.Inject
+import io.quarkus.security.identity.SecurityIdentity;
+import javax.enterprise.context.ApplicationScoped;
+import org.opendc.web.proto.user.User;
+import org.opendc.web.proto.user.UserAccounting;
 
 /**
- * Service for managing [User]s.
+ * Service for managing {@link User}s.
  */
 @ApplicationScoped
-class UserService @Inject constructor(private val accounting: UserAccountingService) {
+public final class UserService {
     /**
-     * Obtain the [User] object for the specified [identity].
+     * The service for managing the user accounting.
      */
-    fun getUser(identity: SecurityIdentity): User {
-        val userId = identity.principal.name
-        val accounting = accounting.getAccounting(userId)
+    private final UserAccountingService accountingService;
 
-        return User(userId, accounting)
+    /**
+     * Construct a {@link UserService} instance.
+     *
+     * @param accountingService The {@link UserAccountingService} instance to use.
+     */
+    public UserService(UserAccountingService accountingService) {
+        this.accountingService = accountingService;
+    }
+
+    /**
+     * Obtain the {@link User} object for the specified <code>identity</code>.
+     */
+    public User getUser(SecurityIdentity identity) {
+        String userId = identity.getPrincipal().getName();
+        UserAccounting accounting = accountingService.getAccounting(userId);
+
+        return new User(userId, accounting);
     }
 }

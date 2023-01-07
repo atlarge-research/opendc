@@ -68,7 +68,7 @@ class PortfolioResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = ["openid"])
     fun testGetForProject() {
-        every { portfolioService.findAll("testUser", 1) } returns emptyList()
+        every { portfolioService.findByUser("testUser", 1) } returns emptyList()
 
         Given {
             pathParam("project", "1")
@@ -197,7 +197,7 @@ class PortfolioResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = ["openid"])
     fun testGetNonExisting() {
-        every { portfolioService.findOne("testUser", 1, 1) } returns null
+        every { portfolioService.findByUser("testUser", 1, 1) } returns null
 
         Given {
             pathParam("project", "1")
@@ -215,7 +215,7 @@ class PortfolioResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = ["openid"])
     fun testGetExisting() {
-        every { portfolioService.findOne("testUser", 1, 1) } returns dummyPortfolio
+        every { portfolioService.findByUser("testUser", 1, 1) } returns dummyPortfolio
 
         Given {
             pathParam("project", "1")
