@@ -1,3 +1,4 @@
+# Workflow for creating a draft release once a new tag is pushed to GitHub
 name: Release
 
 on:
@@ -7,7 +8,7 @@ on:
 jobs:
   build:
     name: Build OpenDC
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -21,12 +22,7 @@ jobs:
       - name: Publish with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: publish
-        env:
-          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
-          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
-          ORG_GRADLE_PROJECT_ossrhUsername: ${{ secrets.OSSRH_USERNAME }}
-          ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
+          arguments: assembleDist
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:

@@ -1,4 +1,5 @@
-name: Publish Docker image
+# Workflow for publishing the artifacts once a GitHub release is published
+name: Publish
 
 on:
   release:
@@ -6,19 +7,18 @@ on:
 
 jobs:
   push-simulator:
-    name: Push Simulator
-    runs-on: ubuntu-latest
+    name: Push Simulator to DockerHub
+    runs-on: ubuntu-22.04
     steps:
       - name: Prepare
         id: prep
         run: |
           DOCKER_IMAGE=atlargeresearch/opendc
-          VERSION=edge
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=3.0-SNAPSHOT
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
           fi
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
-          echo ::set-output name=tags::${TAGS}
+          echo "tags=${DOCKER_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
@@ -32,19 +32,18 @@ jobs:
           repository: atlargeresearch/opendc
           tags: ${{ steps.prep.outputs.tags }}
   push-api:
-    name: Push API
-    runs-on: ubuntu-latest
+    name: Push API to DockerHub
+    runs-on: ubuntu-22.04
     steps:
       - name: Prepare
         id: prep
         run: |
           DOCKER_IMAGE=atlargeresearch/opendc-web-api
-          VERSION=edge
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=3.0-SNAPSHOT
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
           fi
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
-          echo ::set-output name=tags::${TAGS}
+          echo "tags=${DOCKER_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
@@ -54,23 +53,21 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          file: opendc-web/opendc-web-api/Dockerfile
-          repository: atlargeresearch/opendc-web-api
+          file: opendc-web/opendc-web-server/Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
   push-ui:
-    name: Push UI
-    runs-on: ubuntu-latest
+    name: Push UI to DockerHub
+    runs-on: ubuntu-22.04
     steps:
       - name: Prepare
         id: prep
         run: |
           DOCKER_IMAGE=atlargeresearch/opendc-web-ui
-          VERSION=edge
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=3.0-SNAPSHOT
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
           fi
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
-          echo ::set-output name=tags::${TAGS}
+          echo "tags=${DOCKER_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
@@ -81,5 +78,34 @@ jobs:
         with:
           push: true
           context: opendc-web/opendc-web-ui
-          repository: atlargeresearch/opendc-web-ui
           tags: ${{ steps.prep.outputs.tags }}
+  publish-maven-central:
+    name: Publish to Maven Central
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+      - name: Prepare
+        id: prep
+        run: |
+          VERSION=3.0-SNAPSHOT
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+      - name: Publish with Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: publish -Pversion="${{ steps.prep.outputs.version }}"
+        env:
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
+          ORG_GRADLE_PROJECT_ossrhUsername: ${{ secrets.OSSRH_USERNAME }}
+          ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
