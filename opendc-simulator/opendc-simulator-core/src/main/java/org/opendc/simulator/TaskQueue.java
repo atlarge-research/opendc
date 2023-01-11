@@ -183,7 +183,7 @@ final class TaskQueue {
         int oldCapacity = deadlines.length;
 
         // Double size if small; else grow by 50%
-        int newCapacity = oldCapacity + oldCapacity < 64 ? oldCapacity + 2 : oldCapacity >> 1;
+        int newCapacity = oldCapacity + (oldCapacity < 64 ? oldCapacity + 2 : oldCapacity >> 1);
 
         deadlines = Arrays.copyOf(deadlines, newCapacity);
         ids = Arrays.copyOf(ids, newCapacity);
