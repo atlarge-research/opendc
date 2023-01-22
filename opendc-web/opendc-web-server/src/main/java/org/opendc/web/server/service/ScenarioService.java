@@ -219,6 +219,13 @@ public final class ScenarioService {
      * Convert a {@link Workload} entity into a DTO.
      */
     public static org.opendc.web.proto.Workload toDto(Workload workload) {
-        return new org.opendc.web.proto.Workload(TraceService.toUserDto(workload.trace), workload.samplingFraction);
+        return new org.opendc.web.proto.Workload(toDto(workload.trace), workload.samplingFraction);
+    }
+
+    /**
+     * Convert a {@link Trace] entity into a {@link org.opendc.web.proto.Trace} DTO.
+     */
+    public static org.opendc.web.proto.Trace toDto(Trace trace) {
+        return new org.opendc.web.proto.Trace(trace.id, trace.name, trace.type);
     }
 }

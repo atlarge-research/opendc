@@ -55,11 +55,9 @@ dependencies {
     implementation(libs.hypersistence.utils.hibernate)
 
     testImplementation(libs.quarkus.junit5.core)
-    testImplementation(libs.quarkus.junit5.mockk)
     testImplementation(libs.quarkus.jacoco)
     testImplementation(libs.quarkus.panache.mock)
     testImplementation(libs.restassured.core)
-    testImplementation(libs.restassured.kotlin)
     testImplementation(libs.quarkus.test.security)
     testImplementation(libs.quarkus.jdbc.h2)
 }

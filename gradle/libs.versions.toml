@@ -23,8 +23,7 @@ mockk = "1.13.2"
 node = "18.12.0"
 parquet = "1.12.3"
 progressbar = "0.9.3"
-quarkus = "2.14.2.Final"
-quarkus-junit5-mockk = "1.1.1"
+quarkus = "2.16.1.Final"
 sentry = "6.8.0"
 slf4j = "2.0.4"
 spotless = "6.12.0"
@@ -89,12 +88,10 @@ hypersistence-utils-hibernate = { module = "io.hypersistence:hypersistence-utils
 
 # Quarkus (Testing)
 quarkus-junit5-core = { module = "io.quarkus:quarkus-junit5" }
-quarkus-junit5-mockk = { module = "io.quarkiverse.mockk:quarkus-junit5-mockk", version.ref = "quarkus-junit5-mockk" }
 quarkus-jacoco = { module = "io.quarkus:quarkus-jacoco" }
 quarkus-panache-mock = { module = "io.quarkus:quarkus-panache-mock" }
 quarkus-test-security = { module = "io.quarkus:quarkus-test-security" }
 restassured-core = { module = "io.rest-assured:rest-assured" }
-restassured-kotlin = { module = "io.rest-assured:kotlin-extensions" }
 
 # Calcite (SQL)
 calcite-core = { module = "org.apache.calcite:calcite-core", version.ref = "calcite" }

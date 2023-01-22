@@ -61,7 +61,13 @@ public final class JobService {
      * Find a job by its identifier.
      */
     public org.opendc.web.proto.runner.Job findById(long id) {
-        return toRunnerDto(Job.findById(id));
+        Job job = Job.findById(id);
+
+        if (job == null) {
+            return null;
+        }
+
+        return toRunnerDto(job);
     }
 
     /**

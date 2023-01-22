@@ -29,25 +29,11 @@ import org.gradle.kotlin.dsl.kotlin
 import org.gradle.kotlin.dsl.withType
 
 plugins {
-    id("kotlin-conventions")
-    kotlin("plugin.allopen")
-    kotlin("plugin.jpa")
+    id("java-conventions")
     id("testing-conventions")
     id("io.quarkus")
 }
 
-/* Mark necessary classes as open in Kotlin */
-allOpen {
-    annotation("javax.ws.rs.Path")
-    annotation("javax.enterprise.context.ApplicationScoped")
-    annotation("io.quarkus.test.junit.QuarkusTest")
-    annotation("javax.persistence.Entity")
-}
-
-/* Include metadata for method parameters */
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.javaParameters = true
-}
 
 /* Launch Quarkus dev mode from project root directory */
 tasks.quarkusDev {
