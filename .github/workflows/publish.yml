@@ -29,7 +29,6 @@ jobs:
         with:
           push: true
           file: opendc-web/opendc-web-runner/Dockerfile
-          repository: atlargeresearch/opendc
           tags: ${{ steps.prep.outputs.tags }}
   push-api:
     name: Push API to DockerHub
@@ -59,6 +58,8 @@ jobs:
     name: Push UI to DockerHub
     runs-on: ubuntu-22.04
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
       - name: Prepare
         id: prep
         run: |
