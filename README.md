@@ -7,8 +7,8 @@
 Collaborative Datacenter Simulation and Exploration for Everybody
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](/LICENSE.txt)
-[![Documentation](https://img.shields.io/badge/docs-master-green.svg)](https://opendc.org)
-[![GitHub release](https://img.shields.io/github/release/atlarge-research/opendc)](https://github.com/atlarge-research/opendc/releases)
+[![Documentation](https://img.shields.io/badge/docs-master-green.svg)](https://atlarge-research.github.io/opendc)
+[![GitHub release](https://img.shields.io/github/v/release/atlarge-research/opendc?include_prereleases)](https://github.com/atlarge-research/opendc/releases)
 [![Build](https://github.com/atlarge-research/opendc/actions/workflows/build.yml/badge.svg)](https://github.com/atlarge-research/opendc/actions/workflows/build.yml)
 
 -----
@@ -18,7 +18,7 @@ This repository is the home of the OpenDC project, a free and open-source platfo
 ## Latest Release
 
 - General Availability (GA): [OpenDC v2.0](https://github.com/atlarge-research/opendc/releases/tag/v2.0) (May 10, 2021)
-- Preview (Release Candidate): n/a
+- Preview (Release Candidate): [OpenDC v3.0-rc1](https://github.com/atlarge-research/opendc/releases/tag/v3.0-rc1) (Jan 27, 2023)
 
 ## Documentation
 

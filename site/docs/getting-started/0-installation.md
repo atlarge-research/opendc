@@ -20,7 +20,7 @@ quicker.
 
 ## Download
 
-To get an OpenDC distribution, download a recent stable version from our [Releases](https://github.com/atlarge-research/opendc/releases)
+To get an OpenDC distribution, download a recent version from our [Releases](https://github.com/atlarge-research/opendc/releases)
 page on GitHub.
 
 ## Setup
