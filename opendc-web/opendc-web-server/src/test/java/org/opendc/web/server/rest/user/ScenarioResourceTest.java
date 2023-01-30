@@ -27,55 +27,42 @@ import static org.hamcrest.Matchers.equalTo;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
-import java.time.Instant;
-import java.util.Set;
+import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.opendc.web.proto.JobState;
 import org.opendc.web.proto.OperationalPhenomena;
-import org.opendc.web.proto.Targets;
-import org.opendc.web.proto.Trace;
 import org.opendc.web.proto.Workload;
-import org.opendc.web.proto.user.Job;
-import org.opendc.web.proto.user.Portfolio;
-import org.opendc.web.proto.user.Project;
-import org.opendc.web.proto.user.ProjectRole;
 import org.opendc.web.proto.user.Scenario;
-import org.opendc.web.proto.user.Topology;
-import org.opendc.web.server.service.ScenarioService;
 
 /**
- * Test suite for [ScenarioResource].
+ * Test suite for {@link ScenarioResource}.
  */
 @QuarkusTest
 @TestHTTPEndpoint(ScenarioResource.class)
 public final class ScenarioResourceTest {
-    @InjectMock
-    private ScenarioService scenarioService;
+    /**
+     * Test that tries to obtain all scenarios belonging to a project without authorization.
+     */
+    @Test
+    @TestSecurity(
+            user = "unknown",
+            roles = {"openid"})
+    public void testGetAllUnauthorized() {
+        given().pathParam("project", "1").when().get().then().statusCode(404).contentType(ContentType.JSON);
+    }
 
     /**
-     * Dummy values
+     * Test that tries to obtain all scenarios belonging to a project.
      */
-    private final Project dummyProject = new Project(0, "test", Instant.now(), Instant.now(), ProjectRole.OWNER);
-
-    private final Portfolio.Summary dummyPortfolio = new Portfolio.Summary(1, 1, "test", new Targets(Set.of(), 1));
-    private final Job dummyJob = new Job(1, JobState.PENDING, Instant.now(), Instant.now(), null);
-    private final Trace dummyTrace = new Trace("bitbrains", "Bitbrains", "vm");
-    private final Topology.Summary dummyTopology = new Topology.Summary(1, 1, "test", Instant.now(), Instant.now());
-    private final Scenario dummyScenario = new Scenario(
-            1,
-            1,
-            dummyProject,
-            dummyPortfolio,
-            "test",
-            new Workload(dummyTrace, 1.0),
-            dummyTopology,
-            new OperationalPhenomena(false, false),
-            "test",
-            dummyJob);
+    @Test
+    @TestSecurity(
+            user = "owner",
+            roles = {"openid"})
+    public void testGetAll() {
+        given().pathParam("project", "1").when().get().then().statusCode(200).contentType(ContentType.JSON);
+    }
 
     /**
      * Test that tries to obtain a scenario without token.
@@ -90,7 +77,7 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"runner"})
     public void testGetInvalidToken() {
         given().pathParam("project", "1").when().get("/1").then().statusCode(403);
@@ -101,11 +88,25 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testGetNonExisting() {
-        Mockito.when(scenarioService.findOne("testUser", 1, 1)).thenReturn(null);
+        given().pathParam("project", "1")
+                .when()
+                .get("/0")
+                .then()
+                .statusCode(404)
+                .contentType(ContentType.JSON);
+    }
 
+    /**
+     * Test that tries to obtain a scenario.
+     */
+    @Test
+    @TestSecurity(
+            user = "unknown",
+            roles = {"openid"})
+    public void testGetExistingUnauthorized() {
         given().pathParam("project", "1")
                 .when()
                 .get("/1")
@@ -119,11 +120,9 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testGetExisting() {
-        Mockito.when(scenarioService.findOne("testUser", 1, 1)).thenReturn(dummyScenario);
-
         given().pathParam("project", "1")
                 .when()
                 .get("/1")
@@ -138,12 +137,32 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testDeleteNonExistent() {
-        Mockito.when(scenarioService.delete("testUser", 1, 1)).thenReturn(null);
+        given().pathParam("project", "1").when().delete("/0").then().statusCode(404);
+    }
 
+    /**
+     * Test to delete a scenario without authorization.
+     */
+    @Test
+    @TestSecurity(
+            user = "unknown",
+            roles = {"openid"})
+    public void testDeleteUnauthorized() {
         given().pathParam("project", "1").when().delete("/1").then().statusCode(404);
+    }
+
+    /**
+     * Test to delete a scenario as a viewer.
+     */
+    @Test
+    @TestSecurity(
+            user = "viewer",
+            roles = {"openid"})
+    public void testDeleteAsViewer() {
+        given().pathParam("project", "1").when().delete("/1").then().statusCode(403);
     }
 
     /**
@@ -151,14 +170,32 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testDelete() {
-        Mockito.when(scenarioService.delete("testUser", 1, 1)).thenReturn(dummyScenario);
+        RequestSpecification spec = new RequestSpecBuilder()
+                .setBasePath("/projects/1/portfolios/1/scenarios")
+                .build();
+
+        int number = given(spec)
+                .body(new Scenario.Create(
+                        "test",
+                        new Workload.Spec("bitbrains-small", 1.0),
+                        1,
+                        new OperationalPhenomena(false, false),
+                        "test"))
+                .contentType(ContentType.JSON)
+                .when()
+                .post()
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .extract()
+                .path("number");
 
         given().pathParam("project", "1")
                 .when()
-                .delete("/1")
+                .delete("/" + number)
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON);

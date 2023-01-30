@@ -59,7 +59,7 @@ function ScenarioTable({ portfolio, status }) {
                         <Td dataLabel="Topology">
                             {scenario.topology ? (
                                 <Link href={`/projects/${projectId}/topologies/${scenario.topology.number}`}>
-                                    scenario.topology.name
+                                    {scenario.topology.name}
                                 </Link>
                             ) : (
                                 'Unknown Topology'
@@ -69,7 +69,7 @@ function ScenarioTable({ portfolio, status }) {
                             scenario.workload.samplingFraction * 100
                         }%)`}</Td>
                         <Td dataLabel="State">
-                            <ScenarioState state={scenario.job.state} />
+                            <ScenarioState state={scenario.jobs[scenario.jobs.length - 1].state} />
                         </Td>
                         <Td isActionCell>
                             <ActionsColumn items={actions(scenario)} />

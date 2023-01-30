@@ -24,24 +24,14 @@ package org.opendc.web.server.rest.user;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.opendc.web.proto.user.Project;
-import org.opendc.web.proto.user.ProjectRole;
 import org.opendc.web.proto.user.Topology;
-import org.opendc.web.server.service.TopologyService;
 
 /**
  * Test suite for {@link TopologyResource}.
@@ -49,27 +39,31 @@ import org.opendc.web.server.service.TopologyService;
 @QuarkusTest
 @TestHTTPEndpoint(TopologyResource.class)
 public final class TopologyResourceTest {
-    @InjectMock
-    private TopologyService topologyService;
-
     /**
-     * Dummy project and topology.
+     * Test that tries to obtain the list of topologies of a project without proper authorization.
      */
-    private final Project dummyProject = new Project(1, "test", Instant.now(), Instant.now(), ProjectRole.OWNER);
-
-    private final Topology dummyTopology =
-            new Topology(1, 1, dummyProject, "test", List.of(), Instant.now(), Instant.now());
+    @Test
+    @TestSecurity(
+            user = "unknown",
+            roles = {"openid"})
+    public void testGetAllWithoutAuth() {
+        given().pathParam("project", "1")
+                .when()
+                .get()
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body(equalTo("[]"));
+    }
 
     /**
      * Test that tries to obtain the list of topologies belonging to a project.
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
-    public void testGetForProject() {
-        Mockito.when(topologyService.findAll("testUser", 1)).thenReturn(List.of());
-
+    public void testGetAll() {
         given().pathParam("project", "1").when().get().then().statusCode(200).contentType(ContentType.JSON);
     }
 
@@ -78,12 +72,10 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testCreateNonExistent() {
-        Mockito.when(topologyService.create(eq("testUser"), eq(1L), any())).thenReturn(null);
-
-        given().pathParam("project", "1")
+        given().pathParam("project", "0")
                 .body(new Topology.Create("test", List.of()))
                 .contentType(ContentType.JSON)
                 .when()
@@ -94,15 +86,31 @@ public final class TopologyResourceTest {
     }
 
     /**
+     * Test that tries to create a topology for a project as viewer.
+     */
+    @Test
+    @TestSecurity(
+            user = "viewer",
+            roles = {"openid"})
+    public void testCreateUnauthorized() {
+        given().pathParam("project", "1")
+                .body(new Topology.Create("test", List.of()))
+                .contentType(ContentType.JSON)
+                .when()
+                .post()
+                .then()
+                .statusCode(403)
+                .contentType(ContentType.JSON);
+    }
+
+    /**
      * Test that tries to create a topology for a project.
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testCreate() {
-        Mockito.when(topologyService.create(eq("testUser"), eq(1L), any())).thenReturn(dummyTopology);
-
         given().pathParam("project", "1")
                 .body(new Topology.Create("test", List.of()))
                 .contentType(ContentType.JSON)
@@ -111,7 +119,6 @@ public final class TopologyResourceTest {
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("id", equalTo(1))
                 .body("name", equalTo("test"));
     }
 
@@ -120,7 +127,7 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testCreateEmpty() {
         given().pathParam("project", "1")
@@ -138,7 +145,7 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testCreateBlankName() {
         given().pathParam("project", "1")
@@ -164,7 +171,7 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"runner"})
     public void testGetInvalidToken() {
         given().pathParam("project", "1").when().get("/1").then().statusCode(403);
@@ -175,11 +182,25 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testGetNonExisting() {
-        Mockito.when(topologyService.findOne("testUser", 1, 1)).thenReturn(null);
+        given().pathParam("project", "1")
+                .when()
+                .get("/0")
+                .then()
+                .statusCode(404)
+                .contentType(ContentType.JSON);
+    }
 
+    /**
+     * Test that tries to obtain a topology without authorization.
+     */
+    @Test
+    @TestSecurity(
+            user = "unknown",
+            roles = {"openid"})
+    public void testGetUnauthorized() {
         given().pathParam("project", "1")
                 .when()
                 .get("/1")
@@ -193,11 +214,9 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testGetExisting() {
-        Mockito.when(topologyService.findOne("testUser", 1, 1)).thenReturn(dummyTopology);
-
         given().pathParam("project", "1")
                 .when()
                 .get("/1")
@@ -212,12 +231,26 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testUpdateNonExistent() {
-        Mockito.when(topologyService.update(eq("testUser"), anyLong(), anyInt(), any()))
-                .thenReturn(null);
+        given().pathParam("project", "1")
+                .body(new Topology.Update(List.of()))
+                .contentType(ContentType.JSON)
+                .when()
+                .put("/0")
+                .then()
+                .statusCode(404);
+    }
 
+    /**
+     * Test to delete a topology without authorization.
+     */
+    @Test
+    @TestSecurity(
+            user = "unknown",
+            roles = {"openid"})
+    public void testUpdateUnauthorized() {
         given().pathParam("project", "1")
                 .body(new Topology.Update(List.of()))
                 .contentType(ContentType.JSON)
@@ -228,16 +261,31 @@ public final class TopologyResourceTest {
     }
 
     /**
+     * Test to update a topology as a viewer.
+     */
+    @Test
+    @TestSecurity(
+            user = "viewer",
+            roles = {"openid"})
+    public void testUpdateAsViewer() {
+        given().pathParam("project", "1")
+                .body(new Topology.Update(List.of()))
+                .contentType(ContentType.JSON)
+                .when()
+                .put("/1")
+                .then()
+                .statusCode(403)
+                .contentType(ContentType.JSON);
+    }
+
+    /**
      * Test to update a topology.
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testUpdate() {
-        Mockito.when(topologyService.update(eq("testUser"), anyLong(), anyInt(), any()))
-                .thenReturn(dummyTopology);
-
         given().pathParam("project", "1")
                 .body(new Topology.Update(List.of()))
                 .contentType(ContentType.JSON)
@@ -253,12 +301,32 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testDeleteNonExistent() {
-        Mockito.when(topologyService.delete("testUser", 1, 1)).thenReturn(null);
+        given().pathParam("project", "1").when().delete("/0").then().statusCode(404);
+    }
 
+    /**
+     * Test to delete a topology without authorization.
+     */
+    @Test
+    @TestSecurity(
+            user = "unknown",
+            roles = {"openid"})
+    public void testDeleteUnauthorized() {
         given().pathParam("project", "1").when().delete("/1").then().statusCode(404);
+    }
+
+    /**
+     * Test to delete a topology as a viewer.
+     */
+    @Test
+    @TestSecurity(
+            user = "viewer",
+            roles = {"openid"})
+    public void testDeleteAsViewer() {
+        given().pathParam("project", "1").when().delete("/1").then().statusCode(403);
     }
 
     /**
@@ -266,14 +334,23 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testDelete() {
-        Mockito.when(topologyService.delete("testUser", 1, 1)).thenReturn(dummyTopology);
+        int number = given().pathParam("project", "1")
+                .body(new Topology.Create("Delete Topology", List.of()))
+                .contentType(ContentType.JSON)
+                .when()
+                .post()
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .extract()
+                .path("number");
 
         given().pathParam("project", "1")
                 .when()
-                .delete("/1")
+                .delete("/" + number)
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON);

@@ -24,24 +24,14 @@ package org.opendc.web.server.rest.user;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import java.time.Instant;
-import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.opendc.web.proto.Targets;
-import org.opendc.web.proto.user.Portfolio;
-import org.opendc.web.proto.user.Project;
-import org.opendc.web.proto.user.ProjectRole;
-import org.opendc.web.server.service.PortfolioService;
 
 /**
  * Test suite for {@link PortfolioResource}.
@@ -49,27 +39,25 @@ import org.opendc.web.server.service.PortfolioService;
 @QuarkusTest
 @TestHTTPEndpoint(PortfolioResource.class)
 public final class PortfolioResourceTest {
-    @InjectMock
-    private PortfolioService portfolioService;
-
-    /**
-     * Dummy project and portfolio
-     */
-    private final Project dummyProject = new Project(1, "test", Instant.now(), Instant.now(), ProjectRole.OWNER);
-
-    private final Portfolio dummyPortfolio =
-            new Portfolio(1, 1, dummyProject, "test", new Targets(Set.of(), 1), List.of());
-
     /**
      * Test that tries to obtain the list of portfolios belonging to a project.
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testGetForProject() {
-        Mockito.when(portfolioService.findByUser("testUser", 1)).thenReturn(List.of());
+        given().pathParam("project", 1).when().get().then().statusCode(200).contentType(ContentType.JSON);
+    }
 
+    /**
+     * Test that tries to obtain the list of portfolios belonging to a project without authorization.
+     */
+    @Test
+    @TestSecurity(
+            user = "unknown",
+            roles = {"openid"})
+    public void testGetForProjectNoAuthorization() {
         given().pathParam("project", 1).when().get().then().statusCode(200).contentType(ContentType.JSON);
     }
 
@@ -78,13 +66,11 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testCreateNonExistent() {
-        Mockito.when(portfolioService.create(eq("testUser"), eq(1), any())).thenReturn(null);
-
-        given().pathParam("project", "1")
-                .body(new Portfolio.Create("test", new Targets(Set.of(), 1)))
+        given().pathParam("project", "0")
+                .body(new org.opendc.web.proto.user.Portfolio.Create("test", new Targets(Set.of(), 1)))
                 .contentType(ContentType.JSON)
                 .when()
                 .post()
@@ -94,24 +80,39 @@ public final class PortfolioResourceTest {
     }
 
     /**
-     * Test that tries to create a portfolio for a scenario.
+     * Test that tries to create a topology for a project.
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "viewer",
+            roles = {"openid"})
+    public void testCreateNotPermitted() {
+        given().pathParam("project", "1")
+                .body(new org.opendc.web.proto.user.Portfolio.Create("test", new Targets(Set.of(), 1)))
+                .contentType(ContentType.JSON)
+                .when()
+                .post()
+                .then()
+                .statusCode(403)
+                .contentType(ContentType.JSON);
+    }
+
+    /**
+     * Test that tries to create a portfolio for a project.
+     */
+    @Test
+    @TestSecurity(
+            user = "editor",
             roles = {"openid"})
     public void testCreate() {
-        Mockito.when(portfolioService.create(eq("testUser"), eq(1L), any())).thenReturn(dummyPortfolio);
-
         given().pathParam("project", "1")
-                .body(new Portfolio.Create("test", new Targets(Set.of(), 1)))
+                .body(new org.opendc.web.proto.user.Portfolio.Create("test", new Targets(Set.of(), 1)))
                 .contentType(ContentType.JSON)
                 .when()
                 .post()
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("id", equalTo(1))
                 .body("name", equalTo("test"));
     }
 
@@ -120,7 +121,7 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "editor",
             roles = {"openid"})
     public void testCreateEmpty() {
         given().pathParam("project", "1")
@@ -138,11 +139,11 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "editor",
             roles = {"openid"})
     public void testCreateBlankName() {
         given().pathParam("project", "1")
-                .body(new Portfolio.Create("", new Targets(Set.of(), 1)))
+                .body(new org.opendc.web.proto.user.Portfolio.Create("", new Targets(Set.of(), 1)))
                 .contentType(ContentType.JSON)
                 .when()
                 .post()
@@ -164,7 +165,7 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"runner"})
     public void testGetInvalidToken() {
         given().pathParam("project", "1").when().get("/1").then().statusCode(403);
@@ -175,12 +176,26 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testGetNonExisting() {
-        Mockito.when(portfolioService.findByUser("testUser", 1, 1)).thenReturn(null);
-
         given().pathParam("project", "1")
+                .when()
+                .get("/0")
+                .then()
+                .statusCode(404)
+                .contentType(ContentType.JSON);
+    }
+
+    /**
+     * Test that tries to obtain a portfolio for a non-existent project.
+     */
+    @Test
+    @TestSecurity(
+            user = "owner",
+            roles = {"openid"})
+    public void testGetNonExistingProject() {
+        given().pathParam("project", "0")
                 .when()
                 .get("/1")
                 .then()
@@ -193,11 +208,9 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testGetExisting() {
-        Mockito.when(portfolioService.findByUser("testUser", 1, 1)).thenReturn(dummyPortfolio);
-
         given().pathParam("project", "1")
                 .when()
                 .get("/1")
@@ -212,12 +225,21 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testDeleteNonExistent() {
-        Mockito.when(portfolioService.delete("testUser", 1, 1)).thenReturn(null);
+        given().pathParam("project", "1").when().delete("/0").then().statusCode(404);
+    }
 
-        given().pathParam("project", "1").when().delete("/1").then().statusCode(404);
+    /**
+     * Test to delete a portfolio on a non-existent project.
+     */
+    @Test
+    @TestSecurity(
+            user = "owner",
+            roles = {"openid"})
+    public void testDeleteNonExistentProject() {
+        given().pathParam("project", "0").when().delete("/1").then().statusCode(404);
     }
 
     /**
@@ -225,16 +247,41 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testDelete() {
-        Mockito.when(portfolioService.delete("testUser", 1, 1)).thenReturn(dummyPortfolio);
+        int number = given().pathParam("project", "1")
+                .body(new org.opendc.web.proto.user.Portfolio.Create("Delete Portfolio", new Targets(Set.of(), 1)))
+                .contentType(ContentType.JSON)
+                .when()
+                .post()
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .extract()
+                .path("number");
 
+        given().pathParam("project", "1")
+                .when()
+                .delete("/" + number)
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON);
+    }
+
+    /**
+     * Test to delete a portfolio as a viewer.
+     */
+    @Test
+    @TestSecurity(
+            user = "viewer",
+            roles = {"openid"})
+    public void testDeleteAsViewer() {
         given().pathParam("project", "1")
                 .when()
                 .delete("/1")
                 .then()
-                .statusCode(200)
+                .statusCode(403)
                 .contentType(ContentType.JSON);
     }
 }

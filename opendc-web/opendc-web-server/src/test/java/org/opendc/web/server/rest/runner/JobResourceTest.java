@@ -25,30 +25,13 @@ package org.opendc.web.server.rest.runner;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import java.time.Instant;
-import java.util.List;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.opendc.web.proto.JobState;
-import org.opendc.web.proto.OperationalPhenomena;
-import org.opendc.web.proto.Targets;
-import org.opendc.web.proto.Trace;
-import org.opendc.web.proto.Workload;
-import org.opendc.web.proto.runner.Job;
-import org.opendc.web.proto.runner.Portfolio;
-import org.opendc.web.proto.runner.Scenario;
-import org.opendc.web.proto.runner.Topology;
-import org.opendc.web.server.service.JobService;
 
 /**
  * Test suite for {@link JobResource}.
@@ -56,27 +39,6 @@ import org.opendc.web.server.service.JobService;
 @QuarkusTest
 @TestHTTPEndpoint(JobResource.class)
 public final class JobResourceTest {
-    @InjectMock
-    private JobService jobService;
-
-    /**
-     * Dummy values
-     */
-    private final Portfolio dummyPortfolio = new Portfolio(1, 1, "test", new Targets(Set.of(), 1));
-
-    private final Topology dummyTopology = new Topology(1, 1, "test", List.of(), Instant.now(), Instant.now());
-    private final Trace dummyTrace = new Trace("bitbrains", "Bitbrains", "vm");
-    private final Scenario dummyScenario = new Scenario(
-            1,
-            1,
-            dummyPortfolio,
-            "test",
-            new Workload(dummyTrace, 1.0),
-            dummyTopology,
-            new OperationalPhenomena(false, false),
-            "test");
-    private final Job dummyJob = new Job(1, dummyScenario, JobState.PENDING, Instant.now(), Instant.now(), 0, null);
-
     /**
      * Test that tries to query the pending jobs without token.
      */
@@ -90,7 +52,7 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "test",
             roles = {"openid"})
     public void testQueryInvalidScope() {
         when().get().then().statusCode(403);
@@ -101,12 +63,10 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "test",
             roles = {"runner"})
     public void testQuery() {
-        Mockito.when(jobService.listPending()).thenReturn(List.of(dummyJob));
-
-        when().get().then().statusCode(200).contentType(ContentType.JSON).body("get(0).id", equalTo(1));
+        when().get().then().statusCode(200).contentType(ContentType.JSON).body("get(0).state", equalTo("PENDING"));
     }
 
     /**
@@ -114,12 +74,10 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "test",
             roles = {"runner"})
     public void testGetNonExisting() {
-        Mockito.when(jobService.findById(1)).thenReturn(null);
-
-        when().get("/1").then().statusCode(404).contentType(ContentType.JSON);
+        when().get("/0").then().statusCode(404).contentType(ContentType.JSON);
     }
 
     /**
@@ -127,11 +85,9 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "test",
             roles = {"runner"})
     public void testGetExisting() {
-        Mockito.when(jobService.findById(1)).thenReturn(dummyJob);
-
         when().get("/1").then().statusCode(200).contentType(ContentType.JSON).body("id", equalTo(1));
     }
 
@@ -140,15 +96,13 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "test",
             roles = {"runner"})
     public void testUpdateNonExistent() {
-        Mockito.when(jobService.updateState(eq(1L), any(), anyInt(), any())).thenReturn(null);
-
-        given().body(new Job.Update(JobState.PENDING, 0, null))
+        given().body(new org.opendc.web.proto.runner.Job.Update(JobState.PENDING, 0, null))
                 .contentType(ContentType.JSON)
                 .when()
-                .post("/1")
+                .post("/0")
                 .then()
                 .statusCode(404)
                 .contentType(ContentType.JSON);
@@ -159,16 +113,13 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "test",
             roles = {"runner"})
     public void testUpdateState() {
-        Mockito.when(jobService.updateState(eq(1L), any(), anyInt(), any()))
-                .thenReturn(new Job(1, dummyScenario, JobState.CLAIMED, Instant.now(), Instant.now(), 0, null));
-
-        given().body(new Job.Update(JobState.CLAIMED, 0, null))
+        given().body(new org.opendc.web.proto.runner.Job.Update(JobState.CLAIMED, 0, null))
                 .contentType(ContentType.JSON)
                 .when()
-                .post("/1")
+                .post("/2")
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
@@ -180,7 +131,7 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "test",
             roles = {"runner"})
     public void testUpdateInvalidInput() {
         given().body("{ \"test\": \"test\" }")

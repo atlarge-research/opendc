@@ -23,122 +23,59 @@
 package org.opendc.web.server.service;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import org.opendc.web.proto.JobState;
 import org.opendc.web.server.model.Job;
 
 /**
- * Service for managing {@link Job}s.
+ * A service for managing the lifecycle of a job and ensuring that the user does not consume
+ * too much simulation resources.
  */
 @ApplicationScoped
 public final class JobService {
     /**
-     * The service for managing the user accounting.
+     * The {@link UserAccountingService} responsible for accounting the simulation time of users.
      */
     private final UserAccountingService accountingService;
 
     /**
      * Construct a {@link JobService} instance.
      *
-     * @param accountingService The {@link UserAccountingService} instance to use.
+     * @param accountingService The {@link UserAccountingService} for accounting the simulation time of users.
      */
     public JobService(UserAccountingService accountingService) {
         this.accountingService = accountingService;
     }
 
     /**
-     * Query the pending simulation jobs.
-     */
-    public List<org.opendc.web.proto.runner.Job> listPending() {
-        return Job.findByState(JobState.PENDING).stream()
-                .map(JobService::toRunnerDto)
-                .toList();
-    }
-
-    /**
-     * Find a job by its identifier.
-     */
-    public org.opendc.web.proto.runner.Job findById(long id) {
-        Job job = Job.findById(id);
-
-        if (job == null) {
-            return null;
-        }
-
-        return toRunnerDto(job);
-    }
-
-    /**
-     * Atomically update the state of a {@link Job}.
+     * Update the job state.
      *
-     * @param id The identifier of the job.
-     * @param newState The next state for the job.
-     * @param runtime The runtime of the job (in seconds).
-     * @param results The potential results of the job.
+     * @param job The {@link Job} to update.
+     * @param newState The new state to transition the job to.
+     * @param runtime The runtime (in seconds) consumed by the simulation jbo so far.
+     * @param results The results to attach to the job.
+     * @throws IllegalArgumentException if the state transition is invalid.
+     * @throws IllegalStateException if someone tries to update the job concurrently.
      */
-    public org.opendc.web.proto.runner.Job updateState(
-            long id, JobState newState, int runtime, Map<String, ?> results) {
-        Job entity = Job.findById(id);
-        if (entity == null) {
-            return null;
-        }
+    public void updateJob(Job job, JobState newState, int runtime, Map<String, ?> results) {
+        JobState state = job.state;
 
-        JobState state = entity.state;
-        if (!isTransitionLegal(state, newState)) {
+        if (!job.canTransitionTo(newState)) {
             throw new IllegalArgumentException("Invalid transition from %s to %s".formatted(state, newState));
         }
 
         Instant now = Instant.now();
         JobState nextState = newState;
-        int consumedBudget = Math.min(1, runtime - entity.runtime);
+        int consumedBudget = Math.min(1, runtime - job.runtime);
 
         // Check whether the user still has any simulation budget left
-        if (accountingService.consumeSimulationBudget(entity.createdBy, consumedBudget)
-                && nextState == JobState.RUNNING) {
+        if (accountingService.consumeSimulationBudget(job.createdBy, consumedBudget) && nextState == JobState.RUNNING) {
             nextState = JobState.FAILED; // User has consumed all their budget; cancel the job
         }
 
-        if (!entity.updateAtomically(nextState, now, runtime, results)) {
+        if (!job.updateAtomically(nextState, now, runtime, results)) {
             throw new IllegalStateException("Conflicting update");
         }
-
-        return toRunnerDto(entity);
-    }
-
-    /**
-     * Determine whether the transition from [this] to [newState] is legal.
-     */
-    public static boolean isTransitionLegal(JobState currentState, JobState newState) {
-        // Note that we always allow transitions from the state
-        return newState == currentState
-                || switch (currentState) {
-                    case PENDING -> newState == JobState.CLAIMED;
-                    case CLAIMED -> newState == JobState.RUNNING || newState == JobState.FAILED;
-                    case RUNNING -> newState == JobState.FINISHED || newState == JobState.FAILED;
-                    case FINISHED, FAILED -> false;
-                };
-    }
-
-    /**
-     * Convert a {@link Job} entity into a {@link org.opendc.web.proto.user.Job} DTO.
-     */
-    public static org.opendc.web.proto.user.Job toUserDto(Job job) {
-        return new org.opendc.web.proto.user.Job(job.id, job.state, job.createdAt, job.updatedAt, job.results);
-    }
-
-    /**
-     * Convert a {@link Job} into a runner-facing DTO.
-     */
-    public static org.opendc.web.proto.runner.Job toRunnerDto(Job job) {
-        return new org.opendc.web.proto.runner.Job(
-                job.id,
-                ScenarioService.toRunnerDto(job.scenario),
-                job.state,
-                job.createdAt,
-                job.updatedAt,
-                job.runtime,
-                job.results);
     }
 }

@@ -23,10 +23,12 @@
 package org.opendc.web.server.rest.user;
 
 import io.quarkus.security.identity.SecurityIdentity;
+import java.time.Instant;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -34,7 +36,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import org.opendc.web.server.service.PortfolioService;
+import org.opendc.web.server.model.Portfolio;
+import org.opendc.web.server.model.ProjectAuthorization;
 
 /**
  * A resource representing the portfolios of a project.
@@ -44,11 +47,6 @@ import org.opendc.web.server.service.PortfolioService;
 @RolesAllowed("openid")
 public final class PortfolioResource {
     /**
-     * The service for managing the user portfolios.
-     */
-    private final PortfolioService portfolioService;
-
-    /**
      * The identity of the current user.
      */
     private final SecurityIdentity identity;
@@ -56,11 +54,9 @@ public final class PortfolioResource {
     /**
      * Construct a {@link PortfolioResource}.
      *
-     * @param portfolioService The {@link PortfolioService} instance to use.
      * @param identity The {@link SecurityIdentity} of the current user.
      */
-    public PortfolioResource(PortfolioService portfolioService, SecurityIdentity identity) {
-        this.portfolioService = portfolioService;
+    public PortfolioResource(SecurityIdentity identity) {
         this.identity = identity;
     }
 
@@ -69,7 +65,17 @@ public final class PortfolioResource {
      */
     @GET
     public List<org.opendc.web.proto.user.Portfolio> getAll(@PathParam("project") long projectId) {
-        return portfolioService.findByUser(identity.getPrincipal().getName(), projectId);
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
+
+        if (auth == null) {
+            return List.of();
+        }
+
+        return Portfolio.findByProject(projectId).list().stream()
+                .map((p) -> UserProtocol.toDto(p, auth))
+                .toList();
     }
 
     /**
@@ -77,14 +83,29 @@ public final class PortfolioResource {
      */
     @POST
     @Transactional
+    @Consumes("application/json")
     public org.opendc.web.proto.user.Portfolio create(
             @PathParam("project") long projectId, @Valid org.opendc.web.proto.user.Portfolio.Create request) {
-        var portfolio = portfolioService.create(identity.getPrincipal().getName(), projectId, request);
-        if (portfolio == null) {
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
+
+        if (auth == null) {
             throw new WebApplicationException("Project not found", 404);
+        } else if (!auth.canEdit()) {
+            throw new WebApplicationException("Not permitted to edit project", 403);
         }
 
-        return portfolio;
+        var now = Instant.now();
+        var project = auth.project;
+        int number = project.allocatePortfolio(now);
+
+        Portfolio portfolio = new Portfolio(project, number, request.getName(), request.getTargets());
+
+        project.portfolios.add(portfolio);
+        portfolio.persist();
+
+        return UserProtocol.toDto(portfolio, auth);
     }
 
     /**
@@ -94,12 +115,21 @@ public final class PortfolioResource {
     @Path("{portfolio}")
     public org.opendc.web.proto.user.Portfolio get(
             @PathParam("project") long projectId, @PathParam("portfolio") int number) {
-        var portfolio = portfolioService.findByUser(identity.getPrincipal().getName(), projectId, number);
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
+
+        if (auth == null) {
+            throw new WebApplicationException("Portfolio not found", 404);
+        }
+
+        Portfolio portfolio = Portfolio.findByProject(projectId, number);
+
         if (portfolio == null) {
             throw new WebApplicationException("Portfolio not found", 404);
         }
 
-        return portfolio;
+        return UserProtocol.toDto(portfolio, auth);
     }
 
     /**
@@ -110,11 +140,22 @@ public final class PortfolioResource {
     @Transactional
     public org.opendc.web.proto.user.Portfolio delete(
             @PathParam("project") long projectId, @PathParam("portfolio") int number) {
-        var portfolio = portfolioService.delete(identity.getPrincipal().getName(), projectId, number);
-        if (portfolio == null) {
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
+
+        if (auth == null) {
+            throw new WebApplicationException("Portfolio not found", 404);
+        } else if (!auth.canEdit()) {
+            throw new WebApplicationException("Not permitted to edit project", 403);
+        }
+
+        Portfolio entity = Portfolio.findByProject(projectId, number);
+        if (entity == null) {
             throw new WebApplicationException("Portfolio not found", 404);
         }
 
-        return portfolio;
+        entity.delete();
+        return UserProtocol.toDto(entity, auth);
     }
 }

@@ -23,28 +23,39 @@
 package org.opendc.web.server.rest.user;
 
 import io.quarkus.security.identity.SecurityIdentity;
+import java.time.Instant;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import org.opendc.web.proto.user.Scenario;
-import org.opendc.web.server.service.ScenarioService;
+import org.opendc.web.proto.JobState;
+import org.opendc.web.server.model.Job;
+import org.opendc.web.server.model.Portfolio;
+import org.opendc.web.server.model.ProjectAuthorization;
+import org.opendc.web.server.model.Scenario;
+import org.opendc.web.server.model.Topology;
+import org.opendc.web.server.model.Trace;
+import org.opendc.web.server.model.Workload;
+import org.opendc.web.server.service.UserAccountingService;
 
 /**
  * A resource representing the scenarios of a portfolio.
  */
 @Path("/projects/{project}/portfolios/{portfolio}/scenarios")
 @RolesAllowed("openid")
+@Produces("application/json")
 public final class PortfolioScenarioResource {
     /**
-     * The service for managing the user scenarios.
+     * The service for managing the user accounting.
      */
-    private final ScenarioService scenarioService;
+    private final UserAccountingService accountingService;
 
     /**
      * The identity of the current user.
@@ -54,11 +65,11 @@ public final class PortfolioScenarioResource {
     /**
      * Construct a {@link PortfolioScenarioResource}.
      *
-     * @param scenarioService The {@link ScenarioService} instance to use.
+     * @param accountingService The {@link UserAccountingService} instance to use.
      * @param identity The {@link SecurityIdentity} of the current user.
      */
-    public PortfolioScenarioResource(ScenarioService scenarioService, SecurityIdentity identity) {
-        this.scenarioService = scenarioService;
+    public PortfolioScenarioResource(UserAccountingService accountingService, SecurityIdentity identity) {
+        this.accountingService = accountingService;
         this.identity = identity;
     }
 
@@ -66,8 +77,19 @@ public final class PortfolioScenarioResource {
      * Get all scenarios that belong to the specified portfolio.
      */
     @GET
-    public List<Scenario> get(@PathParam("project") long projectId, @PathParam("portfolio") int portfolioNumber) {
-        return scenarioService.findAll(identity.getPrincipal().getName(), projectId, portfolioNumber);
+    public List<org.opendc.web.proto.user.Scenario> get(
+            @PathParam("project") long projectId, @PathParam("portfolio") int portfolioNumber) {
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
+
+        if (auth == null) {
+            return List.of();
+        }
+
+        return org.opendc.web.server.model.Scenario.findByPortfolio(projectId, portfolioNumber).list().stream()
+                .map((s) -> UserProtocol.toDto(s, auth))
+                .toList();
     }
 
     /**
@@ -75,15 +97,63 @@ public final class PortfolioScenarioResource {
      */
     @POST
     @Transactional
+    @Consumes("application/json")
     public org.opendc.web.proto.user.Scenario create(
             @PathParam("project") long projectId,
             @PathParam("portfolio") int portfolioNumber,
             @Valid org.opendc.web.proto.user.Scenario.Create request) {
-        var scenario = scenarioService.create(identity.getPrincipal().getName(), projectId, portfolioNumber, request);
-        if (scenario == null) {
+        // User must have access to project
+        String userId = identity.getPrincipal().getName();
+        ProjectAuthorization auth = ProjectAuthorization.findByUser(userId, projectId);
+
+        if (auth == null) {
+            throw new WebApplicationException("Portfolio not found", 404);
+        } else if (!auth.canEdit()) {
+            throw new WebApplicationException("Not permitted to edit project", 403);
+        }
+
+        Portfolio portfolio = Portfolio.findByProject(projectId, portfolioNumber);
+
+        if (portfolio == null) {
             throw new WebApplicationException("Portfolio not found", 404);
         }
 
-        return scenario;
+        Topology topology = Topology.findByProject(projectId, (int) request.getTopology());
+        if (topology == null) {
+            throw new WebApplicationException("Referred topology does not exist", 400);
+        }
+
+        Trace trace = Trace.findById(request.getWorkload().getTrace());
+        if (trace == null) {
+            throw new WebApplicationException("Referred trace does not exist", 400);
+        }
+
+        var now = Instant.now();
+        var project = auth.project;
+        int number = project.allocateScenario(now);
+
+        Scenario scenario = new Scenario(
+                project,
+                portfolio,
+                number,
+                request.getName(),
+                new Workload(trace, request.getWorkload().getSamplingFraction()),
+                topology,
+                request.getPhenomena(),
+                request.getSchedulerName());
+        scenario.persist();
+
+        Job job = new Job(scenario, userId, now, portfolio.targets.getRepeats());
+        job.persist();
+
+        // Fail the job if there is not enough budget for the simulation
+        if (!accountingService.hasSimulationBudget(userId)) {
+            job.state = JobState.FAILED;
+        }
+
+        scenario.jobs.add(job);
+        portfolio.scenarios.add(scenario);
+
+        return UserProtocol.toDto(scenario, auth);
     }
 }

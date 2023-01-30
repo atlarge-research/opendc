@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,53 +20,31 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.server.model;
+package org.opendc.web.server.rest;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.opendc.web.server.model.Trace;
+import org.opendc.web.server.model.Workload;
 
 /**
- * A workload trace available for simulation.
+ * DTO-conversions for the base protocol.
  */
-@Entity
-@Table(name = "traces")
-public class Trace extends PanacheEntityBase {
+public final class BaseProtocol {
     /**
-     * The unique identifier of the trace.
+     * Private constructor to prevent instantiation of class.
      */
-    @Id
-    public String id;
+    private BaseProtocol() {}
 
     /**
-     * The name of the trace.
+     * Convert a {@link Workload} entity into a DTO.
      */
-    @Column(nullable = false, updatable = false)
-    public String name;
-
-    /**
-     * The type of trace.
-     */
-    @Column(nullable = false, updatable = false)
-    public String type;
-
-    /**
-     * Construct a {@link Trace}.
-     *
-     * @param id The unique identifier of the trace.
-     * @param name The name of the trace.
-     * @param type The type of trace.
-     */
-    public Trace(String id, String name, String type) {
-        this.id = id;
-        this.name = name;
-        this.type = type;
+    public static org.opendc.web.proto.Workload toDto(Workload workload) {
+        return new org.opendc.web.proto.Workload(toDto(workload.trace), workload.samplingFraction);
     }
 
     /**
-     * JPA constructor.
+     * Convert a {@link Trace] entity into a {@link org.opendc.web.proto.Trace} DTO.
      */
-    protected Trace() {}
+    public static org.opendc.web.proto.Trace toDto(Trace trace) {
+        return new org.opendc.web.proto.Trace(trace.id, trace.name, trace.type);
+    }
 }

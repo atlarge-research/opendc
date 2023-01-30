@@ -33,6 +33,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import org.opendc.web.proto.JobState;
+import org.opendc.web.server.model.Job;
 import org.opendc.web.server.service.JobService;
 
 /**
@@ -43,14 +45,14 @@ import org.opendc.web.server.service.JobService;
 @RolesAllowed("runner")
 public final class JobResource {
     /**
-     * The {@link JobService} responsible for managing the jobs.
+     * The {@link JobService} for helping manage the job lifecycle.
      */
     private final JobService jobService;
 
     /**
      * Construct a {@link JobResource} instance.
      *
-     * @param jobService The {@link JobService} responsible for managing the jobs.
+     * @param jobService The {@link JobService} for managing the job lifecycle.
      */
     public JobResource(JobService jobService) {
         this.jobService = jobService;
@@ -61,7 +63,9 @@ public final class JobResource {
      */
     @GET
     public List<org.opendc.web.proto.runner.Job> queryPending() {
-        return jobService.listPending();
+        return Job.findByState(JobState.PENDING).list().stream()
+                .map(RunnerProtocol::toDto)
+                .toList();
     }
 
     /**
@@ -70,12 +74,13 @@ public final class JobResource {
     @GET
     @Path("{job}")
     public org.opendc.web.proto.runner.Job get(@PathParam("job") long id) {
-        org.opendc.web.proto.runner.Job job = jobService.findById(id);
+        Job job = Job.findById(id);
+
         if (job == null) {
             throw new WebApplicationException("Job not found", 404);
         }
 
-        return job;
+        return RunnerProtocol.toDto(job);
     }
 
     /**
@@ -87,17 +92,19 @@ public final class JobResource {
     @Transactional
     public org.opendc.web.proto.runner.Job update(
             @PathParam("job") long id, @Valid org.opendc.web.proto.runner.Job.Update update) {
-        try {
-            var job = jobService.updateState(id, update.getState(), update.getRuntime(), update.getResults());
-            if (job == null) {
-                throw new WebApplicationException("Job not found", 404);
-            }
+        Job job = Job.findById(id);
+        if (job == null) {
+            throw new WebApplicationException("Job not found", 404);
+        }
 
-            return job;
+        try {
+            jobService.updateJob(job, update.getState(), update.getRuntime(), update.getResults());
         } catch (IllegalArgumentException e) {
             throw new WebApplicationException(e, 400);
         } catch (IllegalStateException e) {
             throw new WebApplicationException(e, 409);
         }
+
+        return RunnerProtocol.toDto(job);
     }
 }

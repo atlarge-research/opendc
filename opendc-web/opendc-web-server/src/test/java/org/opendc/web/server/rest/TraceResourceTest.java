@@ -25,16 +25,10 @@ package org.opendc.web.server.rest;
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
 
-import io.quarkus.panache.mock.PanacheMock;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import java.util.stream.Stream;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.opendc.web.server.model.Trace;
 
 /**
  * Test suite for {@link TraceResource}.
@@ -43,21 +37,11 @@ import org.opendc.web.server.model.Trace;
 @TestHTTPEndpoint(TraceResource.class)
 public final class TraceResourceTest {
     /**
-     * Set up the test environment.
-     */
-    @BeforeEach
-    public void setUp() {
-        PanacheMock.mock(Trace.class);
-    }
-
-    /**
-     * Test that tries to obtain all traces (empty response).
+     * Test that tries to obtain all traces.
      */
     @Test
     public void testGetAllEmpty() {
-        Mockito.when(Trace.streamAll()).thenReturn(Stream.of());
-
-        when().get().then().statusCode(200).contentType(ContentType.JSON).body("", Matchers.empty());
+        when().get().then().statusCode(200).contentType(ContentType.JSON);
     }
 
     /**
@@ -65,9 +49,7 @@ public final class TraceResourceTest {
      */
     @Test
     public void testGetNonExisting() {
-        Mockito.when(Trace.findById("bitbrains")).thenReturn(null);
-
-        when().get("/bitbrains").then().statusCode(404).contentType(ContentType.JSON);
+        when().get("/unknown").then().statusCode(404).contentType(ContentType.JSON);
     }
 
     /**
@@ -75,12 +57,10 @@ public final class TraceResourceTest {
      */
     @Test
     public void testGetExisting() {
-        Mockito.when(Trace.findById("bitbrains")).thenReturn(new Trace("bitbrains", "Bitbrains", "VM"));
-
-        when().get("/bitbrains")
+        when().get("/bitbrains-small")
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("name", equalTo("Bitbrains"));
+                .body("name", equalTo("Bitbrains Small"));
     }
 }

@@ -23,6 +23,7 @@
 package org.opendc.web.server.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
 import java.time.Instant;
 import java.util.List;
@@ -44,8 +45,12 @@ import org.opendc.web.proto.Room;
 @Entity
 @Table(
         name = "topologies",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "number"})},
-        indexes = {@Index(name = "fn_topologies_number", columnList = "project_id, number")})
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_topologies_number",
+                    columnNames = {"project_id", "number"})
+        },
+        indexes = {@Index(name = "ux_topologies_number", columnList = "project_id, number")})
 @NamedQueries({
     @NamedQuery(name = "Topology.findByProject", query = "SELECT t FROM Topology t WHERE t.project.id = :projectId"),
     @NamedQuery(
@@ -112,11 +117,10 @@ public class Topology extends PanacheEntity {
      * Find all [Topology]s that belong to [project][projectId].
      *
      * @param projectId The unique identifier of the project.
-     * @return The list of topologies that belong to the specified project.
+     * @return The query of topologies that belong to the specified project.
      */
-    public static List<Topology> findByProject(long projectId) {
-        return find("#Topology.findByProject", Parameters.with("projectId", projectId))
-                .list();
+    public static PanacheQuery<Topology> findByProject(long projectId) {
+        return find("#Topology.findByProject", Parameters.with("projectId", projectId));
     }
 
     /**

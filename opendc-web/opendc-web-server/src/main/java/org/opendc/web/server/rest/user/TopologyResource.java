@@ -23,6 +23,7 @@
 package org.opendc.web.server.rest.user;
 
 import io.quarkus.security.identity.SecurityIdentity;
+import java.time.Instant;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.transaction.Transactional;
@@ -36,7 +37,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import org.opendc.web.server.service.TopologyService;
+import org.opendc.web.server.model.Project;
+import org.opendc.web.server.model.ProjectAuthorization;
+import org.opendc.web.server.model.Topology;
 
 /**
  * A resource representing the constructed datacenter topologies.
@@ -46,11 +49,6 @@ import org.opendc.web.server.service.TopologyService;
 @RolesAllowed("openid")
 public final class TopologyResource {
     /**
-     * The service for managing the user topologies.
-     */
-    private final TopologyService topologyService;
-
-    /**
      * The identity of the current user.
      */
     private final SecurityIdentity identity;
@@ -58,11 +56,9 @@ public final class TopologyResource {
     /**
      * Construct a {@link TopologyResource}.
      *
-     * @param topologyService The {@link TopologyService} instance to use.
      * @param identity The {@link SecurityIdentity} of the current user.
      */
-    public TopologyResource(TopologyService topologyService, SecurityIdentity identity) {
-        this.topologyService = topologyService;
+    public TopologyResource(SecurityIdentity identity) {
         this.identity = identity;
     }
 
@@ -71,7 +67,17 @@ public final class TopologyResource {
      */
     @GET
     public List<org.opendc.web.proto.user.Topology> getAll(@PathParam("project") long projectId) {
-        return topologyService.findAll(identity.getPrincipal().getName(), projectId);
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
+
+        if (auth == null) {
+            return List.of();
+        }
+
+        return Topology.findByProject(projectId).list().stream()
+                .map((t) -> UserProtocol.toDto(t, auth))
+                .toList();
     }
 
     /**
@@ -82,13 +88,26 @@ public final class TopologyResource {
     @Transactional
     public org.opendc.web.proto.user.Topology create(
             @PathParam("project") long projectId, @Valid org.opendc.web.proto.user.Topology.Create request) {
-        var topology = topologyService.create(identity.getPrincipal().getName(), projectId, request);
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
 
-        if (topology == null) {
+        if (auth == null) {
             throw new WebApplicationException("Topology not found", 404);
+        } else if (!auth.canEdit()) {
+            throw new WebApplicationException("Not permitted to edit project", 403);
         }
 
-        return topology;
+        Instant now = Instant.now();
+        Project project = auth.project;
+        int number = project.allocateTopology(now);
+
+        Topology topology = new Topology(project, number, request.getName(), now, request.getRooms());
+
+        project.topologies.add(topology);
+        topology.persist();
+
+        return UserProtocol.toDto(topology, auth);
     }
 
     /**
@@ -98,13 +117,21 @@ public final class TopologyResource {
     @Path("{topology}")
     public org.opendc.web.proto.user.Topology get(
             @PathParam("project") long projectId, @PathParam("topology") int number) {
-        var topology = topologyService.findOne(identity.getPrincipal().getName(), projectId, number);
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
+
+        if (auth == null) {
+            throw new WebApplicationException("Topology not found", 404);
+        }
+
+        Topology topology = Topology.findByProject(projectId, number);
 
         if (topology == null) {
             throw new WebApplicationException("Topology not found", 404);
         }
 
-        return topology;
+        return UserProtocol.toDto(topology, auth);
     }
 
     /**
@@ -118,13 +145,26 @@ public final class TopologyResource {
             @PathParam("project") long projectId,
             @PathParam("topology") int number,
             @Valid org.opendc.web.proto.user.Topology.Update request) {
-        var topology = topologyService.update(identity.getPrincipal().getName(), projectId, number, request);
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
 
-        if (topology == null) {
+        if (auth == null) {
+            throw new WebApplicationException("Topology not found", 404);
+        } else if (!auth.canEdit()) {
+            throw new WebApplicationException("Not permitted to edit project", 403);
+        }
+
+        Topology entity = Topology.findByProject(projectId, number);
+
+        if (entity == null) {
             throw new WebApplicationException("Topology not found", 404);
         }
 
-        return topology;
+        entity.updatedAt = Instant.now();
+        entity.rooms = request.getRooms();
+
+        return UserProtocol.toDto(entity, auth);
     }
 
     /**
@@ -135,12 +175,24 @@ public final class TopologyResource {
     @Transactional
     public org.opendc.web.proto.user.Topology delete(
             @PathParam("project") long projectId, @PathParam("topology") int number) {
-        var topology = topologyService.delete(identity.getPrincipal().getName(), projectId, number);
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
 
-        if (topology == null) {
+        if (auth == null) {
+            throw new WebApplicationException("Topology not found", 404);
+        } else if (!auth.canEdit()) {
+            throw new WebApplicationException("Not permitted to edit project", 403);
+        }
+
+        Topology entity = Topology.findByProject(projectId, number);
+
+        if (entity == null) {
             throw new WebApplicationException("Topology not found", 404);
         }
 
-        return topology;
+        entity.updatedAt = Instant.now();
+        entity.delete();
+        return UserProtocol.toDto(entity, auth);
     }
 }

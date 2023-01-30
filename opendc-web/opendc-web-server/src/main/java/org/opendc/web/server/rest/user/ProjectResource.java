@@ -23,6 +23,7 @@
 package org.opendc.web.server.rest.user;
 
 import io.quarkus.security.identity.SecurityIdentity;
+import java.time.Instant;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.transaction.Transactional;
@@ -35,7 +36,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import org.opendc.web.server.service.ProjectService;
+import org.opendc.web.proto.user.ProjectRole;
+import org.opendc.web.server.model.Project;
+import org.opendc.web.server.model.ProjectAuthorization;
 
 /**
  * A resource representing the created projects.
@@ -45,11 +48,6 @@ import org.opendc.web.server.service.ProjectService;
 @RolesAllowed("openid")
 public final class ProjectResource {
     /**
-     * The service for managing the user projects.
-     */
-    private final ProjectService projectService;
-
-    /**
      * The identity of the current user.
      */
     private final SecurityIdentity identity;
@@ -57,11 +55,9 @@ public final class ProjectResource {
     /**
      * Construct a {@link ProjectResource}.
      *
-     * @param projectService The {@link ProjectService} instance to use.
      * @param identity The {@link SecurityIdentity} of the current user.
      */
-    public ProjectResource(ProjectService projectService, SecurityIdentity identity) {
-        this.projectService = projectService;
+    public ProjectResource(SecurityIdentity identity) {
         this.identity = identity;
     }
 
@@ -70,7 +66,9 @@ public final class ProjectResource {
      */
     @GET
     public List<org.opendc.web.proto.user.Project> getAll() {
-        return projectService.findByUser(identity.getPrincipal().getName());
+        return ProjectAuthorization.findByUser(identity.getPrincipal().getName()).list().stream()
+                .map(UserProtocol::toDto)
+                .toList();
     }
 
     /**
@@ -80,7 +78,17 @@ public final class ProjectResource {
     @Transactional
     @Consumes("application/json")
     public org.opendc.web.proto.user.Project create(@Valid org.opendc.web.proto.user.Project.Create request) {
-        return projectService.create(identity.getPrincipal().getName(), request.getName());
+        Instant now = Instant.now();
+        Project entity = new Project(request.getName(), now);
+        entity.persist();
+
+        ProjectAuthorization authorization =
+                new ProjectAuthorization(entity, identity.getPrincipal().getName(), ProjectRole.OWNER);
+
+        entity.authorizations.add(authorization);
+        authorization.persist();
+
+        return UserProtocol.toDto(authorization);
     }
 
     /**
@@ -89,12 +97,14 @@ public final class ProjectResource {
     @GET
     @Path("{project}")
     public org.opendc.web.proto.user.Project get(@PathParam("project") long id) {
-        var project = projectService.findByUser(identity.getPrincipal().getName(), id);
-        if (project == null) {
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), id);
+
+        if (auth == null) {
             throw new WebApplicationException("Project not found", 404);
         }
 
-        return project;
+        return UserProtocol.toDto(auth);
     }
 
     /**
@@ -104,15 +114,18 @@ public final class ProjectResource {
     @Path("{project}")
     @Transactional
     public org.opendc.web.proto.user.Project delete(@PathParam("project") long id) {
-        try {
-            var project = projectService.delete(identity.getPrincipal().getName(), id);
-            if (project == null) {
-                throw new WebApplicationException("Project not found", 404);
-            }
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), id);
 
-            return project;
-        } catch (IllegalArgumentException e) {
-            throw new WebApplicationException(e.getMessage(), 403);
+        if (auth == null) {
+            throw new WebApplicationException("Project not found", 404);
+        } else if (!auth.canDelete()) {
+            throw new WebApplicationException("Not allowed to delete project", 403);
         }
+
+        auth.project.updatedAt = Instant.now();
+        org.opendc.web.proto.user.Project project = UserProtocol.toDto(auth);
+        auth.project.delete();
+        return project;
     }
 }

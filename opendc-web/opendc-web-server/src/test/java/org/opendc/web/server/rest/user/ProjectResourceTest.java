@@ -28,16 +28,9 @@ import static org.hamcrest.Matchers.equalTo;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import java.time.Instant;
-import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.opendc.web.proto.user.Project;
-import org.opendc.web.proto.user.ProjectRole;
-import org.opendc.web.server.service.ProjectService;
 
 /**
  * Test suite for [ProjectResource].
@@ -45,14 +38,6 @@ import org.opendc.web.server.service.ProjectService;
 @QuarkusTest
 @TestHTTPEndpoint(ProjectResource.class)
 public final class ProjectResourceTest {
-    @InjectMock
-    private ProjectService projectService;
-
-    /**
-     * Dummy values.
-     */
-    private final Project dummyProject = new Project(0, "test", Instant.now(), Instant.now(), ProjectRole.OWNER);
-
     /**
      * Test that tries to obtain all projects without token.
      */
@@ -66,7 +51,7 @@ public final class ProjectResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"runner"})
     public void testGetAllWithInvalidScope() {
         when().get().then().statusCode(403);
@@ -77,12 +62,10 @@ public final class ProjectResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testGetAll() {
-        Mockito.when(projectService.findByUser("testUser")).thenReturn(List.of(dummyProject));
-
-        when().get().then().statusCode(200).contentType(ContentType.JSON).body("get(0).name", equalTo("test"));
+        when().get().then().statusCode(200).contentType(ContentType.JSON).body("get(0).name", equalTo("Test Project"));
     }
 
     /**
@@ -90,25 +73,21 @@ public final class ProjectResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testGetNonExisting() {
-        Mockito.when(projectService.findByUser("testUser", 1)).thenReturn(null);
-
-        when().get("/1").then().statusCode(404).contentType(ContentType.JSON);
+        when().get("/0").then().statusCode(404).contentType(ContentType.JSON);
     }
 
     /**
-     * Test that tries to obtain a job.
+     * Test that tries to obtain a project.
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testGetExisting() {
-        Mockito.when(projectService.findByUser("testUser", 1)).thenReturn(dummyProject);
-
-        when().get("/1").then().statusCode(200).contentType(ContentType.JSON).body("id", equalTo(0));
+        when().get("/1").then().statusCode(200).contentType(ContentType.JSON).body("id", equalTo(1));
     }
 
     /**
@@ -116,19 +95,16 @@ public final class ProjectResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testCreate() {
-        Mockito.when(projectService.create("testUser", "test")).thenReturn(dummyProject);
-
-        given().body(new Project.Create("test"))
+        given().body(new org.opendc.web.proto.user.Project.Create("test"))
                 .contentType(ContentType.JSON)
                 .when()
                 .post()
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("id", equalTo(0))
                 .body("name", equalTo("test"));
     }
 
@@ -137,7 +113,7 @@ public final class ProjectResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testCreateEmpty() {
         given().body("{}")
@@ -154,10 +130,10 @@ public final class ProjectResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testCreateBlankName() {
-        given().body(new Project.Create(""))
+        given().body(new org.opendc.web.proto.user.Project.Create(""))
                 .contentType(ContentType.JSON)
                 .when()
                 .post()
@@ -171,12 +147,10 @@ public final class ProjectResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testDeleteNonExistent() {
-        Mockito.when(projectService.delete("testUser", 1)).thenReturn(null);
-
-        when().delete("/1").then().statusCode(404).contentType(ContentType.JSON);
+        when().delete("/0").then().statusCode(404).contentType(ContentType.JSON);
     }
 
     /**
@@ -184,12 +158,20 @@ public final class ProjectResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "owner",
             roles = {"openid"})
     public void testDelete() {
-        Mockito.when(projectService.delete("testUser", 1)).thenReturn(dummyProject);
+        int id = given().body(new org.opendc.web.proto.user.Project.Create("Delete Project"))
+                .contentType(ContentType.JSON)
+                .when()
+                .post()
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .extract()
+                .path("id");
 
-        when().delete("/1").then().statusCode(200).contentType(ContentType.JSON);
+        when().delete("/" + id).then().statusCode(200).contentType(ContentType.JSON);
     }
 
     /**
@@ -197,12 +179,9 @@ public final class ProjectResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "testUser",
+            user = "viewer",
             roles = {"openid"})
     public void testDeleteNonOwner() {
-        Mockito.when(projectService.delete("testUser", 1))
-                .thenThrow(new IllegalArgumentException("User does not own project"));
-
         when().delete("/1").then().statusCode(403).contentType(ContentType.JSON);
     }
 }

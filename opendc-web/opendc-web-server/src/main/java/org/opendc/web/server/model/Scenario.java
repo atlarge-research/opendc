@@ -23,18 +23,22 @@
 package org.opendc.web.server.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import org.hibernate.annotations.Type;
@@ -46,8 +50,12 @@ import org.opendc.web.proto.OperationalPhenomena;
 @Entity
 @Table(
         name = "scenarios",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "number"})},
-        indexes = {@Index(name = "fn_scenarios_number", columnList = "project_id, number")})
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_scenarios_number",
+                    columnNames = {"project_id", "number"})
+        },
+        indexes = {@Index(name = "ux_scenarios_number", columnList = "project_id, number")})
 @NamedQueries({
     @NamedQuery(name = "Scenario.findByProject", query = "SELECT s FROM Scenario s WHERE s.project.id = :projectId"),
     @NamedQuery(
@@ -68,14 +76,14 @@ public class Scenario extends PanacheEntity {
      * The {@link Project} to which this scenario belongs.
      */
     @ManyToOne(optional = false)
-    @JoinColumn(name = "project_id", nullable = false)
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "fk_scenarios_project"))
     public Project project;
 
     /**
      * The {@link Portfolio} to which this scenario belongs.
      */
     @ManyToOne(optional = false)
-    @JoinColumn(name = "portfolio_id", nullable = false)
+    @JoinColumn(name = "portfolio_id", nullable = false, foreignKey = @ForeignKey(name = "fk_scenarios_portfolio"))
     public Portfolio portfolio;
 
     /**
@@ -100,6 +108,7 @@ public class Scenario extends PanacheEntity {
      * Topology details of the scenario.
      */
     @ManyToOne(optional = false)
+    @JoinColumn(name = "topology_id", nullable = false, foreignKey = @ForeignKey(name = "fk_scenarios_topology"))
     public Topology topology;
 
     /**
@@ -118,8 +127,11 @@ public class Scenario extends PanacheEntity {
     /**
      * The {@link Job} associated with the scenario.
      */
-    @OneToOne(cascade = {CascadeType.ALL})
-    public Job job;
+    @OneToMany(
+            cascade = {CascadeType.ALL},
+            mappedBy = "scenario",
+            fetch = FetchType.LAZY)
+    public List<Job> jobs = new ArrayList<>();
 
     /**
      * Construct a {@link Scenario} object.
@@ -152,11 +164,10 @@ public class Scenario extends PanacheEntity {
      * Find all {@link Scenario}s that belong to the specified project
      *
      * @param projectId The unique identifier of the project.
-     * @return The list of scenarios that belong to the specified project.
+     * @return The query of scenarios that belong to the specified project.
      */
-    public static List<Scenario> findByProject(long projectId) {
-        return find("#Scenario.findByProject", Parameters.with("projectId", projectId))
-                .list();
+    public static PanacheQuery<Scenario> findByProject(long projectId) {
+        return find("#Scenario.findByProject", Parameters.with("projectId", projectId));
     }
 
     /**
@@ -164,13 +175,12 @@ public class Scenario extends PanacheEntity {
      *
      * @param projectId The unique identifier of the project.
      * @param number The number of the portfolio.
-     * @return The list of scenarios that belong to the specified project and portfolio..
+     * @return The query of scenarios that belong to the specified project and portfolio..
      */
-    public static List<Scenario> findByPortfolio(long projectId, int number) {
+    public static PanacheQuery<Scenario> findByPortfolio(long projectId, int number) {
         return find(
-                        "#Scenario.findByPortfolio",
-                        Parameters.with("projectId", projectId).and("number", number))
-                .list();
+                "#Scenario.findByPortfolio",
+                Parameters.with("projectId", projectId).and("number", number));
     }
 
     /**

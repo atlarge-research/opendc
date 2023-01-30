@@ -159,7 +159,7 @@ export const Scenario = PropTypes.shape({
     topology: TopologySummary.isRequired,
     phenomena: Phenomena.isRequired,
     schedulerName: PropTypes.string.isRequired,
-    job: Job.isRequired,
+    jobs: PropTypes.arrayOf(Job).isRequired,
 })
 
 export const Portfolio = PropTypes.shape({

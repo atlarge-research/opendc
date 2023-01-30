@@ -23,6 +23,7 @@
 package org.opendc.web.server.rest.user;
 
 import io.quarkus.security.identity.SecurityIdentity;
+import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.transaction.Transactional;
 import javax.ws.rs.DELETE;
@@ -31,7 +32,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import org.opendc.web.server.service.ScenarioService;
+import org.opendc.web.server.model.ProjectAuthorization;
+import org.opendc.web.server.model.Scenario;
 
 /**
  * A resource representing the scenarios of a portfolio.
@@ -41,11 +43,6 @@ import org.opendc.web.server.service.ScenarioService;
 @RolesAllowed("openid")
 public final class ScenarioResource {
     /**
-     * The service for managing the user scenarios.
-     */
-    private final ScenarioService scenarioService;
-
-    /**
      * The identity of the current user.
      */
     private final SecurityIdentity identity;
@@ -53,12 +50,28 @@ public final class ScenarioResource {
     /**
      * Construct a {@link ScenarioResource}.
      *
-     * @param scenarioService The {@link ScenarioService} instance to use.
      * @param identity The {@link SecurityIdentity} of the current user.
      */
-    public ScenarioResource(ScenarioService scenarioService, SecurityIdentity identity) {
-        this.scenarioService = scenarioService;
+    public ScenarioResource(SecurityIdentity identity) {
         this.identity = identity;
+    }
+
+    /**
+     * Obtain the scenarios belonging to a project.
+     */
+    @GET
+    public List<org.opendc.web.proto.user.Scenario> getAll(@PathParam("project") long projectId) {
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
+
+        if (auth == null) {
+            throw new WebApplicationException("Project not found", 404);
+        }
+
+        return Scenario.findByProject(projectId).list().stream()
+                .map((s) -> UserProtocol.toDto(s, auth))
+                .toList();
     }
 
     /**
@@ -68,12 +81,21 @@ public final class ScenarioResource {
     @Path("{scenario}")
     public org.opendc.web.proto.user.Scenario get(
             @PathParam("project") long projectId, @PathParam("scenario") int number) {
-        var scenario = scenarioService.findOne(identity.getPrincipal().getName(), projectId, number);
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
+
+        if (auth == null) {
+            throw new WebApplicationException("Project not found", 404);
+        }
+
+        Scenario scenario = Scenario.findByProject(projectId, number);
+
         if (scenario == null) {
             throw new WebApplicationException("Scenario not found", 404);
         }
 
-        return scenario;
+        return UserProtocol.toDto(scenario, auth);
     }
 
     /**
@@ -84,11 +106,22 @@ public final class ScenarioResource {
     @Transactional
     public org.opendc.web.proto.user.Scenario delete(
             @PathParam("project") long projectId, @PathParam("scenario") int number) {
-        var scenario = scenarioService.delete(identity.getPrincipal().getName(), projectId, number);
-        if (scenario == null) {
+        // User must have access to project
+        ProjectAuthorization auth =
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), projectId);
+
+        if (auth == null) {
+            throw new WebApplicationException("Project not found", 404);
+        } else if (!auth.canEdit()) {
+            throw new WebApplicationException("Not permitted to edit project", 403);
+        }
+
+        Scenario entity = Scenario.findByProject(projectId, number);
+        if (entity == null) {
             throw new WebApplicationException("Scenario not found", 404);
         }
 
-        return scenario;
+        entity.delete();
+        return UserProtocol.toDto(entity, auth);
     }
 }

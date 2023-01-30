@@ -23,20 +23,25 @@
 package org.opendc.web.server.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
 import java.io.Serializable;
-import java.util.List;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import org.hibernate.annotations.Type;
 import org.opendc.web.proto.user.ProjectRole;
 
 /**
@@ -64,15 +69,22 @@ public class ProjectAuthorization extends PanacheEntityBase {
     /**
      * The project that the user is authorized to participate in.
      */
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @MapsId("projectId")
-    @JoinColumn(name = "project_id", updatable = false, insertable = false, nullable = false)
+    @JoinColumn(
+            name = "project_id",
+            updatable = false,
+            insertable = false,
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_project_authorizations"))
     public Project project;
 
     /**
      * The role of the user in the project.
      */
-    @Column(nullable = false)
+    @Type(type = "io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType")
+    @Column(nullable = false, columnDefinition = "enum")
+    @Enumerated(EnumType.STRING)
     public ProjectRole role;
 
     /**
@@ -93,11 +105,10 @@ public class ProjectAuthorization extends PanacheEntityBase {
      * List all projects for the user with the specified <code>userId</code>.
      *
      * @param userId The identifier of the user that is requesting the list of projects.
-     * @return A list of projects that the user has received authorization for.
+     * @return A query returning projects that the user has received authorization for.
      */
-    public static List<ProjectAuthorization> findByUser(String userId) {
-        return find("#ProjectAuthorization.findByUser", Parameters.with("userId", userId))
-                .list();
+    public static PanacheQuery<ProjectAuthorization> findByUser(String userId) {
+        return find("#ProjectAuthorization.findByUser", Parameters.with("userId", userId));
     }
 
     /**

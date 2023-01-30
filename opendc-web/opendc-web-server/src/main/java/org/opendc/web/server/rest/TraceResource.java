@@ -43,7 +43,7 @@ public final class TraceResource {
     @GET
     public List<org.opendc.web.proto.Trace> getAll() {
         Stream<Trace> entities = Trace.streamAll();
-        return entities.map(TraceResource::toUserDto).toList();
+        return entities.map(TraceResource::toDto).toList();
     }
 
     /**
@@ -58,13 +58,13 @@ public final class TraceResource {
             throw new WebApplicationException("Trace not found", 404);
         }
 
-        return toUserDto(trace);
+        return toDto(trace);
     }
 
     /**
      * Convert a {@link Trace] entity into a {@link org.opendc.web.proto.Trace} DTO.
      */
-    public static org.opendc.web.proto.Trace toUserDto(Trace trace) {
+    public static org.opendc.web.proto.Trace toDto(Trace trace) {
         return new org.opendc.web.proto.Trace(trace.id, trace.name, trace.type);
     }
 }

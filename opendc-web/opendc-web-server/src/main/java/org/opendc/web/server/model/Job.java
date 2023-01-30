@@ -22,18 +22,22 @@
 
 package org.opendc.web.server.model;
 
+import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 import org.opendc.web.proto.JobState;
@@ -54,8 +58,8 @@ import org.opendc.web.proto.JobState;
             """)
 })
 public class Job extends PanacheEntity {
-    @OneToOne(optional = false, mappedBy = "job", fetch = FetchType.EAGER)
-    @JoinColumn(name = "scenario_id", nullable = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "scenario_id", foreignKey = @ForeignKey(name = "fk_jobs_scenario"), nullable = false)
     public Scenario scenario;
 
     @Column(name = "created_by", nullable = false, updatable = false)
@@ -74,12 +78,14 @@ public class Job extends PanacheEntity {
      * The instant at which the job was updated.
      */
     @Column(name = "updated_at", nullable = false)
-    public Instant updatedAt = createdAt;
+    public Instant updatedAt;
 
     /**
      * The state of the job.
      */
-    @Column(nullable = false)
+    @Type(type = "io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType")
+    @Column(nullable = false, columnDefinition = "enum")
+    @Enumerated(EnumType.STRING)
     public JobState state = JobState.PENDING;
 
     /**
@@ -102,6 +108,7 @@ public class Job extends PanacheEntity {
         this.createdBy = createdBy;
         this.scenario = scenario;
         this.createdAt = createdAt;
+        this.updatedAt = createdAt;
         this.repeats = repeats;
     }
 
@@ -114,10 +121,10 @@ public class Job extends PanacheEntity {
      * Find {@link Job}s in the specified {@link JobState}.
      *
      * @param state The state of the jobs to find.
-     * @return The list of jobs that are in the specified state.
+     * @return A query for jobs that are in the specified state.
      */
-    public static List<Job> findByState(JobState state) {
-        return find("state", state).list();
+    public static PanacheQuery<Job> findByState(JobState state) {
+        return find("state", state);
     }
 
     /**
@@ -137,6 +144,24 @@ public class Job extends PanacheEntity {
                         .and("updatedAt", time)
                         .and("runtime", runtime)
                         .and("results", results));
+        Panache.getEntityManager().refresh(this);
         return count > 0;
+    }
+
+    /**
+     * Determine whether the job is allowed to transition to <code>newState</code>.
+     *
+     * @param newState The new state to transition to.
+     * @return <code>true</code> if the transition to the new state is legal, <code>false</code> otherwise.
+     */
+    public boolean canTransitionTo(JobState newState) {
+        // Note that we always allow transitions from the state
+        return newState == this.state
+                || switch (this.state) {
+                    case PENDING -> newState == JobState.CLAIMED;
+                    case CLAIMED -> newState == JobState.RUNNING || newState == JobState.FAILED;
+                    case RUNNING -> newState == JobState.FINISHED || newState == JobState.FAILED;
+                    case FINISHED, FAILED -> false;
+                };
     }
 }

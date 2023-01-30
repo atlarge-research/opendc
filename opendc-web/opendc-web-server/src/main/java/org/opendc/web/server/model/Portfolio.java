@@ -23,9 +23,9 @@
 package org.opendc.web.server.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -48,8 +48,12 @@ import org.opendc.web.proto.Targets;
 @Entity
 @Table(
         name = "portfolios",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "number"})},
-        indexes = {@Index(name = "fn_portfolios_number", columnList = "project_id, number")})
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_portfolios_number",
+                    columnNames = {"project_id", "number"})
+        },
+        indexes = {@Index(name = "ux_portfolios_number", columnList = "project_id, number")})
 @NamedQueries({
     @NamedQuery(name = "Portfolio.findByProject", query = "SELECT p FROM Portfolio p WHERE p.project.id = :projectId"),
     @NamedQuery(
@@ -112,11 +116,10 @@ public class Portfolio extends PanacheEntity {
      * Find all {@link Portfolio}s that belong to the specified project
      *
      * @param projectId The unique identifier of the project.
-     * @return The list of portfolios that belong to the specified project.
+     * @return The query of portfolios that belong to the specified project.
      */
-    public static List<Portfolio> findByProject(long projectId) {
-        return find("#Portfolio.findByProject", Parameters.with("projectId", projectId))
-                .list();
+    public static PanacheQuery<Portfolio> findByProject(long projectId) {
+        return find("#Portfolio.findByProject", Parameters.with("projectId", projectId));
     }
 
     /**

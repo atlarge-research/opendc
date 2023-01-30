@@ -28,17 +28,26 @@ import javax.transaction.Transactional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.opendc.web.proto.JobState;
-import org.opendc.web.proto.runner.Job;
 import org.opendc.web.runner.JobManager;
+import org.opendc.web.server.model.Job;
+import org.opendc.web.server.rest.runner.RunnerProtocol;
 import org.opendc.web.server.service.JobService;
 
 /**
- * Implementation of {@link JobManager} that interfaces directly with {@link JobService} without overhead of the REST API.
+ * Implementation of {@link JobManager} that interfaces directly with the database without overhead of the REST API.
  */
 @ApplicationScoped
 public class QuarkusJobManager implements JobManager {
+    /**
+     * The {@link JobService} used to manage the job's lifecycle.
+     */
     private final JobService jobService;
 
+    /**
+     * Construct a {@link QuarkusJobManager}.
+     *
+     * @param jobService The {@link JobService} for managing the job's lifecycle.
+     */
     public QuarkusJobManager(JobService jobService) {
         this.jobService = jobService;
     }
@@ -46,38 +55,60 @@ public class QuarkusJobManager implements JobManager {
     @Transactional
     @Nullable
     @Override
-    public Job findNext() {
-        var pending = jobService.listPending();
-        if (pending.isEmpty()) {
+    public org.opendc.web.proto.runner.Job findNext() {
+        var job = Job.findByState(JobState.PENDING).firstResult();
+        if (job == null) {
             return null;
         }
 
-        return pending.get(0);
+        return RunnerProtocol.toDto(job);
     }
 
+    @Transactional
     @Override
     public boolean claim(long id) {
-        try {
-            jobService.updateState(id, JobState.CLAIMED, 0, null);
-            return true;
-        } catch (IllegalStateException e) {
-            return false;
-        }
+        return updateState(id, JobState.CLAIMED, 0, null);
     }
 
+    @Transactional
     @Override
     public boolean heartbeat(long id, int runtime) {
-        Job res = jobService.updateState(id, JobState.RUNNING, runtime, null);
-        return res != null && !res.getState().equals(JobState.FAILED);
+        return updateState(id, JobState.RUNNING, runtime, null);
     }
 
+    @Transactional
     @Override
     public void fail(long id, int runtime) {
-        jobService.updateState(id, JobState.FAILED, runtime, null);
+        updateState(id, JobState.FAILED, runtime, null);
     }
 
+    @Transactional
     @Override
     public void finish(long id, int runtime, @NotNull Map<String, ?> results) {
-        jobService.updateState(id, JobState.FINISHED, runtime, results);
+        updateState(id, JobState.FINISHED, runtime, results);
+    }
+
+    /**
+     * Helper method to update the state of a job.
+     *
+     * @param id The unique id of the job.
+     * @param newState The new state to transition to.
+     * @param runtime The runtime of the job.
+     * @param results The results of the job.
+     * @return <code>true</code> if the operation succeeded, <code>false</code> otherwise.
+     */
+    private boolean updateState(long id, JobState newState, int runtime, Map<String, ?> results) {
+        Job job = Job.findById(id);
+
+        if (job == null) {
+            return false;
+        }
+
+        try {
+            jobService.updateJob(job, newState, runtime, results);
+            return true;
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return false;
+        }
     }
 }
