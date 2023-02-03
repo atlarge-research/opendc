@@ -5,6 +5,7 @@ commons-math3 = "3.6.1"
 dokka = "1.7.10"
 gradle-node = "3.5.0"
 hadoop = "3.3.4"
+hypersistence-utils = "3.0.1"
 jackson = "2.14.0"
 jandex-gradle = "1.0.0"
 java = "17"
@@ -22,8 +23,7 @@ mockk = "1.13.2"
 node = "18.12.0"
 parquet = "1.12.3"
 progressbar = "0.9.3"
-quarkus = "2.14.2.Final"
-quarkus-junit5-mockk = "1.1.1"
+quarkus = "2.16.1.Final"
 sentry = "6.8.0"
 slf4j = "2.0.4"
 spotless = "6.12.0"
@@ -78,19 +78,20 @@ quarkus-resteasy-jackson = { module = "io.quarkus:quarkus-resteasy-jackson" }
 quarkus-smallrye-openapi = { module = "io.quarkus:quarkus-smallrye-openapi" }
 quarkus-security = { module = "io.quarkus:quarkus-security" }
 quarkus-oidc = { module = "io.quarkus:quarkus-oidc" }
-quarkus-hibernate-orm = { module = "io.quarkus:quarkus-hibernate-orm" }
+quarkus-hibernate-orm-core = { module = "io.quarkus:quarkus-hibernate-orm" }
+quarkus-hibernate-orm-panache = { module = "io.quarkus:quarkus-hibernate-orm-panache" }
 quarkus-hibernate-validator = { module = "io.quarkus:quarkus-hibernate-validator" }
 quarkus-jdbc-h2 = { module = "io.quarkus:quarkus-jdbc-h2" }
 quarkus-jdbc-postgresql = { module = "io.quarkus:quarkus-jdbc-postgresql" }
 quarkus-flyway = { module = "io.quarkus:quarkus-flyway" }
+hypersistence-utils-hibernate = { module = "io.hypersistence:hypersistence-utils-hibernate-55", version.ref = "hypersistence-utils" }
 
 # Quarkus (Testing)
 quarkus-junit5-core = { module = "io.quarkus:quarkus-junit5" }
-quarkus-junit5-mockk = { module = "io.quarkiverse.mockk:quarkus-junit5-mockk", version.ref = "quarkus-junit5-mockk" }
 quarkus-jacoco = { module = "io.quarkus:quarkus-jacoco" }
+quarkus-panache-mock = { module = "io.quarkus:quarkus-panache-mock" }
 quarkus-test-security = { module = "io.quarkus:quarkus-test-security" }
 restassured-core = { module = "io.rest-assured:rest-assured" }
-restassured-kotlin = { module = "io.rest-assured:kotlin-extensions" }
 
 # Calcite (SQL)
 calcite-core = { module = "org.apache.calcite:calcite-core", version.ref = "calcite" }

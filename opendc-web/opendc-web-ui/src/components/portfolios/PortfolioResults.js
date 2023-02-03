@@ -57,14 +57,17 @@ function PortfolioResults({ projectId, portfolioId }) {
         const dataPerMetric = {}
         AVAILABLE_METRICS.forEach((metric) => {
             dataPerMetric[metric] = scenarios
-                .filter((scenario) => scenario.job?.results)
-                .map((scenario) => ({
-                    metric,
-                    x: scenario.name,
-                    y: mean(scenario.job.results[metric]),
-                    errorY: std(scenario.job.results[metric]),
-                    label,
-                }))
+                .filter((scenario) => scenario.jobs && scenario.jobs[scenario.jobs.length - 1].results)
+                .map((scenario) => {
+                    const job = scenario.jobs[scenario.jobs.length - 1]
+                    return {
+                        metric,
+                        x: scenario.name,
+                        y: mean(job.results[metric]),
+                        errorY: std(job.results[metric]),
+                        label,
+                    }
+                })
         })
         return dataPerMetric
     }, [scenarios])

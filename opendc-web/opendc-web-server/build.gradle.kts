@@ -46,17 +46,18 @@ dependencies {
     implementation(libs.quarkus.security)
     implementation(libs.quarkus.oidc)
 
-    implementation(libs.quarkus.hibernate.orm)
+    implementation(libs.quarkus.hibernate.orm.core)
+    implementation(libs.quarkus.hibernate.orm.panache)
     implementation(libs.quarkus.hibernate.validator)
     implementation(libs.quarkus.flyway)
     implementation(libs.quarkus.jdbc.postgresql)
     implementation(libs.quarkus.jdbc.h2)
+    implementation(libs.hypersistence.utils.hibernate)
 
     testImplementation(libs.quarkus.junit5.core)
-    testImplementation(libs.quarkus.junit5.mockk)
     testImplementation(libs.quarkus.jacoco)
+    testImplementation(libs.quarkus.panache.mock)
     testImplementation(libs.restassured.core)
-    testImplementation(libs.restassured.kotlin)
     testImplementation(libs.quarkus.test.security)
     testImplementation(libs.quarkus.jdbc.h2)
 }

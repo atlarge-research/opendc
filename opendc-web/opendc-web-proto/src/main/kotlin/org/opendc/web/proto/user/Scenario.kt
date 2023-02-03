@@ -40,7 +40,7 @@ public data class Scenario(
     val topology: Topology.Summary,
     val phenomena: OperationalPhenomena,
     val schedulerName: String,
-    val job: Job
+    val jobs: List<Job>
 ) {
     /**
      * Create a new scenario.
@@ -81,6 +81,6 @@ public data class Scenario(
         val topology: Topology.Summary,
         val phenomena: OperationalPhenomena,
         val schedulerName: String,
-        val job: Job
+        val jobs: List<Job>
     )
 }
