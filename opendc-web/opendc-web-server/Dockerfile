@@ -23,3 +23,11 @@ FROM openjdk:17-slim
 COPY --from=0 /app/opendc-web/opendc-web-server/build/quarkus-app /opt/opendc
 WORKDIR /opt/opendc
 CMD java -jar quarkus-run.jar
+
+LABEL org.opencontainers.image.authors="OpenDC Maintainers <opendc@atlarge-research.com>"
+LABEL org.opencontainers.image.url="https://opendc.org"
+LABEL org.opencontainers.image.documentation="https://opendc.org"
+LABEL org.opencontainers.image.source="https://github.com/atlarge-research/opendc"
+LABEL org.opencontainers.image.title="OpenDC"
+LABEL org.opencontainers.image.description="OpenDC Docker Image"
+LABEL org.opencontainers.image.vendor="AtLarge Research"
