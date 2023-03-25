@@ -1,4 +1,4 @@
-FROM openjdk:18-slim
+FROM openjdk:17-slim
 MAINTAINER OpenDC Maintainers <opendc@atlarge-research.com>
 
 # Obtain (cache) Gradle wrapper
