@@ -26,9 +26,9 @@ const noop = () => {}
 
 /**
  * A hook that will invoke the specified callback when the reference returned by this function is initialized.
- * The callback can return an optional clean up function.
+ * The callback can return an optional clean-up function.
  */
-export function useEffectRef(callback) {
+export function useEffectRef(callback, deps = []) {
     const disposeRef = useRef(noop)
     return useCallback((element) => {
         disposeRef.current()
@@ -37,5 +37,5 @@ export function useEffectRef(callback) {
         if (element) {
             disposeRef.current = callback(element) || noop
         }
-    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    }, deps) // eslint-disable-line react-hooks/exhaustive-deps
 }

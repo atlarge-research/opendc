@@ -27,7 +27,7 @@ import { findTileWithPosition } from '../../../../util/tile-calculations'
 import HoverLayerComponent from './HoverLayerComponent'
 import TilePlusIcon from '../elements/TilePlusIcon'
 
-function ObjectHoverLayer() {
+export default function ObjectHoverLayer() {
     const isEnabled = useSelector((state) => state.construction.inRackConstructionMode)
     const isValid = useSelector((state) => (x, y) => {
         if (state.interactionLevel.mode !== 'ROOM') {
@@ -49,5 +49,3 @@ function ObjectHoverLayer() {
         </HoverLayerComponent>
     )
 }
-
-export default ObjectHoverLayer
