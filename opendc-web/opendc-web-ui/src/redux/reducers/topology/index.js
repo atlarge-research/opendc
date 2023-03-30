@@ -35,7 +35,7 @@ function objects(state = {}, action) {
         storages: STORAGE_UNITS,
         machines: machine(state.machines, action, state),
         racks: rack(state.racks, action, state),
-        tiles: tile(state.tiles, action, state),
+        tiles: tile(state.tiles, action),
         rooms: room(state.rooms, action, state),
         root: topology(state.root, action, state),
     }

@@ -15,7 +15,13 @@ import { useSelector } from 'react-redux'
 function MachineSidebar({ tileId, position }) {
     const machine = useSelector(({ topology }) => {
         const rack = topology.racks[topology.tiles[tileId].rack]
-        return topology.machines[rack.machines[position - 1]]
+
+        for (const machineId of rack.machines) {
+            const machine = topology.machines[machineId]
+            if (machine.position === position) {
+                return machine
+            }
+        }
     })
     const machineId = machine.id
     return (

@@ -30,7 +30,7 @@ import {
 } from '../../../../util/tile-calculations'
 import HoverLayerComponent from './HoverLayerComponent'
 
-function RoomHoverLayer() {
+export default function RoomHoverLayer() {
     const dispatch = useDispatch()
     const onClick = (x, y) => dispatch(toggleTileAtLocation(x, y))
     const isEnabled = useSelector((state) => state.construction.currentRoomInConstruction !== '-1')
@@ -57,5 +57,3 @@ function RoomHoverLayer() {
 
     return <HoverLayerComponent onClick={onClick} isEnabled={isEnabled} isValid={isValid} />
 }
-
-export default RoomHoverLayer

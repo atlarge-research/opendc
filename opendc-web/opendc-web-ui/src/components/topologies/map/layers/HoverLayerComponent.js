@@ -15,11 +15,11 @@ function HoverLayerComponent({ isEnabled, isValid, onClick, children }) {
 
         const stage = layer.getStage()
 
-        // Transform used to convert mouse coordinates to world coordinates
-        const transform = stage.getAbsoluteTransform().copy()
-        transform.invert()
-
         stage.on('mousemove.hover', () => {
+            // Transform used to convert mouse coordinates to world coordinates
+            const transform = stage.getAbsoluteTransform().copy()
+            transform.invert()
+
             const { x, y } = transform.point(stage.getPointerPosition())
             setPos([x, y])
         })
@@ -38,7 +38,7 @@ function HoverLayerComponent({ isEnabled, isValid, onClick, children }) {
     const y = gridY * TILE_SIZE_IN_PIXELS
 
     return (
-        <Layer opacity={0.6} ref={layerRef}>
+        <Layer opacity={0.2} ref={layerRef}>
             <HoverTile x={x} y={y} isValid={valid} onClick={() => (valid ? onClick(gridX, gridY) : undefined)} />
             {children ? React.cloneElement(children, { x, y, scale: 1 }) : undefined}
         </Layer>

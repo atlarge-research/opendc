@@ -1,9 +1,8 @@
-import React, { useRef, useState, useContext } from 'react'
+import React, { useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { Stage } from 'react-konva'
 import { MAP_MAX_SCALE, MAP_MIN_SCALE, MAP_MOVE_PIXELS_PER_EVENT, MAP_SCALE_PER_EVENT } from './MapConstants'
-import { ReactReduxContext } from 'react-redux'
 import useResizeObserver from 'use-resize-observer'
 import { mapContainer } from './MapStage.module.css'
 import MapLayer from './layers/MapLayer'
@@ -13,7 +12,6 @@ import ScaleIndicator from './controls/ScaleIndicator'
 import Toolbar from './controls/Toolbar'
 
 function MapStage({ hotkeysRef }) {
-    const reduxContext = useContext(ReactReduxContext)
     const stageRef = useRef(null)
     const { width = 500, height = 500 } = useResizeObserver({ ref: stageRef.current?.attrs?.container })
     const [[x, y], setPos] = useState([0, 0])
@@ -68,11 +66,9 @@ function MapStage({ hotkeysRef }) {
                 x={x}
                 y={y}
             >
-                <ReactReduxContext.Provider value={reduxContext}>
-                    <MapLayer />
-                    <RoomHoverLayer />
-                    <ObjectHoverLayer />
-                </ReactReduxContext.Provider>
+                <MapLayer />
+                <RoomHoverLayer />
+                <ObjectHoverLayer />
             </Stage>
             <ScaleIndicator scale={scale} />
             <Toolbar onZoom={onZoomButton} onExport={onExport} />

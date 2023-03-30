@@ -26,7 +26,7 @@ import { ADD_TILE, DELETE_TILE } from '../../actions/topology/building'
 import { DELETE_RACK } from '../../actions/topology/rack'
 import { ADD_RACK_TO_TILE } from '../../actions/topology/room'
 
-function tile(state = {}, action, { racks }) {
+function tile(state = {}, action) {
     switch (action.type) {
         case STORE_TOPOLOGY:
             return action.entities.tiles || {}
@@ -42,14 +42,13 @@ function tile(state = {}, action, { racks }) {
             })
         case ADD_RACK_TO_TILE:
             return produce(state, (draft) => {
-                const { rack } = action
-                draft[rack.tileId].rack = rack.id
+                const { rack, tileId } = action
+                draft[tileId].rack = rack.id
             })
         case DELETE_RACK:
             return produce(state, (draft) => {
-                const { rackId } = action
-                const rack = racks[rackId]
-                draft[rack.tileId].rack = undefined
+                const { tileId } = action
+                draft[tileId].rack = undefined
             })
         default:
             return state
