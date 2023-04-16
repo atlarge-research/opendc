@@ -110,19 +110,9 @@ distributions {
                 rename { "LICENSE-OpenDC.txt" }
             }
 
-            from("packages.txt")
+            from(".dockerignore")
             from("Dockerfile")
-
-            from("radice.py")
-            from("01-sustainability.ipynb")
-            from("02-phenomena.ipynb")
-            from("03-regret.ipynb")
-            from("04-scheduler.ipynb")
-            from("05-performance.ipynb")
-            from("06-validation.ipynb")
-            from("electricity-price.csv")
-            from("co2-price.csv")
-
+            from("analysis.ipynb")
             into("bin") {
                 from(createRadiceApp)
                 from(createRadicePerfApp)
@@ -136,10 +126,6 @@ distributions {
 
             into("scripts") {
                 from("scripts")
-            }
-
-            into("traces") {
-                from("traces")
             }
 
             into("portfolios") {
