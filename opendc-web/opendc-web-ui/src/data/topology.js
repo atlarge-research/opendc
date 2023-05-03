@@ -83,6 +83,6 @@ export function useNewTopology() {
 /**
  * Create a mutation for deleting a topology.
  */
-export function useDeleteTopology() {
-    return useMutation('deleteTopology')
+export function useDeleteTopology(options = {}) {
+    return useMutation('deleteTopology', options)
 }

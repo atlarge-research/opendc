@@ -49,7 +49,7 @@ export async function request(auth, path, method = 'GET', body) {
     const json = await response.json()
 
     if (!response.ok) {
-        throw response.message
+        throw json.message
     }
 
     return json

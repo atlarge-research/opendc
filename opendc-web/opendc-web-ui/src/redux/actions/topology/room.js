@@ -53,10 +53,10 @@ export function addRackToTile(positionX, positionY) {
         if (tile !== null) {
             dispatch({
                 type: ADD_RACK_TO_TILE,
+                tileId: tile.id,
                 rack: {
                     id: uuid(),
                     name: 'Rack',
-                    tileId: tile.id,
                     capacity: DEFAULT_RACK_SLOT_CAPACITY,
                     powerCapacityW: DEFAULT_RACK_POWER_CAPACITY,
                     machines: [],

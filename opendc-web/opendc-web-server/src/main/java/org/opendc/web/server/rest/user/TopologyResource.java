@@ -22,10 +22,12 @@
 
 package org.opendc.web.server.rest.user;
 
+import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.security.identity.SecurityIdentity;
 import java.time.Instant;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
+import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -193,6 +195,14 @@ public final class TopologyResource {
 
         entity.updatedAt = Instant.now();
         entity.delete();
+
+        try {
+            // Flush the results, so we can check whether the constraints are not violated
+            Panache.flush();
+        } catch (PersistenceException e) {
+            throw new WebApplicationException("Topology is still in use", 403);
+        }
+
         return UserProtocol.toDto(entity, auth);
     }
 }

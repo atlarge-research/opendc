@@ -355,4 +355,20 @@ public final class TopologyResourceTest {
                 .statusCode(200)
                 .contentType(ContentType.JSON);
     }
+
+    /**
+     * Test to delete a topology that is still being used by a scenario.
+     */
+    @Test
+    @TestSecurity(
+            user = "owner",
+            roles = {"openid"})
+    public void testDeleteUsed() {
+        given().pathParam("project", "1")
+                .when()
+                .delete("/1") // Topology 1 is still used by scenario 1 and 2
+                .then()
+                .statusCode(403)
+                .contentType(ContentType.JSON);
+    }
 }
