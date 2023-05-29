@@ -20,9 +20,11 @@
  * SOFTWARE.
  */
 
-@file:JvmName("CapelinCli")
+@file:JvmName("CloudGamingCli")
 
-package org.opendc.experiments.capelin
+package org.opendc.experiments.cloudGaming
+
+import org.opendc.experiments.capelin.CloudGamingRunner
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -51,12 +53,12 @@ import java.util.stream.LongStream
 /**
  * Main entrypoint of the application.
  */
-fun main(args: Array<String>): Unit = CapelinCommand().main(args)
+fun main(args: Array<String>): Unit = CloudGamingCommand().main(args)
 
 /**
- * Represents the command for the Capelin experiments.
+ * Represents the command for my experiments.
  */
-internal class CapelinCommand : CliktCommand(name = "capelin") {
+internal class CloudGamingCommand : CliktCommand(name = "test") {
     /**
      * The path to the environment directory.
      */
@@ -123,7 +125,7 @@ internal class CapelinCommand : CliktCommand(name = "capelin") {
     private val basePartitions: Map<String, String> by option("-P", "--base-partitions").associate()
 
     override fun run() {
-        val runner = CapelinRunner(envPath, tracePath, outputPath.takeUnless { disableOutput })
+        val runner = CloudGamingRunner(envPath, tracePath, outputPath.takeUnless { disableOutput })
         val scenarios = portfolio().scenarios.toList()
 
         val pool = ForkJoinPool(parallelism)
@@ -140,7 +142,7 @@ internal class CapelinCommand : CliktCommand(name = "capelin") {
     /**
      * Run a single scenario.
      */
-    private fun runScenario(runner: CapelinRunner, pool: ForkJoinPool, scenario: Scenario) {
+    private fun runScenario(runner: CloudGamingRunner, pool: ForkJoinPool, scenario: Scenario) {
         val pb = ProgressBarBuilder()
             .setInitialMax(repeats.toLong())
             .setStyle(ProgressBarStyle.ASCII)

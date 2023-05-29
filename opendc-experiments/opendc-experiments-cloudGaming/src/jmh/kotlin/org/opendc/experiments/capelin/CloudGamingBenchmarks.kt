@@ -28,7 +28,7 @@ import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
-import org.opendc.experiments.capelin.topology.clusterTopology
+import org.opendc.experiments.cloudGaming.topology.clusterTopology
 import org.opendc.experiments.compute.ComputeWorkloadLoader
 import org.opendc.experiments.compute.VirtualMachine
 import org.opendc.experiments.compute.replay
@@ -51,13 +51,13 @@ import java.util.Random
 import java.util.concurrent.TimeUnit
 
 /**
- * Benchmark suite for the Capelin experiments.
+ * Benchmark suite for the cloud gaming experiments.
  */
 @State(Scope.Thread)
 @Fork(1)
 @Warmup(iterations = 2, time = 5, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 5, timeUnit = TimeUnit.SECONDS)
-class CapelinBenchmarks {
+class CloudGamingBenchmarks {
     private lateinit var vms: List<VirtualMachine>
     private lateinit var topology: List<HostSpec>
 
