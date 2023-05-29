@@ -22,8 +22,10 @@
 
 @file:JvmName("TopologyFactories")
 
-package org.opendc.experiments.capelin.topology
+package org.opendc.experiments.cloudGaming.topology
 
+import org.opendc.experiments.capelin.topology.ClusterSpec
+import org.opendc.experiments.capelin.topology.ClusterSpecReader
 import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.simulator.compute.SimPsuFactories
 import org.opendc.simulator.compute.model.MachineModel

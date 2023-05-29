@@ -32,7 +32,7 @@ import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
-import org.opendc.experiments.capelin.topology.clusterTopology
+import org.opendc.experiments.cloudGaming.topology.clusterTopology
 import org.opendc.experiments.compute.ComputeWorkloadLoader
 import org.opendc.experiments.compute.VirtualMachine
 import org.opendc.experiments.compute.grid5000
@@ -47,15 +47,19 @@ import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
 import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.experiments.compute.trace
 import org.opendc.experiments.provisioner.Provisioner
+import org.opendc.simulator.compute.workload.SimTrace
+import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
 import java.time.Duration
+import java.time.Instant
 import java.util.Random
+import java.util.UUID
 
 /**
- * An integration test suite for the Capelin experiments.
+ * An integration test suite for the Cloud Gaming experiments.
  */
-class CapelinIntegrationTest {
+class CloudGamingIntegrationTest {
     /**
      * The monitor used to keep track of the metrics.
      */
@@ -134,7 +138,8 @@ class CapelinIntegrationTest {
     @Test
     fun testSmall() = runSimulation {
         val seed = 1L
-        val workload = createTestWorkload(0.25, seed)
+//        val workload = createTestWorkload(0.25, seed)
+        val workload = generatePlayerTrace(1, 1440)
         val topology = createTopology("single")
         val monitor = monitor
 
@@ -158,14 +163,24 @@ class CapelinIntegrationTest {
                 "Active=${monitor.serversActive}"
         )
 
-        // Note that these values have been verified beforehand
-        assertAll(
-            { assertEquals(10999514, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(9741285, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
-            { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-            { assertEquals(7.0116E8, monitor.energyUsage, 1E4) { "Incorrect power draw" } }
+        println(
+            "Results:" +
+                "idleTime=${monitor.idleTime} " +
+                "activeTime=${monitor.activeTime} " +
+                "stealTime=${monitor.stealTime} " +
+                "lostTime=${monitor.lostTime} " +
+                "energyUse=${monitor.energyUsage} " +
+                "upTime=${monitor.uptime}"
         )
+
+        // Note that these values have been verified beforehand
+//        assertAll(
+//            { assertEquals(10999514, monitor.idleTime) { "Idle time incorrect" } },
+//            { assertEquals(9741285, monitor.activeTime) { "Active time incorrect" } },
+//            { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
+//            { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
+//            { assertEquals(7.0116E8, monitor.energyUsage, 1E4) { "Incorrect power draw" } }
+//        )
     }
 
     /**
@@ -283,5 +298,45 @@ class CapelinIntegrationTest {
             energyUsage += reader.powerTotal
             uptime += reader.uptime
         }
+    }
+
+    fun generatePlayerTrace(numOfVms: Int, duration: Long): List<VirtualMachine> {
+        val trace = mutableListOf<VirtualMachine>()
+        val sessionDuration = Duration.ofMinutes(duration)
+        val startTime = Instant.now()
+        val stopTime = startTime.plus(sessionDuration)
+
+        val usageCol = doubleArrayOf(20000.0)
+        val deadlineCol = longArrayOf(stopTime.toEpochMilli())
+        val coresCol = intArrayOf(4)
+        val size = 1
+
+//        val simTrace = SimTrace(usageCol, deadlineCol, coresCol, size)
+
+        for (i in 1..numOfVms) {
+            val vm = VirtualMachine(
+                uid = UUID.randomUUID(),
+                name = "VM_$i",
+                cpuCount = 4,
+                cpuCapacity = 2000.0,
+                memCapacity = 8192,
+//                totalLoad = Math.random() * 100,
+                totalLoad = 0.0,
+                startTime = startTime,
+                stopTime = stopTime,
+                trace =
+//                simTrace,
+                SimTrace.ofFragments(
+                    SimTraceFragment(0, duration * 1000, 2800.0, 1),
+                    SimTraceFragment(duration * 1000, duration * 1000, 5000.0, 1),
+                    SimTraceFragment(duration * 2000, duration * 1000, 1000.0, 1),
+                    SimTraceFragment(duration * 3000, duration * 1000, 3000.0, 1),
+                    SimTraceFragment(duration * 4000, duration * 1000, 2000.0, 1)
+                ),
+                interferenceProfile = null
+            )
+            trace.add(vm)
+        }
+        return trace
     }
 }

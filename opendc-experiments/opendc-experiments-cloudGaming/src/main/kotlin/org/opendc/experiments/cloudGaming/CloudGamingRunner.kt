@@ -24,7 +24,7 @@ package org.opendc.experiments.capelin
 
 import org.opendc.compute.service.ComputeService
 import org.opendc.experiments.capelin.model.Scenario
-import org.opendc.experiments.capelin.topology.clusterTopology
+import org.opendc.experiments.cloudGaming.topology.clusterTopology
 import org.opendc.experiments.compute.ComputeWorkloadLoader
 import org.opendc.experiments.compute.createComputeScheduler
 import org.opendc.experiments.compute.export.parquet.ParquetComputeMonitor
@@ -41,13 +41,13 @@ import java.util.Random
 import kotlin.math.roundToLong
 
 /**
- * Helper class for running the Capelin experiments.
+ * Helper class for running the cloud gaming experiments.
  *
  * @param envPath The path to the directory containing the environments.
  * @param tracePath The path to the directory containing the traces.
  * @param outputPath The path to the directory where the output should be written (or `null` if no output should be generated).
  */
-public class CapelinRunner(
+public class CloudGamingRunner(
     private val envPath: File,
     tracePath: File,
     private val outputPath: File?

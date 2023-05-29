@@ -33,9 +33,9 @@ import java.io.File
 import java.nio.file.Files
 
 /**
- * Test suite for [CapelinRunner].
+ * Test suite for [CloudGamingRunner].
  */
-class CapelinRunnerTest {
+class CloudGamingRunnerTest {
     /**
      * The path to the environments.
      */
@@ -54,7 +54,7 @@ class CapelinRunnerTest {
         val outputPath = Files.createTempDirectory("output").toFile()
 
         try {
-            val runner = CapelinRunner(envPath, tracePath, outputPath)
+            val runner = CloudGamingRunner(envPath, tracePath, outputPath)
             val scenario = Scenario(
                 Topology("topology"),
                 Workload("bitbrains-small", trace("bitbrains-small")),
@@ -73,7 +73,7 @@ class CapelinRunnerTest {
      */
     @Test
     fun testSmokeNoOutput() {
-        val runner = CapelinRunner(envPath, tracePath, null)
+        val runner = CloudGamingRunner(envPath, tracePath, null)
         val scenario = Scenario(
             Topology("topology"),
             Workload("bitbrains-small", trace("bitbrains-small")),
