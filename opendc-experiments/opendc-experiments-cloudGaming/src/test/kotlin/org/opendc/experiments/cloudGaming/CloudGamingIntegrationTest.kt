@@ -20,8 +20,12 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin
+package org.opendc.experiments.cloudGaming
 
+import com.fasterxml.jackson.core.JsonToken
+import com.fasterxml.jackson.dataformat.csv.CsvFactory
+import com.fasterxml.jackson.dataformat.csv.CsvParser
+import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -48,13 +52,14 @@ import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.experiments.compute.trace
 import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.compute.workload.SimTrace
-import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
 import java.time.Duration
 import java.time.Instant
 import java.util.Random
 import java.util.UUID
+import kotlin.math.max
+import kotlin.math.roundToLong
 
 /**
  * An integration test suite for the Cloud Gaming experiments.
@@ -138,9 +143,8 @@ class CloudGamingIntegrationTest {
     @Test
     fun testSmall() = runSimulation {
         val seed = 1L
-//        val workload = createTestWorkload(0.25, seed)
-        val workload = generatePlayerTrace(1, 1440)
-        val topology = createTopology("single")
+        val workload = createTestWorkload(0.25, seed)
+        val topology = createTopology("small")
         val monitor = monitor
 
         Provisioner(dispatcher, seed).use { provisioner ->
@@ -210,6 +214,16 @@ class CloudGamingIntegrationTest {
                 "Error=${monitor.attemptsError} " +
                 "Pending=${monitor.serversPending} " +
                 "Active=${monitor.serversActive}"
+        )
+
+        println(
+            "Results:" +
+                "idleTime=${monitor.idleTime} " +
+                "activeTime=${monitor.activeTime} " +
+                "stealTime=${monitor.stealTime} " +
+                "lostTime=${monitor.lostTime} " +
+                "energyUse=${monitor.energyUsage} " +
+                "upTime=${monitor.uptime}"
         )
 
         // Note that these values have been verified beforehand
@@ -298,45 +312,5 @@ class CloudGamingIntegrationTest {
             energyUsage += reader.powerTotal
             uptime += reader.uptime
         }
-    }
-
-    fun generatePlayerTrace(numOfVms: Int, duration: Long): List<VirtualMachine> {
-        val trace = mutableListOf<VirtualMachine>()
-        val sessionDuration = Duration.ofMinutes(duration)
-        val startTime = Instant.now()
-        val stopTime = startTime.plus(sessionDuration)
-
-        val usageCol = doubleArrayOf(20000.0)
-        val deadlineCol = longArrayOf(stopTime.toEpochMilli())
-        val coresCol = intArrayOf(4)
-        val size = 1
-
-//        val simTrace = SimTrace(usageCol, deadlineCol, coresCol, size)
-
-        for (i in 1..numOfVms) {
-            val vm = VirtualMachine(
-                uid = UUID.randomUUID(),
-                name = "VM_$i",
-                cpuCount = 4,
-                cpuCapacity = 2000.0,
-                memCapacity = 8192,
-//                totalLoad = Math.random() * 100,
-                totalLoad = 0.0,
-                startTime = startTime,
-                stopTime = stopTime,
-                trace =
-//                simTrace,
-                SimTrace.ofFragments(
-                    SimTraceFragment(0, duration * 1000, 2800.0, 1),
-                    SimTraceFragment(duration * 1000, duration * 1000, 5000.0, 1),
-                    SimTraceFragment(duration * 2000, duration * 1000, 1000.0, 1),
-                    SimTraceFragment(duration * 3000, duration * 1000, 3000.0, 1),
-                    SimTraceFragment(duration * 4000, duration * 1000, 2000.0, 1)
-                ),
-                interferenceProfile = null
-            )
-            trace.add(vm)
-        }
-        return trace
     }
 }
