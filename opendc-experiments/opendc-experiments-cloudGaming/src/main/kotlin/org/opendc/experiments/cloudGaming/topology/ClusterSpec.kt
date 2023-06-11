@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.topology
+package org.opendc.experiments.cloudGaming.topology
 
 /**
  * Definition of a compute cluster modeled in the simulation.

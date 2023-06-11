@@ -48,7 +48,7 @@ public final class SimTrace {
      * @param coresCol The column containing the utilized cores.
      * @param size The number of fragments in the trace.
      */
-    public SimTrace(double[] usageCol, long[] deadlineCol, int[] coresCol, int size) { // RS: changed to public for testing
+    private SimTrace(double[] usageCol, long[] deadlineCol, int[] coresCol, int size) { // RS: changed to public for testing
         if (size < 0) {
             throw new IllegalArgumentException("Invalid trace size");
         } else if (usageCol.length < size) {

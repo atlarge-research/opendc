@@ -20,9 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.portfolio
+package org.opendc.experiments.cloudGaming.portfolio
 
-import org.opendc.experiments.capelin.model.Scenario
+import org.opendc.experiments.cloudGaming.model.Scenario
 
 /**
  * A portfolio represents a collection of scenarios are tested for the work.

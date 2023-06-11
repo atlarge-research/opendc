@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.model
+package org.opendc.experiments.cloudGaming.model
 
 /**
  * Operation phenomena during experiments.

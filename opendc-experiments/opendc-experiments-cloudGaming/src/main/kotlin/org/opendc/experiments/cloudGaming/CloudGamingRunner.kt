@@ -20,10 +20,10 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin
+package org.opendc.experiments.cloudGaming
 
 import org.opendc.compute.service.ComputeService
-import org.opendc.experiments.capelin.model.Scenario
+import org.opendc.experiments.cloudGaming.model.Scenario
 import org.opendc.experiments.cloudGaming.topology.clusterTopology
 import org.opendc.experiments.compute.ComputeWorkloadLoader
 import org.opendc.experiments.compute.createComputeScheduler

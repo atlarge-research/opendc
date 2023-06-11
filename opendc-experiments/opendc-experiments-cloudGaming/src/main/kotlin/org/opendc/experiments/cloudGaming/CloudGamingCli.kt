@@ -24,8 +24,6 @@
 
 package org.opendc.experiments.cloudGaming
 
-import org.opendc.experiments.capelin.CloudGamingRunner
-
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.associate
@@ -39,13 +37,13 @@ import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
 import me.tongfei.progressbar.ProgressBarBuilder
 import me.tongfei.progressbar.ProgressBarStyle
-import org.opendc.experiments.capelin.model.Scenario
-import org.opendc.experiments.capelin.portfolio.CompositeWorkloadPortfolio
-import org.opendc.experiments.capelin.portfolio.HorVerPortfolio
-import org.opendc.experiments.capelin.portfolio.MoreHpcPortfolio
-import org.opendc.experiments.capelin.portfolio.MoreVelocityPortfolio
-import org.opendc.experiments.capelin.portfolio.OperationalPhenomenaPortfolio
-import org.opendc.experiments.capelin.portfolio.TestPortfolio
+import org.opendc.experiments.cloudGaming.model.Scenario
+import org.opendc.experiments.cloudGaming.portfolio.CompositeWorkloadPortfolio
+import org.opendc.experiments.cloudGaming.portfolio.HorVerPortfolio
+import org.opendc.experiments.cloudGaming.portfolio.MoreHpcPortfolio
+import org.opendc.experiments.cloudGaming.portfolio.MoreVelocityPortfolio
+import org.opendc.experiments.cloudGaming.portfolio.OperationalPhenomenaPortfolio
+import org.opendc.experiments.cloudGaming.portfolio.TestPortfolio
 import java.io.File
 import java.util.concurrent.ForkJoinPool
 import java.util.stream.LongStream

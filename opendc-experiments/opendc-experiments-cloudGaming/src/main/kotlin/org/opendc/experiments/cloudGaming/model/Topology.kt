@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.model
+package org.opendc.experiments.cloudGaming.model
 
 /**
  * The topology on which we simulate the workload.

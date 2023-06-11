@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin
+package org.opendc.experiments.cloudGaming
 
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.FilterScheduler

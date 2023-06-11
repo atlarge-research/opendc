@@ -20,14 +20,15 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin
+package org.opendc.experiments.cloudGaming
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.opendc.experiments.capelin.model.OperationalPhenomena
-import org.opendc.experiments.capelin.model.Scenario
-import org.opendc.experiments.capelin.model.Topology
-import org.opendc.experiments.capelin.model.Workload
+import org.opendc.experiments.cloudGaming.CloudGamingRunner
+import org.opendc.experiments.cloudGaming.model.OperationalPhenomena
+import org.opendc.experiments.cloudGaming.model.Scenario
+import org.opendc.experiments.cloudGaming.model.Topology
+import org.opendc.experiments.cloudGaming.model.Workload
 import org.opendc.experiments.compute.trace
 import java.io.File
 import java.nio.file.Files

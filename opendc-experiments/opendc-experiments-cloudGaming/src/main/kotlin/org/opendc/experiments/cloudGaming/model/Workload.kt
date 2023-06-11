@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.model
+package org.opendc.experiments.cloudGaming.model
 
 import org.opendc.experiments.compute.ComputeWorkload
 

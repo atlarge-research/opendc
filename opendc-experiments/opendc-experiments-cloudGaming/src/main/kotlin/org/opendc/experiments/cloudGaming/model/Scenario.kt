@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.model
+package org.opendc.experiments.cloudGaming.model
 
 /**
  * A single scenario of a portfolio.
