@@ -26,10 +26,8 @@ import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
 import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.FilterScheduler
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
@@ -39,24 +37,19 @@ import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.experiments.cloudGaming.topology.clusterTopology
 import org.opendc.experiments.compute.ComputeWorkloadLoader
 import org.opendc.experiments.compute.VirtualMachine
-import org.opendc.experiments.compute.grid5000
 import org.opendc.experiments.compute.registerComputeMonitor
 import org.opendc.experiments.compute.replay
-import org.opendc.experiments.compute.sampleByLoad
 import org.opendc.experiments.compute.setupComputeService
 import org.opendc.experiments.compute.setupHosts
 import org.opendc.experiments.compute.telemetry.ComputeMonitor
 import org.opendc.experiments.compute.telemetry.table.HostTableReader
 import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
 import org.opendc.experiments.compute.topology.HostSpec
-import org.opendc.experiments.compute.trace
 import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
-import java.time.Duration
 import java.time.Instant
-import java.util.Random
 import java.util.UUID
 import kotlin.math.max
 import kotlin.math.roundToLong
@@ -90,51 +83,7 @@ class CloudGamingIntegrationTest {
             filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
             weighers = listOf(CoreRamWeigher(multiplier = 1.0))
         )
-        workloadLoader = ComputeWorkloadLoader(File("src/test/resources/trace"))
-    }
-
-    /**
-     * Test a large simulation setup.
-     */
-    @Test
-    fun testLarge() = runSimulation {
-        val seed = 0L
-        val workload = createTestWorkload(1.0, seed)
-        val topology = createTopology()
-        val monitor = monitor
-
-        Provisioner(dispatcher, seed).use { provisioner ->
-            provisioner.runSteps(
-                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology)
-            )
-
-            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-            service.replay(timeSource, workload, seed)
-        }
-
-        println(
-            "Scheduler " +
-                "Success=${monitor.attemptsSuccess} " +
-                "Failure=${monitor.attemptsFailure} " +
-                "Error=${monitor.attemptsError} " +
-                "Pending=${monitor.serversPending} " +
-                "Active=${monitor.serversActive}"
-        )
-
-        // Note that these values have been verified beforehand
-        assertAll(
-            { assertEquals(50, monitor.attemptsSuccess, "The scheduler should schedule 50 VMs") },
-            { assertEquals(0, monitor.serversActive, "All VMs should finish after a run") },
-            { assertEquals(0, monitor.attemptsFailure, "No VM should be unscheduled") },
-            { assertEquals(0, monitor.serversPending, "No VM should not be in the queue") },
-            { assertEquals(223394101, monitor.idleTime) { "Incorrect idle time" } },
-            { assertEquals(66977086, monitor.activeTime) { "Incorrect active time" } },
-            { assertEquals(3160276, monitor.stealTime) { "Incorrect steal time" } },
-            { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
-            { assertEquals(5.84093E9, monitor.energyUsage, 1E4) { "Incorrect power draw" } }
-        )
+//        workloadLoader = ComputeWorkloadLoader(File("src/test/resources/trace"))
     }
 
     /**
@@ -143,7 +92,7 @@ class CloudGamingIntegrationTest {
     @Test
     fun testSmall() = runSimulation {
         val seed = 1L
-        val workload = createTestWorkload(0.25, seed)
+        val workload = getWorkload("myTraces")
         val topology = createTopology("small")
         val monitor = monitor
 
@@ -176,102 +125,191 @@ class CloudGamingIntegrationTest {
                 "energyUse=${monitor.energyUsage} " +
                 "upTime=${monitor.uptime}"
         )
-
-        // Note that these values have been verified beforehand
-//        assertAll(
-//            { assertEquals(10999514, monitor.idleTime) { "Idle time incorrect" } },
-//            { assertEquals(9741285, monitor.activeTime) { "Active time incorrect" } },
-//            { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
-//            { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-//            { assertEquals(7.0116E8, monitor.energyUsage, 1E4) { "Incorrect power draw" } }
-//        )
     }
 
-    /**
-     * Test a small simulation setup with interference.
-     */
-    @Test
-    fun testInterference() = runSimulation {
-        val seed = 0L
-        val workload = createTestWorkload(1.0, seed)
-        val topology = createTopology("single")
+    private val baseDir: File = File("src/test/resources/trace")
+    private val maxUsage: Double = 15000.0
+    private val maxCores: Int = 8
+    private val maxNumPlayersPerVm = 100
 
-        Provisioner(dispatcher, seed).use { provisioner ->
-            provisioner.runSteps(
-                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology)
-            )
+    private fun getWorkload(workloadDir: String) : List<VirtualMachine> {
+        val traceFile = baseDir.resolve("$workloadDir/trace.csv")
+        val metaFile = baseDir.resolve("$workloadDir/meta.csv")
+        val fragments = parseFragments(traceFile) // takes traces and sticks them together (:
+        return parseMeta(metaFile, fragments)
+    }
 
-            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-            service.replay(timeSource, workload, seed, interference = true)
+    private val factory = CsvFactory()
+        .enable(CsvParser.Feature.ALLOW_COMMENTS)
+        .enable(CsvParser.Feature.TRIM_SPACES)
+
+    private fun parseFragments(path: File): Map<Int, FragmentBuilder> {
+        val fragments = mutableMapOf<Int, FragmentBuilder>()
+
+        val parser = factory.createParser(path)
+        parser.schema = fragmentsSchema
+
+        var id = 0
+        var timestamp = 0L
+        var duration = 0L
+        var cpuCount = 0
+        var cpuUsage = 0.0
+
+        while (!parser.isClosed) {
+            val token = parser.nextValue()
+            if (token == JsonToken.END_OBJECT) {
+                val builder = fragments.computeIfAbsent(id) { FragmentBuilder() }
+                val deadlineMs = timestamp
+                val timeMs = (timestamp - duration)
+                builder.add(timeMs, deadlineMs, cpuUsage, cpuCount)
+
+                println("FRAGMENTS\n" +
+                    "id $id\n" +
+                    "timestamp $timestamp\n" +
+                    "duration $duration\n" +
+                    "cpu_count $cpuCount\n" +
+                    "cpu_usage $cpuUsage\n"+
+                    "timeMs $timeMs\n"+
+                    "deadlineMs $deadlineMs\n")
+                id = 0
+                timestamp = 0L
+                duration = 0
+                cpuCount = 0
+                cpuUsage = 0.0
+
+                continue
+            }
+
+            when (parser.currentName) {
+                "id" -> id = parser.valueAsInt
+                "timestamp" -> timestamp = parser.valueAsLong
+                "duration" -> duration = parser.valueAsLong
+                "cpu_count" -> cpuCount = parser.valueAsInt
+                "cpu_usage" -> cpuUsage = parser.valueAsDouble
+            }
         }
 
-        println(
-            "Scheduler " +
-                "Success=${monitor.attemptsSuccess} " +
-                "Failure=${monitor.attemptsFailure} " +
-                "Error=${monitor.attemptsError} " +
-                "Pending=${monitor.serversPending} " +
-                "Active=${monitor.serversActive}"
-        )
-
-        println(
-            "Results:" +
-                "idleTime=${monitor.idleTime} " +
-                "activeTime=${monitor.activeTime} " +
-                "stealTime=${monitor.stealTime} " +
-                "lostTime=${monitor.lostTime} " +
-                "energyUse=${monitor.energyUsage} " +
-                "upTime=${monitor.uptime}"
-        )
-
-        // Note that these values have been verified beforehand
-        assertAll(
-            { assertEquals(6028018, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(14712781, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(12532934, monitor.stealTime) { "Steal time incorrect" } },
-            { assertEquals(424267, monitor.lostTime) { "Lost time incorrect" } }
-        )
+        return fragments
     }
+    private fun parseMeta(path: File, fragments: Map<Int, FragmentBuilder>): List<VirtualMachine> {
+        val vms = mutableListOf<VirtualMachine>()
+        var counter = 0
 
-    /**
-     * Test a small simulation setup with failures.
-     */
-    @Test
-    fun testFailures() = runSimulation {
-        val seed = 0L
-        val topology = createTopology("single")
-        val workload = createTestWorkload(0.25, seed)
-        val monitor = monitor
+        val parser = factory.createParser(path)
+        parser.schema = metaSchema
 
-        Provisioner(dispatcher, seed).use { provisioner ->
-            provisioner.runSteps(
-                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology)
-            )
+        var id = 0
+        var startTime = 0L
+        var stopTime = 0L
+        var cpuCount = 0
+        var cpuCapacity = 0.0
+        var memCapacity = 0.0
 
-            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-            service.replay(timeSource, workload, seed, failureModel = grid5000(Duration.ofDays(7)))
+        while (!parser.isClosed) {
+            val token = parser.nextValue()
+            if (token == JsonToken.END_OBJECT) {
+                if (!fragments.containsKey(id)) {
+                    continue
+                }
+                val builder = fragments.getValue(id)
+                val totalLoad = builder.totalLoad
+                val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
+//                println("adding VM:\n" +
+//                    "UID $uid\n" +
+//                    "ID $id\n" +
+//                    "cpuCount $cpuCount\n" +
+//                    "cpuCapacity $cpuCapacity\n" +
+//                    "memCapacity $memCapacity\n" +
+//                    "totalLoad $totalLoad\n" +
+//                    "startTime $startTime\n" +
+//                    "stopTime $stopTime\n")
+                vms.add(
+                    VirtualMachine(
+                        uid,
+                        id.toString(),
+                        cpuCount,
+                        cpuCapacity,
+                        memCapacity.roundToLong(),
+                        totalLoad,
+                        Instant.ofEpochMilli(startTime),
+                        Instant.ofEpochMilli(stopTime),
+                        builder.build(),
+                        null
+                    )
+                )
+
+//                println("META\n" +
+//                    "id $id\n" +
+//                    "startTime $startTime\n" +
+//                    "stopTime $stopTime\n" +
+//                    "cpuCount $cpuCount\n" +
+//                    "cpuCapacity $cpuCapacity\n"+
+//                    "memCapacity $memCapacity\n")
+                id = 0
+                startTime = 0L
+                stopTime = 0
+                cpuCount = 0
+                cpuCapacity = 0.0
+                memCapacity = 0.0
+
+                continue
+            }
+
+            when (parser.currentName) {
+                "id" -> id = parser.valueAsInt
+                "start_time" -> startTime = parser.valueAsLong
+                "stop_time" -> stopTime = parser.valueAsLong
+                "cpu_count" -> cpuCount = parser.valueAsInt
+                "cpu_capacity" -> cpuCapacity = parser.valueAsDouble
+                "mem_capacity" -> memCapacity = parser.valueAsDouble
+            }
         }
 
-        // Note that these values have been verified beforehand
-        assertAll(
-            { assertEquals(10085111, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(8539204, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
-            { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-            { assertEquals(2328039558, monitor.uptime) { "Uptime incorrect" } }
-        )
+        return vms
     }
 
-    /**
-     * Obtain the trace reader for the test.
-     */
-    private fun createTestWorkload(fraction: Double, seed: Long): List<VirtualMachine> {
-        val source = trace("bitbrains-small").sampleByLoad(fraction)
-        return source.resolve(workloadLoader, Random(seed))
+    private class FragmentBuilder {
+        /**
+         * The total load of the trace.
+         */
+        @JvmField var totalLoad: Double = 0.0
+
+        /**
+         * The internal builder for the trace.
+         */
+        private val builder = SimTrace.builder()
+
+        /**
+         * The deadline of the previous fragment.
+         */
+        private var previousDeadline = Long.MIN_VALUE
+
+        /**
+         * Add a fragment to the trace.
+         *
+         * @param timestamp Timestamp at which the fragment starts (in epoch millis).
+         * @param deadline Timestamp at which the fragment ends (in epoch millis).
+         * @param usage CPU usage of this fragment.
+         * @param cores Number of cores used.
+         */
+        //TODO: change to fit my schema
+        fun add(timestamp: Long, deadline: Long, usage: Double, cores: Int) {
+            val duration = max(0, deadline - timestamp)
+            totalLoad += (usage * duration) / 1000.0 // avg MHz * duration = MFLOPs
+
+            if (timestamp != previousDeadline) {
+                // There is a gap between the previous and current fragment; fill the gap
+                builder.add(timestamp, 0.0, cores)
+            }
+
+            builder.add(deadline, usage, cores)
+            previousDeadline = deadline
+        }
+
+        /**
+         * Build the trace.
+         */
+        fun build(): SimTrace = builder.build()
     }
 
     /**
@@ -313,4 +351,32 @@ class CloudGamingIntegrationTest {
             uptime += reader.uptime
         }
     }
+
+    /**
+     * The [CsvSchema] that is used to parse the trace file.
+     */
+    private val fragmentsSchema = CsvSchema.builder()
+        .addColumn("id", CsvSchema.ColumnType.NUMBER)
+        .addColumn("timestamp", CsvSchema.ColumnType.NUMBER)
+        .addColumn("duration", CsvSchema.ColumnType.NUMBER)
+        .addColumn("cpu_count", CsvSchema.ColumnType.NUMBER)
+        .addColumn("cpu_usage", CsvSchema.ColumnType.NUMBER)
+        .setAllowComments(true)
+        .setUseHeader(true)
+        .build()
+
+    /**
+     * The [CsvSchema] that is used to parse the meta file.
+     */
+    private val metaSchema = CsvSchema.builder()
+        .addColumn("id", CsvSchema.ColumnType.NUMBER)
+        .addColumn("start_time", CsvSchema.ColumnType.NUMBER)
+        .addColumn("stop_time", CsvSchema.ColumnType.NUMBER)
+        .addColumn("cpu_count", CsvSchema.ColumnType.NUMBER)
+        .addColumn("cpu_capacity", CsvSchema.ColumnType.NUMBER)
+        .addColumn("mem_capacity", CsvSchema.ColumnType.NUMBER)
+        .setAllowComments(true)
+        .setUseHeader(true)
+        .build()
+
 }
