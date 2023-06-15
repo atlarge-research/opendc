@@ -71,7 +71,7 @@ class CloudGamingIntegrationTest {
     /**
      * The [ComputeWorkloadLoader] responsible for loading the traces.
      */
-    private lateinit var workloadLoader: ComputeWorkloadLoader
+//    private lateinit var workloadLoader: ComputeWorkloadLoader
 
     /**
      * Set up the experimental environment.
@@ -127,10 +127,55 @@ class CloudGamingIntegrationTest {
         )
     }
 
+    /**
+     * Test a generated csv.
+     */
+    @Test
+    fun testGenCsv() = runSimulation {
+
+        val tracesDir = "genTraces"
+        val usersPerHour = listOf(10, 15, 12, 10)
+
+        // generate new trace
+        CloudGamingTraceGenerator.generateTraceCsv(4, usersPerHour, 1, 1500.0, 3500.0, 8000, tracesDir)
+
+        val seed = 1L
+        val workload = getWorkload(tracesDir)
+        val topology = createTopology("genTopo")
+        val monitor = monitor
+
+        Provisioner(dispatcher, seed).use { provisioner ->
+            provisioner.runSteps(
+                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
+                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
+                setupHosts(serviceDomain = "compute.opendc.org", topology)
+            )
+
+            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
+            service.replay(timeSource, workload, seed)
+        }
+
+        println(
+            "Scheduler " +
+                "Success=${monitor.attemptsSuccess} " +
+                "Failure=${monitor.attemptsFailure} " +
+                "Error=${monitor.attemptsError} " +
+                "Pending=${monitor.serversPending} " +
+                "Active=${monitor.serversActive}"
+        )
+
+        println(
+            "Results:" +
+                "idleTime=${monitor.idleTime} " +
+                "activeTime=${monitor.activeTime} " +
+                "stealTime=${monitor.stealTime} " +
+                "lostTime=${monitor.lostTime} " +
+                "energyUse=${monitor.energyUsage} " +
+                "upTime=${monitor.uptime}"
+        )
+    }
+
     private val baseDir: File = File("src/test/resources/trace")
-    private val maxUsage: Double = 15000.0
-    private val maxCores: Int = 8
-    private val maxNumPlayersPerVm = 100
 
     private fun getWorkload(workloadDir: String) : List<VirtualMachine> {
         val traceFile = baseDir.resolve("$workloadDir/trace.csv")
