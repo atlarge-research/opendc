@@ -83,7 +83,7 @@ class CloudGamingIntegrationTest {
             filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
             weighers = listOf(CoreRamWeigher(multiplier = 1.0))
         )
-//        workloadLoader = ComputeWorkloadLoader(File("src/test/resources/trace"))
+//        workloadLoader = ComputeWorkloadLoader(File("src/test/resources/trace")) // Maybe I should use this instead?
     }
 
     /**
