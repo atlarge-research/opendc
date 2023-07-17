@@ -35,7 +35,7 @@ jobs:
           DOCUSAURUS_URL: ${{ steps.pages.outputs.origin }}
           DOCUSAURUS_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v2
         with:
           path: ./site/build
 
