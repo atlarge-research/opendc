@@ -22,8 +22,8 @@
 
 package org.opendc.web.proto
 
-import javax.validation.constraints.DecimalMax
-import javax.validation.constraints.DecimalMin
+import jakarta.validation.constraints.DecimalMax
+import jakarta.validation.constraints.DecimalMin
 
 /**
  * The workload to simulate for a scenario.

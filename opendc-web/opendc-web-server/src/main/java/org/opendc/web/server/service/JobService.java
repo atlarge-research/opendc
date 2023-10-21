@@ -22,9 +22,9 @@
 
 package org.opendc.web.server.service;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import java.time.Instant;
 import java.util.Map;
-import javax.enterprise.context.ApplicationScoped;
 import org.opendc.web.proto.JobState;
 import org.opendc.web.server.model.Job;
 

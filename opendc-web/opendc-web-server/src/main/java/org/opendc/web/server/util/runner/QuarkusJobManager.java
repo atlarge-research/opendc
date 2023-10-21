@@ -22,9 +22,9 @@
 
 package org.opendc.web.server.util.runner;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import java.util.Map;
-import javax.enterprise.context.ApplicationScoped;
-import javax.transaction.Transactional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.opendc.web.proto.JobState;

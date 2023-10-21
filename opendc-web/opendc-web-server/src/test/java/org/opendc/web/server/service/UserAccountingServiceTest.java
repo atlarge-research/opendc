@@ -33,9 +33,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 
 import io.quarkus.panache.mock.PanacheMock;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.persistence.EntityExistsException;
 import java.time.Duration;
 import java.time.LocalDate;
-import javax.persistence.EntityExistsException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

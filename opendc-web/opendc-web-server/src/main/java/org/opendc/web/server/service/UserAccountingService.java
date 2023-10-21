@@ -22,11 +22,11 @@
 
 package org.opendc.web.server.service;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityExistsException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityExistsException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.opendc.web.server.model.UserAccounting;
 

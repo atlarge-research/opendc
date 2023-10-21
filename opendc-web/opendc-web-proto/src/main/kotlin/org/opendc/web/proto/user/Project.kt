@@ -24,7 +24,7 @@ package org.opendc.web.proto.user
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema
 import java.time.Instant
-import javax.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotBlank
 
 /**
  * A project in OpenDC encapsulates all the datacenter designs and simulation runs for a set of users.

@@ -25,7 +25,7 @@ package org.opendc.web.proto.user
 import org.eclipse.microprofile.openapi.annotations.media.Schema
 import org.opendc.web.proto.OperationalPhenomena
 import org.opendc.web.proto.Workload
-import javax.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotBlank
 
 /**
  * A single scenario to be explored by the simulator.

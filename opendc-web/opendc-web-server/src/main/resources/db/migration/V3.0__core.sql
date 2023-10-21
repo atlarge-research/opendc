@@ -14,6 +14,8 @@ create table projects
     primary key (id)
 );
 
+create sequence projects_SEQ start with 1 increment by 50;
+
 create type project_role as enum ('OWNER', 'EDITOR', 'VIEWER');
 
 -- Project authorizations authorize users specific permissions to a project.
@@ -38,6 +40,8 @@ create table topologies
     primary key (id)
 );
 
+create sequence topologies_SEQ start with 1 increment by 50;
+
 -- Portfolios
 create table portfolios
 (
@@ -48,6 +52,8 @@ create table portfolios
     project_id bigint       not null,
     primary key (id)
 );
+
+create sequence portfolios_SEQ start with 1 increment by 50;
 
 create table scenarios
 (
@@ -64,6 +70,8 @@ create table scenarios
     primary key (id)
 );
 
+create sequence scenarios_SEQ start with 1 increment by 50;
+
 create type job_state as enum ('PENDING', 'CLAIMED', 'RUNNING', 'FINISHED', 'FAILED');
 
 create table jobs
@@ -79,6 +87,8 @@ create table jobs
     scenario_id bigint       not null,
     primary key (id)
 );
+
+create sequence jobs_SEQ start with 1 increment by 50;
 
 -- User accounting
 create table user_accounting

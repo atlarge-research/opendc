@@ -22,7 +22,7 @@
 
 package org.opendc.web.proto
 
-import javax.validation.constraints.Min
+import jakarta.validation.constraints.Min
 
 /**
  * The targets of a portfolio.

@@ -22,7 +22,7 @@
 
 description = "Web server of OpenDC"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `quarkus-conventions`
     distribution
@@ -32,7 +32,7 @@ dependencies {
     implementation(enforcedPlatform(libs.quarkus.bom))
 
     implementation(projects.opendcWeb.opendcWebProto)
-    compileOnly(projects.opendcWeb.opendcWebUiQuarkusDeployment) /* Temporary fix for Quarkus/Gradle issues */
+    compileOnly(projects.opendcWeb.opendcWebUiQuarkusDeployment) // Temporary fix for Quarkus/Gradle issues
     compileOnly(projects.opendcWeb.opendcWebRunnerQuarkusDeployment)
     implementation(projects.opendcWeb.opendcWebUiQuarkus)
     implementation(projects.opendcWeb.opendcWebRunnerQuarkus)
@@ -66,7 +66,7 @@ val createStartScripts by tasks.creating(CreateStartScripts::class) {
     applicationName = "opendc-server"
     mainClass.set("io.quarkus.bootstrap.runner.QuarkusEntryPoint")
     classpath = files("lib/quarkus-run.jar")
-    outputDir = project.buildDir.resolve("scripts")
+    outputDir = project.layout.buildDirectory.dir("scripts").get().asFile
 }
 
 distributions {
