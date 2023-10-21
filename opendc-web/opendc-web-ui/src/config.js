@@ -20,22 +20,24 @@
  * SOFTWARE.
  */
 
+import { env } from 'next-runtime-env';
+
 /**
  * URL to OpenDC API.
  */
-export const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+export const apiUrl = env("NEXT_PUBLIC_API_BASE_URL")
 
 /**
  * Authentication configuration.
  */
 export const auth = {
-    domain: process.env.NEXT_PUBLIC_AUTH0_DOMAIN,
-    clientId: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID,
-    audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+    domain: env("NEXT_PUBLIC_AUTH0_DOMAIN"),
+    clientId: env("NEXT_PUBLIC_AUTH0_CLIENT_ID"),
+    audience: env("NEXT_PUBLIC_AUTH0_AUDIENCE"),
     redirectUri: global.window && global.window.location.origin,
 }
 
 /**
  * Sentry DSN for web frontend.
  */
-export const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN
+export const sentryDsn = env("NEXT_PUBLIC_SENTRY_DSN")

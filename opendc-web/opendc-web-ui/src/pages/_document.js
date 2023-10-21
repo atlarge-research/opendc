@@ -63,6 +63,8 @@ class OpenDCDocument extends Document {
                         content="OpenDC provides collaborative online datacenter modeling, diverse and effective datacenter simulation, and exploratory datacenter performance feedback."
                     />
                     <meta property="og:locale" content="en_US" />
+                    {/* Load config before Next scripts */}
+                    <script src="/__ENV.js" />
                 </Head>
                 <body>
                     <Main />

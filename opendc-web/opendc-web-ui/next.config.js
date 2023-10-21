@@ -26,6 +26,11 @@ const { withGlobalCss } = require('next-global-css')
 const { PHASE_DEVELOPMENT_SERVER } = require("next/constants");
 const withConfig = withGlobalCss()
 
+// Generate dynamic env file
+const { configureRuntimeEnv } = require('next-runtime-env/build/configure');
+
+configureRuntimeEnv();
+
 module.exports = (phase) => withConfig({
     basePath: process.env.NEXT_BASE_PATH && '/' + process.env.NEXT_BASE_PATH,
     reactStrictMode: true,

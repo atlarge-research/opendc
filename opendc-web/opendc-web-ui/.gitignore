@@ -6,6 +6,7 @@
 
 # Production
 /build
+/public/__ENV.js
 
 # Misc
 .DS_Store
