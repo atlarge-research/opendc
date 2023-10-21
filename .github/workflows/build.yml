@@ -37,7 +37,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/master' }}
       - name: Publish report
         if: always()
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         with:
           check_name: test (Java ${{ matrix.java }})
           report_paths: '**/build/test-results/test/TEST-*.xml'
