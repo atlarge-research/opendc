@@ -20,7 +20,7 @@ jobs:
           fi
           echo "tags=${DOCKER_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -45,7 +45,7 @@ jobs:
           fi
           echo "tags=${DOCKER_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -72,7 +72,7 @@ jobs:
           fi
           echo "tags=${DOCKER_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
