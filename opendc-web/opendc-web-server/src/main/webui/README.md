@@ -10,7 +10,7 @@ dynamic components and their styles are contained in `src`.
 
 ### Pages
 
-All pages are represented by a component in the `src/pages` directory, following
+All pages are represented by a component in the `pages` directory, following
 the [Next.js conventions](https://nextjs.org/docs/routing/introduction) for routing. There are components for the
 following pages:
 
@@ -40,8 +40,8 @@ located in `src/api`. The actual logic responsible for calling these functions i
 ### State Management
 
 State for the topology editor is managed via a Redux store. State is kept there in an immutable form, only to be modified through
-actions being dispatched. These actions are contained in the `src/actions` folder, and the reducers (managing how state
-is updated according to dispatched actions) are located in `src/reducers`. If you're not familiar with the Redux
+actions being dispatched. These actions are contained in the `actions` folder, and the reducers (managing how state
+is updated according to dispatched actions) are located in `reducers`. If you're not familiar with the Redux
 approach to state management, have a look at their [official documentation](https://redux.js.org/).
 
 ## Running the development server
