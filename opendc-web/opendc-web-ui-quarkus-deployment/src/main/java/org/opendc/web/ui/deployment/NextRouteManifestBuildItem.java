@@ -26,22 +26,22 @@ import io.quarkus.builder.item.SimpleBuildItem;
 import java.util.List;
 
 /**
- * Build item containing the routes for the OpenDC web UI.
+ * Build item containing the route manifest of the Next.js application.
  */
-public final class OpenDCUiRoutingBuildItem extends SimpleBuildItem {
+public final class NextRouteManifestBuildItem extends SimpleBuildItem {
 
     private final boolean custom404;
     private final List<Page> pages;
     private final List<Redirect> redirects;
 
     /**
-     * Construct a {@link OpenDCUiRoutingBuildItem} instance.
+     * Construct a {@link NextRouteManifestBuildItem} object.
      *
      * @param routes The routes defined by Next.js.
      * @param redirects The redirects that have been defined by Next.js.
      * @param custom404 A flag to indicate that custom 404 pages are enabled.
      */
-    public OpenDCUiRoutingBuildItem(List<Page> routes, List<Redirect> redirects, boolean custom404) {
+    public NextRouteManifestBuildItem(List<Page> routes, List<Redirect> redirects, boolean custom404) {
         this.custom404 = custom404;
         this.pages = routes;
         this.redirects = redirects;
@@ -61,58 +61,18 @@ public final class OpenDCUiRoutingBuildItem extends SimpleBuildItem {
 
     /**
      * A redirect defined by the Next.js routes manifest.
+     *
+     * @param path        The path that should result in a redirect.
+     * @param destination The destination of the redirect.
+     * @param statusCode  The status code of the redirect.
      */
-    public static final class Redirect {
-
-        private final String path;
-        private final String destination;
-        private final int statusCode;
-
-        /**
-         * Construct a {@link Redirect} route.
-         *
-         * @param path The path that should result in a redirect.
-         * @param destination The destination of the redirect.
-         * @param statusCode The status code of the redirect.
-         */
-        public Redirect(String path, String destination, int statusCode) {
-            this.statusCode = statusCode;
-            this.path = path;
-            this.destination = destination;
-        }
-
-        public String getPath() {
-            return path;
-        }
-
-        public String getDestination() {
-            return destination;
-        }
-
-        public int getStatusCode() {
-            return statusCode;
-        }
-    }
+    public record Redirect(String path, String destination, int statusCode) {}
 
     /**
      * A page defined by the Next.js routes manifest.
+     *
+     * @param path The path that to the page.
+     * @param name The name of the page.
      */
-    public static final class Page {
-
-        private final String path;
-        private final String name;
-
-        public Page(String path, String page) {
-            this.path = path;
-            this.name = page;
-        }
-
-        public String getPath() {
-            return path;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
+    public record Page(String path, String name) {}
 }

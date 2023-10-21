@@ -23,7 +23,6 @@
 // PatternFly 4 uses global CSS imports in its distribution files. Therefore,
 // we need to transpile the modules before we can use them.
 const { withGlobalCss } = require('next-global-css')
-const { PHASE_DEVELOPMENT_SERVER } = require("next/constants");
 const withConfig = withGlobalCss()
 
 // Generate dynamic env file
@@ -34,7 +33,6 @@ configureRuntimeEnv();
 module.exports = (phase) => withConfig({
     basePath: process.env.NEXT_BASE_PATH && '/' + process.env.NEXT_BASE_PATH,
     reactStrictMode: true,
-    distDir: phase === PHASE_DEVELOPMENT_SERVER ? 'build/next-dev' : 'build/next',
     async redirects() {
         return [
             {

@@ -24,8 +24,9 @@ node = "18.15.0"
 parquet = "1.13.1"
 progressbar = "0.10.0"
 quarkus = "3.8.0"
+quarkus-quinoa = "2.2.1"
 sentry = "7.4.0"
-slf4j = "2.0.7"
+slf4j = "2.0.9"
 spotless = "6.25.0"
 
 [libraries]
@@ -85,6 +86,8 @@ quarkus-jdbc-h2 = { module = "io.quarkus:quarkus-jdbc-h2" }
 quarkus-jdbc-postgresql = { module = "io.quarkus:quarkus-jdbc-postgresql" }
 quarkus-flyway = { module = "io.quarkus:quarkus-flyway" }
 hypersistence-utils-hibernate = { module = "io.hypersistence:hypersistence-utils-hibernate-62", version.ref = "hypersistence-utils" }
+quarkus-quinoa-runtime = { module = "io.quarkiverse.quinoa:quarkus-quinoa", version.ref = "quarkus-quinoa" }
+quarkus-quinoa-deployment = { module = "io.quarkiverse.quinoa:quarkus-quinoa-deployment", version.ref = "quarkus-quinoa" }
 
 # Quarkus (Testing)
 quarkus-junit5-core = { module = "io.quarkus:quarkus-junit5" }
