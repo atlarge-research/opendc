@@ -25,6 +25,7 @@ package org.opendc.web.proto.user
 import jakarta.validation.constraints.NotBlank
 import org.eclipse.microprofile.openapi.annotations.media.Schema
 import org.opendc.web.proto.Targets
+import jakarta.validation.constraints.NotBlank
 
 /**
  * A portfolio is the composition of multiple scenarios.

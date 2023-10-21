@@ -26,6 +26,7 @@ import jakarta.validation.constraints.NotBlank
 import org.eclipse.microprofile.openapi.annotations.media.Schema
 import org.opendc.web.proto.OperationalPhenomena
 import org.opendc.web.proto.Workload
+import jakarta.validation.constraints.NotBlank
 
 /**
  * A single scenario to be explored by the simulator.

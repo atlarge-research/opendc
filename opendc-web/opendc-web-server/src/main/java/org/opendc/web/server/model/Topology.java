@@ -23,9 +23,20 @@
 package org.opendc.web.server.model;
 
 import io.hypersistence.utils.hibernate.type.json.JsonType;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -48,6 +59,7 @@ import org.opendc.web.proto.Room;
  */
 @Entity
 @Table(
+        name = "topologies",
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "uk_topologies_number",
@@ -103,8 +115,6 @@ public class Topology extends PanacheEntityBase {
 
     /**
      * Datacenter design in JSON
-     *     @Column(columnDefinition = "jsonb", nullable = false)
-     *     @Type(JsonType.class)
      */
     @Column(columnDefinition = "jsonb", nullable = false)
     @Type(JsonType.class)
