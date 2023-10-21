@@ -27,6 +27,7 @@ import io.quarkus.runtime.ShutdownContext;
 import io.quarkus.runtime.annotations.Recorder;
 import jakarta.enterprise.inject.spi.CDI;
 import java.io.File;
+import jakarta.enterprise.inject.spi.CDI;
 import org.jboss.logging.Logger;
 import org.opendc.web.runner.JobManager;
 import org.opendc.web.runner.OpenDCRunner;

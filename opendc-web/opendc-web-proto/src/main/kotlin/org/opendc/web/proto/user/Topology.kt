@@ -26,6 +26,7 @@ import jakarta.validation.constraints.NotBlank
 import org.eclipse.microprofile.openapi.annotations.media.Schema
 import org.opendc.web.proto.Room
 import java.time.Instant
+import jakarta.validation.constraints.NotBlank
 
 /**
  * Model for an OpenDC topology.
