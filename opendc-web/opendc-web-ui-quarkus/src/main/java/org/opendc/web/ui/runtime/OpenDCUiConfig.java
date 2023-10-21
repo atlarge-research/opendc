@@ -20,23 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.ui.deployment;
+package org.opendc.web.ui.runtime;
 
 import io.quarkus.runtime.annotations.ConfigItem;
+import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import java.util.Optional;
 
 /**
- * Build-time configuration for the OpenDC UI extension.
+ * Configuration for the OpenDC web UI.
  */
-@ConfigRoot(name = "opendc-ui")
+@ConfigRoot(phase = ConfigPhase.RUN_TIME, name = "opendc-ui")
 public class OpenDCUiConfig {
-    /**
-     * A flag to include the OpenDC UI extension into the build.
-     */
-    @ConfigItem(defaultValue = "true")
-    boolean include;
-
     /**
      * The base URL of the OpenDC API.
      */

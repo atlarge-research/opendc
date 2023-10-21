@@ -38,5 +38,3 @@ dependencies {
     implementation(libs.quarkus.vertx.http.runtime)
     implementation(libs.quarkus.arc.runtime)
 }
-
-evaluationDependsOn(projects.opendcWeb.opendcWebUiQuarkusDeployment.dependencyProject.path)

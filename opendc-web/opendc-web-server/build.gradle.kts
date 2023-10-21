@@ -45,6 +45,7 @@ dependencies {
 
     implementation(libs.quarkus.security)
     implementation(libs.quarkus.oidc)
+    implementation(libs.quarkus.quinoa.runtime)
 
     implementation(libs.quarkus.hibernate.orm.core)
     implementation(libs.quarkus.hibernate.orm.panache)
