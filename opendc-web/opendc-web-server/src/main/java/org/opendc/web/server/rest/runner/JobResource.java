@@ -98,7 +98,7 @@ public final class JobResource {
         }
 
         try {
-            jobService.updateJob(job, update.getState(), update.getRuntime(), update.getResults());
+            jobService.updateJob(job, update.state(), update.runtime(), update.results());
         } catch (IllegalArgumentException e) {
             throw new WebApplicationException(e, 400);
         } catch (IllegalStateException e) {

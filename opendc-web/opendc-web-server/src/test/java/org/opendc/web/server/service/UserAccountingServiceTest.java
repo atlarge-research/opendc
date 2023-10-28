@@ -68,8 +68,8 @@ public class UserAccountingServiceTest {
 
         var accounting = service.getAccounting(userId);
 
-        assertTrue(accounting.getPeriodEnd().isAfter(LocalDate.now()));
-        assertEquals(0, accounting.getSimulationTime());
+        assertTrue(accounting.periodEnd().isAfter(LocalDate.now()));
+        assertEquals(0, accounting.simulationTime());
     }
 
     @Test
@@ -85,9 +85,9 @@ public class UserAccountingServiceTest {
         var accounting = service.getAccounting(userId);
 
         assertAll(
-                () -> assertEquals(periodEnd, accounting.getPeriodEnd()),
-                () -> assertEquals(32, accounting.getSimulationTime()),
-                () -> assertEquals(3600, accounting.getSimulationTimeBudget()));
+                () -> assertEquals(periodEnd, accounting.periodEnd()),
+                () -> assertEquals(32, accounting.simulationTime()),
+                () -> assertEquals(3600, accounting.simulationTimeBudget()));
     }
 
     @Test

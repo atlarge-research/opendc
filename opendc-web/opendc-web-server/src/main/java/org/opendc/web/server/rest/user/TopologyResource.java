@@ -104,7 +104,7 @@ public final class TopologyResource {
         Project project = auth.project;
         int number = project.allocateTopology(now);
 
-        Topology topology = new Topology(project, number, request.getName(), now, request.getRooms());
+        Topology topology = new Topology(project, number, request.name(), now, request.rooms());
 
         project.topologies.add(topology);
         topology.persist();
@@ -164,7 +164,7 @@ public final class TopologyResource {
         }
 
         entity.updatedAt = Instant.now();
-        entity.rooms = request.getRooms();
+        entity.rooms = request.rooms();
 
         return UserProtocol.toDto(entity, auth);
     }

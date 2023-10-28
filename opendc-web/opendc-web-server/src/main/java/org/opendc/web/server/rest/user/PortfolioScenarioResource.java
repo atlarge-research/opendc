@@ -118,12 +118,12 @@ public final class PortfolioScenarioResource {
             throw new WebApplicationException("Portfolio not found", 404);
         }
 
-        Topology topology = Topology.findByProject(projectId, (int) request.getTopology());
+        Topology topology = Topology.findByProject(projectId, (int) request.topology());
         if (topology == null) {
             throw new WebApplicationException("Referred topology does not exist", 400);
         }
 
-        Trace trace = Trace.findById(request.getWorkload().getTrace());
+        Trace trace = Trace.findById(request.workload().trace());
         if (trace == null) {
             throw new WebApplicationException("Referred trace does not exist", 400);
         }
@@ -136,14 +136,14 @@ public final class PortfolioScenarioResource {
                 project,
                 portfolio,
                 number,
-                request.getName(),
-                new Workload(trace, request.getWorkload().getSamplingFraction()),
+                request.name(),
+                new Workload(trace, request.workload().samplingFraction()),
                 topology,
-                request.getPhenomena(),
-                request.getSchedulerName());
+                request.phenomena(),
+                request.schedulerName());
         scenario.persist();
 
-        Job job = new Job(scenario, userId, now, portfolio.targets.getRepeats());
+        Job job = new Job(scenario, userId, now, portfolio.targets.repeats());
         job.persist();
 
         // Fail the job if there is not enough budget for the simulation

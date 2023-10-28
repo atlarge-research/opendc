@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,32 @@
  * SOFTWARE.
  */
 
-description = "Web communication protocol for OpenDC"
+package org.opendc.web.proto.runner;
 
-/* Build configuration */
-plugins {
-    `java-library-conventions`
-}
+import java.time.Instant;
+import java.util.Map;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.JobState;
 
-dependencies {
-    implementation(libs.jackson.annotations)
-    implementation(libs.jakarta.validation)
-    implementation(libs.jakarta.ws.rs.api)
-    implementation(libs.microprofile.rest.client.api)
-    implementation(libs.microprofile.openapi.api)
+/**
+ * A simulation job to be simulated by a runner.
+ */
+@Schema(name = "Runner.Job")
+public record Job(
+        long id,
+        Scenario scenario,
+        JobState state,
+        Instant createdAt,
+        Instant updatedAt,
+        int runtime,
+        Map<String, ?> results) {
+    /**
+     * A request to update the state of a job.
+     *
+     * @param state The next state of the job.
+     * @param runtime The runtime of the job (in seconds).
+     * @param results The results of the job.
+     */
+    @Schema(name = "Runner.Job.Update")
+    public record Update(JobState state, int runtime, Map<String, ?> results) {}
 }

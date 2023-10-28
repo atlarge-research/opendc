@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,24 @@
  * SOFTWARE.
  */
 
-description = "Web communication protocol for OpenDC"
+package org.opendc.web.proto.user;
 
-/* Build configuration */
-plugins {
-    `java-library-conventions`
-}
+/**
+ * The role of a user in a project.
+ */
+public enum ProjectRole {
+    /**
+     * The user is allowed to view the project.
+     */
+    VIEWER,
 
-dependencies {
-    implementation(libs.jackson.annotations)
-    implementation(libs.jakarta.validation)
-    implementation(libs.jakarta.ws.rs.api)
-    implementation(libs.microprofile.rest.client.api)
-    implementation(libs.microprofile.openapi.api)
+    /**
+     * The user is allowed to edit the project.
+     */
+    EDITOR,
+
+    /**
+     * The user owns the project (so he can delete it).
+     */
+    OWNER
 }

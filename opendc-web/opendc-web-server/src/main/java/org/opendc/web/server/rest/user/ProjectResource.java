@@ -79,7 +79,7 @@ public final class ProjectResource {
     @Consumes("application/json")
     public org.opendc.web.proto.user.Project create(@Valid org.opendc.web.proto.user.Project.Create request) {
         Instant now = Instant.now();
-        Project entity = new Project(request.getName(), now);
+        Project entity = new Project(request.name(), now);
         entity.persist();
 
         ProjectAuthorization authorization =

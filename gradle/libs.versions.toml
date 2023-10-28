@@ -6,16 +6,17 @@ dokka = "1.9.10"
 hadoop = "3.3.6"
 hypersistence-utils = "3.6.0"
 jackson = "2.15.3"
-jandex-gradle = "1.1.0"
 java = "17"
 jline = "3.23.0"
 jmh-gradle = "0.7.1"
 jakarta-validation = "3.0.2"
+jakarta-ws-rs = "3.1.0"
 junit-jupiter = "5.10.0"
 kotlin = "1.9.10"
 kotlin-logging = "3.0.5"
 kotlinx-coroutines = "1.7.3"
 log4j = "2.21.0"
+microprofile-rest-client = "3.0.1"
 microprofile-openapi = "3.1.1"
 microprofile-config = "3.1"
 mockk = "1.13.8"
@@ -100,14 +101,15 @@ jline = { module = "org.jline:jline", version.ref = "jline" }
 
 # Other
 jakarta-validation = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation" }
+jakarta-ws-rs-api = { module = "jakarta.ws.rs:jakarta.ws.rs-api", version.ref = "jakarta-ws-rs" }
 hadoop-common = { module = "org.apache.hadoop:hadoop-common", version.ref = "hadoop" }
 hadoop-mapreduce-client-core = { module = "org.apache.hadoop:hadoop-mapreduce-client-core", version.ref = "hadoop" }
 commons-math3 = { module = "org.apache.commons:commons-math3", version.ref = "commons-math3" }
+microprofile-rest-client-api = { module = "org.eclipse.microprofile.rest.client:microprofile-rest-client-api", version.ref = "microprofile-rest-client" }
 microprofile-openapi-api = { module = "org.eclipse.microprofile.openapi:microprofile-openapi-api", version.ref = "microprofile-openapi" }
 microprofile-config = { module = "org.eclipse.microprofile.config:microprofile-config-api", version.ref = "microprofile-config" }
 
 # Other (Build)
 dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
-jandex-gradle = { module = "org.kordamp.gradle:jandex-gradle-plugin", version.ref = "jandex-gradle" }
 jmh-gradle = { module = "me.champeau.jmh:jmh-gradle-plugin", version.ref = "jmh-gradle" }
 spotless-gradle = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }

@@ -100,7 +100,7 @@ public final class PortfolioResource {
         var project = auth.project;
         int number = project.allocatePortfolio(now);
 
-        Portfolio portfolio = new Portfolio(project, number, request.getName(), request.getTargets());
+        Portfolio portfolio = new Portfolio(project, number, request.name(), request.targets());
 
         project.portfolios.add(portfolio);
         portfolio.persist();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,24 @@
  * SOFTWARE.
  */
 
-description = "Web communication protocol for OpenDC"
+package org.opendc.web.proto;
 
-/* Build configuration */
-plugins {
-    `java-library-conventions`
-}
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 
-dependencies {
-    implementation(libs.jackson.annotations)
-    implementation(libs.jakarta.validation)
-    implementation(libs.jakarta.ws.rs.api)
-    implementation(libs.microprofile.rest.client.api)
-    implementation(libs.microprofile.openapi.api)
+/**
+ * The workload to simulate for a scenario.
+ */
+public record Workload(Trace trace, double samplingFraction) {
+    /**
+     * Specification for a workload.
+     *
+     * @param trace The unique identifier of the trace.
+     * @param samplingFraction The fraction of the workload to sample.
+     */
+    public record Spec(
+            String trace,
+            @DecimalMin(value = "0.001", message = "Sampling fraction must be non-zero")
+                    @DecimalMax(value = "1", message = "Sampling fraction cannot exceed one")
+                    double samplingFraction) {}
 }

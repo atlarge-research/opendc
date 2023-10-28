@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,15 @@
  * SOFTWARE.
  */
 
-description = "Web communication protocol for OpenDC"
+package org.opendc.web.proto.runner;
 
-/* Build configuration */
-plugins {
-    `java-library-conventions`
-}
+import java.time.Instant;
+import java.util.List;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.topology.Room;
 
-dependencies {
-    implementation(libs.jackson.annotations)
-    implementation(libs.jakarta.validation)
-    implementation(libs.jakarta.ws.rs.api)
-    implementation(libs.microprofile.rest.client.api)
-    implementation(libs.microprofile.openapi.api)
-}
+/**
+ * A [Topology] that is exposed to an OpenDC runner.
+ */
+@Schema(name = "Runner.Topology")
+public record Topology(long id, int number, String name, List<Room> rooms, Instant createdAt, Instant updatedAt) {}

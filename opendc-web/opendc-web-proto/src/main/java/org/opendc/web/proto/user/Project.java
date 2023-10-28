@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,19 @@
  * SOFTWARE.
  */
 
-description = "Web communication protocol for OpenDC"
+package org.opendc.web.proto.user;
 
-/* Build configuration */
-plugins {
-    `java-library-conventions`
-}
+import jakarta.validation.constraints.NotBlank;
+import java.time.Instant;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-dependencies {
-    implementation(libs.jackson.annotations)
-    implementation(libs.jakarta.validation)
-    implementation(libs.jakarta.ws.rs.api)
-    implementation(libs.microprofile.rest.client.api)
-    implementation(libs.microprofile.openapi.api)
+/**
+ * A project in OpenDC encapsulates all the datacenter designs and simulation runs for a set of users.
+ */
+public record Project(long id, String name, Instant createdAt, Instant updatedAt, ProjectRole role) {
+    /**
+     * A request to create a new project.
+     */
+    @Schema(name = "Project.Create")
+    public record Create(@NotBlank(message = "Name must not be empty") String name) {}
 }

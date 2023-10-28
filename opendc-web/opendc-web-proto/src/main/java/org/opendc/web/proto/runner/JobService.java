@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,41 @@
  * SOFTWARE.
  */
 
-description = "Web communication protocol for OpenDC"
+package org.opendc.web.proto.runner;
 
-/* Build configuration */
-plugins {
-    `java-library-conventions`
-}
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import java.util.List;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
-dependencies {
-    implementation(libs.jackson.annotations)
-    implementation(libs.jakarta.validation)
-    implementation(libs.jakarta.ws.rs.api)
-    implementation(libs.microprofile.rest.client.api)
-    implementation(libs.microprofile.openapi.api)
+/**
+ * Service for interacting with the OpenDC job server.
+ */
+@Path("/jobs")
+@RegisterRestClient
+public interface JobService {
+    /**
+     * Obtain all pending simulation jobs.
+     */
+    @GET
+    List<Job> queryPending();
+
+    /**
+     * Get a job by identifier.
+     */
+    @GET
+    @Path("{job}")
+    Job get(@PathParam("job") long id);
+
+    /**
+     * Atomically update the state of a job.
+     */
+    @POST
+    @Path("{job}")
+    @Consumes("application/json")
+    Job update(@PathParam("job") long id, @Valid Job.Update update);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,22 @@
  * SOFTWARE.
  */
 
-description = "Web communication protocol for OpenDC"
+package org.opendc.web.proto.runner;
 
-/* Build configuration */
-plugins {
-    `java-library-conventions`
-}
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.OperationalPhenomena;
+import org.opendc.web.proto.Workload;
 
-dependencies {
-    implementation(libs.jackson.annotations)
-    implementation(libs.jakarta.validation)
-    implementation(libs.jakarta.ws.rs.api)
-    implementation(libs.microprofile.rest.client.api)
-    implementation(libs.microprofile.openapi.api)
-}
+/**
+ * A {@link Scenario} that is exposed to an OpenDC runner.
+ */
+@Schema(name = "Runner.Scenario")
+public record Scenario(
+        long id,
+        int number,
+        Portfolio portfolio,
+        String name,
+        Workload workload,
+        Topology topology,
+        OperationalPhenomena phenomena,
+        String schedulerName) {}

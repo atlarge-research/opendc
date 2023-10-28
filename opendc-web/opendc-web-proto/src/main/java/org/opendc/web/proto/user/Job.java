@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,15 @@
  * SOFTWARE.
  */
 
-description = "Web communication protocol for OpenDC"
+package org.opendc.web.proto.user;
 
-/* Build configuration */
-plugins {
-    `java-library-conventions`
-}
+import java.time.Instant;
+import java.util.Map;
+import org.opendc.web.proto.JobState;
 
-dependencies {
-    implementation(libs.jackson.annotations)
-    implementation(libs.jakarta.validation)
-    implementation(libs.jakarta.ws.rs.api)
-    implementation(libs.microprofile.rest.client.api)
-    implementation(libs.microprofile.openapi.api)
-}
+/**
+ * A simulation job that is associated with a {@link Scenario}.
+ * <p>
+ * This entity is exposed in the runner-facing API via {@link Job}.
+ */
+public record Job(long id, JobState state, Instant createdAt, Instant updatedAt, Map<String, ?> results) {}

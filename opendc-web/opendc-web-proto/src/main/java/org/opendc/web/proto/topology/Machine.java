@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,19 @@
  * SOFTWARE.
  */
 
-description = "Web communication protocol for OpenDC"
+package org.opendc.web.proto.topology;
 
-/* Build configuration */
-plugins {
-    `java-library-conventions`
-}
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 
-dependencies {
-    implementation(libs.jackson.annotations)
-    implementation(libs.jakarta.validation)
-    implementation(libs.jakarta.ws.rs.api)
-    implementation(libs.microprofile.rest.client.api)
-    implementation(libs.microprofile.openapi.api)
-}
+/**
+ * A machine in a rack.
+ */
+public record Machine(
+        String id,
+        int position,
+        List<ProcessingUnit> cpus,
+        List<ProcessingUnit> gpus,
+        @JsonProperty("memories") List<MemoryUnit> memory,
+        @JsonProperty("storages") List<MemoryUnit> storage,
+        String rackId) {}
