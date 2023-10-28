@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,41 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.user
+package org.opendc.web.proto.runner;
+
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import java.util.List;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 /**
- * The role of a user in a project.
+ * Service for interacting with the OpenDC job server.
  */
-public enum class ProjectRole {
+@Path("/jobs")
+@RegisterRestClient
+public interface JobService {
     /**
-     * The user is allowed to view the project.
+     * Obtain all pending simulation jobs.
      */
-    VIEWER,
+    @GET
+    List<Job> queryPending();
 
     /**
-     * The user is allowed to edit the project.
+     * Get a job by identifier.
      */
-    EDITOR,
+    @GET
+    @Path("{job}")
+    Job get(@PathParam("job") long id);
 
     /**
-     * The user owns the project (so he can delete it).
+     * Atomically update the state of a job.
      */
-    OWNER,
+    @POST
+    @Path("{job}")
+    @Consumes("application/json")
+    Job update(@PathParam("job") long id, @Valid Job.Update update);
 }

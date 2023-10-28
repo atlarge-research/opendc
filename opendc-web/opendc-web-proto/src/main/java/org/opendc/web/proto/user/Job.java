@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,15 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.runner
+package org.opendc.web.proto.user;
 
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.JobState
-import java.time.Instant
+import java.time.Instant;
+import java.util.Map;
+import org.opendc.web.proto.JobState;
 
 /**
- * A simulation job to be simulated by a runner.
+ * A simulation job that is associated with a {@link Scenario}.
+ * <p>
+ * This entity is exposed in the runner-facing API via {@link Job}.
  */
-@Schema(name = "Runner.Job")
-public data class Job(
-    val id: Long,
-    val scenario: Scenario,
-    val state: JobState,
-    val createdAt: Instant,
-    val updatedAt: Instant,
-    val runtime: Int,
-    val results: Map<String, Any>? = null,
-) {
-    /**
-     * A request to update the state of a job.
-     *
-     * @property state The next state of the job.
-     * @property runtime The runtime of the job (in seconds).
-     * @property results The results of the job.
-     */
-    @Schema(name = "Runner.Job.Update")
-    public data class Update(val state: JobState, val runtime: Int, val results: Map<String, Any>? = null)
-}
+public record Job(long id, JobState state, Instant createdAt, Instant updatedAt, Map<String, ?> results) {}

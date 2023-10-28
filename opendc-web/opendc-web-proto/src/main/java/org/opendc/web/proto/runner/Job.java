@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,32 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto
+package org.opendc.web.proto.runner;
+
+import java.time.Instant;
+import java.util.Map;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.JobState;
 
 /**
- * Container for reporting errors.
+ * A simulation job to be simulated by a runner.
  */
-public data class ProtocolError(val code: Int, val message: String)
+@Schema(name = "Runner.Job")
+public record Job(
+        long id,
+        Scenario scenario,
+        JobState state,
+        Instant createdAt,
+        Instant updatedAt,
+        int runtime,
+        Map<String, ?> results) {
+    /**
+     * A request to update the state of a job.
+     *
+     * @param state The next state of the job.
+     * @param runtime The runtime of the job (in seconds).
+     * @param results The results of the job.
+     */
+    @Schema(name = "Runner.Job.Update")
+    public record Update(JobState state, int runtime, Map<String, ?> results) {}
+}

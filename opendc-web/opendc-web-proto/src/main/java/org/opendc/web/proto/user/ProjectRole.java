@@ -20,27 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.server.rest.error;
-
-import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.ext.ExceptionMapper;
-import jakarta.ws.rs.ext.Provider;
-import org.opendc.web.proto.ProtocolError;
+package org.opendc.web.proto.user;
 
 /**
- * An [ExceptionMapper] for [MissingKotlinParameterException] thrown by Jackson.
+ * The role of a user in a project.
  */
-@Provider
-public final class MissingKotlinParameterExceptionMapper implements ExceptionMapper<MissingKotlinParameterException> {
-    @Override
-    public Response toResponse(MissingKotlinParameterException exception) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity(new ProtocolError(
-                        Response.Status.BAD_REQUEST.getStatusCode(),
-                        "Field " + exception.getParameter().getName() + " is missing from body."))
-                .type(MediaType.APPLICATION_JSON)
-                .build();
-    }
+public enum ProjectRole {
+    /**
+     * The user is allowed to view the project.
+     */
+    VIEWER,
+
+    /**
+     * The user is allowed to edit the project.
+     */
+    EDITOR,
+
+    /**
+     * The user owns the project (so he can delete it).
+     */
+    OWNER,
 }
