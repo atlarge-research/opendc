@@ -32,6 +32,8 @@ dependencies {
     implementation(enforcedPlatform(libs.quarkus.bom))
 
     implementation(projects.opendcWeb.opendcWebProto)
+    compileOnly(projects.opendcWeb.opendcWebQuarkusDeployment)
+    implementation(projects.opendcWeb.opendcWebQuarkus)
     testImplementation("junit:junit:4.13.1")
     testImplementation("junit:junit:4.13.1")
     compileOnly(projects.opendcWeb.opendcWebUiQuarkusDeployment) // Temporary fix for Quarkus/Gradle issues
