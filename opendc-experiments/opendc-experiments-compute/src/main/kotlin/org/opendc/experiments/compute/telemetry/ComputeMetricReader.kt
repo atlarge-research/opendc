@@ -95,7 +95,7 @@ public class ComputeMetricReader(
                     for (host in service.hosts) {
                         val reader = hostTableReaders.computeIfAbsent(host) { HostTableReaderImpl(it) }
                         reader.record(now)
-                        monitor.record(reader)
+                        monitor.record(reader.copy())
                         reader.reset()
                     }
 
@@ -185,6 +185,34 @@ public class ComputeMetricReader(
      * An aggregator for host metrics before they are reported.
      */
     private class HostTableReaderImpl(host: Host) : HostTableReader {
+        override fun copy(): HostTableReader {
+            val newHostTable = HostTableReaderImpl(_host)
+            newHostTable.setValues(this)
+
+            return newHostTable
+        }
+
+        override fun setValues(table: HostTableReader) {
+            _timestamp = table.timestamp
+            _guestsTerminated = table.guestsTerminated
+            _guestsRunning = table.guestsRunning
+            _guestsError = table.guestsError
+            _guestsInvalid = table.guestsInvalid
+            _cpuLimit = table.cpuLimit
+            _cpuDemand = table.cpuDemand
+            _cpuUsage = table.cpuUsage
+            _cpuUtilization = table.cpuUtilization
+            _cpuActiveTime = table.cpuActiveTime
+            _cpuIdleTime = table.cpuIdleTime
+            _cpuStealTime = table.cpuStealTime
+            _cpuLostTime = table.cpuLostTime
+            _powerUsage = table.powerUsage
+            _powerTotal = table.powerTotal
+            _uptime = table.uptime
+            _downtime = table.downtime
+            _bootTime = table.bootTime
+        }
+
         private val _host = host
 
         override val host: HostInfo = HostInfo(host.uid.toString(), host.name, "x86", host.model.cpuCount, host.model.memoryCapacity)
@@ -326,6 +354,28 @@ public class ComputeMetricReader(
      * An aggregator for server metrics before they are reported.
      */
     private class ServerTableReaderImpl(private val service: ComputeService, server: Server) : ServerTableReader {
+        override fun copy(): ServerTableReader {
+            val newServerTable = ServerTableReaderImpl(service, _server)
+            newServerTable.setValues(this)
+
+            return newServerTable
+        }
+
+        override fun setValues(table: ServerTableReader) {
+            _timestamp = table.timestamp
+            _uptime = table.uptime
+            _downtime = table.downtime
+            _provisionTime = table.provisionTime
+            _bootTime = table.bootTime
+            _cpuLimit = table.cpuLimit
+            _cpuActiveTime = table.cpuActiveTime
+            _cpuIdleTime = table.cpuIdleTime
+            _cpuStealTime = table.cpuStealTime
+            _cpuLostTime = table.cpuLostTime
+
+            host = table.host
+        }
+
         private val _server = server
 
         /**

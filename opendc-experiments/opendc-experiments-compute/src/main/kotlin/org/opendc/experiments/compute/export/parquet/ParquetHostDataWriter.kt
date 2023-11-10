@@ -78,68 +78,80 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             consumer.addBinary(UUID.fromString(data.host.id).toBinary())
             consumer.endField("host_id", 1)
 
-            consumer.startField("uptime", 2)
-            consumer.addLong(data.uptime)
-            consumer.endField("uptime", 2)
+            consumer.startField("cpu_count", 2)
+            consumer.addInteger(data.host.cpuCount)
+            consumer.endField("cpu_count", 2)
 
-            consumer.startField("downtime", 3)
+            consumer.startField("mem_capacity", 3)
+            consumer.addLong(data.host.memCapacity)
+            consumer.endField("mem_capacity", 3)
+
+            consumer.startField("guests_terminated", 4)
+            consumer.addInteger(data.guestsTerminated)
+            consumer.endField("guests_terminated", 4)
+
+            consumer.startField("guests_running", 5)
+            consumer.addInteger(data.guestsRunning)
+            consumer.endField("guests_running", 5)
+
+            consumer.startField("guests_error", 6)
+            consumer.addInteger(data.guestsError)
+            consumer.endField("guests_error", 6)
+
+            consumer.startField("guests_invalid", 7)
+            consumer.addInteger(data.guestsInvalid)
+            consumer.endField("guests_invalid", 7)
+
+            consumer.startField("cpu_limit", 8)
+            consumer.addDouble(data.cpuLimit)
+            consumer.endField("cpu_limit", 8)
+
+            consumer.startField("cpu_usage", 9)
+            consumer.addDouble(data.cpuUsage)
+            consumer.endField("cpu_usage", 9)
+
+            consumer.startField("cpu_demand", 10)
+            consumer.addDouble(data.cpuUsage)
+            consumer.endField("cpu_demand", 10)
+
+            consumer.startField("cpu_utilization", 11)
+            consumer.addDouble(data.cpuUtilization)
+            consumer.endField("cpu_utilization", 11)
+
+            consumer.startField("cpu_time_active", 12)
+            consumer.addLong(data.cpuActiveTime)
+            consumer.endField("cpu_time_active", 12)
+
+            consumer.startField("cpu_time_idle", 13)
+            consumer.addLong(data.cpuIdleTime)
+            consumer.endField("cpu_time_idle", 13)
+
+            consumer.startField("cpu_time_steal", 14)
+            consumer.addLong(data.cpuStealTime)
+            consumer.endField("cpu_time_steal", 14)
+
+            consumer.startField("cpu_time_lost", 15)
+            consumer.addLong(data.cpuLostTime)
+            consumer.endField("cpu_time_lost", 15)
+
+            consumer.startField("power_total", 16)
+            consumer.addDouble(data.powerTotal)
+            consumer.endField("power_total", 16)
+
+            consumer.startField("uptime", 17)
+            consumer.addLong(data.uptime)
+            consumer.endField("uptime", 17)
+
+            consumer.startField("downtime", 18)
             consumer.addLong(data.downtime)
-            consumer.endField("downtime", 3)
+            consumer.endField("downtime", 18)
 
             val bootTime = data.bootTime
             if (bootTime != null) {
-                consumer.startField("boot_time", 4)
+                consumer.startField("boot_time", 19)
                 consumer.addLong(bootTime.toEpochMilli())
-                consumer.endField("boot_time", 4)
+                consumer.endField("boot_time", 19)
             }
-
-            consumer.startField("cpu_count", 5)
-            consumer.addInteger(data.host.cpuCount)
-            consumer.endField("cpu_count", 5)
-
-            consumer.startField("cpu_limit", 6)
-            consumer.addDouble(data.cpuLimit)
-            consumer.endField("cpu_limit", 6)
-
-            consumer.startField("cpu_time_active", 7)
-            consumer.addLong(data.cpuActiveTime)
-            consumer.endField("cpu_time_active", 7)
-
-            consumer.startField("cpu_time_idle", 8)
-            consumer.addLong(data.cpuIdleTime)
-            consumer.endField("cpu_time_idle", 8)
-
-            consumer.startField("cpu_time_steal", 9)
-            consumer.addLong(data.cpuStealTime)
-            consumer.endField("cpu_time_steal", 9)
-
-            consumer.startField("cpu_time_lost", 10)
-            consumer.addLong(data.cpuLostTime)
-            consumer.endField("cpu_time_lost", 10)
-
-            consumer.startField("mem_limit", 11)
-            consumer.addLong(data.host.memCapacity)
-            consumer.endField("mem_limit", 11)
-
-            consumer.startField("power_total", 12)
-            consumer.addDouble(data.powerTotal)
-            consumer.endField("power_total", 12)
-
-            consumer.startField("guests_terminated", 13)
-            consumer.addInteger(data.guestsTerminated)
-            consumer.endField("guests_terminated", 13)
-
-            consumer.startField("guests_running", 14)
-            consumer.addInteger(data.guestsRunning)
-            consumer.endField("guests_running", 14)
-
-            consumer.startField("guests_error", 15)
-            consumer.addInteger(data.guestsError)
-            consumer.endField("guests_error", 15)
-
-            consumer.startField("guests_invalid", 16)
-            consumer.addInteger(data.guestsInvalid)
-            consumer.endField("guests_invalid", 16)
 
             consumer.endMessage()
         }
@@ -162,21 +174,35 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                     .`as`(LogicalTypeAnnotation.uuidType())
                     .named("host_id"),
                 Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("uptime"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("downtime"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("boot_time"),
-                Types
                     .required(PrimitiveType.PrimitiveTypeName.INT32)
                     .named("cpu_count"),
                 Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .named("mem_capacity"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT32)
+                    .named("guests_terminated"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT32)
+                    .named("guests_running"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT32)
+                    .named("guests_error"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT32)
+                    .named("guests_invalid"),
+                Types
                     .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                     .named("cpu_limit"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                    .named("cpu_usage"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                    .named("cpu_demand"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                    .named("cpu_utilization"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
                     .named("cpu_time_active"),
@@ -190,23 +216,18 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
                     .named("cpu_time_lost"),
                 Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("mem_limit"),
-                Types
                     .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                     .named("power_total"),
                 Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("guests_terminated"),
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .named("uptime"),
                 Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("guests_running"),
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .named("downtime"),
                 Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("guests_error"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("guests_invalid")
+                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                    .named("boot_time")
             )
             .named("host")
     }

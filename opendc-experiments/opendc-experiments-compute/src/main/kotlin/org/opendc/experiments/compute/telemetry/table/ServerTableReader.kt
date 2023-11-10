@@ -28,6 +28,10 @@ import java.time.Instant
  * An interface that is used to read a row of a server trace entry.
  */
 public interface ServerTableReader {
+
+    public fun copy(): ServerTableReader
+
+    public fun setValues(table: ServerTableReader)
     /**
      * The timestamp of the current entry of the reader.
      */

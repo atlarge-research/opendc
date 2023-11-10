@@ -86,55 +86,55 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
                 consumer.endField("host_id", 2)
             }
 
-            consumer.startField("uptime", 3)
+            consumer.startField("mem_capacity", 3)
+            consumer.addLong(data.server.memCapacity)
+            consumer.endField("mem_capacity", 3)
+
+            consumer.startField("cpu_count", 4)
+            consumer.addInteger(data.server.cpuCount)
+            consumer.endField("cpu_count", 4)
+
+            consumer.startField("cpu_limit", 5)
+            consumer.addDouble(data.cpuLimit)
+            consumer.endField("cpu_limit", 5)
+
+            consumer.startField("cpu_time_active", 6)
+            consumer.addLong(data.cpuActiveTime)
+            consumer.endField("cpu_time_active", 6)
+
+            consumer.startField("cpu_time_idle", 7)
+            consumer.addLong(data.cpuIdleTime)
+            consumer.endField("cpu_time_idle", 7)
+
+            consumer.startField("cpu_time_steal", 8)
+            consumer.addLong(data.cpuStealTime)
+            consumer.endField("cpu_time_steal", 8)
+
+            consumer.startField("cpu_time_lost", 9)
+            consumer.addLong(data.cpuLostTime)
+            consumer.endField("cpu_time_lost", 9)
+
+            consumer.startField("uptime", 10)
             consumer.addLong(data.uptime)
-            consumer.endField("uptime", 3)
+            consumer.endField("uptime", 10)
 
-            consumer.startField("downtime", 4)
+            consumer.startField("downtime", 11)
             consumer.addLong(data.downtime)
-            consumer.endField("downtime", 4)
-
-            val bootTime = data.bootTime
-            if (bootTime != null) {
-                consumer.startField("boot_time", 5)
-                consumer.addLong(bootTime.toEpochMilli())
-                consumer.endField("boot_time", 5)
-            }
+            consumer.endField("downtime", 11)
 
             val provisionTime = data.provisionTime
             if (provisionTime != null) {
-                consumer.startField("provision_time", 6)
+                consumer.startField("provision_time", 12)
                 consumer.addLong(provisionTime.toEpochMilli())
-                consumer.endField("provision_time", 6)
+                consumer.endField("provision_time", 12)
             }
 
-            consumer.startField("cpu_count", 7)
-            consumer.addInteger(data.server.cpuCount)
-            consumer.endField("cpu_count", 7)
-
-            consumer.startField("cpu_limit", 8)
-            consumer.addDouble(data.cpuLimit)
-            consumer.endField("cpu_limit", 8)
-
-            consumer.startField("cpu_time_active", 9)
-            consumer.addLong(data.cpuActiveTime)
-            consumer.endField("cpu_time_active", 9)
-
-            consumer.startField("cpu_time_idle", 10)
-            consumer.addLong(data.cpuIdleTime)
-            consumer.endField("cpu_time_idle", 10)
-
-            consumer.startField("cpu_time_steal", 11)
-            consumer.addLong(data.cpuStealTime)
-            consumer.endField("cpu_time_steal", 11)
-
-            consumer.startField("cpu_time_lost", 12)
-            consumer.addLong(data.cpuLostTime)
-            consumer.endField("cpu_time_lost", 12)
-
-            consumer.startField("mem_limit", 13)
-            consumer.addLong(data.server.memCapacity)
-            consumer.endField("mem_limit", 13)
+            val bootTime = data.bootTime
+            if (bootTime != null) {
+                consumer.startField("boot_time", 13)
+                consumer.addLong(bootTime.toEpochMilli())
+                consumer.endField("boot_time", 13)
+            }
 
             consumer.endMessage()
         }
@@ -162,18 +162,7 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
                     .named("host_id"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("uptime"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("downtime"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("provision_time"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("boot_time"),
+                    .named("mem_capacity"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT32)
                     .named("cpu_count"),
@@ -194,7 +183,19 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
                     .named("cpu_time_lost"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("mem_limit")
+                    .named("uptime"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .named("downtime"),
+                Types
+                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                    .named("provision_time"),
+                Types
+                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                    .named("boot_time"),
+
             )
             .named("server")
     }

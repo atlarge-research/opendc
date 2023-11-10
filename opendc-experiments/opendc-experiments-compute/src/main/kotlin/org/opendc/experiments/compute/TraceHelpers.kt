@@ -104,7 +104,7 @@ public suspend fun ComputeService.replay(
 
                     // Wait for the server reach its end time
                     val endTime = entry.stopTime.toEpochMilli()
-                    delay(endTime + workloadOffset - clock.millis() + 5 * 60 * 1000)
+                    delay(endTime + workloadOffset - clock.millis() + (5 * 60 * 10000))
 
                     // Stop the server after reaching the end-time of the virtual machine
                     server.stop()
