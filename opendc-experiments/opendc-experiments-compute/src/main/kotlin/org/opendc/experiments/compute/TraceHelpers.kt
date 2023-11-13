@@ -27,12 +27,41 @@ package org.opendc.experiments.compute
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.yield
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
+import org.opendc.compute.api.ServerWatcher
 import org.opendc.compute.service.ComputeService
 import java.time.InstantSource
 import java.util.Random
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
+
+public class RunningServerWatcher: ServerWatcher {
+
+    private val _mutex: Mutex = Mutex();
+
+    public suspend fun lock () {
+        _mutex.lock()
+    }
+
+    override fun onStateChanged(server: Server, newState: ServerState) {
+        when (newState) {
+            ServerState.TERMINATED -> {
+                _mutex.unlock()
+            }
+            ServerState.ERROR -> {
+                _mutex.unlock()
+            }
+            ServerState.DELETED -> {
+                _mutex.unlock()
+            }
+            else -> {}
+        }
+    }
+
+}
 
 /**
  * Helper method to replay the specified list of [VirtualMachine] and suspend execution util all VMs have finished.
@@ -102,9 +131,16 @@ public suspend fun ComputeService.replay(
                         meta = meta
                     )
 
+
                     // Wait for the server reach its end time
-                    val endTime = entry.stopTime.toEpochMilli()
-                    delay(endTime + workloadOffset - clock.millis() + (5 * 60 * 10000))
+//                    val endTime = entry.stopTime.toEpochMilli()
+//                    delay(endTime + workloadOffset - clock.millis() + (5 * 60 * 10000))
+
+                    val serverWatcher = RunningServerWatcher()
+
+                    serverWatcher.lock()
+                    server.watch(serverWatcher)
+                    serverWatcher.lock()
 
                     // Stop the server after reaching the end-time of the virtual machine
                     server.stop()

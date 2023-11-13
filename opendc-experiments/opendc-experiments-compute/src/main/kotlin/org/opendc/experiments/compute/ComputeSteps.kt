@@ -59,7 +59,7 @@ public fun setupComputeService(
 public fun registerComputeMonitor(
     serviceDomain: String,
     monitor: ComputeMonitor,
-    exportInterval: Duration = Duration.ofMinutes(5)
+    exportInterval: Duration = Duration.ofMinutes(1)
 ): ProvisioningStep {
     return ComputeMonitorProvisioningStep(serviceDomain, monitor, exportInterval)
 }
