@@ -35,6 +35,7 @@ include(":opendc-experiments:opendc-experiments-compute")
 include(":opendc-experiments:opendc-experiments-workflow")
 include(":opendc-experiments:opendc-experiments-faas")
 include(":opendc-experiments:opendc-experiments-capelin")
+include(":opendc-experiments:opendc-experiments-greenifier")
 include(":opendc-experiments:opendc-experiments-tf20")
 include(":opendc-web:opendc-web-proto")
 include(":opendc-web:opendc-web-server")
@@ -64,3 +65,5 @@ include(":opendc-trace:opendc-trace-calcite")
 include(":opendc-trace:opendc-trace-tools")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+include("opendc-experiments:opendc-experiments-greenifier")
+findProject(":opendc-experiments:opendc-experiments-greenifier")?.name = "opendc-experiments-greenifier"

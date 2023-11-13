@@ -28,15 +28,20 @@ import java.time.Instant
  * An interface that is used to read a row of a host trace entry.
  */
 public interface HostTableReader {
-    /**
-     * The timestamp of the current entry of the reader.
-     */
-    public val timestamp: Instant
+
+    public fun copy() : HostTableReader
+
+    public fun setValues(table: HostTableReader)
 
     /**
      * The [HostInfo] of the host to which the row belongs to.
      */
     public val host: HostInfo
+
+    /**
+     * The timestamp of the current entry of the reader.
+     */
+    public val timestamp: Instant
 
     /**
      * The number of guests that are in a terminated state.
