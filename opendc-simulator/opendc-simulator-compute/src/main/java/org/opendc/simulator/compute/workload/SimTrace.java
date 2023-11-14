@@ -68,10 +68,10 @@ public final class SimTrace {
     /**
      * Construct a {@link SimWorkload} for this trace.
      *
-     * @param offset The offset for the timestamps.
+//     * @param offset The offset for the timestamps.
      */
-    public SimWorkload createWorkload(long offset) {
-        return new Workload(offset, usageCol, deadlineCol, coresCol, size, 0);
+    public SimWorkload createWorkload(long start) {
+        return new Workload(start, usageCol, deadlineCol, coresCol, size, 0);
     }
 
     /**
@@ -206,20 +206,27 @@ public final class SimTrace {
     private static class Workload implements SimWorkload {
         private WorkloadStageLogic logic;
 
-        private final long offset;
+        private long offset;
+
+        private final long start;
         private final double[] usageCol;
         private final long[] deadlineCol;
         private final int[] coresCol;
         private final int size;
         private final int index;
 
-        private Workload(long offset, double[] usageCol, long[] deadlineCol, int[] coresCol, int size, int index) {
-            this.offset = offset;
+        private Workload(long start, double[] usageCol, long[] deadlineCol, int[] coresCol, int size, int index) {
+            this.start = start;
             this.usageCol = usageCol;
             this.deadlineCol = deadlineCol;
             this.coresCol = coresCol;
             this.size = size;
             this.index = index;
+        }
+
+        @Override
+        public void setOffset(long now) {
+            this.offset = now - this.start;
         }
 
         @Override
@@ -252,7 +259,7 @@ public final class SimTrace {
                 index = logic.getIndex();
             }
 
-            return new Workload(offset, usageCol, deadlineCol, coresCol, size, index);
+            return new Workload(start, usageCol, deadlineCol, coresCol, size, index);
         }
     }
 
@@ -279,20 +286,20 @@ public final class SimTrace {
         private final OutPort output;
         private int index;
 
-        private final long offset;
-        private final double[] usageCol;
-        private final long[] deadlineCol;
-        private final int size;
+        private final long workloadOffset;
+        private final double[] cpuUsages;
+        private final long[] deadlines;
+        private final int traceSize;
 
         private final SimMachineContext ctx;
 
         private SingleWorkloadLogic(
                 SimMachineContext ctx, long offset, double[] usageCol, long[] deadlineCol, int size, int index) {
             this.ctx = ctx;
-            this.offset = offset;
-            this.usageCol = usageCol;
-            this.deadlineCol = deadlineCol;
-            this.size = size;
+            this.workloadOffset = offset;
+            this.cpuUsages = usageCol;
+            this.deadlines = deadlineCol;
+            this.traceSize = size;
             this.index = index;
 
             final FlowGraph graph = ctx.getGraph();
@@ -309,25 +316,20 @@ public final class SimTrace {
 
         @Override
         public long onUpdate(FlowStage ctx, long now) {
-            int size = this.size;
-            long offset = this.offset;
-            long nowOffset = now - offset;
+            // Shift the current time to align with the starting time of the workload
+            long nowOffset = now - this.workloadOffset;
+            long deadline = this.deadlines[this.index];
 
-            int index = this.index;
-
-            long[] deadlines = deadlineCol;
-            long deadline = deadlines[index];
-
+            // Loop through the deadlines until the next deadline is reached.
             while (deadline <= nowOffset) {
-                if (++index >= size) {
+                if (++this.index >= this.traceSize) {
                     return doStop(ctx);
                 }
-                deadline = deadlines[index];
+                deadline = this.deadlines[this.index];
             }
 
-            this.index = index;
-            this.output.push((float) usageCol[index]);
-            return deadline + offset;
+            this.output.push((float) this.cpuUsages[this.index]);
+            return deadline + this.workloadOffset;
         }
 
         @Override
@@ -366,7 +368,7 @@ public final class SimTrace {
         private final double[] usageCol;
         private final long[] deadlineCol;
         private final int[] coresCol;
-        private final int size;
+        private final int traceSize;
 
         private final SimMachineContext ctx;
 
@@ -376,14 +378,14 @@ public final class SimTrace {
                 double[] usageCol,
                 long[] deadlineCol,
                 int[] coresCol,
-                int size,
+                int traceSize,
                 int index) {
             this.ctx = ctx;
             this.offset = offset;
             this.usageCol = usageCol;
             this.deadlineCol = deadlineCol;
             this.coresCol = coresCol;
-            this.size = size;
+            this.traceSize = traceSize;
             this.index = index;
 
             final FlowGraph graph = ctx.getGraph();
@@ -406,7 +408,6 @@ public final class SimTrace {
 
         @Override
         public long onUpdate(FlowStage ctx, long now) {
-            int size = this.size;
             long offset = this.offset;
             long nowOffset = now - offset;
 
@@ -415,11 +416,11 @@ public final class SimTrace {
             long[] deadlines = deadlineCol;
             long deadline = deadlines[index];
 
-            while (deadline <= nowOffset && ++index < size) {
+            while (deadline <= nowOffset && ++index < this.traceSize) {
                 deadline = deadlines[index];
             }
 
-            if (index >= size) {
+            if (index >= this.traceSize) {
                 final SimMachineContext machineContext = this.ctx;
                 if (machineContext != null) {
                     machineContext.shutdown();

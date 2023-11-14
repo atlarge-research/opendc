@@ -61,6 +61,14 @@ final class SimChainWorkload implements SimWorkload {
     }
 
     @Override
+    public void setOffset(long now) {
+        for (SimWorkload workload : this.workloads) {
+            workload.setOffset(now);
+        }
+
+    }
+
+    @Override
     public void onStart(SimMachineContext ctx) {
         final SimWorkload[] workloads = this.workloads;
         final int activeWorkloadIndex = this.activeWorkloadIndex;

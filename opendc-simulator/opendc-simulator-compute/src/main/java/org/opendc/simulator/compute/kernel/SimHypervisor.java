@@ -72,6 +72,9 @@ public final class SimHypervisor implements SimWorkload {
     private final ArrayList<VirtualMachine> vms = new ArrayList<>();
     private final HvCounters counters = new HvCounters();
 
+    @Override
+    public void setOffset(long now) {}
+
     /**
      * Construct a {@link SimHypervisor} instance.
      *

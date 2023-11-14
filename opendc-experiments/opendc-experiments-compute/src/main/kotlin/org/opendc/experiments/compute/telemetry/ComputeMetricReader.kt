@@ -79,43 +79,44 @@ public class ComputeMetricReader(
      */
     private val job = scope.launch {
         val intervalMs = exportInterval.toMillis()
-        val service = service
-        val monitor = monitor
-        val hostTableReaders = hostTableReaders
-        val serverTableReaders = serverTableReaders
-        val serviceTableReader = serviceTableReader
-
         try {
             while (isActive) {
                 delay(intervalMs)
 
-                try {
-                    val now = clock.instant()
-
-                    for (host in service.hosts) {
-                        val reader = hostTableReaders.computeIfAbsent(host) { HostTableReaderImpl(it) }
-                        reader.record(now)
-                        monitor.record(reader.copy())
-                        reader.reset()
-                    }
-
-                    for (server in service.servers) {
-                        val reader = serverTableReaders.computeIfAbsent(server) { ServerTableReaderImpl(service, it) }
-                        reader.record(now)
-                        monitor.record(reader)
-                        reader.reset()
-                    }
-
-                    serviceTableReader.record(now)
-                    monitor.record(serviceTableReader)
-                } catch (cause: Throwable) {
-                    logger.warn(cause) { "Exporter threw an Exception" }
-                }
+                loggState()
             }
+
         } finally {
+            loggState()
+
             if (monitor is AutoCloseable) {
                 monitor.close()
             }
+        }
+    }
+
+    private fun loggState() {
+        try {
+            val now = this.clock.instant()
+
+            for (host in this.service.hosts) {
+                val reader = this.hostTableReaders.computeIfAbsent(host) { HostTableReaderImpl(it) }
+                reader.record(now)
+                this.monitor.record(reader.copy())
+                reader.reset()
+            }
+
+            for (server in this.service.servers) {
+                val reader = this.serverTableReaders.computeIfAbsent(server) { ServerTableReaderImpl(service, it) }
+                reader.record(now)
+                this.monitor.record(reader)
+                reader.reset()
+            }
+
+            this.serviceTableReader.record(now)
+            monitor.record(this.serviceTableReader)
+        } catch (cause: Throwable) {
+            this.logger.warn(cause) { "Exporter threw an Exception" }
         }
     }
 
