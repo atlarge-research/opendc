@@ -32,6 +32,7 @@ import org.opendc.compute.simulator.SimWorkloadMapper
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.kernel.SimVirtualMachine
+import org.opendc.simulator.compute.workload.SimWorkload
 import java.time.Duration
 import java.time.Instant
 import java.time.InstantSource
@@ -169,7 +170,8 @@ internal class Guest(
 
         onStart()
 
-        val workload = mapper.createWorkload(server)
+        val workload: SimWorkload = mapper.createWorkload(server)
+        workload.setOffset(clock.millis())
         val meta = mapOf("driver" to host, "server" to server) + server.meta
         ctx = machine.startWorkload(workload, meta) { cause ->
             onStop(if (cause != null) ServerState.ERROR else ServerState.TERMINATED)

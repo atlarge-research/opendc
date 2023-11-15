@@ -27,12 +27,46 @@ package org.opendc.experiments.compute
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.yield
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
+import org.opendc.compute.api.ServerWatcher
 import org.opendc.compute.service.ComputeService
 import java.time.InstantSource
 import java.util.Random
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
+
+public class RunningServerWatcher: ServerWatcher {
+
+    private val _mutex: Mutex = Mutex();
+
+    public suspend fun lock () {
+        _mutex.lock()
+    }
+
+    public suspend fun wait () {
+        // TODO: look at the better way to wait for an unlock
+        this.lock();
+    }
+
+    override fun onStateChanged(server: Server, newState: ServerState) {
+        when (newState) {
+            ServerState.TERMINATED -> {
+                _mutex.unlock()
+            }
+            ServerState.ERROR -> {
+                _mutex.unlock()
+            }
+            ServerState.DELETED -> {
+                _mutex.unlock()
+            }
+            else -> {}
+        }
+    }
+
+}
 
 /**
  * Helper method to replay the specified list of [VirtualMachine] and suspend execution util all VMs have finished.
@@ -63,25 +97,26 @@ public suspend fun ComputeService.replay(
             // Start the fault injector
             injector?.start()
 
-            var offset = Long.MIN_VALUE
+            var simulationOffset = Long.MIN_VALUE
 
             for (entry in trace.sortedBy { it.startTime }) {
                 val now = clock.millis()
                 val start = entry.startTime.toEpochMilli()
 
-                if (offset < 0) {
-                    offset = start - now
+                // Set the simulationOffset based on the starting time of the first server
+                if (simulationOffset == Long.MIN_VALUE) {
+                    simulationOffset = start - now
                 }
 
                 // Make sure the trace entries are ordered by submission time
-                assert(start - offset >= 0) { "Invalid trace order" }
+//                assert(start - simulationOffset >= 0) { "Invalid trace order" }
 
+                // Delay the server based on the startTime given by the trace.
                 if (!submitImmediately) {
-                    delay(max(0, (start - offset) - now))
+                    delay(max(0, (start - now - simulationOffset)));
                 }
 
-                val workloadOffset = -offset + 300001
-                val workload = entry.trace.createWorkload(workloadOffset)
+                val workload = entry.trace.createWorkload(start)
                 val meta = mutableMapOf<String, Any>("workload" to workload)
 
                 val interferenceProfile = entry.interferenceProfile
@@ -102,16 +137,18 @@ public suspend fun ComputeService.replay(
                         meta = meta
                     )
 
-                    // Wait for the server reach its end time
-                    val endTime = entry.stopTime.toEpochMilli()
-                    delay(endTime + workloadOffset - clock.millis() + (5 * 60 * 10000))
+                    val serverWatcher = RunningServerWatcher()
+                    serverWatcher.lock()
+                    server.watch(serverWatcher)
+
+                    // Wait until the server is terminated
+                    serverWatcher.wait()
 
                     // Stop the server after reaching the end-time of the virtual machine
-                    server.stop()
+                    server.delete()
                 }
             }
         }
-
         yield()
     } finally {
         injector?.close()

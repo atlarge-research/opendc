@@ -79,43 +79,44 @@ public class ComputeMetricReader(
      */
     private val job = scope.launch {
         val intervalMs = exportInterval.toMillis()
-        val service = service
-        val monitor = monitor
-        val hostTableReaders = hostTableReaders
-        val serverTableReaders = serverTableReaders
-        val serviceTableReader = serviceTableReader
-
         try {
             while (isActive) {
                 delay(intervalMs)
 
-                try {
-                    val now = clock.instant()
-
-                    for (host in service.hosts) {
-                        val reader = hostTableReaders.computeIfAbsent(host) { HostTableReaderImpl(it) }
-                        reader.record(now)
-                        monitor.record(reader.copy())
-                        reader.reset()
-                    }
-
-                    for (server in service.servers) {
-                        val reader = serverTableReaders.computeIfAbsent(server) { ServerTableReaderImpl(service, it) }
-                        reader.record(now)
-                        monitor.record(reader)
-                        reader.reset()
-                    }
-
-                    serviceTableReader.record(now)
-                    monitor.record(serviceTableReader)
-                } catch (cause: Throwable) {
-                    logger.warn(cause) { "Exporter threw an Exception" }
-                }
+                loggState()
             }
+
         } finally {
+//            loggState()
+
             if (monitor is AutoCloseable) {
                 monitor.close()
             }
+        }
+    }
+
+    private fun loggState() {
+        try {
+            val now = this.clock.instant()
+
+            for (host in this.service.hosts) {
+                val reader = this.hostTableReaders.computeIfAbsent(host) { HostTableReaderImpl(it) }
+                reader.record(now)
+                this.monitor.record(reader.copy())
+                reader.reset()
+            }
+
+            for (server in this.service.servers) {
+                val reader = this.serverTableReaders.computeIfAbsent(server) { ServerTableReaderImpl(service, it) }
+                reader.record(now)
+                this.monitor.record(reader.copy())
+                reader.reset()
+            }
+
+            this.serviceTableReader.record(now)
+            monitor.record(this.serviceTableReader.copy())
+        } catch (cause: Throwable) {
+            this.logger.warn(cause) { "Exporter threw an Exception" }
         }
     }
 
@@ -127,6 +128,27 @@ public class ComputeMetricReader(
      * An aggregator for service metrics before they are reported.
      */
     private class ServiceTableReaderImpl(private val service: ComputeService) : ServiceTableReader {
+
+        override fun copy(): ServiceTableReader {
+            val newServiceTable = ServiceTableReaderImpl(service)
+            newServiceTable.setValues(this)
+
+            return newServiceTable
+        }
+
+        override fun setValues(table: ServiceTableReader) {
+            _timestamp = table.timestamp
+
+            _hostsUp = table.hostsUp
+            _hostsDown = table.hostsDown
+            _serversTotal = table.serversTotal
+            _serversPending = table.serversPending
+            _serversActive = table.serversActive
+            _attemptsSuccess = table.attemptsSuccess
+            _attemptsFailure = table.attemptsFailure
+            _attemptsError = table.attemptsError
+        }
+
         private var _timestamp: Instant = Instant.MIN
         override val timestamp: Instant
             get() = _timestamp
@@ -362,18 +384,18 @@ public class ComputeMetricReader(
         }
 
         override fun setValues(table: ServerTableReader) {
+            host = table.host
+
             _timestamp = table.timestamp
-            _uptime = table.uptime
-            _downtime = table.downtime
-            _provisionTime = table.provisionTime
-            _bootTime = table.bootTime
             _cpuLimit = table.cpuLimit
             _cpuActiveTime = table.cpuActiveTime
             _cpuIdleTime = table.cpuIdleTime
             _cpuStealTime = table.cpuStealTime
             _cpuLostTime = table.cpuLostTime
-
-            host = table.host
+            _uptime = table.uptime
+            _downtime = table.downtime
+            _provisionTime = table.provisionTime
+            _bootTime = table.bootTime
         }
 
         private val _server = server

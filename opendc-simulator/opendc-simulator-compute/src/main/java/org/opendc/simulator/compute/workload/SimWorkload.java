@@ -50,4 +50,6 @@ public interface SimWorkload {
      * Create a snapshot of this workload.
      */
     SimWorkload snapshot();
+
+    void setOffset(long now);
 }

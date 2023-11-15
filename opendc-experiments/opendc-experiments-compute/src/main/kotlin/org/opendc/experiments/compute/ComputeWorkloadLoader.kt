@@ -45,6 +45,8 @@ import java.io.File
 import java.lang.ref.SoftReference
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.time.Duration
+import java.time.Instant
 import kotlin.math.max
 import kotlin.math.roundToLong
 
@@ -82,14 +84,12 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
             while (reader.nextRow()) {
                 val id = reader.getString(idCol)!!
                 val time = reader.getInstant(timestampCol)!!
-                val duration = reader.getDuration(durationCol)!!
+                val durationMs = reader.getDuration(durationCol)!!
                 val cores = reader.getInt(coresCol)
                 val cpuUsage = reader.getDouble(usageCol)
 
-                val deadlineMs = time.toEpochMilli()
-                val timeMs = (time - duration).toEpochMilli()
                 val builder = fragments.computeIfAbsent(id) { Builder() }
-                builder.add(timeMs, deadlineMs, cpuUsage, cores)
+                builder.add(time, durationMs, cpuUsage, cores)
             }
 
             fragments
@@ -246,17 +246,17 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
          * @param usage CPU usage of this fragment.
          * @param cores Number of cores used.
          */
-        fun add(timestamp: Long, deadline: Long, usage: Double, cores: Int) {
-            val duration = max(0, deadline - timestamp)
-            totalLoad += (usage * duration) / 1000.0 // avg MHz * duration = MFLOPs
+        fun add(deadline: Instant, duration: Duration, usage: Double, cores: Int) {
+            val startTimeMs = (deadline - duration).toEpochMilli()
+            totalLoad += (usage * duration.toMillis()) / 1000.0 // avg MHz * duration = MFLOPs
 
-            if (timestamp != previousDeadline) {
+            if ((startTimeMs != previousDeadline) && (previousDeadline != Long.MIN_VALUE)) {
                 // There is a gap between the previous and current fragment; fill the gap
-                builder.add(timestamp, 0.0, cores)
+                builder.add(startTimeMs, 0.0, cores)
             }
 
-            builder.add(deadline, usage, cores)
-            previousDeadline = deadline
+            builder.add(deadline.toEpochMilli(), usage, cores)
+            previousDeadline = deadline.toEpochMilli()
         }
 
         /**

@@ -64,6 +64,9 @@ public class SimFlopsWorkload implements SimWorkload, FlowStageLogic {
     }
 
     @Override
+    public void setOffset(long now) {}
+
+    @Override
     public void onStart(SimMachineContext ctx) {
         this.ctx = ctx;
 
