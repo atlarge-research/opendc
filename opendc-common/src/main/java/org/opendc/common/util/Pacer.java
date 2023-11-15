@@ -73,7 +73,7 @@ public final class Pacer {
 
         // We assume that the scheduler runs at a fixed slot every time quantum (e.g t=0, t=60, t=120).
         // We calculate here the delay until the next scheduling slot.
-        long timeUntilNextSlot = quantumMs - (now % quantumMs);
+        long timeUntilNextSlot = (quantumMs - (now % quantumMs)) % quantumMs;
 
         handle = dispatcher.scheduleCancellable(timeUntilNextSlot, () -> {
             process.accept(now + timeUntilNextSlot);

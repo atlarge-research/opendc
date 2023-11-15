@@ -28,6 +28,11 @@ import java.time.Instant
  * An interface that is used to read a row of a service trace entry.
  */
 public interface ServiceTableReader {
+
+    public fun copy(): ServiceTableReader
+
+    public fun setValues(table: ServiceTableReader)
+
     /**
      * The timestamp of the current entry of the reader.
      */
