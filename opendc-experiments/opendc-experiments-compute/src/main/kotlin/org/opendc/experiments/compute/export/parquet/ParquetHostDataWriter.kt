@@ -25,6 +25,7 @@ package org.opendc.experiments.compute.export.parquet
 import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.api.WriteSupport
+import org.apache.parquet.io.api.Binary
 import org.apache.parquet.io.api.RecordConsumer
 import org.apache.parquet.schema.LogicalTypeAnnotation
 import org.apache.parquet.schema.MessageType
@@ -33,7 +34,6 @@ import org.apache.parquet.schema.Types
 import org.opendc.experiments.compute.telemetry.table.HostTableReader
 import org.opendc.trace.util.parquet.LocalParquetWriter
 import java.io.File
-import java.util.UUID
 
 /**
  * A Parquet event writer for [HostTableReader]s.
@@ -75,7 +75,7 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             consumer.endField("timestamp", 0)
 
             consumer.startField("host_id", 1)
-            consumer.addBinary(UUID.fromString(data.host.id).toBinary())
+            consumer.addBinary(Binary.fromString(data.host.id))
             consumer.endField("host_id", 1)
 
             consumer.startField("cpu_count", 2)
@@ -169,9 +169,8 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                     .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                     .named("timestamp"),
                 Types
-                    .required(PrimitiveType.PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY)
-                    .length(16)
-                    .`as`(LogicalTypeAnnotation.uuidType())
+                    .required(PrimitiveType.PrimitiveTypeName.BINARY)
+                    .`as`(LogicalTypeAnnotation.stringType())
                     .named("host_id"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT32)
