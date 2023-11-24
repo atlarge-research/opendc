@@ -42,7 +42,6 @@ spotless {
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
         kotlin {
             ktlint()
-                .setUseExperimental(false)
             trimTrailingWhitespace()
             endWithNewline()
 

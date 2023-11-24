@@ -24,16 +24,13 @@ description = "Web communication protocol for OpenDC"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-conventions`
-    id("org.kordamp.gradle.jandex") // Necessary for Quarkus to process annotations
+    `java-library-conventions`
 }
 
 dependencies {
     implementation(libs.jackson.annotations)
     implementation(libs.jakarta.validation)
+    implementation(libs.jakarta.ws.rs.api)
+    implementation(libs.microprofile.rest.client.api)
     implementation(libs.microprofile.openapi.api)
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.javaParameters = true
 }

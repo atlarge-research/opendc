@@ -25,7 +25,7 @@ package org.opendc.web.server.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hypersistence.utils.hibernate.type.util.ObjectMapperSupplier;
 import io.quarkus.runtime.annotations.RegisterForReflection;
-import javax.enterprise.inject.spi.CDI;
+import jakarta.enterprise.inject.spi.CDI;
 
 /**
  * A supplier for an {@link ObjectMapper} used by the Hypersistence utilities.

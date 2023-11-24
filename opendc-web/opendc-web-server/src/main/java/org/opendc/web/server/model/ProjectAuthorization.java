@@ -22,25 +22,26 @@
 
 package org.opendc.web.server.model;
 
+import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapsId;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 import org.opendc.web.proto.user.ProjectRole;
 
@@ -82,9 +83,9 @@ public class ProjectAuthorization extends PanacheEntityBase {
     /**
      * The role of the user in the project.
      */
-    @Type(type = "io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType")
     @Column(nullable = false, columnDefinition = "enum")
     @Enumerated(EnumType.STRING)
+    @Type(PostgreSQLEnumType.class)
     public ProjectRole role;
 
     /**

@@ -25,7 +25,7 @@ package org.opendc.web.server.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
 import io.quarkus.jackson.ObjectMapperCustomizer;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * Helper class to register the Kotlin Jackson module.

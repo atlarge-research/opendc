@@ -23,18 +23,18 @@
 package org.opendc.web.server.rest.user;
 
 import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
 import java.time.Instant;
 import java.util.List;
-import javax.annotation.security.RolesAllowed;
-import javax.transaction.Transactional;
-import javax.validation.Valid;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import org.opendc.web.proto.JobState;
 import org.opendc.web.server.model.Job;
 import org.opendc.web.server.model.Portfolio;
@@ -118,12 +118,12 @@ public final class PortfolioScenarioResource {
             throw new WebApplicationException("Portfolio not found", 404);
         }
 
-        Topology topology = Topology.findByProject(projectId, (int) request.getTopology());
+        Topology topology = Topology.findByProject(projectId, (int) request.topology());
         if (topology == null) {
             throw new WebApplicationException("Referred topology does not exist", 400);
         }
 
-        Trace trace = Trace.findById(request.getWorkload().getTrace());
+        Trace trace = Trace.findById(request.workload().trace());
         if (trace == null) {
             throw new WebApplicationException("Referred trace does not exist", 400);
         }
@@ -136,14 +136,14 @@ public final class PortfolioScenarioResource {
                 project,
                 portfolio,
                 number,
-                request.getName(),
-                new Workload(trace, request.getWorkload().getSamplingFraction()),
+                request.name(),
+                new Workload(trace, request.workload().samplingFraction()),
                 topology,
-                request.getPhenomena(),
-                request.getSchedulerName());
+                request.phenomena(),
+                request.schedulerName());
         scenario.persist();
 
-        Job job = new Job(scenario, userId, now, portfolio.targets.getRepeats());
+        Job job = new Job(scenario, userId, now, portfolio.targets.repeats());
         job.persist();
 
         // Fail the job if there is not enough budget for the simulation

@@ -22,23 +22,25 @@
 
 package org.opendc.web.server.model;
 
+import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Map;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 import org.opendc.web.proto.JobState;
 
@@ -83,7 +85,7 @@ public class Job extends PanacheEntity {
     /**
      * The state of the job.
      */
-    @Type(type = "io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType")
+    @Type(PostgreSQLEnumType.class)
     @Column(nullable = false, columnDefinition = "enum")
     @Enumerated(EnumType.STRING)
     public JobState state = JobState.PENDING;
@@ -97,7 +99,7 @@ public class Job extends PanacheEntity {
     /**
      * Experiment results in JSON
      */
-    @Type(type = "io.hypersistence.utils.hibernate.type.json.JsonType")
+    @Type(JsonType.class)
     @Column(columnDefinition = "jsonb")
     public Map<String, ?> results = null;
 

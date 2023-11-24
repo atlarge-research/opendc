@@ -24,21 +24,21 @@ package org.opendc.web.server.rest.user;
 
 import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.persistence.PersistenceException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
 import java.time.Instant;
 import java.util.List;
-import javax.annotation.security.RolesAllowed;
-import javax.persistence.PersistenceException;
-import javax.transaction.Transactional;
-import javax.validation.Valid;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import org.opendc.web.server.model.Project;
 import org.opendc.web.server.model.ProjectAuthorization;
 import org.opendc.web.server.model.Topology;
@@ -104,7 +104,7 @@ public final class TopologyResource {
         Project project = auth.project;
         int number = project.allocateTopology(now);
 
-        Topology topology = new Topology(project, number, request.getName(), now, request.getRooms());
+        Topology topology = new Topology(project, number, request.name(), now, request.rooms());
 
         project.topologies.add(topology);
         topology.persist();
@@ -164,7 +164,7 @@ public final class TopologyResource {
         }
 
         entity.updatedAt = Instant.now();
-        entity.rooms = request.getRooms();
+        entity.rooms = request.rooms();
 
         return UserProtocol.toDto(entity, auth);
     }

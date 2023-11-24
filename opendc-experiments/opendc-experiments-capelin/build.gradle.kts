@@ -54,7 +54,7 @@ val createCapelinApp by tasks.creating(CreateStartScripts::class) {
     applicationName = "capelin"
     mainClass.set("org.opendc.experiments.capelin.CapelinCli")
     classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
-    outputDir = project.buildDir.resolve("scripts")
+    outputDir = project.layout.buildDirectory.dir("scripts").get().asFile
 }
 
 /* Create custom Capelin distribution */

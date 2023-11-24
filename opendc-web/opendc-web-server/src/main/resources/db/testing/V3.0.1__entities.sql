@@ -1,6 +1,10 @@
 -- Test entities
 
-alter sequence hibernate_sequence restart with 500;
+alter sequence projects_SEQ restart with 500;
+alter sequence portfolios_SEQ restart with 500;
+alter sequence topologies_SEQ restart with 500;
+alter sequence scenarios_SEQ restart with 500;
+alter sequence jobs_SEQ restart with 500;
 
 insert into projects (id, created_at, name, portfolios_created, scenarios_created, topologies_created, updated_at)
 values (1, current_timestamp(), 'Test Project', 1, 2, 1, current_timestamp());
