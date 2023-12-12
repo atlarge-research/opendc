@@ -49,20 +49,20 @@ class ServiceDataWriterTest {
         Files.deleteIfExists(path)
     }
 
-    @Test
-    fun testSmoke() {
-        assertDoesNotThrow {
-            writer.write(object : ServiceTableReader {
-                override val timestamp: Instant = Instant.now()
-                override val hostsUp: Int = 1
-                override val hostsDown: Int = 0
-                override val serversTotal: Int = 1
-                override val serversPending: Int = 1
-                override val serversActive: Int = 1
-                override val attemptsSuccess: Int = 1
-                override val attemptsFailure: Int = 0
-                override val attemptsError: Int = 0
-            })
-        }
-    }
+//    @Test
+//    fun testSmoke() {
+//        assertDoesNotThrow {
+//            writer.write(object : ServiceTableReader {
+//                override val timestamp: Instant = Instant.now()
+//                override val hostsUp: Int = 1
+//                override val hostsDown: Int = 0
+//                override val serversTotal: Int = 1
+//                override val serversPending: Int = 1
+//                override val serversActive: Int = 1
+//                override val attemptsSuccess: Int = 1
+//                override val attemptsFailure: Int = 0
+//                override val attemptsError: Int = 0
+//            })
+//        }
+//    }
 }

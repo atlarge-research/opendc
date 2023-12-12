@@ -223,7 +223,7 @@ public class WorkflowServiceImpl(
     /**
      * Perform a scheduling cycle immediately.
      */
-    private fun () {
+    private fun doSchedule() {
         // J2 Create list of eligible jobs
         val iterator = incomingJobs.iterator()
         while (iterator.hasNext()) {

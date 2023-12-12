@@ -176,6 +176,8 @@ class SimMachineTest {
                 ctx.shutdown()
             }
 
+            override fun setOffset(now: Long) {}
+
             override fun onStop(ctx: SimMachineContext) {}
 
             override fun snapshot(): SimWorkload = TODO()
@@ -198,6 +200,8 @@ class SimMachineTest {
                 ctx.shutdown()
             }
 
+            override fun setOffset(now: Long) {}
+
             override fun onStop(ctx: SimMachineContext) {}
 
             override fun snapshot(): SimWorkload = TODO()
@@ -219,6 +223,8 @@ class SimMachineTest {
                 val source = SimpleFlowSource(ctx.graph, ctx.memory.capacity.toFloat(), 1.0f) { ctx.shutdown() }
                 ctx.graph.connect(source.output, ctx.memory.input)
             }
+
+            override fun setOffset(now: Long) {}
 
             override fun onStop(ctx: SimMachineContext) {}
 
@@ -248,6 +254,8 @@ class SimMachineTest {
                 ctx.graph.connect(source.output, iface.tx)
             }
 
+            override fun setOffset(now: Long) {}
+
             override fun onStop(ctx: SimMachineContext) {}
 
             override fun snapshot(): SimWorkload = TODO()
@@ -273,6 +281,8 @@ class SimMachineTest {
                 ctx.graph.connect(source.output, disk.read)
             }
 
+            override fun setOffset(now: Long) {}
+
             override fun onStop(ctx: SimMachineContext) {}
 
             override fun snapshot(): SimWorkload = TODO()
@@ -297,6 +307,8 @@ class SimMachineTest {
                 val source = SimpleFlowSource(ctx.graph, 800.0f, 0.8f) { ctx.shutdown() }
                 ctx.graph.connect(source.output, disk.write)
             }
+
+            override fun setOffset(now: Long) {}
 
             override fun onStop(ctx: SimMachineContext) {}
 

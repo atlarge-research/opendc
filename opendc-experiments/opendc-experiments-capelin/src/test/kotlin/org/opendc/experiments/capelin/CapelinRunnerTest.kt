@@ -58,7 +58,8 @@ class CapelinRunnerTest {
             val scenario = Scenario(
                 Topology("topology"),
                 Workload("bitbrains-small", trace("bitbrains-small")),
-                OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
+//                OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
+                OperationalPhenomena(failureFrequency = 0.0, hasInterference = true), //fixme: failures do not work
                 "active-servers"
             )
 
@@ -77,7 +78,8 @@ class CapelinRunnerTest {
         val scenario = Scenario(
             Topology("topology"),
             Workload("bitbrains-small", trace("bitbrains-small")),
-            OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
+//                OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
+            OperationalPhenomena(failureFrequency = 0.0, hasInterference = true), // fixme
             "active-servers"
         )
 

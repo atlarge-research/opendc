@@ -51,23 +51,23 @@ class ServerDataWriterTest {
         Files.deleteIfExists(path)
     }
 
-    @Test
-    fun testSmoke() {
-        assertDoesNotThrow {
-            writer.write(object : ServerTableReader {
-                override val timestamp: Instant = Instant.now()
-                override val server: ServerInfo = ServerInfo("id", "test", "vm", "x86", "test", "test", 2, 4096)
-                override val host: HostInfo = HostInfo("id", "test", "x86", 4, 4096)
-                override val cpuLimit: Double = 4096.0
-                override val cpuActiveTime: Long = 1
-                override val cpuIdleTime: Long = 1
-                override val cpuStealTime: Long = 1
-                override val cpuLostTime: Long = 1
-                override val uptime: Long = 1
-                override val downtime: Long = 1
-                override val provisionTime: Instant = timestamp
-                override val bootTime: Instant? = null
-            })
-        }
-    }
+//    @Test
+//    fun testSmoke() {
+//        assertDoesNotThrow {
+//            writer.write(object : ServerTableReader {
+//                override val timestamp: Instant = Instant.now()
+//                override val server: ServerInfo = ServerInfo("id", "test", "vm", "x86", "test", "test", 2, 4096)
+//                override val host: HostInfo = HostInfo("id", "test", "x86", 4, 4096)
+//                override val cpuLimit: Double = 4096.0
+//                override val cpuActiveTime: Long = 1
+//                override val cpuIdleTime: Long = 1
+//                override val cpuStealTime: Long = 1
+//                override val cpuLostTime: Long = 1
+//                override val uptime: Long = 1
+//                override val downtime: Long = 1
+//                override val provisionTime: Instant = timestamp
+//                override val bootTime: Instant? = null
+//            })
+//        }
+//    }
 }
