@@ -22,12 +22,12 @@
 
 package org.opendc.experiments.greenifier.portfolio
 
+import org.opendc.experiments.compute.sampleByLoad
+import org.opendc.experiments.compute.trace
 import org.opendc.experiments.greenifier.model.OperationalPhenomena
 import org.opendc.experiments.greenifier.model.Scenario
 import org.opendc.experiments.greenifier.model.Topology
 import org.opendc.experiments.greenifier.model.Workload
-import org.opendc.experiments.compute.sampleByLoad
-import org.opendc.experiments.compute.trace
 
 /**
  * A [Portfolio] that explores the difference between horizontal and vertical scaling.
@@ -35,11 +35,11 @@ import org.opendc.experiments.compute.trace
 public class GreenifierPortfolio : Portfolio {
     private val topologies = listOf(
         Topology("single"),
-        Topology("multi"),
+        Topology("multi")
     )
 
     private val workloads = listOf(
-        Workload("bitbrains-small", trace("trace").sampleByLoad(1.0)),
+        Workload("bitbrains-small", trace("trace").sampleByLoad(1.0))
     )
     private val operationalPhenomena = OperationalPhenomena(0.0, false)
     private val allocationPolicy = "active-servers"

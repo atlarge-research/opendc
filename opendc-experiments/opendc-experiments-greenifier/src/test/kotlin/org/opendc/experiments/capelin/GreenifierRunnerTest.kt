@@ -24,11 +24,11 @@ package org.opendc.experiments.greenifier
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.opendc.experiments.compute.trace
 import org.opendc.experiments.greenifier.model.OperationalPhenomena
 import org.opendc.experiments.greenifier.model.Scenario
 import org.opendc.experiments.greenifier.model.Topology
 import org.opendc.experiments.greenifier.model.Workload
-import org.opendc.experiments.compute.trace
 import java.io.File
 import java.nio.file.Files
 
@@ -58,8 +58,7 @@ class GreenifierRunnerTest {
             val scenario = Scenario(
                 Topology("topology"),
                 Workload("bitbrains-small", trace("bitbrains-small")),
-//                OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
-                OperationalPhenomena(failureFrequency = 0.0, hasInterference = true), // fixme
+                OperationalPhenomena(failureFrequency = 0.0, hasInterference = true), // fixme: set failure to 24.0 * 7
                 "active-servers"
             )
 
@@ -78,8 +77,7 @@ class GreenifierRunnerTest {
         val scenario = Scenario(
             Topology("topology"),
             Workload("bitbrains-small", trace("bitbrains-small")),
-//                OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
-            OperationalPhenomena(failureFrequency = 0.0, hasInterference = true), // fixme
+            OperationalPhenomena(failureFrequency = 0.0, hasInterference = true), // fixme: set failure to 24.0 * 7
             "active-servers"
         )
 

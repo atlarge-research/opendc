@@ -23,8 +23,6 @@
 package org.opendc.experiments.greenifier
 
 import org.opendc.compute.service.ComputeService
-import org.opendc.experiments.greenifier.model.Scenario
-import org.opendc.experiments.greenifier.topology.clusterTopology
 import org.opendc.experiments.compute.ComputeWorkloadLoader
 import org.opendc.experiments.compute.createComputeScheduler
 import org.opendc.experiments.compute.export.parquet.ParquetComputeMonitor
@@ -33,6 +31,8 @@ import org.opendc.experiments.compute.registerComputeMonitor
 import org.opendc.experiments.compute.replay
 import org.opendc.experiments.compute.setupComputeService
 import org.opendc.experiments.compute.setupHosts
+import org.opendc.experiments.greenifier.model.Scenario
+import org.opendc.experiments.greenifier.topology.clusterTopology
 import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
