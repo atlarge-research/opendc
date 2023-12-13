@@ -23,13 +23,7 @@
 package org.opendc.experiments.compute.export.parquet
 
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
-import org.opendc.experiments.compute.telemetry.table.HostInfo
-import org.opendc.experiments.compute.telemetry.table.HostTableReader
-import org.opendc.experiments.compute.telemetry.ComputeMetricReader
 import java.nio.file.Files
-import java.time.Instant
 
 /**
  * Test suite for [ParquetHostDataWriter]
@@ -75,7 +69,7 @@ class HostDataWriterTest {
 //                override val downtime: Long = 1
 //                override val bootTime: Instant? = null
 //
-////                override fun copy(): HostTableReader {return HostTableReader}
+// //                override fun copy(): HostTableReader {return HostTableReader}
 //
 //                override fun setValues(table: HostTableReader) {}
 //            })

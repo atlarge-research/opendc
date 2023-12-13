@@ -200,7 +200,7 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
                 Types
                     .optional(PrimitiveType.PrimitiveTypeName.INT64)
                     .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("boot_time"),
+                    .named("boot_time")
 
             )
             .named("server")

@@ -32,19 +32,17 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 
 import io.quarkus.panache.mock.PanacheMock;
-import io.quarkus.test.junit.QuarkusTest;
 import java.time.Duration;
 import java.time.LocalDate;
 import javax.persistence.EntityExistsException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.opendc.web.server.model.UserAccounting;
 
 /**
  * Test suite for the {@link UserAccountingService}.
  */
-//@QuarkusTest
+// @QuarkusTest
 public class UserAccountingServiceTest {
     /**
      * The {@link UserAccountingService} instance under test.
@@ -62,7 +60,7 @@ public class UserAccountingServiceTest {
         service = new UserAccountingService(Duration.ofHours(1));
     }
 
-//    @Test
+    //    @Test
     public void testGetUserDoesNotExist() {
         Mockito.when(UserAccounting.findByUser(userId)).thenReturn(null);
 
@@ -72,7 +70,7 @@ public class UserAccountingServiceTest {
         assertEquals(0, accounting.getSimulationTime());
     }
 
-//    @Test
+    //    @Test
     public void testGetUserDoesExist() {
         var now = LocalDate.now();
         var periodEnd = now.plusMonths(1);
@@ -90,14 +88,14 @@ public class UserAccountingServiceTest {
                 () -> assertEquals(3600, accounting.getSimulationTimeBudget()));
     }
 
-//    @Test
+    //    @Test
     public void testHasBudgetUserDoesNotExist() {
         Mockito.when(UserAccounting.findByUser(userId)).thenReturn(null);
 
         assertTrue(service.hasSimulationBudget(userId));
     }
 
-//    @Test
+    //    @Test
     public void testHasBudget() {
         var periodEnd = LocalDate.now().plusMonths(2);
 
@@ -107,7 +105,7 @@ public class UserAccountingServiceTest {
         assertTrue(service.hasSimulationBudget(userId));
     }
 
-//    @Test
+    //    @Test
     public void testHasBudgetExceededButPeriodExpired() {
         var periodEnd = LocalDate.now().minusMonths(2);
 
@@ -118,7 +116,7 @@ public class UserAccountingServiceTest {
         assertTrue(service.hasSimulationBudget(userId));
     }
 
-//    @Test
+    //    @Test
     public void testHasBudgetPeriodExpired() {
         var periodEnd = LocalDate.now().minusMonths(2);
 
@@ -128,7 +126,7 @@ public class UserAccountingServiceTest {
         assertTrue(service.hasSimulationBudget(userId));
     }
 
-//    @Test
+    //    @Test
     public void testHasBudgetExceeded() {
         var periodEnd = LocalDate.now().plusMonths(1);
 
@@ -139,7 +137,7 @@ public class UserAccountingServiceTest {
         assertFalse(service.hasSimulationBudget(userId));
     }
 
-//    @Test
+    //    @Test
     public void testConsumeBudgetNewUser() {
         Mockito.when(UserAccounting.findByUser(userId)).thenReturn(null);
         Mockito.when(UserAccounting.create(anyString(), any(), anyInt(), anyInt()))
@@ -152,7 +150,7 @@ public class UserAccountingServiceTest {
         assertFalse(service.consumeSimulationBudget(userId, 10));
     }
 
-//    @Test
+    //    @Test
     public void testConsumeBudgetNewUserExceeded() {
         Mockito.when(UserAccounting.findByUser(userId)).thenReturn(null);
         Mockito.when(UserAccounting.create(anyString(), any(), anyInt(), anyInt()))
@@ -165,7 +163,7 @@ public class UserAccountingServiceTest {
         assertTrue(service.consumeSimulationBudget(userId, 4000));
     }
 
-//    @Test
+    //    @Test
     public void testConsumeBudgetNewUserConflict() {
         var periodEnd = LocalDate.now().plusMonths(1);
         var accountingMock = Mockito.spy(new UserAccounting(userId, periodEnd, 3600));
@@ -181,7 +179,7 @@ public class UserAccountingServiceTest {
         assertFalse(service.consumeSimulationBudget(userId, 10));
     }
 
-//    @Test
+    //    @Test
     public void testConsumeBudgetResetSuccess() {
         var periodEnd = LocalDate.now().minusMonths(2);
         var accountingMock = Mockito.spy(new UserAccounting(userId, periodEnd, 3600));
@@ -197,7 +195,7 @@ public class UserAccountingServiceTest {
         assertTrue(service.consumeSimulationBudget(userId, 4000));
     }
 
-//    @Test
+    //    @Test
     public void testInfiniteConflict() {
         var periodEnd = LocalDate.now().plusMonths(1);
         var accountingMock = Mockito.spy(new UserAccounting(userId, periodEnd, 3600));

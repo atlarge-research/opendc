@@ -85,7 +85,6 @@ public class ComputeMetricReader(
 
                 loggState()
             }
-
         } finally {
             loggState()
 

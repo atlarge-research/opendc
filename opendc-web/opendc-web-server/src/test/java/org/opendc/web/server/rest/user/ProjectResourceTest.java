@@ -26,22 +26,18 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
 
-import io.quarkus.test.common.http.TestHTTPEndpoint;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Test;
 
 /**
  * Test suite for [ProjectResource].
  */
-//@QuarkusTest
-//@TestHTTPEndpoint(ProjectResource.class)
+// @QuarkusTest
+// @TestHTTPEndpoint(ProjectResource.class)
 public final class ProjectResourceTest {
     /**
      * Test that tries to obtain all projects without token.
      */
-//    @Test
+    //    @Test
     public void testGetAllWithoutToken() {
         when().get().then().statusCode(401);
     }
@@ -49,10 +45,10 @@ public final class ProjectResourceTest {
     /**
      * Test that tries to obtain all projects with an invalid scope.
      */
-//    @Test
-//    @TestSecurity(
-//            user = "owner",
-//            roles = {"runner"})
+    //    @Test
+    //    @TestSecurity(
+    //            user = "owner",
+    //            roles = {"runner"})
     public void testGetAllWithInvalidScope() {
         when().get().then().statusCode(403);
     }
@@ -60,10 +56,10 @@ public final class ProjectResourceTest {
     /**
      * Test that tries to obtain all project for a user.
      */
-//    @Test
-//    @TestSecurity(
-//            user = "owner",
-//            roles = {"openid"})
+    //    @Test
+    //    @TestSecurity(
+    //            user = "owner",
+    //            roles = {"openid"})
     public void testGetAll() {
         when().get().then().statusCode(200).contentType(ContentType.JSON).body("get(0).name", equalTo("Test Project"));
     }
@@ -71,10 +67,10 @@ public final class ProjectResourceTest {
     /**
      * Test that tries to obtain a non-existent project.
      */
-//    @Test
-//    @TestSecurity(
-//            user = "owner",
-//            roles = {"openid"})
+    //    @Test
+    //    @TestSecurity(
+    //            user = "owner",
+    //            roles = {"openid"})
     public void testGetNonExisting() {
         when().get("/0").then().statusCode(404).contentType(ContentType.JSON);
     }
@@ -82,10 +78,10 @@ public final class ProjectResourceTest {
     /**
      * Test that tries to obtain a project.
      */
-//    @Test
-//    @TestSecurity(
-//            user = "owner",
-//            roles = {"openid"})
+    //    @Test
+    //    @TestSecurity(
+    //            user = "owner",
+    //            roles = {"openid"})
     public void testGetExisting() {
         when().get("/1").then().statusCode(200).contentType(ContentType.JSON).body("id", equalTo(1));
     }
@@ -93,10 +89,10 @@ public final class ProjectResourceTest {
     /**
      * Test that tries to create a project.
      */
-//    @Test
-//    @TestSecurity(
-//            user = "owner",
-//            roles = {"openid"})
+    //    @Test
+    //    @TestSecurity(
+    //            user = "owner",
+    //            roles = {"openid"})
     public void testCreate() {
         given().body(new org.opendc.web.proto.user.Project.Create("test"))
                 .contentType(ContentType.JSON)
@@ -111,10 +107,10 @@ public final class ProjectResourceTest {
     /**
      * Test to create a project with an empty body.
      */
-//    @Test
-//    @TestSecurity(
-//            user = "owner",
-//            roles = {"openid"})
+    //    @Test
+    //    @TestSecurity(
+    //            user = "owner",
+    //            roles = {"openid"})
     public void testCreateEmpty() {
         given().body("{}")
                 .contentType(ContentType.JSON)
@@ -128,10 +124,10 @@ public final class ProjectResourceTest {
     /**
      * Test to create a project with a blank name.
      */
-//    @Test
-//    @TestSecurity(
-//            user = "owner",
-//            roles = {"openid"})
+    //    @Test
+    //    @TestSecurity(
+    //            user = "owner",
+    //            roles = {"openid"})
     public void testCreateBlankName() {
         given().body(new org.opendc.web.proto.user.Project.Create(""))
                 .contentType(ContentType.JSON)
@@ -145,10 +141,10 @@ public final class ProjectResourceTest {
     /**
      * Test to delete a non-existent project.
      */
-//    @Test
-//    @TestSecurity(
-//            user = "owner",
-//            roles = {"openid"})
+    //    @Test
+    //    @TestSecurity(
+    //            user = "owner",
+    //            roles = {"openid"})
     public void testDeleteNonExistent() {
         when().delete("/0").then().statusCode(404).contentType(ContentType.JSON);
     }
@@ -156,10 +152,10 @@ public final class ProjectResourceTest {
     /**
      * Test to delete a project.
      */
-//    @Test
-//    @TestSecurity(
-//            user = "owner",
-//            roles = {"openid"})
+    //    @Test
+    //    @TestSecurity(
+    //            user = "owner",
+    //            roles = {"openid"})
     public void testDelete() {
         int id = given().body(new org.opendc.web.proto.user.Project.Create("Delete Project"))
                 .contentType(ContentType.JSON)
@@ -177,10 +173,10 @@ public final class ProjectResourceTest {
     /**
      * Test to delete a project which the user does not own.
      */
-//    @Test
-//    @TestSecurity(
-//            user = "viewer",
-//            roles = {"openid"})
+    //    @Test
+    //    @TestSecurity(
+    //            user = "viewer",
+    //            roles = {"openid"})
     public void testDeleteNonOwner() {
         when().delete("/1").then().statusCode(403).contentType(ContentType.JSON);
     }

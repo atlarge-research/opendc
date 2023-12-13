@@ -43,11 +43,10 @@ import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import java.io.File
 import java.lang.ref.SoftReference
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import java.time.Duration
 import java.time.Instant
-import kotlin.math.max
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.roundToLong
 
 /**

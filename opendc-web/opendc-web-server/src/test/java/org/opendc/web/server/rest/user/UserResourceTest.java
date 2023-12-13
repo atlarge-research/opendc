@@ -26,25 +26,21 @@ import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 
-import io.quarkus.test.common.http.TestHTTPEndpoint;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Test;
 
 /**
  * Test suite for [UserResource].
  */
-//@QuarkusTest
-//@TestHTTPEndpoint(UserResource.class)
+// @QuarkusTest
+// @TestHTTPEndpoint(UserResource.class)
 public final class UserResourceTest {
     /**
      * Test that tries to obtain the profile of the active user.
      */
-//    @Test
-//    @TestSecurity(
-//            user = "testUser",
-//            roles = {"openid"})
+    //    @Test
+    //    @TestSecurity(
+    //            user = "testUser",
+    //            roles = {"openid"})
     public void testMe() {
         when().get("me")
                 .then()
@@ -58,7 +54,7 @@ public final class UserResourceTest {
     /**
      * Test that tries to obtain the profile of the active user without authorization.
      */
-//    @Test
+    //    @Test
     public void testMeUnauthorized() {
         when().get("me").then().statusCode(401);
     }

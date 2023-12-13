@@ -68,7 +68,7 @@ public final class SimTrace {
     /**
      * Construct a {@link SimWorkload} for this trace.
      *
-//     * @param offset The offset for the timestamps.
+     * //     * @param offset The offset for the timestamps.
      */
     public SimWorkload createWorkload(long start) {
         return new Workload(start, usageCol, deadlineCol, coresCol, size, 0);

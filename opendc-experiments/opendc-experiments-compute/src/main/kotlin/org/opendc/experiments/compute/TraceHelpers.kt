@@ -38,17 +38,17 @@ import java.util.Random
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 
-public class RunningServerWatcher: ServerWatcher {
+public class RunningServerWatcher : ServerWatcher {
 
-    private val _mutex: Mutex = Mutex();
+    private val _mutex: Mutex = Mutex()
 
-    public suspend fun lock () {
+    public suspend fun lock() {
         _mutex.lock()
     }
 
-    public suspend fun wait () {
+    public suspend fun wait() {
         // TODO: look at the better way to wait for an unlock
-        this.lock();
+        this.lock()
     }
 
     override fun onStateChanged(server: Server, newState: ServerState) {
@@ -65,7 +65,6 @@ public class RunningServerWatcher: ServerWatcher {
             else -> {}
         }
     }
-
 }
 
 /**
@@ -113,7 +112,7 @@ public suspend fun ComputeService.replay(
 
                 // Delay the server based on the startTime given by the trace.
                 if (!submitImmediately) {
-                    delay(max(0, (start - now - simulationOffset)));
+                    delay(max(0, (start - now - simulationOffset)))
                 }
 
                 val workload = entry.trace.createWorkload(start)

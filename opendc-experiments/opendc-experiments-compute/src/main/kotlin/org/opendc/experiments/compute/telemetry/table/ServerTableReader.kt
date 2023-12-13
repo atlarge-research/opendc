@@ -32,6 +32,7 @@ public interface ServerTableReader {
     public fun copy(): ServerTableReader
 
     public fun setValues(table: ServerTableReader)
+
     /**
      * The timestamp of the current entry of the reader.
      */
