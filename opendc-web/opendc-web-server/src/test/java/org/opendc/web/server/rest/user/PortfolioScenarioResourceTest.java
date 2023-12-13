@@ -25,7 +25,11 @@ package org.opendc.web.server.rest.user;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
+import io.quarkus.test.common.http.TestHTTPEndpoint;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
+import org.junit.jupiter.api.Test;
 import org.opendc.web.proto.OperationalPhenomena;
 import org.opendc.web.proto.Workload;
 import org.opendc.web.proto.user.Scenario;
@@ -33,8 +37,8 @@ import org.opendc.web.proto.user.Scenario;
 /**
  * Test suite for {@link PortfolioScenarioResource}.
  */
-// @QuarkusTest
-// @TestHTTPEndpoint(PortfolioScenarioResource.class)
+@QuarkusTest
+@TestHTTPEndpoint(PortfolioScenarioResource.class)
 public final class PortfolioScenarioResourceTest {
     /**
      * Test that tries to obtain a portfolio without token.
@@ -52,10 +56,10 @@ public final class PortfolioScenarioResourceTest {
     /**
      * Test that tries to obtain a portfolio with an invalid scope.
      */
-    //    @Test
-    //    @TestSecurity(
-    //            user = "owner",
-    //            roles = {"runner"})
+    @Test
+    @TestSecurity(
+            user = "owner",
+            roles = {"runner"})
     public void testGetInvalidToken() {
         given().pathParam("project", "1")
                 .pathParam("portfolio", "1")

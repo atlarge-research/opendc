@@ -27,8 +27,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 
+import io.quarkus.test.junit.QuarkusTest;
 import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.opendc.web.proto.JobState;
 import org.opendc.web.server.model.Job;
@@ -36,7 +38,7 @@ import org.opendc.web.server.model.Job;
 /**
  * Test suite for the {@link JobService}.
  */
-// @QuarkusTest
+@QuarkusTest
 public class JobServiceTest {
     /**
      * The {@link JobService} instance under test.
@@ -54,7 +56,7 @@ public class JobServiceTest {
         service = new JobService(mockAccountingService);
     }
 
-    //    @Test
+    @Test
     public void testUpdateInvalidTransition() {
         Job job = new Job(null, "test", Instant.now(), 1);
         job.state = JobState.RUNNING;
@@ -64,7 +66,7 @@ public class JobServiceTest {
         Mockito.verifyNoInteractions(mockAccountingService);
     }
 
-    //    @Test
+    @Test
     public void testUpdateNoBudget() {
         Job job = Mockito.spy(new Job(null, "test", Instant.now(), 1));
         job.state = JobState.RUNNING;
@@ -78,7 +80,7 @@ public class JobServiceTest {
         Mockito.verify(job).updateAtomically(eq(JobState.FAILED), any(), anyInt(), any());
     }
 
-    //    @Test
+    @Test
     public void testUpdateNoBudgetWhenFinishing() {
         Job job = Mockito.spy(new Job(null, "test", Instant.now(), 1));
         job.state = JobState.RUNNING;
@@ -92,7 +94,7 @@ public class JobServiceTest {
         Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), anyInt(), any());
     }
 
-    //    @Test
+    @Test
     public void testUpdateSuccess() {
         Job job = Mockito.spy(new Job(null, "test", Instant.now(), 1));
         job.state = JobState.RUNNING;
@@ -106,7 +108,7 @@ public class JobServiceTest {
         Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), anyInt(), any());
     }
 
-    //    @Test
+    @Test
     public void testUpdateConflict() {
         Job job = Mockito.spy(new Job(null, "test", Instant.now(), 1));
         job.state = JobState.RUNNING;

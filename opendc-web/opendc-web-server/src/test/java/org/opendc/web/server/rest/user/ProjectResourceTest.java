@@ -26,13 +26,17 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
 
+import io.quarkus.test.common.http.TestHTTPEndpoint;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test suite for [ProjectResource].
  */
-// @QuarkusTest
-// @TestHTTPEndpoint(ProjectResource.class)
+@QuarkusTest
+@TestHTTPEndpoint(ProjectResource.class)
 public final class ProjectResourceTest {
     /**
      * Test that tries to obtain all projects without token.
@@ -45,10 +49,10 @@ public final class ProjectResourceTest {
     /**
      * Test that tries to obtain all projects with an invalid scope.
      */
-    //    @Test
-    //    @TestSecurity(
-    //            user = "owner",
-    //            roles = {"runner"})
+    @Test
+    @TestSecurity(
+            user = "owner",
+            roles = {"runner"})
     public void testGetAllWithInvalidScope() {
         when().get().then().statusCode(403);
     }

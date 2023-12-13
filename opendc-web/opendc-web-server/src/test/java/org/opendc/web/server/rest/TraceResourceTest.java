@@ -25,18 +25,21 @@ package org.opendc.web.server.rest;
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
 
+import io.quarkus.test.common.http.TestHTTPEndpoint;
+import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test suite for {@link TraceResource}.
  */
-// @QuarkusTest
-// @TestHTTPEndpoint(TraceResource.class)
+@QuarkusTest
+@TestHTTPEndpoint(TraceResource.class)
 public final class TraceResourceTest {
     /**
      * Test that tries to obtain all traces.
      */
-    //    @Test
+    @Test
     public void testGetAllEmpty() {
         when().get().then().statusCode(200).contentType(ContentType.JSON);
     }
@@ -44,7 +47,7 @@ public final class TraceResourceTest {
     /**
      * Test that tries to obtain a non-existent trace.
      */
-    //    @Test
+    @Test
     public void testGetNonExisting() {
         when().get("/unknown").then().statusCode(404).contentType(ContentType.JSON);
     }
@@ -52,7 +55,7 @@ public final class TraceResourceTest {
     /**
      * Test that tries to obtain an existing trace.
      */
-    //    @Test
+    @Test
     public void testGetExisting() {
         when().get("/bitbrains-small")
                 .then()
