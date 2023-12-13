@@ -94,7 +94,7 @@ class SimTraceWorkloadTest {
 
         machine.runWorkload(workload)
 
-        assertEquals(4000, timeSource.millis()) // fixme: should be 5000 but this is 4000 for now to make all tests succeed
+        assertEquals(5000, timeSource.millis()) // fixme: should be 5000 but this is 4000 for now to make all tests succeed
     }
 
     @Test
