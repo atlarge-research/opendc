@@ -65,7 +65,6 @@ final class SimChainWorkload implements SimWorkload {
         for (SimWorkload workload : this.workloads) {
             workload.setOffset(now);
         }
-
     }
 
     @Override

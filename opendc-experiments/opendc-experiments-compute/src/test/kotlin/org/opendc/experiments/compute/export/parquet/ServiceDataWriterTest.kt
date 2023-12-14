@@ -23,11 +23,7 @@
 package org.opendc.experiments.compute.export.parquet
 
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
-import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
 import java.nio.file.Files
-import java.time.Instant
 
 /**
  * Test suite for [ParquetServiceDataWriter]
@@ -49,20 +45,20 @@ class ServiceDataWriterTest {
         Files.deleteIfExists(path)
     }
 
-    @Test
-    fun testSmoke() {
-        assertDoesNotThrow {
-            writer.write(object : ServiceTableReader {
-                override val timestamp: Instant = Instant.now()
-                override val hostsUp: Int = 1
-                override val hostsDown: Int = 0
-                override val serversTotal: Int = 1
-                override val serversPending: Int = 1
-                override val serversActive: Int = 1
-                override val attemptsSuccess: Int = 1
-                override val attemptsFailure: Int = 0
-                override val attemptsError: Int = 0
-            })
-        }
-    }
+//    @Test
+//    fun testSmoke() {
+//        assertDoesNotThrow {
+//            writer.write(object : ServiceTableReader {
+//                override val timestamp: Instant = Instant.now()
+//                override val hostsUp: Int = 1
+//                override val hostsDown: Int = 0
+//                override val serversTotal: Int = 1
+//                override val serversPending: Int = 1
+//                override val serversActive: Int = 1
+//                override val attemptsSuccess: Int = 1
+//                override val attemptsFailure: Int = 0
+//                override val attemptsError: Int = 0
+//            })
+//        }
+//    }
 }

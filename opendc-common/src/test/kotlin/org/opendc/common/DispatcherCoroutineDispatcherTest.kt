@@ -36,6 +36,10 @@ import org.opendc.simulator.kotlin.runSimulation
  * Test suite for [DispatcherCoroutineDispatcher].
  */
 class DispatcherCoroutineDispatcherTest {
+
+    /**
+     * Tests if a dispatcher yields the correct time
+     */
     @Test
     fun testYield() = runSimulation {
         withContext(dispatcher.asCoroutineDispatcher()) {
@@ -45,6 +49,9 @@ class DispatcherCoroutineDispatcherTest {
         }
     }
 
+    /**
+     * Tests if a dispatcher correctly delays
+     */
     @Test
     fun testDelay() = runSimulation {
         withContext(dispatcher.asCoroutineDispatcher()) {
@@ -54,6 +61,9 @@ class DispatcherCoroutineDispatcherTest {
         }
     }
 
+    /**
+     * Tests if a dispatcher correctly times out
+     */
     @Test
     fun testTimeout() = runSimulation {
         withContext(dispatcher.asCoroutineDispatcher()) {

@@ -28,7 +28,6 @@ import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
-import org.opendc.experiments.greenifier.topology.clusterTopology
 import org.opendc.experiments.compute.ComputeWorkloadLoader
 import org.opendc.experiments.compute.VirtualMachine
 import org.opendc.experiments.compute.replay
@@ -36,6 +35,7 @@ import org.opendc.experiments.compute.setupComputeService
 import org.opendc.experiments.compute.setupHosts
 import org.opendc.experiments.compute.topology.HostSpec
 import org.opendc.experiments.compute.trace
+import org.opendc.experiments.greenifier.topology.clusterTopology
 import org.opendc.experiments.provisioner.Provisioner
 import org.opendc.simulator.kotlin.runSimulation
 import org.openjdk.jmh.annotations.Benchmark

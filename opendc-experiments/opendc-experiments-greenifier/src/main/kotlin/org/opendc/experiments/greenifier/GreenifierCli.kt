@@ -105,9 +105,9 @@ internal class GreenifierCommand : CliktCommand(name = "greenifier") {
      */
     private val portfolio by argument(help = "portfolio to replay")
         .choice(
-            "greenifier" to { GreenifierPortfolio() },
+            "greenifier" to { GreenifierPortfolio() }
         )
-        .default({GreenifierPortfolio()})
+        .default({ GreenifierPortfolio() })
 
     /**
      * The base partitions to use for the invocation

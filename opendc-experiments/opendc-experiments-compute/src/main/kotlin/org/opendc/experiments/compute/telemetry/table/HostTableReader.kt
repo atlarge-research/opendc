@@ -29,7 +29,7 @@ import java.time.Instant
  */
 public interface HostTableReader {
 
-    public fun copy() : HostTableReader
+    public fun copy(): HostTableReader
 
     public fun setValues(table: HostTableReader)
 
