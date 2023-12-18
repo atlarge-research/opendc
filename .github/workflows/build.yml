@@ -45,7 +45,7 @@ jobs:
       - name: Upload reports
         if: always()
         continue-on-error: true # See https://github.com/actions/upload-artifact/issues/270
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: reports-${{ matrix.os }}-jdk${{ matrix.java }}
           path: |
@@ -54,7 +54,7 @@ jobs:
           retention-days: 5
       - name: Upload build
         continue-on-error: true
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.os }}-jdk${{ matrix.java }}
           path: |
