@@ -25,7 +25,6 @@ package org.opendc.simulator.kotlin
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable.children
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -106,7 +105,7 @@ private fun Job.activeJobs(): Set<Job> {
  * Convert a [ContinuationInterceptor] into a [SimulationDispatcher] if possible.
  */
 internal fun ContinuationInterceptor.asSimulationDispatcher(): SimulationDispatcher {
-    val provider = this as? DispatcherProvider ?: throw IllegalArgumentException(
+    val provider = this as? org.opendc.common.DispatcherProvider ?: throw IllegalArgumentException(
         "DispatcherProvider such as SimulatorCoroutineDispatcher as the ContinuationInterceptor(Dispatcher) is required"
     )
 

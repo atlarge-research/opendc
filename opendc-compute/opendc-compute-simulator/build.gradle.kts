@@ -34,6 +34,10 @@ dependencies {
     implementation(projects.opendcCommon)
     implementation(libs.kotlin.logging)
 
+    api(libs.microprofile.config)
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
+
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testRuntimeOnly(libs.slf4j.simple)
 }

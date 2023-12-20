@@ -55,7 +55,7 @@ import kotlin.coroutines.resumeWithException
  * A [FunctionDeployer] that uses that simulates the [FunctionInstance]s.
  */
 public class SimFunctionDeployer(
-    private val dispatcher: Dispatcher,
+    private val dispatcher: org.opendc.common.Dispatcher,
     private val model: MachineModel,
     private val delayInjector: DelayInjector,
     private val mapper: SimFaaSWorkloadMapper = SimMetaFaaSWorkloadMapper()

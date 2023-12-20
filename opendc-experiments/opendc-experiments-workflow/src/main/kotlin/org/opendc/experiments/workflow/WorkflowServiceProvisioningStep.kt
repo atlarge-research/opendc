@@ -23,8 +23,8 @@
 package org.opendc.experiments.workflow
 
 import org.opendc.compute.service.ComputeService
-import org.opendc.experiments.provisioner.ProvisioningContext
-import org.opendc.experiments.provisioner.ProvisioningStep
+import org.opendc.compute.simulator.provisioner.ProvisioningContext
+import org.opendc.compute.simulator.provisioner.ProvisioningStep
 import org.opendc.workflow.service.WorkflowService
 import java.time.Duration
 

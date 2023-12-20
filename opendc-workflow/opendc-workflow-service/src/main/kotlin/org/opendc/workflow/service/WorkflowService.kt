@@ -67,7 +67,7 @@ public interface WorkflowService : AutoCloseable {
          * @param taskOrderPolicy The task order policy to use.
          */
         public operator fun invoke(
-            dispatcher: Dispatcher,
+            dispatcher: org.opendc.common.Dispatcher,
             compute: ComputeClient,
             schedulingQuantum: Duration,
             jobAdmissionPolicy: JobAdmissionPolicy,

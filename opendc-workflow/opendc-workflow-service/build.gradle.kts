@@ -32,9 +32,9 @@ dependencies {
     api(projects.opendcCompute.opendcComputeApi)
     implementation(projects.opendcCommon)
     implementation(libs.kotlin.logging)
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testImplementation(projects.opendcExperiments.opendcExperimentsCompute)
     testImplementation(projects.opendcExperiments.opendcExperimentsWorkflow)
     testImplementation(projects.opendcTrace.opendcTraceApi)
     testRuntimeOnly(projects.opendcTrace.opendcTraceGwf)

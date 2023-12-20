@@ -37,7 +37,7 @@ class TimerSchedulerTest {
     @Test
     fun testBasicTimer() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(dispatcher)
+            val scheduler = org.opendc.common.util.TimerScheduler<Int>(dispatcher)
 
             scheduler.startSingleTimer(0, 1000) {
                 assertEquals(1000, timeSource.millis())
@@ -51,7 +51,7 @@ class TimerSchedulerTest {
     @Test
     fun testCancelNonExisting() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(dispatcher)
+            val scheduler = org.opendc.common.util.TimerScheduler<Int>(dispatcher)
 
             scheduler.cancel(1)
         }
@@ -60,7 +60,7 @@ class TimerSchedulerTest {
     @Test
     fun testCancelExisting() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(dispatcher)
+            val scheduler = org.opendc.common.util.TimerScheduler<Int>(dispatcher)
 
             scheduler.startSingleTimer(0, 1000) {
                 fail()
@@ -77,7 +77,7 @@ class TimerSchedulerTest {
     @Test
     fun testCancelAll() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(dispatcher)
+            val scheduler = org.opendc.common.util.TimerScheduler<Int>(dispatcher)
 
             scheduler.startSingleTimer(0, 1000) { fail() }
             scheduler.startSingleTimer(1, 100) { fail() }
@@ -88,7 +88,7 @@ class TimerSchedulerTest {
     @Test
     fun testOverride() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(dispatcher)
+            val scheduler = org.opendc.common.util.TimerScheduler<Int>(dispatcher)
 
             scheduler.startSingleTimer(0, 1000) { fail() }
 
@@ -101,7 +101,7 @@ class TimerSchedulerTest {
     @Test
     fun testOverrideBlock() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(dispatcher)
+            val scheduler = org.opendc.common.util.TimerScheduler<Int>(dispatcher)
 
             scheduler.startSingleTimer(0, 1000) { fail() }
 
@@ -114,7 +114,7 @@ class TimerSchedulerTest {
     @Test
     fun testNegativeDelay() {
         runSimulation {
-            val scheduler = TimerScheduler<Int>(dispatcher)
+            val scheduler = org.opendc.common.util.TimerScheduler<Int>(dispatcher)
 
             assertThrows<IllegalArgumentException> {
                 scheduler.startSingleTimer(1, -1) {

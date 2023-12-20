@@ -23,11 +23,11 @@
 package org.opendc.experiments.capelin
 
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.opendc.experiments.capelin.model.OperationalPhenomena
-import org.opendc.experiments.capelin.model.Scenario
-import org.opendc.experiments.capelin.model.Topology
-import org.opendc.experiments.capelin.model.Workload
-import org.opendc.experiments.compute.trace
+import org.opendc.compute.workload.trace
+import org.opendc.experiments.base.portfolio.model.OperationalPhenomena
+import org.opendc.experiments.base.portfolio.model.Scenario
+import org.opendc.experiments.base.portfolio.model.Topology
+import org.opendc.experiments.base.portfolio.model.Workload
 import java.io.File
 import java.nio.file.Files
 

@@ -57,7 +57,7 @@ import kotlin.coroutines.resumeWithException
  * this component queues the events to await the deployment of new instances.
  */
 internal class FaaSServiceImpl(
-    dispatcher: Dispatcher,
+    dispatcher: org.opendc.common.Dispatcher,
     private val deployer: FunctionDeployer,
     private val routingPolicy: RoutingPolicy,
     private val terminationPolicy: FunctionTerminationPolicy,
@@ -71,7 +71,7 @@ internal class FaaSServiceImpl(
     /**
      * The [Pacer] to use for scheduling the scheduler cycles.
      */
-    private val pacer = Pacer(dispatcher, quantum.toMillis()) { doSchedule() }
+    private val pacer = org.opendc.common.util.Pacer(dispatcher, quantum.toMillis()) { doSchedule() }
 
     /**
      * The [InstantSource] instance representing the clock.

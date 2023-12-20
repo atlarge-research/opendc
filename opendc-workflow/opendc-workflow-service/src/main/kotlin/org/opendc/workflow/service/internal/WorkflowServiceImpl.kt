@@ -53,7 +53,7 @@ import kotlin.coroutines.resume
  * Datacenter Scheduling.
  */
 public class WorkflowServiceImpl(
-    dispatcher: Dispatcher,
+    dispatcher: org.opendc.common.Dispatcher,
     private val computeClient: ComputeClient,
     schedulingQuantum: Duration,
     jobAdmissionPolicy: JobAdmissionPolicy,
@@ -154,7 +154,8 @@ public class WorkflowServiceImpl(
     /**
      * The [Pacer] to use for scheduling the scheduler cycles.
      */
-    private val pacer = Pacer(dispatcher, schedulingQuantum.toMillis()) { doSchedule() }
+    private val pacer =
+        org.opendc.common.util.Pacer(dispatcher, schedulingQuantum.toMillis()) { doSchedule() }
 
     private val jobAdmissionPolicy: JobAdmissionPolicy.Logic
     private val taskEligibilityPolicy: TaskEligibilityPolicy.Logic

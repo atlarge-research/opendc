@@ -22,11 +22,11 @@
 
 package org.opendc.web.runner.internal
 
-import org.opendc.experiments.compute.telemetry.ComputeMonitor
-import org.opendc.experiments.compute.telemetry.table.HostTableReader
-import org.opendc.experiments.compute.telemetry.table.ServiceData
-import org.opendc.experiments.compute.telemetry.table.ServiceTableReader
-import org.opendc.experiments.compute.telemetry.table.toServiceData
+import org.opendc.compute.telemetry.ComputeMonitor
+import org.opendc.compute.telemetry.table.HostTableReader
+import org.opendc.compute.telemetry.table.ServiceData
+import org.opendc.compute.telemetry.table.ServiceTableReader
+import org.opendc.compute.telemetry.table.toServiceData
 import kotlin.math.roundToLong
 
 /**

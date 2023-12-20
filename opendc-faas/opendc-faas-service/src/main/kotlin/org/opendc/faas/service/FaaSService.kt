@@ -68,7 +68,7 @@ public interface FaaSService : AutoCloseable {
          * @param quantum The scheduling quantum of the service (100 ms default)
          */
         public operator fun invoke(
-            dispatcher: Dispatcher,
+            dispatcher: org.opendc.common.Dispatcher,
             deployer: FunctionDeployer,
             routingPolicy: RoutingPolicy,
             terminationPolicy: FunctionTerminationPolicy,

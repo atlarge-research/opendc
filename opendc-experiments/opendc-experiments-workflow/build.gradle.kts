@@ -30,7 +30,6 @@ plugins {
 }
 
 dependencies {
-    api(projects.opendcExperiments.opendcExperimentsBase)
     api(projects.opendcWorkflow.opendcWorkflowApi)
 
     implementation(libs.kotlinx.coroutines)
@@ -38,4 +37,5 @@ dependencies {
     implementation(projects.opendcWorkflow.opendcWorkflowService)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcTrace.opendcTraceApi)
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-simulator")))
 }

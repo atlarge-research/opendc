@@ -22,8 +22,8 @@
 
 package org.opendc.experiments.faas
 
-import org.opendc.experiments.provisioner.ProvisioningContext
-import org.opendc.experiments.provisioner.ProvisioningStep
+import org.opendc.compute.simulator.provisioner.ProvisioningContext
+import org.opendc.compute.simulator.provisioner.ProvisioningStep
 import org.opendc.faas.service.FaaSService
 import org.opendc.faas.service.autoscaler.FunctionTerminationPolicy
 import org.opendc.faas.service.router.RoutingPolicy

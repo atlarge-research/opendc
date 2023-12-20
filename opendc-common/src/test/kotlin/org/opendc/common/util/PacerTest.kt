@@ -39,7 +39,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
+            val pacer = org.opendc.common.util.Pacer(dispatcher, /*quantum*/ 100) {
                 count++
             }
 
@@ -54,7 +54,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
+            val pacer = org.opendc.common.util.Pacer(dispatcher, /*quantum*/ 100) {
                 count++
             }
 
@@ -72,7 +72,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
+            val pacer = org.opendc.common.util.Pacer(dispatcher, /*quantum*/ 100) {
                 count++
             }
 
@@ -90,7 +90,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
+            val pacer = org.opendc.common.util.Pacer(dispatcher, /*quantum*/ 100) {
                 count++
             }
 
@@ -108,7 +108,7 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
+            val pacer = org.opendc.common.util.Pacer(dispatcher, /*quantum*/ 100) {
                 count++
             }
 
