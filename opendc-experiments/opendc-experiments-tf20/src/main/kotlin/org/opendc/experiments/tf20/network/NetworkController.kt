@@ -30,11 +30,11 @@ import org.opendc.common.util.TimerScheduler
  * The network controller represents a simple network model between the worker and master nodes during
  * TensorFlow execution.
  */
-public class NetworkController(dispatcher: org.opendc.common.Dispatcher) : AutoCloseable {
+public class NetworkController(dispatcher: Dispatcher) : AutoCloseable {
     /**
      * The scheduler for the message.
      */
-    private val scheduler = org.opendc.common.util.TimerScheduler<Message>(dispatcher)
+    private val scheduler = TimerScheduler<Message>(dispatcher)
 
     /**
      * The outbound communication channels.

@@ -50,7 +50,7 @@ import java.time.Instant
  * @param exportInterval The export interval.
  */
 public class ComputeMetricReader(
-    dispatcher: org.opendc.common.Dispatcher,
+    dispatcher: Dispatcher,
     private val service: ComputeService,
     private val monitor: ComputeMonitor,
     private val exportInterval: Duration = Duration.ofMinutes(5)

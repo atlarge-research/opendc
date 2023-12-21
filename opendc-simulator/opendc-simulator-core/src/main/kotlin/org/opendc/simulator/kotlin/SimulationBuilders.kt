@@ -105,7 +105,7 @@ private fun Job.activeJobs(): Set<Job> {
  * Convert a [ContinuationInterceptor] into a [SimulationDispatcher] if possible.
  */
 internal fun ContinuationInterceptor.asSimulationDispatcher(): SimulationDispatcher {
-    val provider = this as? org.opendc.common.DispatcherProvider ?: throw IllegalArgumentException(
+    val provider = this as? DispatcherProvider ?: throw IllegalArgumentException(
         "DispatcherProvider such as SimulatorCoroutineDispatcher as the ContinuationInterceptor(Dispatcher) is required"
     )
 

@@ -34,13 +34,13 @@ import java.time.Duration
  * @param timeout The idle timeout after which the function instance is terminated.
  */
 public class FunctionTerminationPolicyFixed(
-    dispatcher: org.opendc.common.Dispatcher,
+    dispatcher: Dispatcher,
     public val timeout: Duration
 ) : FunctionTerminationPolicy {
     /**
      * The [TimerScheduler] used to schedule the function terminations.
      */
-    private val scheduler = org.opendc.common.util.TimerScheduler<FunctionInstance>(dispatcher)
+    private val scheduler = TimerScheduler<FunctionInstance>(dispatcher)
 
     override fun enqueue(instance: FunctionInstance) {
         // Cancel the existing timeout timer

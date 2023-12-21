@@ -51,7 +51,7 @@ import kotlin.math.roundToLong
 public class SimTFDevice(
     override val uid: UUID,
     override val isGpu: Boolean,
-    dispatcher: org.opendc.common.Dispatcher,
+    dispatcher: Dispatcher,
     pu: ProcessingUnit,
     private val memory: MemoryUnit,
     powerModel: CpuPowerModel
