@@ -33,6 +33,8 @@ dependencies {
     implementation(projects.opendcCommon)
     implementation(libs.kotlin.logging)
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-service")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-simulator")))
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(projects.opendcExperiments.opendcExperimentsWorkflow)
