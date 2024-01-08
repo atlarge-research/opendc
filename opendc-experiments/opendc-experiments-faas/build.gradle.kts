@@ -30,11 +30,11 @@ plugins {
 }
 
 dependencies {
-    api(projects.opendcExperiments.opendcExperimentsBase)
     api(projects.opendcFaas.opendcFaasSimulator)
 
     implementation(libs.kotlin.logging)
     implementation(libs.jackson.dataformat.csv)
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-simulator")))
 
     testImplementation(libs.slf4j.simple)
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)

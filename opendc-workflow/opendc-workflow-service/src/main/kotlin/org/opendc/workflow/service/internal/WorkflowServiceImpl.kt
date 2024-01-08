@@ -154,7 +154,8 @@ public class WorkflowServiceImpl(
     /**
      * The [Pacer] to use for scheduling the scheduler cycles.
      */
-    private val pacer = Pacer(dispatcher, schedulingQuantum.toMillis()) { doSchedule() }
+    private val pacer =
+        Pacer(dispatcher, schedulingQuantum.toMillis()) { doSchedule() }
 
     private val jobAdmissionPolicy: JobAdmissionPolicy.Logic
     private val taskEligibilityPolicy: TaskEligibilityPolicy.Logic

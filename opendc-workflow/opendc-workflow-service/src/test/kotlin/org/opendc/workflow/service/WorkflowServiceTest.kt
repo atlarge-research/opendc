@@ -32,11 +32,11 @@ import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.VCpuWeigher
-import org.opendc.experiments.compute.setupComputeService
-import org.opendc.experiments.compute.setupHosts
-import org.opendc.experiments.compute.topology.HostSpec
-import org.opendc.experiments.provisioner.Provisioner
-import org.opendc.experiments.provisioner.ProvisioningContext
+import org.opendc.compute.simulator.provisioner.Provisioner
+import org.opendc.compute.simulator.provisioner.ProvisioningContext
+import org.opendc.compute.simulator.provisioner.setupComputeService
+import org.opendc.compute.simulator.provisioner.setupHosts
+import org.opendc.compute.topology.HostSpec
 import org.opendc.experiments.workflow.WorkflowSchedulerSpec
 import org.opendc.experiments.workflow.replay
 import org.opendc.experiments.workflow.setupWorkflowService

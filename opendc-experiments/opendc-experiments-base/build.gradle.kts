@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-description = "Experiment base for OpenDC"
+description = "Support library for simulating VM-based workloads with OpenDC"
 
 /* Build configuration */
 plugins {
@@ -30,7 +30,7 @@ plugins {
 }
 
 dependencies {
-    api(libs.microprofile.config)
-
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
+    api(projects.opendcCompute.opendcComputeService)
+    api(projects.opendcCompute.opendcComputeSimulator)
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-workload")))
 }

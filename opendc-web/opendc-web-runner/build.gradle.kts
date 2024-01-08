@@ -49,11 +49,14 @@ val cliJar by tasks.creating(Jar::class) {
 
 dependencies {
     api(projects.opendcWeb.opendcWebClient)
-    implementation(projects.opendcExperiments.opendcExperimentsCompute)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcTrace.opendcTraceApi)
 
     implementation(libs.kotlin.logging)
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-workload")))
+    implementation(project(mapOf("path" to ":opendc-experiments:opendc-experiments-base")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
     runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
     runtimeOnly(projects.opendcTrace.opendcTraceBitbrains)
 

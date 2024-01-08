@@ -38,8 +38,7 @@ import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
 import me.tongfei.progressbar.ProgressBarBuilder
 import me.tongfei.progressbar.ProgressBarStyle
-import org.opendc.experiments.greenifier.model.Scenario
-import org.opendc.experiments.greenifier.portfolio.GreenifierPortfolio
+import org.opendc.experiments.base.portfolio.model.Scenario
 import java.io.File
 import java.util.concurrent.ForkJoinPool
 import java.util.stream.LongStream

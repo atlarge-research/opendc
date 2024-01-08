@@ -25,7 +25,7 @@ package org.opendc.experiments.faas
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.opendc.experiments.provisioner.Provisioner
+import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.faas.service.FaaSService
 import org.opendc.faas.service.autoscaler.FunctionTerminationPolicyFixed
 import org.opendc.faas.service.router.RandomRoutingPolicy

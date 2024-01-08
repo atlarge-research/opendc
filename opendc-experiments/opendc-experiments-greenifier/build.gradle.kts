@@ -32,8 +32,6 @@ plugins {
 }
 
 dependencies {
-    api(projects.opendcExperiments.opendcExperimentsCompute)
-
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcCompute.opendcComputeSimulator)
@@ -42,6 +40,10 @@ dependencies {
     implementation(libs.progressbar)
     implementation(libs.kotlin.logging)
     implementation(libs.jackson.dataformat.csv)
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-workload")))
+    implementation(project(mapOf("path" to ":opendc-experiments:opendc-experiments-base")))
 
     runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
     runtimeOnly(libs.log4j.core)
