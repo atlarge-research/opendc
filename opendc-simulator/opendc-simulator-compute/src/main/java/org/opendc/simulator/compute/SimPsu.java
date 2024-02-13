@@ -43,7 +43,7 @@ public abstract class SimPsu extends SimPowerInlet {
     /**
      * Return the instantaneous power usage of the machine (in W) measured at the inlet of the power supply.
      */
-    public abstract double getPowerUsage();
+    public abstract double getPowerDraw();
 
     /**
      * Return the cumulated energy usage of the machine (in J) measured at the inlet of the powers supply.

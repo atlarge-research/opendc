@@ -229,7 +229,7 @@ public class SimHost(
             Duration.ofMillis(_uptime),
             Duration.ofMillis(_downtime),
             _bootTime,
-            machine.psu.powerUsage,
+            machine.psu.powerDraw,
             machine.psu.energyUsage,
             terminated,
             running,

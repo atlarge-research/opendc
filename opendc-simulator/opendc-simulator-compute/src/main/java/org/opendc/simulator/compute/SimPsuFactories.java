@@ -82,7 +82,7 @@ public class SimPsuFactories {
         }
 
         @Override
-        public double getPowerUsage() {
+        public double getPowerDraw() {
             return 0;
         }
 
@@ -123,7 +123,7 @@ public class SimPsuFactories {
         private double totalUsage;
         private long lastUpdate;
 
-        private double powerUsage;
+        private double powerDraw;
         private double energyUsage;
 
         private final InHandler handler = new InHandler() {
@@ -154,8 +154,8 @@ public class SimPsuFactories {
         }
 
         @Override
-        public double getPowerUsage() {
-            return powerUsage;
+        public double getPowerDraw() {
+            return powerDraw;
         }
 
         @Override
@@ -186,7 +186,7 @@ public class SimPsuFactories {
 
             double usage = model.computePower(totalUsage / targetFreq);
             out.push((float) usage);
-            powerUsage = usage;
+            powerDraw = usage;
 
             return Long.MAX_VALUE;
         }
@@ -207,7 +207,7 @@ public class SimPsuFactories {
             long duration = now - lastUpdate;
             if (duration > 0) {
                 // Compute the energy usage of the machine
-                energyUsage += powerUsage * duration * 0.001;
+                energyUsage += powerDraw * duration * 0.001;
             }
         }
     }

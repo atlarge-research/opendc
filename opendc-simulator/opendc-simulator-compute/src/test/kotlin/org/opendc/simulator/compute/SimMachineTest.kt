@@ -148,7 +148,7 @@ class SimMachineTest {
 
             yield()
             assertAll(
-                { assertEquals(100.0, machine.psu.powerUsage) },
+                { assertEquals(100.0, machine.psu.powerDraw) },
                 { assertEquals(100.0f, source.powerDraw) }
             )
         }

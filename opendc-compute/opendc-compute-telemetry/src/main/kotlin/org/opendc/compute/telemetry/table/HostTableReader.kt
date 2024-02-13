@@ -104,14 +104,14 @@ public interface HostTableReader {
     public val cpuLostTime: Long
 
     /**
-     * The current power usage of the host in W.
+     * The current power draw of the host in W.
      */
-    public val powerUsage: Double
+    public val powerDraw: Double
 
     /**
-     * The total power consumption of the host since last time in J.
+     * The total energy consumption of the host since last time in J.
      */
-    public val powerTotal: Double
+    public val energyUsage: Double
 
     /**
      * The uptime of the host since last time in ms.
