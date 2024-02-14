@@ -41,7 +41,7 @@ internal class WebComputeMonitor : ComputeMonitor {
             hostAggregateMetrics.totalIdleTime + reader.cpuIdleTime,
             hostAggregateMetrics.totalStealTime + reader.cpuStealTime,
             hostAggregateMetrics.totalLostTime + reader.cpuLostTime,
-            hostAggregateMetrics.totalPowerDraw + reader.powerTotal,
+            hostAggregateMetrics.totalPowerDraw + reader.energyUsage,
             hostAggregateMetrics.totalFailureSlices + slices,
             hostAggregateMetrics.totalFailureVmSlices + reader.guestsRunning * slices
         )
