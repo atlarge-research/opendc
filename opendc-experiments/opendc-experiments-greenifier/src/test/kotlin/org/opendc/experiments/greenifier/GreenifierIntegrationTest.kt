@@ -280,7 +280,7 @@ class GreenifierIntegrationTest {
             activeTime += reader.cpuActiveTime
             stealTime += reader.cpuStealTime
             lostTime += reader.cpuLostTime
-            energyUsage += reader.powerTotal
+            energyUsage += reader.energyUsage
             uptime += reader.uptime
         }
     }

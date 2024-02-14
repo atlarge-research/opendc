@@ -33,17 +33,17 @@ import java.io.File
  */
 public class ParquetComputeMonitor(base: File, partition: String, bufferSize: Int) : ComputeMonitor, AutoCloseable {
     private val serverWriter = ParquetServerDataWriter(
-        File(base, "server/$partition/data.parquet").also { it.parentFile.mkdirs() },
+        File(base, "$partition/server.parquet").also { it.parentFile.mkdirs() },
         bufferSize
     )
 
     private val hostWriter = ParquetHostDataWriter(
-        File(base, "host/$partition/data.parquet").also { it.parentFile.mkdirs() },
+        File(base, "$partition/host.parquet").also { it.parentFile.mkdirs() },
         bufferSize
     )
 
     private val serviceWriter = ParquetServiceDataWriter(
-        File(base, "service/$partition/data.parquet").also { it.parentFile.mkdirs() },
+        File(base, "$partition/service.parquet").also { it.parentFile.mkdirs() },
         bufferSize
     )
 

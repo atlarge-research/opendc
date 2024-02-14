@@ -168,7 +168,7 @@ public class SimTFDevice(
     }
 
     override fun getDeviceStats(): TFDeviceStats {
-        return TFDeviceStats(machine.cpuUsage, machine.psu.powerUsage, machine.psu.energyUsage)
+        return TFDeviceStats(machine.cpuUsage, machine.psu.powerDraw, machine.psu.energyUsage)
     }
 
     override fun close() {

@@ -227,8 +227,8 @@ public class ComputeMetricReader(
             _cpuIdleTime = table.cpuIdleTime
             _cpuStealTime = table.cpuStealTime
             _cpuLostTime = table.cpuLostTime
-            _powerUsage = table.powerUsage
-            _powerTotal = table.powerTotal
+            _powerDraw = table.powerDraw
+            _energyUsage = table.energyUsage
             _uptime = table.uptime
             _downtime = table.downtime
             _bootTime = table.bootTime
@@ -294,13 +294,13 @@ public class ComputeMetricReader(
         private var _cpuLostTime = 0L
         private var previousCpuLostTime = 0L
 
-        override val powerUsage: Double
-            get() = _powerUsage
-        private var _powerUsage = 0.0
+        override val powerDraw: Double
+            get() = _powerDraw
+        private var _powerDraw = 0.0
 
-        override val powerTotal: Double
-            get() = _powerTotal - previousPowerTotal
-        private var _powerTotal = 0.0
+        override val energyUsage: Double
+            get() = _energyUsage - previousPowerTotal
+        private var _energyUsage = 0.0
         private var previousPowerTotal = 0.0
 
         override val uptime: Long
@@ -337,8 +337,8 @@ public class ComputeMetricReader(
             _cpuIdleTime = hostCpuStats.idleTime
             _cpuStealTime = hostCpuStats.stealTime
             _cpuLostTime = hostCpuStats.lostTime
-            _powerUsage = hostSysStats.powerUsage
-            _powerTotal = hostSysStats.energyUsage
+            _powerDraw = hostSysStats.powerDraw
+            _energyUsage = hostSysStats.energyUsage
             _uptime = hostSysStats.uptime.toMillis()
             _downtime = hostSysStats.downtime.toMillis()
             _bootTime = hostSysStats.bootTime
@@ -353,7 +353,7 @@ public class ComputeMetricReader(
             previousCpuIdleTime = _cpuIdleTime
             previousCpuStealTime = _cpuStealTime
             previousCpuLostTime = _cpuLostTime
-            previousPowerTotal = _powerTotal
+            previousPowerTotal = _energyUsage
             previousUptime = _uptime
             previousDowntime = _downtime
 
@@ -367,7 +367,7 @@ public class ComputeMetricReader(
             _cpuDemand = 0.0
             _cpuUtilization = 0.0
 
-            _powerUsage = 0.0
+            _powerDraw = 0.0
         }
     }
 

@@ -26,11 +26,11 @@ package org.opendc.experiments.tf20.core
  * Statistics about a TensorFlow [TFDevice].
  *
  * @property resourceUsage The resource usage of the device (in MHz).
- * @property powerUsage The instantaneous power draw of the device (in W).
+ * @property powerDraw The instantaneous power draw of the device (in W).
  * @property energyUsage Cumulative energy usage of the device since boot (in J).
  */
 data class TFDeviceStats(
     val resourceUsage: Double,
-    val powerUsage: Double,
+    val powerDraw: Double,
     val energyUsage: Double
 )

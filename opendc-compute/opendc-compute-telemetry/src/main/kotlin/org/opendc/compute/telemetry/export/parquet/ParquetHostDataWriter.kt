@@ -134,23 +134,27 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             consumer.addLong(data.cpuLostTime)
             consumer.endField("cpu_time_lost", 15)
 
-            consumer.startField("power_total", 16)
-            consumer.addDouble(data.powerTotal)
-            consumer.endField("power_total", 16)
+            consumer.startField("power_draw", 16)
+            consumer.addDouble(data.powerDraw)
+            consumer.endField("power_draw", 16)
 
-            consumer.startField("uptime", 17)
+            consumer.startField("energy_usage", 17)
+            consumer.addDouble(data.energyUsage)
+            consumer.endField("energy_usage", 17)
+
+            consumer.startField("uptime", 18)
             consumer.addLong(data.uptime)
-            consumer.endField("uptime", 17)
+            consumer.endField("uptime", 18)
 
-            consumer.startField("downtime", 18)
+            consumer.startField("downtime", 19)
             consumer.addLong(data.downtime)
-            consumer.endField("downtime", 18)
+            consumer.endField("downtime", 19)
 
             val bootTime = data.bootTime
             if (bootTime != null) {
-                consumer.startField("boot_time", 19)
+                consumer.startField("boot_time", 20)
                 consumer.addLong(bootTime.toEpochMilli())
-                consumer.endField("boot_time", 19)
+                consumer.endField("boot_time", 20)
             }
 
             consumer.endMessage()
@@ -216,7 +220,10 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                     .named("cpu_time_lost"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("power_total"),
+                    .named("power_draw"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                    .named("energy_usage"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
                     .named("uptime"),
