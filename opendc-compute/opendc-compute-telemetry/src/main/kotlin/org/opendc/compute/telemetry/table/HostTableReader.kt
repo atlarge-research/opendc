@@ -109,7 +109,7 @@ public interface HostTableReader {
     public val powerDraw: Double
 
     /**
-     * The total energy consumption of the host since last time in J.
+     * The total energy consumption of the host since last sample in J.
      */
     public val energyUsage: Double
 

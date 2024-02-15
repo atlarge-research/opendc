@@ -69,7 +69,7 @@ public interface ServerTableReader {
     public val bootTime: Instant?
 
     /**
-     * The capacity of the CPUs of the servers (in MHz).
+     * The capacity of the CPUs of Host on which the server is running (in MHz).
      */
     public val cpuLimit: Double
 

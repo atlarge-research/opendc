@@ -49,7 +49,7 @@ public interface ServiceTableReader {
     public val hostsDown: Int
 
     /**
-     * The number of servers that are registered with the compute service..
+     * The number of servers that are registered with the compute service.
      */
     public val serversTotal: Int
 
