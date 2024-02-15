@@ -42,11 +42,22 @@ const config = {
     plugins: [
         [
             "content-docs",
-            /** @type {import("@docusaurus/plugin-content-docs").Options} */
+            // /** @type {import("@docusaurus/plugin-content-docs").Options} */
             ({
                 id: "community",
                 path: "community",
                 routeBasePath: "community",
+                editUrl: `https://github.com/${organizationName}/${projectName}/tree/master/site/`,
+                sidebarPath: require.resolve("./sidebars.js")
+            })
+        ],
+        [
+            "content-docs",
+            // /** @type {import("@docusaurus/plugin-content-docs").Options} */
+            ({
+                id: "documentation",
+                path: "documentation",
+                routeBasePath: "documentation",
                 editUrl: `https://github.com/${organizationName}/${projectName}/tree/master/site/`,
                 sidebarPath: require.resolve("./sidebars.js")
             })
@@ -74,6 +85,12 @@ const config = {
                         label: "Community",
                         position: "left",
                         activeBaseRegex: `/community/`
+                    },
+                    {
+                        to: "/documentation/introduction",
+                        label: "Documentation",
+                        position: "left",
+                        activeBaseRegex: `/documentation/`
                     },
                     {
                         href: "https://app.opendc.org",
@@ -112,6 +129,23 @@ const config = {
                     },
                     {
                         title: "Community",
+                        items: [
+                            {
+                                label: "Support",
+                                to: "/community/support"
+                            },
+                            {
+                                label: "Team",
+                                to: "/community/team"
+                            },
+                            {
+                                label: "GitHub Discussions",
+                                href: `https://github.com/${organizationName}/${projectName}/discussions`
+                            }
+                        ]
+                    },
+                    {
+                        title: "Documentation",
                         items: [
                             {
                                 label: "Support",
