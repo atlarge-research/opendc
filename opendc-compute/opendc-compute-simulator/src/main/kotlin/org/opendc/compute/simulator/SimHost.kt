@@ -248,10 +248,10 @@ public class SimHost(
         counters.sync()
 
         return HostCpuStats(
-            counters.cpuActiveTime / 1000L,
-            counters.cpuIdleTime / 1000L,
-            counters.cpuStealTime / 1000L,
-            counters.cpuLostTime / 1000L,
+            counters.cpuActiveTime,
+            counters.cpuIdleTime,
+            counters.cpuStealTime,
+            counters.cpuLostTime,
             hypervisor.cpuCapacity,
             hypervisor.cpuDemand,
             hypervisor.cpuUsage,
