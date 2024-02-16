@@ -42,7 +42,7 @@ const config = {
     plugins: [
         [
             "content-docs",
-            /** @type {import("@docusaurus/plugin-content-docs").Options} */
+            // /** @type {import("@docusaurus/plugin-content-docs").Options} */
             ({
                 id: "community",
                 path: "community",

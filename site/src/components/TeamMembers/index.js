@@ -33,8 +33,14 @@ const leads = [
         url: 'https://www.atlarge-research.com/aiosup/',
     },
     {
-        name: 'Fabian Mastenbroek',
+        name: 'Dante Niewenhuis',
         title: 'Technology Lead',
+        avatar: "https://www.atlarge-research.com/images/people/dniewenhuis_large.png",
+        url: 'https://www.atlarge-research.com/dniewenhuis/',
+    },
+    {
+        name: 'Fabian Mastenbroek',
+        title: 'Technology Lead (2020-2022)',
         avatar: 'https://www.atlarge-research.com/images/people/fmastenbroek_large.png',
         url: 'https://www.atlarge-research.com/fmastenbroek/',
     },
