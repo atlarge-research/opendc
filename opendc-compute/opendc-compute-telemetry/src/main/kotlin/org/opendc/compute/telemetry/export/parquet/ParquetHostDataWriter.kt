@@ -170,7 +170,7 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             .addFields(
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+//                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                     .named("timestamp"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.BINARY)
@@ -232,7 +232,7 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                     .named("downtime"),
                 Types
                     .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+//                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                     .named("boot_time")
             )
             .named("host")
