@@ -6,23 +6,23 @@ contains metrics describing the overall performance. An experiment in OpenDC has
 ### Server
 The server output file, contains all metrics of related to the servers run.  
 
-| Metric          | Datatype | Unit          | Summary                                                                       |
-|-----------------|----------|---------------|-------------------------------------------------------------------------------|
-| timestamp       | int64    | ms            | Timestamp of the sample                                                       |
-| server_id       | binary   | string        | The id of the server determined during runtime                                |
-| server_name     | binary   | string        | The name of the server provided by the Trace                                  |
-| host_id         | binary   | string        | The id of the host on which the server is hosted or `null` if it has no host. |
-| mem_capacity    | int64    | Mb            |                                                                               |
-| cpu_count       | int32    | count         |                                                                               |
-| cpu_limit       | double   | MHz           | The capacity of the CPUs of Host on which the server is running.              |
-| cpu_time_active | int64    | seconds       | The duration that a CPU was active in the server.                             |
-| cpu_time_idle   | int64    | seconds       | The duration that a CPU was idle in the server.                               |
-| cpu_time_steal  | int64    | seconds       | The duration that a vCPU wanted to run, but no capacity was available.        |
-| cpu_time_lost   | int64    | seconds       | The duration of CPU time that was lost due to interference.                   |
-| uptime          | int64    | milli seconds | The uptime of the host since last sample.                                     |
-| downtime        | int64    | milli seconds | The downtime of the host since last sample.                                   |
-| provision_time  | int64    | ms            | The time for which the server was enqueued for the scheduler.                 |
-| boot_time       | int64    | ms            | The time the server took booting.                                             |
+| Metric          | Datatype | Unit   | Summary                                                                       |
+|-----------------|----------|--------|-------------------------------------------------------------------------------|
+| timestamp       | int64    | ms     | Timestamp of the sample                                                       |
+| server_id       | binary   | string | The id of the server determined during runtime                                |
+| server_name     | binary   | string | The name of the server provided by the Trace                                  |
+| host_id         | binary   | string | The id of the host on which the server is hosted or `null` if it has no host. |
+| mem_capacity    | int64    | Mb     |                                                                               |
+| cpu_count       | int32    | count  |                                                                               |
+| cpu_limit       | double   | MHz    | The capacity of the CPUs of Host on which the server is running.              |
+| cpu_time_active | int64    | ms     | The duration that a CPU was active in the server.                             |
+| cpu_time_idle   | int64    | ms     | The duration that a CPU was idle in the server.                               |
+| cpu_time_steal  | int64    | ms     | The duration that a vCPU wanted to run, but no capacity was available.        |
+| cpu_time_lost   | int64    | ms     | The duration of CPU time that was lost due to interference.                   |
+| uptime          | int64    | ms     | The uptime of the host since last sample.                                     |
+| downtime        | int64    | ms     | The downtime of the host since last sample.                                   |
+| provision_time  | int64    | ms     | The time for which the server was enqueued for the scheduler.                 |
+| boot_time       | int64    | ms     | The time the server took booting.                                             |
 
 ### Host
 The host output file, contains all metrics of related to the host run.
