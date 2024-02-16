@@ -25,7 +25,6 @@ package org.opendc.compute.telemetry.export.parquet
 import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.io.api.RecordConsumer
-import org.apache.parquet.schema.LogicalTypeAnnotation
 import org.apache.parquet.schema.MessageType
 import org.apache.parquet.schema.PrimitiveType
 import org.apache.parquet.schema.Types
@@ -102,7 +101,7 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
             .addFields(
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+//                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                     .named("timestamp"),
                 Types
                     .required(PrimitiveType.PrimitiveTypeName.INT32)

@@ -84,22 +84,22 @@ public interface HostTableReader {
     public val cpuUtilization: Double
 
     /**
-     * The duration (in seconds) that a CPU was active in the host.
+     * The duration (in ms) that a CPU was active in the host.
      */
     public val cpuActiveTime: Long
 
     /**
-     * The duration (in seconds) that a CPU was idle in the host.
+     * The duration (in ms) that a CPU was idle in the host.
      */
     public val cpuIdleTime: Long
 
     /**
-     * The duration (in seconds) that a vCPU wanted to run, but no capacity was available.
+     * The duration (in ms) that a vCPU wanted to run, but no capacity was available.
      */
     public val cpuStealTime: Long
 
     /**
-     * The duration (in seconds) of CPU time that was lost due to interference.
+     * The duration (in ms) of CPU time that was lost due to interference.
      */
     public val cpuLostTime: Long
 

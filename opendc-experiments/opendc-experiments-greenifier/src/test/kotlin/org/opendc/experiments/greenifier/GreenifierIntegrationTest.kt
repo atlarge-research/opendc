@@ -120,9 +120,9 @@ class GreenifierIntegrationTest {
             { assertEquals(0, monitor.serversActive, "All VMs should finish after a run") },
             { assertEquals(0, monitor.attemptsFailure, "No VM should be unscheduled") },
             { assertEquals(0, monitor.serversPending, "No VM should not be in the queue") },
-            { assertEquals(223379987, monitor.idleTime) { "Incorrect idle time" } },
-            { assertEquals(66977088, monitor.activeTime) { "Incorrect active time" } },
-            { assertEquals(3160266, monitor.stealTime) { "Incorrect steal time" } },
+            { assertEquals(223379991650, monitor.idleTime) { "Incorrect idle time" } },
+            { assertEquals(66977091124, monitor.activeTime) { "Incorrect active time" } },
+            { assertEquals(3160267873, monitor.stealTime) { "Incorrect steal time" } },
             { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
             { assertEquals(5.8407E9, monitor.energyUsage, 1E4) { "Incorrect power draw" } }
         )
@@ -160,9 +160,9 @@ class GreenifierIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(10996730, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(9741285, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
+            { assertEquals(10996730092, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(9741285381, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(152, monitor.stealTime) { "Steal time incorrect" } },
             { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
             { assertEquals(7.0109E8, monitor.energyUsage, 1E4) { "Incorrect power draw" } }
         )
@@ -199,10 +199,10 @@ class GreenifierIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(42814948, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(40138266, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(23489356, monitor.stealTime) { "Steal time incorrect" } },
-            { assertEquals(424267, monitor.lostTime) { "Lost time incorrect" } }
+            { assertEquals(42814948316, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(40138266225, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(23489356981, monitor.stealTime) { "Steal time incorrect" } },
+            { assertEquals(424267131, monitor.lostTime) { "Lost time incorrect" } }
         )
     }
 
@@ -229,9 +229,9 @@ class GreenifierIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(1404277, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(1478675, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
+            { assertEquals(1404277711, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(1478675712, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(152, monitor.stealTime) { "Steal time incorrect" } },
             { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
             { assertEquals(360369187, monitor.uptime) { "Uptime incorrect" } }
         )
