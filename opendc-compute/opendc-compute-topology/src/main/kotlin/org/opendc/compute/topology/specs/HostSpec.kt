@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.topology
+package org.opendc.compute.topology.specs
 
 import org.opendc.simulator.compute.SimPsuFactories
 import org.opendc.simulator.compute.SimPsuFactory
@@ -38,6 +38,7 @@ import java.util.UUID
  * @param psuFactory The [SimPsuFactory] to construct the PSU that models the power consumption of the machine.
  * @param multiplexerFactory The [FlowMultiplexerFactory] that is used to multiplex the virtual machines over the host.
  */
+
 public data class HostSpec(
     val uid: UUID,
     val name: String,

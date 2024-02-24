@@ -62,274 +62,243 @@ internal class SimHostTest {
     fun setUp() {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
-        machineModel =
-            MachineModel(
-                // cpus
-                List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
-                // memory
-                List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
-            )
+        machineModel = MachineModel(
+            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
+            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+        )
     }
 
     /**
      * Test a single virtual machine hosted by the hypervisor.
      */
     @Test
-    fun testSingle() =
-        runSimulation {
-            val duration = 5 * 60L
+    fun testSingle() = runSimulation {
+        val duration = 5 * 60L
 
-            val engine = FlowEngine.create(dispatcher)
-            val graph = engine.newGraph()
+        val engine = FlowEngine.create(dispatcher)
+        val graph = engine.newGraph()
 
-            val machine = SimBareMetalMachine.create(graph, machineModel)
-            val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1))
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1))
 
-            val host =
-                SimHost(
-                    uid = UUID.randomUUID(),
-                    name = "test",
-                    meta = emptyMap(),
-                    timeSource,
-                    machine,
-                    hypervisor,
-                )
-            val vmImage =
-                MockImage(
-                    UUID.randomUUID(),
-                    "<unnamed>",
-                    emptyMap(),
-                    mapOf(
-                        "workload" to
-                            SimTrace.ofFragments(
-                                SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
-                                SimTraceFragment(duration * 1000, duration * 1000, 2 * 3500.0, 2),
-                                SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
-                                SimTraceFragment(duration * 3000, duration * 1000, 2 * 183.0, 2),
-                            ).createWorkload(1),
-                    ),
-                )
-
-            val flavor = MockFlavor(2, 0)
-
-            suspendCancellableCoroutine { cont ->
-                host.addListener(
-                    object : HostListener {
-                        private var finished = 0
-
-                        override fun onStateChanged(
-                            host: Host,
-                            server: Server,
-                            newState: ServerState,
-                        ) {
-                            if (newState == ServerState.TERMINATED && ++finished == 1) {
-                                cont.resume(Unit)
-                            }
-                        }
-                    },
-                )
-                val server = MockServer(UUID.randomUUID(), "a", flavor, vmImage)
-                host.spawn(server)
-                host.start(server)
-            }
-
-            // Ensure last cycle is collected
-            delay(1000L * duration)
-            host.close()
-
-            val cpuStats = host.getCpuStats()
-
-            assertAll(
-                { assertEquals(639564, cpuStats.activeTime, "Active time does not match") },
-                { assertEquals(2360433, cpuStats.idleTime, "Idle time does not match") },
-                { assertEquals(56251, cpuStats.stealTime, "Steal time does not match") },
-                { assertEquals(1499999, timeSource.millis()) },
+        val host = SimHost(
+            uid = UUID.randomUUID(),
+            name = "test",
+            meta = emptyMap(),
+            timeSource,
+            machine,
+            hypervisor
+        )
+        val vmImage = MockImage(
+            UUID.randomUUID(),
+            "<unnamed>",
+            emptyMap(),
+            mapOf(
+                "workload" to
+                    SimTrace.ofFragments(
+                        SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
+                        SimTraceFragment(duration * 1000, duration * 1000, 2 * 3500.0, 2),
+                        SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
+                        SimTraceFragment(duration * 3000, duration * 1000, 2 * 183.0, 2)
+                    ).createWorkload(1)
             )
+        )
+
+        val flavor = MockFlavor(2, 0)
+
+        suspendCancellableCoroutine { cont ->
+            host.addListener(object : HostListener {
+                private var finished = 0
+
+                override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
+                    if (newState == ServerState.TERMINATED && ++finished == 1) {
+                        cont.resume(Unit)
+                    }
+                }
+            })
+            val server = MockServer(UUID.randomUUID(), "a", flavor, vmImage)
+            host.spawn(server)
+            host.start(server)
         }
+
+        // Ensure last cycle is collected
+        delay(1000L * duration)
+        host.close()
+
+        val cpuStats = host.getCpuStats()
+
+        assertAll(
+            { assertEquals(639564, cpuStats.activeTime, "Active time does not match") },
+            { assertEquals(2360433, cpuStats.idleTime, "Idle time does not match") },
+            { assertEquals(56251, cpuStats.stealTime, "Steal time does not match") },
+            { assertEquals(1499999, timeSource.millis()) }
+        )
+    }
 
     /**
      * Test overcommitting of resources by the hypervisor.
      */
     @Test
-    fun testOvercommitted() =
-        runSimulation {
-            val duration = 5 * 60L
+    fun testOvercommitted() = runSimulation {
+        val duration = 5 * 60L
 
-            val engine = FlowEngine.create(dispatcher)
-            val graph = engine.newGraph()
+        val engine = FlowEngine.create(dispatcher)
+        val graph = engine.newGraph()
 
-            val machine = SimBareMetalMachine.create(graph, machineModel)
-            val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1))
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1))
 
-            val host =
-                SimHost(
-                    uid = UUID.randomUUID(),
-                    name = "test",
-                    meta = emptyMap(),
-                    timeSource,
-                    machine,
-                    hypervisor,
-                )
-            val vmImageA =
-                MockImage(
-                    UUID.randomUUID(),
-                    "<unnamed>",
-                    emptyMap(),
-                    mapOf(
-                        "workload" to
-                            SimTrace.ofFragments(
-                                SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
-                                SimTraceFragment(duration * 1000, duration * 1000, 2 * 3500.0, 2),
-                                SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
-                                SimTraceFragment(duration * 3000, duration * 1000, 2 * 183.0, 2),
-                            ).createWorkload(1),
-                    ),
-                )
-            val vmImageB =
-                MockImage(
-                    UUID.randomUUID(),
-                    "<unnamed>",
-                    emptyMap(),
-                    mapOf(
-                        "workload" to
-                            SimTrace.ofFragments(
-                                SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
-                                SimTraceFragment(duration * 1000, duration * 1000, 2 * 3100.0, 2),
-                                SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
-                                SimTraceFragment(duration * 3000, duration * 1000, 2 * 73.0, 2),
-                            ).createWorkload(1),
-                    ),
-                )
-
-            val flavor = MockFlavor(2, 0)
-
-            coroutineScope {
-                suspendCancellableCoroutine { cont ->
-                    host.addListener(
-                        object : HostListener {
-                            private var finished = 0
-
-                            override fun onStateChanged(
-                                host: Host,
-                                server: Server,
-                                newState: ServerState,
-                            ) {
-                                if (newState == ServerState.TERMINATED && ++finished == 2) {
-                                    cont.resume(Unit)
-                                }
-                            }
-                        },
-                    )
-                    val serverA = MockServer(UUID.randomUUID(), "a", flavor, vmImageA)
-                    host.spawn(serverA)
-                    val serverB = MockServer(UUID.randomUUID(), "b", flavor, vmImageB)
-                    host.spawn(serverB)
-
-                    host.start(serverA)
-                    host.start(serverB)
-                }
-            }
-
-            // Ensure last cycle is collected
-            delay(1000L * duration)
-            host.close()
-
-            val cpuStats = host.getCpuStats()
-
-            assertAll(
-                { assertEquals(658502, cpuStats.activeTime, "Active time does not match") },
-                { assertEquals(2341496, cpuStats.idleTime, "Idle time does not match") },
-                { assertEquals(637504, cpuStats.stealTime, "Steal time does not match") },
-                { assertEquals(1499999, timeSource.millis()) },
+        val host = SimHost(
+            uid = UUID.randomUUID(),
+            name = "test",
+            meta = emptyMap(),
+            timeSource,
+            machine,
+            hypervisor
+        )
+        val vmImageA = MockImage(
+            UUID.randomUUID(),
+            "<unnamed>",
+            emptyMap(),
+            mapOf(
+                "workload" to
+                    SimTrace.ofFragments(
+                        SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
+                        SimTraceFragment(duration * 1000, duration * 1000, 2 * 3500.0, 2),
+                        SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
+                        SimTraceFragment(duration * 3000, duration * 1000, 2 * 183.0, 2)
+                    ).createWorkload(1)
             )
+        )
+        val vmImageB = MockImage(
+            UUID.randomUUID(),
+            "<unnamed>",
+            emptyMap(),
+            mapOf(
+                "workload" to
+                    SimTrace.ofFragments(
+                        SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
+                        SimTraceFragment(duration * 1000, duration * 1000, 2 * 3100.0, 2),
+                        SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
+                        SimTraceFragment(duration * 3000, duration * 1000, 2 * 73.0, 2)
+                    ).createWorkload(1)
+            )
+        )
+
+        val flavor = MockFlavor(2, 0)
+
+        coroutineScope {
+            suspendCancellableCoroutine { cont ->
+                host.addListener(object : HostListener {
+                    private var finished = 0
+
+                    override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
+                        if (newState == ServerState.TERMINATED && ++finished == 2) {
+                            cont.resume(Unit)
+                        }
+                    }
+                })
+                val serverA = MockServer(UUID.randomUUID(), "a", flavor, vmImageA)
+                host.spawn(serverA)
+                val serverB = MockServer(UUID.randomUUID(), "b", flavor, vmImageB)
+                host.spawn(serverB)
+
+                host.start(serverA)
+                host.start(serverB)
+            }
         }
+
+        // Ensure last cycle is collected
+        delay(1000L * duration)
+        host.close()
+
+        val cpuStats = host.getCpuStats()
+
+        assertAll(
+            { assertEquals(658502, cpuStats.activeTime, "Active time does not match") },
+            { assertEquals(2341496, cpuStats.idleTime, "Idle time does not match") },
+            { assertEquals(637504, cpuStats.stealTime, "Steal time does not match") },
+            { assertEquals(1499999, timeSource.millis()) }
+        )
+    }
 
     /**
      * Test failure of the host.
      */
     @Test
-    fun testFailure() =
-        runSimulation {
-            val duration = 5 * 60L
+    fun testFailure() = runSimulation {
+        val duration = 5 * 60L
 
-            val engine = FlowEngine.create(dispatcher)
-            val graph = engine.newGraph()
+        val engine = FlowEngine.create(dispatcher)
+        val graph = engine.newGraph()
 
-            val machine = SimBareMetalMachine.create(graph, machineModel)
-            val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1))
-            val host =
-                SimHost(
-                    uid = UUID.randomUUID(),
-                    name = "test",
-                    meta = emptyMap(),
-                    timeSource,
-                    machine,
-                    hypervisor,
-                )
-            val image =
-                MockImage(
-                    UUID.randomUUID(),
-                    "<unnamed>",
-                    emptyMap(),
-                    mapOf(
-                        "workload" to
-                            SimTrace.ofFragments(
-                                SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
-                                SimTraceFragment(duration * 1000L, duration * 1000, 2 * 3500.0, 2),
-                                SimTraceFragment(duration * 2000L, duration * 1000, 0.0, 2),
-                                SimTraceFragment(duration * 3000L, duration * 1000, 2 * 183.0, 2),
-                            ).createWorkload(1),
-                    ),
-                )
-            val flavor = MockFlavor(2, 0)
-            val server = MockServer(UUID.randomUUID(), "a", flavor, image)
-
-            coroutineScope {
-                host.spawn(server)
-                host.start(server)
-                delay(5000L)
-                host.fail()
-                delay(duration * 1000)
-                host.recover()
-
-                suspendCancellableCoroutine { cont ->
-                    host.addListener(
-                        object : HostListener {
-                            override fun onStateChanged(
-                                host: Host,
-                                server: Server,
-                                newState: ServerState,
-                            ) {
-                                if (newState == ServerState.TERMINATED) {
-                                    cont.resume(Unit)
-                                }
-                            }
-                        },
-                    )
-                }
-            }
-
-            host.close()
-            // Ensure last cycle is collected
-            delay(1000L * duration)
-
-            val cpuStats = host.getCpuStats()
-            val sysStats = host.getSystemStats()
-            val guestSysStats = host.getSystemStats(server)
-
-            assertAll(
-                { assertEquals(1770344, cpuStats.idleTime, "Idle time does not match") },
-                { assertEquals(639653, cpuStats.activeTime, "Active time does not match") },
-                { assertEquals(1204999, sysStats.uptime.toMillis(), "Uptime does not match") },
-                { assertEquals(300000, sysStats.downtime.toMillis(), "Downtime does not match") },
-                { assertEquals(1204999, guestSysStats.uptime.toMillis(), "Guest uptime does not match") },
-                { assertEquals(300000, guestSysStats.downtime.toMillis(), "Guest downtime does not match") },
+        val machine = SimBareMetalMachine.create(graph, machineModel)
+        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(1))
+        val host = SimHost(
+            uid = UUID.randomUUID(),
+            name = "test",
+            meta = emptyMap(),
+            timeSource,
+            machine,
+            hypervisor
+        )
+        val image = MockImage(
+            UUID.randomUUID(),
+            "<unnamed>",
+            emptyMap(),
+            mapOf(
+                "workload" to
+                    SimTrace.ofFragments(
+                        SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
+                        SimTraceFragment(duration * 1000L, duration * 1000, 2 * 3500.0, 2),
+                        SimTraceFragment(duration * 2000L, duration * 1000, 0.0, 2),
+                        SimTraceFragment(duration * 3000L, duration * 1000, 2 * 183.0, 2)
+                    ).createWorkload(1)
             )
+        )
+        val flavor = MockFlavor(2, 0)
+        val server = MockServer(UUID.randomUUID(), "a", flavor, image)
+
+        coroutineScope {
+            host.spawn(server)
+            host.start(server)
+            delay(5000L)
+            host.fail()
+            delay(duration * 1000)
+            host.recover()
+
+            suspendCancellableCoroutine { cont ->
+                host.addListener(object : HostListener {
+                    override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
+                        if (newState == ServerState.TERMINATED) {
+                            cont.resume(Unit)
+                        }
+                    }
+                })
+            }
         }
 
+        host.close()
+        // Ensure last cycle is collected
+        delay(1000L * duration)
+
+        val cpuStats = host.getCpuStats()
+        val sysStats = host.getSystemStats()
+        val guestSysStats = host.getSystemStats(server)
+
+        assertAll(
+            { assertEquals(1770344, cpuStats.idleTime, "Idle time does not match") },
+            { assertEquals(639653, cpuStats.activeTime, "Active time does not match") },
+            { assertEquals(1204999, sysStats.uptime.toMillis(), "Uptime does not match") },
+            { assertEquals(300000, sysStats.downtime.toMillis(), "Downtime does not match") },
+            { assertEquals(1204999, guestSysStats.uptime.toMillis(), "Guest uptime does not match") },
+            { assertEquals(300000, guestSysStats.downtime.toMillis(), "Guest downtime does not match") }
+        )
+    }
+
     private class MockFlavor(
-        override val cpuCount: Int,
-        override val memorySize: Long,
+        override val coreCount: Int,
+        override val memorySize: Long
     ) : Flavor {
         override val uid: UUID = UUID.randomUUID()
         override val name: String = "test"
@@ -349,7 +318,7 @@ internal class SimHostTest {
         override val uid: UUID,
         override val name: String,
         override val labels: Map<String, String>,
-        override val meta: Map<String, Any>,
+        override val meta: Map<String, Any>
     ) : Image {
         override fun delete() {
             throw NotImplementedError()
@@ -364,7 +333,7 @@ internal class SimHostTest {
         override val uid: UUID,
         override val name: String,
         override val flavor: Flavor,
-        override val image: Image,
+        override val image: Image
     ) : Server {
         override val labels: Map<String, String> = emptyMap()
 

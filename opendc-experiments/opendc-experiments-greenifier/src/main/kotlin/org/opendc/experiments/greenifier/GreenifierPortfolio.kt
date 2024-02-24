@@ -34,29 +34,26 @@ import org.opendc.experiments.base.portfolio.model.Workload
  * A [Portfolio] that explores the difference between horizontal and vertical scaling.
  */
 public class GreenifierPortfolio : Portfolio {
-    private val topologies =
-        listOf(
-            Topology("single"),
-            Topology("multi"),
-        )
+    private val topologies = listOf(
+        Topology("single.json"),
+        Topology("multi.json")
+    )
 
-    private val workloads =
-        listOf(
-            Workload("bitbrains-small", trace("trace").sampleByLoad(1.0)),
-        )
+    private val workloads = listOf(
+        Workload("bitbrains-small", trace("trace").sampleByLoad(1.0))
+    )
     private val operationalPhenomena = OperationalPhenomena(0.0, false)
     private val allocationPolicy = "active-servers"
 
-    override val scenarios: Iterable<Scenario> =
-        topologies.flatMap { topology ->
-            workloads.map { workload ->
-                Scenario(
-                    topology,
-                    workload,
-                    operationalPhenomena,
-                    allocationPolicy,
-                    mapOf("topology" to topology.name, "workload" to workload.name),
-                )
-            }
+    override val scenarios: Iterable<Scenario> = topologies.flatMap { topology ->
+        workloads.map { workload ->
+            Scenario(
+                topology,
+                workload,
+                operationalPhenomena,
+                allocationPolicy,
+                mapOf("topology" to topology.name, "workload" to workload.name)
+            )
         }
+    }
 }

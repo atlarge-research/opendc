@@ -37,61 +37,48 @@ import java.util.random.RandomGenerator
 /**
  * Create a [ComputeScheduler] for the experiment.
  */
-public fun createComputeScheduler(
-    name: String,
-    seeder: RandomGenerator,
-    placements: Map<String, String> = emptyMap(),
-): ComputeScheduler {
-    val cpuAllocationRatio = 16.0
+public fun createComputeScheduler(name: String, seeder: RandomGenerator, placements: Map<String, String> = emptyMap()): ComputeScheduler {
+    val cpuAllocationRatio = 1.0
     val ramAllocationRatio = 1.5
     return when (name) {
-        "mem" ->
-            FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-                weighers = listOf(RamWeigher(multiplier = 1.0)),
-            )
-        "mem-inv" ->
-            FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-                weighers = listOf(RamWeigher(multiplier = -1.0)),
-            )
-        "core-mem" ->
-            FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-                weighers = listOf(CoreRamWeigher(multiplier = 1.0)),
-            )
-        "core-mem-inv" ->
-            FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-                weighers = listOf(CoreRamWeigher(multiplier = -1.0)),
-            )
-        "active-servers" ->
-            FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-                weighers = listOf(InstanceCountWeigher(multiplier = -1.0)),
-            )
-        "active-servers-inv" ->
-            FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-                weighers = listOf(InstanceCountWeigher(multiplier = 1.0)),
-            )
-        "provisioned-cores" ->
-            FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-                weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = 1.0)),
-            )
-        "provisioned-cores-inv" ->
-            FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-                weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = -1.0)),
-            )
-        "random" ->
-            FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-                weighers = emptyList(),
-                subsetSize = Int.MAX_VALUE,
-                random = SplittableRandom(seeder.nextLong()),
-            )
+        "mem" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(RamWeigher(multiplier = 1.0))
+        )
+        "mem-inv" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(RamWeigher(multiplier = -1.0))
+        )
+        "core-mem" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(CoreRamWeigher(multiplier = 1.0))
+        )
+        "core-mem-inv" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(CoreRamWeigher(multiplier = -1.0))
+        )
+        "active-servers" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(InstanceCountWeigher(multiplier = -1.0))
+        )
+        "active-servers-inv" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(InstanceCountWeigher(multiplier = 1.0))
+        )
+        "provisioned-cores" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = 1.0))
+        )
+        "provisioned-cores-inv" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = -1.0))
+        )
+        "random" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = emptyList(),
+            subsetSize = Int.MAX_VALUE,
+            random = SplittableRandom(seeder.nextLong())
+        )
         "replay" -> ReplayScheduler(placements)
         else -> throw IllegalArgumentException("Unknown policy $name")
     }

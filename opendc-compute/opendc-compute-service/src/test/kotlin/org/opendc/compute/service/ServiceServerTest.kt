@@ -284,7 +284,7 @@ class ServiceServerTest {
         val flavor = mockk<ServiceFlavor>()
         every { flavor.name } returns "c5.large"
         every { flavor.uid } returns UUID.randomUUID()
-        every { flavor.cpuCount } returns 2
+        every { flavor.coreCount } returns 2
         every { flavor.memorySize } returns 4096
         return flavor
     }

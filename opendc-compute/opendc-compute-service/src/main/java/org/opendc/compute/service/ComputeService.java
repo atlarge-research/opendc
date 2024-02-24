@@ -171,7 +171,7 @@ public final class ComputeService implements AutoCloseable {
                 HostView hv = hostToView.get(host);
                 final ServiceFlavor flavor = serviceServer.getFlavor();
                 if (hv != null) {
-                    hv.provisionedCores -= flavor.getCpuCount();
+                    hv.provisionedCores -= flavor.getCoreCount();
                     hv.instanceCount--;
                     hv.availableMemory += flavor.getMemorySize();
                 } else {
@@ -237,7 +237,7 @@ public final class ComputeService implements AutoCloseable {
         HostView hv = new HostView(host);
         HostModel model = host.getModel();
 
-        maxCores = Math.max(maxCores, model.cpuCount());
+        maxCores = Math.max(maxCores, model.coreCount());
         maxMemory = Math.max(maxMemory, model.memoryCapacity());
         hostToView.put(host, hv);
 
@@ -370,7 +370,7 @@ public final class ComputeService implements AutoCloseable {
                 LOGGER.trace(
                         "Server {} selected for scheduling but no capacity available for it at the moment", server);
 
-                if (flavor.getMemorySize() > maxMemory || flavor.getCpuCount() > maxCores) {
+                if (flavor.getMemorySize() > maxMemory || flavor.getCoreCount() > maxCores) {
                     // Remove the incoming image
                     queue.poll();
                     serversPending--;
@@ -403,7 +403,7 @@ public final class ComputeService implements AutoCloseable {
                 attemptsSuccess++;
 
                 hv.instanceCount++;
-                hv.provisionedCores += flavor.getCpuCount();
+                hv.provisionedCores += flavor.getCoreCount();
                 hv.availableMemory -= flavor.getMemorySize();
 
                 activeServers.put(server, host);
