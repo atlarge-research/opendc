@@ -36,7 +36,7 @@ import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.ProvisioningContext
 import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
-import org.opendc.compute.topology.HostSpec
+import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.experiments.workflow.WorkflowSchedulerSpec
 import org.opendc.experiments.workflow.replay
 import org.opendc.experiments.workflow.setupWorkflowService

@@ -35,6 +35,6 @@ public class VCpuCapacityFilter : HostFilter {
         val hostModel = host.host.model
         val availableCapacity = hostModel.cpuCapacity / hostModel.cpuCount
 
-        return requiredCapacity == null || availableCapacity >= (requiredCapacity / server.flavor.cpuCount)
+        return requiredCapacity == null || availableCapacity >= (requiredCapacity / server.flavor.coreCount)
     }
 }

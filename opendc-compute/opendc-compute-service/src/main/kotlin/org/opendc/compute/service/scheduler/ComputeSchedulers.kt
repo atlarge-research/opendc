@@ -38,7 +38,7 @@ import java.util.random.RandomGenerator
  * Create a [ComputeScheduler] for the experiment.
  */
 public fun createComputeScheduler(name: String, seeder: RandomGenerator, placements: Map<String, String> = emptyMap()): ComputeScheduler {
-    val cpuAllocationRatio = 16.0
+    val cpuAllocationRatio = 1.0
     val ramAllocationRatio = 1.5
     return when (name) {
         "mem" -> FilterScheduler(

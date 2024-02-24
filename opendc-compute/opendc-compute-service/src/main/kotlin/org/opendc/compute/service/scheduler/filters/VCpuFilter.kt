@@ -32,8 +32,8 @@ import org.opendc.compute.service.HostView
  */
 public class VCpuFilter(private val allocationRatio: Double) : HostFilter {
     override fun test(host: HostView, server: Server): Boolean {
-        val requested = server.flavor.cpuCount
-        val total = host.host.model.cpuCount
+        val requested = server.flavor.coreCount
+        val total = host.host.model.coreCount
         val limit = total * allocationRatio
 
         // Do not allow an instance to overcommit against itself, only against other instances

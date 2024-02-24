@@ -30,7 +30,7 @@ public interface Flavor : Resource {
     /**
      * The number of (virtual) processing cores to use.
      */
-    public val cpuCount: Int
+    public val coreCount: Int
 
     /**
      * The amount of RAM available to the server (in MB).

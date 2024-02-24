@@ -35,8 +35,8 @@ import org.opendc.experiments.base.portfolio.model.Workload
  */
 public class GreenifierPortfolio : Portfolio {
     private val topologies = listOf(
-        Topology("single"),
-        Topology("multi")
+        Topology("single.json"),
+        Topology("multi.json")
     )
 
     private val workloads = listOf(
