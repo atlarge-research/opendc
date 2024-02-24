@@ -63,324 +63,309 @@ internal class ComputeServiceTest {
     @BeforeEach
     fun setUp() {
         scope = SimulationCoroutineScope()
-        val computeScheduler =
-            FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(allocationRatio = 1.0), RamFilter(allocationRatio = 1.0)),
-                weighers = listOf(RamWeigher()),
-            )
+        val computeScheduler = FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(allocationRatio = 1.0), RamFilter(allocationRatio = 1.0)),
+            weighers = listOf(RamWeigher())
+        )
         service = ComputeService(scope.dispatcher, computeScheduler, Duration.ofMinutes(5))
     }
 
     @Test
-    fun testClientClose() =
-        scope.runSimulation {
-            val client = service.newClient()
+    fun testClientClose() = scope.runSimulation {
+        val client = service.newClient()
 
-            assertEquals(emptyList<Flavor>(), client.queryFlavors())
-            assertEquals(emptyList<Image>(), client.queryImages())
-            assertEquals(emptyList<Server>(), client.queryServers())
+        assertEquals(emptyList<Flavor>(), client.queryFlavors())
+        assertEquals(emptyList<Image>(), client.queryImages())
+        assertEquals(emptyList<Server>(), client.queryServers())
 
-            client.close()
+        client.close()
 
-            assertThrows<IllegalStateException> { client.queryFlavors() }
-            assertThrows<IllegalStateException> { client.queryImages() }
-            assertThrows<IllegalStateException> { client.queryServers() }
+        assertThrows<IllegalStateException> { client.queryFlavors() }
+        assertThrows<IllegalStateException> { client.queryImages() }
+        assertThrows<IllegalStateException> { client.queryServers() }
 
-            assertThrows<IllegalStateException> { client.findFlavor(UUID.randomUUID()) }
-            assertThrows<IllegalStateException> { client.findImage(UUID.randomUUID()) }
-            assertThrows<IllegalStateException> { client.findServer(UUID.randomUUID()) }
+        assertThrows<IllegalStateException> { client.findFlavor(UUID.randomUUID()) }
+        assertThrows<IllegalStateException> { client.findImage(UUID.randomUUID()) }
+        assertThrows<IllegalStateException> { client.findServer(UUID.randomUUID()) }
 
-            assertThrows<IllegalStateException> { client.newFlavor("test", 1, 2) }
-            assertThrows<IllegalStateException> { client.newImage("test") }
-            assertThrows<IllegalStateException> { client.newServer("test", mockk(), mockk()) }
-        }
-
-    @Test
-    fun testClientCreate() =
-        scope.runSimulation {
-            val client = service.newClient()
-
-            val flavor = client.newFlavor("test", 1, 1024)
-            assertEquals(listOf(flavor), client.queryFlavors())
-            assertEquals(flavor, client.findFlavor(flavor.uid))
-            val image = client.newImage("test")
-            assertEquals(listOf(image), client.queryImages())
-            assertEquals(image, client.findImage(image.uid))
-            val server = client.newServer("test", image, flavor, start = false)
-            assertEquals(listOf(server), client.queryServers())
-            assertEquals(server, client.findServer(server.uid))
-
-            server.delete()
-            assertNull(client.findServer(server.uid))
-
-            image.delete()
-            assertNull(client.findImage(image.uid))
-
-            flavor.delete()
-            assertNull(client.findFlavor(flavor.uid))
-
-            assertThrows<IllegalStateException> { server.start() }
-        }
+        assertThrows<IllegalStateException> { client.newFlavor("test", 1, 2) }
+        assertThrows<IllegalStateException> { client.newImage("test") }
+        assertThrows<IllegalStateException> { client.newServer("test", mockk(), mockk()) }
+    }
 
     @Test
-    fun testClientOnClose() =
-        scope.runSimulation {
-            service.close()
-            assertThrows<IllegalStateException> {
-                service.newClient()
-            }
-        }
+    fun testClientCreate() = scope.runSimulation {
+        val client = service.newClient()
+
+        val flavor = client.newFlavor("test", 1, 1024)
+        assertEquals(listOf(flavor), client.queryFlavors())
+        assertEquals(flavor, client.findFlavor(flavor.uid))
+        val image = client.newImage("test")
+        assertEquals(listOf(image), client.queryImages())
+        assertEquals(image, client.findImage(image.uid))
+        val server = client.newServer("test", image, flavor, start = false)
+        assertEquals(listOf(server), client.queryServers())
+        assertEquals(server, client.findServer(server.uid))
+
+        server.delete()
+        assertNull(client.findServer(server.uid))
+
+        image.delete()
+        assertNull(client.findImage(image.uid))
+
+        flavor.delete()
+        assertNull(client.findFlavor(flavor.uid))
+
+        assertThrows<IllegalStateException> { server.start() }
+    }
 
     @Test
-    fun testAddHost() =
-        scope.runSimulation {
-            val host = mockk<Host>(relaxUnitFun = true)
-
-            every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
-            every { host.state } returns HostState.UP
-
-            assertEquals(emptySet<Host>(), service.hosts)
-
-            service.addHost(host)
-
-            verify(exactly = 1) { host.addListener(any()) }
-
-            assertEquals(1, service.hosts.size)
-
-            service.removeHost(host)
-
-            verify(exactly = 1) { host.removeListener(any()) }
+    fun testClientOnClose() = scope.runSimulation {
+        service.close()
+        assertThrows<IllegalStateException> {
+            service.newClient()
         }
+    }
 
     @Test
-    fun testAddHostDouble() =
-        scope.runSimulation {
-            val host = mockk<Host>(relaxUnitFun = true)
+    fun testAddHost() = scope.runSimulation {
+        val host = mockk<Host>(relaxUnitFun = true)
 
-            every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
-            every { host.state } returns HostState.DOWN
+        every { host.model } returns HostModel(4 * 2600.0, 1,4, 2048)
+        every { host.state } returns HostState.UP
 
-            assertEquals(emptySet<Host>(), service.hosts)
+        assertEquals(emptySet<Host>(), service.hosts)
 
-            service.addHost(host)
-            service.addHost(host)
+        service.addHost(host)
 
-            verify(exactly = 1) { host.addListener(any()) }
-        }
+        verify(exactly = 1) { host.addListener(any()) }
 
-    @Test
-    fun testServerStartWithoutEnoughCpus() =
-        scope.runSimulation {
-            val client = service.newClient()
-            val flavor = client.newFlavor("test", 1, 0)
-            val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+        assertEquals(1, service.hosts.size)
 
-            server.start()
-            delay(5L * 60 * 1000)
-            server.reload()
-            assertEquals(ServerState.TERMINATED, server.state)
-        }
+        service.removeHost(host)
+
+        verify(exactly = 1) { host.removeListener(any()) }
+    }
 
     @Test
-    fun testServerStartWithoutEnoughMemory() =
-        scope.runSimulation {
-            val client = service.newClient()
-            val flavor = client.newFlavor("test", 0, 1024)
-            val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+    fun testAddHostDouble() = scope.runSimulation {
+        val host = mockk<Host>(relaxUnitFun = true)
 
-            server.start()
-            delay(5L * 60 * 1000)
-            server.reload()
-            assertEquals(ServerState.TERMINATED, server.state)
-        }
+        every { host.model } returns HostModel(4 * 2600.0,1, 4, 2048)
+        every { host.state } returns HostState.DOWN
 
-    @Test
-    fun testServerStartWithoutEnoughResources() =
-        scope.runSimulation {
-            val client = service.newClient()
-            val flavor = client.newFlavor("test", 1, 1024)
-            val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+        assertEquals(emptySet<Host>(), service.hosts)
 
-            server.start()
-            delay(5L * 60 * 1000)
-            server.reload()
-            assertEquals(ServerState.TERMINATED, server.state)
-        }
+        service.addHost(host)
+        service.addHost(host)
+
+        verify(exactly = 1) { host.addListener(any()) }
+    }
 
     @Test
-    fun testServerCancelRequest() =
-        scope.runSimulation {
-            val client = service.newClient()
-            val flavor = client.newFlavor("test", 1, 1024)
-            val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+    fun testServerStartWithoutEnoughCpus() = scope.runSimulation {
+        val client = service.newClient()
+        val flavor = client.newFlavor("test", 1, 0)
+        val image = client.newImage("test")
+        val server = client.newServer("test", image, flavor, start = false)
 
-            server.start()
-            server.stop()
-            delay(5L * 60 * 1000)
-            server.reload()
-            assertEquals(ServerState.TERMINATED, server.state)
-        }
+        server.start()
+        delay(5L * 60 * 1000)
+        server.reload()
+        assertEquals(ServerState.TERMINATED, server.state)
+    }
 
     @Test
-    fun testServerCannotFitOnHost() =
-        scope.runSimulation {
-            val host = mockk<Host>(relaxUnitFun = true)
+    fun testServerStartWithoutEnoughMemory() = scope.runSimulation {
+        val client = service.newClient()
+        val flavor = client.newFlavor("test", 0, 1024)
+        val image = client.newImage("test")
+        val server = client.newServer("test", image, flavor, start = false)
 
-            every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
-            every { host.state } returns HostState.UP
-            every { host.canFit(any()) } returns false
-
-            service.addHost(host)
-
-            val client = service.newClient()
-            val flavor = client.newFlavor("test", 1, 1024)
-            val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
-
-            server.start()
-            delay(10L * 60 * 1000)
-            server.reload()
-            assertEquals(ServerState.PROVISIONING, server.state)
-
-            verify { host.canFit(server) }
-        }
+        server.start()
+        delay(5L * 60 * 1000)
+        server.reload()
+        assertEquals(ServerState.TERMINATED, server.state)
+    }
 
     @Test
-    fun testHostAvailableAfterSomeTime() =
-        scope.runSimulation {
-            val host = mockk<Host>(relaxUnitFun = true)
-            val listeners = mutableListOf<HostListener>()
+    fun testServerStartWithoutEnoughResources() = scope.runSimulation {
+        val client = service.newClient()
+        val flavor = client.newFlavor("test", 1, 1024)
+        val image = client.newImage("test")
+        val server = client.newServer("test", image, flavor, start = false)
 
-            every { host.uid } returns UUID.randomUUID()
-            every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
-            every { host.state } returns HostState.DOWN
-            every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
-            every { host.canFit(any()) } returns false
-
-            service.addHost(host)
-
-            val client = service.newClient()
-            val flavor = client.newFlavor("test", 1, 1024)
-            val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
-
-            server.start()
-            delay(5L * 60 * 1000)
-
-            every { host.state } returns HostState.UP
-            listeners.forEach { it.onStateChanged(host, HostState.UP) }
-
-            delay(5L * 60 * 1000)
-            server.reload()
-            assertEquals(ServerState.PROVISIONING, server.state)
-
-            verify { host.canFit(server) }
-        }
+        server.start()
+        delay(5L * 60 * 1000)
+        server.reload()
+        assertEquals(ServerState.TERMINATED, server.state)
+    }
 
     @Test
-    fun testHostUnavailableAfterSomeTime() =
-        scope.runSimulation {
-            val host = mockk<Host>(relaxUnitFun = true)
-            val listeners = mutableListOf<HostListener>()
+    fun testServerCancelRequest() = scope.runSimulation {
+        val client = service.newClient()
+        val flavor = client.newFlavor("test", 1, 1024)
+        val image = client.newImage("test")
+        val server = client.newServer("test", image, flavor, start = false)
 
-            every { host.uid } returns UUID.randomUUID()
-            every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
-            every { host.state } returns HostState.UP
-            every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
-            every { host.canFit(any()) } returns false
-
-            service.addHost(host)
-
-            val client = service.newClient()
-            val flavor = client.newFlavor("test", 1, 1024)
-            val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
-
-            delay(5L * 60 * 1000)
-
-            every { host.state } returns HostState.DOWN
-            listeners.forEach { it.onStateChanged(host, HostState.DOWN) }
-
-            server.start()
-            delay(5L * 60 * 1000)
-            server.reload()
-            assertEquals(ServerState.PROVISIONING, server.state)
-
-            verify(exactly = 0) { host.canFit(server) }
-        }
+        server.start()
+        server.stop()
+        delay(5L * 60 * 1000)
+        server.reload()
+        assertEquals(ServerState.TERMINATED, server.state)
+    }
 
     @Test
-    fun testServerDeploy() =
-        scope.runSimulation {
-            val host = mockk<Host>(relaxUnitFun = true)
-            val listeners = mutableListOf<HostListener>()
+    fun testServerCannotFitOnHost() = scope.runSimulation {
+        val host = mockk<Host>(relaxUnitFun = true)
 
-            every { host.uid } returns UUID.randomUUID()
-            every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
-            every { host.state } returns HostState.UP
-            every { host.canFit(any()) } returns true
-            every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
+        every { host.model } returns HostModel(4 * 2600.0, 1,4, 2048)
+        every { host.state } returns HostState.UP
+        every { host.canFit(any()) } returns false
 
-            service.addHost(host)
+        service.addHost(host)
 
-            val client = service.newClient()
-            val flavor = client.newFlavor("test", 1, 1024)
-            val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
-            val slot = slot<Server>()
+        val client = service.newClient()
+        val flavor = client.newFlavor("test", 1, 1024)
+        val image = client.newImage("test")
+        val server = client.newServer("test", image, flavor, start = false)
 
-            val watcher = mockk<ServerWatcher>(relaxUnitFun = true)
-            server.watch(watcher)
+        server.start()
+        delay(10L * 60 * 1000)
+        server.reload()
+        assertEquals(ServerState.PROVISIONING, server.state)
 
-            // Start server
-            server.start()
-            delay(5L * 60 * 1000)
-            coVerify { host.spawn(capture(slot)) }
-
-            listeners.forEach { it.onStateChanged(host, slot.captured, ServerState.RUNNING) }
-
-            server.reload()
-            assertEquals(ServerState.RUNNING, server.state)
-
-            verify { watcher.onStateChanged(server, ServerState.RUNNING) }
-
-            // Stop server
-            listeners.forEach { it.onStateChanged(host, slot.captured, ServerState.TERMINATED) }
-
-            server.reload()
-            assertEquals(ServerState.TERMINATED, server.state)
-
-            verify { watcher.onStateChanged(server, ServerState.TERMINATED) }
-        }
+        verify { host.canFit(server) }
+    }
 
     @Test
-    fun testServerDeployFailure() =
-        scope.runSimulation {
-            val host = mockk<Host>(relaxUnitFun = true)
-            val listeners = mutableListOf<HostListener>()
+    fun testHostAvailableAfterSomeTime() = scope.runSimulation {
+        val host = mockk<Host>(relaxUnitFun = true)
+        val listeners = mutableListOf<HostListener>()
 
-            every { host.uid } returns UUID.randomUUID()
-            every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
-            every { host.state } returns HostState.UP
-            every { host.canFit(any()) } returns true
-            every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
-            coEvery { host.spawn(any()) } throws IllegalStateException()
+        every { host.uid } returns UUID.randomUUID()
+        every { host.model } returns HostModel(4 * 2600.0, 1,4, 2048)
+        every { host.state } returns HostState.DOWN
+        every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
+        every { host.canFit(any()) } returns false
 
-            service.addHost(host)
+        service.addHost(host)
 
-            val client = service.newClient()
-            val flavor = client.newFlavor("test", 1, 1024)
-            val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+        val client = service.newClient()
+        val flavor = client.newFlavor("test", 1, 1024)
+        val image = client.newImage("test")
+        val server = client.newServer("test", image, flavor, start = false)
 
-            server.start()
-            delay(5L * 60 * 1000)
+        server.start()
+        delay(5L * 60 * 1000)
 
-            server.reload()
-            assertEquals(ServerState.PROVISIONING, server.state)
-        }
+        every { host.state } returns HostState.UP
+        listeners.forEach { it.onStateChanged(host, HostState.UP) }
+
+        delay(5L * 60 * 1000)
+        server.reload()
+        assertEquals(ServerState.PROVISIONING, server.state)
+
+        verify { host.canFit(server) }
+    }
+
+    @Test
+    fun testHostUnavailableAfterSomeTime() = scope.runSimulation {
+        val host = mockk<Host>(relaxUnitFun = true)
+        val listeners = mutableListOf<HostListener>()
+
+        every { host.uid } returns UUID.randomUUID()
+        every { host.model } returns HostModel(4 * 2600.0, 1,4, 2048)
+        every { host.state } returns HostState.UP
+        every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
+        every { host.canFit(any()) } returns false
+
+        service.addHost(host)
+
+        val client = service.newClient()
+        val flavor = client.newFlavor("test", 1, 1024)
+        val image = client.newImage("test")
+        val server = client.newServer("test", image, flavor, start = false)
+
+        delay(5L * 60 * 1000)
+
+        every { host.state } returns HostState.DOWN
+        listeners.forEach { it.onStateChanged(host, HostState.DOWN) }
+
+        server.start()
+        delay(5L * 60 * 1000)
+        server.reload()
+        assertEquals(ServerState.PROVISIONING, server.state)
+
+        verify(exactly = 0) { host.canFit(server) }
+    }
+
+    @Test
+    fun testServerDeploy() = scope.runSimulation {
+        val host = mockk<Host>(relaxUnitFun = true)
+        val listeners = mutableListOf<HostListener>()
+
+        every { host.uid } returns UUID.randomUUID()
+        every { host.model } returns HostModel(4 * 2600.0, 1,4, 2048)
+        every { host.state } returns HostState.UP
+        every { host.canFit(any()) } returns true
+        every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
+
+        service.addHost(host)
+
+        val client = service.newClient()
+        val flavor = client.newFlavor("test", 1, 1024)
+        val image = client.newImage("test")
+        val server = client.newServer("test", image, flavor, start = false)
+        val slot = slot<Server>()
+
+        val watcher = mockk<ServerWatcher>(relaxUnitFun = true)
+        server.watch(watcher)
+
+        // Start server
+        server.start()
+        delay(5L * 60 * 1000)
+        coVerify { host.spawn(capture(slot)) }
+
+        listeners.forEach { it.onStateChanged(host, slot.captured, ServerState.RUNNING) }
+
+        server.reload()
+        assertEquals(ServerState.RUNNING, server.state)
+
+        verify { watcher.onStateChanged(server, ServerState.RUNNING) }
+
+        // Stop server
+        listeners.forEach { it.onStateChanged(host, slot.captured, ServerState.TERMINATED) }
+
+        server.reload()
+        assertEquals(ServerState.TERMINATED, server.state)
+
+        verify { watcher.onStateChanged(server, ServerState.TERMINATED) }
+    }
+
+    @Test
+    fun testServerDeployFailure() = scope.runSimulation {
+        val host = mockk<Host>(relaxUnitFun = true)
+        val listeners = mutableListOf<HostListener>()
+
+        every { host.uid } returns UUID.randomUUID()
+        every { host.model } returns HostModel(4 * 2600.0, 1,4, 2048)
+        every { host.state } returns HostState.UP
+        every { host.canFit(any()) } returns true
+        every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
+        coEvery { host.spawn(any()) } throws IllegalStateException()
+
+        service.addHost(host)
+
+        val client = service.newClient()
+        val flavor = client.newFlavor("test", 1, 1024)
+        val image = client.newImage("test")
+        val server = client.newServer("test", image, flavor, start = false)
+
+        server.start()
+        delay(5L * 60 * 1000)
+
+        server.reload()
+        assertEquals(ServerState.PROVISIONING, server.state)
+    }
 }

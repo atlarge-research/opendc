@@ -24,7 +24,7 @@ package org.opendc.compute.simulator.provisioner
 
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.simulator.SimHost
-import org.opendc.compute.topology.HostSpec
+import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.flow2.FlowEngine

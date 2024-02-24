@@ -29,4 +29,4 @@ package org.opendc.compute.service.driver;
  * @param cpuCount The number of logical processing cores available for this host.
  * @param memoryCapacity The amount of memory available for this host in MB.
  */
-public record HostModel(double cpuCapacity, int cpuCount, long memoryCapacity) {}
+public record HostModel(double cpuCapacity, int cpuCount, int coreCount, long memoryCapacity) {}

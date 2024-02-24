@@ -20,24 +20,34 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.scheduler.filters
+package org.opendc.compute.topology
 
-import org.opendc.compute.api.Server
-import org.opendc.compute.service.HostView
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import org.opendc.compute.topology.specs.TopologyJSONSpec
+import java.io.File
+import java.io.InputStream
 
 /**
- * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [Server] and the available
- * capacity on the host.
+ * A helper class for reading a topology specification file.
  */
-public class VCpuCapacityFilter : HostFilter {
-    override fun test(
-        host: HostView,
-        server: Server,
-    ): Boolean {
-        val requiredCapacity = server.flavor.meta["cpu-capacity"] as? Double
-        val hostModel = host.host.model
-        val availableCapacity = hostModel.cpuCapacity / hostModel.cpuCount
+public class TopologyReader {
 
-        return requiredCapacity == null || availableCapacity >= (requiredCapacity / server.flavor.coreCount)
+    @OptIn(ExperimentalSerializationApi::class)
+    public fun read(file: File): TopologyJSONSpec {
+        val input = file.inputStream()
+        val obj = Json.decodeFromStream<TopologyJSONSpec>(input)
+
+        return obj
+    }
+
+    /**
+     * Read the specified [input].
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    public fun read(input: InputStream): TopologyJSONSpec {
+        val obj = Json.decodeFromStream<TopologyJSONSpec>(input)
+        return obj
     }
 }
