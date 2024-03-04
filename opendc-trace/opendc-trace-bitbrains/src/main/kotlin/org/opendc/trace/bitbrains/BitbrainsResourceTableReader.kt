@@ -24,7 +24,7 @@ package org.opendc.trace.bitbrains
 
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
 import org.opendc.trace.TableReader
-import org.opendc.trace.conv.RESOURCE_ID
+import org.opendc.trace.conv.resourceID
 import java.nio.file.Path
 import java.time.Duration
 import java.time.Instant
@@ -56,7 +56,7 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
 
             val parser = factory.createParser(path.toFile())
             val reader = BitbrainsResourceStateTableReader(name, parser)
-            val idCol = reader.resolve(RESOURCE_ID)
+            val idCol = reader.resolve(resourceID)
 
             try {
                 if (!reader.nextRow()) {
@@ -74,17 +74,17 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
         return false
     }
 
-    private val COL_ID = 0
+    private val colID = 0
 
     override fun resolve(name: String): Int {
         return when (name) {
-            RESOURCE_ID -> COL_ID
+            resourceID -> colID
             else -> -1
         }
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in 0..COL_ID) { "Invalid column index" }
+        require(index in 0..colID) { "Invalid column index" }
         return false
     }
 
@@ -111,7 +111,7 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
     override fun getString(index: Int): String? {
         check(state == State.Active) { "No active row" }
         return when (index) {
-            COL_ID -> id
+            colID -> id
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -128,15 +128,25 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+    override fun <T> getList(
+        index: Int,
+        elementType: Class<T>,
+    ): List<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+    override fun <T> getSet(
+        index: Int,
+        elementType: Class<T>,
+    ): Set<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+    override fun <K, V> getMap(
+        index: Int,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>? {
         throw IllegalArgumentException("Invalid column")
     }
 
@@ -158,6 +168,8 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
     }
 
     private enum class State {
-        Pending, Active, Closed
+        Pending,
+        Active,
+        Closed,
     }
 }

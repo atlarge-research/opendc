@@ -40,7 +40,6 @@ import java.io.File
  */
 public class ParquetServerDataWriter(path: File, bufferSize: Int) :
     ParquetDataWriter<ServerTableReader>(path, ServerDataWriteSupport(), bufferSize) {
-
     override fun buildWriter(builder: LocalParquetWriter.Builder<ServerTableReader>): ParquetWriter<ServerTableReader> {
         return builder
             .withDictionaryEncoding("server_id", true)
@@ -68,7 +67,10 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
             write(recordConsumer, record)
         }
 
-        private fun write(consumer: RecordConsumer, data: ServerTableReader) {
+        private fun write(
+            consumer: RecordConsumer,
+            data: ServerTableReader,
+        ) {
             consumer.startMessage()
 
             consumer.startField("timestamp", 0)
@@ -148,61 +150,61 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
         /**
          * The schema of the server data.
          */
-        val SCHEMA: MessageType = Types.buildMessage()
-            .addFields(
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+        val SCHEMA: MessageType =
+            Types.buildMessage()
+                .addFields(
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
 //                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("timestamp"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("server_id"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("server_name"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("host_id"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("mem_capacity"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("cpu_count"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("cpu_limit"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("cpu_time_active"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("cpu_time_idle"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("cpu_time_steal"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("cpu_time_lost"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("uptime"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("downtime"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("timestamp"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.BINARY)
+                        .`as`(LogicalTypeAnnotation.stringType())
+                        .named("server_id"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.BINARY)
+                        .`as`(LogicalTypeAnnotation.stringType())
+                        .named("server_name"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.BINARY)
+                        .`as`(LogicalTypeAnnotation.stringType())
+                        .named("host_id"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("mem_capacity"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("cpu_count"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("cpu_limit"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("cpu_time_active"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("cpu_time_idle"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("cpu_time_steal"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("cpu_time_lost"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("uptime"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("downtime"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
 //                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("provision_time"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("provision_time"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
 //                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("boot_time")
-
-            )
-            .named("server")
+                        .named("boot_time"),
+                )
+                .named("server")
     }
 }

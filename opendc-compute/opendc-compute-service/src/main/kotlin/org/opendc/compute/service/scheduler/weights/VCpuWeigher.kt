@@ -31,12 +31,14 @@ import org.opendc.compute.service.HostView
  * @param allocationRatio Virtual CPU to physical CPU allocation ratio.
  */
 public class VCpuWeigher(private val allocationRatio: Double, override val multiplier: Double = 1.0) : HostWeigher {
-
     init {
         require(allocationRatio > 0.0) { "Allocation ratio must be greater than zero" }
     }
 
-    override fun getWeight(host: HostView, server: Server): Double {
+    override fun getWeight(
+        host: HostView,
+        server: Server,
+    ): Double {
         return host.host.model.cpuCount * allocationRatio - host.provisionedCores
     }
 

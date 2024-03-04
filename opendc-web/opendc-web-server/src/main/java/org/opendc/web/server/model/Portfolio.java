@@ -22,23 +22,27 @@
 
 package org.opendc.web.server.model;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import org.hibernate.annotations.Type;
 import org.opendc.web.proto.Targets;
 
@@ -47,7 +51,6 @@ import org.opendc.web.proto.Targets;
  */
 @Entity
 @Table(
-        name = "portfolios",
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "uk_portfolios_number",
@@ -60,7 +63,17 @@ import org.opendc.web.proto.Targets;
             name = "Portfolio.findOneByProject",
             query = "SELECT p FROM Portfolio p WHERE p.project.id = :projectId AND p.number = :number")
 })
-public class Portfolio extends PanacheEntity {
+public class Portfolio extends PanacheEntityBase {
+
+    /**
+     * The main ID of a project.
+     * The value starts at 6 to account for the other 5 projects already made by the loading script.
+     */
+    @Id
+    @SequenceGenerator(name = "portfolioSeq", sequenceName = "portfolio_id_seq", allocationSize = 1, initialValue = 4)
+    @GeneratedValue(generator = "portfolioSeq")
+    public Long id;
+
     /**
      * The {@link Project} this portfolio belongs to.
      */
@@ -83,8 +96,8 @@ public class Portfolio extends PanacheEntity {
     /**
      * The portfolio targets (metrics, repetitions).
      */
-    @Type(type = "io.hypersistence.utils.hibernate.type.json.JsonType")
     @Column(columnDefinition = "jsonb", nullable = false, updatable = false)
+    @Type(JsonType.class)
     public Targets targets;
 
     /**

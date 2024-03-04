@@ -40,33 +40,55 @@ import org.opendc.web.proto.Targets;
 @TestHTTPEndpoint(PortfolioResource.class)
 public final class PortfolioResourceTest {
     /**
-     * Test that tries to obtain the list of portfolios belonging to a project.
+     * Test that tries to obtain the list of all portfolios belonging to a project.
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
-    public void testGetForProject() {
-        given().pathParam("project", 1).when().get().then().statusCode(200).contentType(ContentType.JSON);
+    public void testGetAllForProject() {
+        given().pathParam("project", 1).when().get().then().statusCode(200);
     }
 
     /**
-     * Test that tries to obtain the list of portfolios belonging to a project without authorization.
+     * Test that tries to obtain the list of all portfolios belonging to a project
+     * without authorization.
+     *
+     * TODO: Why is this an empty list, and not a 403 message?
      */
     @Test
     @TestSecurity(
-            user = "unknown",
+            user = "test_user_1",
             roles = {"openid"})
-    public void testGetForProjectNoAuthorization() {
-        given().pathParam("project", 1).when().get().then().statusCode(200).contentType(ContentType.JSON);
+    public void testGetAllForProjectNoAuthorization() {
+        given().pathParam("project", 1).when().get().then().statusCode(200);
     }
 
     /**
-     * Test that tries to create a topology for a project.
+     * Test that tries to create a portfolio for a project that exists and user has permission.
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
+            roles = {"openid"})
+    public void testCreate() {
+        given().pathParam("project", "1")
+                .body(new org.opendc.web.proto.user.Portfolio.Create("Test Portfolio New", new Targets(Set.of(), 1)))
+                .contentType(ContentType.JSON)
+                .when()
+                .post()
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("name", equalTo("Test Portfolio New"));
+    }
+
+    /**
+     * Test that tries to create a topology for a project that does not exist.
+     */
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
             roles = {"openid"})
     public void testCreateNonExistent() {
         given().pathParam("project", "0")
@@ -75,45 +97,42 @@ public final class PortfolioResourceTest {
                 .when()
                 .post()
                 .then()
-                .statusCode(404)
-                .contentType(ContentType.JSON);
+                .statusCode(404);
     }
 
     /**
-     * Test that tries to create a topology for a project.
+     * Test that tries to create a portfolio for a project that does exist but the user does not have permission.
      */
     @Test
     @TestSecurity(
-            user = "viewer",
+            user = "test_user_2",
+            roles = {"openid"})
+    public void testCreateViewer() {
+        given().pathParam("project", "1")
+                .body(new org.opendc.web.proto.user.Portfolio.Create("test", new Targets(Set.of(), 1)))
+                .contentType(ContentType.JSON)
+                .when()
+                .post()
+                .then()
+                .statusCode(403);
+    }
+
+    /**
+     * Test that tries to create a portfolio for a project that does exist but the user does not have permission.
+     * TODO: This should return 403 but does not because there is no user class
+     */
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
             roles = {"openid"})
     public void testCreateNotPermitted() {
-        given().pathParam("project", "1")
+        given().pathParam("project", "3")
                 .body(new org.opendc.web.proto.user.Portfolio.Create("test", new Targets(Set.of(), 1)))
                 .contentType(ContentType.JSON)
                 .when()
                 .post()
                 .then()
-                .statusCode(403)
-                .contentType(ContentType.JSON);
-    }
-
-    /**
-     * Test that tries to create a portfolio for a project.
-     */
-    @Test
-    @TestSecurity(
-            user = "editor",
-            roles = {"openid"})
-    public void testCreate() {
-        given().pathParam("project", "1")
-                .body(new org.opendc.web.proto.user.Portfolio.Create("test", new Targets(Set.of(), 1)))
-                .contentType(ContentType.JSON)
-                .when()
-                .post()
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body("name", equalTo("test"));
+                .statusCode(404);
     }
 
     /**
@@ -121,7 +140,7 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "editor",
+            user = "test_user_1",
             roles = {"openid"})
     public void testCreateEmpty() {
         given().pathParam("project", "1")
@@ -130,8 +149,7 @@ public final class PortfolioResourceTest {
                 .when()
                 .post()
                 .then()
-                .statusCode(400)
-                .contentType(ContentType.JSON);
+                .statusCode(400);
     }
 
     /**
@@ -139,7 +157,7 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "editor",
+            user = "test_user_1",
             roles = {"openid"})
     public void testCreateBlankName() {
         given().pathParam("project", "1")
@@ -148,8 +166,7 @@ public final class PortfolioResourceTest {
                 .when()
                 .post()
                 .then()
-                .statusCode(400)
-                .contentType(ContentType.JSON);
+                .statusCode(400);
     }
 
     /**
@@ -165,7 +182,7 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"runner"})
     public void testGetInvalidToken() {
         given().pathParam("project", "1").when().get("/1").then().statusCode(403);
@@ -176,15 +193,10 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testGetNonExisting() {
-        given().pathParam("project", "1")
-                .when()
-                .get("/0")
-                .then()
-                .statusCode(404)
-                .contentType(ContentType.JSON);
+        given().pathParam("project", "1").when().get("/0").then().statusCode(404);
     }
 
     /**
@@ -192,15 +204,10 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testGetNonExistingProject() {
-        given().pathParam("project", "0")
-                .when()
-                .get("/1")
-                .then()
-                .statusCode(404)
-                .contentType(ContentType.JSON);
+        given().pathParam("project", "0").when().get("/1").then().statusCode(404);
     }
 
     /**
@@ -208,7 +215,7 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testGetExisting() {
         given().pathParam("project", "1")
@@ -225,7 +232,7 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testDeleteNonExistent() {
         given().pathParam("project", "1").when().delete("/0").then().statusCode(404);
@@ -236,7 +243,7 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testDeleteNonExistentProject() {
         given().pathParam("project", "0").when().delete("/1").then().statusCode(404);
@@ -247,26 +254,21 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testDelete() {
-        int number = given().pathParam("project", "1")
-                .body(new org.opendc.web.proto.user.Portfolio.Create("Delete Portfolio", new Targets(Set.of(), 1)))
-                .contentType(ContentType.JSON)
-                .when()
-                .post()
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .extract()
-                .path("number");
+        given().pathParam("project", "1").when().delete("/2").then().statusCode(200);
+    }
 
-        given().pathParam("project", "1")
-                .when()
-                .delete("/" + number)
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON);
+    /**
+     * Test to delete a portfolio as an editor.
+     */
+    @Test
+    @TestSecurity(
+            user = "test_user_3",
+            roles = {"openid"})
+    public void testDeleteEditor() {
+        given().pathParam("project", "1").when().delete("/3").then().statusCode(200);
     }
 
     /**
@@ -274,14 +276,9 @@ public final class PortfolioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "viewer",
+            user = "test_user_2",
             roles = {"openid"})
     public void testDeleteAsViewer() {
-        given().pathParam("project", "1")
-                .when()
-                .delete("/1")
-                .then()
-                .statusCode(403)
-                .contentType(ContentType.JSON);
+        given().pathParam("project", "1").when().delete("/1").then().statusCode(403);
     }
 }

@@ -22,7 +22,7 @@
 
 description = "Simulation-specific code for use in OpenDC"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }

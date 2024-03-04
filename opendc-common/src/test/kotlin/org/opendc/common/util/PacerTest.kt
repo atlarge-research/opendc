@@ -39,9 +39,10 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
-                count++
-            }
+            val pacer =
+                Pacer(dispatcher, 100) {
+                    count++
+                }
 
             pacer.enqueue()
         }
@@ -54,9 +55,10 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
-                count++
-            }
+            val pacer =
+                Pacer(dispatcher, 100) {
+                    count++
+                }
 
             pacer.enqueue()
             pacer.enqueue()
@@ -72,9 +74,10 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
-                count++
-            }
+            val pacer =
+                Pacer(dispatcher, 100) {
+                    count++
+                }
 
             pacer.enqueue()
             pacer.cancel()
@@ -90,9 +93,10 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
-                count++
-            }
+            val pacer =
+                Pacer(dispatcher, 100) {
+                    count++
+                }
 
             assertFalse(pacer.isPending)
             assertDoesNotThrow { pacer.cancel() }
@@ -108,9 +112,10 @@ class PacerTest {
         var count = 0
 
         runSimulation {
-            val pacer = Pacer(dispatcher, /*quantum*/ 100) {
-                count++
-            }
+            val pacer =
+                Pacer(dispatcher, 100) {
+                    count++
+                }
 
             pacer.enqueue()
             delay(100)

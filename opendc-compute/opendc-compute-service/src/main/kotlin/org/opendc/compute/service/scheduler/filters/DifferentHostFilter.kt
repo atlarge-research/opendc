@@ -30,7 +30,10 @@ import java.util.UUID
  * A [HostFilter] that ensures an instance is scheduled on a different host from a set of instances.
  */
 public class DifferentHostFilter : HostFilter {
-    override fun test(host: HostView, server: Server): Boolean {
+    override fun test(
+        host: HostView,
+        server: Server,
+    ): Boolean {
         @Suppress("UNCHECKED_CAST")
         val affinityUUIDs = server.meta["scheduler_hint:different_host"] as? Set<UUID> ?: return true
         return host.host.instances.none { it.uid in affinityUUIDs }

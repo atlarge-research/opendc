@@ -39,102 +39,113 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
     /**
      * State of current record being read.
      */
-    private var _id = ""
-    private var _workflowId = ""
-    private var _submitTime = Instant.MIN
-    private var _waitTime = Duration.ZERO
-    private var _runtime = Duration.ZERO
-    private var _requestedCpus = 0
-    private var _groupId = 0
-    private var _userId = 0
-    private var _parents = mutableSetOf<String>()
-    private var _children = mutableSetOf<String>()
+    private var localID = ""
+    private var localWorkflowID = ""
+    private var localSubmitTime = Instant.MIN
+    private var localWaitTime = Duration.ZERO
+    private var localRuntime = Duration.ZERO
+    private var localRequestedCpus = 0
+    private var localGroupId = 0
+    private var localUserId = 0
+    private var localParents = mutableSetOf<String>()
+    private var localChildren = mutableSetOf<String>()
 
     /**
      * Root converter for the record.
      */
-    private val root = object : GroupConverter() {
-        /**
-         * The converters for the columns of the schema.
-         */
-        private val converters = schema.fields.map { type ->
-            when (type.name) {
-                "id" -> object : PrimitiveConverter() {
-                    override fun addLong(value: Long) {
-                        _id = value.toString()
+    private val root =
+        object : GroupConverter() {
+            /**
+             * The converters for the columns of the schema.
+             */
+            private val converters =
+                schema.fields.map { type ->
+                    when (type.name) {
+                        "id" ->
+                            object : PrimitiveConverter() {
+                                override fun addLong(value: Long) {
+                                    localID = value.toString()
+                                }
+                            }
+                        "workflow_id" ->
+                            object : PrimitiveConverter() {
+                                override fun addLong(value: Long) {
+                                    localWorkflowID = value.toString()
+                                }
+                            }
+                        "ts_submit" ->
+                            object : PrimitiveConverter() {
+                                override fun addLong(value: Long) {
+                                    localSubmitTime = Instant.ofEpochMilli(value)
+                                }
+                            }
+                        "wait_time" ->
+                            object : PrimitiveConverter() {
+                                override fun addLong(value: Long) {
+                                    localWaitTime = Duration.ofMillis(value)
+                                }
+                            }
+                        "runtime" ->
+                            object : PrimitiveConverter() {
+                                override fun addLong(value: Long) {
+                                    localRuntime = Duration.ofMillis(value)
+                                }
+                            }
+                        "resource_amount_requested" ->
+                            object : PrimitiveConverter() {
+                                override fun addDouble(value: Double) {
+                                    localRequestedCpus = value.roundToInt()
+                                }
+                            }
+                        "group_id" ->
+                            object : PrimitiveConverter() {
+                                override fun addInt(value: Int) {
+                                    localGroupId = value
+                                }
+                            }
+                        "user_id" ->
+                            object : PrimitiveConverter() {
+                                override fun addInt(value: Int) {
+                                    localUserId = value
+                                }
+                            }
+                        "children" -> RelationConverter(localChildren)
+                        "parents" -> RelationConverter(localParents)
+                        else -> error("Unknown column $type")
                     }
                 }
-                "workflow_id" -> object : PrimitiveConverter() {
-                    override fun addLong(value: Long) {
-                        _workflowId = value.toString()
-                    }
-                }
-                "ts_submit" -> object : PrimitiveConverter() {
-                    override fun addLong(value: Long) {
-                        _submitTime = Instant.ofEpochMilli(value)
-                    }
-                }
-                "wait_time" -> object : PrimitiveConverter() {
-                    override fun addLong(value: Long) {
-                        _waitTime = Duration.ofMillis(value)
-                    }
-                }
-                "runtime" -> object : PrimitiveConverter() {
-                    override fun addLong(value: Long) {
-                        _runtime = Duration.ofMillis(value)
-                    }
-                }
-                "resource_amount_requested" -> object : PrimitiveConverter() {
-                    override fun addDouble(value: Double) {
-                        _requestedCpus = value.roundToInt()
-                    }
-                }
-                "group_id" -> object : PrimitiveConverter() {
-                    override fun addInt(value: Int) {
-                        _groupId = value
-                    }
-                }
-                "user_id" -> object : PrimitiveConverter() {
-                    override fun addInt(value: Int) {
-                        _userId = value
-                    }
-                }
-                "children" -> RelationConverter(_children)
-                "parents" -> RelationConverter(_parents)
-                else -> error("Unknown column $type")
+
+            override fun start() {
+                localID = ""
+                localWorkflowID = ""
+                localSubmitTime = Instant.MIN
+                localWaitTime = Duration.ZERO
+                localRuntime = Duration.ZERO
+                localRequestedCpus = 0
+                localGroupId = 0
+                localUserId = 0
+                localParents.clear()
+                localChildren.clear()
             }
+
+            override fun end() {}
+
+            override fun getConverter(fieldIndex: Int): Converter = converters[fieldIndex]
         }
 
-        override fun start() {
-            _id = ""
-            _workflowId = ""
-            _submitTime = Instant.MIN
-            _waitTime = Duration.ZERO
-            _runtime = Duration.ZERO
-            _requestedCpus = 0
-            _groupId = 0
-            _userId = 0
-            _parents.clear()
-            _children.clear()
-        }
-
-        override fun end() {}
-
-        override fun getConverter(fieldIndex: Int): Converter = converters[fieldIndex]
-    }
-
-    override fun getCurrentRecord(): Task = Task(
-        _id,
-        _workflowId,
-        _submitTime,
-        _waitTime,
-        _runtime,
-        _requestedCpus,
-        _groupId,
-        _userId,
-        _parents.toSet(),
-        _children.toSet()
-    )
+    override fun getCurrentRecord(): Task =
+        Task(
+            localID,
+            localWorkflowID,
+            localSubmitTime,
+            localWaitTime,
+            localRuntime,
+            localRequestedCpus,
+            localGroupId,
+            localUserId,
+            localParents.toSet(),
+            localChildren.toSet(),
+        )
 
     override fun getRootConverter(): GroupConverter = root
 
@@ -142,25 +153,28 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
      * Helper class to convert parent and child relations and add them to [relations].
      */
     private class RelationConverter(private val relations: MutableSet<String>) : GroupConverter() {
-        private val entryConverter = object : PrimitiveConverter() {
-            override fun addLong(value: Long) {
-                relations.add(value.toString())
+        private val entryConverter =
+            object : PrimitiveConverter() {
+                override fun addLong(value: Long) {
+                    relations.add(value.toString())
+                }
+
+                override fun addDouble(value: Double) {
+                    relations.add(value.roundToLong().toString())
+                }
             }
 
-            override fun addDouble(value: Double) {
-                relations.add(value.roundToLong().toString())
-            }
-        }
+        private val listConverter =
+            object : GroupConverter() {
+                override fun getConverter(fieldIndex: Int): Converter {
+                    require(fieldIndex == 0)
+                    return entryConverter
+                }
 
-        private val listConverter = object : GroupConverter() {
-            override fun getConverter(fieldIndex: Int): Converter {
-                require(fieldIndex == 0)
-                return entryConverter
-            }
+                override fun start() {}
 
-            override fun start() {}
-            override fun end() {}
-        }
+                override fun end() {}
+            }
 
         override fun getConverter(fieldIndex: Int): Converter {
             require(fieldIndex == 0)
@@ -168,6 +182,7 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
         }
 
         override fun start() {}
+
         override fun end() {}
     }
 }

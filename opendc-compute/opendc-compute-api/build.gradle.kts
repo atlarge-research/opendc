@@ -22,7 +22,7 @@
 
 description = "API interface for the OpenDC Compute service"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }

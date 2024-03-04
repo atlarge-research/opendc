@@ -49,7 +49,7 @@ private val reader = ClusterSpecReader()
 public fun clusterTopology(
     file: File,
     powerModel: CpuPowerModel = CpuPowerModels.linear(350.0, 200.0),
-    random: RandomGenerator = SplittableRandom(0)
+    random: RandomGenerator = SplittableRandom(0),
 ): List<HostSpec> {
     return clusterTopology(reader.read(file), powerModel, random)
 }
@@ -60,7 +60,7 @@ public fun clusterTopology(
 public fun clusterTopology(
     input: InputStream,
     powerModel: CpuPowerModel = CpuPowerModels.linear(350.0, 200.0),
-    random: RandomGenerator = SplittableRandom(0)
+    random: RandomGenerator = SplittableRandom(0),
 ): List<HostSpec> {
     return clusterTopology(reader.read(input), powerModel, random)
 }
@@ -68,23 +68,31 @@ public fun clusterTopology(
 /**
  * Construct a topology from the given list of [clusters].
  */
-public fun clusterTopology(clusters: List<ClusterSpec>, powerModel: CpuPowerModel, random: RandomGenerator = SplittableRandom(0)): List<HostSpec> {
+public fun clusterTopology(
+    clusters: List<ClusterSpec>,
+    powerModel: CpuPowerModel,
+    random: RandomGenerator = SplittableRandom(0),
+): List<HostSpec> {
     return clusters.flatMap { it.toHostSpecs(random, powerModel) }
 }
 
 /**
  * Helper method to convert a [ClusterSpec] into a list of [HostSpec]s.
  */
-private fun ClusterSpec.toHostSpecs(random: RandomGenerator, powerModel: CpuPowerModel): List<HostSpec> {
+private fun ClusterSpec.toHostSpecs(
+    random: RandomGenerator,
+    powerModel: CpuPowerModel,
+): List<HostSpec> {
     val cpuSpeed = cpuSpeed
     val memoryPerHost = memCapacityPerHost.roundToLong()
 
     val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cpuCountPerHost)
     val unknownMemoryUnit = MemoryUnit("unknown", "unknown", -1.0, memoryPerHost)
-    val machineModel = MachineModel(
-        List(cpuCountPerHost) { coreId -> ProcessingUnit(unknownProcessingNode, coreId, cpuSpeed) },
-        listOf(unknownMemoryUnit)
-    )
+    val machineModel =
+        MachineModel(
+            List(cpuCountPerHost) { coreId -> ProcessingUnit(unknownProcessingNode, coreId, cpuSpeed) },
+            listOf(unknownMemoryUnit),
+        )
 
     return List(hostCount) {
         HostSpec(
@@ -92,7 +100,7 @@ private fun ClusterSpec.toHostSpecs(random: RandomGenerator, powerModel: CpuPowe
             "node-$name-$it",
             mapOf("cluster" to id),
             machineModel,
-            SimPsuFactories.simple(powerModel)
+            SimPsuFactories.simple(powerModel),
         )
     }
 }

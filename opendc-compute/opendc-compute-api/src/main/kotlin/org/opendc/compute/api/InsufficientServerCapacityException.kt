@@ -26,4 +26,6 @@ package org.opendc.compute.api
  * This exception is thrown to indicate that the compute service does not have enough capacity at the moment to
  * fulfill a launch request.
  */
-public class InsufficientServerCapacityException(override val cause: Throwable? = null) : Exception("There was insufficient capacity available to satisfy the launch request")
+public class InsufficientServerCapacityException(
+    override val cause: Throwable? = null,
+) : Exception("There was insufficient capacity available to satisfy the launch request")

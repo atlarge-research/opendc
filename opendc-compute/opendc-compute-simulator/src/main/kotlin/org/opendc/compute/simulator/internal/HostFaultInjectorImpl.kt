@@ -52,7 +52,7 @@ internal class HostFaultInjectorImpl(
     private val hosts: Set<SimHost>,
     private val iat: RealDistribution,
     private val selector: VictimSelector,
-    private val fault: HostFault
+    private val fault: HostFault,
 ) : HostFaultInjector {
     /**
      * The scope in which the injector runs.
@@ -72,10 +72,11 @@ internal class HostFaultInjectorImpl(
             return
         }
 
-        job = scope.launch {
-            runInjector()
-            job = null
-        }
+        job =
+            scope.launch {
+                runInjector()
+                job = null
+            }
     }
 
     /**

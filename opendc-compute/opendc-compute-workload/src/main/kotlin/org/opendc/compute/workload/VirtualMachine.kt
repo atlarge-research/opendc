@@ -50,5 +50,5 @@ public data class VirtualMachine(
     val startTime: Instant,
     val stopTime: Instant,
     val trace: SimTrace,
-    val interferenceProfile: VmInterferenceProfile?
+    val interferenceProfile: VmInterferenceProfile?,
 )

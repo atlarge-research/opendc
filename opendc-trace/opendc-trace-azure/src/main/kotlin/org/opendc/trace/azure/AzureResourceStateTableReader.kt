@@ -26,9 +26,9 @@ import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import org.opendc.trace.TableReader
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceStateCpuUsagePct
+import org.opendc.trace.conv.resourceStateTimestamp
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
@@ -74,21 +74,21 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
         return true
     }
 
-    private val COL_ID = 0
-    private val COL_TIMESTAMP = 1
-    private val COL_CPU_USAGE_PCT = 2
+    private val colID = 0
+    private val colTimestamp = 1
+    private val colCpuUsagePct = 2
 
     override fun resolve(name: String): Int {
         return when (name) {
-            RESOURCE_ID -> COL_ID
-            RESOURCE_STATE_TIMESTAMP -> COL_TIMESTAMP
-            RESOURCE_STATE_CPU_USAGE_PCT -> COL_CPU_USAGE_PCT
+            resourceID -> colID
+            resourceStateTimestamp -> colTimestamp
+            resourceStateCpuUsagePct -> colCpuUsagePct
             else -> -1
         }
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in 0..COL_CPU_USAGE_PCT) { "Invalid column index" }
+        require(index in 0..colCpuUsagePct) { "Invalid column index" }
         return false
     }
 
@@ -111,7 +111,7 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
     override fun getDouble(index: Int): Double {
         checkActive()
         return when (index) {
-            COL_CPU_USAGE_PCT -> cpuUsagePct
+            colCpuUsagePct -> cpuUsagePct
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -119,7 +119,7 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
     override fun getString(index: Int): String? {
         checkActive()
         return when (index) {
-            COL_ID -> id
+            colID -> id
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -131,7 +131,7 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
     override fun getInstant(index: Int): Instant? {
         checkActive()
         return when (index) {
-            COL_TIMESTAMP -> timestamp
+            colTimestamp -> timestamp
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -140,15 +140,25 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+    override fun <T> getList(
+        index: Int,
+        elementType: Class<T>,
+    ): List<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+    override fun <K, V> getMap(
+        index: Int,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+    override fun <T> getSet(
+        index: Int,
+        elementType: Class<T>,
+    ): Set<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
@@ -196,13 +206,14 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
         /**
          * The [CsvSchema] that is used to parse the trace.
          */
-        private val schema = CsvSchema.builder()
-            .addColumn("timestamp", CsvSchema.ColumnType.NUMBER)
-            .addColumn("vm id", CsvSchema.ColumnType.STRING)
-            .addColumn("CPU min cpu", CsvSchema.ColumnType.NUMBER)
-            .addColumn("CPU max cpu", CsvSchema.ColumnType.NUMBER)
-            .addColumn("CPU avg cpu", CsvSchema.ColumnType.NUMBER)
-            .setAllowComments(true)
-            .build()
+        private val schema =
+            CsvSchema.builder()
+                .addColumn("timestamp", CsvSchema.ColumnType.NUMBER)
+                .addColumn("vm id", CsvSchema.ColumnType.STRING)
+                .addColumn("CPU min cpu", CsvSchema.ColumnType.NUMBER)
+                .addColumn("CPU max cpu", CsvSchema.ColumnType.NUMBER)
+                .addColumn("CPU avg cpu", CsvSchema.ColumnType.NUMBER)
+                .setAllowComments(true)
+                .build()
     }
 }

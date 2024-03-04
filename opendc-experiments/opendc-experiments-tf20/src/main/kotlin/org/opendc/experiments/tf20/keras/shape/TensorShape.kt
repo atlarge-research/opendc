@@ -33,7 +33,7 @@ public class TensorShape(vararg dims: Long) {
     /**
      * The dimensions of the tensor represented as [LongArray].
      */
-    private val _dims: LongArray = dims
+    private val localDims: LongArray = dims
 
     /**
      * Return amount of elements in Tensor with the given shape.
@@ -42,7 +42,7 @@ public class TensorShape(vararg dims: Long) {
         get() {
             var prod = 1L
             for (i in 0 until rank) {
-                prod *= abs(_dims[i])
+                prod *= abs(localDims[i])
             }
             return prod
         }
@@ -51,7 +51,7 @@ public class TensorShape(vararg dims: Long) {
      * Returns the rank of this shape.
      */
     public val rank: Int
-        get() = _dims.size
+        get() = localDims.size
 
     /**
      * Returns the value of a dimension
@@ -60,7 +60,7 @@ public class TensorShape(vararg dims: Long) {
      * @return The size of dimension i
      */
     public operator fun get(i: Int): Long {
-        return _dims[i]
+        return localDims[i]
     }
 
     /**
@@ -70,7 +70,7 @@ public class TensorShape(vararg dims: Long) {
      * @return Whether dimension i is unknown (equal to -1)
      */
     private fun isKnown(i: Int): Boolean {
-        return _dims[i] != -1L
+        return localDims[i] != -1L
     }
 
     /**
@@ -80,21 +80,21 @@ public class TensorShape(vararg dims: Long) {
      * @return The size of dimension i
      */
     public fun size(i: Int): Long {
-        return _dims[i]
+        return localDims[i]
     }
 
     /**
      * Clone the [TensorShape] and return a new instance.
      */
     public fun clone(): TensorShape {
-        return TensorShape(*_dims)
+        return TensorShape(*localDims)
     }
 
     /**
      * Create a string representation of this [TensorShape].
      */
     override fun toString(): String {
-        return _dims.contentToString().replace("-1", "None")
+        return localDims.contentToString().replace("-1", "None")
     }
 
     override fun equals(other: Any?): Boolean {
@@ -103,12 +103,12 @@ public class TensorShape(vararg dims: Long) {
 
         other as TensorShape
 
-        if (!_dims.contentEquals(other._dims)) return false
+        if (!localDims.contentEquals(other.localDims)) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return _dims.contentHashCode()
+        return localDims.contentHashCode()
     }
 }

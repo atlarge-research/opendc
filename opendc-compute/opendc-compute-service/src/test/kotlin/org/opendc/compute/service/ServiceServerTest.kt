@@ -80,193 +80,205 @@ class ServiceServerTest {
     }
 
     @Test
-    fun testStartTerminatedServer() = runSimulation {
-        val service = mockk<ComputeService>()
-        val uid = UUID.randomUUID()
-        val flavor = mockFlavor()
-        val image = mockImage()
-        val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+    fun testStartTerminatedServer() =
+        runSimulation {
+            val service = mockk<ComputeService>()
+            val uid = UUID.randomUUID()
+            val flavor = mockFlavor()
+            val image = mockImage()
+            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
 
-        every { service.schedule(any()) } answers { ComputeService.SchedulingRequest(it.invocation.args[0] as ServiceServer, 0) }
+            every { service.schedule(any()) } answers { ComputeService.SchedulingRequest(it.invocation.args[0] as ServiceServer, 0) }
 
-        server.start()
+            server.start()
 
-        verify(exactly = 1) { service.schedule(server) }
-        assertEquals(ServerState.PROVISIONING, server.state)
-    }
-
-    @Test
-    fun testStartDeletedServer() = runSimulation {
-        val service = mockk<ComputeService>()
-        val uid = UUID.randomUUID()
-        val flavor = mockFlavor()
-        val image = mockImage()
-        val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
-
-        server.setState(ServerState.DELETED)
-
-        assertThrows<IllegalStateException> { server.start() }
-    }
+            verify(exactly = 1) { service.schedule(server) }
+            assertEquals(ServerState.PROVISIONING, server.state)
+        }
 
     @Test
-    fun testStartProvisioningServer() = runSimulation {
-        val service = mockk<ComputeService>()
-        val uid = UUID.randomUUID()
-        val flavor = mockFlavor()
-        val image = mockImage()
-        val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+    fun testStartDeletedServer() =
+        runSimulation {
+            val service = mockk<ComputeService>()
+            val uid = UUID.randomUUID()
+            val flavor = mockFlavor()
+            val image = mockImage()
+            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
 
-        server.setState(ServerState.PROVISIONING)
+            server.setState(ServerState.DELETED)
 
-        server.start()
-
-        assertEquals(ServerState.PROVISIONING, server.state)
-    }
-
-    @Test
-    fun testStartRunningServer() = runSimulation {
-        val service = mockk<ComputeService>()
-        val uid = UUID.randomUUID()
-        val flavor = mockFlavor()
-        val image = mockImage()
-        val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
-
-        server.setState(ServerState.RUNNING)
-
-        server.start()
-
-        assertEquals(ServerState.RUNNING, server.state)
-    }
+            assertThrows<IllegalStateException> { server.start() }
+        }
 
     @Test
-    fun testStopProvisioningServer() = runSimulation {
-        val service = mockk<ComputeService>()
-        val uid = UUID.randomUUID()
-        val flavor = mockFlavor()
-        val image = mockImage()
-        val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
-        val request = ComputeService.SchedulingRequest(server, 0)
+    fun testStartProvisioningServer() =
+        runSimulation {
+            val service = mockk<ComputeService>()
+            val uid = UUID.randomUUID()
+            val flavor = mockFlavor()
+            val image = mockImage()
+            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
 
-        every { service.schedule(any()) } returns request
+            server.setState(ServerState.PROVISIONING)
 
-        server.start()
-        server.stop()
+            server.start()
 
-        assertTrue(request.isCancelled)
-        assertEquals(ServerState.TERMINATED, server.state)
-    }
+            assertEquals(ServerState.PROVISIONING, server.state)
+        }
 
     @Test
-    fun testStopTerminatedServer() = runSimulation {
-        val service = mockk<ComputeService>()
-        val uid = UUID.randomUUID()
-        val flavor = mockFlavor()
-        val image = mockImage()
-        val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+    fun testStartRunningServer() =
+        runSimulation {
+            val service = mockk<ComputeService>()
+            val uid = UUID.randomUUID()
+            val flavor = mockFlavor()
+            val image = mockImage()
+            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
 
-        server.setState(ServerState.TERMINATED)
-        server.stop()
+            server.setState(ServerState.RUNNING)
 
-        assertEquals(ServerState.TERMINATED, server.state)
-    }
+            server.start()
 
-    @Test
-    fun testStopDeletedServer() = runSimulation {
-        val service = mockk<ComputeService>()
-        val uid = UUID.randomUUID()
-        val flavor = mockFlavor()
-        val image = mockImage()
-        val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
-
-        server.setState(ServerState.DELETED)
-        server.stop()
-
-        assertEquals(ServerState.DELETED, server.state)
-    }
+            assertEquals(ServerState.RUNNING, server.state)
+        }
 
     @Test
-    fun testStopRunningServer() = runSimulation {
-        val service = mockk<ComputeService>()
-        val uid = UUID.randomUUID()
-        val flavor = mockFlavor()
-        val image = mockImage()
-        val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
-        val host = mockk<Host>(relaxUnitFun = true)
+    fun testStopProvisioningServer() =
+        runSimulation {
+            val service = mockk<ComputeService>()
+            val uid = UUID.randomUUID()
+            val flavor = mockFlavor()
+            val image = mockImage()
+            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val request = ComputeService.SchedulingRequest(server, 0)
 
-        server.setState(ServerState.RUNNING)
-        server.host = host
-        server.stop()
-        yield()
+            every { service.schedule(any()) } returns request
 
-        verify { host.stop(server) }
-    }
+            server.start()
+            server.stop()
 
-    @Test
-    fun testDeleteProvisioningServer() = runSimulation {
-        val service = mockk<ComputeService>(relaxUnitFun = true)
-        val uid = UUID.randomUUID()
-        val flavor = mockFlavor()
-        val image = mockImage()
-        val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
-        val request = ComputeService.SchedulingRequest(server, 0)
-
-        every { service.schedule(any()) } returns request
-
-        server.start()
-        server.delete()
-
-        assertTrue(request.isCancelled)
-        assertEquals(ServerState.DELETED, server.state)
-        verify { service.delete(server) }
-    }
+            assertTrue(request.isCancelled)
+            assertEquals(ServerState.TERMINATED, server.state)
+        }
 
     @Test
-    fun testDeleteTerminatedServer() = runSimulation {
-        val service = mockk<ComputeService>(relaxUnitFun = true)
-        val uid = UUID.randomUUID()
-        val flavor = mockFlavor()
-        val image = mockImage()
-        val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+    fun testStopTerminatedServer() =
+        runSimulation {
+            val service = mockk<ComputeService>()
+            val uid = UUID.randomUUID()
+            val flavor = mockFlavor()
+            val image = mockImage()
+            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
 
-        server.setState(ServerState.TERMINATED)
-        server.delete()
+            server.setState(ServerState.TERMINATED)
+            server.stop()
 
-        assertEquals(ServerState.DELETED, server.state)
-
-        verify { service.delete(server) }
-    }
-
-    @Test
-    fun testDeleteDeletedServer() = runSimulation {
-        val service = mockk<ComputeService>(relaxUnitFun = true)
-        val uid = UUID.randomUUID()
-        val flavor = mockFlavor()
-        val image = mockImage()
-        val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
-
-        server.setState(ServerState.DELETED)
-        server.delete()
-
-        assertEquals(ServerState.DELETED, server.state)
-    }
+            assertEquals(ServerState.TERMINATED, server.state)
+        }
 
     @Test
-    fun testDeleteRunningServer() = runSimulation {
-        val service = mockk<ComputeService>(relaxUnitFun = true)
-        val uid = UUID.randomUUID()
-        val flavor = mockFlavor()
-        val image = mockImage()
-        val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
-        val host = mockk<Host>(relaxUnitFun = true)
+    fun testStopDeletedServer() =
+        runSimulation {
+            val service = mockk<ComputeService>()
+            val uid = UUID.randomUUID()
+            val flavor = mockFlavor()
+            val image = mockImage()
+            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
 
-        server.setState(ServerState.RUNNING)
-        server.host = host
-        server.delete()
-        yield()
+            server.setState(ServerState.DELETED)
+            server.stop()
 
-        verify { host.delete(server) }
-        verify { service.delete(server) }
-    }
+            assertEquals(ServerState.DELETED, server.state)
+        }
+
+    @Test
+    fun testStopRunningServer() =
+        runSimulation {
+            val service = mockk<ComputeService>()
+            val uid = UUID.randomUUID()
+            val flavor = mockFlavor()
+            val image = mockImage()
+            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val host = mockk<Host>(relaxUnitFun = true)
+
+            server.setState(ServerState.RUNNING)
+            server.host = host
+            server.stop()
+            yield()
+
+            verify { host.stop(server) }
+        }
+
+    @Test
+    fun testDeleteProvisioningServer() =
+        runSimulation {
+            val service = mockk<ComputeService>(relaxUnitFun = true)
+            val uid = UUID.randomUUID()
+            val flavor = mockFlavor()
+            val image = mockImage()
+            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val request = ComputeService.SchedulingRequest(server, 0)
+
+            every { service.schedule(any()) } returns request
+
+            server.start()
+            server.delete()
+
+            assertTrue(request.isCancelled)
+            assertEquals(ServerState.DELETED, server.state)
+            verify { service.delete(server) }
+        }
+
+    @Test
+    fun testDeleteTerminatedServer() =
+        runSimulation {
+            val service = mockk<ComputeService>(relaxUnitFun = true)
+            val uid = UUID.randomUUID()
+            val flavor = mockFlavor()
+            val image = mockImage()
+            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+
+            server.setState(ServerState.TERMINATED)
+            server.delete()
+
+            assertEquals(ServerState.DELETED, server.state)
+
+            verify { service.delete(server) }
+        }
+
+    @Test
+    fun testDeleteDeletedServer() =
+        runSimulation {
+            val service = mockk<ComputeService>(relaxUnitFun = true)
+            val uid = UUID.randomUUID()
+            val flavor = mockFlavor()
+            val image = mockImage()
+            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+
+            server.setState(ServerState.DELETED)
+            server.delete()
+
+            assertEquals(ServerState.DELETED, server.state)
+        }
+
+    @Test
+    fun testDeleteRunningServer() =
+        runSimulation {
+            val service = mockk<ComputeService>(relaxUnitFun = true)
+            val uid = UUID.randomUUID()
+            val flavor = mockFlavor()
+            val image = mockImage()
+            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val host = mockk<Host>(relaxUnitFun = true)
+
+            server.setState(ServerState.RUNNING)
+            server.host = host
+            server.delete()
+            yield()
+
+            verify { host.delete(server) }
+            verify { service.delete(server) }
+        }
 
     private fun mockFlavor(): ServiceFlavor {
         val flavor = mockk<ServiceFlavor>()

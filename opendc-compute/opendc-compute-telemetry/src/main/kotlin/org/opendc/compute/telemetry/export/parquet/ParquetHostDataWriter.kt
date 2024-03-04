@@ -40,7 +40,6 @@ import java.io.File
  */
 public class ParquetHostDataWriter(path: File, bufferSize: Int) :
     ParquetDataWriter<HostTableReader>(path, HostDataWriteSupport(), bufferSize) {
-
     override fun buildWriter(builder: LocalParquetWriter.Builder<HostTableReader>): ParquetWriter<HostTableReader> {
         return builder
             .withDictionaryEncoding("host_id", true)
@@ -67,7 +66,10 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             write(recordConsumer, record)
         }
 
-        private fun write(consumer: RecordConsumer, data: HostTableReader) {
+        private fun write(
+            consumer: RecordConsumer,
+            data: HostTableReader,
+        ) {
             consumer.startMessage()
 
             consumer.startField("timestamp", 0)
@@ -165,76 +167,77 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
         /**
          * The schema of the host data.
          */
-        val SCHEMA: MessageType = Types
-            .buildMessage()
-            .addFields(
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+        val SCHEMA: MessageType =
+            Types
+                .buildMessage()
+                .addFields(
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
 //                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("timestamp"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("host_id"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("cpu_count"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("mem_capacity"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("guests_terminated"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("guests_running"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("guests_error"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("guests_invalid"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("cpu_limit"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("cpu_usage"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("cpu_demand"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("cpu_utilization"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("cpu_time_active"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("cpu_time_idle"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("cpu_time_steal"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("cpu_time_lost"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("power_draw"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("energy_usage"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("uptime"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("downtime"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("timestamp"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.BINARY)
+                        .`as`(LogicalTypeAnnotation.stringType())
+                        .named("host_id"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("cpu_count"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("mem_capacity"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("guests_terminated"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("guests_running"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("guests_error"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("guests_invalid"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("cpu_limit"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("cpu_usage"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("cpu_demand"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("cpu_utilization"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("cpu_time_active"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("cpu_time_idle"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("cpu_time_steal"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("cpu_time_lost"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("power_draw"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("energy_usage"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("uptime"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("downtime"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
 //                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("boot_time")
-            )
-            .named("host")
+                        .named("boot_time"),
+                )
+                .named("host")
     }
 }

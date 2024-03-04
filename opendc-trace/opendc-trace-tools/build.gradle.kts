@@ -22,7 +22,7 @@
 
 description = "Tools for working with workload traces"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-conventions`
     application

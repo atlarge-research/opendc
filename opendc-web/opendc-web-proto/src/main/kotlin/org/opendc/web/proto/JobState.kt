@@ -49,5 +49,5 @@ public enum class JobState {
     /**
      * The job has failed.
      */
-    FAILED;
+    FAILED,
 }

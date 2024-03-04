@@ -72,7 +72,7 @@ public interface FaaSService : AutoCloseable {
             deployer: FunctionDeployer,
             routingPolicy: RoutingPolicy,
             terminationPolicy: FunctionTerminationPolicy,
-            quantum: Duration = Duration.ofMillis(100)
+            quantum: Duration = Duration.ofMillis(100),
         ): FaaSService {
             return FaaSServiceImpl(dispatcher, deployer, routingPolicy, terminationPolicy, quantum)
         }

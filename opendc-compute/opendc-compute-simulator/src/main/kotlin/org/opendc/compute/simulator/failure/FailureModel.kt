@@ -38,6 +38,6 @@ public interface FailureModel {
         context: CoroutineContext,
         clock: InstantSource,
         service: ComputeService,
-        random: RandomGenerator
+        random: RandomGenerator,
     ): HostFaultInjector
 }

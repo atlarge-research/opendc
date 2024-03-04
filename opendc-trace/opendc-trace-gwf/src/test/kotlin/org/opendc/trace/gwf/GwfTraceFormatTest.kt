@@ -82,7 +82,7 @@ internal class GwfTraceFormatTest {
             { assertEquals("1", reader.getString(TASK_ID)) },
             { assertEquals(Instant.ofEpochSecond(16), reader.getInstant(TASK_SUBMIT_TIME)) },
             { assertEquals(Duration.ofSeconds(11), reader.getDuration(TASK_RUNTIME)) },
-            { assertEquals(emptySet<String>(), reader.getSet(TASK_PARENTS, String::class.java)) }
+            { assertEquals(emptySet<String>(), reader.getSet(TASK_PARENTS, String::class.java)) },
         )
     }
 
@@ -101,7 +101,7 @@ internal class GwfTraceFormatTest {
             { assertEquals("7", reader.getString(TASK_ID)) },
             { assertEquals(Instant.ofEpochSecond(87), reader.getInstant(TASK_SUBMIT_TIME)) },
             { assertEquals(Duration.ofSeconds(11), reader.getDuration(TASK_RUNTIME)) },
-            { assertEquals(setOf("4", "5", "6"), reader.getSet(TASK_PARENTS, String::class.java)) }
+            { assertEquals(setOf("4", "5", "6"), reader.getSet(TASK_PARENTS, String::class.java)) },
         )
     }
 

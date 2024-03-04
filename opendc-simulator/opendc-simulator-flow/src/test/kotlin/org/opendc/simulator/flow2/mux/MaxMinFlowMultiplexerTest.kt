@@ -34,21 +34,22 @@ import org.opendc.simulator.kotlin.runSimulation
  */
 class MaxMinFlowMultiplexerTest {
     @Test
-    fun testSmoke() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val switch = MaxMinFlowMultiplexer(graph)
+    fun testSmoke() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val switch = MaxMinFlowMultiplexer(graph)
 
-        val sinks = List(2) { SimpleFlowSink(graph, 2000.0f) }
-        for (source in sinks) {
-            graph.connect(switch.newOutput(), source.input)
+            val sinks = List(2) { SimpleFlowSink(graph, 2000.0f) }
+            for (source in sinks) {
+                graph.connect(switch.newOutput(), source.input)
+            }
+
+            val source = SimpleFlowSource(graph, 2000.0f, 1.0f)
+            graph.connect(source.output, switch.newInput())
+
+            advanceUntilIdle()
+
+            assertEquals(500, timeSource.millis())
         }
-
-        val source = SimpleFlowSource(graph, 2000.0f, 1.0f)
-        graph.connect(source.output, switch.newInput())
-
-        advanceUntilIdle()
-
-        assertEquals(500, timeSource.millis())
-    }
 }

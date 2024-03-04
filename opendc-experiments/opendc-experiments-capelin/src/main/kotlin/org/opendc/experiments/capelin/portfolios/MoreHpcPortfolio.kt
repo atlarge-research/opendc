@@ -35,34 +35,37 @@ import org.opendc.experiments.base.portfolio.model.Workload
  * A [Portfolio] to explore the effect of HPC workloads.
  */
 public class MoreHpcPortfolio : Portfolio {
-    private val topologies = listOf(
-        Topology("base"),
-        Topology("exp-vol-hor-hom"),
-        Topology("exp-vol-ver-hom"),
-        Topology("exp-vel-ver-hom")
-    )
-    private val workloads = listOf(
-        Workload("hpc-0%", trace("solvinity").sampleByHpc(0.0)),
-        Workload("hpc-25%", trace("solvinity").sampleByHpc(0.25)),
-        Workload("hpc-50%", trace("solvinity").sampleByHpc(0.5)),
-        Workload("hpc-100%", trace("solvinity").sampleByHpc(1.0)),
-        Workload("hpc-load-25%", trace("solvinity").sampleByHpcLoad(0.25)),
-        Workload("hpc-load-50%", trace("solvinity").sampleByHpcLoad(0.5)),
-        Workload("hpc-load-100%", trace("solvinity").sampleByHpcLoad(1.0))
-    )
+    private val topologies =
+        listOf(
+            Topology("base"),
+            Topology("exp-vol-hor-hom"),
+            Topology("exp-vol-ver-hom"),
+            Topology("exp-vel-ver-hom"),
+        )
+    private val workloads =
+        listOf(
+            Workload("hpc-0%", trace("solvinity").sampleByHpc(0.0)),
+            Workload("hpc-25%", trace("solvinity").sampleByHpc(0.25)),
+            Workload("hpc-50%", trace("solvinity").sampleByHpc(0.5)),
+            Workload("hpc-100%", trace("solvinity").sampleByHpc(1.0)),
+            Workload("hpc-load-25%", trace("solvinity").sampleByHpcLoad(0.25)),
+            Workload("hpc-load-50%", trace("solvinity").sampleByHpcLoad(0.5)),
+            Workload("hpc-load-100%", trace("solvinity").sampleByHpcLoad(1.0)),
+        )
 
     private val operationalPhenomena = OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true)
     private val allocationPolicy: String = "active-servers"
 
-    override val scenarios: Iterable<Scenario> = topologies.flatMap { topology ->
-        workloads.map { workload ->
-            Scenario(
-                topology,
-                workload,
-                operationalPhenomena,
-                allocationPolicy,
-                mapOf("topology" to topology.name, "workload" to workload.name)
-            )
+    override val scenarios: Iterable<Scenario> =
+        topologies.flatMap { topology ->
+            workloads.map { workload ->
+                Scenario(
+                    topology,
+                    workload,
+                    operationalPhenomena,
+                    allocationPolicy,
+                    mapOf("topology" to topology.name, "workload" to workload.name),
+                )
+            }
         }
-    }
 }

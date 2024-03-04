@@ -71,7 +71,11 @@ internal class TraceTable(private val table: org.opendc.trace.Table) :
         return rowType
     }
 
-    override fun scan(root: DataContext, filters: MutableList<RexNode>, projects: IntArray?): Enumerable<Array<Any?>> {
+    override fun scan(
+        root: DataContext,
+        filters: MutableList<RexNode>,
+        projects: IntArray?,
+    ): Enumerable<Array<Any?>> {
         // Filters are currently not supported by the OpenDC trace API. By keeping the filters in the list, Calcite
         // assumes that they are declined and will perform the filters itself.
 
@@ -130,14 +134,18 @@ internal class TraceTable(private val table: org.opendc.trace.Table) :
         return rowCount
     }
 
-    override fun <T> asQueryable(queryProvider: QueryProvider, schema: SchemaPlus, tableName: String): Queryable<T> {
+    override fun <T> asQueryable(
+        queryProvider: QueryProvider,
+        schema: SchemaPlus,
+        tableName: String,
+    ): Queryable<T> {
         return object : AbstractTableQueryable<T>(queryProvider, schema, this@TraceTable, tableName) {
             override fun enumerator(): Enumerator<T> {
                 val cancelFlag = AtomicBoolean(false)
                 return TraceReaderEnumerator(
                     this@TraceTable.table.newReader(),
                     this@TraceTable.table.columns,
-                    cancelFlag
+                    cancelFlag,
                 )
             }
 
@@ -155,7 +163,7 @@ internal class TraceTable(private val table: org.opendc.trace.Table) :
         operation: TableModify.Operation,
         updateColumnList: MutableList<String>?,
         sourceExpressionList: MutableList<RexNode>?,
-        flattened: Boolean
+        flattened: Boolean,
     ): TableModify {
         cluster.planner.addRule(TraceTableModifyRule.DEFAULT.toRule())
 
@@ -166,7 +174,7 @@ internal class TraceTable(private val table: org.opendc.trace.Table) :
             operation,
             updateColumnList,
             sourceExpressionList,
-            flattened
+            flattened,
         )
     }
 
@@ -184,7 +192,10 @@ internal class TraceTable(private val table: org.opendc.trace.Table) :
         return typeFactory.createStructType(types, names)
     }
 
-    private fun mapType(typeFactory: JavaTypeFactory, type: TableColumnType): RelDataType {
+    private fun mapType(
+        typeFactory: JavaTypeFactory,
+        type: TableColumnType,
+    ): RelDataType {
         return when (type) {
             is TableColumnType.Boolean -> typeFactory.createSqlType(SqlTypeName.BOOLEAN)
             is TableColumnType.Int -> typeFactory.createSqlType(SqlTypeName.INTEGER)

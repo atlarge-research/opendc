@@ -32,7 +32,10 @@ import org.opendc.compute.service.HostView
  * available memory, and a negative number will result in the scheduler preferring hosts with less memory.
  */
 public class RamWeigher(override val multiplier: Double = 1.0) : HostWeigher {
-    override fun getWeight(host: HostView, server: Server): Double {
+    override fun getWeight(
+        host: HostView,
+        server: Server,
+    ): Double {
         return host.availableMemory.toDouble()
     }
 

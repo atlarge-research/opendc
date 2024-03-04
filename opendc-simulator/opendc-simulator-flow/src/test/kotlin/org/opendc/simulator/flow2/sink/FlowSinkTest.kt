@@ -36,82 +36,89 @@ import java.util.concurrent.ThreadLocalRandom
  */
 class FlowSinkTest {
     @Test
-    fun testSmoke() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testSmoke() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val sink = SimpleFlowSink(graph, 1.0f)
-        val source = SimpleFlowSource(graph, 2.0f, 1.0f)
+            val sink = SimpleFlowSink(graph, 1.0f)
+            val source = SimpleFlowSource(graph, 2.0f, 1.0f)
 
-        graph.connect(source.output, sink.input)
-        advanceUntilIdle()
+            graph.connect(source.output, sink.input)
+            advanceUntilIdle()
 
-        assertEquals(2000, timeSource.millis())
-    }
-
-    @Test
-    fun testAdjustCapacity() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val sink = SimpleFlowSink(graph, 1.0f)
-        val source = SimpleFlowSource(graph, 2.0f, 1.0f)
-
-        graph.connect(source.output, sink.input)
-
-        delay(1000)
-        sink.capacity = 0.5f
-
-        advanceUntilIdle()
-
-        assertEquals(3000, timeSource.millis())
-    }
+            assertEquals(2000, timeSource.millis())
+        }
 
     @Test
-    fun testUtilization() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testAdjustCapacity() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val sink = SimpleFlowSink(graph, 1.0f)
-        val source = SimpleFlowSource(graph, 2.0f, 0.5f)
+            val sink = SimpleFlowSink(graph, 1.0f)
+            val source = SimpleFlowSource(graph, 2.0f, 1.0f)
 
-        graph.connect(source.output, sink.input)
-        advanceUntilIdle()
+            graph.connect(source.output, sink.input)
 
-        assertEquals(4000, timeSource.millis())
-    }
+            delay(1000)
+            sink.capacity = 0.5f
+
+            advanceUntilIdle()
+
+            assertEquals(3000, timeSource.millis())
+        }
 
     @Test
-    fun testFragments() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testUtilization() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val sink = SimpleFlowSink(graph, 1.0f)
-        val trace = TraceFlowSource.Trace(
-            longArrayOf(1000, 2000, 3000, 4000),
-            floatArrayOf(1.0f, 0.5f, 2.0f, 1.0f),
-            4
-        )
-        val source = TraceFlowSource(
-            graph,
-            trace
-        )
+            val sink = SimpleFlowSink(graph, 1.0f)
+            val source = SimpleFlowSource(graph, 2.0f, 0.5f)
 
-        graph.connect(source.output, sink.input)
-        advanceUntilIdle()
+            graph.connect(source.output, sink.input)
+            advanceUntilIdle()
 
-        assertEquals(4000, timeSource.millis())
-    }
+            assertEquals(4000, timeSource.millis())
+        }
+
+    @Test
+    fun testFragments() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+
+            val sink = SimpleFlowSink(graph, 1.0f)
+            val trace =
+                TraceFlowSource.Trace(
+                    longArrayOf(1000, 2000, 3000, 4000),
+                    floatArrayOf(1.0f, 0.5f, 2.0f, 1.0f),
+                    4,
+                )
+            val source =
+                TraceFlowSource(
+                    graph,
+                    trace,
+                )
+
+            graph.connect(source.output, sink.input)
+            advanceUntilIdle()
+
+            assertEquals(4000, timeSource.millis())
+        }
 
     @Test
     fun benchmarkSink() {
         val random = ThreadLocalRandom.current()
         val traceSize = 10000000
-        val trace = TraceFlowSource.Trace(
-            LongArray(traceSize) { it * 1000L },
-            FloatArray(traceSize) { random.nextDouble(0.0, 4500.0).toFloat() },
-            traceSize
-        )
+        val trace =
+            TraceFlowSource.Trace(
+                LongArray(traceSize) { it * 1000L },
+                FloatArray(traceSize) { random.nextDouble(0.0, 4500.0).toFloat() },
+                traceSize,
+            )
 
         return runSimulation {
             val engine = FlowEngine.create(dispatcher)

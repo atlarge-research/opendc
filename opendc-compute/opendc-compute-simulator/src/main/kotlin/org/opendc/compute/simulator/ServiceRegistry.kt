@@ -36,7 +36,10 @@ public interface ServiceRegistry {
      * @param type The type of the service to resolve, identified by the interface that is implemented by the service.
      * @return The service with specified [name] and implementing [type] or `null` if it does not exist.
      */
-    public fun <T : Any> resolve(name: String, type: Class<T>): T?
+    public fun <T : Any> resolve(
+        name: String,
+        type: Class<T>,
+    ): T?
 
     /**
      * Create a copy of the registry.

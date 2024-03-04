@@ -33,8 +33,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 @JsonSubTypes(
     value = [
         JsonSubTypes.Type(value = OAuthTokenRequest.ClientCredentials::class, name = "client_credentials"),
-        JsonSubTypes.Type(value = OAuthTokenRequest.RefreshToken::class, name = "refresh_token")
-    ]
+        JsonSubTypes.Type(value = OAuthTokenRequest.RefreshToken::class, name = "refresh_token"),
+    ],
 )
 internal sealed class OAuthTokenRequest {
     /**
@@ -45,7 +45,7 @@ internal sealed class OAuthTokenRequest {
         @JsonProperty("client_id")
         val clientId: String,
         @JsonProperty("client_secret")
-        val clientSecret: String
+        val clientSecret: String,
     ) : OAuthTokenRequest()
 
     /**
@@ -57,6 +57,6 @@ internal sealed class OAuthTokenRequest {
         @JsonProperty("client_id")
         val clientId: String,
         @JsonProperty("client_secret")
-        val clientSecret: String
+        val clientSecret: String,
     ) : OAuthTokenRequest()
 }

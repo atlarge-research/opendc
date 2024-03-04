@@ -122,17 +122,27 @@ public abstract class CompositeTableReader : TableReader {
         return delegate.getDuration(index)
     }
 
-    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+    override fun <T> getList(
+        index: Int,
+        elementType: Class<T>,
+    ): List<T>? {
         val delegate = checkNotNull(delegate) { "Invalid reader state" }
         return delegate.getList(index, elementType)
     }
 
-    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+    override fun <T> getSet(
+        index: Int,
+        elementType: Class<T>,
+    ): Set<T>? {
         val delegate = checkNotNull(delegate) { "Invalid reader state" }
         return delegate.getSet(index, elementType)
     }
 
-    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+    override fun <K, V> getMap(
+        index: Int,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>? {
         val delegate = checkNotNull(delegate) { "Invalid reader state" }
         return delegate.getMap(index, keyType, valueType)
     }

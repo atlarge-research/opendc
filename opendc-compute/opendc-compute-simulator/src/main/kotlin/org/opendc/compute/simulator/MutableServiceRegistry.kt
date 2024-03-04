@@ -34,7 +34,11 @@ public interface MutableServiceRegistry : ServiceRegistry {
      * @param type The interface provided by the service.
      * @param service A reference to the actual implementation of the service.
      */
-    public fun <T : Any> register(name: String, type: Class<T>, service: T)
+    public fun <T : Any> register(
+        name: String,
+        type: Class<T>,
+        service: T,
+    )
 
     /**
      * Remove the service with [name] and [type] from this registry.
@@ -42,7 +46,10 @@ public interface MutableServiceRegistry : ServiceRegistry {
      * @param name The name of the service to remove, which should follow the rules for domain names as defined by DNS.
      * @param type The type of the service to remove.
      */
-    public fun remove(name: String, type: Class<*>)
+    public fun remove(
+        name: String,
+        type: Class<*>,
+    )
 
     /**
      * Remove all services registered with [name].

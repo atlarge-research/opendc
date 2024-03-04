@@ -31,5 +31,8 @@ public interface ComputeWorkload {
     /**
      * Resolve the workload into a list of [VirtualMachine]s to simulate.
      */
-    public fun resolve(loader: ComputeWorkloadLoader, random: RandomGenerator): List<VirtualMachine>
+    public fun resolve(
+        loader: ComputeWorkloadLoader,
+        random: RandomGenerator,
+    ): List<VirtualMachine>
 }

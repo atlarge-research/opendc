@@ -43,64 +43,72 @@ class HostFaultInjectorTest {
      * Simple test case to test that nothing happens when the injector is not started.
      */
     @Test
-    fun testInjectorNotStarted() = runSimulation {
-        val host = mockk<SimHost>(relaxUnitFun = true)
+    fun testInjectorNotStarted() =
+        runSimulation {
+            val host = mockk<SimHost>(relaxUnitFun = true)
 
-        val injector = createSimpleInjector(coroutineContext, timeSource, setOf(host))
+            val injector = createSimpleInjector(coroutineContext, timeSource, setOf(host))
 
-        coVerify(exactly = 0) { host.fail() }
-        coVerify(exactly = 0) { host.recover() }
+            coVerify(exactly = 0) { host.fail() }
+            coVerify(exactly = 0) { host.recover() }
 
-        injector.close()
-    }
+            injector.close()
+        }
 
     /**
      * Simple test case to test a start stop fault where the machine is stopped and started after some time.
      */
     @Test
-    fun testInjectorStopsMachine() = runSimulation {
-        val host = mockk<SimHost>(relaxUnitFun = true)
+    fun testInjectorStopsMachine() =
+        runSimulation {
+            val host = mockk<SimHost>(relaxUnitFun = true)
 
-        val injector = createSimpleInjector(coroutineContext, timeSource, setOf(host))
+            val injector = createSimpleInjector(coroutineContext, timeSource, setOf(host))
 
-        injector.start()
+            injector.start()
 
-        delay(Duration.ofDays(55).toMillis())
+            delay(Duration.ofDays(55).toMillis())
 
-        injector.close()
+            injector.close()
 
-        coVerify(exactly = 1) { host.fail() }
-        coVerify(exactly = 1) { host.recover() }
-    }
+            coVerify(exactly = 1) { host.fail() }
+            coVerify(exactly = 1) { host.recover() }
+        }
 
     /**
      * Simple test case to test a start stop fault where multiple machines are stopped.
      */
     @Test
-    fun testInjectorStopsMultipleMachines() = runSimulation {
-        val hosts = listOf<SimHost>(
-            mockk(relaxUnitFun = true),
-            mockk(relaxUnitFun = true)
-        )
+    fun testInjectorStopsMultipleMachines() =
+        runSimulation {
+            val hosts =
+                listOf<SimHost>(
+                    mockk(relaxUnitFun = true),
+                    mockk(relaxUnitFun = true),
+                )
 
-        val injector = createSimpleInjector(coroutineContext, timeSource, hosts.toSet())
+            val injector = createSimpleInjector(coroutineContext, timeSource, hosts.toSet())
 
-        injector.start()
+            injector.start()
 
-        delay(Duration.ofDays(55).toMillis())
+            delay(Duration.ofDays(55).toMillis())
 
-        injector.close()
+            injector.close()
 
-        coVerify(exactly = 1) { hosts[0].fail() }
-        coVerify(exactly = 1) { hosts[1].fail() }
-        coVerify(exactly = 1) { hosts[0].recover() }
-        coVerify(exactly = 1) { hosts[1].recover() }
-    }
+            coVerify(exactly = 1) { hosts[0].fail() }
+            coVerify(exactly = 1) { hosts[1].fail() }
+            coVerify(exactly = 1) { hosts[0].recover() }
+            coVerify(exactly = 1) { hosts[1].recover() }
+        }
 
     /**
      * Create a simple start stop fault injector.
      */
-    private fun createSimpleInjector(context: CoroutineContext, clock: InstantSource, hosts: Set<SimHost>): HostFaultInjector {
+    private fun createSimpleInjector(
+        context: CoroutineContext,
+        clock: InstantSource,
+        hosts: Set<SimHost>,
+    ): HostFaultInjector {
         val rng = Well19937c(0)
         val iat = LogNormalDistribution(rng, ln(24 * 7.0), 1.03)
         val selector = StochasticVictimSelector(LogNormalDistribution(rng, 1.88, 1.25))

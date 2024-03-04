@@ -29,8 +29,10 @@ import org.opendc.compute.service.HostView
  * A [HostWeigher] that weighs the hosts based on the difference required vCPU capacity and the available CPU capacity.
  */
 public class VCpuCapacityWeigher(override val multiplier: Double = 1.0) : HostWeigher {
-
-    override fun getWeight(host: HostView, server: Server): Double {
+    override fun getWeight(
+        host: HostView,
+        server: Server,
+    ): Double {
         val model = host.host.model
         val requiredCapacity = server.flavor.meta["cpu-capacity"] as? Double ?: 0.0
         return model.cpuCapacity / model.cpuCount - requiredCapacity / server.flavor.cpuCount

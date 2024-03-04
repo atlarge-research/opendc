@@ -40,10 +40,13 @@ import java.util.SplittableRandom
 public class HostsProvisioningStep internal constructor(
     private val serviceDomain: String,
     private val specs: List<HostSpec>,
-    private val optimize: Boolean
+    private val optimize: Boolean,
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
-        val service = requireNotNull(ctx.registry.resolve(serviceDomain, ComputeService::class.java)) { "Compute service $serviceDomain does not exist" }
+        val service =
+            requireNotNull(
+                ctx.registry.resolve(serviceDomain, ComputeService::class.java),
+            ) { "Compute service $serviceDomain does not exist" }
         val engine = FlowEngine.create(ctx.dispatcher)
         val graph = engine.newGraph()
         val hosts = mutableSetOf<SimHost>()
@@ -52,15 +55,16 @@ public class HostsProvisioningStep internal constructor(
             val machine = SimBareMetalMachine.create(graph, spec.model, spec.psuFactory)
             val hypervisor = SimHypervisor.create(spec.multiplexerFactory, SplittableRandom(ctx.seeder.nextLong()))
 
-            val host = SimHost(
-                spec.uid,
-                spec.name,
-                spec.meta,
-                ctx.dispatcher.timeSource,
-                machine,
-                hypervisor,
-                optimize = optimize
-            )
+            val host =
+                SimHost(
+                    spec.uid,
+                    spec.name,
+                    spec.meta,
+                    ctx.dispatcher.timeSource,
+                    machine,
+                    hypervisor,
+                    optimize = optimize,
+                )
 
             require(hosts.add(host)) { "Host with uid ${spec.uid} already exists" }
             service.addHost(host)

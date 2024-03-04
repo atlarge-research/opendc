@@ -32,5 +32,5 @@ package org.opendc.trace
 public data class TableColumn(
     public val name: String,
     public val type: TableColumnType,
-    public val isNullable: Boolean = false
+    public val isNullable: Boolean = false,
 )

@@ -29,18 +29,18 @@ import org.opendc.trace.Trace
 import org.opendc.trace.conv.INTERFERENCE_GROUP_MEMBERS
 import org.opendc.trace.conv.INTERFERENCE_GROUP_SCORE
 import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
-import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
-import org.opendc.trace.conv.RESOURCE_START_TIME
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
-import org.opendc.trace.conv.RESOURCE_STATE_DURATION
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
-import org.opendc.trace.conv.RESOURCE_STOP_TIME
 import org.opendc.trace.conv.TABLE_INTERFERENCE_GROUPS
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.conv.resourceCpuCapacity
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceStartTime
+import org.opendc.trace.conv.resourceStateCpuUsage
+import org.opendc.trace.conv.resourceStateDuration
+import org.opendc.trace.conv.resourceStateTimestamp
+import org.opendc.trace.conv.resourceStopTime
 import java.io.File
 import java.lang.ref.SoftReference
 import java.time.Duration
@@ -71,11 +71,11 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     private fun parseFragments(trace: Trace): Map<String, Builder> {
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCE_STATES)).newReader()
 
-        val idCol = reader.resolve(RESOURCE_ID)
-        val timestampCol = reader.resolve(RESOURCE_STATE_TIMESTAMP)
-        val durationCol = reader.resolve(RESOURCE_STATE_DURATION)
-        val coresCol = reader.resolve(RESOURCE_CPU_COUNT)
-        val usageCol = reader.resolve(RESOURCE_STATE_CPU_USAGE)
+        val idCol = reader.resolve(resourceID)
+        val timestampCol = reader.resolve(resourceStateTimestamp)
+        val durationCol = reader.resolve(resourceStateDuration)
+        val coresCol = reader.resolve(resourceCpuCount)
+        val usageCol = reader.resolve(resourceStateCpuUsage)
 
         val fragments = mutableMapOf<String, Builder>()
 
@@ -100,15 +100,19 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     /**
      * Read the metadata into a workload.
      */
-    private fun parseMeta(trace: Trace, fragments: Map<String, Builder>, interferenceModel: VmInterferenceModel): List<VirtualMachine> {
+    private fun parseMeta(
+        trace: Trace,
+        fragments: Map<String, Builder>,
+        interferenceModel: VmInterferenceModel,
+    ): List<VirtualMachine> {
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCES)).newReader()
 
-        val idCol = reader.resolve(RESOURCE_ID)
-        val startTimeCol = reader.resolve(RESOURCE_START_TIME)
-        val stopTimeCol = reader.resolve(RESOURCE_STOP_TIME)
-        val cpuCountCol = reader.resolve(RESOURCE_CPU_COUNT)
-        val cpuCapacityCol = reader.resolve(RESOURCE_CPU_CAPACITY)
-        val memCol = reader.resolve(RESOURCE_MEM_CAPACITY)
+        val idCol = reader.resolve(resourceID)
+        val startTimeCol = reader.resolve(resourceStartTime)
+        val stopTimeCol = reader.resolve(resourceStopTime)
+        val cpuCountCol = reader.resolve(resourceCpuCount)
+        val cpuCapacityCol = reader.resolve(resourceCpuCapacity)
+        val memCol = reader.resolve(resourceMemCapacity)
 
         var counter = 0
         val entries = mutableListOf<VirtualMachine>()
@@ -141,8 +145,8 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                         submissionTime,
                         endTime,
                         builder.build(),
-                        interferenceModel.getProfile(id)
-                    )
+                        interferenceModel.getProfile(id),
+                    ),
                 )
             }
 
@@ -189,24 +193,28 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     /**
      * Load the trace with the specified [name] and [format].
      */
-    public fun get(name: String, format: String): List<VirtualMachine> {
-        val ref = cache.compute(name) { key, oldVal ->
-            val inst = oldVal?.get()
-            if (inst == null) {
-                val path = baseDir.resolve(key)
+    public fun get(
+        name: String,
+        format: String,
+    ): List<VirtualMachine> {
+        val ref =
+            cache.compute(name) { key, oldVal ->
+                val inst = oldVal?.get()
+                if (inst == null) {
+                    val path = baseDir.resolve(key)
 
-                logger.info { "Loading trace $key at $path" }
+                    logger.info { "Loading trace $key at $path" }
 
-                val trace = Trace.open(path, format)
-                val fragments = parseFragments(trace)
-                val interferenceModel = parseInterferenceModel(trace)
-                val vms = parseMeta(trace, fragments, interferenceModel)
+                    val trace = Trace.open(path, format)
+                    val fragments = parseFragments(trace)
+                    val interferenceModel = parseInterferenceModel(trace)
+                    val vms = parseMeta(trace, fragments, interferenceModel)
 
-                SoftReference(vms)
-            } else {
-                oldVal
+                    SoftReference(vms)
+                } else {
+                    oldVal
+                }
             }
-        }
 
         return checkNotNull(ref?.get()) { "Memory pressure" }
     }
@@ -245,7 +253,12 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
          * @param usage CPU usage of this fragment.
          * @param cores Number of cores used.
          */
-        fun add(deadline: Instant, duration: Duration, usage: Double, cores: Int) {
+        fun add(
+            deadline: Instant,
+            duration: Duration,
+            usage: Double,
+            cores: Int,
+        ) {
             val startTimeMs = (deadline - duration).toEpochMilli()
             totalLoad += (usage * duration.toMillis()) / 1000.0 // avg MHz * duration = MFLOPs
 

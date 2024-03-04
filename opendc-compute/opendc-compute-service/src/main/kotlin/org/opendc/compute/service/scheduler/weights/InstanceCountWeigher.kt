@@ -29,7 +29,10 @@ import org.opendc.compute.service.HostView
  * A [HostWeigher] that weighs the hosts based on the number of instances on the host.
  */
 public class InstanceCountWeigher(override val multiplier: Double = 1.0) : HostWeigher {
-    override fun getWeight(host: HostView, server: Server): Double {
+    override fun getWeight(
+        host: HostView,
+        server: Server,
+    ): Double {
         return host.instanceCount.toDouble()
     }
 

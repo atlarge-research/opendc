@@ -51,7 +51,10 @@ public data class DurationHistoryTaskOrderPolicy(public val ascending: Boolean =
                 results.getValue(task.job) += task.finishedAt - task.startedAt
             }
 
-            override fun compare(o1: TaskState, o2: TaskState): Int {
+            override fun compare(
+                o1: TaskState,
+                o2: TaskState,
+            ): Int {
                 return compareValuesBy(o1, o2) { key ->
                     val history = results.getValue(key.job)
                     if (history.isEmpty()) {

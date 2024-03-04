@@ -37,7 +37,7 @@ public data class Job(
     val createdAt: Instant,
     val updatedAt: Instant,
     val runtime: Int,
-    val results: Map<String, Any>? = null
+    val results: Map<String, Any>? = null,
 ) {
     /**
      * A request to update the state of a job.

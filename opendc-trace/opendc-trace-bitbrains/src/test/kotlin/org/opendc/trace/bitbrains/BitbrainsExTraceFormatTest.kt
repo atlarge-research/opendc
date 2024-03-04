@@ -33,9 +33,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableReader
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.conv.resourceStateCpuUsage
+import org.opendc.trace.conv.resourceStateTimestamp
 import org.opendc.trace.testkit.TableReaderTestKit
 import java.nio.file.Paths
 
@@ -72,8 +72,8 @@ internal class BitbrainsExTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals(1631911500, reader.getInstant(RESOURCE_STATE_TIMESTAMP)?.epochSecond) },
-            { assertEquals(21.2, reader.getDouble(RESOURCE_STATE_CPU_USAGE), 0.01) }
+            { assertEquals(1631911500, reader.getInstant(resourceStateTimestamp)?.epochSecond) },
+            { assertEquals(21.2, reader.getDouble(resourceStateCpuUsage), 0.01) },
         )
 
         reader.close()

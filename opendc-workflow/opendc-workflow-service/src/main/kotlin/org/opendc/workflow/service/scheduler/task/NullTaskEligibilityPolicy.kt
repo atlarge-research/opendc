@@ -32,9 +32,7 @@ public object NullTaskEligibilityPolicy : TaskEligibilityPolicy {
     override fun invoke(scheduler: WorkflowServiceImpl): TaskEligibilityPolicy.Logic = Logic
 
     private object Logic : TaskEligibilityPolicy.Logic {
-        override fun invoke(
-            task: TaskState
-        ): TaskEligibilityPolicy.Advice = TaskEligibilityPolicy.Advice.ADMIT
+        override fun invoke(task: TaskState): TaskEligibilityPolicy.Advice = TaskEligibilityPolicy.Advice.ADMIT
     }
 
     override fun toString(): String = "Always"

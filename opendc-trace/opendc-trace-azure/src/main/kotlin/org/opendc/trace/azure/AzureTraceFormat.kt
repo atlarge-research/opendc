@@ -28,15 +28,15 @@ import org.opendc.trace.TableColumn
 import org.opendc.trace.TableColumnType
 import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
-import org.opendc.trace.conv.RESOURCE_START_TIME
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
-import org.opendc.trace.conv.RESOURCE_STOP_TIME
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceStartTime
+import org.opendc.trace.conv.resourceStateCpuUsagePct
+import org.opendc.trace.conv.resourceStateTimestamp
+import org.opendc.trace.conv.resourceStopTime
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.CompositeTableReader
@@ -59,9 +59,10 @@ public class AzureTraceFormat : TraceFormat {
     /**
      * The [CsvFactory] used to create the parser.
      */
-    private val factory = CsvFactory()
-        .enable(CsvParser.Feature.ALLOW_COMMENTS)
-        .enable(CsvParser.Feature.TRIM_SPACES)
+    private val factory =
+        CsvFactory()
+            .enable(CsvParser.Feature.ALLOW_COMMENTS)
+            .enable(CsvParser.Feature.TRIM_SPACES)
 
     override fun create(path: Path) {
         throw UnsupportedOperationException("Writing not supported for this format")
@@ -69,29 +70,38 @@ public class AzureTraceFormat : TraceFormat {
 
     override fun getTables(path: Path): List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES)
 
-    override fun getDetails(path: Path, table: String): TableDetails {
+    override fun getDetails(
+        path: Path,
+        table: String,
+    ): TableDetails {
         return when (table) {
-            TABLE_RESOURCES -> TableDetails(
-                listOf(
-                    TableColumn(RESOURCE_ID, TableColumnType.String),
-                    TableColumn(RESOURCE_START_TIME, TableColumnType.Instant),
-                    TableColumn(RESOURCE_STOP_TIME, TableColumnType.Instant),
-                    TableColumn(RESOURCE_CPU_COUNT, TableColumnType.Int),
-                    TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double)
+            TABLE_RESOURCES ->
+                TableDetails(
+                    listOf(
+                        TableColumn(resourceID, TableColumnType.String),
+                        TableColumn(resourceStartTime, TableColumnType.Instant),
+                        TableColumn(resourceStopTime, TableColumnType.Instant),
+                        TableColumn(resourceCpuCount, TableColumnType.Int),
+                        TableColumn(resourceMemCapacity, TableColumnType.Double),
+                    ),
                 )
-            )
-            TABLE_RESOURCE_STATES -> TableDetails(
-                listOf(
-                    TableColumn(RESOURCE_ID, TableColumnType.String),
-                    TableColumn(RESOURCE_STATE_TIMESTAMP, TableColumnType.Instant),
-                    TableColumn(RESOURCE_STATE_CPU_USAGE_PCT, TableColumnType.Double)
+            TABLE_RESOURCE_STATES ->
+                TableDetails(
+                    listOf(
+                        TableColumn(resourceID, TableColumnType.String),
+                        TableColumn(resourceStateTimestamp, TableColumnType.Instant),
+                        TableColumn(resourceStateCpuUsagePct, TableColumnType.Double),
+                    ),
                 )
-            )
             else -> throw IllegalArgumentException("Table $table not supported")
         }
     }
 
-    override fun newReader(path: Path, table: String, projection: List<String>?): TableReader {
+    override fun newReader(
+        path: Path,
+        table: String,
+        projection: List<String>?,
+    ): TableReader {
         return when (table) {
             TABLE_RESOURCES -> {
                 val stream = GZIPInputStream(path.resolve("vmtable/vmtable.csv.gz").inputStream())
@@ -102,7 +112,10 @@ public class AzureTraceFormat : TraceFormat {
         }
     }
 
-    override fun newWriter(path: Path, table: String): TableWriter {
+    override fun newWriter(
+        path: Path,
+        table: String,
+    ): TableWriter {
         throw UnsupportedOperationException("Writing not supported for this format")
     }
 
@@ -110,10 +123,11 @@ public class AzureTraceFormat : TraceFormat {
      * Construct a [TableReader] for reading over all VM CPU readings.
      */
     private fun newResourceStateReader(path: Path): TableReader {
-        val partitions = Files.walk(path.resolve("vm_cpu_readings"), 1)
-            .filter { !Files.isDirectory(it) && it.name.endsWith(".csv.gz") }
-            .collect(Collectors.toMap({ it.name.removeSuffix(".csv.gz") }, { it }))
-            .toSortedMap()
+        val partitions =
+            Files.walk(path.resolve("vm_cpu_readings"), 1)
+                .filter { !Files.isDirectory(it) && it.name.endsWith(".csv.gz") }
+                .collect(Collectors.toMap({ it.name.removeSuffix(".csv.gz") }, { it }))
+                .toSortedMap()
         val it = partitions.iterator()
 
         return object : CompositeTableReader() {

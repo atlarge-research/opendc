@@ -34,18 +34,18 @@ import org.opendc.trace.TableWriter
 import org.opendc.trace.conv.INTERFERENCE_GROUP_MEMBERS
 import org.opendc.trace.conv.INTERFERENCE_GROUP_SCORE
 import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
-import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
-import org.opendc.trace.conv.RESOURCE_START_TIME
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
-import org.opendc.trace.conv.RESOURCE_STATE_DURATION
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
-import org.opendc.trace.conv.RESOURCE_STOP_TIME
 import org.opendc.trace.conv.TABLE_INTERFERENCE_GROUPS
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.conv.resourceCpuCapacity
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceStartTime
+import org.opendc.trace.conv.resourceStateCpuUsage
+import org.opendc.trace.conv.resourceStateDuration
+import org.opendc.trace.conv.resourceStateTimestamp
+import org.opendc.trace.conv.resourceStopTime
 import org.opendc.trace.opendc.parquet.ResourceReadSupport
 import org.opendc.trace.opendc.parquet.ResourceStateReadSupport
 import org.opendc.trace.opendc.parquet.ResourceStateWriteSupport
@@ -86,39 +86,49 @@ public class OdcVmTraceFormat : TraceFormat {
 
     override fun getTables(path: Path): List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES, TABLE_INTERFERENCE_GROUPS)
 
-    override fun getDetails(path: Path, table: String): TableDetails {
+    override fun getDetails(
+        path: Path,
+        table: String,
+    ): TableDetails {
         return when (table) {
-            TABLE_RESOURCES -> TableDetails(
-                listOf(
-                    TableColumn(RESOURCE_ID, TableColumnType.String),
-                    TableColumn(RESOURCE_START_TIME, TableColumnType.Instant),
-                    TableColumn(RESOURCE_STOP_TIME, TableColumnType.Instant),
-                    TableColumn(RESOURCE_CPU_COUNT, TableColumnType.Int),
-                    TableColumn(RESOURCE_CPU_CAPACITY, TableColumnType.Double),
-                    TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double)
+            TABLE_RESOURCES ->
+                TableDetails(
+                    listOf(
+                        TableColumn(resourceID, TableColumnType.String),
+                        TableColumn(resourceStartTime, TableColumnType.Instant),
+                        TableColumn(resourceStopTime, TableColumnType.Instant),
+                        TableColumn(resourceCpuCount, TableColumnType.Int),
+                        TableColumn(resourceCpuCapacity, TableColumnType.Double),
+                        TableColumn(resourceMemCapacity, TableColumnType.Double),
+                    ),
                 )
-            )
-            TABLE_RESOURCE_STATES -> TableDetails(
-                listOf(
-                    TableColumn(RESOURCE_ID, TableColumnType.String),
-                    TableColumn(RESOURCE_STATE_TIMESTAMP, TableColumnType.Instant),
-                    TableColumn(RESOURCE_STATE_DURATION, TableColumnType.Duration),
-                    TableColumn(RESOURCE_CPU_COUNT, TableColumnType.Int),
-                    TableColumn(RESOURCE_STATE_CPU_USAGE, TableColumnType.Double)
+            TABLE_RESOURCE_STATES ->
+                TableDetails(
+                    listOf(
+                        TableColumn(resourceID, TableColumnType.String),
+                        TableColumn(resourceStateTimestamp, TableColumnType.Instant),
+                        TableColumn(resourceStateDuration, TableColumnType.Duration),
+                        TableColumn(resourceCpuCount, TableColumnType.Int),
+                        TableColumn(resourceStateCpuUsage, TableColumnType.Double),
+                    ),
                 )
-            )
-            TABLE_INTERFERENCE_GROUPS -> TableDetails(
-                listOf(
-                    TableColumn(INTERFERENCE_GROUP_MEMBERS, TableColumnType.Set(TableColumnType.String)),
-                    TableColumn(INTERFERENCE_GROUP_TARGET, TableColumnType.Double),
-                    TableColumn(INTERFERENCE_GROUP_SCORE, TableColumnType.Double)
+            TABLE_INTERFERENCE_GROUPS ->
+                TableDetails(
+                    listOf(
+                        TableColumn(INTERFERENCE_GROUP_MEMBERS, TableColumnType.Set(TableColumnType.String)),
+                        TableColumn(INTERFERENCE_GROUP_TARGET, TableColumnType.Double),
+                        TableColumn(INTERFERENCE_GROUP_SCORE, TableColumnType.Double),
+                    ),
                 )
-            )
             else -> throw IllegalArgumentException("Table $table not supported")
         }
     }
 
-    override fun newReader(path: Path, table: String, projection: List<String>?): TableReader {
+    override fun newReader(
+        path: Path,
+        table: String,
+        projection: List<String>?,
+    ): TableReader {
         return when (table) {
             TABLE_RESOURCES -> {
                 val reader = LocalParquetReader(path.resolve("meta.parquet"), ResourceReadSupport(projection))
@@ -130,11 +140,12 @@ public class OdcVmTraceFormat : TraceFormat {
             }
             TABLE_INTERFERENCE_GROUPS -> {
                 val modelPath = path.resolve("interference-model.json")
-                val parser = if (modelPath.exists()) {
-                    jsonFactory.createParser(modelPath.toFile())
-                } else {
-                    jsonFactory.createParser("[]") // If model does not exist, return empty model
-                }
+                val parser =
+                    if (modelPath.exists()) {
+                        jsonFactory.createParser(modelPath.toFile())
+                    } else {
+                        jsonFactory.createParser("[]") // If model does not exist, return empty model
+                    }
 
                 OdcVmInterferenceJsonTableReader(parser)
             }
@@ -142,26 +153,31 @@ public class OdcVmTraceFormat : TraceFormat {
         }
     }
 
-    override fun newWriter(path: Path, table: String): TableWriter {
+    override fun newWriter(
+        path: Path,
+        table: String,
+    ): TableWriter {
         return when (table) {
             TABLE_RESOURCES -> {
-                val writer = LocalParquetWriter.builder(path.resolve("meta.parquet"), ResourceWriteSupport())
-                    .withCompressionCodec(CompressionCodecName.ZSTD)
-                    .withPageWriteChecksumEnabled(true)
-                    .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
-                    .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
-                    .build()
+                val writer =
+                    LocalParquetWriter.builder(path.resolve("meta.parquet"), ResourceWriteSupport())
+                        .withCompressionCodec(CompressionCodecName.ZSTD)
+                        .withPageWriteChecksumEnabled(true)
+                        .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
+                        .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
+                        .build()
                 OdcVmResourceTableWriter(writer)
             }
             TABLE_RESOURCE_STATES -> {
-                val writer = LocalParquetWriter.builder(path.resolve("trace.parquet"), ResourceStateWriteSupport())
-                    .withCompressionCodec(CompressionCodecName.ZSTD)
-                    .withDictionaryEncoding("id", true)
-                    .withBloomFilterEnabled("id", true)
-                    .withPageWriteChecksumEnabled(true)
-                    .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
-                    .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
-                    .build()
+                val writer =
+                    LocalParquetWriter.builder(path.resolve("trace.parquet"), ResourceStateWriteSupport())
+                        .withCompressionCodec(CompressionCodecName.ZSTD)
+                        .withDictionaryEncoding("id", true)
+                        .withBloomFilterEnabled("id", true)
+                        .withPageWriteChecksumEnabled(true)
+                        .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
+                        .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
+                        .build()
                 OdcVmResourceStateTableWriter(writer)
             }
             TABLE_INTERFERENCE_GROUPS -> {

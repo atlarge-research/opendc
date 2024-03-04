@@ -41,136 +41,145 @@ import java.util.UUID
  * Test suite for the [FaaSService] implementation.
  */
 internal class FaaSServiceTest {
-
     @Test
-    fun testClientState() = runSimulation {
-        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
+    fun testClientState() =
+        runSimulation {
+            val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
 
-        val client = assertDoesNotThrow { service.newClient() }
-        assertDoesNotThrow { client.close() }
+            val client = assertDoesNotThrow { service.newClient() }
+            assertDoesNotThrow { client.close() }
 
-        assertThrows<IllegalStateException> { client.queryFunctions() }
-        assertThrows<IllegalStateException> { client.newFunction("test", 128) }
-        assertThrows<IllegalStateException> { client.invoke("test") }
-        assertThrows<IllegalStateException> { client.findFunction(UUID.randomUUID()) }
-        assertThrows<IllegalStateException> { client.findFunction("name") }
-    }
-
-    @Test
-    fun testClientInvokeUnknown() = runSimulation {
-        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
-
-        val client = service.newClient()
-
-        assertThrows<IllegalArgumentException> { client.invoke("test") }
-    }
-
-    @Test
-    fun testClientFunctionCreation() = runSimulation {
-        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
-
-        val client = service.newClient()
-
-        val function = client.newFunction("test", 128)
-
-        assertEquals("test", function.name)
-    }
-
-    @Test
-    fun testClientFunctionQuery() = runSimulation {
-        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
-
-        val client = service.newClient()
-
-        assertEquals(emptyList<FaaSFunction>(), client.queryFunctions())
-
-        val function = client.newFunction("test", 128)
-
-        assertEquals(listOf(function), client.queryFunctions())
-    }
-
-    @Test
-    fun testClientFunctionFindById() = runSimulation {
-        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
-
-        val client = service.newClient()
-
-        assertEquals(emptyList<FaaSFunction>(), client.queryFunctions())
-
-        val function = client.newFunction("test", 128)
-
-        assertNotNull(client.findFunction(function.uid))
-    }
-
-    @Test
-    fun testClientFunctionFindByName() = runSimulation {
-        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
-
-        val client = service.newClient()
-
-        assertEquals(emptyList<FaaSFunction>(), client.queryFunctions())
-
-        val function = client.newFunction("test", 128)
-
-        assertNotNull(client.findFunction(function.name))
-    }
-
-    @Test
-    fun testClientFunctionDuplicateName() = runSimulation {
-        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
-
-        val client = service.newClient()
-
-        client.newFunction("test", 128)
-
-        assertThrows<IllegalArgumentException> { client.newFunction("test", 128) }
-    }
-
-    @Test
-    fun testClientFunctionDelete() = runSimulation {
-        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
-
-        val client = service.newClient()
-        val function = client.newFunction("test", 128)
-        assertNotNull(client.findFunction(function.uid))
-        function.delete()
-        assertNull(client.findFunction(function.uid))
-
-        // Delete should be idempotent
-        function.delete()
-    }
-
-    @Test
-    fun testClientFunctionCannotInvokeDeleted() = runSimulation {
-        val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
-
-        val client = service.newClient()
-        val function = client.newFunction("test", 128)
-        assertNotNull(client.findFunction(function.uid))
-        function.delete()
-
-        assertThrows<IllegalStateException> { function.invoke() }
-    }
-
-    @Test
-    fun testClientFunctionInvoke() = runSimulation {
-        val deployer = mockk<FunctionDeployer>()
-        val service = FaaSService(dispatcher, deployer, mockk(), mockk(relaxUnitFun = true))
-
-        every { deployer.deploy(any(), any()) } answers {
-            object : FunctionInstance {
-                override val state: FunctionInstanceState = FunctionInstanceState.Idle
-                override val function: FunctionObject = it.invocation.args[0] as FunctionObject
-
-                override suspend fun invoke() {}
-
-                override fun close() {}
-            }
+            assertThrows<IllegalStateException> { client.queryFunctions() }
+            assertThrows<IllegalStateException> { client.newFunction("test", 128) }
+            assertThrows<IllegalStateException> { client.invoke("test") }
+            assertThrows<IllegalStateException> { client.findFunction(UUID.randomUUID()) }
+            assertThrows<IllegalStateException> { client.findFunction("name") }
         }
 
-        val client = service.newClient()
-        val function = client.newFunction("test", 128)
+    @Test
+    fun testClientInvokeUnknown() =
+        runSimulation {
+            val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
 
-        function.invoke()
-    }
+            val client = service.newClient()
+
+            assertThrows<IllegalArgumentException> { client.invoke("test") }
+        }
+
+    @Test
+    fun testClientFunctionCreation() =
+        runSimulation {
+            val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
+
+            val client = service.newClient()
+
+            val function = client.newFunction("test", 128)
+
+            assertEquals("test", function.name)
+        }
+
+    @Test
+    fun testClientFunctionQuery() =
+        runSimulation {
+            val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
+
+            val client = service.newClient()
+
+            assertEquals(emptyList<FaaSFunction>(), client.queryFunctions())
+
+            val function = client.newFunction("test", 128)
+
+            assertEquals(listOf(function), client.queryFunctions())
+        }
+
+    @Test
+    fun testClientFunctionFindById() =
+        runSimulation {
+            val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
+
+            val client = service.newClient()
+
+            assertEquals(emptyList<FaaSFunction>(), client.queryFunctions())
+
+            val function = client.newFunction("test", 128)
+
+            assertNotNull(client.findFunction(function.uid))
+        }
+
+    @Test
+    fun testClientFunctionFindByName() =
+        runSimulation {
+            val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
+
+            val client = service.newClient()
+
+            assertEquals(emptyList<FaaSFunction>(), client.queryFunctions())
+
+            val function = client.newFunction("test", 128)
+
+            assertNotNull(client.findFunction(function.name))
+        }
+
+    @Test
+    fun testClientFunctionDuplicateName() =
+        runSimulation {
+            val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
+
+            val client = service.newClient()
+
+            client.newFunction("test", 128)
+
+            assertThrows<IllegalArgumentException> { client.newFunction("test", 128) }
+        }
+
+    @Test
+    fun testClientFunctionDelete() =
+        runSimulation {
+            val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
+
+            val client = service.newClient()
+            val function = client.newFunction("test", 128)
+            assertNotNull(client.findFunction(function.uid))
+            function.delete()
+            assertNull(client.findFunction(function.uid))
+
+            // Delete should be idempotent
+            function.delete()
+        }
+
+    @Test
+    fun testClientFunctionCannotInvokeDeleted() =
+        runSimulation {
+            val service = FaaSService(dispatcher, mockk(), mockk(), mockk())
+
+            val client = service.newClient()
+            val function = client.newFunction("test", 128)
+            assertNotNull(client.findFunction(function.uid))
+            function.delete()
+
+            assertThrows<IllegalStateException> { function.invoke() }
+        }
+
+    @Test
+    fun testClientFunctionInvoke() =
+        runSimulation {
+            val deployer = mockk<FunctionDeployer>()
+            val service = FaaSService(dispatcher, deployer, mockk(), mockk(relaxUnitFun = true))
+
+            every { deployer.deploy(any(), any()) } answers {
+                object : FunctionInstance {
+                    override val state: FunctionInstanceState = FunctionInstanceState.Idle
+                    override val function: FunctionObject = it.invocation.args[0] as FunctionObject
+
+                    override suspend fun invoke() {}
+
+                    override fun close() {}
+                }
+            }
+
+            val client = service.newClient()
+            val function = client.newFunction("test", 128)
+
+            function.invoke()
+        }
 }

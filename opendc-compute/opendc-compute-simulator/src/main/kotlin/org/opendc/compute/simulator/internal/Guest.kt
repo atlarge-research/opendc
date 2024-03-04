@@ -47,7 +47,7 @@ internal class Guest(
     private val mapper: SimWorkloadMapper,
     private val listener: GuestListener,
     val server: Server,
-    val machine: SimVirtualMachine
+    val machine: SimVirtualMachine,
 ) {
     /**
      * The state of the [Guest].
@@ -132,9 +132,9 @@ internal class Guest(
         updateUptime()
 
         return GuestSystemStats(
-            Duration.ofMillis(_uptime),
-            Duration.ofMillis(_downtime),
-            _bootTime
+            Duration.ofMillis(localUptime),
+            Duration.ofMillis(localDowntime),
+            localBootTime,
         )
     }
 
@@ -152,7 +152,7 @@ internal class Guest(
             counters.cpuLostTime / 1000L,
             machine.cpuCapacity,
             machine.cpuUsage,
-            machine.cpuUsage / _cpuLimit
+            machine.cpuUsage / localCpuLimit,
         )
     }
 
@@ -173,10 +173,11 @@ internal class Guest(
         val workload: SimWorkload = mapper.createWorkload(server)
         workload.setOffset(clock.millis())
         val meta = mapOf("driver" to host, "server" to server) + server.meta
-        ctx = machine.startWorkload(workload, meta) { cause ->
-            onStop(if (cause != null) ServerState.ERROR else ServerState.TERMINATED)
-            ctx = null
-        }
+        ctx =
+            machine.startWorkload(workload, meta) { cause ->
+                onStop(if (cause != null) ServerState.ERROR else ServerState.TERMINATED)
+                ctx = null
+            }
     }
 
     /**
@@ -201,7 +202,7 @@ internal class Guest(
      * This method is invoked when the guest was started on the host and has booted into a running state.
      */
     private fun onStart() {
-        _bootTime = clock.instant()
+        localBootTime = clock.instant()
         state = ServerState.RUNNING
         listener.onStart(this)
     }
@@ -216,24 +217,24 @@ internal class Guest(
         listener.onStop(this)
     }
 
-    private var _uptime = 0L
-    private var _downtime = 0L
-    private var _lastReport = clock.millis()
-    private var _bootTime: Instant? = null
-    private val _cpuLimit = machine.model.cpus.sumOf { it.frequency }
+    private var localUptime = 0L
+    private var localDowntime = 0L
+    private var localLastReport = clock.millis()
+    private var localBootTime: Instant? = null
+    private val localCpuLimit = machine.model.cpus.sumOf { it.frequency }
 
     /**
      * Helper function to track the uptime and downtime of the guest.
      */
     fun updateUptime() {
         val now = clock.millis()
-        val duration = now - _lastReport
-        _lastReport = now
+        val duration = now - localLastReport
+        localLastReport = now
 
         if (state == ServerState.RUNNING) {
-            _uptime += duration
+            localUptime += duration
         } else if (state == ServerState.ERROR) {
-            _downtime += duration
+            localDowntime += duration
         }
     }
 

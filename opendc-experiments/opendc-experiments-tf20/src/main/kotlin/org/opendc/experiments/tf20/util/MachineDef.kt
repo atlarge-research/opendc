@@ -34,5 +34,5 @@ public data class MachineDef(
     val name: String,
     val meta: Map<String, Any>,
     val model: MachineModel,
-    val powerModel: CpuPowerModel
+    val powerModel: CpuPowerModel,
 )

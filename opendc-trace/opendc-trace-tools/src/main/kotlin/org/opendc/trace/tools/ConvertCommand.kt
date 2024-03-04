@@ -39,24 +39,23 @@ import com.github.ajalt.clikt.parameters.types.restrictTo
 import mu.KotlinLogging
 import org.opendc.trace.TableWriter
 import org.opendc.trace.Trace
-import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
-import org.opendc.trace.conv.RESOURCE_START_TIME
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
-import org.opendc.trace.conv.RESOURCE_STATE_DURATION
-import org.opendc.trace.conv.RESOURCE_STATE_MEM_USAGE
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
-import org.opendc.trace.conv.RESOURCE_STOP_TIME
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.conv.resourceCpuCapacity
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceStartTime
+import org.opendc.trace.conv.resourceStateCpuUsage
+import org.opendc.trace.conv.resourceStateCpuUsagePct
+import org.opendc.trace.conv.resourceStateDuration
+import org.opendc.trace.conv.resourceStateMemUsage
+import org.opendc.trace.conv.resourceStateTimestamp
+import org.opendc.trace.conv.resourceStopTime
 import java.io.File
 import java.time.Duration
 import java.time.Instant
 import java.util.Random
-import kotlin.collections.HashMap
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -105,7 +104,7 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
      */
     private val converter by option("-c", "--converter", help = "converter strategy to use").groupChoice(
         "default" to DefaultTraceConverter(),
-        "azure" to AzureTraceConverter()
+        "azure" to AzureTraceConverter(),
     ).defaultByName("default")
 
     override fun run() {
@@ -174,7 +173,11 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
          * @param samplingOptions The sampling options to use.
          * @return The map of resources that have been selected.
          */
-        abstract fun convertResources(trace: Trace, writer: TableWriter, samplingOptions: SamplingOptions?): Map<String, Resource>
+        abstract fun convertResources(
+            trace: Trace,
+            writer: TableWriter,
+            samplingOptions: SamplingOptions?,
+        ): Map<String, Resource>
 
         /**
          * Convert the resource states table for the trace.
@@ -184,7 +187,11 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
          * @param selected The set of virtual machines that have been selected.
          * @return The number of rows written.
          */
-        abstract fun convertResourceStates(trace: Trace, writer: TableWriter, selected: Map<String, Resource>): Int
+        abstract fun convertResourceStates(
+            trace: Trace,
+            writer: TableWriter,
+            selected: Map<String, Resource>,
+        ): Int
 
         /**
          * A resource in the resource table.
@@ -195,7 +202,7 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
             val stopTime: Instant,
             val cpuCount: Int,
             val cpuCapacity: Double,
-            val memCapacity: Double
+            val memCapacity: Double,
         )
     }
 
@@ -211,14 +218,18 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
         /**
          * The interval at which the samples where taken.
          */
-        private val SAMPLE_INTERVAL = Duration.ofMinutes(5)
+        private val sampleInterval = Duration.ofMinutes(5)
 
         /**
          * The difference in CPU usage for the algorithm to cascade samples.
          */
-        private val SAMPLE_CASCADE_DIFF = 0.1
+        private val sampleCascadeDiff = 0.1
 
-        override fun convertResources(trace: Trace, writer: TableWriter, samplingOptions: SamplingOptions?): Map<String, Resource> {
+        override fun convertResources(
+            trace: Trace,
+            writer: TableWriter,
+            samplingOptions: SamplingOptions?,
+        ): Map<String, Resource> {
             val random = samplingOptions?.let { Random(it.seed) }
             val samplingFraction = samplingOptions?.fraction ?: 1.0
             val reader = checkNotNull(trace.getTable(TABLE_RESOURCE_STATES)).newReader()
@@ -226,12 +237,12 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
             var hasNextRow = reader.nextRow()
             val selectedVms = mutableMapOf<String, Resource>()
 
-            val idCol = reader.resolve(RESOURCE_ID)
-            val timestampCol = reader.resolve(RESOURCE_STATE_TIMESTAMP)
-            val cpuCountCol = reader.resolve(RESOURCE_CPU_COUNT)
-            val cpuCapacityCol = reader.resolve(RESOURCE_CPU_CAPACITY)
-            val memCapacityCol = reader.resolve(RESOURCE_MEM_CAPACITY)
-            val memUsageCol = reader.resolve(RESOURCE_STATE_MEM_USAGE)
+            val idCol = reader.resolve(resourceID)
+            val timestampCol = reader.resolve(resourceStateTimestamp)
+            val cpuCountCol = reader.resolve(resourceCpuCount)
+            val cpuCapacityCol = reader.resolve(resourceCpuCapacity)
+            val memCapacityCol = reader.resolve(resourceMemCapacity)
+            val memUsageCol = reader.resolve(resourceStateMemUsage)
 
             while (hasNextRow) {
                 var id: String
@@ -257,7 +268,7 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                     }
 
                     hasNextRow = reader.nextRow()
-                } while (hasNextRow && id == reader.getString(RESOURCE_ID))
+                } while (hasNextRow && id == reader.getString(resourceID))
 
                 // Sample only a fraction of the VMs
                 if (random != null && random.nextDouble() > samplingFraction) {
@@ -266,7 +277,7 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
 
                 logger.info { "Selecting VM $id" }
 
-                val startInstant = Instant.ofEpochMilli(startTime) - SAMPLE_INTERVAL // Offset by sample interval
+                val startInstant = Instant.ofEpochMilli(startTime) - sampleInterval // Offset by sample interval
                 val stopInstant = Instant.ofEpochMilli(stopTime)
 
                 selectedVms.computeIfAbsent(id) {
@@ -274,26 +285,30 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                 }
 
                 writer.startRow()
-                writer.setString(RESOURCE_ID, id)
-                writer.setInstant(RESOURCE_START_TIME, startInstant)
-                writer.setInstant(RESOURCE_STOP_TIME, stopInstant)
-                writer.setInt(RESOURCE_CPU_COUNT, cpuCount)
-                writer.setDouble(RESOURCE_CPU_CAPACITY, cpuCapacity)
-                writer.setDouble(RESOURCE_MEM_CAPACITY, max(memCapacity, memUsage))
+                writer.setString(resourceID, id)
+                writer.setInstant(resourceStartTime, startInstant)
+                writer.setInstant(resourceStopTime, stopInstant)
+                writer.setInt(resourceCpuCount, cpuCount)
+                writer.setDouble(resourceCpuCapacity, cpuCapacity)
+                writer.setDouble(resourceMemCapacity, max(memCapacity, memUsage))
                 writer.endRow()
             }
 
             return selectedVms
         }
 
-        override fun convertResourceStates(trace: Trace, writer: TableWriter, selected: Map<String, Resource>): Int {
+        override fun convertResourceStates(
+            trace: Trace,
+            writer: TableWriter,
+            selected: Map<String, Resource>,
+        ): Int {
             val reader = checkNotNull(trace.getTable(TABLE_RESOURCE_STATES)).newReader()
-            val sampleInterval = SAMPLE_INTERVAL.toMillis()
+            val sampleInterval = sampleInterval.toMillis()
 
-            val idCol = reader.resolve(RESOURCE_ID)
-            val timestampCol = reader.resolve(RESOURCE_STATE_TIMESTAMP)
-            val cpuCountCol = reader.resolve(RESOURCE_CPU_COUNT)
-            val cpuUsageCol = reader.resolve(RESOURCE_STATE_CPU_USAGE)
+            val idCol = reader.resolve(resourceID)
+            val timestampCol = reader.resolve(resourceStateTimestamp)
+            val cpuCountCol = reader.resolve(resourceCpuCount)
+            val cpuUsageCol = reader.resolve(resourceStateCpuUsage)
 
             var hasNextRow = reader.nextRow()
             var count = 0
@@ -315,9 +330,10 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
 
                 // Attempt to cascade further samples into one if they share the same CPU usage
                 while (reader.nextRow().also { hasNextRow = it }) {
-                    val shouldCascade = id == reader.getString(idCol) &&
-                        abs(cpuUsage - reader.getDouble(cpuUsageCol)) < SAMPLE_CASCADE_DIFF &&
-                        cpuCount == reader.getInt(cpuCountCol)
+                    val shouldCascade =
+                        id == reader.getString(idCol) &&
+                            abs(cpuUsage - reader.getDouble(cpuUsageCol)) < sampleCascadeDiff &&
+                            cpuCount == reader.getInt(cpuCountCol)
 
                     // Check whether the next sample can be cascaded with the current sample:
                     // (1) The VM identifier of both samples matches
@@ -339,11 +355,11 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                 }
 
                 writer.startRow()
-                writer.setString(RESOURCE_ID, id)
-                writer.setInstant(RESOURCE_STATE_TIMESTAMP, Instant.ofEpochMilli(timestamp))
-                writer.setDuration(RESOURCE_STATE_DURATION, Duration.ofMillis(duration))
-                writer.setInt(RESOURCE_CPU_COUNT, cpuCount)
-                writer.setDouble(RESOURCE_STATE_CPU_USAGE, cpuUsage)
+                writer.setString(resourceID, id)
+                writer.setInstant(resourceStateTimestamp, Instant.ofEpochMilli(timestamp))
+                writer.setDuration(resourceStateDuration, Duration.ofMillis(duration))
+                writer.setInt(resourceCpuCount, cpuCount)
+                writer.setDouble(resourceStateCpuUsage, cpuUsage)
                 writer.endRow()
 
                 count++
@@ -365,28 +381,32 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
         /**
          * CPU capacity of the machines used by Azure.
          */
-        private val CPU_CAPACITY = 2500.0
+        private val cpuCapacity = 2500.0
 
         /**
          * The interval at which the samples where taken.
          */
-        private val SAMPLE_INTERVAL = Duration.ofMinutes(5)
+        private val sampleInterval = Duration.ofMinutes(5)
 
         /**
          * The difference in CPU usage for the algorithm to cascade samples.
          */
-        private val SAMPLE_CASCADE_DIFF = 0.1
+        private val sampleCascadeDiff = 0.1
 
-        override fun convertResources(trace: Trace, writer: TableWriter, samplingOptions: SamplingOptions?): Map<String, Resource> {
+        override fun convertResources(
+            trace: Trace,
+            writer: TableWriter,
+            samplingOptions: SamplingOptions?,
+        ): Map<String, Resource> {
             val random = samplingOptions?.let { Random(it.seed) }
             val samplingFraction = samplingOptions?.fraction ?: 1.0
             val reader = checkNotNull(trace.getTable(TABLE_RESOURCES)).newReader()
 
-            val idCol = reader.resolve(RESOURCE_ID)
-            val startTimeCol = reader.resolve(RESOURCE_START_TIME)
-            val stopTimeCol = reader.resolve(RESOURCE_STOP_TIME)
-            val cpuCountCol = reader.resolve(RESOURCE_CPU_COUNT)
-            val memCapacityCol = reader.resolve(RESOURCE_MEM_CAPACITY)
+            val idCol = reader.resolve(resourceID)
+            val startTimeCol = reader.resolve(resourceStartTime)
+            val stopTimeCol = reader.resolve(resourceStopTime)
+            val cpuCountCol = reader.resolve(resourceCpuCount)
+            val memCapacityCol = reader.resolve(resourceMemCapacity)
 
             val selectedVms = mutableMapOf<String, Resource>()
 
@@ -406,33 +426,37 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
 
                 val startInstant = Instant.ofEpochMilli(startTime)
                 val stopInstant = Instant.ofEpochMilli(stopTime)
-                val cpuCapacity = cpuCount * CPU_CAPACITY
+                val cpuCapacity = cpuCount * cpuCapacity
 
                 selectedVms.computeIfAbsent(id) {
                     Resource(it, startInstant, stopInstant, cpuCount, cpuCapacity, memCapacity)
                 }
 
                 writer.startRow()
-                writer.setString(RESOURCE_ID, id)
-                writer.setInstant(RESOURCE_START_TIME, startInstant)
-                writer.setInstant(RESOURCE_STOP_TIME, stopInstant)
-                writer.setInt(RESOURCE_CPU_COUNT, cpuCount)
-                writer.setDouble(RESOURCE_CPU_CAPACITY, cpuCapacity)
-                writer.setDouble(RESOURCE_MEM_CAPACITY, memCapacity)
+                writer.setString(resourceID, id)
+                writer.setInstant(resourceStartTime, startInstant)
+                writer.setInstant(resourceStopTime, stopInstant)
+                writer.setInt(resourceCpuCount, cpuCount)
+                writer.setDouble(resourceCpuCapacity, cpuCapacity)
+                writer.setDouble(resourceMemCapacity, memCapacity)
                 writer.endRow()
             }
 
             return selectedVms
         }
 
-        override fun convertResourceStates(trace: Trace, writer: TableWriter, selected: Map<String, Resource>): Int {
+        override fun convertResourceStates(
+            trace: Trace,
+            writer: TableWriter,
+            selected: Map<String, Resource>,
+        ): Int {
             val reader = checkNotNull(trace.getTable(TABLE_RESOURCE_STATES)).newReader()
             val states = HashMap<String, State>()
-            val sampleInterval = SAMPLE_INTERVAL.toMillis()
+            val sampleInterval = sampleInterval.toMillis()
 
-            val idCol = reader.resolve(RESOURCE_ID)
-            val timestampCol = reader.resolve(RESOURCE_STATE_TIMESTAMP)
-            val cpuUsageCol = reader.resolve(RESOURCE_STATE_CPU_USAGE_PCT)
+            val idCol = reader.resolve(resourceID)
+            val timestampCol = reader.resolve(resourceStateTimestamp)
+            val cpuUsageCol = reader.resolve(resourceStateCpuUsagePct)
 
             var count = 0
 
@@ -448,7 +472,7 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                 // Check whether the next sample can be cascaded with the current sample:
                 // (1) The CPU usage is almost identical (lower than `SAMPLE_CASCADE_DIFF`)
                 // (2) The interval between both samples is not higher than `SAMPLE_INTERVAL`
-                if (abs(cpuUsage - state.cpuUsage) <= SAMPLE_CASCADE_DIFF && delta <= sampleInterval) {
+                if (abs(cpuUsage - state.cpuUsage) <= sampleCascadeDiff && delta <= sampleInterval) {
                     state.time = timestamp
                     state.duration += delta
                     continue
@@ -470,7 +494,11 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
             return count
         }
 
-        private class State(@JvmField val resource: Resource, @JvmField var cpuUsage: Double, @JvmField var duration: Long) {
+        private class State(
+            @JvmField val resource: Resource,
+            @JvmField var cpuUsage: Double,
+            @JvmField var duration: Long,
+        ) {
             @JvmField var time: Long = resource.startTime.toEpochMilli()
             private var lastWrite: Long = Long.MIN_VALUE
 
@@ -482,11 +510,11 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
                 lastWrite = time
 
                 writer.startRow()
-                writer.setString(RESOURCE_ID, resource.id)
-                writer.setInstant(RESOURCE_STATE_TIMESTAMP, Instant.ofEpochMilli(time))
-                writer.setDuration(RESOURCE_STATE_DURATION, Duration.ofMillis(duration))
-                writer.setDouble(RESOURCE_STATE_CPU_USAGE, cpuUsage)
-                writer.setInt(RESOURCE_CPU_COUNT, resource.cpuCount)
+                writer.setString(resourceID, resource.id)
+                writer.setInstant(resourceStateTimestamp, Instant.ofEpochMilli(time))
+                writer.setDuration(resourceStateDuration, Duration.ofMillis(duration))
+                writer.setDouble(resourceStateCpuUsage, cpuUsage)
+                writer.setInt(resourceCpuCount, resource.cpuCount)
                 writer.endRow()
             }
         }

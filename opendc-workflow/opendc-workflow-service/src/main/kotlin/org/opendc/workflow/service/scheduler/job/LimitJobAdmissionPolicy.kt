@@ -31,16 +31,15 @@ import org.opendc.workflow.service.internal.WorkflowServiceImpl
  * @property limit The maximum number of concurrent jobs in the system.
  */
 public data class LimitJobAdmissionPolicy(public val limit: Int) : JobAdmissionPolicy {
-    override fun invoke(scheduler: WorkflowServiceImpl): JobAdmissionPolicy.Logic = object : JobAdmissionPolicy.Logic {
-        override fun invoke(
-            job: JobState
-        ): JobAdmissionPolicy.Advice =
-            if (scheduler.activeJobs.size < limit) {
-                JobAdmissionPolicy.Advice.ADMIT
-            } else {
-                JobAdmissionPolicy.Advice.STOP
-            }
-    }
+    override fun invoke(scheduler: WorkflowServiceImpl): JobAdmissionPolicy.Logic =
+        object : JobAdmissionPolicy.Logic {
+            override fun invoke(job: JobState): JobAdmissionPolicy.Advice =
+                if (scheduler.activeJobs.size < limit) {
+                    JobAdmissionPolicy.Advice.ADMIT
+                } else {
+                    JobAdmissionPolicy.Advice.STOP
+                }
+        }
 
     override fun toString(): String = "Limit-Active($limit)"
 }

@@ -52,14 +52,20 @@ internal class TraceTableModifyRule(config: Config) : ConverterRule(config) {
             modify.operation,
             modify.updateColumnList,
             modify.sourceExpressionList,
-            modify.isFlattened
+            modify.isFlattened,
         )
     }
 
     companion object {
         /** Default configuration.  */
-        val DEFAULT: Config = Config.INSTANCE
-            .withConversion(LogicalTableModify::class.java, Convention.NONE, EnumerableConvention.INSTANCE, "TraceTableModificationRule")
-            .withRuleFactory { config: Config -> TraceTableModifyRule(config) }
+        val DEFAULT: Config =
+            Config.INSTANCE
+                .withConversion(
+                    LogicalTableModify::class.java,
+                    Convention.NONE,
+                    EnumerableConvention.INSTANCE,
+                    "TraceTableModificationRule",
+                )
+                .withRuleFactory { config: Config -> TraceTableModifyRule(config) }
     }
 }

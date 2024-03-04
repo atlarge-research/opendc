@@ -38,7 +38,10 @@ class TestInlet(graph: FlowGraph) : SimPowerInlet(), FlowStageLogic {
         flowOutlet.push(100.0f)
     }
 
-    override fun onUpdate(ctx: FlowStage, now: Long): Long = Long.MAX_VALUE
+    override fun onUpdate(
+        ctx: FlowStage,
+        now: Long,
+    ): Long = Long.MAX_VALUE
 
     override fun getFlowOutlet(): Outlet {
         return flowOutlet

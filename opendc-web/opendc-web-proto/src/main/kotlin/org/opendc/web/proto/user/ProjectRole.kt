@@ -39,5 +39,5 @@ public enum class ProjectRole {
     /**
      * The user owns the project (so he can delete it).
      */
-    OWNER
+    OWNER,
 }

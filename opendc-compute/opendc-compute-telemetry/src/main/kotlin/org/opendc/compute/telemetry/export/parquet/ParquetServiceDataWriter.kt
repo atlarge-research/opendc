@@ -36,7 +36,6 @@ import java.io.File
  */
 public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
     ParquetDataWriter<ServiceTableReader>(path, ServiceDataWriteSupport(), bufferSize) {
-
     override fun toString(): String = "service-writer"
 
     /**
@@ -57,7 +56,10 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
             write(recordConsumer, record)
         }
 
-        private fun write(consumer: RecordConsumer, data: ServiceTableReader) {
+        private fun write(
+            consumer: RecordConsumer,
+            data: ServiceTableReader,
+        ) {
             consumer.startMessage()
 
             consumer.startField("timestamp", 0)
@@ -97,34 +99,35 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
     }
 
     private companion object {
-        private val SCHEMA: MessageType = Types.buildMessage()
-            .addFields(
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+        private val SCHEMA: MessageType =
+            Types.buildMessage()
+                .addFields(
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
 //                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("timestamp"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("hosts_up"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("hosts_down"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("servers_pending"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("servers_active"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("attempts_success"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("attempts_failure"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("attempts_error")
-            )
-            .named("service")
+                        .named("timestamp"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("hosts_up"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("hosts_down"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("servers_pending"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("servers_active"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("attempts_success"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("attempts_failure"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("attempts_error"),
+                )
+                .named("service")
     }
 }

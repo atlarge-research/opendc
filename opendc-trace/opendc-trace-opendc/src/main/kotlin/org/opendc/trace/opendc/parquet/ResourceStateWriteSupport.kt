@@ -52,7 +52,10 @@ internal class ResourceStateWriteSupport : WriteSupport<ResourceState>() {
         write(recordConsumer, record)
     }
 
-    private fun write(consumer: RecordConsumer, record: ResourceState) {
+    private fun write(
+        consumer: RecordConsumer,
+        record: ResourceState,
+    ) {
         consumer.startMessage()
 
         consumer.startField("id", 0)
@@ -83,26 +86,27 @@ internal class ResourceStateWriteSupport : WriteSupport<ResourceState>() {
          * Parquet schema for the "resource states" table in the trace.
          */
         @JvmStatic
-        val WRITE_SCHEMA: MessageType = Types.buildMessage()
-            .addFields(
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("id"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("timestamp"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("duration"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("cpu_count"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("cpu_usage")
-            )
-            .named("resource_state")
+        val WRITE_SCHEMA: MessageType =
+            Types.buildMessage()
+                .addFields(
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.BINARY)
+                        .`as`(LogicalTypeAnnotation.stringType())
+                        .named("id"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                        .named("timestamp"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("duration"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("cpu_count"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("cpu_usage"),
+                )
+                .named("resource_state")
     }
 }

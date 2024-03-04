@@ -23,7 +23,7 @@
 group = "org.opendc"
 description = "Common functionality used across OpenDC modules"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }

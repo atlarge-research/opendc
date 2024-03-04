@@ -37,39 +37,41 @@ import org.opendc.simulator.kotlin.runSimulation
  */
 class SimNetworkSwitchVirtualTest {
     @Test
-    fun testConnect() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
-        val source = TestSource(graph)
-        val switch = SimNetworkSwitchVirtual(graph)
+    fun testConnect() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val sink = SimNetworkSink(graph, 100.0f)
+            val source = TestSource(graph)
+            val switch = SimNetworkSwitchVirtual(graph)
 
-        switch.newPort().connect(sink)
-        switch.newPort().connect(source)
+            switch.newPort().connect(sink)
+            switch.newPort().connect(source)
 
-        yield()
+            yield()
 
-        assertAll(
-            { assertTrue(sink.isConnected) },
-            { assertTrue(source.isConnected) },
-            { assertEquals(100.0f, source.outlet.capacity) }
-        )
+            assertAll(
+                { assertTrue(sink.isConnected) },
+                { assertTrue(source.isConnected) },
+                { assertEquals(100.0f, source.outlet.capacity) },
+            )
 
-        verify { source.logic.onUpdate(any(), any()) }
-    }
+            verify { source.logic.onUpdate(any(), any()) }
+        }
 
     @Test
-    fun testConnectClosedPort() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
-        val switch = SimNetworkSwitchVirtual(graph)
+    fun testConnectClosedPort() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val sink = SimNetworkSink(graph, 100.0f)
+            val switch = SimNetworkSwitchVirtual(graph)
 
-        val port = switch.newPort()
-        port.close()
+            val port = switch.newPort()
+            port.close()
 
-        assertThrows<IllegalStateException> {
-            port.connect(sink)
+            assertThrows<IllegalStateException> {
+                port.connect(sink)
+            }
         }
-    }
 }

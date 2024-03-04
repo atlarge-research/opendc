@@ -35,7 +35,7 @@ import java.time.Duration
  */
 public class FunctionTerminationPolicyFixed(
     dispatcher: Dispatcher,
-    public val timeout: Duration
+    public val timeout: Duration,
 ) : FunctionTerminationPolicy {
     /**
      * The [TimerScheduler] used to schedule the function terminations.
@@ -47,7 +47,10 @@ public class FunctionTerminationPolicyFixed(
         scheduler.cancel(instance)
     }
 
-    override fun onStateChanged(instance: FunctionInstance, newState: FunctionInstanceState) {
+    override fun onStateChanged(
+        instance: FunctionInstance,
+        newState: FunctionInstanceState,
+    ) {
         when (newState) {
             FunctionInstanceState.Active -> scheduler.cancel(instance)
             FunctionInstanceState.Idle -> schedule(instance)

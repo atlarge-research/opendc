@@ -61,7 +61,7 @@ internal class FaaSServiceImpl(
     private val deployer: FunctionDeployer,
     private val routingPolicy: RoutingPolicy,
     private val terminationPolicy: FunctionTerminationPolicy,
-    quantum: Duration
+    quantum: Duration,
 ) : FaaSService, FunctionInstanceListener {
     /**
      * The logger instance of this server.
@@ -134,19 +134,20 @@ internal class FaaSServiceImpl(
                 name: String,
                 memorySize: Long,
                 labels: Map<String, String>,
-                meta: Map<String, Any>
+                meta: Map<String, Any>,
             ): FaaSFunction {
                 check(!isClosed) { "Client is already closed" }
                 require(name !in functionsByName) { "Function with same name exists" }
 
                 val uid = UUID(clock.millis(), random.nextLong())
-                val function = FunctionObject(
-                    uid,
-                    name,
-                    memorySize,
-                    labels,
-                    meta
-                )
+                val function =
+                    FunctionObject(
+                        uid,
+                        name,
+                        memorySize,
+                        labels,
+                        meta,
+                    )
 
                 functionsByName[name] = function
                 functions[uid] = function
@@ -200,27 +201,29 @@ internal class FaaSServiceImpl(
                 val instances = function.instances
 
                 // Check if there exists an instance of the function
-                val activeInstance = if (instances.isNotEmpty()) {
-                    routingPolicy.select(instances, function)
-                } else {
-                    null
-                }
+                val activeInstance =
+                    if (instances.isNotEmpty()) {
+                        routingPolicy.select(instances, function)
+                    } else {
+                        null
+                    }
 
-                val instance = if (activeInstance != null) {
-                    timelyInvocations++
-                    function.reportDeployment(isDelayed = false)
+                val instance =
+                    if (activeInstance != null) {
+                        timelyInvocations++
+                        function.reportDeployment(isDelayed = false)
 
-                    activeInstance
-                } else {
-                    val instance = deployer.deploy(function, this)
-                    instances.add(instance)
-                    terminationPolicy.enqueue(instance)
+                        activeInstance
+                    } else {
+                        val instance = deployer.deploy(function, this)
+                        instances.add(instance)
+                        terminationPolicy.enqueue(instance)
 
-                    delayedInvocations++
-                    function.reportDeployment(isDelayed = true)
+                        delayedInvocations++
+                        function.reportDeployment(isDelayed = true)
 
-                    instance
-                }
+                        instance
+                    }
 
                 suspend {
                     val start = clock.millis()
@@ -268,7 +271,10 @@ internal class FaaSServiceImpl(
         }
     }
 
-    override fun onStateChanged(instance: FunctionInstance, newState: FunctionInstanceState) {
+    override fun onStateChanged(
+        instance: FunctionInstance,
+        newState: FunctionInstanceState,
+    ) {
         terminationPolicy.onStateChanged(instance, newState)
 
         if (newState == FunctionInstanceState.Deleted) {

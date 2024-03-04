@@ -40,21 +40,25 @@ public class WorkflowServiceProvisioningStep internal constructor(
     private val serviceDomain: String,
     private val computeService: String,
     private val scheduler: WorkflowSchedulerSpec,
-    private val schedulingQuantum: Duration
+    private val schedulingQuantum: Duration,
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
-        val computeService = requireNotNull(ctx.registry.resolve(computeService, ComputeService::class.java)) { "Compute service $computeService does not exist" }
+        val computeService =
+            requireNotNull(
+                ctx.registry.resolve(computeService, ComputeService::class.java),
+            ) { "Compute service $computeService does not exist" }
 
         val client = computeService.newClient()
-        val service = WorkflowService(
-            ctx.dispatcher,
-            client,
-            scheduler.schedulingQuantum,
-            jobAdmissionPolicy = scheduler.jobAdmissionPolicy,
-            jobOrderPolicy = scheduler.jobOrderPolicy,
-            taskEligibilityPolicy = scheduler.taskEligibilityPolicy,
-            taskOrderPolicy = scheduler.taskOrderPolicy
-        )
+        val service =
+            WorkflowService(
+                ctx.dispatcher,
+                client,
+                scheduler.schedulingQuantum,
+                jobAdmissionPolicy = scheduler.jobAdmissionPolicy,
+                jobOrderPolicy = scheduler.jobOrderPolicy,
+                taskEligibilityPolicy = scheduler.taskEligibilityPolicy,
+                taskOrderPolicy = scheduler.taskOrderPolicy,
+            )
         ctx.registry.register(serviceDomain, WorkflowService::class.java, service)
 
         return AutoCloseable {

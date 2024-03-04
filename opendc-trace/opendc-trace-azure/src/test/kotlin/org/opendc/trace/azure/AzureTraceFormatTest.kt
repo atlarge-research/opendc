@@ -33,13 +33,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableReader
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceStateCpuUsagePct
+import org.opendc.trace.conv.resourceStateTimestamp
 import org.opendc.trace.testkit.TableReaderTestKit
 import java.nio.file.Paths
 
@@ -76,9 +76,9 @@ class AzureTraceFormatTest {
         val reader = format.newReader(path, TABLE_RESOURCES, null)
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("x/XsOfHO4ocsV99i4NluqKDuxctW2MMVmwqOPAlg4wp8mqbBOe3wxBlQo0+Qx+uf", reader.getString(RESOURCE_ID)) },
-            { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
-            { assertEquals(1750000.0, reader.getDouble(RESOURCE_MEM_CAPACITY)) }
+            { assertEquals("x/XsOfHO4ocsV99i4NluqKDuxctW2MMVmwqOPAlg4wp8mqbBOe3wxBlQo0+Qx+uf", reader.getString(resourceID)) },
+            { assertEquals(1, reader.getInt(resourceCpuCount)) },
+            { assertEquals(1750000.0, reader.getDouble(resourceMemCapacity)) },
         )
 
         reader.close()
@@ -91,9 +91,9 @@ class AzureTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("+ZcrOp5/c/fJ6mVgP5qMZlOAGDwyjaaDNM0WoWOt2IDb47gT0UwK9lFwkPQv3C7Q", reader.getString(RESOURCE_ID)) },
-            { assertEquals(0, reader.getInstant(RESOURCE_STATE_TIMESTAMP)?.epochSecond) },
-            { assertEquals(0.0286979, reader.getDouble(RESOURCE_STATE_CPU_USAGE_PCT), 0.01) }
+            { assertEquals("+ZcrOp5/c/fJ6mVgP5qMZlOAGDwyjaaDNM0WoWOt2IDb47gT0UwK9lFwkPQv3C7Q", reader.getString(resourceID)) },
+            { assertEquals(0, reader.getInstant(resourceStateTimestamp)?.epochSecond) },
+            { assertEquals(0.0286979, reader.getDouble(resourceStateCpuUsagePct), 0.01) },
         )
 
         reader.close()

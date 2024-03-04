@@ -34,11 +34,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableReader
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceStateCpuUsage
+import org.opendc.trace.conv.resourceStateTimestamp
 import org.opendc.trace.testkit.TableReaderTestKit
 import java.nio.file.Paths
 
@@ -75,8 +75,8 @@ class BitbrainsTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("bitbrains", reader.getString(RESOURCE_ID)) },
-            { assertFalse(reader.nextRow()) }
+            { assertEquals("bitbrains", reader.getString(resourceID)) },
+            { assertFalse(reader.nextRow()) },
         )
 
         reader.close()
@@ -89,8 +89,8 @@ class BitbrainsTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals(1376314846, reader.getInstant(RESOURCE_STATE_TIMESTAMP)?.epochSecond) },
-            { assertEquals(19.066, reader.getDouble(RESOURCE_STATE_CPU_USAGE), 0.01) }
+            { assertEquals(1376314846, reader.getInstant(resourceStateTimestamp)?.epochSecond) },
+            { assertEquals(19.066, reader.getDouble(resourceStateCpuUsage), 0.01) },
         )
 
         reader.close()

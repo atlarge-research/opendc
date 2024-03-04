@@ -23,19 +23,19 @@
 package org.opendc.web.server.rest.user;
 
 import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
 import java.time.Instant;
 import java.util.List;
-import javax.annotation.security.RolesAllowed;
-import javax.transaction.Transactional;
-import javax.validation.Valid;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import org.opendc.web.proto.user.ProjectRole;
 import org.opendc.web.server.model.Project;
 import org.opendc.web.server.model.ProjectAuthorization;
@@ -96,9 +96,9 @@ public final class ProjectResource {
      */
     @GET
     @Path("{project}")
-    public org.opendc.web.proto.user.Project get(@PathParam("project") long id) {
+    public org.opendc.web.proto.user.Project get(@PathParam("project") long project_id) {
         ProjectAuthorization auth =
-                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), id);
+                ProjectAuthorization.findByUser(identity.getPrincipal().getName(), project_id);
 
         if (auth == null) {
             throw new WebApplicationException("Project not found", 404);

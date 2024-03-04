@@ -30,5 +30,5 @@ internal class ResourceState(
     val timestamp: Instant,
     val duration: Duration,
     val cpuCount: Int,
-    val cpuUsage: Double
+    val cpuUsage: Double,
 )

@@ -23,25 +23,28 @@
 package org.opendc.web.server.model;
 
 import io.quarkus.hibernate.orm.panache.Panache;
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.panache.common.Parameters;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
 
 /**
  * A project in OpenDC encapsulates all the datacenter designs and simulation runs for a set of users.
  */
 @Entity
-@Table(name = "projects")
+@Table
 @NamedQueries({
     @NamedQuery(
             name = "Project.findByUser",
@@ -49,7 +52,7 @@ import javax.persistence.Table;
                     """
             SELECT a
             FROM ProjectAuthorization a
-            WHERE a.key.userId = :userId
+            WHERE a.key.userName = :userName
         """),
     @NamedQuery(
             name = "Project.allocatePortfolio",
@@ -76,7 +79,17 @@ import javax.persistence.Table;
             WHERE p.id = :id AND p.scenariosCreated = :oldState
         """)
 })
-public class Project extends PanacheEntity {
+public class Project extends PanacheEntityBase {
+
+    /**
+     * The main ID of a project.
+     * The value starts at 6 to account for the other 5 projects already made by the loading script.
+     */
+    @Id
+    @SequenceGenerator(name = "projectSeq", sequenceName = "project_id_seq", allocationSize = 1, initialValue = 7)
+    @GeneratedValue(generator = "projectSeq")
+    public Long id;
+
     /**
      * The name of the project.
      */

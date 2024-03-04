@@ -35,14 +35,20 @@ internal inline fun <reified T> TransportClient.get(path: String): T? {
 /**
  * Perform a POST request for resource at [path] and convert to type [T].
  */
-internal inline fun <B, reified T> TransportClient.post(path: String, body: B): T? {
+internal inline fun <B, reified T> TransportClient.post(
+    path: String,
+    body: B,
+): T? {
     return post(path, body, object : TypeReference<T>() {})
 }
 
 /**
  * Perform a PUT request for resource at [path] and convert to type [T].
  */
-internal inline fun <B, reified T> TransportClient.put(path: String, body: B): T? {
+internal inline fun <B, reified T> TransportClient.put(
+    path: String,
+    body: B,
+): T? {
     return put(path, body, object : TypeReference<T>() {})
 }
 

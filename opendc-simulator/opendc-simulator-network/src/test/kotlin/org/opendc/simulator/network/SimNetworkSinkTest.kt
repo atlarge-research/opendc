@@ -42,105 +42,112 @@ import org.opendc.simulator.kotlin.runSimulation
  */
 class SimNetworkSinkTest {
     @Test
-    fun testInitialState() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
+    fun testInitialState() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val sink = SimNetworkSink(graph, 100.0f)
 
-        assertAll(
-            { assertFalse(sink.isConnected) },
-            { assertNull(sink.link) },
-            { assertEquals(100.0f, sink.capacity) }
-        )
-    }
-
-    @Test
-    fun testDisconnectIdempotent() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
-
-        assertDoesNotThrow { sink.disconnect() }
-        assertFalse(sink.isConnected)
-    }
-
-    @Test
-    fun testConnectCircular() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
-
-        assertThrows<IllegalArgumentException> {
-            sink.connect(sink)
+            assertAll(
+                { assertFalse(sink.isConnected) },
+                { assertNull(sink.link) },
+                { assertEquals(100.0f, sink.capacity) },
+            )
         }
-    }
 
     @Test
-    fun testConnectAlreadyConnectedTarget() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
-        val source = mockk<SimNetworkPort>(relaxUnitFun = true)
-        every { source.isConnected } returns true
+    fun testDisconnectIdempotent() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val sink = SimNetworkSink(graph, 100.0f)
 
-        assertThrows<IllegalStateException> {
+            assertDoesNotThrow { sink.disconnect() }
+            assertFalse(sink.isConnected)
+        }
+
+    @Test
+    fun testConnectCircular() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val sink = SimNetworkSink(graph, 100.0f)
+
+            assertThrows<IllegalArgumentException> {
+                sink.connect(sink)
+            }
+        }
+
+    @Test
+    fun testConnectAlreadyConnectedTarget() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val sink = SimNetworkSink(graph, 100.0f)
+            val source = mockk<SimNetworkPort>(relaxUnitFun = true)
+            every { source.isConnected } returns true
+
+            assertThrows<IllegalStateException> {
+                sink.connect(source)
+            }
+        }
+
+    @Test
+    fun testConnectAlreadyConnected() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val sink = SimNetworkSink(graph, 100.0f)
+            val source1 = TestSource(graph)
+
+            val source2 = mockk<SimNetworkPort>(relaxUnitFun = true)
+
+            every { source2.isConnected } returns false
+
+            sink.connect(source1)
+            assertThrows<IllegalStateException> {
+                sink.connect(source2)
+            }
+        }
+
+    @Test
+    fun testConnect() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val sink = SimNetworkSink(graph, 100.0f)
+            val source = TestSource(graph)
+
             sink.connect(source)
+
+            yield()
+
+            assertAll(
+                { assertTrue(sink.isConnected) },
+                { assertTrue(source.isConnected) },
+                { assertEquals(100.0f, source.outlet.capacity) },
+            )
+
+            verify { source.logic.onUpdate(any(), any()) }
         }
-    }
 
     @Test
-    fun testConnectAlreadyConnected() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
-        val source1 = TestSource(graph)
+    fun testDisconnect() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val sink = SimNetworkSink(graph, 100.0f)
+            val source = TestSource(graph)
 
-        val source2 = mockk<SimNetworkPort>(relaxUnitFun = true)
+            sink.connect(source)
+            sink.disconnect()
 
-        every { source2.isConnected } returns false
+            yield()
 
-        sink.connect(source1)
-        assertThrows<IllegalStateException> {
-            sink.connect(source2)
+            assertAll(
+                { assertFalse(sink.isConnected) },
+                { assertFalse(source.isConnected) },
+                { assertEquals(0.0f, source.outlet.capacity) },
+            )
         }
-    }
-
-    @Test
-    fun testConnect() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
-        val source = TestSource(graph)
-
-        sink.connect(source)
-
-        yield()
-
-        assertAll(
-            { assertTrue(sink.isConnected) },
-            { assertTrue(source.isConnected) },
-            { assertEquals(100.0f, source.outlet.capacity) }
-        )
-
-        verify { source.logic.onUpdate(any(), any()) }
-    }
-
-    @Test
-    fun testDisconnect() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val sink = SimNetworkSink(graph, /*capacity*/ 100.0f)
-        val source = TestSource(graph)
-
-        sink.connect(source)
-        sink.disconnect()
-
-        yield()
-
-        assertAll(
-            { assertFalse(sink.isConnected) },
-            { assertFalse(source.isConnected) },
-            { assertEquals(0.0f, source.outlet.capacity) }
-        )
-    }
 }

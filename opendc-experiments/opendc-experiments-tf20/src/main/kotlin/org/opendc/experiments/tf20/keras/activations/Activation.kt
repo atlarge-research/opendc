@@ -194,5 +194,5 @@ public enum class Activation {
      *
      * @see <a href="https://arxiv.org/abs/1710.05941">Ramachandran et al., 2017</a>
      */
-    Swish;
+    Swish,
 }

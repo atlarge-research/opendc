@@ -22,7 +22,7 @@
 
 description = "Workflow orchestration service for OpenDC"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }

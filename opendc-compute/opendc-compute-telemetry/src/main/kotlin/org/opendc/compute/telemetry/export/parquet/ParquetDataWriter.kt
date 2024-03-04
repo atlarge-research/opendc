@@ -43,7 +43,7 @@ import kotlin.concurrent.thread
 public abstract class ParquetDataWriter<in T>(
     path: File,
     private val writeSupport: WriteSupport<T>,
-    bufferSize: Int = 4096
+    bufferSize: Int = 4096,
 ) : AutoCloseable {
     /**
      * The logging instance to use.
@@ -63,41 +63,44 @@ public abstract class ParquetDataWriter<in T>(
     /**
      * The thread that is responsible for writing the Parquet records.
      */
-    private val writerThread = thread(start = false, name = this.toString()) {
-        val writer = let {
-            val builder = LocalParquetWriter.builder(path.toPath(), writeSupport)
-                .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
-                .withCompressionCodec(CompressionCodecName.ZSTD)
-                .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
-            buildWriter(builder)
-        }
-
-        val queue = queue
-        val buf = mutableListOf<T>()
-        var shouldStop = false
-
-        try {
-            while (!shouldStop) {
-                try {
-                    writer.write(queue.take())
-                } catch (e: InterruptedException) {
-                    shouldStop = true
+    private val writerThread =
+        thread(start = false, name = this.toString()) {
+            val writer =
+                let {
+                    val builder =
+                        LocalParquetWriter.builder(path.toPath(), writeSupport)
+                            .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
+                            .withCompressionCodec(CompressionCodecName.ZSTD)
+                            .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
+                    buildWriter(builder)
                 }
 
-                if (queue.drainTo(buf) > 0) {
-                    for (data in buf) {
-                        writer.write(data)
+            val queue = queue
+            val buf = mutableListOf<T>()
+            var shouldStop = false
+
+            try {
+                while (!shouldStop) {
+                    try {
+                        writer.write(queue.take())
+                    } catch (e: InterruptedException) {
+                        shouldStop = true
                     }
-                    buf.clear()
+
+                    if (queue.drainTo(buf) > 0) {
+                        for (data in buf) {
+                            writer.write(data)
+                        }
+                        buf.clear()
+                    }
                 }
+            } catch (e: Throwable) {
+                logger.error(e) { "Failure in Parquet data writer" }
+                exception = e
+            } finally {
+                writer.close()
             }
-        } catch (e: Throwable) {
-            logger.error(e) { "Failure in Parquet data writer" }
-            exception = e
-        } finally {
-            writer.close()
         }
-    }
 
     /**
      * Build the [ParquetWriter] used to write the Parquet files.

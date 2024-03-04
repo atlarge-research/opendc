@@ -34,33 +34,36 @@ import org.opendc.experiments.base.portfolio.model.Workload
  * A [Portfolio] that explores the effect of adding more velocity to a cluster (e.g., faster machines).
  */
 public class MoreVelocityPortfolio : Portfolio {
-    private val topologies = listOf(
-        Topology("base"),
-        Topology("rep-vel-ver-hom"),
-        Topology("rep-vel-ver-het"),
-        Topology("exp-vel-ver-hom"),
-        Topology("exp-vel-ver-het")
-    )
+    private val topologies =
+        listOf(
+            Topology("base"),
+            Topology("rep-vel-ver-hom"),
+            Topology("rep-vel-ver-het"),
+            Topology("exp-vel-ver-hom"),
+            Topology("exp-vel-ver-het"),
+        )
 
-    private val workloads = listOf(
-        Workload("solvinity-10%", trace("solvinity").sampleByLoad(0.1)),
-        Workload("solvinity-25%", trace("solvinity").sampleByLoad(0.25)),
-        Workload("solvinity-50%", trace("solvinity").sampleByLoad(0.5)),
-        Workload("solvinity-100%", trace("solvinity").sampleByLoad(1.0))
-    )
+    private val workloads =
+        listOf(
+            Workload("solvinity-10%", trace("solvinity").sampleByLoad(0.1)),
+            Workload("solvinity-25%", trace("solvinity").sampleByLoad(0.25)),
+            Workload("solvinity-50%", trace("solvinity").sampleByLoad(0.5)),
+            Workload("solvinity-100%", trace("solvinity").sampleByLoad(1.0)),
+        )
 
     private val operationalPhenomena = OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true)
     private val allocationPolicy = "active-servers"
 
-    override val scenarios: Iterable<Scenario> = topologies.flatMap { topology ->
-        workloads.map { workload ->
-            Scenario(
-                topology,
-                workload,
-                operationalPhenomena,
-                allocationPolicy,
-                mapOf("topology" to topology.name, "workload" to workload.name)
-            )
+    override val scenarios: Iterable<Scenario> =
+        topologies.flatMap { topology ->
+            workloads.map { workload ->
+                Scenario(
+                    topology,
+                    workload,
+                    operationalPhenomena,
+                    allocationPolicy,
+                    mapOf("topology" to topology.name, "workload" to workload.name),
+                )
+            }
         }
-    }
 }

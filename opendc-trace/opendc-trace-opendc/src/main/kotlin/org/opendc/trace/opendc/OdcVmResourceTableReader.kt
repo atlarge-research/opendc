@@ -23,12 +23,12 @@
 package org.opendc.trace.opendc
 
 import org.opendc.trace.TableReader
-import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
-import org.opendc.trace.conv.RESOURCE_START_TIME
-import org.opendc.trace.conv.RESOURCE_STOP_TIME
+import org.opendc.trace.conv.resourceCpuCapacity
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceStartTime
+import org.opendc.trace.conv.resourceStopTime
 import org.opendc.trace.opendc.parquet.Resource
 import org.opendc.trace.util.parquet.LocalParquetReader
 import java.time.Duration
@@ -56,27 +56,27 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         }
     }
 
-    private val COL_ID = 0
-    private val COL_START_TIME = 1
-    private val COL_STOP_TIME = 2
-    private val COL_CPU_COUNT = 3
-    private val COL_CPU_CAPACITY = 4
-    private val COL_MEM_CAPACITY = 5
+    private val colID = 0
+    private val colStartTime = 1
+    private val colStopTime = 2
+    private val colCpuCount = 3
+    private val colCpuCapacity = 4
+    private val colMemCapacity = 5
 
     override fun resolve(name: String): Int {
         return when (name) {
-            RESOURCE_ID -> COL_ID
-            RESOURCE_START_TIME -> COL_START_TIME
-            RESOURCE_STOP_TIME -> COL_STOP_TIME
-            RESOURCE_CPU_COUNT -> COL_CPU_COUNT
-            RESOURCE_CPU_CAPACITY -> COL_CPU_CAPACITY
-            RESOURCE_MEM_CAPACITY -> COL_MEM_CAPACITY
+            resourceID -> colID
+            resourceStartTime -> colStartTime
+            resourceStopTime -> colStopTime
+            resourceCpuCount -> colCpuCount
+            resourceCpuCapacity -> colCpuCapacity
+            resourceMemCapacity -> colMemCapacity
             else -> -1
         }
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in 0..COL_MEM_CAPACITY) { "Invalid column index" }
+        require(index in 0..colMemCapacity) { "Invalid column index" }
         return false
     }
 
@@ -88,7 +88,7 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
-            COL_CPU_COUNT -> record.cpuCount
+            colCpuCount -> record.cpuCount
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -105,8 +105,8 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
-            COL_CPU_CAPACITY -> record.cpuCapacity
-            COL_MEM_CAPACITY -> record.memCapacity
+            colCpuCapacity -> record.cpuCapacity
+            colMemCapacity -> record.memCapacity
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -115,7 +115,7 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
-            COL_ID -> record.id
+            colID -> record.id
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -128,8 +128,8 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
-            COL_START_TIME -> record.startTime
-            COL_STOP_TIME -> record.stopTime
+            colStartTime -> record.startTime
+            colStopTime -> record.stopTime
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -138,15 +138,25 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+    override fun <T> getList(
+        index: Int,
+        elementType: Class<T>,
+    ): List<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+    override fun <T> getSet(
+        index: Int,
+        elementType: Class<T>,
+    ): Set<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+    override fun <K, V> getMap(
+        index: Int,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>? {
         throw IllegalArgumentException("Invalid column")
     }
 

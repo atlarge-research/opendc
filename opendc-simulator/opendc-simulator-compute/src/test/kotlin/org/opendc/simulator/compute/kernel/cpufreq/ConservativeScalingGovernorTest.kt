@@ -51,10 +51,10 @@ internal class ConservativeScalingGovernorTest {
         logic.onStart()
         logic.onLimit(0.5)
 
-        /* Upwards scaling */
+        // Upwards scaling
         logic.onLimit(defaultThreshold + 0.2)
 
-        /* Downwards scaling */
+        // Downwards scaling
         logic.onLimit(defaultThreshold + 0.1)
 
         verify(exactly = 2) { policy.target = minSpeed }
@@ -82,10 +82,10 @@ internal class ConservativeScalingGovernorTest {
         logic.onStart()
         logic.onLimit(0.5)
 
-        /* Upwards scaling */
+        // Upwards scaling
         logic.onLimit(threshold + 0.2)
 
-        /* Downwards scaling */
+        // Downwards scaling
         logic.onLimit(threshold + 0.1)
 
         verify(exactly = 2) { policy.target = minSpeed }

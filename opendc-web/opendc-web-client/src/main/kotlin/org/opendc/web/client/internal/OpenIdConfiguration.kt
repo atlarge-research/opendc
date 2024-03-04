@@ -39,5 +39,5 @@ internal data class OpenIdConfiguration(
     @JsonProperty("jwks_uri")
     val jwksUri: URI,
     @JsonProperty("scopes_supported")
-    val scopesSupported: Set<String>
+    val scopesSupported: Set<String>,
 )

@@ -37,161 +37,174 @@ import org.opendc.simulator.kotlin.runSimulation
  */
 class FlowEngineTest {
     @Test
-    fun testSmoke() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testSmoke() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val multiplexer = MaxMinFlowMultiplexer(graph)
-        val sink = SimpleFlowSink(graph, 2.0f)
+            val multiplexer = MaxMinFlowMultiplexer(graph)
+            val sink = SimpleFlowSink(graph, 2.0f)
 
-        graph.connect(multiplexer.newOutput(), sink.input)
+            graph.connect(multiplexer.newOutput(), sink.input)
 
-        val sourceA = SimpleFlowSource(graph, 2000.0f, 0.8f)
-        val sourceB = SimpleFlowSource(graph, 2000.0f, 0.8f)
+            val sourceA = SimpleFlowSource(graph, 2000.0f, 0.8f)
+            val sourceB = SimpleFlowSource(graph, 2000.0f, 0.8f)
 
-        graph.connect(sourceA.output, multiplexer.newInput())
-        graph.connect(sourceB.output, multiplexer.newInput())
-    }
-
-    @Test
-    fun testConnectInvalidInlet() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val inlet = mockk<Inlet>()
-        val source = SimpleFlowSource(graph, 2000.0f, 0.8f)
-        assertThrows<IllegalArgumentException> { graph.connect(source.output, inlet) }
-    }
+            graph.connect(sourceA.output, multiplexer.newInput())
+            graph.connect(sourceB.output, multiplexer.newInput())
+        }
 
     @Test
-    fun testConnectInvalidOutlet() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testConnectInvalidInlet() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val outlet = mockk<Outlet>()
-        val sink = SimpleFlowSink(graph, 2.0f)
-        assertThrows<IllegalArgumentException> { graph.connect(outlet, sink.input) }
-    }
-
-    @Test
-    fun testConnectInletBelongsToDifferentGraph() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graphA = engine.newGraph()
-        val graphB = engine.newGraph()
-
-        val sink = SimpleFlowSink(graphB, 2.0f)
-        val source = SimpleFlowSource(graphA, 2000.0f, 0.8f)
-
-        assertThrows<IllegalArgumentException> { graphA.connect(source.output, sink.input) }
-    }
+            val inlet = mockk<Inlet>()
+            val source = SimpleFlowSource(graph, 2000.0f, 0.8f)
+            assertThrows<IllegalArgumentException> { graph.connect(source.output, inlet) }
+        }
 
     @Test
-    fun testConnectOutletBelongsToDifferentGraph() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graphA = engine.newGraph()
-        val graphB = engine.newGraph()
+    fun testConnectInvalidOutlet() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val sink = SimpleFlowSink(graphA, 2.0f)
-        val source = SimpleFlowSource(graphB, 2000.0f, 0.8f)
-
-        assertThrows<IllegalArgumentException> { graphA.connect(source.output, sink.input) }
-    }
-
-    @Test
-    fun testConnectInletAlreadyConnected() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val sink = SimpleFlowSink(graph, 2.0f)
-        val sourceA = SimpleFlowSource(graph, 2000.0f, 0.8f)
-        val sourceB = SimpleFlowSource(graph, 2000.0f, 0.8f)
-
-        graph.connect(sourceA.output, sink.input)
-        assertThrows<IllegalStateException> { graph.connect(sourceB.output, sink.input) }
-    }
+            val outlet = mockk<Outlet>()
+            val sink = SimpleFlowSink(graph, 2.0f)
+            assertThrows<IllegalArgumentException> { graph.connect(outlet, sink.input) }
+        }
 
     @Test
-    fun testConnectOutletAlreadyConnected() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testConnectInletBelongsToDifferentGraph() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graphA = engine.newGraph()
+            val graphB = engine.newGraph()
 
-        val sinkA = SimpleFlowSink(graph, 2.0f)
-        val sinkB = SimpleFlowSink(graph, 2.0f)
-        val source = SimpleFlowSource(graph, 2000.0f, 0.8f)
+            val sink = SimpleFlowSink(graphB, 2.0f)
+            val source = SimpleFlowSource(graphA, 2000.0f, 0.8f)
 
-        graph.connect(source.output, sinkA.input)
-        assertThrows<IllegalStateException> { graph.connect(source.output, sinkB.input) }
-    }
-
-    @Test
-    fun testDisconnectInletInvalid() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val inlet = mockk<Inlet>()
-        assertThrows<IllegalArgumentException> { graph.disconnect(inlet) }
-    }
+            assertThrows<IllegalArgumentException> { graphA.connect(source.output, sink.input) }
+        }
 
     @Test
-    fun testDisconnectOutletInvalid() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testConnectOutletBelongsToDifferentGraph() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graphA = engine.newGraph()
+            val graphB = engine.newGraph()
 
-        val outlet = mockk<Outlet>()
-        assertThrows<IllegalArgumentException> { graph.disconnect(outlet) }
-    }
+            val sink = SimpleFlowSink(graphA, 2.0f)
+            val source = SimpleFlowSource(graphB, 2000.0f, 0.8f)
 
-    @Test
-    fun testDisconnectInletInvalidGraph() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graphA = engine.newGraph()
-        val graphB = engine.newGraph()
-
-        val sink = SimpleFlowSink(graphA, 2.0f)
-
-        assertThrows<IllegalArgumentException> { graphB.disconnect(sink.input) }
-    }
+            assertThrows<IllegalArgumentException> { graphA.connect(source.output, sink.input) }
+        }
 
     @Test
-    fun testDisconnectOutletInvalidGraph() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graphA = engine.newGraph()
-        val graphB = engine.newGraph()
+    fun testConnectInletAlreadyConnected() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val source = SimpleFlowSource(graphA, 2000.0f, 0.8f)
+            val sink = SimpleFlowSink(graph, 2.0f)
+            val sourceA = SimpleFlowSource(graph, 2000.0f, 0.8f)
+            val sourceB = SimpleFlowSource(graph, 2000.0f, 0.8f)
 
-        assertThrows<IllegalArgumentException> { graphB.disconnect(source.output) }
-    }
-
-    @Test
-    fun testInletEquality() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val sinkA = SimpleFlowSink(graph, 2.0f)
-        val sinkB = SimpleFlowSink(graph, 2.0f)
-
-        val multiplexer = MaxMinFlowMultiplexer(graph)
-
-        assertEquals(sinkA.input, sinkA.input)
-        assertNotEquals(sinkA.input, sinkB.input)
-
-        assertNotEquals(multiplexer.newInput(), multiplexer.newInput())
-    }
+            graph.connect(sourceA.output, sink.input)
+            assertThrows<IllegalStateException> { graph.connect(sourceB.output, sink.input) }
+        }
 
     @Test
-    fun testOutletEquality() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testConnectOutletAlreadyConnected() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val sourceA = SimpleFlowSource(graph, 2000.0f, 0.8f)
-        val sourceB = SimpleFlowSource(graph, 2000.0f, 0.8f)
+            val sinkA = SimpleFlowSink(graph, 2.0f)
+            val sinkB = SimpleFlowSink(graph, 2.0f)
+            val source = SimpleFlowSource(graph, 2000.0f, 0.8f)
 
-        val multiplexer = MaxMinFlowMultiplexer(graph)
+            graph.connect(source.output, sinkA.input)
+            assertThrows<IllegalStateException> { graph.connect(source.output, sinkB.input) }
+        }
 
-        assertEquals(sourceA.output, sourceA.output)
-        assertNotEquals(sourceA.output, sourceB.output)
+    @Test
+    fun testDisconnectInletInvalid() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        assertNotEquals(multiplexer.newOutput(), multiplexer.newOutput())
-    }
+            val inlet = mockk<Inlet>()
+            assertThrows<IllegalArgumentException> { graph.disconnect(inlet) }
+        }
+
+    @Test
+    fun testDisconnectOutletInvalid() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+
+            val outlet = mockk<Outlet>()
+            assertThrows<IllegalArgumentException> { graph.disconnect(outlet) }
+        }
+
+    @Test
+    fun testDisconnectInletInvalidGraph() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graphA = engine.newGraph()
+            val graphB = engine.newGraph()
+
+            val sink = SimpleFlowSink(graphA, 2.0f)
+
+            assertThrows<IllegalArgumentException> { graphB.disconnect(sink.input) }
+        }
+
+    @Test
+    fun testDisconnectOutletInvalidGraph() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graphA = engine.newGraph()
+            val graphB = engine.newGraph()
+
+            val source = SimpleFlowSource(graphA, 2000.0f, 0.8f)
+
+            assertThrows<IllegalArgumentException> { graphB.disconnect(source.output) }
+        }
+
+    @Test
+    fun testInletEquality() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+
+            val sinkA = SimpleFlowSink(graph, 2.0f)
+            val sinkB = SimpleFlowSink(graph, 2.0f)
+
+            val multiplexer = MaxMinFlowMultiplexer(graph)
+
+            assertEquals(sinkA.input, sinkA.input)
+            assertNotEquals(sinkA.input, sinkB.input)
+
+            assertNotEquals(multiplexer.newInput(), multiplexer.newInput())
+        }
+
+    @Test
+    fun testOutletEquality() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+
+            val sourceA = SimpleFlowSource(graph, 2000.0f, 0.8f)
+            val sourceB = SimpleFlowSource(graph, 2000.0f, 0.8f)
+
+            val multiplexer = MaxMinFlowMultiplexer(graph)
+
+            assertEquals(sourceA.output, sourceA.output)
+            assertNotEquals(sourceA.output, sourceB.output)
+
+            assertNotEquals(multiplexer.newOutput(), multiplexer.newOutput())
+        }
 }

@@ -38,7 +38,7 @@ import org.opendc.experiments.tf20.keras.shape.TensorShape
  */
 public class Dropout(
     public val keepProbability: Float = 0.1f,
-    name: String
+    name: String,
 ) : Layer(name) {
     override fun build(inputShape: TensorShape) {}
 

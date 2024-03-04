@@ -29,5 +29,5 @@ public enum class TaskStatus {
     CREATED,
     READY,
     ACTIVE,
-    FINISHED
+    FINISHED,
 }

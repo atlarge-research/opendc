@@ -46,34 +46,35 @@ class FaaSExperiment {
      * Smoke test that simulates a small trace.
      */
     @Test
-    fun testSmoke() = runSimulation {
-        val faasService = "faas.opendc.org"
+    fun testSmoke() =
+        runSimulation {
+            val faasService = "faas.opendc.org"
 
-        Provisioner(dispatcher, seed = 0L).use { provisioner ->
-            provisioner.runStep(
-                setupFaaSService(
-                    faasService,
-                    { RandomRoutingPolicy() },
-                    { FunctionTerminationPolicyFixed(it.dispatcher, timeout = Duration.ofMinutes(10)) },
-                    createMachineModel(),
-                    coldStartModel = ColdStartModel.GOOGLE
+            Provisioner(dispatcher, seed = 0L).use { provisioner ->
+                provisioner.runStep(
+                    setupFaaSService(
+                        faasService,
+                        { RandomRoutingPolicy() },
+                        { FunctionTerminationPolicyFixed(it.dispatcher, timeout = Duration.ofMinutes(10)) },
+                        createMachineModel(),
+                        coldStartModel = ColdStartModel.GOOGLE,
+                    ),
                 )
-            )
 
-            val service = provisioner.registry.resolve(faasService, FaaSService::class.java)!!
+                val service = provisioner.registry.resolve(faasService, FaaSService::class.java)!!
 
-            val trace = ServerlessTraceReader().parse(File("src/test/resources/trace"))
-            service.replay(timeSource, trace)
+                val trace = ServerlessTraceReader().parse(File("src/test/resources/trace"))
+                service.replay(timeSource, trace)
 
-            val stats = service.getSchedulerStats()
+                val stats = service.getSchedulerStats()
 
-            assertAll(
-                { assertEquals(14, stats.totalInvocations) },
-                { assertEquals(2, stats.timelyInvocations) },
-                { assertEquals(12, stats.delayedInvocations) }
-            )
+                assertAll(
+                    { assertEquals(14, stats.totalInvocations) },
+                    { assertEquals(2, stats.timelyInvocations) },
+                    { assertEquals(12, stats.delayedInvocations) },
+                )
+            }
         }
-    }
 
     /**
      * Construct the machine model to test with.
@@ -82,8 +83,10 @@ class FaaSExperiment {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
         return MachineModel(
-            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
-            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+            // cpus
+            List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
+            // memory
+            List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
         )
     }
 }

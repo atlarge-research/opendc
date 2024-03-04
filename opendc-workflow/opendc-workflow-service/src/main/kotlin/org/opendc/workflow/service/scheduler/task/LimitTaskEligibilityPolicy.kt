@@ -29,16 +29,15 @@ import org.opendc.workflow.service.internal.WorkflowServiceImpl
  * A [TaskEligibilityPolicy] that limits the total number of active tasks in the system.
  */
 public data class LimitTaskEligibilityPolicy(val limit: Int) : TaskEligibilityPolicy {
-    override fun invoke(scheduler: WorkflowServiceImpl): TaskEligibilityPolicy.Logic = object : TaskEligibilityPolicy.Logic {
-        override fun invoke(
-            task: TaskState
-        ): TaskEligibilityPolicy.Advice =
-            if (scheduler.activeTasks.size < limit) {
-                TaskEligibilityPolicy.Advice.ADMIT
-            } else {
-                TaskEligibilityPolicy.Advice.STOP
-            }
-    }
+    override fun invoke(scheduler: WorkflowServiceImpl): TaskEligibilityPolicy.Logic =
+        object : TaskEligibilityPolicy.Logic {
+            override fun invoke(task: TaskState): TaskEligibilityPolicy.Advice =
+                if (scheduler.activeTasks.size < limit) {
+                    TaskEligibilityPolicy.Advice.ADMIT
+                } else {
+                    TaskEligibilityPolicy.Advice.STOP
+                }
+        }
 
     override fun toString(): String = "Limit-Active($limit)"
 }

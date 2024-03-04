@@ -22,13 +22,13 @@
 
 description = "Parquet helpers for traces in OpenDC"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }
 
 dependencies {
-    /* This configuration is necessary for a slim dependency on Apache Parquet */
+    // This configuration is necessary for a slim dependency on Apache Parquet
     api(libs.parquet) {
         exclude(group = "org.apache.hadoop")
     }

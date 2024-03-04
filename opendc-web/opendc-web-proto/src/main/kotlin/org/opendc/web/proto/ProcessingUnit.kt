@@ -30,5 +30,5 @@ public data class ProcessingUnit(
     val name: String,
     val clockRateMhz: Double,
     val numberOfCores: Int,
-    val energyConsumptionW: Double
+    val energyConsumptionW: Double,
 )

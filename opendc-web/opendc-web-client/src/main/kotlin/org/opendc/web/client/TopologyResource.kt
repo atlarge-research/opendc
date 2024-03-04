@@ -41,26 +41,39 @@ public class TopologyResource internal constructor(private val client: Transport
     /**
      * Obtain the topology for [project] with [index].
      */
-    public fun get(project: Long, index: Int): Topology? = client.get("projects/$project/topologies/$index")
+    public fun get(
+        project: Long,
+        index: Int,
+    ): Topology? = client.get("projects/$project/topologies/$index")
 
     /**
      * Create a new topology for [project] with [request].
      */
-    public fun create(project: Long, request: Topology.Create): Topology {
+    public fun create(
+        project: Long,
+        request: Topology.Create,
+    ): Topology {
         return checkNotNull(client.post("projects/$project/topologies", request))
     }
 
     /**
      * Update the topology with [index] for [project] using the specified [request].
      */
-    public fun update(project: Long, index: Int, request: Topology.Update): Topology? {
+    public fun update(
+        project: Long,
+        index: Int,
+        request: Topology.Update,
+    ): Topology? {
         return client.put("projects/$project/topologies/$index", request)
     }
 
     /**
      * Delete the topology for [project] with [index].
      */
-    public fun delete(project: Long, index: Long): Topology {
+    public fun delete(
+        project: Long,
+        index: Long,
+    ): Topology {
         return requireNotNull(client.delete("projects/$project/topologies/$index")) { "Unknown topology $index" }
     }
 }

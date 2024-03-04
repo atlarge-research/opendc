@@ -30,5 +30,5 @@ import java.time.LocalDate
 public data class UserAccounting(
     val periodEnd: LocalDate,
     val simulationTime: Int,
-    val simulationTimeBudget: Int
+    val simulationTimeBudget: Int,
 )

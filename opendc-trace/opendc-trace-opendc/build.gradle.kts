@@ -22,7 +22,7 @@
 
 description = "Support for OpenDC-specific trace formats"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
     `benchmark-conventions`

@@ -46,7 +46,7 @@ public fun grid5000(failureInterval: Duration): FailureModel {
             context: CoroutineContext,
             clock: InstantSource,
             service: ComputeService,
-            random: RandomGenerator
+            random: RandomGenerator,
         ): HostFaultInjector {
             val rng = Well19937c(random.nextLong())
             val hosts = service.hosts.map { it as SimHost }.toSet()
@@ -59,7 +59,7 @@ public fun grid5000(failureInterval: Duration): FailureModel {
                 hosts,
                 iat = LogNormalDistribution(rng, ln(failureInterval.toHours().toDouble()), 1.03),
                 selector = StochasticVictimSelector(LogNormalDistribution(rng, 1.88, 1.25), random),
-                fault = StartStopHostFault(LogNormalDistribution(rng, 8.89, 2.71))
+                fault = StartStopHostFault(LogNormalDistribution(rng, 8.89, 2.71)),
             )
         }
 

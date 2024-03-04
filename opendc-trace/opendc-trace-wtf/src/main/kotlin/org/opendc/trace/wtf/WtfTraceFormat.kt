@@ -55,27 +55,35 @@ public class WtfTraceFormat : TraceFormat {
 
     override fun getTables(path: Path): List<String> = listOf(TABLE_TASKS)
 
-    override fun getDetails(path: Path, table: String): TableDetails {
+    override fun getDetails(
+        path: Path,
+        table: String,
+    ): TableDetails {
         return when (table) {
-            TABLE_TASKS -> TableDetails(
-                listOf(
-                    TableColumn(TASK_ID, TableColumnType.String),
-                    TableColumn(TASK_WORKFLOW_ID, TableColumnType.String),
-                    TableColumn(TASK_SUBMIT_TIME, TableColumnType.Instant),
-                    TableColumn(TASK_WAIT_TIME, TableColumnType.Duration),
-                    TableColumn(TASK_RUNTIME, TableColumnType.Duration),
-                    TableColumn(TASK_REQ_NCPUS, TableColumnType.Int),
-                    TableColumn(TASK_PARENTS, TableColumnType.Set(TableColumnType.String)),
-                    TableColumn(TASK_CHILDREN, TableColumnType.Set(TableColumnType.String)),
-                    TableColumn(TASK_GROUP_ID, TableColumnType.Int),
-                    TableColumn(TASK_USER_ID, TableColumnType.Int)
+            TABLE_TASKS ->
+                TableDetails(
+                    listOf(
+                        TableColumn(TASK_ID, TableColumnType.String),
+                        TableColumn(TASK_WORKFLOW_ID, TableColumnType.String),
+                        TableColumn(TASK_SUBMIT_TIME, TableColumnType.Instant),
+                        TableColumn(TASK_WAIT_TIME, TableColumnType.Duration),
+                        TableColumn(TASK_RUNTIME, TableColumnType.Duration),
+                        TableColumn(TASK_REQ_NCPUS, TableColumnType.Int),
+                        TableColumn(TASK_PARENTS, TableColumnType.Set(TableColumnType.String)),
+                        TableColumn(TASK_CHILDREN, TableColumnType.Set(TableColumnType.String)),
+                        TableColumn(TASK_GROUP_ID, TableColumnType.Int),
+                        TableColumn(TASK_USER_ID, TableColumnType.Int),
+                    ),
                 )
-            )
             else -> throw IllegalArgumentException("Table $table not supported")
         }
     }
 
-    override fun newReader(path: Path, table: String, projection: List<String>?): TableReader {
+    override fun newReader(
+        path: Path,
+        table: String,
+        projection: List<String>?,
+    ): TableReader {
         return when (table) {
             TABLE_TASKS -> {
                 val reader = LocalParquetReader(path.resolve("tasks/schema-1.0"), TaskReadSupport(projection), strictTyping = false)
@@ -85,7 +93,10 @@ public class WtfTraceFormat : TraceFormat {
         }
     }
 
-    override fun newWriter(path: Path, table: String): TableWriter {
+    override fun newWriter(
+        path: Path,
+        table: String,
+    ): TableWriter {
         throw UnsupportedOperationException("Writing not supported for this format")
     }
 }

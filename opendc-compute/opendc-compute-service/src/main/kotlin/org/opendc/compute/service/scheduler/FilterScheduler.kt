@@ -46,7 +46,7 @@ public class FilterScheduler(
     private val filters: List<HostFilter>,
     private val weighers: List<HostWeigher>,
     private val subsetSize: Int = 1,
-    private val random: RandomGenerator = SplittableRandom(0)
+    private val random: RandomGenerator = SplittableRandom(0),
 ) : ComputeScheduler {
     /**
      * The pool of hosts available to the scheduler.
@@ -69,36 +69,37 @@ public class FilterScheduler(
         val hosts = hosts
         val filteredHosts = hosts.filter { host -> filters.all { filter -> filter.test(host, server) } }
 
-        val subset = if (weighers.isNotEmpty()) {
-            val results = weighers.map { it.getWeights(filteredHosts, server) }
-            val weights = DoubleArray(filteredHosts.size)
+        val subset =
+            if (weighers.isNotEmpty()) {
+                val results = weighers.map { it.getWeights(filteredHosts, server) }
+                val weights = DoubleArray(filteredHosts.size)
 
-            for (result in results) {
-                val min = result.min
-                val range = (result.max - min)
+                for (result in results) {
+                    val min = result.min
+                    val range = (result.max - min)
 
-                // Skip result if all weights are the same
-                if (range == 0.0) {
-                    continue
+                    // Skip result if all weights are the same
+                    if (range == 0.0) {
+                        continue
+                    }
+
+                    val multiplier = result.multiplier
+                    val factor = multiplier / range
+
+                    for ((i, weight) in result.weights.withIndex()) {
+                        weights[i] += factor * (weight - min)
+                    }
                 }
 
-                val multiplier = result.multiplier
-                val factor = multiplier / range
-
-                for ((i, weight) in result.weights.withIndex()) {
-                    weights[i] += factor * (weight - min)
-                }
+                weights.indices
+                    .asSequence()
+                    .sortedByDescending { weights[it] }
+                    .map { filteredHosts[it] }
+                    .take(subsetSize)
+                    .toList()
+            } else {
+                filteredHosts
             }
-
-            weights.indices
-                .asSequence()
-                .sortedByDescending { weights[it] }
-                .map { filteredHosts[it] }
-                .take(subsetSize)
-                .toList()
-        } else {
-            filteredHosts
-        }
 
         return when (val maxSize = min(subsetSize, subset.size)) {
             0 -> null

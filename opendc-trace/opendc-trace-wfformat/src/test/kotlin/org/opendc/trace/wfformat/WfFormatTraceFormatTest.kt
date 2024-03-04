@@ -81,7 +81,7 @@ class WfFormatTraceFormatTest {
             { assertEquals("makebwaindex_mammoth_mt_krause.fasta", reader.getString(TASK_ID)) },
             { assertEquals("eager-nextflow-chameleon", reader.getString(TASK_WORKFLOW_ID)) },
             { assertEquals(172000, reader.getDuration(TASK_RUNTIME)?.toMillis()) },
-            { assertEquals(emptySet<String>(), reader.getSet(TASK_PARENTS, String::class.java)) }
+            { assertEquals(emptySet<String>(), reader.getSet(TASK_PARENTS, String::class.java)) },
         )
 
         assertAll(
@@ -89,7 +89,7 @@ class WfFormatTraceFormatTest {
             { assertEquals("makeseqdict_mammoth_mt_krause.fasta", reader.getString(TASK_ID)) },
             { assertEquals("eager-nextflow-chameleon", reader.getString(TASK_WORKFLOW_ID)) },
             { assertEquals(175000, reader.getDuration(TASK_RUNTIME)?.toMillis()) },
-            { assertEquals(setOf("makebwaindex_mammoth_mt_krause.fasta"), reader.getSet(TASK_PARENTS, String::class.java)) }
+            { assertEquals(setOf("makebwaindex_mammoth_mt_krause.fasta"), reader.getSet(TASK_PARENTS, String::class.java)) },
         )
 
         reader.close()

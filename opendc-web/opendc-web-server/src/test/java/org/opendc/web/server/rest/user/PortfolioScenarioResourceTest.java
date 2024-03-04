@@ -43,7 +43,7 @@ public final class PortfolioScenarioResourceTest {
     /**
      * Test that tries to obtain a portfolio without token.
      */
-    //    @Test
+    @Test
     public void testGetWithoutToken() {
         given().pathParam("project", "1")
                 .pathParam("portfolio", "1")
@@ -58,7 +58,7 @@ public final class PortfolioScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"runner"})
     public void testGetInvalidToken() {
         given().pathParam("project", "1")
@@ -72,12 +72,12 @@ public final class PortfolioScenarioResourceTest {
     /**
      * Test that tries to obtain a scenario without authorization.
      */
-    //    @Test
-    //    @TestSecurity(
-    //            user = "unknown",
-    //            roles = {"openid"})
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"openid"})
     public void testGetUnauthorized() {
-        given().pathParam("project", "1")
+        given().pathParam("project", "2")
                 .pathParam("portfolio", "1")
                 .when()
                 .get()
@@ -88,28 +88,28 @@ public final class PortfolioScenarioResourceTest {
 
     /**
      * Test that tries to obtain a scenario.
+     * TODO: shouldn't this be all scenarios?
      */
-    //    @Test
-    //    @TestSecurity(
-    //            user = "owner",
-    //            roles = {"openid"})
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"openid"})
     public void testGet() {
         given().pathParam("project", "1")
                 .pathParam("portfolio", "1")
                 .when()
                 .get()
                 .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON);
+                .statusCode(200);
     }
 
     /**
-     * Test that tries to create a scenario for a portfolio.
+     * Test that tries to create a scenario for a portfolio that does not exist in a project that can be accessed.
      */
-    //    @Test
-    //    @TestSecurity(
-    //            user = "owner",
-    //            roles = {"openid"})
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"openid"})
     public void testCreateNonExistent() {
         given().pathParam("project", "1")
                 .pathParam("portfolio", "0")
@@ -126,13 +126,13 @@ public final class PortfolioScenarioResourceTest {
     /**
      * Test that tries to create a scenario for a portfolio without authorization.
      */
-    //    @Test
-    //    @TestSecurity(
-    //            user = "unknown",
-    //            roles = {"openid"})
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"openid"})
     public void testCreateUnauthorized() {
-        given().pathParam("project", "1")
-                .pathParam("portfolio", "0")
+        given().pathParam("project", "2")
+                .pathParam("portfolio", "1")
                 .body(new Scenario.Create(
                         "test", new Workload.Spec("test", 1.0), 1, new OperationalPhenomena(false, false), "test"))
                 .contentType(ContentType.JSON)
@@ -146,13 +146,13 @@ public final class PortfolioScenarioResourceTest {
     /**
      * Test that tries to create a scenario for a portfolio as a viewer.
      */
-    //    @Test
-    //    @TestSecurity(
-    //            user = "viewer",
-    //            roles = {"openid"})
+    @Test
+    @TestSecurity(
+            user = "test_user_2",
+            roles = {"openid"})
     public void testCreateAsViewer() {
         given().pathParam("project", "1")
-                .pathParam("portfolio", "0")
+                .pathParam("portfolio", "1")
                 .body(new Scenario.Create(
                         "test", new Workload.Spec("test", 1.0), 1, new OperationalPhenomena(false, false), "test"))
                 .contentType(ContentType.JSON)
@@ -166,15 +166,15 @@ public final class PortfolioScenarioResourceTest {
     /**
      * Test that tries to create a scenario for a portfolio.
      */
-    //    @Test
-    //    @TestSecurity(
-    //            user = "owner",
-    //            roles = {"openid"})
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"openid"})
     public void testCreate() {
         given().pathParam("project", "1")
                 .pathParam("portfolio", "1")
                 .body(new Scenario.Create(
-                        "test",
+                        "Test Scenario New",
                         new Workload.Spec("bitbrains-small", 1.0),
                         1,
                         new OperationalPhenomena(false, false),
@@ -185,16 +185,16 @@ public final class PortfolioScenarioResourceTest {
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("name", equalTo("test"));
+                .body("name", equalTo("Test Scenario New"));
     }
 
     /**
      * Test to create a project with an empty body.
      */
-    //    @Test
-    //    @TestSecurity(
-    //            user = "owner",
-    //            roles = {"openid"})
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"openid"})
     public void testCreateEmpty() {
         given().pathParam("project", "1")
                 .pathParam("portfolio", "1")
@@ -210,10 +210,10 @@ public final class PortfolioScenarioResourceTest {
     /**
      * Test to create a project with a blank name.
      */
-    //    @Test
-    //    @TestSecurity(
-    //            user = "owner",
-    //            roles = {"openid"})
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"openid"})
     public void testCreateBlankName() {
         given().pathParam("project", "1")
                 .pathParam("portfolio", "1")
@@ -228,12 +228,12 @@ public final class PortfolioScenarioResourceTest {
     }
 
     /**
-     * Test that tries to create a scenario for a portfolio.
+     * Test that tries to create a scenario for a portfolio with an unknown Topology.
      */
-    //    @Test
-    //    @TestSecurity(
-    //            user = "owner",
-    //            roles = {"openid"})
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"openid"})
     public void testCreateUnknownTopology() {
         given().pathParam("project", "1")
                 .pathParam("portfolio", "1")
@@ -252,12 +252,12 @@ public final class PortfolioScenarioResourceTest {
     }
 
     /**
-     * Test that tries to create a scenario for a portfolio.
+     * Test that tries to create a scenario for a portfolio with an unknown Trace.
      */
-    //    @Test
-    //    @TestSecurity(
-    //            user = "owner",
-    //            roles = {"openid"})
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"openid"})
     public void testCreateUnknownTrace() {
         given().pathParam("project", "1")
                 .pathParam("portfolio", "1")

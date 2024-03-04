@@ -30,5 +30,5 @@ public data class MemoryUnit(
     val name: String,
     val speedMbPerS: Double,
     val sizeMb: Double,
-    val energyConsumptionW: Double
+    val energyConsumptionW: Double,
 )

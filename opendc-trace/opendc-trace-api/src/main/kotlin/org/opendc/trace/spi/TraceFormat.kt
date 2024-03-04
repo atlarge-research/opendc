@@ -61,7 +61,10 @@ public interface TraceFormat {
      * @throws IllegalArgumentException If [table] does not exist.
      * @return The [TableDetails] for the specified [table].
      */
-    public fun getDetails(path: Path, table: String): TableDetails
+    public fun getDetails(
+        path: Path,
+        table: String,
+    ): TableDetails
 
     /**
      * Open a [TableReader] for the specified [table].
@@ -72,7 +75,11 @@ public interface TraceFormat {
      * @throws IllegalArgumentException If [table] does not exist.
      * @return A [TableReader] instance for the table.
      */
-    public fun newReader(path: Path, table: String, projection: List<String>?): TableReader
+    public fun newReader(
+        path: Path,
+        table: String,
+        projection: List<String>?,
+    ): TableReader
 
     /**
      * Open a [TableWriter] for the specified [table].
@@ -83,7 +90,10 @@ public interface TraceFormat {
      * @throws UnsupportedOperationException If the format does not support writing.
      * @return A [TableWriter] instance for the table.
      */
-    public fun newWriter(path: Path, table: String): TableWriter
+    public fun newWriter(
+        path: Path,
+        table: String,
+    ): TableWriter
 
     /**
      * A helper object for resolving providers.

@@ -44,5 +44,5 @@ public enum class FunctionInstanceState {
     /**
      * The function instance is released and cannot be used anymore.
      */
-    Deleted
+    Deleted,
 }

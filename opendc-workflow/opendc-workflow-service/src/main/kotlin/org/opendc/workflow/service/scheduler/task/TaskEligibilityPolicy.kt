@@ -65,6 +65,6 @@ public interface TaskEligibilityPolicy : StagePolicy<TaskEligibilityPolicy.Logic
         /**
          * Deny the current job and also stop admitting jobs.
          */
-        STOP(false, true)
+        STOP(false, true),
     }
 }

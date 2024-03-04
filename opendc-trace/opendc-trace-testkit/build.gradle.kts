@@ -22,7 +22,7 @@
 
 description = "Reusable test suite for implementors"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }

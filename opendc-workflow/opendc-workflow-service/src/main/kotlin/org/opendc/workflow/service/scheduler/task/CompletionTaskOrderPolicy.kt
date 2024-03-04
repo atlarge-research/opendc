@@ -51,7 +51,10 @@ public data class CompletionTaskOrderPolicy(public val ascending: Boolean = true
                 finished.merge(task.job, 1, Int::plus)
             }
 
-            override fun compare(o1: TaskState, o2: TaskState): Int {
+            override fun compare(
+                o1: TaskState,
+                o2: TaskState,
+            ): Int {
                 return compareValuesBy(o1, o2) { finished.getValue(it.job) / it.job.tasks.size.toDouble() }.let {
                     if (ascending) it else -it
                 }

@@ -65,6 +65,6 @@ public interface JobAdmissionPolicy : StagePolicy<JobAdmissionPolicy.Logic> {
         /**
          * Deny the current job and also stop admitting jobs.
          */
-        STOP(false, true)
+        STOP(false, true),
     }
 }

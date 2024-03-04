@@ -55,7 +55,10 @@ public data class ActiveTaskOrderPolicy(public val ascending: Boolean = true) : 
                 active.merge(task.job, -1, Int::plus)
             }
 
-            override fun compare(o1: TaskState, o2: TaskState): Int {
+            override fun compare(
+                o1: TaskState,
+                o2: TaskState,
+            ): Int {
                 return compareValuesBy(o1, o2) { active.getValue(it.job) }.let {
                     if (ascending) it else -it
                 }

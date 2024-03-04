@@ -54,102 +54,107 @@ public class SimTFDevice(
     dispatcher: Dispatcher,
     pu: ProcessingUnit,
     private val memory: MemoryUnit,
-    powerModel: CpuPowerModel
+    powerModel: CpuPowerModel,
 ) : TFDevice {
     /**
      * The [SimMachine] representing the device.
      */
-    private val machine = SimBareMetalMachine.create(
-        FlowEngine.create(dispatcher).newGraph(),
-        MachineModel(listOf(pu), listOf(memory)),
-        SimPsuFactories.simple(powerModel)
-    )
+    private val machine =
+        SimBareMetalMachine.create(
+            FlowEngine.create(dispatcher).newGraph(),
+            MachineModel(listOf(pu), listOf(memory)),
+            SimPsuFactories.simple(powerModel),
+        )
 
     /**
      * The workload that will be run by the device.
      */
-    private val workload = object : SimWorkload, FlowStageLogic {
-        /**
-         * The [FlowStage] of the workload.
-         */
-        var stage: FlowStage? = null
+    private val workload =
+        object : SimWorkload, FlowStageLogic {
+            /**
+             * The [FlowStage] of the workload.
+             */
+            var stage: FlowStage? = null
 
-        /**
-         * The output of the workload.
-         */
-        private var output: OutPort? = null
+            /**
+             * The output of the workload.
+             */
+            private var output: OutPort? = null
 
-        /**
-         * The queue of work to run.
-         */
-        val queue = ArrayDeque<Work>()
+            /**
+             * The queue of work to run.
+             */
+            val queue = ArrayDeque<Work>()
 
-        /**
-         * A flag to indicate that the workload is idle.
-         */
-        val isIdle
-            get() = activeWork == null
+            /**
+             * A flag to indicate that the workload is idle.
+             */
+            val isIdle
+                get() = activeWork == null
 
-        /**
-         * The active work of the workload.
-         */
-        private var activeWork: Work? = null
+            /**
+             * The active work of the workload.
+             */
+            private var activeWork: Work? = null
 
-        /**
-         * The timestamp of the last pull.
-         */
-        private var lastPull: Long = 0L
+            /**
+             * The timestamp of the last pull.
+             */
+            private var lastPull: Long = 0L
 
-        override fun onStart(ctx: SimMachineContext) {
-            val stage = ctx.graph.newStage(this)
-            this.stage = stage
-            output = stage.getOutlet("out")
-            lastPull = ctx.graph.engine.clock.millis()
+            override fun onStart(ctx: SimMachineContext) {
+                val stage = ctx.graph.newStage(this)
+                this.stage = stage
+                output = stage.getOutlet("out")
+                lastPull = ctx.graph.engine.clock.millis()
 
-            ctx.graph.connect(output, ctx.cpus[0].input)
-        }
+                ctx.graph.connect(output, ctx.cpus[0].input)
+            }
 
-        override fun onStop(ctx: SimMachineContext) {
-            stage?.close()
-            stage = null
-            output = null
-        }
+            override fun onStop(ctx: SimMachineContext) {
+                stage?.close()
+                stage = null
+                output = null
+            }
 
-        override fun setOffset(now: Long) {}
+            override fun setOffset(now: Long) {}
 
-        override fun snapshot(): SimWorkload = throw UnsupportedOperationException()
+            override fun snapshot(): SimWorkload = throw UnsupportedOperationException()
 
-        override fun onUpdate(ctx: FlowStage, now: Long): Long {
-            val output = output ?: return Long.MAX_VALUE
-            val lastPull = lastPull
-            this.lastPull = now
-            val delta = (now - lastPull).coerceAtLeast(0)
-            val consumedWork = output.rate * delta / 1000.0
+            override fun onUpdate(
+                ctx: FlowStage,
+                now: Long,
+            ): Long {
+                val output = output ?: return Long.MAX_VALUE
+                val lastPull = lastPull
+                this.lastPull = now
+                val delta = (now - lastPull).coerceAtLeast(0)
+                val consumedWork = output.rate * delta / 1000.0
 
-            val activeWork = activeWork
-            if (activeWork != null) {
-                if (activeWork.consume(consumedWork)) {
-                    this.activeWork = null
-                } else {
-                    val duration = ceil(activeWork.flops / output.capacity * 1000).toLong()
+                val activeWork = activeWork
+                if (activeWork != null) {
+                    if (activeWork.consume(consumedWork)) {
+                        this.activeWork = null
+                    } else {
+                        val duration = ceil(activeWork.flops / output.capacity * 1000).toLong()
+                        output.push(output.capacity)
+                        return now + duration
+                    }
+                }
+
+                val queue = queue
+                val head = queue.poll()
+                return if (head != null) {
+                    this.activeWork = head
+                    val duration = (head.flops / output.capacity * 1000).roundToLong()
                     output.push(output.capacity)
-                    return now + duration
+                    now + duration
+                } else {
+                    output.push(0.0f)
+                    Long.MAX_VALUE
                 }
             }
-
-            val queue = queue
-            val head = queue.poll()
-            return if (head != null) {
-                this.activeWork = head
-                val duration = (head.flops / output.capacity * 1000).roundToLong()
-                output.push(output.capacity)
-                now + duration
-            } else {
-                output.push(0.0f)
-                Long.MAX_VALUE
-            }
         }
-    }
 
     init {
         machine.startWorkload(workload, emptyMap()) {}
@@ -160,12 +165,13 @@ public class SimTFDevice(
         delay(duration.toLong())
     }
 
-    override suspend fun compute(flops: Double) = suspendCancellableCoroutine<Unit> { cont ->
-        workload.queue.add(Work(flops, cont))
-        if (workload.isIdle) {
-            workload.stage?.invalidate()
+    override suspend fun compute(flops: Double) =
+        suspendCancellableCoroutine<Unit> { cont ->
+            workload.queue.add(Work(flops, cont))
+            if (workload.isIdle) {
+                workload.stage?.invalidate()
+            }
         }
-    }
 
     override fun getDeviceStats(): TFDeviceStats {
         return TFDeviceStats(machine.cpuUsage, machine.psu.powerDraw, machine.psu.energyUsage)

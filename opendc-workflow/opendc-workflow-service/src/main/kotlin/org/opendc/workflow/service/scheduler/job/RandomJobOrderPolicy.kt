@@ -52,7 +52,10 @@ public object RandomJobOrderPolicy : JobOrderPolicy {
                 ids.remove(job.job)
             }
 
-            override fun compare(o1: JobState, o2: JobState): Int {
+            override fun compare(
+                o1: JobState,
+                o2: JobState,
+            ): Int {
                 return compareValuesBy(o1, o2) { ids.getValue(it.job) }
             }
         }

@@ -32,5 +32,8 @@ public interface HostFault {
     /**
      * Apply the fault to the specified [victims].
      */
-    public suspend fun apply(clock: InstantSource, victims: List<SimHost>)
+    public suspend fun apply(
+        clock: InstantSource,
+        victims: List<SimHost>,
+    )
 }

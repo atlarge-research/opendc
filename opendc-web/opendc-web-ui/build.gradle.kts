@@ -43,27 +43,29 @@ node {
     version.set(libs.versions.node.get())
 }
 
-val formatTask = tasks.register<NpmTask>("prettierFormat") {
-    group = "formatting"
-    description = "Use Prettier to format the JavaScript codebase"
+val formatTask =
+    tasks.register<NpmTask>("prettierFormat") {
+        group = "formatting"
+        description = "Use Prettier to format the JavaScript codebase"
 
-    args.set(listOf("run", "format"))
-    dependsOn(tasks.npmInstall)
-    inputs.dir("src")
-    inputs.files("package.json", "next.config.js", ".prettierrc.yaml")
-    outputs.upToDateWhen { true }
-}
+        args.set(listOf("run", "format"))
+        dependsOn(tasks.npmInstall)
+        inputs.dir("src")
+        inputs.files("package.json", "next.config.js", ".prettierrc.yaml")
+        outputs.upToDateWhen { true }
+    }
 
-val lintTask = tasks.register<NpmTask>("nextLint") {
-    group = "verification"
-    description = "Use ESLint to check for problems"
+val lintTask =
+    tasks.register<NpmTask>("nextLint") {
+        group = "verification"
+        description = "Use ESLint to check for problems"
 
-    args.set(listOf("run", "lint"))
-    dependsOn(tasks.npmInstall)
-    inputs.dir("src")
-    inputs.files("package.json", "next.config.js", ".eslintrc")
-    outputs.upToDateWhen { true }
-}
+        args.set(listOf("run", "lint"))
+        dependsOn(tasks.npmInstall)
+        inputs.dir("src")
+        inputs.files("package.json", "next.config.js", ".eslintrc")
+        outputs.upToDateWhen { true }
+    }
 
 tasks.register<NpmTask>("nextDev") {
     group = "build"
@@ -77,29 +79,31 @@ tasks.register<NpmTask>("nextDev") {
     outputs.upToDateWhen { true }
 }
 
-val buildTask = tasks.register<NpmTask>("nextBuild") {
-    group = "build"
-    description = "Build the Next.js project"
+val buildTask =
+    tasks.register<NpmTask>("nextBuild") {
+        group = "build"
+        description = "Build the Next.js project"
 
-    args.set(listOf("run", "build"))
+        args.set(listOf("run", "build"))
 
-    val env = listOf(
-        "NEXT_PUBLIC_API_BASE_URL",
-        "NEXT_PUBLIC_SENTRY_DSN",
-        "NEXT_PUBLIC_AUTH0_DOMAIN",
-        "NEXT_PUBLIC_AUTH0_CLIENT_ID",
-        "NEXT_PUBLIC_AUTH0_AUDIENCE"
-    )
-    for (envvar in env) {
-        environment.put(envvar, "%%$envvar%%")
+        val env =
+            listOf(
+                "NEXT_PUBLIC_API_BASE_URL",
+                "NEXT_PUBLIC_SENTRY_DSN",
+                "NEXT_PUBLIC_AUTH0_DOMAIN",
+                "NEXT_PUBLIC_AUTH0_CLIENT_ID",
+                "NEXT_PUBLIC_AUTH0_AUDIENCE",
+            )
+        for (envvar in env) {
+            environment.put(envvar, "%%$envvar%%")
+        }
+
+        dependsOn(tasks.npmInstall)
+        inputs.dir(project.fileTree("src"))
+        inputs.dir("node_modules")
+        inputs.files("package.json", "next.config.js")
+        outputs.dir(layout.buildDirectory.dir("next"))
     }
-
-    dependsOn(tasks.npmInstall)
-    inputs.dir(project.fileTree("src"))
-    inputs.dir("node_modules")
-    inputs.files("package.json", "next.config.js")
-    outputs.dir(layout.buildDirectory.dir("next"))
-}
 
 tasks.register<NpmTask>("nextStart") {
     group = "build"

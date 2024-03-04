@@ -59,7 +59,7 @@ public interface FaaSClient : AutoCloseable {
         name: String,
         memorySize: Long,
         labels: Map<String, String> = emptyMap(),
-        meta: Map<String, Any> = emptyMap()
+        meta: Map<String, Any> = emptyMap(),
     ): FaaSFunction
 
     /**

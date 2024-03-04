@@ -41,114 +41,121 @@ class TensorFlowTest {
      * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
      */
     @Test
-    fun testSmokeAlexNet() = runSimulation {
-        val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
-        val def = MLEnvironmentReader().readEnvironment(envInput).first()
+    fun testSmokeAlexNet() =
+        runSimulation {
+            val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
+            val def = MLEnvironmentReader().readEnvironment(envInput).first()
 
-        val device = SimTFDevice(
-            def.uid,
-            def.meta["gpu"] as Boolean,
-            dispatcher,
-            def.model.cpus[0],
-            def.model.memory[0],
-            CpuPowerModels.linear(250.0, 60.0)
-        )
-        val strategy = OneDeviceStrategy(device)
-        val batchSize = 32
-        val model = AlexNet(batchSize.toLong())
-        model.use {
-            it.compile(strategy)
+            val device =
+                SimTFDevice(
+                    def.uid,
+                    def.meta["gpu"] as Boolean,
+                    dispatcher,
+                    def.model.cpus[0],
+                    def.model.memory[0],
+                    CpuPowerModels.linear(250.0, 60.0),
+                )
+            val strategy = OneDeviceStrategy(device)
+            val batchSize = 32
+            val model = getAlexNet(batchSize.toLong())
+            model.use {
+                it.compile(strategy)
 
-            it.fit(epochs = 9088 / batchSize, batchSize = batchSize)
+                it.fit(epochs = 9088 / batchSize, batchSize = batchSize)
+            }
+
+            device.close()
+
+            val stats = device.getDeviceStats()
+            assertAll(
+                { assertEquals(3309694252, timeSource.millis()) },
+                { assertEquals(8.27423563E8, stats.energyUsage) },
+            )
         }
-
-        device.close()
-
-        val stats = device.getDeviceStats()
-        assertAll(
-            { assertEquals(3309694252, timeSource.millis()) },
-            { assertEquals(8.27423563E8, stats.energyUsage) }
-        )
-    }
 
     /**
      * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
      */
     @Test
-    fun testSmokeVGG() = runSimulation {
-        val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
-        val def = MLEnvironmentReader().readEnvironment(envInput).first()
+    fun testSmokeVGG() =
+        runSimulation {
+            val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
+            val def = MLEnvironmentReader().readEnvironment(envInput).first()
 
-        val device = SimTFDevice(
-            def.uid,
-            def.meta["gpu"] as Boolean,
-            dispatcher,
-            def.model.cpus[0],
-            def.model.memory[0],
-            CpuPowerModels.linear(250.0, 60.0)
-        )
-        val strategy = OneDeviceStrategy(device)
-        val batchSize = 128
-        val model = VGG16(batchSize.toLong())
-        model.use {
-            it.compile(strategy)
+            val device =
+                SimTFDevice(
+                    def.uid,
+                    def.meta["gpu"] as Boolean,
+                    dispatcher,
+                    def.model.cpus[0],
+                    def.model.memory[0],
+                    CpuPowerModels.linear(250.0, 60.0),
+                )
+            val strategy = OneDeviceStrategy(device)
+            val batchSize = 128
+            val model = getVGG16(batchSize.toLong())
+            model.use {
+                it.compile(strategy)
 
-            it.fit(epochs = 9088 / batchSize, batchSize = batchSize)
+                it.fit(epochs = 9088 / batchSize, batchSize = batchSize)
+            }
+
+            device.close()
+
+            val stats = device.getDeviceStats()
+            assertAll(
+                { assertEquals(176230328513, timeSource.millis()) },
+                { assertEquals(4.405758212825E10, stats.energyUsage) },
+            )
         }
-
-        device.close()
-
-        val stats = device.getDeviceStats()
-        assertAll(
-            { assertEquals(176230328513, timeSource.millis()) },
-            { assertEquals(4.405758212825E10, stats.energyUsage) }
-        )
-    }
 
     /**
      * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
      */
     @Test
-    fun testSmokeDistribute() = runSimulation {
-        val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
-        val def = MLEnvironmentReader().readEnvironment(envInput).first()
+    fun testSmokeDistribute() =
+        runSimulation {
+            val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
+            val def = MLEnvironmentReader().readEnvironment(envInput).first()
 
-        val deviceA = SimTFDevice(
-            def.uid,
-            def.meta["gpu"] as Boolean,
-            dispatcher,
-            def.model.cpus[0],
-            def.model.memory[0],
-            CpuPowerModels.linear(250.0, 60.0)
-        )
+            val deviceA =
+                SimTFDevice(
+                    def.uid,
+                    def.meta["gpu"] as Boolean,
+                    dispatcher,
+                    def.model.cpus[0],
+                    def.model.memory[0],
+                    CpuPowerModels.linear(250.0, 60.0),
+                )
 
-        val deviceB = SimTFDevice(
-            UUID.randomUUID(),
-            def.meta["gpu"] as Boolean,
-            dispatcher,
-            def.model.cpus[0],
-            def.model.memory[0],
-            CpuPowerModels.linear(250.0, 60.0)
-        )
+            val deviceB =
+                SimTFDevice(
+                    UUID.randomUUID(),
+                    def.meta["gpu"] as Boolean,
+                    dispatcher,
+                    def.model.cpus[0],
+                    def.model.memory[0],
+                    CpuPowerModels.linear(250.0, 60.0),
+                )
 
-        val strategy = MirroredStrategy(listOf(deviceA, deviceB))
-        val batchSize = 32
-        val model = AlexNet(batchSize.toLong())
-        model.use {
-            it.compile(strategy)
+            val strategy = MirroredStrategy(listOf(deviceA, deviceB))
+            val batchSize = 32
+            val model = getAlexNet(batchSize.toLong())
+            model.use {
+                it.compile(strategy)
 
-            it.fit(epochs = 9088 / batchSize, batchSize = batchSize)
+                it.fit(epochs = 9088 / batchSize, batchSize = batchSize)
+            }
+
+            deviceA.close()
+            deviceB.close()
+
+            val statsA = deviceA.getDeviceStats()
+            val statsB = deviceB.getDeviceStats()
+            assertAll(
+                { assertEquals(1704994000, timeSource.millis()) },
+                { assertEquals(4.262485E8, statsA.energyUsage) },
+                { assertEquals(4.262485E8, statsB.energyUsage) },
+            )
         }
-
-        deviceA.close()
-        deviceB.close()
-
-        val statsA = deviceA.getDeviceStats()
-        val statsB = deviceB.getDeviceStats()
-        assertAll(
-            { assertEquals(1704994000, timeSource.millis()) },
-            { assertEquals(4.262485E8, statsA.energyUsage) },
-            { assertEquals(4.262485E8, statsB.energyUsage) }
-        )
-    }
 }

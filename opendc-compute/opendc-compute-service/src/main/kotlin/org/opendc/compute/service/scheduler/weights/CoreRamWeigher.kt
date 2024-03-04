@@ -33,7 +33,10 @@ import org.opendc.compute.service.HostView
  * memory.
  */
 public class CoreRamWeigher(override val multiplier: Double = 1.0) : HostWeigher {
-    override fun getWeight(host: HostView, server: Server): Double {
+    override fun getWeight(
+        host: HostView,
+        server: Server,
+    ): Double {
         return host.availableMemory.toDouble() / host.host.model.cpuCount
     }
 

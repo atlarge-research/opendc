@@ -35,7 +35,7 @@ public fun setupWorkflowService(
     serviceDomain: String,
     computeService: String,
     scheduler: WorkflowSchedulerSpec,
-    schedulingQuantum: Duration = Duration.ofMinutes(5)
+    schedulingQuantum: Duration = Duration.ofMinutes(5),
 ): ProvisioningStep {
     return WorkflowServiceProvisioningStep(serviceDomain, computeService, scheduler, schedulingQuantum)
 }

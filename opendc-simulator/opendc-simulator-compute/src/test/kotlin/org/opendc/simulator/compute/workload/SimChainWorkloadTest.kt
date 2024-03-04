@@ -51,235 +51,255 @@ class SimChainWorkloadTest {
     fun setUp() {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
-        machineModel = MachineModel(
-            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
-            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
-        )
+        machineModel =
+            MachineModel(
+                // cpus
+                List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
+                // memory
+                List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+            )
     }
 
     @Test
-    fun testMultipleWorkloads() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testMultipleWorkloads() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(
-            graph,
-            machineModel
-        )
+            val machine =
+                SimBareMetalMachine.create(
+                    graph,
+                    machineModel,
+                )
 
-        val workload =
-            SimWorkloads.chain(
-                SimWorkloads.runtime(1000, 1.0),
-                SimWorkloads.runtime(1000, 1.0)
-            )
+            val workload =
+                SimWorkloads.chain(
+                    SimWorkloads.runtime(1000, 1.0),
+                    SimWorkloads.runtime(1000, 1.0),
+                )
 
-        machine.runWorkload(workload)
+            machine.runWorkload(workload)
 
-        assertEquals(2000, timeSource.millis())
-    }
-
-    @Test
-    fun testStartFailure() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val machine = SimBareMetalMachine.create(
-            graph,
-            machineModel
-        )
-
-        val workloadA = mockk<SimWorkload>()
-        every { workloadA.onStart(any()) } throws IllegalStateException("Staged")
-        every { workloadA.onStop(any()) } returns Unit
-
-        val workload =
-            SimWorkloads.chain(
-                workloadA,
-                SimWorkloads.runtime(1000, 1.0)
-            )
-
-        assertThrows<IllegalStateException> { machine.runWorkload(workload) }
-
-        assertEquals(0, timeSource.millis())
-    }
+            assertEquals(2000, timeSource.millis())
+        }
 
     @Test
-    fun testStartFailureSecond() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testStartFailure() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(
-            graph,
-            machineModel
-        )
+            val machine =
+                SimBareMetalMachine.create(
+                    graph,
+                    machineModel,
+                )
 
-        val workloadA = mockk<SimWorkload>()
-        every { workloadA.onStart(any()) } throws IllegalStateException("Staged")
-        every { workloadA.onStop(any()) } returns Unit
+            val workloadA = mockk<SimWorkload>()
+            every { workloadA.onStart(any()) } throws IllegalStateException("Staged")
+            every { workloadA.onStop(any()) } returns Unit
 
-        val workload =
-            SimWorkloads.chain(
-                SimWorkloads.runtime(1000, 1.0),
-                workloadA,
-                SimWorkloads.runtime(1000, 1.0)
-            )
+            val workload =
+                SimWorkloads.chain(
+                    workloadA,
+                    SimWorkloads.runtime(1000, 1.0),
+                )
 
-        assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+            assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
-        assertEquals(1000, timeSource.millis())
-    }
-
-    @Test
-    fun testStopFailure() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val machine = SimBareMetalMachine.create(
-            graph,
-            machineModel
-        )
-
-        val workloadA = spyk<SimWorkload>(SimRuntimeWorkload(1000, 1.0))
-        every { workloadA.onStop(any()) } throws IllegalStateException("Staged")
-
-        val workload =
-            SimWorkloads.chain(
-                workloadA,
-                SimWorkloads.runtime(1000, 1.0)
-            )
-
-        assertThrows<IllegalStateException> { machine.runWorkload(workload) }
-
-        assertEquals(1000, timeSource.millis())
-    }
+            assertEquals(0, timeSource.millis())
+        }
 
     @Test
-    fun testStopFailureSecond() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testStartFailureSecond() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(
-            graph,
-            machineModel
-        )
+            val machine =
+                SimBareMetalMachine.create(
+                    graph,
+                    machineModel,
+                )
 
-        val workloadA = spyk<SimWorkload>(SimRuntimeWorkload(1000, 1.0))
-        every { workloadA.onStop(any()) } throws IllegalStateException("Staged")
+            val workloadA = mockk<SimWorkload>()
+            every { workloadA.onStart(any()) } throws IllegalStateException("Staged")
+            every { workloadA.onStop(any()) } returns Unit
 
-        val workload =
-            SimWorkloads.chain(
-                SimWorkloads.runtime(1000, 1.0),
-                workloadA,
-                SimWorkloads.runtime(1000, 1.0)
-            )
+            val workload =
+                SimWorkloads.chain(
+                    SimWorkloads.runtime(1000, 1.0),
+                    workloadA,
+                    SimWorkloads.runtime(1000, 1.0),
+                )
 
-        assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+            assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
-        assertEquals(2000, timeSource.millis())
-    }
-
-    @Test
-    fun testStartAndStopFailure() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val machine = SimBareMetalMachine.create(
-            graph,
-            machineModel
-        )
-
-        val workloadA = mockk<SimWorkload>()
-        every { workloadA.onStart(any()) } throws IllegalStateException()
-        every { workloadA.onStop(any()) } throws IllegalStateException()
-
-        val workload =
-            SimWorkloads.chain(
-                SimRuntimeWorkload(1000, 1.0),
-                workloadA
-            )
-
-        val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
-
-        assertEquals(2, exc.cause!!.suppressedExceptions.size)
-        assertEquals(1000, timeSource.millis())
-    }
+            assertEquals(1000, timeSource.millis())
+        }
 
     @Test
-    fun testShutdownAndStopFailure() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testStopFailure() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(
-            graph,
-            machineModel
-        )
+            val machine =
+                SimBareMetalMachine.create(
+                    graph,
+                    machineModel,
+                )
 
-        val workloadA = mockk<SimWorkload>()
-        every { workloadA.onStart(any()) } answers { (it.invocation.args[0] as SimMachineContext).shutdown(IllegalStateException()) }
-        every { workloadA.onStop(any()) } throws IllegalStateException()
+            val workloadA = spyk<SimWorkload>(SimRuntimeWorkload(1000, 1.0))
+            every { workloadA.onStop(any()) } throws IllegalStateException("Staged")
 
-        val workload =
-            SimWorkloads.chain(
-                SimRuntimeWorkload(1000, 1.0),
-                workloadA
-            )
+            val workload =
+                SimWorkloads.chain(
+                    workloadA,
+                    SimWorkloads.runtime(1000, 1.0),
+                )
 
-        val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+            assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
-        assertEquals(1, exc.cause!!.suppressedExceptions.size)
-        assertEquals(1000, timeSource.millis())
-    }
-
-    @Test
-    fun testShutdownAndStartFailure() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val machine = SimBareMetalMachine.create(
-            graph,
-            machineModel
-        )
-
-        val workloadA = mockk<SimWorkload>(relaxUnitFun = true)
-        every { workloadA.onStart(any()) } answers { (it.invocation.args[0] as SimMachineContext).shutdown(IllegalStateException()) }
-
-        val workloadB = mockk<SimWorkload>(relaxUnitFun = true)
-        every { workloadB.onStart(any()) } throws IllegalStateException()
-
-        val workload =
-            SimWorkloads.chain(
-                SimRuntimeWorkload(1000, 1.0),
-                workloadA,
-                workloadB
-            )
-
-        val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
-        assertEquals(1, exc.cause!!.suppressedExceptions.size)
-        assertEquals(1000, timeSource.millis())
-    }
+            assertEquals(1000, timeSource.millis())
+        }
 
     @Test
-    fun testSnapshot() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testStopFailureSecond() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(graph, machineModel)
-        val workload =
-            SimWorkloads.chain(
-                SimWorkloads.runtime(1000, 1.0),
-                SimWorkloads.runtime(1000, 1.0)
-            )
+            val machine =
+                SimBareMetalMachine.create(
+                    graph,
+                    machineModel,
+                )
 
-        val job = launch { machine.runWorkload(workload) }
-        delay(500L)
-        val snapshot = workload.snapshot()
+            val workloadA = spyk<SimWorkload>(SimRuntimeWorkload(1000, 1.0))
+            every { workloadA.onStop(any()) } throws IllegalStateException("Staged")
 
-        job.join()
+            val workload =
+                SimWorkloads.chain(
+                    SimWorkloads.runtime(1000, 1.0),
+                    workloadA,
+                    SimWorkloads.runtime(1000, 1.0),
+                )
 
-        assertEquals(2000, timeSource.millis())
+            assertThrows<IllegalStateException> { machine.runWorkload(workload) }
 
-        machine.runWorkload(snapshot)
+            assertEquals(2000, timeSource.millis())
+        }
 
-        assertEquals(3500, timeSource.millis())
-    }
+    @Test
+    fun testStartAndStopFailure() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+
+            val machine =
+                SimBareMetalMachine.create(
+                    graph,
+                    machineModel,
+                )
+
+            val workloadA = mockk<SimWorkload>()
+            every { workloadA.onStart(any()) } throws IllegalStateException()
+            every { workloadA.onStop(any()) } throws IllegalStateException()
+
+            val workload =
+                SimWorkloads.chain(
+                    SimRuntimeWorkload(1000, 1.0),
+                    workloadA,
+                )
+
+            val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+
+            assertEquals(2, exc.cause!!.suppressedExceptions.size)
+            assertEquals(1000, timeSource.millis())
+        }
+
+    @Test
+    fun testShutdownAndStopFailure() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+
+            val machine =
+                SimBareMetalMachine.create(
+                    graph,
+                    machineModel,
+                )
+
+            val workloadA = mockk<SimWorkload>()
+            every { workloadA.onStart(any()) } answers { (it.invocation.args[0] as SimMachineContext).shutdown(IllegalStateException()) }
+            every { workloadA.onStop(any()) } throws IllegalStateException()
+
+            val workload =
+                SimWorkloads.chain(
+                    SimRuntimeWorkload(1000, 1.0),
+                    workloadA,
+                )
+
+            val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+
+            assertEquals(1, exc.cause!!.suppressedExceptions.size)
+            assertEquals(1000, timeSource.millis())
+        }
+
+    @Test
+    fun testShutdownAndStartFailure() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+
+            val machine =
+                SimBareMetalMachine.create(
+                    graph,
+                    machineModel,
+                )
+
+            val workloadA = mockk<SimWorkload>(relaxUnitFun = true)
+            every { workloadA.onStart(any()) } answers { (it.invocation.args[0] as SimMachineContext).shutdown(IllegalStateException()) }
+
+            val workloadB = mockk<SimWorkload>(relaxUnitFun = true)
+            every { workloadB.onStart(any()) } throws IllegalStateException()
+
+            val workload =
+                SimWorkloads.chain(
+                    SimRuntimeWorkload(1000, 1.0),
+                    workloadA,
+                    workloadB,
+                )
+
+            val exc = assertThrows<IllegalStateException> { machine.runWorkload(workload) }
+            assertEquals(1, exc.cause!!.suppressedExceptions.size)
+            assertEquals(1000, timeSource.millis())
+        }
+
+    @Test
+    fun testSnapshot() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+
+            val machine = SimBareMetalMachine.create(graph, machineModel)
+            val workload =
+                SimWorkloads.chain(
+                    SimWorkloads.runtime(1000, 1.0),
+                    SimWorkloads.runtime(1000, 1.0),
+                )
+
+            val job = launch { machine.runWorkload(workload) }
+            delay(500L)
+            val snapshot = workload.snapshot()
+
+            job.join()
+
+            assertEquals(2000, timeSource.millis())
+
+            machine.runWorkload(snapshot)
+
+            assertEquals(3500, timeSource.millis())
+        }
 }

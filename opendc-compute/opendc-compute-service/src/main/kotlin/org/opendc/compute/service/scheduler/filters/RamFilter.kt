@@ -31,7 +31,10 @@ import org.opendc.compute.service.HostView
  * @param allocationRatio Virtual RAM to physical RAM allocation ratio.
  */
 public class RamFilter(private val allocationRatio: Double) : HostFilter {
-    override fun test(host: HostView, server: Server): Boolean {
+    override fun test(
+        host: HostView,
+        server: Server,
+    ): Boolean {
         val requested = server.flavor.memorySize
         val available = host.availableMemory
         val total = host.host.model.memoryCapacity

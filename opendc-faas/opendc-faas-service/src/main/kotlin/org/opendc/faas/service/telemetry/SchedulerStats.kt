@@ -32,5 +32,5 @@ package org.opendc.faas.service.telemetry
 public data class SchedulerStats(
     val totalInvocations: Long,
     val timelyInvocations: Long,
-    val delayedInvocations: Long
+    val delayedInvocations: Long,
 )

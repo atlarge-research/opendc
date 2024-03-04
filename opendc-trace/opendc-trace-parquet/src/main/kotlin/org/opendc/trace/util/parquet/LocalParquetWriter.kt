@@ -37,7 +37,7 @@ public class LocalParquetWriter {
      */
     public class Builder<T> internal constructor(
         output: OutputFile,
-        private val writeSupport: WriteSupport<T>
+        private val writeSupport: WriteSupport<T>,
     ) : ParquetWriter.Builder<T, Builder<T>>(output) {
         override fun self(): Builder<T> = this
 
@@ -49,7 +49,9 @@ public class LocalParquetWriter {
          * Create a [Builder] instance that writes a Parquet file at the specified [path].
          */
         @JvmStatic
-        public fun <T> builder(path: Path, writeSupport: WriteSupport<T>): Builder<T> =
-            Builder(LocalOutputFile(path), writeSupport)
+        public fun <T> builder(
+            path: Path,
+            writeSupport: WriteSupport<T>,
+        ): Builder<T> = Builder(LocalOutputFile(path), writeSupport)
     }
 }

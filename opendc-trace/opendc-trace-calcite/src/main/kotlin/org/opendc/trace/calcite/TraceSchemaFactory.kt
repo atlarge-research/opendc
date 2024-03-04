@@ -36,7 +36,11 @@ import java.nio.file.Paths
  * This factory allows users to include a schema that references a trace in a `model.json` file.
  */
 public class TraceSchemaFactory : SchemaFactory {
-    override fun create(parentSchema: SchemaPlus, name: String, operand: Map<String, Any>): Schema {
+    override fun create(
+        parentSchema: SchemaPlus,
+        name: String,
+        operand: Map<String, Any>,
+    ): Schema {
         val base = operand[ModelHandler.ExtraOperand.BASE_DIRECTORY.camelName] as File?
         val pathParam = requireNotNull(operand["path"]) { "Trace path not specified" } as String
         val path = if (base != null) File(base, pathParam).toPath() else Paths.get(pathParam)

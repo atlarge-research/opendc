@@ -39,7 +39,7 @@ class ServerlessTraceReaderTest {
         assertAll(
             { assertEquals(2, trace.size) },
             { assertEquals("004c1ea5eb15978682b00ab659aed21e2835d5287668da8d5267f751fdfbdd78", trace[0].id) },
-            { assertEquals(256, trace[0].maxMemory) }
+            { assertEquals(256, trace[0].maxMemory) },
         )
     }
 }

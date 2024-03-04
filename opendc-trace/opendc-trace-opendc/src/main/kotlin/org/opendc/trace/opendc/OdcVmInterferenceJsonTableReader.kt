@@ -65,24 +65,24 @@ internal class OdcVmInterferenceJsonTableReader(private val parser: JsonParser) 
         }
     }
 
-    private val COL_MEMBERS = 0
-    private val COL_TARGET = 1
-    private val COL_SCORE = 2
+    private val colMembers = 0
+    private val colTarget = 1
+    private val colScore = 2
 
-    private val TYPE_MEMBERS = TableColumnType.Set(TableColumnType.String)
+    private val typeMembers = TableColumnType.Set(TableColumnType.String)
 
     override fun resolve(name: String): Int {
         return when (name) {
-            INTERFERENCE_GROUP_MEMBERS -> COL_MEMBERS
-            INTERFERENCE_GROUP_TARGET -> COL_TARGET
-            INTERFERENCE_GROUP_SCORE -> COL_SCORE
+            INTERFERENCE_GROUP_MEMBERS -> colMembers
+            INTERFERENCE_GROUP_TARGET -> colTarget
+            INTERFERENCE_GROUP_SCORE -> colScore
             else -> -1
         }
     }
 
     override fun isNull(index: Int): Boolean {
         return when (index) {
-            COL_MEMBERS, COL_TARGET, COL_SCORE -> false
+            colMembers, colTarget, colScore -> false
             else -> throw IllegalArgumentException("Invalid column index $index")
         }
     }
@@ -106,8 +106,8 @@ internal class OdcVmInterferenceJsonTableReader(private val parser: JsonParser) 
     override fun getDouble(index: Int): Double {
         checkActive()
         return when (index) {
-            COL_TARGET -> targetLoad
-            COL_SCORE -> score
+            colTarget -> targetLoad
+            colScore -> score
             else -> throw IllegalArgumentException("Invalid column $index")
         }
     }
@@ -128,19 +128,29 @@ internal class OdcVmInterferenceJsonTableReader(private val parser: JsonParser) 
         throw IllegalArgumentException("Invalid column $index")
     }
 
-    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+    override fun <T> getList(
+        index: Int,
+        elementType: Class<T>,
+    ): List<T>? {
         throw IllegalArgumentException("Invalid column $index")
     }
 
-    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+    override fun <T> getSet(
+        index: Int,
+        elementType: Class<T>,
+    ): Set<T>? {
         checkActive()
         return when (index) {
-            COL_MEMBERS -> TYPE_MEMBERS.convertTo(members, elementType)
+            colMembers -> typeMembers.convertTo(members, elementType)
             else -> throw IllegalArgumentException("Invalid column $index")
         }
     }
 
-    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+    override fun <K, V> getMap(
+        index: Int,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>? {
         throw IllegalArgumentException("Invalid column $index")
     }
 
@@ -196,7 +206,10 @@ internal class OdcVmInterferenceJsonTableReader(private val parser: JsonParser) 
     /**
      * Parse the members of a group.
      */
-    private fun parseGroupMembers(parser: JsonParser, members: MutableSet<String>) {
+    private fun parseGroupMembers(
+        parser: JsonParser,
+        members: MutableSet<String>,
+    ) {
         if (!parser.isExpectedStartArrayToken) {
             throw JsonParseException(parser, "Expected array for group members, but got ${parser.currentToken()}")
         }

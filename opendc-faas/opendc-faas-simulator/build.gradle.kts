@@ -22,7 +22,7 @@
 
 description = "Simulator for the OpenDC FaaS platform"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }

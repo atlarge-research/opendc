@@ -56,6 +56,9 @@ public fun interface ProvisioningStep {
          * @param config The external configuration of the experiment runner.
          * @return The [ProvisioningStep] constructed according to [spec].
          */
-        public abstract fun create(spec: S, config: Config): ProvisioningStep
+        public abstract fun create(
+            spec: S,
+            config: Config,
+        ): ProvisioningStep
     }
 }

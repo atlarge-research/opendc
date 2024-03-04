@@ -27,18 +27,18 @@ import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import org.opendc.trace.TableReader
-import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
-import org.opendc.trace.conv.RESOURCE_STATE_DISK_READ
-import org.opendc.trace.conv.RESOURCE_STATE_DISK_WRITE
-import org.opendc.trace.conv.RESOURCE_STATE_MEM_USAGE
-import org.opendc.trace.conv.RESOURCE_STATE_NET_RX
-import org.opendc.trace.conv.RESOURCE_STATE_NET_TX
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
+import org.opendc.trace.conv.resourceCpuCapacity
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceStateCpuUsage
+import org.opendc.trace.conv.resourceStateCpuUsagePct
+import org.opendc.trace.conv.resourceStateDiskRead
+import org.opendc.trace.conv.resourceStateDiskWrite
+import org.opendc.trace.conv.resourceStateMemUsage
+import org.opendc.trace.conv.resourceStateNetRx
+import org.opendc.trace.conv.resourceStateNetTx
+import org.opendc.trace.conv.resourceStateTimestamp
 import java.text.NumberFormat
 import java.time.Duration
 import java.time.Instant
@@ -103,20 +103,21 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
 
             when (parser.currentName) {
                 "Timestamp [ms]" -> {
-                    timestamp = when (timestampType) {
-                        TimestampType.UNDECIDED -> {
-                            try {
-                                val res = LocalDateTime.parse(parser.text, formatter).toInstant(ZoneOffset.UTC)
-                                timestampType = TimestampType.DATE_TIME
-                                res
-                            } catch (e: DateTimeParseException) {
-                                timestampType = TimestampType.EPOCH_MILLIS
-                                Instant.ofEpochSecond(parser.longValue)
+                    timestamp =
+                        when (timestampType) {
+                            TimestampType.UNDECIDED -> {
+                                try {
+                                    val res = LocalDateTime.parse(parser.text, formatter).toInstant(ZoneOffset.UTC)
+                                    timestampType = TimestampType.DATE_TIME
+                                    res
+                                } catch (e: DateTimeParseException) {
+                                    timestampType = TimestampType.EPOCH_MILLIS
+                                    Instant.ofEpochSecond(parser.longValue)
+                                }
                             }
+                            TimestampType.DATE_TIME -> LocalDateTime.parse(parser.text, formatter).toInstant(ZoneOffset.UTC)
+                            TimestampType.EPOCH_MILLIS -> Instant.ofEpochSecond(parser.longValue)
                         }
-                        TimestampType.DATE_TIME -> LocalDateTime.parse(parser.text, formatter).toInstant(ZoneOffset.UTC)
-                        TimestampType.EPOCH_MILLIS -> Instant.ofEpochSecond(parser.longValue)
-                    }
                 }
                 "CPU cores" -> cpuCores = parser.intValue
                 "CPU capacity provisioned [MHZ]" -> cpuCapacity = parseSafeDouble()
@@ -134,39 +135,39 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
         return true
     }
 
-    private val COL_TIMESTAMP = 0
-    private val COL_CPU_COUNT = 1
-    private val COL_CPU_CAPACITY = 2
-    private val COL_CPU_USAGE = 3
-    private val COL_CPU_USAGE_PCT = 4
-    private val COL_MEM_CAPACITY = 5
-    private val COL_MEM_USAGE = 6
-    private val COL_DISK_READ = 7
-    private val COL_DISK_WRITE = 8
-    private val COL_NET_RX = 9
-    private val COL_NET_TX = 10
-    private val COL_ID = 11
+    private val colTimestamp = 0
+    private val colCpuCount = 1
+    private val colCpuCapacity = 2
+    private val colCpuUsage = 3
+    private val colCpuUsagePct = 4
+    private val colMemCapacity = 5
+    private val colMemUsage = 6
+    private val colDiskRead = 7
+    private val colDiskWrite = 8
+    private val colNetRx = 9
+    private val colNetTx = 10
+    private val colID = 11
 
     override fun resolve(name: String): Int {
         return when (name) {
-            RESOURCE_ID -> COL_ID
-            RESOURCE_STATE_TIMESTAMP -> COL_TIMESTAMP
-            RESOURCE_CPU_COUNT -> COL_CPU_COUNT
-            RESOURCE_CPU_CAPACITY -> COL_CPU_CAPACITY
-            RESOURCE_STATE_CPU_USAGE -> COL_CPU_USAGE
-            RESOURCE_STATE_CPU_USAGE_PCT -> COL_CPU_USAGE_PCT
-            RESOURCE_MEM_CAPACITY -> COL_MEM_CAPACITY
-            RESOURCE_STATE_MEM_USAGE -> COL_MEM_USAGE
-            RESOURCE_STATE_DISK_READ -> COL_DISK_READ
-            RESOURCE_STATE_DISK_WRITE -> COL_DISK_WRITE
-            RESOURCE_STATE_NET_RX -> COL_NET_RX
-            RESOURCE_STATE_NET_TX -> COL_NET_TX
+            resourceID -> colID
+            resourceStateTimestamp -> colTimestamp
+            resourceCpuCount -> colCpuCount
+            resourceCpuCapacity -> colCpuCapacity
+            resourceStateCpuUsage -> colCpuUsage
+            resourceStateCpuUsagePct -> colCpuUsagePct
+            resourceMemCapacity -> colMemCapacity
+            resourceStateMemUsage -> colMemUsage
+            resourceStateDiskRead -> colDiskRead
+            resourceStateDiskWrite -> colDiskWrite
+            resourceStateNetRx -> colNetRx
+            resourceStateNetTx -> colNetTx
             else -> -1
         }
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in 0..COL_ID) { "Invalid column index" }
+        require(index in 0..colID) { "Invalid column index" }
         return false
     }
 
@@ -177,7 +178,7 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
     override fun getInt(index: Int): Int {
         checkActive()
         return when (index) {
-            COL_CPU_COUNT -> cpuCores
+            colCpuCount -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -193,15 +194,15 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
     override fun getDouble(index: Int): Double {
         checkActive()
         return when (index) {
-            COL_CPU_CAPACITY -> cpuCapacity
-            COL_CPU_USAGE -> cpuUsage
-            COL_CPU_USAGE_PCT -> cpuUsagePct
-            COL_MEM_CAPACITY -> memCapacity
-            COL_MEM_USAGE -> memUsage
-            COL_DISK_READ -> diskRead
-            COL_DISK_WRITE -> diskWrite
-            COL_NET_RX -> netReceived
-            COL_NET_TX -> netTransmitted
+            colCpuCapacity -> cpuCapacity
+            colCpuUsage -> cpuUsage
+            colCpuUsagePct -> cpuUsagePct
+            colMemCapacity -> memCapacity
+            colMemUsage -> memUsage
+            colDiskRead -> diskRead
+            colDiskWrite -> diskWrite
+            colNetRx -> netReceived
+            colNetTx -> netTransmitted
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -209,7 +210,7 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
     override fun getString(index: Int): String {
         checkActive()
         return when (index) {
-            COL_ID -> partition
+            colID -> partition
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -221,7 +222,7 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
     override fun getInstant(index: Int): Instant? {
         checkActive()
         return when (index) {
-            COL_TIMESTAMP -> timestamp
+            colTimestamp -> timestamp
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -230,15 +231,25 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+    override fun <T> getList(
+        index: Int,
+        elementType: Class<T>,
+    ): List<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+    override fun <T> getSet(
+        index: Int,
+        elementType: Class<T>,
+    ): Set<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+    override fun <K, V> getMap(
+        index: Int,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>? {
         throw IllegalArgumentException("Invalid column")
     }
 
@@ -322,30 +333,33 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
      * The type of the timestamp in the trace.
      */
     private enum class TimestampType {
-        UNDECIDED, DATE_TIME, EPOCH_MILLIS
+        UNDECIDED,
+        DATE_TIME,
+        EPOCH_MILLIS,
     }
 
     companion object {
         /**
          * The [CsvSchema] that is used to parse the trace.
          */
-        private val schema = CsvSchema.builder()
-            .addColumn("Timestamp [ms]", CsvSchema.ColumnType.NUMBER_OR_STRING)
-            .addColumn("CPU cores", CsvSchema.ColumnType.NUMBER)
-            .addColumn("CPU capacity provisioned [MHZ]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("CPU usage [MHZ]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("CPU usage [%]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Memory capacity provisioned [KB]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Memory usage [KB]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Memory usage [%]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Disk read throughput [KB/s]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Disk write throughput [KB/s]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Disk size [GB]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Network received throughput [KB/s]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Network transmitted throughput [KB/s]", CsvSchema.ColumnType.NUMBER)
-            .setAllowComments(true)
-            .setUseHeader(true)
-            .setColumnSeparator(';')
-            .build()
+        private val schema =
+            CsvSchema.builder()
+                .addColumn("Timestamp [ms]", CsvSchema.ColumnType.NUMBER_OR_STRING)
+                .addColumn("CPU cores", CsvSchema.ColumnType.NUMBER)
+                .addColumn("CPU capacity provisioned [MHZ]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("CPU usage [MHZ]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("CPU usage [%]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Memory capacity provisioned [KB]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Memory usage [KB]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Memory usage [%]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Disk read throughput [KB/s]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Disk write throughput [KB/s]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Disk size [GB]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Network received throughput [KB/s]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Network transmitted throughput [KB/s]", CsvSchema.ColumnType.NUMBER)
+                .setAllowComments(true)
+                .setUseHeader(true)
+                .setColumnSeparator(';')
+                .build()
     }
 }

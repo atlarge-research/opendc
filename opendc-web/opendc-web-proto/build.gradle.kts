@@ -22,7 +22,7 @@
 
 description = "Web communication protocol for OpenDC"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
     id("org.kordamp.gradle.jandex") // Necessary for Quarkus to process annotations

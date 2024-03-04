@@ -37,20 +37,33 @@ import kotlin.coroutines.CoroutineContext
  */
 @OptIn(InternalCoroutinesApi::class)
 internal class DispatcherCoroutineDispatcher(private val dispatcher: Dispatcher) : CoroutineDispatcher(), Delay, DispatcherProvider {
-    override fun dispatch(context: CoroutineContext, block: Runnable) {
+    override fun dispatch(
+        context: CoroutineContext,
+        block: Runnable,
+    ) {
         block.run()
     }
 
-    override fun dispatchYield(context: CoroutineContext, block: Runnable) {
+    override fun dispatchYield(
+        context: CoroutineContext,
+        block: Runnable,
+    ) {
         dispatcher.schedule(block)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {
+    override fun scheduleResumeAfterDelay(
+        timeMillis: Long,
+        continuation: CancellableContinuation<Unit>,
+    ) {
         dispatcher.schedule(timeMillis, CancellableContinuationRunnable(continuation) { resumeUndispatched(Unit) })
     }
 
-    override fun invokeOnTimeout(timeMillis: Long, block: Runnable, context: CoroutineContext): DisposableHandle {
+    override fun invokeOnTimeout(
+        timeMillis: Long,
+        block: Runnable,
+        context: CoroutineContext,
+    ): DisposableHandle {
         val handle = dispatcher.scheduleCancellable(timeMillis, block)
         return DisposableHandle { handle.cancel() }
     }
@@ -67,7 +80,7 @@ internal class DispatcherCoroutineDispatcher(private val dispatcher: Dispatcher)
      */
     private class CancellableContinuationRunnable<T>(
         @JvmField val continuation: CancellableContinuation<T>,
-        private val block: CancellableContinuation<T>.() -> Unit
+        private val block: CancellableContinuation<T>.() -> Unit,
     ) : Runnable {
         override fun run() = continuation.block()
     }

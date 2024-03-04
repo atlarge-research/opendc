@@ -45,7 +45,10 @@ class TestSource(graph: FlowGraph) : SimNetworkPort(), FlowStageLogic {
         outlet.push(80.0f)
     }
 
-    override fun onUpdate(ctx: FlowStage, now: Long): Long = Long.MAX_VALUE
+    override fun onUpdate(
+        ctx: FlowStage,
+        now: Long,
+    ): Long = Long.MAX_VALUE
 
     override fun getOutlet(): Outlet = outlet
 

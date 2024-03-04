@@ -73,7 +73,7 @@ public interface WorkflowService : AutoCloseable {
             jobAdmissionPolicy: JobAdmissionPolicy,
             jobOrderPolicy: JobOrderPolicy,
             taskEligibilityPolicy: TaskEligibilityPolicy,
-            taskOrderPolicy: TaskOrderPolicy
+            taskOrderPolicy: TaskOrderPolicy,
         ): WorkflowService {
             return WorkflowServiceImpl(
                 dispatcher,
@@ -82,7 +82,7 @@ public interface WorkflowService : AutoCloseable {
                 jobAdmissionPolicy,
                 jobOrderPolicy,
                 taskEligibilityPolicy,
-                taskOrderPolicy
+                taskOrderPolicy,
             )
         }
     }

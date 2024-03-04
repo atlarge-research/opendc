@@ -37,7 +37,10 @@ import kotlin.math.max
  * @param clock An [InstantSource] instance tracking simulation time.
  * @param trace The trace to simulate.
  */
-public suspend fun FaaSService.replay(clock: InstantSource, trace: List<FunctionTrace>) {
+public suspend fun FaaSService.replay(
+    clock: InstantSource,
+    trace: List<FunctionTrace>,
+) {
     val client = newClient()
     try {
         coroutineScope {

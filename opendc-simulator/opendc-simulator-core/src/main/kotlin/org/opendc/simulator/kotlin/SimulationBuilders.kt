@@ -66,14 +66,15 @@ import kotlin.coroutines.EmptyCoroutineContext
 public fun runSimulation(
     context: CoroutineContext = EmptyCoroutineContext,
     scheduler: SimulationDispatcher = SimulationDispatcher(),
-    body: suspend SimulationCoroutineScope.() -> Unit
+    body: suspend SimulationCoroutineScope.() -> Unit,
 ) {
     val (safeContext, job, dispatcher) = context.checkArguments(scheduler)
     val startingJobs = job.activeJobs()
     val scope = SimulationCoroutineScope(safeContext)
-    val deferred = scope.async {
-        body(scope)
-    }
+    val deferred =
+        scope.async {
+            body(scope)
+        }
     dispatcher.advanceUntilIdle()
     deferred.getCompletionExceptionOrNull()?.let {
         throw it
@@ -105,9 +106,10 @@ private fun Job.activeJobs(): Set<Job> {
  * Convert a [ContinuationInterceptor] into a [SimulationDispatcher] if possible.
  */
 internal fun ContinuationInterceptor.asSimulationDispatcher(): SimulationDispatcher {
-    val provider = this as? DispatcherProvider ?: throw IllegalArgumentException(
-        "DispatcherProvider such as SimulatorCoroutineDispatcher as the ContinuationInterceptor(Dispatcher) is required"
-    )
+    val provider =
+        this as? DispatcherProvider ?: throw IllegalArgumentException(
+            "DispatcherProvider such as SimulatorCoroutineDispatcher as the ContinuationInterceptor(Dispatcher) is required",
+        )
 
     return provider.dispatcher as? SimulationDispatcher ?: throw IllegalArgumentException("Active dispatcher is not a SimulationDispatcher")
 }

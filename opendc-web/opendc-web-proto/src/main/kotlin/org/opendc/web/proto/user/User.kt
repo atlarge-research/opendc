@@ -27,5 +27,5 @@ package org.opendc.web.proto.user
  */
 public data class User(
     val userId: String,
-    val accounting: UserAccounting
+    val accounting: UserAccounting,
 )

@@ -23,7 +23,6 @@
 package org.opendc.web.server.rest.runner;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
@@ -44,7 +43,7 @@ public final class JobResourceTest {
      */
     @Test
     public void testQueryWithoutToken() {
-        when().get().then().statusCode(401);
+        given().get().then().statusCode(401);
     }
 
     /**
@@ -52,10 +51,10 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "test",
+            user = "test_user_1",
             roles = {"openid"})
     public void testQueryInvalidScope() {
-        when().get().then().statusCode(403);
+        given().get().then().statusCode(403);
     }
 
     /**
@@ -63,10 +62,10 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "test",
+            user = "test_user_1",
             roles = {"runner"})
     public void testQuery() {
-        when().get().then().statusCode(200).contentType(ContentType.JSON).body("get(0).state", equalTo("PENDING"));
+        given().get().then().statusCode(200).contentType(ContentType.JSON).body("get(0).state", equalTo("PENDING"));
     }
 
     /**
@@ -74,10 +73,10 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "test",
+            user = "test_user_1",
             roles = {"runner"})
     public void testGetNonExisting() {
-        when().get("/0").then().statusCode(404).contentType(ContentType.JSON);
+        given().get("/0").then().statusCode(404);
     }
 
     /**
@@ -85,10 +84,10 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "test",
+            user = "test_user_1",
             roles = {"runner"})
     public void testGetExisting() {
-        when().get("/1").then().statusCode(200).contentType(ContentType.JSON).body("id", equalTo(1));
+        given().get("/1").then().statusCode(200).contentType(ContentType.JSON).body("id", equalTo(1));
     }
 
     /**
@@ -96,7 +95,7 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "test",
+            user = "test_user_1",
             roles = {"runner"})
     public void testUpdateNonExistent() {
         given().body(new org.opendc.web.proto.runner.Job.Update(JobState.PENDING, 0, null))
@@ -113,7 +112,7 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "test",
+            user = "test_user_1",
             roles = {"runner"})
     public void testUpdateState() {
         given().body(new org.opendc.web.proto.runner.Job.Update(JobState.CLAIMED, 0, null))
@@ -131,7 +130,7 @@ public final class JobResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "test",
+            user = "test_user_1",
             roles = {"runner"})
     public void testUpdateInvalidInput() {
         given().body("{ \"test\": \"test\" }")

@@ -48,7 +48,7 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
     private val apiUrl by option(
         "--api-url",
         help = "url to the OpenDC API",
-        envvar = "OPENDC_API_URL"
+        envvar = "OPENDC_API_URL",
     )
         .convert { URI(it) }
         .default(URI("https://api.opendc.org/v2"))
@@ -59,7 +59,7 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
     private val authDomain by option(
         "--auth-domain",
         help = "auth domain of the OpenDC API",
-        envvar = "AUTH0_DOMAIN"
+        envvar = "AUTH0_DOMAIN",
     )
         .required()
 
@@ -69,7 +69,7 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
     private val authAudience by option(
         "--auth-audience",
         help = "auth audience of the OpenDC API",
-        envvar = "AUTH0_AUDIENCE"
+        envvar = "AUTH0_AUDIENCE",
     )
         .required()
 
@@ -79,7 +79,7 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
     private val authClientId by option(
         "--auth-id",
         help = "auth client id of the OpenDC API",
-        envvar = "AUTH0_CLIENT_ID"
+        envvar = "AUTH0_CLIENT_ID",
     )
         .required()
 
@@ -89,7 +89,7 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
     private val authClientSecret by option(
         "--auth-secret",
         help = "auth client secret of the OpenDC API",
-        envvar = "AUTH0_CLIENT_SECRET"
+        envvar = "AUTH0_CLIENT_SECRET",
     )
         .required()
 
@@ -99,7 +99,7 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
     private val tracePath by option(
         "--traces",
         help = "path to the directory containing the traces",
-        envvar = "OPENDC_TRACES"
+        envvar = "OPENDC_TRACES",
     )
         .file(canBeFile = false)
         .defaultLazy { File("traces/") }
@@ -109,7 +109,7 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
      */
     private val parallelism by option(
         "--parallelism",
-        help = "maximum number of threads for simulations"
+        help = "maximum number of threads for simulations",
     )
         .int()
         .default(Runtime.getRuntime().availableProcessors() - 1)

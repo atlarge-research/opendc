@@ -29,9 +29,10 @@ import org.opendc.workflow.service.internal.WorkflowServiceImpl
  * A [TaskOrderPolicy] that orders tasks based on the number of dependent tasks it has.
  */
 public data class DependentsTaskOrderPolicy(public val ascending: Boolean = true) : TaskOrderPolicy {
-    override fun invoke(scheduler: WorkflowServiceImpl): Comparator<TaskState> = compareBy {
-        it.dependents.size.let { if (ascending) it else -it }
-    }
+    override fun invoke(scheduler: WorkflowServiceImpl): Comparator<TaskState> =
+        compareBy {
+            it.dependents.size.let { if (ascending) it else -it }
+        }
 
     override fun toString(): String {
         return "Task-Dependents(${if (ascending) "asc" else "desc"})"

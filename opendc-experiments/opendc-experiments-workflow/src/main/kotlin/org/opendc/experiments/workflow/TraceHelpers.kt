@@ -66,30 +66,35 @@ public fun Trace.toJobs(): List<Job> {
             val workflow = jobs.computeIfAbsent(workflowId) { id -> Job(UUID(0L, id), "<unnamed>", HashSet(), HashMap()) }
 
             val id = reader.getString(TASK_ID)!!.toLong()
-            val grantedCpus = if (reader.resolve(TASK_ALLOC_NCPUS) != 0) {
-                reader.getInt(TASK_ALLOC_NCPUS)
-            } else {
-                reader.getInt(TASK_REQ_NCPUS)
-            }
+            val grantedCpus =
+                if (reader.resolve(TASK_ALLOC_NCPUS) != 0) {
+                    reader.getInt(TASK_ALLOC_NCPUS)
+                } else {
+                    reader.getInt(TASK_REQ_NCPUS)
+                }
             val submitTime = reader.getInstant(TASK_SUBMIT_TIME)!!
             val runtime = reader.getDuration(TASK_RUNTIME)!!
             val flops: Long = 4000 * runtime.seconds * grantedCpus
             val workload = SimWorkloads.flops(flops, 1.0)
-            val task = Task(
-                UUID(0L, id),
-                "<unnamed>",
-                HashSet(),
-                mapOf(
-                    "workload" to workload,
-                    WORKFLOW_TASK_CORES to grantedCpus,
-                    WORKFLOW_TASK_DEADLINE to runtime.toMillis()
+            val task =
+                Task(
+                    UUID(0L, id),
+                    "<unnamed>",
+                    HashSet(),
+                    mapOf(
+                        "workload" to workload,
+                        WORKFLOW_TASK_CORES to grantedCpus,
+                        WORKFLOW_TASK_DEADLINE to runtime.toMillis(),
+                    ),
                 )
-            )
 
             tasks[id] = task
             taskDependencies[task] = reader.getSet(TASK_PARENTS, String::class.java)!!.map { it.toLong() }.toSet()
 
-            (workflow.metadata as MutableMap<String, Any>).merge("WORKFLOW_SUBMIT_TIME", submitTime.toEpochMilli()) { a, b -> min(a as Long, b as Long) }
+            (workflow.metadata as MutableMap<String, Any>).merge(
+                "WORKFLOW_SUBMIT_TIME",
+                submitTime.toEpochMilli(),
+            ) { a, b -> min(a as Long, b as Long) }
             (workflow.tasks as MutableSet<Task>).add(task)
         }
 
@@ -110,7 +115,10 @@ public fun Trace.toJobs(): List<Job> {
 /**
  * Helper method to replay the specified list of [jobs] and suspend execution util all jobs have finished.
  */
-public suspend fun WorkflowService.replay(clock: InstantSource, jobs: List<Job>) {
+public suspend fun WorkflowService.replay(
+    clock: InstantSource,
+    jobs: List<Job>,
+) {
     // Sort jobs by their arrival time
     val orderedJobs = jobs.sortedBy { it.metadata.getOrDefault("WORKFLOW_SUBMIT_TIME", Long.MAX_VALUE) as Long }
     if (orderedJobs.isEmpty()) {

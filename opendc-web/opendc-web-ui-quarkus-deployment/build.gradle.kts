@@ -22,7 +22,7 @@
 
 description = "Quarkus extension for serving OpenDC web interface"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `java-library-conventions`
 }

@@ -36,5 +36,5 @@ public data class Job(
     val state: JobState,
     val createdAt: Instant,
     val updatedAt: Instant,
-    val results: Map<String, Any>? = null
+    val results: Map<String, Any>? = null,
 )

@@ -22,7 +22,7 @@
 
 description = "Apache Calcite (SQL) integration for the OpenDC trace library"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }

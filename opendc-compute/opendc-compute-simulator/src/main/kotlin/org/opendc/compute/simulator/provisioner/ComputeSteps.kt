@@ -40,7 +40,7 @@ import java.time.Duration
 public fun setupComputeService(
     serviceDomain: String,
     scheduler: (ProvisioningContext) -> ComputeScheduler,
-    schedulingQuantum: Duration = Duration.ofMinutes(5)
+    schedulingQuantum: Duration = Duration.ofMinutes(5),
 ): ProvisioningStep {
     return ComputeServiceProvisioningStep(serviceDomain, scheduler, schedulingQuantum)
 }
@@ -56,7 +56,7 @@ public fun setupComputeService(
 public fun registerComputeMonitor(
     serviceDomain: String,
     monitor: ComputeMonitor,
-    exportInterval: Duration = Duration.ofMinutes(5)
+    exportInterval: Duration = Duration.ofMinutes(5),
 ): ProvisioningStep {
     return ComputeMonitorProvisioningStep(serviceDomain, monitor, exportInterval)
 }
@@ -69,6 +69,10 @@ public fun registerComputeMonitor(
  * @param specs A list of [HostSpec] objects describing the simulated hosts to provision.
  * @param optimize A flag to indicate that the CPU resources of the host should be merged into a single CPU resource.
  */
-public fun setupHosts(serviceDomain: String, specs: List<HostSpec>, optimize: Boolean = false): ProvisioningStep {
+public fun setupHosts(
+    serviceDomain: String,
+    specs: List<HostSpec>,
+    optimize: Boolean = false,
+): ProvisioningStep {
     return HostsProvisioningStep(serviceDomain, specs, optimize)
 }

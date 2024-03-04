@@ -26,19 +26,19 @@ import org.opendc.trace.TableColumn
 import org.opendc.trace.TableColumnType
 import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
-import org.opendc.trace.conv.RESOURCE_CLUSTER_ID
-import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_DEMAND
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_READY_PCT
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
-import org.opendc.trace.conv.RESOURCE_STATE_DISK_READ
-import org.opendc.trace.conv.RESOURCE_STATE_DISK_WRITE
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.conv.resourceClusterID
+import org.opendc.trace.conv.resourceCpuCapacity
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceStateCpuDemand
+import org.opendc.trace.conv.resourceStateCpuReadyPct
+import org.opendc.trace.conv.resourceStateCpuUsage
+import org.opendc.trace.conv.resourceStateCpuUsagePct
+import org.opendc.trace.conv.resourceStateDiskRead
+import org.opendc.trace.conv.resourceStateDiskWrite
+import org.opendc.trace.conv.resourceStateTimestamp
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.CompositeTableReader
@@ -64,36 +64,47 @@ public class BitbrainsExTraceFormat : TraceFormat {
 
     override fun getTables(path: Path): List<String> = listOf(TABLE_RESOURCE_STATES)
 
-    override fun getDetails(path: Path, table: String): TableDetails {
+    override fun getDetails(
+        path: Path,
+        table: String,
+    ): TableDetails {
         return when (table) {
-            TABLE_RESOURCE_STATES -> TableDetails(
-                listOf(
-                    TableColumn(RESOURCE_ID, TableColumnType.String),
-                    TableColumn(RESOURCE_CLUSTER_ID, TableColumnType.String),
-                    TableColumn(RESOURCE_STATE_TIMESTAMP, TableColumnType.Instant),
-                    TableColumn(RESOURCE_CPU_COUNT, TableColumnType.Int),
-                    TableColumn(RESOURCE_CPU_CAPACITY, TableColumnType.Double),
-                    TableColumn(RESOURCE_STATE_CPU_USAGE, TableColumnType.Double),
-                    TableColumn(RESOURCE_STATE_CPU_USAGE_PCT, TableColumnType.Double),
-                    TableColumn(RESOURCE_STATE_CPU_DEMAND, TableColumnType.Double),
-                    TableColumn(RESOURCE_STATE_CPU_READY_PCT, TableColumnType.Double),
-                    TableColumn(RESOURCE_MEM_CAPACITY, TableColumnType.Double),
-                    TableColumn(RESOURCE_STATE_DISK_READ, TableColumnType.Double),
-                    TableColumn(RESOURCE_STATE_DISK_WRITE, TableColumnType.Double)
+            TABLE_RESOURCE_STATES ->
+                TableDetails(
+                    listOf(
+                        TableColumn(resourceID, TableColumnType.String),
+                        TableColumn(resourceClusterID, TableColumnType.String),
+                        TableColumn(resourceStateTimestamp, TableColumnType.Instant),
+                        TableColumn(resourceCpuCount, TableColumnType.Int),
+                        TableColumn(resourceCpuCapacity, TableColumnType.Double),
+                        TableColumn(resourceStateCpuUsage, TableColumnType.Double),
+                        TableColumn(resourceStateCpuUsagePct, TableColumnType.Double),
+                        TableColumn(resourceStateCpuDemand, TableColumnType.Double),
+                        TableColumn(resourceStateCpuReadyPct, TableColumnType.Double),
+                        TableColumn(resourceMemCapacity, TableColumnType.Double),
+                        TableColumn(resourceStateDiskRead, TableColumnType.Double),
+                        TableColumn(resourceStateDiskWrite, TableColumnType.Double),
+                    ),
                 )
-            )
             else -> throw IllegalArgumentException("Table $table not supported")
         }
     }
 
-    override fun newReader(path: Path, table: String, projection: List<String>?): TableReader {
+    override fun newReader(
+        path: Path,
+        table: String,
+        projection: List<String>?,
+    ): TableReader {
         return when (table) {
             TABLE_RESOURCE_STATES -> newResourceStateReader(path)
             else -> throw IllegalArgumentException("Table $table not supported")
         }
     }
 
-    override fun newWriter(path: Path, table: String): TableWriter {
+    override fun newWriter(
+        path: Path,
+        table: String,
+    ): TableWriter {
         throw UnsupportedOperationException("Writing not supported for this format")
     }
 
@@ -101,10 +112,11 @@ public class BitbrainsExTraceFormat : TraceFormat {
      * Construct a [TableReader] for reading over all resource state partitions.
      */
     private fun newResourceStateReader(path: Path): TableReader {
-        val partitions = Files.walk(path, 1)
-            .filter { !Files.isDirectory(it) && it.extension == "txt" }
-            .collect(Collectors.toMap({ it.nameWithoutExtension }, { it }))
-            .toSortedMap()
+        val partitions =
+            Files.walk(path, 1)
+                .filter { !Files.isDirectory(it) && it.extension == "txt" }
+                .collect(Collectors.toMap({ it.nameWithoutExtension }, { it }))
+                .toSortedMap()
         val it = partitions.iterator()
 
         return object : CompositeTableReader() {

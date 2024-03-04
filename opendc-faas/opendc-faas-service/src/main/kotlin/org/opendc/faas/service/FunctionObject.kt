@@ -35,21 +35,23 @@ public class FunctionObject(
     name: String,
     allocatedMemory: Long,
     labels: Map<String, String>,
-    meta: Map<String, Any>
+    meta: Map<String, Any>,
 ) : AutoCloseable {
     /**
      * Metrics tracked per function.
      */
-    private var _invocations = 0L
-    private var _timelyInvocations = 0L
-    private var _delayedInvocations = 0L
-    private var _failedInvocations = 0L
-    private var _activeInstances = 0
-    private var _idleInstances = 0
-    private val _waitTime = DescriptiveStatistics()
-        .apply { windowSize = 100 }
-    private val _activeTime = DescriptiveStatistics()
-        .apply { windowSize = 100 }
+    private var localInvocations = 0L
+    private var localTimelyInvocations = 0L
+    private var localDelayedInvocations = 0L
+    private var localFailedInvocations = 0L
+    private var localActiveInstances = 0
+    private var localIdleInstances = 0
+    private val localWaitTime =
+        DescriptiveStatistics()
+            .apply { windowSize = 100 }
+    private val localActiveTime =
+        DescriptiveStatistics()
+            .apply { windowSize = 100 }
 
     /**
      * The instances associated with this function.
@@ -70,7 +72,7 @@ public class FunctionObject(
      * Report a scheduled invocation.
      */
     internal fun reportSubmission() {
-        _invocations++
+        localInvocations++
     }
 
     /**
@@ -78,38 +80,41 @@ public class FunctionObject(
      */
     internal fun reportDeployment(isDelayed: Boolean) {
         if (isDelayed) {
-            _delayedInvocations++
-            _idleInstances++
+            localDelayedInvocations++
+            localIdleInstances++
         } else {
-            _timelyInvocations++
+            localTimelyInvocations++
         }
     }
 
     /**
      * Report the start of a function invocation.
      */
-    internal fun reportStart(start: Long, submitTime: Long) {
+    internal fun reportStart(
+        start: Long,
+        submitTime: Long,
+    ) {
         val wait = start - submitTime
-        _waitTime.addValue(wait.toDouble())
+        localWaitTime.addValue(wait.toDouble())
 
-        _idleInstances--
-        _activeInstances++
+        localIdleInstances--
+        localActiveInstances++
     }
 
     /**
      * Report the failure of a function invocation.
      */
     internal fun reportFailure() {
-        _failedInvocations++
+        localFailedInvocations++
     }
 
     /**
      * Report the end of a function invocation.
      */
     internal fun reportEnd(duration: Long) {
-        _activeTime.addValue(duration.toDouble())
-        _idleInstances++
-        _activeInstances--
+        localActiveTime.addValue(duration.toDouble())
+        localIdleInstances++
+        localActiveInstances--
     }
 
     /**
@@ -117,14 +122,14 @@ public class FunctionObject(
      */
     internal fun getStats(): FunctionStats {
         return FunctionStats(
-            _invocations,
-            _timelyInvocations,
-            _delayedInvocations,
-            _failedInvocations,
-            _activeInstances,
-            _idleInstances,
-            _waitTime.copy(),
-            _activeTime.copy()
+            localInvocations,
+            localTimelyInvocations,
+            localDelayedInvocations,
+            localFailedInvocations,
+            localActiveInstances,
+            localIdleInstances,
+            localWaitTime.copy(),
+            localActiveTime.copy(),
         )
     }
 

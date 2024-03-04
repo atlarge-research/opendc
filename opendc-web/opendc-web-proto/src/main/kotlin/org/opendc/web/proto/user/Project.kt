@@ -22,9 +22,9 @@
 
 package org.opendc.web.proto.user
 
+import jakarta.validation.constraints.NotBlank
 import org.eclipse.microprofile.openapi.annotations.media.Schema
 import java.time.Instant
-import javax.validation.constraints.NotBlank
 
 /**
  * A project in OpenDC encapsulates all the datacenter designs and simulation runs for a set of users.
@@ -34,11 +34,13 @@ public data class Project(
     val name: String,
     val createdAt: Instant,
     val updatedAt: Instant,
-    val role: ProjectRole
+    val role: ProjectRole,
 ) {
     /**
      * A request to create a new project.
      */
     @Schema(name = "Project.Create")
-    public data class Create(@field:NotBlank(message = "Name must not be empty") val name: String)
+    public data class Create(
+        @field:NotBlank(message = "Name must not be empty") val name: String,
+    )
 }

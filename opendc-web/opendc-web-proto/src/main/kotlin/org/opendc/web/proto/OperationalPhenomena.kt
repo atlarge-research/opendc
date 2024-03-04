@@ -27,5 +27,5 @@ package org.opendc.web.proto
  */
 public data class OperationalPhenomena(
     val failures: Boolean,
-    val interference: Boolean
+    val interference: Boolean,
 )

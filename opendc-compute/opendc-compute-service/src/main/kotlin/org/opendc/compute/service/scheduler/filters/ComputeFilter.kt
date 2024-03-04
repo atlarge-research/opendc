@@ -30,7 +30,10 @@ import org.opendc.compute.service.driver.HostState
  * A [HostFilter] that filters on active hosts.
  */
 public class ComputeFilter : HostFilter {
-    override fun test(host: HostView, server: Server): Boolean {
+    override fun test(
+        host: HostView,
+        server: Server,
+    ): Boolean {
         return host.host.state == HostState.UP
     }
 

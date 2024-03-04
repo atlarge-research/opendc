@@ -44,5 +44,8 @@ public class JobResource internal constructor(private val client: TransportClien
     /**
      * Update the job with [id].
      */
-    public fun update(id: Long, update: Job.Update): Job? = client.post("jobs/$id", update)
+    public fun update(
+        id: Long,
+        update: Job.Update,
+    ): Job? = client.post("jobs/$id", update)
 }

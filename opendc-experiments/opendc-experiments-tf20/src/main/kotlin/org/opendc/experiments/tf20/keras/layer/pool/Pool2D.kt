@@ -40,9 +40,8 @@ public class Pool2D(
     public val poolSize: IntArray = intArrayOf(1, 2, 2, 1),
     public val strides: IntArray = intArrayOf(1, 2, 2, 1),
     public val padding: ConvPadding = ConvPadding.VALID,
-    name: String
+    name: String,
 ) : Layer(name) {
-
     private var padHeight = 0L
     private var padWidth = 0L
 

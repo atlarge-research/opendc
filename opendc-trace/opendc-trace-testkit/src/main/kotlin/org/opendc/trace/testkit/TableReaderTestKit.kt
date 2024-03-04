@@ -89,7 +89,7 @@ public abstract class TableReaderTestKit {
             { assertThrows<IllegalArgumentException> { reader.getDuration(-1) } },
             { assertThrows<IllegalArgumentException> { reader.getList(-1, Any::class.java) } },
             { assertThrows<IllegalArgumentException> { reader.getSet(-1, Any::class.java) } },
-            { assertThrows<IllegalArgumentException> { reader.getMap(-1, Any::class.java, Any::class.java) } }
+            { assertThrows<IllegalArgumentException> { reader.getMap(-1, Any::class.java, Any::class.java) } },
         )
     }
 
@@ -111,13 +111,25 @@ public abstract class TableReaderTestKit {
                             is TableColumnType.String -> assertFalse(reader.isNull(column.name) && reader.getString(column.name) != null)
                             is TableColumnType.UUID -> assertFalse(reader.isNull(column.name) && reader.getUUID(column.name) != null)
                             is TableColumnType.Instant -> assertFalse(reader.isNull(column.name) && reader.getInstant(column.name) != null)
-                            is TableColumnType.Duration -> assertFalse(reader.isNull(column.name) && reader.getDuration(column.name) != null)
-                            is TableColumnType.List -> assertFalse(reader.isNull(column.name) && reader.getList(column.name, Any::class.java) != null)
-                            is TableColumnType.Set -> assertFalse(reader.isNull(column.name) && reader.getSet(column.name, Any::class.java) != null)
-                            is TableColumnType.Map -> assertFalse(reader.isNull(column.name) && reader.getMap(column.name, Any::class.java, Any::class.java) != null)
+                            is TableColumnType.Duration ->
+                                assertFalse(
+                                    reader.isNull(column.name) && reader.getDuration(column.name) != null,
+                                )
+                            is TableColumnType.List ->
+                                assertFalse(
+                                    reader.isNull(column.name) && reader.getList(column.name, Any::class.java) != null,
+                                )
+                            is TableColumnType.Set ->
+                                assertFalse(
+                                    reader.isNull(column.name) && reader.getSet(column.name, Any::class.java) != null,
+                                )
+                            is TableColumnType.Map ->
+                                assertFalse(
+                                    reader.isNull(column.name) && reader.getMap(column.name, Any::class.java, Any::class.java) != null,
+                                )
                         }
                     }
-                }
+                },
             )
         }
     }

@@ -50,57 +50,63 @@ import java.util.Random
  * A test suite for the [FaaSService] implementation under simulated conditions.
  */
 internal class SimFaaSServiceTest {
-
     private lateinit var machineModel: MachineModel
 
     @BeforeEach
     fun setUp() {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
-        machineModel = MachineModel(
-            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
-            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
-        )
+        machineModel =
+            MachineModel(
+                List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
+                List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+            )
     }
 
     @Test
-    fun testSmoke() = runSimulation {
-        val random = Random(0)
-        val workload = spyk(object : SimFaaSWorkload, SimWorkload by SimWorkloads.runtime(1000, 1.0) {
-            override suspend fun invoke() {
-                delay(random.nextInt(1000).toLong())
-            }
-        })
+    fun testSmoke() =
+        runSimulation {
+            val random = Random(0)
+            val workload =
+                spyk(
+                    object : SimFaaSWorkload, SimWorkload by SimWorkloads.runtime(1000, 1.0) {
+                        override suspend fun invoke() {
+                            delay(random.nextInt(1000).toLong())
+                        }
+                    },
+                )
 
-        val delayInjector = StochasticDelayInjector(ColdStartModel.GOOGLE, random)
-        val deployer = SimFunctionDeployer(dispatcher, machineModel, delayInjector) { workload }
-        val service = FaaSService(
-            dispatcher,
-            deployer,
-            RandomRoutingPolicy(),
-            FunctionTerminationPolicyFixed(dispatcher, timeout = Duration.ofMillis(10000))
-        )
+            val delayInjector = StochasticDelayInjector(ColdStartModel.GOOGLE, random)
+            val deployer = SimFunctionDeployer(dispatcher, machineModel, delayInjector) { workload }
+            val service =
+                FaaSService(
+                    dispatcher,
+                    deployer,
+                    RandomRoutingPolicy(),
+                    FunctionTerminationPolicyFixed(dispatcher, timeout = Duration.ofMillis(10000)),
+                )
 
-        val client = service.newClient()
+            val client = service.newClient()
 
-        val function = client.newFunction("test", 128)
-        function.invoke()
-        delay(2000)
+            val function = client.newFunction("test", 128)
+            function.invoke()
+            delay(2000)
 
-        service.close()
-        deployer.close()
+            service.close()
+            deployer.close()
 
-        yield()
+            yield()
 
-        val funcStats = service.getFunctionStats(function)
+            val funcStats = service.getFunctionStats(function)
 
-        assertAll(
-            { coVerify { workload.invoke() } },
-            { assertEquals(1, funcStats.totalInvocations) },
-            { assertEquals(1, funcStats.delayedInvocations) },
-            { assertEquals(0, funcStats.failedInvocations) },
-            { assertEquals(0.0, funcStats.waitTime.mean) }, // fixme: this is probably wrong, and should be 100
-            { assertEquals(1285.0, funcStats.activeTime.mean) }
-        )
-    }
+            // fixme: waitTime is probably wrong, and should be 100
+            assertAll(
+                { coVerify { workload.invoke() } },
+                { assertEquals(1, funcStats.totalInvocations) },
+                { assertEquals(1, funcStats.delayedInvocations) },
+                { assertEquals(0, funcStats.failedInvocations) },
+                { assertEquals(0.0, funcStats.waitTime.mean) },
+                { assertEquals(1285.0, funcStats.activeTime.mean) },
+            )
+        }
 }

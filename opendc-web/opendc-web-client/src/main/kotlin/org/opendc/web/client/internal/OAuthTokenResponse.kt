@@ -36,5 +36,5 @@ internal data class OAuthTokenResponse(
     val tokenType: String,
     val scope: String = "",
     @JsonProperty("expires_in")
-    val expiresIn: Long
+    val expiresIn: Long,
 )

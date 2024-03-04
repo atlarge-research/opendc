@@ -54,173 +54,202 @@ internal class SimFairShareHypervisorTest {
     @BeforeEach
     fun setUp() {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 1)
-        model = MachineModel(
-            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
-            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
-        )
+        model =
+            MachineModel(
+                // cpus
+                List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
+                // memory
+                List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+            )
     }
 
     /**
      * Test overcommitting of resources via the hypervisor with a single VM.
      */
     @Test
-    fun testOvercommittedSingle() = runSimulation {
-        val duration = 5 * 60L
-        val workloadA =
-            SimTrace.ofFragments(
-                SimTraceFragment(0, duration * 1000, 28.0, 1),
-                SimTraceFragment(duration * 1000, duration * 1000, 3500.0, 1),
-                SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
-                SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
-            ).createWorkload(0)
+    fun testOvercommittedSingle() =
+        runSimulation {
+            val duration = 5 * 60L
+            val workloadA =
+                SimTrace.ofFragments(
+                    SimTraceFragment(0, duration * 1000, 28.0, 1),
+                    SimTraceFragment(duration * 1000, duration * 1000, 3500.0, 1),
+                    SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
+                    SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1),
+                ).createWorkload(0)
 
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(graph, model)
-        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(0L), ScalingGovernors.performance())
+            val machine = SimBareMetalMachine.create(graph, model)
+            val hypervisor =
+                SimHypervisor.create(
+                    FlowMultiplexerFactory.maxMinMultiplexer(),
+                    SplittableRandom(0L),
+                    ScalingGovernors.performance(),
+                )
 
-        launch { machine.runWorkload(hypervisor) }
-        yield()
+            launch { machine.runWorkload(hypervisor) }
+            yield()
 
-        val vm = hypervisor.newMachine(model)
-        vm.runWorkload(workloadA)
+            val vm = hypervisor.newMachine(model)
+            vm.runWorkload(workloadA)
 
-        yield()
-        machine.cancel()
+            yield()
+            machine.cancel()
 
-        assertAll(
-            { assertEquals(319781, hypervisor.counters.cpuActiveTime, "Active time does not match") },
-            { assertEquals(880219, hypervisor.counters.cpuIdleTime, "Idle time does not match") },
-            { assertEquals(28125, hypervisor.counters.cpuStealTime, "Steal time does not match") },
-            { assertEquals(1200000, timeSource.millis()) { "Current time is correct" } }
-        )
-    }
+            assertAll(
+                { assertEquals(319781, hypervisor.counters.cpuActiveTime, "Active time does not match") },
+                { assertEquals(880219, hypervisor.counters.cpuIdleTime, "Idle time does not match") },
+                { assertEquals(28125, hypervisor.counters.cpuStealTime, "Steal time does not match") },
+                { assertEquals(1200000, timeSource.millis()) { "Current time is correct" } },
+            )
+        }
 
     /**
      * Test overcommitting of resources via the hypervisor with two VMs.
      */
     @Test
-    fun testOvercommittedDual() = runSimulation {
-        val duration = 5 * 60L
-        val workloadA =
-            SimTrace.ofFragments(
-                SimTraceFragment(0, duration * 1000, 28.0, 1),
-                SimTraceFragment(duration * 1000, duration * 1000, 3500.0, 1),
-                SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
-                SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
-            ).createWorkload(0)
-        val workloadB =
-            SimTrace.ofFragments(
-                SimTraceFragment(0, duration * 1000, 28.0, 1),
-                SimTraceFragment(duration * 1000, duration * 1000, 3100.0, 1),
-                SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
-                SimTraceFragment(duration * 3000, duration * 1000, 73.0, 1)
-            ).createWorkload(0)
+    fun testOvercommittedDual() =
+        runSimulation {
+            val duration = 5 * 60L
+            val workloadA =
+                SimTrace.ofFragments(
+                    SimTraceFragment(0, duration * 1000, 28.0, 1),
+                    SimTraceFragment(duration * 1000, duration * 1000, 3500.0, 1),
+                    SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
+                    SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1),
+                ).createWorkload(0)
+            val workloadB =
+                SimTrace.ofFragments(
+                    SimTraceFragment(0, duration * 1000, 28.0, 1),
+                    SimTraceFragment(duration * 1000, duration * 1000, 3100.0, 1),
+                    SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
+                    SimTraceFragment(duration * 3000, duration * 1000, 73.0, 1),
+                ).createWorkload(0)
 
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(graph, model)
-        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(0L), ScalingGovernors.performance())
+            val machine = SimBareMetalMachine.create(graph, model)
+            val hypervisor =
+                SimHypervisor.create(
+                    FlowMultiplexerFactory.maxMinMultiplexer(),
+                    SplittableRandom(0L),
+                    ScalingGovernors.performance(),
+                )
 
-        launch { machine.runWorkload(hypervisor) }
-
-        yield()
-        coroutineScope {
-            launch {
-                val vm = hypervisor.newMachine(model)
-                vm.runWorkload(workloadA)
-                hypervisor.removeMachine(vm)
-            }
-            val vm = hypervisor.newMachine(model)
-            vm.runWorkload(workloadB)
-            hypervisor.removeMachine(vm)
-        }
-        yield()
-        machine.cancel()
-        yield()
-
-        assertAll(
-            { assertEquals(329250, hypervisor.counters.cpuActiveTime, "Active time does not match") },
-            { assertEquals(870750, hypervisor.counters.cpuIdleTime, "Idle time does not match") },
-            { assertEquals(318750, hypervisor.counters.cpuStealTime, "Steal time does not match") },
-            { assertEquals(1200000, timeSource.millis()) }
-        )
-    }
-
-    @Test
-    fun testMultipleCPUs() = runSimulation {
-        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
-        val model = MachineModel(
-            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
-            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
-        )
-
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val machine = SimBareMetalMachine.create(graph, model)
-        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(0L), ScalingGovernors.performance())
-
-        assertDoesNotThrow {
             launch { machine.runWorkload(hypervisor) }
-        }
 
-        machine.cancel()
-    }
-
-    @Test
-    fun testInterference() = runSimulation {
-        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
-        val model = MachineModel(
-            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
-            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
-        )
-
-        val interferenceModel = VmInterferenceModel.builder()
-            .addGroup(setOf("a", "b"), 0.0, 0.9)
-            .addGroup(setOf("a", "c"), 0.0, 0.6)
-            .addGroup(setOf("a", "n"), 0.1, 0.8)
-            .build()
-
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val machine = SimBareMetalMachine.create(graph, model)
-        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(0L))
-
-        val duration = 5 * 60L
-        val workloadA =
-            SimTrace.ofFragments(
-                SimTraceFragment(0, duration * 1000, 0.0, 1),
-                SimTraceFragment(duration * 1000, duration * 1000, 28.0, 1),
-                SimTraceFragment(duration * 2000, duration * 1000, 3500.0, 1),
-                SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
-            ).createWorkload(0)
-        val workloadB =
-            SimTrace.ofFragments(
-                SimTraceFragment(0, duration * 1000, 0.0, 1),
-                SimTraceFragment(duration * 1000, duration * 1000, 28.0, 1),
-                SimTraceFragment(duration * 2000, duration * 1000, 3100.0, 1),
-                SimTraceFragment(duration * 3000, duration * 1000, 73.0, 1)
-            ).createWorkload(0)
-
-        launch {
-            machine.runWorkload(hypervisor)
-        }
-
-        coroutineScope {
-            launch {
+            yield()
+            coroutineScope {
+                launch {
+                    val vm = hypervisor.newMachine(model)
+                    vm.runWorkload(workloadA)
+                    hypervisor.removeMachine(vm)
+                }
                 val vm = hypervisor.newMachine(model)
-                vm.runWorkload(workloadA, meta = mapOf("interference-model" to interferenceModel.getProfile("a")!!))
+                vm.runWorkload(workloadB)
                 hypervisor.removeMachine(vm)
             }
-            val vm = hypervisor.newMachine(model)
-            vm.runWorkload(workloadB, meta = mapOf("interference-model" to interferenceModel.getProfile("b")!!))
-            hypervisor.removeMachine(vm)
+            yield()
+            machine.cancel()
+            yield()
+
+            assertAll(
+                { assertEquals(329250, hypervisor.counters.cpuActiveTime, "Active time does not match") },
+                { assertEquals(870750, hypervisor.counters.cpuIdleTime, "Idle time does not match") },
+                { assertEquals(318750, hypervisor.counters.cpuStealTime, "Steal time does not match") },
+                { assertEquals(1200000, timeSource.millis()) },
+            )
         }
 
-        machine.cancel()
-    }
+    @Test
+    fun testMultipleCPUs() =
+        runSimulation {
+            val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
+            val model =
+                MachineModel(
+                    // cpus
+                    List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
+                    // memory
+                    List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+                )
+
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+
+            val machine = SimBareMetalMachine.create(graph, model)
+            val hypervisor =
+                SimHypervisor.create(
+                    FlowMultiplexerFactory.maxMinMultiplexer(),
+                    SplittableRandom(0L),
+                    ScalingGovernors.performance(),
+                )
+
+            assertDoesNotThrow {
+                launch { machine.runWorkload(hypervisor) }
+            }
+
+            machine.cancel()
+        }
+
+    @Test
+    fun testInterference() =
+        runSimulation {
+            val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
+            val model =
+                MachineModel(
+                    // cpus
+                    List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
+                    // memory
+                    List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+                )
+
+            val interferenceModel =
+                VmInterferenceModel.builder()
+                    .addGroup(setOf("a", "b"), 0.0, 0.9)
+                    .addGroup(setOf("a", "c"), 0.0, 0.6)
+                    .addGroup(setOf("a", "n"), 0.1, 0.8)
+                    .build()
+
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+
+            val machine = SimBareMetalMachine.create(graph, model)
+            val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.maxMinMultiplexer(), SplittableRandom(0L))
+
+            val duration = 5 * 60L
+            val workloadA =
+                SimTrace.ofFragments(
+                    SimTraceFragment(0, duration * 1000, 0.0, 1),
+                    SimTraceFragment(duration * 1000, duration * 1000, 28.0, 1),
+                    SimTraceFragment(duration * 2000, duration * 1000, 3500.0, 1),
+                    SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1),
+                ).createWorkload(0)
+            val workloadB =
+                SimTrace.ofFragments(
+                    SimTraceFragment(0, duration * 1000, 0.0, 1),
+                    SimTraceFragment(duration * 1000, duration * 1000, 28.0, 1),
+                    SimTraceFragment(duration * 2000, duration * 1000, 3100.0, 1),
+                    SimTraceFragment(duration * 3000, duration * 1000, 73.0, 1),
+                ).createWorkload(0)
+
+            launch {
+                machine.runWorkload(hypervisor)
+            }
+
+            coroutineScope {
+                launch {
+                    val vm = hypervisor.newMachine(model)
+                    vm.runWorkload(workloadA, meta = mapOf("interference-model" to interferenceModel.getProfile("a")!!))
+                    hypervisor.removeMachine(vm)
+                }
+                val vm = hypervisor.newMachine(model)
+                vm.runWorkload(workloadB, meta = mapOf("interference-model" to interferenceModel.getProfile("b")!!))
+                hypervisor.removeMachine(vm)
+            }
+
+            machine.cancel()
+        }
 }

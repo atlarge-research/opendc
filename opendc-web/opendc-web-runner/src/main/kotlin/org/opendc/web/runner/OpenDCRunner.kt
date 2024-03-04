@@ -76,7 +76,7 @@ public class OpenDCRunner(
     parallelism: Int = Runtime.getRuntime().availableProcessors(),
     private val jobTimeout: Duration = Duration.ofMinutes(10),
     private val pollInterval: Duration = Duration.ofSeconds(30),
-    private val heartbeatInterval: Duration = Duration.ofMinutes(1)
+    private val heartbeatInterval: Duration = Duration.ofMinutes(1),
 ) : Runnable {
     /**
      * Logging instance for this runner.
@@ -149,26 +149,28 @@ public class OpenDCRunner(
             val startTime = Instant.now()
             val currentThread = Thread.currentThread()
 
-            val heartbeat = scheduler.scheduleWithFixedDelay(
-                {
-                    if (!manager.heartbeat(id, startTime.secondsSince())) {
-                        currentThread.interrupt()
-                    }
-                },
-                0,
-                heartbeatInterval.toMillis(),
-                TimeUnit.MILLISECONDS
-            )
+            val heartbeat =
+                scheduler.scheduleWithFixedDelay(
+                    {
+                        if (!manager.heartbeat(id, startTime.secondsSince())) {
+                            currentThread.interrupt()
+                        }
+                    },
+                    0,
+                    heartbeatInterval.toMillis(),
+                    TimeUnit.MILLISECONDS,
+                )
 
             try {
                 val topology = convertTopology(scenario.topology)
-                val jobs = (0 until scenario.portfolio.targets.repeats).map { repeat ->
-                    SimulationTask(
-                        scenario,
-                        repeat,
-                        topology
-                    )
-                }
+                val jobs =
+                    (0 until scenario.portfolio.targets.repeats).map { repeat ->
+                        SimulationTask(
+                            scenario,
+                            repeat,
+                            topology,
+                        )
+                    }
                 val results = invokeAll(jobs).map { it.rawResult }
 
                 heartbeat.cancel(true)
@@ -194,8 +196,8 @@ public class OpenDCRunner(
                         "total_vms_submitted" to results.map { it.totalVmsSubmitted },
                         "total_vms_queued" to results.map { it.totalVmsQueued },
                         "total_vms_finished" to results.map { it.totalVmsFinished },
-                        "total_vms_failed" to results.map { it.totalVmsFailed }
-                    )
+                        "total_vms_failed" to results.map { it.totalVmsFailed },
+                    ),
                 )
             } catch (e: Exception) {
                 // Check whether the job failed due to exceeding its time budget
@@ -232,7 +234,7 @@ public class OpenDCRunner(
     private inner class SimulationTask(
         private val scenario: Scenario,
         private val repeat: Int,
-        private val topology: List<HostSpec>
+        private val topology: List<HostSpec>,
     ) : RecursiveTask<WebComputeMonitor.Results>() {
         override fun compute(): WebComputeMonitor.Results {
             val monitor = WebComputeMonitor()
@@ -254,50 +256,51 @@ public class OpenDCRunner(
         /**
          * Run a single simulation of the scenario.
          */
-        private fun runSimulation(monitor: WebComputeMonitor) = runSimulation {
-            val serviceDomain = "compute.opendc.org"
-            val seed = repeat.toLong()
+        private fun runSimulation(monitor: WebComputeMonitor) =
+            runSimulation {
+                val serviceDomain = "compute.opendc.org"
+                val seed = repeat.toLong()
 
-            val scenario = scenario
+                val scenario = scenario
 
-            Provisioner(dispatcher, seed).use { provisioner ->
-                provisioner.runSteps(
-                    setupComputeService(
-                        serviceDomain,
-                        { createComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong())) }
-                    ),
-                    registerComputeMonitor(serviceDomain, monitor),
-                    setupHosts(serviceDomain, topology)
-                )
+                Provisioner(dispatcher, seed).use { provisioner ->
+                    provisioner.runSteps(
+                        setupComputeService(
+                            serviceDomain,
+                            { createComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong())) },
+                        ),
+                        registerComputeMonitor(serviceDomain, monitor),
+                        setupHosts(serviceDomain, topology),
+                    )
 
-                val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
+                    val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
 
-                val workload =
-                    trace(scenario.workload.trace.id).sampleByLoad(scenario.workload.samplingFraction)
-                val vms = workload.resolve(workloadLoader, Random(seed))
+                    val workload =
+                        trace(scenario.workload.trace.id).sampleByLoad(scenario.workload.samplingFraction)
+                    val vms = workload.resolve(workloadLoader, Random(seed))
 
-                val phenomena = scenario.phenomena
-                val failureModel =
-                    if (phenomena.failures) {
-                        grid5000(Duration.ofDays(7))
-                    } else {
-                        null
+                    val phenomena = scenario.phenomena
+                    val failureModel =
+                        if (phenomena.failures) {
+                            grid5000(Duration.ofDays(7))
+                        } else {
+                            null
+                        }
+
+                    // Run workload trace
+                    service.replay(timeSource, vms, seed, failureModel = failureModel, interference = phenomena.interference)
+
+                    val serviceMetrics = service.getSchedulerStats()
+                    logger.debug {
+                        "Scheduler " +
+                            "Success=${serviceMetrics.attemptsSuccess} " +
+                            "Failure=${serviceMetrics.attemptsFailure} " +
+                            "Error=${serviceMetrics.attemptsError} " +
+                            "Pending=${serviceMetrics.serversPending} " +
+                            "Active=${serviceMetrics.serversActive}"
                     }
-
-                // Run workload trace
-                service.replay(timeSource, vms, seed, failureModel = failureModel, interference = phenomena.interference)
-
-                val serviceMetrics = service.getSchedulerStats()
-                logger.debug {
-                    "Scheduler " +
-                        "Success=${serviceMetrics.attemptsSuccess} " +
-                        "Failure=${serviceMetrics.attemptsFailure} " +
-                        "Error=${serviceMetrics.attemptsError} " +
-                        "Pending=${serviceMetrics.serversPending} " +
-                        "Active=${serviceMetrics.serversActive}"
                 }
             }
-        }
     }
 
     /**
@@ -307,46 +310,50 @@ public class OpenDCRunner(
         val res = mutableListOf<HostSpec>()
         val random = Random(0)
 
-        val machines = topology.rooms.asSequence()
-            .flatMap { room ->
-                room.tiles.flatMap { tile ->
-                    val rack = tile.rack
-                    rack?.machines?.map { machine -> rack to machine } ?: emptyList()
+        val machines =
+            topology.rooms.asSequence()
+                .flatMap { room ->
+                    room.tiles.flatMap { tile ->
+                        val rack = tile.rack
+                        rack?.machines?.map { machine -> rack to machine } ?: emptyList()
+                    }
                 }
-            }
 
         for ((rack, machine) in machines) {
             val clusterId = rack.id
             val position = machine.position
 
-            val processors = machine.cpus.flatMap { cpu ->
-                val cores = cpu.numberOfCores
-                val speed = cpu.clockRateMhz
-                // TODO Remove hard coding of vendor
-                val node = ProcessingNode("Intel", "amd64", cpu.name, cores)
-                List(cores) { coreId ->
-                    ProcessingUnit(node, coreId, speed)
+            val processors =
+                machine.cpus.flatMap { cpu ->
+                    val cores = cpu.numberOfCores
+                    val speed = cpu.clockRateMhz
+                    // TODO Remove hard coding of vendor
+                    val node = ProcessingNode("Intel", "amd64", cpu.name, cores)
+                    List(cores) { coreId ->
+                        ProcessingUnit(node, coreId, speed)
+                    }
                 }
-            }
-            val memoryUnits = machine.memory.map { memory ->
-                MemoryUnit(
-                    "Samsung",
-                    memory.name,
-                    memory.speedMbPerS,
-                    memory.sizeMb.toLong()
-                )
-            }
+            val memoryUnits =
+                machine.memory.map { memory ->
+                    MemoryUnit(
+                        "Samsung",
+                        memory.name,
+                        memory.speedMbPerS,
+                        memory.sizeMb.toLong(),
+                    )
+                }
 
             val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
             val powerModel = CpuPowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
 
-            val spec = HostSpec(
-                UUID(random.nextLong(), random.nextLong()),
-                "node-$clusterId-$position",
-                mapOf("cluster" to clusterId),
-                MachineModel(processors, memoryUnits),
-                SimPsuFactories.simple(powerModel)
-            )
+            val spec =
+                HostSpec(
+                    UUID(random.nextLong(), random.nextLong()),
+                    "node-$clusterId-$position",
+                    mapOf("cluster" to clusterId),
+                    MachineModel(processors, memoryUnits),
+                    SimPsuFactories.simple(powerModel),
+                )
 
             res += spec
         }
@@ -358,10 +365,11 @@ public class OpenDCRunner(
      * A custom [ForkJoinWorkerThreadFactory] that uses the [ClassLoader] of specified by the runner.
      */
     private class RunnerThreadFactory(private val classLoader: ClassLoader) : ForkJoinWorkerThreadFactory {
-        override fun newThread(pool: ForkJoinPool): ForkJoinWorkerThread = object : ForkJoinWorkerThread(pool) {
-            init {
-                contextClassLoader = classLoader
+        override fun newThread(pool: ForkJoinPool): ForkJoinWorkerThread =
+            object : ForkJoinWorkerThread(pool) {
+                init {
+                    contextClassLoader = classLoader
+                }
             }
-        }
     }
 }

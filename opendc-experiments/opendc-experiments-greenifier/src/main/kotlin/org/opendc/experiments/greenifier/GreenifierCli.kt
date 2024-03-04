@@ -104,7 +104,7 @@ internal class GreenifierCommand : CliktCommand(name = "greenifier") {
      */
     private val portfolio by argument(help = "portfolio to replay")
         .choice(
-            "greenifier" to { GreenifierPortfolio() }
+            "greenifier" to { GreenifierPortfolio() },
         )
         .default({ GreenifierPortfolio() })
 
@@ -131,12 +131,17 @@ internal class GreenifierCommand : CliktCommand(name = "greenifier") {
     /**
      * Run a single scenario.
      */
-    private fun runScenario(runner: GreenifierRunner, pool: ForkJoinPool, scenario: Scenario) {
-        val pb = ProgressBarBuilder()
-            .setInitialMax(repeats.toLong())
-            .setStyle(ProgressBarStyle.ASCII)
-            .setTaskName("Simulating...")
-            .build()
+    private fun runScenario(
+        runner: GreenifierRunner,
+        pool: ForkJoinPool,
+        scenario: Scenario,
+    ) {
+        val pb =
+            ProgressBarBuilder()
+                .setInitialMax(repeats.toLong())
+                .setStyle(ProgressBarStyle.ASCII)
+                .setTaskName("Simulating...")
+                .build()
 
         pool.submit {
             LongStream.range(0, repeats.toLong())

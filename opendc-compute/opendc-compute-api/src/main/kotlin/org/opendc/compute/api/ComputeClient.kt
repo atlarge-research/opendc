@@ -54,7 +54,7 @@ public interface ComputeClient : AutoCloseable {
         cpuCount: Int,
         memorySize: Long,
         labels: Map<String, String> = emptyMap(),
-        meta: Map<String, Any> = emptyMap()
+        meta: Map<String, Any> = emptyMap(),
     ): Flavor
 
     /**
@@ -79,7 +79,7 @@ public interface ComputeClient : AutoCloseable {
     public fun newImage(
         name: String,
         labels: Map<String, String> = emptyMap(),
-        meta: Map<String, Any> = emptyMap()
+        meta: Map<String, Any> = emptyMap(),
     ): Image
 
     /**
@@ -110,7 +110,7 @@ public interface ComputeClient : AutoCloseable {
         flavor: Flavor,
         labels: Map<String, String> = emptyMap(),
         meta: Map<String, Any> = emptyMap(),
-        start: Boolean = true
+        start: Boolean = true,
     ): Server
 
     /**

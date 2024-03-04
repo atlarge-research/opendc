@@ -34,46 +34,49 @@ import org.opendc.experiments.base.portfolio.model.Workload
  * A [Portfolio] that explores the effect of a composite workload.
  */
 public class CompositeWorkloadPortfolio : Portfolio {
-    private val topologies = listOf(
-        Topology("base"),
-        Topology("exp-vol-hor-hom"),
-        Topology("exp-vol-ver-hom"),
-        Topology("exp-vel-ver-hom")
-    )
-    private val workloads = listOf(
-        Workload(
-            "all-azure",
-            composite(trace("solvinity-short") to 0.0, trace("azure") to 1.0)
-        ),
-        Workload(
-            "solvinity-25-azure-75",
-            composite(trace("solvinity-short") to 0.25, trace("azure") to 0.75)
-        ),
-        Workload(
-            "solvinity-50-azure-50",
-            composite(trace("solvinity-short") to 0.5, trace("azure") to 0.5)
-        ),
-        Workload(
-            "solvinity-75-azure-25",
-            composite(trace("solvinity-short") to 0.75, trace("azure") to 0.25)
-        ),
-        Workload(
-            "all-solvinity",
-            composite(trace("solvinity-short") to 1.0, trace("azure") to 0.0)
+    private val topologies =
+        listOf(
+            Topology("base"),
+            Topology("exp-vol-hor-hom"),
+            Topology("exp-vol-ver-hom"),
+            Topology("exp-vel-ver-hom"),
         )
-    )
+    private val workloads =
+        listOf(
+            Workload(
+                "all-azure",
+                composite(trace("solvinity-short") to 0.0, trace("azure") to 1.0),
+            ),
+            Workload(
+                "solvinity-25-azure-75",
+                composite(trace("solvinity-short") to 0.25, trace("azure") to 0.75),
+            ),
+            Workload(
+                "solvinity-50-azure-50",
+                composite(trace("solvinity-short") to 0.5, trace("azure") to 0.5),
+            ),
+            Workload(
+                "solvinity-75-azure-25",
+                composite(trace("solvinity-short") to 0.75, trace("azure") to 0.25),
+            ),
+            Workload(
+                "all-solvinity",
+                composite(trace("solvinity-short") to 1.0, trace("azure") to 0.0),
+            ),
+        )
     private val operationalPhenomena = OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = false)
     private val allocationPolicy = "active-servers"
 
-    override val scenarios: Iterable<Scenario> = topologies.flatMap { topology ->
-        workloads.map { workload ->
-            Scenario(
-                topology,
-                workload,
-                operationalPhenomena,
-                allocationPolicy,
-                mapOf("topology" to topology.name, "workload" to workload.name)
-            )
+    override val scenarios: Iterable<Scenario> =
+        topologies.flatMap { topology ->
+            workloads.map { workload ->
+                Scenario(
+                    topology,
+                    workload,
+                    operationalPhenomena,
+                    allocationPolicy,
+                    mapOf("topology" to topology.name, "workload" to workload.name),
+                )
+            }
         }
-    }
 }

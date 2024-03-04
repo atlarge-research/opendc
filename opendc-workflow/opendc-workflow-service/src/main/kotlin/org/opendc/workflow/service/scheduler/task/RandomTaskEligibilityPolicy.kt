@@ -30,16 +30,17 @@ import java.util.Random
  * A [TaskEligibilityPolicy] that randomly accepts tasks in the system with some [probability].
  */
 public data class RandomTaskEligibilityPolicy(val probability: Double = 0.5) : TaskEligibilityPolicy {
-    override fun invoke(scheduler: WorkflowServiceImpl): TaskEligibilityPolicy.Logic = object : TaskEligibilityPolicy.Logic {
-        val random = Random(123)
+    override fun invoke(scheduler: WorkflowServiceImpl): TaskEligibilityPolicy.Logic =
+        object : TaskEligibilityPolicy.Logic {
+            val random = Random(123)
 
-        override fun invoke(task: TaskState): TaskEligibilityPolicy.Advice =
-            if (random.nextDouble() <= probability || scheduler.activeTasks.isEmpty()) {
-                TaskEligibilityPolicy.Advice.ADMIT
-            } else {
-                TaskEligibilityPolicy.Advice.DENY
-            }
-    }
+            override fun invoke(task: TaskState): TaskEligibilityPolicy.Advice =
+                if (random.nextDouble() <= probability || scheduler.activeTasks.isEmpty()) {
+                    TaskEligibilityPolicy.Advice.ADMIT
+                } else {
+                    TaskEligibilityPolicy.Advice.DENY
+                }
+        }
 
     override fun toString(): String = "Random($probability)"
 }

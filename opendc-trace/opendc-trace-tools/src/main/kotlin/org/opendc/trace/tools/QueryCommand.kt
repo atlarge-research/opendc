@@ -67,11 +67,12 @@ internal class QueryCommand : CliktCommand(name = "query", help = "Query workloa
     /**
      * Access to the terminal.
      */
-    private val terminal = TerminalBuilder.builder()
-        .system(false)
-        .streams(System.`in`, System.out)
-        .encoding(StandardCharsets.UTF_8)
-        .build()
+    private val terminal =
+        TerminalBuilder.builder()
+            .system(false)
+            .streams(System.`in`, System.out)
+            .encoding(StandardCharsets.UTF_8)
+            .build()
 
     /**
      * Helper class to print results to console.
@@ -119,10 +120,11 @@ internal class QueryCommand : CliktCommand(name = "query", help = "Query workloa
         var count = 0
         val meta: ResultSetMetaData = rs.metaData
 
-        val options = mapOf(
-            Printer.COLUMNS to List(meta.columnCount) { meta.getColumnName(it + 1) },
-            Printer.BORDER to "|"
-        )
+        val options =
+            mapOf(
+                Printer.COLUMNS to List(meta.columnCount) { meta.getColumnName(it + 1) },
+                Printer.BORDER to "|",
+            )
         val data = mutableListOf<Map<String, Any>>()
 
         while (rs.next()) {
@@ -146,7 +148,10 @@ internal class QueryCommand : CliktCommand(name = "query", help = "Query workloa
     private class QueryPrinter(private val terminal: Terminal) : DefaultPrinter(null) {
         override fun terminal(): Terminal = terminal
 
-        override fun highlightAndPrint(options: MutableMap<String, Any>, exception: Throwable) {
+        override fun highlightAndPrint(
+            options: MutableMap<String, Any>,
+            exception: Throwable,
+        ) {
             if (options.getOrDefault("exception", "stack") == "stack") {
                 exception.printStackTrace()
             } else {

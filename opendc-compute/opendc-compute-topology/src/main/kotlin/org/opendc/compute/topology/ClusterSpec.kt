@@ -42,5 +42,5 @@ public data class ClusterSpec(
     val memCapacity: Double,
     val hostCount: Int,
     val memCapacityPerHost: Double,
-    val cpuCountPerHost: Int
+    val cpuCountPerHost: Int,
 )
