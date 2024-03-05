@@ -32,7 +32,10 @@ import java.util.UUID
 /**
  * Helper method to convert a [List] into a [List] with elements of [targetElementType].
  */
-public fun <T> TableColumnType.List.convertTo(value: List<*>?, targetElementType: Class<T>): List<T>? {
+public fun <T> TableColumnType.List.convertTo(
+    value: List<*>?,
+    targetElementType: Class<T>,
+): List<T>? {
     require(elementType.isCompatible(targetElementType)) { "Target element type is not compatible with $elementType" }
     @Suppress("UNCHECKED_CAST")
     return value as List<T>?
@@ -41,7 +44,10 @@ public fun <T> TableColumnType.List.convertTo(value: List<*>?, targetElementType
 /**
  * Helper method to convert a [Set] into a [Set] with elements of [targetElementType].
  */
-public fun <T> TableColumnType.Set.convertTo(value: Set<*>?, targetElementType: Class<T>): Set<T>? {
+public fun <T> TableColumnType.Set.convertTo(
+    value: Set<*>?,
+    targetElementType: Class<T>,
+): Set<T>? {
     require(elementType.isCompatible(targetElementType)) { "Target element type is not compatible with $elementType" }
     @Suppress("UNCHECKED_CAST")
     return value as Set<T>?
@@ -50,7 +56,11 @@ public fun <T> TableColumnType.Set.convertTo(value: Set<*>?, targetElementType: 
 /**
  * Helper method to convert a [Map] into a [Map] with [targetKeyType] keys and [targetValueType] values.
  */
-public fun <K, V> TableColumnType.Map.convertTo(value: Map<*, *>?, targetKeyType: Class<K>, targetValueType: Class<V>): Map<K, V>? {
+public fun <K, V> TableColumnType.Map.convertTo(
+    value: Map<*, *>?,
+    targetKeyType: Class<K>,
+    targetValueType: Class<V>,
+): Map<K, V>? {
     require(keyType.isCompatible(targetKeyType)) { "Target key type $targetKeyType is not compatible with $keyType" }
     require(valueType.isCompatible(targetValueType)) { "Target value type $targetValueType is not compatible with $valueType" }
     @Suppress("UNCHECKED_CAST")

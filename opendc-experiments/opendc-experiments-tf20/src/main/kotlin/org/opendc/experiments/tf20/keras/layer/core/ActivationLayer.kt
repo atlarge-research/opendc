@@ -31,9 +31,8 @@ import org.opendc.experiments.tf20.keras.shape.TensorShape
  */
 public class ActivationLayer(
     public val activation: Activation = Activation.Relu,
-    name: String = ""
+    name: String = "",
 ) : Layer(name) {
-
     override fun build(inputShape: TensorShape) {
         // Intentionally left empty
     }

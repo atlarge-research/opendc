@@ -39,33 +39,34 @@ class ForwardingFlowMultiplexerTest {
      * Test a trace workload.
      */
     @Test
-    fun testTrace() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testTrace() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val switch = ForwardingFlowMultiplexer(graph)
-        val sink = SimpleFlowSink(graph, 3200.0f)
-        graph.connect(switch.newOutput(), sink.input)
+            val switch = ForwardingFlowMultiplexer(graph)
+            val sink = SimpleFlowSink(graph, 3200.0f)
+            graph.connect(switch.newOutput(), sink.input)
 
-        yield()
+            yield()
 
-        assertEquals(sink.capacity, switch.capacity) { "Capacity is not detected" }
+            assertEquals(sink.capacity, switch.capacity) { "Capacity is not detected" }
 
-        val workload =
-            TraceFlowSource(
-                graph,
-                TraceFlowSource.Trace(
-                    longArrayOf(1000, 2000, 3000, 4000),
-                    floatArrayOf(28.0f, 3500.0f, 0.0f, 183.0f),
-                    4
+            val workload =
+                TraceFlowSource(
+                    graph,
+                    TraceFlowSource.Trace(
+                        longArrayOf(1000, 2000, 3000, 4000),
+                        floatArrayOf(28.0f, 3500.0f, 0.0f, 183.0f),
+                        4,
+                    ),
                 )
+            graph.connect(workload.output, switch.newInput())
+
+            advanceUntilIdle()
+
+            assertAll(
+                { assertEquals(4000, timeSource.millis()) { "Took enough time" } },
             )
-        graph.connect(workload.output, switch.newInput())
-
-        advanceUntilIdle()
-
-        assertAll(
-            { assertEquals(4000, timeSource.millis()) { "Took enough time" } }
-        )
-    }
+        }
 }

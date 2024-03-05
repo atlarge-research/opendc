@@ -34,5 +34,8 @@ public fun interface HostFilter {
      * Test whether the specified [host] should be included in the selection
      * for scheduling the specified [server].
      */
-    public fun test(host: HostView, server: Server): Boolean
+    public fun test(
+        host: HostView,
+        server: Server,
+    ): Boolean
 }

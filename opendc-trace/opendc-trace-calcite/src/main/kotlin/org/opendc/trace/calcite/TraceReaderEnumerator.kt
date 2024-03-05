@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 internal class TraceReaderEnumerator<E>(
     private val reader: TableReader,
     private val columns: List<TableColumn>,
-    private val cancelFlag: AtomicBoolean
+    private val cancelFlag: AtomicBoolean,
 ) : Enumerator<E> {
     private val columnIndices = columns.map { reader.resolve(it.name) }.toIntArray()
     private var current: E? = null
@@ -80,7 +80,11 @@ internal class TraceReaderEnumerator<E>(
         return res
     }
 
-    private fun convertColumn(reader: TableReader, column: TableColumn, columnIndex: Int): Any? {
+    private fun convertColumn(
+        reader: TableReader,
+        column: TableColumn,
+        columnIndex: Int,
+    ): Any? {
         return when (column.type) {
             is TableColumnType.Boolean -> reader.getBoolean(columnIndex)
             is TableColumnType.Int -> reader.getInt(columnIndex)

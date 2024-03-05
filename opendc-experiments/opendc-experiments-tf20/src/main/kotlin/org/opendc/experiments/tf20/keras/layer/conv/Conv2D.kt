@@ -35,13 +35,12 @@ import kotlin.math.ceil
  * Finally, if `activation` is applied to the outputs as well.
  */
 public class Conv2D(
-    public val filter: LongArray = LongArray(4), // [H, W, channel_in, channel_out]
-    public val strides: LongArray = LongArray(4), // [1, stride_h, stride_w, 1]
+    public val filter: LongArray = LongArray(4),
+    public val strides: LongArray = LongArray(4),
     public val activation: Activation = Activation.Relu,
     public val padding: ConvPadding = ConvPadding.VALID,
-    name: String = ""
+    name: String = "",
 ) : Layer(name) {
-
     private var padHeight: Double = 0.0
     private var padWidth: Double = 0.0
 

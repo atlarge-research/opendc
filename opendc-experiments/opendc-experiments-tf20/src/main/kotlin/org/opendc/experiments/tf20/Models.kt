@@ -35,7 +35,7 @@ import org.opendc.experiments.tf20.keras.layer.regularization.Dropout
 /**
  * Construct an AlexNet model with the given batch size.
  */
-fun AlexNet(batchSize: Long): TrainableModel {
+fun getAlexNet(batchSize: Long): TrainableModel {
     return Sequential(
         Input(batchSize, 227, 227, 3, name = "Input"),
         Conv2D(longArrayOf(11, 11, 3, 96), longArrayOf(1, 4, 4, 1), padding = ConvPadding.VALID, name = "conv1"),
@@ -51,14 +51,14 @@ fun AlexNet(batchSize: Long): TrainableModel {
         Conv2D(longArrayOf(1, 1, 4096, 4096), longArrayOf(1, 1, 1, 1), padding = ConvPadding.SAME, name = "fc7"),
         Dropout(0.5f, name = "dropout7"),
         Conv2D(longArrayOf(1, 1, 4096, 1000), longArrayOf(1, 1, 1, 1), padding = ConvPadding.SAME, name = "f8"),
-        ActivationLayer(Activation.Softmax, name = "softmax")
+        ActivationLayer(Activation.Softmax, name = "softmax"),
     )
 }
 
 /**
  * Construct an VGG16 model with the given batch size.
  */
-fun VGG16(batchSize: Long = 128): TrainableModel {
+fun getVGG16(batchSize: Long = 128): TrainableModel {
     return Sequential(
         Input(batchSize, 224, 224, 3, name = "Input"),
         Conv2D(longArrayOf(3, 3, 3, 64), longArrayOf(1, 1, 1, 1), padding = ConvPadding.SAME, name = "conv1-1"),
@@ -84,6 +84,6 @@ fun VGG16(batchSize: Long = 128): TrainableModel {
         Conv2D(longArrayOf(1, 1, 4096, 4096), longArrayOf(1, 1, 1, 1), padding = ConvPadding.SAME, name = "fc7"),
         Dropout(0.5f, name = "dropout7"),
         Conv2D(longArrayOf(1, 1, 4096, 1000), longArrayOf(1, 1, 1, 1), padding = ConvPadding.SAME, name = "f8"),
-        ActivationLayer(Activation.Softmax, name = "softmax")
+        ActivationLayer(Activation.Softmax, name = "softmax"),
     )
 }

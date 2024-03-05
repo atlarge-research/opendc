@@ -34,71 +34,75 @@ import org.opendc.simulator.kotlin.runSimulation
  */
 internal class SimUpsTest {
     @Test
-    fun testSingleInlet() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val source = SimPowerSource(graph, /*capacity*/ 200.0f)
-        val ups = SimUps(graph)
-        source.connect(ups.newInlet())
-        ups.connect(TestInlet(graph))
+    fun testSingleInlet() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val source = SimPowerSource(graph, 200.0f)
+            val ups = SimUps(graph)
+            source.connect(ups.newInlet())
+            ups.connect(TestInlet(graph))
 
-        yield()
+            yield()
 
-        assertEquals(100.0f, source.powerDraw)
-    }
-
-    @Test
-    fun testDoubleInlet() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val source1 = SimPowerSource(graph, /*capacity*/ 200.0f)
-        val source2 = SimPowerSource(graph, /*capacity*/ 200.0f)
-        val ups = SimUps(graph)
-        source1.connect(ups.newInlet())
-        source2.connect(ups.newInlet())
-
-        ups.connect(TestInlet(graph))
-
-        yield()
-
-        assertAll(
-            { assertEquals(50.0f, source1.powerDraw) },
-            { assertEquals(50.0f, source2.powerDraw) }
-        )
-    }
+            assertEquals(100.0f, source.powerDraw)
+        }
 
     @Test
-    fun testLoss() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val source = SimPowerSource(graph, /*capacity*/ 500.0f)
-        // https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
-        val ups = SimUps(graph, /*idlePower*/ 4.0f, /*lossCoefficient*/ 0.05f)
-        source.connect(ups.newInlet())
-        ups.connect(TestInlet(graph))
+    fun testDoubleInlet() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val source1 = SimPowerSource(graph, 200.0f)
+            val source2 = SimPowerSource(graph, 200.0f)
+            val ups = SimUps(graph)
+            source1.connect(ups.newInlet())
+            source2.connect(ups.newInlet())
 
-        yield()
+            ups.connect(TestInlet(graph))
 
-        assertEquals(109.0f, source.powerDraw, 0.01f)
-    }
+            yield()
+
+            assertAll(
+                { assertEquals(50.0f, source1.powerDraw) },
+                { assertEquals(50.0f, source2.powerDraw) },
+            )
+        }
 
     @Test
-    fun testDisconnect() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val source1 = SimPowerSource(graph, /*capacity*/ 200.0f)
-        val source2 = SimPowerSource(graph, /*capacity*/ 200.0f)
-        val ups = SimUps(graph)
-        source1.connect(ups.newInlet())
-        source2.connect(ups.newInlet())
+    fun testLoss() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val source = SimPowerSource(graph, 500.0f)
+            // https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
+            val ups = SimUps(graph, 4.0f, 0.05f)
+            source.connect(ups.newInlet())
+            ups.connect(TestInlet(graph))
 
-        val inlet = TestInlet(graph)
+            yield()
 
-        ups.connect(inlet)
-        ups.disconnect()
+            assertEquals(109.0f, source.powerDraw, 0.01f)
+        }
 
-        yield()
+    @Test
+    fun testDisconnect() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val source1 = SimPowerSource(graph, 200.0f)
+            val source2 = SimPowerSource(graph, 200.0f)
+            val ups = SimUps(graph)
+            source1.connect(ups.newInlet())
+            source2.connect(ups.newInlet())
 
-        assertEquals(0.0f, inlet.flowOutlet.capacity)
-    }
+            val inlet = TestInlet(graph)
+
+            ups.connect(inlet)
+            ups.disconnect()
+
+            yield()
+
+            assertEquals(0.0f, inlet.flowOutlet.capacity)
+        }
 }

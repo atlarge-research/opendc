@@ -40,19 +40,28 @@ public class PortfolioResource internal constructor(private val client: Transpor
     /**
      * Obtain the portfolio for [project] with [number].
      */
-    public fun get(project: Long, number: Int): Portfolio? = client.get("projects/$project/portfolios/$number")
+    public fun get(
+        project: Long,
+        number: Int,
+    ): Portfolio? = client.get("projects/$project/portfolios/$number")
 
     /**
      * Create a new portfolio for [project] with the specified [request].
      */
-    public fun create(project: Long, request: Portfolio.Create): Portfolio {
+    public fun create(
+        project: Long,
+        request: Portfolio.Create,
+    ): Portfolio {
         return checkNotNull(client.post("projects/$project/portfolios", request))
     }
 
     /**
      * Delete the portfolio for [project] with [index].
      */
-    public fun delete(project: Long, index: Int): Portfolio {
+    public fun delete(
+        project: Long,
+        index: Int,
+    ): Portfolio {
         return requireNotNull(client.delete("projects/$project/portfolios/$index")) { "Unknown portfolio $index" }
     }
 }

@@ -22,7 +22,7 @@
 
 description = "Support for Azure VM traces in OpenDC"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
     `benchmark-conventions`

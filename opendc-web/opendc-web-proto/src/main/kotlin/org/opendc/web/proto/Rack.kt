@@ -30,5 +30,5 @@ public data class Rack(
     val name: String,
     val capacity: Int,
     val powerCapacityW: Double,
-    val machines: List<Machine>
+    val machines: List<Machine>,
 )

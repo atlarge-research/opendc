@@ -50,11 +50,12 @@ class FlowBenchmarks {
     fun setUp() {
         val random = ThreadLocalRandom.current()
         val traceSize = 10_000_000
-        trace = TraceFlowSource.Trace(
-            LongArray(traceSize) { (it + 1) * 1000L },
-            FloatArray(traceSize) { random.nextFloat(0.0f, 4500.0f) },
-            traceSize
-        )
+        trace =
+            TraceFlowSource.Trace(
+                LongArray(traceSize) { (it + 1) * 1000L },
+                FloatArray(traceSize) { random.nextFloat(0.0f, 4500.0f) },
+                traceSize,
+            )
     }
 
     @Benchmark

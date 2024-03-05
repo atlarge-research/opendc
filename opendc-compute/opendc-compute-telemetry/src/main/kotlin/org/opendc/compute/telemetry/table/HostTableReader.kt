@@ -28,7 +28,6 @@ import java.time.Instant
  * An interface that is used to read a row of a host trace entry.
  */
 public interface HostTableReader {
-
     public fun copy(): HostTableReader
 
     public fun setValues(table: HostTableReader)

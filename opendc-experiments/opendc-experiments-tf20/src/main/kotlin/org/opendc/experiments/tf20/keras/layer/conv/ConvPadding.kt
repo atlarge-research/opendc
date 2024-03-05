@@ -35,5 +35,5 @@ public enum class ConvPadding {
     /**
      * No padding.
      */
-    VALID
+    VALID,
 }

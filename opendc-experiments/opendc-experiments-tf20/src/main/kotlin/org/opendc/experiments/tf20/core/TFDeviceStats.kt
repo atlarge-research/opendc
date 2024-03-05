@@ -32,5 +32,5 @@ package org.opendc.experiments.tf20.core
 data class TFDeviceStats(
     val resourceUsage: Double,
     val powerDraw: Double,
-    val energyUsage: Double
+    val energyUsage: Double,
 )

@@ -60,7 +60,7 @@ public enum class ColdStartModel {
                 else -> Pair(0.0, 1.0)
             }
         }
-    };
+    }, ;
 
     /**
      * Obtain the stochastic parameters for the cold start models.

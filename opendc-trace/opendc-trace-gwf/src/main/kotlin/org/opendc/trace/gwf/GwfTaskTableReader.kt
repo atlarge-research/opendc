@@ -88,19 +88,19 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
 
     override fun resolve(name: String): Int {
         return when (name) {
-            TASK_ID -> COL_JOB_ID
-            TASK_WORKFLOW_ID -> COL_WORKFLOW_ID
-            TASK_SUBMIT_TIME -> COL_SUBMIT_TIME
-            TASK_RUNTIME -> COL_RUNTIME
-            TASK_ALLOC_NCPUS -> COL_NPROC
-            TASK_REQ_NCPUS -> COL_REQ_NPROC
-            TASK_PARENTS -> COL_DEPS
+            TASK_ID -> colJobID
+            TASK_WORKFLOW_ID -> colWorkflowID
+            TASK_SUBMIT_TIME -> colSubmitTime
+            TASK_RUNTIME -> colRuntime
+            TASK_ALLOC_NCPUS -> colNproc
+            TASK_REQ_NCPUS -> colReqNproc
+            TASK_PARENTS -> colDeps
             else -> -1
         }
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in 0..COL_DEPS) { "Invalid column" }
+        require(index in 0..colDeps) { "Invalid column" }
         return false
     }
 
@@ -111,8 +111,8 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     override fun getInt(index: Int): Int {
         checkActive()
         return when (index) {
-            COL_REQ_NPROC -> reqNProcs
-            COL_NPROC -> nProcs
+            colReqNproc -> reqNProcs
+            colNproc -> nProcs
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -132,8 +132,8 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     override fun getString(index: Int): String? {
         checkActive()
         return when (index) {
-            COL_JOB_ID -> jobId
-            COL_WORKFLOW_ID -> workflowId
+            colJobID -> jobId
+            colWorkflowID -> workflowId
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -145,7 +145,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     override fun getInstant(index: Int): Instant? {
         checkActive()
         return when (index) {
-            COL_SUBMIT_TIME -> submitTime
+            colSubmitTime -> submitTime
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -153,23 +153,33 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     override fun getDuration(index: Int): Duration? {
         checkActive()
         return when (index) {
-            COL_RUNTIME -> runtime
+            colRuntime -> runtime
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
 
-    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+    override fun <T> getList(
+        index: Int,
+        elementType: Class<T>,
+    ): List<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+    override fun <K, V> getMap(
+        index: Int,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+    override fun <T> getSet(
+        index: Int,
+        elementType: Class<T>,
+    ): Set<T>? {
         checkActive()
         return when (index) {
-            COL_DEPS -> TYPE_DEPS.convertTo(dependencies, elementType)
+            colDeps -> typeDeps.convertTo(dependencies, elementType)
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -245,31 +255,32 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
         dependencies = emptySet()
     }
 
-    private val COL_WORKFLOW_ID = 0
-    private val COL_JOB_ID = 1
-    private val COL_SUBMIT_TIME = 2
-    private val COL_RUNTIME = 3
-    private val COL_NPROC = 4
-    private val COL_REQ_NPROC = 5
-    private val COL_DEPS = 6
+    private val colWorkflowID = 0
+    private val colJobID = 1
+    private val colSubmitTime = 2
+    private val colRuntime = 3
+    private val colNproc = 4
+    private val colReqNproc = 5
+    private val colDeps = 6
 
-    private val TYPE_DEPS = TableColumnType.Set(TableColumnType.String)
+    private val typeDeps = TableColumnType.Set(TableColumnType.String)
 
     companion object {
         /**
          * The [CsvSchema] that is used to parse the trace.
          */
-        private val schema = CsvSchema.builder()
-            .addColumn("WorkflowID", CsvSchema.ColumnType.NUMBER)
-            .addColumn("JobID", CsvSchema.ColumnType.NUMBER)
-            .addColumn("SubmitTime", CsvSchema.ColumnType.NUMBER)
-            .addColumn("RunTime", CsvSchema.ColumnType.NUMBER)
-            .addColumn("NProcs", CsvSchema.ColumnType.NUMBER)
-            .addColumn("ReqNProcs", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Dependencies", CsvSchema.ColumnType.STRING)
-            .setAllowComments(true)
-            .setUseHeader(true)
-            .setColumnSeparator(',')
-            .build()
+        private val schema =
+            CsvSchema.builder()
+                .addColumn("WorkflowID", CsvSchema.ColumnType.NUMBER)
+                .addColumn("JobID", CsvSchema.ColumnType.NUMBER)
+                .addColumn("SubmitTime", CsvSchema.ColumnType.NUMBER)
+                .addColumn("RunTime", CsvSchema.ColumnType.NUMBER)
+                .addColumn("NProcs", CsvSchema.ColumnType.NUMBER)
+                .addColumn("ReqNProcs", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Dependencies", CsvSchema.ColumnType.STRING)
+                .setAllowComments(true)
+                .setUseHeader(true)
+                .setColumnSeparator(',')
+                .build()
     }
 }

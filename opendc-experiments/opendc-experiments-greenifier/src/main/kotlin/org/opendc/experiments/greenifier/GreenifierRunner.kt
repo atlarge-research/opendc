@@ -50,7 +50,7 @@ import kotlin.math.roundToLong
 public class GreenifierRunner(
     private val envPath: File,
     tracePath: File,
-    private val outputPath: File?
+    private val outputPath: File?,
 ) {
     /**
      * The [ComputeWorkloadLoader] to use for loading the traces.
@@ -60,14 +60,17 @@ public class GreenifierRunner(
     /**
      * Run a single [scenario] with the specified seed.
      */
-    fun runScenario(scenario: Scenario, seed: Long) = runSimulation {
+    fun runScenario(
+        scenario: Scenario,
+        seed: Long,
+    ) = runSimulation {
         val serviceDomain = "compute.opendc.org"
         val topology = clusterTopology(File(envPath, "${scenario.topology.name}.txt"))
 
         Provisioner(dispatcher, seed).use { provisioner ->
             provisioner.runSteps(
                 setupComputeService(serviceDomain, { createComputeScheduler(scenario.allocationPolicy, Random(it.seeder.nextLong())) }),
-                setupHosts(serviceDomain, topology, optimize = true)
+                setupHosts(serviceDomain, topology, optimize = true),
             )
 
             if (outputPath != null) {
@@ -80,9 +83,9 @@ public class GreenifierRunner(
                         ParquetComputeMonitor(
                             outputPath,
                             partition,
-                            bufferSize = 4096
-                        )
-                    )
+                            bufferSize = 4096,
+                        ),
+                    ),
                 )
             }
 

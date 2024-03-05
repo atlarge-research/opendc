@@ -46,7 +46,7 @@ public fun setupFaaSService(
     routingPolicy: (ProvisioningContext) -> RoutingPolicy,
     terminationPolicy: (ProvisioningContext) -> FunctionTerminationPolicy,
     machineModel: MachineModel,
-    coldStartModel: ColdStartModel? = null
+    coldStartModel: ColdStartModel? = null,
 ): ProvisioningStep {
     return FaaSServiceProvisioningStep(serviceDomain, routingPolicy, terminationPolicy, machineModel, coldStartModel)
 }

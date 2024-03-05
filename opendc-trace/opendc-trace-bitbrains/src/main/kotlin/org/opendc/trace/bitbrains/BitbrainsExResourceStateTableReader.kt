@@ -23,18 +23,18 @@
 package org.opendc.trace.bitbrains
 
 import org.opendc.trace.TableReader
-import org.opendc.trace.conv.RESOURCE_CLUSTER_ID
-import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_DEMAND
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_READY_PCT
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE_PCT
-import org.opendc.trace.conv.RESOURCE_STATE_DISK_READ
-import org.opendc.trace.conv.RESOURCE_STATE_DISK_WRITE
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
+import org.opendc.trace.conv.resourceClusterID
+import org.opendc.trace.conv.resourceCpuCapacity
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceStateCpuDemand
+import org.opendc.trace.conv.resourceStateCpuReadyPct
+import org.opendc.trace.conv.resourceStateCpuUsage
+import org.opendc.trace.conv.resourceStateCpuUsagePct
+import org.opendc.trace.conv.resourceStateDiskRead
+import org.opendc.trace.conv.resourceStateDiskWrite
+import org.opendc.trace.conv.resourceStateTimestamp
 import java.io.BufferedReader
 import java.time.Duration
 import java.time.Instant
@@ -99,18 +99,18 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
 
             val field = line.subSequence(start, end) as String
             when (col++) {
-                COL_TIMESTAMP -> timestamp = Instant.ofEpochSecond(field.toLong(10))
-                COL_CPU_USAGE -> cpuUsage = field.toDouble()
-                COL_CPU_DEMAND -> cpuDemand = field.toDouble()
-                COL_DISK_READ -> diskRead = field.toDouble()
-                COL_DISK_WRITE -> diskWrite = field.toDouble()
-                COL_CLUSTER_ID -> cluster = field.trim()
-                COL_NCPUS -> cpuCores = field.toInt(10)
-                COL_CPU_READY_PCT -> cpuReadyPct = field.toDouble()
-                COL_POWERED_ON -> poweredOn = field.toInt(10) == 1
-                COL_CPU_CAPACITY -> cpuCapacity = field.toDouble()
-                COL_ID -> id = field.trim()
-                COL_MEM_CAPACITY -> memCapacity = field.toDouble() * 1000 // Convert from MB to KB
+                colTimestamp -> timestamp = Instant.ofEpochSecond(field.toLong(10))
+                colCpuUsage -> cpuUsage = field.toDouble()
+                colCpuDemand -> cpuDemand = field.toDouble()
+                colDiskRead -> diskRead = field.toDouble()
+                colDiskWrite -> diskWrite = field.toDouble()
+                colClusterID -> cluster = field.trim()
+                colNcpus -> cpuCores = field.toInt(10)
+                colCpuReadyPct -> cpuReadyPct = field.toDouble()
+                colPoweredOn -> poweredOn = field.toInt(10) == 1
+                colCpuCapacity -> cpuCapacity = field.toDouble()
+                colID -> id = field.trim()
+                colMemCapacity -> memCapacity = field.toDouble() * 1000 // Convert from MB to KB
             }
         }
 
@@ -119,31 +119,31 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
 
     override fun resolve(name: String): Int {
         return when (name) {
-            RESOURCE_ID -> COL_ID
-            RESOURCE_CLUSTER_ID -> COL_CLUSTER_ID
-            RESOURCE_STATE_TIMESTAMP -> COL_TIMESTAMP
-            RESOURCE_CPU_COUNT -> COL_NCPUS
-            RESOURCE_CPU_CAPACITY -> COL_CPU_CAPACITY
-            RESOURCE_STATE_CPU_USAGE -> COL_CPU_USAGE
-            RESOURCE_STATE_CPU_USAGE_PCT -> COL_CPU_USAGE_PCT
-            RESOURCE_STATE_CPU_DEMAND -> COL_CPU_DEMAND
-            RESOURCE_STATE_CPU_READY_PCT -> COL_CPU_READY_PCT
-            RESOURCE_MEM_CAPACITY -> COL_MEM_CAPACITY
-            RESOURCE_STATE_DISK_READ -> COL_DISK_READ
-            RESOURCE_STATE_DISK_WRITE -> COL_DISK_WRITE
+            resourceID -> colID
+            resourceClusterID -> colClusterID
+            resourceStateTimestamp -> colTimestamp
+            resourceCpuCount -> colNcpus
+            resourceCpuCapacity -> colCpuCapacity
+            resourceStateCpuUsage -> colCpuUsage
+            resourceStateCpuUsagePct -> colCpuUsagePct
+            resourceStateCpuDemand -> colCpuDemand
+            resourceStateCpuReadyPct -> colCpuReadyPct
+            resourceMemCapacity -> colMemCapacity
+            resourceStateDiskRead -> colDiskRead
+            resourceStateDiskWrite -> colDiskWrite
             else -> -1
         }
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in 0 until COL_MAX) { "Invalid column index" }
+        require(index in 0 until colMax) { "Invalid column index" }
         return false
     }
 
     override fun getBoolean(index: Int): Boolean {
         check(state == State.Active) { "No active row" }
         return when (index) {
-            COL_POWERED_ON -> poweredOn
+            colPoweredOn -> poweredOn
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -151,7 +151,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     override fun getInt(index: Int): Int {
         check(state == State.Active) { "No active row" }
         return when (index) {
-            COL_NCPUS -> cpuCores
+            colNcpus -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -167,14 +167,14 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     override fun getDouble(index: Int): Double {
         check(state == State.Active) { "No active row" }
         return when (index) {
-            COL_CPU_CAPACITY -> cpuCapacity
-            COL_CPU_USAGE -> cpuUsage
-            COL_CPU_USAGE_PCT -> cpuUsage / cpuCapacity
-            COL_CPU_READY_PCT -> cpuReadyPct
-            COL_CPU_DEMAND -> cpuDemand
-            COL_MEM_CAPACITY -> memCapacity
-            COL_DISK_READ -> diskRead
-            COL_DISK_WRITE -> diskWrite
+            colCpuCapacity -> cpuCapacity
+            colCpuUsage -> cpuUsage
+            colCpuUsagePct -> cpuUsage / cpuCapacity
+            colCpuReadyPct -> cpuReadyPct
+            colCpuDemand -> cpuDemand
+            colMemCapacity -> memCapacity
+            colDiskRead -> diskRead
+            colDiskWrite -> diskWrite
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -182,8 +182,8 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     override fun getString(index: Int): String? {
         check(state == State.Active) { "No active row" }
         return when (index) {
-            COL_ID -> id
-            COL_CLUSTER_ID -> cluster
+            colID -> id
+            colClusterID -> cluster
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -195,7 +195,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     override fun getInstant(index: Int): Instant? {
         check(state == State.Active) { "No active row" }
         return when (index) {
-            COL_TIMESTAMP -> timestamp
+            colTimestamp -> timestamp
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -204,15 +204,25 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+    override fun <T> getList(
+        index: Int,
+        elementType: Class<T>,
+    ): List<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+    override fun <T> getSet(
+        index: Int,
+        elementType: Class<T>,
+    ): Set<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+    override fun <K, V> getMap(
+        index: Int,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>? {
         throw IllegalArgumentException("Invalid column")
     }
 
@@ -259,22 +269,24 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
     /**
      * Default column indices for the extended Bitbrains format.
      */
-    private val COL_TIMESTAMP = 0
-    private val COL_CPU_USAGE = 1
-    private val COL_CPU_DEMAND = 2
-    private val COL_DISK_READ = 4
-    private val COL_DISK_WRITE = 6
-    private val COL_CLUSTER_ID = 10
-    private val COL_NCPUS = 12
-    private val COL_CPU_READY_PCT = 13
-    private val COL_POWERED_ON = 14
-    private val COL_CPU_CAPACITY = 18
-    private val COL_ID = 19
-    private val COL_MEM_CAPACITY = 20
-    private val COL_CPU_USAGE_PCT = 21
-    private val COL_MAX = COL_CPU_USAGE_PCT + 1
+    private val colTimestamp = 0
+    private val colCpuUsage = 1
+    private val colCpuDemand = 2
+    private val colDiskRead = 4
+    private val colDiskWrite = 6
+    private val colClusterID = 10
+    private val colNcpus = 12
+    private val colCpuReadyPct = 13
+    private val colPoweredOn = 14
+    private val colCpuCapacity = 18
+    private val colID = 19
+    private val colMemCapacity = 20
+    private val colCpuUsagePct = 21
+    private val colMax = colCpuUsagePct + 1
 
     private enum class State {
-        Pending, Active, Closed
+        Pending,
+        Active,
+        Closed,
     }
 }

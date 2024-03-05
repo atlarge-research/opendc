@@ -55,7 +55,10 @@ public interface Trace {
          * @throws IllegalArgumentException if [format] is not supported.
          */
         @JvmStatic
-        public fun open(path: File, format: String): Trace = open(path.toPath(), format)
+        public fun open(
+            path: File,
+            format: String,
+        ): Trace = open(path.toPath(), format)
 
         /**
          * Open a [Trace] at the specified [path] in the given [format].
@@ -65,7 +68,10 @@ public interface Trace {
          * @throws IllegalArgumentException if [format] is not supported.
          */
         @JvmStatic
-        public fun open(path: Path, format: String): Trace {
+        public fun open(
+            path: Path,
+            format: String,
+        ): Trace {
             val provider = requireNotNull(TraceFormat.byName(format)) { "Unknown format $format" }
             return TraceImpl(provider, path)
         }
@@ -77,7 +83,10 @@ public interface Trace {
          * @param format The format of the trace to create.
          */
         @JvmStatic
-        public fun create(path: File, format: String): Trace = create(path.toPath(), format)
+        public fun create(
+            path: File,
+            format: String,
+        ): Trace = create(path.toPath(), format)
 
         /**
          * Create a [Trace] at the specified [path] in the given [format].
@@ -86,7 +95,10 @@ public interface Trace {
          * @param format The format of the trace to create.
          */
         @JvmStatic
-        public fun create(path: Path, format: String): Trace {
+        public fun create(
+            path: Path,
+            format: String,
+        ): Trace {
             val provider = requireNotNull(TraceFormat.byName(format)) { "Unknown format $format" }
             provider.create(path)
             return TraceImpl(provider, path)

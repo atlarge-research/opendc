@@ -31,7 +31,10 @@ import org.opendc.compute.service.HostView
  * @param limit The maximum number of instances on the host.
  */
 public class InstanceCountFilter(private val limit: Int) : HostFilter {
-    override fun test(host: HostView, server: Server): Boolean {
+    override fun test(
+        host: HostView,
+        server: Server,
+    ): Boolean {
         return host.instanceCount < limit
     }
 

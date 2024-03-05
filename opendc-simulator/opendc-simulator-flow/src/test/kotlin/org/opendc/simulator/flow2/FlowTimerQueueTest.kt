@@ -47,7 +47,7 @@ class FlowTimerQueueTest {
     fun testPollEmpty() {
         assertAll(
             { assertEquals(Long.MAX_VALUE, queue.peekDeadline()) },
-            { assertNull(queue.poll(100L)) }
+            { assertNull(queue.poll(100L)) },
         )
     }
 
@@ -66,7 +66,7 @@ class FlowTimerQueueTest {
             { assertEquals(100, queue.peekDeadline()) },
             { assertNull(queue.poll(10L)) },
             { assertEquals(entry, queue.poll(200L)) },
-            { assertNull(queue.poll(200L)) }
+            { assertNull(queue.poll(200L)) },
         )
     }
 
@@ -98,7 +98,7 @@ class FlowTimerQueueTest {
             { assertEquals(entryB, queue.poll(100L)) },
             { assertEquals(entryC, queue.poll(100L)) },
             { assertEquals(entryA, queue.poll(100L)) },
-            { assertNull(queue.poll(100L)) }
+            { assertNull(queue.poll(100L)) },
         )
     }
 
@@ -137,7 +137,7 @@ class FlowTimerQueueTest {
             { assertEquals(entryD, queue.poll(100L)) },
             { assertEquals(entryC, queue.poll(100L)) },
             { assertEquals(entryA, queue.poll(100L)) },
-            { assertNull(queue.poll(100L)) }
+            { assertNull(queue.poll(100L)) },
         )
     }
 
@@ -172,7 +172,7 @@ class FlowTimerQueueTest {
             { assertEquals(entryA, queue.poll(100L)) },
             { assertEquals(entryB, queue.poll(100L)) },
             { assertEquals(entryC, queue.poll(100L)) },
-            { assertNull(queue.poll(100L)) }
+            { assertNull(queue.poll(100L)) },
         )
     }
 
@@ -207,7 +207,7 @@ class FlowTimerQueueTest {
             { assertEquals(entryC, queue.poll(100L)) },
             { assertEquals(entryB, queue.poll(100L)) },
             { assertEquals(entryA, queue.poll(100L)) },
-            { assertNull(queue.poll(100L)) }
+            { assertNull(queue.poll(100L)) },
         )
     }
 
@@ -242,7 +242,7 @@ class FlowTimerQueueTest {
             { assertEquals(entryB, queue.poll(100L)) },
             { assertEquals(entryC, queue.poll(100L)) },
             { assertEquals(entryA, queue.poll(100L)) },
-            { assertNull(queue.poll(100L)) }
+            { assertNull(queue.poll(100L)) },
         )
     }
 
@@ -277,7 +277,7 @@ class FlowTimerQueueTest {
             { assertEquals(entryB, queue.poll(100L)) },
             { assertEquals(entryC, queue.poll(100L)) },
             { assertEquals(entryA, queue.poll(100L)) },
-            { assertNull(queue.poll(100L)) }
+            { assertNull(queue.poll(100L)) },
         )
     }
 
@@ -311,7 +311,7 @@ class FlowTimerQueueTest {
             { assertEquals(20, queue.peekDeadline()) },
             { assertEquals(entryB, queue.poll(100L)) },
             { assertEquals(entryA, queue.poll(100L)) },
-            { assertNull(queue.poll(100L)) }
+            { assertNull(queue.poll(100L)) },
         )
     }
 
@@ -345,7 +345,7 @@ class FlowTimerQueueTest {
             { assertEquals(58, queue.peekDeadline()) },
             { assertEquals(entryC, queue.poll(100L)) },
             { assertEquals(entryA, queue.poll(100L)) },
-            { assertNull(queue.poll(100L)) }
+            { assertNull(queue.poll(100L)) },
         )
     }
 
@@ -379,7 +379,7 @@ class FlowTimerQueueTest {
             { assertEquals(20, queue.peekDeadline()) },
             { assertEquals(entryB, queue.poll(100L)) },
             { assertEquals(entryA, queue.poll(100L)) },
-            { assertNull(queue.poll(100L)) }
+            { assertNull(queue.poll(100L)) },
         )
     }
 }

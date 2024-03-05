@@ -14,10 +14,10 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-22.04 ]
-        java: [ 17, 19 ]
+        java: [ 19 ]
         include:
           - os: windows-2022
-            java: 17
+            java: 19
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

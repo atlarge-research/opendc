@@ -35,29 +35,32 @@ import org.opendc.experiments.base.portfolio.model.Workload
  */
 public class OperationalPhenomenaPortfolio : Portfolio {
     private val topology = Topology("base")
-    private val workloads = listOf(
-        Workload("solvinity-10%", trace("solvinity").sampleByLoad(0.1)),
-        Workload("solvinity-25%", trace("solvinity").sampleByLoad(0.25)),
-        Workload("solvinity-50%", trace("solvinity").sampleByLoad(0.5)),
-        Workload("solvinity-100%", trace("solvinity").sampleByLoad(1.0))
-    )
+    private val workloads =
+        listOf(
+            Workload("solvinity-10%", trace("solvinity").sampleByLoad(0.1)),
+            Workload("solvinity-25%", trace("solvinity").sampleByLoad(0.25)),
+            Workload("solvinity-50%", trace("solvinity").sampleByLoad(0.5)),
+            Workload("solvinity-100%", trace("solvinity").sampleByLoad(1.0)),
+        )
 
-    private val phenomenas = listOf(
-        OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
-        OperationalPhenomena(failureFrequency = 0.0, hasInterference = true),
-        OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = false),
-        OperationalPhenomena(failureFrequency = 0.0, hasInterference = false)
-    )
+    private val phenomenas =
+        listOf(
+            OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
+            OperationalPhenomena(failureFrequency = 0.0, hasInterference = true),
+            OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = false),
+            OperationalPhenomena(failureFrequency = 0.0, hasInterference = false),
+        )
 
-    private val allocationPolicies = listOf(
-        "mem",
-        "mem-inv",
-        "core-mem",
-        "core-mem-inv",
-        "active-servers",
-        "active-servers-inv",
-        "random"
-    )
+    private val allocationPolicies =
+        listOf(
+            "mem",
+            "mem-inv",
+            "core-mem",
+            "core-mem-inv",
+            "active-servers",
+            "active-servers-inv",
+            "random",
+        )
 
     override val scenarios: Iterable<Scenario> =
         workloads.flatMap { workload ->
@@ -68,7 +71,7 @@ public class OperationalPhenomenaPortfolio : Portfolio {
                         workload,
                         operationalPhenomena,
                         allocationPolicy,
-                        mapOf("workload" to workload.name, "scheduler" to allocationPolicy, "phenomena" to index.toString())
+                        mapOf("workload" to workload.name, "scheduler" to allocationPolicy, "phenomena" to index.toString()),
                     )
                 }
             }

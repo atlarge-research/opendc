@@ -26,11 +26,11 @@ import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import org.opendc.trace.TableReader
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
-import org.opendc.trace.conv.RESOURCE_START_TIME
-import org.opendc.trace.conv.RESOURCE_STOP_TIME
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceStartTime
+import org.opendc.trace.conv.resourceStopTime
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
@@ -78,25 +78,25 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
         return true
     }
 
-    private val COL_ID = 0
-    private val COL_START_TIME = 1
-    private val COL_STOP_TIME = 2
-    private val COL_CPU_COUNT = 3
-    private val COL_MEM_CAPACITY = 4
+    private val colID = 0
+    private val colStartTime = 1
+    private val colStopTime = 2
+    private val colCpuCount = 3
+    private val colMemCapacity = 4
 
     override fun resolve(name: String): Int {
         return when (name) {
-            RESOURCE_ID -> COL_ID
-            RESOURCE_START_TIME -> COL_START_TIME
-            RESOURCE_STOP_TIME -> COL_STOP_TIME
-            RESOURCE_CPU_COUNT -> COL_CPU_COUNT
-            RESOURCE_MEM_CAPACITY -> COL_MEM_CAPACITY
+            resourceID -> colID
+            resourceStartTime -> colStartTime
+            resourceStopTime -> colStopTime
+            resourceCpuCount -> colCpuCount
+            resourceMemCapacity -> colMemCapacity
             else -> -1
         }
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in 0..COL_MEM_CAPACITY) { "Invalid column index" }
+        require(index in 0..colMemCapacity) { "Invalid column index" }
         return false
     }
 
@@ -107,7 +107,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     override fun getInt(index: Int): Int {
         checkActive()
         return when (index) {
-            COL_CPU_COUNT -> cpuCores
+            colCpuCount -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -115,7 +115,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     override fun getLong(index: Int): Long {
         checkActive()
         return when (index) {
-            COL_CPU_COUNT -> cpuCores.toLong()
+            colCpuCount -> cpuCores.toLong()
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -127,7 +127,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     override fun getDouble(index: Int): Double {
         checkActive()
         return when (index) {
-            COL_MEM_CAPACITY -> memCapacity
+            colMemCapacity -> memCapacity
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -135,7 +135,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     override fun getString(index: Int): String? {
         checkActive()
         return when (index) {
-            COL_ID -> id
+            colID -> id
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -147,8 +147,8 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     override fun getInstant(index: Int): Instant? {
         checkActive()
         return when (index) {
-            COL_START_TIME -> startTime
-            COL_STOP_TIME -> stopTime
+            colStartTime -> startTime
+            colStopTime -> stopTime
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -157,15 +157,25 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+    override fun <T> getList(
+        index: Int,
+        elementType: Class<T>,
+    ): List<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+    override fun <T> getSet(
+        index: Int,
+        elementType: Class<T>,
+    ): Set<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+    override fun <K, V> getMap(
+        index: Int,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>? {
         throw IllegalArgumentException("Invalid column")
     }
 
@@ -217,19 +227,20 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
         /**
          * The [CsvSchema] that is used to parse the trace.
          */
-        private val schema = CsvSchema.builder()
-            .addColumn("vm id", CsvSchema.ColumnType.NUMBER)
-            .addColumn("subscription id", CsvSchema.ColumnType.STRING)
-            .addColumn("deployment id", CsvSchema.ColumnType.NUMBER)
-            .addColumn("timestamp vm created", CsvSchema.ColumnType.NUMBER)
-            .addColumn("timestamp vm deleted", CsvSchema.ColumnType.NUMBER)
-            .addColumn("max cpu", CsvSchema.ColumnType.NUMBER)
-            .addColumn("avg cpu", CsvSchema.ColumnType.NUMBER)
-            .addColumn("p95 cpu", CsvSchema.ColumnType.NUMBER)
-            .addColumn("vm category", CsvSchema.ColumnType.NUMBER)
-            .addColumn("vm virtual core count", CsvSchema.ColumnType.NUMBER)
-            .addColumn("vm memory", CsvSchema.ColumnType.NUMBER)
-            .setAllowComments(true)
-            .build()
+        private val schema =
+            CsvSchema.builder()
+                .addColumn("vm id", CsvSchema.ColumnType.NUMBER)
+                .addColumn("subscription id", CsvSchema.ColumnType.STRING)
+                .addColumn("deployment id", CsvSchema.ColumnType.NUMBER)
+                .addColumn("timestamp vm created", CsvSchema.ColumnType.NUMBER)
+                .addColumn("timestamp vm deleted", CsvSchema.ColumnType.NUMBER)
+                .addColumn("max cpu", CsvSchema.ColumnType.NUMBER)
+                .addColumn("avg cpu", CsvSchema.ColumnType.NUMBER)
+                .addColumn("p95 cpu", CsvSchema.ColumnType.NUMBER)
+                .addColumn("vm category", CsvSchema.ColumnType.NUMBER)
+                .addColumn("vm virtual core count", CsvSchema.ColumnType.NUMBER)
+                .addColumn("vm memory", CsvSchema.ColumnType.NUMBER)
+                .setAllowComments(true)
+                .build()
     }
 }

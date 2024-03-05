@@ -22,7 +22,7 @@
 
 description = "Support library for simulating workflows with OpenDC"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
     `testing-conventions`

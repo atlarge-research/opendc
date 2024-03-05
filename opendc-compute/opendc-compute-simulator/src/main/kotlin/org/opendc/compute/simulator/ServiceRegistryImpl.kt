@@ -27,14 +27,21 @@ package org.opendc.compute.simulator
  */
 internal class ServiceRegistryImpl(private val registry: MutableMap<String, MutableMap<Class<*>, Any>> = mutableMapOf()) :
     MutableServiceRegistry {
-    override fun <T : Any> resolve(name: String, type: Class<T>): T? {
+    override fun <T : Any> resolve(
+        name: String,
+        type: Class<T>,
+    ): T? {
         val servicesForName = registry[name] ?: return null
 
         @Suppress("UNCHECKED_CAST")
         return servicesForName[type] as T?
     }
 
-    override fun <T : Any> register(name: String, type: Class<T>, service: T) {
+    override fun <T : Any> register(
+        name: String,
+        type: Class<T>,
+        service: T,
+    ) {
         val services = registry.computeIfAbsent(name) { mutableMapOf() }
 
         if (type in services) {
@@ -44,7 +51,10 @@ internal class ServiceRegistryImpl(private val registry: MutableMap<String, Muta
         services[type] = service
     }
 
-    override fun remove(name: String, type: Class<*>) {
+    override fun remove(
+        name: String,
+        type: Class<*>,
+    ) {
         val services = registry[name] ?: return
         services.remove(type)
     }

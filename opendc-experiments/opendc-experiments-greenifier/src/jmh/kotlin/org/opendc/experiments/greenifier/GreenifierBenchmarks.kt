@@ -72,22 +72,24 @@ class GreenifierBenchmarks {
     }
 
     @Benchmark
-    fun benchmarkGreenifier() = runSimulation {
-        val serviceDomain = "compute.opendc.org"
+    fun benchmarkGreenifier() =
+        runSimulation {
+            val serviceDomain = "compute.opendc.org"
 
-        Provisioner(dispatcher, seed = 0).use { provisioner ->
-            val computeScheduler = FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
-                weighers = listOf(CoreRamWeigher(multiplier = 1.0))
-            )
+            Provisioner(dispatcher, seed = 0).use { provisioner ->
+                val computeScheduler =
+                    FilterScheduler(
+                        filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
+                        weighers = listOf(CoreRamWeigher(multiplier = 1.0)),
+                    )
 
-            provisioner.runSteps(
-                setupComputeService(serviceDomain, { computeScheduler }),
-                setupHosts(serviceDomain, topology, optimize = isOptimized)
-            )
+                provisioner.runSteps(
+                    setupComputeService(serviceDomain, { computeScheduler }),
+                    setupHosts(serviceDomain, topology, optimize = isOptimized),
+                )
 
-            val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
-            service.replay(timeSource, vms, 0L, interference = true)
+                val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
+                service.replay(timeSource, vms, 0L, interference = true)
+            }
         }
-    }
 }

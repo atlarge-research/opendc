@@ -23,15 +23,15 @@
 package org.opendc.web.server.rest.user;
 
 import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
 import java.util.List;
-import javax.annotation.security.RolesAllowed;
-import javax.transaction.Transactional;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import org.opendc.web.server.model.ProjectAuthorization;
 import org.opendc.web.server.model.Scenario;
 

@@ -31,6 +31,11 @@ import org.opendc.simulator.compute.workload.SimWorkload
  * A [SimFaaSWorkload] for a [FunctionTrace].
  */
 public class FunctionTraceWorkload(trace: FunctionTrace) :
-    SimFaaSWorkload, SimWorkload by SimTrace.ofFragments(trace.samples.map { SimTraceFragment(it.timestamp, it.duration, it.cpuUsage, 1) }).createWorkload(0) {
+    SimFaaSWorkload,
+    SimWorkload by SimTrace.ofFragments(
+        trace.samples.map {
+            SimTraceFragment(it.timestamp, it.duration, it.cpuUsage, 1)
+        },
+    ).createWorkload(0) {
     override suspend fun invoke() {}
 }

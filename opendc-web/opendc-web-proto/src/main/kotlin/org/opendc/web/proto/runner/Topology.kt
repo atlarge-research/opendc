@@ -36,5 +36,5 @@ public data class Topology(
     val name: String,
     val rooms: List<Room>,
     val createdAt: Instant,
-    val updatedAt: Instant
+    val updatedAt: Instant,
 )

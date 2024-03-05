@@ -59,7 +59,7 @@ public class WorkflowServiceImpl(
     jobAdmissionPolicy: JobAdmissionPolicy,
     jobOrderPolicy: JobOrderPolicy,
     taskEligibilityPolicy: TaskEligibilityPolicy,
-    taskOrderPolicy: TaskOrderPolicy
+    taskOrderPolicy: TaskOrderPolicy,
 ) : WorkflowService, ServerWatcher {
     /**
      * The [CoroutineScope] of the service bounded by the lifecycle of the service.
@@ -109,47 +109,48 @@ public class WorkflowServiceImpl(
     /**
      * The root listener of this scheduler.
      */
-    private val rootListener = object : WorkflowSchedulerListener {
-        /**
-         * The listeners to delegate to.
-         */
-        val listeners = mutableListOf<WorkflowSchedulerListener>()
+    private val rootListener =
+        object : WorkflowSchedulerListener {
+            /**
+             * The listeners to delegate to.
+             */
+            val listeners = mutableListOf<WorkflowSchedulerListener>()
 
-        override fun jobSubmitted(job: JobState) {
-            listeners.forEach { it.jobSubmitted(job) }
+            override fun jobSubmitted(job: JobState) {
+                listeners.forEach { it.jobSubmitted(job) }
+            }
+
+            override fun jobStarted(job: JobState) {
+                listeners.forEach { it.jobStarted(job) }
+            }
+
+            override fun jobFinished(job: JobState) {
+                listeners.forEach { it.jobFinished(job) }
+            }
+
+            override fun taskReady(task: TaskState) {
+                listeners.forEach { it.taskReady(task) }
+            }
+
+            override fun taskAssigned(task: TaskState) {
+                listeners.forEach { it.taskAssigned(task) }
+            }
+
+            override fun taskStarted(task: TaskState) {
+                listeners.forEach { it.taskStarted(task) }
+            }
+
+            override fun taskFinished(task: TaskState) {
+                listeners.forEach { it.taskFinished(task) }
+            }
         }
 
-        override fun jobStarted(job: JobState) {
-            listeners.forEach { it.jobStarted(job) }
-        }
-
-        override fun jobFinished(job: JobState) {
-            listeners.forEach { it.jobFinished(job) }
-        }
-
-        override fun taskReady(task: TaskState) {
-            listeners.forEach { it.taskReady(task) }
-        }
-
-        override fun taskAssigned(task: TaskState) {
-            listeners.forEach { it.taskAssigned(task) }
-        }
-
-        override fun taskStarted(task: TaskState) {
-            listeners.forEach { it.taskStarted(task) }
-        }
-
-        override fun taskFinished(task: TaskState) {
-            listeners.forEach { it.taskFinished(task) }
-        }
-    }
-
-    private var _workflowsSubmitted: Int = 0
-    private var _workflowsRunning: Int = 0
-    private var _workflowsFinished: Int = 0
-    private var _tasksSubmitted: Int = 0
-    private var _tasksRunning: Int = 0
-    private var _tasksFinished: Int = 0
+    private var localWorkflowsSubmitted: Int = 0
+    private var localWorkflowsRunning: Int = 0
+    private var localWorkflowsFinished: Int = 0
+    private var localTasksSubmitted: Int = 0
+    private var localTasksRunning: Int = 0
+    private var localTasksFinished: Int = 0
 
     /**
      * The [Pacer] to use for scheduling the scheduler cycles.
@@ -170,37 +171,46 @@ public class WorkflowServiceImpl(
         scope.launch { image = computeClient.newImage("workflow-runner") }
     }
 
-    override suspend fun invoke(job: Job): Unit = suspendCancellableCoroutine { cont ->
-        // J1 Incoming Jobs
-        val jobInstance = JobState(job, clock.millis(), cont)
-        val instances = job.tasks.associateWith {
-            TaskState(jobInstance, it)
-        }
+    override suspend fun invoke(job: Job): Unit =
+        suspendCancellableCoroutine { cont ->
+            // J1 Incoming Jobs
+            val jobInstance = JobState(job, clock.millis(), cont)
+            val instances =
+                job.tasks.associateWith {
+                    TaskState(jobInstance, it)
+                }
 
-        for ((task, instance) in instances) {
-            instance.dependencies.addAll(task.dependencies.map { instances[it]!! })
-            task.dependencies.forEach {
-                instances[it]!!.dependents.add(instance)
+            for ((task, instance) in instances) {
+                instance.dependencies.addAll(task.dependencies.map { instances[it]!! })
+                task.dependencies.forEach {
+                    instances[it]!!.dependents.add(instance)
+                }
+
+                // If the task has no dependency, it is a root task and can immediately be evaluated
+                if (instance.isRoot) {
+                    instance.state = TaskStatus.READY
+                }
+
+                localTasksSubmitted++
             }
 
-            // If the task has no dependency, it is a root task and can immediately be evaluated
-            if (instance.isRoot) {
-                instance.state = TaskStatus.READY
-            }
+            instances.values.toCollection(jobInstance.tasks)
+            incomingJobs += jobInstance
+            rootListener.jobSubmitted(jobInstance)
+            localWorkflowsSubmitted++
 
-            _tasksSubmitted++
+            pacer.enqueue()
         }
-
-        instances.values.toCollection(jobInstance.tasks)
-        incomingJobs += jobInstance
-        rootListener.jobSubmitted(jobInstance)
-        _workflowsSubmitted++
-
-        pacer.enqueue()
-    }
 
     override fun getSchedulerStats(): SchedulerStats {
-        return SchedulerStats(_workflowsSubmitted, _workflowsRunning, _workflowsFinished, _tasksSubmitted, _tasksRunning, _tasksFinished)
+        return SchedulerStats(
+            localWorkflowsSubmitted,
+            localWorkflowsRunning,
+            localWorkflowsFinished,
+            localTasksSubmitted,
+            localTasksRunning,
+            localTasksFinished,
+        )
     }
 
     override fun close() {
@@ -240,7 +250,7 @@ public class WorkflowServiceImpl(
             jobQueue.add(jobInstance)
             activeJobs += jobInstance
 
-            _workflowsRunning++
+            localWorkflowsRunning++
             rootListener.jobStarted(jobInstance)
         }
 
@@ -286,18 +296,20 @@ public class WorkflowServiceImpl(
             val cores = instance.task.metadata[WORKFLOW_TASK_CORES] as? Int ?: 1
             val image = image
             scope.launch {
-                val flavor = computeClient.newFlavor(
-                    instance.task.name,
-                    cores,
-                    1000
-                ) // TODO How to determine memory usage for workflow task
-                val server = computeClient.newServer(
-                    instance.task.name,
-                    image,
-                    flavor,
-                    start = false,
-                    meta = instance.task.metadata
-                )
+                val flavor =
+                    computeClient.newFlavor(
+                        instance.task.name,
+                        cores,
+                        1000,
+                    ) // TODO How to determine memory usage for workflow task
+                val server =
+                    computeClient.newServer(
+                        instance.task.name,
+                        image,
+                        flavor,
+                        start = false,
+                        meta = instance.task.metadata,
+                    )
 
                 instance.state = TaskStatus.ACTIVE
                 instance.server = server
@@ -313,13 +325,16 @@ public class WorkflowServiceImpl(
         }
     }
 
-    override fun onStateChanged(server: Server, newState: ServerState) {
+    override fun onStateChanged(
+        server: Server,
+        newState: ServerState,
+    ) {
         when (newState) {
             ServerState.PROVISIONING -> {}
             ServerState.RUNNING -> {
                 val task = taskByServer.getValue(server)
                 task.startedAt = clock.millis()
-                _tasksRunning++
+                localTasksRunning++
                 rootListener.taskStarted(task)
             }
             ServerState.TERMINATED, ServerState.ERROR -> {
@@ -336,8 +351,8 @@ public class WorkflowServiceImpl(
                 job.tasks.remove(task)
                 activeTasks -= task
 
-                _tasksRunning--
-                _tasksFinished++
+                localTasksRunning--
+                localTasksFinished++
                 rootListener.taskFinished(task)
 
                 // Add job roots to the scheduling queue
@@ -363,8 +378,8 @@ public class WorkflowServiceImpl(
 
     private fun finishJob(job: JobState) {
         activeJobs -= job
-        _workflowsRunning--
-        _workflowsFinished++
+        localWorkflowsRunning--
+        localWorkflowsFinished++
         rootListener.jobFinished(job)
 
         job.cont.resume(Unit)

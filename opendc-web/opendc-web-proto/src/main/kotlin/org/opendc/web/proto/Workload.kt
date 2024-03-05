@@ -22,8 +22,8 @@
 
 package org.opendc.web.proto
 
-import javax.validation.constraints.DecimalMax
-import javax.validation.constraints.DecimalMin
+import jakarta.validation.constraints.DecimalMax
+import jakarta.validation.constraints.DecimalMin
 
 /**
  * The workload to simulate for a scenario.
@@ -39,6 +39,6 @@ public data class Workload(val trace: Trace, val samplingFraction: Double) {
         val trace: String,
         @DecimalMin(value = "0.001", message = "Sampling fraction must be non-zero")
         @DecimalMax(value = "1", message = "Sampling fraction cannot exceed one")
-        val samplingFraction: Double
+        val samplingFraction: Double,
     )
 }

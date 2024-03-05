@@ -49,19 +49,22 @@ public class RunningServerWatcher : ServerWatcher {
     // TODO: make this changeable
     private val unlockStates: List<ServerState> = listOf(ServerState.TERMINATED, ServerState.ERROR, ServerState.DELETED)
 
-    private val _mutex: Mutex = Mutex()
+    private val mutex: Mutex = Mutex()
 
     public suspend fun lock() {
-        _mutex.lock()
+        mutex.lock()
     }
 
     public suspend fun wait() {
         this.lock()
     }
 
-    override fun onStateChanged(server: Server, newState: ServerState) {
+    override fun onStateChanged(
+        server: Server,
+        newState: ServerState,
+    ) {
         if (unlockStates.contains(newState)) {
-            _mutex.unlock()
+            mutex.unlock()
         }
     }
 }
@@ -82,7 +85,7 @@ public suspend fun ComputeService.replay(
     seed: Long,
     submitImmediately: Boolean = false,
     failureModel: FailureModel? = null,
-    interference: Boolean = false
+    interference: Boolean = false,
 ) {
     val injector = failureModel?.createInjector(coroutineContext, clock, this, Random(seed))
     val client = newClient()
@@ -123,17 +126,18 @@ public suspend fun ComputeService.replay(
                 }
 
                 launch {
-                    val server = client.newServer(
-                        entry.name,
-                        image,
-                        client.newFlavor(
+                    val server =
+                        client.newServer(
                             entry.name,
-                            entry.cpuCount,
-                            entry.memCapacity,
-                            meta = if (entry.cpuCapacity > 0.0) mapOf("cpu-capacity" to entry.cpuCapacity) else emptyMap()
-                        ),
-                        meta = meta
-                    )
+                            image,
+                            client.newFlavor(
+                                entry.name,
+                                entry.cpuCount,
+                                entry.memCapacity,
+                                meta = if (entry.cpuCapacity > 0.0) mapOf("cpu-capacity" to entry.cpuCapacity) else emptyMap(),
+                            ),
+                            meta = meta,
+                        )
 
                     val serverWatcher = RunningServerWatcher()
                     serverWatcher.lock()

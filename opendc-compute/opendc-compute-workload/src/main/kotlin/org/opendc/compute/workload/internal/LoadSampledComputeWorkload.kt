@@ -37,7 +37,10 @@ internal class LoadSampledComputeWorkload(val source: ComputeWorkload, val fract
      */
     private val logger = KotlinLogging.logger {}
 
-    override fun resolve(loader: ComputeWorkloadLoader, random: RandomGenerator): List<VirtualMachine> {
+    override fun resolve(
+        loader: ComputeWorkloadLoader,
+        random: RandomGenerator,
+    ): List<VirtualMachine> {
         val vms = source.resolve(loader, random)
         val res = mutableListOf<VirtualMachine>()
 

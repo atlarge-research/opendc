@@ -22,25 +22,13 @@
 
 package org.opendc.web.server.model;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import org.hibernate.annotations.Type;
 import org.opendc.web.proto.OperationalPhenomena;
 
@@ -49,7 +37,6 @@ import org.opendc.web.proto.OperationalPhenomena;
  */
 @Entity
 @Table(
-        name = "scenarios",
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "uk_scenarios_number",
@@ -71,7 +58,16 @@ import org.opendc.web.proto.OperationalPhenomena;
             name = "Scenario.findOneByProject",
             query = "SELECT s FROM Scenario s WHERE s.project.id = :projectId AND s.number = :number")
 })
-public class Scenario extends PanacheEntity {
+public class Scenario extends PanacheEntityBase {
+    /**
+     * The main ID of a Scenario.
+     * The value starts at 3 to account for the other 2 scenarios already made by the loading script.
+     */
+    @Id
+    @SequenceGenerator(name = "scenarioSeq", sequenceName = "scenario_id_seq", allocationSize = 1, initialValue = 3)
+    @GeneratedValue(generator = "scenarioSeq")
+    public Long id;
+
     /**
      * The {@link Project} to which this scenario belongs.
      */
@@ -113,9 +109,11 @@ public class Scenario extends PanacheEntity {
 
     /**
      * Operational phenomena activated in the scenario.
+     *         @Column(columnDefinition = "jsonb", nullable = false, updatable = false)
+     *     @Type(JsonType.class)
      */
-    @Type(type = "io.hypersistence.utils.hibernate.type.json.JsonType")
     @Column(columnDefinition = "jsonb", nullable = false, updatable = false)
+    @Type(JsonType.class)
     public OperationalPhenomena phenomena;
 
     /**

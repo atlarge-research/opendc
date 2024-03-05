@@ -45,102 +45,113 @@ class SimTraceWorkloadTest {
     fun setUp() {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
-        machineModel = MachineModel(
-            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
-            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
-        )
+        machineModel =
+            MachineModel(
+                // cpus
+                List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
+                // memory
+                List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+            )
     }
 
     @Test
-    fun testSmoke() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testSmoke() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(
-            graph,
-            machineModel
-        )
+            val machine =
+                SimBareMetalMachine.create(
+                    graph,
+                    machineModel,
+                )
 
-        val workload =
-            SimTrace.ofFragments(
-                SimTraceFragment(0, 1000, 2 * 28.0, 2),
-                SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
-                SimTraceFragment(2000, 1000, 0.0, 2),
-                SimTraceFragment(3000, 1000, 2 * 73.0, 2)
-            ).createWorkload(0)
+            val workload =
+                SimTrace.ofFragments(
+                    SimTraceFragment(0, 1000, 2 * 28.0, 2),
+                    SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
+                    SimTraceFragment(2000, 1000, 0.0, 2),
+                    SimTraceFragment(3000, 1000, 2 * 73.0, 2),
+                ).createWorkload(0)
 
-        machine.runWorkload(workload)
+            machine.runWorkload(workload)
 
-        assertEquals(4000, timeSource.millis())
-    }
+            assertEquals(4000, timeSource.millis())
+        }
 
 //    @Test // fixme: Fix delayed start and enable test
-    fun testOffset() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testOffset() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(
-            graph,
-            machineModel
-        )
+            val machine =
+                SimBareMetalMachine.create(
+                    graph,
+                    machineModel,
+                )
 
-        val workload =
-            SimTrace.ofFragments(
-                SimTraceFragment(0, 1000, 2 * 28.0, 2),
-                SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
-                SimTraceFragment(2000, 1000, 0.0, 2),
-                SimTraceFragment(3000, 1000, 2 * 73.0, 2)
-            ).createWorkload(1000)
+            val workload =
+                SimTrace.ofFragments(
+                    SimTraceFragment(0, 1000, 2 * 28.0, 2),
+                    SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
+                    SimTraceFragment(2000, 1000, 0.0, 2),
+                    SimTraceFragment(3000, 1000, 2 * 73.0, 2),
+                ).createWorkload(1000)
 
-        machine.runWorkload(workload)
+            machine.runWorkload(workload)
 
-        assertEquals(5000, timeSource.millis()) // fixme: should be 5000 but this is 4000 for now to make all tests succeed
-    }
-
-    @Test
-    fun testSkipFragment() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val machine = SimBareMetalMachine.create(
-            graph,
-            machineModel
-        )
-
-        val workload =
-            SimTrace.ofFragments(
-                SimTraceFragment(0, 1000, 2 * 28.0, 2),
-                SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
-                SimTraceFragment(2000, 1000, 0.0, 2),
-                SimTraceFragment(3000, 1000, 2 * 73.0, 2)
-            ).createWorkload(0)
-
-        delay(1000L)
-        machine.runWorkload(workload)
-
-        assertEquals(4000, timeSource.millis())
-    }
+            assertEquals(5000, timeSource.millis()) // fixme: should be 5000 but this is 4000 for now to make all tests succeed
+        }
 
     @Test
-    fun testZeroCores() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testSkipFragment() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(
-            graph,
-            machineModel
-        )
+            val machine =
+                SimBareMetalMachine.create(
+                    graph,
+                    machineModel,
+                )
 
-        val workload =
-            SimTrace.ofFragments(
-                SimTraceFragment(0, 1000, 2 * 28.0, 2),
-                SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
-                SimTraceFragment(2000, 1000, 0.0, 0),
-                SimTraceFragment(3000, 1000, 2 * 73.0, 2)
-            ).createWorkload(0)
+            val workload =
+                SimTrace.ofFragments(
+                    SimTraceFragment(0, 1000, 2 * 28.0, 2),
+                    SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
+                    SimTraceFragment(2000, 1000, 0.0, 2),
+                    SimTraceFragment(3000, 1000, 2 * 73.0, 2),
+                ).createWorkload(0)
 
-        machine.runWorkload(workload)
+            delay(1000L)
+            machine.runWorkload(workload)
 
-        assertEquals(4000, timeSource.millis())
-    }
+            assertEquals(4000, timeSource.millis())
+        }
+
+    @Test
+    fun testZeroCores() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+
+            val machine =
+                SimBareMetalMachine.create(
+                    graph,
+                    machineModel,
+                )
+
+            val workload =
+                SimTrace.ofFragments(
+                    SimTraceFragment(0, 1000, 2 * 28.0, 2),
+                    SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
+                    SimTraceFragment(2000, 1000, 0.0, 0),
+                    SimTraceFragment(3000, 1000, 2 * 73.0, 2),
+                ).createWorkload(0)
+
+            machine.runWorkload(workload)
+
+            assertEquals(4000, timeSource.millis())
+        }
 }

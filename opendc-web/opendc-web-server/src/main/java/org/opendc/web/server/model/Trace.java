@@ -23,16 +23,16 @@
 package org.opendc.web.server.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 /**
  * A workload trace available for simulation.
  */
 @Entity
-@Table(name = "traces")
+@Table
 public class Trace extends PanacheEntityBase {
     /**
      * The unique identifier of the trace.

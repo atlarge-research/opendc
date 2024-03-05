@@ -22,7 +22,7 @@
 
 description = "Experiments for the Capelin work"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-conventions`
     `testing-conventions`
@@ -56,10 +56,10 @@ val createCapelinApp by tasks.creating(CreateStartScripts::class) {
     applicationName = "capelin"
     mainClass.set("org.opendc.experiments.capelin.CapelinCli")
     classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
-    outputDir = project.buildDir.resolve("scripts")
+    outputDir = project.layout.buildDirectory.get().asFile.resolve("scripts")
 }
 
-/* Create custom Capelin distribution */
+// Create custom Capelin distribution
 distributions {
     main {
         distributionBaseName.set("capelin")

@@ -99,22 +99,22 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
 
     override fun resolve(name: String): Int {
         return when (name) {
-            TASK_ID -> COL_JOB_ID
-            TASK_SUBMIT_TIME -> COL_SUBMIT_TIME
-            TASK_WAIT_TIME -> COL_WAIT_TIME
-            TASK_RUNTIME -> COL_RUN_TIME
-            TASK_ALLOC_NCPUS -> COL_ALLOC_NCPUS
-            TASK_REQ_NCPUS -> COL_REQ_NCPUS
-            TASK_STATUS -> COL_STATUS
-            TASK_USER_ID -> COL_USER_ID
-            TASK_GROUP_ID -> COL_GROUP_ID
-            TASK_PARENTS -> COL_PARENT_JOB
+            TASK_ID -> colJobID
+            TASK_SUBMIT_TIME -> colSubmitTime
+            TASK_WAIT_TIME -> colWaitTime
+            TASK_RUNTIME -> colRunTime
+            TASK_ALLOC_NCPUS -> colAllocNcpus
+            TASK_REQ_NCPUS -> colReqNcpus
+            TASK_STATUS -> colStatus
+            TASK_USER_ID -> colUserID
+            TASK_GROUP_ID -> colGroupID
+            TASK_PARENTS -> colParentJob
             else -> -1
         }
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in COL_JOB_ID..COL_PARENT_THINK_TIME) { "Invalid column index" }
+        require(index in colJobID..colParentThinkTime) { "Invalid column index" }
         return false
     }
 
@@ -125,7 +125,7 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
     override fun getInt(index: Int): Int {
         check(state == State.Active) { "No active row" }
         return when (index) {
-            COL_REQ_NCPUS, COL_ALLOC_NCPUS, COL_STATUS, COL_GROUP_ID, COL_USER_ID -> fields[index].toInt(10)
+            colReqNcpus, colAllocNcpus, colStatus, colGroupID, colUserID -> fields[index].toInt(10)
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -145,7 +145,7 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
     override fun getString(index: Int): String {
         check(state == State.Active) { "No active row" }
         return when (index) {
-            COL_JOB_ID -> fields[index]
+            colJobID -> fields[index]
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -157,7 +157,7 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
     override fun getInstant(index: Int): Instant? {
         check(state == State.Active) { "No active row" }
         return when (index) {
-            COL_SUBMIT_TIME -> Instant.ofEpochSecond(fields[index].toLong(10))
+            colSubmitTime -> Instant.ofEpochSecond(fields[index].toLong(10))
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -165,20 +165,26 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
     override fun getDuration(index: Int): Duration? {
         check(state == State.Active) { "No active row" }
         return when (index) {
-            COL_WAIT_TIME, COL_RUN_TIME -> Duration.ofSeconds(fields[index].toLong(10))
+            colWaitTime, colRunTime -> Duration.ofSeconds(fields[index].toLong(10))
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
 
-    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+    override fun <T> getList(
+        index: Int,
+        elementType: Class<T>,
+    ): List<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+    override fun <T> getSet(
+        index: Int,
+        elementType: Class<T>,
+    ): Set<T>? {
         check(state == State.Active) { "No active row" }
         @Suppress("UNCHECKED_CAST")
         return when (index) {
-            COL_PARENT_JOB -> {
+            colParentJob -> {
                 require(elementType.isAssignableFrom(String::class.java))
                 val parent = fields[index].toLong(10)
                 if (parent < 0) emptySet() else setOf(parent)
@@ -187,7 +193,11 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
         } as Set<T>?
     }
 
-    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+    override fun <K, V> getMap(
+        index: Int,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>? {
         throw IllegalArgumentException("Invalid column")
     }
 
@@ -199,26 +209,28 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
     /**
      * Default column indices for the SWF format.
      */
-    private val COL_JOB_ID = 0
-    private val COL_SUBMIT_TIME = 1
-    private val COL_WAIT_TIME = 2
-    private val COL_RUN_TIME = 3
-    private val COL_ALLOC_NCPUS = 4
-    private val COL_AVG_CPU_TIME = 5
-    private val COL_USED_MEM = 6
-    private val COL_REQ_NCPUS = 7
-    private val COL_REQ_TIME = 8
-    private val COL_REQ_MEM = 9
-    private val COL_STATUS = 10
-    private val COL_USER_ID = 11
-    private val COL_GROUP_ID = 12
-    private val COL_EXEC_NUM = 13
-    private val COL_QUEUE_NUM = 14
-    private val COL_PART_NUM = 15
-    private val COL_PARENT_JOB = 16
-    private val COL_PARENT_THINK_TIME = 17
+    private val colJobID = 0
+    private val colSubmitTime = 1
+    private val colWaitTime = 2
+    private val colRunTime = 3
+    private val colAllocNcpus = 4
+    private val colAvgCpuTime = 5
+    private val colUsedMem = 6
+    private val colReqNcpus = 7
+    private val colReqTime = 8
+    private val colReqMem = 9
+    private val colStatus = 10
+    private val colUserID = 11
+    private val colGroupID = 12
+    private val colExecNum = 13
+    private val colQueueNum = 14
+    private val colPartNum = 15
+    private val colParentJob = 16
+    private val colParentThinkTime = 17
 
     private enum class State {
-        Pending, Active, Closed
+        Pending,
+        Active,
+        Closed,
     }
 }

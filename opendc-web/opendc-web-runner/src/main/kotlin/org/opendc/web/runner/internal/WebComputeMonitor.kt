@@ -34,31 +34,32 @@ import kotlin.math.roundToLong
  */
 internal class WebComputeMonitor : ComputeMonitor {
     override fun record(reader: HostTableReader) {
-        val slices = reader.downtime / SLICE_LENGTH
+        val slices = reader.downtime / sliceLength
 
-        hostAggregateMetrics = AggregateHostMetrics(
-            hostAggregateMetrics.totalActiveTime + reader.cpuActiveTime,
-            hostAggregateMetrics.totalIdleTime + reader.cpuIdleTime,
-            hostAggregateMetrics.totalStealTime + reader.cpuStealTime,
-            hostAggregateMetrics.totalLostTime + reader.cpuLostTime,
-            hostAggregateMetrics.totalPowerDraw + reader.energyUsage,
-            hostAggregateMetrics.totalFailureSlices + slices,
-            hostAggregateMetrics.totalFailureVmSlices + reader.guestsRunning * slices
-        )
+        hostAggregateMetrics =
+            AggregateHostMetrics(
+                hostAggregateMetrics.totalActiveTime + reader.cpuActiveTime,
+                hostAggregateMetrics.totalIdleTime + reader.cpuIdleTime,
+                hostAggregateMetrics.totalStealTime + reader.cpuStealTime,
+                hostAggregateMetrics.totalLostTime + reader.cpuLostTime,
+                hostAggregateMetrics.totalPowerDraw + reader.energyUsage,
+                hostAggregateMetrics.totalFailureSlices + slices,
+                hostAggregateMetrics.totalFailureVmSlices + reader.guestsRunning * slices,
+            )
 
         hostMetrics.compute(reader.host.id) { _, prev ->
             HostMetrics(
                 reader.cpuUsage + (prev?.cpuUsage ?: 0.0),
                 reader.cpuDemand + (prev?.cpuDemand ?: 0.0),
                 reader.guestsRunning + (prev?.instanceCount ?: 0),
-                1 + (prev?.count ?: 0)
+                1 + (prev?.count ?: 0),
             )
         }
     }
 
     private var hostAggregateMetrics: AggregateHostMetrics = AggregateHostMetrics()
     private val hostMetrics: MutableMap<String, HostMetrics> = mutableMapOf()
-    private val SLICE_LENGTH: Long = 5 * 60L
+    private val sliceLength: Long = 5 * 60L
 
     private data class AggregateHostMetrics(
         val totalActiveTime: Long = 0L,
@@ -67,14 +68,14 @@ internal class WebComputeMonitor : ComputeMonitor {
         val totalLostTime: Long = 0L,
         val totalPowerDraw: Double = 0.0,
         val totalFailureSlices: Double = 0.0,
-        val totalFailureVmSlices: Double = 0.0
+        val totalFailureVmSlices: Double = 0.0,
     )
 
     private data class HostMetrics(
         val cpuUsage: Double,
         val cpuDemand: Double,
         val instanceCount: Long,
-        val count: Long
+        val count: Long,
     )
 
     private lateinit var serviceData: ServiceData
@@ -106,7 +107,7 @@ internal class WebComputeMonitor : ComputeMonitor {
             serviceData.serversTotal,
             serviceData.serversPending,
             serviceData.serversTotal - serviceData.serversPending - serviceData.serversActive,
-            serviceData.attemptsError + serviceData.attemptsFailure
+            serviceData.attemptsError + serviceData.attemptsFailure,
         )
     }
 
@@ -128,6 +129,6 @@ internal class WebComputeMonitor : ComputeMonitor {
         val totalVmsSubmitted: Int,
         val totalVmsQueued: Int,
         val totalVmsFinished: Int,
-        val totalVmsFailed: Int
+        val totalVmsFailed: Int,
     )
 }

@@ -22,9 +22,9 @@
 
 package org.opendc.web.proto.user
 
+import jakarta.validation.constraints.NotBlank
 import org.eclipse.microprofile.openapi.annotations.media.Schema
 import org.opendc.web.proto.Targets
-import javax.validation.constraints.NotBlank
 
 /**
  * A portfolio is the composition of multiple scenarios.
@@ -42,7 +42,7 @@ public data class Portfolio(
     val project: Project,
     val name: String,
     val targets: Targets,
-    val scenarios: List<Scenario.Summary>
+    val scenarios: List<Scenario.Summary>,
 ) {
     /**
      * A request to create a new portfolio.
@@ -51,7 +51,7 @@ public data class Portfolio(
     public data class Create(
         @field:NotBlank(message = "Name must not be empty")
         val name: String,
-        val targets: Targets
+        val targets: Targets,
     )
 
     /**
@@ -67,6 +67,6 @@ public data class Portfolio(
         val id: Long,
         val number: Int,
         val name: String,
-        val targets: Targets
+        val targets: Targets,
     )
 }

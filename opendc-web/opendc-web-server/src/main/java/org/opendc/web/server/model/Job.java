@@ -22,23 +22,14 @@
 
 package org.opendc.web.server.model;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import io.quarkus.hibernate.orm.panache.Panache;
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.Map;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 import org.opendc.web.proto.JobState;
 
@@ -46,7 +37,7 @@ import org.opendc.web.proto.JobState;
  * A simulation job to be run by the simulator.
  */
 @Entity
-@Table(name = "jobs")
+@Table
 @NamedQueries({
     @NamedQuery(
             name = "Job.updateOne",
@@ -57,7 +48,16 @@ import org.opendc.web.proto.JobState;
                 WHERE j.id = :id AND j.state = :oldState
             """)
 })
-public class Job extends PanacheEntity {
+public class Job extends PanacheEntityBase {
+    /**
+     * The main ID of a project.
+     * The value starts at 6 to account for the other 5 projects already made by the loading script.
+     */
+    @Id
+    @SequenceGenerator(name = "jobSeq", sequenceName = "job_id_seq", allocationSize = 1, initialValue = 3)
+    @GeneratedValue(generator = "jobSeq")
+    public Long id;
+
     @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "scenario_id", foreignKey = @ForeignKey(name = "fk_jobs_scenario"), nullable = false)
     public Scenario scenario;
@@ -83,9 +83,8 @@ public class Job extends PanacheEntity {
     /**
      * The state of the job.
      */
-    @Type(type = "io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType")
-    @Column(nullable = false, columnDefinition = "enum")
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     public JobState state = JobState.PENDING;
 
     /**
@@ -97,8 +96,8 @@ public class Job extends PanacheEntity {
     /**
      * Experiment results in JSON
      */
-    @Type(type = "io.hypersistence.utils.hibernate.type.json.JsonType")
     @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
     public Map<String, ?> results = null;
 
     /**

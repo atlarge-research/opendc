@@ -31,20 +31,34 @@ public interface TransportClient {
     /**
      * Obtain a resource at [path] of [targetType].
      */
-    public fun <T> get(path: String, targetType: TypeReference<T>): T?
+    public fun <T> get(
+        path: String,
+        targetType: TypeReference<T>,
+    ): T?
 
     /**
      * Update a resource at [path] of [targetType].
      */
-    public fun <B, T> post(path: String, body: B, targetType: TypeReference<T>): T?
+    public fun <B, T> post(
+        path: String,
+        body: B,
+        targetType: TypeReference<T>,
+    ): T?
 
     /**
      * Replace a resource at [path] of [targetType].
      */
-    public fun <B, T> put(path: String, body: B, targetType: TypeReference<T>): T?
+    public fun <B, T> put(
+        path: String,
+        body: B,
+        targetType: TypeReference<T>,
+    ): T?
 
     /**
      * Delete a resource at [path] of [targetType].
      */
-    public fun <T> delete(path: String, targetType: TypeReference<T>): T?
+    public fun <T> delete(
+        path: String,
+        targetType: TypeReference<T>,
+    ): T?
 }

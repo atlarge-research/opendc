@@ -70,70 +70,106 @@ internal class OdcVmInterferenceJsonTableWriter(private val generator: JsonGener
 
     override fun resolve(name: String): Int {
         return when (name) {
-            INTERFERENCE_GROUP_MEMBERS -> COL_MEMBERS
-            INTERFERENCE_GROUP_TARGET -> COL_TARGET
-            INTERFERENCE_GROUP_SCORE -> COL_SCORE
+            INTERFERENCE_GROUP_MEMBERS -> colMembers
+            INTERFERENCE_GROUP_TARGET -> colTarget
+            INTERFERENCE_GROUP_SCORE -> colScore
             else -> -1
         }
     }
 
-    override fun setBoolean(index: Int, value: Boolean) {
+    override fun setBoolean(
+        index: Int,
+        value: Boolean,
+    ) {
         throw IllegalArgumentException("Invalid column $index")
     }
 
-    override fun setInt(index: Int, value: Int) {
+    override fun setInt(
+        index: Int,
+        value: Int,
+    ) {
         throw IllegalArgumentException("Invalid column $index")
     }
 
-    override fun setLong(index: Int, value: Long) {
+    override fun setLong(
+        index: Int,
+        value: Long,
+    ) {
         throw IllegalArgumentException("Invalid column $index")
     }
 
-    override fun setFloat(index: Int, value: Float) {
+    override fun setFloat(
+        index: Int,
+        value: Float,
+    ) {
         throw IllegalArgumentException("Invalid column $index")
     }
 
-    override fun setDouble(index: Int, value: Double) {
+    override fun setDouble(
+        index: Int,
+        value: Double,
+    ) {
         check(isRowActive) { "No active row" }
 
         when (index) {
-            COL_TARGET -> targetLoad = (value as Number).toDouble()
-            COL_SCORE -> score = (value as Number).toDouble()
+            colTarget -> targetLoad = (value as Number).toDouble()
+            colScore -> score = (value as Number).toDouble()
             else -> throw IllegalArgumentException("Invalid column $index")
         }
     }
 
-    override fun setString(index: Int, value: String) {
+    override fun setString(
+        index: Int,
+        value: String,
+    ) {
         throw IllegalArgumentException("Invalid column $index")
     }
 
-    override fun setUUID(index: Int, value: UUID) {
+    override fun setUUID(
+        index: Int,
+        value: UUID,
+    ) {
         throw IllegalArgumentException("Invalid column $index")
     }
 
-    override fun setInstant(index: Int, value: Instant) {
+    override fun setInstant(
+        index: Int,
+        value: Instant,
+    ) {
         throw IllegalArgumentException("Invalid column $index")
     }
 
-    override fun setDuration(index: Int, value: Duration) {
+    override fun setDuration(
+        index: Int,
+        value: Duration,
+    ) {
         throw IllegalArgumentException("Invalid column $index")
     }
 
-    override fun <T> setList(index: Int, value: List<T>) {
+    override fun <T> setList(
+        index: Int,
+        value: List<T>,
+    ) {
         throw IllegalArgumentException("Invalid column $index")
     }
 
-    override fun <T> setSet(index: Int, value: Set<T>) {
+    override fun <T> setSet(
+        index: Int,
+        value: Set<T>,
+    ) {
         check(isRowActive) { "No active row" }
 
         @Suppress("UNCHECKED_CAST")
         when (index) {
-            COL_MEMBERS -> members = value as Set<String>
+            colMembers -> members = value as Set<String>
             else -> throw IllegalArgumentException("Invalid column index $index")
         }
     }
 
-    override fun <K, V> setMap(index: Int, value: Map<K, V>) {
+    override fun <K, V> setMap(
+        index: Int,
+        value: Map<K, V>,
+    ) {
         throw IllegalArgumentException("Invalid column $index")
     }
 
@@ -146,9 +182,9 @@ internal class OdcVmInterferenceJsonTableWriter(private val generator: JsonGener
         generator.close()
     }
 
-    private val COL_MEMBERS = 0
-    private val COL_TARGET = 1
-    private val COL_SCORE = 2
+    private val colMembers = 0
+    private val colTarget = 1
+    private val colScore = 2
 
     private var members = emptySet<String>()
     private var targetLoad = Double.POSITIVE_INFINITY

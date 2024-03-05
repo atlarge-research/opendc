@@ -29,5 +29,8 @@ public interface FunctionInstanceListener {
     /**
      * This method is invoked when the state of a [FunctionInstance] has changed.
      */
-    public fun onStateChanged(instance: FunctionInstance, newState: FunctionInstanceState) {}
+    public fun onStateChanged(
+        instance: FunctionInstance,
+        newState: FunctionInstanceState,
+    ) {}
 }

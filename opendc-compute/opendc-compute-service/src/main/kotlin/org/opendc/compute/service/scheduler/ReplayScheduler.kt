@@ -49,8 +49,9 @@ public class ReplayScheduler(private val vmPlacements: Map<String, String>) : Co
     }
 
     override fun select(server: Server): HostView? {
-        val clusterName = vmPlacements[server.name]
-            ?: throw IllegalStateException("Could not find placement data in VM placement file for VM ${server.name}")
+        val clusterName =
+            vmPlacements[server.name]
+                ?: throw IllegalStateException("Could not find placement data in VM placement file for VM ${server.name}")
         val machinesInCluster = hosts.filter { it.host.name.contains(clusterName) }
 
         if (machinesInCluster.isEmpty()) {

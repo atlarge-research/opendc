@@ -27,5 +27,5 @@ package org.opendc.experiments.tf20.network
  */
 public enum class MessageType {
     REQUEST,
-    WEIGHTS
+    WEIGHTS,
 }

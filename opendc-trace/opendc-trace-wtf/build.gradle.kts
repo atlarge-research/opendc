@@ -22,7 +22,7 @@
 
 description = "Support for Workflow Trace Format (WTF) traces in OpenDC"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }

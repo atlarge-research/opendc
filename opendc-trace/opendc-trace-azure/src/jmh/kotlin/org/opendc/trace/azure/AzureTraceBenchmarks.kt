@@ -22,9 +22,9 @@
 
 package org.opendc.trace.azure
 
-import org.opendc.trace.conv.RESOURCE_ID
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.conv.resourceID
 import org.opendc.trace.spi.TraceFormat
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Fork
@@ -58,7 +58,7 @@ class AzureTraceBenchmarks {
     fun benchmarkResourcesReader(bh: Blackhole) {
         val reader = format.newReader(path, TABLE_RESOURCES, null)
         try {
-            val idColumn = reader.resolve(RESOURCE_ID)
+            val idColumn = reader.resolve(resourceID)
             while (reader.nextRow()) {
                 bh.consume(reader.getString(idColumn))
             }
@@ -71,7 +71,7 @@ class AzureTraceBenchmarks {
     fun benchmarkResourceStatesReader(bh: Blackhole) {
         val reader = format.newReader(path, TABLE_RESOURCE_STATES, null)
         try {
-            val idColumn = reader.resolve(RESOURCE_ID)
+            val idColumn = reader.resolve(resourceID)
             while (reader.nextRow()) {
                 bh.consume(reader.getString(idColumn))
             }

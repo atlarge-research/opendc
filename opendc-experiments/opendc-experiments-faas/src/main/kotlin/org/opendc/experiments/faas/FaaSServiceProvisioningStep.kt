@@ -48,21 +48,23 @@ public class FaaSServiceProvisioningStep internal constructor(
     private val routingPolicy: (ProvisioningContext) -> RoutingPolicy,
     private val terminationPolicy: (ProvisioningContext) -> FunctionTerminationPolicy,
     private val machineModel: MachineModel,
-    private val coldStartModel: ColdStartModel?
+    private val coldStartModel: ColdStartModel?,
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
-        val delayInjector = if (coldStartModel != null) {
-            StochasticDelayInjector(coldStartModel, Random(ctx.seeder.nextLong()))
-        } else {
-            ZeroDelayInjector
-        }
+        val delayInjector =
+            if (coldStartModel != null) {
+                StochasticDelayInjector(coldStartModel, Random(ctx.seeder.nextLong()))
+            } else {
+                ZeroDelayInjector
+            }
         val deployer = SimFunctionDeployer(ctx.dispatcher, machineModel, delayInjector)
-        val service = FaaSService(
-            ctx.dispatcher,
-            deployer,
-            routingPolicy(ctx),
-            terminationPolicy(ctx)
-        )
+        val service =
+            FaaSService(
+                ctx.dispatcher,
+                deployer,
+                routingPolicy(ctx),
+                terminationPolicy(ctx),
+            )
 
         ctx.registry.register(serviceDomain, FaaSService::class.java, service)
 

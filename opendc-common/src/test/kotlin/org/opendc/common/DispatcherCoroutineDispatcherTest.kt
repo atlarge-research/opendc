@@ -36,44 +36,46 @@ import org.opendc.simulator.kotlin.runSimulation
  * Test suite for [DispatcherCoroutineDispatcher].
  */
 class DispatcherCoroutineDispatcherTest {
-
     /**
      * Tests if a dispatcher yields the correct time
      */
     @Test
-    fun testYield() = runSimulation {
-        withContext(dispatcher.asCoroutineDispatcher()) {
-            val startTime = dispatcher.currentTime
-            yield()
-            assertEquals(startTime, dispatcher.currentTime)
+    fun testYield() =
+        runSimulation {
+            withContext(dispatcher.asCoroutineDispatcher()) {
+                val startTime = dispatcher.currentTime
+                yield()
+                assertEquals(startTime, dispatcher.currentTime)
+            }
         }
-    }
 
     /**
      * Tests if a dispatcher correctly delays
      */
     @Test
-    fun testDelay() = runSimulation {
-        withContext(dispatcher.asCoroutineDispatcher()) {
-            val startTime = dispatcher.currentTime
-            delay(10)
-            assertEquals(startTime + 10, dispatcher.currentTime)
+    fun testDelay() =
+        runSimulation {
+            withContext(dispatcher.asCoroutineDispatcher()) {
+                val startTime = dispatcher.currentTime
+                delay(10)
+                assertEquals(startTime + 10, dispatcher.currentTime)
+            }
         }
-    }
 
     /**
      * Tests if a dispatcher correctly times out
      */
     @Test
-    fun testTimeout() = runSimulation {
-        withContext(dispatcher.asCoroutineDispatcher()) {
-            assertThrows<TimeoutCancellationException> {
-                withTimeout(10) {
-                    delay(1000)
+    fun testTimeout() =
+        runSimulation {
+            withContext(dispatcher.asCoroutineDispatcher()) {
+                assertThrows<TimeoutCancellationException> {
+                    withTimeout(10) {
+                        delay(1000)
+                    }
                 }
-            }
 
-            assertEquals(10, dispatcher.currentTime)
+                assertEquals(10, dispatcher.currentTime)
+            }
         }
-    }
 }

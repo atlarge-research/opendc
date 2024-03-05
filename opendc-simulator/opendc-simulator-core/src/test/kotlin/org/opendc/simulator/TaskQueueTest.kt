@@ -47,7 +47,7 @@ class TaskQueueTest {
     fun testPollEmpty() {
         assertAll(
             { assertEquals(Long.MAX_VALUE, queue.peekDeadline()) },
-            { assertNull(queue.poll()) }
+            { assertNull(queue.poll()) },
         )
     }
 
@@ -63,7 +63,7 @@ class TaskQueueTest {
         assertAll(
             { assertEquals(100, queue.peekDeadline()) },
             { assertEquals(entry, queue.poll()) },
-            { assertNull(queue.poll()) }
+            { assertNull(queue.poll()) },
         )
     }
 
@@ -86,7 +86,7 @@ class TaskQueueTest {
             { assertEquals(entryB, queue.poll()) },
             { assertEquals(entryC, queue.poll()) },
             { assertEquals(entryA, queue.poll()) },
-            { assertNull(queue.poll()) }
+            { assertNull(queue.poll()) },
         )
     }
 
@@ -109,7 +109,7 @@ class TaskQueueTest {
             { assertEquals(entryA, queue.poll()) },
             { assertEquals(entryB, queue.poll()) },
             { assertEquals(entryC, queue.poll()) },
-            { assertNull(queue.poll()) }
+            { assertNull(queue.poll()) },
         )
     }
 
@@ -136,7 +136,7 @@ class TaskQueueTest {
             { assertEquals(entryD, queue.poll()) },
             { assertEquals(entryC, queue.poll()) },
             { assertEquals(entryA, queue.poll()) },
-            { assertNull(queue.poll()) }
+            { assertNull(queue.poll()) },
         )
     }
 
@@ -160,7 +160,7 @@ class TaskQueueTest {
             { assertEquals(20, queue.peekDeadline()) },
             { assertEquals(entryB, queue.poll()) },
             { assertEquals(entryC, queue.poll()) },
-            { assertNull(queue.poll()) }
+            { assertNull(queue.poll()) },
         )
     }
 
@@ -184,7 +184,7 @@ class TaskQueueTest {
             { assertEquals(58, queue.peekDeadline()) },
             { assertEquals(entryC, queue.poll()) },
             { assertEquals(entryA, queue.poll()) },
-            { assertNull(queue.poll()) }
+            { assertNull(queue.poll()) },
         )
     }
 
@@ -208,7 +208,7 @@ class TaskQueueTest {
             { assertEquals(20, queue.peekDeadline()) },
             { assertEquals(entryB, queue.poll()) },
             { assertEquals(entryA, queue.poll()) },
-            { assertNull(queue.poll()) }
+            { assertNull(queue.poll()) },
         )
     }
 
@@ -228,7 +228,7 @@ class TaskQueueTest {
 
         assertAll(
             { assertFalse(queue.remove(10, 1)) },
-            { assertFalse(queue.remove(58, 2)) }
+            { assertFalse(queue.remove(58, 2)) },
         )
     }
 }

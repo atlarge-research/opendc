@@ -43,7 +43,7 @@ public interface SimulationCoroutineScope : CoroutineScope, SimulationController
  */
 public fun SimulationCoroutineScope(
     context: CoroutineContext = EmptyCoroutineContext,
-    scheduler: SimulationDispatcher = SimulationDispatcher()
+    scheduler: SimulationDispatcher = SimulationDispatcher(),
 ): SimulationCoroutineScope {
     var safeContext = context
     val simulationDispatcher: SimulationDispatcher

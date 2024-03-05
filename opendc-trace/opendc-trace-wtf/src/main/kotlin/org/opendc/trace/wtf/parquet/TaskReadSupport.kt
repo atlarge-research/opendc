@@ -51,18 +51,19 @@ internal class TaskReadSupport(private val projection: List<String>?) : ReadSupp
     /**
      * Mapping of table columns to their Parquet column names.
      */
-    private val colMap = mapOf(
-        TASK_ID to "id",
-        TASK_WORKFLOW_ID to "workflow_id",
-        TASK_SUBMIT_TIME to "ts_submit",
-        TASK_WAIT_TIME to "wait_time",
-        TASK_RUNTIME to "runtime",
-        TASK_REQ_NCPUS to "resource_amount_requested",
-        TASK_PARENTS to "parents",
-        TASK_CHILDREN to "children",
-        TASK_GROUP_ID to "group_id",
-        TASK_USER_ID to "user_id"
-    )
+    private val colMap =
+        mapOf(
+            TASK_ID to "id",
+            TASK_WORKFLOW_ID to "workflow_id",
+            TASK_SUBMIT_TIME to "ts_submit",
+            TASK_WAIT_TIME to "wait_time",
+            TASK_RUNTIME to "runtime",
+            TASK_REQ_NCPUS to "resource_amount_requested",
+            TASK_PARENTS to "parents",
+            TASK_CHILDREN to "children",
+            TASK_GROUP_ID to "group_id",
+            TASK_USER_ID to "user_id",
+        )
 
     override fun init(context: InitContext): ReadContext {
         val projectedSchema =
@@ -87,7 +88,7 @@ internal class TaskReadSupport(private val projection: List<String>?) : ReadSupp
         configuration: Configuration,
         keyValueMetaData: Map<String, String>,
         fileSchema: MessageType,
-        readContext: ReadContext
+        readContext: ReadContext,
     ): RecordMaterializer<Task> = TaskRecordMaterializer(readContext.requestedSchema)
 
     companion object {
@@ -95,52 +96,53 @@ internal class TaskReadSupport(private val projection: List<String>?) : ReadSupp
          * Parquet read schema for the "tasks" table in the trace.
          */
         @JvmStatic
-        val READ_SCHEMA: MessageType = Types.buildMessage()
-            .addFields(
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("id"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("workflow_id"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("ts_submit"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("wait_time"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("runtime"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("resource_amount_requested"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("user_id"),
-                Types
-                    .optional(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("group_id"),
-                Types
-                    .buildGroup(Type.Repetition.OPTIONAL)
-                    .addField(
-                        Types.repeatedGroup()
-                            .addField(Types.optional(PrimitiveType.PrimitiveTypeName.INT64).named("item"))
-                            .named("list")
-                    )
-                    .`as`(LogicalTypeAnnotation.listType())
-                    .named("children"),
-                Types
-                    .buildGroup(Type.Repetition.OPTIONAL)
-                    .addField(
-                        Types.repeatedGroup()
-                            .addField(Types.optional(PrimitiveType.PrimitiveTypeName.INT64).named("item"))
-                            .named("list")
-                    )
-                    .`as`(LogicalTypeAnnotation.listType())
-                    .named("parents")
-            )
-            .named("task")
+        val READ_SCHEMA: MessageType =
+            Types.buildMessage()
+                .addFields(
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("id"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("workflow_id"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                        .named("ts_submit"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("wait_time"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("runtime"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("resource_amount_requested"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("user_id"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("group_id"),
+                    Types
+                        .buildGroup(Type.Repetition.OPTIONAL)
+                        .addField(
+                            Types.repeatedGroup()
+                                .addField(Types.optional(PrimitiveType.PrimitiveTypeName.INT64).named("item"))
+                                .named("list"),
+                        )
+                        .`as`(LogicalTypeAnnotation.listType())
+                        .named("children"),
+                    Types
+                        .buildGroup(Type.Repetition.OPTIONAL)
+                        .addField(
+                            Types.repeatedGroup()
+                                .addField(Types.optional(PrimitiveType.PrimitiveTypeName.INT64).named("item"))
+                                .named("list"),
+                        )
+                        .`as`(LogicalTypeAnnotation.listType())
+                        .named("parents"),
+                )
+                .named("task")
     }
 }

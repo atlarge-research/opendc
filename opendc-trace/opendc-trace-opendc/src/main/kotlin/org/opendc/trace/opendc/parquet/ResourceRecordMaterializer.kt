@@ -37,75 +37,91 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
     /**
      * State of current record being read.
      */
-    private var _id = ""
-    private var _startTime = Instant.MIN
-    private var _stopTime = Instant.MIN
-    private var _cpuCount = 0
-    private var _cpuCapacity = 0.0
-    private var _memCapacity = 0.0
+    private var localId = ""
+    private var localStartTime = Instant.MIN
+    private var localStopTime = Instant.MIN
+    private var localCpuCount = 0
+    private var localCpuCapacity = 0.0
+    private var localMemCapacity = 0.0
 
     /**
      * Root converter for the record.
      */
-    private val root = object : GroupConverter() {
-        /**
-         * The converters for the columns of the schema.
-         */
-        private val converters = schema.fields.map { type ->
-            when (type.name) {
-                "id" -> object : PrimitiveConverter() {
-                    override fun addBinary(value: Binary) {
-                        _id = value.toStringUsingUTF8()
-                    }
-                }
-                "start_time", "submissionTime" -> object : PrimitiveConverter() {
-                    override fun addLong(value: Long) {
-                        _startTime = Instant.ofEpochMilli(value)
-                    }
-                }
-                "stop_time", "endTime" -> object : PrimitiveConverter() {
-                    override fun addLong(value: Long) {
-                        _stopTime = Instant.ofEpochMilli(value)
-                    }
-                }
-                "cpu_count", "maxCores" -> object : PrimitiveConverter() {
-                    override fun addInt(value: Int) {
-                        _cpuCount = value
-                    }
-                }
-                "cpu_capacity" -> object : PrimitiveConverter() {
-                    override fun addDouble(value: Double) {
-                        _cpuCapacity = value
-                    }
-                }
-                "mem_capacity", "requiredMemory" -> object : PrimitiveConverter() {
-                    override fun addDouble(value: Double) {
-                        _memCapacity = value
-                    }
+    private val root =
+        object : GroupConverter() {
+            /**
+             * The converters for the columns of the schema.
+             */
+            private val converters =
+                schema.fields.map { type ->
+                    when (type.name) {
+                        "id" ->
+                            object : PrimitiveConverter() {
+                                override fun addBinary(value: Binary) {
+                                    localId = value.toStringUsingUTF8()
+                                }
+                            }
+                        "start_time", "submissionTime" ->
+                            object : PrimitiveConverter() {
+                                override fun addLong(value: Long) {
+                                    localStartTime = Instant.ofEpochMilli(value)
+                                }
+                            }
+                        "stop_time", "endTime" ->
+                            object : PrimitiveConverter() {
+                                override fun addLong(value: Long) {
+                                    localStopTime = Instant.ofEpochMilli(value)
+                                }
+                            }
+                        "cpu_count", "maxCores" ->
+                            object : PrimitiveConverter() {
+                                override fun addInt(value: Int) {
+                                    localCpuCount = value
+                                }
+                            }
+                        "cpu_capacity" ->
+                            object : PrimitiveConverter() {
+                                override fun addDouble(value: Double) {
+                                    localCpuCapacity = value
+                                }
+                            }
+                        "mem_capacity", "requiredMemory" ->
+                            object : PrimitiveConverter() {
+                                override fun addDouble(value: Double) {
+                                    localMemCapacity = value
+                                }
 
-                    override fun addLong(value: Long) {
-                        _memCapacity = value.toDouble()
+                                override fun addLong(value: Long) {
+                                    localMemCapacity = value.toDouble()
+                                }
+                            }
+                        else -> error("Unknown column $type")
                     }
                 }
-                else -> error("Unknown column $type")
+
+            override fun start() {
+                localId = ""
+                localStartTime = Instant.MIN
+                localStopTime = Instant.MIN
+                localCpuCount = 0
+                localCpuCapacity = 0.0
+                localMemCapacity = 0.0
             }
+
+            override fun end() {}
+
+            override fun getConverter(fieldIndex: Int): Converter = converters[fieldIndex]
         }
 
-        override fun start() {
-            _id = ""
-            _startTime = Instant.MIN
-            _stopTime = Instant.MIN
-            _cpuCount = 0
-            _cpuCapacity = 0.0
-            _memCapacity = 0.0
-        }
-
-        override fun end() {}
-
-        override fun getConverter(fieldIndex: Int): Converter = converters[fieldIndex]
-    }
-
-    override fun getCurrentRecord(): Resource = Resource(_id, _startTime, _stopTime, _cpuCount, _cpuCapacity, _memCapacity)
+    override fun getCurrentRecord(): Resource =
+        Resource(
+            localId,
+            localStartTime,
+            localStopTime,
+            localCpuCount,
+            localCpuCapacity,
+            localMemCapacity,
+        )
 
     override fun getRootConverter(): GroupConverter = root
 }

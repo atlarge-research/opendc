@@ -69,11 +69,12 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testNoWorkflow() {
-        val content = """
-        {
-            "name": "eager-nextflow-chameleon"
-        }
-        """.trimIndent()
+        val content =
+            """
+            {
+                "name": "eager-nextflow-chameleon"
+            }
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 
@@ -88,12 +89,13 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testWorkflowArrayType() {
-        val content = """
-        {
-            "name": "eager-nextflow-chameleon",
-            "workflow": []
-        }
-        """.trimIndent()
+        val content =
+            """
+            {
+                "name": "eager-nextflow-chameleon",
+                "workflow": []
+            }
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 
@@ -108,12 +110,13 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testWorkflowNullType() {
-        val content = """
-        {
-            "name": "eager-nextflow-chameleon",
-            "workflow": null
-        }
-        """.trimIndent()
+        val content =
+            """
+            {
+                "name": "eager-nextflow-chameleon",
+                "workflow": null
+            }
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 
@@ -128,14 +131,15 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testNoJobs() {
-        val content = """
-        {
-            "name": "eager-nextflow-chameleon",
-            "workflow": {
+        val content =
+            """
+            {
+                "name": "eager-nextflow-chameleon",
+                "workflow": {
 
+                }
             }
-        }
-        """.trimIndent()
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 
@@ -146,12 +150,13 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testJobsObjectType() {
-        val content = """
-        {
-            "name": "eager-nextflow-chameleon",
-            "workflow": { "jobs": {} }
-        }
-        """.trimIndent()
+        val content =
+            """
+            {
+                "name": "eager-nextflow-chameleon",
+                "workflow": { "jobs": {} }
+            }
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 
@@ -162,12 +167,13 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testJobsNullType() {
-        val content = """
-        {
-            "name": "eager-nextflow-chameleon",
-            "workflow": { "jobs": null }
-        }
-        """.trimIndent()
+        val content =
+            """
+            {
+                "name": "eager-nextflow-chameleon",
+                "workflow": { "jobs": null }
+            }
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 
@@ -178,14 +184,15 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testJobsInvalidChildType() {
-        val content = """
-        {
-            "name": "eager-nextflow-chameleon",
-            "workflow": {
-                "jobs": [1]
+        val content =
+            """
+            {
+                "name": "eager-nextflow-chameleon",
+                "workflow": {
+                    "jobs": [1]
+                }
             }
-        }
-        """.trimIndent()
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 
@@ -196,18 +203,19 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testJobsValidChildType() {
-        val content = """
-        {
-            "name": "eager-nextflow-chameleon",
-            "workflow": {
-                "jobs": [
-                    {
-                        "name": "test"
-                    }
-                ]
+        val content =
+            """
+            {
+                "name": "eager-nextflow-chameleon",
+                "workflow": {
+                    "jobs": [
+                        {
+                            "name": "test"
+                        }
+                    ]
+                }
             }
-        }
-        """.trimIndent()
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 
@@ -220,19 +228,20 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testJobsInvalidParents() {
-        val content = """
-        {
-            "name": "eager-nextflow-chameleon",
-            "workflow": {
-                "jobs": [
-                    {
-                        "name": "test",
-                        "parents": 1,
-                    }
-                ]
+        val content =
+            """
+            {
+                "name": "eager-nextflow-chameleon",
+                "workflow": {
+                    "jobs": [
+                        {
+                            "name": "test",
+                            "parents": 1,
+                        }
+                    ]
+                }
             }
-        }
-        """.trimIndent()
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 
@@ -243,19 +252,20 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testJobsInvalidParentsItem() {
-        val content = """
-        {
-            "name": "eager-nextflow-chameleon",
-            "workflow": {
-                "jobs": [
-                    {
-                        "name": "test",
-                        "parents": [1],
-                    }
-                ]
+        val content =
+            """
+            {
+                "name": "eager-nextflow-chameleon",
+                "workflow": {
+                    "jobs": [
+                        {
+                            "name": "test",
+                            "parents": [1],
+                        }
+                    ]
+                }
             }
-        }
-        """.trimIndent()
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 
@@ -266,19 +276,20 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testJobsValidParents() {
-        val content = """
-        {
-            "name": "eager-nextflow-chameleon",
-            "workflow": {
-                "jobs": [
-                    {
-                        "name": "test",
-                        "parents": ["1"]
-                    }
-                ]
+        val content =
+            """
+            {
+                "name": "eager-nextflow-chameleon",
+                "workflow": {
+                    "jobs": [
+                        {
+                            "name": "test",
+                            "parents": ["1"]
+                        }
+                    ]
+                }
             }
-        }
-        """.trimIndent()
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 
@@ -291,19 +302,20 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testJobsInvalidSecondEntry() {
-        val content = """
-        {
-            "workflow": {
-                "jobs": [
-                    {
-                        "name": "test",
-                        "parents": ["1"]
-                    },
-                    "test"
-                ]
+        val content =
+            """
+            {
+                "workflow": {
+                    "jobs": [
+                        {
+                            "name": "test",
+                            "parents": ["1"]
+                        },
+                        "test"
+                    ]
+                }
             }
-        }
-        """.trimIndent()
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 
@@ -315,25 +327,26 @@ internal class WfFormatTaskTableReaderTest {
 
     @Test
     fun testDuplicateJobsArray() {
-        val content = """
-        {
-            "name": "eager-nextflow-chameleon",
-            "workflow": {
-                "jobs": [
-                    {
-                        "name": "test",
-                        "parents": ["1"]
-                    }
-                ],
-                "jobs": [
-                    {
-                        "name": "test2",
-                        "parents": ["test"]
-                    }
-                ]
+        val content =
+            """
+            {
+                "name": "eager-nextflow-chameleon",
+                "workflow": {
+                    "jobs": [
+                        {
+                            "name": "test",
+                            "parents": ["1"]
+                        }
+                    ],
+                    "jobs": [
+                        {
+                            "name": "test2",
+                            "parents": ["test"]
+                        }
+                    ]
+                }
             }
-        }
-        """.trimIndent()
+            """.trimIndent()
         val parser = factory.createParser(content)
         val reader = WfFormatTaskTableReader(parser)
 

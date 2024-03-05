@@ -55,167 +55,176 @@ internal class SimSpaceSharedHypervisorTest {
     @BeforeEach
     fun setUp() {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 1)
-        machineModel = MachineModel(
-            /*cpus*/ List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
-            /*memory*/ List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
-        )
+        machineModel =
+            MachineModel(
+                // cpus
+                List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
+                // memory
+                List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+            )
     }
 
     /**
      * Test a trace workload.
      */
     @Test
-    fun testTrace() = runSimulation {
-        val duration = 5 * 60L
-        val workloadA =
-            SimTrace.ofFragments(
-                SimTraceFragment(0, duration * 1000, 28.0, 1),
-                SimTraceFragment(duration * 1000, duration * 1000, 3500.0, 1),
-                SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
-                SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
-            ).createWorkload(0)
+    fun testTrace() =
+        runSimulation {
+            val duration = 5 * 60L
+            val workloadA =
+                SimTrace.ofFragments(
+                    SimTraceFragment(0, duration * 1000, 28.0, 1),
+                    SimTraceFragment(duration * 1000, duration * 1000, 3500.0, 1),
+                    SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
+                    SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1),
+                ).createWorkload(0)
 
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(graph, machineModel)
-        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
+            val machine = SimBareMetalMachine.create(graph, machineModel)
+            val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
 
-        launch { machine.runWorkload(hypervisor) }
-        val vm = hypervisor.newMachine(machineModel)
-        vm.runWorkload(workloadA)
-        yield()
+            launch { machine.runWorkload(hypervisor) }
+            val vm = hypervisor.newMachine(machineModel)
+            vm.runWorkload(workloadA)
+            yield()
 
-        hypervisor.removeMachine(vm)
-        machine.cancel()
+            hypervisor.removeMachine(vm)
+            machine.cancel()
 
-        assertEquals(5 * 60L * 4000, timeSource.millis()) { "Took enough time" }
-    }
+            assertEquals(5 * 60L * 4000, timeSource.millis()) { "Took enough time" }
+        }
 
     /**
      * Test runtime workload on hypervisor.
      */
     @Test
-    fun testRuntimeWorkload() = runSimulation {
-        val duration = 5 * 60L * 1000
-        val workload = SimWorkloads.runtime(duration, 1.0)
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testRuntimeWorkload() =
+        runSimulation {
+            val duration = 5 * 60L * 1000
+            val workload = SimWorkloads.runtime(duration, 1.0)
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(graph, machineModel)
-        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
+            val machine = SimBareMetalMachine.create(graph, machineModel)
+            val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
 
-        launch { machine.runWorkload(hypervisor) }
-        yield()
-        val vm = hypervisor.newMachine(machineModel)
-        vm.runWorkload(workload)
-        hypervisor.removeMachine(vm)
+            launch { machine.runWorkload(hypervisor) }
+            yield()
+            val vm = hypervisor.newMachine(machineModel)
+            vm.runWorkload(workload)
+            hypervisor.removeMachine(vm)
 
-        machine.cancel()
+            machine.cancel()
 
-        assertEquals(duration, timeSource.millis()) { "Took enough time" }
-    }
+            assertEquals(duration, timeSource.millis()) { "Took enough time" }
+        }
 
     /**
      * Test FLOPs workload on hypervisor.
      */
     @Test
-    fun testFlopsWorkload() = runSimulation {
-        val duration = 5 * 60L * 1000
-        val workload = SimWorkloads.flops((duration * 3.2).toLong(), 1.0)
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testFlopsWorkload() =
+        runSimulation {
+            val duration = 5 * 60L * 1000
+            val workload = SimWorkloads.flops((duration * 3.2).toLong(), 1.0)
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(graph, machineModel)
-        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
+            val machine = SimBareMetalMachine.create(graph, machineModel)
+            val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
 
-        launch { machine.runWorkload(hypervisor) }
-        yield()
-        val vm = hypervisor.newMachine(machineModel)
-        vm.runWorkload(workload)
-        machine.cancel()
+            launch { machine.runWorkload(hypervisor) }
+            yield()
+            val vm = hypervisor.newMachine(machineModel)
+            vm.runWorkload(workload)
+            machine.cancel()
 
-        assertEquals(duration, timeSource.millis()) { "Took enough time" }
-    }
+            assertEquals(duration, timeSource.millis()) { "Took enough time" }
+        }
 
     /**
      * Test two workloads running sequentially.
      */
     @Test
-    fun testTwoWorkloads() = runSimulation {
-        val duration = 5 * 60L * 1000
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testTwoWorkloads() =
+        runSimulation {
+            val duration = 5 * 60L * 1000
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(graph, machineModel)
-        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
+            val machine = SimBareMetalMachine.create(graph, machineModel)
+            val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
 
-        launch { machine.runWorkload(hypervisor) }
-        yield()
+            launch { machine.runWorkload(hypervisor) }
+            yield()
 
-        val vm = hypervisor.newMachine(machineModel)
-        vm.runWorkload(SimWorkloads.runtime(duration, 1.0))
-        hypervisor.removeMachine(vm)
+            val vm = hypervisor.newMachine(machineModel)
+            vm.runWorkload(SimWorkloads.runtime(duration, 1.0))
+            hypervisor.removeMachine(vm)
 
-        yield()
+            yield()
 
-        val vm2 = hypervisor.newMachine(machineModel)
-        vm2.runWorkload(SimWorkloads.runtime(duration, 1.0))
-        hypervisor.removeMachine(vm2)
+            val vm2 = hypervisor.newMachine(machineModel)
+            vm2.runWorkload(SimWorkloads.runtime(duration, 1.0))
+            hypervisor.removeMachine(vm2)
 
-        machine.cancel()
+            machine.cancel()
 
-        assertEquals(duration * 2, timeSource.millis()) { "Took enough time" }
-    }
-
-    /**
-     * Test concurrent workloads on the machine.
-     */
-    @Test
-    fun testConcurrentWorkloadFails() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-
-        val machine = SimBareMetalMachine.create(graph, machineModel)
-        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
-
-        launch { machine.runWorkload(hypervisor) }
-        yield()
-
-        val vm = hypervisor.newMachine(machineModel)
-        launch { vm.runWorkload(SimWorkloads.runtime(10_000, 1.0)) }
-        yield()
-
-        assertAll(
-            { assertFalse(hypervisor.canFit(machineModel)) },
-            { assertThrows<IllegalArgumentException> { hypervisor.newMachine(machineModel) } }
-        )
-
-        machine.cancel()
-        vm.cancel()
-    }
+            assertEquals(duration * 2, timeSource.millis()) { "Took enough time" }
+        }
 
     /**
      * Test concurrent workloads on the machine.
      */
     @Test
-    fun testConcurrentWorkloadSucceeds() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
+    fun testConcurrentWorkloadFails() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
 
-        val machine = SimBareMetalMachine.create(graph, machineModel)
-        val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
+            val machine = SimBareMetalMachine.create(graph, machineModel)
+            val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
 
-        launch { machine.runWorkload(hypervisor) }
-        yield()
+            launch { machine.runWorkload(hypervisor) }
+            yield()
 
-        hypervisor.removeMachine(hypervisor.newMachine(machineModel))
+            val vm = hypervisor.newMachine(machineModel)
+            launch { vm.runWorkload(SimWorkloads.runtime(10_000, 1.0)) }
+            yield()
 
-        assertAll(
-            { assertTrue(hypervisor.canFit(machineModel)) },
-            { assertDoesNotThrow { hypervisor.newMachine(machineModel) } }
-        )
+            assertAll(
+                { assertFalse(hypervisor.canFit(machineModel)) },
+                { assertThrows<IllegalArgumentException> { hypervisor.newMachine(machineModel) } },
+            )
 
-        machine.cancel()
-    }
+            machine.cancel()
+            vm.cancel()
+        }
+
+    /**
+     * Test concurrent workloads on the machine.
+     */
+    @Test
+    fun testConcurrentWorkloadSucceeds() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+
+            val machine = SimBareMetalMachine.create(graph, machineModel)
+            val hypervisor = SimHypervisor.create(FlowMultiplexerFactory.forwardingMultiplexer(), SplittableRandom(0L))
+
+            launch { machine.runWorkload(hypervisor) }
+            yield()
+
+            hypervisor.removeMachine(hypervisor.newMachine(machineModel))
+
+            assertAll(
+                { assertTrue(hypervisor.canFit(machineModel)) },
+                { assertDoesNotThrow { hypervisor.newMachine(machineModel) } },
+            )
+
+            machine.cancel()
+        }
 }

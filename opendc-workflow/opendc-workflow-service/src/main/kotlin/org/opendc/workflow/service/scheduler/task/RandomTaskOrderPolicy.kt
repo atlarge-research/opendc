@@ -49,7 +49,10 @@ public object RandomTaskOrderPolicy : TaskOrderPolicy {
                 ids.remove(task.task)
             }
 
-            override fun compare(o1: TaskState, o2: TaskState): Int {
+            override fun compare(
+                o1: TaskState,
+                o2: TaskState,
+            ): Int {
                 return compareValuesBy(o1, o2) { ids.getValue(it.task) }
             }
         }

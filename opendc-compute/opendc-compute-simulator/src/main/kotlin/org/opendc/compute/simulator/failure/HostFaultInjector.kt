@@ -60,7 +60,7 @@ public interface HostFaultInjector : AutoCloseable {
             hosts: Set<SimHost>,
             iat: RealDistribution,
             selector: VictimSelector,
-            fault: HostFault
+            fault: HostFault,
         ): HostFaultInjector = HostFaultInjectorImpl(context, clock, hosts, iat, selector, fault)
     }
 }

@@ -35,7 +35,11 @@ import java.util.random.RandomGenerator
  * @param fraction The fraction of load/virtual machines to sample
  * @param sampleLoad A flag to indicate that the sampling should be based on the total load or on the number of VMs.
  */
-internal class HpcSampledComputeWorkload(val source: ComputeWorkload, val fraction: Double, val sampleLoad: Boolean = false) : ComputeWorkload {
+internal class HpcSampledComputeWorkload(
+    val source: ComputeWorkload,
+    val fraction: Double,
+    val sampleLoad: Boolean = false,
+) : ComputeWorkload {
     /**
      * The logging instance of this class.
      */
@@ -46,29 +50,35 @@ internal class HpcSampledComputeWorkload(val source: ComputeWorkload, val fracti
      */
     private val pattern = Regex("^(ComputeNode|cn).*")
 
-    override fun resolve(loader: ComputeWorkloadLoader, random: RandomGenerator): List<VirtualMachine> {
+    override fun resolve(
+        loader: ComputeWorkloadLoader,
+        random: RandomGenerator,
+    ): List<VirtualMachine> {
         val vms = source.resolve(loader, random)
 
-        val (hpc, nonHpc) = vms.partition { entry ->
-            val name = entry.name
-            name.matches(pattern)
-        }
-
-        val hpcSequence = generateSequence(0) { it + 1 }
-            .map { index ->
-                val res = mutableListOf<VirtualMachine>()
-                hpc.mapTo(res) { sample(it, index) }
-                res
+        val (hpc, nonHpc) =
+            vms.partition { entry ->
+                val name = entry.name
+                name.matches(pattern)
             }
-            .flatten()
 
-        val nonHpcSequence = generateSequence(0) { it + 1 }
-            .map { index ->
-                val res = mutableListOf<VirtualMachine>()
-                nonHpc.mapTo(res) { sample(it, index) }
-                res
-            }
-            .flatten()
+        val hpcSequence =
+            generateSequence(0) { it + 1 }
+                .map { index ->
+                    val res = mutableListOf<VirtualMachine>()
+                    hpc.mapTo(res) { sample(it, index) }
+                    res
+                }
+                .flatten()
+
+        val nonHpcSequence =
+            generateSequence(0) { it + 1 }
+                .map { index ->
+                    val res = mutableListOf<VirtualMachine>()
+                    nonHpc.mapTo(res) { sample(it, index) }
+                    res
+                }
+                .flatten()
 
         logger.debug { "Found ${hpc.size} HPC workloads and ${nonHpc.size} non-HPC workloads" }
 
@@ -135,7 +145,10 @@ internal class HpcSampledComputeWorkload(val source: ComputeWorkload, val fracti
     /**
      * Sample a random trace entry.
      */
-    private fun sample(entry: VirtualMachine, i: Int): VirtualMachine {
+    private fun sample(
+        entry: VirtualMachine,
+        i: Int,
+    ): VirtualMachine {
         val uid = UUID.nameUUIDFromBytes("${entry.uid}-$i".toByteArray())
         return entry.copy(uid = uid)
     }

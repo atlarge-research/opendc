@@ -22,7 +22,7 @@
 
 description = "Client for the OpenDC web API"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }

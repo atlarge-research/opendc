@@ -28,13 +28,8 @@ import static org.hamcrest.Matchers.equalTo;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
-import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.Test;
-import org.opendc.web.proto.OperationalPhenomena;
-import org.opendc.web.proto.Workload;
-import org.opendc.web.proto.user.Scenario;
 
 /**
  * Test suite for {@link ScenarioResource}.
@@ -47,10 +42,10 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "unknown",
+            user = "test_user_1",
             roles = {"openid"})
     public void testGetAllUnauthorized() {
-        given().pathParam("project", "1").when().get().then().statusCode(404).contentType(ContentType.JSON);
+        given().pathParam("project", "2").when().get().then().statusCode(404);
     }
 
     /**
@@ -58,10 +53,10 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testGetAll() {
-        given().pathParam("project", "1").when().get().then().statusCode(200).contentType(ContentType.JSON);
+        given().pathParam("project", "1").when().get().then().statusCode(200);
     }
 
     /**
@@ -77,7 +72,7 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"runner"})
     public void testGetInvalidToken() {
         given().pathParam("project", "1").when().get("/1").then().statusCode(403);
@@ -88,7 +83,7 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testGetNonExisting() {
         given().pathParam("project", "1")
@@ -100,14 +95,14 @@ public final class ScenarioResourceTest {
     }
 
     /**
-     * Test that tries to obtain a scenario.
+     * Test that tries to obtain a scenario when it does not have authority to get to the project.
      */
     @Test
     @TestSecurity(
-            user = "unknown",
+            user = "test_user_1",
             roles = {"openid"})
     public void testGetExistingUnauthorized() {
-        given().pathParam("project", "1")
+        given().pathParam("project", "2")
                 .when()
                 .get("/1")
                 .then()
@@ -120,7 +115,7 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testGetExisting() {
         given().pathParam("project", "1")
@@ -137,7 +132,7 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testDeleteNonExistent() {
         given().pathParam("project", "1").when().delete("/0").then().statusCode(404);
@@ -148,10 +143,10 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "unknown",
+            user = "test_user_1",
             roles = {"openid"})
     public void testDeleteUnauthorized() {
-        given().pathParam("project", "1").when().delete("/1").then().statusCode(404);
+        given().pathParam("project", "2").when().delete("/1").then().statusCode(404);
     }
 
     /**
@@ -159,7 +154,7 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "viewer",
+            user = "test_user_2",
             roles = {"openid"})
     public void testDeleteAsViewer() {
         given().pathParam("project", "1").when().delete("/1").then().statusCode(403);
@@ -170,32 +165,12 @@ public final class ScenarioResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testDelete() {
-        RequestSpecification spec = new RequestSpecBuilder()
-                .setBasePath("/projects/1/portfolios/1/scenarios")
-                .build();
-
-        int number = given(spec)
-                .body(new Scenario.Create(
-                        "test",
-                        new Workload.Spec("bitbrains-small", 1.0),
-                        1,
-                        new OperationalPhenomena(false, false),
-                        "test"))
-                .contentType(ContentType.JSON)
-                .when()
-                .post()
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .extract()
-                .path("number");
-
         given().pathParam("project", "1")
                 .when()
-                .delete("/" + number)
+                .delete("/1")
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON);

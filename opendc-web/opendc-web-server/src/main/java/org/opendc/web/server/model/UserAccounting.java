@@ -24,19 +24,19 @@ package org.opendc.web.server.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.panache.common.Parameters;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
 
 /**
  * Entity to track the number of simulation minutes used by a user.
  */
 @Entity
-@Table(name = "user_accounting")
+@Table
 @NamedQueries({
     @NamedQuery(
             name = "UserAccounting.consumeBudget",

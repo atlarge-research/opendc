@@ -34,9 +34,8 @@ import kotlin.math.roundToInt
  */
 public class StochasticVictimSelector(
     private val size: RealDistribution,
-    private val random: RandomGenerator = SplittableRandom(0)
+    private val random: RandomGenerator = SplittableRandom(0),
 ) : VictimSelector {
-
     override fun select(hosts: Set<SimHost>): List<SimHost> {
         val n = size.sample().roundToInt()
         val result = ArrayList<SimHost>(n)

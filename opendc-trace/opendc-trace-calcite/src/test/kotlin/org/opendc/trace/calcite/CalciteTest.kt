@@ -71,7 +71,7 @@ class CalciteTest {
                 { assertEquals("1052", rs.getString("id")) },
                 { assertTrue(rs.next()) },
                 { assertEquals("1073", rs.getString("id")) },
-                { assertFalse(rs.next()) }
+                { assertFalse(rs.next()) },
             )
         }
     }
@@ -86,7 +86,7 @@ class CalciteTest {
                 { assertEquals(300000, rs.getLong("duration")) },
                 { assertEquals(0.0, rs.getDouble("cpu_usage")) },
                 { assertTrue(rs.next()) },
-                { assertEquals("1019", rs.getString("id")) }
+                { assertEquals("1019", rs.getString("id")) },
             )
         }
     }
@@ -98,7 +98,7 @@ class CalciteTest {
                 { assertTrue(rs.next()) },
                 { assertArrayEquals(arrayOf("1019", "1023", "1052"), rs.getArray("members").array as Array<*>) },
                 { assertEquals(0.0, rs.getDouble("target")) },
-                { assertEquals(0.8830158730158756, rs.getDouble("score")) }
+                { assertEquals(0.8830158730158756, rs.getDouble("score")) },
             )
         }
     }
@@ -109,7 +109,7 @@ class CalciteTest {
             assertAll(
                 { assertTrue(rs.next()) },
                 { assertEquals(249.59993808, rs.getDouble("max_cpu_usage")) },
-                { assertEquals(5.387240309118493, rs.getDouble("avg_cpu_usage")) }
+                { assertEquals(5.387240309118493, rs.getDouble("avg_cpu_usage")) },
             )
         }
     }
@@ -120,12 +120,13 @@ class CalciteTest {
         val newTrace = Trace.create(tmp, "opendc-vm")
 
         runStatement(newTrace) { stmt ->
-            val count = stmt.executeUpdate(
-                """
-                INSERT INTO trace.resources (id, start_time, stop_time, cpu_count, cpu_capacity, mem_capacity)
-                VALUES (1234, '2013-08-12 13:35:46.0', '2013-09-11 13:39:58.0', 1, 2926.0, 1024.0)
-                """.trimIndent()
-            )
+            val count =
+                stmt.executeUpdate(
+                    """
+                    INSERT INTO trace.resources (id, start_time, stop_time, cpu_count, cpu_capacity, mem_capacity)
+                    VALUES (1234, '2013-08-12 13:35:46.0', '2013-09-11 13:39:58.0', 1, 2926.0, 1024.0)
+                    """.trimIndent(),
+                )
             assertEquals(1, count)
         }
 
@@ -136,7 +137,7 @@ class CalciteTest {
                 { assertEquals(1, rs.getInt("cpu_count")) },
                 { assertEquals(Timestamp.valueOf("2013-08-12 13:35:46.0"), rs.getTimestamp("start_time")) },
                 { assertEquals(2926.0, rs.getDouble("cpu_capacity")) },
-                { assertEquals(1024.0, rs.getDouble("mem_capacity")) }
+                { assertEquals(1024.0, rs.getDouble("mem_capacity")) },
             )
         }
     }
@@ -145,9 +146,10 @@ class CalciteTest {
     fun testUUID() {
         val trace = mockk<Trace>()
         every { trace.tables } returns listOf(TABLE_RESOURCES)
-        every { trace.getTable(TABLE_RESOURCES)!!.columns } returns listOf(
-            TableColumn("id", TableColumnType.UUID)
-        )
+        every { trace.getTable(TABLE_RESOURCES)!!.columns } returns
+            listOf(
+                TableColumn("id", TableColumnType.UUID),
+            )
         every { trace.getTable(TABLE_RESOURCES)!!.newReader() } answers {
             object : TableReader {
                 override fun nextRow(): Boolean = true
@@ -195,15 +197,25 @@ class CalciteTest {
                     TODO("not implemented")
                 }
 
-                override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+                override fun <T> getList(
+                    index: Int,
+                    elementType: Class<T>,
+                ): List<T>? {
                     TODO("not implemented")
                 }
 
-                override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+                override fun <T> getSet(
+                    index: Int,
+                    elementType: Class<T>,
+                ): Set<T>? {
                     TODO("not implemented")
                 }
 
-                override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+                override fun <K, V> getMap(
+                    index: Int,
+                    keyType: Class<K>,
+                    valueType: Class<V>,
+                ): Map<K, V>? {
                     TODO("not implemented")
                 }
 
@@ -214,7 +226,7 @@ class CalciteTest {
         runQuery(trace, "SELECT id FROM trace.resources") { rs ->
             assertAll(
                 { assertTrue(rs.next()) },
-                { assertArrayEquals(byteArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2), rs.getBytes("id")) }
+                { assertArrayEquals(byteArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2), rs.getBytes("id")) },
             )
         }
     }
@@ -222,7 +234,11 @@ class CalciteTest {
     /**
      * Helper function to run statement for the specified trace.
      */
-    private fun runQuery(trace: Trace, query: String, block: (ResultSet) -> Unit) {
+    private fun runQuery(
+        trace: Trace,
+        query: String,
+        block: (ResultSet) -> Unit,
+    ) {
         runStatement(trace) { stmt ->
             val rs = stmt.executeQuery(query)
             rs.use { block(rs) }
@@ -232,7 +248,10 @@ class CalciteTest {
     /**
      * Helper function to run statement for the specified trace.
      */
-    private fun runStatement(trace: Trace, block: (Statement) -> Unit) {
+    private fun runStatement(
+        trace: Trace,
+        block: (Statement) -> Unit,
+    ) {
         val info = Properties()
         info.setProperty("lex", "JAVA")
         val connection = DriverManager.getConnection("jdbc:calcite:", info).unwrap(CalciteConnection::class.java)

@@ -31,7 +31,10 @@ import java.util.random.RandomGenerator
  * A [RoutingPolicy] that selects a random function instance.
  */
 public class RandomRoutingPolicy(private val random: RandomGenerator = SplittableRandom(0)) : RoutingPolicy {
-    override fun select(instances: List<FunctionInstance>, function: FunctionObject): FunctionInstance {
+    override fun select(
+        instances: List<FunctionInstance>,
+        function: FunctionObject,
+    ): FunctionInstance {
         val idx = random.nextInt(instances.size)
         return instances.elementAt(idx)
     }

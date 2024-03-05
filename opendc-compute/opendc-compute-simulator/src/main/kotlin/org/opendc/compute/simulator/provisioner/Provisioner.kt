@@ -43,13 +43,14 @@ public class Provisioner(dispatcher: Dispatcher, seed: Long) : AutoCloseable {
     /**
      * Implementation of [ProvisioningContext].
      */
-    private val context = object : ProvisioningContext {
-        override val dispatcher: Dispatcher = dispatcher
-        override val seeder: SplittableRandom = SplittableRandom(seed)
-        override val registry: MutableServiceRegistry = ServiceRegistryImpl()
+    private val context =
+        object : ProvisioningContext {
+            override val dispatcher: Dispatcher = dispatcher
+            override val seeder: SplittableRandom = SplittableRandom(seed)
+            override val registry: MutableServiceRegistry = ServiceRegistryImpl()
 
-        override fun toString(): String = "Provisioner.ProvisioningContext"
-    }
+            override fun toString(): String = "Provisioner.ProvisioningContext"
+        }
 
     /**
      * The stack of handles to run during the clean-up process.

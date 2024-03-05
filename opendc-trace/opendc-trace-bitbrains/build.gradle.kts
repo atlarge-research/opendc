@@ -22,7 +22,7 @@
 
 description = "Support for GWF traces in OpenDC"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }

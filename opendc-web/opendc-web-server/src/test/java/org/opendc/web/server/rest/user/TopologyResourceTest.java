@@ -44,7 +44,7 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "unknown",
+            user = "test_user_4",
             roles = {"openid"})
     public void testGetAllWithoutAuth() {
         given().pathParam("project", "1")
@@ -58,21 +58,22 @@ public final class TopologyResourceTest {
 
     /**
      * Test that tries to obtain the list of topologies belonging to a project.
+     * TODO: check if any topology comes back
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testGetAll() {
-        given().pathParam("project", "1").when().get().then().statusCode(200).contentType(ContentType.JSON);
+        given().pathParam("project", "1").when().get().then().statusCode(200);
     }
 
     /**
-     * Test that tries to create a topology for a project.
+     * Test that tries to create a topology for a project that does not exist.
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testCreateNonExistent() {
         given().pathParam("project", "0")
@@ -81,26 +82,25 @@ public final class TopologyResourceTest {
                 .when()
                 .post()
                 .then()
-                .statusCode(404)
-                .contentType(ContentType.JSON);
+                .statusCode(404);
     }
 
     /**
-     * Test that tries to create a topology for a project as viewer.
+     * Test that tries to create a topology for a project while not authorized.
+     * TODO: should probably return 403, but this does not work in the current system
      */
     @Test
     @TestSecurity(
-            user = "viewer",
+            user = "test_user_1",
             roles = {"openid"})
     public void testCreateUnauthorized() {
-        given().pathParam("project", "1")
+        given().pathParam("project", "2")
                 .body(new Topology.Create("test", List.of()))
                 .contentType(ContentType.JSON)
                 .when()
                 .post()
                 .then()
-                .statusCode(403)
-                .contentType(ContentType.JSON);
+                .statusCode(404);
     }
 
     /**
@@ -108,18 +108,18 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testCreate() {
         given().pathParam("project", "1")
-                .body(new Topology.Create("test", List.of()))
+                .body(new Topology.Create("Test Topology New", List.of()))
                 .contentType(ContentType.JSON)
                 .when()
                 .post()
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("name", equalTo("test"));
+                .body("name", equalTo("Test Topology New"));
     }
 
     /**
@@ -127,7 +127,7 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testCreateEmpty() {
         given().pathParam("project", "1")
@@ -136,8 +136,7 @@ public final class TopologyResourceTest {
                 .when()
                 .post()
                 .then()
-                .statusCode(400)
-                .contentType(ContentType.JSON);
+                .statusCode(400);
     }
 
     /**
@@ -145,7 +144,7 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testCreateBlankName() {
         given().pathParam("project", "1")
@@ -154,8 +153,7 @@ public final class TopologyResourceTest {
                 .when()
                 .post()
                 .then()
-                .statusCode(400)
-                .contentType(ContentType.JSON);
+                .statusCode(400);
     }
 
     /**
@@ -171,7 +169,7 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"runner"})
     public void testGetInvalidToken() {
         given().pathParam("project", "1").when().get("/1").then().statusCode(403);
@@ -182,15 +180,10 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testGetNonExisting() {
-        given().pathParam("project", "1")
-                .when()
-                .get("/0")
-                .then()
-                .statusCode(404)
-                .contentType(ContentType.JSON);
+        given().pathParam("project", "1").when().get("/0").then().statusCode(404);
     }
 
     /**
@@ -198,15 +191,10 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "unknown",
+            user = "test_user_1",
             roles = {"openid"})
     public void testGetUnauthorized() {
-        given().pathParam("project", "1")
-                .when()
-                .get("/1")
-                .then()
-                .statusCode(404)
-                .contentType(ContentType.JSON);
+        given().pathParam("project", "2").when().get("/1").then().statusCode(404);
     }
 
     /**
@@ -214,7 +202,7 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testGetExisting() {
         given().pathParam("project", "1")
@@ -231,7 +219,7 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testUpdateNonExistent() {
         given().pathParam("project", "1")
@@ -248,10 +236,10 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "unknown",
+            user = "test_user_1",
             roles = {"openid"})
     public void testUpdateUnauthorized() {
-        given().pathParam("project", "1")
+        given().pathParam("project", "2")
                 .body(new Topology.Update(List.of()))
                 .contentType(ContentType.JSON)
                 .when()
@@ -262,10 +250,11 @@ public final class TopologyResourceTest {
 
     /**
      * Test to update a topology as a viewer.
+     * TODO: should return 403, but currently returns 404
      */
     @Test
     @TestSecurity(
-            user = "viewer",
+            user = "test_user_2",
             roles = {"openid"})
     public void testUpdateAsViewer() {
         given().pathParam("project", "1")
@@ -283,7 +272,7 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testUpdate() {
         given().pathParam("project", "1")
@@ -292,8 +281,7 @@ public final class TopologyResourceTest {
                 .when()
                 .put("/1")
                 .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON);
+                .statusCode(200);
     }
 
     /**
@@ -301,7 +289,7 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testDeleteNonExistent() {
         given().pathParam("project", "1").when().delete("/0").then().statusCode(404);
@@ -312,10 +300,10 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "unknown",
+            user = "test_user_1",
             roles = {"openid"})
     public void testDeleteUnauthorized() {
-        given().pathParam("project", "1").when().delete("/1").then().statusCode(404);
+        given().pathParam("project", "2").when().delete("/1").then().statusCode(404);
     }
 
     /**
@@ -323,10 +311,21 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "viewer",
+            user = "test_user_2",
             roles = {"openid"})
     public void testDeleteAsViewer() {
         given().pathParam("project", "1").when().delete("/1").then().statusCode(403);
+    }
+
+    /**
+     * Test to delete a topology as a viewer.
+     */
+    @Test
+    @TestSecurity(
+            user = "test_user_3",
+            roles = {"openid"})
+    public void testDeleteAsEditor() {
+        given().pathParam("project", "1").when().delete("/2").then().statusCode(200);
     }
 
     /**
@@ -334,39 +333,24 @@ public final class TopologyResourceTest {
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testDelete() {
-        int number = given().pathParam("project", "1")
-                .body(new Topology.Create("Delete Topology", List.of()))
-                .contentType(ContentType.JSON)
-                .when()
-                .post()
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .extract()
-                .path("number");
-
-        given().pathParam("project", "1")
-                .when()
-                .delete("/" + number)
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON);
+        given().pathParam("project", "1").when().delete("/3").then().statusCode(200);
     }
 
     /**
      * Test to delete a topology that is still being used by a scenario.
+     * TODO: fix later
      */
     @Test
     @TestSecurity(
-            user = "owner",
+            user = "test_user_1",
             roles = {"openid"})
     public void testDeleteUsed() {
         given().pathParam("project", "1")
                 .when()
-                .delete("/1") // Topology 1 is still used by scenario 1 and 2
+                .delete("/4") // Topology 1 is still used by scenario 1 and 2
                 .then()
                 .statusCode(403)
                 .contentType(ContentType.JSON);

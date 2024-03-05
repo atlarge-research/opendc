@@ -22,10 +22,10 @@
 
 package org.opendc.web.proto.user
 
+import jakarta.validation.constraints.NotBlank
 import org.eclipse.microprofile.openapi.annotations.media.Schema
 import org.opendc.web.proto.Room
 import java.time.Instant
-import javax.validation.constraints.NotBlank
 
 /**
  * Model for an OpenDC topology.
@@ -37,7 +37,7 @@ public data class Topology(
     val name: String,
     val rooms: List<Room>,
     val createdAt: Instant,
-    val updatedAt: Instant
+    val updatedAt: Instant,
 ) {
     /**
      * Create a new topology for a project.
@@ -46,7 +46,7 @@ public data class Topology(
     public data class Create(
         @field:NotBlank(message = "Name must not be empty")
         val name: String,
-        val rooms: List<Room>
+        val rooms: List<Room>,
     )
 
     /**
@@ -70,6 +70,6 @@ public data class Topology(
         val number: Int,
         val name: String,
         val createdAt: Instant,
-        val updatedAt: Instant
+        val updatedAt: Instant,
     )
 }

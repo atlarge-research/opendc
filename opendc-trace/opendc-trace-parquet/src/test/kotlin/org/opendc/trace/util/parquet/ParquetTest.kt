@@ -51,49 +51,52 @@ import java.nio.file.Path
 internal class ParquetTest {
     private lateinit var path: Path
 
-    private val schema = Types.buildMessage()
-        .addField(
-            Types.primitive(PrimitiveType.PrimitiveTypeName.INT32, Type.Repetition.REQUIRED)
-                .named("field")
-        )
-        .named("test")
-    private val writeSupport = object : WriteSupport<Int>() {
-        lateinit var recordConsumer: RecordConsumer
+    private val schema =
+        Types.buildMessage()
+            .addField(
+                Types.primitive(PrimitiveType.PrimitiveTypeName.INT32, Type.Repetition.REQUIRED)
+                    .named("field"),
+            )
+            .named("test")
+    private val writeSupport =
+        object : WriteSupport<Int>() {
+            lateinit var recordConsumer: RecordConsumer
 
-        override fun init(configuration: Configuration): WriteContext {
-            return WriteContext(schema, emptyMap())
+            override fun init(configuration: Configuration): WriteContext {
+                return WriteContext(schema, emptyMap())
+            }
+
+            override fun prepareForWrite(recordConsumer: RecordConsumer) {
+                this.recordConsumer = recordConsumer
+            }
+
+            override fun write(record: Int) {
+                val consumer = recordConsumer
+
+                consumer.startMessage()
+                consumer.startField("field", 0)
+                consumer.addInteger(record)
+                consumer.endField("field", 0)
+                consumer.endMessage()
+            }
         }
 
-        override fun prepareForWrite(recordConsumer: RecordConsumer) {
-            this.recordConsumer = recordConsumer
+    private val readSupport =
+        object : ReadSupport<Int>() {
+            @Suppress("OVERRIDE_DEPRECATION")
+            override fun init(
+                configuration: Configuration,
+                keyValueMetaData: Map<String, String>,
+                fileSchema: MessageType,
+            ): ReadContext = ReadContext(fileSchema)
+
+            override fun prepareForRead(
+                configuration: Configuration,
+                keyValueMetaData: Map<String, String>,
+                fileSchema: MessageType,
+                readContext: ReadContext,
+            ): RecordMaterializer<Int> = TestRecordMaterializer()
         }
-
-        override fun write(record: Int) {
-            val consumer = recordConsumer
-
-            consumer.startMessage()
-            consumer.startField("field", 0)
-            consumer.addInteger(record)
-            consumer.endField("field", 0)
-            consumer.endMessage()
-        }
-    }
-
-    private val readSupport = object : ReadSupport<Int>() {
-        @Suppress("OVERRIDE_DEPRECATION")
-        override fun init(
-            configuration: Configuration,
-            keyValueMetaData: Map<String, String>,
-            fileSchema: MessageType
-        ): ReadContext = ReadContext(fileSchema)
-
-        override fun prepareForRead(
-            configuration: Configuration,
-            keyValueMetaData: Map<String, String>,
-            fileSchema: MessageType,
-            readContext: ReadContext
-        ): RecordMaterializer<Int> = TestRecordMaterializer()
-    }
 
     /**
      * Set up the test
@@ -117,9 +120,10 @@ internal class ParquetTest {
     @Test
     fun testSmoke() {
         val n = 4
-        val writer = LocalParquetWriter.builder(path, writeSupport)
-            .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
-            .build()
+        val writer =
+            LocalParquetWriter.builder(path, writeSupport)
+                .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
+                .build()
 
         try {
             repeat(n) { i ->
@@ -166,19 +170,23 @@ internal class ParquetTest {
 
     private class TestRecordMaterializer : RecordMaterializer<Int>() {
         private var current: Int = 0
-        private val fieldConverter = object : PrimitiveConverter() {
-            override fun addInt(value: Int) {
-                current = value
+        private val fieldConverter =
+            object : PrimitiveConverter() {
+                override fun addInt(value: Int) {
+                    current = value
+                }
             }
-        }
-        private val root = object : GroupConverter() {
-            override fun getConverter(fieldIndex: Int): Converter {
-                require(fieldIndex == 0)
-                return fieldConverter
+        private val root =
+            object : GroupConverter() {
+                override fun getConverter(fieldIndex: Int): Converter {
+                    require(fieldIndex == 0)
+                    return fieldConverter
+                }
+
+                override fun start() {}
+
+                override fun end() {}
             }
-            override fun start() {}
-            override fun end() {}
-        }
 
         override fun getCurrentRecord(): Int = current
 

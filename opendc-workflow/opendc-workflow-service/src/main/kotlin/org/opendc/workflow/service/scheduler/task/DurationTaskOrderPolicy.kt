@@ -35,7 +35,6 @@ import kotlin.collections.set
  * A [TaskOrderPolicy] orders tasks based on the pre-specified (approximate) duration of the task.
  */
 public data class DurationTaskOrderPolicy(public val ascending: Boolean = true) : TaskOrderPolicy {
-
     override fun invoke(scheduler: WorkflowServiceImpl): Comparator<TaskState> =
         object : Comparator<TaskState>, WorkflowSchedulerListener {
             private val results = HashMap<UUID, Long>()
@@ -56,7 +55,10 @@ public data class DurationTaskOrderPolicy(public val ascending: Boolean = true) 
             private val TaskState.duration: Long
                 get() = results.getValue(task.uid)
 
-            override fun compare(o1: TaskState, o2: TaskState): Int {
+            override fun compare(
+                o1: TaskState,
+                o2: TaskState,
+            ): Int {
                 return compareValuesBy(o1, o2) { state -> state.duration }.let {
                     if (ascending) it else -it
                 }

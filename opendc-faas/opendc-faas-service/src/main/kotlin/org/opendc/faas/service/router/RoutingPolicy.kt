@@ -32,5 +32,8 @@ public interface RoutingPolicy {
     /**
      * Select the instance to which the request should be routed to.
      */
-    public fun select(instances: List<FunctionInstance>, function: FunctionObject): FunctionInstance?
+    public fun select(
+        instances: List<FunctionInstance>,
+        function: FunctionObject,
+    ): FunctionInstance?
 }

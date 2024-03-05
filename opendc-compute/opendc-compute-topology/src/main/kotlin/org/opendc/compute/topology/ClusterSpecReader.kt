@@ -65,16 +65,17 @@ public class ClusterSpecReader {
         val result = mutableListOf<ClusterSpec>()
 
         for (entry in it) {
-            val def = ClusterSpec(
-                entry.id,
-                entry.name,
-                entry.cpuCount,
-                entry.cpuSpeed * 1000, // Convert to MHz
-                entry.memCapacity * 1000, // Convert to MiB
-                entry.hostCount,
-                entry.memCapacityPerHost * 1000,
-                entry.cpuCountPerHost
-            )
+            val def =
+                ClusterSpec(
+                    entry.id,
+                    entry.name,
+                    entry.cpuCount,
+                    entry.cpuSpeed * 1000,
+                    entry.memCapacity * 1000,
+                    entry.hostCount,
+                    entry.memCapacityPerHost * 1000,
+                    entry.cpuCountPerHost,
+                )
             result.add(def)
         }
 
@@ -97,25 +98,26 @@ public class ClusterSpecReader {
         @JsonProperty("memoryCapacityPerHost")
         val memCapacityPerHost: Double,
         @JsonProperty("coreCountPerHost")
-        val cpuCountPerHost: Int
+        val cpuCountPerHost: Int,
     )
 
     public companion object {
         /**
          * The [CsvSchema] that is used to parse the trace.
          */
-        private val schema = CsvSchema.builder()
-            .addColumn("ClusterID", CsvSchema.ColumnType.STRING)
-            .addColumn("ClusterName", CsvSchema.ColumnType.STRING)
-            .addColumn("Cores", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Speed", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Memory", CsvSchema.ColumnType.NUMBER)
-            .addColumn("numberOfHosts", CsvSchema.ColumnType.NUMBER)
-            .addColumn("memoryCapacityPerHost", CsvSchema.ColumnType.NUMBER)
-            .addColumn("coreCountPerHost", CsvSchema.ColumnType.NUMBER)
-            .setAllowComments(true)
-            .setColumnSeparator(';')
-            .setUseHeader(true)
-            .build()
+        private val schema =
+            CsvSchema.builder()
+                .addColumn("ClusterID", CsvSchema.ColumnType.STRING)
+                .addColumn("ClusterName", CsvSchema.ColumnType.STRING)
+                .addColumn("Cores", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Speed", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Memory", CsvSchema.ColumnType.NUMBER)
+                .addColumn("numberOfHosts", CsvSchema.ColumnType.NUMBER)
+                .addColumn("memoryCapacityPerHost", CsvSchema.ColumnType.NUMBER)
+                .addColumn("coreCountPerHost", CsvSchema.ColumnType.NUMBER)
+                .setAllowComments(true)
+                .setColumnSeparator(';')
+                .setUseHeader(true)
+                .build()
     }
 }

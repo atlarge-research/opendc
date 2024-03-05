@@ -34,12 +34,13 @@ import org.opendc.experiments.base.portfolio.model.Workload
  * A [Portfolio] to perform a simple test run.
  */
 public class TestPortfolio : Portfolio {
-    override val scenarios: Iterable<Scenario> = listOf(
-        Scenario(
-            Topology("single"),
-            Workload("bitbrains-small", trace("trace").sampleByLoad(1.0)),
-            OperationalPhenomena(failureFrequency = 0.0, hasInterference = true),
-            "active-servers"
+    override val scenarios: Iterable<Scenario> =
+        listOf(
+            Scenario(
+                Topology("single"),
+                Workload("bitbrains-small", trace("trace").sampleByLoad(1.0)),
+                OperationalPhenomena(failureFrequency = 0.0, hasInterference = true),
+                "active-servers",
+            ),
         )
-    )
 }

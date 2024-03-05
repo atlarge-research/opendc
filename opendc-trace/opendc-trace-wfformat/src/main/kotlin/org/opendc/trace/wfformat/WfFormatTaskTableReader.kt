@@ -81,13 +81,14 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
                 }
                 ParserLevel.WORKFLOW -> {
                     // Seek for the jobs object in the file
-                    level = if (!seekJobs()) {
-                        ParserLevel.TRACE
-                    } else if (!parser.isExpectedStartArrayToken) {
-                        throw JsonParseException(parser, "Expected array", parser.currentLocation)
-                    } else {
-                        ParserLevel.JOB
-                    }
+                    level =
+                        if (!seekJobs()) {
+                            ParserLevel.TRACE
+                        } else if (!parser.isExpectedStartArrayToken) {
+                            throw JsonParseException(parser, "Expected array", parser.currentLocation)
+                        } else {
+                            ParserLevel.JOB
+                        }
                 }
                 ParserLevel.JOB -> {
                     when (parser.nextToken()) {
@@ -108,18 +109,18 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
 
     override fun resolve(name: String): Int {
         return when (name) {
-            TASK_ID -> COL_ID
-            TASK_WORKFLOW_ID -> COL_WORKFLOW_ID
-            TASK_RUNTIME -> COL_RUNTIME
-            TASK_REQ_NCPUS -> COL_NPROC
-            TASK_PARENTS -> COL_PARENTS
-            TASK_CHILDREN -> COL_CHILDREN
+            TASK_ID -> colID
+            TASK_WORKFLOW_ID -> colWorkflowID
+            TASK_RUNTIME -> colRuntime
+            TASK_REQ_NCPUS -> colNproc
+            TASK_PARENTS -> colParents
+            TASK_CHILDREN -> colChildren
             else -> -1
         }
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in 0..COL_CHILDREN) { "Invalid column value" }
+        require(index in 0..colChildren) { "Invalid column value" }
         return false
     }
 
@@ -130,7 +131,7 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
     override fun getInt(index: Int): Int {
         checkActive()
         return when (index) {
-            COL_NPROC -> cores
+            colNproc -> cores
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -150,8 +151,8 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
     override fun getString(index: Int): String? {
         checkActive()
         return when (index) {
-            COL_ID -> id
-            COL_WORKFLOW_ID -> workflowId
+            colID -> id
+            colWorkflowID -> workflowId
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -167,25 +168,35 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
     override fun getDuration(index: Int): Duration? {
         checkActive()
         return when (index) {
-            COL_RUNTIME -> runtime
+            colRuntime -> runtime
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
 
-    override fun <T> getList(index: Int, elementType: Class<T>): List<T>? {
+    override fun <T> getList(
+        index: Int,
+        elementType: Class<T>,
+    ): List<T>? {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun <T> getSet(index: Int, elementType: Class<T>): Set<T>? {
+    override fun <T> getSet(
+        index: Int,
+        elementType: Class<T>,
+    ): Set<T>? {
         checkActive()
         return when (index) {
-            COL_PARENTS -> TYPE_PARENTS.convertTo(parents, elementType)
-            COL_CHILDREN -> TYPE_CHILDREN.convertTo(children, elementType)
+            colParents -> typeParents.convertTo(parents, elementType)
+            colChildren -> typeChildren.convertTo(children, elementType)
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
 
-    override fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>? {
+    override fun <K, V> getMap(
+        index: Int,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>? {
         throw IllegalArgumentException("Invalid column")
     }
 
@@ -267,7 +278,10 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
     }
 
     private enum class ParserLevel {
-        TOP, TRACE, WORKFLOW, JOB
+        TOP,
+        TRACE,
+        WORKFLOW,
+        JOB,
     }
 
     /**
@@ -288,13 +302,13 @@ internal class WfFormatTaskTableReader(private val parser: JsonParser) : TableRe
         cores = -1
     }
 
-    private val COL_ID = 0
-    private val COL_WORKFLOW_ID = 1
-    private val COL_RUNTIME = 3
-    private val COL_NPROC = 4
-    private val COL_PARENTS = 5
-    private val COL_CHILDREN = 6
+    private val colID = 0
+    private val colWorkflowID = 1
+    private val colRuntime = 3
+    private val colNproc = 4
+    private val colParents = 5
+    private val colChildren = 6
 
-    private val TYPE_PARENTS = TableColumnType.Set(TableColumnType.String)
-    private val TYPE_CHILDREN = TableColumnType.Set(TableColumnType.String)
+    private val typeParents = TableColumnType.Set(TableColumnType.String)
+    private val typeChildren = TableColumnType.Set(TableColumnType.String)
 }

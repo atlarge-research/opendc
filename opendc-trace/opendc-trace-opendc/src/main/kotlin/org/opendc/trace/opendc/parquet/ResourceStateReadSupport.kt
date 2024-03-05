@@ -31,11 +31,11 @@ import org.apache.parquet.schema.MessageType
 import org.apache.parquet.schema.PrimitiveType
 import org.apache.parquet.schema.Types
 import org.opendc.trace.TableColumn
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
-import org.opendc.trace.conv.RESOURCE_STATE_DURATION
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceStateCpuUsage
+import org.opendc.trace.conv.resourceStateDuration
+import org.opendc.trace.conv.resourceStateTimestamp
 
 /**
  * A [ReadSupport] instance for [ResourceState] objects.
@@ -44,16 +44,17 @@ internal class ResourceStateReadSupport(private val projection: List<String>?) :
     /**
      * Mapping from field names to [TableColumn]s.
      */
-    private val fieldMap = mapOf(
-        "id" to RESOURCE_ID,
-        "time" to RESOURCE_STATE_TIMESTAMP,
-        "timestamp" to RESOURCE_STATE_TIMESTAMP,
-        "duration" to RESOURCE_STATE_DURATION,
-        "cores" to RESOURCE_CPU_COUNT,
-        "cpu_count" to RESOURCE_CPU_COUNT,
-        "cpuUsage" to RESOURCE_STATE_CPU_USAGE,
-        "cpu_usage" to RESOURCE_STATE_CPU_USAGE
-    )
+    private val fieldMap =
+        mapOf(
+            "id" to resourceID,
+            "time" to resourceStateTimestamp,
+            "timestamp" to resourceStateTimestamp,
+            "duration" to resourceStateDuration,
+            "cores" to resourceCpuCount,
+            "cpu_count" to resourceCpuCount,
+            "cpuUsage" to resourceStateCpuUsage,
+            "cpu_usage" to resourceStateCpuUsage,
+        )
 
     override fun init(context: InitContext): ReadContext {
         val projectedSchema =
@@ -81,7 +82,7 @@ internal class ResourceStateReadSupport(private val projection: List<String>?) :
         configuration: Configuration,
         keyValueMetaData: Map<String, String>,
         fileSchema: MessageType,
-        readContext: ReadContext
+        readContext: ReadContext,
     ): RecordMaterializer<ResourceState> = ResourceStateRecordMaterializer(readContext.requestedSchema)
 
     companion object {
@@ -89,53 +90,55 @@ internal class ResourceStateReadSupport(private val projection: List<String>?) :
          * Parquet read schema (version 2.0) for the "resource states" table in the trace.
          */
         @JvmStatic
-        val READ_SCHEMA_V2_0: MessageType = Types.buildMessage()
-            .addFields(
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("id"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("time"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("duration"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("cores"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("cpuUsage")
-            )
-            .named("resource_state")
+        val READ_SCHEMA_V2_0: MessageType =
+            Types.buildMessage()
+                .addFields(
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.BINARY)
+                        .`as`(LogicalTypeAnnotation.stringType())
+                        .named("id"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                        .named("time"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("duration"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("cores"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("cpuUsage"),
+                )
+                .named("resource_state")
 
         /**
          * Parquet read schema (version 2.1) for the "resource states" table in the trace.
          */
         @JvmStatic
-        val READ_SCHEMA_V2_1: MessageType = Types.buildMessage()
-            .addFields(
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("id"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("timestamp"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("duration"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("cpu_count"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("cpu_usage")
-            )
-            .named("resource_state")
+        val READ_SCHEMA_V2_1: MessageType =
+            Types.buildMessage()
+                .addFields(
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.BINARY)
+                        .`as`(LogicalTypeAnnotation.stringType())
+                        .named("id"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                        .named("timestamp"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("duration"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("cpu_count"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("cpu_usage"),
+                )
+                .named("resource_state")
 
         /**
          * Parquet read schema for the "resource states" table in the trace.

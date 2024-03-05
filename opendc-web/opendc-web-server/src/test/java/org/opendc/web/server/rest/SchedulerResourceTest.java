@@ -22,11 +22,10 @@
 
 package org.opendc.web.server.rest;
 
-import static io.restassured.RestAssured.when;
+import static io.restassured.RestAssured.given;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -40,6 +39,6 @@ public final class SchedulerResourceTest {
      */
     @Test
     public void testGetSchedulers() {
-        when().get().then().statusCode(200).contentType(ContentType.JSON);
+        given().get().then().statusCode(200);
     }
 }

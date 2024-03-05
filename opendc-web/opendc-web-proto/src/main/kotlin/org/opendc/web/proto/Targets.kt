@@ -22,7 +22,7 @@
 
 package org.opendc.web.proto
 
-import javax.validation.constraints.Min
+import jakarta.validation.constraints.Min
 
 /**
  * The targets of a portfolio.
@@ -33,5 +33,5 @@ import javax.validation.constraints.Min
 public data class Targets(
     val metrics: Set<String>,
     @field:Min(1)
-    val repeats: Int = 1
+    val repeats: Int = 1,
 )

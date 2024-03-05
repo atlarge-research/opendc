@@ -55,30 +55,41 @@ public class WfFormatTraceFormat : TraceFormat {
 
     override fun getTables(path: Path): List<String> = listOf(TABLE_TASKS)
 
-    override fun getDetails(path: Path, table: String): TableDetails {
+    override fun getDetails(
+        path: Path,
+        table: String,
+    ): TableDetails {
         return when (table) {
-            TABLE_TASKS -> TableDetails(
-                listOf(
-                    TableColumn(TASK_ID, TableColumnType.String),
-                    TableColumn(TASK_WORKFLOW_ID, TableColumnType.String),
-                    TableColumn(TASK_RUNTIME, TableColumnType.Duration),
-                    TableColumn(TASK_REQ_NCPUS, TableColumnType.Int),
-                    TableColumn(TASK_PARENTS, TableColumnType.Set(TableColumnType.String)),
-                    TableColumn(TASK_CHILDREN, TableColumnType.Set(TableColumnType.String))
+            TABLE_TASKS ->
+                TableDetails(
+                    listOf(
+                        TableColumn(TASK_ID, TableColumnType.String),
+                        TableColumn(TASK_WORKFLOW_ID, TableColumnType.String),
+                        TableColumn(TASK_RUNTIME, TableColumnType.Duration),
+                        TableColumn(TASK_REQ_NCPUS, TableColumnType.Int),
+                        TableColumn(TASK_PARENTS, TableColumnType.Set(TableColumnType.String)),
+                        TableColumn(TASK_CHILDREN, TableColumnType.Set(TableColumnType.String)),
+                    ),
                 )
-            )
             else -> throw IllegalArgumentException("Table $table not supported")
         }
     }
 
-    override fun newReader(path: Path, table: String, projection: List<String>?): TableReader {
+    override fun newReader(
+        path: Path,
+        table: String,
+        projection: List<String>?,
+    ): TableReader {
         return when (table) {
             TABLE_TASKS -> WfFormatTaskTableReader(factory.createParser(path.toFile()))
             else -> throw IllegalArgumentException("Table $table not supported")
         }
     }
 
-    override fun newWriter(path: Path, table: String): TableWriter {
+    override fun newWriter(
+        path: Path,
+        table: String,
+    ): TableWriter {
         throw UnsupportedOperationException("Writing not supported for this format")
     }
 }

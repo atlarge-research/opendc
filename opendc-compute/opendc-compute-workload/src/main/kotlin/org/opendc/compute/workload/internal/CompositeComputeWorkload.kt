@@ -37,7 +37,10 @@ internal class CompositeComputeWorkload(val sources: Map<ComputeWorkload, Double
      */
     private val logger = KotlinLogging.logger {}
 
-    override fun resolve(loader: ComputeWorkloadLoader, random: RandomGenerator): List<VirtualMachine> {
+    override fun resolve(
+        loader: ComputeWorkloadLoader,
+        random: RandomGenerator,
+    ): List<VirtualMachine> {
         val traces = sources.map { (source, fraction) -> fraction to source.resolve(loader, random) }
 
         val totalLoad = traces.sumOf { (_, vms) -> vms.sumOf { it.totalLoad } }

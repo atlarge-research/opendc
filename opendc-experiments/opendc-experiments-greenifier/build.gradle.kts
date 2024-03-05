@@ -22,7 +22,7 @@
 
 description = "Experiments for the Greenifier work"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-conventions`
     `testing-conventions`
@@ -56,10 +56,10 @@ val createGreenifierApp by tasks.creating(CreateStartScripts::class) {
     applicationName = "greenifier"
     mainClass.set("org.opendc.experiments.greenifier.GreenifierCli")
     classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
-    outputDir = project.buildDir.resolve("scripts")
+    outputDir = project.layout.buildDirectory.get().asFile.resolve("scripts")
 }
 
-/* Create custom Greenifier distribution */
+// Create custom Greenifier distribution
 distributions {
     main {
         distributionBaseName.set("greenifier")

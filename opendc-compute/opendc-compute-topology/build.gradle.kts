@@ -22,7 +22,7 @@
 
 description = "OpenDC Compute Topology implementation"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }

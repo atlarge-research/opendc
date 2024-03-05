@@ -28,7 +28,11 @@ import org.opendc.experiments.tf20.core.TFDevice
  * A distribution [Strategy] that places all variables and computation on a single specified device.
  */
 public class OneDeviceStrategy(val device: TFDevice) : Strategy {
-    override suspend fun run(forward: Double, backward: Double, batchSize: Int) {
+    override suspend fun run(
+        forward: Double,
+        backward: Double,
+        batchSize: Int,
+    ) {
         device.compute(forward * batchSize + backward)
     }
 }

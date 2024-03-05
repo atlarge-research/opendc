@@ -40,17 +40,17 @@ import org.opendc.trace.TableWriter
 import org.opendc.trace.conv.INTERFERENCE_GROUP_MEMBERS
 import org.opendc.trace.conv.INTERFERENCE_GROUP_SCORE
 import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
-import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
-import org.opendc.trace.conv.RESOURCE_START_TIME
-import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
-import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
-import org.opendc.trace.conv.RESOURCE_STOP_TIME
 import org.opendc.trace.conv.TABLE_INTERFERENCE_GROUPS
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.conv.resourceCpuCapacity
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceStartTime
+import org.opendc.trace.conv.resourceStateCpuUsage
+import org.opendc.trace.conv.resourceStateTimestamp
+import org.opendc.trace.conv.resourceStopTime
 import org.opendc.trace.testkit.TableReaderTestKit
 import org.opendc.trace.testkit.TableWriterTestKit
 import java.nio.file.Files
@@ -88,19 +88,19 @@ internal class OdcVmTraceFormatTest {
     @ValueSource(strings = ["trace-v2.0", "trace-v2.1"])
     fun testResources(name: String) {
         val path = Paths.get("src/test/resources/$name")
-        val reader = format.newReader(path, TABLE_RESOURCES, listOf(RESOURCE_ID, RESOURCE_START_TIME))
+        val reader = format.newReader(path, TABLE_RESOURCES, listOf(resourceID, resourceStartTime))
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1019", reader.getString(RESOURCE_ID)) },
-            { assertEquals(Instant.ofEpochMilli(1376314846000), reader.getInstant(RESOURCE_START_TIME)) },
+            { assertEquals("1019", reader.getString(resourceID)) },
+            { assertEquals(Instant.ofEpochMilli(1376314846000), reader.getInstant(resourceStartTime)) },
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1023", reader.getString(RESOURCE_ID)) },
+            { assertEquals("1023", reader.getString(resourceID)) },
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1052", reader.getString(RESOURCE_ID)) },
+            { assertEquals("1052", reader.getString(resourceID)) },
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1073", reader.getString(RESOURCE_ID)) },
-            { assertFalse(reader.nextRow()) }
+            { assertEquals("1073", reader.getString(resourceID)) },
+            { assertFalse(reader.nextRow()) },
         )
 
         reader.close()
@@ -112,12 +112,12 @@ internal class OdcVmTraceFormatTest {
         val writer = format.newWriter(path, TABLE_RESOURCES)
 
         writer.startRow()
-        writer.setString(RESOURCE_ID, "1019")
-        writer.setInstant(RESOURCE_START_TIME, Instant.EPOCH)
-        writer.setInstant(RESOURCE_STOP_TIME, Instant.EPOCH)
-        writer.setInt(RESOURCE_CPU_COUNT, 1)
-        writer.setDouble(RESOURCE_CPU_CAPACITY, 1024.0)
-        writer.setDouble(RESOURCE_MEM_CAPACITY, 1024.0)
+        writer.setString(resourceID, "1019")
+        writer.setInstant(resourceStartTime, Instant.EPOCH)
+        writer.setInstant(resourceStopTime, Instant.EPOCH)
+        writer.setInt(resourceCpuCount, 1)
+        writer.setDouble(resourceCpuCapacity, 1024.0)
+        writer.setDouble(resourceMemCapacity, 1024.0)
         writer.endRow()
         writer.close()
 
@@ -125,13 +125,13 @@ internal class OdcVmTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1019", reader.getString(RESOURCE_ID)) },
-            { assertEquals(Instant.EPOCH, reader.getInstant(RESOURCE_START_TIME)) },
-            { assertEquals(Instant.EPOCH, reader.getInstant(RESOURCE_STOP_TIME)) },
-            { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
-            { assertEquals(1024.0, reader.getDouble(RESOURCE_CPU_CAPACITY)) },
-            { assertEquals(1024.0, reader.getDouble(RESOURCE_MEM_CAPACITY)) },
-            { assertFalse(reader.nextRow()) }
+            { assertEquals("1019", reader.getString(resourceID)) },
+            { assertEquals(Instant.EPOCH, reader.getInstant(resourceStartTime)) },
+            { assertEquals(Instant.EPOCH, reader.getInstant(resourceStopTime)) },
+            { assertEquals(1, reader.getInt(resourceCpuCount)) },
+            { assertEquals(1024.0, reader.getDouble(resourceCpuCapacity)) },
+            { assertEquals(1024.0, reader.getDouble(resourceMemCapacity)) },
+            { assertFalse(reader.nextRow()) },
         )
 
         reader.close()
@@ -141,17 +141,18 @@ internal class OdcVmTraceFormatTest {
     @ValueSource(strings = ["trace-v2.0", "trace-v2.1"])
     fun testSmoke(name: String) {
         val path = Paths.get("src/test/resources/$name")
-        val reader = format.newReader(
-            path,
-            TABLE_RESOURCE_STATES,
-            listOf(RESOURCE_ID, RESOURCE_STATE_TIMESTAMP, RESOURCE_STATE_CPU_USAGE)
-        )
+        val reader =
+            format.newReader(
+                path,
+                TABLE_RESOURCE_STATES,
+                listOf(resourceID, resourceStateTimestamp, resourceStateCpuUsage),
+            )
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1019", reader.getString(RESOURCE_ID)) },
-            { assertEquals(1376314846, reader.getInstant(RESOURCE_STATE_TIMESTAMP)?.epochSecond) },
-            { assertEquals(0.0, reader.getDouble(RESOURCE_STATE_CPU_USAGE), 0.01) }
+            { assertEquals("1019", reader.getString(resourceID)) },
+            { assertEquals(1376314846, reader.getInstant(resourceStateTimestamp)?.epochSecond) },
+            { assertEquals(0.0, reader.getDouble(resourceStateCpuUsage), 0.01) },
         )
 
         reader.close()
@@ -163,10 +164,10 @@ internal class OdcVmTraceFormatTest {
         val writer = format.newWriter(path, TABLE_RESOURCE_STATES)
 
         writer.startRow()
-        writer.setString(RESOURCE_ID, "1019")
-        writer.setInstant(RESOURCE_STATE_TIMESTAMP, Instant.EPOCH)
-        writer.setDouble(RESOURCE_STATE_CPU_USAGE, 23.0)
-        writer.setInt(RESOURCE_CPU_COUNT, 1)
+        writer.setString(resourceID, "1019")
+        writer.setInstant(resourceStateTimestamp, Instant.EPOCH)
+        writer.setDouble(resourceStateCpuUsage, 23.0)
+        writer.setInt(resourceCpuCount, 1)
         writer.endRow()
         writer.close()
 
@@ -174,11 +175,11 @@ internal class OdcVmTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1019", reader.getString(RESOURCE_ID)) },
-            { assertEquals(Instant.EPOCH, reader.getInstant(RESOURCE_STATE_TIMESTAMP)) },
-            { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
-            { assertEquals(23.0, reader.getDouble(RESOURCE_STATE_CPU_USAGE)) },
-            { assertFalse(reader.nextRow()) }
+            { assertEquals("1019", reader.getString(resourceID)) },
+            { assertEquals(Instant.EPOCH, reader.getInstant(resourceStateTimestamp)) },
+            { assertEquals(1, reader.getInt(resourceCpuCount)) },
+            { assertEquals(23.0, reader.getDouble(resourceStateCpuUsage)) },
+            { assertFalse(reader.nextRow()) },
         )
 
         reader.close()
@@ -187,11 +188,12 @@ internal class OdcVmTraceFormatTest {
     @Test
     fun testInterferenceGroups() {
         val path = Paths.get("src/test/resources/trace-v2.1")
-        val reader = format.newReader(
-            path,
-            TABLE_INTERFERENCE_GROUPS,
-            listOf(INTERFERENCE_GROUP_MEMBERS, INTERFERENCE_GROUP_TARGET, INTERFERENCE_GROUP_SCORE)
-        )
+        val reader =
+            format.newReader(
+                path,
+                TABLE_INTERFERENCE_GROUPS,
+                listOf(INTERFERENCE_GROUP_MEMBERS, INTERFERENCE_GROUP_TARGET, INTERFERENCE_GROUP_SCORE),
+            )
 
         assertAll(
             { assertTrue(reader.nextRow()) },
@@ -202,7 +204,7 @@ internal class OdcVmTraceFormatTest {
             { assertEquals(setOf("1023", "1052", "1073"), reader.getSet(INTERFERENCE_GROUP_MEMBERS, String::class.java)) },
             { assertEquals(0.0, reader.getDouble(INTERFERENCE_GROUP_TARGET)) },
             { assertEquals(0.7133055555552751, reader.getDouble(INTERFERENCE_GROUP_SCORE)) },
-            { assertFalse(reader.nextRow()) }
+            { assertFalse(reader.nextRow()) },
         )
 
         reader.close()
@@ -247,7 +249,7 @@ internal class OdcVmTraceFormatTest {
             { assertEquals(setOf("a", "b", "d"), reader.getSet(INTERFERENCE_GROUP_MEMBERS, String::class.java)) },
             { assertEquals(0.5, reader.getDouble(INTERFERENCE_GROUP_TARGET)) },
             { assertEquals(0.9, reader.getDouble(INTERFERENCE_GROUP_SCORE)) },
-            { assertFalse(reader.nextRow()) }
+            { assertFalse(reader.nextRow()) },
         )
 
         reader.close()

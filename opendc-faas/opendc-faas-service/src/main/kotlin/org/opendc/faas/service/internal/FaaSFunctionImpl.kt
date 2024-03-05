@@ -31,7 +31,7 @@ import java.util.UUID
  */
 internal class FaaSFunctionImpl(
     private val service: FaaSServiceImpl,
-    private val state: FunctionObject
+    private val state: FunctionObject,
 ) : FaaSFunction {
     override val uid: UUID = state.uid
 

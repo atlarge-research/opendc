@@ -41,108 +41,115 @@ import org.opendc.simulator.kotlin.runSimulation
  */
 internal class SimPowerSourceTest {
     @Test
-    fun testInitialState() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
+    fun testInitialState() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val source = SimPowerSource(graph, 100.0f)
 
-        yield()
+            yield()
 
-        assertAll(
-            { assertFalse(source.isConnected) },
-            { assertNull(source.inlet) },
-            { assertEquals(100.0f, source.capacity) }
-        )
-    }
-
-    @Test
-    fun testDisconnectIdempotent() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
-
-        assertDoesNotThrow { source.disconnect() }
-        assertFalse(source.isConnected)
-    }
-
-    @Test
-    fun testConnect() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
-        val inlet = TestInlet(graph)
-
-        source.connect(inlet)
-
-        yield()
-
-        assertAll(
-            { assertTrue(source.isConnected) },
-            { assertEquals(inlet, source.inlet) },
-            { assertTrue(inlet.isConnected) },
-            { assertEquals(source, inlet.outlet) },
-            { assertEquals(100.0f, source.powerDraw) }
-        )
-    }
-
-    @Test
-    fun testDisconnect() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
-        val inlet = TestInlet(graph)
-
-        source.connect(inlet)
-        source.disconnect()
-
-        yield()
-
-        assertEquals(0.0f, inlet.flowOutlet.capacity)
-    }
-
-    @Test
-    fun testDisconnectAssertion() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
-
-        val inlet = mockk<SimPowerInlet>(relaxUnitFun = true)
-        every { inlet.isConnected } returns false
-        every { inlet.flowOutlet } returns TestInlet(graph).flowOutlet
-
-        source.connect(inlet)
-        inlet.outlet = null
-
-        assertThrows<AssertionError> {
-            source.disconnect()
-        }
-    }
-
-    @Test
-    fun testOutletAlreadyConnected() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
-        val inlet = TestInlet(graph)
-
-        source.connect(inlet)
-        assertThrows<IllegalStateException> {
-            source.connect(TestInlet(graph))
+            assertAll(
+                { assertFalse(source.isConnected) },
+                { assertNull(source.inlet) },
+                { assertEquals(100.0f, source.capacity) },
+            )
         }
 
-        assertEquals(inlet, source.inlet)
-    }
+    @Test
+    fun testDisconnectIdempotent() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val source = SimPowerSource(graph, 100.0f)
+
+            assertDoesNotThrow { source.disconnect() }
+            assertFalse(source.isConnected)
+        }
 
     @Test
-    fun testInletAlreadyConnected() = runSimulation {
-        val engine = FlowEngine.create(dispatcher)
-        val graph = engine.newGraph()
-        val source = SimPowerSource(graph, /*capacity*/ 100.0f)
-        val inlet = mockk<SimPowerInlet>(relaxUnitFun = true)
-        every { inlet.isConnected } returns true
+    fun testConnect() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val source = SimPowerSource(graph, 100.0f)
+            val inlet = TestInlet(graph)
 
-        assertThrows<IllegalStateException> {
             source.connect(inlet)
+
+            yield()
+
+            assertAll(
+                { assertTrue(source.isConnected) },
+                { assertEquals(inlet, source.inlet) },
+                { assertTrue(inlet.isConnected) },
+                { assertEquals(source, inlet.outlet) },
+                { assertEquals(100.0f, source.powerDraw) },
+            )
         }
-    }
+
+    @Test
+    fun testDisconnect() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val source = SimPowerSource(graph, 100.0f)
+            val inlet = TestInlet(graph)
+
+            source.connect(inlet)
+            source.disconnect()
+
+            yield()
+
+            assertEquals(0.0f, inlet.flowOutlet.capacity)
+        }
+
+    @Test
+    fun testDisconnectAssertion() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val source = SimPowerSource(graph, 100.0f)
+
+            val inlet = mockk<SimPowerInlet>(relaxUnitFun = true)
+            every { inlet.isConnected } returns false
+            every { inlet.flowOutlet } returns TestInlet(graph).flowOutlet
+
+            source.connect(inlet)
+            inlet.outlet = null
+
+            assertThrows<AssertionError> {
+                source.disconnect()
+            }
+        }
+
+    @Test
+    fun testOutletAlreadyConnected() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val source = SimPowerSource(graph, 100.0f)
+            val inlet = TestInlet(graph)
+
+            source.connect(inlet)
+            assertThrows<IllegalStateException> {
+                source.connect(TestInlet(graph))
+            }
+
+            assertEquals(inlet, source.inlet)
+        }
+
+    @Test
+    fun testInletAlreadyConnected() =
+        runSimulation {
+            val engine = FlowEngine.create(dispatcher)
+            val graph = engine.newGraph()
+            val source = SimPowerSource(graph, 100.0f)
+            val inlet = mockk<SimPowerInlet>(relaxUnitFun = true)
+            every { inlet.isConnected } returns true
+
+            assertThrows<IllegalStateException> {
+                source.connect(inlet)
+            }
+        }
 }

@@ -40,24 +40,37 @@ public class ScenarioResource internal constructor(private val client: Transport
     /**
      * List all scenarios that belong to the specified [portfolioNumber].
      */
-    public fun getAll(project: Long, portfolioNumber: Int): List<Scenario> = client.get("projects/$project/portfolios/$portfolioNumber/scenarios") ?: emptyList()
+    public fun getAll(
+        project: Long,
+        portfolioNumber: Int,
+    ): List<Scenario> = client.get("projects/$project/portfolios/$portfolioNumber/scenarios") ?: emptyList()
 
     /**
      * Obtain the scenario for [project] with [index].
      */
-    public fun get(project: Long, index: Int): Scenario? = client.get("projects/$project/scenarios/$index")
+    public fun get(
+        project: Long,
+        index: Int,
+    ): Scenario? = client.get("projects/$project/scenarios/$index")
 
     /**
      * Create a new scenario for [portfolio][portfolioNumber] with the specified [request].
      */
-    public fun create(project: Long, portfolioNumber: Int, request: Scenario.Create): Scenario {
+    public fun create(
+        project: Long,
+        portfolioNumber: Int,
+        request: Scenario.Create,
+    ): Scenario {
         return checkNotNull(client.post("projects/$project/portfolios/$portfolioNumber", request))
     }
 
     /**
      * Delete the scenario for [project] with [index].
      */
-    public fun delete(project: Long, index: Int): Scenario {
+    public fun delete(
+        project: Long,
+        index: Int,
+    ): Scenario {
         return requireNotNull(client.delete("projects/$project/scenarios/$index")) { "Unknown scenario $index" }
     }
 }

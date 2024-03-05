@@ -35,5 +35,5 @@ public data class Message(
     val to: NetworkNode,
     val type: MessageType,
     val dataSize: Long,
-    val iterations: Int
+    val iterations: Int,
 )

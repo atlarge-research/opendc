@@ -32,7 +32,11 @@ import org.opendc.experiments.tf20.core.TFDevice
  * It creates one replica per GPU device. Each variable in the model is mirrored across all the replicas.
  */
 public class MirroredStrategy(val devices: List<TFDevice>) : Strategy {
-    override suspend fun run(forward: Double, backward: Double, batchSize: Int) = coroutineScope {
+    override suspend fun run(
+        forward: Double,
+        backward: Double,
+        batchSize: Int,
+    ) = coroutineScope {
         for (device in devices) {
             launch { device.compute(forward * batchSize / devices.size + backward) }
         }

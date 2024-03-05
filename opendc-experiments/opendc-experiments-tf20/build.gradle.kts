@@ -22,7 +22,7 @@
 
 description = "TensorFlow application model in OpenDC"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-conventions`
     `testing-conventions`

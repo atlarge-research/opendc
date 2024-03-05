@@ -22,7 +22,7 @@
 
 description = "Quarkus extension for the OpenDC experiment runner"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `java-library-conventions`
 }

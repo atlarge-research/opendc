@@ -40,5 +40,5 @@ public data class FunctionSample(
     val provisionedCpu: Int,
     val provisionedMem: Int,
     val cpuUsage: Double,
-    val memUsage: Double
+    val memUsage: Double,
 )

@@ -32,5 +32,8 @@ public interface ServerWatcher {
      * @param server The server whose state has changed.
      * @param newState The new state of the server.
      */
-    public fun onStateChanged(server: Server, newState: ServerState) {}
+    public fun onStateChanged(
+        server: Server,
+        newState: ServerState,
+    ) {}
 }

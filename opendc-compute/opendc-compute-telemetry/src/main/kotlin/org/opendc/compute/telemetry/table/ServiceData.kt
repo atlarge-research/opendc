@@ -36,7 +36,7 @@ public data class ServiceData(
     val serversActive: Int,
     val attemptsSuccess: Int,
     val attemptsFailure: Int,
-    val attemptsError: Int
+    val attemptsError: Int,
 )
 
 /**
@@ -52,6 +52,6 @@ public fun ServiceTableReader.toServiceData(): ServiceData {
         serversActive,
         attemptsSuccess,
         attemptsFailure,
-        attemptsError
+        attemptsError,
     )
 }

@@ -110,7 +110,10 @@ public abstract class TrainableModel(vararg layers: Layer) : AutoCloseable {
      * @param [epochs] Number of epochs to train the model. An epoch is an iteration over the entire x and y data provided.
      * @param [batchSize] Number of samples per gradient update.
      */
-    public suspend fun fit(epochs: Int = 5, batchSize: Int = 32) {
+    public suspend fun fit(
+        epochs: Int = 5,
+        batchSize: Int = 32,
+    ) {
         check(isCompiled) { "Model not yet compiled." }
 
         val forwardFlops = forward()

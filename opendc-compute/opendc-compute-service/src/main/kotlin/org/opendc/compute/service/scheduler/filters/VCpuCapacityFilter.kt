@@ -30,7 +30,10 @@ import org.opendc.compute.service.HostView
  * capacity on the host.
  */
 public class VCpuCapacityFilter : HostFilter {
-    override fun test(host: HostView, server: Server): Boolean {
+    override fun test(
+        host: HostView,
+        server: Server,
+    ): Boolean {
         val requiredCapacity = server.flavor.meta["cpu-capacity"] as? Double
         val hostModel = host.host.model
         val availableCapacity = hostModel.cpuCapacity / hostModel.cpuCount

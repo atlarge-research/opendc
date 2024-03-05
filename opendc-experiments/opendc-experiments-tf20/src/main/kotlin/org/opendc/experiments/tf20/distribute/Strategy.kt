@@ -29,5 +29,9 @@ public interface Strategy {
     /**
      * Converge the specified batch using the given strategy.
      */
-    public suspend fun run(forward: Double, backward: Double, batchSize: Int)
+    public suspend fun run(
+        forward: Double,
+        backward: Double,
+        batchSize: Int,
+    )
 }

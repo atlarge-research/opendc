@@ -114,7 +114,7 @@ internal class CapelinCommand : CliktCommand(name = "capelin") {
             "hor-ver" to { HorVerPortfolio() },
             "more-hpc" to { MoreHpcPortfolio() },
             "more-velocity" to { MoreVelocityPortfolio() },
-            "op-phen" to { OperationalPhenomenaPortfolio() }
+            "op-phen" to { OperationalPhenomenaPortfolio() },
         )
 
     /**
@@ -140,12 +140,17 @@ internal class CapelinCommand : CliktCommand(name = "capelin") {
     /**
      * Run a single scenario.
      */
-    private fun runScenario(runner: CapelinRunner, pool: ForkJoinPool, scenario: Scenario) {
-        val pb = ProgressBarBuilder()
-            .setInitialMax(repeats.toLong())
-            .setStyle(ProgressBarStyle.ASCII)
-            .setTaskName("Simulating...")
-            .build()
+    private fun runScenario(
+        runner: CapelinRunner,
+        pool: ForkJoinPool,
+        scenario: Scenario,
+    ) {
+        val pb =
+            ProgressBarBuilder()
+                .setInitialMax(repeats.toLong())
+                .setStyle(ProgressBarStyle.ASCII)
+                .setTaskName("Simulating...")
+                .build()
 
         pool.submit {
             LongStream.range(0, repeats.toLong())

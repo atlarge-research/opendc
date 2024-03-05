@@ -59,7 +59,7 @@ internal class TraceTableModify(
     operation: Operation,
     updateColumnList: List<String>?,
     sourceExpressionList: List<RexNode>?,
-    flattened: Boolean
+    flattened: Boolean,
 ) : TableModify(cluster, traitSet, table, schema, input, operation, updateColumnList, sourceExpressionList, flattened),
     EnumerableRel {
     init {
@@ -67,7 +67,10 @@ internal class TraceTableModify(
         table.unwrap(ModifiableTable::class.java) ?: throw AssertionError() // TODO: user error in validator
     }
 
-    override fun copy(traitSet: RelTraitSet, inputs: List<RelNode>?): RelNode {
+    override fun copy(
+        traitSet: RelTraitSet,
+        inputs: List<RelNode>?,
+    ): RelNode {
         return TraceTableModify(
             cluster,
             traitSet,
@@ -77,40 +80,48 @@ internal class TraceTableModify(
             operation,
             updateColumnList,
             sourceExpressionList,
-            isFlattened
+            isFlattened,
         )
     }
 
-    override fun computeSelfCost(planner: RelOptPlanner, mq: RelMetadataQuery?): RelOptCost {
+    override fun computeSelfCost(
+        planner: RelOptPlanner,
+        mq: RelMetadataQuery?,
+    ): RelOptCost {
         // Prefer this plan compared to the standard EnumerableTableModify.
         return super.computeSelfCost(planner, mq)!!.multiplyBy(.1)
     }
 
-    override fun implement(implementor: EnumerableRelImplementor, pref: Prefer): EnumerableRel.Result {
+    override fun implement(
+        implementor: EnumerableRelImplementor,
+        pref: Prefer,
+    ): EnumerableRel.Result {
         val builder = BlockBuilder()
         val result = implementor.visitChild(this, 0, getInput() as EnumerableRel, pref)
         val childExp = builder.append("child", result.block)
-        val convertedChildExpr = if (getInput().rowType != rowType) {
-            val typeFactory = cluster.typeFactory as JavaTypeFactory
-            val format = EnumerableTableScan.deduceFormat(table)
-            val physType = PhysTypeImpl.of(typeFactory, table.rowType, format)
-            val childPhysType = result.physType
-            val o = Expressions.parameter(childPhysType.javaRowType, "o")
-            val expressionList = List(childPhysType.rowType.fieldCount) { i ->
-                childPhysType.fieldReference(o, i, physType.getJavaFieldType(i))
-            }
+        val convertedChildExpr =
+            if (getInput().rowType != rowType) {
+                val typeFactory = cluster.typeFactory as JavaTypeFactory
+                val format = EnumerableTableScan.deduceFormat(table)
+                val physType = PhysTypeImpl.of(typeFactory, table.rowType, format)
+                val childPhysType = result.physType
+                val o = Expressions.parameter(childPhysType.javaRowType, "o")
+                val expressionList =
+                    List(childPhysType.rowType.fieldCount) { i ->
+                        childPhysType.fieldReference(o, i, physType.getJavaFieldType(i))
+                    }
 
-            builder.append(
-                "convertedChild",
-                Expressions.call(
-                    childExp,
-                    BuiltInMethod.SELECT.method,
-                    Expressions.lambda<org.apache.calcite.linq4j.function.Function<*>>(physType.record(expressionList), o)
+                builder.append(
+                    "convertedChild",
+                    Expressions.call(
+                        childExp,
+                        BuiltInMethod.SELECT.method,
+                        Expressions.lambda<org.apache.calcite.linq4j.function.Function<*>>(physType.record(expressionList), o),
+                    ),
                 )
-            )
-        } else {
-            childExp
-        }
+            } else {
+                childExp
+            }
 
         if (!isInsert) {
             throw UnsupportedOperationException("Deletion and update not supported")
@@ -126,10 +137,10 @@ internal class TraceTableModify(
                         Long::class.java,
                         expression,
                         INSERT_METHOD,
-                        convertedChildExpr
-                    )
-                )
-            )
+                        convertedChildExpr,
+                    ),
+                ),
+            ),
         )
 
         val rowFormat = if (pref === Prefer.ARRAY) JavaRowFormat.ARRAY else JavaRowFormat.SCALAR

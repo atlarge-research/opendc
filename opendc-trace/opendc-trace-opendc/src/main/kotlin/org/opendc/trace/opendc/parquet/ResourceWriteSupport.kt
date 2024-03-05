@@ -53,7 +53,10 @@ internal class ResourceWriteSupport : WriteSupport<Resource>() {
         write(recordConsumer, record)
     }
 
-    private fun write(consumer: RecordConsumer, record: Resource) {
+    private fun write(
+        consumer: RecordConsumer,
+        record: Resource,
+    ) {
         consumer.startMessage()
 
         consumer.startField("id", 0)
@@ -88,30 +91,31 @@ internal class ResourceWriteSupport : WriteSupport<Resource>() {
          * Parquet schema for the "resources" table in the trace.
          */
         @JvmStatic
-        val WRITE_SCHEMA: MessageType = Types.buildMessage()
-            .addFields(
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("id"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("start_time"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                    .named("stop_time"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT32)
-                    .named("cpu_count"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                    .named("cpu_capacity"),
-                Types
-                    .required(PrimitiveType.PrimitiveTypeName.INT64)
-                    .named("mem_capacity")
-            )
-            .named("resource")
+        val WRITE_SCHEMA: MessageType =
+            Types.buildMessage()
+                .addFields(
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.BINARY)
+                        .`as`(LogicalTypeAnnotation.stringType())
+                        .named("id"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                        .named("start_time"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                        .named("stop_time"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("cpu_count"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("cpu_capacity"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("mem_capacity"),
+                )
+                .named("resource")
     }
 }

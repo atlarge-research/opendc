@@ -35,7 +35,10 @@ import kotlin.coroutines.resumeWithException
  * @return A [SimMachineContext] that represents the execution context for the workload.
  * @throws IllegalStateException if a workload is already active on the machine or if the machine is closed.
  */
-public suspend fun SimMachine.runWorkload(workload: SimWorkload, meta: Map<String, Any> = emptyMap()) {
+public suspend fun SimMachine.runWorkload(
+    workload: SimWorkload,
+    meta: Map<String, Any> = emptyMap(),
+) {
     return suspendCancellableCoroutine { cont ->
         cont.invokeOnCancellation { this@runWorkload.cancel() }
 

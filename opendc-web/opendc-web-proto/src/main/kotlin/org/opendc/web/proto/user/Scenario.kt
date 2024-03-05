@@ -22,10 +22,10 @@
 
 package org.opendc.web.proto.user
 
+import jakarta.validation.constraints.NotBlank
 import org.eclipse.microprofile.openapi.annotations.media.Schema
 import org.opendc.web.proto.OperationalPhenomena
 import org.opendc.web.proto.Workload
-import javax.validation.constraints.NotBlank
 
 /**
  * A single scenario to be explored by the simulator.
@@ -40,7 +40,7 @@ public data class Scenario(
     val topology: Topology.Summary,
     val phenomena: OperationalPhenomena,
     val schedulerName: String,
-    val jobs: List<Job>
+    val jobs: List<Job>,
 ) {
     /**
      * Create a new scenario.
@@ -58,7 +58,7 @@ public data class Scenario(
         val workload: Workload.Spec,
         val topology: Long,
         val phenomena: OperationalPhenomena,
-        val schedulerName: String
+        val schedulerName: String,
     )
 
     /**
@@ -81,6 +81,6 @@ public data class Scenario(
         val topology: Topology.Summary,
         val phenomena: OperationalPhenomena,
         val schedulerName: String,
-        val jobs: List<Job>
+        val jobs: List<Job>,
     )
 }

@@ -63,7 +63,11 @@ public class NetworkController(dispatcher: Dispatcher) : AutoCloseable {
     /**
      * Add a connection between two links.
      */
-    public fun addConnection(node1: NetworkNode, node2: NetworkNode, bandwidth: Long) {
+    public fun addConnection(
+        node1: NetworkNode,
+        node2: NetworkNode,
+        bandwidth: Long,
+    ) {
         bandwidthMatrix[Pair(node1, node2)] = bandwidth
     }
 

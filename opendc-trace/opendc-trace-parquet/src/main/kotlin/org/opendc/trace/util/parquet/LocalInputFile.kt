@@ -47,61 +47,66 @@ public class LocalInputFile(private val path: Path) : InputFile {
 
     override fun getLength(): Long = channel.size()
 
-    override fun newStream(): SeekableInputStream = object : SeekableInputStream() {
-        override fun read(buf: ByteBuffer): Int {
-            return channel.read(buf)
-        }
-
-        override fun read(): Int {
-            val single = ByteBuffer.allocate(1)
-            var read: Int
-
-            // ReadableByteChannel#read might read zero bytes so continue until we read at least one byte
-            do {
-                read = channel.read(single)
-            } while (read == 0)
-
-            return if (read == -1) {
-                read
-            } else {
-                single.get(0).toInt() and 0xff
+    override fun newStream(): SeekableInputStream =
+        object : SeekableInputStream() {
+            override fun read(buf: ByteBuffer): Int {
+                return channel.read(buf)
             }
-        }
 
-        override fun getPos(): Long {
-            return channel.position()
-        }
+            override fun read(): Int {
+                val single = ByteBuffer.allocate(1)
+                var read: Int
 
-        override fun seek(newPos: Long) {
-            channel.position(newPos)
-        }
+                // ReadableByteChannel#read might read zero bytes so continue until we read at least one byte
+                do {
+                    read = channel.read(single)
+                } while (read == 0)
 
-        override fun readFully(bytes: ByteArray) {
-            readFully(ByteBuffer.wrap(bytes))
-        }
-
-        override fun readFully(bytes: ByteArray, start: Int, len: Int) {
-            readFully(ByteBuffer.wrap(bytes, start, len))
-        }
-
-        override fun readFully(buf: ByteBuffer) {
-            var remainder = buf.remaining()
-            while (remainder > 0) {
-                val read = channel.read(buf)
-                remainder -= read
-
-                if (read == -1 && remainder > 0) {
-                    throw EOFException()
+                return if (read == -1) {
+                    read
+                } else {
+                    single.get(0).toInt() and 0xff
                 }
             }
-        }
 
-        override fun close() {
-            channel.close()
-        }
+            override fun getPos(): Long {
+                return channel.position()
+            }
 
-        override fun toString(): String = "NioSeekableInputStream"
-    }
+            override fun seek(newPos: Long) {
+                channel.position(newPos)
+            }
+
+            override fun readFully(bytes: ByteArray) {
+                readFully(ByteBuffer.wrap(bytes))
+            }
+
+            override fun readFully(
+                bytes: ByteArray,
+                start: Int,
+                len: Int,
+            ) {
+                readFully(ByteBuffer.wrap(bytes, start, len))
+            }
+
+            override fun readFully(buf: ByteBuffer) {
+                var remainder = buf.remaining()
+                while (remainder > 0) {
+                    val read = channel.read(buf)
+                    remainder -= read
+
+                    if (read == -1 && remainder > 0) {
+                        throw EOFException()
+                    }
+                }
+            }
+
+            override fun close() {
+                channel.close()
+            }
+
+            override fun toString(): String = "NioSeekableInputStream"
+        }
 
     override fun toString(): String = "LocalInputFile[path=$path]"
 }

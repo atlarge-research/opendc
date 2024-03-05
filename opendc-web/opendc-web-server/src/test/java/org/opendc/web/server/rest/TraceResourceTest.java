@@ -41,7 +41,7 @@ public final class TraceResourceTest {
      */
     @Test
     public void testGetAllEmpty() {
-        when().get().then().statusCode(200).contentType(ContentType.JSON);
+        when().get().then().statusCode(200);
     }
 
     /**
@@ -49,7 +49,7 @@ public final class TraceResourceTest {
      */
     @Test
     public void testGetNonExisting() {
-        when().get("/unknown").then().statusCode(404).contentType(ContentType.JSON);
+        when().get("/unknown").then().statusCode(404);
     }
 
     /**

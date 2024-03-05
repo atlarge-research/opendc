@@ -38,5 +38,5 @@ public data class SchedulerStats(
     val workflowsFinished: Int,
     val tasksSubmitted: Int,
     val tasksRunning: Int,
-    val tasksFinished: Int
+    val tasksFinished: Int,
 )

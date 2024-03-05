@@ -25,30 +25,29 @@ package org.opendc.web.server.model;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapsId;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import org.hibernate.annotations.Type;
 import org.opendc.web.proto.user.ProjectRole;
 
 /**
  * An authorization for some user to participate in a project.
  */
 @Entity
-@Table(name = "project_authorizations")
+@Table
 @NamedQueries({
     @NamedQuery(
             name = "ProjectAuthorization.findByUser",
@@ -56,7 +55,7 @@ import org.opendc.web.proto.user.ProjectRole;
                     """
             SELECT a
             FROM ProjectAuthorization a
-            WHERE a.key.userId = :userId
+            WHERE a.key.userName = :userName
         """),
 })
 public class ProjectAuthorization extends PanacheEntityBase {
@@ -82,16 +81,15 @@ public class ProjectAuthorization extends PanacheEntityBase {
     /**
      * The role of the user in the project.
      */
-    @Type(type = "io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType")
-    @Column(nullable = false, columnDefinition = "enum")
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     public ProjectRole role;
 
     /**
      * Construct a {@link ProjectAuthorization} object.
      */
-    public ProjectAuthorization(Project project, String userId, ProjectRole role) {
-        this.key = new ProjectAuthorization.Key(project.id, userId);
+    public ProjectAuthorization(Project project, String userName, ProjectRole role) {
+        this.key = new ProjectAuthorization.Key(project.id, userName);
         this.project = project;
         this.role = role;
     }
@@ -102,25 +100,25 @@ public class ProjectAuthorization extends PanacheEntityBase {
     protected ProjectAuthorization() {}
 
     /**
-     * List all projects for the user with the specified <code>userId</code>.
+     * List all projects for the user with the specified <code>userName</code>.
      *
-     * @param userId The identifier of the user that is requesting the list of projects.
+     * @param userName The identifier of the user that is requesting the list of projects.
      * @return A query returning projects that the user has received authorization for.
      */
-    public static PanacheQuery<ProjectAuthorization> findByUser(String userId) {
-        return find("#ProjectAuthorization.findByUser", Parameters.with("userId", userId));
+    public static PanacheQuery<ProjectAuthorization> findByUser(String userName) {
+        return find("#ProjectAuthorization.findByUser", Parameters.with("userName", userName));
     }
 
     /**
-     * Find the project with <code>id</code> for the user with the specified <code>userId</code>.
+     * Find the project with <code>id</code> for the user with the specified <code>userName</code>.
      *
-     * @param userId The identifier of the user that is requesting the list of projects.
-     * @param id The unique identifier of the project.
+     * @param userName The identifier of the user that is requesting the list of projects.
+     * @param project_id The unique identifier of the project.
      * @return The project with the specified identifier or <code>null</code> if it does not exist or is not accessible
      *         to the user with the specified identifier.
      */
-    public static ProjectAuthorization findByUser(String userId, long id) {
-        return findById(new ProjectAuthorization.Key(id, userId));
+    public static ProjectAuthorization findByUser(String userName, long project_id) {
+        return findById(new ProjectAuthorization.Key(project_id, userName));
     }
 
     /**
@@ -148,12 +146,12 @@ public class ProjectAuthorization extends PanacheEntityBase {
         @Column(name = "project_id", nullable = false)
         public long projectId;
 
-        @Column(name = "user_id", nullable = false)
-        public String userId;
+        @Column(name = "user_name", nullable = false)
+        public String userName;
 
-        public Key(long projectId, String userId) {
+        public Key(long projectId, String userName) {
             this.projectId = projectId;
-            this.userId = userId;
+            this.userName = userName;
         }
 
         protected Key() {}
@@ -163,12 +161,12 @@ public class ProjectAuthorization extends PanacheEntityBase {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Key key = (Key) o;
-            return projectId == key.projectId && userId.equals(key.userId);
+            return projectId == key.projectId && userName.equals(key.userName);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(projectId, userId);
+            return Objects.hash(projectId, userName);
         }
     }
 }

@@ -44,5 +44,5 @@ public data class FunctionStats(
     val activeInstances: Int,
     val idleInstances: Int,
     val waitTime: DescriptiveStatistics,
-    val activeTime: DescriptiveStatistics
+    val activeTime: DescriptiveStatistics,
 )

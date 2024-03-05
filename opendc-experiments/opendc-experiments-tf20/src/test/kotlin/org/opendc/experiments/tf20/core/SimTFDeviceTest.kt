@@ -39,36 +39,38 @@ import java.util.UUID
  */
 internal class SimTFDeviceTest {
     @Test
-    fun testSmoke() = runSimulation {
-        val puNode = ProcessingNode("NVIDIA", "Tesla V100", "unknown", 1)
-        val pu = ProcessingUnit(puNode, 0, 960 * 1230.0)
-        val memory = MemoryUnit("NVIDIA", "Tesla V100", 877.0, 32_000)
+    fun testSmoke() =
+        runSimulation {
+            val puNode = ProcessingNode("NVIDIA", "Tesla V100", "unknown", 1)
+            val pu = ProcessingUnit(puNode, 0, 960 * 1230.0)
+            val memory = MemoryUnit("NVIDIA", "Tesla V100", 877.0, 32_000)
 
-        val device = SimTFDevice(
-            UUID.randomUUID(),
-            isGpu = true,
-            dispatcher,
-            pu,
-            memory,
-            CpuPowerModels.linear(250.0, 100.0)
-        )
+            val device =
+                SimTFDevice(
+                    UUID.randomUUID(),
+                    isGpu = true,
+                    dispatcher,
+                    pu,
+                    memory,
+                    CpuPowerModels.linear(250.0, 100.0),
+                )
 
-        // Load 1 GiB into GPU memory
-        device.load(1000)
-        assertEquals(1140, timeSource.millis())
+            // Load 1 GiB into GPU memory
+            device.load(1000)
+            assertEquals(1140, timeSource.millis())
 
-        coroutineScope {
-            launch { device.compute(1e6) }
-            launch { device.compute(2e6) }
+            coroutineScope {
+                launch { device.compute(1e6) }
+                launch { device.compute(2e6) }
+            }
+
+            device.close()
+
+            val stats = device.getDeviceStats()
+
+            assertAll(
+                { assertEquals(3681, timeSource.millis()) },
+                { assertEquals(749.25, stats.energyUsage) },
+            )
         }
-
-        device.close()
-
-        val stats = device.getDeviceStats()
-
-        assertAll(
-            { assertEquals(3681, timeSource.millis()) },
-            { assertEquals(749.25, stats.energyUsage) }
-        )
-    }
 }

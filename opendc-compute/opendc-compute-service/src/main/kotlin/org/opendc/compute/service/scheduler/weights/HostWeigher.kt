@@ -38,12 +38,18 @@ public interface HostWeigher {
     /**
      * Obtain the weight of the specified [host] when scheduling the specified [server].
      */
-    public fun getWeight(host: HostView, server: Server): Double
+    public fun getWeight(
+        host: HostView,
+        server: Server,
+    ): Double
 
     /**
      * Obtain the weights for [hosts] when scheduling the specified [server].
      */
-    public fun getWeights(hosts: List<HostView>, server: Server): Result {
+    public fun getWeights(
+        hosts: List<HostView>,
+        server: Server,
+    ): Result {
         val weights = DoubleArray(hosts.size)
         var min = Double.MAX_VALUE
         var max = Double.MIN_VALUE
@@ -70,6 +76,6 @@ public interface HostWeigher {
         public val weights: DoubleArray,
         public val min: Double,
         public val max: Double,
-        public val multiplier: Double
+        public val multiplier: Double,
     )
 }

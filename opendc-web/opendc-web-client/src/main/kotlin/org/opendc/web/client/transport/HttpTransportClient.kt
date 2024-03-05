@@ -43,23 +43,28 @@ import java.nio.file.Paths
 public class HttpTransportClient(
     private val baseUrl: URI,
     private val auth: AuthController?,
-    private val client: HttpClient = HttpClient.newHttpClient()
+    private val client: HttpClient = HttpClient.newHttpClient(),
 ) : TransportClient {
     /**
      * The Jackson object mapper to convert messages from/to JSON.
      */
-    private val mapper = jacksonObjectMapper()
-        .registerModule(JavaTimeModule())
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    private val mapper =
+        jacksonObjectMapper()
+            .registerModule(JavaTimeModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     /**
      * Obtain a resource at [path] of [targetType].
      */
-    override fun <T> get(path: String, targetType: TypeReference<T>): T? {
-        val request = HttpRequest.newBuilder(buildUri(path))
-            .GET()
-            .also { auth?.injectToken(it) }
-            .build()
+    override fun <T> get(
+        path: String,
+        targetType: TypeReference<T>,
+    ): T? {
+        val request =
+            HttpRequest.newBuilder(buildUri(path))
+                .GET()
+                .also { auth?.injectToken(it) }
+                .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
         return when (val code = response.statusCode()) {
@@ -81,12 +86,17 @@ public class HttpTransportClient(
     /**
      * Update a resource at [path] of [targetType].
      */
-    override fun <B, T> post(path: String, body: B, targetType: TypeReference<T>): T? {
-        val request = HttpRequest.newBuilder(buildUri(path))
-            .POST(HttpRequest.BodyPublishers.ofByteArray(mapper.writeValueAsBytes(body)))
-            .header("Content-Type", "application/json")
-            .also { auth?.injectToken(it) }
-            .build()
+    override fun <B, T> post(
+        path: String,
+        body: B,
+        targetType: TypeReference<T>,
+    ): T? {
+        val request =
+            HttpRequest.newBuilder(buildUri(path))
+                .POST(HttpRequest.BodyPublishers.ofByteArray(mapper.writeValueAsBytes(body)))
+                .header("Content-Type", "application/json")
+                .also { auth?.injectToken(it) }
+                .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
         return when (val code = response.statusCode()) {
@@ -108,12 +118,17 @@ public class HttpTransportClient(
     /**
      * Replace a resource at [path] of [targetType].
      */
-    override fun <B, T> put(path: String, body: B, targetType: TypeReference<T>): T? {
-        val request = HttpRequest.newBuilder(buildUri(path))
-            .PUT(HttpRequest.BodyPublishers.ofByteArray(mapper.writeValueAsBytes(body)))
-            .header("Content-Type", "application/json")
-            .also { auth?.injectToken(it) }
-            .build()
+    override fun <B, T> put(
+        path: String,
+        body: B,
+        targetType: TypeReference<T>,
+    ): T? {
+        val request =
+            HttpRequest.newBuilder(buildUri(path))
+                .PUT(HttpRequest.BodyPublishers.ofByteArray(mapper.writeValueAsBytes(body)))
+                .header("Content-Type", "application/json")
+                .also { auth?.injectToken(it) }
+                .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
         return when (val code = response.statusCode()) {
@@ -135,11 +150,15 @@ public class HttpTransportClient(
     /**
      * Delete a resource at [path] of [targetType].
      */
-    override fun <T> delete(path: String, targetType: TypeReference<T>): T? {
-        val request = HttpRequest.newBuilder(buildUri(path))
-            .DELETE()
-            .also { auth?.injectToken(it) }
-            .build()
+    override fun <T> delete(
+        path: String,
+        targetType: TypeReference<T>,
+    ): T? {
+        val request =
+            HttpRequest.newBuilder(buildUri(path))
+                .DELETE()
+                .also { auth?.injectToken(it) }
+                .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
         return when (val code = response.statusCode()) {

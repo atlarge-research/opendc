@@ -51,8 +51,7 @@ public class LocalOutputFile(private val path: Path) : OutputFile {
 
     override fun supportsBlockSize(): Boolean = false
 
-    override fun defaultBlockSize(): Long =
-        throw UnsupportedOperationException("Local filesystem does not have default block size")
+    override fun defaultBlockSize(): Long = throw UnsupportedOperationException("Local filesystem does not have default block size")
 
     override fun getPath(): String = path.toString()
 
@@ -77,7 +76,11 @@ public class LocalOutputFile(private val path: Path) : OutputFile {
             _pos += b.size
         }
 
-        override fun write(b: ByteArray, off: Int, len: Int) {
+        override fun write(
+            b: ByteArray,
+            off: Int,
+            len: Int,
+        ) {
             output.write(b, off, len)
             _pos += len
         }

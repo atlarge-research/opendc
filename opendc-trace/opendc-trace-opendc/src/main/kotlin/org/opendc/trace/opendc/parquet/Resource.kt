@@ -33,5 +33,5 @@ internal data class Resource(
     val stopTime: Instant,
     val cpuCount: Int,
     val cpuCapacity: Double,
-    val memCapacity: Double
+    val memCapacity: Double,
 )

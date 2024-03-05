@@ -38,5 +38,5 @@ internal data class Task(
     val groupId: Int,
     val userId: Int,
     val parents: Set<String>,
-    val children: Set<String>
+    val children: Set<String>,
 )

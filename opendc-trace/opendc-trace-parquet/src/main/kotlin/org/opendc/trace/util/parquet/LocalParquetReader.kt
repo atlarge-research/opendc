@@ -43,20 +43,21 @@ import kotlin.io.path.isDirectory
 public class LocalParquetReader<out T>(
     path: Path,
     private val readSupport: ReadSupport<T>,
-    private val strictTyping: Boolean = true
+    private val strictTyping: Boolean = true,
 ) : AutoCloseable {
     /**
      * The input files to process.
      */
-    private val filesIterator = if (path.isDirectory()) {
-        Files.list(path)
-            .filter { !it.isDirectory() }
-            .sorted()
-            .map { LocalInputFile(it) }
-            .iterator()
-    } else {
-        listOf(LocalInputFile(path)).iterator()
-    }
+    private val filesIterator =
+        if (path.isDirectory()) {
+            Files.list(path)
+                .filter { !it.isDirectory() }
+                .sorted()
+                .map { LocalInputFile(it) }
+                .iterator()
+        } else {
+            listOf(LocalInputFile(path)).iterator()
+        }
 
     /**
      * The Parquet reader to use.
@@ -104,11 +105,12 @@ public class LocalParquetReader<out T>(
         reader?.close()
 
         try {
-            this.reader = if (filesIterator.hasNext()) {
-                createReader(filesIterator.next())
-            } else {
-                null
-            }
+            this.reader =
+                if (filesIterator.hasNext()) {
+                    createReader(filesIterator.next())
+                } else {
+                    null
+                }
         } catch (e: Throwable) {
             this.reader = null
             throw e

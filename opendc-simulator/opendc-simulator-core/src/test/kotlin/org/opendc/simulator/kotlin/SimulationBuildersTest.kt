@@ -38,31 +38,33 @@ import org.junit.jupiter.api.assertThrows
  */
 class SimulationBuildersTest {
     @Test
-    fun testDelay() = runSimulation {
-        assertEquals(0, currentTime)
-        delay(100)
-        assertEquals(100, currentTime)
-    }
-
-    @Test
-    fun testController() = runSimulation {
-        var completed = false
-
-        launch {
-            delay(20)
-            completed = true
+    fun testDelay() =
+        runSimulation {
+            assertEquals(0, currentTime)
+            delay(100)
+            assertEquals(100, currentTime)
         }
 
-        advanceBy(10)
-        assertFalse(completed)
-        advanceBy(11)
-        assertTrue(completed)
+    @Test
+    fun testController() =
+        runSimulation {
+            var completed = false
 
-        completed = false
-        launch { completed = true }
-        runCurrent()
-        assertTrue(completed)
-    }
+            launch {
+                delay(20)
+                completed = true
+            }
+
+            advanceBy(10)
+            assertFalse(completed)
+            advanceBy(11)
+            assertTrue(completed)
+
+            completed = false
+            launch { completed = true }
+            runCurrent()
+            assertTrue(completed)
+        }
 
     @Test
     fun testFailOnActiveJobs() {

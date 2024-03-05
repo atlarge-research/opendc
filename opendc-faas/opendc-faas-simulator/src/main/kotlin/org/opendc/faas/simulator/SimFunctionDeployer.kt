@@ -58,14 +58,17 @@ public class SimFunctionDeployer(
     private val dispatcher: Dispatcher,
     private val model: MachineModel,
     private val delayInjector: DelayInjector,
-    private val mapper: SimFaaSWorkloadMapper = SimMetaFaaSWorkloadMapper()
+    private val mapper: SimFaaSWorkloadMapper = SimMetaFaaSWorkloadMapper(),
 ) : FunctionDeployer, AutoCloseable {
     /**
      * The [CoroutineScope] of this deployer.
      */
     private val scope = CoroutineScope(dispatcher.asCoroutineDispatcher() + Job())
 
-    override fun deploy(function: FunctionObject, listener: FunctionInstanceListener): Instance {
+    override fun deploy(
+        function: FunctionObject,
+        listener: FunctionInstanceListener,
+    ): Instance {
         val instance = Instance(function, listener)
         instance.start()
         return instance
@@ -84,10 +87,11 @@ public class SimFunctionDeployer(
         /**
          * The machine that will execute the workloads.
          */
-        public val machine: SimMachine = SimBareMetalMachine.create(
-            FlowEngine.create(dispatcher).newGraph(),
-            model
-        )
+        public val machine: SimMachine =
+            SimBareMetalMachine.create(
+                FlowEngine.create(dispatcher).newGraph(),
+                model,
+            )
 
         /**
          * The job associated with the lifecycle of the instance.
@@ -134,38 +138,39 @@ public class SimFunctionDeployer(
          */
         internal fun start() {
             check(state == FunctionInstanceState.Provisioning) { "Invalid state of function instance" }
-            job = scope.launch {
-                delay(delayInjector.getColdStartDelay(this@Instance))
+            job =
+                scope.launch {
+                    delay(delayInjector.getColdStartDelay(this@Instance))
 
-                launch {
-                    try {
-                        machine.runWorkload(workload)
-                    } finally {
-                        state = FunctionInstanceState.Deleted
-                    }
-                }
-
-                while (isActive) {
-                    if (queue.isEmpty()) {
-                        chan.receive()
-                    }
-
-                    state = FunctionInstanceState.Active
-                    while (queue.isNotEmpty()) {
-                        val request = queue.poll()
+                    launch {
                         try {
-                            workload.invoke()
-                            request.cont.resume(Unit)
-                        } catch (cause: CancellationException) {
-                            request.cont.resumeWithException(cause)
-                            throw cause
-                        } catch (cause: Throwable) {
-                            request.cont.resumeWithException(cause)
+                            machine.runWorkload(workload)
+                        } finally {
+                            state = FunctionInstanceState.Deleted
                         }
                     }
-                    state = FunctionInstanceState.Idle
+
+                    while (isActive) {
+                        if (queue.isEmpty()) {
+                            chan.receive()
+                        }
+
+                        state = FunctionInstanceState.Active
+                        while (queue.isNotEmpty()) {
+                            val request = queue.poll()
+                            try {
+                                workload.invoke()
+                                request.cont.resume(Unit)
+                            } catch (cause: CancellationException) {
+                                request.cont.resumeWithException(cause)
+                                throw cause
+                            } catch (cause: Throwable) {
+                                request.cont.resumeWithException(cause)
+                            }
+                        }
+                        state = FunctionInstanceState.Idle
+                    }
                 }
-            }
         }
 
         /**

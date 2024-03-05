@@ -42,9 +42,10 @@ public class ServerlessTraceReader {
     /**
      * The [CsvFactory] used to create the parser.
      */
-    private val factory = CsvFactory()
-        .enable(CsvParser.Feature.ALLOW_COMMENTS)
-        .enable(CsvParser.Feature.TRIM_SPACES)
+    private val factory =
+        CsvFactory()
+            .enable(CsvParser.Feature.ALLOW_COMMENTS)
+            .enable(CsvParser.Feature.TRIM_SPACES)
 
     /**
      * Parse the traces at the specified [path].
@@ -120,17 +121,18 @@ public class ServerlessTraceReader {
         /**
          * The [CsvSchema] that is used to parse the trace.
          */
-        val schema = CsvSchema.builder()
-            .addColumn("Timestamp [ms]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Invocations", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Avg Exec time per Invocation", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Provisioned CPU [Mhz]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Provisioned Memory [mb]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Avg cpu usage per Invocation [Mhz]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("Avg mem usage per Invocation [mb]", CsvSchema.ColumnType.NUMBER)
-            .addColumn("name", CsvSchema.ColumnType.STRING)
-            .setAllowComments(true)
-            .setUseHeader(true)
-            .build()
+        val schema =
+            CsvSchema.builder()
+                .addColumn("Timestamp [ms]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Invocations", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Avg Exec time per Invocation", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Provisioned CPU [Mhz]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Provisioned Memory [mb]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Avg cpu usage per Invocation [Mhz]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("Avg mem usage per Invocation [mb]", CsvSchema.ColumnType.NUMBER)
+                .addColumn("name", CsvSchema.ColumnType.STRING)
+                .setAllowComments(true)
+                .setUseHeader(true)
+                .build()
     }
 }

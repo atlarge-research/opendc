@@ -41,39 +41,40 @@ public class OpenIdAuthController(
     private val clientId: String,
     private val clientSecret: String,
     private val audience: String = "https://api.opendc.org/v2/",
-    private val client: HttpClient = HttpClient.newHttpClient()
+    private val client: HttpClient = HttpClient.newHttpClient(),
 ) : AuthController {
     /**
      * The Jackson object mapper to convert messages from/to JSON.
      */
-    private val mapper = jacksonObjectMapper()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    private val mapper =
+        jacksonObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     /**
      * The cached [OpenIdConfiguration].
      */
     private val openidConfig: OpenIdConfiguration
         get() {
-            var openidConfig = _openidConfig
+            var openidConfig = localOpenidConfig
             if (openidConfig == null) {
                 openidConfig = requestConfig()
-                _openidConfig = openidConfig
+                localOpenidConfig = openidConfig
             }
 
             return openidConfig
         }
-    private var _openidConfig: OpenIdConfiguration? = null
+    private var localOpenidConfig: OpenIdConfiguration? = null
 
     /**
      * The cached OAuth token.
      */
-    private var _token: OAuthTokenResponse? = null
+    private var localToken: OAuthTokenResponse? = null
 
     override fun injectToken(request: HttpRequest.Builder) {
-        var token = _token
+        var token = localToken
         if (token == null) {
             token = requestToken()
-            _token = token
+            localToken = token
         }
 
         request.header("Authorization", "Bearer ${token.accessToken}")
@@ -83,22 +84,23 @@ public class OpenIdAuthController(
      * Refresh the current access token.
      */
     override fun refreshToken() {
-        val refreshToken = _token?.refreshToken
+        val refreshToken = localToken?.refreshToken
         if (refreshToken == null) {
             requestToken()
             return
         }
 
-        _token = refreshToken(openidConfig, refreshToken)
+        localToken = refreshToken(openidConfig, refreshToken)
     }
 
     /**
      * Request the OpenID configuration from the chosen auth domain
      */
     private fun requestConfig(): OpenIdConfiguration {
-        val request = HttpRequest.newBuilder(URI("https://$domain/.well-known/openid-configuration"))
-            .GET()
-            .build()
+        val request =
+            HttpRequest.newBuilder(URI("https://$domain/.well-known/openid-configuration"))
+                .GET()
+                .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
         return mapper.readValue(response.body())
     }
@@ -108,10 +110,11 @@ public class OpenIdAuthController(
      */
     private fun requestToken(openidConfig: OpenIdConfiguration): OAuthTokenResponse {
         val body = OAuthTokenRequest.ClientCredentials(audience, clientId, clientSecret)
-        val request = HttpRequest.newBuilder(openidConfig.tokenEndpoint)
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofByteArray(mapper.writeValueAsBytes(body)))
-            .build()
+        val request =
+            HttpRequest.newBuilder(openidConfig.tokenEndpoint)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofByteArray(mapper.writeValueAsBytes(body)))
+                .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
         return mapper.readValue(response.body())
     }
@@ -119,12 +122,16 @@ public class OpenIdAuthController(
     /**
      * Helper method to refresh the auth token.
      */
-    private fun refreshToken(openidConfig: OpenIdConfiguration, refreshToken: String): OAuthTokenResponse {
+    private fun refreshToken(
+        openidConfig: OpenIdConfiguration,
+        refreshToken: String,
+    ): OAuthTokenResponse {
         val body = OAuthTokenRequest.RefreshToken(refreshToken, clientId, clientSecret)
-        val request = HttpRequest.newBuilder(openidConfig.tokenEndpoint)
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofByteArray(mapper.writeValueAsBytes(body)))
-            .build()
+        val request =
+            HttpRequest.newBuilder(openidConfig.tokenEndpoint)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofByteArray(mapper.writeValueAsBytes(body)))
+                .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
         return mapper.readValue(response.body())
     }
@@ -134,7 +141,7 @@ public class OpenIdAuthController(
      */
     private fun requestToken(): OAuthTokenResponse {
         val token = requestToken(openidConfig)
-        _token = token
+        localToken = token
         return token
     }
 }

@@ -143,7 +143,10 @@ public interface TableReader : AutoCloseable {
      * @throws IllegalArgumentException if the column index is not valid for this reader or this type.
      * @return The value of the column as `List` or `null` if the column is null.
      */
-    public fun <T> getList(index: Int, elementType: Class<T>): List<T>?
+    public fun <T> getList(
+        index: Int,
+        elementType: Class<T>,
+    ): List<T>?
 
     /**
      * Obtain the value of the column with the specified [index] as [Set].
@@ -153,7 +156,10 @@ public interface TableReader : AutoCloseable {
      * @throws IllegalArgumentException if the column index is not valid for this reader or this type.
      * @return The value of the column as `Set` or `null` if the column is null.
      */
-    public fun <T> getSet(index: Int, elementType: Class<T>): Set<T>?
+    public fun <T> getSet(
+        index: Int,
+        elementType: Class<T>,
+    ): Set<T>?
 
     /**
      * Obtain the value of the column with the specified [index] as [Set].
@@ -164,7 +170,11 @@ public interface TableReader : AutoCloseable {
      * @throws IllegalArgumentException if the column index is not valid for this reader or this type.
      * @return The value of the column as `Map` or `null` if the column is null.
      */
-    public fun <K, V> getMap(index: Int, keyType: Class<K>, valueType: Class<V>): Map<K, V>?
+    public fun <K, V> getMap(
+        index: Int,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>?
 
     /**
      * Determine whether a column named [name] has a `null` value for the current row.
@@ -264,7 +274,10 @@ public interface TableReader : AutoCloseable {
      * @throws IllegalArgumentException if the column index is not valid for this reader or this type.
      * @return The value of the column as `List` or `null` if the column is null.
      */
-    public fun <T> getList(name: String, elementType: Class<T>): List<T>? = getList(resolve(name), elementType)
+    public fun <T> getList(
+        name: String,
+        elementType: Class<T>,
+    ): List<T>? = getList(resolve(name), elementType)
 
     /**
      * Obtain the value of the column named [name] as [Set].
@@ -274,7 +287,10 @@ public interface TableReader : AutoCloseable {
      * @throws IllegalArgumentException if the column index is not valid for this reader or this type.
      * @return The value of the column as `Set` or `null` if the column is null.
      */
-    public fun <T> getSet(name: String, elementType: Class<T>): Set<T>? = getSet(resolve(name), elementType)
+    public fun <T> getSet(
+        name: String,
+        elementType: Class<T>,
+    ): Set<T>? = getSet(resolve(name), elementType)
 
     /**
      * Obtain the value of the column named [name] as [Set].
@@ -285,8 +301,11 @@ public interface TableReader : AutoCloseable {
      * @throws IllegalArgumentException if the column index is not valid for this reader or this type.
      * @return The value of the column as `Map` or `null` if the column is null.
      */
-    public fun <K, V> getMap(name: String, keyType: Class<K>, valueType: Class<V>): Map<K, V>? =
-        getMap(resolve(name), keyType, valueType)
+    public fun <K, V> getMap(
+        name: String,
+        keyType: Class<K>,
+        valueType: Class<V>,
+    ): Map<K, V>? = getMap(resolve(name), keyType, valueType)
 
     /**
      * Closes the reader so that no further iteration or data access can be made.

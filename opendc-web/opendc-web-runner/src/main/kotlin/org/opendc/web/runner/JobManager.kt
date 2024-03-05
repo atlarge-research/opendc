@@ -47,17 +47,27 @@ public interface JobManager {
      * @param runtime The total runtime of the job.
      * @return `true` if the job can continue, `false` if the job has been cancelled.
      */
-    public fun heartbeat(id: Long, runtime: Int): Boolean
+    public fun heartbeat(
+        id: Long,
+        runtime: Int,
+    ): Boolean
 
     /**
      * Mark the job as failed.
      */
-    public fun fail(id: Long, runtime: Int)
+    public fun fail(
+        id: Long,
+        runtime: Int,
+    )
 
     /**
      * Persist the specified results for the specified job.
      */
-    public fun finish(id: Long, runtime: Int, results: Map<String, Any>)
+    public fun finish(
+        id: Long,
+        runtime: Int,
+        results: Map<String, Any>,
+    )
 
     public companion object {
         /**

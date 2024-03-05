@@ -66,63 +66,64 @@ internal class WorkflowServiceTest {
      * A large integration test where we check whether all tasks in some trace are executed correctly.
      */
     @Test
-    fun testTrace() = runSimulation {
-        val computeService = "compute.opendc.org"
-        val workflowService = "workflow.opendc.org"
+    fun testTrace() =
+        runSimulation {
+            val computeService = "compute.opendc.org"
+            val workflowService = "workflow.opendc.org"
 
-        Provisioner(dispatcher, seed = 0L).use { provisioner ->
-            val scheduler: (ProvisioningContext) -> ComputeScheduler = {
-                FilterScheduler(
-                    filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
-                    weighers = listOf(VCpuWeigher(1.0, multiplier = 1.0))
+            Provisioner(dispatcher, seed = 0L).use { provisioner ->
+                val scheduler: (ProvisioningContext) -> ComputeScheduler = {
+                    FilterScheduler(
+                        filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
+                        weighers = listOf(VCpuWeigher(1.0, multiplier = 1.0)),
+                    )
+                }
+
+                provisioner.runSteps(
+                    // Configure the ComputeService that is responsible for mapping virtual machines onto physical hosts
+                    setupComputeService(computeService, scheduler, schedulingQuantum = Duration.ofSeconds(1)),
+                    setupHosts(computeService, List(4) { createHostSpec(it) }),
+                    // Configure the WorkflowService that is responsible for scheduling the workflow tasks onto machines
+                    setupWorkflowService(
+                        workflowService,
+                        computeService,
+                        WorkflowSchedulerSpec(
+                            schedulingQuantum = Duration.ofMillis(100),
+                            jobAdmissionPolicy = NullJobAdmissionPolicy,
+                            jobOrderPolicy = SubmissionTimeJobOrderPolicy(),
+                            taskEligibilityPolicy = NullTaskEligibilityPolicy,
+                            taskOrderPolicy = SubmissionTimeTaskOrderPolicy(),
+                        ),
+                    ),
+                )
+
+                val service = provisioner.registry.resolve(workflowService, WorkflowService::class.java)!!
+
+                val trace =
+                    Trace.open(
+                        Paths.get(checkNotNull(WorkflowServiceTest::class.java.getResource("/trace.gwf")).toURI()),
+                        format = "gwf",
+                    )
+                service.replay(timeSource, trace.toJobs())
+
+                val metrics = service.getSchedulerStats()
+
+                assertAll(
+                    { assertEquals(758, metrics.workflowsSubmitted, "No jobs submitted") },
+                    { assertEquals(0, metrics.workflowsRunning, "Not all submitted jobs started") },
+                    {
+                        assertEquals(
+                            metrics.workflowsSubmitted,
+                            metrics.workflowsFinished,
+                            "Not all started jobs finished",
+                        )
+                    },
+                    { assertEquals(0, metrics.tasksRunning, "Not all started tasks finished") },
+                    { assertEquals(metrics.tasksSubmitted, metrics.tasksFinished, "Not all started tasks finished") },
+                    { assertEquals(45975707L, timeSource.millis()) { "Total duration incorrect" } },
                 )
             }
-
-            provisioner.runSteps(
-                // Configure the ComputeService that is responsible for mapping virtual machines onto physical hosts
-                setupComputeService(computeService, scheduler, schedulingQuantum = Duration.ofSeconds(1)),
-                setupHosts(computeService, List(4) { createHostSpec(it) }),
-
-                // Configure the WorkflowService that is responsible for scheduling the workflow tasks onto machines
-                setupWorkflowService(
-                    workflowService,
-                    computeService,
-                    WorkflowSchedulerSpec(
-                        schedulingQuantum = Duration.ofMillis(100),
-                        jobAdmissionPolicy = NullJobAdmissionPolicy,
-                        jobOrderPolicy = SubmissionTimeJobOrderPolicy(),
-                        taskEligibilityPolicy = NullTaskEligibilityPolicy,
-                        taskOrderPolicy = SubmissionTimeTaskOrderPolicy()
-                    )
-                )
-            )
-
-            val service = provisioner.registry.resolve(workflowService, WorkflowService::class.java)!!
-
-            val trace = Trace.open(
-                Paths.get(checkNotNull(WorkflowServiceTest::class.java.getResource("/trace.gwf")).toURI()),
-                format = "gwf"
-            )
-            service.replay(timeSource, trace.toJobs())
-
-            val metrics = service.getSchedulerStats()
-
-            assertAll(
-                { assertEquals(758, metrics.workflowsSubmitted, "No jobs submitted") },
-                { assertEquals(0, metrics.workflowsRunning, "Not all submitted jobs started") },
-                {
-                    assertEquals(
-                        metrics.workflowsSubmitted,
-                        metrics.workflowsFinished,
-                        "Not all started jobs finished"
-                    )
-                },
-                { assertEquals(0, metrics.tasksRunning, "Not all started tasks finished") },
-                { assertEquals(metrics.tasksSubmitted, metrics.tasksFinished, "Not all started tasks finished") },
-                { assertEquals(45975707L, timeSource.millis()) { "Total duration incorrect" } }
-            )
         }
-    }
 
     /**
      * Construct a [HostSpec] for a simulated host.
@@ -141,7 +142,7 @@ internal class WorkflowServiceTest {
             emptyMap(),
             machineModel,
             SimPsuFactories.noop(),
-            FlowMultiplexerFactory.forwardingMultiplexer()
+            FlowMultiplexerFactory.forwardingMultiplexer(),
         )
     }
 }

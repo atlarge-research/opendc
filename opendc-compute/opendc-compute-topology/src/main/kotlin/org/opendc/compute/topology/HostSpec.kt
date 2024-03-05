@@ -44,5 +44,5 @@ public data class HostSpec(
     val meta: Map<String, Any>,
     val model: MachineModel,
     val psuFactory: SimPsuFactory = SimPsuFactories.noop(),
-    val multiplexerFactory: FlowMultiplexerFactory = FlowMultiplexerFactory.maxMinMultiplexer()
+    val multiplexerFactory: FlowMultiplexerFactory = FlowMultiplexerFactory.maxMinMultiplexer(),
 )

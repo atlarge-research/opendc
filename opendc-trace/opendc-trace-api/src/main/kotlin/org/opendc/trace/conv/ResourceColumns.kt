@@ -28,40 +28,40 @@ package org.opendc.trace.conv
  * Identifier of the resource.
  */
 @JvmField
-public val RESOURCE_ID: String = "id"
+public val resourceID: String = "id"
 
 /**
  * The cluster to which the resource belongs.
  */
 @JvmField
-public val RESOURCE_CLUSTER_ID: String = "cluster_id"
+public val resourceClusterID: String = "cluster_id"
 
 /**
  * Start time for the resource.
  */
 @JvmField
-public val RESOURCE_START_TIME: String = "start_time"
+public val resourceStartTime: String = "start_time"
 
 /**
  * End time for the resource.
  */
 @JvmField
-public val RESOURCE_STOP_TIME: String = "stop_time"
+public val resourceStopTime: String = "stop_time"
 
 /**
  * Number of CPUs for the resource.
  */
 @JvmField
-public val RESOURCE_CPU_COUNT: String = "cpu_count"
+public val resourceCpuCount: String = "cpu_count"
 
 /**
  * Total CPU capacity of the resource in MHz.
  */
 @JvmField
-public val RESOURCE_CPU_CAPACITY: String = "cpu_capacity"
+public val resourceCpuCapacity: String = "cpu_capacity"
 
 /**
  * Memory capacity for the resource in KB.
  */
 @JvmField
-public val RESOURCE_MEM_CAPACITY: String = "mem_capacity"
+public val resourceMemCapacity: String = "mem_capacity"

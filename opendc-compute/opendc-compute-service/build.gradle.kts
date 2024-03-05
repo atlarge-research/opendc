@@ -22,7 +22,7 @@
 
 description = "OpenDC Compute Service implementation"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }
@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.kotlin.logging)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
+    testImplementation(libs.log4j.slf4j)
     testRuntimeOnly(libs.log4j.core)
     testRuntimeOnly(libs.log4j.slf4j)
 }

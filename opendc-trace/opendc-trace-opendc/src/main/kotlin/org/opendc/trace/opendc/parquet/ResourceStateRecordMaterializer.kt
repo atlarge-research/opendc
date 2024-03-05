@@ -38,69 +38,77 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
     /**
      * State of current record being read.
      */
-    private var _id = ""
-    private var _timestamp = Instant.MIN
-    private var _duration = Duration.ZERO
-    private var _cpuCount = 0
-    private var _cpuUsage = 0.0
+    private var localId = ""
+    private var localTimestamp = Instant.MIN
+    private var localDuration = Duration.ZERO
+    private var localCpuCount = 0
+    private var localCpuUsage = 0.0
 
     /**
      * Root converter for the record.
      */
-    private val root = object : GroupConverter() {
-        /**
-         * The converters for the columns of the schema.
-         */
-        private val converters = schema.fields.map { type ->
-            when (type.name) {
-                "id" -> object : PrimitiveConverter() {
-                    override fun addBinary(value: Binary) {
-                        _id = value.toStringUsingUTF8()
+    private val root =
+        object : GroupConverter() {
+            /**
+             * The converters for the columns of the schema.
+             */
+            private val converters =
+                schema.fields.map { type ->
+                    when (type.name) {
+                        "id" ->
+                            object : PrimitiveConverter() {
+                                override fun addBinary(value: Binary) {
+                                    localId = value.toStringUsingUTF8()
+                                }
+                            }
+                        "timestamp", "time" ->
+                            object : PrimitiveConverter() {
+                                override fun addLong(value: Long) {
+                                    localTimestamp = Instant.ofEpochMilli(value)
+                                }
+                            }
+                        "duration" ->
+                            object : PrimitiveConverter() {
+                                override fun addLong(value: Long) {
+                                    localDuration = Duration.ofMillis(value)
+                                }
+                            }
+                        "cpu_count", "cores" ->
+                            object : PrimitiveConverter() {
+                                override fun addInt(value: Int) {
+                                    localCpuCount = value
+                                }
+                            }
+                        "cpu_usage", "cpuUsage" ->
+                            object : PrimitiveConverter() {
+                                override fun addDouble(value: Double) {
+                                    localCpuUsage = value
+                                }
+                            }
+                        "flops" ->
+                            object : PrimitiveConverter() {
+                                override fun addLong(value: Long) {
+                                    // Ignore to support v1 format
+                                }
+                            }
+                        else -> error("Unknown column $type")
                     }
                 }
-                "timestamp", "time" -> object : PrimitiveConverter() {
-                    override fun addLong(value: Long) {
-                        _timestamp = Instant.ofEpochMilli(value)
-                    }
-                }
-                "duration" -> object : PrimitiveConverter() {
-                    override fun addLong(value: Long) {
-                        _duration = Duration.ofMillis(value)
-                    }
-                }
-                "cpu_count", "cores" -> object : PrimitiveConverter() {
-                    override fun addInt(value: Int) {
-                        _cpuCount = value
-                    }
-                }
-                "cpu_usage", "cpuUsage" -> object : PrimitiveConverter() {
-                    override fun addDouble(value: Double) {
-                        _cpuUsage = value
-                    }
-                }
-                "flops" -> object : PrimitiveConverter() {
-                    override fun addLong(value: Long) {
-                        // Ignore to support v1 format
-                    }
-                }
-                else -> error("Unknown column $type")
+
+            override fun start() {
+                localId = ""
+                localTimestamp = Instant.MIN
+                localDuration = Duration.ZERO
+                localCpuCount = 0
+                localCpuUsage = 0.0
             }
+
+            override fun end() {}
+
+            override fun getConverter(fieldIndex: Int): Converter = converters[fieldIndex]
         }
 
-        override fun start() {
-            _id = ""
-            _timestamp = Instant.MIN
-            _duration = Duration.ZERO
-            _cpuCount = 0
-            _cpuUsage = 0.0
-        }
-
-        override fun end() {}
-
-        override fun getConverter(fieldIndex: Int): Converter = converters[fieldIndex]
-    }
-
-    override fun getCurrentRecord(): ResourceState = ResourceState(_id, _timestamp, _duration, _cpuCount, _cpuUsage)
+    override fun getCurrentRecord(): ResourceState = ResourceState(localId, localTimestamp, localDuration, localCpuCount, localCpuUsage)
 
     override fun getRootConverter(): GroupConverter = root
 }

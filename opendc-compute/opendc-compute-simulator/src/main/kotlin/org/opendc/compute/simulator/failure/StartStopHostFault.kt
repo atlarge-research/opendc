@@ -32,7 +32,10 @@ import kotlin.math.roundToLong
  * A type of [HostFault] where the hosts are stopped and recover after some random amount of time.
  */
 public class StartStopHostFault(private val duration: RealDistribution) : HostFault {
-    override suspend fun apply(clock: InstantSource, victims: List<SimHost>) {
+    override suspend fun apply(
+        clock: InstantSource,
+        victims: List<SimHost>,
+    ) {
         for (host in victims) {
             host.fail()
         }

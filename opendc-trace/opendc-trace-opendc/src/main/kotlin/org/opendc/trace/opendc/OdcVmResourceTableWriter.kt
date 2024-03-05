@@ -24,12 +24,12 @@ package org.opendc.trace.opendc
 
 import org.apache.parquet.hadoop.ParquetWriter
 import org.opendc.trace.TableWriter
-import org.opendc.trace.conv.RESOURCE_CPU_CAPACITY
-import org.opendc.trace.conv.RESOURCE_CPU_COUNT
-import org.opendc.trace.conv.RESOURCE_ID
-import org.opendc.trace.conv.RESOURCE_MEM_CAPACITY
-import org.opendc.trace.conv.RESOURCE_START_TIME
-import org.opendc.trace.conv.RESOURCE_STOP_TIME
+import org.opendc.trace.conv.resourceCpuCapacity
+import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceStartTime
+import org.opendc.trace.conv.resourceStopTime
 import org.opendc.trace.opendc.parquet.Resource
 import java.time.Duration
 import java.time.Instant
@@ -42,105 +42,141 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
     /**
      * The current state for the record that is being written.
      */
-    private var _isActive = false
-    private var _id: String = ""
-    private var _startTime: Instant = Instant.MIN
-    private var _stopTime: Instant = Instant.MIN
-    private var _cpuCount: Int = 0
-    private var _cpuCapacity: Double = Double.NaN
-    private var _memCapacity: Double = Double.NaN
+    private var localIsActive = false
+    private var localId: String = ""
+    private var localStartTime: Instant = Instant.MIN
+    private var localStopTime: Instant = Instant.MIN
+    private var localCpuCount: Int = 0
+    private var localCpuCapacity: Double = Double.NaN
+    private var localMemCapacity: Double = Double.NaN
 
     override fun startRow() {
-        _isActive = true
-        _id = ""
-        _startTime = Instant.MIN
-        _stopTime = Instant.MIN
-        _cpuCount = 0
-        _cpuCapacity = Double.NaN
-        _memCapacity = Double.NaN
+        localIsActive = true
+        localId = ""
+        localStartTime = Instant.MIN
+        localStopTime = Instant.MIN
+        localCpuCount = 0
+        localCpuCapacity = Double.NaN
+        localMemCapacity = Double.NaN
     }
 
     override fun endRow() {
-        check(_isActive) { "No active row" }
-        _isActive = false
-        writer.write(Resource(_id, _startTime, _stopTime, _cpuCount, _cpuCapacity, _memCapacity))
+        check(localIsActive) { "No active row" }
+        localIsActive = false
+        writer.write(Resource(localId, localStartTime, localStopTime, localCpuCount, localCpuCapacity, localMemCapacity))
     }
 
     override fun resolve(name: String): Int {
         return when (name) {
-            RESOURCE_ID -> COL_ID
-            RESOURCE_START_TIME -> COL_START_TIME
-            RESOURCE_STOP_TIME -> COL_STOP_TIME
-            RESOURCE_CPU_COUNT -> COL_CPU_COUNT
-            RESOURCE_CPU_CAPACITY -> COL_CPU_CAPACITY
-            RESOURCE_MEM_CAPACITY -> COL_MEM_CAPACITY
+            resourceID -> colID
+            resourceStartTime -> colStartTime
+            resourceStopTime -> colStopTime
+            resourceCpuCount -> colCpuCount
+            resourceCpuCapacity -> colCpuCapacity
+            resourceMemCapacity -> colMemCapacity
             else -> -1
         }
     }
 
-    override fun setBoolean(index: Int, value: Boolean) {
+    override fun setBoolean(
+        index: Int,
+        value: Boolean,
+    ) {
         throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
-    override fun setInt(index: Int, value: Int) {
-        check(_isActive) { "No active row" }
+    override fun setInt(
+        index: Int,
+        value: Int,
+    ) {
+        check(localIsActive) { "No active row" }
         when (index) {
-            COL_CPU_COUNT -> _cpuCount = value
+            colCpuCount -> localCpuCount = value
             else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
     }
 
-    override fun setLong(index: Int, value: Long) {
+    override fun setLong(
+        index: Int,
+        value: Long,
+    ) {
         throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
-    override fun setFloat(index: Int, value: Float) {
+    override fun setFloat(
+        index: Int,
+        value: Float,
+    ) {
         throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
-    override fun setDouble(index: Int, value: Double) {
-        check(_isActive) { "No active row" }
+    override fun setDouble(
+        index: Int,
+        value: Double,
+    ) {
+        check(localIsActive) { "No active row" }
         when (index) {
-            COL_CPU_CAPACITY -> _cpuCapacity = value
-            COL_MEM_CAPACITY -> _memCapacity = value
+            colCpuCapacity -> localCpuCapacity = value
+            colMemCapacity -> localMemCapacity = value
             else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
     }
 
-    override fun setString(index: Int, value: String) {
-        check(_isActive) { "No active row" }
+    override fun setString(
+        index: Int,
+        value: String,
+    ) {
+        check(localIsActive) { "No active row" }
         when (index) {
-            COL_ID -> _id = value
+            colID -> localId = value
             else -> throw IllegalArgumentException("Invalid column index $index")
         }
     }
 
-    override fun setUUID(index: Int, value: UUID) {
+    override fun setUUID(
+        index: Int,
+        value: UUID,
+    ) {
         throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
-    override fun setInstant(index: Int, value: Instant) {
-        check(_isActive) { "No active row" }
+    override fun setInstant(
+        index: Int,
+        value: Instant,
+    ) {
+        check(localIsActive) { "No active row" }
         when (index) {
-            COL_START_TIME -> _startTime = value
-            COL_STOP_TIME -> _stopTime = value
+            colStartTime -> localStartTime = value
+            colStopTime -> localStopTime = value
             else -> throw IllegalArgumentException("Invalid column index $index")
         }
     }
 
-    override fun setDuration(index: Int, value: Duration) {
+    override fun setDuration(
+        index: Int,
+        value: Duration,
+    ) {
         throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
-    override fun <T> setList(index: Int, value: List<T>) {
+    override fun <T> setList(
+        index: Int,
+        value: List<T>,
+    ) {
         throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
-    override fun <T> setSet(index: Int, value: Set<T>) {
+    override fun <T> setSet(
+        index: Int,
+        value: Set<T>,
+    ) {
         throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
-    override fun <K, V> setMap(index: Int, value: Map<K, V>) {
+    override fun <K, V> setMap(
+        index: Int,
+        value: Map<K, V>,
+    ) {
         throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
@@ -152,10 +188,10 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
         writer.close()
     }
 
-    private val COL_ID = 0
-    private val COL_START_TIME = 1
-    private val COL_STOP_TIME = 2
-    private val COL_CPU_COUNT = 3
-    private val COL_CPU_CAPACITY = 4
-    private val COL_MEM_CAPACITY = 5
+    private val colID = 0
+    private val colStartTime = 1
+    private val colStopTime = 2
+    private val colCpuCount = 3
+    private val colCpuCapacity = 4
+    private val colMemCapacity = 5
 }

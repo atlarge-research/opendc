@@ -47,17 +47,21 @@ public data class DurationJobOrderPolicy(val ascending: Boolean = true) : JobOrd
                 get() = results[this]!!
 
             override fun jobSubmitted(job: JobState) {
-                results[job.job] = job.job.toposort().map { task ->
-                    val estimable = task.metadata[WORKFLOW_TASK_DEADLINE] as? Long?
-                    estimable ?: Long.MAX_VALUE
-                }.sum()
+                results[job.job] =
+                    job.job.toposort().map { task ->
+                        val estimable = task.metadata[WORKFLOW_TASK_DEADLINE] as? Long?
+                        estimable ?: Long.MAX_VALUE
+                    }.sum()
             }
 
             override fun jobFinished(job: JobState) {
                 results.remove(job.job)
             }
 
-            override fun compare(o1: JobState, o2: JobState): Int {
+            override fun compare(
+                o1: JobState,
+                o2: JobState,
+            ): Int {
                 return compareValuesBy(o1, o2) { it.job.duration }.let { if (ascending) it else -it }
             }
         }

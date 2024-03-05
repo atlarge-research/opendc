@@ -33,5 +33,5 @@ public data class ServerInfo(
     val imageId: String,
     val imageName: String,
     val cpuCount: Int,
-    val memCapacity: Long
+    val memCapacity: Long,
 )
