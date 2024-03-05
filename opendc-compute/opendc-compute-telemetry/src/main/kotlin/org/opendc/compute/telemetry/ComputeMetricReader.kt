@@ -53,7 +53,7 @@ public class ComputeMetricReader(
     dispatcher: Dispatcher,
     private val service: ComputeService,
     private val monitor: ComputeMonitor,
-    private val exportInterval: Duration = Duration.ofMinutes(5)
+    private val exportInterval: Duration = Duration.ofMinutes(5),
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(dispatcher.asCoroutineDispatcher())
@@ -77,22 +77,23 @@ public class ComputeMetricReader(
     /**
      * The background job that is responsible for collecting the metrics every cycle.
      */
-    private val job = scope.launch {
-        val intervalMs = exportInterval.toMillis()
-        try {
-            while (isActive) {
-                delay(intervalMs)
+    private val job =
+        scope.launch {
+            val intervalMs = exportInterval.toMillis()
+            try {
+                while (isActive) {
+                    delay(intervalMs)
 
+                    loggState()
+                }
+            } finally {
                 loggState()
-            }
-        } finally {
-            loggState()
 
-            if (monitor is AutoCloseable) {
-                monitor.close()
+                if (monitor is AutoCloseable) {
+                    monitor.close()
+                }
             }
         }
-    }
 
     private fun loggState() {
         try {
@@ -127,7 +128,6 @@ public class ComputeMetricReader(
      * An aggregator for service metrics before they are reported.
      */
     private class ServiceTableReaderImpl(private val service: ComputeService) : ServiceTableReader {
-
         override fun copy(): ServiceTableReader {
             val newServiceTable = ServiceTableReaderImpl(service)
             newServiceTable.setValues(this)
@@ -402,16 +402,17 @@ public class ComputeMetricReader(
         /**
          * The static information about this server.
          */
-        override val server = ServerInfo(
-            server.uid.toString(),
-            server.name,
-            "vm",
-            "x86",
-            server.image.uid.toString(),
-            server.image.name,
-            server.flavor.coreCount,
-            server.flavor.memorySize
-        )
+        override val server =
+            ServerInfo(
+                server.uid.toString(),
+                server.name,
+                "vm",
+                "x86",
+                server.image.uid.toString(),
+                server.image.name,
+                server.flavor.coreCount,
+                server.flavor.memorySize,
+            )
 
         /**
          * The [HostInfo] of the host on which the server is hosted.

@@ -32,7 +32,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 public data class TopologyJSONSpec(
     val clusters: List<ClusterJSONSpec>,
-    val schemaVersion: Int = 1
+    val schemaVersion: Int = 1,
 )
 
 /**
@@ -47,7 +47,7 @@ public data class ClusterJSONSpec(
     val name: String = "Cluster",
     val count: Int = 1,
     val hosts: List<HostJSONSpec>,
-    val location: String = "NL"
+    val location: String = "NL",
 )
 
 /**
@@ -62,10 +62,9 @@ public data class ClusterJSONSpec(
 public data class HostJSONSpec(
     val name: String = "Host",
     val cpus: List<CPUJSONSpec>,
-
     val memory: MemoryJSONSpec,
     val powerModel: PowerModelJSONSpec = PowerModelJSONSpec("linear", 350.0, 200.0, 400.0),
-    val count: Int = 1
+    val count: Int = 1,
 )
 
 /**
@@ -82,10 +81,9 @@ public data class CPUJSONSpec(
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val arch: String = "unknown",
-
     val coreCount: Int,
     val coreSpeed: Double,
-    val count: Int = 1
+    val count: Int = 1,
 )
 
 /**
@@ -102,9 +100,8 @@ public data class MemoryJSONSpec(
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val arch: String = "unknown",
-
     val memorySpeed: Double = -1.0,
-    val memorySize: Long
+    val memorySize: Long,
 )
 
 @Serializable
@@ -112,5 +109,5 @@ public data class PowerModelJSONSpec(
     val modelType: String,
     val power: Double = 400.0,
     val maxPower: Double,
-    val idlePower: Double
+    val idlePower: Double,
 )

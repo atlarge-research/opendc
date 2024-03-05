@@ -68,7 +68,8 @@ class CapelinRunnerTest {
     }
 
     /**
-     * Smoke test without output. fixme: Fix failures and enable Test
+     * Smoke test without output.
+     * fixme: Fix failures and enable Test
      */
     fun testSmokeNoOutput() {
         val runner = CapelinRunner(envPath, tracePath, null)

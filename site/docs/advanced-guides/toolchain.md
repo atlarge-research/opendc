@@ -22,7 +22,7 @@ Follow the steps below to get it all set up!
 
 ## 1. Installing Java
 
-OpenDC requires a Java installation of version 17 or higher. Make sure to install
+OpenDC requires a Java installation of version 19 or higher. Make sure to install
 the [JDK](https://www.oracle.com/technetwork/java/javase/downloads/index.html), not only the JRE (the JDK also includes
 a JRE).
 

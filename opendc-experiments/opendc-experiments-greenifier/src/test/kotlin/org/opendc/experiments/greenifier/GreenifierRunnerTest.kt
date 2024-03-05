@@ -47,19 +47,20 @@ class GreenifierRunnerTest {
 
     /**
      * Smoke test with output.
+     * fixme: Fix failures and enable
      */
-//    @Test // fixme: Fix failures and enable
     fun testSmoke() {
         val outputPath = Files.createTempDirectory("output").toFile()
 
         try {
             val runner = GreenifierRunner(envPath, tracePath, outputPath)
-            val scenario = Scenario(
-                Topology("topology.json"),
-                Workload("bitbrains-small", trace("bitbrains-small")),
-                OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
-                "active-servers"
-            )
+            val scenario =
+                Scenario(
+                    Topology("topology.json"),
+                    Workload("bitbrains-small", trace("bitbrains-small")),
+                    OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
+                    "active-servers",
+                )
 
             assertDoesNotThrow { runner.runScenario(scenario, seed = 0L) }
         } finally {
@@ -69,16 +70,17 @@ class GreenifierRunnerTest {
 
     /**
      * Smoke test without output.
+     * fixme: Fix failures and enable
      */
-//    @Test // fixme: Fix failures and enable
     fun testSmokeNoOutput() {
         val runner = GreenifierRunner(envPath, tracePath, null)
-        val scenario = Scenario(
-            Topology("topology"),
-            Workload("bitbrains-small", trace("bitbrains-small")),
-            OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
-            "active-servers"
-        )
+        val scenario =
+            Scenario(
+                Topology("topology"),
+                Workload("bitbrains-small", trace("bitbrains-small")),
+                OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
+                "active-servers",
+            )
 
         assertDoesNotThrow { runner.runScenario(scenario, seed = 0L) }
     }

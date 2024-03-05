@@ -22,7 +22,12 @@
 
 package org.opendc.simulator.compute.power
 
-public fun getPowerModel(modelType: String, power: Double, maxPower: Double, idlePower: Double): CpuPowerModel {
+public fun getPowerModel(
+    modelType: String,
+    power: Double,
+    maxPower: Double,
+    idlePower: Double,
+): CpuPowerModel {
     return when (modelType) {
         "constant" -> CpuPowerModels.constant(power)
         "sqrt" -> CpuPowerModels.sqrt(maxPower, idlePower)

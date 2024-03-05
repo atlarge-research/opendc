@@ -31,7 +31,10 @@ import org.opendc.compute.service.HostView
  * @param allocationRatio Virtual CPU to physical CPU allocation ratio.
  */
 public class VCpuFilter(private val allocationRatio: Double) : HostFilter {
-    override fun test(host: HostView, server: Server): Boolean {
+    override fun test(
+        host: HostView,
+        server: Server,
+    ): Boolean {
         val requested = server.flavor.coreCount
         val total = host.host.model.coreCount
         val limit = total * allocationRatio

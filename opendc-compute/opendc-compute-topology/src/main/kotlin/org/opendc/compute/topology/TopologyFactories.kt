@@ -51,7 +51,7 @@ private val reader = TopologyReader()
  */
 public fun clusterTopology(
     file: File,
-    random: RandomGenerator = SplittableRandom(0)
+    random: RandomGenerator = SplittableRandom(0),
 ): List<HostSpec> {
     val topology = reader.read(file)
 
@@ -63,7 +63,7 @@ public fun clusterTopology(
  */
 public fun clusterTopology(
     input: InputStream,
-    random: RandomGenerator = SplittableRandom(0)
+    random: RandomGenerator = SplittableRandom(0),
 ): List<HostSpec> {
     val topology = reader.read(input)
 
@@ -81,36 +81,49 @@ private fun TopologyJSONSpec.toHostSpecs(random: RandomGenerator): List<HostSpec
  * Helper method to convert a [ClusterJSONSpec] into a list of [HostSpec]s.
  */
 private var clusterId = 0
+
 private fun ClusterJSONSpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
-    val host_specs = hosts.flatMap { host -> (List(host.count) { host.toHostSpecs(clusterId, random); }) }
-//    val host_specs = hosts.flatMap{it.toHostSpecs(clusterId, random)};
+    val hostSpecs =
+        hosts.flatMap { host ->
+            (
+                List(host.count) {
+                    host.toHostSpecs(clusterId, random)
+                }
+            )
+        }
     clusterId++
-    return host_specs
+    return hostSpecs
 }
 
 /**
  * Helper method to convert a [HostJSONSpec] into a [HostSpec]s.
  */
 private var hostId = 0
-private fun HostJSONSpec.toHostSpecs(clusterId: Int, random: RandomGenerator): HostSpec {
+
+private fun HostJSONSpec.toHostSpecs(
+    clusterId: Int,
+    random: RandomGenerator,
+): HostSpec {
     val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cpus.sumOf { it.coreCount })
 
     val units = cpus.flatMap { cpu -> List(cpu.count) { cpu.toProcessingUnit(unknownProcessingNode) }.flatten() }
 
     val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed, memory.memorySize)
-    val machineModel = MachineModel(
-        units,
-        listOf(unknownMemoryUnit)
-    )
+    val machineModel =
+        MachineModel(
+            units,
+            listOf(unknownMemoryUnit),
+        )
 
     val powerModel = getPowerModel(powerModel.modelType, powerModel.power, powerModel.maxPower, powerModel.idlePower)
-    val hostSpec = HostSpec(
-        UUID(random.nextLong(), (hostId).toLong()),
-        "$name-${(hostId)}",
-        mapOf("cluster" to clusterId),
-        machineModel,
-        SimPsuFactories.simple(powerModel)
-    )
+    val hostSpec =
+        HostSpec(
+            UUID(random.nextLong(), (hostId).toLong()),
+            "$name-${(hostId)}",
+            mapOf("cluster" to clusterId),
+            machineModel,
+            SimPsuFactories.simple(powerModel),
+        )
     hostId++
 
     return hostSpec
@@ -120,6 +133,7 @@ private fun HostJSONSpec.toHostSpecs(clusterId: Int, random: RandomGenerator): H
  * Helper method to convert a [CPUJSONSpec] into a list of [ProcessingUnit]s.
  */
 private var globalCoreId = 0
+
 private fun CPUJSONSpec.toProcessingUnit(unknownProcessingNode: ProcessingNode): List<ProcessingUnit> {
     val units = List(coreCount) { ProcessingUnit(unknownProcessingNode, globalCoreId++, coreSpeed) }
     return units
