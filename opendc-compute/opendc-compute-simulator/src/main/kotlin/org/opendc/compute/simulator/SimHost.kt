@@ -73,9 +73,8 @@ public class SimHost(
     private val hypervisor: SimHypervisor,
     private val mapper: SimWorkloadMapper = DefaultWorkloadMapper,
     private val bootModel: Supplier<SimWorkload?> = Supplier { null },
-    private val optimize: Boolean = false
+    private val optimize: Boolean = false,
 ) : Host, AutoCloseable {
-
     /**
      * The event listeners registered with this host.
      */
@@ -85,9 +84,9 @@ public class SimHost(
      * The virtual machines running on the hypervisor.
      */
     private val guests = HashMap<Server, Guest>()
-    private val _guests = mutableListOf<Guest>()
+    private val localGuests = mutableListOf<Guest>()
 
-    private var _state: HostState = HostState.DOWN
+    private var localState: HostState = HostState.DOWN
         set(value) {
             if (value != field) {
                 listeners.forEach { it.onStateChanged(this, value) }
@@ -95,25 +94,27 @@ public class SimHost(
             field = value
         }
 
-    private val model: HostModel = HostModel(
-        machine.model.cpus.sumOf { it.frequency * it.node.coreCount },
-        machine.model.cpus.size,
-        machine.model.cpus.sumOf { it.node.coreCount },
-        machine.model.memory.sumOf { it.size }
-    )
+    private val model: HostModel =
+        HostModel(
+            machine.model.cpus.sumOf { it.frequency * it.node.coreCount },
+            machine.model.cpus.size,
+            machine.model.cpus.sumOf { it.node.coreCount },
+            machine.model.memory.sumOf { it.size },
+        )
 
     /**
      * The [GuestListener] that listens for guest events.
      */
-    private val guestListener = object : GuestListener {
-        override fun onStart(guest: Guest) {
-            listeners.forEach { it.onStateChanged(this@SimHost, guest.server, guest.state) }
-        }
+    private val guestListener =
+        object : GuestListener {
+            override fun onStart(guest: Guest) {
+                listeners.forEach { it.onStateChanged(this@SimHost, guest.server, guest.state) }
+            }
 
-        override fun onStop(guest: Guest) {
-            listeners.forEach { it.onStateChanged(this@SimHost, guest.server, guest.state) }
+            override fun onStop(guest: Guest) {
+                listeners.forEach { it.onStateChanged(this@SimHost, guest.server, guest.state) }
+            }
         }
-    }
 
     init {
         launch()
@@ -136,7 +137,7 @@ public class SimHost(
     }
 
     override fun getState(): HostState {
-        return _state
+        return localState
     }
 
     override fun getInstances(): Set<Server> {
@@ -156,17 +157,18 @@ public class SimHost(
             require(canFit(key)) { "Server does not fit" }
 
             val machine = hypervisor.newMachine(key.flavor.toMachineModel())
-            val newGuest = Guest(
-                clock,
-                this,
-                hypervisor,
-                mapper,
-                guestListener,
-                server,
-                machine
-            )
+            val newGuest =
+                Guest(
+                    clock,
+                    this,
+                    hypervisor,
+                    mapper,
+                    guestListener,
+                    server,
+                    machine,
+                )
 
-            _guests.add(newGuest)
+            localGuests.add(newGuest)
             newGuest
         }
     }
@@ -211,7 +213,7 @@ public class SimHost(
         var error = 0
         var invalid = 0
 
-        val guests = _guests.listIterator()
+        val guests = localGuests.listIterator()
         for (guest in guests) {
             when (guest.state) {
                 ServerState.TERMINATED -> terminated++
@@ -227,15 +229,15 @@ public class SimHost(
         }
 
         return HostSystemStats(
-            Duration.ofMillis(_uptime),
-            Duration.ofMillis(_downtime),
-            _bootTime,
+            Duration.ofMillis(localUptime),
+            Duration.ofMillis(localDowntime),
+            localBootTime,
             machine.psu.powerDraw,
             machine.psu.energyUsage,
             terminated,
             running,
             error,
-            invalid
+            invalid,
         )
     }
 
@@ -256,7 +258,7 @@ public class SimHost(
             hypervisor.cpuCapacity,
             hypervisor.cpuDemand,
             hypervisor.cpuUsage,
-            hypervisor.cpuUsage / _cpuLimit
+            hypervisor.cpuUsage / localCpuLimit,
         )
     }
 
@@ -276,7 +278,7 @@ public class SimHost(
     public fun fail() {
         reset(HostState.ERROR)
 
-        for (guest in _guests) {
+        for (guest in localGuests) {
             guest.fail()
         }
     }
@@ -300,31 +302,33 @@ public class SimHost(
 
         val bootWorkload = bootModel.get()
         val hypervisor = hypervisor
-        val hypervisorWorkload = object : SimWorkload by hypervisor {
-            override fun onStart(ctx: SimMachineContext) {
-                try {
-                    _bootTime = clock.instant()
-                    _state = HostState.UP
-                    hypervisor.onStart(ctx)
+        val hypervisorWorkload =
+            object : SimWorkload by hypervisor {
+                override fun onStart(ctx: SimMachineContext) {
+                    try {
+                        localBootTime = clock.instant()
+                        localState = HostState.UP
+                        hypervisor.onStart(ctx)
 
-                    // Recover the guests that were running on the hypervisor.
-                    for (guest in _guests) {
-                        guest.recover()
+                        // Recover the guests that were running on the hypervisor.
+                        for (guest in localGuests) {
+                            guest.recover()
+                        }
+                    } catch (cause: Throwable) {
+                        localState = HostState.ERROR
+                        throw cause
                     }
-                } catch (cause: Throwable) {
-                    _state = HostState.ERROR
-                    throw cause
                 }
             }
-        }
 
         val workload = if (bootWorkload != null) SimWorkloads.chain(bootWorkload, hypervisorWorkload) else hypervisorWorkload
 
         // Launch hypervisor onto machine
-        ctx = machine.startWorkload(workload, emptyMap()) { cause ->
-            _state = if (cause != null) HostState.ERROR else HostState.DOWN
-            ctx = null
-        }
+        ctx =
+            machine.startWorkload(workload, emptyMap()) { cause ->
+                localState = if (cause != null) HostState.ERROR else HostState.DOWN
+                ctx = null
+            }
     }
 
     /**
@@ -335,7 +339,7 @@ public class SimHost(
 
         // Stop the hypervisor
         ctx?.shutdown()
-        _state = state
+        localState = state
     }
 
     /**
@@ -353,28 +357,28 @@ public class SimHost(
         return if (optimize) model.optimize() else model
     }
 
-    private var _lastReport = clock.millis()
-    private var _uptime = 0L
-    private var _downtime = 0L
-    private var _bootTime: Instant? = null
-    private val _cpuLimit = machine.model.cpus.sumOf { it.frequency }
+    private var localLastReport = clock.millis()
+    private var localUptime = 0L
+    private var localDowntime = 0L
+    private var localBootTime: Instant? = null
+    private val localCpuLimit = machine.model.cpus.sumOf { it.frequency }
 
     /**
      * Helper function to track the uptime of a machine.
      */
     private fun updateUptime() {
         val now = clock.millis()
-        val duration = now - _lastReport
-        _lastReport = now
+        val duration = now - localLastReport
+        localLastReport = now
 
-        if (_state == HostState.UP) {
-            _uptime += duration
-        } else if (_state == HostState.ERROR) {
+        if (localState == HostState.UP) {
+            localUptime += duration
+        } else if (localState == HostState.ERROR) {
             // Only increment downtime if the machine is in a failure state
-            _downtime += duration
+            localDowntime += duration
         }
 
-        val guests = _guests
+        val guests = localGuests
         for (i in guests.indices) {
             guests[i].updateUptime()
         }

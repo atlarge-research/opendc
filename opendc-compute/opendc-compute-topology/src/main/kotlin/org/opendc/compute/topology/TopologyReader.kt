@@ -33,7 +33,6 @@ import java.io.InputStream
  * A helper class for reading a topology specification file.
  */
 public class TopologyReader {
-
     @OptIn(ExperimentalSerializationApi::class)
     public fun read(file: File): TopologyJSONSpec {
         val input = file.inputStream()

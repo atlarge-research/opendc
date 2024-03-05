@@ -77,10 +77,11 @@ class CapelinIntegrationTest {
     @BeforeEach
     fun setUp() {
         monitor = TestComputeMonitor()
-        computeScheduler = FilterScheduler(
-            filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
-            weighers = listOf(CoreRamWeigher(multiplier = 1.0))
-        )
+        computeScheduler =
+            FilterScheduler(
+                filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
+                weighers = listOf(CoreRamWeigher(multiplier = 1.0)),
+            )
         workloadLoader = ComputeWorkloadLoader(File("src/test/resources/trace"))
     }
 
@@ -88,159 +89,166 @@ class CapelinIntegrationTest {
      * Test a large simulation setup.
      */
     @Test
-    fun testLarge() = runSimulation {
-        val seed = 0L
-        val workload = createTestWorkload(1.0, seed)
-        val topology = createTopology()
-        val monitor = monitor
+    fun testLarge() =
+        runSimulation {
+            val seed = 0L
+            val workload = createTestWorkload(1.0, seed)
+            val topology = createTopology()
+            val monitor = monitor
 
-        Provisioner(dispatcher, seed).use { provisioner ->
-            provisioner.runSteps(
-                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology)
+            Provisioner(dispatcher, seed).use { provisioner ->
+                provisioner.runSteps(
+                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
+                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
+                    setupHosts(serviceDomain = "compute.opendc.org", topology),
+                )
+
+                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
+                service.replay(timeSource, workload, seed)
+            }
+
+            println(
+                "Scheduler " +
+                    "Success=${monitor.attemptsSuccess} " +
+                    "Failure=${monitor.attemptsFailure} " +
+                    "Error=${monitor.attemptsError} " +
+                    "Pending=${monitor.serversPending} " +
+                    "Active=${monitor.serversActive}",
             )
 
-            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-            service.replay(timeSource, workload, seed)
+            // Note that these values have been verified beforehand
+            assertAll(
+                { assertEquals(50, monitor.attemptsSuccess, "The scheduler should schedule 50 VMs") },
+                { assertEquals(0, monitor.serversActive, "All VMs should finish after a run") },
+                { assertEquals(0, monitor.attemptsFailure, "No VM should be unscheduled") },
+                { assertEquals(0, monitor.serversPending, "No VM should not be in the queue") },
+                { assertEquals(223379991650, monitor.idleTime) { "Incorrect idle time" } },
+                { assertEquals(66977091124, monitor.activeTime) { "Incorrect active time" } },
+                { assertEquals(3160267873, monitor.stealTime) { "Incorrect steal time" } },
+                { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
+                { assertEquals(7.767237E9, monitor.energyUsage, 1E4) { "Incorrect power draw" } },
+            )
         }
-
-        println(
-            "Scheduler " +
-                "Success=${monitor.attemptsSuccess} " +
-                "Failure=${monitor.attemptsFailure} " +
-                "Error=${monitor.attemptsError} " +
-                "Pending=${monitor.serversPending} " +
-                "Active=${monitor.serversActive}"
-        )
-
-        // Note that these values have been verified beforehand
-        assertAll(
-            { assertEquals(50, monitor.attemptsSuccess, "The scheduler should schedule 50 VMs") },
-            { assertEquals(0, monitor.serversActive, "All VMs should finish after a run") },
-            { assertEquals(0, monitor.attemptsFailure, "No VM should be unscheduled") },
-            { assertEquals(0, monitor.serversPending, "No VM should not be in the queue") },
-            { assertEquals(223379991650, monitor.idleTime) { "Incorrect idle time" } },
-            { assertEquals(66977091124, monitor.activeTime) { "Incorrect active time" } },
-            { assertEquals(3160267873, monitor.stealTime) { "Incorrect steal time" } },
-            { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
-            { assertEquals(7.767237E9, monitor.energyUsage, 1E4) { "Incorrect power draw" } }
-        )
-    }
 
     /**
      * Test a small simulation setup.
      */
     @Test
-    fun testSmall() = runSimulation {
-        val seed = 1L
-        val workload = createTestWorkload(0.25, seed)
-        val topology = createTopology("single.json")
-        val monitor = monitor
+    fun testSmall() =
+        runSimulation {
+            val seed = 1L
+            val workload = createTestWorkload(0.25, seed)
+            val topology = createTopology("single.json")
+            val monitor = monitor
 
-        Provisioner(dispatcher, seed).use { provisioner ->
-            provisioner.runSteps(
-                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology)
+            Provisioner(dispatcher, seed).use { provisioner ->
+                provisioner.runSteps(
+                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
+                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
+                    setupHosts(serviceDomain = "compute.opendc.org", topology),
+                )
+
+                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
+                service.replay(timeSource, workload, seed)
+            }
+
+            println(
+                "Scheduler " +
+                    "Success=${monitor.attemptsSuccess} " +
+                    "Failure=${monitor.attemptsFailure} " +
+                    "Error=${monitor.attemptsError} " +
+                    "Pending=${monitor.serversPending} " +
+                    "Active=${monitor.serversActive}",
             )
 
-            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-            service.replay(timeSource, workload, seed)
+            // Note that these values have been verified beforehand
+            assertAll(
+                { assertEquals(10996730092, monitor.idleTime) { "Idle time incorrect" } },
+                { assertEquals(9741285381, monitor.activeTime) { "Active time incorrect" } },
+                { assertEquals(152, monitor.stealTime) { "Steal time incorrect" } },
+                { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
+                { assertEquals(7.933686E8, monitor.energyUsage, 1E4) { "Incorrect power draw" } },
+            )
         }
-
-        println(
-            "Scheduler " +
-                "Success=${monitor.attemptsSuccess} " +
-                "Failure=${monitor.attemptsFailure} " +
-                "Error=${monitor.attemptsError} " +
-                "Pending=${monitor.serversPending} " +
-                "Active=${monitor.serversActive}"
-        )
-
-        // Note that these values have been verified beforehand
-        assertAll(
-            { assertEquals(10996730092, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(9741285381, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(152, monitor.stealTime) { "Steal time incorrect" } },
-            { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-            { assertEquals(7.933686E8, monitor.energyUsage, 1E4) { "Incorrect power draw" } }
-        )
-    }
 
     /**
      * Test a small simulation setup with interference.
      */
     @Test
-    fun testInterference() = runSimulation {
-        val seed = 0L
-        val workload = createTestWorkload(1.0, seed)
-        val topology = createTopology("single.json")
+    fun testInterference() =
+        runSimulation {
+            val seed = 0L
+            val workload = createTestWorkload(1.0, seed)
+            val topology = createTopology("single.json")
 
-        Provisioner(dispatcher, seed).use { provisioner ->
-            provisioner.runSteps(
-                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology)
+            Provisioner(dispatcher, seed).use { provisioner ->
+                provisioner.runSteps(
+                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
+                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
+                    setupHosts(serviceDomain = "compute.opendc.org", topology),
+                )
+
+                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
+                service.replay(timeSource, workload, seed, interference = true)
+            }
+
+            println(
+                "Scheduler " +
+                    "Success=${monitor.attemptsSuccess} " +
+                    "Failure=${monitor.attemptsFailure} " +
+                    "Error=${monitor.attemptsError} " +
+                    "Pending=${monitor.serversPending} " +
+                    "Active=${monitor.serversActive}",
             )
 
-            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-            service.replay(timeSource, workload, seed, interference = true)
+            // Note that these values have been verified beforehand
+            assertAll(
+                { assertEquals(42814948316, monitor.idleTime) { "Idle time incorrect" } },
+                { assertEquals(40138266225, monitor.activeTime) { "Active time incorrect" } },
+                { assertEquals(23489356981, monitor.stealTime) { "Steal time incorrect" } },
+                { assertEquals(424267131, monitor.lostTime) { "Lost time incorrect" } },
+            )
         }
-
-        println(
-            "Scheduler " +
-                "Success=${monitor.attemptsSuccess} " +
-                "Failure=${monitor.attemptsFailure} " +
-                "Error=${monitor.attemptsError} " +
-                "Pending=${monitor.serversPending} " +
-                "Active=${monitor.serversActive}"
-        )
-
-        // Note that these values have been verified beforehand
-        assertAll(
-            { assertEquals(42814948316, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(40138266225, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(23489356981, monitor.stealTime) { "Steal time incorrect" } },
-            { assertEquals(424267131, monitor.lostTime) { "Lost time incorrect" } }
-        )
-    }
 
     /**
      * Test a small simulation setup with failures.
      */
     @Test
-    fun testFailures() = runSimulation {
-        val seed = 0L
-        val topology = createTopology("single.json")
-        val workload = createTestWorkload(0.25, seed)
-        val monitor = monitor
+    fun testFailures() =
+        runSimulation {
+            val seed = 0L
+            val topology = createTopology("single.json")
+            val workload = createTestWorkload(0.25, seed)
+            val monitor = monitor
 
-        Provisioner(dispatcher, seed).use { provisioner ->
-            provisioner.runSteps(
-                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-                setupHosts(serviceDomain = "compute.opendc.org", topology)
+            Provisioner(dispatcher, seed).use { provisioner ->
+                provisioner.runSteps(
+                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
+                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
+                    setupHosts(serviceDomain = "compute.opendc.org", topology),
+                )
+
+                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
+                service.replay(timeSource, workload, seed, failureModel = grid5000(Duration.ofDays(7)))
+            }
+
+            // Note that these values have been verified beforehand
+            assertAll(
+                { assertEquals(1404277711, monitor.idleTime) { "Idle time incorrect" } },
+                { assertEquals(1478675712, monitor.activeTime) { "Active time incorrect" } },
+                { assertEquals(152, monitor.stealTime) { "Steal time incorrect" } },
+                { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
+                { assertEquals(360369187, monitor.uptime) { "Uptime incorrect" } },
             )
-
-            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-            service.replay(timeSource, workload, seed, failureModel = grid5000(Duration.ofDays(7)))
         }
-
-        // Note that these values have been verified beforehand
-        assertAll(
-            { assertEquals(1404277711, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(1478675712, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(152, monitor.stealTime) { "Steal time incorrect" } },
-            { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-            { assertEquals(360369187, monitor.uptime) { "Uptime incorrect" } }
-        )
-    }
 
     /**
      * Obtain the trace reader for the test.
      */
-    private fun createTestWorkload(fraction: Double, seed: Long): List<VirtualMachine> {
+    private fun createTestWorkload(
+        fraction: Double,
+        seed: Long,
+    ): List<VirtualMachine> {
         val source = trace("bitbrains-small").sampleByLoad(fraction)
         return source.resolve(workloadLoader, Random(seed))
     }
