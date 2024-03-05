@@ -46,7 +46,8 @@ class CapelinRunnerTest {
     private val tracePath = File("src/test/resources/trace")
 
     /**
-     * Smoke test with output. fixme: Fix failures and enable Test
+     * Smoke test with output.
+     * fixme: Fix failures and enable
      */
     fun testSmoke() {
         val outputPath = Files.createTempDirectory("output").toFile()
@@ -68,7 +69,8 @@ class CapelinRunnerTest {
     }
 
     /**
-     * Smoke test without output. fixme: Fix failures and enable Test
+     * Smoke test without output.
+     * fixme: Fix failures and enable
      */
     fun testSmokeNoOutput() {
         val runner = CapelinRunner(envPath, tracePath, null)

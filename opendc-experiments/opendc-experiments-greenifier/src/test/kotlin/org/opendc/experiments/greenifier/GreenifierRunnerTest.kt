@@ -47,8 +47,8 @@ class GreenifierRunnerTest {
 
     /**
      * Smoke test with output.
+     * fixme: Fix failures and enable
      */
-//    @Test // fixme: Fix failures and enable
     fun testSmoke() {
         val outputPath = Files.createTempDirectory("output").toFile()
 
@@ -69,8 +69,8 @@ class GreenifierRunnerTest {
 
     /**
      * Smoke test without output.
+     * fixme: Fix failures and enable
      */
-//    @Test // fixme: Fix failures and enable
     fun testSmokeNoOutput() {
         val runner = GreenifierRunner(envPath, tracePath, null)
         val scenario = Scenario(
