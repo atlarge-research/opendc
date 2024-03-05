@@ -27,7 +27,7 @@ package org.opendc.compute.simulator.provisioner
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.telemetry.ComputeMonitor
-import org.opendc.compute.topology.HostSpec
+import org.opendc.compute.topology.specs.HostSpec
 import java.time.Duration
 
 /**

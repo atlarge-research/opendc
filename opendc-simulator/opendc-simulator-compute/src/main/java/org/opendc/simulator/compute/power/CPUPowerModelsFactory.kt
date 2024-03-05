@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.scheduler.filters
+package org.opendc.simulator.compute.power
 
-import org.opendc.compute.api.Server
-import org.opendc.compute.service.HostView
+public fun getPowerModel(
+    modelType: String,
+    power: Double,
+    maxPower: Double,
+    idlePower: Double,
+): CpuPowerModel {
+    return when (modelType) {
+        "constant" -> CpuPowerModels.constant(power)
+        "sqrt" -> CpuPowerModels.sqrt(maxPower, idlePower)
+        "linear" -> CpuPowerModels.linear(maxPower, idlePower)
+        "square" -> CpuPowerModels.square(maxPower, idlePower)
+        "cubic" -> CpuPowerModels.cubic(maxPower, idlePower)
 
-/**
- * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [Server] and the available
- * capacity on the host.
- */
-public class VCpuCapacityFilter : HostFilter {
-    override fun test(
-        host: HostView,
-        server: Server,
-    ): Boolean {
-        val requiredCapacity = server.flavor.meta["cpu-capacity"] as? Double
-        val hostModel = host.host.model
-        val availableCapacity = hostModel.cpuCapacity / hostModel.cpuCount
-
-        return requiredCapacity == null || availableCapacity >= (requiredCapacity / server.flavor.coreCount)
+        else -> throw IllegalArgumentException("Unknown power modelType $modelType")
     }
 }

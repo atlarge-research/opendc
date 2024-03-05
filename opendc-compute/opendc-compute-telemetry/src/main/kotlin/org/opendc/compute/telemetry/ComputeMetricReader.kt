@@ -410,7 +410,7 @@ public class ComputeMetricReader(
                 "x86",
                 server.image.uid.toString(),
                 server.image.name,
-                server.flavor.cpuCount,
+                server.flavor.coreCount,
                 server.flavor.memorySize,
             )
 

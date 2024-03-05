@@ -328,7 +328,7 @@ internal class SimHostTest {
         }
 
     private class MockFlavor(
-        override val cpuCount: Int,
+        override val coreCount: Int,
         override val memorySize: Long,
     ) : Flavor {
         override val uid: UUID = UUID.randomUUID()

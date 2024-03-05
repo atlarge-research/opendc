@@ -84,7 +84,7 @@ public class SimHost(
      * The virtual machines running on the hypervisor.
      */
     private val guests = HashMap<Server, Guest>()
-    private val temporaryGuests = mutableListOf<Guest>() // TODO: Determine a better naming for this
+    private val localGuests = mutableListOf<Guest>()
 
     private var localState: HostState = HostState.DOWN
         set(value) {
@@ -96,8 +96,9 @@ public class SimHost(
 
     private val model: HostModel =
         HostModel(
-            machine.model.cpus.sumOf { it.frequency },
+            machine.model.cpus.sumOf { it.frequency * it.node.coreCount },
             machine.model.cpus.size,
+            machine.model.cpus.sumOf { it.node.coreCount },
             machine.model.memory.sumOf { it.size },
         )
 
@@ -145,7 +146,7 @@ public class SimHost(
 
     override fun canFit(server: Server): Boolean {
         val sufficientMemory = model.memoryCapacity >= server.flavor.memorySize
-        val enoughCpus = model.cpuCount >= server.flavor.cpuCount
+        val enoughCpus = model.cpuCount >= server.flavor.coreCount
         val canFit = hypervisor.canFit(server.flavor.toMachineModel())
 
         return sufficientMemory && enoughCpus && canFit
@@ -167,7 +168,7 @@ public class SimHost(
                     machine,
                 )
 
-            temporaryGuests.add(newGuest)
+            localGuests.add(newGuest)
             newGuest
         }
     }
@@ -212,7 +213,7 @@ public class SimHost(
         var error = 0
         var invalid = 0
 
-        val guests = temporaryGuests.listIterator()
+        val guests = localGuests.listIterator()
         for (guest in guests) {
             when (guest.state) {
                 ServerState.TERMINATED -> terminated++
@@ -277,7 +278,7 @@ public class SimHost(
     public fun fail() {
         reset(HostState.ERROR)
 
-        for (guest in temporaryGuests) {
+        for (guest in localGuests) {
             guest.fail()
         }
     }
@@ -310,7 +311,7 @@ public class SimHost(
                         hypervisor.onStart(ctx)
 
                         // Recover the guests that were running on the hypervisor.
-                        for (guest in temporaryGuests) {
+                        for (guest in localGuests) {
                             guest.recover()
                         }
                     } catch (cause: Throwable) {
@@ -348,8 +349,8 @@ public class SimHost(
         val originalCpu = machine.model.cpus[0]
         val originalNode = originalCpu.node
         val cpuCapacity = (this.meta["cpu-capacity"] as? Double ?: Double.MAX_VALUE).coerceAtMost(originalCpu.frequency)
-        val processingNode = ProcessingNode(originalNode.vendor, originalNode.modelName, originalNode.architecture, cpuCount)
-        val processingUnits = (0 until cpuCount).map { ProcessingUnit(processingNode, it, cpuCapacity) }
+        val processingNode = ProcessingNode(originalNode.vendor, originalNode.modelName, originalNode.architecture, coreCount)
+        val processingUnits = (0 until coreCount).map { ProcessingUnit(processingNode, it, cpuCapacity) }
         val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
 
         val model = MachineModel(processingUnits, memoryUnits)
@@ -377,7 +378,7 @@ public class SimHost(
             localDowntime += duration
         }
 
-        val guests = temporaryGuests
+        val guests = localGuests
         for (i in guests.indices) {
             guests[i].updateUptime()
         }

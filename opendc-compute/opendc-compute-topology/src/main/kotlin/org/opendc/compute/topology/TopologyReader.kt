@@ -22,27 +22,31 @@
 
 package org.opendc.compute.topology
 
-import org.opendc.simulator.compute.SimPsuFactories
-import org.opendc.simulator.compute.SimPsuFactory
-import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.flow2.mux.FlowMultiplexerFactory
-import java.util.UUID
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import org.opendc.compute.topology.specs.TopologyJSONSpec
+import java.io.File
+import java.io.InputStream
 
 /**
- * Description of a physical host that will be simulated by OpenDC and host the virtual machines.
- *
- * @param uid Unique identifier of the host.
- * @param name The name of the host.
- * @param meta The metadata of the host.
- * @param model The physical model of the machine.
- * @param psuFactory The [SimPsuFactory] to construct the PSU that models the power consumption of the machine.
- * @param multiplexerFactory The [FlowMultiplexerFactory] that is used to multiplex the virtual machines over the host.
+ * A helper class for reading a topology specification file.
  */
-public data class HostSpec(
-    val uid: UUID,
-    val name: String,
-    val meta: Map<String, Any>,
-    val model: MachineModel,
-    val psuFactory: SimPsuFactory = SimPsuFactories.noop(),
-    val multiplexerFactory: FlowMultiplexerFactory = FlowMultiplexerFactory.maxMinMultiplexer(),
-)
+public class TopologyReader {
+    @OptIn(ExperimentalSerializationApi::class)
+    public fun read(file: File): TopologyJSONSpec {
+        val input = file.inputStream()
+        val obj = Json.decodeFromStream<TopologyJSONSpec>(input)
+
+        return obj
+    }
+
+    /**
+     * Read the specified [input].
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    public fun read(input: InputStream): TopologyJSONSpec {
+        val obj = Json.decodeFromStream<TopologyJSONSpec>(input)
+        return obj
+    }
+}

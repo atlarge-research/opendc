@@ -31,8 +31,8 @@ import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
-import org.opendc.compute.topology.HostSpec
 import org.opendc.compute.topology.clusterTopology
+import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.VirtualMachine
 import org.opendc.compute.workload.trace

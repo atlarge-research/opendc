@@ -46,7 +46,8 @@ class GreenifierRunnerTest {
     private val tracePath = File("src/test/resources/trace")
 
     /**
-     * Smoke test with output. fixme: Fix failures and enable Test
+     * Smoke test with output.
+     * fixme: Fix failures and enable
      */
     fun testSmoke() {
         val outputPath = Files.createTempDirectory("output").toFile()
@@ -55,7 +56,7 @@ class GreenifierRunnerTest {
             val runner = GreenifierRunner(envPath, tracePath, outputPath)
             val scenario =
                 Scenario(
-                    Topology("topology"),
+                    Topology("topology.json"),
                     Workload("bitbrains-small", trace("bitbrains-small")),
                     OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
                     "active-servers",
@@ -68,7 +69,8 @@ class GreenifierRunnerTest {
     }
 
     /**
-     * Smoke test without output. fixme: Fix failures and enable Test
+     * Smoke test without output.
+     * fixme: Fix failures and enable
      */
     fun testSmokeNoOutput() {
         val runner = GreenifierRunner(envPath, tracePath, null)

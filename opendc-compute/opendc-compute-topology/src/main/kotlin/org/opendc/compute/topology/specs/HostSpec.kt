@@ -20,27 +20,30 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.topology
+package org.opendc.compute.topology.specs
+
+import org.opendc.simulator.compute.SimPsuFactories
+import org.opendc.simulator.compute.SimPsuFactory
+import org.opendc.simulator.compute.model.MachineModel
+import org.opendc.simulator.flow2.mux.FlowMultiplexerFactory
+import java.util.UUID
 
 /**
- * Definition of a compute cluster modeled in the simulation.
+ * Description of a physical host that will be simulated by OpenDC and host the virtual machines.
  *
- * @param id A unique identifier representing the compute cluster.
- * @param name The name of the cluster.
- * @param cpuCount The total number of CPUs in the cluster.
- * @param cpuSpeed The speed of a CPU in the cluster in MHz.
- * @param memCapacity The total memory capacity of the cluster (in MiB).
- * @param hostCount The number of hosts in the cluster.
- * @param memCapacityPerHost The memory capacity per host in the cluster (MiB).
- * @param cpuCountPerHost The number of CPUs per host in the cluster.
+ * @param uid Unique identifier of the host.
+ * @param name The name of the host.
+ * @param meta The metadata of the host.
+ * @param model The physical model of the machine.
+ * @param psuFactory The [SimPsuFactory] to construct the PSU that models the power consumption of the machine.
+ * @param multiplexerFactory The [FlowMultiplexerFactory] that is used to multiplex the virtual machines over the host.
  */
-public data class ClusterSpec(
-    val id: String,
+
+public data class HostSpec(
+    val uid: UUID,
     val name: String,
-    val cpuCount: Int,
-    val cpuSpeed: Double,
-    val memCapacity: Double,
-    val hostCount: Int,
-    val memCapacityPerHost: Double,
-    val cpuCountPerHost: Int,
+    val meta: Map<String, Any>,
+    val model: MachineModel,
+    val psuFactory: SimPsuFactory = SimPsuFactories.noop(),
+    val multiplexerFactory: FlowMultiplexerFactory = FlowMultiplexerFactory.maxMinMultiplexer(),
 )

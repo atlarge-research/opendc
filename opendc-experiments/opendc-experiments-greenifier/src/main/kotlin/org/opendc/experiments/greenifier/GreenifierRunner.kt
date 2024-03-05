@@ -65,7 +65,7 @@ public class GreenifierRunner(
         seed: Long,
     ) = runSimulation {
         val serviceDomain = "compute.opendc.org"
-        val topology = clusterTopology(File(envPath, "${scenario.topology.name}.txt"))
+        val topology = clusterTopology(File(envPath, scenario.topology.name))
 
         Provisioner(dispatcher, seed).use { provisioner ->
             provisioner.runSteps(

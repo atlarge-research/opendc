@@ -25,6 +25,7 @@ description = "OpenDC Compute Topology implementation"
 // Build configuration
 plugins {
     `kotlin-library-conventions`
+    kotlin("plugin.serialization") version "1.9.22"
 }
 
 dependencies {
@@ -32,6 +33,8 @@ dependencies {
     implementation(projects.opendcCommon)
     implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-compute")))
 
-    implementation(libs.jackson.dataformat.csv)
+    implementation(libs.jackson.module.kotlin)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
 }

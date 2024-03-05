@@ -40,8 +40,8 @@ import org.opendc.compute.simulator.provisioner.setupHosts
 import org.opendc.compute.telemetry.ComputeMonitor
 import org.opendc.compute.telemetry.table.HostTableReader
 import org.opendc.compute.telemetry.table.ServiceTableReader
-import org.opendc.compute.topology.HostSpec
 import org.opendc.compute.topology.clusterTopology
+import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.VirtualMachine
 import org.opendc.compute.workload.sampleByLoad
@@ -126,7 +126,7 @@ class CapelinIntegrationTest {
                 { assertEquals(66977091124, monitor.activeTime) { "Incorrect active time" } },
                 { assertEquals(3160267873, monitor.stealTime) { "Incorrect steal time" } },
                 { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
-                { assertEquals(5.8407E9, monitor.energyUsage, 1E4) { "Incorrect power draw" } },
+                { assertEquals(7.767237E9, monitor.energyUsage, 1E4) { "Incorrect power draw" } },
             )
         }
 
@@ -138,7 +138,7 @@ class CapelinIntegrationTest {
         runSimulation {
             val seed = 1L
             val workload = createTestWorkload(0.25, seed)
-            val topology = createTopology("single")
+            val topology = createTopology("single.json")
             val monitor = monitor
 
             Provisioner(dispatcher, seed).use { provisioner ->
@@ -167,7 +167,7 @@ class CapelinIntegrationTest {
                 { assertEquals(9741285381, monitor.activeTime) { "Active time incorrect" } },
                 { assertEquals(152, monitor.stealTime) { "Steal time incorrect" } },
                 { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-                { assertEquals(7.0109E8, monitor.energyUsage, 1E4) { "Incorrect power draw" } },
+                { assertEquals(7.933686E8, monitor.energyUsage, 1E4) { "Incorrect power draw" } },
             )
         }
 
@@ -179,7 +179,7 @@ class CapelinIntegrationTest {
         runSimulation {
             val seed = 0L
             val workload = createTestWorkload(1.0, seed)
-            val topology = createTopology("single")
+            val topology = createTopology("single.json")
 
             Provisioner(dispatcher, seed).use { provisioner ->
                 provisioner.runSteps(
@@ -217,7 +217,7 @@ class CapelinIntegrationTest {
     fun testFailures() =
         runSimulation {
             val seed = 0L
-            val topology = createTopology("single")
+            val topology = createTopology("single.json")
             val workload = createTestWorkload(0.25, seed)
             val monitor = monitor
 
@@ -256,8 +256,8 @@ class CapelinIntegrationTest {
     /**
      * Obtain the topology factory for the test.
      */
-    private fun createTopology(name: String = "topology"): List<HostSpec> {
-        val stream = checkNotNull(object {}.javaClass.getResourceAsStream("/env/$name.txt"))
+    private fun createTopology(name: String = "topology.json"): List<HostSpec> {
+        val stream = checkNotNull(object {}.javaClass.getResourceAsStream("/env/$name"))
         return stream.use { clusterTopology(stream) }
     }
 
