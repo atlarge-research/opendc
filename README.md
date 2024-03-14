@@ -26,6 +26,7 @@ You can find the OpenDC documentation [on the website](https://atlarge-research.
 The documentation is divided into several sections:
 
 * [Getting Started](https://atlarge-research.github.io/opendc/docs/category/getting-started/)
+* [How to run locally](how-to-run.md)
 * [Tutorials](https://atlarge-research.github.io/opendc/docs/category/tutorials/)
 * [Advanced Guides](https://atlarge-research.github.io/opendc/docs/category/advanced-guides/)
 * [Where to Get Support](https://atlarge-research.github.io/opendc/community/support/)
