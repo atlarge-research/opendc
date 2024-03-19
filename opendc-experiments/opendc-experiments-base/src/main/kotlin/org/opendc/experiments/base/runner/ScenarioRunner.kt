@@ -46,7 +46,7 @@ import java.util.stream.LongStream
 public fun runPortfolio(
     portfolio: Portfolio,
     parallelism: Int,
-)  {
+) {
     val pool = ForkJoinPool(parallelism)
 
     for (scenario in portfolio.scenarios) {
