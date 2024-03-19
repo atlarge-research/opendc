@@ -131,7 +131,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                 val memCapacity = reader.getDouble(memCol) / 1000.0 // Convert from KB to MB
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
 
-                val builder = fragments.getValue(id)
+                val builder = fragments.getValue(id) // Get all fragments related to this VM
                 val totalLoad = builder.totalLoad
 
                 entries.add(

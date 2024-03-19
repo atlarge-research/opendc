@@ -41,7 +41,7 @@ internal class LoadSampledComputeWorkload(val source: ComputeWorkload, val fract
         loader: ComputeWorkloadLoader,
         random: RandomGenerator,
     ): List<VirtualMachine> {
-        val vms = source.resolve(loader, random)
+        val vms = source.resolve(loader, random) // fixme: Should be shuffled, otherwise the first fraction is always chosen
         val res = mutableListOf<VirtualMachine>()
 
         val totalLoad = vms.sumOf { it.totalLoad }

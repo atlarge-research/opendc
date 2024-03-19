@@ -20,9 +20,9 @@
  * SOFTWARE.
  */
 
-@file:JvmName("ScenarioCli")
+@file:JvmName("PortfolioCli")
 
-package org.opendc.experiments.scenario
+package org.opendc.experiments.portfolio
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
@@ -30,25 +30,25 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
-import org.opendc.experiments.base.models.scenario.getScenario
-import org.opendc.experiments.base.runner.runScenario
+import org.opendc.experiments.base.models.portfolio.getPortfolio
+import org.opendc.experiments.base.runner.runPortfolio
 import java.io.File
 
 /**
  * Main entrypoint of the application.
  */
-public fun main(args: Array<String>): Unit = ScenarioCommand().main(args)
+public fun main(args: Array<String>): Unit = PortfolioCommand().main(args)
 
 /**
- * Represents the command for the Scenario experiments.
+ * Represents the command for the Portfolio experiments.
  */
-internal class ScenarioCommand : CliktCommand(name = "scenario") {
+internal class PortfolioCommand : CliktCommand(name = "portfolio") {
     /**
      * The path to the environment directory.
      */
-    private val scenarioPath by option("--scenario-path", help = "path to scenario file")
+    private val portfolioPath by option("--portfolio-path", help = "path to portfolio file")
         .file(canBeDir = true, canBeFile = false)
-        .defaultLazy { File("resources/scenario.json") }
+        .defaultLazy { File("resources/portfolio.json") }
 
     /**
      * The number of threads to use for parallelism.
@@ -58,7 +58,7 @@ internal class ScenarioCommand : CliktCommand(name = "scenario") {
         .default(Runtime.getRuntime().availableProcessors() - 1)
 
     override fun run() {
-        val scenario = getScenario(scenarioPath)
-        runScenario(scenario, parallelism)
+        val portfolio = getPortfolio(portfolioPath)
+        runPortfolio(portfolio, parallelism)
     }
 }

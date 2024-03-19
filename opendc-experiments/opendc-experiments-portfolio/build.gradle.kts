@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the Scenario work"
+description = "Experiments for the Portfolio work"
 
 // Build configuration
 plugins {
@@ -55,11 +55,11 @@ dependencies {
     runtimeOnly(libs.log4j.slf4j)
 }
 
-val createScenarioApp by tasks.creating(CreateStartScripts::class) {
+val createPortfolioApp by tasks.creating(CreateStartScripts::class) {
     dependsOn(tasks.jar)
 
-    applicationName = "scenario"
-    mainClass.set("org.opendc.experiments.scenario.ScnearioCLI")
+    applicationName = "portfolio"
+    mainClass.set("org.opendc.experiments.portfolio.portfolioCLI")
     classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
     outputDir = project.buildDir.resolve("scripts")
 }
@@ -67,7 +67,7 @@ val createScenarioApp by tasks.creating(CreateStartScripts::class) {
 // Create custom Greenifier distribution
 distributions {
     main {
-        distributionBaseName.set("scenario")
+        distributionBaseName.set("portfolio")
 
         contents {
             from("README.md")
@@ -77,7 +77,7 @@ distributions {
             }
 
             into("bin") {
-                from(createScenarioApp)
+                from(createPortfolioApp)
             }
 
             into("lib") {

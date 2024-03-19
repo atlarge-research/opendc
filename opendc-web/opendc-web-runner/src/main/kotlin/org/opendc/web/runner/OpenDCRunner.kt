@@ -25,7 +25,7 @@ package org.opendc.web.runner
 import mu.KotlinLogging
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.createComputeScheduler
-import org.opendc.compute.simulator.failure.grid5000
+import org.opendc.compute.simulator.failure.models.Grid5000
 import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
@@ -282,13 +282,13 @@ public class OpenDCRunner(
                     val phenomena = scenario.phenomena
                     val failureModel =
                         if (phenomena.failures) {
-                            grid5000(Duration.ofDays(7))
+                            Grid5000(Duration.ofDays(7))
                         } else {
                             null
                         }
 
                     // Run workload trace
-                    service.replay(timeSource, vms, seed, failureModel = failureModel, interference = phenomena.interference)
+                    service.replay(timeSource, vms, seed, failureModel = failureModel)
 
                     val serviceMetrics = service.getSchedulerStats()
                     logger.debug {
@@ -327,7 +327,7 @@ public class OpenDCRunner(
                 machine.cpus.flatMap { cpu ->
                     val cores = cpu.numberOfCores
                     val speed = cpu.clockRateMhz
-                    // TODO Remove hard coding of vendor
+                    // TODO: Remove hard coding of vendor
                     val node = ProcessingNode("Intel", "amd64", cpu.name, cores)
                     List(cores) { coreId ->
                         ProcessingUnit(node, coreId, speed)
