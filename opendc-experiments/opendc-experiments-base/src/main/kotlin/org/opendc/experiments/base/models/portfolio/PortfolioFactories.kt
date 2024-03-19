@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,26 @@
  * SOFTWARE.
  */
 
-description = "Support library for simulating VM-based workloads with OpenDC"
+package org.opendc.experiments.base.models.portfolio
 
-// Build configuration
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-    kotlin("plugin.serialization") version "1.9.22"
+import org.opendc.experiments.base.models.scenario.getScenario
+import java.io.File
+
+private val porfolioReader = PortfolioReader()
+
+public fun getPortfolio(filePath: String): Portfolio {
+    return getPortfolio(File(filePath))
 }
 
-dependencies {
+public fun getPortfolio(file: File): Portfolio {
+    return getPortfolio(porfolioReader.read(file))
+}
 
-    api(projects.opendcCompute.opendcComputeService)
-    api(projects.opendcCompute.opendcComputeSimulator)
-
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    implementation(libs.progressbar)
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-workload")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
-    implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-core")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
-
-    runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
-    runtimeOnly(libs.log4j.core)
-    runtimeOnly(libs.log4j.slf4j)
+public fun getPortfolio(portfolioSpec: PortfolioSpec): Portfolio {
+    return Portfolio(
+        portfolioSpec.scenarios.map {
+                scenario ->
+            getScenario(scenario)
+        },
+    )
 }

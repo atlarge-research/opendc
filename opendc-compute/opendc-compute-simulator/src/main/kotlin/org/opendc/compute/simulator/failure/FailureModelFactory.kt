@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,22 @@
  * SOFTWARE.
  */
 
-description = "Support library for simulating VM-based workloads with OpenDC"
+package org.opendc.compute.simulator.failure
 
-// Build configuration
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-    kotlin("plugin.serialization") version "1.9.22"
-}
+import org.opendc.compute.simulator.failure.models.Grid5000
+import java.time.Duration
+import kotlin.math.roundToLong
 
-dependencies {
-
-    api(projects.opendcCompute.opendcComputeService)
-    api(projects.opendcCompute.opendcComputeSimulator)
-
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    implementation(libs.progressbar)
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-workload")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
-    implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-core")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
-
-    runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
-    runtimeOnly(libs.log4j.core)
-    runtimeOnly(libs.log4j.slf4j)
+/**
+ * Get failure model
+ *
+ * @param failureInterval The interval of failures occurring in s
+ * @return
+ */
+public fun getFailureModel(failureInterval: Double): FailureModel? {
+    return if (failureInterval > 0) {
+        Grid5000(Duration.ofSeconds(failureInterval.roundToLong()))
+    } else {
+        null
+    }
 }
