@@ -116,7 +116,7 @@ public fun runScenario(
         val serviceDomain = "compute.opendc.org"
         Provisioner(dispatcher, seed).use { provisioner ->
 
-            val topology = clusterTopology(scenario.topology.pathToFile, Random(seed))
+            val topology = clusterTopology(scenario.topologySpec.pathToFile, Random(seed))
             provisioner.runSteps(
                 setupComputeService(
                     serviceDomain,
@@ -125,17 +125,49 @@ public fun runScenario(
                 setupHosts(serviceDomain, topology, optimize = true),
             )
 
-            val workloadLoader = ComputeWorkloadLoader(File(scenario.workload.pathToFile))
-            val vms = getWorkloadType(scenario.workload.type).resolve(workloadLoader, Random(seed))
+            val workloadLoader = ComputeWorkloadLoader(File(scenario.workloadSpec.pathToFile))
+            val vms = getWorkloadType(scenario.workloadSpec.type).resolve(workloadLoader, Random(seed))
 
             val carbonTrace = getCarbonTrace(scenario.carbonTracePath)
             val startTime = Duration.ofMillis(vms.minOf { it.startTime }.toEpochMilli())
             addExportModel(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace, index)
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
-            service.replay(timeSource, vms, failureModelSpec = scenario.failureModel, seed = seed)
+            service.replay(timeSource, vms, failureModelSpec = scenario.failureModelSpec, seed = seed)
         }
     }
+
+/**
+ * When the simulation is run, saves the simulation results into a seed folder. This is useful for debugging purposes.
+ * @param provisioner The provisioner used to setup and run the simulation.
+ * @param serviceDomain The domain of the compute service.
+ * @param scenario The scenario being run in the simulation.
+ * @param seed The seed used for randomness in the simulation.
+ * @param partition The partition name for the output data.
+ * @param startTime The start time of the simulation.
+
+ */
+public fun saveInSeedFolder(
+    provisioner: Provisioner,
+    serviceDomain: String,
+    scenario: Scenario,
+    seed: Long,
+    partition: String,
+    startTime: Duration,
+) {
+    provisioner.runStep(
+        registerComputeMonitor(
+            serviceDomain,
+            ParquetComputeMonitor(
+                File(scenario.outputFolder),
+                partition,
+                bufferSize = 4096,
+            ),
+            Duration.ofSeconds(scenario.exportModelSpec.exportInterval),
+            startTime,
+        ),
+    )
+}
 
 /**
  * Saves the simulation results into a specific output folder received from the input.
@@ -164,7 +196,7 @@ public fun addExportModel(
                 "seed=$seed",
                 bufferSize = 4096,
             ),
-            Duration.ofSeconds(scenario.exportModel.exportInterval),
+            Duration.ofSeconds(scenario.exportModelSpec.exportInterval),
             startTime,
             carbonTrace,
         ),

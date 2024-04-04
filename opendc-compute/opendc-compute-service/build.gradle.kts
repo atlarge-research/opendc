@@ -31,6 +31,7 @@ dependencies {
     api(projects.opendcCompute.opendcComputeApi)
     implementation(projects.opendcCommon)
     implementation(libs.kotlin.logging)
+    implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-compute")))
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(libs.log4j.slf4j)

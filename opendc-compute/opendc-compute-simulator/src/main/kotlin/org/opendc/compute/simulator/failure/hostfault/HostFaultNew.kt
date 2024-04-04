@@ -20,16 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure
+package org.opendc.compute.simulator.failure.hostfault
 
+import org.opendc.compute.service.ComputeService
 import org.opendc.compute.simulator.SimHost
+import java.time.InstantSource
 
 /**
- * Interface responsible for selecting the victim(s) for fault injection.
+ * Interface responsible for applying the fault to a host.
  */
-public interface VictimSelector {
+public abstract class HostFaultNew(
+    private val service: ComputeService,
+    private val clock: InstantSource,
+) {
     /**
-     * Select the hosts from [hosts] where a fault will be injected.
+     * Apply the fault to the specified [victims].
      */
-    public fun select(hosts: Set<SimHost>): List<SimHost>
+    public abstract suspend fun apply(
+        victims: List<SimHost>,
+        faultDuration: Long
+    )
 }

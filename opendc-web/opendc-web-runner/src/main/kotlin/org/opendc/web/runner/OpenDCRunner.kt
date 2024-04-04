@@ -25,7 +25,7 @@ package org.opendc.web.runner
 import mu.KotlinLogging
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.createComputeScheduler
-import org.opendc.compute.simulator.failure.models.Grid5000
+import org.opendc.compute.simulator.failure.prefab.Grid5000
 import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService

@@ -23,6 +23,7 @@
 package org.opendc.experiments.base.scenario
 
 import AllocationPolicySpec
+import CheckpointModelSpec
 import ExportModelSpec
 import FailureModelSpec
 import ScenarioTopologySpec
@@ -41,15 +42,15 @@ import WorkloadSpec
  * @property runs The Int representing the number of runs of the scenario. It defaults to 1.
  * @property initialSeed The Int representing the initial seed of the scenario. It defaults to 0.
  */
-
 public data class Scenario(
     var id: Int = -1,
-    val topology: ScenarioTopologySpec,
-    val workload: WorkloadSpec,
-    val allocationPolicy: AllocationPolicySpec,
-    val failureModel: FailureModelSpec?,
+    val topologySpec: ScenarioTopologySpec,
+    val workloadSpec: WorkloadSpec,
+    val allocationPolicySpec: AllocationPolicySpec,
+    val failureModelSpec: FailureModelSpec?,
+    val checkpointModelSpec: CheckpointModelSpec?,
     val carbonTracePath: String? = null,
-    val exportModel: ExportModelSpec = ExportModelSpec(),
+    val exportModelSpec: ExportModelSpec = ExportModelSpec(),
     val outputFolder: String = "output",
     val name: String = "",
     val runs: Int = 1,

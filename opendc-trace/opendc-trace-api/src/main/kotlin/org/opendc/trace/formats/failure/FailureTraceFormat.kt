@@ -20,43 +20,45 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.carbon
+package org.opendc.trace.formats.failure
 
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableColumnType
 import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
-import org.opendc.trace.conv.CARBON_INTENSITY_TIMESTAMP
-import org.opendc.trace.conv.CARBON_INTENSITY_VALUE
-import org.opendc.trace.conv.TABLE_CARBON_INTENSITIES
-import org.opendc.trace.formats.carbon.parquet.CarbonIntensityReadSupport
+import org.opendc.trace.conv.FAILURE_DURATION
+import org.opendc.trace.conv.FAILURE_INTENSITY
+import org.opendc.trace.conv.FAILURE_START
+import org.opendc.trace.conv.TABLE_FAILURES
+import org.opendc.trace.formats.failure.parquet.FailureReadSupport
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.parquet.LocalParquetReader
 import java.nio.file.Path
 
 /**
- * A [TraceFormat] implementation for the Carbon Intensity trace.
+ * A [TraceFormat] implementation for the Failure Intensity trace.
  */
-public class CarbonTraceFormat : TraceFormat {
-    override val name: String = "carbon_intensity"
+public class FailureTraceFormat : TraceFormat {
+    override val name: String = "failure"
 
     override fun create(path: Path) {
         throw UnsupportedOperationException("Writing not supported for this format")
     }
 
-    override fun getTables(path: Path): List<String> = listOf(TABLE_CARBON_INTENSITIES)
+    override fun getTables(path: Path): List<String> = listOf(TABLE_FAILURES)
 
     override fun getDetails(
         path: Path,
         table: String,
     ): TableDetails {
         return when (table) {
-            TABLE_CARBON_INTENSITIES ->
+            TABLE_FAILURES ->
                 TableDetails(
                     listOf(
-                        TableColumn(CARBON_INTENSITY_TIMESTAMP, TableColumnType.Instant),
-                        TableColumn(CARBON_INTENSITY_VALUE, TableColumnType.Double),
+                        TableColumn(FAILURE_START, TableColumnType.Long),
+                        TableColumn(FAILURE_DURATION, TableColumnType.Long),
+                        TableColumn(FAILURE_INTENSITY, TableColumnType.Double),
                     ),
                 )
             else -> throw IllegalArgumentException("Table $table not supported")
@@ -69,9 +71,9 @@ public class CarbonTraceFormat : TraceFormat {
         projection: List<String>?,
     ): TableReader {
         return when (table) {
-            TABLE_CARBON_INTENSITIES -> {
-                val reader = LocalParquetReader(path, CarbonIntensityReadSupport(projection))
-                CarbonTableReader(reader)
+            TABLE_FAILURES -> {
+                val reader = LocalParquetReader(path, FailureReadSupport(projection))
+                FailureTableReader(reader)
             }
             else -> throw IllegalArgumentException("Table $table not supported")
         }

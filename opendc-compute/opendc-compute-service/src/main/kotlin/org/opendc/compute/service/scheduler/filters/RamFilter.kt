@@ -35,19 +35,21 @@ public class RamFilter(private val allocationRatio: Double) : HostFilter {
         host: HostView,
         server: Server,
     ): Boolean {
-        val requested = server.flavor.memorySize
-        val available = host.availableMemory
-        val total = host.host.model.memoryCapacity
+        val requestedMemory = server.flavor.memorySize
+        val availableMemory = host.availableMemory
+        val memoryCapacity = host.host.model.memoryCapacity
 
         // Do not allow an instance to overcommit against itself, only against
         // other instances.
-        if (requested > total) {
+        if (requestedMemory > memoryCapacity) {
             return false
         }
 
-        val limit = total * allocationRatio
-        val used = total - available
+        val limit = memoryCapacity * allocationRatio
+        val used = memoryCapacity - availableMemory
         val usable = limit - used
-        return usable >= requested
+
+        val result = usable >= requestedMemory
+        return result
     }
 }

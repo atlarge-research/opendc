@@ -20,28 +20,28 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure
+package org.opendc.compute.simulator.failure.victimselector
 
-import org.apache.commons.math3.distribution.RealDistribution
 import org.opendc.compute.simulator.SimHost
-import java.util.ArrayList
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
-import kotlin.math.roundToInt
 
 /**
  * A [VictimSelector] that stochastically selects a set of hosts to be failed.
  */
 public class StochasticVictimSelector(
-    private val size: RealDistribution,
     private val random: RandomGenerator = SplittableRandom(0),
 ) : VictimSelector {
-    override fun select(hosts: Set<SimHost>): List<SimHost> {
-        val n = size.sample().roundToInt()
-        val result = ArrayList<SimHost>(n)
+
+    override fun select(numberOfHosts: Int): List<SimHost> {
+        error("select with only int cannot be used in this type of VictimSelector");
+    }
+
+    override fun select(hosts: Set<SimHost>, numberOfHosts:Int): List<SimHost> {
+        val result = ArrayList<SimHost>(numberOfHosts)
 
         val random = random
-        var samplesNeeded = n
+        var samplesNeeded = numberOfHosts
         var remainingHosts = hosts.size
         val iterator = hosts.iterator()
 
@@ -59,5 +59,13 @@ public class StochasticVictimSelector(
         return result
     }
 
-    override fun toString(): String = "StochasticVictimSelector[$size]"
+    override fun select(failureIntensity: Double): List<SimHost> {
+        error("select with only int cannot be used in this type of VictimSelector");
+    }
+
+    override fun select(hosts: Set<SimHost>, failureIntensity:Double): List<SimHost> {
+        error("select with only int cannot be used in this type of VictimSelector");
+    }
+
+    override fun toString(): String = "StochasticVictimSelector"
 }

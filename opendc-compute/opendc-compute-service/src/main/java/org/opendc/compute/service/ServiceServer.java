@@ -25,6 +25,7 @@ package org.opendc.compute.service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,11 +47,12 @@ public final class ServiceServer implements Server {
 
     private final ComputeService service;
     private final UUID uid;
+
     private final String name;
     private final ServiceFlavor flavor;
     private final ServiceImage image;
     private final Map<String, String> labels;
-    private final Map<String, ?> meta;
+    private Map<String, ?> meta;
 
     private final List<ServerWatcher> watchers = new ArrayList<>();
     private ServerState state = ServerState.TERMINATED;
@@ -109,6 +111,13 @@ public final class ServiceServer implements Server {
     @Override
     public Map<String, Object> getMeta() {
         return Collections.unmodifiableMap(meta);
+    }
+
+    public void setWorkload(Object _workload) {
+        Map<String, Object> new_meta = new HashMap<String, Object>();
+        new_meta.put("workload", _workload);
+
+        meta = new_meta;
     }
 
     @NotNull

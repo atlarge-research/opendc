@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,25 @@
  * SOFTWARE.
  */
 
-description = "Simulator for OpenDC Compute"
+package org.opendc.compute.simulator.failure.models
 
-// Build configuration
-plugins {
-    `kotlin-library-conventions`
-}
+import org.opendc.compute.service.ComputeService
+import org.opendc.compute.simulator.failure.HostFaultInjector
+import java.time.InstantSource
+import java.util.random.RandomGenerator
+import kotlin.coroutines.CoroutineContext
 
-dependencies {
-    api(projects.opendcCompute.opendcComputeService)
-    api(projects.opendcSimulator.opendcSimulatorCompute)
-    api(libs.commons.math3)
-    implementation(projects.opendcCommon)
-    implementation(libs.kotlin.logging)
-
-    api(libs.microprofile.config)
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
-
-    implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly(libs.slf4j.simple)
+/**
+ * Factory interface for constructing [HostFaultInjector] for modeling failures of compute service hosts.
+ */
+public interface FailureModel {
+    /**
+     * Construct a [HostFaultInjector] for the specified [service].
+     */
+    public fun createInjector(
+        context: CoroutineContext,
+        clock: InstantSource,
+        service: ComputeService,
+        random: RandomGenerator,
+    ): HostFaultInjector
 }

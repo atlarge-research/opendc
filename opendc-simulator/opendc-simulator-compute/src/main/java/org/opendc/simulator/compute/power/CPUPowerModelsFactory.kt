@@ -22,6 +22,15 @@
 
 package org.opendc.simulator.compute.power
 
+// TODO: couple this correctly
+public enum class CPUPowerModel {
+    Constant,
+    Sqrt,
+    Linear,
+    Square,
+    Cubic
+}
+
 public fun getPowerModel(
     modelType: String,
     power: Double,

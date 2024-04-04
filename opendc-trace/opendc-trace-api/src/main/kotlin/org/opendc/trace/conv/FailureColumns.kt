@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,39 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure
+@file:JvmName("FailureColumns")
 
-import kotlinx.coroutines.delay
-import org.apache.commons.math3.distribution.RealDistribution
-import org.opendc.compute.simulator.SimHost
-import java.time.InstantSource
-import kotlin.math.roundToLong
+package org.opendc.trace.conv
 
 /**
- * A type of [HostFault] where the hosts are stopped and recover after some random amount of time.
+ * A column containing the task identifier.
  */
-public class StartStopHostFault(private val duration: RealDistribution) : HostFault {
-    override suspend fun apply(
-        clock: InstantSource,
-        victims: List<SimHost>,
-    ) {
-        for (host in victims) {
-            host.fail()
-        }
+public const val FAILURE_START: String = "failure_start"
 
-        val df = (duration.sample() * 1000).roundToLong() // seconds to milliseconds
+/**
+ * A column containing the task identifier.
+ */
+public const val FAILURE_DURATION: String = "failure_duration"
 
-        // Handle long overflow
-        if (clock.millis() + df <= 0) {
-            return
-        }
-
-        delay(df)
-
-        for (host in victims) {
-            host.recover()
-        }
-    }
-
-    override fun toString(): String = "StartStopHostFault[$duration]"
-}
+/**
+ * A column containing the task identifier.
+ */
+public const val FAILURE_INTENSITY: String = "failure_intensity"

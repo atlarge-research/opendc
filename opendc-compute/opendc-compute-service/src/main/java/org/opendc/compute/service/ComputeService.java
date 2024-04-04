@@ -54,6 +54,7 @@ import org.opendc.compute.service.scheduler.ComputeScheduler;
 import org.opendc.compute.service.telemetry.SchedulerStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.opendc.simulator.compute.workload.SimWorkload;
 
 /**
  * The {@link ComputeService} hosts the API implementation of the OpenDC Compute Engine.
@@ -161,7 +162,7 @@ public final class ComputeService implements AutoCloseable {
 
             serviceServer.setState(newState);
 
-            if (newState == ServerState.TERMINATED || newState == ServerState.DELETED) {
+            if (newState == ServerState.TERMINATED || newState == ServerState.DELETED || newState == ServerState.ERROR) {
                 LOGGER.info("Server {} {} {} finished", server.getUid(), server.getName(), server.getFlavor());
 
                 if (activeServers.remove(server) != null) {
@@ -353,6 +354,8 @@ public final class ComputeService implements AutoCloseable {
      * Run a single scheduling iteration.
      */
     private void doSchedule() {
+        // reorder tasks
+
         while (!queue.isEmpty()) {
             SchedulingRequest request = queue.peek();
 
@@ -363,6 +366,9 @@ public final class ComputeService implements AutoCloseable {
             }
 
             final ServiceServer server = request.server;
+            // Check if all dependencies are met
+            // otherwise continue
+
             final ServiceFlavor flavor = server.getFlavor();
             final HostView hv = scheduler.select(request.server);
 
@@ -581,6 +587,23 @@ public final class ComputeService implements AutoCloseable {
         @Override
         public String toString() {
             return "ComputeService.Client";
+        }
+
+        @Nullable
+        @Override
+        public void rescheduleServer(
+            @NotNull Server server,
+            @NotNull SimWorkload workload)
+        {
+            ServiceServer internalServer = (ServiceServer) findServer(server.getUid());
+            Host from = service.lookupHost(internalServer);
+
+            from.delete(internalServer);
+
+            internalServer.host = null;
+
+            internalServer.setWorkload(workload);
+            internalServer.start();
         }
     }
 

@@ -28,17 +28,20 @@ import kotlinx.serialization.json.decodeFromStream
 import org.opendc.compute.topology.specs.TopologySpec
 import java.io.File
 import java.io.InputStream
+import java.nio.file.Path
+import kotlin.io.path.inputStream
 
 /**
  * A helper class for reading a topology specification file.
  */
 public class TopologyReader {
-    @OptIn(ExperimentalSerializationApi::class)
-    public fun read(file: File): TopologySpec {
-        val input = file.inputStream()
-        val obj = Json.decodeFromStream<TopologySpec>(input)
 
-        return obj
+    public fun read(path: Path): TopologySpec {
+        return read(path.inputStream())
+    }
+
+    public fun read(file: File): TopologySpec {
+        return read(file.inputStream())
     }
 
     /**

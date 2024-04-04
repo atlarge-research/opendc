@@ -24,7 +24,9 @@
 
 package org.opendc.experiments.base.runner
 
+import CheckpointModelSpec
 import FailureModelSpec
+import getFailureModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -34,8 +36,11 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
 import org.opendc.compute.service.ComputeService
+import org.opendc.compute.simulator.failure.models.FailureModelNew
 import org.opendc.compute.workload.VirtualMachine
 import java.time.InstantSource
+import java.util.Random
+import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 
 /**
@@ -45,7 +50,7 @@ import kotlin.math.max
  */
 public class RunningServerWatcher : ServerWatcher {
     // TODO: make this changeable
-    private val unlockStates: List<ServerState> = listOf(ServerState.TERMINATED, ServerState.ERROR, ServerState.DELETED)
+    private val unlockStates: List<ServerState> = listOf(ServerState.DELETED, ServerState.TERMINATED)
 
     private val mutex: Mutex = Mutex()
 
@@ -80,18 +85,23 @@ public suspend fun ComputeService.replay(
     clock: InstantSource,
     trace: List<VirtualMachine>,
     failureModelSpec: FailureModelSpec? = null,
+    checkpointModelSpec: CheckpointModelSpec? = null,
     seed: Long = 0,
     submitImmediately: Boolean = false,
 ) {
-    // TODO: add failureModel functionality
     val client = newClient()
+
+    // Create a failure model based on the failureModelSpec, if not null, otherwise set failureModel to null
+    val failureModel: FailureModelNew? = failureModelSpec?.let {
+        getFailureModel(coroutineContext, clock, this, Random(seed), it) }
 
     // Create new image for the virtual machine
     val image = client.newImage("vm-image")
 
     try {
         coroutineScope {
-            // TODO: start failure model when implemented
+            // Start the fault injector
+            failureModel?.start()
 
             var simulationOffset = Long.MIN_VALUE
 
@@ -109,7 +119,17 @@ public suspend fun ComputeService.replay(
                     delay(max(0, (start - now - simulationOffset)))
                 }
 
-                val workload = entry.trace.createWorkload(start)
+                val checkpointTime = checkpointModelSpec?.checkpointTime ?: 0L
+                val checkpointWait = checkpointModelSpec?.checkpointWait ?: 0L
+
+//                val workload = SimRuntimeWorkload(
+//                    entry.duration,
+//                    1.0,
+//                    checkpointTime,
+//                    checkpointWait
+//                )
+
+                val workload = entry.trace.createWorkload(start, checkpointTime, checkpointWait)
                 val meta = mutableMapOf<String, Any>("workload" to workload)
 
                 launch {
@@ -140,7 +160,7 @@ public suspend fun ComputeService.replay(
         }
         yield()
     } finally {
-        // TODO: close failure model when implemented
+        failureModel?.close()
         client.close()
     }
 }

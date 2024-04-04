@@ -29,9 +29,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.apache.commons.math3.distribution.RealDistribution
 import org.opendc.compute.simulator.SimHost
-import org.opendc.compute.simulator.failure.HostFault
+import org.opendc.compute.simulator.failure.hostfault.HostFault
 import org.opendc.compute.simulator.failure.HostFaultInjector
-import org.opendc.compute.simulator.failure.VictimSelector
+import org.opendc.compute.simulator.failure.victimselector.VictimSelector
 import java.time.InstantSource
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToLong
@@ -46,7 +46,7 @@ import kotlin.math.roundToLong
  * @param selector The [VictimSelector] to select the host victims.
  * @param fault The type of [HostFault] to inject.
  */
-internal class HostFaultInjectorImpl(
+internal class RandomHostFaultInjector(
     private val context: CoroutineContext,
     private val clock: InstantSource,
     private val hosts: Set<SimHost>,
@@ -94,7 +94,7 @@ internal class HostFaultInjectorImpl(
 
             delay(d)
 
-            val victims = selector.select(hosts)
+            val victims = selector.select(hosts, 1)
             fault.apply(clock, victims)
         }
     }

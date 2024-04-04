@@ -190,6 +190,9 @@ public class SimHost(
     override fun delete(server: Server) {
         val guest = guests[server] ?: return
         guest.delete()
+
+        guests.remove(server)
+        localGuests.remove(guest)
     }
 
     override fun addListener(listener: HostListener) {

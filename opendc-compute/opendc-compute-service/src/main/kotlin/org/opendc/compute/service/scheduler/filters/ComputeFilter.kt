@@ -34,7 +34,8 @@ public class ComputeFilter : HostFilter {
         host: HostView,
         server: Server,
     ): Boolean {
-        return host.host.state == HostState.UP
+        val result = host.host.state == HostState.UP
+        return result
     }
 
     override fun toString(): String = "ComputeFilter"

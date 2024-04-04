@@ -27,6 +27,7 @@ import org.opendc.trace.TableWriter
 import org.opendc.trace.azure.AzureTraceFormat
 import org.opendc.trace.bitbrains.BitbrainsTraceFormat
 import org.opendc.trace.formats.carbon.CarbonTraceFormat
+import org.opendc.trace.formats.failure.FailureTraceFormat
 import org.opendc.trace.formats.opendc.OdcVmTraceFormat
 import org.opendc.trace.gwf.GwfTraceFormat
 import org.opendc.trace.swf.SwfTraceFormat
@@ -124,6 +125,7 @@ public interface TraceFormat {
                 "azure" -> AzureTraceFormat()
                 "bitbrains" -> BitbrainsTraceFormat()
                 "carbon" -> CarbonTraceFormat()
+                "failure" -> FailureTraceFormat()
                 "gwf" -> GwfTraceFormat()
                 "opendc-vm" -> OdcVmTraceFormat()
                 "swf" -> SwfTraceFormat()

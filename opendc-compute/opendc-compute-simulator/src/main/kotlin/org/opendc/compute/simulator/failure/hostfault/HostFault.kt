@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure
+package org.opendc.compute.simulator.failure.hostfault
 
 import org.opendc.compute.simulator.SimHost
 import java.time.InstantSource
@@ -34,6 +34,6 @@ public interface HostFault {
      */
     public suspend fun apply(
         clock: InstantSource,
-        victims: List<SimHost>,
+        victims: List<SimHost>
     )
 }

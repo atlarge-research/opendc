@@ -24,7 +24,9 @@ package org.opendc.compute.simulator.failure
 
 import org.apache.commons.math3.distribution.RealDistribution
 import org.opendc.compute.simulator.SimHost
-import org.opendc.compute.simulator.internal.HostFaultInjectorImpl
+import org.opendc.compute.simulator.failure.hostfault.HostFault
+import org.opendc.compute.simulator.failure.victimselector.VictimSelector
+import org.opendc.compute.simulator.internal.RandomHostFaultInjector
 import java.time.Clock
 import java.time.InstantSource
 import kotlin.coroutines.CoroutineContext
@@ -61,6 +63,6 @@ public interface HostFaultInjector : AutoCloseable {
             iat: RealDistribution,
             selector: VictimSelector,
             fault: HostFault,
-        ): HostFaultInjector = HostFaultInjectorImpl(context, clock, hosts, iat, selector, fault)
+        ): HostFaultInjector = RandomHostFaultInjector(context, clock, hosts, iat, selector, fault)
     }
 }

@@ -22,21 +22,33 @@
 
 @file:JvmName("FailureModels")
 
-package org.opendc.compute.simulator.failure.models
+package org.opendc.compute.simulator.failure.prefab
 
+import org.apache.commons.math3.distribution.ConstantRealDistribution
 import org.apache.commons.math3.distribution.LogNormalDistribution
 import org.apache.commons.math3.random.Well19937c
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.simulator.SimHost
-import org.opendc.compute.simulator.failure.FailureModel
-import org.opendc.compute.simulator.failure.HostFaultInjector
-import org.opendc.compute.simulator.failure.StartStopHostFault
-import org.opendc.compute.simulator.failure.StochasticVictimSelector
-import java.time.Duration
+import org.opendc.compute.simulator.failure.models.SampleBasedFailureModel
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.ln
+
+public enum class FailurePrefab {
+    Grid5000,
+}
+
+public fun getFailureModelPrefab(context: CoroutineContext,
+                                 clock: InstantSource,
+                                 service: ComputeService,
+                                 random: RandomGenerator,
+                                 prefab: FailurePrefab): SampleBasedFailureModel {
+    when(prefab) {
+        FailurePrefab.Grid5000 -> return createGrid5000(context, clock, service, random)
+
+        else -> error("Unknown failure prefab: $prefab")
+    }
+}
+
 
 /**
  * A [FailureModel] based on the GRID'5000 failure trace.
@@ -44,27 +56,20 @@ import kotlin.math.ln
  * This fault injector uses parameters from the GRID'5000 failure trace as described in
  * "A Framework for the Study of Grid Inter-Operation Mechanisms", A. Iosup, 2009.
  */
-public class Grid5000(private val failureInterval: Duration) : FailureModel {
-    override fun createInjector(
-        context: CoroutineContext,
-        clock: InstantSource,
-        service: ComputeService,
-        random: RandomGenerator,
-    ): HostFaultInjector {
-        val rng = Well19937c(random.nextLong())
-        val hosts = service.hosts.map { it as SimHost }.toSet()
+public fun createGrid5000(context: CoroutineContext,
+                          clock: InstantSource,
+                          service: ComputeService,
+                          random: RandomGenerator): SampleBasedFailureModel {
+    val rng = Well19937c(random.nextLong())
 
-        // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
-        // GRID'5000
-        return HostFaultInjector(
-            context,
-            clock,
-            hosts,
-            iat = LogNormalDistribution(rng, ln(failureInterval.toHours().toDouble()), 1.03),
-            selector = StochasticVictimSelector(LogNormalDistribution(rng, 1.88, 1.25), random),
-            fault = StartStopHostFault(LogNormalDistribution(rng, 8.89, 2.71)),
-        )
-    }
+    return SampleBasedFailureModel(
+        context,
+        clock,
+        service,
+        random,
 
-    override fun toString(): String = "Grid5000FailureModel"
+        LogNormalDistribution(rng, 1.0, 0.1),
+        LogNormalDistribution(rng, 1.0, 0.1),
+        ConstantRealDistribution(0.5)
+    )
 }

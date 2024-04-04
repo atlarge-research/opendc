@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,19 @@
  * SOFTWARE.
  */
 
-description = "Simulator for OpenDC Compute"
+package org.opendc.compute.simulator.failure.victimselector
 
-// Build configuration
-plugins {
-    `kotlin-library-conventions`
-}
+import org.opendc.compute.simulator.SimHost
 
-dependencies {
-    api(projects.opendcCompute.opendcComputeService)
-    api(projects.opendcSimulator.opendcSimulatorCompute)
-    api(libs.commons.math3)
-    implementation(projects.opendcCommon)
-    implementation(libs.kotlin.logging)
-
-    api(libs.microprofile.config)
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
-
-    implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly(libs.slf4j.simple)
+/**
+ * Interface responsible for selecting the victim(s) for fault injection.
+ */
+public interface VictimSelector {
+    /**
+     * Select the hosts from [hosts] where a fault will be injected.
+     */
+    public fun select(hosts: Set<SimHost>, numberOfHosts:Int): List<SimHost>
+    public fun select(numberOfHosts:Int): List<SimHost>
+    public fun select(failureIntensity: Double): List<SimHost>
+    public fun select(hosts: Set<SimHost>, failureIntensity: Double): List<SimHost>
 }

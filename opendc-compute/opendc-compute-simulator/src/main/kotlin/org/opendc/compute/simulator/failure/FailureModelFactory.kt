@@ -22,9 +22,7 @@
 
 package org.opendc.compute.simulator.failure
 
-import org.opendc.compute.simulator.failure.models.Grid5000
-import java.time.Duration
-import kotlin.math.roundToLong
+import org.opendc.compute.simulator.failure.models.FailureModelNew
 
 /**
  * Get failure model
@@ -32,9 +30,10 @@ import kotlin.math.roundToLong
  * @param failureInterval The interval of failures occurring in s
  * @return
  */
-public fun getFailureModel(failureInterval: Double): FailureModel? {
+public fun getFailureModelOld(failureInterval: Long): FailureModelNew? {
     return if (failureInterval > 0) {
-        Grid5000(Duration.ofSeconds(failureInterval.roundToLong()))
+//        createGrid5000()
+        null
     } else {
         null
     }

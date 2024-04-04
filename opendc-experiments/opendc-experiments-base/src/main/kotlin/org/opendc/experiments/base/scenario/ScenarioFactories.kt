@@ -22,8 +22,9 @@
 
 package org.opendc.experiments.base.scenario
 
+import AllocationPolicySpec
+import FailureModelSpec
 import ScenarioTopologySpec
-import org.opendc.experiments.base.scenario.specs.ScenarioSpec
 import java.io.File
 
 private val scenarioReader = ScenarioReader()
@@ -70,25 +71,28 @@ public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
         for (workloadSpec in scenarioSpec.workloads) {
             for (allocationPolicySpec in scenarioSpec.allocationPolicies) {
                 for (failureModelSpec in scenarioSpec.failureModels) {
-                    for (carbonTracePath in scenarioSpec.carbonTracePaths) {
-                        for (exportModelSpec in scenarioSpec.exportModels) {
-                            val scenario =
-                                Scenario(
-                                    id = scenarioID,
-                                    topology = scenarioTopologySpec,
-                                    workload = workloadSpec,
-                                    allocationPolicy = allocationPolicySpec,
-                                    failureModel = failureModelSpec,
-                                    carbonTracePath = carbonTracePath,
-                                    exportModel = exportModelSpec,
-                                    outputFolder = outputFolder,
-                                    name = scenarioID.toString(),
-                                    runs = scenarioSpec.runs,
-                                    initialSeed = scenarioSpec.initialSeed,
-                                )
-                            trackScenario(scenarioSpec, outputFolder, scenario, scenarioTopologySpec)
-                            scenarios.add(scenario)
-                            scenarioID++
+                    for (checkpointModelSpec in scenarioSpec.checkpointModels) {
+                        for (carbonTracePath in scenarioSpec.carbonTracePaths) {
+                            for (exportModelSpec in scenarioSpec.exportModels) {
+                                val scenario =
+                                    Scenario(
+                                        id = scenarioID,
+                                        topologySpec = scenarioTopologySpec,
+                                        workloadSpec = workloadSpec,
+                                        allocationPolicySpec = allocationPolicySpec,
+                                        failureModelSpec = failureModelSpec,
+                                        checkpointModelSpec = checkpointModelSpec,
+                                        carbonTracePath = carbonTracePath,
+                                        exportModelSpec = exportModelSpec,
+                                        outputFolder = scenarioSpec.outputFolder,
+                                        name = scenarioID.toString(),
+                                        runs = scenarioSpec.runs,
+                                        initialSeed = scenarioSpec.initialSeed,
+                                    )
+                                trackScenario(scenarioSpec, outputFolder, scenario, scenarioTopologySpec)
+                                scenarios.add(scenario)
+                                scenarioID++
+                            }
                         }
                     }
                 }
@@ -120,11 +124,11 @@ public fun trackScenario(
             id = scenario.id,
             name = scenarioSpec.name,
             topologies = listOf(topologySpec),
-            workloads = listOf(scenario.workload),
-            allocationPolicies = listOf(scenario.allocationPolicy),
+            workloads = listOf(scenario.workloadSpec),
+            allocationPolicies = listOf(scenario.allocationPolicySpec),
             // when implemented, add failure models here
             carbonTracePaths = listOf(scenario.carbonTracePath),
-            exportModels = listOf(scenario.exportModel),
+            exportModels = listOf(scenario.exportModelSpec),
             outputFolder = scenario.outputFolder,
             initialSeed = scenario.initialSeed,
             runs = scenario.runs,
