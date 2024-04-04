@@ -47,7 +47,7 @@ internal class PortfolioCommand : CliktCommand(name = "portfolio") {
      * The path to the environment directory.
      */
     private val portfolioPath by option("--portfolio-path", help = "path to portfolio file")
-        .file(canBeDir = true, canBeFile = false)
+        .file(canBeDir = false, canBeFile = true)
         .defaultLazy { File("resources/portfolio.json") }
 
     /**

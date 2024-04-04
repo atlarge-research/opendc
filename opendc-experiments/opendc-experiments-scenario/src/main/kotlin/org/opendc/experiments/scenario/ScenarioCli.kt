@@ -47,7 +47,7 @@ internal class ScenarioCommand : CliktCommand(name = "scenario") {
      * The path to the environment directory.
      */
     private val scenarioPath by option("--scenario-path", help = "path to scenario file")
-        .file(canBeDir = true, canBeFile = false)
+        .file(canBeDir = false, canBeFile = true)
         .defaultLazy { File("resources/scenario.json") }
 
     /**
