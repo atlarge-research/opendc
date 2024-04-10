@@ -38,6 +38,11 @@ public interface ServerTableReader {
     public val timestamp: Instant
 
     /**
+     * The timestamp of the current entry of the reader.
+     */
+    public val absoluteTimestamp: Instant
+
+    /**
      * The [ServerInfo] of the server to which the row belongs to.
      */
     public val server: ServerInfo

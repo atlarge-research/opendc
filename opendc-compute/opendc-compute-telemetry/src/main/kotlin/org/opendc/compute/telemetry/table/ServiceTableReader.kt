@@ -38,6 +38,11 @@ public interface ServiceTableReader {
     public val timestamp: Instant
 
     /**
+     * The timestamp of the current entry of the reader.
+     */
+    public val absoluteTimestamp: Instant
+
+    /**
      * The number of hosts that are up at this instant.
      */
     public val hostsUp: Int

@@ -41,7 +41,7 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
     /**
      * A [WriteSupport] implementation for a [ServiceTableReader].
      */
-    private class ServiceDataWriteSupport : WriteSupport<ServiceTableReader>() {
+    private class ServiceDataWriteSupport() : WriteSupport<ServiceTableReader>() {
         lateinit var recordConsumer: RecordConsumer
 
         override fun init(configuration: Configuration): WriteContext {
@@ -66,33 +66,37 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
             consumer.addLong(data.timestamp.toEpochMilli())
             consumer.endField("timestamp", 0)
 
-            consumer.startField("hosts_up", 1)
+            consumer.startField("absolute_timestamp", 1)
+            consumer.addLong(data.absoluteTimestamp.toEpochMilli())
+            consumer.endField("absolute_timestamp", 1)
+
+            consumer.startField("hosts_up", 2)
             consumer.addInteger(data.hostsUp)
-            consumer.endField("hosts_up", 1)
+            consumer.endField("hosts_up", 2)
 
-            consumer.startField("hosts_down", 2)
+            consumer.startField("hosts_down", 3)
             consumer.addInteger(data.hostsDown)
-            consumer.endField("hosts_down", 2)
+            consumer.endField("hosts_down", 3)
 
-            consumer.startField("servers_pending", 3)
+            consumer.startField("servers_pending", 4)
             consumer.addInteger(data.serversPending)
-            consumer.endField("servers_pending", 3)
+            consumer.endField("servers_pending", 4)
 
-            consumer.startField("servers_active", 4)
+            consumer.startField("servers_active", 5)
             consumer.addInteger(data.serversActive)
-            consumer.endField("servers_active", 4)
+            consumer.endField("servers_active", 5)
 
-            consumer.startField("attempts_success", 5)
+            consumer.startField("attempts_success", 6)
             consumer.addInteger(data.attemptsSuccess)
-            consumer.endField("attempts_pending", 5)
+            consumer.endField("attempts_pending", 6)
 
-            consumer.startField("attempts_failure", 6)
+            consumer.startField("attempts_failure", 7)
             consumer.addInteger(data.attemptsFailure)
-            consumer.endField("attempts_failure", 6)
+            consumer.endField("attempts_failure", 7)
 
-            consumer.startField("attempts_error", 7)
+            consumer.startField("attempts_error", 8)
             consumer.addInteger(data.attemptsError)
-            consumer.endField("attempts_error", 7)
+            consumer.endField("attempts_error", 8)
 
             consumer.endMessage()
         }
@@ -104,8 +108,10 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
                 .addFields(
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
-//                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                         .named("timestamp"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("absolute_timestamp"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT32)
                         .named("hosts_up"),
