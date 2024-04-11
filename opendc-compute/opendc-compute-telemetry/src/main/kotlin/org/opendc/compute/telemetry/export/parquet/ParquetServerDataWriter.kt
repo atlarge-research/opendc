@@ -52,7 +52,7 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
     /**
      * A [WriteSupport] implementation for a [ServerTableReader].
      */
-    private class ServerDataWriteSupport : WriteSupport<ServerTableReader>() {
+    private class ServerDataWriteSupport() : WriteSupport<ServerTableReader>() {
         lateinit var recordConsumer: RecordConsumer
 
         override fun init(configuration: Configuration): WriteContext {
@@ -77,69 +77,73 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
             consumer.addLong(data.timestamp.toEpochMilli())
             consumer.endField("timestamp", 0)
 
-            consumer.startField("server_id", 1)
-            consumer.addBinary(Binary.fromString(data.server.id))
-            consumer.endField("server_id", 1)
+            consumer.startField("absolute_timestamp", 1)
+            consumer.addLong(data.absoluteTimestamp.toEpochMilli())
+            consumer.endField("absolute_timestamp", 1)
 
-            consumer.startField("server_name", 2)
+            consumer.startField("server_id", 2)
+            consumer.addBinary(Binary.fromString(data.server.id))
+            consumer.endField("server_id", 2)
+
+            consumer.startField("server_name", 3)
             consumer.addBinary(Binary.fromString(data.server.name))
-            consumer.endField("server_name", 2)
+            consumer.endField("server_name", 3)
 
             val hostId = data.host?.id
             if (hostId != null) {
-                consumer.startField("host_id", 3)
+                consumer.startField("host_id", 4)
                 consumer.addBinary(Binary.fromString(hostId))
-                consumer.endField("host_id", 3)
+                consumer.endField("host_id", 4)
             }
 
-            consumer.startField("mem_capacity", 4)
+            consumer.startField("mem_capacity", 5)
             consumer.addLong(data.server.memCapacity)
-            consumer.endField("mem_capacity", 4)
+            consumer.endField("mem_capacity", 5)
 
-            consumer.startField("cpu_count", 5)
+            consumer.startField("cpu_count", 6)
             consumer.addInteger(data.server.cpuCount)
-            consumer.endField("cpu_count", 5)
+            consumer.endField("cpu_count", 6)
 
-            consumer.startField("cpu_limit", 6)
+            consumer.startField("cpu_limit", 7)
             consumer.addDouble(data.cpuLimit)
-            consumer.endField("cpu_limit", 6)
+            consumer.endField("cpu_limit", 7)
 
-            consumer.startField("cpu_time_active", 7)
+            consumer.startField("cpu_time_active", 8)
             consumer.addLong(data.cpuActiveTime)
-            consumer.endField("cpu_time_active", 7)
+            consumer.endField("cpu_time_active", 8)
 
-            consumer.startField("cpu_time_idle", 8)
+            consumer.startField("cpu_time_idle", 9)
             consumer.addLong(data.cpuIdleTime)
-            consumer.endField("cpu_time_idle", 8)
+            consumer.endField("cpu_time_idle", 9)
 
-            consumer.startField("cpu_time_steal", 9)
+            consumer.startField("cpu_time_steal", 10)
             consumer.addLong(data.cpuStealTime)
-            consumer.endField("cpu_time_steal", 9)
+            consumer.endField("cpu_time_steal", 10)
 
-            consumer.startField("cpu_time_lost", 10)
+            consumer.startField("cpu_time_lost", 11)
             consumer.addLong(data.cpuLostTime)
-            consumer.endField("cpu_time_lost", 10)
+            consumer.endField("cpu_time_lost", 11)
 
-            consumer.startField("uptime", 11)
+            consumer.startField("uptime", 12)
             consumer.addLong(data.uptime)
-            consumer.endField("uptime", 11)
+            consumer.endField("uptime", 12)
 
-            consumer.startField("downtime", 12)
+            consumer.startField("downtime", 13)
             consumer.addLong(data.downtime)
-            consumer.endField("downtime", 12)
+            consumer.endField("downtime", 13)
 
             val provisionTime = data.provisionTime
             if (provisionTime != null) {
-                consumer.startField("provision_time", 13)
+                consumer.startField("provision_time", 14)
                 consumer.addLong(provisionTime.toEpochMilli())
-                consumer.endField("provision_time", 13)
+                consumer.endField("provision_time", 14)
             }
 
             val bootTime = data.bootTime
             if (bootTime != null) {
-                consumer.startField("boot_time", 14)
+                consumer.startField("boot_time", 15)
                 consumer.addLong(bootTime.toEpochMilli())
-                consumer.endField("boot_time", 14)
+                consumer.endField("boot_time", 15)
             }
 
             consumer.endMessage()
@@ -155,8 +159,10 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
                 .addFields(
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
-//                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                         .named("timestamp"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("absolute_timestamp"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.BINARY)
                         .`as`(LogicalTypeAnnotation.stringType())

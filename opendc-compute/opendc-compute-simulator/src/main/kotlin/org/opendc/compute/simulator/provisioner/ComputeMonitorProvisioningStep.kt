@@ -35,13 +35,14 @@ public class ComputeMonitorProvisioningStep(
     private val serviceDomain: String,
     private val monitor: ComputeMonitor,
     private val exportInterval: Duration,
+    private val startTime: Duration = Duration.ofMillis(0),
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service =
             requireNotNull(
                 ctx.registry.resolve(serviceDomain, ComputeService::class.java),
             ) { "Compute service $serviceDomain does not exist" }
-        val metricReader = ComputeMetricReader(ctx.dispatcher, service, monitor, exportInterval)
+        val metricReader = ComputeMetricReader(ctx.dispatcher, service, monitor, exportInterval, startTime)
         return AutoCloseable { metricReader.close() }
     }
 }

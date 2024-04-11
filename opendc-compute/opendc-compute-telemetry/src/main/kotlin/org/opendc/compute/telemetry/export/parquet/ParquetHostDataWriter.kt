@@ -51,7 +51,7 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
     /**
      * A [WriteSupport] implementation for a [HostTableReader].
      */
-    private class HostDataWriteSupport : WriteSupport<HostTableReader>() {
+    private class HostDataWriteSupport() : WriteSupport<HostTableReader>() {
         lateinit var recordConsumer: RecordConsumer
 
         override fun init(configuration: Configuration): WriteContext {
@@ -76,87 +76,91 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             consumer.addLong(data.timestamp.toEpochMilli())
             consumer.endField("timestamp", 0)
 
-            consumer.startField("host_id", 1)
+            consumer.startField("absolute_timestamp", 1)
+            consumer.addLong(data.absoluteTimestamp.toEpochMilli())
+            consumer.endField("absolute_timestamp", 1)
+
+            consumer.startField("host_id", 2)
             consumer.addBinary(Binary.fromString(data.host.id))
-            consumer.endField("host_id", 1)
+            consumer.endField("host_id", 2)
 
-            consumer.startField("cpu_count", 2)
+            consumer.startField("cpu_count", 3)
             consumer.addInteger(data.host.cpuCount)
-            consumer.endField("cpu_count", 2)
+            consumer.endField("cpu_count", 3)
 
-            consumer.startField("mem_capacity", 3)
+            consumer.startField("mem_capacity", 4)
             consumer.addLong(data.host.memCapacity)
-            consumer.endField("mem_capacity", 3)
+            consumer.endField("mem_capacity", 4)
 
-            consumer.startField("guests_terminated", 4)
+            consumer.startField("guests_terminated", 5)
             consumer.addInteger(data.guestsTerminated)
-            consumer.endField("guests_terminated", 4)
+            consumer.endField("guests_terminated", 5)
 
-            consumer.startField("guests_running", 5)
+            consumer.startField("guests_running", 6)
             consumer.addInteger(data.guestsRunning)
-            consumer.endField("guests_running", 5)
+            consumer.endField("guests_running", 6)
 
-            consumer.startField("guests_error", 6)
+            consumer.startField("guests_error", 7)
             consumer.addInteger(data.guestsError)
-            consumer.endField("guests_error", 6)
+            consumer.endField("guests_error", 7)
 
-            consumer.startField("guests_invalid", 7)
+            consumer.startField("guests_invalid", 8)
             consumer.addInteger(data.guestsInvalid)
-            consumer.endField("guests_invalid", 7)
+            consumer.endField("guests_invalid", 8)
 
-            consumer.startField("cpu_limit", 8)
+            consumer.startField("cpu_limit", 9)
             consumer.addDouble(data.cpuLimit)
-            consumer.endField("cpu_limit", 8)
+            consumer.endField("cpu_limit", 9)
 
-            consumer.startField("cpu_usage", 9)
+            consumer.startField("cpu_usage", 10)
             consumer.addDouble(data.cpuUsage)
-            consumer.endField("cpu_usage", 9)
+            consumer.endField("cpu_usage", 10)
 
-            consumer.startField("cpu_demand", 10)
+            consumer.startField("cpu_demand", 11)
             consumer.addDouble(data.cpuUsage)
-            consumer.endField("cpu_demand", 10)
+            consumer.endField("cpu_demand", 11)
 
-            consumer.startField("cpu_utilization", 11)
+            consumer.startField("cpu_utilization", 12)
             consumer.addDouble(data.cpuUtilization)
-            consumer.endField("cpu_utilization", 11)
+            consumer.endField("cpu_utilization", 12)
 
-            consumer.startField("cpu_time_active", 12)
+            consumer.startField("cpu_time_active", 13)
             consumer.addLong(data.cpuActiveTime)
-            consumer.endField("cpu_time_active", 12)
+            consumer.endField("cpu_time_active", 13)
 
-            consumer.startField("cpu_time_idle", 13)
+            consumer.startField("cpu_time_idle", 14)
             consumer.addLong(data.cpuIdleTime)
-            consumer.endField("cpu_time_idle", 13)
+            consumer.endField("cpu_time_idle", 14)
 
-            consumer.startField("cpu_time_steal", 14)
+            consumer.startField("cpu_time_steal", 15)
             consumer.addLong(data.cpuStealTime)
-            consumer.endField("cpu_time_steal", 14)
+            consumer.endField("cpu_time_steal", 15)
 
-            consumer.startField("cpu_time_lost", 15)
+            consumer.startField("cpu_time_lost", 16)
             consumer.addLong(data.cpuLostTime)
-            consumer.endField("cpu_time_lost", 15)
+            consumer.endField("cpu_time_lost", 16)
 
-            consumer.startField("power_draw", 16)
+            consumer.startField("power_draw", 17)
             consumer.addDouble(data.powerDraw)
-            consumer.endField("power_draw", 16)
+            consumer.endField("power_draw", 17)
 
-            consumer.startField("energy_usage", 17)
+            consumer.startField("energy_usage", 18)
             consumer.addDouble(data.energyUsage)
-            consumer.endField("energy_usage", 17)
+            consumer.endField("energy_usage", 18)
 
-            consumer.startField("uptime", 18)
+            consumer.startField("uptime", 19)
             consumer.addLong(data.uptime)
-            consumer.endField("uptime", 18)
+            consumer.endField("uptime", 19)
 
-            consumer.startField("downtime", 19)
+            consumer.startField("downtime", 20)
             consumer.addLong(data.downtime)
-            consumer.endField("downtime", 19)
+            consumer.endField("downtime", 20)
 
             val bootTime = data.bootTime
             if (bootTime != null) {
-                consumer.startField("boot_time", 20)
+                consumer.startField("boot_time", 21)
                 consumer.addLong(bootTime.toEpochMilli())
-                consumer.endField("boot_time", 20)
+                consumer.endField("boot_time", 21)
             }
 
             consumer.endMessage()
@@ -173,8 +177,10 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                 .addFields(
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
-//                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                         .named("timestamp"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("absolute_timestamp"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.BINARY)
                         .`as`(LogicalTypeAnnotation.stringType())

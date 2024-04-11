@@ -120,6 +120,11 @@ public fun runScenario(
 
             val partition = scenario.name + "/seed=$seed"
 
+            val workloadLoader = ComputeWorkloadLoader(File(scenario.workload.pathToFile))
+            val vms = getWorkloadType(scenario.workload.type).resolve(workloadLoader, Random(seed))
+
+            val startTime = Duration.ofMillis(vms.minOf { it.startTime }.toEpochMilli())
+
             provisioner.runStep(
                 registerComputeMonitor(
                     serviceDomain,
@@ -129,13 +134,11 @@ public fun runScenario(
                         bufferSize = 4096,
                     ),
                     Duration.ofSeconds(scenario.exportModel.exportInterval),
+                    startTime,
                 ),
             )
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
-
-            val workloadLoader = ComputeWorkloadLoader(File(scenario.workload.pathToFile))
-            val vms = getWorkloadType(scenario.workload.type).resolve(workloadLoader, Random(seed))
 
             service.replay(timeSource, vms, seed, failureModel = scenario.failureModel)
         }

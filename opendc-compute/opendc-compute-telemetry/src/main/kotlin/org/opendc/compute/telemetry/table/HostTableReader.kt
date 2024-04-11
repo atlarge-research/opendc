@@ -43,6 +43,11 @@ public interface HostTableReader {
     public val timestamp: Instant
 
     /**
+     * The timestamp of the current entry of the reader.
+     */
+    public val absoluteTimestamp: Instant
+
+    /**
      * The number of guests that are in a terminated state.
      */
     public val guestsTerminated: Int

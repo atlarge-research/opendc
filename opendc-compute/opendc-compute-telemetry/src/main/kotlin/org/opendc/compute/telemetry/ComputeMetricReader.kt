@@ -54,6 +54,7 @@ public class ComputeMetricReader(
     private val service: ComputeService,
     private val monitor: ComputeMonitor,
     private val exportInterval: Duration = Duration.ofMinutes(5),
+    private val startTime: Duration = Duration.ofMillis(0),
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(dispatcher.asCoroutineDispatcher())
@@ -62,7 +63,7 @@ public class ComputeMetricReader(
     /**
      * Aggregator for service metrics.
      */
-    private val serviceTableReader = ServiceTableReaderImpl(service)
+    private val serviceTableReader = ServiceTableReaderImpl(service, startTime)
 
     /**
      * Mapping from [Host] instances to [HostTableReaderImpl]
@@ -100,14 +101,14 @@ public class ComputeMetricReader(
             val now = this.clock.instant()
 
             for (host in this.service.hosts) {
-                val reader = this.hostTableReaders.computeIfAbsent(host) { HostTableReaderImpl(it) }
+                val reader = this.hostTableReaders.computeIfAbsent(host) { HostTableReaderImpl(it, startTime) }
                 reader.record(now)
                 this.monitor.record(reader.copy())
                 reader.reset()
             }
 
             for (server in this.service.servers) {
-                val reader = this.serverTableReaders.computeIfAbsent(server) { ServerTableReaderImpl(service, it) }
+                val reader = this.serverTableReaders.computeIfAbsent(server) { ServerTableReaderImpl(service, it, startTime) }
                 reader.record(now)
                 this.monitor.record(reader.copy())
                 reader.reset()
@@ -127,7 +128,10 @@ public class ComputeMetricReader(
     /**
      * An aggregator for service metrics before they are reported.
      */
-    private class ServiceTableReaderImpl(private val service: ComputeService) : ServiceTableReader {
+    private class ServiceTableReaderImpl(
+        private val service: ComputeService,
+        private val startTime: Duration = Duration.ofMillis(0),
+    ) : ServiceTableReader {
         override fun copy(): ServiceTableReader {
             val newServiceTable = ServiceTableReaderImpl(service)
             newServiceTable.setValues(this)
@@ -137,6 +141,7 @@ public class ComputeMetricReader(
 
         override fun setValues(table: ServiceTableReader) {
             _timestamp = table.timestamp
+            _absoluteTimestamp = table.absoluteTimestamp
 
             _hostsUp = table.hostsUp
             _hostsDown = table.hostsDown
@@ -151,6 +156,10 @@ public class ComputeMetricReader(
         private var _timestamp: Instant = Instant.MIN
         override val timestamp: Instant
             get() = _timestamp
+
+        private var _absoluteTimestamp: Instant = Instant.MIN
+        override val absoluteTimestamp: Instant
+            get() = _absoluteTimestamp
 
         override val hostsUp: Int
             get() = _hostsUp
@@ -189,6 +198,7 @@ public class ComputeMetricReader(
          */
         fun record(now: Instant) {
             _timestamp = now
+            _absoluteTimestamp = now + startTime
 
             val stats = service.getSchedulerStats()
             _hostsUp = stats.hostsAvailable
@@ -205,7 +215,10 @@ public class ComputeMetricReader(
     /**
      * An aggregator for host metrics before they are reported.
      */
-    private class HostTableReaderImpl(host: Host) : HostTableReader {
+    private class HostTableReaderImpl(
+        host: Host,
+        private val startTime: Duration = Duration.ofMillis(0),
+    ) : HostTableReader {
         override fun copy(): HostTableReader {
             val newHostTable = HostTableReaderImpl(_host)
             newHostTable.setValues(this)
@@ -215,6 +228,8 @@ public class ComputeMetricReader(
 
         override fun setValues(table: HostTableReader) {
             _timestamp = table.timestamp
+            _absoluteTimestamp = table.absoluteTimestamp
+
             _guestsTerminated = table.guestsTerminated
             _guestsRunning = table.guestsRunning
             _guestsError = table.guestsError
@@ -241,6 +256,10 @@ public class ComputeMetricReader(
         override val timestamp: Instant
             get() = _timestamp
         private var _timestamp = Instant.MIN
+
+        override val absoluteTimestamp: Instant
+            get() = _absoluteTimestamp
+        private var _absoluteTimestamp = Instant.MIN
 
         override val guestsTerminated: Int
             get() = _guestsTerminated
@@ -325,6 +344,8 @@ public class ComputeMetricReader(
             val hostSysStats = _host.getSystemStats()
 
             _timestamp = now
+            _absoluteTimestamp = now + startTime
+
             _guestsTerminated = hostSysStats.guestsTerminated
             _guestsRunning = hostSysStats.guestsRunning
             _guestsError = hostSysStats.guestsError
@@ -374,7 +395,11 @@ public class ComputeMetricReader(
     /**
      * An aggregator for server metrics before they are reported.
      */
-    private class ServerTableReaderImpl(private val service: ComputeService, server: Server) : ServerTableReader {
+    private class ServerTableReaderImpl(
+        private val service: ComputeService,
+        server: Server,
+        private val startTime: Duration = Duration.ofMillis(0),
+    ) : ServerTableReader {
         override fun copy(): ServerTableReader {
             val newServerTable = ServerTableReaderImpl(service, _server)
             newServerTable.setValues(this)
@@ -386,6 +411,8 @@ public class ComputeMetricReader(
             host = table.host
 
             _timestamp = table.timestamp
+            _absoluteTimestamp = table.absoluteTimestamp
+
             _cpuLimit = table.cpuLimit
             _cpuActiveTime = table.cpuActiveTime
             _cpuIdleTime = table.cpuIdleTime
@@ -423,6 +450,10 @@ public class ComputeMetricReader(
         private var _timestamp = Instant.MIN
         override val timestamp: Instant
             get() = _timestamp
+
+        private var _absoluteTimestamp = Instant.MIN
+        override val absoluteTimestamp: Instant
+            get() = _absoluteTimestamp
 
         override val uptime: Long
             get() = _uptime - previousUptime
@@ -480,6 +511,8 @@ public class ComputeMetricReader(
             val sysStats = _host?.getSystemStats(_server)
 
             _timestamp = now
+            _absoluteTimestamp = now + startTime
+
             _cpuLimit = cpuStats?.capacity ?: 0.0
             _cpuActiveTime = cpuStats?.activeTime ?: 0
             _cpuIdleTime = cpuStats?.idleTime ?: 0
