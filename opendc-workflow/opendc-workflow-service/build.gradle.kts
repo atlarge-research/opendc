@@ -39,7 +39,6 @@ dependencies {
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(projects.opendcExperiments.opendcExperimentsWorkflow)
     testImplementation(projects.opendcTrace.opendcTraceApi)
-    testRuntimeOnly(projects.opendcTrace.opendcTraceGwf)
     testRuntimeOnly(libs.log4j.core)
     testRuntimeOnly(libs.log4j.slf4j)
 }

@@ -24,6 +24,13 @@ package org.opendc.trace.spi
 
 import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
+import org.opendc.trace.azure.AzureTraceFormat
+import org.opendc.trace.bitbrains.BitbrainsTraceFormat
+import org.opendc.trace.formats.opendc.OdcVmTraceFormat
+import org.opendc.trace.gwf.GwfTraceFormat
+import org.opendc.trace.swf.SwfTraceFormat
+import org.opendc.trace.wfformat.WfFormatTraceFormat
+import org.opendc.trace.wtf.WtfTraceFormat
 import java.nio.file.Path
 import java.util.ServiceLoader
 
@@ -107,13 +114,31 @@ public interface TraceFormat {
             return ServiceLoader.load(TraceFormat::class.java)
         }
 
+//        /**
+//         * Obtain a [TraceFormat] implementation by [name].
+//         */
+//        @JvmStatic
+//        public fun byName(name: String): TraceFormat? {
+//
+//            val loader = ServiceLoader.load(TraceFormat::class.java)
+//            return loader.find { it.name == name }
+//        }
+
         /**
          * Obtain a [TraceFormat] implementation by [name].
          */
         @JvmStatic
         public fun byName(name: String): TraceFormat? {
-            val loader = ServiceLoader.load(TraceFormat::class.java)
-            return loader.find { it.name == name }
+            return when (name) {
+                "opendc-vm" -> OdcVmTraceFormat()
+                "azure" -> AzureTraceFormat()
+                "bitbrains" -> BitbrainsTraceFormat()
+                "gwf" -> GwfTraceFormat()
+                "swf" -> SwfTraceFormat()
+                "wfformat" -> WfFormatTraceFormat()
+                "wtf" -> WtfTraceFormat()
+                else -> null
+            }
         }
     }
 }

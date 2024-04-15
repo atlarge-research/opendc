@@ -32,6 +32,5 @@ dependencies {
 
     api(libs.calcite.core)
 
-    testRuntimeOnly(projects.opendcTrace.opendcTraceOpendc)
     testRuntimeOnly(libs.slf4j.simple)
 }

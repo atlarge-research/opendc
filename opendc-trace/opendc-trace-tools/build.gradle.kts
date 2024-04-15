@@ -39,13 +39,6 @@ dependencies {
     implementation(libs.clikt)
     implementation(libs.jline)
 
-    runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
-    runtimeOnly(projects.opendcTrace.opendcTraceBitbrains)
-    runtimeOnly(projects.opendcTrace.opendcTraceAzure)
-    runtimeOnly(projects.opendcTrace.opendcTraceGwf)
-    runtimeOnly(projects.opendcTrace.opendcTraceSwf)
-    runtimeOnly(projects.opendcTrace.opendcTraceWfformat)
-    runtimeOnly(projects.opendcTrace.opendcTraceWtf)
     runtimeOnly(libs.log4j.core)
     runtimeOnly(libs.log4j.slf4j)
 }

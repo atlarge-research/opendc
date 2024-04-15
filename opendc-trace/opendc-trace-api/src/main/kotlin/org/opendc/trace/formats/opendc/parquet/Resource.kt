@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,18 @@
  * SOFTWARE.
  */
 
-description = "Workload trace library for OpenDC"
+package org.opendc.trace.formats.opendc.parquet
 
-// Build configuration
-plugins {
-    `kotlin-library-conventions`
-}
-dependencies {
+import java.time.Instant
 
-    implementation(libs.jackson.dataformat.csv)
-
-    implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-parquet")))
-    testImplementation(project(mapOf("path" to ":opendc-trace:opendc-trace-testkit")))
-}
+/**
+ * A description of a resource in a trace.
+ */
+internal data class Resource(
+    val id: String,
+    val startTime: Instant,
+    val stopTime: Instant,
+    val cpuCount: Int,
+    val cpuCapacity: Double,
+    val memCapacity: Double,
+)

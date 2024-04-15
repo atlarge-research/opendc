@@ -50,7 +50,6 @@ dependencies {
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-workload")))
     implementation(project(mapOf("path" to ":opendc-experiments:opendc-experiments-base")))
 
-    runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
     runtimeOnly(libs.log4j.core)
     runtimeOnly(libs.log4j.slf4j)
 }
