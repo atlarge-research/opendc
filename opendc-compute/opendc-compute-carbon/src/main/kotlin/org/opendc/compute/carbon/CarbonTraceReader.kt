@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,33 +20,29 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
+@file:JvmName("ComputeWorkloads")
 
-package org.opendc.trace.conv
+package org.opendc.compute.carbon
 
-/**
- * A table containing all workflows in a workload.
- */
-public const val TABLE_WORKFLOWS: String = "workflows"
+import java.io.File
+
 
 /**
- * A table containing all tasks in a workload.
+ * Construct a workload from a trace.
  */
-public const val TABLE_TASKS: String = "tasks"
+public fun getCarbonTrace(
+    pathToFile: String,
+): CarbonIntensityTrace {
+    return getCarbonTrace(File(pathToFile))
+}
 
 /**
- * A table containing all resources in a workload.
+ * Construct a workload from a trace.
  */
-public const val TABLE_RESOURCES: String = "resources"
+public fun getCarbonTrace(
+    pathToFile: File,
+): CarbonIntensityTrace {
+    val fragments = CarbonTraceLoader().get(pathToFile)
 
-/**
- * A table containing all resource states in a workload.
- */
-public const val TABLE_RESOURCE_STATES: String = "resource_states"
-
-/**
- * A table containing the groups of resources that interfere when run on the same execution platform.
- */
-public const val TABLE_INTERFERENCE_GROUPS: String = "interference_groups"
-
-public const val TABLE_CARBON_INTENSITY: String = "carbon_intensities"
+    return CarbonIntensityTrace(fragments)
+}

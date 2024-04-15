@@ -20,33 +20,14 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
+package org.opendc.trace.carbon.parquet
 
-package org.opendc.trace.conv
-
-/**
- * A table containing all workflows in a workload.
- */
-public const val TABLE_WORKFLOWS: String = "workflows"
+import java.time.Instant
 
 /**
- * A table containing all tasks in a workload.
+ * A task in the Workflow Trace Format.
  */
-public const val TABLE_TASKS: String = "tasks"
-
-/**
- * A table containing all resources in a workload.
- */
-public const val TABLE_RESOURCES: String = "resources"
-
-/**
- * A table containing all resource states in a workload.
- */
-public const val TABLE_RESOURCE_STATES: String = "resource_states"
-
-/**
- * A table containing the groups of resources that interfere when run on the same execution platform.
- */
-public const val TABLE_INTERFERENCE_GROUPS: String = "interference_groups"
-
-public const val TABLE_CARBON_INTENSITY: String = "carbon_intensities"
+internal data class CarbonIntensityFragment(
+    val timestamp: Instant,
+    val carbonIntensity: Double
+)

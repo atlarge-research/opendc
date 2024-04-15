@@ -24,6 +24,7 @@ package org.opendc.experiments.base.runner
 
 import me.tongfei.progressbar.ProgressBarBuilder
 import me.tongfei.progressbar.ProgressBarStyle
+import org.opendc.compute.carbon.getCarbonTrace
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.service.scheduler.createComputeScheduler
@@ -117,6 +118,8 @@ public fun runScenario(
                 setupComputeService(serviceDomain, { createComputeScheduler(ComputeSchedulerEnum.Mem, Random(it.seeder.nextLong())) }),
                 setupHosts(serviceDomain, scenario.topology, optimize = true),
             )
+
+            val carbonIntensityTrace = getCarbonTrace("carbon_intensity.parquet")
 
             val partition = scenario.name + "/seed=$seed"
 

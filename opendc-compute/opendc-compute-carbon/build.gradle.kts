@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,33 +20,18 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
+description = "OpenDC Compute Service implementation"
 
-package org.opendc.trace.conv
+// Build configuration
+plugins {
+    `kotlin-library-conventions`
+}
 
-/**
- * A table containing all workflows in a workload.
- */
-public const val TABLE_WORKFLOWS: String = "workflows"
+dependencies {
+    api(projects.opendcCompute.opendcComputeApi)
+    implementation(projects.opendcCommon)
+    implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))
+    implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-compute")))
 
-/**
- * A table containing all tasks in a workload.
- */
-public const val TABLE_TASKS: String = "tasks"
-
-/**
- * A table containing all resources in a workload.
- */
-public const val TABLE_RESOURCES: String = "resources"
-
-/**
- * A table containing all resource states in a workload.
- */
-public const val TABLE_RESOURCE_STATES: String = "resource_states"
-
-/**
- * A table containing the groups of resources that interfere when run on the same execution platform.
- */
-public const val TABLE_INTERFERENCE_GROUPS: String = "interference_groups"
-
-public const val TABLE_CARBON_INTENSITY: String = "carbon_intensities"
+    implementation(libs.kotlin.logging)
+}

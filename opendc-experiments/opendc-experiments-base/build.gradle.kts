@@ -41,6 +41,7 @@ dependencies {
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
     implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-core")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
 
     runtimeOnly(libs.log4j.core)
     runtimeOnly(libs.log4j.slf4j)
