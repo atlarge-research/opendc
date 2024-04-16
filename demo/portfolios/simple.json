@@ -1,0 +1,44 @@
+{
+    "scenarios": [
+        {
+            "name": "correct",
+            "topology": {
+                "pathToFile": "single.json"
+            },
+            "workload": {
+                "pathToFile": "traces/correct",
+                "type": "ComputeWorkload"
+            },
+            "allocationPolicy": {
+                "policyType": "Mem"
+            }
+        },
+        {
+            "name": "fragment_before_end_task",
+            "topology": {
+                "pathToFile": "single.json"
+            },
+            "workload": {
+                "pathToFile": "traces/fragment_before_end_task",
+                "type": "ComputeWorkload"
+            },
+            "allocationPolicy": {
+                "policyType": "Mem"
+            }
+        },
+        {
+            "name": "fragment_before_start_task",
+            "topology": {
+                "pathToFile": "single.json"
+            },
+            "workload": {
+                "pathToFile": "traces/fragment_before_start_task",
+                "type": "ComputeWorkload"
+            },
+            "allocationPolicy": {
+                "policyType": "Mem"
+            }
+        }
+
+    ]
+}
