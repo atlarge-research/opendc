@@ -57,12 +57,9 @@ dependencies {
     implementation(project(mapOf("path" to ":opendc-experiments:opendc-experiments-base")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
-    runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
-    runtimeOnly(projects.opendcTrace.opendcTraceBitbrains)
 
     cliImplementation(libs.clikt)
 
-    cliRuntimeOnly(projects.opendcTrace.opendcTraceOpendc)
     cliRuntimeOnly(libs.log4j.core)
     cliRuntimeOnly(libs.log4j.slf4j)
     cliRuntimeOnly(libs.sentry.log4j2)
