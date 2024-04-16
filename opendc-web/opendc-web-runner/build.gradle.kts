@@ -58,7 +58,6 @@ dependencies {
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
 
-
     cliImplementation(libs.clikt)
 
     cliRuntimeOnly(libs.log4j.core)
