@@ -38,3 +38,17 @@ public fun getPowerModel(
         else -> throw IllegalArgumentException("Unknown power modelType $modelType")
     }
 }
+
+public fun getPowerModel(
+    modelType: String
+): CpuPowerModel {
+    return when (modelType) {
+        "constant" -> CpuPowerModels.constant(200.0)
+        "sqrt" -> CpuPowerModels.sqrt(350.0, 200.0)
+        "linear" -> CpuPowerModels.linear(350.0, 200.0)
+        "square" -> CpuPowerModels.square(350.0, 200.0)
+        "cubic" -> CpuPowerModels.cubic(350.0, 200.0)
+
+        else -> throw IllegalArgumentException("Unknown power modelType $modelType")
+    }
+}
