@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.carbon.parquet
+package org.opendc.trace.formats.carbon.parquet
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.api.InitContext
@@ -45,7 +45,7 @@ internal class CarbonIntensityReadSupport(private val projection: List<String>?)
     private val colMap =
         mapOf(
             CARBON_INTENSITY_TIMESTAMP to "timestamp",
-            CARBON_INTENSITY_VALUE to "carbon_intensity"
+            CARBON_INTENSITY_VALUE to "carbon_intensity",
         )
 
     override fun init(context: InitContext): ReadContext {

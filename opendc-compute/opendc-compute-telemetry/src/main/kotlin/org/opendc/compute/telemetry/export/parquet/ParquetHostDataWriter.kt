@@ -148,19 +148,27 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             consumer.addDouble(data.energyUsage)
             consumer.endField("energy_usage", 18)
 
-            consumer.startField("uptime", 19)
-            consumer.addLong(data.uptime)
-            consumer.endField("uptime", 19)
+            consumer.startField("carbon_intensity", 19)
+            consumer.addDouble(data.carbonIntensity)
+            consumer.endField("carbon_intensity", 19)
 
-            consumer.startField("downtime", 20)
+            consumer.startField("carbon_emission", 20)
+            consumer.addDouble(data.carbonEmission)
+            consumer.endField("carbon_emission", 20)
+
+            consumer.startField("uptime", 21)
+            consumer.addLong(data.uptime)
+            consumer.endField("uptime", 21)
+
+            consumer.startField("downtime", 22)
             consumer.addLong(data.downtime)
-            consumer.endField("downtime", 20)
+            consumer.endField("downtime", 22)
 
             val bootTime = data.bootTime
             if (bootTime != null) {
-                consumer.startField("boot_time", 21)
+                consumer.startField("boot_time", 23)
                 consumer.addLong(bootTime.toEpochMilli())
-                consumer.endField("boot_time", 21)
+                consumer.endField("boot_time", 23)
             }
 
             consumer.endMessage()
@@ -234,6 +242,12 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                         .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                         .named("energy_usage"),
                     Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("carbon_intensity"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("carbon_emission"),
+                    Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
                         .named("uptime"),
                     Types
@@ -241,7 +255,6 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                         .named("downtime"),
                     Types
                         .optional(PrimitiveType.PrimitiveTypeName.INT64)
-//                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                         .named("boot_time"),
                 )
                 .named("host")

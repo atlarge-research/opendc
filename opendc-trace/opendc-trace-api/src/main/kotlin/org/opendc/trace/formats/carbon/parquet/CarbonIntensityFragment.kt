@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,14 @@
  * SOFTWARE.
  */
 
-description = "Support for carbon trace formats"
+package org.opendc.trace.formats.carbon.parquet
 
-// Build configuration
-plugins {
-    `kotlin-library-conventions`
-    `benchmark-conventions`
-}
+import java.time.Instant
 
-dependencies {
-    api(projects.opendcTrace.opendcTraceApi)
-
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(libs.jackson.core)
-    implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-opendc")))
-
-    testImplementation(projects.opendcTrace.opendcTraceTestkit)
-    testRuntimeOnly(libs.slf4j.simple)
-}
+/**
+ * A task in the Workflow Trace Format.
+ */
+internal data class CarbonIntensityFragment(
+    val timestamp: Instant,
+    val carbonIntensity: Double,
+)

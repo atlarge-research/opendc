@@ -47,6 +47,7 @@ public data class ScenarioSpec(
     val workload: WorkloadSpec,
     val allocationPolicy: AllocationPolicySpec,
     val failureModel: FailureModelSpec = FailureModelSpec(),
+    val carbonTracePath: String? = null,
     val exportModel: ExportSpec = ExportSpec(),
     val outputFolder: String = "output",
     val initialSeed: Int = 0,
@@ -55,6 +56,7 @@ public data class ScenarioSpec(
 ) {
     init {
         require(runs > 0) { "The number of runs should always be positive" }
+        require(carbonTracePath == null || File(carbonTracePath).exists()) { "The provided carbon trace cannot be found: $carbonTracePath" }
 
         // generate name if not provided
         if (name == "") {

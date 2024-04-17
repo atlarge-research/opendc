@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.carbon.parquet
+package org.opendc.trace.formats.carbon.parquet
 
 import org.apache.parquet.io.api.Converter
 import org.apache.parquet.io.api.GroupConverter
@@ -79,7 +79,7 @@ internal class CarbonIntensityRecordMaterializer(schema: MessageType) : RecordMa
     override fun getCurrentRecord(): CarbonIntensityFragment =
         CarbonIntensityFragment(
             localTimestamp,
-            localCarbonIntensity
+            localCarbonIntensity,
         )
 
     override fun getRootConverter(): GroupConverter = root

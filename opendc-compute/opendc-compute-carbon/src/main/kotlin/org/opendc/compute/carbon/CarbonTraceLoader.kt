@@ -24,9 +24,9 @@ package org.opendc.compute.carbon
 
 import mu.KotlinLogging
 import org.opendc.trace.Trace
-import org.opendc.trace.conv.TABLE_RESOURCES
-import org.opendc.trace.conv.resourceCarbonIntensity
-import org.opendc.trace.conv.resourceStartTime
+import org.opendc.trace.conv.CARBON_INTENSITY_TIMESTAMP
+import org.opendc.trace.conv.CARBON_INTENSITY_VALUE
+import org.opendc.trace.conv.TABLE_CARBON_INTENSITY
 import java.io.File
 import java.lang.ref.SoftReference
 import java.time.Instant
@@ -46,21 +46,20 @@ public class CarbonTraceLoader {
     /**
      * The cache of workloads.
      */
-    private val cache = ConcurrentHashMap<String, SoftReference<List<CarbonIntensityFragment>>>()
+    private val cache = ConcurrentHashMap<String, SoftReference<List<CarbonFragment>>>()
 
-    private val builder = CarbonFragmentBuilder();
+    private val builder = CarbonFragmentBuilder()
+
     /**
      * Read the metadata into a workload.
      */
-    private fun parseCarbon(
-        trace: Trace
-    ): List<CarbonIntensityFragment> {
-        val reader = checkNotNull(trace.getTable(TABLE_RESOURCES)).newReader()
+    private fun parseCarbon(trace: Trace): List<CarbonFragment> {
+        val reader = checkNotNull(trace.getTable(TABLE_CARBON_INTENSITY)).newReader()
 
-        val startTimeCol = reader.resolve(resourceStartTime)
-        val carbonIntensityCol = reader.resolve(resourceCarbonIntensity)
+        val startTimeCol = reader.resolve(CARBON_INTENSITY_TIMESTAMP)
+        val carbonIntensityCol = reader.resolve(CARBON_INTENSITY_VALUE)
 
-        val entries = mutableListOf<CarbonIntensityFragment>()
+        val entries = mutableListOf<CarbonFragment>()
 
         try {
             while (reader.nextRow()) {
@@ -73,7 +72,7 @@ public class CarbonTraceLoader {
             // Make sure the virtual machines are ordered by start time
             builder.fixReportTimes()
 
-            return entries
+            return builder.fragments
         } catch (e: Exception) {
             e.printStackTrace()
             throw e
@@ -85,29 +84,8 @@ public class CarbonTraceLoader {
     /**
      * Load the trace with the specified [name] and [format].
      */
-    public fun get(
-        pathToFile: File,
-    ): List<CarbonIntensityFragment> {
-
-        val trace = Trace.open(pathToFile, "gwf")
-
-
-//        val ref =
-//            cache.compute(name) { key, oldVal ->
-//                val inst = oldVal?.get()
-//                if (inst == null) {
-//                    val path = baseDir.resolve(key)
-//
-//                    logger.info { "Loading trace $key at $path" }
-//
-//                    val trace = Trace.open(path, format)
-//                    val carbonReports = parseCarbon(trace)
-//
-//                    SoftReference(carbonReports)
-//                } else {
-//                    oldVal
-//                }
-//            }
+    public fun get(pathToFile: File): List<CarbonFragment> {
+        val trace = Trace.open(pathToFile, "carbon")
 
         return parseCarbon(trace)
     }
@@ -126,7 +104,7 @@ public class CarbonTraceLoader {
         /**
          * The total load of the trace.
          */
-        private val reports: MutableList<CarbonIntensityFragment> = mutableListOf<CarbonIntensityFragment>();
+        public val fragments: MutableList<CarbonFragment> = mutableListOf<CarbonFragment>()
 
         /**
          * Add a fragment to the trace.
@@ -138,21 +116,21 @@ public class CarbonTraceLoader {
             startTime: Instant,
             carbonIntensity: Double,
         ) {
-            reports.add(
-                CarbonIntensityFragment(startTime.toEpochMilli(), Long.MAX_VALUE, carbonIntensity)
+            fragments.add(
+                CarbonFragment(startTime.toEpochMilli(), Long.MAX_VALUE, carbonIntensity),
             )
         }
 
         fun fixReportTimes() {
-            reports.sortBy{it.startTime}
+            fragments.sortBy { it.startTime }
 
             // For each report, set the end time to the start time of the next report
-            for (i in 0..reports.size - 2) {
-                reports[i].endTime = reports[i+1].startTime
+            for (i in 0..fragments.size - 2) {
+                fragments[i].endTime = fragments[i + 1].startTime
             }
 
             // Set the start time of each report to the minimum value
-            reports[0].startTime = Long.MIN_VALUE
+            fragments[0].startTime = Long.MIN_VALUE
         }
     }
 }

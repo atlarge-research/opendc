@@ -25,24 +25,28 @@
 package org.opendc.compute.carbon
 
 import java.io.File
-
+import javax.management.InvalidAttributeValueException
 
 /**
  * Construct a workload from a trace.
  */
-public fun getCarbonTrace(
-    pathToFile: String,
-): CarbonIntensityTrace {
+public fun getCarbonTrace(pathToFile: String?): CarbonTrace {
+    if (pathToFile == null) {
+        return CarbonTrace(null)
+    }
+
     return getCarbonTrace(File(pathToFile))
 }
 
 /**
  * Construct a workload from a trace.
  */
-public fun getCarbonTrace(
-    pathToFile: File,
-): CarbonIntensityTrace {
-    val fragments = CarbonTraceLoader().get(pathToFile)
+public fun getCarbonTrace(file: File): CarbonTrace {
+    if (!file.exists()) {
+        throw InvalidAttributeValueException("The carbon trace cannot be found")
+    }
 
-    return CarbonIntensityTrace(fragments)
+    val fragments = CarbonTraceLoader().get(file)
+
+    return CarbonTrace(fragments)
 }

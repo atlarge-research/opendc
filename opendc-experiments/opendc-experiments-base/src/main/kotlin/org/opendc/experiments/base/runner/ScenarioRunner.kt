@@ -119,7 +119,7 @@ public fun runScenario(
                 setupHosts(serviceDomain, scenario.topology, optimize = true),
             )
 
-            val carbonIntensityTrace = getCarbonTrace("carbon_intensity.parquet")
+            val carbonTrace = getCarbonTrace(scenario.carbonTracePath)
 
             val partition = scenario.name + "/seed=$seed"
 
@@ -138,6 +138,7 @@ public fun runScenario(
                     ),
                     Duration.ofSeconds(scenario.exportModel.exportInterval),
                     startTime,
+                    carbonTrace,
                 ),
             )
 

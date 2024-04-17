@@ -30,6 +30,7 @@ public data class Scenario(
     val workload: WorkloadSpec,
     val allocationPolicy: AllocationPolicySpec,
     val failureModel: FailureModel?,
+    val carbonTracePath: String? = null,
     val exportModel: ExportSpec = ExportSpec(),
     val outputFolder: String = "output",
     val name: String = "",

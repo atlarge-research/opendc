@@ -42,7 +42,6 @@ public val resourceClusterID: String = "cluster_id"
 @JvmField
 public val resourceStartTime: String = "start_time"
 
-
 /**
  * Start time for the resource.
  */

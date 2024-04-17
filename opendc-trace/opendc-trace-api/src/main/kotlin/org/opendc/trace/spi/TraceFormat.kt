@@ -26,6 +26,7 @@ import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
 import org.opendc.trace.azure.AzureTraceFormat
 import org.opendc.trace.bitbrains.BitbrainsTraceFormat
+import org.opendc.trace.formats.carbon.CarbonTraceFormat
 import org.opendc.trace.formats.opendc.OdcVmTraceFormat
 import org.opendc.trace.gwf.GwfTraceFormat
 import org.opendc.trace.swf.SwfTraceFormat
@@ -114,26 +115,17 @@ public interface TraceFormat {
             return ServiceLoader.load(TraceFormat::class.java)
         }
 
-//        /**
-//         * Obtain a [TraceFormat] implementation by [name].
-//         */
-//        @JvmStatic
-//        public fun byName(name: String): TraceFormat? {
-//
-//            val loader = ServiceLoader.load(TraceFormat::class.java)
-//            return loader.find { it.name == name }
-//        }
-
         /**
          * Obtain a [TraceFormat] implementation by [name].
          */
         @JvmStatic
         public fun byName(name: String): TraceFormat? {
             return when (name) {
-                "opendc-vm" -> OdcVmTraceFormat()
                 "azure" -> AzureTraceFormat()
                 "bitbrains" -> BitbrainsTraceFormat()
+                "carbon" -> CarbonTraceFormat()
                 "gwf" -> GwfTraceFormat()
+                "opendc-vm" -> OdcVmTraceFormat()
                 "swf" -> SwfTraceFormat()
                 "wfformat" -> WfFormatTraceFormat()
                 "wtf" -> WtfTraceFormat()

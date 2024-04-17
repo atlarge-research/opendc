@@ -37,6 +37,7 @@ dependencies {
     api(libs.microprofile.config)
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testRuntimeOnly(libs.slf4j.simple)

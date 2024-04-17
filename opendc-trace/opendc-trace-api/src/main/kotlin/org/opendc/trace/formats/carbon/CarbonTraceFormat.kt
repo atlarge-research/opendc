@@ -20,16 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.carbon
+package org.opendc.trace.formats.carbon
 
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableColumnType
 import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
-import org.opendc.trace.carbon.parquet.CarbonIntensityReadSupport
 import org.opendc.trace.conv.CARBON_INTENSITY_TIMESTAMP
 import org.opendc.trace.conv.CARBON_INTENSITY_VALUE
 import org.opendc.trace.conv.TABLE_CARBON_INTENSITY
+import org.opendc.trace.formats.carbon.parquet.CarbonIntensityReadSupport
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.parquet.LocalParquetReader
@@ -38,7 +38,7 @@ import java.nio.file.Path
 /**
  * A [TraceFormat] implementation for the Carbon Intensity trace.
  */
-public class CarbonIntensityTraceFormat : TraceFormat {
+public class CarbonTraceFormat : TraceFormat {
     override val name: String = "carbon_intensity"
 
     override fun create(path: Path) {
@@ -56,7 +56,7 @@ public class CarbonIntensityTraceFormat : TraceFormat {
                 TableDetails(
                     listOf(
                         TableColumn(CARBON_INTENSITY_TIMESTAMP, TableColumnType.Instant),
-                        TableColumn(CARBON_INTENSITY_VALUE, TableColumnType.Double)
+                        TableColumn(CARBON_INTENSITY_VALUE, TableColumnType.Double),
                     ),
                 )
             else -> throw IllegalArgumentException("Table $table not supported")
@@ -71,7 +71,7 @@ public class CarbonIntensityTraceFormat : TraceFormat {
         return when (table) {
             TABLE_CARBON_INTENSITY -> {
                 val reader = LocalParquetReader(path, CarbonIntensityReadSupport(projection))
-                CarbonIntensityTableReader(reader)
+                CarbonTableReader(reader)
             }
             else -> throw IllegalArgumentException("Table $table not supported")
         }
