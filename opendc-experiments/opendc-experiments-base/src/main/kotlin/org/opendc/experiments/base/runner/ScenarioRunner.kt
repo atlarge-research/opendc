@@ -135,6 +135,7 @@ public fun runScenario(
 
             val startTime = Duration.ofMillis(vms.minOf { it.startTime }.toEpochMilli())
 
+            // saves in a seed folder
             provisioner.runStep(
                 registerComputeMonitor(
                     serviceDomain,
@@ -149,8 +150,24 @@ public fun runScenario(
                 ),
             )
 
-            val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
+            // saves results in an output folder
+            val outputFolderPath = "output/simulation-results/"
+            if (File(outputFolderPath).exists()) File(outputFolderPath).deleteRecursively()
+            provisioner.runStep(
+                registerComputeMonitor(
+                    serviceDomain,
+                    ParquetComputeMonitor(
+                        File("output/simulation-results/"),
+                        scenario.name,
+                        bufferSize = 4096,
+                        modelName = "${scenario.energyModels.names[0]}-"
+                        ),
+                    Duration.ofSeconds(scenario.exportModel.exportInterval),
+                    startTime,
+                ),
+            )
 
+            val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
             service.replay(timeSource, vms, seed, failureModel = scenario.failureModel)
         }
     }
