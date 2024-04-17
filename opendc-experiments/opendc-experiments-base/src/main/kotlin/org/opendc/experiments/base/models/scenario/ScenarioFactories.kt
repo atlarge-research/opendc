@@ -48,6 +48,7 @@ public fun getScenario(scenarioSpec: ScenarioSpec): Scenario {
         workload,
         allocationPolicy,
         failureModel,
+        scenarioSpec.carbonTracePath,
         exportModel,
         scenarioSpec.outputFolder,
         scenarioSpec.name,

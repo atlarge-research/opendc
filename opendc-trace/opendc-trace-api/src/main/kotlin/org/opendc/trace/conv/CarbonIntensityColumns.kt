@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,16 @@
  * SOFTWARE.
  */
 
-description = "Simulator for OpenDC Compute"
+@file:JvmName("CarbonIntensityColumns")
 
-// Build configuration
-plugins {
-    `kotlin-library-conventions`
-}
+package org.opendc.trace.conv
 
-dependencies {
-    api(projects.opendcCompute.opendcComputeService)
-    api(projects.opendcSimulator.opendcSimulatorCompute)
-    api(libs.commons.math3)
-    implementation(projects.opendcCommon)
-    implementation(libs.kotlin.logging)
+/**
+ * A column containing the task identifier.
+ */
+public const val CARBON_INTENSITY_TIMESTAMP: String = "timestamp"
 
-    api(libs.microprofile.config)
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly(libs.slf4j.simple)
-}
+/**
+ * A column containing the task identifier.
+ */
+public const val CARBON_INTENSITY_VALUE: String = "carbon_intensity"

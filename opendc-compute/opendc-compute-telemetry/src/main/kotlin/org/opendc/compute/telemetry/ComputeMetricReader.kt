@@ -30,6 +30,7 @@ import mu.KotlinLogging
 import org.opendc.common.Dispatcher
 import org.opendc.common.asCoroutineDispatcher
 import org.opendc.compute.api.Server
+import org.opendc.compute.carbon.CarbonTrace
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.telemetry.table.HostInfo
@@ -55,6 +56,7 @@ public class ComputeMetricReader(
     private val monitor: ComputeMonitor,
     private val exportInterval: Duration = Duration.ofMinutes(5),
     private val startTime: Duration = Duration.ofMillis(0),
+    private val carbonTrace: CarbonTrace = CarbonTrace(null),
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(dispatcher.asCoroutineDispatcher())
@@ -101,7 +103,7 @@ public class ComputeMetricReader(
             val now = this.clock.instant()
 
             for (host in this.service.hosts) {
-                val reader = this.hostTableReaders.computeIfAbsent(host) { HostTableReaderImpl(it, startTime) }
+                val reader = this.hostTableReaders.computeIfAbsent(host) { HostTableReaderImpl(it, startTime, carbonTrace) }
                 reader.record(now)
                 this.monitor.record(reader.copy())
                 reader.reset()
@@ -218,6 +220,7 @@ public class ComputeMetricReader(
     private class HostTableReaderImpl(
         host: Host,
         private val startTime: Duration = Duration.ofMillis(0),
+        private val carbonTrace: CarbonTrace = CarbonTrace(null),
     ) : HostTableReader {
         override fun copy(): HostTableReader {
             val newHostTable = HostTableReaderImpl(_host)
@@ -244,6 +247,8 @@ public class ComputeMetricReader(
             _cpuLostTime = table.cpuLostTime
             _powerDraw = table.powerDraw
             _energyUsage = table.energyUsage
+            _carbonIntensity = table.carbonIntensity
+            _carbonEmission = table.carbonEmission
             _uptime = table.uptime
             _downtime = table.downtime
             _bootTime = table.bootTime
@@ -322,6 +327,14 @@ public class ComputeMetricReader(
         private var _energyUsage = 0.0
         private var previousPowerTotal = 0.0
 
+        override val carbonIntensity: Double
+            get() = _carbonIntensity
+        private var _carbonIntensity = 0.0
+
+        override val carbonEmission: Double
+            get() = _carbonEmission
+        private var _carbonEmission = 0.0
+
         override val uptime: Long
             get() = _uptime - previousUptime
         private var _uptime = 0L
@@ -360,6 +373,9 @@ public class ComputeMetricReader(
             _cpuLostTime = hostCpuStats.lostTime
             _powerDraw = hostSysStats.powerDraw
             _energyUsage = hostSysStats.energyUsage
+            _carbonIntensity = carbonTrace.getCarbonIntensity(absoluteTimestamp)
+
+            _carbonEmission = carbonIntensity * (energyUsage / 3600000.0) // convert energy usage from J to kWh
             _uptime = hostSysStats.uptime.toMillis()
             _downtime = hostSysStats.downtime.toMillis()
             _bootTime = hostSysStats.bootTime
@@ -389,6 +405,9 @@ public class ComputeMetricReader(
             _cpuUtilization = 0.0
 
             _powerDraw = 0.0
+            _energyUsage = 0.0
+            _carbonIntensity = 0.0
+            _carbonEmission = 0.0
         }
     }
 

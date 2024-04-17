@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,14 @@
  * SOFTWARE.
  */
 
-description = "Simulator for OpenDC Compute"
+package org.opendc.trace.formats.carbon.parquet
 
-// Build configuration
-plugins {
-    `kotlin-library-conventions`
-}
+import java.time.Instant
 
-dependencies {
-    api(projects.opendcCompute.opendcComputeService)
-    api(projects.opendcSimulator.opendcSimulatorCompute)
-    api(libs.commons.math3)
-    implementation(projects.opendcCommon)
-    implementation(libs.kotlin.logging)
-
-    api(libs.microprofile.config)
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly(libs.slf4j.simple)
-}
+/**
+ * A task in the Workflow Trace Format.
+ */
+internal data class CarbonIntensityFragment(
+    val timestamp: Instant,
+    val carbonIntensity: Double,
+)

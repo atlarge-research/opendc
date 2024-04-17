@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,33 @@
  * SOFTWARE.
  */
 
-description = "Simulator for OpenDC Compute"
+@file:JvmName("ComputeWorkloads")
 
-// Build configuration
-plugins {
-    `kotlin-library-conventions`
+package org.opendc.compute.carbon
+
+import java.io.File
+import javax.management.InvalidAttributeValueException
+
+/**
+ * Construct a workload from a trace.
+ */
+public fun getCarbonTrace(pathToFile: String?): CarbonTrace {
+    if (pathToFile == null) {
+        return CarbonTrace(null)
+    }
+
+    return getCarbonTrace(File(pathToFile))
 }
 
-dependencies {
-    api(projects.opendcCompute.opendcComputeService)
-    api(projects.opendcSimulator.opendcSimulatorCompute)
-    api(libs.commons.math3)
-    implementation(projects.opendcCommon)
-    implementation(libs.kotlin.logging)
+/**
+ * Construct a workload from a trace.
+ */
+public fun getCarbonTrace(file: File): CarbonTrace {
+    if (!file.exists()) {
+        throw InvalidAttributeValueException("The carbon trace cannot be found")
+    }
 
-    api(libs.microprofile.config)
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
+    val fragments = CarbonTraceLoader().get(file)
 
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly(libs.slf4j.simple)
+    return CarbonTrace(fragments)
 }

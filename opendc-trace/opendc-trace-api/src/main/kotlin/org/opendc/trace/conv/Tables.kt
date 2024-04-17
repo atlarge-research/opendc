@@ -48,3 +48,5 @@ public const val TABLE_RESOURCE_STATES: String = "resource_states"
  * A table containing the groups of resources that interfere when run on the same execution platform.
  */
 public const val TABLE_INTERFERENCE_GROUPS: String = "interference_groups"
+
+public const val TABLE_CARBON_INTENSITY: String = "carbon_intensities"

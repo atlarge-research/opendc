@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.kotlin.logging)
     implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-parquet")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-service")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testRuntimeOnly(libs.log4j.core)

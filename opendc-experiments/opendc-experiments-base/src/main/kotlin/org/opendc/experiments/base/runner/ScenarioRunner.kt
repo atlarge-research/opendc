@@ -24,6 +24,7 @@ package org.opendc.experiments.base.runner
 
 import me.tongfei.progressbar.ProgressBarBuilder
 import me.tongfei.progressbar.ProgressBarStyle
+import org.opendc.compute.carbon.getCarbonTrace
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.service.scheduler.createComputeScheduler
@@ -118,6 +119,8 @@ public fun runScenario(
                 setupHosts(serviceDomain, scenario.topology, optimize = true),
             )
 
+            val carbonTrace = getCarbonTrace(scenario.carbonTracePath)
+
             val partition = scenario.name + "/seed=$seed"
 
             val workloadLoader = ComputeWorkloadLoader(File(scenario.workload.pathToFile))
@@ -135,6 +138,7 @@ public fun runScenario(
                     ),
                     Duration.ofSeconds(scenario.exportModel.exportInterval),
                     startTime,
+                    carbonTrace,
                 ),
             )
 

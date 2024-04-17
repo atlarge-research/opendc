@@ -43,6 +43,12 @@ public val resourceClusterID: String = "cluster_id"
 public val resourceStartTime: String = "start_time"
 
 /**
+ * Start time for the resource.
+ */
+@JvmField
+public val resourceCarbonIntensity: String = "carbon_intensity"
+
+/**
  * End time for the resource.
  */
 @JvmField
