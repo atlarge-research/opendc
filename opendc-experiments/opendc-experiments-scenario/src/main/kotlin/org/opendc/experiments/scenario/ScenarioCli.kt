@@ -58,14 +58,10 @@ internal class ScenarioCommand : CliktCommand(name = "scenario") {
         .int()
         .default(Runtime.getRuntime().availableProcessors() - 1)
 
-    private val multimodel by option ("-multi", "--multimodel", help = "run multimodel scenario")
-        .flag(default = false)
-
-    private val metamodel by option ("-meta", "--metamodel", help = "run & compute a metamodel")
-        .flag(default = false)
 
     override fun run() {
         val scenario = getScenario(scenarioPath)
         runScenario(scenario, parallelism)
+        // TODO: implement outputResults(scenario) // this will take the results, from a folder, and output them visually
     }
 }
