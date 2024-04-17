@@ -27,6 +27,7 @@ package org.opendc.experiments.scenario
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.defaultLazy
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
@@ -57,8 +58,15 @@ internal class ScenarioCommand : CliktCommand(name = "scenario") {
         .int()
         .default(Runtime.getRuntime().availableProcessors() - 1)
 
+    private val multimodel by option ("-multi", "--multimodel", help = "run multimodel scenario")
+        .flag(default = false)
+
+    private val metamodel by option ("-meta", "--metamodel", help = "run & compute a metamodel")
+        .flag(default = false)
+
     override fun run() {
         val scenario = getScenario(scenarioPath)
-        runScenario(scenario, parallelism)
+        runScenario(scenario, parallelism, multimodel, metamodel)
+//        runScenario(scenario, parallelism)
     }
 }

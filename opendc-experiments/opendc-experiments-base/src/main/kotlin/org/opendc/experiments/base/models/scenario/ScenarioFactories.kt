@@ -42,11 +42,13 @@ public fun getScenario(scenarioSpec: ScenarioSpec): Scenario {
     val allocationPolicy = scenarioSpec.allocationPolicy
     val failureModel = getFailureModel(scenarioSpec.failureModel.failureInterval)
     val exportModel = scenarioSpec.exportModel
+    val energyModels = scenarioSpec.energyModelSpec
 
     return Scenario(
         topology,
         workload,
         allocationPolicy,
+        energyModels,
         failureModel,
         scenarioSpec.carbonTracePath,
         exportModel,

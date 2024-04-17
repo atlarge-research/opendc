@@ -35,6 +35,7 @@ import org.opendc.compute.simulator.provisioner.setupHosts
 import org.opendc.compute.telemetry.export.parquet.ParquetComputeMonitor
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.experiments.base.models.portfolio.Portfolio
+import org.opendc.experiments.base.models.scenario.EnergyModelSpec
 import org.opendc.experiments.base.models.scenario.Scenario
 import org.opendc.experiments.base.models.scenario.getWorkloadType
 import org.opendc.simulator.kotlin.runSimulation
@@ -64,9 +65,18 @@ public fun runPortfolio(
 public fun runScenario(
     scenario: Scenario,
     parallelism: Int,
+    multiModel: Boolean,
+    metaModel: Boolean
 ) {
-    val pool = ForkJoinPool(parallelism)
-    runScenario(scenario, pool)
+//    scenario.energyModel.forEach(energyModel ->
+    for (name in scenario.energyModels.names) {
+        val pool = ForkJoinPool(parallelism)
+        runScenario(
+            scenario.copy(energyModels = EnergyModelSpec(List(1) { name })),
+            pool
+        )
+    }
+    // )
 }
 
 /**
@@ -94,7 +104,6 @@ public fun runScenario(
                 runScenario(scenario, scenario.initialSeed + it)
                 pb.step()
             }
-
         pb.close()
     }.join()
 }
@@ -111,11 +120,15 @@ public fun runScenario(
 ): Unit =
     runSimulation {
         val serviceDomain = "compute.opendc.org"
+        // val allocationPolicy = createComputeScheduler(scenario.allocationPolicy.name, Random(seed))
+        val newscenario = scenario
+        print(newscenario)
 
         Provisioner(dispatcher, seed).use { provisioner ->
-
             provisioner.runSteps(
-                setupComputeService(serviceDomain, { createComputeScheduler(ComputeSchedulerEnum.Mem, Random(it.seeder.nextLong())) }),
+                setupComputeService(
+                    serviceDomain,
+                    { createComputeScheduler(ComputeSchedulerEnum.Mem, Random(it.seeder.nextLong())) }),
                 setupHosts(serviceDomain, scenario.topology, optimize = true),
             )
 

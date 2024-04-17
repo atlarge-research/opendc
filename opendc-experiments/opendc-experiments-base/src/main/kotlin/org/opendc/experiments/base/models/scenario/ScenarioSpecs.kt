@@ -46,6 +46,7 @@ public data class ScenarioSpec(
     val topology: TopologySpec,
     val workload: WorkloadSpec,
     val allocationPolicy: AllocationPolicySpec,
+    val energyModelSpec: EnergyModelSpec = EnergyModelSpec(),
     val failureModel: FailureModelSpec = FailureModelSpec(),
     val carbonTracePath: String? = null,
     val exportModel: ExportSpec = ExportSpec(),
@@ -137,6 +138,14 @@ public data class AllocationPolicySpec(
 ) {
     public val name: String = policyType.toString()
 }
+
+@Serializable
+public data class EnergyModelSpec(
+    val energyModels: List<String> = listOf("constant")
+) {
+    public val names: List<String> = energyModels
+}
+
 
 /**
  * specification describing the failure model

@@ -59,6 +59,7 @@ internal class PortfolioCommand : CliktCommand(name = "portfolio") {
 
     override fun run() {
         val portfolio = getPortfolio(portfolioPath)
+
         runPortfolio(portfolio, parallelism)
     }
 }

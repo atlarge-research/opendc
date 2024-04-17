@@ -10,5 +10,13 @@
     "allocationPolicy": {
         "policyType": "Mem"
     },
-    "runs":5
+    "runs": 5,
+    "energyModelSpec": {
+        "energyModels": [
+            "linear",
+            "sqrt",
+            "quadratic",
+            "cubic"
+        ]
+    }
 }
