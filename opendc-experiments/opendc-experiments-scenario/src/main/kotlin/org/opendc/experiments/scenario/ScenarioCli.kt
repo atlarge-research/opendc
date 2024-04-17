@@ -66,7 +66,6 @@ internal class ScenarioCommand : CliktCommand(name = "scenario") {
 
     override fun run() {
         val scenario = getScenario(scenarioPath)
-        runScenario(scenario, parallelism, multimodel, metamodel)
-//        runScenario(scenario, parallelism)
+        runScenario(scenario, parallelism)
     }
 }

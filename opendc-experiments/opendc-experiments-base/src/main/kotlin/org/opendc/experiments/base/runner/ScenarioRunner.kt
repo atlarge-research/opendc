@@ -65,14 +65,13 @@ public fun runPortfolio(
 public fun runScenario(
     scenario: Scenario,
     parallelism: Int,
-    multiModel: Boolean,
-    metaModel: Boolean
 ) {
 //    scenario.energyModel.forEach(energyModel ->
     for (name in scenario.energyModels.names) {
         val pool = ForkJoinPool(parallelism)
+        val newScenario = scenario.copy(energyModels = EnergyModelSpec(List(1) { name }))
         runScenario(
-            scenario.copy(energyModels = EnergyModelSpec(List(1) { name })),
+            newScenario,
             pool
         )
     }
@@ -90,12 +89,11 @@ public fun runScenario(
     scenario: Scenario,
     pool: ForkJoinPool,
 ) {
-    val pb =
-        ProgressBarBuilder()
-            .setInitialMax(scenario.runs.toLong())
-            .setStyle(ProgressBarStyle.ASCII)
-            .setTaskName("Simulating...")
-            .build()
+    val pb = ProgressBarBuilder()
+        .setInitialMax(scenario.runs.toLong())
+        .setStyle(ProgressBarStyle.ASCII)
+        .setTaskName("Simulating...")
+        .build()
 
     pool.submit {
         LongStream.range(0, scenario.runs.toLong())
@@ -120,10 +118,6 @@ public fun runScenario(
 ): Unit =
     runSimulation {
         val serviceDomain = "compute.opendc.org"
-        // val allocationPolicy = createComputeScheduler(scenario.allocationPolicy.name, Random(seed))
-        val newscenario = scenario
-        print(newscenario)
-
         Provisioner(dispatcher, seed).use { provisioner ->
             provisioner.runSteps(
                 setupComputeService(
