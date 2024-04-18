@@ -19,22 +19,5 @@
             "policyType": "Mem"
         }
     ],
-    "runs": 1,
-    "powerModels": [
-        {
-            "type": "sqrt",
-            "idlePower": 200.0,
-            "maxPower": 350.0
-        },
-        {
-            "type": "sqrt",
-            "idlePower": 350.0,
-            "maxPower": 350.0
-        },
-        {
-            "type": "sqrt",
-            "idlePower": 200.0,
-            "maxPower": 200.0
-        }
-    ]
+    "runs": 1
 }

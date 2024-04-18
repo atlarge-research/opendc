@@ -46,7 +46,6 @@ public data class ScenarioSpec(
     val topologies: List<TopologySpec>,
     val workloads: List<WorkloadSpec>,
     val allocationPolicies: List<AllocationPolicySpec>,
-    val powerModels: List<PowerModelSpec>,
     val failureModels: List<FailureModelSpec> = listOf(FailureModelSpec()),
     val exportModels: List<ExportSpec> = listOf(ExportSpec()),
     val outputFolder: String = "output",

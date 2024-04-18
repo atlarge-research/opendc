@@ -53,7 +53,6 @@ public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
     val exportModels = scenarioSpec.exportModels
     val powerModels = getPowerModels(topologies)
     val scenarios = mutableListOf<Scenario>()
-    val powerModelllls = scenarioSpec.powerModels
 
     for (topology in scenarioSpec.topologies) {
         for (workload in workloads) {
@@ -69,7 +68,6 @@ public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
                                 ),
                                 workload = workload,
                                 allocationPolicy = allocationPolicy,
-                                powerModel = powerModelllls[i],
                                 failureModel = getFailureModel(failureModel.failureInterval),
                                 exportModel = exportModel,
                                 outputFolder = scenarioSpec.outputFolder,
