@@ -160,7 +160,6 @@ public fun runScenario(
                         File("output/simulation-results/"),
                         scenario.name,
                         bufferSize = 4096,
-                        modelName = scenario.powerModel.type,
                         ),
                     Duration.ofSeconds(scenario.exportModel.exportInterval),
                     startTime,

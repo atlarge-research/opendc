@@ -1,5 +1,0 @@
-Topology,EnergyModel,FailureFrequency,AllocationPolicy,MetricsCount,Metrics,FolderOutputName
-multi,linear,0.0,active-servers,2,cpu_utilization,cpu_usage,
-multi,linear,0.0,core-mem-inv,2,cpu_utilization,cpu_usage,
-multi,linear,0.0,mem-inv,2cpu_utilization,cpu_usage,
-multi,linear,0.0,random,2,cpu_utilization,cpu_usage,

@@ -107,7 +107,7 @@ public data class MemoryJSONSpec(
 @Serializable
 public data class PowerModelJSONSpec(
     val modelType: String,
-    val power: Double = 400.0,
-    val maxPower: Double,
     val idlePower: Double,
+    val maxPower: Double,
+    val power: Double = 400.0,
 )

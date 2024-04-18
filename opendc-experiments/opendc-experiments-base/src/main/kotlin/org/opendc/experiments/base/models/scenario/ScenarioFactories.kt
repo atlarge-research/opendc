@@ -23,8 +23,13 @@
 package org.opendc.experiments.base.models.scenario
 
 import org.opendc.compute.simulator.failure.getFailureModel
+import org.opendc.compute.topology.TopologyReader
 import org.opendc.compute.topology.clusterTopology
+import org.opendc.compute.topology.specs.TopologyJSONSpec
+import org.opendc.simulator.compute.power.CpuPowerModel
+import org.opendc.simulator.compute.power.getPowerModel
 import java.io.File
+import java.util.UUID
 
 private val scenarioReader = ScenarioReader()
 
@@ -41,33 +46,44 @@ public fun getScenario(scenarioSpec: ScenarioSpec): List<Scenario> {
 }
 
 public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
-    val topologies = scenarioSpec.topologies
+    val topologies = getTopologies(scenarioSpec.topologies)
     val workloads = scenarioSpec.workloads
     val allocationPolicies = scenarioSpec.allocationPolicies
     val failureModels = scenarioSpec.failureModels
     val exportModels = scenarioSpec.exportModels
-    val powerModels = scenarioSpec.powerModels
-
+    val powerModels = getPowerModels(topologies)
     val scenarios = mutableListOf<Scenario>()
-    for (topology in topologies) {
+    val powerModelllls = scenarioSpec.powerModels
+
+    for (topology in scenarioSpec.topologies) {
         for (workload in workloads) {
             for (allocationPolicy in allocationPolicies) {
                 for (failureModel in failureModels) {
                     for (exportModel in exportModels) {
+                        var i = 0
                         for (powerModel in powerModels) {
                             val scenario = Scenario(
-                                topology = clusterTopology(File(topology.pathToFile), powerModel.type),
+                                topology = clusterTopology(
+                                    File(topology.pathToFile),
+                                    powerModel,
+                                ),
                                 workload = workload,
                                 allocationPolicy = allocationPolicy,
-                                powerModel = powerModel,
+                                powerModel = powerModelllls[i],
                                 failureModel = getFailureModel(failureModel.failureInterval),
                                 exportModel = exportModel,
                                 outputFolder = scenarioSpec.outputFolder,
-                                name = "scenario-${scenarioSpec.name}-model-${powerModel.type}-scheduler-${allocationPolicy.policyType}",
+                                name = "scenario-${scenarioSpec.name}-model-powerModelType-scheduler-${allocationPolicy.policyType}-topology-${
+                                    topology.pathToFile.replace(
+                                        "/",
+                                        "-"
+                                    )
+                                }-${UUID.randomUUID().toString().substring(0, 8)}",
                                 runs = scenarioSpec.runs,
                                 initialSeed = scenarioSpec.initialSeed,
                             )
                             scenarios.add(scenario)
+                            i++
                         }
                     }
                 }
@@ -75,4 +91,33 @@ public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
         }
     }
     return scenarios
+}
+
+public fun getTopologies(topologies: List<TopologySpec>): List<TopologyJSONSpec> {
+    val readTopologies = mutableListOf<TopologyJSONSpec>()
+    for (topology in topologies) {
+        readTopologies.add(TopologyReader().read(File(topology.pathToFile)))
+    }
+
+    return readTopologies
+}
+
+public fun getPowerModels(topologies: List<TopologyJSONSpec>): List<CpuPowerModel> {
+    val powerModelss = mutableListOf<CpuPowerModel>()
+    for (topology in topologies) {
+        for (cluster in topology.clusters) {
+            for (host in cluster.hosts) {
+                powerModelss.add(
+                    getPowerModel(
+                        modelType = host.powerModel.modelType,
+                        power = host.powerModel.power,
+                        maxPower = host.powerModel.maxPower,
+                        idlePower = host.powerModel.idlePower
+                    )
+                )
+            }
+        }
+    }
+
+    return powerModelss
 }

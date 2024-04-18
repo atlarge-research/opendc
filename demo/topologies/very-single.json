@@ -16,6 +16,12 @@
                     ],
                     "memory": {
                         "memorySize": 82000
+                    },
+                    "powerModel": {
+                        "modelType": "sqrt",
+                        "power": 50.0,
+                        "maxPower": 50.0,
+                        "idlePower": 0.0
                     }
                 }
             ]

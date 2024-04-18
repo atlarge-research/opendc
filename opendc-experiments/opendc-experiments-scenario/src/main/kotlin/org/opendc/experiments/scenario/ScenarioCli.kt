@@ -65,3 +65,25 @@ internal class ScenarioCommand : CliktCommand(name = "scenario") {
         // TODO: implement outputResults(scenario) // this will take the results, from a folder, and output them visually
     }
 }
+
+/**
+ * Meeting with Alexandru - tips:
+ * Experiment design
+ * - either combinatorial or slice and dice
+ * - slice and dice = use a default option for each dimension, except for the dimension that is used at the time (there we use everything)
+ * - users can specify default, or let system choose automatically the median entry
+ * - placket burman design = https://en.wikipedia.org/wiki/Plackett%E2%80%93Burman_design
+
+{
+"type": "linear",
+"idlePower": 350.0,
+"maxPower": 350.0
+}
+{
+"type": "linear",
+"idlePower": 200.0,
+"maxPower": 350.0
+}
+ -- these 2 models have the "exact" same output
+ --> the CPUs are always at the peak level
+ */

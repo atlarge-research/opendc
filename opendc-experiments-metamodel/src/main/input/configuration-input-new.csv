@@ -1,2 +1,0 @@
-Topology,Workload,Scheduler,FailureFrequency,MetricsCount,Metrics,FolderOutputName
-multi,bitbrains-small,active-servers-inv,0.0,1,power_total

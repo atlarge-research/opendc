@@ -10,12 +10,18 @@
                     "cpus":
                     [
                         {
-                            "coreCount": 8,
+                            "coreCount": 32,
                             "coreSpeed": 3200
                         }
                     ],
                     "memory": {
-                        "memorySize": 32000
+                        "memorySize": 10000000
+                    },
+                    "powerModel": {
+                        "modelType": "sqrt",
+                        "power": 400.0,
+                        "maxPower": 400.0,
+                        "idlePower": 200.0
                     }
                 }
             ]

@@ -1,38 +1,40 @@
 {
     "name": "simple",
-    "topologies": [{
-        "pathToFile": "topologies/single.json"
-    }, {
-        "pathToFile": "topologies/very-single.json"
-    }],
-    "workloads": [{
-        "pathToFile": "traces/bitbrains-small",
-        "type": "ComputeWorkload"
-    }],
-    "allocationPolicies": [{
-        "policyType": "Mem"
-    }],
-    "runs": 5,
-    "powerModels": [
+    "topologies": [
         {
-            "type": "linear",
-            "idlePower": 200.0,
-            "maxPower": 350.0
+            "pathToFile": "topologies/single.json"
         },
+        {
+            "pathToFile": "topologies/very-single.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/bitbrains-small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "runs": 1,
+    "powerModels": [
         {
             "type": "sqrt",
             "idlePower": 200.0,
             "maxPower": 350.0
         },
         {
-            "type": "square",
-            "idlePower": 200.0,
+            "type": "sqrt",
+            "idlePower": 350.0,
             "maxPower": 350.0
         },
         {
-            "type": "cubic",
+            "type": "sqrt",
             "idlePower": 200.0,
-            "maxPower": 350.0
+            "maxPower": 200.0
         }
     ]
 }
