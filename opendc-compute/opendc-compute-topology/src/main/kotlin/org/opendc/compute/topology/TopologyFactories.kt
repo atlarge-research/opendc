@@ -53,7 +53,7 @@ private val reader = TopologyReader()
  */
 public fun clusterTopology(
     file: File,
-    modelType: String = "linear",
+    modelType: String,
     random: RandomGenerator = SplittableRandom(0),
 ): List<HostSpec> {
     val topology = reader.read(file)
@@ -65,7 +65,7 @@ public fun clusterTopology(
  */
 public fun clusterTopology(
     input: InputStream,
-    modelType: String = "linear",
+    modelType: String,
     random: RandomGenerator = SplittableRandom(0),
 ): List<HostSpec> {
     val topology = reader.read(input)

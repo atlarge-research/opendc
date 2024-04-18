@@ -56,7 +56,7 @@ public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
                     for (exportModel in exportModels) {
                         for (powerModel in powerModels) {
                             val scenario = Scenario(
-                                topology = clusterTopology(File(topology.pathToFile)),
+                                topology = clusterTopology(File(topology.pathToFile), powerModel.type),
                                 workload = workload,
                                 allocationPolicy = allocationPolicy,
                                 powerModel = powerModel,

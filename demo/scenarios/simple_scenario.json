@@ -23,6 +23,16 @@
             "type": "sqrt",
             "idlePower": 200.0,
             "maxPower": 350.0
+        },
+        {
+            "type": "square",
+            "idlePower": 200.0,
+            "maxPower": 350.0
+        },
+        {
+            "type": "cubic",
+            "idlePower": 200.0,
+            "maxPower": 350.0
         }
     ]
 }
