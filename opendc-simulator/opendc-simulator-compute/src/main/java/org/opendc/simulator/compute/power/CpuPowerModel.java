@@ -35,4 +35,9 @@ public interface CpuPowerModel {
      * @return A double value of CPU power consumption (in W).
      */
     double computePower(double utilization);
+    String getName();
+
+    default String getFullName() {
+        return getName();
+    }
 }
