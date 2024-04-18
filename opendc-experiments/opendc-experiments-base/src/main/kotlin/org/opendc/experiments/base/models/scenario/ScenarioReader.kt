@@ -33,31 +33,9 @@ public class ScenarioReader {
     @OptIn(ExperimentalSerializationApi::class)
     public fun read(file: File): ScenarioSpec {
         val input = file.inputStream()
-        val obj = Json.decodeFromStream<InputScenario>(input)
+        val obj = Json.decodeFromStream<ScenarioSpec>(input)
 
-        val topologies = obj.topologies
-        val workloads = obj.workloads
-        val allocationPolicies = obj.allocationPolicies
-        val powerModels = obj.powerModels
-        val failureModels = obj.failureModels.orEmpty()
-        val exportModels = obj.exportModels.orEmpty()
-        val outputFolder = obj.outputFolder
-        val initialSeed = obj.initialSeed
-        val runs = obj.runs
-        val name = obj.name
-
-        return ScenarioSpec(
-            topology = topologies[0],
-            workload = workloads[0],
-            allocationPolicy = allocationPolicies[0],
-            powerModelSpec = powerModels[0],
-            failureModel = failureModels[0],
-            exportModel = exportModels[0],
-            outputFolder = outputFolder,
-            initialSeed = initialSeed,
-            runs,
-            name,
-        )
+        return obj
     }
 
     /**
@@ -69,17 +47,17 @@ public class ScenarioReader {
         return obj
     }
 }
-
-@Serializable
-public data class InputScenario(
-    val topologies: List<TopologySpec>,
-    val workloads: List<WorkloadSpec>,
-    val allocationPolicies: List<AllocationPolicySpec>,
-    val powerModels: List<PowerModelSpec>,
-    val failureModels: List<FailureModelSpec>? = listOf(FailureModelSpec()),
-    val exportModels: List<ExportSpec> = listOf(ExportSpec()),
-    val outputFolder: String = "output",
-    val initialSeed: Int = 0,
-    val runs: Int,
-    val name: String,
-)
+//
+//@Serializable
+//public data class InputScenario(
+//    val topologies: List<TopologySpec>,
+//    val workloads: List<WorkloadSpec>,
+//    val allocationPolicies: List<AllocationPolicySpec>,
+//    val powerModels: List<PowerModelSpec>,
+//    val failureModels: List<FailureModelSpec>? = listOf(FailureModelSpec()),
+//    val exportModels: List<ExportSpec> = listOf(ExportSpec()),
+//    val outputFolder: String = "output",
+//    val initialSeed: Int = 0,
+//    val runs: Int,
+//    val name: String,
+//)

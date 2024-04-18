@@ -28,5 +28,5 @@ import org.opendc.experiments.base.models.scenario.Scenario
  * A portfolio represents a collection of scenarios are tested for the work.
  */
 public class Portfolio(
-    public val scenarios: Iterable<Scenario>,
+    public val scenarios: List<List<Scenario>>,
 )

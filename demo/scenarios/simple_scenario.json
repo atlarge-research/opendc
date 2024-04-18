@@ -2,6 +2,8 @@
     "name": "simple",
     "topologies": [{
         "pathToFile": "topologies/single.json"
+    }, {
+        "pathToFile": "topologies/very-single.json"
     }],
     "workloads": [{
         "pathToFile": "traces/bitbrains-small",

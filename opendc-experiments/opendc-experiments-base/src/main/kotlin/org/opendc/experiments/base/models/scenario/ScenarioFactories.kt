@@ -28,33 +28,51 @@ import java.io.File
 
 private val scenarioReader = ScenarioReader()
 
-public fun getScenario(filePath: String): Scenario {
+public fun getScenario(filePath: String): List<Scenario> {
     return getScenario(File(filePath))
 }
 
-public fun getScenario(file: File): Scenario {
+public fun getScenario(file: File): List<Scenario> {
     return getScenario(scenarioReader.read(file))
 }
 
-public fun getScenario(scenarioSpec: ScenarioSpec): Scenario {
-    val topology = clusterTopology(File(scenarioSpec.topology.pathToFile))
-    val workload = scenarioSpec.workload
-    val allocationPolicy = scenarioSpec.allocationPolicy
-    val failureModel = getFailureModel(scenarioSpec.failureModel.failureInterval)
-    val exportModel = scenarioSpec.exportModel
-    val energyModels = scenarioSpec.powerModelSpec
+public fun getScenario(scenarioSpec: ScenarioSpec): List<Scenario> {
+    return getScenarioCombinations(scenarioSpec)
+}
 
-    return Scenario(
-        topology,
-        workload,
-        allocationPolicy,
-        energyModels,
-        failureModel,
-        scenarioSpec.carbonTracePath,
-        exportModel,
-        scenarioSpec.outputFolder,
-        scenarioSpec.name,
-        scenarioSpec.runs,
-        scenarioSpec.initialSeed,
-    )
+public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
+    val topologies = scenarioSpec.topologies
+    val workloads = scenarioSpec.workloads
+    val allocationPolicies = scenarioSpec.allocationPolicies
+    val failureModels = scenarioSpec.failureModels
+    val exportModels = scenarioSpec.exportModels
+    val powerModels = scenarioSpec.powerModels
+
+    val scenarios = mutableListOf<Scenario>()
+    for (topology in topologies) {
+        for (workload in workloads) {
+            for (allocationPolicy in allocationPolicies) {
+                for (failureModel in failureModels) {
+                    for (exportModel in exportModels) {
+                        for (powerModel in powerModels) {
+                            val scenario = Scenario(
+                                topology = clusterTopology(File(topology.pathToFile)),
+                                workload = workload,
+                                allocationPolicy = allocationPolicy,
+                                powerModel = powerModel,
+                                failureModel = getFailureModel(failureModel.failureInterval),
+                                exportModel = exportModel,
+                                outputFolder = scenarioSpec.outputFolder,
+                                name = "scenario-${scenarioSpec.name}-model-${powerModel.type}-scheduler-${allocationPolicy.policyType}",
+                                runs = scenarioSpec.runs,
+                                initialSeed = scenarioSpec.initialSeed,
+                            )
+                            scenarios.add(scenario)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return scenarios
 }

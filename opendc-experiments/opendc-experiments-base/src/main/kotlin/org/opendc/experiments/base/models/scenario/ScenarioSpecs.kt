@@ -32,24 +32,23 @@ import java.io.File
 /**
  * specification describing a scenario
  *
- * @property topology
- * @property workload
- * @property allocationPolicy
- * @property failureModel
- * @property exportModel
+ * @property topologies
+ * @property workloads
+ * @property allocationPolicies
+ * @property failureModels
+ * @property exportModels
  * @property outputFolder
  * @property initialSeed
  * @property runs
  */
 @Serializable
 public data class ScenarioSpec(
-    val topology: TopologySpec,
-    val workload: WorkloadSpec,
-    val allocationPolicy: AllocationPolicySpec,
-    val powerModelSpec: PowerModelSpec,
-    val failureModel: FailureModelSpec = FailureModelSpec(),
-    val carbonTracePath: String? = null,
-    val exportModel: ExportSpec = ExportSpec(),
+    val topologies: List<TopologySpec>,
+    val workloads: List<WorkloadSpec>,
+    val allocationPolicies: List<AllocationPolicySpec>,
+    val powerModels: List<PowerModelSpec>,
+    val failureModels: List<FailureModelSpec> = listOf(FailureModelSpec()),
+    val exportModels: List<ExportSpec> = listOf(ExportSpec()),
     val outputFolder: String = "output",
     val initialSeed: Int = 0,
     val runs: Int = 1,
@@ -57,11 +56,10 @@ public data class ScenarioSpec(
 ) {
     init {
         require(runs > 0) { "The number of runs should always be positive" }
-        require(carbonTracePath == null || File(carbonTracePath).exists()) { "The provided carbon trace cannot be found: $carbonTracePath" }
 
         // generate name if not provided
         if (name == "") {
-            name = "workload=${workload.name}_topology=${topology.name}_allocationPolicy=${allocationPolicy.name}"
+            name = "workload=${workloads[0].name}_topology=${topologies[0].name}_allocationPolicy=${allocationPolicies[0].name}"
         }
     }
 }
