@@ -35,7 +35,7 @@ import org.opendc.compute.simulator.provisioner.setupHosts
 import org.opendc.compute.telemetry.export.parquet.ParquetComputeMonitor
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.experiments.base.models.portfolio.Portfolio
-import org.opendc.experiments.base.models.scenario.EnergyModelSpec
+import org.opendc.experiments.base.models.scenario.PowerModelSpec
 import org.opendc.experiments.base.models.scenario.Scenario
 import org.opendc.experiments.base.models.scenario.getWorkloadType
 import org.opendc.simulator.kotlin.runSimulation
@@ -67,15 +67,21 @@ public fun runScenario(
     parallelism: Int,
 ) {
 //    scenario.energyModel.forEach(energyModel ->
-    for (name in scenario.energyModels.names) {
-        val pool = ForkJoinPool(parallelism)
-        val newScenario = scenario.copy(energyModels = EnergyModelSpec(List(1) { name }))
-        runScenario(
-            newScenario,
-            pool
-        )
-    }
-    // )
+//    for (name in scenario.energyModels.names) {
+//        val pool = ForkJoinPool(parallelism)
+//        val newScenario = scenario.copy(energyModels = PowerModelSpec(List(1) { name }))
+//        runScenario(
+//            newScenario,
+//            pool
+//        )
+//    }
+//
+    val pool = ForkJoinPool(parallelism)
+    runScenario(
+        scenario,
+        pool
+    )
+//    // )
 }
 
 /**
@@ -160,7 +166,7 @@ public fun runScenario(
                         File("output/simulation-results/"),
                         scenario.name,
                         bufferSize = 4096,
-                        modelName = "${scenario.energyModels.names[0]}-"
+                        modelName = "someGoodFolderOrFileNameToBeAdded-"
                         ),
                     Duration.ofSeconds(scenario.exportModel.exportInterval),
                     startTime,

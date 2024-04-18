@@ -29,7 +29,7 @@ public data class Scenario(
     val topology: List<HostSpec>,
     val workload: WorkloadSpec,
     val allocationPolicy: AllocationPolicySpec,
-    val energyModels: EnergyModelSpec,
+    val energyModels: PowerModelSpec,
     val failureModel: FailureModel?,
     val carbonTracePath: String? = null,
     val exportModel: ExportSpec = ExportSpec(),

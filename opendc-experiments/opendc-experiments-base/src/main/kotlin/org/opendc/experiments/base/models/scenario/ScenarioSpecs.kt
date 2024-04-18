@@ -46,7 +46,7 @@ public data class ScenarioSpec(
     val topology: TopologySpec,
     val workload: WorkloadSpec,
     val allocationPolicy: AllocationPolicySpec,
-    val energyModelSpec: EnergyModelSpec = EnergyModelSpec(),
+    val powerModelSpec: PowerModelSpec,
     val failureModel: FailureModelSpec = FailureModelSpec(),
     val carbonTracePath: String? = null,
     val exportModel: ExportSpec = ExportSpec(),
@@ -140,11 +140,11 @@ public data class AllocationPolicySpec(
 }
 
 @Serializable
-public data class EnergyModelSpec(
-    val energyModels: List<String> = listOf("constant")
-) {
-    public val names: List<String> = energyModels
-}
+public data class PowerModelSpec(
+    val type: String = "constant",
+    val idlePower: Double = 200.0,
+    val maxPower: Double = 350.0,
+)
 
 
 /**

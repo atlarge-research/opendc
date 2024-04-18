@@ -1,22 +1,26 @@
 {
     "name": "simple",
-    "topology": {
+    "topologies": [{
         "pathToFile": "topologies/single.json"
-    },
-    "workload": {
+    }],
+    "workloads": [{
         "pathToFile": "traces/bitbrains-small",
         "type": "ComputeWorkload"
-    },
-    "allocationPolicy": {
+    }],
+    "allocationPolicies": [{
         "policyType": "Mem"
-    },
+    }],
     "runs": 5,
-    "energyModelSpec": {
-        "energyModels": [
-            "linear",
-            "sqrt",
-            "quadratic",
-            "cubic"
-        ]
-    }
+    "powerModels": [
+        {
+            "type": "linear",
+            "idlePower": 200.0,
+            "maxPower": 350.0
+        },
+        {
+            "type": "sqrt",
+            "idlePower": 200.0,
+            "maxPower": 350.0
+        }
+    ]
 }
