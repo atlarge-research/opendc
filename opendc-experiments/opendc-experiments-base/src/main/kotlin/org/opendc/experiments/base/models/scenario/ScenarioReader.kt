@@ -47,17 +47,3 @@ public class ScenarioReader {
         return obj
     }
 }
-//
-//@Serializable
-//public data class InputScenario(
-//    val topologies: List<TopologySpec>,
-//    val workloads: List<WorkloadSpec>,
-//    val allocationPolicies: List<AllocationPolicySpec>,
-//    val powerModels: List<PowerModelSpec>,
-//    val failureModels: List<FailureModelSpec>? = listOf(FailureModelSpec()),
-//    val exportModels: List<ExportSpec> = listOf(ExportSpec()),
-//    val outputFolder: String = "output",
-//    val initialSeed: Int = 0,
-//    val runs: Int,
-//    val name: String,
-//)

@@ -71,7 +71,7 @@ public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
                                 failureModel = getFailureModel(failureModel.failureInterval),
                                 exportModel = exportModel,
                                 outputFolder = scenarioSpec.outputFolder,
-                                name = "scenario-${scenarioSpec.name}-model-powerModelType-scheduler-${allocationPolicy.policyType}-topology-${
+                                name = "scenario-${scenarioSpec.name}-model-${powerModel.fullName}-scheduler-${allocationPolicy.policyType}-topology-${
                                     topologiess[i].pathToFile.replace(
                                         "/",
                                         "-"

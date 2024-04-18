@@ -190,7 +190,7 @@ public class CpuPowerModels {
 
         @Override
         public String getFullName() {
-            return ("SqrtPowerModel" + idlePower + "-" + maxPower);
+            return ("sqrtPowerModel-" + idlePower + "-" + maxPower);
         }
     }
 
@@ -214,7 +214,7 @@ public class CpuPowerModels {
 
         @Override
         public String getFullName() {
-            return ("LinearPowerModel" + idlePower + "-" + maxPower);
+            return ("linearPowerModel-" + idlePower + "-" + maxPower);
         }
     }
 
@@ -238,7 +238,7 @@ public class CpuPowerModels {
 
         @Override
         public String getFullName() {
-            return ("SquarePowerModel" + idlePower + "-" + maxPower);
+            return ("squarePowerModel-" + idlePower + "-" + maxPower);
         }
     }
 
@@ -262,7 +262,7 @@ public class CpuPowerModels {
 
         @Override
         public String getFullName() {
-            return ("CubicPowerModel" + idlePower + "-" + maxPower);
+            return ("cubicPowerModel-" + idlePower + "-" + maxPower);
         }
     }
 
