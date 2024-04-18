@@ -47,23 +47,23 @@ public fun getScenario(scenarioSpec: ScenarioSpec): List<Scenario> {
 
 public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
     val topologies = getTopologies(scenarioSpec.topologies)
+    val topologiess = scenarioSpec.topologies
     val workloads = scenarioSpec.workloads
     val allocationPolicies = scenarioSpec.allocationPolicies
     val failureModels = scenarioSpec.failureModels
     val exportModels = scenarioSpec.exportModels
-    val powerModels = getPowerModels(topologies)
     val scenarios = mutableListOf<Scenario>()
 
-    for (topology in scenarioSpec.topologies) {
+    for (topology in topologies) {
+        var i = 0
         for (workload in workloads) {
             for (allocationPolicy in allocationPolicies) {
                 for (failureModel in failureModels) {
                     for (exportModel in exportModels) {
-                        var i = 0
-                        for (powerModel in powerModels) {
+                        for (powerModel in getPowerModelsFromTopology(topology)) {
                             val scenario = Scenario(
                                 topology = clusterTopology(
-                                    File(topology.pathToFile),
+                                    File(topologiess[i].pathToFile),
                                     powerModel,
                                 ),
                                 workload = workload,
@@ -72,7 +72,7 @@ public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
                                 exportModel = exportModel,
                                 outputFolder = scenarioSpec.outputFolder,
                                 name = "scenario-${scenarioSpec.name}-model-powerModelType-scheduler-${allocationPolicy.policyType}-topology-${
-                                    topology.pathToFile.replace(
+                                    topologiess[i].pathToFile.replace(
                                         "/",
                                         "-"
                                     )
@@ -100,22 +100,21 @@ public fun getTopologies(topologies: List<TopologySpec>): List<TopologyJSONSpec>
     return readTopologies
 }
 
-public fun getPowerModels(topologies: List<TopologyJSONSpec>): List<CpuPowerModel> {
-    val powerModelss = mutableListOf<CpuPowerModel>()
-    for (topology in topologies) {
-        for (cluster in topology.clusters) {
-            for (host in cluster.hosts) {
-                powerModelss.add(
+public fun getPowerModelsFromTopology(topology: TopologyJSONSpec): List<CpuPowerModel> {
+    val powerModels = mutableListOf<CpuPowerModel>()
+    for (cluster in topology.clusters) {
+        for (host in cluster.hosts) {
+            for (model in host.powerModel) {
+                powerModels.add(
                     getPowerModel(
-                        modelType = host.powerModel.modelType,
-                        power = host.powerModel.power,
-                        maxPower = host.powerModel.maxPower,
-                        idlePower = host.powerModel.idlePower
+                        model.modelType,
+                        model.power,
+                        model.maxPower,
+                        model.idlePower
                     )
                 )
             }
         }
     }
-
-    return powerModelss
+    return powerModels
 }

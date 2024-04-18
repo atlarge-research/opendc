@@ -1,14 +1,11 @@
 {
-    "clusters":
-    [
+    "clusters": [
         {
             "name": "C01",
-            "hosts" :
-            [
+            "hosts": [
                 {
                     "name": "H01",
-                    "cpus":
-                    [
+                    "cpus": [
                         {
                             "coreCount": 32,
                             "coreSpeed": 3200
@@ -17,12 +14,20 @@
                     "memory": {
                         "memorySize": 10000000
                     },
-                    "powerModel": {
-                        "modelType": "sqrt",
-                        "power": 400.0,
-                        "maxPower": 400.0,
-                        "idlePower": 200.0
-                    }
+                    "powerModel": [
+                        {
+                            "modelType": "sqrt",
+                            "power": 350.0,
+                            "maxPower": 350.0,
+                            "idlePower": 200.0
+                        },
+                        {
+                            "modelType": "linear",
+                            "power": 350.0,
+                            "maxPower": 200.0,
+                            "idlePower": 50.0
+                        }
+                    ]
                 }
             ]
         }

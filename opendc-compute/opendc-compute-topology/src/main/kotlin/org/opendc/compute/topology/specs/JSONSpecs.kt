@@ -63,7 +63,7 @@ public data class HostJSONSpec(
     val name: String = "Host",
     val cpus: List<CPUJSONSpec>,
     val memory: MemoryJSONSpec,
-    val powerModel: PowerModelJSONSpec = PowerModelJSONSpec("linear", 350.0, 200.0, 400.0),
+    val powerModel: List<PowerModelJSONSpec>,
     val count: Int = 1,
 )
 

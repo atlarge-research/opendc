@@ -11,14 +11,7 @@
             },
             "allocationPolicy": {
                 "policyType": "Mem"
-            },
-            "powerModels": [
-                {
-                    "type": "sqrt",
-                    "idlePower": 200.0,
-                    "maxPower": 350.0
-                }
-            ]
+            }
         }
     ]
 }
