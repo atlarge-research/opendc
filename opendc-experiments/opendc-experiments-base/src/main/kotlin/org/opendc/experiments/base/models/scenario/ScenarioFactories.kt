@@ -47,7 +47,7 @@ public fun getScenario(scenarioSpec: ScenarioSpec): List<Scenario> {
 
 public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
     val topologies = getTopologies(scenarioSpec.topologies)
-    val topologiess = scenarioSpec.topologies
+    val topologiesRaw = scenarioSpec.topologies
     val workloads = scenarioSpec.workloads
     val allocationPolicies = scenarioSpec.allocationPolicies
     val failureModels = scenarioSpec.failureModels
@@ -63,7 +63,7 @@ public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
                         for (powerModel in getPowerModelsFromTopology(topology)) {
                             val scenario = Scenario(
                                 topology = clusterTopology(
-                                    File(topologiess[i].pathToFile),
+                                    File(topologiesRaw[i].pathToFile),
                                     powerModel,
                                 ),
                                 workload = workload,
@@ -72,7 +72,7 @@ public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
                                 exportModel = exportModel,
                                 outputFolder = scenarioSpec.outputFolder,
                                 name = "scenario-${scenarioSpec.name}-model-${powerModel.fullName}-scheduler-${allocationPolicy.policyType}-topology-${
-                                    topologiess[i].pathToFile.replace(
+                                    topologiesRaw[i].pathToFile.replace(
                                         "/",
                                         "-"
                                     )
@@ -104,7 +104,7 @@ public fun getPowerModelsFromTopology(topology: TopologyJSONSpec): List<CpuPower
     val powerModels = mutableListOf<CpuPowerModel>()
     for (cluster in topology.clusters) {
         for (host in cluster.hosts) {
-            for (model in host.powerModel) {
+            for (model in host.powerModels) {
                 powerModels.add(
                     getPowerModel(
                         model.modelType,

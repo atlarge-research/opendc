@@ -17,7 +17,7 @@
                     "memory": {
                         "memorySize": 82000
                     },
-                    "powerModel": [
+                    "powerModels": [
                         {
                             "modelType": "sqrt",
                             "power": 350.0,
