@@ -18,7 +18,7 @@
                         "memorySize": 128000
                     },
                     "powerModel": {
-                        "modelType": "sqrt",
+                        "modelType": "linear",
                         "power": 350.0,
                         "maxPower": 350.0,
                         "idlePower": 200.0

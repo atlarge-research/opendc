@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-<<<<<<<< HEAD:opendc-trace/opendc-trace-api/src/main/kotlin/org/opendc/trace/formats/carbon/parquet/CarbonIntensityFragment.kt
 package org.opendc.trace.formats.carbon.parquet
 
 import java.time.Instant
@@ -32,17 +31,8 @@ internal data class CarbonIntensityFragment(
     val timestamp: Instant,
     val carbonIntensity: Double,
 )
-========
-package org.opendc.experiments.metamodel.portfolio
-import org.opendc.experiments.base.portfolio.model.Scenario
 
 /**
  * A portfolio represents a collection of scenarios are tested for the work.
  */
-public interface Portfolio {
-    /**
-     * The scenarios that belong to this portfolio.
-     */
-    val scenarios: Iterable<Scenario>
-}
->>>>>>>> e38c249e (code runnable):opendc-experiments/opendc-experiments-metamodel/src/main/kotlin/org.opendc.experiments.metamodel/opendc/experiments/metamodel/portfolio/Portfolio.kt
+
