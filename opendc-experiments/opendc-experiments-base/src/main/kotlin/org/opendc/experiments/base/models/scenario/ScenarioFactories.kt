@@ -30,7 +30,6 @@ import org.opendc.compute.topology.TopologyReader
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.compute.topology.specs.TopologyJSONSpec
 import org.opendc.experiments.base.models.scenario.specs.ScenarioSpec
-import org.opendc.simulator.compute.power.CpuPowerModel
 import java.io.File
 import java.util.UUID
 

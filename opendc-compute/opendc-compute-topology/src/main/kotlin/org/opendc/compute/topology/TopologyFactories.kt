@@ -34,8 +34,6 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.power.CpuPowerModel
-import org.opendc.simulator.compute.power.CpuPowerModels
 import org.opendc.simulator.compute.power.getPowerModel
 import java.io.File
 import java.io.InputStream
@@ -73,9 +71,7 @@ public fun clusterTopology(
 /**
  * Helper method to convert a [TopologyJSONSpec] into a list of [HostSpec]s.
  */
-private fun TopologyJSONSpec.toHostSpecs(
-    random: RandomGenerator,
-): List<HostSpec> {
+private fun TopologyJSONSpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
     return clusters.flatMap { cluster ->
         List(cluster.count) {
             cluster.toHostSpecs(random)
@@ -88,16 +84,14 @@ private fun TopologyJSONSpec.toHostSpecs(
  */
 private var clusterId = 0
 
-private fun ClusterJSONSpec.toHostSpecs(
-    random: RandomGenerator,
-): List<HostSpec> {
+private fun ClusterJSONSpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
     val hostSpecs =
         hosts.flatMap { host ->
             (
                 List(host.count) {
                     host.toHostSpecs(
                         clusterId,
-                        random
+                        random,
                     )
                 }
             )
@@ -113,7 +107,7 @@ private var hostId = 0
 
 private fun HostJSONSpec.toHostSpecs(
     clusterId: Int,
-    random: RandomGenerator
+    random: RandomGenerator,
 ): HostSpec {
     val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cpus.sumOf { it.coreCount })
 
