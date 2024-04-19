@@ -31,8 +31,3 @@ internal data class CarbonIntensityFragment(
     val timestamp: Instant,
     val carbonIntensity: Double,
 )
-
-/**
- * A portfolio represents a collection of scenarios are tested for the work.
- */
-

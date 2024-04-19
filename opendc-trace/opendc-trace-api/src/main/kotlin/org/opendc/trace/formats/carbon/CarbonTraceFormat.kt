@@ -22,7 +22,6 @@
 
 package org.opendc.trace.formats.carbon
 
-import org.apache.parquet.hadoop.api.ReadSupport
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableColumnType
 import org.opendc.trace.TableReader
