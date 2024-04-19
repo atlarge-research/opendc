@@ -24,13 +24,13 @@ package org.opendc.experiments.base.models.scenario
 
 import AllocationPolicySpec
 import TopologySpec
+import WorkloadSpec
 import org.opendc.compute.simulator.failure.getFailureModel
 import org.opendc.compute.topology.TopologyReader
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.compute.topology.specs.TopologyJSONSpec
 import org.opendc.experiments.base.models.scenario.specs.ScenarioSpec
 import org.opendc.simulator.compute.power.CpuPowerModel
-import org.opendc.simulator.compute.power.getPowerModel
 import java.io.File
 import java.util.UUID
 
@@ -75,46 +75,37 @@ public fun getScenario(scenarioSpec: ScenarioSpec): List<Scenario> {
  */
 public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
     val topologies = getTopologies(scenarioSpec.topologies)
-    val topologiesRaw = scenarioSpec.topologies
+    val topologiesSpec = scenarioSpec.topologies
     val workloads = scenarioSpec.workloads
     val allocationPolicies = scenarioSpec.allocationPolicies
     val failureModels = scenarioSpec.failureModels
     val exportModels = scenarioSpec.exportModels
     val scenarios = mutableListOf<Scenario>()
 
-    for (topology in topologies) {
+    for (topology in topologiesSpec) {
         for (workload in workloads) {
             for (allocationPolicy in allocationPolicies) {
                 for (failureModel in failureModels) {
                     for (exportModel in exportModels) {
-                        var powerModelIndex = 0
-                        for (powerModel in getPowerModelsFromTopology(topology)) {
-                            val scenario =
-                                Scenario(
-                                    topology = clusterTopology(File(topologiesRaw[powerModelIndex].pathToFile), powerModel),
-                                    workload = workload,
-                                    allocationPolicy = allocationPolicy,
-                                    failureModel = getFailureModel(failureModel.failureInterval),
-                                    exportModel = exportModel,
-                                    outputFolder = scenarioSpec.outputFolder,
-                                    name =
-                                        getOutputFolderName(
-                                            scenarioSpec,
-                                            powerModel,
-                                            allocationPolicy,
-                                            topologiesRaw[powerModelIndex].pathToFile,
-                                        ),
-                                    runs = scenarioSpec.runs,
-                                    initialSeed = scenarioSpec.initialSeed,
-                                )
-                            scenarios.add(scenario)
-                            powerModelIndex++
-                        }
+                        val scenario =
+                            Scenario(
+                                topology = clusterTopology(File(topology.pathToFile)),
+                                workload = workload,
+                                allocationPolicy = allocationPolicy,
+                                failureModel = getFailureModel(failureModel.failureInterval),
+                                exportModel = exportModel,
+                                outputFolder = scenarioSpec.outputFolder,
+                                name = getOutputFolderName(scenarioSpec, topology, workload, allocationPolicy),
+                                runs = scenarioSpec.runs,
+                                initialSeed = scenarioSpec.initialSeed,
+                            )
+                        scenarios.add(scenario)
                     }
                 }
             }
         }
     }
+
     return scenarios
 }
 
@@ -134,31 +125,6 @@ public fun getTopologies(topologies: List<TopologySpec>): List<TopologyJSONSpec>
 }
 
 /**
- * Returns a list of CpuPowerModel from a given TopologyJSONSpec - unparsed JSON input.
- *
- * @param topology The TopologyJSONSpec.
- * @return A list of CpuPowerModel.
- */
-public fun getPowerModelsFromTopology(topology: TopologyJSONSpec): List<CpuPowerModel> {
-    val powerModels = mutableListOf<CpuPowerModel>()
-    for (cluster in topology.clusters) {
-        for (host in cluster.hosts) {
-            for (model in host.powerModels) {
-                powerModels.add(
-                    getPowerModel(
-                        model.modelType,
-                        model.power,
-                        model.maxPower,
-                        model.idlePower,
-                    ),
-                )
-            }
-        }
-    }
-    return powerModels
-}
-
-/**
  * Returns a string representing the output folder name for a given ScenarioSpec, CpuPowerModel, AllocationPolicySpec, and topology path.
  *
  * @param scenarioSpec The ScenarioSpec.
@@ -169,13 +135,13 @@ public fun getPowerModelsFromTopology(topology: TopologyJSONSpec): List<CpuPower
  */
 public fun getOutputFolderName(
     scenarioSpec: ScenarioSpec,
-    powerModel: CpuPowerModel,
+    topology: TopologySpec,
+    workload: WorkloadSpec,
     allocationPolicy: AllocationPolicySpec,
-    topologyPath: String,
 ): String {
-    return "scenario-${scenarioSpec.name}" +
-        "-model-${powerModel.fullName}" +
-        "-scheduler-${allocationPolicy.policyType}" +
-        "-topology-${topologyPath.replace("/", "-")}" +
+    return "scenario=${scenarioSpec.name}" +
+        "-topology=${topology.pathToFile}" +
+        "-workload=${workload.name}}" +
+        "-scheduler=${allocationPolicy.name}" +
         "-${UUID.randomUUID().toString().substring(0, 8)}"
 }

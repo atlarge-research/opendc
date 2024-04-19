@@ -15,20 +15,12 @@
                     "memory": {
                         "memorySize": 82000
                     },
-                    "powerModels": [
-                        {
-                            "modelType": "sqrt",
-                            "power": 350.0,
-                            "maxPower": 350.0,
-                            "idlePower": 200.0
-                        },
-                        {
-                            "modelType": "linear",
-                            "power": 350.0,
-                            "maxPower": 350.0,
-                            "idlePower": 200.0
-                        }
-                    ]
+                    "powerModel": {
+                        "modelType": "sqrt",
+                        "power": 350.0,
+                        "maxPower": 350.0,
+                        "idlePower": 200.0
+                    }
                 }
             ],
             "location": "RO"

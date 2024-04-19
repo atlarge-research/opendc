@@ -36,6 +36,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.CpuPowerModel
 import org.opendc.simulator.compute.power.CpuPowerModels
+import org.opendc.simulator.compute.power.getPowerModel
 import java.io.File
 import java.io.InputStream
 import java.util.SplittableRandom
@@ -52,11 +53,10 @@ private val reader = TopologyReader()
  */
 public fun clusterTopology(
     file: File,
-    powerModel: CpuPowerModel = CpuPowerModels.linear(200.0, 400.0),
     random: RandomGenerator = SplittableRandom(0),
 ): List<HostSpec> {
     val topology = reader.read(file)
-    return topology.toHostSpecs(random, powerModel)
+    return topology.toHostSpecs(random)
 }
 
 /**
@@ -64,11 +64,10 @@ public fun clusterTopology(
  */
 public fun clusterTopology(
     input: InputStream,
-    powerModel: CpuPowerModel = CpuPowerModels.linear(200.0, 400.0),
     random: RandomGenerator = SplittableRandom(0),
 ): List<HostSpec> {
     val topology = reader.read(input)
-    return topology.toHostSpecs(random, powerModel)
+    return topology.toHostSpecs(random)
 }
 
 /**
@@ -76,11 +75,10 @@ public fun clusterTopology(
  */
 private fun TopologyJSONSpec.toHostSpecs(
     random: RandomGenerator,
-    powerModel: CpuPowerModel = CpuPowerModels.linear(200.0, 400.0),
 ): List<HostSpec> {
     return clusters.flatMap { cluster ->
         List(cluster.count) {
-            cluster.toHostSpecs(random, powerModel)
+            cluster.toHostSpecs(random)
         }.flatten()
     }
 }
@@ -92,7 +90,6 @@ private var clusterId = 0
 
 private fun ClusterJSONSpec.toHostSpecs(
     random: RandomGenerator,
-    powerModel: CpuPowerModel = CpuPowerModels.linear(200.0, 400.0),
 ): List<HostSpec> {
     val hostSpecs =
         hosts.flatMap { host ->
@@ -100,8 +97,7 @@ private fun ClusterJSONSpec.toHostSpecs(
                 List(host.count) {
                     host.toHostSpecs(
                         clusterId,
-                        random,
-                        powerModel,
+                        random
                     )
                 }
             )
@@ -117,8 +113,7 @@ private var hostId = 0
 
 private fun HostJSONSpec.toHostSpecs(
     clusterId: Int,
-    random: RandomGenerator,
-    powerModel: CpuPowerModel = CpuPowerModels.linear(200.0, 400.0)
+    random: RandomGenerator
 ): HostSpec {
     val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cpus.sumOf { it.coreCount })
 
@@ -130,6 +125,8 @@ private fun HostJSONSpec.toHostSpecs(
             units,
             listOf(unknownMemoryUnit),
         )
+
+    val powerModel = getPowerModel(powerModel.modelType, powerModel.power, powerModel.maxPower, powerModel.idlePower)
 
     val hostSpec =
         HostSpec(

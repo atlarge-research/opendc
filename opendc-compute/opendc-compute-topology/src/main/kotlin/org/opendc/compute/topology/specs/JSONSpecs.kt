@@ -46,7 +46,7 @@ public data class TopologyJSONSpec(
 public data class ClusterJSONSpec(
     val name: String = "Cluster",
     val count: Int = 1,
-    val hosts: List<HostJSONSpec> = emptyList(),
+    val hosts: List<HostJSONSpec>,
     val location: String = "NL",
 )
 
@@ -64,7 +64,7 @@ public data class HostJSONSpec(
     val name: String = "Host",
     val cpus: List<CPUJSONSpec>,
     val memory: MemoryJSONSpec,
-    val powerModels: List<PowerModelJSONSpec>,
+    val powerModel: PowerModelJSONSpec = PowerModelJSONSpec("linear", 350.0, 200.0, 400.0),
     val count: Int = 1,
 )
 
@@ -108,7 +108,7 @@ public data class MemoryJSONSpec(
 @Serializable
 public data class PowerModelJSONSpec(
     val modelType: String,
+    val power: Double = 400.0,
     val idlePower: Double,
     val maxPower: Double,
-    val power: Double = 400.0,
 )
