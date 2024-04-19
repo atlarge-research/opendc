@@ -28,8 +28,7 @@ import java.util.Arrays;
  * A collection {@link CpuPowerModel} implementations.
  */
 public class CpuPowerModels {
-    private CpuPowerModels() {
-    }
+    private CpuPowerModels() {}
 
     /**
      * Construct a constant {@link CpuPowerModel}.
@@ -284,7 +283,7 @@ public class CpuPowerModels {
         @Override
         public String toString() {
             return "MsePowerModel[max=" + maxPower + ",idle=" + idlePower + ",calibrationFactor=" + calibrationFactor
-                + "]";
+                    + "]";
         }
 
         @Override
@@ -309,11 +308,11 @@ public class CpuPowerModels {
         public double computePower(double utilization) {
             if (dvfs) {
                 return idlePower
-                    + (factor * 100)
-                    / 2
-                    * (1
-                    + Math.pow(utilization, 3)
-                    - Math.pow(Math.E, -Math.pow(utilization, 3) / asymUtil));
+                        + (factor * 100)
+                                / 2
+                                * (1
+                                        + Math.pow(utilization, 3)
+                                        - Math.pow(Math.E, -Math.pow(utilization, 3) / asymUtil));
             } else {
                 return idlePower + (factor * 100) / 2 * (1 + utilization - Math.pow(Math.E, -utilization / asymUtil));
             }
@@ -322,7 +321,7 @@ public class CpuPowerModels {
         @Override
         public String toString() {
             return "AsymptoticPowerModel[max=" + maxPower + ",idle=" + idlePower + ",asymUtil=" + asymUtil + ",dvfs="
-                + dvfs + "]";
+                    + dvfs + "]";
         }
 
         @Override

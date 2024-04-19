@@ -46,6 +46,7 @@ public class TopologyReader {
      */
     @OptIn(ExperimentalSerializationApi::class)
     public fun read(input: InputStream): TopologyJSONSpec {
+        val currentPath = File(".").absoluteFile
         val obj = Json.decodeFromStream<TopologyJSONSpec>(input)
         return obj
     }

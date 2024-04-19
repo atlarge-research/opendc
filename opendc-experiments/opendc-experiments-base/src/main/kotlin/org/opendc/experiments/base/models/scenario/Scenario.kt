@@ -22,16 +22,31 @@
 
 package org.opendc.experiments.base.models.scenario
 
+import AllocationPolicySpec
+import ExportModelSpec
+import WorkloadSpec
 import org.opendc.compute.simulator.failure.FailureModel
 import org.opendc.compute.topology.specs.HostSpec
 
+/**
+ * A data class representing a scenario for a set of experiments.
+ *
+ * @property topology The list of HostSpec representing the topology of the scenario.
+ * @property workload The WorkloadSpec representing the workload of the scenario.
+ * @property allocationPolicy The AllocationPolicySpec representing the allocation policy of the scenario.
+ * @property failureModel The FailureModel representing the failure model of the scenario. It can be null.
+ * @property exportModel The ExportSpec representing the export model of the scenario. It defaults to an instance of ExportSpec.
+ * @property outputFolder The String representing the output folder of the scenario. It defaults to "output".
+ * @property name The String representing the name of the scenario. It defaults to an empty string.
+ * @property runs The Int representing the number of runs of the scenario. It defaults to 1.
+ * @property initialSeed The Int representing the initial seed of the scenario. It defaults to 0.
+ */
 public data class Scenario(
     val topology: List<HostSpec>,
     val workload: WorkloadSpec,
     val allocationPolicy: AllocationPolicySpec,
     val failureModel: FailureModel?,
-    val carbonTracePath: String? = null,
-    val exportModel: ExportSpec = ExportSpec(),
+    val exportModel: ExportModelSpec = ExportModelSpec(),
     val outputFolder: String = "output",
     val name: String = "",
     val runs: Int = 1,

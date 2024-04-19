@@ -22,6 +22,7 @@
 
 package org.opendc.experiments.base.runner
 
+import getWorkloadType
 import me.tongfei.progressbar.ProgressBarBuilder
 import me.tongfei.progressbar.ProgressBarStyle
 import org.opendc.compute.service.ComputeService
@@ -33,27 +34,13 @@ import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
 import org.opendc.compute.telemetry.export.parquet.ParquetComputeMonitor
 import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.experiments.base.models.portfolio.Portfolio
-import org.opendc.experiments.base.models.scenario.PowerModelSpec
 import org.opendc.experiments.base.models.scenario.Scenario
-import org.opendc.experiments.base.models.scenario.getWorkloadType
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
 import java.time.Duration
 import java.util.Random
 import java.util.concurrent.ForkJoinPool
 import java.util.stream.LongStream
-
-public fun runPortfolio(
-    portfolio: Portfolio,
-    parallelism: Int,
-) {
-    val pool = ForkJoinPool(parallelism)
-
-    for (scenario in portfolio.scenarios) {
-        runScenario(scenario[0], pool)
-    }
-}
 
 /**
  * Run scenario when no pool is available for parallel execution
@@ -65,17 +52,21 @@ public fun runScenario(
     scenarios: List<Scenario>,
     parallelism: Int,
 ) {
+    val ansiReset = "\u001B[0m"
+    val ansiGreen = "\u001B[32m"
+    val ansiBlue = "\u001B[34m"
+    clearOutputFolder()
+
     for (scenario in scenarios) {
         val pool = ForkJoinPool(parallelism)
         println(
-            "\n\n" + """
-            ================================================================================
-                      Running scenario: ${scenario.name}
-            ================================================================================
-        """.trimIndent()
+            "\n\n$ansiGreen================================================================================$ansiReset",
         )
+        println("$ansiBlue Running scenario: ${scenario.name} $ansiReset")
+        println("$ansiGreen================================================================================$ansiReset")
         runScenario(
-            scenario, pool
+            scenario,
+            pool,
         )
     }
 }
@@ -91,14 +82,15 @@ public fun runScenario(
     scenario: Scenario,
     pool: ForkJoinPool,
 ) {
-    val pb = ProgressBarBuilder().setInitialMax(scenario.runs.toLong()).setStyle(ProgressBarStyle.ASCII)
-        .setTaskName("Simulating...").build()
+    val pb =
+        ProgressBarBuilder().setInitialMax(scenario.runs.toLong()).setStyle(ProgressBarStyle.ASCII)
+            .setTaskName("Simulating...").build()
 
     pool.submit {
         LongStream.range(0, scenario.runs.toLong()).parallel().forEach {
-                runScenario(scenario, scenario.initialSeed + it)
-                pb.step()
-            }
+            runScenario(scenario, scenario.initialSeed + it)
+            pb.step()
+        }
         pb.close()
     }.join()
 }
@@ -112,30 +104,50 @@ public fun runScenario(
 public fun runScenario(
     scenario: Scenario,
     seed: Long,
-): Unit = runSimulation {
-    val serviceDomain = "compute.opendc.org"
-    Provisioner(dispatcher, seed).use { provisioner ->
-        provisioner.runSteps(
-            setupComputeService(serviceDomain,
-                { createComputeScheduler(ComputeSchedulerEnum.Mem, Random(it.seeder.nextLong())) }),
-            setupHosts(serviceDomain, scenario.topology, optimize = true),
-        )
+): Unit =
+    runSimulation {
+        val serviceDomain = "compute.opendc.org"
+        Provisioner(dispatcher, seed).use { provisioner ->
+            provisioner.runSteps(
+                setupComputeService(
+                    serviceDomain,
+                    { createComputeScheduler(ComputeSchedulerEnum.Mem, Random(it.seeder.nextLong())) },
+                ),
+                setupHosts(serviceDomain, scenario.topology, optimize = true),
+            )
 
-        val partition = scenario.name + "/seed=$seed"
-        val workloadLoader = ComputeWorkloadLoader(File(scenario.workload.pathToFile))
-        val vms = getWorkloadType(scenario.workload.type).resolve(workloadLoader, Random(seed))
-        val startTime = Duration.ofMillis(vms.minOf { it.startTime }.toEpochMilli())
+            val partition = scenario.name + "/seed=$seed"
+            val workloadLoader = ComputeWorkloadLoader(File(scenario.workload.pathToFile))
+            val vms = getWorkloadType(scenario.workload.type).resolve(workloadLoader, Random(seed))
+            val startTime = Duration.ofMillis(vms.minOf { it.startTime }.toEpochMilli())
 
-        // saveInSeedFolder(provisioner, serviceDomain, scenario, seed, partition, startTime)
-        // XOR
-        saveInOutputFolder(provisioner, serviceDomain, scenario, startTime)
+            // saveInSeedFolder(provisioner, serviceDomain, scenario, seed, partition, startTime)
+            // XOR
+            saveInOutputFolder(provisioner, serviceDomain, scenario, startTime)
 
-        val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
-        service.replay(timeSource, vms, seed, failureModel = scenario.failureModel)
+            val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
+            service.replay(timeSource, vms, seed, failureModel = scenario.failureModel)
+        }
     }
-}
 
-public fun saveInSeedFolder(provisioner: Provisioner, serviceDomain: String, scenario: Scenario, seed: Long, partition: String, startTime: Duration) {
+/**
+ * When the simulation is run, saves the simulation results into a seed folder. This is useful for debugging purposes.
+ * @param provisioner The provisioner used to setup and run the simulation.
+ * @param serviceDomain The domain of the compute service.
+ * @param scenario The scenario being run in the simulation.
+ * @param seed The seed used for randomness in the simulation.
+ * @param partition The partition name for the output data.
+ * @param startTime The start time of the simulation.
+
+ */
+public fun saveInSeedFolder(
+    provisioner: Provisioner,
+    serviceDomain: String,
+    scenario: Scenario,
+    seed: Long,
+    partition: String,
+    startTime: Duration,
+) {
     provisioner.runStep(
         registerComputeMonitor(
             serviceDomain,
@@ -148,10 +160,22 @@ public fun saveInSeedFolder(provisioner: Provisioner, serviceDomain: String, sce
             startTime,
         ),
     )
-
 }
 
-public fun saveInOutputFolder(provisioner: Provisioner, serviceDomain: String, scenario: Scenario, startTime: Duration) {
+/**
+ * Saves the simulation results into a specific output folder received from the input.
+ *
+ * @param provisioner The provisioner used to setup and run the simulation.
+ * @param serviceDomain The domain of the compute service.
+ * @param scenario The scenario being run.
+ * @param startTime The start time of the simulation.
+ */
+public fun saveInOutputFolder(
+    provisioner: Provisioner,
+    serviceDomain: String,
+    scenario: Scenario,
+    startTime: Duration,
+) {
     provisioner.runStep(
         registerComputeMonitor(
             serviceDomain,
@@ -166,7 +190,10 @@ public fun saveInOutputFolder(provisioner: Provisioner, serviceDomain: String, s
     )
 }
 
+/**
+ * Utilitary function, in case we want to delete the previous simulation results.
+ */
 public fun clearOutputFolder() {
-     val outputFolderPath = "output/simulation-results/"
-     if (File(outputFolderPath).exists()) File(outputFolderPath).deleteRecursively()
+    val outputFolderPath = "output/simulation-results/"
+    if (File(outputFolderPath).exists()) File(outputFolderPath).deleteRecursively()
 }

@@ -1,14 +1,12 @@
 {
-    "clusters":
-    [
+    "clusters": [
         {
             "name": "C01",
-            "hosts" :
-            [
+            "count": 1,
+            "hosts": [
                 {
                     "name": "H01",
-                    "cpus":
-                    [
+                    "cpus": [
                         {
                             "coreCount": 8,
                             "coreSpeed": 4500
@@ -32,7 +30,9 @@
                         }
                     ]
                 }
-            ]
+            ],
+            "location": "RO"
         }
-    ]
+    ],
+    "schemaVersion": 1
 }

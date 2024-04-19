@@ -16,7 +16,15 @@
                     ],
                     "memory": {
                         "memorySize": 256000
-                    }
+                    },
+                    "powerModels": [
+                        {
+                            "modelType": "sqrt",
+                            "power": 350.0,
+                            "maxPower": 350.0,
+                            "idlePower": 200.0
+                        }
+                    ]
                 }
             ]
         },
@@ -36,7 +44,21 @@
                     ],
                     "memory": {
                         "memorySize": 64000
-                    }
+                    },
+                    "powerModels": [
+                        {
+                            "modelType": "sqrt",
+                            "power": 350.0,
+                            "maxPower": 350.0,
+                            "idlePower": 200.0
+                        },
+                        {
+                            "modelType": "linear",
+                            "power": 350.0,
+                            "maxPower": 350.0,
+                            "idlePower": 200.0
+                        }
+                    ]
                 }
             ]
         },
@@ -56,7 +78,15 @@
                     ],
                     "memory": {
                         "memorySize": 128000
-                    }
+                    },
+                    "powerModels": [
+                        {
+                            "modelType": "sqrt",
+                            "power": 350.0,
+                            "maxPower": 350.0,
+                            "idlePower": 200.0
+                        }
+                    ]
                 }
             ]
         }

@@ -20,29 +20,51 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.models.portfolio
-
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.Serializable
+import org.opendc.compute.workload.ComputeWorkload
+import org.opendc.compute.workload.sampleByLoad
+import org.opendc.compute.workload.trace
 import java.io.File
-import java.io.InputStream
 
-public class PortfolioReader {
-    @OptIn(ExperimentalSerializationApi::class)
-    public fun read(file: File): PortfolioSpec {
-        val input = file.inputStream()
-        val obj = Json.decodeFromStream<PortfolioSpec>(input)
+/**
+ * specification describing a workload
+ *
+ * @property pathToFile
+ * @property type
+ */
+@Serializable
+public data class WorkloadSpec(
+    val pathToFile: String,
+    val type: WorkloadTypes,
+) {
+    public val name: String = File(pathToFile).nameWithoutExtension
 
-        return obj
+    init {
+        require(File(pathToFile).exists()) { "The provided path to the workload: $pathToFile does not exist " }
     }
+}
 
+/**
+ * specification describing a workload type
+ *
+ * @constructor Create empty Workload types
+ */
+public enum class WorkloadTypes {
     /**
-     * Read the specified [input].
+     * Compute workload
+     *
+     * @constructor Create empty Compute workload
      */
-    @OptIn(ExperimentalSerializationApi::class)
-    public fun read(input: InputStream): PortfolioSpec {
-        val obj = Json.decodeFromStream<PortfolioSpec>(input)
-        return obj
+    ComputeWorkload,
+}
+
+/**
+ *
+ *TODO: move to separate file
+ * @param type
+ */
+public fun getWorkloadType(type: WorkloadTypes): ComputeWorkload {
+    return when (type) {
+        WorkloadTypes.ComputeWorkload -> trace("trace").sampleByLoad(1.0)
     }
 }

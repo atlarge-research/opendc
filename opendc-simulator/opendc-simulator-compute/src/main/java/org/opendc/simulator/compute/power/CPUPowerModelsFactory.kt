@@ -39,9 +39,7 @@ public fun getPowerModel(
     }
 }
 
-public fun getPowerModel(
-    modelType: String
-): CpuPowerModel {
+public fun getPowerModel(modelType: String): CpuPowerModel {
     return when (modelType) {
         "constant" -> CpuPowerModels.constant(200.0)
         "sqrt" -> CpuPowerModels.sqrt(350.0, 200.0)

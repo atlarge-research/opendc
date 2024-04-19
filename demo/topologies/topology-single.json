@@ -1,18 +1,23 @@
 {
     "clusters": [
         {
-            "name": "C01",
+            "name": "C02",
+            "count": 1,
             "hosts": [
                 {
-                    "name": "H01",
+                    "name": "H02",
                     "cpus": [
                         {
+                            "vendor": "Intel",
+                            "modelName": "Xeon-v2",
+                            "arch": "x86_64",
                             "coreCount": 32,
-                            "coreSpeed": 3200
+                            "coreSpeed": 2500.0,
+                            "count": 1
                         }
                     ],
                     "memory": {
-                        "memorySize": 10000000
+                        "memorySize": 82000
                     },
                     "powerModels": [
                         {
@@ -27,9 +32,12 @@
                             "maxPower": 350.0,
                             "idlePower": 200.0
                         }
-                    ]
+                    ],
+                    "count": 1
                 }
-            ]
+            ],
+            "location": "RO"
         }
-    ]
+    ],
+    "schemaVersion": 1
 }

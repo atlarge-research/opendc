@@ -46,7 +46,7 @@ public data class TopologyJSONSpec(
 public data class ClusterJSONSpec(
     val name: String = "Cluster",
     val count: Int = 1,
-    val hosts: List<HostJSONSpec>,
+    val hosts: List<HostJSONSpec> = emptyList(),
     val location: String = "NL",
 )
 

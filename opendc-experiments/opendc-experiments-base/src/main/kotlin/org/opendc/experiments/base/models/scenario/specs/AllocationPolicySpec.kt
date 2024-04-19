@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.power;
-
-import org.opendc.simulator.compute.SimMachine;
+import kotlinx.serialization.Serializable
+import org.opendc.compute.service.scheduler.ComputeSchedulerEnum
 
 /**
- * A model for estimating the power usage of a {@link SimMachine} based on the CPU usage.
+ * specification describing how tasks are allocated
+ *
+ * @property policyType
+ *
+ * TODO: expand with more variables such as allowed over-subscription
  */
-public interface CpuPowerModel {
-    /**
-     * Computes CPU power consumption for each host.
-     *
-     * @param utilization The CPU utilization percentage.
-     * @return A double value of CPU power consumption (in W).
-     */
-    double computePower(double utilization);
-
-    String getName();
-
-    default String getFullName() {
-        return getName();
-    }
+@Serializable
+public data class AllocationPolicySpec(
+    val policyType: ComputeSchedulerEnum,
+) {
+    public val name: String = policyType.toString()
 }

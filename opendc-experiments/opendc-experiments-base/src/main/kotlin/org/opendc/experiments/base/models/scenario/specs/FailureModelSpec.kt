@@ -20,26 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.models.portfolio
+import kotlinx.serialization.Serializable
 
-import org.opendc.experiments.base.models.scenario.getScenario
-import java.io.File
-
-private val porfolioReader = PortfolioReader()
-
-public fun getPortfolio(filePath: String): Portfolio {
-    return getPortfolio(File(filePath))
-}
-
-public fun getPortfolio(file: File): Portfolio {
-    return getPortfolio(porfolioReader.read(file))
-}
-
-public fun getPortfolio(portfolioSpec: PortfolioSpec): Portfolio {
-    return Portfolio(
-        portfolioSpec.scenarios.map {
-                scenario ->
-            getScenario(scenario)
-        },
-    )
+/**
+ * specification describing the failure model
+ *
+ * @property failureInterval The interval between failures in s. Should be 0.0 or higher
+ */
+@Serializable
+public data class FailureModelSpec(
+    val failureInterval: Double = 0.0,
+) {
+    init {
+        require(failureInterval >= 0.0) { "failure frequency cannot be lower than 0" }
+    }
 }
