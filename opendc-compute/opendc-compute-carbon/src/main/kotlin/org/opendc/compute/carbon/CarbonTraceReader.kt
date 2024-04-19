@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+<<<<<<<< HEAD:opendc-compute/opendc-compute-carbon/src/main/kotlin/org/opendc/compute/carbon/CarbonTraceReader.kt
 @file:JvmName("ComputeWorkloads")
 
 package org.opendc.compute.carbon
@@ -50,3 +51,29 @@ public fun getCarbonTrace(file: File): CarbonTrace {
 
     return CarbonTrace(fragments)
 }
+========
+package org.opendc.experiments.metamodel.topology
+
+/**
+ * Definition of a compute cluster modeled in the simulation.
+ *
+ * @param id A unique identifier representing the compute cluster.
+ * @param name The name of the cluster.
+ * @param cpuCount The total number of CPUs in the cluster.
+ * @param cpuSpeed The speed of a CPU in the cluster in MHz.
+ * @param memCapacity The total memory capacity of the cluster (in MiB).
+ * @param hostCount The number of hosts in the cluster.
+ * @param memCapacityPerHost The memory capacity per host in the cluster (MiB).
+ * @param cpuCountPerHost The number of CPUs per host in the cluster.
+ */
+public data class ClusterSpec(
+    val id: String,
+    val name: String,
+    val cpuCount: Int,
+    val cpuSpeed: Double,
+    val memCapacity: Double,
+    val hostCount: Int,
+    val memCapacityPerHost: Double,
+    val cpuCountPerHost: Int
+)
+>>>>>>>> e38c249e (code runnable):opendc-experiments/opendc-experiments-metamodel/src/main/kotlin/org.opendc.experiments.metamodel/opendc/experiments/metamodel/topology/ClusterSpec.kt
