@@ -25,6 +25,8 @@ package org.opendc.experiments.base.runner
 import getWorkloadType
 import me.tongfei.progressbar.ProgressBarBuilder
 import me.tongfei.progressbar.ProgressBarStyle
+import org.opendc.compute.carbon.CarbonTrace
+import org.opendc.compute.carbon.getCarbonTrace
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.service.scheduler.createComputeScheduler
@@ -55,7 +57,7 @@ public fun runScenario(
     val ansiReset = "\u001B[0m"
     val ansiGreen = "\u001B[32m"
     val ansiBlue = "\u001B[34m"
-    clearOutputFolder()
+    clearOutputFolder(scenarios[0].outputFolder)
 
     for (scenario in scenarios) {
         val pool = ForkJoinPool(parallelism)
@@ -116,14 +118,12 @@ public fun runScenario(
                 setupHosts(serviceDomain, scenario.topology, optimize = true),
             )
 
-            val partition = scenario.name + "/seed=$seed"
             val workloadLoader = ComputeWorkloadLoader(File(scenario.workload.pathToFile))
             val vms = getWorkloadType(scenario.workload.type).resolve(workloadLoader, Random(seed))
-            val startTime = Duration.ofMillis(vms.minOf { it.startTime }.toEpochMilli())
 
-            // saveInSeedFolder(provisioner, serviceDomain, scenario, seed, partition, startTime)
-            // XOR
-            saveInOutputFolder(provisioner, serviceDomain, scenario, startTime)
+            val carbonTrace = getCarbonTrace(scenario.carbonTracePath)
+            val startTime = Duration.ofMillis(vms.minOf { it.startTime }.toEpochMilli())
+            saveInOutputFolder(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace)
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
             service.replay(timeSource, vms, seed, failureModel = scenario.failureModel)
@@ -168,32 +168,37 @@ public fun saveInSeedFolder(
  * @param provisioner The provisioner used to setup and run the simulation.
  * @param serviceDomain The domain of the compute service.
  * @param scenario The scenario being run.
- * @param startTime The start time of the simulation.
+ * @param seed The seed of the current run
+ * @param startTime The start time of the simulation given by the workload trace.
+ * @param carbonTrace The carbon trace used to determine carbon emissions.
  */
 public fun saveInOutputFolder(
     provisioner: Provisioner,
     serviceDomain: String,
     scenario: Scenario,
+    seed: Long,
     startTime: Duration,
+    carbonTrace: CarbonTrace,
 ) {
     provisioner.runStep(
         registerComputeMonitor(
             serviceDomain,
             ParquetComputeMonitor(
-                File("output/simulation-results/"),
-                scenario.name,
+                File("${scenario.outputFolder}/${scenario.name}"),
+                "seed=$seed",
                 bufferSize = 4096,
             ),
             Duration.ofSeconds(scenario.exportModel.exportInterval),
             startTime,
+            carbonTrace,
         ),
     )
 }
 
 /**
- * Utilitary function, in case we want to delete the previous simulation results.
+ * Utility function, in case we want to delete the previous simulation results.
+ * @param outputFolderPath The output folder to remove
  */
-public fun clearOutputFolder() {
-    val outputFolderPath = "output/simulation-results/"
+public fun clearOutputFolder(outputFolderPath: String) {
     if (File(outputFolderPath).exists()) File(outputFolderPath).deleteRecursively()
 }
