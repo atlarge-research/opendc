@@ -47,6 +47,7 @@ public data class ScenarioSpec(
     val workloads: List<WorkloadSpec>,
     val allocationPolicies: List<AllocationPolicySpec>,
     val failureModels: List<FailureModelSpec> = listOf(FailureModelSpec()),
+    val carbonTracePaths: List<String?> = listOf(null),
     val exportModels: List<ExportModelSpec> = listOf(ExportModelSpec()),
     val outputFolder: String = "output",
     val initialSeed: Int = 0,
@@ -57,6 +58,7 @@ public data class ScenarioSpec(
         require(runs > 0) { "The number of runs should always be positive" }
 
         // generate name if not provided
+        // TODO: improve this
         if (name == "") {
             name =
                 "workload=${workloads[0].name}_topology=${topologies[0].name}_allocationPolicy=${allocationPolicies[0].name}"

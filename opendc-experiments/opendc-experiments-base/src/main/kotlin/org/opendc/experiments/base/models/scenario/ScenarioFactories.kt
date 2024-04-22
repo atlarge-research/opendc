@@ -31,7 +31,6 @@ import org.opendc.compute.topology.clusterTopology
 import org.opendc.compute.topology.specs.TopologyJSONSpec
 import org.opendc.experiments.base.models.scenario.specs.ScenarioSpec
 import java.io.File
-import java.util.UUID
 
 private val scenarioReader = ScenarioReader()
 
@@ -73,7 +72,6 @@ public fun getScenario(scenarioSpec: ScenarioSpec): List<Scenario> {
  * @return A list of Scenarios.
  */
 public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
-    val topologies = getTopologies(scenarioSpec.topologies)
     val topologiesSpec = scenarioSpec.topologies
     val workloads = scenarioSpec.workloads
     val allocationPolicies = scenarioSpec.allocationPolicies
@@ -85,20 +83,23 @@ public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
         for (workload in workloads) {
             for (allocationPolicy in allocationPolicies) {
                 for (failureModel in failureModels) {
-                    for (exportModel in exportModels) {
-                        val scenario =
-                            Scenario(
-                                topology = clusterTopology(File(topology.pathToFile)),
-                                workload = workload,
-                                allocationPolicy = allocationPolicy,
-                                failureModel = getFailureModel(failureModel.failureInterval),
-                                exportModel = exportModel,
-                                outputFolder = scenarioSpec.outputFolder,
-                                name = getOutputFolderName(scenarioSpec, topology, workload, allocationPolicy),
-                                runs = scenarioSpec.runs,
-                                initialSeed = scenarioSpec.initialSeed,
-                            )
-                        scenarios.add(scenario)
+                    for (carbonTracePath in scenarioSpec.carbonTracePaths) {
+                        for (exportModel in exportModels) {
+                            val scenario =
+                                Scenario(
+                                    topology = clusterTopology(File(topology.pathToFile)),
+                                    workload = workload,
+                                    allocationPolicy = allocationPolicy,
+                                    failureModel = getFailureModel(failureModel.failureInterval),
+                                    carbonTracePath = carbonTracePath,
+                                    exportModel = exportModel,
+                                    outputFolder = scenarioSpec.outputFolder,
+                                    name = getOutputFolderName(scenarioSpec, topology, workload, allocationPolicy),
+                                    runs = scenarioSpec.runs,
+                                    initialSeed = scenarioSpec.initialSeed,
+                                )
+                            scenarios.add(scenario)
+                        }
                     }
                 }
             }
@@ -139,8 +140,7 @@ public fun getOutputFolderName(
     allocationPolicy: AllocationPolicySpec,
 ): String {
     return "scenario=${scenarioSpec.name}" +
-        "-topology=${topology.pathToFile}" +
-        "-workload=${workload.name}}" +
-        "-scheduler=${allocationPolicy.name}" +
-        "-${UUID.randomUUID().toString().substring(0, 8)}"
+        "-topology=${topology.name}" +
+        "-workload=${workload.name}" +
+        "-scheduler=${allocationPolicy.name}"
 }
