@@ -42,7 +42,7 @@ public class CpuPowerModels {
     /**
      * Construct a square root {@link CpuPowerModel} that is adapted from CloudSim.
      *
-     * @param maxPower The maximum power draw of the server in W.
+     * @param maxPower  The maximum power draw of the server in W.
      * @param idlePower The power draw of the server at its lowest utilization level in W.
      */
     public static CpuPowerModel sqrt(double maxPower, double idlePower) {
@@ -52,7 +52,7 @@ public class CpuPowerModels {
     /**
      * Construct a linear {@link CpuPowerModel} that is adapted from CloudSim.
      *
-     * @param maxPower The maximum power draw of the server in W.
+     * @param maxPower  The maximum power draw of the server in W.
      * @param idlePower The power draw of the server at its lowest utilization level in W.
      */
     public static CpuPowerModel linear(double maxPower, double idlePower) {
@@ -62,7 +62,7 @@ public class CpuPowerModels {
     /**
      * Construct a square {@link CpuPowerModel} that is adapted from CloudSim.
      *
-     * @param maxPower The maximum power draw of the server in W.
+     * @param maxPower  The maximum power draw of the server in W.
      * @param idlePower The power draw of the server at its lowest utilization level in W.
      */
     public static CpuPowerModel square(double maxPower, double idlePower) {
@@ -72,7 +72,7 @@ public class CpuPowerModels {
     /**
      * Construct a cubic {@link CpuPowerModel} that is adapted from CloudSim.
      *
-     * @param maxPower The maximum power draw of the server in W.
+     * @param maxPower  The maximum power draw of the server in W.
      * @param idlePower The power draw of the server at its lowest utilization level in W.
      */
     public static CpuPowerModel cubic(double maxPower, double idlePower) {
@@ -83,11 +83,11 @@ public class CpuPowerModels {
      * Construct a {@link CpuPowerModel} that minimizes the mean squared error (MSE)
      * to the actual power measurement by tuning the calibration parameter.
      *
-     * @param maxPower The maximum power draw of the server in W.
-     * @param idlePower The power draw of the server at its lowest utilization level in W.
+     * @param maxPower          The maximum power draw of the server in W.
+     * @param idlePower         The power draw of the server at its lowest utilization level in W.
      * @param calibrationFactor The parameter set to minimize the MSE.
      * @see <a href="https://dl.acm.org/doi/abs/10.1145/1273440.1250665">
-     *     Fan et al., Power provisioning for a warehouse-sized computer, ACM SIGARCH'07</a>
+     * Fan et al., Power provisioning for a warehouse-sized computer, ACM SIGARCH'07</a>
      */
     public static CpuPowerModel mse(double maxPower, double idlePower, double calibrationFactor) {
         return new MsePowerModel(maxPower, idlePower, calibrationFactor);
@@ -96,12 +96,12 @@ public class CpuPowerModels {
     /**
      * Construct an asymptotic {@link CpuPowerModel} adapted from GreenCloud.
      *
-     * @param maxPower The maximum power draw of the server in W.
+     * @param maxPower  The maximum power draw of the server in W.
      * @param idlePower The power draw of the server at its lowest utilization level in W.
-     * @param asymUtil A utilization level at which the server attains asymptotic,
-     *              i.e., close to linear power consumption versus the offered load.
-     *              For most of the CPUs,a is in [0.2, 0.5].
-     * @param dvfs A flag indicates whether DVFS is enabled.
+     * @param asymUtil  A utilization level at which the server attains asymptotic,
+     *                  i.e., close to linear power consumption versus the offered load.
+     *                  For most of the CPUs,a is in [0.2, 0.5].
+     * @param dvfs      A flag indicates whether DVFS is enabled.
      */
     public static CpuPowerModel asymptotic(double maxPower, double idlePower, double asymUtil, boolean dvfs) {
         return new AsymptoticPowerModel(maxPower, idlePower, asymUtil, dvfs);
@@ -147,6 +147,11 @@ public class CpuPowerModels {
         public String toString() {
             return "ConstantPowerModel[power=" + power + "]";
         }
+
+        @Override
+        public String getName() {
+            return "ConstantPowerModel";
+        }
     }
 
     private abstract static class MaxIdlePowerModel implements CpuPowerModel {
@@ -176,6 +181,16 @@ public class CpuPowerModels {
         public double computePower(double utilization) {
             return idlePower + factor * Math.sqrt(utilization * 100);
         }
+
+        @Override
+        public String getName() {
+            return "SqrtPowerModel";
+        }
+
+        @Override
+        public String getFullName() {
+            return ("sqrtPowerModel-" + idlePower + "-" + maxPower);
+        }
     }
 
     private static final class LinearPowerModel extends MaxIdlePowerModel {
@@ -189,6 +204,16 @@ public class CpuPowerModels {
         @Override
         public double computePower(double utilization) {
             return idlePower + factor * utilization * 100;
+        }
+
+        @Override
+        public String getName() {
+            return "LinearPowerModel";
+        }
+
+        @Override
+        public String getFullName() {
+            return ("linearPowerModel-" + idlePower + "-" + maxPower);
         }
     }
 
@@ -204,6 +229,16 @@ public class CpuPowerModels {
         public double computePower(double utilization) {
             return idlePower + factor * Math.pow(utilization * 100, 2);
         }
+
+        @Override
+        public String getName() {
+            return "SquarePowerModel";
+        }
+
+        @Override
+        public String getFullName() {
+            return ("squarePowerModel-" + idlePower + "-" + maxPower);
+        }
     }
 
     private static final class CubicPowerModel extends MaxIdlePowerModel {
@@ -217,6 +252,16 @@ public class CpuPowerModels {
         @Override
         public double computePower(double utilization) {
             return idlePower + factor * Math.pow(utilization * 100, 3);
+        }
+
+        @Override
+        public String getName() {
+            return "CubicPowerModel";
+        }
+
+        @Override
+        public String getFullName() {
+            return ("cubicPowerModel-" + idlePower + "-" + maxPower);
         }
     }
 
@@ -239,6 +284,11 @@ public class CpuPowerModels {
         public String toString() {
             return "MsePowerModel[max=" + maxPower + ",idle=" + idlePower + ",calibrationFactor=" + calibrationFactor
                     + "]";
+        }
+
+        @Override
+        public String getName() {
+            return "MsePowerModel";
         }
     }
 
@@ -273,6 +323,11 @@ public class CpuPowerModels {
             return "AsymptoticPowerModel[max=" + maxPower + ",idle=" + idlePower + ",asymUtil=" + asymUtil + ",dvfs="
                     + dvfs + "]";
         }
+
+        @Override
+        public String getName() {
+            return "AsymptoticPowerModel";
+        }
     }
 
     private static final class InterpolationPowerModel implements CpuPowerModel {
@@ -304,6 +359,11 @@ public class CpuPowerModels {
         public String toString() {
             return "InterpolationPowerModel[levels=" + Arrays.toString(powerLevels) + "]";
         }
+
+        @Override
+        public String getName() {
+            return "InterpolationPowerModel";
+        }
     }
 
     private static final class ZeroIdlePowerDecorator implements CpuPowerModel {
@@ -325,6 +385,11 @@ public class CpuPowerModels {
         @Override
         public String toString() {
             return "ZeroIdlePowerDecorator[delegate=" + delegate + "]";
+        }
+
+        @Override
+        public String getName() {
+            return "ZeroIdlePowerDecorator";
         }
     }
 }

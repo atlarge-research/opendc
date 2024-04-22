@@ -20,12 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.models.portfolio
-
 import kotlinx.serialization.Serializable
-import org.opendc.experiments.base.models.scenario.ScenarioSpec
+import java.io.File
 
+/**
+ * specification describing a topology
+ *
+ * @property pathToFile
+ */
 @Serializable
-public data class PortfolioSpec(
-    val scenarios: List<ScenarioSpec>,
-)
+public data class TopologySpec(
+    val pathToFile: String,
+) {
+    public val name: String = File(pathToFile).nameWithoutExtension
+
+    init {
+        require(File(pathToFile).exists()) { "The provided path to the topology: $pathToFile does not exist " }
+    }
+}

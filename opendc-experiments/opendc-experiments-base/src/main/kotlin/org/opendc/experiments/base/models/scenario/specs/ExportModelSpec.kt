@@ -20,26 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.models.portfolio
+import kotlinx.serialization.Serializable
 
-import org.opendc.experiments.base.models.scenario.getScenario
-import java.io.File
-
-private val porfolioReader = PortfolioReader()
-
-public fun getPortfolio(filePath: String): Portfolio {
-    return getPortfolio(File(filePath))
-}
-
-public fun getPortfolio(file: File): Portfolio {
-    return getPortfolio(porfolioReader.read(file))
-}
-
-public fun getPortfolio(portfolioSpec: PortfolioSpec): Portfolio {
-    return Portfolio(
-        portfolioSpec.scenarios.map {
-                scenario ->
-            getScenario(scenario)
-        },
-    )
+/**
+ * specification describing how the results should be exported
+ *
+ * @property exportInterval The interval of exporting results in s. Should be higher than 0.0
+ */
+@Serializable
+public data class ExportModelSpec(
+    val exportInterval: Long = 5 * 60,
+) {
+    init {
+        require(exportInterval > 0) { "The Export interval has to be higher than 0" }
+    }
 }

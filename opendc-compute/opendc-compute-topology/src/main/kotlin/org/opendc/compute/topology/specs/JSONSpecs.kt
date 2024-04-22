@@ -55,8 +55,9 @@ public data class ClusterJSONSpec(
  *
  * @param name The name of the host.
  * @param cpus List of the different CPUs available in this cluster
- * @param memCapacity The amount of RAM memory available in Byte
+ * @param memory The amount of RAM memory available in Byte
  * @param powerModel The power model used to determine the power draw of a host
+ * @param count The power model used to determine the power draw of a host
  */
 @Serializable
 public data class HostJSONSpec(
@@ -108,6 +109,6 @@ public data class MemoryJSONSpec(
 public data class PowerModelJSONSpec(
     val modelType: String,
     val power: Double = 400.0,
-    val maxPower: Double,
     val idlePower: Double,
+    val maxPower: Double,
 )

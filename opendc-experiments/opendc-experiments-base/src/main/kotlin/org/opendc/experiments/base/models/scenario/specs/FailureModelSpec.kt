@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.models.portfolio
-
-import org.opendc.experiments.base.models.scenario.Scenario
+import kotlinx.serialization.Serializable
 
 /**
- * A portfolio represents a collection of scenarios are tested for the work.
+ * specification describing the failure model
+ *
+ * @property failureInterval The interval between failures in s. Should be 0.0 or higher
  */
-public class Portfolio(
-    public val scenarios: Iterable<Scenario>,
-)
+@Serializable
+public data class FailureModelSpec(
+    val failureInterval: Double = 0.0,
+) {
+    init {
+        require(failureInterval >= 0.0) { "failure frequency cannot be lower than 0" }
+    }
+}

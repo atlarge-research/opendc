@@ -25,6 +25,7 @@ package org.opendc.experiments.base.models.scenario
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import org.opendc.experiments.base.models.scenario.specs.ScenarioSpec
 import java.io.File
 import java.io.InputStream
 

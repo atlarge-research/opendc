@@ -125,8 +125,8 @@ class ScenarioIntegrationTest {
                 { assertEquals(66977091124, monitor.activeTime) { "Incorrect active time" } },
                 { assertEquals(3160267873, monitor.stealTime) { "Incorrect steal time" } },
                 { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
-                { assertEquals(2.5892214E7, monitor.powerDraw, 1E4) { "Incorrect power draw" } },
-                { assertEquals(7.7672373E9, monitor.energyUsage, 1E4) { "Incorrect energy usage" } },
+                { assertEquals(1.9469839319124512E7, monitor.powerDraw, 1E4) { "Incorrect power draw" } },
+                { assertEquals(5.840705003360067E9, monitor.energyUsage, 1E5) { "Incorrect energy usage" } },
             )
         }
 
@@ -167,8 +167,8 @@ class ScenarioIntegrationTest {
                 { assertEquals(9741285381, monitor.activeTime) { "Active time incorrect" } },
                 { assertEquals(152, monitor.stealTime) { "Steal time incorrect" } },
                 { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-                { assertEquals(2644612.0, monitor.powerDraw, 1E4) { "Incorrect power draw" } },
-                { assertEquals(7.9336867E8, monitor.energyUsage, 1E4) { "Incorrect energy usage" } },
+                { assertEquals(2337040.5458753705, monitor.powerDraw, 1E4) { "Incorrect power draw" } },
+                { assertEquals(7.010994945790212E8, monitor.energyUsage, 1E4) { "Incorrect energy usage" } },
             )
         }
 

@@ -108,7 +108,7 @@ public suspend fun ComputeService.replay(
                 }
 
                 // Make sure the trace entries are ordered by submission time
-//                assert(start - simulationOffset >= 0) { "Invalid trace order" }
+                // assert(start - simulationOffset >= 0) { "Invalid trace order" }
 
                 // Delay the server based on the startTime given by the trace.
                 if (!submitImmediately) {

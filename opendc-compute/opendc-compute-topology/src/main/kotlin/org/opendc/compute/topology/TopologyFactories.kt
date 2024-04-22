@@ -54,7 +54,6 @@ public fun clusterTopology(
     random: RandomGenerator = SplittableRandom(0),
 ): List<HostSpec> {
     val topology = reader.read(file)
-
     return topology.toHostSpecs(random)
 }
 
@@ -66,7 +65,6 @@ public fun clusterTopology(
     random: RandomGenerator = SplittableRandom(0),
 ): List<HostSpec> {
     val topology = reader.read(input)
-
     return topology.toHostSpecs(random)
 }
 
@@ -74,7 +72,11 @@ public fun clusterTopology(
  * Helper method to convert a [TopologyJSONSpec] into a list of [HostSpec]s.
  */
 private fun TopologyJSONSpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
-    return clusters.flatMap { cluster -> List(cluster.count) { cluster.toHostSpecs(random) }.flatten() }
+    return clusters.flatMap { cluster ->
+        List(cluster.count) {
+            cluster.toHostSpecs(random)
+        }.flatten()
+    }
 }
 
 /**
@@ -87,7 +89,10 @@ private fun ClusterJSONSpec.toHostSpecs(random: RandomGenerator): List<HostSpec>
         hosts.flatMap { host ->
             (
                 List(host.count) {
-                    host.toHostSpecs(clusterId, random)
+                    host.toHostSpecs(
+                        clusterId,
+                        random,
+                    )
                 }
             )
         }
@@ -116,6 +121,7 @@ private fun HostJSONSpec.toHostSpecs(
         )
 
     val powerModel = getPowerModel(powerModel.modelType, powerModel.power, powerModel.maxPower, powerModel.idlePower)
+
     val hostSpec =
         HostSpec(
             UUID(random.nextLong(), (hostId).toLong()),

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,19 @@
  * SOFTWARE.
  */
 
-description = "Workload trace library for OpenDC"
+import kotlinx.serialization.Serializable
+import org.opendc.compute.service.scheduler.ComputeSchedulerEnum
 
-// Build configuration
-plugins {
-    `kotlin-library-conventions`
-}
-dependencies {
-
-    implementation(libs.jackson.dataformat.csv)
-
-    implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-parquet")))
-    testImplementation(project(mapOf("path" to ":opendc-trace:opendc-trace-testkit")))
+/**
+ * specification describing how tasks are allocated
+ *
+ * @property policyType
+ *
+ * TODO: expand with more variables such as allowed over-subscription
+ */
+@Serializable
+public data class AllocationPolicySpec(
+    val policyType: ComputeSchedulerEnum,
+) {
+    public val name: String = policyType.toString()
 }
