@@ -78,6 +78,90 @@ internal class PowerModelTest {
         )
     }
 
+    @Test
+    fun `test linear model`() {
+        val powerModel = CpuPowerModels.linear(400.0, 200.0)
+
+        assertAll(
+            { assertEquals(200.0, powerModel.computePower(-0.1)) },
+            { assertEquals(200.0, powerModel.computePower(0.0)) },
+            { assertEquals(220.0, powerModel.computePower(0.1)) },
+            { assertEquals(240.0, powerModel.computePower(0.2)) },
+            { assertEquals(260.0, powerModel.computePower(0.3)) },
+            { assertEquals(280.0, powerModel.computePower(0.4)) },
+            { assertEquals(300.0, powerModel.computePower(0.5)) },
+            { assertEquals(320.0, powerModel.computePower(0.6)) },
+            { assertEquals(340.0, powerModel.computePower(0.7)) },
+            { assertEquals(360.0, powerModel.computePower(0.8)) },
+            { assertEquals(380.0, powerModel.computePower(0.9)) },
+            { assertEquals(400.0, powerModel.computePower(1.0)) },
+            { assertEquals(400.0, powerModel.computePower(1.1)) },
+        )
+    }
+
+    @Test
+    fun `test sqrt model`() {
+        val powerModel = CpuPowerModels.sqrt(400.0, 200.0)
+
+        assertAll(
+            { assertEquals(200.0, powerModel.computePower(-1.0), 1.0) },
+            { assertEquals(200.0, powerModel.computePower(0.0), 1.0) },
+            { assertEquals(263.0, powerModel.computePower(0.1), 1.0) },
+            { assertEquals(289.0, powerModel.computePower(0.2), 1.0) },
+            { assertEquals(309.0, powerModel.computePower(0.3), 1.0) },
+            { assertEquals(326.0, powerModel.computePower(0.4), 1.0) },
+            { assertEquals(341.0, powerModel.computePower(0.5), 1.0) },
+            { assertEquals(354.0, powerModel.computePower(0.6), 1.0) },
+            { assertEquals(367.0, powerModel.computePower(0.7), 1.0) },
+            { assertEquals(378.0, powerModel.computePower(0.8), 1.0) },
+            { assertEquals(389.0, powerModel.computePower(0.9), 1.0) },
+            { assertEquals(400.0, powerModel.computePower(1.0), 1.0) },
+            { assertEquals(400.0, powerModel.computePower(1.1), 1.0) },
+        )
+    }
+
+    @Test
+    fun `test square model`() {
+        val powerModel = CpuPowerModels.square(400.0, 200.0)
+
+        assertAll(
+            { assertEquals(200.0, powerModel.computePower(-1.0), 1.0) },
+            { assertEquals(200.0, powerModel.computePower(0.0), 1.0) },
+            { assertEquals(202.0, powerModel.computePower(0.1), 1.0) },
+            { assertEquals(208.0, powerModel.computePower(0.2), 1.0) },
+            { assertEquals(218.0, powerModel.computePower(0.3), 1.0) },
+            { assertEquals(232.0, powerModel.computePower(0.4), 1.0) },
+            { assertEquals(250.0, powerModel.computePower(0.5), 1.0) },
+            { assertEquals(272.0, powerModel.computePower(0.6), 1.0) },
+            { assertEquals(298.0, powerModel.computePower(0.7), 1.0) },
+            { assertEquals(328.0, powerModel.computePower(0.8), 1.0) },
+            { assertEquals(362.0, powerModel.computePower(0.9), 1.0) },
+            { assertEquals(400.0, powerModel.computePower(1.0), 1.0) },
+            { assertEquals(400.0, powerModel.computePower(1.1), 1.0) },
+        )
+    }
+
+    @Test
+    fun `test cubic model`() {
+        val powerModel = CpuPowerModels.cubic(400.0, 200.0)
+
+        assertAll(
+            { assertEquals(200.0, powerModel.computePower(-1.0), 1.0) },
+            { assertEquals(200.0, powerModel.computePower(0.0), 1.0) },
+            { assertEquals(200.0, powerModel.computePower(0.1), 1.0) },
+            { assertEquals(201.0, powerModel.computePower(0.2), 1.0) },
+            { assertEquals(205.0, powerModel.computePower(0.3), 1.0) },
+            { assertEquals(212.0, powerModel.computePower(0.4), 1.0) },
+            { assertEquals(225.0, powerModel.computePower(0.5), 1.0) },
+            { assertEquals(243.0, powerModel.computePower(0.6), 1.0) },
+            { assertEquals(268.0, powerModel.computePower(0.7), 1.0) },
+            { assertEquals(302.0, powerModel.computePower(0.8), 1.0) },
+            { assertEquals(345.0, powerModel.computePower(0.9), 1.0) },
+            { assertEquals(400.0, powerModel.computePower(1.0), 1.0) },
+            { assertEquals(400.0, powerModel.computePower(1.1), 1.0) },
+        )
+    }
+
     @Suppress("unused")
     private companion object {
         @JvmStatic

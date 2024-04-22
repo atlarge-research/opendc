@@ -163,6 +163,12 @@ public class CpuPowerModels {
             this.idlePower = idlePower;
         }
 
+        // Clamps the provided utilization in the range of 0.0 and 1.0
+        // This is done to avoid floating point errors
+        public double clampUtilization(double utilization) {
+            return Math.max(0.0, Math.min(1.0, utilization));
+        }
+
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[max=" + maxPower + ",idle=" + idlePower + "]";
@@ -174,12 +180,14 @@ public class CpuPowerModels {
 
         SqrtPowerModel(double maxPower, double idlePower) {
             super(maxPower, idlePower);
-            this.factor = (maxPower - idlePower) / Math.sqrt(100);
+            this.factor = (maxPower - idlePower);
         }
 
         @Override
         public double computePower(double utilization) {
-            return idlePower + factor * Math.sqrt(utilization * 100);
+            utilization = clampUtilization(utilization);
+
+            return idlePower + factor * Math.sqrt(utilization);
         }
 
         @Override
@@ -198,12 +206,14 @@ public class CpuPowerModels {
 
         LinearPowerModel(double maxPower, double idlePower) {
             super(maxPower, idlePower);
-            this.factor = (maxPower - idlePower) / 100;
+            this.factor = maxPower - idlePower;
         }
 
         @Override
         public double computePower(double utilization) {
-            return idlePower + factor * utilization * 100;
+            utilization = clampUtilization(utilization);
+
+            return idlePower + factor * utilization;
         }
 
         @Override
@@ -222,12 +232,14 @@ public class CpuPowerModels {
 
         SquarePowerModel(double maxPower, double idlePower) {
             super(maxPower, idlePower);
-            this.factor = (maxPower - idlePower) / Math.pow(100, 2);
+            this.factor = (maxPower - idlePower);
         }
 
         @Override
         public double computePower(double utilization) {
-            return idlePower + factor * Math.pow(utilization * 100, 2);
+            utilization = clampUtilization(utilization);
+
+            return idlePower + factor * Math.pow(utilization, 2);
         }
 
         @Override
@@ -246,12 +258,14 @@ public class CpuPowerModels {
 
         CubicPowerModel(double maxPower, double idlePower) {
             super(maxPower, idlePower);
-            this.factor = (maxPower - idlePower) / Math.pow(100, 3);
+            this.factor = (maxPower - idlePower);
         }
 
         @Override
         public double computePower(double utilization) {
-            return idlePower + factor * Math.pow(utilization * 100, 3);
+            utilization = clampUtilization(utilization);
+
+            return idlePower + factor * Math.pow(utilization, 3);
         }
 
         @Override
