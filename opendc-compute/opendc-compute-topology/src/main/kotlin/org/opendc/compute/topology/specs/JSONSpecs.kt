@@ -64,7 +64,7 @@ public data class HostJSONSpec(
     val name: String = "Host",
     val cpus: List<CPUJSONSpec>,
     val memory: MemoryJSONSpec,
-    val powerModel: PowerModelJSONSpec = PowerModelJSONSpec("linear", 350.0, 200.0, 400.0),
+    val powerModel: PowerModelJSONSpec = PowerModelJSONSpec("linear", 350.0, 400.0, 200.0),
     val count: Int = 1,
 )
 
@@ -109,6 +109,10 @@ public data class MemoryJSONSpec(
 public data class PowerModelJSONSpec(
     val modelType: String,
     val power: Double = 400.0,
-    val idlePower: Double,
     val maxPower: Double,
-)
+    val idlePower: Double,
+) {
+    init {
+        require(maxPower >= idlePower) { "The max power of a power model can not be less than the idle power" }
+    }
+}

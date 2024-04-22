@@ -111,7 +111,7 @@ private fun HostJSONSpec.toHostSpecs(
 ): HostSpec {
     val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cpus.sumOf { it.coreCount })
 
-    val units = cpus.flatMap { cpu -> List(cpu.count) { cpu.toProcessingUnit(unknownProcessingNode) }.flatten() }
+    val units = cpus.flatMap { cpu -> List(cpu.count) { cpu.toProcessingUnits(unknownProcessingNode) }.flatten() }
 
     val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed, memory.memorySize)
     val machineModel =
@@ -140,7 +140,9 @@ private fun HostJSONSpec.toHostSpecs(
  */
 private var globalCoreId = 0
 
-private fun CPUJSONSpec.toProcessingUnit(unknownProcessingNode: ProcessingNode): List<ProcessingUnit> {
+private fun CPUJSONSpec.toProcessingUnits(unknownProcessingNode: ProcessingNode): List<ProcessingUnit> {
     val units = List(coreCount) { ProcessingUnit(unknownProcessingNode, globalCoreId++, coreSpeed) }
     return units
+
+//    return listOf(ProcessingUnit(unknownProcessingNode, globalCoreId++, coreSpeed))
 }
