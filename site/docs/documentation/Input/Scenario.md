@@ -8,18 +8,18 @@ In the following section, we describe the different components of the schema.
 
 ### General Structure
 
-| Variable             | Type                                         | Required? | Default  | Description                                                              |
-|----------------------|----------------------------------------------|-----------|----------|--------------------------------------------------------------------------|
-| name                 | string                                       | yes       | N/A      | Name of the scenario, used for identification and referencing.            |
-| topologies           | List[[Topology](#topology)]                  | yes       | N/A      | List of topologies used in the scenario.                                 |
-| workloads            | List[[Workload](#workload)]                  | yes       | N/A      | List of workloads to be executed within the scenario.                    |
-| allocationPolicies   | List[[AllocationPolicy](#allocationpolicy)]  | yes       | N/A      | Allocation policies used for resource management in the scenario.        |
-| failureModels        | List[[FailureModel](#failuremodel)]          | no        | empty    | List of failure models to simulate various types of failures.            |
-| exportModels         | List[[ExportModel](#exportmodel)]            | no        | empty    | Specifications for exporting data from the simulation.                   |
-| carbonTracePaths     | List[string]                                 | no        | null     | Paths to carbon footprint trace files.                                   |
+| Variable             | Type                                         | Required? | Default | Description                                                              |
+|----------------------|----------------------------------------------|-----------|-------|--------------------------------------------------------------------------|
+| name                 | string                                       | no        | ""      | Name of the scenario, used for identification and referencing.            |
+| topologies           | List[[Topology](#topology)]                  | yes       | N/A   | List of topologies used in the scenario.                                 |
+| workloads            | List[[Workload](#workload)]                  | yes       | N/A   | List of workloads to be executed within the scenario.                    |
+| allocationPolicies   | List[[AllocationPolicy](#allocationpolicy)]  | yes       | N/A   | Allocation policies used for resource management in the scenario.        |
+| failureModels        | List[[FailureModel](#failuremodel)]          | no        | empty | List of failure models to simulate various types of failures.            |
+| exportModels         | List[[ExportModel](#exportmodel)]            | no        | empty | Specifications for exporting data from the simulation.                   |
+| carbonTracePaths     | List[string]                                 | no        | null  | Paths to carbon footprint trace files.                                   |
 | outputFolder         | string                                       | no        | "output" | Directory where the simulation outputs will be stored.                   |
-| initialSeed          | integer                                      | no        | 0        | Seed used for random number generation to ensure reproducibility.        |
-| runs                 | integer                                      | yes       | 1        | Number of times the scenario should be run.                              |
+| initialSeed          | integer                                      | no        | 0     | Seed used for random number generation to ensure reproducibility.        |
+| runs                 | integer                                      | no        | 1     | Number of times the scenario should be run.                              |
 
 ### Topology
 
