@@ -1,8 +1,10 @@
 The topology of a datacenter is defined using a JSON file. A topology consist of one or more clusters.
-Each cluster consist of at least one host on which jobs can be executed. Each host consist of one or more CPUs, a memory unit and a power model.
+Each cluster consist of at least one host on which jobs can be executed. Each host consist of one or more CPUs,
+a memory unit and a power model.
 
 ## Schema
-The schema for the topology file is provided in [schema](TopologySchema). 
+
+The schema for the topology file is provided in [schema](TopologySchema).
 In the following section, we describe the different components of the schema.
 
 ### Cluster
@@ -54,24 +56,22 @@ In the following section, we describe the different components of the schema.
 | maxPower  | string  | Watt | yes       | N/A     | The power draw of a host when using max capacity in Watt                   |
 | idlePower | integer | Watt | yes       | N/A     | The power draw of a host when idle in Watt                                 |
 
-
 ## Examples
-In the following section, we discuss several examples of topology files. Any topology file can be verified using the 
+
+In the following section, we discuss several examples of topology files. Any topology file can be verified using the
 JSON schema defined in [schema](TopologySchema).
 
 ### Simple
 
 The simplest data center that can be provided to OpenDC is shown below:
+
 ```json
 {
-    "clusters":
-    [
+    "clusters": [
         {
-            "hosts" :
-            [
+            "hosts": [
                 {
-                    "cpus":
-                    [
+                    "cpus": [
                         {
                             "coreCount": 16,
                             "coreSpeed": 1000
@@ -91,19 +91,18 @@ This is creates a data center with a single cluster containing a single host. Th
 with a speed of 1 Ghz, and 100 MiB RAM memory.
 
 ### Count
+
 Duplicating clusters, hosts, or CPUs is easy using the "count" keyword:
+
 ```json
 {
-    "clusters":
-    [
+    "clusters": [
         {
             "count": 2,
-            "hosts" : 
-            [
+            "hosts": [
                 {
                     "count": 5,
-                    "cpus":
-                    [
+                    "cpus": [
                         {
                             "coreCount": 16,
                             "coreSpeed": 1000,
@@ -119,26 +118,26 @@ Duplicating clusters, hosts, or CPUs is easy using the "count" keyword:
     ]
 }
 ```
-This topology creates a datacenter consisting of 2 clusters, both containing 5 hosts. Each host contains 10 16 core CPUs. 
+
+This topology creates a datacenter consisting of 2 clusters, both containing 5 hosts. Each host contains 10 16 core
+CPUs.
 Using "count" saves a lot of copying.
 
 ### Complex
+
 Following is an example of a more complex topology:
 
 ```json
 {
-    "clusters":
-    [
+    "clusters": [
         {
             "name": "C01",
             "count": 2,
-            "hosts" :
-            [
+            "hosts": [
                 {
                     "name": "H01",
                     "count": 2,
-                    "cpus":
-                    [
+                    "cpus": [
                         {
                             "coreCount": 16,
                             "coreSpeed": 1000
@@ -147,8 +146,7 @@ Following is an example of a more complex topology:
                     "memory": {
                         "memorySize": 1000000
                     },
-                    "powerModel":
-                    {
+                    "powerModel": {
                         "modelType": "linear",
                         "idlePower": 200.0,
                         "maxPower": 400.0
@@ -157,8 +155,7 @@ Following is an example of a more complex topology:
                 {
                     "name": "H02",
                     "count": 2,
-                    "cpus":
-                    [
+                    "cpus": [
                         {
                             "coreCount": 8,
                             "coreSpeed": 3000
@@ -167,8 +164,7 @@ Following is an example of a more complex topology:
                     "memory": {
                         "memorySize": 100000
                     },
-                    "powerModel":
-                    {
+                    "powerModel": {
                         "modelType": "square",
                         "idlePower": 300.0,
                         "maxPower": 500.0
@@ -180,5 +176,5 @@ Following is an example of a more complex topology:
 }
 ```
 
-This topology defines two types of hosts with different coreCount, and coreSpeed. 
+This topology defines two types of hosts with different coreCount, and coreSpeed.
 Both types of hosts are created twice. 

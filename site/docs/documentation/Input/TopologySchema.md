@@ -1,5 +1,5 @@
 Below is the schema for the Topology JSON file. This schema can be used to validate a topology file. 
-A topology file can be validated using using a JSON schema validator, such as https://www.jsonschemavalidator.net/.
+A topology file can be validated using a JSON schema validator, such as https://www.jsonschemavalidator.net/.
 
 ```json
 {
