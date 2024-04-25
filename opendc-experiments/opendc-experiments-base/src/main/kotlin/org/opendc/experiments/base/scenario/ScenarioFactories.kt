@@ -29,6 +29,7 @@ import org.opendc.experiments.base.scenario.specs.ScenarioSpec
 import java.io.File
 
 private val scenarioReader = ScenarioReader()
+private val scenarioWriter = ScenarioWriter()
 
 /**
  * Returns a list of Scenarios from a given file path (input).
@@ -58,7 +59,19 @@ public fun getScenarios(file: File): List<Scenario> {
  * @return A list of Scenarios.
  */
 public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
+    val outputFolder = scenarioSpec.outputFolder + "/" + scenarioSpec.name
+    File(outputFolder).mkdirs()
+
+    val trackrPath = outputFolder + "/trackr.json"
+    File(trackrPath).createNewFile()
+
+    val topologiesSpec = scenarioSpec.topologies
+    val workloads = scenarioSpec.workloads
+    val allocationPolicies = scenarioSpec.allocationPolicies
+    val failureModels = scenarioSpec.failureModels
+    val exportModels = scenarioSpec.exportModels
     val scenarios = mutableListOf<Scenario>()
+    var scenarioID = 0
 
     for (scenarioTopologySpec in scenarioSpec.topologies) {
         for (workloadSpec in scenarioSpec.workloads) {
@@ -79,7 +92,9 @@ public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
                                     runs = scenarioSpec.runs,
                                     initialSeed = scenarioSpec.initialSeed,
                                 )
+                            trackScenario(scenarioSpec, outputFolder, scenario, topology)
                             scenarios.add(scenario)
+                            scenarioID++
                         }
                     }
                 }
@@ -109,4 +124,41 @@ public fun getOutputFolderName(
         "-topology=${topology.name}" +
         "-workload=${workload.name}" +
         "-allocation=${allocationPolicy.name}"
+}
+
+/**
+ * Writes a ScenarioSpec to a file.
+ *
+ * @param scenarioSpec The ScenarioSpec.
+ * @param outputFolder The output folder path.
+ * @param scenario The Scenario.
+ * @param topologySpec The TopologySpec.
+
+ */
+public fun trackScenario(
+    scenarioSpec: ScenarioSpec,
+    outputFolder: String,
+    scenario: Scenario,
+    topologySpec: TopologySpec,
+) {
+    val trackrPath = outputFolder + "/trackr.json"
+    scenarioWriter.write(
+        ScenarioSpec(
+            id = scenarioSpec.id,
+            name = scenarioSpec.name,
+            topologies = listOf(topologySpec),
+            workloads = listOf(scenario.workload),
+            allocationPolicies = listOf(scenario.allocationPolicy),
+            // when implemented, add failure models here
+            carbonTracePaths = listOf(scenario.carbonTracePath),
+            exportModels = listOf(scenario.exportModel),
+            outputFolder = scenario.outputFolder,
+            initialSeed = scenario.initialSeed,
+            runs = scenario.runs,
+        ),
+        File(trackrPath),
+    )
+
+    // remove the last comma
+    File(trackrPath).writeText(File(trackrPath).readText().dropLast(3) + "]")
 }

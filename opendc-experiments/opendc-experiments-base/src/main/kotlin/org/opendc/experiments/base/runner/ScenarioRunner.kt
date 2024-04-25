@@ -58,9 +58,10 @@ public fun runScenarios(
     val ansiReset = "\u001B[0m"
     val ansiGreen = "\u001B[32m"
     val ansiBlue = "\u001B[34m"
-    clearOutputFolder(scenarios[0].outputFolder)
 
-    for (scenario in scenarios) {
+    setupOutputFolderStructure(scenarios[0].outputFolder)
+
+    for ((i, scenario) in scenarios.withIndex()) {
         val pool = ForkJoinPool(parallelism)
         println(
             "\n\n$ansiGreen================================================================================$ansiReset",
@@ -70,6 +71,7 @@ public fun runScenarios(
         runScenario(
             scenario,
             pool,
+            i,
         )
     }
 }
@@ -84,6 +86,7 @@ public fun runScenarios(
 public fun runScenario(
     scenario: Scenario,
     pool: ForkJoinPool,
+    index: Int = -1,
 ) {
     val pb =
         ProgressBarBuilder().setInitialMax(scenario.runs.toLong()).setStyle(ProgressBarStyle.ASCII)
@@ -91,7 +94,7 @@ public fun runScenario(
 
     pool.submit {
         LongStream.range(0, scenario.runs.toLong()).parallel().forEach {
-            runScenario(scenario, scenario.initialSeed + it)
+            runScenario(scenario, scenario.initialSeed + it, index)
             pb.step()
         }
         pb.close()
@@ -107,6 +110,7 @@ public fun runScenario(
 public fun runScenario(
     scenario: Scenario,
     seed: Long,
+    index: Int = 0,
 ): Unit =
     runSimulation {
         val serviceDomain = "compute.opendc.org"
@@ -126,7 +130,7 @@ public fun runScenario(
 
             val carbonTrace = getCarbonTrace(scenario.carbonTracePath)
             val startTime = Duration.ofMillis(vms.minOf { it.startTime }.toEpochMilli())
-            saveInOutputFolder(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace)
+            addExportModel(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace, index)
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
             service.replay(timeSource, vms, failureModelSpec = scenario.failureModel, seed = seed)
@@ -143,19 +147,20 @@ public fun runScenario(
  * @param startTime The start time of the simulation given by the workload trace.
  * @param carbonTrace The carbon trace used to determine carbon emissions.
  */
-public fun saveInOutputFolder(
+public fun addExportModel(
     provisioner: Provisioner,
     serviceDomain: String,
     scenario: Scenario,
     seed: Long,
     startTime: Duration,
     carbonTrace: CarbonTrace,
+    index: Int,
 ) {
     provisioner.runStep(
         registerComputeMonitor(
             serviceDomain,
             ParquetComputeMonitor(
-                File("${scenario.outputFolder}/${scenario.name}"),
+                File("${scenario.outputFolder}/raw-output/$index"),
                 "seed=$seed",
                 bufferSize = 4096,
             ),
@@ -172,4 +177,21 @@ public fun saveInOutputFolder(
  */
 public fun clearOutputFolder(outputFolderPath: String) {
     if (File(outputFolderPath).exists()) File(outputFolderPath).deleteRecursively()
+}
+
+/**
+ * Utility function to create the output folder structure for the simulation results.
+ * @param folderPath The path to the output folder
+ */
+private fun setupOutputFolderStructure(folderPath: String) {
+    val trackrPath = folderPath + "/trackr.json"
+    val simulationAnalysisPath = folderPath + "/simulation-analysis/"
+    val energyAnalysisPath = simulationAnalysisPath + "/energy-analysis/"
+    val emissionsAnalysisPath = simulationAnalysisPath + "/emissions-analysis/"
+
+    File(folderPath).mkdir()
+    File(trackrPath).createNewFile()
+    File(simulationAnalysisPath).mkdir()
+    File(energyAnalysisPath).mkdir()
+    File(emissionsAnalysisPath).mkdir()
 }
