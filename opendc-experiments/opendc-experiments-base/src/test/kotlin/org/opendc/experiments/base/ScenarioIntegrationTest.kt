@@ -215,7 +215,6 @@ class ScenarioIntegrationTest {
      * Test a small simulation setup with failures.
      * FIXME: Currently failures do not work. reactivate this test when Failures are implemented again
      */
-//    @Test
     fun testFailures() =
         runSimulation {
             val seed = 0L
