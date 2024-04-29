@@ -20,21 +20,30 @@
  * SOFTWARE.
  */
 
-import kotlinx.serialization.Serializable
+package org.opendc.experiments.base.scenario
+
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import org.opendc.experiments.base.scenario.specs.ScenarioSpec
 import java.io.File
+import java.io.InputStream
 
-/**
- * specification describing a topology
- *
- * @property pathToFile
- */
-@Serializable
-public data class TopologySpec(
-    val pathToFile: String,
-) {
-    public val name: String = File(pathToFile).nameWithoutExtension
+public class ScenarioReader {
+    @OptIn(ExperimentalSerializationApi::class)
+    public fun read(file: File): ScenarioSpec {
+        val input = file.inputStream()
+        val obj = Json.decodeFromStream<ScenarioSpec>(input)
 
-    init {
-        require(File(pathToFile).exists()) { "The provided path to the topology: $pathToFile does not exist " }
+        return obj
+    }
+
+    /**
+     * Read the specified [input].
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    public fun read(input: InputStream): ScenarioSpec {
+        val obj = Json.decodeFromStream<ScenarioSpec>(input)
+        return obj
     }
 }

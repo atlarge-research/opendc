@@ -20,13 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.models.scenario
+package org.opendc.experiments.base.scenario
 
 import AllocationPolicySpec
 import ExportModelSpec
+import FailureModelSpec
+import ScenarioTopologySpec
 import WorkloadSpec
-import org.opendc.compute.simulator.failure.FailureModel
-import org.opendc.compute.topology.specs.HostSpec
 
 /**
  * A data class representing a scenario for a set of experiments.
@@ -42,10 +42,10 @@ import org.opendc.compute.topology.specs.HostSpec
  * @property initialSeed The Int representing the initial seed of the scenario. It defaults to 0.
  */
 public data class Scenario(
-    val topology: List<HostSpec>,
+    val topology: ScenarioTopologySpec,
     val workload: WorkloadSpec,
     val allocationPolicy: AllocationPolicySpec,
-    val failureModel: FailureModel?,
+    val failureModel: FailureModelSpec?,
     val carbonTracePath: String? = null,
     val exportModel: ExportModelSpec = ExportModelSpec(),
     val outputFolder: String = "output",

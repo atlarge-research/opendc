@@ -20,16 +20,12 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.models.scenario
+package org.opendc.experiments.base.scenario
 
 import AllocationPolicySpec
-import TopologySpec
+import ScenarioTopologySpec
 import WorkloadSpec
-import org.opendc.compute.simulator.failure.getFailureModel
-import org.opendc.compute.topology.TopologyReader
-import org.opendc.compute.topology.clusterTopology
-import org.opendc.compute.topology.specs.TopologyJSONSpec
-import org.opendc.experiments.base.models.scenario.specs.ScenarioSpec
+import org.opendc.experiments.base.scenario.specs.ScenarioSpec
 import java.io.File
 
 private val scenarioReader = ScenarioReader()
@@ -40,8 +36,8 @@ private val scenarioReader = ScenarioReader()
  * @param filePath The path to the file containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getScenario(filePath: String): List<Scenario> {
-    return getScenario(File(filePath))
+public fun getScenarios(filePath: String): List<Scenario> {
+    return getScenarios(File(filePath))
 }
 
 /**
@@ -50,18 +46,8 @@ public fun getScenario(filePath: String): List<Scenario> {
  * @param file The file containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getScenario(file: File): List<Scenario> {
-    return getScenario(scenarioReader.read(file))
-}
-
-/**
- * Returns a list of Scenarios from a given ScenarioSpec.
- *
- * @param scenarioSpec The ScenarioSpec containing the scenario specifications.
- * @return A list of Scenarios.
- */
-public fun getScenario(scenarioSpec: ScenarioSpec): List<Scenario> {
-    return getScenarioCombinations(scenarioSpec)
+public fun getScenarios(file: File): List<Scenario> {
+    return getScenarios(scenarioReader.read(file))
 }
 
 /**
@@ -71,30 +57,25 @@ public fun getScenario(scenarioSpec: ScenarioSpec): List<Scenario> {
  * @param scenarioSpec The ScenarioSpec containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
-    val topologiesSpec = scenarioSpec.topologies
-    val workloads = scenarioSpec.workloads
-    val allocationPolicies = scenarioSpec.allocationPolicies
-    val failureModels = scenarioSpec.failureModels
-    val exportModels = scenarioSpec.exportModels
+public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
     val scenarios = mutableListOf<Scenario>()
 
-    for (topology in topologiesSpec) {
-        for (workload in workloads) {
-            for (allocationPolicy in allocationPolicies) {
-                for (failureModel in failureModels) {
+    for (scenarioTopologySpec in scenarioSpec.topologies) {
+        for (workloadSpec in scenarioSpec.workloads) {
+            for (allocationPolicySpec in scenarioSpec.allocationPolicies) {
+                for (failureModelSpec in scenarioSpec.failureModels) {
                     for (carbonTracePath in scenarioSpec.carbonTracePaths) {
-                        for (exportModel in exportModels) {
+                        for (exportModelSpec in scenarioSpec.exportModels) {
                             val scenario =
                                 Scenario(
-                                    topology = clusterTopology(File(topology.pathToFile)),
-                                    workload = workload,
-                                    allocationPolicy = allocationPolicy,
-                                    failureModel = getFailureModel(failureModel.failureInterval),
+                                    topology = scenarioTopologySpec,
+                                    workload = workloadSpec,
+                                    allocationPolicy = allocationPolicySpec,
+                                    failureModel = failureModelSpec,
                                     carbonTracePath = carbonTracePath,
-                                    exportModel = exportModel,
+                                    exportModel = exportModelSpec,
                                     outputFolder = scenarioSpec.outputFolder,
-                                    name = getOutputFolderName(scenarioSpec, topology, workload, allocationPolicy),
+                                    name = getOutputFolderName(scenarioSpec, scenarioTopologySpec, workloadSpec, allocationPolicySpec),
                                     runs = scenarioSpec.runs,
                                     initialSeed = scenarioSpec.initialSeed,
                                 )
@@ -110,37 +91,22 @@ public fun getScenarioCombinations(scenarioSpec: ScenarioSpec): List<Scenario> {
 }
 
 /**
- * Returns a list of TopologyJSONSpec from a given list of TopologySpec.
- *
- * @param topologies The list of TopologySpec.
- * @return A list of TopologyJSONSpec.
- */
-public fun getTopologies(topologies: List<TopologySpec>): List<TopologyJSONSpec> {
-    val readTopologies = mutableListOf<TopologyJSONSpec>()
-    for (topology in topologies) {
-        readTopologies.add(TopologyReader().read(File(topology.pathToFile)))
-    }
-
-    return readTopologies
-}
-
-/**
  * Returns a string representing the output folder name for a given ScenarioSpec, CpuPowerModel, AllocationPolicySpec, and topology path.
  *
  * @param scenarioSpec The ScenarioSpec.
- * @param powerModel The CpuPowerModel.
- * @param allocationPolicy The AllocationPolicySpec.
- * @param topologyPath The path to the topology file.
+ * @param topology The specification of the topology used
+ * @param workload The specification of the workload
+ * @param allocationPolicy The allocation policy used
  * @return A string representing the output folder name.
  */
 public fun getOutputFolderName(
     scenarioSpec: ScenarioSpec,
-    topology: TopologySpec,
+    topology: ScenarioTopologySpec,
     workload: WorkloadSpec,
     allocationPolicy: AllocationPolicySpec,
 ): String {
     return "scenario=${scenarioSpec.name}" +
         "-topology=${topology.name}" +
         "-workload=${workload.name}" +
-        "-scheduler=${allocationPolicy.name}"
+        "-allocation=${allocationPolicy.name}"
 }

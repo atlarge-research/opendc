@@ -25,7 +25,7 @@ package org.opendc.compute.topology
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import org.opendc.compute.topology.specs.TopologyJSONSpec
+import org.opendc.compute.topology.specs.TopologySpec
 import java.io.File
 import java.io.InputStream
 
@@ -34,9 +34,9 @@ import java.io.InputStream
  */
 public class TopologyReader {
     @OptIn(ExperimentalSerializationApi::class)
-    public fun read(file: File): TopologyJSONSpec {
+    public fun read(file: File): TopologySpec {
         val input = file.inputStream()
-        val obj = Json.decodeFromStream<TopologyJSONSpec>(input)
+        val obj = Json.decodeFromStream<TopologySpec>(input)
 
         return obj
     }
@@ -45,8 +45,8 @@ public class TopologyReader {
      * Read the specified [input].
      */
     @OptIn(ExperimentalSerializationApi::class)
-    public fun read(input: InputStream): TopologyJSONSpec {
-        val obj = Json.decodeFromStream<TopologyJSONSpec>(input)
+    public fun read(input: InputStream): TopologySpec {
+        val obj = Json.decodeFromStream<TopologySpec>(input)
         return obj
     }
 }

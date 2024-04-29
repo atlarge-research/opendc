@@ -30,8 +30,8 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
-import org.opendc.experiments.base.models.scenario.getScenario
-import org.opendc.experiments.base.runner.runScenario
+import org.opendc.experiments.base.runner.runScenarios
+import org.opendc.experiments.base.scenario.getScenarios
 import java.io.File
 
 /**
@@ -59,8 +59,8 @@ internal class ScenarioCommand : CliktCommand(name = "scenario") {
 
     override fun run() {
         // TODO: clean the simulation-results folder?
-        val scenarios = getScenario(scenarioPath)
-        runScenario(scenarios, parallelism)
+        val scenarios = getScenarios(scenarioPath)
+        runScenarios(scenarios, parallelism)
         // TODO: implement outputResults(scenario) // this will take the results, from a folder, and output them visually
     }
 }

@@ -24,10 +24,10 @@
 
 package org.opendc.compute.topology
 
-import org.opendc.compute.topology.specs.ClusterJSONSpec
+import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostJSONSpec
 import org.opendc.compute.topology.specs.HostSpec
-import org.opendc.compute.topology.specs.TopologyJSONSpec
+import org.opendc.compute.topology.specs.TopologySpec
 import org.opendc.simulator.compute.SimPsuFactories
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -44,6 +44,16 @@ import java.util.random.RandomGenerator
  * A [TopologyReader] that is used to read the cluster definition file.
  */
 private val reader = TopologyReader()
+
+/**
+ * Construct a topology from the specified [pathToFile].
+ */
+public fun clusterTopology(
+    pathToFile: String,
+    random: RandomGenerator = SplittableRandom(0),
+): List<HostSpec> {
+    return clusterTopology(File(pathToFile), random)
+}
 
 /**
  * Construct a topology from the specified [file].
@@ -68,9 +78,9 @@ public fun clusterTopology(
 }
 
 /**
- * Helper method to convert a [TopologyJSONSpec] into a list of [HostSpec]s.
+ * Helper method to convert a [TopologySpec] into a list of [HostSpec]s.
  */
-private fun TopologyJSONSpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
+private fun TopologySpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
     return clusters.flatMap { cluster ->
         List(cluster.count) {
             cluster.toHostSpecs(random)
@@ -79,11 +89,11 @@ private fun TopologyJSONSpec.toHostSpecs(random: RandomGenerator): List<HostSpec
 }
 
 /**
- * Helper method to convert a [ClusterJSONSpec] into a list of [HostSpec]s.
+ * Helper method to convert a [ClusterSpec] into a list of [HostSpec]s.
  */
 private var clusterId = 0
 
-private fun ClusterJSONSpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
+private fun ClusterSpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
     val hostSpecs =
         hosts.flatMap { host ->
             (
