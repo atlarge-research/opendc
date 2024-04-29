@@ -54,7 +54,7 @@ public data class ClusterJSONSpec(
  * Definition of a compute host modeled in the simulation.
  *
  * @param name The name of the host.
- * @param cpus List of the different CPUs available in this cluster
+ * @param cpu The CPU available in this cluster
  * @param memory The amount of RAM memory available in Byte
  * @param powerModel The power model used to determine the power draw of a host
  * @param count The power model used to determine the power draw of a host
@@ -62,7 +62,7 @@ public data class ClusterJSONSpec(
 @Serializable
 public data class HostJSONSpec(
     val name: String = "Host",
-    val cpus: List<CPUJSONSpec>,
+    val cpu: CPUJSONSpec,
     val memory: MemoryJSONSpec,
     val powerModel: PowerModelJSONSpec = PowerModelJSONSpec("linear", 350.0, 400.0, 200.0),
     val count: Int = 1,
