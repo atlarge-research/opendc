@@ -7,13 +7,11 @@
             [
                 {
                     "name": "H01",
-                    "cpus":
-                    [
-                        {
-                            "coreCount": 32,
-                            "coreSpeed": 3200
-                        }
-                    ],
+                    "cpu":
+                    {
+                        "coreCount": 32,
+                        "coreSpeed": 3200
+                    },
                     "memory": {
                         "memorySize": 256000
                     }
@@ -27,13 +25,11 @@
                 {
                     "name": "H02",
                     "count": 6,
-                    "cpus":
-                    [
-                        {
-                            "coreCount": 8,
-                            "coreSpeed": 2930
-                        }
-                    ],
+                    "cpu":
+                    {
+                        "coreCount": 8,
+                        "coreSpeed": 2930
+                    },
                     "memory": {
                         "memorySize": 64000
                     }
@@ -47,13 +43,11 @@
                 {
                     "name": "H03",
                     "count": 2,
-                    "cpus":
-                    [
-                        {
-                            "coreCount": 16,
-                            "coreSpeed": 3200
-                        }
-                    ],
+                    "cpu":
+                    {
+                        "coreCount": 16,
+                        "coreSpeed": 3200
+                    },
                     "memory": {
                         "memorySize": 128000
                     }
