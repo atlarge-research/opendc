@@ -17,12 +17,12 @@ In the following section, we describe the different components of the schema.
 
 ### Host
 
-| variable    | type                        | required? | default | description                                                                    |
-|-------------|-----------------------------|-----------|---------|--------------------------------------------------------------------------------|
-| name        | string                      | no        | Host    | The name of the host. This is only important for debugging and post-processing |
-| count       | integer                     | no        | 1       | The amount of hosts of this type are in the cluster                            |
-| cpus        | List[[CPU](#cpu)]           | yes       | N/A     | A list of the hosts in a cluster.                                              |
-| memory      | [Memory](#memory)           | yes       | N/A     | The memory used by the host                                                    |
+| variable   | type                  | required? | default | description                                                                    |
+|------------|-----------------------|-----------|---------|--------------------------------------------------------------------------------|
+| name       | string                | no        | Host    | The name of the host. This is only important for debugging and post-processing |
+| count      | integer               | no        | 1       | The amount of hosts of this type are in the cluster                            |
+| cpu        | [CPU](#cpu)           | yes       | N/A     | The CPUs in the host                                                           |
+| memory     | [Memory](#memory)     | yes       | N/A     | The memory used by the host                                                    |
 | power model | [Power Model](#power-model) | yes       | N/A     | The power model used to determine the power draw of the host                   |
 
 ### CPU

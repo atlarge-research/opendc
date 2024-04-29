@@ -36,15 +36,15 @@ public class VCpuFilter(private val allocationRatio: Double) : HostFilter {
         server: Server,
     ): Boolean {
         val requested = server.flavor.coreCount
-        val total = host.host.model.coreCount
-        val limit = total * allocationRatio
+        val totalCores = host.host.model.coreCount
+        val limit = totalCores * allocationRatio
 
         // Do not allow an instance to overcommit against itself, only against other instances
-        if (requested > total) {
+        if (requested > totalCores) {
             return false
         }
 
-        val free = limit - host.provisionedCores
-        return free >= requested
+        val availableCores = limit - host.provisionedCores
+        return availableCores >= requested
     }
 }

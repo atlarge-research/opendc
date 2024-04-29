@@ -24,7 +24,6 @@
 
 package org.opendc.compute.topology
 
-import org.opendc.compute.topology.specs.CPUJSONSpec
 import org.opendc.compute.topology.specs.ClusterJSONSpec
 import org.opendc.compute.topology.specs.HostJSONSpec
 import org.opendc.compute.topology.specs.HostSpec
@@ -104,14 +103,14 @@ private fun ClusterJSONSpec.toHostSpecs(random: RandomGenerator): List<HostSpec>
  * Helper method to convert a [HostJSONSpec] into a [HostSpec]s.
  */
 private var hostId = 0
+private var globalCoreId = 0
 
 private fun HostJSONSpec.toHostSpecs(
     clusterId: Int,
     random: RandomGenerator,
 ): HostSpec {
-    val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cpus.sumOf { it.coreCount })
-
-    val units = cpus.flatMap { cpu -> List(cpu.count) { cpu.toProcessingUnits(unknownProcessingNode) }.flatten() }
+    val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cpu.coreCount)
+    val units = List(cpu.count) { ProcessingUnit(unknownProcessingNode, globalCoreId++, cpu.coreSpeed) }
 
     val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed, memory.memorySize)
     val machineModel =
@@ -133,16 +132,4 @@ private fun HostJSONSpec.toHostSpecs(
     hostId++
 
     return hostSpec
-}
-
-/**
- * Helper method to convert a [CPUJSONSpec] into a list of [ProcessingUnit]s.
- */
-private var globalCoreId = 0
-
-private fun CPUJSONSpec.toProcessingUnits(unknownProcessingNode: ProcessingNode): List<ProcessingUnit> {
-    val units = List(coreCount) { ProcessingUnit(unknownProcessingNode, globalCoreId++, coreSpeed) }
-    return units
-
-//    return listOf(ProcessingUnit(unknownProcessingNode, globalCoreId++, coreSpeed))
 }
