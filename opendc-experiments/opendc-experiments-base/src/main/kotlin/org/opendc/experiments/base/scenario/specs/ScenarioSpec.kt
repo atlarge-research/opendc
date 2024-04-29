@@ -20,12 +20,12 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.models.scenario.specs
+package org.opendc.experiments.base.scenario.specs
 
 import AllocationPolicySpec
 import ExportModelSpec
 import FailureModelSpec
-import TopologySpec
+import ScenarioTopologySpec
 import WorkloadSpec
 import kotlinx.serialization.Serializable
 
@@ -43,7 +43,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 public data class ScenarioSpec(
-    val topologies: List<TopologySpec>,
+    val topologies: List<ScenarioTopologySpec>,
     val workloads: List<WorkloadSpec>,
     val allocationPolicies: List<AllocationPolicySpec>,
     val failureModels: List<FailureModelSpec> = listOf(FailureModelSpec()),

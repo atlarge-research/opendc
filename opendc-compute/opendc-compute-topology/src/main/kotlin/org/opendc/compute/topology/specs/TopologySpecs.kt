@@ -30,8 +30,8 @@ import kotlinx.serialization.Serializable
  * @param clusters List of the clusters in this topology
  */
 @Serializable
-public data class TopologyJSONSpec(
-    val clusters: List<ClusterJSONSpec>,
+public data class TopologySpec(
+    val clusters: List<ClusterSpec>,
     val schemaVersion: Int = 1,
 )
 
@@ -43,7 +43,7 @@ public data class TopologyJSONSpec(
  * @param location Location of the cluster. This can impact the carbon intensity
  */
 @Serializable
-public data class ClusterJSONSpec(
+public data class ClusterSpec(
     val name: String = "Cluster",
     val count: Int = 1,
     val hosts: List<HostJSONSpec>,
@@ -62,9 +62,9 @@ public data class ClusterJSONSpec(
 @Serializable
 public data class HostJSONSpec(
     val name: String = "Host",
-    val cpu: CPUJSONSpec,
-    val memory: MemoryJSONSpec,
-    val powerModel: PowerModelJSONSpec = PowerModelJSONSpec("linear", 350.0, 400.0, 200.0),
+    val cpu: CPUSpec,
+    val memory: MemorySpec,
+    val powerModel: PowerModelSpec = PowerModelSpec("linear", 350.0, 400.0, 200.0),
     val count: Int = 1,
 )
 
@@ -78,7 +78,7 @@ public data class HostJSONSpec(
  * @param coreSpeed The speed of the cores in Mhz
  */
 @Serializable
-public data class CPUJSONSpec(
+public data class CPUSpec(
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val arch: String = "unknown",
@@ -97,7 +97,7 @@ public data class CPUJSONSpec(
  * @param memorySize The size of the memory Unit in MiB
  */
 @Serializable
-public data class MemoryJSONSpec(
+public data class MemorySpec(
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val arch: String = "unknown",
@@ -106,7 +106,7 @@ public data class MemoryJSONSpec(
 )
 
 @Serializable
-public data class PowerModelJSONSpec(
+public data class PowerModelSpec(
     val modelType: String,
     val power: Double = 400.0,
     val maxPower: Double,

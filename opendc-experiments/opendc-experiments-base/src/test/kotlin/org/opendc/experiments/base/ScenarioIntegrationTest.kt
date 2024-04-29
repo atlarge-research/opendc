@@ -32,7 +32,6 @@ import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
-import org.opendc.compute.simulator.failure.getFailureModel
 import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
@@ -103,7 +102,7 @@ class ScenarioIntegrationTest {
                 )
 
                 val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed)
+                service.replay(timeSource, workload, seed = seed)
             }
 
             println(
@@ -149,7 +148,7 @@ class ScenarioIntegrationTest {
                 )
 
                 val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed)
+                service.replay(timeSource, workload, seed = seed)
             }
 
             println(
@@ -190,7 +189,7 @@ class ScenarioIntegrationTest {
                 )
 
                 val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed)
+                service.replay(timeSource, workload, seed = seed)
             }
 
             println(
@@ -230,7 +229,7 @@ class ScenarioIntegrationTest {
                 )
 
                 val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed, failureModel = getFailureModel(7.0 * 24 * 60 * 60))
+                service.replay(timeSource, workload, seed = seed, failureModelSpec = null)
             }
 
             // Note that these values have been verified beforehand

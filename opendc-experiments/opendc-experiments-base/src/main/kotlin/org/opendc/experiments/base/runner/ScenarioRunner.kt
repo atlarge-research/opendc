@@ -35,8 +35,9 @@ import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
 import org.opendc.compute.telemetry.export.parquet.ParquetComputeMonitor
+import org.opendc.compute.topology.clusterTopology
 import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.experiments.base.models.scenario.Scenario
+import org.opendc.experiments.base.scenario.Scenario
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
 import java.time.Duration
@@ -47,10 +48,10 @@ import java.util.stream.LongStream
 /**
  * Run scenario when no pool is available for parallel execution
  *
- * @param scenario The scenario to run
+ * @param scenarios The scenarios to run
  * @param parallelism The number of scenarios that can be run in parallel
  */
-public fun runScenario(
+public fun runScenarios(
     scenarios: List<Scenario>,
     parallelism: Int,
 ) {
@@ -110,12 +111,14 @@ public fun runScenario(
     runSimulation {
         val serviceDomain = "compute.opendc.org"
         Provisioner(dispatcher, seed).use { provisioner ->
+
+            val topology = clusterTopology(scenario.topology.pathToFile, Random(seed))
             provisioner.runSteps(
                 setupComputeService(
                     serviceDomain,
                     { createComputeScheduler(ComputeSchedulerEnum.Mem, Random(it.seeder.nextLong())) },
                 ),
-                setupHosts(serviceDomain, scenario.topology, optimize = true),
+                setupHosts(serviceDomain, topology, optimize = true),
             )
 
             val workloadLoader = ComputeWorkloadLoader(File(scenario.workload.pathToFile))
@@ -126,41 +129,9 @@ public fun runScenario(
             saveInOutputFolder(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace)
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
-            service.replay(timeSource, vms, seed, failureModel = scenario.failureModel)
+            service.replay(timeSource, vms, failureModelSpec = scenario.failureModel, seed = seed)
         }
     }
-
-/**
- * When the simulation is run, saves the simulation results into a seed folder. This is useful for debugging purposes.
- * @param provisioner The provisioner used to setup and run the simulation.
- * @param serviceDomain The domain of the compute service.
- * @param scenario The scenario being run in the simulation.
- * @param seed The seed used for randomness in the simulation.
- * @param partition The partition name for the output data.
- * @param startTime The start time of the simulation.
-
- */
-public fun saveInSeedFolder(
-    provisioner: Provisioner,
-    serviceDomain: String,
-    scenario: Scenario,
-    seed: Long,
-    partition: String,
-    startTime: Duration,
-) {
-    provisioner.runStep(
-        registerComputeMonitor(
-            serviceDomain,
-            ParquetComputeMonitor(
-                File(scenario.outputFolder),
-                partition,
-                bufferSize = 4096,
-            ),
-            Duration.ofSeconds(scenario.exportModel.exportInterval),
-            startTime,
-        ),
-    )
-}
 
 /**
  * Saves the simulation results into a specific output folder received from the input.

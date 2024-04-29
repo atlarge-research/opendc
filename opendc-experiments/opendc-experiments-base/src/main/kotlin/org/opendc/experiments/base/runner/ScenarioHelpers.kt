@@ -24,6 +24,7 @@
 
 package org.opendc.experiments.base.runner
 
+import FailureModelSpec
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -33,11 +34,8 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.simulator.failure.FailureModel
 import org.opendc.compute.workload.VirtualMachine
 import java.time.InstantSource
-import java.util.Random
-import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 
 /**
@@ -76,16 +74,16 @@ public class RunningServerWatcher : ServerWatcher {
  * @param trace The trace to simulate.
  * @param seed The seed to use for randomness.
  * @param submitImmediately A flag to indicate that the servers are scheduled immediately (so not at their start time).
- * @param failureModel A failure model to use for injecting failures.
+ * @param failureModelSpec A failure model to use for injecting failures.
  */
 public suspend fun ComputeService.replay(
     clock: InstantSource,
     trace: List<VirtualMachine>,
-    seed: Long,
+    failureModelSpec: FailureModelSpec? = null,
+    seed: Long = 0,
     submitImmediately: Boolean = false,
-    failureModel: FailureModel? = null,
 ) {
-    val injector = failureModel?.createInjector(coroutineContext, clock, this, Random(seed))
+    // TODO: add failureModel functionality
     val client = newClient()
 
     // Create new image for the virtual machine
@@ -93,8 +91,7 @@ public suspend fun ComputeService.replay(
 
     try {
         coroutineScope {
-            // Start the fault injector
-            injector?.start()
+            // TODO: start failure model when implemented
 
             var simulationOffset = Long.MIN_VALUE
 
@@ -106,9 +103,6 @@ public suspend fun ComputeService.replay(
                 if (simulationOffset == Long.MIN_VALUE) {
                     simulationOffset = start - now
                 }
-
-                // Make sure the trace entries are ordered by submission time
-                // assert(start - simulationOffset >= 0) { "Invalid trace order" }
 
                 // Delay the server based on the startTime given by the trace.
                 if (!submitImmediately) {
@@ -146,7 +140,7 @@ public suspend fun ComputeService.replay(
         }
         yield()
     } finally {
-        injector?.close()
+        // TODO: close failure model when implemented
         client.close()
     }
 }

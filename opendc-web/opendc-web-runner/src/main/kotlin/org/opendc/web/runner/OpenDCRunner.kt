@@ -288,7 +288,7 @@ public class OpenDCRunner(
                         }
 
                     // Run workload trace
-                    service.replay(timeSource, vms, seed, failureModel = failureModel)
+                    service.replay(timeSource, vms, seed = seed)
 
                     val serviceMetrics = service.getSchedulerStats()
                     logger.debug {
