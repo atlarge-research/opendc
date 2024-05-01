@@ -43,7 +43,7 @@ import WorkloadSpec
  */
 
 public data class Scenario(
-    var id : Int = -1,
+    var id: Int = -1,
     val topology: ScenarioTopologySpec,
     val workload: WorkloadSpec,
     val allocationPolicy: AllocationPolicySpec,
