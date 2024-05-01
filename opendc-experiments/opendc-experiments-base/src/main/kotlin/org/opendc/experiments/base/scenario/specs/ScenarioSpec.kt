@@ -28,6 +28,7 @@ import FailureModelSpec
 import ScenarioTopologySpec
 import WorkloadSpec
 import kotlinx.serialization.Serializable
+import java.util.UUID
 
 /**
  * specification describing a scenario
@@ -43,6 +44,8 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 public data class ScenarioSpec(
+    var id: Int = -1,
+    var name: String = "",
     val topologies: List<ScenarioTopologySpec>,
     val workloads: List<WorkloadSpec>,
     val allocationPolicies: List<AllocationPolicySpec>,
@@ -52,7 +55,6 @@ public data class ScenarioSpec(
     val outputFolder: String = "output",
     val initialSeed: Int = 0,
     val runs: Int = 1,
-    var name: String = "",
 ) {
     init {
         require(runs > 0) { "The number of runs should always be positive" }
@@ -60,8 +62,8 @@ public data class ScenarioSpec(
         // generate name if not provided
         // TODO: improve this
         if (name == "") {
-            name =
-                "workload=${workloads[0].name}_topology=${topologies[0].name}_allocationPolicy=${allocationPolicies[0].name}"
+            name = "unnamed-simulation-${UUID.randomUUID().toString().substring(0, 4)}"
+//                "workload=${workloads[0].name}_topology=${topologies[0].name}_allocationPolicy=${allocationPolicies[0].name}"
         }
     }
 }

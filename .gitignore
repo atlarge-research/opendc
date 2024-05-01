@@ -11,9 +11,6 @@ database/opendc_testing/*
 # Old credential setup file
 keys.json
 
-# Demo
-/demo/
-
 # Traces
 /traces/
 

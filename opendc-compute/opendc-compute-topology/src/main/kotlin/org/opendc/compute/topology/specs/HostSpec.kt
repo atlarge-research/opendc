@@ -38,7 +38,6 @@ import java.util.UUID
  * @param psuFactory The [SimPsuFactory] to construct the PSU that models the power consumption of the machine.
  * @param multiplexerFactory The [FlowMultiplexerFactory] that is used to multiplex the virtual machines over the host.
  */
-
 public data class HostSpec(
     val uid: UUID,
     val name: String,

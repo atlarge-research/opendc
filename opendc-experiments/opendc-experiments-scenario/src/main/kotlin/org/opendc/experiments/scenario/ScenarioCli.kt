@@ -58,9 +58,9 @@ internal class ScenarioCommand : CliktCommand(name = "scenario") {
         .default(Runtime.getRuntime().availableProcessors() - 1)
 
     override fun run() {
-        // TODO: clean the simulation-results folder?
         val scenarios = getScenarios(scenarioPath)
         runScenarios(scenarios, parallelism)
+
         // TODO: implement outputResults(scenario) // this will take the results, from a folder, and output them visually
     }
 }

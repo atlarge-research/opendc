@@ -41,7 +41,9 @@ import WorkloadSpec
  * @property runs The Int representing the number of runs of the scenario. It defaults to 1.
  * @property initialSeed The Int representing the initial seed of the scenario. It defaults to 0.
  */
+
 public data class Scenario(
+    var id: Int = -1,
     val topology: ScenarioTopologySpec,
     val workload: WorkloadSpec,
     val allocationPolicy: AllocationPolicySpec,
