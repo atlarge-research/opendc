@@ -186,8 +186,8 @@ public fun clearOutputFolder(outputFolderPath: String) {
 private fun setupOutputFolderStructure(folderPath: String) {
     val trackrPath = folderPath + "/trackr.json"
     val simulationAnalysisPath = folderPath + "/simulation-analysis/"
-    val energyAnalysisPath = simulationAnalysisPath + "/energy-analysis/"
-    val emissionsAnalysisPath = simulationAnalysisPath + "/emissions-analysis/"
+    val energyAnalysisPath = simulationAnalysisPath + "/power_draw/"
+    val emissionsAnalysisPath = simulationAnalysisPath + "/carbon_emission/"
 
     File(folderPath).mkdir()
     File(trackrPath).createNewFile()

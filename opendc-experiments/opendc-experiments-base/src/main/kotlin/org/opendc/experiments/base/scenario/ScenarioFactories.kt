@@ -22,9 +22,8 @@
 
 package org.opendc.experiments.base.scenario
 
-import AllocationPolicySpec
 import ScenarioTopologySpec
-import WorkloadSpec
+import org.opendc.experiments.base.models.scenario.ScenarioWriter
 import org.opendc.experiments.base.scenario.specs.ScenarioSpec
 import java.io.File
 
@@ -65,11 +64,6 @@ public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
     val trackrPath = outputFolder + "/trackr.json"
     File(trackrPath).createNewFile()
 
-    val topologiesSpec = scenarioSpec.topologies
-    val workloads = scenarioSpec.workloads
-    val allocationPolicies = scenarioSpec.allocationPolicies
-    val failureModels = scenarioSpec.failureModels
-    val exportModels = scenarioSpec.exportModels
     val scenarios = mutableListOf<Scenario>()
     var scenarioID = 0
 
@@ -81,18 +75,19 @@ public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
                         for (exportModelSpec in scenarioSpec.exportModels) {
                             val scenario =
                                 Scenario(
+                                    id = scenarioID,
                                     topology = scenarioTopologySpec,
                                     workload = workloadSpec,
                                     allocationPolicy = allocationPolicySpec,
                                     failureModel = failureModelSpec,
                                     carbonTracePath = carbonTracePath,
                                     exportModel = exportModelSpec,
-                                    outputFolder = scenarioSpec.outputFolder,
-                                    name = getOutputFolderName(scenarioSpec, scenarioTopologySpec, workloadSpec, allocationPolicySpec),
+                                    outputFolder = outputFolder,
+                                    name = scenarioID.toString(),
                                     runs = scenarioSpec.runs,
                                     initialSeed = scenarioSpec.initialSeed,
                                 )
-                            trackScenario(scenarioSpec, outputFolder, scenario, topology)
+                            trackScenario(scenarioSpec, outputFolder, scenario, scenarioTopologySpec)
                             scenarios.add(scenario)
                             scenarioID++
                         }
@@ -103,27 +98,6 @@ public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
     }
 
     return scenarios
-}
-
-/**
- * Returns a string representing the output folder name for a given ScenarioSpec, CpuPowerModel, AllocationPolicySpec, and topology path.
- *
- * @param scenarioSpec The ScenarioSpec.
- * @param topology The specification of the topology used
- * @param workload The specification of the workload
- * @param allocationPolicy The allocation policy used
- * @return A string representing the output folder name.
- */
-public fun getOutputFolderName(
-    scenarioSpec: ScenarioSpec,
-    topology: ScenarioTopologySpec,
-    workload: WorkloadSpec,
-    allocationPolicy: AllocationPolicySpec,
-): String {
-    return "scenario=${scenarioSpec.name}" +
-        "-topology=${topology.name}" +
-        "-workload=${workload.name}" +
-        "-allocation=${allocationPolicy.name}"
 }
 
 /**
@@ -139,12 +113,12 @@ public fun trackScenario(
     scenarioSpec: ScenarioSpec,
     outputFolder: String,
     scenario: Scenario,
-    topologySpec: TopologySpec,
+    topologySpec: ScenarioTopologySpec,
 ) {
     val trackrPath = outputFolder + "/trackr.json"
     scenarioWriter.write(
         ScenarioSpec(
-            id = scenarioSpec.id,
+            id = scenario.id,
             name = scenarioSpec.name,
             topologies = listOf(topologySpec),
             workloads = listOf(scenario.workload),
