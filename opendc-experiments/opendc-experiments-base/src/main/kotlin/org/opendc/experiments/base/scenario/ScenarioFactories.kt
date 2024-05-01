@@ -23,7 +23,6 @@
 package org.opendc.experiments.base.scenario
 
 import ScenarioTopologySpec
-import org.opendc.experiments.base.models.scenario.ScenarioWriter
 import org.opendc.experiments.base.scenario.specs.ScenarioSpec
 import java.io.File
 

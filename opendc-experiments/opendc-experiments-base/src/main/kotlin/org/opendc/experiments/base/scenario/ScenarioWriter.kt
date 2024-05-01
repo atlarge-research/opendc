@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.models.scenario
+package org.opendc.experiments.base.scenario
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
