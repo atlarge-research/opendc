@@ -50,7 +50,7 @@ public data class Scenario(
     val failureModel: FailureModelSpec?,
     val carbonTracePath: String? = null,
     val exportModel: ExportModelSpec = ExportModelSpec(),
-    var outputFolder: String = "output",
+    val outputFolder: String = "output",
     val name: String = "",
     val runs: Int = 1,
     val initialSeed: Int = 0,
