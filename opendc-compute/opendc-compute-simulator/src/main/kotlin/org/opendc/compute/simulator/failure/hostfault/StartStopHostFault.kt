@@ -23,38 +23,42 @@
 package org.opendc.compute.simulator.failure.hostfault
 
 import kotlinx.coroutines.delay
-import org.apache.commons.math3.distribution.RealDistribution
+import org.opendc.compute.api.ComputeClient
+import org.opendc.compute.service.ComputeService
 import org.opendc.compute.simulator.SimHost
+import org.opendc.simulator.compute.workload.SimWorkload
 import java.time.InstantSource
-import kotlin.math.roundToLong
 
 /**
- * A type of [HostFault] where the hosts are stopped and recover after some random amount of time.
- *
- * @property durationSampler A RealDistribution which the duration of the error is sampled from
+ * A type of [HostFault] where the hosts are stopped and recover after a given amount of time.
  */
-public class StartStopHostFault(private val durationSampler: RealDistribution) : HostFault {
+public class StartStopHostFault (
+    private val service: ComputeService,
+    clock: InstantSource
+): HostFault(service, clock) {
     override suspend fun apply(
-        clock: InstantSource,
         victims: List<SimHost>,
+        faultDuration: Long
     ) {
+        val client: ComputeClient = service.newClient()
+
         for (host in victims) {
+            val servers = host.instances
+
+            val snapshots = servers.map{(it.meta["workload"] as SimWorkload).snapshot()}
             host.fail()
+
+            for ((server, snapshot) in servers.zip(snapshots)) {
+                client.rescheduleServer(server, snapshot)
+            }
         }
 
-        val df = (durationSampler.sample() * 1000).roundToLong() // seconds to milliseconds
-
-        // Handle long overflow
-        if (clock.millis() + df <= 0) {
-            return
-        }
-
-        delay(df)
+        delay(faultDuration)
 
         for (host in victims) {
             host.recover()
         }
     }
 
-    override fun toString(): String = "StartStopHostFault[$durationSampler]"
+    override fun toString(): String = "StartStopHostFault"
 }

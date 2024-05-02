@@ -25,6 +25,8 @@ package org.opendc.compute.simulator.failure.victimselector
 import org.opendc.compute.simulator.SimHost
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * A [VictimSelector] that stochastically selects a set of hosts to be failed.
@@ -64,7 +66,11 @@ public class StochasticVictimSelector(
     }
 
     override fun select(hosts: Set<SimHost>, failureIntensity:Double): List<SimHost> {
-        error("select with only int cannot be used in this type of VictimSelector");
+        // clamp value between 0.0 and 1.0
+        val intensity = min(1.0, max(0.0, failureIntensity))
+        val numberOfHosts = (hosts.size * intensity).toInt()
+
+        return hosts.asSequence().shuffled().take(numberOfHosts).toList()
     }
 
     override fun toString(): String = "StochasticVictimSelector"

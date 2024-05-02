@@ -27,7 +27,7 @@ import org.apache.commons.math3.distribution.LogNormalDistribution
 import org.apache.commons.math3.distribution.RealDistribution
 import org.apache.commons.math3.random.Well19937c
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.simulator.failure.models.FailureModelNew
+import org.opendc.compute.simulator.failure.models.FailureModel
 import org.opendc.compute.simulator.failure.models.SampleBasedFailureModel
 import org.opendc.compute.simulator.failure.models.TraceBasedFailureModel
 import org.opendc.compute.simulator.failure.prefab.FailurePrefab
@@ -93,7 +93,7 @@ public fun getFailureModel(context: CoroutineContext,
                            clock: InstantSource,
                            service: ComputeService,
                            random: java.util.random.RandomGenerator,
-                           failureModel: PrefabFailureModelSpec): FailureModelNew {
+                           failureModel: PrefabFailureModelSpec): FailureModel {
     return getFailureModelPrefab(context, clock, service, random, failureModel.prefabName)
 }
 
@@ -101,7 +101,7 @@ public fun getFailureModel(context: CoroutineContext,
                            clock: InstantSource,
                            service: ComputeService,
                            random: java.util.random.RandomGenerator,
-                           failureModel: CustomFailureModelSpec): FailureModelNew {
+                           failureModel: CustomFailureModelSpec): FailureModel {
     val rng: org.apache.commons.math3.random.RandomGenerator = Well19937c(random.nextLong())
 
     val iatSampler = getSampler(rng, failureModel.iatSampler)
@@ -123,7 +123,7 @@ public fun getFailureModel(context: CoroutineContext,
                            clock: InstantSource,
                            service: ComputeService,
                            random: java.util.random.RandomGenerator,
-                           failureModel: TraceBasedFailureModelSpec): FailureModelNew {
+                           failureModel: TraceBasedFailureModelSpec): FailureModel {
 
     return TraceBasedFailureModel(context, clock, service, random, failureModel.pathToFile)
 }
@@ -132,7 +132,7 @@ public fun getFailureModel(context: CoroutineContext,
                            clock: InstantSource,
                            service: ComputeService,
                            random: java.util.random.RandomGenerator,
-                           failureModel: FailureModelSpec?): FailureModelNew? {
+                           failureModel: FailureModelSpec?): FailureModel? {
 
     return when(failureModel) {
         is PrefabFailureModelSpec -> getFailureModel(context, clock, service, random, failureModel)

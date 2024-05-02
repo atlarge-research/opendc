@@ -22,8 +22,15 @@
 
 package org.opendc.compute.simulator.failure.models
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.simulator.failure.HostFaultInjector
+import org.opendc.compute.simulator.SimHost
+import org.opendc.compute.simulator.failure.hostfault.HostFault
+import org.opendc.compute.simulator.failure.hostfault.StartStopHostFault
+import org.opendc.compute.simulator.failure.victimselector.StochasticVictimSelector
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
@@ -31,14 +38,48 @@ import kotlin.coroutines.CoroutineContext
 /**
  * Factory interface for constructing [HostFaultInjector] for modeling failures of compute service hosts.
  */
-public interface FailureModel {
+public abstract class FailureModel (
+    context: CoroutineContext,
+    protected val clock: InstantSource,
+    protected val service: ComputeService,
+    protected val random: RandomGenerator
+): AutoCloseable {
+    protected val scope: CoroutineScope = CoroutineScope(context + Job())
+
+    // TODO: could at some point be extended to different types of faults
+    protected val fault: HostFault = StartStopHostFault(service, clock)
+
+    // TODO: could at some point be extended to different types of victim selectors
+    protected val victimSelector: StochasticVictimSelector = StochasticVictimSelector(random)
+
+    protected val hosts: Set<SimHost> = service.hosts.map { it as SimHost }.toSet()
+
     /**
-     * Construct a [HostFaultInjector] for the specified [service].
+     * The [Job] that awaits the nearest fault in the system.
      */
-    public fun createInjector(
-        context: CoroutineContext,
-        clock: InstantSource,
-        service: ComputeService,
-        random: RandomGenerator,
-    ): HostFaultInjector
+    private var job: Job? = null
+
+    /**
+     * Start the fault injection into the system.
+     */
+    public fun start() {
+        if (job != null) {
+            return
+        }
+
+        job =
+            scope.launch {
+                runInjector()
+                job = null
+            }
+    }
+
+    public abstract suspend fun runInjector()
+
+    /**
+     * Stop the fault injector.
+     */
+    public override fun close() {
+        scope.cancel()
+    }
 }

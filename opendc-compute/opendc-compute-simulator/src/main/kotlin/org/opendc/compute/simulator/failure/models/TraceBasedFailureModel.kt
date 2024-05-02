@@ -26,7 +26,7 @@ public class TraceBasedFailureModel(
     service: ComputeService,
     random: RandomGenerator,
     pathToTrace: String
-    ) : FailureModelNew(context, clock, service, random){
+    ) : FailureModel(context, clock, service, random){
 
     private val failureList = FailureTraceLoader().get(File(pathToTrace)).iterator()
 

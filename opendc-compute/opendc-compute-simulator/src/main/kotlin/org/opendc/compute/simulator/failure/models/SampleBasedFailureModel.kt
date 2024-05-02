@@ -29,7 +29,7 @@ public class SampleBasedFailureModel(
     private val iatSampler: RealDistribution,
     private val durationSampler: RealDistribution,
     private val nohSampler: RealDistribution
-    ): FailureModelNew(context, clock, service, random) {
+    ): FailureModel(context, clock, service, random) {
     override suspend fun runInjector() {
         while(true) {
             val d = (iatSampler.sample() * 3.6e6).roundToLong()

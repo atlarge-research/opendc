@@ -22,9 +22,8 @@
 
 package org.opendc.experiments.base.scenario
 
-import AllocationPolicySpec
-import FailureModelSpec
 import ScenarioTopologySpec
+import org.opendc.experiments.base.scenario.specs.ScenarioSpec
 import java.io.File
 
 private val scenarioReader = ScenarioReader()
@@ -61,13 +60,12 @@ public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
     val outputFolder = scenarioSpec.outputFolder + "/" + scenarioSpec.name
     File(outputFolder).mkdirs()
 
-    val trackrPath = outputFolder + "/trackr.json"
+    val trackrPath = "$outputFolder/trackr.json"
     File(trackrPath).createNewFile()
 
     val scenarios = mutableListOf<Scenario>()
-    var scenarioID = 0
 
-    for (scenarioTopologySpec in scenarioSpec.topologies) {
+    for ((scenarioID, scenarioTopologySpec) in scenarioSpec.topologies.withIndex()) {
         for (workloadSpec in scenarioSpec.workloads) {
             for (allocationPolicySpec in scenarioSpec.allocationPolicies) {
                 for (failureModelSpec in scenarioSpec.failureModels) {
@@ -91,7 +89,6 @@ public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
                                     )
                                 trackScenario(scenarioSpec, outputFolder, scenario, scenarioTopologySpec)
                                 scenarios.add(scenario)
-                                scenarioID++
                             }
                         }
                     }
@@ -118,7 +115,7 @@ public fun trackScenario(
     scenario: Scenario,
     topologySpec: ScenarioTopologySpec,
 ) {
-    val trackrPath = outputFolder + "/trackr.json"
+    val trackrPath = "$outputFolder/trackr.json"
     scenarioWriter.write(
         ScenarioSpec(
             id = scenario.id,

@@ -29,8 +29,6 @@ import org.apache.commons.math3.distribution.LogNormalDistribution
 import org.apache.commons.math3.random.Well19937c
 import org.junit.jupiter.api.Test
 import org.opendc.compute.simulator.SimHost
-import org.opendc.compute.simulator.failure.hostfault.StartStopHostFault
-import org.opendc.compute.simulator.failure.victimselector.StochasticVictimSelector
 import org.opendc.simulator.kotlin.runSimulation
 import java.time.Duration
 import java.time.InstantSource

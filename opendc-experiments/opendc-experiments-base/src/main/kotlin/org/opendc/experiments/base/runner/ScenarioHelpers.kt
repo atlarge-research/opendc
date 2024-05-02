@@ -36,7 +36,7 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.simulator.failure.models.FailureModelNew
+import org.opendc.compute.simulator.failure.models.FailureModel
 import org.opendc.compute.workload.VirtualMachine
 import java.time.InstantSource
 import java.util.Random
@@ -92,7 +92,7 @@ public suspend fun ComputeService.replay(
     val client = newClient()
 
     // Create a failure model based on the failureModelSpec, if not null, otherwise set failureModel to null
-    val failureModel: FailureModelNew? = failureModelSpec?.let {
+    val failureModel: FailureModel? = failureModelSpec?.let {
         getFailureModel(coroutineContext, clock, this, Random(seed), it) }
 
     // Create new image for the virtual machine
