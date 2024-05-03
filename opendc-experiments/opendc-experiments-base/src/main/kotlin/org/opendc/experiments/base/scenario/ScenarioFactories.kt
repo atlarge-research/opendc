@@ -22,7 +22,6 @@
 
 package org.opendc.experiments.base.scenario
 
-import ScenarioTopologySpec
 import org.opendc.experiments.base.scenario.specs.ScenarioSpec
 import java.io.File
 
@@ -82,12 +81,12 @@ public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
                                         checkpointModelSpec = checkpointModelSpec,
                                         carbonTracePath = carbonTracePath,
                                         exportModelSpec = exportModelSpec,
-                                        outputFolder = scenarioSpec.outputFolder,
+                                        outputFolder = outputFolder,
                                         name = scenarioID.toString(),
                                         runs = scenarioSpec.runs,
                                         initialSeed = scenarioSpec.initialSeed,
                                     )
-                                trackScenario(scenarioSpec, outputFolder, scenario, scenarioTopologySpec)
+                                trackScenario(scenarioSpec, outputFolder, scenario)
                                 scenarios.add(scenario)
                             }
                         }
@@ -113,17 +112,17 @@ public fun trackScenario(
     scenarioSpec: ScenarioSpec,
     outputFolder: String,
     scenario: Scenario,
-    topologySpec: ScenarioTopologySpec,
 ) {
     val trackrPath = "$outputFolder/trackr.json"
     scenarioWriter.write(
         ScenarioSpec(
             id = scenario.id,
             name = scenarioSpec.name,
-            topologies = listOf(topologySpec),
+            topologies = listOf(scenario.topologySpec),
             workloads = listOf(scenario.workloadSpec),
             allocationPolicies = listOf(scenario.allocationPolicySpec),
-            // when implemented, add failure models here
+            failureModels = listOf(scenario.failureModelSpec),
+            checkpointModels = listOf(scenario.checkpointModelSpec),
             carbonTracePaths = listOf(scenario.carbonTracePath),
             exportModels = listOf(scenario.exportModelSpec),
             outputFolder = scenario.outputFolder,

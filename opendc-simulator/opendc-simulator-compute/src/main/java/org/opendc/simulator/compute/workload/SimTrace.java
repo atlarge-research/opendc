@@ -70,6 +70,15 @@ public final class SimTrace {
      *
      * //     * @param offset The offset for the timestamps.
      */
+    public SimWorkload createWorkload(long start) {
+        return createWorkload(start, 0, 0);
+    }
+
+    /**
+     * Construct a {@link SimWorkload} for this trace.
+     *
+     * //     * @param offset The offset for the timestamps.
+     */
     public SimWorkload createWorkload(long start, long checkpointTime, long checkpointWait) {
         return new Workload(start, usageCol, deadlineCol, coresCol, size, 0, checkpointTime, checkpointWait);
     }
@@ -219,8 +228,15 @@ public final class SimTrace {
         private long checkpointWait; // How long to wait until a new checkpoint is made?
         private long total_checks;
 
-        private Workload(long start, double[] usageCol, long[] deadlineCol, int[] coresCol, int size, int index,
-                         long checkpointTime, long checkpointWait) {
+        private Workload(
+                long start,
+                double[] usageCol,
+                long[] deadlineCol,
+                int[] coresCol,
+                int size,
+                int index,
+                long checkpointTime,
+                long checkpointWait) {
             this.start = start;
             this.usageCol = usageCol;
             this.deadlineCol = deadlineCol;

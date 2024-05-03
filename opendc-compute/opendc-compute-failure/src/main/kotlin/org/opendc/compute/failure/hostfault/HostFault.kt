@@ -20,24 +20,22 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure.hostfault
+package org.opendc.compute.failure.hostfault
 
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.simulator.SimHost
-import java.time.InstantSource
 
 /**
  * Interface responsible for applying the fault to a host.
  */
 public abstract class HostFault(
     private val service: ComputeService,
-    private val clock: InstantSource,
 ) {
     /**
      * Apply the fault to the specified [victims].
      */
     public abstract suspend fun apply(
         victims: List<SimHost>,
-        faultDuration: Long
+        faultDuration: Long,
     )
 }

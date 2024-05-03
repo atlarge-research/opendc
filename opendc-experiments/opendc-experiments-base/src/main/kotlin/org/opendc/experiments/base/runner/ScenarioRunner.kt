@@ -138,38 +138,6 @@ public fun runScenario(
     }
 
 /**
- * When the simulation is run, saves the simulation results into a seed folder. This is useful for debugging purposes.
- * @param provisioner The provisioner used to setup and run the simulation.
- * @param serviceDomain The domain of the compute service.
- * @param scenario The scenario being run in the simulation.
- * @param seed The seed used for randomness in the simulation.
- * @param partition The partition name for the output data.
- * @param startTime The start time of the simulation.
-
- */
-public fun saveInSeedFolder(
-    provisioner: Provisioner,
-    serviceDomain: String,
-    scenario: Scenario,
-    seed: Long,
-    partition: String,
-    startTime: Duration,
-) {
-    provisioner.runStep(
-        registerComputeMonitor(
-            serviceDomain,
-            ParquetComputeMonitor(
-                File(scenario.outputFolder),
-                partition,
-                bufferSize = 4096,
-            ),
-            Duration.ofSeconds(scenario.exportModelSpec.exportInterval),
-            startTime,
-        ),
-    )
-}
-
-/**
  * Saves the simulation results into a specific output folder received from the input.
  *
  * @param provisioner The provisioner used to setup and run the simulation.
@@ -216,10 +184,10 @@ public fun clearOutputFolder(outputFolderPath: String) {
  * @param folderPath The path to the output folder
  */
 private fun setupOutputFolderStructure(folderPath: String) {
-    val trackrPath = folderPath + "/trackr.json"
-    val simulationAnalysisPath = folderPath + "/simulation-analysis/"
-    val energyAnalysisPath = simulationAnalysisPath + "/power_draw/"
-    val emissionsAnalysisPath = simulationAnalysisPath + "/carbon_emission/"
+    val trackrPath = "$folderPath/trackr.json"
+    val simulationAnalysisPath = "$folderPath/simulation-analysis/"
+    val energyAnalysisPath = "$simulationAnalysisPath/power_draw/"
+    val emissionsAnalysisPath = "$simulationAnalysisPath/carbon_emission/"
 
     File(folderPath).mkdir()
     File(trackrPath).createNewFile()

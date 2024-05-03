@@ -28,7 +28,7 @@ import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
 import org.opendc.trace.conv.FAILURE_DURATION
 import org.opendc.trace.conv.FAILURE_INTENSITY
-import org.opendc.trace.conv.FAILURE_START
+import org.opendc.trace.conv.FAILURE_INTERVAL
 import org.opendc.trace.conv.TABLE_FAILURES
 import org.opendc.trace.formats.failure.parquet.FailureReadSupport
 import org.opendc.trace.spi.TableDetails
@@ -56,7 +56,7 @@ public class FailureTraceFormat : TraceFormat {
             TABLE_FAILURES ->
                 TableDetails(
                     listOf(
-                        TableColumn(FAILURE_START, TableColumnType.Long),
+                        TableColumn(FAILURE_INTERVAL, TableColumnType.Long),
                         TableColumn(FAILURE_DURATION, TableColumnType.Long),
                         TableColumn(FAILURE_INTENSITY, TableColumnType.Double),
                     ),

@@ -35,7 +35,6 @@ import kotlin.io.path.inputStream
  * A helper class for reading a topology specification file.
  */
 public class TopologyReader {
-
     public fun read(path: Path): TopologySpec {
         return read(path.inputStream())
     }

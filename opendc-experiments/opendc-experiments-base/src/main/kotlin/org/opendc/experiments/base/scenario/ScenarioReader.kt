@@ -42,7 +42,6 @@ public class ScenarioReader {
         return jsonReader.decodeFromStream<ScenarioSpec>(input)
     }
 
-
     @OptIn(ExperimentalSerializationApi::class)
     public fun read(path: Path): ScenarioSpec {
         val input = path.inputStream()

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure.victimselector
+package org.opendc.compute.failure.victimselector
 
 import org.opendc.compute.simulator.SimHost
 import java.util.SplittableRandom
@@ -34,12 +34,14 @@ import kotlin.math.min
 public class StochasticVictimSelector(
     private val random: RandomGenerator = SplittableRandom(0),
 ) : VictimSelector {
-
     override fun select(numberOfHosts: Int): List<SimHost> {
-        error("select with only int cannot be used in this type of VictimSelector");
+        error("select with only int cannot be used in this type of VictimSelector")
     }
 
-    override fun select(hosts: Set<SimHost>, numberOfHosts:Int): List<SimHost> {
+    override fun select(
+        hosts: Set<SimHost>,
+        numberOfHosts: Int,
+    ): List<SimHost> {
         val result = ArrayList<SimHost>(numberOfHosts)
 
         val random = random
@@ -62,10 +64,13 @@ public class StochasticVictimSelector(
     }
 
     override fun select(failureIntensity: Double): List<SimHost> {
-        error("select with only int cannot be used in this type of VictimSelector");
+        error("select with only int cannot be used in this type of VictimSelector")
     }
 
-    override fun select(hosts: Set<SimHost>, failureIntensity:Double): List<SimHost> {
+    override fun select(
+        hosts: Set<SimHost>,
+        failureIntensity: Double,
+    ): List<SimHost> {
         // clamp value between 0.0 and 1.0
         val intensity = min(1.0, max(0.0, failureIntensity))
         val numberOfHosts = (hosts.size * intensity).toInt()

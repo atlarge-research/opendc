@@ -48,6 +48,22 @@ public class SimRuntimeWorkload implements SimWorkload, FlowStageLogic {
     private long checkpointWait; // How long to wait until a new checkpoint is made?
     private long totalChecks;
 
+    public SimRuntimeWorkload(long duration, double utilization) {
+        this(duration, utilization, 0, 0);
+        //        if (duration < 0) {
+        //            throw new IllegalArgumentException("Duration must be positive");
+        //        } else if (utilization <= 0.0 || utilization > 1.0) {
+        //            throw new IllegalArgumentException("Utilization must be in (0, 1]");
+        //        }
+        //
+        //        this.checkpointTime = 0L;
+        //        this.checkpointWait = 0L;
+        //        this.duration = duration;
+        //
+        //        this.utilization = utilization;
+        //        this.remainingDuration = duration;
+    }
+
     /**
      * Construct a new {@link SimRuntimeWorkload}.
      *
@@ -67,7 +83,8 @@ public class SimRuntimeWorkload implements SimWorkload, FlowStageLogic {
 
         if (this.checkpointWait > 0) {
             // Determine the number of checkpoints that need to be made during the workload
-            // If the total duration is divisible by the wait time between checkpoints, we can remove the last checkpoint
+            // If the total duration is divisible by the wait time between checkpoints, we can remove the last
+            // checkpoint
             int to_remove = ((this.duration % this.checkpointWait == 0) ? 1 : 0);
             this.totalChecks = this.duration / this.checkpointWait - to_remove;
             this.duration += (this.checkpointTime * totalChecks);
@@ -129,17 +146,17 @@ public class SimRuntimeWorkload implements SimWorkload, FlowStageLogic {
             // Calculate last checkpoint
             var total_check_time = this.checkpointWait + this.checkpointTime;
             var processed_time = this.duration - this.remainingDuration;
-            var processed_checks = (int)(processed_time / total_check_time);
-            var processed_time_last_check = (processed_checks * total_check_time); // The processed time after the last checkpoint
+            var processed_checks = (int) (processed_time / total_check_time);
+            var processed_time_last_check =
+                    (processed_checks * total_check_time); // The processed time after the last checkpoint
 
-            remaining_time = this.duration - processed_time_last_check; // The remaining duration to process after last checkpoint
-            var remaining_checks = (int)(remaining_time / total_check_time);
-            remaining_time -=  (remaining_checks * checkpointTime);
-        }
-        else {
+            remaining_time = this.duration
+                    - processed_time_last_check; // The remaining duration to process after last checkpoint
+            var remaining_checks = (int) (remaining_time / total_check_time);
+            remaining_time -= (remaining_checks * checkpointTime);
+        } else {
             remaining_time = duration;
         }
-
 
         return new SimRuntimeWorkload(remaining_time, utilization, this.checkpointTime, this.checkpointWait);
     }

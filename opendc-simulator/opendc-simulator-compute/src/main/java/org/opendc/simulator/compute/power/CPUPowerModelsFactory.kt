@@ -28,7 +28,7 @@ public enum class CPUPowerModel {
     Sqrt,
     Linear,
     Square,
-    Cubic
+    Cubic,
 }
 
 public fun getPowerModel(

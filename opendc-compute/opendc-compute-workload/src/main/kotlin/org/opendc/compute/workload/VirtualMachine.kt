@@ -51,6 +51,6 @@ public data class VirtualMachine(
     val stopTime: Instant,
     val trace: SimTrace,
     val interferenceProfile: VmInterferenceProfile?,
-){
+) {
     val duration: Long = stopTime.toEpochMilli() - startTime.toEpochMilli()
 }

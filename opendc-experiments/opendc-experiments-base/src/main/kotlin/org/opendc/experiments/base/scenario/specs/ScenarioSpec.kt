@@ -25,7 +25,6 @@ package org.opendc.experiments.base.scenario.specs
 import AllocationPolicySpec
 import CheckpointModelSpec
 import ExportModelSpec
-import FailureModelSpec
 import ScenarioTopologySpec
 import WorkloadSpec
 import kotlinx.serialization.Serializable

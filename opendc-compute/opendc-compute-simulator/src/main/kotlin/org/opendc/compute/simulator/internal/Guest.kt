@@ -188,8 +188,7 @@ internal class Guest(
         val ctx = ctx ?: return
         if (target == ServerState.ERROR) {
             ctx.shutdown(Exception("Stopped because of ERROR"))
-        }
-        else{
+        } else {
             ctx.shutdown()
         }
 

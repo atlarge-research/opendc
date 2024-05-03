@@ -52,9 +52,9 @@ import org.opendc.compute.service.driver.HostModel;
 import org.opendc.compute.service.driver.HostState;
 import org.opendc.compute.service.scheduler.ComputeScheduler;
 import org.opendc.compute.service.telemetry.SchedulerStats;
+import org.opendc.simulator.compute.workload.SimWorkload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.opendc.simulator.compute.workload.SimWorkload;
 
 /**
  * The {@link ComputeService} hosts the API implementation of the OpenDC Compute Engine.
@@ -162,7 +162,9 @@ public final class ComputeService implements AutoCloseable {
 
             serviceServer.setState(newState);
 
-            if (newState == ServerState.TERMINATED || newState == ServerState.DELETED || newState == ServerState.ERROR) {
+            if (newState == ServerState.TERMINATED
+                    || newState == ServerState.DELETED
+                    || newState == ServerState.ERROR) {
                 LOGGER.info("Server {} {} {} finished", server.getUid(), server.getName(), server.getFlavor());
 
                 if (activeServers.remove(server) != null) {
@@ -591,10 +593,7 @@ public final class ComputeService implements AutoCloseable {
 
         @Nullable
         @Override
-        public void rescheduleServer(
-            @NotNull Server server,
-            @NotNull SimWorkload workload)
-        {
+        public void rescheduleServer(@NotNull Server server, @NotNull SimWorkload workload) {
             ServiceServer internalServer = (ServiceServer) findServer(server.getUid());
             Host from = service.lookupHost(internalServer);
 

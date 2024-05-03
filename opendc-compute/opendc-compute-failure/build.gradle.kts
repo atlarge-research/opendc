@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,31 +20,21 @@
  * SOFTWARE.
  */
 
-description = "Support library for simulating VM-based workloads with OpenDC"
+description = "OpenDC Failure Service implementation"
 
 // Build configuration
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-    kotlin("plugin.serialization") version "1.9.22"
 }
 
 dependencies {
+    api(projects.opendcCompute.opendcComputeApi)
+    implementation(projects.opendcCommon)
+    implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))
+    implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-compute")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-service")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-simulator")))
 
-    api(projects.opendcCompute.opendcComputeService)
-    api(projects.opendcCompute.opendcComputeSimulator)
-
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    implementation(libs.progressbar)
-    implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-core")))
-
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-workload")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-failure")))
-
-    runtimeOnly(libs.log4j.core)
-    runtimeOnly(libs.log4j.slf4j)
+    api(libs.commons.math3)
+    implementation(libs.kotlin.logging)
 }

@@ -74,8 +74,8 @@ class SimChainWorkloadTest {
 
             val workload =
                 SimWorkloads.chain(
-                    SimWorkloads.runtime(1000, 1.0),
-                    SimWorkloads.runtime(1000, 1.0),
+                    SimWorkloads.runtime(1000, 1.0, 0L, 0L),
+                    SimWorkloads.runtime(1000, 1.0, 0L, 0L),
                 )
 
             machine.runWorkload(workload)
@@ -102,7 +102,7 @@ class SimChainWorkloadTest {
             val workload =
                 SimWorkloads.chain(
                     workloadA,
-                    SimWorkloads.runtime(1000, 1.0),
+                    SimWorkloads.runtime(1000, 1.0, 0L, 0L),
                 )
 
             assertThrows<IllegalStateException> { machine.runWorkload(workload) }
@@ -300,6 +300,6 @@ class SimChainWorkloadTest {
 
             machine.runWorkload(snapshot)
 
-            assertEquals(3500, timeSource.millis())
+            assertEquals(4000, timeSource.millis())
         }
 }

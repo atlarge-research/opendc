@@ -20,13 +20,11 @@
  * SOFTWARE.
  */
 
-@file:JvmName("TraceHelpers")
+@file:JvmName("ScenarioHelpers")
 
 package org.opendc.experiments.base.runner
 
 import CheckpointModelSpec
-import FailureModelSpec
-import getFailureModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -35,9 +33,11 @@ import kotlinx.coroutines.yield
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
+import org.opendc.compute.failure.models.FailureModel
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.simulator.failure.models.FailureModel
 import org.opendc.compute.workload.VirtualMachine
+import org.opendc.experiments.base.scenario.specs.FailureModelSpec
+import org.opendc.experiments.base.scenario.specs.createFailureModel
 import java.time.InstantSource
 import java.util.Random
 import kotlin.coroutines.coroutineContext
@@ -92,8 +92,10 @@ public suspend fun ComputeService.replay(
     val client = newClient()
 
     // Create a failure model based on the failureModelSpec, if not null, otherwise set failureModel to null
-    val failureModel: FailureModel? = failureModelSpec?.let {
-        getFailureModel(coroutineContext, clock, this, Random(seed), it) }
+    val failureModel: FailureModel? =
+        failureModelSpec?.let {
+            createFailureModel(coroutineContext, clock, this, Random(seed), it)
+        }
 
     // Create new image for the virtual machine
     val image = client.newImage("vm-image")

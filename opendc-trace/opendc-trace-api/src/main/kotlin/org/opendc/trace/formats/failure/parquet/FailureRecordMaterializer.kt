@@ -87,7 +87,7 @@ internal class FailureRecordMaterializer(schema: MessageType) : RecordMaterializ
         FailureFragment(
             localStart,
             localDuration,
-            localIntensity
+            localIntensity,
         )
 
     override fun getRootConverter(): GroupConverter = root

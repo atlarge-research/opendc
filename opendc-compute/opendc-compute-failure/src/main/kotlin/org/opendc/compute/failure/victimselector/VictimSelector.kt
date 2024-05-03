@@ -20,45 +20,28 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure.hostfault
+package org.opendc.compute.failure.victimselector
 
-import kotlinx.coroutines.delay
-import org.opendc.compute.api.ComputeClient
-import org.opendc.compute.service.ComputeService
 import org.opendc.compute.simulator.SimHost
-import org.opendc.simulator.compute.workload.SimWorkload
-import java.time.InstantSource
 
 /**
- * A type of [HostFault] where the hosts are stopped and recover after a given amount of time.
+ * Interface responsible for selecting the victim(s) for fault injection.
  */
-public class StartStopHostFault (
-    private val service: ComputeService,
-    clock: InstantSource
-): HostFault(service, clock) {
-    override suspend fun apply(
-        victims: List<SimHost>,
-        faultDuration: Long
-    ) {
-        val client: ComputeClient = service.newClient()
+public interface VictimSelector {
+    /**
+     * Select the hosts from [hosts] where a fault will be injected.
+     */
+    public fun select(
+        hosts: Set<SimHost>,
+        numberOfHosts: Int,
+    ): List<SimHost>
 
-        for (host in victims) {
-            val servers = host.instances
+    public fun select(numberOfHosts: Int): List<SimHost>
 
-            val snapshots = servers.map{(it.meta["workload"] as SimWorkload).snapshot()}
-            host.fail()
+    public fun select(failureIntensity: Double): List<SimHost>
 
-            for ((server, snapshot) in servers.zip(snapshots)) {
-                client.rescheduleServer(server, snapshot)
-            }
-        }
-
-        delay(faultDuration)
-
-        for (host in victims) {
-            host.recover()
-        }
-    }
-
-    override fun toString(): String = "StartStopHostFault"
+    public fun select(
+        hosts: Set<SimHost>,
+        failureIntensity: Double,
+    ): List<SimHost>
 }

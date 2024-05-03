@@ -25,7 +25,7 @@ package org.opendc.trace.formats.failure
 import org.opendc.trace.TableReader
 import org.opendc.trace.conv.FAILURE_DURATION
 import org.opendc.trace.conv.FAILURE_INTENSITY
-import org.opendc.trace.conv.FAILURE_START
+import org.opendc.trace.conv.FAILURE_INTERVAL
 import org.opendc.trace.formats.failure.parquet.FailureFragment
 import org.opendc.trace.util.parquet.LocalParquetReader
 import java.time.Duration
@@ -59,7 +59,7 @@ internal class FailureTableReader(private val reader: LocalParquetReader<Failure
 
     override fun resolve(name: String): Int {
         return when (name) {
-            FAILURE_START -> colFailureStart
+            FAILURE_INTERVAL -> colFailureStart
             FAILURE_DURATION -> colFailureDuration
             FAILURE_INTENSITY -> colFailureIntensity
             else -> -1

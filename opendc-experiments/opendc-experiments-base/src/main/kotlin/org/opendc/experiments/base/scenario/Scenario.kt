@@ -25,9 +25,9 @@ package org.opendc.experiments.base.scenario
 import AllocationPolicySpec
 import CheckpointModelSpec
 import ExportModelSpec
-import FailureModelSpec
 import ScenarioTopologySpec
 import WorkloadSpec
+import org.opendc.experiments.base.scenario.specs.FailureModelSpec
 
 /**
  * A data class representing a scenario for a set of experiments.

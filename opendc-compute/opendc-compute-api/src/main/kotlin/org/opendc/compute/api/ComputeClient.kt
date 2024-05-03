@@ -116,7 +116,7 @@ public interface ComputeClient : AutoCloseable {
 
     public fun rescheduleServer(
         server: Server,
-        workload: SimWorkload
+        workload: SimWorkload,
     )
 
     /**

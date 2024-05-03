@@ -31,7 +31,7 @@ import org.apache.parquet.schema.PrimitiveType
 import org.apache.parquet.schema.Types
 import org.opendc.trace.conv.FAILURE_DURATION
 import org.opendc.trace.conv.FAILURE_INTENSITY
-import org.opendc.trace.conv.FAILURE_START
+import org.opendc.trace.conv.FAILURE_INTERVAL
 
 /**
  * A [ReadSupport] instance for [Task] objects.
@@ -44,9 +44,9 @@ internal class FailureReadSupport(private val projection: List<String>?) : ReadS
      */
     private val colMap =
         mapOf(
-            FAILURE_START to "start",
+            FAILURE_INTERVAL to "start",
             FAILURE_DURATION to "duration",
-            FAILURE_INTENSITY to "intensity"
+            FAILURE_INTENSITY to "intensity",
         )
 
     override fun init(context: InitContext): ReadContext {
