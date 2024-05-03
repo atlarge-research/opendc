@@ -44,7 +44,7 @@ internal class FailureReadSupport(private val projection: List<String>?) : ReadS
      */
     private val colMap =
         mapOf(
-            FAILURE_INTERVAL to "start",
+            FAILURE_INTERVAL to "interval",
             FAILURE_DURATION to "duration",
             FAILURE_INTENSITY to "intensity",
         )
@@ -85,7 +85,7 @@ internal class FailureReadSupport(private val projection: List<String>?) : ReadS
                 .addFields(
                     Types
                         .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                        .named("failure_start"),
+                        .named("failure_interval"),
                     Types
                         .optional(PrimitiveType.PrimitiveTypeName.INT64)
                         .named("failure_duration"),

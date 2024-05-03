@@ -35,9 +35,9 @@ internal class FailureRecordMaterializer(schema: MessageType) : RecordMaterializ
     /**
      * State of current record being read.
      */
-    private var localStart: Long = 0L
-    private var localDuration: Long = 0L
-    private var localIntensity: Double = 0.0
+    private var localFailureInterval: Long = 0L
+    private var localFailureDuration: Long = 0L
+    private var localFailureIntensity: Double = 0.0
 
     /**
      * Root converter for the record.
@@ -50,22 +50,22 @@ internal class FailureRecordMaterializer(schema: MessageType) : RecordMaterializ
             private val converters =
                 schema.fields.map { type ->
                     when (type.name) {
-                        "failure_start" ->
+                        "failure_interval" ->
                             object : PrimitiveConverter() {
                                 override fun addLong(value: Long) {
-                                    localStart = value
+                                    localFailureInterval = value
                                 }
                             }
                         "failure_duration" ->
                             object : PrimitiveConverter() {
                                 override fun addLong(value: Long) {
-                                    localDuration = value
+                                    localFailureDuration = value
                                 }
                             }
                         "failure_intensity" ->
                             object : PrimitiveConverter() {
                                 override fun addDouble(value: Double) {
-                                    localIntensity = value
+                                    localFailureIntensity = value
                                 }
                             }
                         else -> error("Unknown column $type")
@@ -73,9 +73,9 @@ internal class FailureRecordMaterializer(schema: MessageType) : RecordMaterializ
                 }
 
             override fun start() {
-                localStart = 0L
-                localDuration = 0L
-                localIntensity = 0.0
+                localFailureInterval = 0L
+                localFailureDuration = 0L
+                localFailureIntensity = 0.0
             }
 
             override fun end() {}
@@ -85,9 +85,9 @@ internal class FailureRecordMaterializer(schema: MessageType) : RecordMaterializ
 
     override fun getCurrentRecord(): FailureFragment =
         FailureFragment(
-            localStart,
-            localDuration,
-            localIntensity,
+            localFailureInterval,
+            localFailureDuration,
+            localFailureIntensity,
         )
 
     override fun getRootConverter(): GroupConverter = root

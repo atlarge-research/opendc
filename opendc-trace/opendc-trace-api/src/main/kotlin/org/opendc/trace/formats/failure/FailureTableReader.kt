@@ -53,13 +53,13 @@ internal class FailureTableReader(private val reader: LocalParquetReader<Failure
         }
     }
 
-    private val colFailureStart = 0
+    private val colFailureInterval = 0
     private val colFailureDuration = 1
     private val colFailureIntensity = 2
 
     override fun resolve(name: String): Int {
         return when (name) {
-            FAILURE_INTERVAL -> colFailureStart
+            FAILURE_INTERVAL -> colFailureInterval
             FAILURE_DURATION -> colFailureDuration
             FAILURE_INTENSITY -> colFailureIntensity
             else -> -1
@@ -67,7 +67,7 @@ internal class FailureTableReader(private val reader: LocalParquetReader<Failure
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in colFailureStart..colFailureIntensity) { "Invalid column index" }
+        require(index in colFailureInterval..colFailureIntensity) { "Invalid column index" }
         return false
     }
 
@@ -82,7 +82,7 @@ internal class FailureTableReader(private val reader: LocalParquetReader<Failure
     override fun getLong(index: Int): Long {
         val record = checkNotNull(record) { "Reader in invalid state" }
         return when (index) {
-            colFailureStart -> record.failureStart
+            colFailureInterval -> record.failureInterval
             colFailureDuration -> record.failureDuration
             else -> throw IllegalArgumentException("Invalid column")
         }

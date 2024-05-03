@@ -26,7 +26,7 @@ package org.opendc.trace.formats.failure.parquet
  * A task in the Workflow Trace Format.
  */
 internal data class FailureFragment(
-    val failureStart: Long,
+    val failureInterval: Long,
     val failureDuration: Long,
     val failureIntensity: Double,
 )

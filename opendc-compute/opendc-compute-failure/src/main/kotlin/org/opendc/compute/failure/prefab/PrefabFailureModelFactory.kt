@@ -70,7 +70,10 @@ public enum class FailurePrefab {
 }
 
 /**
- * Get a [SampleBasedFailureModel] based on the provided prefab
+ * Get a [SampleBasedFailureModel] based on the provided prefab.
+ * All Failure models are based on values taken from "The Failure Trace Archive: Enabling the comparison of failure measurements and models of distributed systems"
+ * Which can be found at https://www-sciencedirect-com.vu-nl.idm.oclc.org/science/article/pii/S0743731513000634
+ *
  *
  * @param context
  * @param clock

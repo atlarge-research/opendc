@@ -27,7 +27,7 @@ package org.opendc.trace.conv
 /**
  * A column containing the task identifier.
  */
-public const val FAILURE_INTERVAL: String = "failure_start"
+public const val FAILURE_INTERVAL: String = "failure_interval"
 
 /**
  * A column containing the task identifier.

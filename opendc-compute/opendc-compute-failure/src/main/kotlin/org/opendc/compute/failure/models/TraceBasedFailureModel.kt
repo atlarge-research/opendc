@@ -51,7 +51,7 @@ public data class Failure(
     init {
         require(failureInterval >= 0.0) { "A failure cannot start at a negative time" }
         require(failureDuration >= 0.0) { "A failure can not have a duration of 0 or less" }
-        require(failureIntensity > 0.0 && failureInterval <= 1.0) { "The intensity of a failure has to be in the range (0.0, 1.0]" }
+        require(failureIntensity > 0.0 && failureIntensity <= 1.0) { "The intensity of a failure has to be in the range (0.0, 1.0]" }
     }
 }
 
@@ -72,20 +72,21 @@ public class TraceBasedFailureModel(
     service: ComputeService,
     random: RandomGenerator,
     pathToTrace: String,
+    private val repeat: Boolean = false
 ) : FailureModel(context, clock, service, random) {
-    private val failureList = loadTrace(pathToTrace).iterator()
+    private val failureList = loadTrace(pathToTrace)
 
     override suspend fun runInjector() {
-        while (failureList.hasNext()) {
-            val failure = failureList.next()
+        do {
+            for (failure in failureList) {
+                delay(failure.failureInterval - clock.millis())
 
-            delay(failure.failureInterval - clock.millis())
-
-            val victims = victimSelector.select(hosts, failure.failureIntensity)
-            scope.launch {
-                fault.apply(victims, failure.failureDuration)
+                val victims = victimSelector.select(hosts, failure.failureIntensity)
+                scope.launch {
+                    fault.apply(victims, failure.failureDuration)
+                }
             }
-        }
+        } while(repeat)
     }
 
     /**
