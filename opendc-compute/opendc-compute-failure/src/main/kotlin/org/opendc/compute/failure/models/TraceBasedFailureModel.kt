@@ -72,7 +72,7 @@ public class TraceBasedFailureModel(
     service: ComputeService,
     random: RandomGenerator,
     pathToTrace: String,
-    private val repeat: Boolean = false
+    private val repeat: Boolean = false,
 ) : FailureModel(context, clock, service, random) {
     private val failureList = loadTrace(pathToTrace)
 
@@ -86,7 +86,7 @@ public class TraceBasedFailureModel(
                     fault.apply(victims, failure.failureDuration)
                 }
             }
-        } while(repeat)
+        } while (repeat)
     }
 
     /**
