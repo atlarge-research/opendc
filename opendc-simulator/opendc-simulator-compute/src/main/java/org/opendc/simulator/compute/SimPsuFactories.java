@@ -82,14 +82,18 @@ public class SimPsuFactories {
         }
 
         @Override
-        public double getPowerDraw() {
-            return 0;
-        }
+        public double getPowerDraw() {return 0;}
+
+        @Override
+        public double getIdlePower() { return 0;}
 
         @Override
         public double getEnergyUsage() {
             return 0;
         }
+
+        @Override
+        public double getThermalPower() {return 0;}
 
         @Override
         InPort getCpuPower(int id, ProcessingUnit model) {
@@ -156,6 +160,23 @@ public class SimPsuFactories {
         @Override
         public double getPowerDraw() {
             return powerDraw;
+        }
+
+        public double getIdlePower(){
+            return model.computePower(0.0);
+        }
+
+        @Override
+        public double getThermalPower() {
+            double dynamicPower = powerDraw;
+
+            //TODO check with Dante with if there is a way to get idle power from scenario input
+            double idlePower = model.computePower(0.0);
+
+            //TODO Figure out a better way to calculate static power
+            double staticPower = 20 * 0.12; // current (A) * voltage (V) based on typical values from an intel i7
+
+            return dynamicPower + idlePower + staticPower;
         }
 
         @Override

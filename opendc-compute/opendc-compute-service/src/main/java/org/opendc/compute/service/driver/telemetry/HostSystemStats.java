@@ -33,6 +33,7 @@ import java.time.Instant;
  * @param bootTime The time at which the server started.
  * @param powerDraw Instantaneous power draw of the system (in W).
  * @param energyUsage The cumulative energy usage of the system (in J).
+ * @param thermalPower The thermal power dissipated by the system (in W).
  * @param guestsTerminated The number of guests that are in a terminated state.
  * @param guestsRunning The number of guests that are in a running state.
  * @param guestsError The number of guests that are in an error state.
@@ -44,6 +45,7 @@ public record HostSystemStats(
         Instant bootTime,
         double powerDraw,
         double energyUsage,
+        double thermalPower,
         int guestsTerminated,
         int guestsRunning,
         int guestsError,

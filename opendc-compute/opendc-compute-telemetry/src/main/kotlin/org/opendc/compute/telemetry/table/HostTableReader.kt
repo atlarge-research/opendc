@@ -118,6 +118,11 @@ public interface HostTableReader {
     public val energyUsage: Double
 
     /**
+     * The thermal power of the host in W (i.e., the power that is dissipated as heat).
+     */
+    public val thermalPower: Double
+
+    /**
      * The current carbon intensity of the host in gCO2 / kW.
      */
     public val carbonIntensity: Double

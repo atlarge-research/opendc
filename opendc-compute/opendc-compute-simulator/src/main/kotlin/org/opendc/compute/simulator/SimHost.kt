@@ -237,6 +237,7 @@ public class SimHost(
             localBootTime,
             machine.psu.powerDraw,
             machine.psu.energyUsage,
+            machine.psu.thermalPower,
             terminated,
             running,
             error,
@@ -261,7 +262,7 @@ public class SimHost(
             hypervisor.cpuCapacity,
             hypervisor.cpuDemand,
             hypervisor.cpuUsage,
-            hypervisor.cpuUsage / localCpuLimit,
+            hypervisor.cpuUsage / localCpuLimit
         )
     }
 

@@ -247,6 +247,7 @@ public class ComputeMetricReader(
             _cpuLostTime = table.cpuLostTime
             _powerDraw = table.powerDraw
             _energyUsage = table.energyUsage
+            _thermalPower = table.thermalPower
             _carbonIntensity = table.carbonIntensity
             _carbonEmission = table.carbonEmission
             _uptime = table.uptime
@@ -328,6 +329,10 @@ public class ComputeMetricReader(
         private var _energyUsage = 0.0
         private var previousPowerTotal = 0.0
 
+        override val thermalPower: Double
+            get() = _thermalPower
+        private var _thermalPower = 0.0
+
         override val carbonIntensity: Double
             get() = _carbonIntensity
         private var _carbonIntensity = 0.0
@@ -378,6 +383,8 @@ public class ComputeMetricReader(
             _cpuLostTime = hostCpuStats.lostTime
             _powerDraw = hostSysStats.powerDraw
             _energyUsage = hostSysStats.energyUsage
+            _thermalPower = hostSysStats.thermalPower
+            _carbonIntensity = carbonTrace.getCarbonIntensity(absoluteTimestamp)
             _carbonIntensity = carbonTrace.getCarbonIntensity(timestampAbsolute)
 
             _carbonEmission = carbonIntensity * (energyUsage / 3600000.0) // convert energy usage from J to kWh
