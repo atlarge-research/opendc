@@ -38,7 +38,8 @@ internal object DefaultWorkloadMapper : SimWorkloadMapper {
 
     override fun createWorkload(server: Server): SimWorkload {
         val workload = delegate.createWorkload(server)
-        val bootWorkload = SimWorkloads.runtime(Duration.ofMillis(1), 0.8)
+        // FIXME: look at connecting this to frontend. Probably not needed since the duration is so small
+        val bootWorkload = SimWorkloads.runtime(Duration.ofMillis(1), 0.8, 0L, 0L)
         return SimWorkloads.chain(bootWorkload, workload)
     }
 }

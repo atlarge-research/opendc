@@ -26,3 +26,6 @@ description = "API interface for the OpenDC Compute service"
 plugins {
     `kotlin-library-conventions`
 }
+dependencies {
+    implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-compute")))
+}

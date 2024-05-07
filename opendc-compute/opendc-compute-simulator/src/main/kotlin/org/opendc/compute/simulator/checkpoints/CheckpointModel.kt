@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure
+package org.opendc.compute.simulator.checkpoints
 
-import org.opendc.compute.simulator.SimHost
-
-/**
- * Interface responsible for selecting the victim(s) for fault injection.
- */
-public interface VictimSelector {
-    /**
-     * Select the hosts from [hosts] where a fault will be injected.
-     */
-    public fun select(hosts: Set<SimHost>): List<SimHost>
-}
+public data class CheckpointModel(
+    val checkpointWait: Long = 60 * 60 * 1000,
+    val checkpointTime: Long = 5 * 60 * 1000,
+)

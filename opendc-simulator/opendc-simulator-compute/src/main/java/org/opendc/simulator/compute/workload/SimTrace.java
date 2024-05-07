@@ -71,7 +71,16 @@ public final class SimTrace {
      * //     * @param offset The offset for the timestamps.
      */
     public SimWorkload createWorkload(long start) {
-        return new Workload(start, usageCol, deadlineCol, coresCol, size, 0);
+        return createWorkload(start, 0, 0);
+    }
+
+    /**
+     * Construct a {@link SimWorkload} for this trace.
+     *
+     * //     * @param offset The offset for the timestamps.
+     */
+    public SimWorkload createWorkload(long start, long checkpointTime, long checkpointWait) {
+        return new Workload(start, usageCol, deadlineCol, coresCol, size, 0, checkpointTime, checkpointWait);
     }
 
     /**
@@ -215,13 +224,27 @@ public final class SimTrace {
         private final int size;
         private final int index;
 
-        private Workload(long start, double[] usageCol, long[] deadlineCol, int[] coresCol, int size, int index) {
+        private long checkpointTime; // How long does it take to make a checkpoint?
+        private long checkpointWait; // How long to wait until a new checkpoint is made?
+        private long total_checks;
+
+        private Workload(
+                long start,
+                double[] usageCol,
+                long[] deadlineCol,
+                int[] coresCol,
+                int size,
+                int index,
+                long checkpointTime,
+                long checkpointWait) {
             this.start = start;
             this.usageCol = usageCol;
             this.deadlineCol = deadlineCol;
             this.coresCol = coresCol;
             this.size = size;
             this.index = index;
+            this.checkpointTime = checkpointTime;
+            this.checkpointWait = checkpointWait;
         }
 
         @Override
@@ -259,7 +282,7 @@ public final class SimTrace {
                 index = logic.getIndex();
             }
 
-            return new Workload(start, usageCol, deadlineCol, coresCol, size, index);
+            return new Workload(start, usageCol, deadlineCol, coresCol, size, index, checkpointTime, checkpointWait);
         }
     }
 

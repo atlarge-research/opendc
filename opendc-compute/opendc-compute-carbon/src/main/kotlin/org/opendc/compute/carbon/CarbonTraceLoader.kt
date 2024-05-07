@@ -22,11 +22,10 @@
 
 package org.opendc.compute.carbon
 
-import mu.KotlinLogging
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.CARBON_INTENSITY_TIMESTAMP
 import org.opendc.trace.conv.CARBON_INTENSITY_VALUE
-import org.opendc.trace.conv.TABLE_CARBON_INTENSITY
+import org.opendc.trace.conv.TABLE_CARBON_INTENSITIES
 import java.io.File
 import java.lang.ref.SoftReference
 import java.time.Instant
@@ -39,11 +38,6 @@ import java.util.concurrent.ConcurrentHashMap
  */
 public class CarbonTraceLoader {
     /**
-     * The logger for this instance.
-     */
-    private val logger = KotlinLogging.logger {}
-
-    /**
      * The cache of workloads.
      */
     private val cache = ConcurrentHashMap<String, SoftReference<List<CarbonFragment>>>()
@@ -54,12 +48,10 @@ public class CarbonTraceLoader {
      * Read the metadata into a workload.
      */
     private fun parseCarbon(trace: Trace): List<CarbonFragment> {
-        val reader = checkNotNull(trace.getTable(TABLE_CARBON_INTENSITY)).newReader()
+        val reader = checkNotNull(trace.getTable(TABLE_CARBON_INTENSITIES)).newReader()
 
         val startTimeCol = reader.resolve(CARBON_INTENSITY_TIMESTAMP)
         val carbonIntensityCol = reader.resolve(CARBON_INTENSITY_VALUE)
-
-        val entries = mutableListOf<CarbonFragment>()
 
         try {
             while (reader.nextRow()) {

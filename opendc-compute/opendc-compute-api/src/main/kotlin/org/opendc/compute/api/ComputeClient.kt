@@ -22,6 +22,7 @@
 
 package org.opendc.compute.api
 
+import org.opendc.simulator.compute.workload.SimWorkload
 import java.util.UUID
 
 /**
@@ -112,6 +113,11 @@ public interface ComputeClient : AutoCloseable {
         meta: Map<String, Any> = emptyMap(),
         start: Boolean = true,
     ): Server
+
+    public fun rescheduleServer(
+        server: Server,
+        workload: SimWorkload,
+    )
 
     /**
      * Release the resources associated with this client, preventing any further API calls.

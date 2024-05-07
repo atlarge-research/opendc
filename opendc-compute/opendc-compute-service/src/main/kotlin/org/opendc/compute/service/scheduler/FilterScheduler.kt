@@ -101,6 +101,7 @@ public class FilterScheduler(
                 filteredHosts
             }
 
+        // fixme: currently finding no matching hosts can result in an error
         return when (val maxSize = min(subsetSize, subset.size)) {
             0 -> null
             1 -> subset[0]

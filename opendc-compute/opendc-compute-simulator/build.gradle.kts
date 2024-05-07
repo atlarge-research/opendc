@@ -39,6 +39,8 @@ dependencies {
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
 
+    implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))
+
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testRuntimeOnly(libs.slf4j.simple)
 }

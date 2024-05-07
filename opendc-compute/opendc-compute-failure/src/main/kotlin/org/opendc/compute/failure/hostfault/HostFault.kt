@@ -20,39 +20,22 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure
+package org.opendc.compute.failure.hostfault
 
-import kotlinx.coroutines.delay
-import org.apache.commons.math3.distribution.RealDistribution
+import org.opendc.compute.service.ComputeService
 import org.opendc.compute.simulator.SimHost
-import java.time.InstantSource
-import kotlin.math.roundToLong
 
 /**
- * A type of [HostFault] where the hosts are stopped and recover after some random amount of time.
+ * Interface responsible for applying the fault to a host.
  */
-public class StartStopHostFault(private val duration: RealDistribution) : HostFault {
-    override suspend fun apply(
-        clock: InstantSource,
+public abstract class HostFault(
+    private val service: ComputeService,
+) {
+    /**
+     * Apply the fault to the specified [victims].
+     */
+    public abstract suspend fun apply(
         victims: List<SimHost>,
-    ) {
-        for (host in victims) {
-            host.fail()
-        }
-
-        val df = (duration.sample() * 1000).roundToLong() // seconds to milliseconds
-
-        // Handle long overflow
-        if (clock.millis() + df <= 0) {
-            return
-        }
-
-        delay(df)
-
-        for (host in victims) {
-            host.recover()
-        }
-    }
-
-    override fun toString(): String = "StartStopHostFault[$duration]"
+        faultDuration: Long,
+    )
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure
-
-import org.opendc.compute.service.ComputeService
-import java.time.InstantSource
-import java.util.random.RandomGenerator
-import kotlin.coroutines.CoroutineContext
+package org.opendc.trace.formats.failure.parquet
 
 /**
- * Factory interface for constructing [HostFaultInjector] for modeling failures of compute service hosts.
+ * A task in the Workflow Trace Format.
  */
-public interface FailureModel {
-    /**
-     * Construct a [HostFaultInjector] for the specified [service].
-     */
-    public fun createInjector(
-        context: CoroutineContext,
-        clock: InstantSource,
-        service: ComputeService,
-        random: RandomGenerator,
-    ): HostFaultInjector
-}
+internal data class FailureFragment(
+    val failureInterval: Long,
+    val failureDuration: Long,
+    val failureIntensity: Double,
+)

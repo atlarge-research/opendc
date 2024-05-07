@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure
+@file:JvmName("FailureColumns")
 
-import org.opendc.compute.simulator.failure.models.Grid5000
-import java.time.Duration
-import kotlin.math.roundToLong
+package org.opendc.trace.conv
 
 /**
- * Get failure model
- *
- * @param failureInterval The interval of failures occurring in s
- * @return
+ * A column containing the task identifier.
  */
-public fun getFailureModel(failureInterval: Double): FailureModel? {
-    return if (failureInterval > 0) {
-        Grid5000(Duration.ofSeconds(failureInterval.roundToLong()))
-    } else {
-        null
-    }
-}
+public const val FAILURE_INTERVAL: String = "failure_interval"
+
+/**
+ * A column containing the task identifier.
+ */
+public const val FAILURE_DURATION: String = "failure_duration"
+
+/**
+ * A column containing the task identifier.
+ */
+public const val FAILURE_INTENSITY: String = "failure_intensity"

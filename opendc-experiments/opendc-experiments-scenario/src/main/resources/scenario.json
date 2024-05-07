@@ -9,5 +9,8 @@
     },
     "allocationPolicy": {
         "policyType": "Mem"
+    },
+    "failureModel": {
+        "name": "TEST"
     }
 }

@@ -116,7 +116,7 @@ public fun runScenario(
         val serviceDomain = "compute.opendc.org"
         Provisioner(dispatcher, seed).use { provisioner ->
 
-            val topology = clusterTopology(scenario.topology.pathToFile, Random(seed))
+            val topology = clusterTopology(scenario.topologySpec.pathToFile, Random(seed))
             provisioner.runSteps(
                 setupComputeService(
                     serviceDomain,
@@ -125,15 +125,15 @@ public fun runScenario(
                 setupHosts(serviceDomain, topology, optimize = true),
             )
 
-            val workloadLoader = ComputeWorkloadLoader(File(scenario.workload.pathToFile))
-            val vms = getWorkloadType(scenario.workload.type).resolve(workloadLoader, Random(seed))
+            val workloadLoader = ComputeWorkloadLoader(File(scenario.workloadSpec.pathToFile))
+            val vms = getWorkloadType(scenario.workloadSpec.type).resolve(workloadLoader, Random(seed))
 
             val carbonTrace = getCarbonTrace(scenario.carbonTracePath)
             val startTime = Duration.ofMillis(vms.minOf { it.startTime }.toEpochMilli())
             addExportModel(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace, index)
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
-            service.replay(timeSource, vms, failureModelSpec = scenario.failureModel, seed = seed)
+            service.replay(timeSource, vms, failureModelSpec = scenario.failureModelSpec, seed = seed)
         }
     }
 
@@ -164,7 +164,7 @@ public fun addExportModel(
                 "seed=$seed",
                 bufferSize = 4096,
             ),
-            Duration.ofSeconds(scenario.exportModel.exportInterval),
+            Duration.ofSeconds(scenario.exportModelSpec.exportInterval),
             startTime,
             carbonTrace,
         ),
@@ -184,10 +184,10 @@ public fun clearOutputFolder(outputFolderPath: String) {
  * @param folderPath The path to the output folder
  */
 private fun setupOutputFolderStructure(folderPath: String) {
-    val trackrPath = folderPath + "/trackr.json"
-    val simulationAnalysisPath = folderPath + "/simulation-analysis/"
-    val energyAnalysisPath = simulationAnalysisPath + "/power_draw/"
-    val emissionsAnalysisPath = simulationAnalysisPath + "/carbon_emission/"
+    val trackrPath = "$folderPath/trackr.json"
+    val simulationAnalysisPath = "$folderPath/simulation-analysis/"
+    val energyAnalysisPath = "$simulationAnalysisPath/power_draw/"
+    val emissionsAnalysisPath = "$simulationAnalysisPath/carbon_emission/"
 
     File(folderPath).mkdir()
     File(trackrPath).createNewFile()

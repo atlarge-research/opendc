@@ -23,9 +23,10 @@
 package org.opendc.web.runner
 
 import mu.KotlinLogging
+import org.opendc.compute.failure.prefab.FailurePrefab
+import org.opendc.compute.failure.prefab.createFailureModelPrefab
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.createComputeScheduler
-import org.opendc.compute.simulator.failure.models.Grid5000
 import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
@@ -282,7 +283,7 @@ public class OpenDCRunner(
                     val phenomena = scenario.phenomena
                     val failureModel =
                         if (phenomena.failures) {
-                            Grid5000(Duration.ofDays(7))
+                            createFailureModelPrefab(coroutineContext, timeSource, service, Random(seed), FailurePrefab.G5k06Exp)
                         } else {
                             null
                         }

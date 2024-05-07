@@ -13,7 +13,7 @@ In the following section, we describe the different components of the schema.
 | name                 | string                                       | no        | ""      | Name of the scenario, used for identification and referencing.            |
 | topologies           | List[[Topology](#topology)]                  | yes       | N/A   | List of topologies used in the scenario.                                 |
 | workloads            | List[[Workload](#workload)]                  | yes       | N/A   | List of workloads to be executed within the scenario.                    |
-| allocationPolicies   | List[[AllocationPolicy](#allocationpolicy)]  | yes       | N/A   | Allocation policies used for resource management in the scenario.        |
+| allocationPolicies   | List[[AllocationPolicy](#allocation-policy)] | yes       | N/A   | Allocation policies used for resource management in the scenario.        |
 | failureModels        | List[[FailureModel](#failuremodel)]          | no        | empty | List of failure models to simulate various types of failures.            |
 | exportModels         | List[[ExportModel](#exportmodel)]            | no        | empty | Specifications for exporting data from the simulation.                   |
 | carbonTracePaths     | List[string]                                 | no        | null  | Paths to carbon footprint trace files.                                   |
@@ -34,7 +34,7 @@ In the following section, we describe the different components of the schema.
 | pathToFile  | string | yes       | N/A     | Path to the file containing the workload trace.                     |
 | type        | string | yes       | N/A     | Type of the workload (e.g., "ComputeWorkload").                     |
 
-### AllocationPolicy
+### Allocation Policy
 
 | Variable    | Type   | Required? | Default | Description                                                         |
 |-------------|--------|-----------|---------|---------------------------------------------------------------------|

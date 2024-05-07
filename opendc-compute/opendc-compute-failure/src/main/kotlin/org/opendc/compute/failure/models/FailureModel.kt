@@ -20,44 +20,39 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.internal
+package org.opendc.compute.failure.models
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.apache.commons.math3.distribution.RealDistribution
+import org.opendc.compute.failure.hostfault.HostFault
+import org.opendc.compute.failure.hostfault.StartStopHostFault
+import org.opendc.compute.failure.victimselector.StochasticVictimSelector
+import org.opendc.compute.service.ComputeService
 import org.opendc.compute.simulator.SimHost
-import org.opendc.compute.simulator.failure.HostFault
-import org.opendc.compute.simulator.failure.HostFaultInjector
-import org.opendc.compute.simulator.failure.VictimSelector
 import java.time.InstantSource
+import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.roundToLong
 
 /**
- * Internal implementation of the [HostFaultInjector] interface.
- *
- * @param context The scope to run the fault injector in.
- * @param clock The [InstantSource] to keep track of simulation time.
- * @param hosts The set of hosts to inject faults into.
- * @param iat The inter-arrival time distribution of the failures (in hours).
- * @param selector The [VictimSelector] to select the host victims.
- * @param fault The type of [HostFault] to inject.
+ * Factory interface for constructing [FailureModel] for modeling failures of compute service hosts.
  */
-internal class HostFaultInjectorImpl(
-    private val context: CoroutineContext,
-    private val clock: InstantSource,
-    private val hosts: Set<SimHost>,
-    private val iat: RealDistribution,
-    private val selector: VictimSelector,
-    private val fault: HostFault,
-) : HostFaultInjector {
-    /**
-     * The scope in which the injector runs.
-     */
-    private val scope = CoroutineScope(context + Job())
+public abstract class FailureModel(
+    context: CoroutineContext,
+    protected val clock: InstantSource,
+    protected val service: ComputeService,
+    protected val random: RandomGenerator,
+) : AutoCloseable {
+    protected val scope: CoroutineScope = CoroutineScope(context + Job())
+
+    // TODO: could at some point be extended to different types of faults
+    protected val fault: HostFault = StartStopHostFault(service)
+
+    // TODO: could at some point be extended to different types of victim selectors
+    protected val victimSelector: StochasticVictimSelector = StochasticVictimSelector(random)
+
+    protected val hosts: Set<SimHost> = service.hosts.map { it as SimHost }.toSet()
 
     /**
      * The [Job] that awaits the nearest fault in the system.
@@ -67,7 +62,7 @@ internal class HostFaultInjectorImpl(
     /**
      * Start the fault injection into the system.
      */
-    override fun start() {
+    public fun start() {
         if (job != null) {
             return
         }
@@ -79,25 +74,7 @@ internal class HostFaultInjectorImpl(
             }
     }
 
-    /**
-     * Converge the injection process.
-     */
-    private suspend fun runInjector() {
-        while (true) {
-            // Make sure to convert delay from hours to milliseconds
-            val d = (iat.sample() * 3.6e6).roundToLong()
-
-            // Handle long overflow
-            if (clock.millis() + d <= 0) {
-                return
-            }
-
-            delay(d)
-
-            val victims = selector.select(hosts)
-            fault.apply(clock, victims)
-        }
-    }
+    public abstract suspend fun runInjector()
 
     /**
      * Stop the fault injector.

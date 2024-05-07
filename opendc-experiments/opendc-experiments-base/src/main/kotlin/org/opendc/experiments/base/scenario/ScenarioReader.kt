@@ -28,14 +28,25 @@ import kotlinx.serialization.json.decodeFromStream
 import org.opendc.experiments.base.scenario.specs.ScenarioSpec
 import java.io.File
 import java.io.InputStream
+import java.nio.file.Path
+import kotlin.io.path.inputStream
 
 public class ScenarioReader {
+//    private val jsonReader = Json { serializersModule = failureModule }
+    private val jsonReader = Json
+
     @OptIn(ExperimentalSerializationApi::class)
     public fun read(file: File): ScenarioSpec {
         val input = file.inputStream()
-        val obj = Json.decodeFromStream<ScenarioSpec>(input)
 
-        return obj
+        return jsonReader.decodeFromStream<ScenarioSpec>(input)
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    public fun read(path: Path): ScenarioSpec {
+        val input = path.inputStream()
+
+        return jsonReader.decodeFromStream<ScenarioSpec>(input)
     }
 
     /**
@@ -43,7 +54,6 @@ public class ScenarioReader {
      */
     @OptIn(ExperimentalSerializationApi::class)
     public fun read(input: InputStream): ScenarioSpec {
-        val obj = Json.decodeFromStream<ScenarioSpec>(input)
-        return obj
+        return jsonReader.decodeFromStream<ScenarioSpec>(input)
     }
 }

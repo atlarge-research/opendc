@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,20 +20,10 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure
+import kotlinx.serialization.Serializable
 
-import org.opendc.compute.simulator.SimHost
-import java.time.InstantSource
-
-/**
- * Interface responsible for applying the fault to a host.
- */
-public interface HostFault {
-    /**
-     * Apply the fault to the specified [victims].
-     */
-    public suspend fun apply(
-        clock: InstantSource,
-        victims: List<SimHost>,
-    )
-}
+@Serializable
+public data class CheckpointModelSpec(
+    val checkpointWait: Long = 60 * 60 * 1000,
+    val checkpointTime: Long = 5 * 60 * 1000,
+)

@@ -20,44 +20,43 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.failure
+package org.opendc.compute.failure.hostfault
 
-import org.apache.commons.math3.distribution.RealDistribution
+import kotlinx.coroutines.delay
+import org.opendc.compute.api.ComputeClient
+import org.opendc.compute.service.ComputeService
 import org.opendc.compute.simulator.SimHost
-import java.util.ArrayList
-import java.util.SplittableRandom
-import java.util.random.RandomGenerator
-import kotlin.math.roundToInt
+import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
- * A [VictimSelector] that stochastically selects a set of hosts to be failed.
+ * A type of [HostFault] where the hosts are stopped and recover after a given amount of time.
  */
-public class StochasticVictimSelector(
-    private val size: RealDistribution,
-    private val random: RandomGenerator = SplittableRandom(0),
-) : VictimSelector {
-    override fun select(hosts: Set<SimHost>): List<SimHost> {
-        val n = size.sample().roundToInt()
-        val result = ArrayList<SimHost>(n)
+public class StartStopHostFault(
+    private val service: ComputeService,
+) : HostFault(service) {
+    override suspend fun apply(
+        victims: List<SimHost>,
+        faultDuration: Long,
+    ) {
+        val client: ComputeClient = service.newClient()
 
-        val random = random
-        var samplesNeeded = n
-        var remainingHosts = hosts.size
-        val iterator = hosts.iterator()
+        for (host in victims) {
+            val servers = host.instances
 
-        while (iterator.hasNext() && samplesNeeded > 0) {
-            val host = iterator.next()
+            val snapshots = servers.map { (it.meta["workload"] as SimWorkload).snapshot() }
+            host.fail()
 
-            if (random.nextInt(remainingHosts) < samplesNeeded) {
-                result.add(host)
-                samplesNeeded--
+            for ((server, snapshot) in servers.zip(snapshots)) {
+                client.rescheduleServer(server, snapshot)
             }
-
-            remainingHosts--
         }
 
-        return result
+        delay(faultDuration)
+
+        for (host in victims) {
+            host.recover()
+        }
     }
 
-    override fun toString(): String = "StochasticVictimSelector[$size]"
+    override fun toString(): String = "StartStopHostFault"
 }

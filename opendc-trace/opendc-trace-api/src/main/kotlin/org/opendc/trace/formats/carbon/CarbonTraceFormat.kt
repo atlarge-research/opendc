@@ -28,7 +28,7 @@ import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
 import org.opendc.trace.conv.CARBON_INTENSITY_TIMESTAMP
 import org.opendc.trace.conv.CARBON_INTENSITY_VALUE
-import org.opendc.trace.conv.TABLE_CARBON_INTENSITY
+import org.opendc.trace.conv.TABLE_CARBON_INTENSITIES
 import org.opendc.trace.formats.carbon.parquet.CarbonIntensityReadSupport
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
@@ -45,14 +45,14 @@ public class CarbonTraceFormat : TraceFormat {
         throw UnsupportedOperationException("Writing not supported for this format")
     }
 
-    override fun getTables(path: Path): List<String> = listOf(TABLE_CARBON_INTENSITY)
+    override fun getTables(path: Path): List<String> = listOf(TABLE_CARBON_INTENSITIES)
 
     override fun getDetails(
         path: Path,
         table: String,
     ): TableDetails {
         return when (table) {
-            TABLE_CARBON_INTENSITY ->
+            TABLE_CARBON_INTENSITIES ->
                 TableDetails(
                     listOf(
                         TableColumn(CARBON_INTENSITY_TIMESTAMP, TableColumnType.Instant),
@@ -69,7 +69,7 @@ public class CarbonTraceFormat : TraceFormat {
         projection: List<String>?,
     ): TableReader {
         return when (table) {
-            TABLE_CARBON_INTENSITY -> {
+            TABLE_CARBON_INTENSITIES -> {
                 val reader = LocalParquetReader(path, CarbonIntensityReadSupport(projection))
                 CarbonTableReader(reader)
             }
