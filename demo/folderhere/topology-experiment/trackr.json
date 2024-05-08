@@ -1,0 +1,96 @@
+[{
+    "id": 0,
+    "name": "topology-experiment",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-sqrt.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/bitbrains-small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "folderhere/topology-experiment"
+},
+{
+    "id": 1,
+    "name": "topology-experiment",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-linear.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/bitbrains-small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "folderhere/topology-experiment"
+},
+{
+    "id": 2,
+    "name": "topology-experiment",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-square.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/bitbrains-small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "folderhere/topology-experiment"
+},
+{
+    "id": 3,
+    "name": "topology-experiment",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/bitbrains-small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "folderhere/topology-experiment"
+}]
