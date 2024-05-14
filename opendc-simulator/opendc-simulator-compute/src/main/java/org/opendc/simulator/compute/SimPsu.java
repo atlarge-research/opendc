@@ -56,6 +56,12 @@ public abstract class SimPsu extends SimPowerInlet {
     public abstract double getThermalPower();
 
     /**
+     * Return the temperature of the Host in degrees Celsius based on a power equation.
+     */
+    public abstract double getTemperature();
+
+
+    /**
      * Return the cumulated energy usage of the machine (in J) measured at the inlet of the powers supply.
      */
     public abstract double getEnergyUsage();

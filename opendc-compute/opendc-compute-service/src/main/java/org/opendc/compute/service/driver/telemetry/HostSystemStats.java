@@ -46,6 +46,7 @@ public record HostSystemStats(
         double powerDraw,
         double energyUsage,
         double thermalPower,
+        double temperatureC,
         int guestsTerminated,
         int guestsRunning,
         int guestsError,

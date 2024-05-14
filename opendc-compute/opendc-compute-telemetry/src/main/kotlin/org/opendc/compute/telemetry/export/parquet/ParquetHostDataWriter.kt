@@ -156,6 +156,10 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             consumer.addDouble(data.thermalPower)
             consumer.endField("thermal_power", 20)
 
+            consumer.startField("temperature_C", 20)
+            consumer.addDouble(data.temperature)
+            consumer.endField("temperature_C", 20)
+
             consumer.startField("carbon_intensity", 21)
             consumer.addDouble(data.carbonIntensity)
             consumer.endField("carbon_intensity", 21)
@@ -264,6 +268,9 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                         .named("thermal_power"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("temperature_C"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                         .named("carbon_intensity"),

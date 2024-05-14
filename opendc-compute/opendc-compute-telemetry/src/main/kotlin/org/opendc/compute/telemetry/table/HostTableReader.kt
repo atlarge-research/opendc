@@ -123,6 +123,11 @@ public interface HostTableReader {
     public val thermalPower: Double
 
     /**
+     * The current temperature of the host in degrees Celsius.
+     */
+    public val temperature: Double
+
+    /**
      * The current carbon intensity of the host in gCO2 / kW.
      */
     public val carbonIntensity: Double
