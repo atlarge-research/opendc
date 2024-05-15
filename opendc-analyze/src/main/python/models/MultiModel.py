@@ -9,21 +9,25 @@ from .Model import Model
 
 
 class MultiModel:
-    def __init__(self, input_metric, window_size):
+    def __init__(self, input_metric, window_size, aggregation_function="median"):
         # the following metrics are set in the latter functions
         self.measure_unit = None
         self.metric = None
         self.raw_models = []
         self.aggregated_models = []
         self.output_folder = None
-        self.computed_data = []
         self.input_folder = utils.RAW_OUTPUT_FOLDER_PATH
         self.window_size = window_size
+        self.aggregation_function = "median"
 
         # run init functions
         self.check_and_set_metric(input_metric)
         self.set_output_folder()
         self.init_models()
+
+        # compute the multimodel on initialization
+        self.computed_data = []
+        self.compute_windowed_aggregation()
 
     """
     The set_output_folder function sets the output folder based on the metric chosen. If the metric is power_draw,
@@ -45,8 +49,8 @@ class MultiModel:
         elif self.metric == "carbon_emission":
             self.output_folder = utils.EMISSIONS_ANALYSIS_FOLDER_PATH
             with open(
-                    utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + utils.EMISSIONS_ANALYSIS_FOLDER_NAME + "/analysis.txt",
-                    "a") as f:
+                utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + utils.EMISSIONS_ANALYSIS_FOLDER_NAME + "/analysis.txt",
+                "a") as f:
                 f.write("")
 
         else:
@@ -93,7 +97,7 @@ class MultiModel:
 
     """
 
-    def compute_windowed_aggregation(self, aggregation_function="median"):
+    def compute_windowed_aggregation(self):
         print("Computing windowed aggregation for " + self.metric)
         for model in self.aggregated_models:
             # Select only numeric data for aggregation
@@ -103,9 +107,8 @@ class MultiModel:
             windowed_data = self.mean_of_chunks(numeric_values, self.window_size)
             self.computed_data.append(windowed_data)
 
-    def generate(self, aggregation_function="median"):
+    def generate(self):
         self.setup_plot()
-        self.compute_windowed_aggregation(aggregation_function=aggregation_function)
         self.plot_windowed_aggregation()
         self.save_plot()
 
@@ -118,7 +121,10 @@ class MultiModel:
         plt.figure(figsize=(30, 10))
         plt.title(self.metric)
         plt.xlabel("Time [s]")
-        plt.ylim(0, 1000)
+        plt.ylim(
+            0,
+            self.get_y_lim()
+        )
         plt.ylabel(self.metric + " [W]")
         plt.grid()
 
@@ -133,4 +139,5 @@ class MultiModel:
     def mean_of_chunks(self, np_array, chunk_size):
         return [np.mean(np_array[i:i + chunk_size]) for i in range(0, len(np_array), chunk_size)]
 
-
+    def get_y_lim(self):
+        return max([max(model) for model in self.computed_data]) * 1  # max from the computed_data bi-dim array + 10%

@@ -21,12 +21,13 @@ class Metamodel:
     at a granularity defined by the window-size.
     """
     def compute(self):
-        for granularity in range(len(self.multimodel_data[0])):
-            array_at_granularity = []
+        for index in range(len(self.multimodel_data[0])):
+            array_at_index = []
             for model in self.multimodel_data:
-                array_at_granularity.append(model[granularity])
+                if (index + self.window_size < len(model)):
+                    array_at_index.append(model[index])
 
-            median_at_granularity = np.median(array_at_granularity)
+            median_at_granularity = np.median(array_at_index)
             self.metamodel_data.append(median_at_granularity)
 
     def generate(self):
@@ -40,7 +41,7 @@ class Metamodel:
         plt.title(self.metric)
         plt.xlabel("Time [s]")
         plt.ylabel(self.metric + self.measure_unit)
-        plt.ylim(0, 400)
+        plt.ylim(0, self.multimodel.get_y_lim())
         plt.grid()
 
     def plot(self):
