@@ -6,5 +6,8 @@ and further in the MetaModel class.
 :param host: the host data of the model
 """
 class Model:
-    def __init__(self, host):
-        self.host = host
+    def __init__(self, raw_host_data, name="notfornow"):
+        self.raw_host_data = raw_host_data
+        self.processed_host_data = []
+        self.name = name
+

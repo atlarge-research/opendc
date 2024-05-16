@@ -18,11 +18,10 @@ aggregation (e.g., mathematical functions, machine learning models).
 class Metamodel:
     def __init__(self, multimodel):
         self.multimodel = multimodel
-        self.raw_models = multimodel.raw_models
+        self.models = multimodel.models
         self.metric = multimodel.metric
         self.measure_unit = multimodel.measure_unit
         self.window_size = multimodel.window_size
-        self.multimodel_data = multimodel.computed_data
         self.metamodel_data = []
         self.compute()  # compute the metamodel on initialization
 
@@ -35,11 +34,11 @@ class Metamodel:
     This function is called on initialization and computes the MetaModel data.
     """
     def compute(self):
-        for index in range(len(self.multimodel_data[0])):
+        for index in range(len(self.models[0].processed_host_data)):
             array_at_index = []
-            for model in self.multimodel_data:
-                if (index + self.window_size < len(model)):
-                    array_at_index.append(model[index])
+            for model in self.models:
+                if index + self.window_size < len(model.processed_host_data):
+                    array_at_index.append(model.processed_host_data[index])
 
             median_at_granularity = np.median(array_at_index)
             self.metamodel_data.append(median_at_granularity)
@@ -65,6 +64,12 @@ class Metamodel:
         plt.xlabel("Time [s]")
         plt.ylabel(self.metric + self.measure_unit)
         plt.ylim(0, self.multimodel.get_y_lim())
+
+        # multiply all the values from the x-axis by the window size
+        plt.xticks(
+            np.arange(0, len(self.metamodel_data), step=self.window_size),
+            np.arange(0, len(self.metamodel_data) * self.window_size, step=100 * self.window_size)
+        )
         plt.grid()
 
 
@@ -82,5 +87,5 @@ class Metamodel:
     """
     def save_plot(self):
         folder_prefix = "./" + utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + self.metric + "/"
-        plt.savefig(folder_prefix + "metamodel_metric=" + self.metric + "_window_size=" + str(self.window_size) + ".png")
+        plt.savefig(folder_prefix + "metamodel_metric=" + self.metric + "_window=" + str(self.window_size) + ".png")
 

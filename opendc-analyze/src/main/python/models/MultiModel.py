@@ -1,3 +1,4 @@
+import math
 import os
 import pandas as pd
 import numpy as np
@@ -24,20 +25,20 @@ class MultiModel:
         # the following metrics are set in the latter functions
         self.measure_unit = None
         self.metric = None
-        self.raw_models = []
-        self.aggregated_models = []
-        self.output_folder = None
+        self.models = []
+
         self.input_folder = utils.RAW_OUTPUT_FOLDER_PATH
+        self.output_folder = None
         self.window_size = window_size
         self.aggregation_function = "median"
+        self.workload_time = 0
+        self.max_model_len = 0
 
         # run init functions
         self.check_and_set_metric(input_metric)
         self.set_output_folder()
         self.init_models()
 
-        # compute the multimodel on initialization
-        self.computed_data = []
         self.compute_windowed_aggregation()
 
 
@@ -51,7 +52,7 @@ class MultiModel:
         if input_metric not in ["power_draw", "carbon_emission"]:
             raise ValueError("Invalid metric. Please choose from 'power_draw', 'carbon_emission'")
         self.metric = input_metric
-        self.measure_unit = "W" if self.metric == "power_draw" else "gCO2"
+        self.measure_unit = "[W]" if self.metric == "power_draw" else "[gCO2]"
 
 
 
@@ -67,7 +68,6 @@ class MultiModel:
     def set_output_folder(self):
         if self.metric == "power_draw":
             self.output_folder = utils.ENERGY_ANALYSIS_FOLDER_PATH
-            # create a new file called analysis.txt
             with open(utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + utils.ENERGY_ANALYSIS_FOLDER_NAME + "/analysis.txt",
                       "a") as f:
                 f.write("")
@@ -91,18 +91,23 @@ class MultiModel:
     """
     def init_models(self):
         folder_prefix = "./raw-output"
+        model_id = 0
 
         for simulation_folder in os.listdir(folder_prefix):
-            raw_model = Model(host=pd.read_parquet(f"{folder_prefix}/{simulation_folder}/seed=0/host.parquet"))
+            parquet_file = pq.read_table(f"{folder_prefix}/{simulation_folder}/seed=0/host.parquet").to_pandas()
+            raw_data = parquet_file.select_dtypes(include=[np.number]).groupby("timestamp")
+            raw_data = raw_data[self.metric].aggregate("sum")
 
-            # push simulation model raw, not aggregated
-            self.raw_models.append(raw_model)
+            model = Model(
+                raw_host_data=raw_data,
+                name=model_id
+            )
 
-            # aggregate and push the model
-            processed_raw_model = raw_model.host.select_dtypes(include=[np.number]).groupby("timestamp")
-            processed_raw_model = processed_raw_model[self.metric].aggregate("sum")
-            self.aggregated_models.append(processed_raw_model)
+            self.models.append(model)
+            model_id += 1
 
+        self.max_model_len = max([len(model.raw_host_data) for model in self.models])
+        self.workload_time = math.floor(300 * self.max_model_len / 3600 / 24)  # a sample is taken every 300 seconds and converted to days
 
 
     """
@@ -113,12 +118,11 @@ class MultiModel:
     """
     def compute_windowed_aggregation(self):
         print("Computing windowed aggregation for " + self.metric)
-        for model in self.aggregated_models:
-            numeric_values = model.values  # Select only numeric data for aggregation
+        for model in self.models:
+            numeric_values = model.raw_host_data  # Select only numeric data for aggregation
 
             # Calculate the median for each window
-            windowed_data = self.mean_of_chunks(numeric_values, self.window_size)
-            self.computed_data.append(windowed_data)
+            model.processed_host_data = self.mean_of_chunks(numeric_values, self.window_size)
 
 
 
@@ -138,13 +142,17 @@ class MultiModel:
     def setup_plot(self):
         plt.figure(figsize=(30, 10))
         plt.title(self.metric)
-        plt.xlabel("Time [s]")
-        plt.ylim(
-            0,
-            self.get_y_lim()
-        )
-        plt.ylabel(self.metric + " [W]")
+
+        # position the xlabel in the right of the graph
+        plt.xlabel(("Prediction over " + str(self.workload_time) + " days"), ha="right")
+        plt.ylim(0, self.get_y_lim())
+        plt.ylabel(self.metric + " " + self.measure_unit)
+        # Add grid for better visibility
+
+        # remove all x ticks
+        plt.xticks([])
         plt.grid()
+
 
 
 
@@ -152,10 +160,8 @@ class MultiModel:
     Plot the processed models, after the windowed aggregation is computed.
     """
     def plot_processed_models(self):
-        i = 0
-        for model in self.computed_data:
-            plt.plot(model, label=i)
-            i = i + 1
+        for model in self.models:
+            plt.plot(model.processed_host_data, label=str(model.name))
         plt.legend()
 
 
@@ -166,7 +172,7 @@ class MultiModel:
     def save_plot(self):
         folder_prefix = "./" + utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + self.metric + "/"
         plt.savefig(
-            folder_prefix + "multimodel_metric=" + self.metric + "_window_size=" + str(self.window_size) + ".png")
+            folder_prefix + "multimodel_metric=" + self.metric + "_window=" + str(self.window_size) + ".png")
 
 
 
@@ -184,4 +190,4 @@ class MultiModel:
     usually x and y are orders of magnitude different.
     """
     def get_y_lim(self):
-        return max([max(model) for model in self.computed_data]) * 1.1  # max from the computed_data bi-dim array + 10%
+        return max([max(model.processed_host_data) for model in self.models]) * 1.1  # max value from the model  + 10%
