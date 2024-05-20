@@ -46,11 +46,6 @@ public abstract class SimPsu extends SimPowerInlet {
     public abstract double getPowerDraw();
 
     /**
-     * Return the idle power of a cpu from the PSU's CPU power model
-     */
-    public abstract double getIdlePower();
-
-    /**
      * Return the thermal power of the machine (in W).
      */
     public abstract double getThermalPower();

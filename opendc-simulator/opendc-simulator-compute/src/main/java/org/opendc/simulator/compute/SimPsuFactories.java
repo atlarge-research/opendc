@@ -83,9 +83,6 @@ public class SimPsuFactories {
         public double getPowerDraw() { return 0;}
 
         @Override
-        public double getIdlePower() { return 0;}
-
-        @Override
         public double getEnergyUsage() { return 0;}
 
         @Override
@@ -130,7 +127,7 @@ public class SimPsuFactories {
 
         private double powerDraw;
         private double energyUsage;
-        private double current; //FIXME implement current when PSU is fully implemented
+        private double leakageCurrent; //FIXME implement current when PSU is fully implemented
         private double voltage; //FIXME implement voltage when PSU is fully implemented
 
         private final InHandler handler = new InHandler() {
@@ -165,19 +162,15 @@ public class SimPsuFactories {
             return powerDraw;
         }
 
-        public double getIdlePower(){
-            return model.computePower(0.0);
-        }
-
         @Override
         public double getThermalPower() {
-            // defining current (A) and voltage (V) based on typical values from an intel i7
-            current = 20;
-            voltage = 0.12;
+            // defining leakage current (A) and voltage (V) based on typical values from an intel i7
+            leakageCurrent = 0.001; // not the same as total current for the CPU, based off the data sheet values for different input signals summed together
+            voltage = 1.2;
 
             double dynamicPower = powerDraw;
             double idlePower = model.computePower(0.0);
-            double staticPower = current * voltage;
+            double staticPower = leakageCurrent * voltage;
 
             return dynamicPower + idlePower + staticPower;
         }
