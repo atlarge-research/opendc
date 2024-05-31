@@ -33,14 +33,14 @@ public interface ServerTableReader {
     public fun setValues(table: ServerTableReader)
 
     /**
-     * The timestamp of the current entry of the reader.
+     * The timestamp of the current entry of the reader relative to the start of the workload.
      */
     public val timestamp: Instant
 
     /**
      * The timestamp of the current entry of the reader.
      */
-    public val absoluteTimestamp: Instant
+    public val timestampAbsolute: Instant
 
     /**
      * The [ServerInfo] of the server to which the row belongs to.
@@ -68,9 +68,14 @@ public interface ServerTableReader {
     public val provisionTime: Instant?
 
     /**
-     * The [Instant] at which the server booted.
+     * The [Instant] at which the server booted relative to the start of the workload.
      */
     public val bootTime: Instant?
+
+    /**
+     * The [Instant] at which the server booted.
+     */
+    public val bootTimeAbsolute: Instant?
 
     /**
      * The capacity of the CPUs of Host on which the server is running (in MHz).

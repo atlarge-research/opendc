@@ -131,10 +131,17 @@ private fun HostJSONSpec.toHostSpecs(
 
     val powerModel = getPowerModel(powerModel.modelType, powerModel.power, powerModel.maxPower, powerModel.idlePower)
 
+    var hostName: String
+    if (name == null) {
+        hostName = "Host-$hostId"
+    } else {
+        hostName = name
+    }
+
     val hostSpec =
         HostSpec(
             UUID(random.nextLong(), (hostId).toLong()),
-            "$name-${(hostId)}",
+            hostName,
             mapOf("cluster" to clusterId),
             machineModel,
             SimPsuFactories.simple(powerModel),

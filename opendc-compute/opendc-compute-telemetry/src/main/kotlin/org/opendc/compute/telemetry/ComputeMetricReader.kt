@@ -143,7 +143,7 @@ public class ComputeMetricReader(
 
         override fun setValues(table: ServiceTableReader) {
             _timestamp = table.timestamp
-            _absoluteTimestamp = table.absoluteTimestamp
+            _timestampAbsolute = table.timestampAbsolute
 
             _hostsUp = table.hostsUp
             _hostsDown = table.hostsDown
@@ -159,9 +159,9 @@ public class ComputeMetricReader(
         override val timestamp: Instant
             get() = _timestamp
 
-        private var _absoluteTimestamp: Instant = Instant.MIN
-        override val absoluteTimestamp: Instant
-            get() = _absoluteTimestamp
+        private var _timestampAbsolute: Instant = Instant.MIN
+        override val timestampAbsolute: Instant
+            get() = _timestampAbsolute
 
         override val hostsUp: Int
             get() = _hostsUp
@@ -200,7 +200,7 @@ public class ComputeMetricReader(
          */
         fun record(now: Instant) {
             _timestamp = now
-            _absoluteTimestamp = now + startTime
+            _timestampAbsolute = now + startTime
 
             val stats = service.getSchedulerStats()
             _hostsUp = stats.hostsAvailable
@@ -231,7 +231,7 @@ public class ComputeMetricReader(
 
         override fun setValues(table: HostTableReader) {
             _timestamp = table.timestamp
-            _absoluteTimestamp = table.absoluteTimestamp
+            _timestampAbsolute = table.timestampAbsolute
 
             _guestsTerminated = table.guestsTerminated
             _guestsRunning = table.guestsRunning
@@ -252,6 +252,7 @@ public class ComputeMetricReader(
             _uptime = table.uptime
             _downtime = table.downtime
             _bootTime = table.bootTime
+            _bootTimeAbsolute = table.bootTimeAbsolute
         }
 
         private val _host = host
@@ -262,9 +263,9 @@ public class ComputeMetricReader(
             get() = _timestamp
         private var _timestamp = Instant.MIN
 
-        override val absoluteTimestamp: Instant
-            get() = _absoluteTimestamp
-        private var _absoluteTimestamp = Instant.MIN
+        override val timestampAbsolute: Instant
+            get() = _timestampAbsolute
+        private var _timestampAbsolute = Instant.MIN
 
         override val guestsTerminated: Int
             get() = _guestsTerminated
@@ -349,6 +350,10 @@ public class ComputeMetricReader(
             get() = _bootTime
         private var _bootTime: Instant? = null
 
+        override val bootTimeAbsolute: Instant?
+            get() = _bootTimeAbsolute
+        private var _bootTimeAbsolute: Instant? = null
+
         /**
          * Record the next cycle.
          */
@@ -357,7 +362,7 @@ public class ComputeMetricReader(
             val hostSysStats = _host.getSystemStats()
 
             _timestamp = now
-            _absoluteTimestamp = now + startTime
+            _timestampAbsolute = now + startTime
 
             _guestsTerminated = hostSysStats.guestsTerminated
             _guestsRunning = hostSysStats.guestsRunning
@@ -373,12 +378,13 @@ public class ComputeMetricReader(
             _cpuLostTime = hostCpuStats.lostTime
             _powerDraw = hostSysStats.powerDraw
             _energyUsage = hostSysStats.energyUsage
-            _carbonIntensity = carbonTrace.getCarbonIntensity(absoluteTimestamp)
+            _carbonIntensity = carbonTrace.getCarbonIntensity(timestampAbsolute)
 
             _carbonEmission = carbonIntensity * (energyUsage / 3600000.0) // convert energy usage from J to kWh
             _uptime = hostSysStats.uptime.toMillis()
             _downtime = hostSysStats.downtime.toMillis()
             _bootTime = hostSysStats.bootTime
+            _bootTime = hostSysStats.bootTime + startTime
         }
 
         /**
@@ -430,7 +436,7 @@ public class ComputeMetricReader(
             host = table.host
 
             _timestamp = table.timestamp
-            _absoluteTimestamp = table.absoluteTimestamp
+            _timestampAbsolute = table.timestampAbsolute
 
             _cpuLimit = table.cpuLimit
             _cpuActiveTime = table.cpuActiveTime
@@ -441,6 +447,7 @@ public class ComputeMetricReader(
             _downtime = table.downtime
             _provisionTime = table.provisionTime
             _bootTime = table.bootTime
+            _bootTimeAbsolute = table.bootTimeAbsolute
         }
 
         private val _server = server
@@ -470,9 +477,9 @@ public class ComputeMetricReader(
         override val timestamp: Instant
             get() = _timestamp
 
-        private var _absoluteTimestamp = Instant.MIN
-        override val absoluteTimestamp: Instant
-            get() = _absoluteTimestamp
+        private var _timestampAbsolute = Instant.MIN
+        override val timestampAbsolute: Instant
+            get() = _timestampAbsolute
 
         override val uptime: Long
             get() = _uptime - previousUptime
@@ -516,6 +523,10 @@ public class ComputeMetricReader(
         private var _cpuLostTime = 0L
         private var previousCpuLostTime = 0L
 
+        override val bootTimeAbsolute: Instant?
+            get() = _bootTimeAbsolute
+        private var _bootTimeAbsolute: Instant? = null
+
         /**
          * Record the next cycle.
          */
@@ -530,7 +541,7 @@ public class ComputeMetricReader(
             val sysStats = _host?.getSystemStats(_server)
 
             _timestamp = now
-            _absoluteTimestamp = now + startTime
+            _timestampAbsolute = now + startTime
 
             _cpuLimit = cpuStats?.capacity ?: 0.0
             _cpuActiveTime = cpuStats?.activeTime ?: 0
@@ -541,6 +552,12 @@ public class ComputeMetricReader(
             _downtime = sysStats?.downtime?.toMillis() ?: 0
             _provisionTime = _server.launchedAt
             _bootTime = sysStats?.bootTime
+
+            if (sysStats != null) {
+                _bootTimeAbsolute = sysStats.bootTime + startTime
+            } else {
+                _bootTimeAbsolute = null
+            }
         }
 
         /**

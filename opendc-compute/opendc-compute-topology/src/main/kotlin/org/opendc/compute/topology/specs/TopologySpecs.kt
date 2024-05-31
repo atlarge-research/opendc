@@ -61,7 +61,7 @@ public data class ClusterSpec(
  */
 @Serializable
 public data class HostJSONSpec(
-    val name: String = "Host",
+    val name: String? = null,
     val cpu: CPUSpec,
     val memory: MemorySpec,
     val powerModel: PowerModelSpec = PowerModelSpec("linear", 350.0, 400.0, 200.0),

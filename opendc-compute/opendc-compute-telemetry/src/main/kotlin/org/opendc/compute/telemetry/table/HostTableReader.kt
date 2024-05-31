@@ -38,14 +38,14 @@ public interface HostTableReader {
     public val host: HostInfo
 
     /**
-     * The timestamp of the current entry of the reader.
+     * The timestamp of the current entry of the reader relative to the start of the workload.
      */
     public val timestamp: Instant
 
     /**
      * The timestamp of the current entry of the reader.
      */
-    public val absoluteTimestamp: Instant
+    public val timestampAbsolute: Instant
 
     /**
      * The number of guests that are in a terminated state.
@@ -138,7 +138,12 @@ public interface HostTableReader {
     public val downtime: Long
 
     /**
-     * The [Instant] at which the host booted.
+     * The [Instant] at which the host booted relative to the start of the workload.
      */
     public val bootTime: Instant?
+
+    /**
+     * The [Instant] at which the host booted.
+     */
+    public val bootTimeAbsolute: Instant?
 }
