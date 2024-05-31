@@ -555,8 +555,7 @@ public class ComputeMetricReader(
 
             if (sysStats != null) {
                 _bootTimeAbsolute = sysStats.bootTime + startTime
-            }
-            else {
+            } else {
                 _bootTimeAbsolute = null
             }
         }

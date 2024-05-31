@@ -131,11 +131,10 @@ private fun HostJSONSpec.toHostSpecs(
 
     val powerModel = getPowerModel(powerModel.modelType, powerModel.power, powerModel.maxPower, powerModel.idlePower)
 
-    var hostName: String;
+    var hostName: String
     if (name == null) {
         hostName = "Host-$hostId"
-    }
-    else {
+    } else {
         hostName = name
     }
 
