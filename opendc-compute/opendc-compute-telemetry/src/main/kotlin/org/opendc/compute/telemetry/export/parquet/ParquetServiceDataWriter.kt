@@ -66,9 +66,9 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
             consumer.addLong(data.timestamp.toEpochMilli())
             consumer.endField("timestamp", 0)
 
-            consumer.startField("absolute_timestamp", 1)
-            consumer.addLong(data.absoluteTimestamp.toEpochMilli())
-            consumer.endField("absolute_timestamp", 1)
+            consumer.startField("timestamp_absolute", 1)
+            consumer.addLong(data.timestampAbsolute.toEpochMilli())
+            consumer.endField("timestamp_absolute", 1)
 
             consumer.startField("hosts_up", 2)
             consumer.addInteger(data.hostsUp)
@@ -111,7 +111,7 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
                         .named("timestamp"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
-                        .named("absolute_timestamp"),
+                        .named("timestamp_absolute"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT32)
                         .named("hosts_up"),

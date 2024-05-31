@@ -77,9 +77,9 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
             consumer.addLong(data.timestamp.toEpochMilli())
             consumer.endField("timestamp", 0)
 
-            consumer.startField("absolute_timestamp", 1)
-            consumer.addLong(data.absoluteTimestamp.toEpochMilli())
-            consumer.endField("absolute_timestamp", 1)
+            consumer.startField("timestamp_absolute", 1)
+            consumer.addLong(data.timestampAbsolute.toEpochMilli())
+            consumer.endField("timestamp_absolute", 1)
 
             consumer.startField("server_id", 2)
             consumer.addBinary(Binary.fromString(data.server.id))
@@ -146,6 +146,13 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
                 consumer.endField("boot_time", 15)
             }
 
+            val bootTimeAbsolute = data.bootTimeAbsolute
+            if (bootTimeAbsolute != null) {
+                consumer.startField("boot_time_absolute", 16)
+                consumer.addLong(bootTimeAbsolute.toEpochMilli())
+                consumer.endField("boot_time_absolute", 16)
+            }
+
             consumer.endMessage()
         }
     }
@@ -162,7 +169,7 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
                         .named("timestamp"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
-                        .named("absolute_timestamp"),
+                        .named("timestamp_absolute"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.BINARY)
                         .`as`(LogicalTypeAnnotation.stringType())
@@ -204,12 +211,13 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
                         .named("downtime"),
                     Types
                         .optional(PrimitiveType.PrimitiveTypeName.INT64)
-//                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                         .named("provision_time"),
                     Types
                         .optional(PrimitiveType.PrimitiveTypeName.INT64)
-//                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                         .named("boot_time"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("boot_time_absolute"),
                 )
                 .named("server")
     }
