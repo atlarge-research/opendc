@@ -1,3 +1,5 @@
+import json
+import os
 import sys
 
 import matplotlib.pyplot as plt
@@ -21,13 +23,6 @@ ENERGY_ANALYSIS_FOLDER_NAME = 'power_draw'
 """
 Utility functions
 """
-def plot_a_figure():
-    plt.figure(figsize=(10, 10))
-    plt.plot([1, 2, 3, 4])
-    plt.savefig("testtt.png")
-    plt.show()
-
-
 def clean_analysis_file(metric):
     analysis_file_path = SIMULATION_ANALYSIS_FOLDER_NAME + "/"
     if metric == "power_draw":
@@ -38,3 +33,6 @@ def clean_analysis_file(metric):
 
     with open(analysis_file_path, "w") as f:
         f.write("")
+
+
+

@@ -100,7 +100,7 @@ class MultiModel:
 
             model = Model(
                 raw_host_data=raw_data,
-                name=model_id
+                id=model_id
             )
 
             self.models.append(model)
@@ -161,7 +161,7 @@ class MultiModel:
     """
     def plot_processed_models(self):
         for model in self.models:
-            plt.plot(model.processed_host_data, label=str(model.name))
+            plt.plot(model.processed_host_data, label=("Model " + str(model.id) + "-" + model.experiment_name))
         plt.legend()
 
 

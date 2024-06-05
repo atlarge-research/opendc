@@ -20,7 +20,7 @@ We obtained for power_draw:
 @:param window_sizes: list of window sizes to compare, default is [1, 10, 100, 1000, 10000], increasing order of magnitude
 @:param metrics: list of metrics to compare, default is ["power_draw", "carbon_emission"]
 """
-def exp1_window_sizes(window_sizes=[10, 100, 1000, 10000], metrics=["power_draw", "carbon_emission"]):
+def exp1_window_sizes(window_sizes=[1, 10, 100, 1000, 10000], metrics=["power_draw", "carbon_emission"]):
     for metric in metrics:
         utils.clean_analysis_file(metric)
         analysis_file_path = utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/"
