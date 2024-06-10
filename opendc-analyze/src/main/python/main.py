@@ -6,6 +6,9 @@ import utils
 from models.MetaModel import Metamodel
 from models.MultiModel import MultiModel
 
+# an example of program arguments is output/4-models-and-ground-truth
+# similar to $folder_name$/$subfolder_name$
+
 
 def main():
     os.chdir(utils.SIMULATION_FOLDER_PATH)
