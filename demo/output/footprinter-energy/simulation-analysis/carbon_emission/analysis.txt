@@ -1,0 +1,9 @@
+
+
+=====================
+| Exp1_window_sizes |
+=====================
+Time taken for window size 2: 0.352 seconds
+Time taken for window size 20: 0.261 seconds
+Time taken for window size 200: 0.24 seconds
+Time taken for window size 2000: 0.226 seconds

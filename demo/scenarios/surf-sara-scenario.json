@@ -1,0 +1,25 @@
+{
+    "name": "4-models-and-ground-truth",
+    "topologies": [
+        {
+            "pathToFile": "topologies/surf-sara/sara-topology.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "outputFolder": "output/surf-sara-sim",
+
+    "runs": 1
+}

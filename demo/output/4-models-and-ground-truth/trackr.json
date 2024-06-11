@@ -1,0 +1,96 @@
+[{
+    "id": 0,
+    "name": "4-models-and-ground-truth",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/4-models-and-ground-truth"
+},
+{
+    "id": 1,
+    "name": "4-models-and-ground-truth",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-linear.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/4-models-and-ground-truth"
+},
+{
+    "id": 2,
+    "name": "4-models-and-ground-truth",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-square.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/4-models-and-ground-truth"
+},
+{
+    "id": 3,
+    "name": "4-models-and-ground-truth",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/4-models-and-ground-truth"
+}]
