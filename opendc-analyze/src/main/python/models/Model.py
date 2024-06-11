@@ -15,6 +15,7 @@ class Model:
         self.experiment_name = id
         self.id = id
 
+        self.margins_of_error = []
         self.topologies = []
         self.workloads = []
         self.allocationPolicies = []

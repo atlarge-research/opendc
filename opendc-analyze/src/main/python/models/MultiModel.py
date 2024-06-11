@@ -122,7 +122,7 @@ class MultiModel:
             numeric_values = model.raw_host_data  # Select only numeric data for aggregation
 
             # Calculate the median for each window
-            model.processed_host_data = self.mean_of_chunks(numeric_values, self.window_size)
+            model.processed_host_data, model.margins_of_error = self.mean_of_chunks_and_margin_error(numeric_values, self.window_size)
 
 
 
@@ -155,13 +155,16 @@ class MultiModel:
 
 
 
-
     """
     Plot the processed models, after the windowed aggregation is computed.
     """
     def plot_processed_models(self):
         for model in self.models:
             plt.plot(model.processed_host_data, label=("Model " + str(model.id) + "-" + model.experiment_name))
+            plt.fill_between(range(len(model.processed_host_data)),
+                             model.processed_host_data - model.margins_of_error,
+                             model.processed_host_data + model.margins_of_error,
+                             alpha=0.2)
         plt.legend()
 
 
@@ -179,8 +182,13 @@ class MultiModel:
     """
     Takes the mean of the chunks, depending on the window size (i.e., chunk size).
     """
-    def mean_of_chunks(self, np_array, window_size):
-        return [np.mean(np_array[i:i + window_size]) for i in range(0, len(np_array), window_size)]
+    def mean_of_chunks_and_margin_error(self, np_array, window_size):
+        chunks = [np_array[i:i + window_size] for i in range(0, len(np_array), window_size)]
+        means = [np.mean(chunk) for chunk in chunks]
+        errors = [np.std(chunk) / np.sqrt(len(chunk)) for chunk in chunks]
+        return np.array(means), np.array(errors)
+
+
 
 
 
@@ -190,4 +198,5 @@ class MultiModel:
     usually x and y are orders of magnitude different.
     """
     def get_y_lim(self):
-        return max([max(model.processed_host_data) for model in self.models]) * 1.1  # max value from the model  + 10%
+        return max([max(model.processed_host_data + model.margins_of_error) for model in self.models]) * 1.1
+
