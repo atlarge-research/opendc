@@ -39,7 +39,6 @@ class TensorFlowTest {
     /**
      * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
      */
-//    @Test
     fun testSmokeAlexNet() =
         runSimulation {
             val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
@@ -75,7 +74,6 @@ class TensorFlowTest {
     /**
      * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
      */
-//    @Test
     fun testSmokeVGG() =
         runSimulation {
             val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
@@ -111,7 +109,6 @@ class TensorFlowTest {
     /**
      * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
      */
-//    @Test
     fun testSmokeDistribute() =
         runSimulation {
             val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
