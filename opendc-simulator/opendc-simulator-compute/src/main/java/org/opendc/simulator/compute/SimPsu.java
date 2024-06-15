@@ -55,7 +55,9 @@ public abstract class SimPsu extends SimPowerInlet {
      */
     public abstract double getTemperature();
 
-
+    /**
+     * Set the temperature of the Host in degrees Celsius based on a power equation.
+     */
     public abstract void setTemperature();
 
     /**

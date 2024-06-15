@@ -86,16 +86,13 @@ public class SimPsuFactories {
         public double getEnergyUsage() { return 0;}
 
         @Override
-        public double getThermalPower() {return 0;}
+        public double getThermalPower() { return 0;}
 
         @Override
-        public double getTemperature() {
-            return 0;
-        }
+        public double getTemperature() { return 0;}
 
         @Override
-        public void setTemperature() {
-        }
+        public void setTemperature() { }
 
         @Override
         InPort getCpuPower(int id, ProcessingUnit model) {
