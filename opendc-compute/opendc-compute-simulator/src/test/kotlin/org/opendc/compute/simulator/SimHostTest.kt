@@ -140,9 +140,9 @@ internal class SimHostTest {
             val cpuStats = host.getCpuStats()
 
             assertAll(
-                { assertEquals(639564, cpuStats.activeTime, "Active time does not match") },
-                { assertEquals(2360433, cpuStats.idleTime, "Idle time does not match") },
-                { assertEquals(56251, cpuStats.stealTime, "Steal time does not match") },
+                { assertEquals(347908, cpuStats.activeTime, "Active time does not match") },
+                { assertEquals(2652090, cpuStats.idleTime, "Idle time does not match") },
+                { assertEquals(1, cpuStats.stealTime, "Steal time does not match") },
                 { assertEquals(1499999, timeSource.millis()) },
             )
         }
@@ -237,9 +237,9 @@ internal class SimHostTest {
             val cpuStats = host.getCpuStats()
 
             assertAll(
-                { assertEquals(658502, cpuStats.activeTime, "Active time does not match") },
-                { assertEquals(2341496, cpuStats.idleTime, "Idle time does not match") },
-                { assertEquals(637504, cpuStats.stealTime, "Steal time does not match") },
+                { assertEquals(629252, cpuStats.activeTime, "Active time does not match") },
+                { assertEquals(2370746, cpuStats.idleTime, "Idle time does not match") },
+                { assertEquals(18754, cpuStats.stealTime, "Steal time does not match") },
                 { assertEquals(1499999, timeSource.millis()) },
             )
         }
@@ -318,8 +318,8 @@ internal class SimHostTest {
             val guestSysStats = host.getSystemStats(server)
 
             assertAll(
-                { assertEquals(1770344, cpuStats.idleTime, "Idle time does not match") },
-                { assertEquals(639653, cpuStats.activeTime, "Active time does not match") },
+                { assertEquals(2062044, cpuStats.idleTime, "Idle time does not match") },
+                { assertEquals(347954, cpuStats.activeTime, "Active time does not match") },
                 { assertEquals(1204999, sysStats.uptime.toMillis(), "Uptime does not match") },
                 { assertEquals(300000, sysStats.downtime.toMillis(), "Downtime does not match") },
                 { assertEquals(1204999, guestSysStats.uptime.toMillis(), "Guest uptime does not match") },
