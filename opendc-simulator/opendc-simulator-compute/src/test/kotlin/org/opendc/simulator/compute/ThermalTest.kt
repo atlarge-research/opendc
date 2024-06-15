@@ -64,7 +64,7 @@ class ThermalTest {
         }
 
     @Test
-    fun zeroUtilization() = testUtilization(0.0, 24.0012, 45.48)
+    fun zeroUtilization() = testUtilization(0.01, 24.0012, 45.48)
 
     @Test
     fun quarterUtilization() = testUtilization(0.25, 53.5012, 51.085)

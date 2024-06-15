@@ -56,6 +56,8 @@ public abstract class SimPsu extends SimPowerInlet {
     public abstract double getTemperature();
 
 
+    public abstract void setTemperature();
+
     /**
      * Return the cumulated energy usage of the machine (in J) measured at the inlet of the powers supply.
      */

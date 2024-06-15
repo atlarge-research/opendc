@@ -94,6 +94,10 @@ public class SimPsuFactories {
         }
 
         @Override
+        public void setTemperature() {
+        }
+
+        @Override
         InPort getCpuPower(int id, ProcessingUnit model) {
             final InPort port = stage.getInlet("cpu" + id);
             port.setMask(true);
@@ -127,8 +131,9 @@ public class SimPsuFactories {
 
         private double powerDraw;
         private double energyUsage;
-        private double leakageCurrent; //FIXME implement current when PSU is fully implemented
+        private double leakageCurrent; //FIXME implement leakage current when PSU is fully implemented
         private double voltage; //FIXME implement voltage when PSU is fully implemented
+        private double machineTemp;
 
         private final InHandler handler = new InHandler() {
             @Override
@@ -166,7 +171,7 @@ public class SimPsuFactories {
         public double getThermalPower() {
             // defining leakage current (A) and voltage (V) based on typical values from an intel i7
             leakageCurrent = 0.001; // not the same as total current for the CPU, based off the data sheet values for different input signals summed together
-            voltage = 1.2;
+            voltage = 1.4;
 
             double dynamicPower = powerDraw;
             double idlePower = model.computePower(0.0);
@@ -176,13 +181,17 @@ public class SimPsuFactories {
         }
 
         @Override
-        public double getTemperature() {
-            // defining the temperature based on a linear equation with power draw for an Intel i7
-            double yIntercept = 43.2;
-            double slope = 0.19;
-            double dynamicPower = powerDraw;
+        public void setTemperature() {
+            double rHS = 0.298; // thermal resistance of the heat sink
+            double ambientTemp = 22; // ambient temperature in degrees Celsius
+            double totalPowerDissipated = getThermalPower();
 
-            return yIntercept + slope * dynamicPower;
+            machineTemp = ambientTemp + (totalPowerDissipated * rHS);
+        }
+
+        @Override
+        public double getTemperature() {
+            return machineTemp;
         }
 
         @Override
@@ -214,6 +223,8 @@ public class SimPsuFactories {
             double usage = model.computePower(totalUsage / targetFreq);
             out.push((float) usage);
             powerDraw = usage;
+
+            setTemperature();
 
             return Long.MAX_VALUE;
         }
