@@ -96,7 +96,7 @@ public class SimHost(
 
     private val model: HostModel =
         HostModel(
-            machine.model.cpus.sumOf { it.frequency * it.node.coreCount },
+            machine.model.cpus.sumOf { it.frequency },
             machine.model.cpus.size,
             machine.model.cpus.sumOf { it.node.coreCount },
             machine.model.memory.sumOf { it.size },
@@ -364,7 +364,7 @@ public class SimHost(
     private var localUptime = 0L
     private var localDowntime = 0L
     private var localBootTime: Instant? = null
-    private val localCpuLimit = machine.model.cpus.sumOf { it.frequency }
+    private val localCpuLimit = machine.model.cpus.sumOf { it.frequency * it.node.coreCount }
 
     /**
      * Helper function to track the uptime of a machine.

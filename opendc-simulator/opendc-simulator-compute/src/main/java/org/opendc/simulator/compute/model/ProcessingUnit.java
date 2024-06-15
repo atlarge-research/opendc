@@ -42,7 +42,7 @@ public final class ProcessingUnit {
     public ProcessingUnit(ProcessingNode node, int id, double frequency) {
         this.node = node;
         this.id = id;
-        this.frequency = frequency;
+        this.frequency = frequency * node.getCoreCount();
     }
 
     /**
