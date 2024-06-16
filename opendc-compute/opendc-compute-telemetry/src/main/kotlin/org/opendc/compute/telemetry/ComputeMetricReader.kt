@@ -390,7 +390,6 @@ public class ComputeMetricReader(
             _energyUsage = hostSysStats.energyUsage
             _thermalPower = hostSysStats.thermalPower
             _temperature = hostSysStats.temperatureC
-            _carbonIntensity = carbonTrace.getCarbonIntensity(absoluteTimestamp)
             _carbonIntensity = carbonTrace.getCarbonIntensity(timestampAbsolute)
 
             _carbonEmission = carbonIntensity * (energyUsage / 3600000.0) // convert energy usage from J to kWh

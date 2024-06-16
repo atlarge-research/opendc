@@ -156,39 +156,38 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             consumer.addDouble(data.thermalPower)
             consumer.endField("thermal_power", 20)
 
-            consumer.startField("temperature_C", 20)
+            consumer.startField("temperature_C", 21)
             consumer.addDouble(data.temperature)
-            consumer.endField("temperature_C", 20)
+            consumer.endField("temperature_C", 21)
 
-            consumer.startField("carbon_intensity", 21)
+            consumer.startField("carbon_intensity", 22)
             consumer.addDouble(data.carbonIntensity)
-            consumer.endField("carbon_intensity", 21)
+            consumer.endField("carbon_intensity", 22)
 
-            consumer.startField("carbon_emission", 22)
+            consumer.startField("carbon_emission", 23)
             consumer.addDouble(data.carbonEmission)
-            consumer.endField("carbon_emission", 22)
+            consumer.endField("carbon_emission", 23)
 
-            consumer.startField("uptime", 23)
+            consumer.startField("uptime", 24)
             consumer.addLong(data.uptime)
-            consumer.endField("uptime", 23)
+            consumer.endField("uptime", 24)
 
-            consumer.startField("downtime", 24)
+            consumer.startField("downtime", 25)
             consumer.addLong(data.downtime)
-            consumer.endField("downtime", 24)
+            consumer.endField("downtime", 25)
 
             val bootTime = data.bootTime
             if (bootTime != null) {
-                consumer.startField("boot_time", 25)
+                consumer.startField("boot_time", 26)
                 consumer.addLong(bootTime.toEpochMilli())
-                consumer.endField("boot_time", 25)
-                consumer.endField("boot_time", 25)
+                consumer.endField("boot_time", 26)
             }
 
             val bootTimeAbsolute = data.bootTimeAbsolute
             if (bootTimeAbsolute != null) {
-                consumer.startField("boot_time_absolute", 26)
+                consumer.startField("boot_time_absolute", 27)
                 consumer.addLong(bootTimeAbsolute.toEpochMilli())
-                consumer.endField("boot_time_absolute", 26)
+                consumer.endField("boot_time_absolute", 27)
             }
 
             consumer.endMessage()
