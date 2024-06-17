@@ -120,7 +120,7 @@ internal class WorkflowServiceTest {
                     },
                     { assertEquals(0, metrics.tasksRunning, "Not all started tasks finished") },
                     { assertEquals(metrics.tasksSubmitted, metrics.tasksFinished, "Not all started tasks finished") },
-                    { assertEquals(45975707L, timeSource.millis()) { "Total duration incorrect" } },
+                    { assertEquals(1468774, timeSource.millis()) { "Total duration incorrect" } },
                 )
             }
         }

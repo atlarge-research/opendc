@@ -28,7 +28,6 @@ import me.tongfei.progressbar.ProgressBarStyle
 import org.opendc.compute.carbon.CarbonTrace
 import org.opendc.compute.carbon.getCarbonTrace
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.service.scheduler.createComputeScheduler
 import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
@@ -120,7 +119,7 @@ public fun runScenario(
             provisioner.runSteps(
                 setupComputeService(
                     serviceDomain,
-                    { createComputeScheduler(ComputeSchedulerEnum.Mem, Random(it.seeder.nextLong())) },
+                    { createComputeScheduler(scenario.allocationPolicySpec.policyType, Random(it.seeder.nextLong())) },
                 ),
                 setupHosts(serviceDomain, topology, optimize = true),
             )

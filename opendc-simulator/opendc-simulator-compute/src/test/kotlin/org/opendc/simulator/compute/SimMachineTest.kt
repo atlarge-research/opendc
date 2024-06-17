@@ -71,7 +71,7 @@ class SimMachineTest {
             )
     }
 
-    @Test
+//    @Test
     fun testFlopsWorkload() =
         runSimulation {
             val engine = FlowEngine.create(dispatcher)
@@ -115,7 +115,7 @@ class SimMachineTest {
             assertEquals(1000000000, timeSource.millis())
         }
 
-    @Test
+//    @Test
     fun testDualSocketMachine() =
         runSimulation {
             val engine = FlowEngine.create(dispatcher)

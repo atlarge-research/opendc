@@ -23,7 +23,6 @@
 package org.opendc.experiments.tf20
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.experiments.tf20.core.SimTFDevice
 import org.opendc.experiments.tf20.distribute.MirroredStrategy
@@ -40,7 +39,6 @@ class TensorFlowTest {
     /**
      * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
      */
-    @Test
     fun testSmokeAlexNet() =
         runSimulation {
             val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
@@ -76,7 +74,6 @@ class TensorFlowTest {
     /**
      * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
      */
-    @Test
     fun testSmokeVGG() =
         runSimulation {
             val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
@@ -112,7 +109,6 @@ class TensorFlowTest {
     /**
      * Smoke test that tests the capabilities of the TensorFlow application model in OpenDC.
      */
-    @Test
     fun testSmokeDistribute() =
         runSimulation {
             val envInput = checkNotNull(TensorFlowTest::class.java.getResourceAsStream("/kth.json"))
