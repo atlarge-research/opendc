@@ -1,0 +1,96 @@
+[{
+    "id": 0,
+    "name": "window-differences-sara",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/window-differences-sara"
+},
+{
+    "id": 1,
+    "name": "window-differences-sara",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-linear.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/window-differences-sara"
+},
+{
+    "id": 2,
+    "name": "window-differences-sara",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-square.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/window-differences-sara"
+},
+{
+    "id": 3,
+    "name": "window-differences-sara",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/window-differences-sara"
+}]

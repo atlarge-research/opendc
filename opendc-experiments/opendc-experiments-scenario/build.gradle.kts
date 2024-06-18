@@ -37,6 +37,7 @@ dependencies {
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcCompute.opendcComputeSimulator)
+    implementation(project(":opendc-analyze"))
 
     implementation(libs.clikt)
     implementation(libs.progressbar)

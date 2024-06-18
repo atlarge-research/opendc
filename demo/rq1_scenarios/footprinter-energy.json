@@ -1,0 +1,25 @@
+{
+    "name": "footprinter-energy",
+    "topologies": [
+        {
+            "pathToFile": "topologies/footprinter-energy/topology-cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/bitbrains-small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "outputFolder": "output",
+
+    "runs": 1
+}

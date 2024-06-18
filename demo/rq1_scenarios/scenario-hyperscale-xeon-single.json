@@ -1,0 +1,34 @@
+{
+    "name": "hyperscale-xeon",
+    "topologies": [
+        {
+            "pathToFile": "topologies/hyperscale-xeon/hyperscale-xeon-sqrt.json"
+        },
+        {
+            "pathToFile": "topologies/hyperscale-xeon/hyperscale-xeon-linear.json"
+        },
+        {
+            "pathToFile": "topologies/hyperscale-xeon/hyperscale-xeon-square.json"
+        },
+        {
+            "pathToFile": "topologies/hyperscale-xeon/hyperscale-xeon-cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+
+
+    "runs": 1
+}
