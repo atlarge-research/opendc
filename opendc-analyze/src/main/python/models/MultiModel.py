@@ -98,10 +98,16 @@ class MultiModel:
             raw_data = parquet_file.select_dtypes(include=[np.number]).groupby("timestamp")
             raw_data = raw_data[self.metric].aggregate("sum")
 
+            total_values = len(raw_data) # data is outputed every 30 seconds
+            total_time = total_values * 30 / 3600 / 24
+            print("There are " + str(total_values) + " values in the raw data, hence the data is measured for a time of"
+                                                     " " + str(total_time) + " days.")
+
             model = Model(
-                raw_host_data=raw_data,
+                raw_host_data=raw_data[:math.floor((len(raw_data) / 3))], # raw_host_data=raw_data, when we want all the data
                 id=model_id
             )
+
 
             self.models.append(model)
             model_id += 1
@@ -162,9 +168,8 @@ class MultiModel:
         for model in self.models:
             plt.plot(model.processed_host_data, label=("Model " + str(model.id) + "-" + model.experiment_name))
             plt.fill_between(range(len(model.processed_host_data)),
-                             model.processed_host_data - model.margins_of_error,
-                             model.processed_host_data + model.margins_of_error,
-                             alpha=0.2)
+                             model.processed_host_data - model.margins_of_error * 10,
+                             model.processed_host_data + model.margins_of_error * 10)
         plt.legend()
 
 

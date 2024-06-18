@@ -1,0 +1,34 @@
+{
+    "name": "window-differences-bitbrains-30-sec",
+    "topologies": [
+        {
+            "pathToFile": "topologies/topology-cubic.json"
+        },
+        {
+            "pathToFile": "topologies/topology-linear.json"
+        },
+        {
+            "pathToFile": "topologies/topology-square.json"
+        },
+        {
+            "pathToFile": "topologies/topology-cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/bitbrains-small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+
+
+    "runs": 1
+}
