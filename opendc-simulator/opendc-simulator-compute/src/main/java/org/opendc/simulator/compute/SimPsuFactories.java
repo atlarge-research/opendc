@@ -77,22 +77,35 @@ public class SimPsuFactories {
         }
 
         @Override
-        public double getPowerDemand() { return 0;}
+        public double getPowerDemand() {
+            return 0;
+        }
 
         @Override
-        public double getPowerDraw() { return 0;}
+        public double getPowerDraw() {
+            return 0;
+        }
 
         @Override
-        public double getEnergyUsage() { return 0;}
+        public double getEnergyUsage() {
+            return 0;
+        }
 
         @Override
-        public double getThermalPower() { return 0;}
+        public double getThermalPower() {
+            return 0;
+        }
 
         @Override
-        public double getTemperature() { return 0;}
+        public double getTemperature() {
+            return 0;
+        }
 
         @Override
-        public void setTemperature() { }
+        public void setTemperature() {}
+
+        @Override
+        public void setStaticPower() {}
 
         @Override
         InPort getCpuPower(int id, ProcessingUnit model) {
@@ -128,8 +141,9 @@ public class SimPsuFactories {
 
         private double powerDraw;
         private double energyUsage;
-        private double leakageCurrent; //FIXME implement leakage current when PSU is fully implemented
-        private double voltage; //FIXME implement voltage when PSU is fully implemented
+        private double voltage = 1.8; // FIXME implement voltage when PSU is fully implemented
+        private double current; // FIXME implement current when PSU is fully implemented
+        private double staticPower;
         private double machineTemp;
 
         private final InHandler handler = new InHandler() {
@@ -165,14 +179,27 @@ public class SimPsuFactories {
         }
 
         @Override
-        public double getThermalPower() {
-            // defining leakage current (A) and voltage (V) based on typical values from an intel i7
-            leakageCurrent = 0.001; // not the same as total current for the CPU, based off the data sheet values for different input signals summed together
-            voltage = 1.4;
+        public void setStaticPower() {
+            // Using linear interpolation to calculate the leakage current based on the power draw
 
+            double maxLeakageCurrent = 0.0041; // maximum leakage current for an intel Xeon Platinum 8160 CPU
+            double minLeakageCurrent = 0.00035; // minimum leakage current for an intel Xeon Platinum 8160 CPU
+            double maxPowerDraw = model.computePower(1.0);
+            double minPowerDraw = model.computePower(0.0);
+
+            double leakageCurrent = ((maxLeakageCurrent - minLeakageCurrent)
+                            / (maxPowerDraw - minPowerDraw)
+                            * (powerDraw - minPowerDraw))
+                    + minLeakageCurrent;
+
+            staticPower = leakageCurrent * voltage;
+        }
+
+        @Override
+        public double getThermalPower() {
             double dynamicPower = powerDraw;
             double idlePower = model.computePower(0.0);
-            double staticPower = leakageCurrent * voltage;
+            double staticPower = this.staticPower;
 
             return dynamicPower + idlePower + staticPower;
         }
@@ -222,6 +249,7 @@ public class SimPsuFactories {
             powerDraw = usage;
 
             setTemperature();
+            setStaticPower();
 
             return Long.MAX_VALUE;
         }

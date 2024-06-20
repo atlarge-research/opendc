@@ -61,6 +61,11 @@ public abstract class SimPsu extends SimPowerInlet {
     public abstract void setTemperature();
 
     /**
+     * Set the leakage current of the machine (in A).
+     */
+    public abstract void setStaticPower();
+
+    /**
      * Return the cumulated energy usage of the machine (in J) measured at the inlet of the powers supply.
      */
     public abstract double getEnergyUsage();
