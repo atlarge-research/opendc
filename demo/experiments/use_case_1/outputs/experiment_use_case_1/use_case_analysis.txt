@@ -1,0 +1,8 @@
+========================================
+Simulation made at 2024-06-23 23:37:41
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 8641
+Cumulated energy usage for model 0: 108.75127823530401 MWh
+Cumulated energy usage for model 1: 108.75001241155418 MWh
+Cumulated energy usage for model 2: 108.75000000000057 MWh
+Cumulated energy usage for model 3: 108.75000000252092 MWh
