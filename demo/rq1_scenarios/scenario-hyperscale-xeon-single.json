@@ -2,16 +2,16 @@
     "name": "hyperscale-xeon",
     "topologies": [
         {
-            "pathToFile": "topologies/hyperscale-xeon/hyperscale-xeon-sqrt.json"
+            "pathToFile": "rq1_topologies/hyperscale-xeon-single/hyperscale-xeon-sqrt.json"
         },
         {
-            "pathToFile": "topologies/hyperscale-xeon/hyperscale-xeon-linear.json"
+            "pathToFile": "rq1_topologies/hyperscale-xeon-single/hyperscale-xeon-linear.json"
         },
         {
-            "pathToFile": "topologies/hyperscale-xeon/hyperscale-xeon-square.json"
+            "pathToFile": "rq1_topologies/hyperscale-xeon-single/hyperscale-xeon-square.json"
         },
         {
-            "pathToFile": "topologies/hyperscale-xeon/hyperscale-xeon-cubic.json"
+            "pathToFile": "rq1_topologies/hyperscale-xeon-single/hyperscale-xeon-cubic.json"
         }
     ],
     "workloads": [
