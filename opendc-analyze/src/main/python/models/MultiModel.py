@@ -91,20 +91,20 @@ class MultiModel:
     def init_models(self):
         folder_prefix = "./raw-output"
         model_id = 0
+        export_rate = 300
 
         for simulation_folder in os.listdir(folder_prefix):
             parquet_file = pq.read_table(f"{folder_prefix}/{simulation_folder}/seed=0/host.parquet").to_pandas()
             raw_data = parquet_file.select_dtypes(include=[np.number]).groupby("timestamp")
             raw_data = raw_data[self.metric].aggregate("sum")
 
-            total_values = len(raw_data)  # data is outputed every 30 seconds
-            total_time = total_values * 30 / 3600 / 24
+            total_values = len(raw_data)  # data is outputed every 300 seconds
+            total_time = total_values * export_rate / 3600 / 24
             print("There are " + str(total_values) + " values in the raw data, hence the data is measured for a time of"
                                                      " " + str(total_time) + " days.")
 
             model = Model(
-                raw_host_data=raw_data[:math.floor((len(raw_data) / 3))],
-                # raw_host_data=raw_data, when we want all the data
+                raw_host_data=raw_data,
                 id=model_id
             )
 
@@ -197,3 +197,20 @@ class MultiModel:
 
     def get_y_lim(self):
         return max([max(model.processed_host_data + model.margins_of_error) for model in self.models]) * 1.1
+
+    """
+    Computes the total of energy consumption / co2 emissions (depending on the input metric)
+    for each model.
+
+    !Unit of measurement [Wh] or [gCO2]!
+
+    @return: a list of cumulated energies / emissions for each model (array)
+    """
+    def get_cumulated(self):
+        cumulated_energies = []
+        for (i, model) in enumerate(self.models):
+            cumulated_energy = model.processed_host_data.sum()
+            cumulated_energies.append(cumulated_energy)
+
+        return cumulated_energies
+
