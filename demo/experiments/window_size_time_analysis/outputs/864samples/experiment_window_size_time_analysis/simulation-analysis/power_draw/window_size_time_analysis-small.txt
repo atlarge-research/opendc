@@ -1,0 +1,8 @@
+
+
+We are running window_size_time_analysis.experiment_small() for power_draw
+Sample count in raw host data: 865
+Time taken for window size 1: 0.481 seconds
+Time taken for window size 10: 0.277 seconds
+Time taken for window size 100: 0.255 seconds
+Time taken for window size 1000: 0.274 seconds

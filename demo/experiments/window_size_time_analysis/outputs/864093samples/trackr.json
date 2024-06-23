@@ -1,0 +1,96 @@
+[{
+    "id": 0,
+    "name": "small-scale",
+    "topologies": [
+        {
+            "pathToFile": "rq1_topologies/small-scale/small-scale-sqrt.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/bitbrains-small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/small-scale"
+},
+{
+    "id": 1,
+    "name": "small-scale",
+    "topologies": [
+        {
+            "pathToFile": "rq1_topologies/small-scale/small-scale-linear.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/bitbrains-small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/small-scale"
+},
+{
+    "id": 2,
+    "name": "small-scale",
+    "topologies": [
+        {
+            "pathToFile": "rq1_topologies/small-scale/small-scale-square.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/bitbrains-small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/small-scale"
+},
+{
+    "id": 3,
+    "name": "small-scale",
+    "topologies": [
+        {
+            "pathToFile": "rq1_topologies/small-scale/small-scale-cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/bitbrains-small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/small-scale"
+}]
