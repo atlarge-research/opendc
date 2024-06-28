@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import pyarrow.parquet as pq
+import time
 
 import utils
 from .Model import Model
@@ -23,7 +24,7 @@ technique is similar to a convolution / moving average, which takes chunks of da
 
 
 class MultiModel:
-    def __init__(self, input_metric, window_size, aggregation_function="median"):
+    def __init__(self, input_metric, window_size, x_label="Time [days]", y_label="Metric", aggregation_function="median"):
         # the following metrics are set in the latter functions
         self.measure_unit = None
         self.metric = None
@@ -35,6 +36,9 @@ class MultiModel:
         self.aggregation_function = "median"
         self.workload_time = 0
         self.max_model_len = 0
+
+        self.x_label = x_label
+        self.y_label = y_label
 
         # run init functions
         self.check_and_set_metric(input_metric)
@@ -145,17 +149,15 @@ class MultiModel:
     """
 
     def setup_plot(self):
-        plt.figure(figsize=(30, 10))
+        plt.figure(figsize=(10, 10))
         plt.title(self.metric)
 
         # position the xlabel in the right of the graph
-        plt.xlabel(("Prediction over " + str(self.workload_time) + " days"), ha="right")
-        plt.ylim(0, self.get_y_lim())
+        plt.xlabel(self.x_label)
+        plt.ylim(self.get_y_lim())
         plt.ylabel(self.metric + " " + self.measure_unit)
         # Add grid for better visibility
 
-        # remove all x ticks
-        plt.xticks([])
         plt.grid()
 
     """
@@ -165,9 +167,9 @@ class MultiModel:
     def plot_processed_models(self):
         for model in self.models:
             plt.plot(model.processed_host_data, label=("Model " + str(model.id) + "-" + model.experiment_name))
-            plt.fill_between(range(len(model.processed_host_data)),
-                             model.processed_host_data - model.margins_of_error * 10,
-                             model.processed_host_data + model.margins_of_error * 10)
+            # plt.fill_between(range(len(model.processed_host_data)),
+            #                  model.processed_host_data - model.margins_of_error * 10,
+            #                  model.processed_host_data + model.margins_of_error * 10)
         plt.legend()
 
     """
@@ -190,13 +192,14 @@ class MultiModel:
         return np.array(means), np.array(errors)
 
     """
-    Dynamically sets the y limit for the plot, which is 10% higher than the maximum value in the computed data.
-    This is because, while some metrics may have a maximum value of x, other metrics may have a maximum value of y, and
-    usually x and y are orders of magnitude different.
+    Dynamically sets the y limit for the plot, which is 10% higher than the maximum value in the computed data, and 10%
+    smaller than the minimum value in the computed data. This is done to ensure that the plot is not too zoomed in or out.
     """
 
     def get_y_lim(self):
-        return max([max(model.processed_host_data + model.margins_of_error) for model in self.models]) * 1.1
+        y_min = min([min(model.processed_host_data - model.margins_of_error) for model in self.models])
+        y_max = max([max(model.processed_host_data + model.margins_of_error) for model in self.models])
+        return [y_min * 0.95, y_max * 1.05]
 
     """
     Computes the total of energy consumption / co2 emissions (depending on the input metric)
@@ -213,4 +216,25 @@ class MultiModel:
             cumulated_energies.append(cumulated_energy)
 
         return cumulated_energies
+
+
+    """
+    Computes the average CPU utilization for each model.
+    """
+    def get_average_cpu_utilization(self):
+        average_cpu_utilizations = []
+        for model in self.models:
+            average_cpu_utilization = model.processed_host_data.mean()
+            average_cpu_utilizations.append(average_cpu_utilization)
+
+        return average_cpu_utilizations
+
+
+    def output_stats(self):
+        analysis_file_path = utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + self.metric + "/analysis.txt"
+        with open(analysis_file_path, "a") as f:
+            f.write("\n\n========================================\n")
+            f.write("Simulation made at " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+            f.write("We are running MultiModel for " + self.metric + ", with window size " + str(self.window_size) + "\n")
+            f.write("Sample count in raw host data: " + str(self.max_model_len) + "\n")
 
