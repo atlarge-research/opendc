@@ -16,7 +16,7 @@
     ],
     "workloads": [
         {
-            "pathToFile": "experiments/use_case_1/inputs/trace_bitbrains_small",
+            "pathToFile": "experiments/use_case_1/inputs/surf-sara",
             "type": "ComputeWorkload"
         }
     ],

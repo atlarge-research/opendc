@@ -1,0 +1,96 @@
+[{
+    "id": 0,
+    "name": "surf-sara-sim",
+    "topologies": [
+        {
+            "pathToFile": "rq1_topologies/surf-sara/sara-topology-linear.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/surf-sara-sim"
+},
+{
+    "id": 1,
+    "name": "surf-sara-sim",
+    "topologies": [
+        {
+            "pathToFile": "rq1_topologies/surf-sara/sara-topology-cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/surf-sara-sim"
+},
+{
+    "id": 2,
+    "name": "surf-sara-sim",
+    "topologies": [
+        {
+            "pathToFile": "rq1_topologies/surf-sara/sara-topology-square.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/surf-sara-sim"
+},
+{
+    "id": 3,
+    "name": "surf-sara-sim",
+    "topologies": [
+        {
+            "pathToFile": "rq1_topologies/surf-sara/sara-topology-sqrt.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/surf-sara-sim"
+}]

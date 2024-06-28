@@ -2,7 +2,7 @@
     "clusters": [
         {
             "name": "DataCenterCluster",
-            "count": 100,
+            "count": 20,
             "hosts": [
                 {
                     "name": "HighPerformanceHost",
@@ -11,7 +11,7 @@
                         "arch": "x86-64",
                         "coreCount": 128,
                         "coreSpeed": 2100.0,
-                        "count": 200
+                        "count": 50
                     },
                     "memory": {
                         "vendor": "Generic",
@@ -21,10 +21,10 @@
                     "powerModel": {
                         "modelType": "cubic",
                         "power": 400.0,
-                        "maxPower": 600.0,
-                        "idlePower": 150.0
+                        "maxPower": 400.0,
+                        "idlePower": 250.0
                     },
-                    "count": 50
+                    "count": 5
                 }
             ]
         }

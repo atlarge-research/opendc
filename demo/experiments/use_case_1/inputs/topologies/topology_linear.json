@@ -2,22 +2,22 @@
     "clusters": [
         {
             "name": "DataCenterCluster",
-            "count": 100,
+            "count": 16,
             "hosts": [
                 {
-                    "count": 50,
+                    "count": 32,
                     "name": "HighPerformanceHost",
                     "cpu": {
-                        "vendor": "Intel",
+                        "vendor": "IntelXeon",
                         "arch": "x86-64",
-                        "coreCount": 200,
+                        "coreCount": 20,
                         "coreSpeed": 2100.0,
-                        "count": 200
+                        "count": 1
                     },
                     "memory": {
                         "vendor": "Generic",
                         "arch": "DDR4",
-                        "memorySize": 1099511627776
+                        "memorySize": 1000000000000
                     },
                     "powerModel": {
                         "modelType": "linear",

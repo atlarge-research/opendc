@@ -9,6 +9,8 @@ import time
 from models.MultiModel import MultiModel
 
 """
+Experiment goal: determine the difference in energy usage between different simulation models.
+
 This experiment is part of RQ1 and runs the first use case. We hypothetically provide a large-scale datacenter, with
 a scenario in which its scaling and maintenance team wants to understand the behaviour of the infrastructure.
 
@@ -28,23 +30,27 @@ def rq1_case_1():
         window_size=_window_size
     )
     number_of_samples = len(multimodel.models[0].raw_host_data)
-    cumulated_energies = np.array(multimodel.get_cumulated()) / 1000000  # convert to MWh
+    cumulated_energies = np.array(multimodel.get_cumulated()) / 1000  # convert to MWh
+    # round all the values in cumulated_energies to 3 decimal places
+    cumulated_energies = np.round(cumulated_energies, 3)
 
     plot_horizontal_bar_chart(cumulated_energies, number_of_models=1)
     plot_horizontal_bar_chart(cumulated_energies, number_of_models=4)
-    output_simulation_details(_input_metric, _window_size, number_of_samples, cumulated_energies)
+    output_simulation_details(multimodel, _input_metric, _window_size, number_of_samples, cumulated_energies)
 
 
-def output_simulation_details(input_metric, window_size, number_of_samples, cumulated_energies):
+def output_simulation_details(multimodel, input_metric, window_size, number_of_samples, cumulated_energies):
     with open('use_case_analysis.txt', 'a') as f:
         # Write to the file here
-        f.write("========================================\n")
+        average_cpu_utilizations = multimodel.get_average_cpu_utilization()
+        f.write("\n\n========================================\n")
         f.write("Simulation made at " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
         f.write(
             "We are running use_cases.rq1_case_1() for " + input_metric + ", on a multimodel with window size " + str(
                 window_size) + "\n")
         f.write("Sample count in raw host data: " + str(number_of_samples) + "\n")
         for (i, cumulated_energy) in enumerate(cumulated_energies):
+            f.write("Average CPU utilization for model " + str(i) + ": " + str(average_cpu_utilizations[i]) + "\n")
             f.write("Cumulated energy usage for model " + str(i) + ": " + str(cumulated_energy) + " MWh\n")
 
 

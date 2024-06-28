@@ -1,0 +1,96 @@
+[{
+    "id": 0,
+    "name": "hyperscale-xeon",
+    "topologies": [
+        {
+            "pathToFile": "rq1_topologies/hyperscale-xeon-single/hyperscale-xeon-sqrt.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/hyperscale-xeon"
+},
+{
+    "id": 1,
+    "name": "hyperscale-xeon",
+    "topologies": [
+        {
+            "pathToFile": "rq1_topologies/hyperscale-xeon-single/hyperscale-xeon-linear.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/hyperscale-xeon"
+},
+{
+    "id": 2,
+    "name": "hyperscale-xeon",
+    "topologies": [
+        {
+            "pathToFile": "rq1_topologies/hyperscale-xeon-single/hyperscale-xeon-square.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/hyperscale-xeon"
+},
+{
+    "id": 3,
+    "name": "hyperscale-xeon",
+    "topologies": [
+        {
+            "pathToFile": "rq1_topologies/hyperscale-xeon-single/hyperscale-xeon-cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "outputFolder": "output/hyperscale-xeon"
+}]

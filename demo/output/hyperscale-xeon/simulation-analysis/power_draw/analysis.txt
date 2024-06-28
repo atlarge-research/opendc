@@ -1,0 +1,9 @@
+
+
+=====================
+| Exp1_window_sizes |
+=====================
+Time taken for window size 1: 8.696 seconds
+Time taken for window size 10: 7.428 seconds
+Time taken for window size 100: 6.977 seconds
+Time taken for window size 1000: 7.005 seconds
