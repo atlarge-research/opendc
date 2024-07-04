@@ -57,7 +57,7 @@ public fun setupComputeService(
 public fun registerComputeMonitor(
     serviceDomain: String,
     monitor: ComputeMonitor,
-    exportInterval: Duration = Duration.ofMinutes(5), // sets the export granularity
+    exportInterval: Duration = Duration.ofSeconds(1), // sets the export granularity
     startTime: Duration = Duration.ofMillis(0),
     carbonTrace: CarbonTrace = CarbonTrace(null),
 ): ProvisioningStep {

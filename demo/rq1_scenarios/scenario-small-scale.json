@@ -2,16 +2,16 @@
     "name": "small-scale",
     "topologies": [
         {
-            "pathToFile": "topologies/small-scale/small-scale-sqrt.json"
+            "pathToFile": "rq1_topologies/small-scale/small-scale-sqrt.json"
         },
         {
-            "pathToFile": "topologies/small-scale/small-scale-linear.json"
+            "pathToFile": "rq1_topologies/small-scale/small-scale-linear.json"
         },
         {
-            "pathToFile": "topologies/small-scale/small-scale-square.json"
+            "pathToFile": "rq1_topologies/small-scale/small-scale-square.json"
         },
         {
-            "pathToFile": "topologies/small-scale/small-scale-cubic.json"
+            "pathToFile": "rq1_topologies/small-scale/small-scale-cubic.json"
         }
     ],
     "workloads": [

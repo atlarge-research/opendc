@@ -1,0 +1,6 @@
+We are running window_size_time_analysis.experiment_small() for power_draw
+Sample count: 672
+Time taken for window size 1: 0.647 seconds
+Time taken for window size 10: 0.495 seconds
+Time taken for window size 100: 0.468 seconds
+Time taken for window size 1000: 0.433 seconds

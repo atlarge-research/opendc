@@ -1,0 +1,96 @@
+[{
+    "id": 0,
+    "name": "experiment_window_size_time_analysis",
+    "topologies": [
+        {
+            "pathToFile": "experiments/window_size_time_analysis/inputs/topologies/topology_sqrt.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/window_size_time_analysis/inputs/trace_bitbrains_small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/window_size_time_analysis/inputs/carbon_intensity.parquet"
+    ],
+    "outputFolder": "experiments/window_size_time_analysis/outputs/86410samples/experiment_window_size_time_analysis"
+},
+{
+    "id": 1,
+    "name": "experiment_window_size_time_analysis",
+    "topologies": [
+        {
+            "pathToFile": "experiments/window_size_time_analysis/inputs/topologies/topology_linear.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/window_size_time_analysis/inputs/trace_bitbrains_small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/window_size_time_analysis/inputs/carbon_intensity.parquet"
+    ],
+    "outputFolder": "experiments/window_size_time_analysis/outputs/86410samples/experiment_window_size_time_analysis"
+},
+{
+    "id": 2,
+    "name": "experiment_window_size_time_analysis",
+    "topologies": [
+        {
+            "pathToFile": "experiments/window_size_time_analysis/inputs/topologies/topology_square.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/window_size_time_analysis/inputs/trace_bitbrains_small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/window_size_time_analysis/inputs/carbon_intensity.parquet"
+    ],
+    "outputFolder": "experiments/window_size_time_analysis/outputs/86410samples/experiment_window_size_time_analysis"
+},
+{
+    "id": 3,
+    "name": "experiment_window_size_time_analysis",
+    "topologies": [
+        {
+            "pathToFile": "experiments/window_size_time_analysis/inputs/topologies/topology_cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/window_size_time_analysis/inputs/trace_bitbrains_small",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/window_size_time_analysis/inputs/carbon_intensity.parquet"
+    ],
+    "outputFolder": "experiments/window_size_time_analysis/outputs/86410samples/experiment_window_size_time_analysis"
+}]
