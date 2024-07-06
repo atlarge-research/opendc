@@ -24,7 +24,7 @@ We obtained for power_draw:
 @:param window_sizes: list of window sizes to compare, default is [1, 10, 100, 1000, 10000], increasing order of magnitude
 @:param metrics: list of metrics to compare, default is ["power_draw", "carbon_emission"]
 """
-
+import matplotlib.ticker as ticker
 
 def experiment_0(window_sizes=[1, 10, 100, 1000]):
     metric = "power_draw"
@@ -52,7 +52,7 @@ In this experiment, we are plotting multiple window sizes in separate plots, and
 """
 
 
-def experiment_1(window_sizes=[1, 10, 100, 1000], metric="power_draw", max_samples=2500):
+def experiment_1(window_sizes=[1, 10, 100, 1000], metric="power_draw", max_samples=5000):
     analysis_file_path = utils.SIMULATION_ANALYSIS_FOLDER_NAME
     models_data = []
 
@@ -66,15 +66,15 @@ def experiment_1(window_sizes=[1, 10, 100, 1000], metric="power_draw", max_sampl
         data_to_plot = [x / 1000 for x in data_to_plot][:max_samples]
         models_data.append(data_to_plot)
 
-    # for i, model_data in enumerate(models_data):
-    #     plot_individual_model(
-    #         export_path=analysis_file_path + "/window=" + str(window_sizes[i]) + ".pdf",
-    #         model_data=model_data,
-    #         plot_title="Window size: " + str(window_sizes[i]),
-    #     )
+    for i, model_data in enumerate(models_data):
+        plot_individual_model(
+            export_path=analysis_file_path + "/window=" + str(window_sizes[i]) + ".svg",
+            model_data=model_data,
+            plot_title="Window size: " + str(window_sizes[i]),
+        )
 
     plot_all_models(
-        export_path=analysis_file_path + "/all_models_by_window.pdf",
+        export_path=analysis_file_path + "/all_models_by_window.svg",
         models_data=models_data,
         plot_title="Power draw graph for different window sizes",
         window_sizes=window_sizes,
@@ -85,23 +85,28 @@ def plot_individual_model(export_path, model_data, plot_title):
     plt.figure(figsize=(10, 10))
     plt.plot(model_data)
     plt.title(plot_title, fontsize=32)
+
+    # Set the tick format for the x-axis
+    ax = plt.gca()
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{int(x):,}'))
+
     plt.xticks(fontsize=32, ticks=[2000, 4000])
     plt.yticks(fontsize=32, ticks=[135, 140, 145])
-    plt.ylim([133, 147])
+    plt.ylim([131.5, 146])
 
-    plt.xlabel("Sample count", fontsize=32)
-    plt.ylabel("Energy usage [kW]", fontsize=32)
+    # plt.xlabel("Sample count", fontsize=32)
+    # plt.ylabel("Energy usage [kW]", fontsize=32)
 
     # make the space under 135 gray
-    plt.fill_between([0, 5000], 133, 135, color='lightgray', alpha=0.2)
+    plt.fill_between([0, 5000], 131, 133, color='lightgray', alpha=0.2)
 
     # write a "~" on the gray area from above
-    plt.text(-750, 133.5, "~", fontsize=32, color='black')
-    plt.text(-750, 132.33, "0", fontsize=32, color='black')
+    plt.text(-750, 132, "~", fontsize=32, color='black')
+    plt.text(-750, 130.75, "0", fontsize=32, color='black')
 
     plt.tight_layout()
     plt.savefig(export_path, bbox_inches='tight')
-    plt.close()  # Close the figure to free memory
+    plt.close()
 
 
 def plot_all_models(export_path, models_data, plot_title, window_sizes, with_zoom=True):
@@ -122,14 +127,14 @@ def plot_all_models(export_path, models_data, plot_title, window_sizes, with_zoo
     if with_zoom:
         # Draw a square, fill transparently, borders pink
         coordinates_x = [1950, 1950, 2050, 2050, 1950]
-        coordinates_y = [139, 142, 142, 139, 139]
+        coordinates_y = [136, 139, 139, 136, 136]  # Shifted down by 3 units
         ax.plot(coordinates_x, coordinates_y, color='#FFD700', linewidth=2)
-        ax.fill_betweenx([139, 142], 1950, 2050, color='#FFD700', alpha=0)
+        ax.fill_betweenx([136, 139], 1950, 2050, color='#FFD700', alpha=0)
 
         # Create an inset plot
         inset_ax = fig.add_axes([0.6, 0.15, 0.35, 0.30])  # [left, bottom, width, height]
         inset_ax.set_xlim(1950, 2050)
-        inset_ax.set_ylim(139, 142)
+        inset_ax.set_ylim(136, 139)  # Adjusted to match the shifted square
         inset_ax.set_title('Zoomed In', fontsize=24)
         inset_ax.set_xticks([])
         inset_ax.set_yticks([])
@@ -140,7 +145,7 @@ def plot_all_models(export_path, models_data, plot_title, window_sizes, with_zoo
 
     for i, model_data in enumerate(models_data):
         ax.plot(
-            model_data,
+            model_data[:2500],
             label="window of " + str(window_sizes[i]) + (" sample" if window_sizes[i] == 1 else " samples"),
             color=colors[i],
             marker=markers[i],
