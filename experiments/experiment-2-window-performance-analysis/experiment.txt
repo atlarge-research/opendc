@@ -1,0 +1,6 @@
+!Coming soon!
+
+In this experiment, we analyze the time needed to compute the Multi-Model, using datasets of various lengths.
+The times will vary between seconds, minutes, and possibly hours.
+
+Machine: Macbook M2 pro, 2023, 16GB RAM, 512GB SSD, cute stickers.

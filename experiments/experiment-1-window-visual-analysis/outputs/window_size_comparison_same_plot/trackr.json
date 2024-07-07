@@ -1,0 +1,24 @@
+[{
+    "id": 0,
+    "name": "window_size_comparison_same_plot",
+    "topologies": [
+        {
+            "pathToFile": "experiments/use_case_1/inputs/topologies/topology_sqrt.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/use_case_1/inputs/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/use_case_1/inputs/carbon_intensity.parquet"
+    ],
+    "outputFolder": "experiments/#1-more-windows-same-plot/outputs//window_size_comparison_same_plot"
+}]

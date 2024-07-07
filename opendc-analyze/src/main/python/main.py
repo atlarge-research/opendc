@@ -27,7 +27,6 @@ User input data
 def main():
     # output/surf-sara-sim
     os.chdir(utils.SIMULATION_FOLDER_PATH)
-    window_size_time_analysis.experiment_1()
 
 
 main()

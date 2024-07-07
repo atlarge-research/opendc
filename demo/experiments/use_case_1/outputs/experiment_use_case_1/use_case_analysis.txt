@@ -1,0 +1,238 @@
+========================================
+Simulation made at 2024-06-23 23:37:41
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 8641
+Cumulated energy usage for model 0: 108.75127823530401 MWh
+Cumulated energy usage for model 1: 108.75001241155418 MWh
+Cumulated energy usage for model 2: 108.75000000000057 MWh
+Cumulated energy usage for model 3: 108.75000000252092 MWh
+========================================
+Simulation made at 2024-06-24 12:34:16
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 8641
+Average CPU utilization for model 0: 1250014.7087016571
+Cumulated energy usage for model 0: 108.75127823530401 MWh
+Average CPU utilization for model 1: 1250000.1428546056
+Cumulated energy usage for model 1: 108.75001241155418 MWh
+Average CPU utilization for model 2: 1250000.0000000068
+Cumulated energy usage for model 2: 108.75000000000057 MWh
+Average CPU utilization for model 3: 1250000.0000290112
+Cumulated energy usage for model 3: 108.75000000252092 MWh
+
+
+========================================
+Simulation made at 2024-06-24 12:37:46
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 8641
+Average CPU utilization for model 0: 1250014.6923598163
+Cumulated energy usage for model 0: 108.75127823530401 MWh
+Average CPU utilization for model 1: 1250000.1426615424
+Cumulated energy usage for model 1: 108.75001241155418 MWh
+Average CPU utilization for model 2: 1250000.0000000065
+Cumulated energy usage for model 2: 108.75000000000057 MWh
+Average CPU utilization for model 3: 1250w000.000028976
+Cumulated energy usage for model 3: 108.75000000252092 MWh
+
+
+========================================
+Simulation made at 2024-06-25 06:30:29
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Average CPU utilization for model 0: 1250006.9909448442
+Cumulated energy usage for model 0: 26.25014680984173 MWh
+Average CPU utilization for model 1: 1250000.00437559
+Cumulated energy usage for model 1: 26.250000091887394 MWh
+Average CPU utilization for model 2: 1250000.0
+Cumulated energy usage for model 2: 26.25 MWh
+Average CPU utilization for model 3: 1250000.0000000033
+Cumulated energy usage for model 3: 26.250000000000068 MWh
+
+
+========================================
+Simulation made at 2024-06-25 06:33:57
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Average CPU utilization for model 0: 125011.05360186138
+Cumulated energy usage for model 0: 2.625232125639089 MWh
+Average CPU utilization for model 1: 125000.01093897651
+Cumulated energy usage for model 1: 2.625000229718507 MWh
+Average CPU utilization for model 2: 125000.0
+Cumulated energy usage for model 2: 2.625 MWh
+Average CPU utilization for model 3: 125000.00000002036
+Cumulated energy usage for model 3: 2.6250000000004277 MWh
+
+
+========================================
+Simulation made at 2024-06-25 06:35:19
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Average CPU utilization for model 0: 125011.05360186138
+Cumulated energy usage for model 0: 2625.232 MWh
+Average CPU utilization for model 1: 125000.01093897651
+Cumulated energy usage for model 1: 2625.0 MWh
+Average CPU utilization for model 2: 125000.0
+Cumulated energy usage for model 2: 2625.0 MWh
+Average CPU utilization for model 3: 125000.00000002036
+Cumulated energy usage for model 3: 2625.0 MWh
+
+
+========================================
+Simulation made at 2024-06-25 22:17:51
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Average CPU utilization for model 0: 125393.75756178373
+Cumulated energy usage for model 0: 2633.269 MWh
+Average CPU utilization for model 1: 125011.07822162083
+Cumulated energy usage for model 1: 2625.233 MWh
+Average CPU utilization for model 2: 125000.00000928718
+Cumulated energy usage for model 2: 2625.0 MWh
+Average CPU utilization for model 3: 125000.00993125222
+Cumulated energy usage for model 3: 2625.0 MWh
+
+
+========================================
+Simulation made at 2024-06-25 22:18:34
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Average CPU utilization for model 0: 125393.75756178373
+Cumulated energy usage for model 0: 2633.269 MWh
+Average CPU utilization for model 1: 125011.07822162083
+Cumulated energy usage for model 1: 2625.233 MWh
+Average CPU utilization for model 2: 125000.00000928718
+Cumulated energy usage for model 2: 2625.0 MWh
+Average CPU utilization for model 3: 125000.00993125222
+Cumulated energy usage for model 3: 2625.0 MWh
+
+
+========================================
+Simulation made at 2024-06-25 22:39:33
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Average CPU utilization for model 0: 125393.75756178373
+Cumulated energy usage for model 0: 2633.269 MWh
+Average CPU utilization for model 1: 125011.07822162083
+Cumulated energy usage for model 1: 2625.233 MWh
+Average CPU utilization for model 2: 125000.00000928718
+Cumulated energy usage for model 2: 2625.0 MWh
+Average CPU utilization for model 3: 125000.00993125222
+Cumulated energy usage for model 3: 2625.0 MWh
+
+
+========================================
+Simulation made at 2024-06-25 22:40:48
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Average CPU utilization for model 0: 125011.05360186138
+Cumulated energy usage for model 0: 2625.232 MWh
+Average CPU utilization for model 1: 125000.01093897651
+Cumulated energy usage for model 1: 2625.0 MWh
+Average CPU utilization for model 2: 125000.0
+Cumulated energy usage for model 2: 2625.0 MWh
+Average CPU utilization for model 3: 125000.00000002036
+Cumulated energy usage for model 3: 2625.0 MWh
+
+
+========================================
+Simulation made at 2024-06-25 22:41:42
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 8641
+Average CPU utilization for model 0: 125023.23076162842
+Cumulated energy usage for model 0: 10877.021 MWh
+Average CPU utilization for model 1: 125000.35665383318
+Cumulated energy usage for model 1: 10875.031 MWh
+Average CPU utilization for model 2: 125000.00000010566
+Cumulated energy usage for model 2: 10875.0 MWh
+Average CPU utilization for model 3: 125000.00018110055
+Cumulated energy usage for model 3: 10875.0 MWh
+
+
+========================================
+Simulation made at 2024-06-25 22:42:20
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Average CPU utilization for model 0: 125393.75756178373
+Cumulated energy usage for model 0: 2633.269 MWh
+Average CPU utilization for model 1: 125011.07822162083
+Cumulated energy usage for model 1: 2625.233 MWh
+Average CPU utilization for model 2: 125000.00000928718
+Cumulated energy usage for model 2: 2625.0 MWh
+Average CPU utilization for model 3: 125000.00993125222
+Cumulated energy usage for model 3: 2625.0 MWh
+
+
+========================================
+Simulation made at 2024-06-25 22:43:01
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Average CPU utilization for model 0: 62893.75756178375
+Cumulated energy usage for model 0: 1320.769 MWh
+Average CPU utilization for model 1: 62511.07822162086
+Cumulated energy usage for model 1: 1312.733 MWh
+Average CPU utilization for model 2: 62500.000009287134
+Cumulated energy usage for model 2: 1312.5 MWh
+Average CPU utilization for model 3: 62500.00993125225
+Cumulated energy usage for model 3: 1312.5 MWh
+
+
+========================================
+Simulation made at 2024-06-25 22:43:55
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Average CPU utilization for model 0: 625393.7575617837
+Cumulated energy usage for model 0: 13133.269 MWh
+Average CPU utilization for model 1: 62511.07822162086
+Cumulated energy usage for model 1: 1312.733 MWh
+Average CPU utilization for model 2: 62500.000009287134
+Cumulated energy usage for model 2: 1312.5 MWh
+Average CPU utilization for model 3: 62500.00993125225
+Cumulated energy usage for model 3: 1312.5 MWh
+
+
+========================================
+Simulation made at 2024-06-25 22:45:23
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Average CPU utilization for model 0: 125393.75756178373
+Cumulated energy usage for model 0: 2633.269 MWh
+Average CPU utilization for model 1: 125011.07822162083
+Cumulated energy usage for model 1: 2625.233 MWh
+Average CPU utilization for model 2: 125000.00000928718
+Cumulated energy usage for model 2: 2625.0 MWh
+Average CPU utilization for model 3: 125000.00993125222
+Cumulated energy usage for model 3: 2625.0 MWh
+
+
+========================================
+Simulation made at 2024-06-25 22:45:51
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Average CPU utilization for model 0: 125011.05360186138
+Cumulated energy usage for model 0: 2625.232 MWh
+Average CPU utilization for model 1: 125000.01093897651
+Cumulated energy usage for model 1: 2625.0 MWh
+Average CPU utilization for model 2: 125000.0
+Cumulated energy usage for model 2: 2625.0 MWh
+Average CPU utilization for model 3: 125000.00000002036
+Cumulated energy usage for model 3: 2625.0 MWh
+
+
+
+
+========================================
+Simulation made at 2024-06-26 10:15:28
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Cumulated energy usage for model 0: 2694.566 MWh
+Cumulated energy usage for model 1: 2688.184 MWh
+Cumulated energy usage for model 2: 2688.000 MWh
+Cumulated energy usage for model 3: 2688.000 MWh
+
+
+========================================
+Simulation made at 2024-06-26 10:21:13
+We are running use_cases.rq1_case_1() for power_draw, on a multimodel with window size 100
+Sample count in raw host data: 2016
+Cumulated energy usage for model 0: 2921.875 MWh
+Cumulated energy usage for model 1: 2874.114 MWh
+Cumulated energy usage for model 2: 2787.855 MWh
+Cumulated energy usage for model 3: 2821.476 MWh
