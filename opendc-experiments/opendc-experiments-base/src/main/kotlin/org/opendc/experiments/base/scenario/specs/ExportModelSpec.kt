@@ -29,7 +29,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 public data class ExportModelSpec(
-    val exportInterval: Long = 30,
+    val exportInterval: Long = 100,
 ) {
     init {
         require(exportInterval > 0) { "The Export interval has to be higher than 0" }

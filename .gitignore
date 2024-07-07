@@ -115,7 +115,4 @@ gradle-app.setting
 
 # Cache of project
 .gradletasknamecache
-
-# Experiments ignored (can be found on #9 branch)
-demo/experiments
-opendc-analyze/src/main/python/experiments
+demo
