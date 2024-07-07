@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 Constants for the main.py file
 """
 
-SIMULATION_FOLDER_PATH = './../../../../demo/' + sys.argv[1]
+SIMULATION_FOLDER_PATH = './../../../experiments/' + sys.argv[1]
 RAW_OUTPUT_FOLDER_PATH = SIMULATION_FOLDER_PATH + '/raw-output/'
 ANALYSIS_FOLDER_PATH = SIMULATION_FOLDER_PATH + '/simulation-analysis/'
 

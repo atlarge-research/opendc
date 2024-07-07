@@ -66,6 +66,9 @@ internal class ScenarioCommand : CliktCommand(name = "scenario") {
         val scenarios = getScenarios(scenarioPath)
         runScenarios(scenarios, parallelism)
 
-        if (analyzeResults) analyzeResults(outputFolderPath=scenarios[0].outputFolder)
+        if (analyzeResults) analyzeResults(
+            outputFolderPath=scenarios[0].outputFolder,
+            analyzerSetupPath = scenarios[0].analyzerPath
+        )
     }
 }

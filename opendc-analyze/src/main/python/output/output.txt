@@ -1,0 +1,2 @@
+The first received argument is: experiments/experiment-2-window-performance-analysis/outputs//window_size_comparison_same_plot
+The second received argument is: experiments/experiment-2-window-performance-analysis/inputs/analyzer.json

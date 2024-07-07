@@ -22,19 +22,24 @@
 
 import kotlin.io.path.Path
 import java.lang.ProcessBuilder
+import java.nio.file.Paths
 
 /**
  * This constant variable should be changed depending on the root folder that is being run.
  * PATH_TO_PYTHON_MAIN should point to the main python file, ran when the analysis starts.
  */
 
-public val ANALYSIS_SCRIPTS_DIRECTORY: String = "../opendc-analyze/src/main/python"
-public val MAIN_ANALYSIS_SCRIPT_PATH: String = "$ANALYSIS_SCRIPTS_DIRECTORY/main.py"
-public var ABSOLUTE_SCRIPT_PATH: String = Path(MAIN_ANALYSIS_SCRIPT_PATH).toAbsolutePath().normalize().toString()
+public val ANALYSIS_SCRIPTS_DIRECTORY: String = "./opendc-analyze/src/main/python"
+public var ABSOLUTE_SCRIPT_PATH: String = Path("$ANALYSIS_SCRIPTS_DIRECTORY/main.py").toAbsolutePath().normalize().toString()
 public val SCRIPT_LANGUAGE: String = "python3"
 
-public fun analyzeResults(outputFolderPath: String) {
-    val process = ProcessBuilder(SCRIPT_LANGUAGE, ABSOLUTE_SCRIPT_PATH,outputFolderPath)
+public fun analyzeResults(outputFolderPath: String, analyzerSetupPath: String) {
+    val process = ProcessBuilder(
+        SCRIPT_LANGUAGE,
+        ABSOLUTE_SCRIPT_PATH,
+        outputFolderPath, // argument 1
+        analyzerSetupPath // argument 2
+    )
         .directory(Path(ANALYSIS_SCRIPTS_DIRECTORY).toFile())
         .start()
 

@@ -52,6 +52,7 @@ public data class ScenarioSpec(
     val failureModels: List<FailureModelSpec?> = listOf(null),
     val checkpointModels: List<CheckpointModelSpec?> = listOf(null),
     val carbonTracePaths: List<String?> = listOf(null),
+    val analyzerPath: String = "",
     val exportModels: List<ExportModelSpec> = listOf(ExportModelSpec()),
     val outputFolder: String = "output",
     val initialSeed: Int = 0,

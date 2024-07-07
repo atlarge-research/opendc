@@ -1,0 +1,6 @@
+{
+    "input_metric": ["power_draw", "carbon_emission"],
+    "window_size": 10,
+    "aggregation_function": "mean",
+    "plot_type": "time_series"
+}
