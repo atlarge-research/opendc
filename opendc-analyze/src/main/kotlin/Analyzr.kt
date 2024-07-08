@@ -22,7 +22,6 @@
 
 import kotlin.io.path.Path
 import java.lang.ProcessBuilder
-import java.nio.file.Paths
 
 /**
  * This constant variable should be changed depending on the root folder that is being run.
@@ -44,7 +43,11 @@ public fun analyzeResults(outputFolderPath: String, analyzerSetupPath: String) {
         .start()
 
     val exitCode = process.waitFor()
-    if (exitCode != 0) {
+    if (exitCode == 0) {
+        println("Analysis completed successfully.")
+    } else if (exitCode == 1918) {
+        println("Error. Please configure the Multi(-Meta)-Model setup file, and link the file to the scenario.")
+    } else {
         val errors = process.errorStream.bufferedReader().readText()
         println("Errors: $errors")
     }
