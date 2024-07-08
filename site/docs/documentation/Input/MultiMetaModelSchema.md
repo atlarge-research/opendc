@@ -3,7 +3,7 @@ A setup file can be validated using a JSON schema validator, such as https://www
 
 ```json
 {
-    "$schema": "OpenDC/MultiMetaModel",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
         "multimodel": {
@@ -15,8 +15,7 @@ A setup file can be validated using a JSON schema validator, such as https://www
             "default": true
         },
         "metric": {
-            "type": "string",
-            "required": true
+            "type": "string"
         },
         "window_size": {
             "type": "integer",
@@ -32,6 +31,11 @@ A setup file can be validated using a JSON schema validator, such as https://www
             "type": "string",
             "default": "mean",
             "enum": ["mean", "median"]
+        },
+        "samples_per_minute": {
+            "type": "number",
+            "default": 1,
+            "minimum": 0.0001
         },
         "plot_type": {
             "type": "string",
@@ -51,14 +55,14 @@ A setup file can be validated using a JSON schema validator, such as https://www
             "default": "Metric Unit"
         },
         "y_min": {
-            "type": "number",
-            "minimum": 0
+            "type": "number"
         },
         "y_max": {
-            "type": "number",
-            "minimum": 0
+            "type": "number"
         }
-    }
+    },
+    "required": [
+        "metric"
+    ]
 }
-
 ```
