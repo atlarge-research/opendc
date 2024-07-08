@@ -24,16 +24,9 @@ technique is similar to a convolution / moving average, which takes chunks of da
 
 
 class MultiModel:
-    def __init__(
-        self,
-        metric,
-        window_size,
-        x_label="Time [days]",
-        y_label="Metric",
-        aggregation_function="median",
-        plot_type="time_series",
-        path=""
-    ):
+    def __init__(self,user_input,path):
+        self.user_input = user_input
+
         # the following metrics are set in the latter functions
         self.measure_unit = None
         self.metric = None
@@ -44,20 +37,38 @@ class MultiModel:
         self.output_folder_path = None
         self.raw_output_path = None
         self.analysis_file_path = None
-        self.window_size = window_size
+        self.window_size = -1
         self.aggregation_function = "median"
         self.workload_time = 0
         self.max_model_len = 0
 
-        self.x_label = x_label
-        self.y_label = y_label
+        self.x_label = None
+        self.y_label = None
+        self.y_min = None
+        self.y_max = None
 
         # run init functions
-        self.check_and_set_metric(metric)
+        self.parse_user_input()
+        self.check_and_set_metric(self.metric)
         self.set_paths()
         self.init_models()
 
         self.compute_windowed_aggregation()
+
+
+    """
+    This function is used to parse the user input. It takes the inputs from the user and sets the attributed of the
+    Multi-Model.
+    """
+    def parse_user_input(self):
+        self.window_size = self.user_input["window_size"]
+        self.metric = self.user_input["metric"]
+        self.aggregation_function = self.user_input["aggregation_function"]
+        self.x_label = self.user_input["x_label"]
+        self.y_label = self.user_input["y_label"]
+        self.y_min = self.user_input["y_min"]
+        self.y_max = self.user_input["y_max"]
+
 
     """
     This function serves as an error prevention mechanism. It checks if the input metric is valid.
@@ -103,7 +114,6 @@ class MultiModel:
 
     def init_models(self):
         model_id = 0
-        export_rate = 300
 
         for simulation_folder in os.listdir(self.raw_output_path):
             path_of_parquet_file = f"{self.raw_output_path}/{simulation_folder}/seed=0/host.parquet"
@@ -111,14 +121,16 @@ class MultiModel:
             raw_data = parquet_file.select_dtypes(include=[np.number]).groupby("timestamp")
             raw_data = raw_data[self.metric].aggregate("sum")
 
-            total_values = len(raw_data)  # data is outputed every 300 seconds
-            total_time = total_values * export_rate / 3600 / 24
-            print("There are " + str(total_values) + " values in the raw data, hence the data is measured for a time of"
-                                                     " " + str(total_time) + " days.")
+            if self.user_input["samples_per_minute"] > 0:
+                total_values = len(raw_data)
+                total_time = total_values * self.user_input["samples_per_minute"] / 60 / 24
+                print("There are " + str(total_values) + " values in the raw data, hence the data is measured for a time of"
+                                                         " " + str(total_time) + " days.")
 
             model = Model(
                 raw_host_data=raw_data,
-                id=model_id
+                id=model_id,
+                path=self.output_folder_path
             )
 
             self.models.append(model)
@@ -175,12 +187,8 @@ class MultiModel:
 
     def plot_processed_models(self):
         for model in self.models:
-            # plt.plot(model.processed_host_data, label=("Model " + str(model.id) + "-" + model.experiment_name))
-            plt.plot(model.processed_host_data)
+            plt.plot(model.processed_host_data, label=("Model " + str(model.id) + "-" + model.experiment_name))
 
-            # plt.fill_between(range(len(model.processed_host_data)),
-            #                  model.processed_host_data - model.margins_of_error * 10,
-            #                  model.processed_host_data + model.margins_of_error * 10)
         plt.legend()
 
     """

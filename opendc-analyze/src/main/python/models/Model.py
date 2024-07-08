@@ -10,7 +10,8 @@ import os
 
 
 class Model:
-    def __init__(self, raw_host_data, id):
+    def __init__(self, raw_host_data, id, path):
+        self.path = path
         self.raw_host_data = raw_host_data
         self.processed_host_data = []
         self.experiment_name = id
@@ -22,13 +23,12 @@ class Model:
         self.allocation_policies = []
         self.carbon_trace_paths = []
 
-        # self.parse_trackr()
-
+        self.parse_trackr()
 
     def parse_trackr(self):
-        # open trackr.json, located in the same folder as we are now
-        # pwd
-        with open("../../trackr.json") as f:
+        trackr_path = self.path + "/trackr.json"
+
+        with open(trackr_path) as f:
             trackr = json.load(f)
             self.experiment_name = trackr[self.id]['name']
             self.topologies = trackr[self.id]['topologies']

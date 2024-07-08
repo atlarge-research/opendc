@@ -1,7 +1,12 @@
 {
-    "metamodel": "true",
+    "multimodel": true,
+    "metamodel": true,
     "metric": "power_draw",
     "window_size": 10,
     "aggregation_function": "mean",
-    "plot_type": "time_series"
+    "plot_type": "time_series",
+    "samples_per_minute": 0.2,
+    "plot_title": "",
+    "x_label": "Time",
+    "y_label": "Power Draw (W)"
 }
