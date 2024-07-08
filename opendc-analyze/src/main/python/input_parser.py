@@ -28,7 +28,7 @@ def read_input(path=""):
         print("Failed to decode JSON.")
         sys.exit(1)
     except IOError:
-        print("Error opening file.")
+        print("MultiModel's parser says: Error opening file.")
         sys.exit(1)
 
     switch_to_root_dir()

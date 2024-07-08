@@ -1,7 +1,7 @@
 import os
 import time
 
-import experiments
+from experiments.experiment2 import experiment_2
 import utils
 import sys
 # from models.MetaModel import Metamodel
@@ -16,18 +16,20 @@ from input_parser import read_input
 # "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json", "experiments/experiment-2-window-performance-analysis/outputs/window-size-performance-analysis"
 
 def main():
-    print("ARGV1 is " + sys.argv[1])
-    print("ARGV2 is " + sys.argv[2])
-    print("The current path is " + os.getcwd())
-    user_input = read_input(sys.argv[1])
+    experiment_2()
+    # print("ARGV1 is " + sys.argv[1])
+    # print("ARGV2 is " + sys.argv[2])
+    # print("The current path is " + os.getcwd())
+    # user_input = read_input(sys.argv[1])
+    #
+    # # if user wants to run a multi-model
+    # if (user_input["multimodel"]):
+    #     multimodel = MultiModel(
+    #         user_input,
+    #         path=sys.argv[2]
+    #     )
+    #     multimodel.generate_plot()
 
-    # if user wants to run a multi-model
-    if (user_input["multimodel"]):
-        multimodel = MultiModel(
-            user_input,
-            path=sys.argv[2]
-        )
-        multimodel.generate_plot()
 
 
 if __name__ == "__main__":
