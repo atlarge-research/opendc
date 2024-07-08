@@ -4,42 +4,31 @@ import time
 import experiments
 import utils
 import sys
-from models.MetaModel import Metamodel
 from models.MultiModel import MultiModel
-from input_parser import read_input
-# from experiments import window_size_time_analysis
-# from experiments import use_cases
-
-# an example of program arguments is output/4-models-and-ground-truth
-# similar to $folder_name$/$subfolder_name$
-
-"""
-User input data
-"""
-
-# Multimodel
-# input_metric = "power_draw" or "carbon_emission"
-# window_size
-# aggregation_function
-# plot_type = "cummulative" or "line"
-# x_label
-# y_label
-# plot_title
+from input_parser import read_input  # Corrected import
 
 
-# experiments/#1-more-windows-same-plot/outputs//window_size_comparison_same_plot
+# e.g., argument 1 -- experiments/experiment-2-window-performance-analysis/inputs/analyzer.json
+# e.g., argument 2 -- experiments/experiment-2-window-performance-analysis/outputs//window_size_comparison_same_plot
 
 def main():
+    print("ARGV1 is " + sys.argv[1])
+    print("ARGV2 is " + sys.argv[2])
     # create a file and write in it argv[1]
     # use os to create a file
-    os.makedirs("output", exist_ok=True)
-    with open("output/output.txt", "w") as f:
-        f.write("The first received argument is: " + sys.argv[1])
-        f.write("\n")
-        f.write("The second received argument is: " + sys.argv[2])
+    print("The current path is " + os.getcwd())
+    user_input = read_input(sys.argv[1])
+
+    multimodel = MultiModel(
+        metric=user_input["metric"],
+        window_size=user_input["window_size"],
+        aggregation_function=user_input["aggregation_function"],
+        plot_type=user_input["plot_type"],
+        path=sys.argv[2]
+    )
+
+    multimodel.generate_plot()
 
 
-
-
-
-main()
+if __name__ == "__main__":
+    main()

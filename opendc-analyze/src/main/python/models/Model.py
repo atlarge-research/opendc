@@ -6,6 +6,7 @@ and further in the MetaModel class.
 :param host: the host data of the model
 """
 import json
+import os
 
 
 class Model:
@@ -18,18 +19,19 @@ class Model:
         self.margins_of_error = []
         self.topologies = []
         self.workloads = []
-        self.allocationPolicies = []
-        self.carbonTracePaths = []
+        self.allocation_policies = []
+        self.carbon_trace_paths = []
 
-        self.parse_trackr()
+        # self.parse_trackr()
 
 
     def parse_trackr(self):
         # open trackr.json, located in the same folder as we are now
-        with open("trackr.json") as f:
+        # pwd
+        with open("../../trackr.json") as f:
             trackr = json.load(f)
             self.experiment_name = trackr[self.id]['name']
             self.topologies = trackr[self.id]['topologies']
             self.workloads = trackr[self.id]['workloads']
-            self.allocationPolicies = trackr[self.id]['allocationPolicies']
-            self.carbonTracePaths = trackr[self.id]['carbonTracePaths']
+            self.allocation_policies = trackr[self.id]['allocationPolicies']
+            self.carbon_trace_paths = trackr[self.id]['carbonTracePaths']

@@ -24,14 +24,26 @@ technique is similar to a convolution / moving average, which takes chunks of da
 
 
 class MultiModel:
-    def __init__(self, input_metric, window_size, x_label="Time [days]", y_label="Metric", aggregation_function="median"):
+    def __init__(
+        self,
+        metric,
+        window_size,
+        x_label="Time [days]",
+        y_label="Metric",
+        aggregation_function="median",
+        plot_type="time_series",
+        path=""
+    ):
         # the following metrics are set in the latter functions
         self.measure_unit = None
         self.metric = None
+        self.path = path
         self.models = []
 
-        self.input_folder = utils.RAW_OUTPUT_FOLDER_PATH
-        self.output_folder = None
+        self.folder_path = None
+        self.output_folder_path = None
+        self.raw_output_path = None
+        self.analysis_file_path = None
         self.window_size = window_size
         self.aggregation_function = "median"
         self.workload_time = 0
@@ -41,8 +53,8 @@ class MultiModel:
         self.y_label = y_label
 
         # run init functions
-        self.check_and_set_metric(input_metric)
-        self.set_output_folder()
+        self.check_and_set_metric(metric)
+        self.set_paths()
         self.init_models()
 
         self.compute_windowed_aggregation()
@@ -69,21 +81,18 @@ class MultiModel:
     @return: None, but sets the self.output_folder attribute.
     """
 
-    def set_output_folder(self):
-        if self.metric == "power_draw":
-            self.output_folder = utils.ENERGY_ANALYSIS_FOLDER_PATH
-            with open(utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + utils.ENERGY_ANALYSIS_FOLDER_NAME + "/analysis.txt",
-                      "a") as f:
-                f.write("")
-        elif self.metric == "carbon_emission":
-            self.output_folder = utils.EMISSIONS_ANALYSIS_FOLDER_PATH
-            with open(
-                utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + utils.EMISSIONS_ANALYSIS_FOLDER_NAME + "/analysis.txt",
-                "a") as f:
-                f.write("")
+    def set_paths(self):
+        # the output folder is the current path + self.path
+        self.output_folder_path = os.getcwd() + "/" + self.path
+        self.raw_output_path = os.getcwd() + "/" + self.path + "/raw-output"
+        self.analysis_file_path = os.getcwd() + "/" + self.path + "/simulation-analysis/"
+        os.makedirs(self.analysis_file_path, exist_ok=True)
+        self.analysis_file_path = os.path.join(self.analysis_file_path, "analysis.txt")
+        if not os.path.exists(self.analysis_file_path):
+            with open(self.analysis_file_path, "w") as f:
+                f.write("Analysis file created.\n")
 
-        else:
-            raise ValueError("Invalid metric. Please choose from 'power_draw', 'emissions'")
+
 
     """
     The init_models function takes the raw data from the simulation output and loads into the model attributes.
@@ -93,12 +102,12 @@ class MultiModel:
     """
 
     def init_models(self):
-        folder_prefix = "./raw-output"
         model_id = 0
         export_rate = 300
 
-        for simulation_folder in os.listdir(folder_prefix):
-            parquet_file = pq.read_table(f"{folder_prefix}/{simulation_folder}/seed=0/host.parquet").to_pandas()
+        for simulation_folder in os.listdir(self.raw_output_path):
+            path_of_parquet_file = f"{self.raw_output_path}/{simulation_folder}/seed=0/host.parquet"
+            parquet_file = pq.read_table(path_of_parquet_file).to_pandas()
             raw_data = parquet_file.select_dtypes(include=[np.number]).groupby("timestamp")
             raw_data = raw_data[self.metric].aggregate("sum")
 
@@ -166,7 +175,9 @@ class MultiModel:
 
     def plot_processed_models(self):
         for model in self.models:
-            plt.plot(model.processed_host_data, label=("Model " + str(model.id) + "-" + model.experiment_name))
+            # plt.plot(model.processed_host_data, label=("Model " + str(model.id) + "-" + model.experiment_name))
+            plt.plot(model.processed_host_data)
+
             # plt.fill_between(range(len(model.processed_host_data)),
             #                  model.processed_host_data - model.margins_of_error * 10,
             #                  model.processed_host_data + model.margins_of_error * 10)
@@ -177,7 +188,7 @@ class MultiModel:
     """
 
     def save_plot(self):
-        folder_prefix = "./" + utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + self.metric + "/"
+        folder_prefix = self.output_folder_path + "/simulation-analysis/" + self.metric + "/"
         plt.savefig(
             folder_prefix + "multimodel_metric=" + self.metric + "_window=" + str(self.window_size) + ".png")
 
@@ -209,6 +220,7 @@ class MultiModel:
 
     @return: a list of cumulated energies / emissions for each model (array)
     """
+
     def get_cumulated(self):
         cumulated_energies = []
         for (i, model) in enumerate(self.models):
@@ -217,10 +229,10 @@ class MultiModel:
 
         return cumulated_energies
 
-
     """
     Computes the average CPU utilization for each model.
     """
+
     def get_average_cpu_utilization(self):
         average_cpu_utilizations = []
         for model in self.models:
@@ -229,12 +241,11 @@ class MultiModel:
 
         return average_cpu_utilizations
 
-
     def output_stats(self):
         analysis_file_path = utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + self.metric + "/analysis.txt"
         with open(analysis_file_path, "a") as f:
             f.write("\n\n========================================\n")
             f.write("Simulation made at " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
-            f.write("We are running MultiModel for " + self.metric + ", with window size " + str(self.window_size) + "\n")
+            f.write(
+                "We are running MultiModel for " + self.metric + ", with window size " + str(self.window_size) + "\n")
             f.write("Sample count in raw host data: " + str(self.max_model_len) + "\n")
-
