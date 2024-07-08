@@ -4,12 +4,16 @@ import time
 import experiments
 import utils
 import sys
+# from models.MetaModel import Metamodel
 from models.MultiModel import MultiModel
 from input_parser import read_input  # Corrected import
 
 
 # e.g., argument 1 -- experiments/experiment-2-window-performance-analysis/inputs/analyzer.json
-# e.g., argument 2 -- experiments/experiment-2-window-performance-analysis/outputs//window_size_comparison_same_plot
+# e.g., argument 2 -- experiments/experiment-2-window-performance-analysis/outputs//window_size_performance_analysis
+
+# parameter input for main
+# "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json", "experiments/experiment-2-window-performance-analysis/outputs/window-size-performance-analysis"
 
 def main():
     print("ARGV1 is " + sys.argv[1])

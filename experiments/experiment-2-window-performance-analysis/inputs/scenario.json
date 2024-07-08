@@ -1,8 +1,17 @@
 {
-    "name": "window_size_comparison_same_plot",
+    "name": "window-size-performance-analysis",
     "topologies": [
         {
             "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/topologies/topology_sqrt.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/topologies/topology_linear.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/topologies/topology_square.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/topologies/topology_cubic.json"
         }
     ],
     "workloads": [
