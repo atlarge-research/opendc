@@ -3,3 +3,11 @@
 # These are explicitly windows files and should use crlf
 *.bat   text eol=crlf
 *.sh    text eol=lf
+experiments/experiment-2-window-performance-analysis/outputs/sample-rate=3s/raw-output filter=lfs diff=lfs merge=lfs -text
+experiments/experiment-2-window-performance-analysis/outputs/sample-rate=3s/simulation-analysis filter=lfs diff=lfs merge=lfs -text
+experiments/experiment-2-window-performance-analysis/outputs/sample-rate=3s/trackr.json filter=lfs diff=lfs merge=lfs -text
+experiments/experiment-2-window-performance-analysis/outputs/sample-rate=3s/raw-output/0/seed=0/host.parquet filter=lfs diff=lfs merge=lfs -text
+experiments/experiment-2-window-performance-analysis/outputs/sample-rate=3s/raw-output/1/seed=0/host.parquet filter=lfs diff=lfs merge=lfs -text
+experiments/experiment-2-window-performance-analysis/outputs/sample-rate=3s/raw-output/2/seed=0/host.parquet filter=lfs diff=lfs merge=lfs -text
+experiments/experiment-2-window-performance-analysis/outputs/sample-rate=3s/raw-output/3/seed=0/host.parquet filter=lfs diff=lfs merge=lfs -text
+*.json !text !filter !merge !diff

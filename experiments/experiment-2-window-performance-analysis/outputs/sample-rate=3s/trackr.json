@@ -1,3 +1,100 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6272ac48e9b1292c6b2c9f9d5755aa0a0bc40035018b5068c6ff3a972892d405
-size 3233
+[{
+    "id": 0,
+    "name": "sample-rate=3s",
+    "topologies": [
+        {
+            "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/topologies/topology_sqrt.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/surf-lisa",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/experiment-2-window-performance-analysis/inputs/carbon_intensity.parquet"
+    ],
+    "analyzerPath": "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json",
+    "outputFolder": "experiments/experiment-2-window-performance-analysis/outputs//sample-rate=3s"
+},
+{
+    "id": 1,
+    "name": "sample-rate=3s",
+    "topologies": [
+        {
+            "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/topologies/topology_linear.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/surf-lisa",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/experiment-2-window-performance-analysis/inputs/carbon_intensity.parquet"
+    ],
+    "analyzerPath": "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json",
+    "outputFolder": "experiments/experiment-2-window-performance-analysis/outputs//sample-rate=3s"
+},
+{
+    "id": 2,
+    "name": "sample-rate=3s",
+    "topologies": [
+        {
+            "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/topologies/topology_square.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/surf-lisa",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/experiment-2-window-performance-analysis/inputs/carbon_intensity.parquet"
+    ],
+    "analyzerPath": "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json",
+    "outputFolder": "experiments/experiment-2-window-performance-analysis/outputs//sample-rate=3s"
+},
+{
+    "id": 3,
+    "name": "sample-rate=3s",
+    "topologies": [
+        {
+            "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/topologies/topology_cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/surf-lisa",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/experiment-2-window-performance-analysis/inputs/carbon_intensity.parquet"
+    ],
+    "analyzerPath": "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json",
+    "outputFolder": "experiments/experiment-2-window-performance-analysis/outputs//sample-rate=3s"
+}]
