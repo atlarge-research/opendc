@@ -1,5 +1,5 @@
 {
-    "name": "window-size-performance-analysis",
+    "name": "sample-rate=300s",
     "topologies": [
         {
             "pathToFile": "experiments/experiment-2-window-performance-analysis/inputs/topologies/topology_sqrt.json"

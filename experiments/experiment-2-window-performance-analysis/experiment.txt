@@ -1,6 +1,38 @@
-!Coming soon!
-
 In this experiment, we analyze the time needed to compute the Multi-Model, using datasets of various lengths.
 The times will vary between seconds, minutes, and possibly hours.
 
-Machine: Macbook M2 pro, 2023, 16GB RAM, 512GB SSD, cute stickers.
+Machine: Macbook M2 pro, 2023, 16GB RAM, 512GB SSD, cute (computer-systems) stickers.
+
+
+Experiment results
+===Sampling rate = 300===
+===Number of samples = 2016===
+Time taken for window size 1: 1.01 seconds
+Time taken for window size 10: 0.559 seconds
+Time taken for window size 100: 0.543 seconds
+Time taken for window size 1000: 0.521 seconds
+
+
+===Sampling rate = 60===
+===Number of samples 10080===
+Time taken for window size 1: 4.644 seconds
+Time taken for window size 10: 2.82 seconds
+Time taken for window size 100: 2.774 seconds
+Time taken for window size 1000: 2.592 seconds
+
+
+===Sampling rate = 30===
+===Number of samples 20160===
+Time taken for window size 1: 10.725 seconds
+Time taken for window size 10: 6.551 seconds
+Time taken for window size 100: 6.3 seconds
+Time taken for window size 1000: 6.801 seconds
+
+
+===Sampling rate = 3===
+===Number of samples 201600===
+Time taken for window size 1: 252.483 seconds
+Time taken for window size 10: 202.858 seconds
+Time taken for window size 100: 182.329 seconds
+Time taken for window size 1000: 190.405 seconds
+
