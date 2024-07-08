@@ -24,7 +24,7 @@ technique is similar to a convolution / moving average, which takes chunks of da
 
 
 class MultiModel:
-    def __init__(self,user_input,path):
+    def __init__(self,user_input,path, window_size=-1):
         self.user_input = user_input
 
         # the following metrics are set in the latter functions
@@ -37,7 +37,7 @@ class MultiModel:
         self.output_folder_path = None
         self.raw_output_path = None
         self.analysis_file_path = None
-        self.window_size = -1
+        self.window_size = window_size
         self.aggregation_function = "median"
         self.workload_time = 0
         self.max_model_len = 0
@@ -61,7 +61,8 @@ class MultiModel:
     Multi-Model.
     """
     def parse_user_input(self):
-        self.window_size = self.user_input["window_size"]
+        if self.window_size == -1:
+            self.window_size = self.user_input["window_size"]
         self.metric = self.user_input["metric"]
         self.aggregation_function = self.user_input["aggregation_function"]
         self.x_label = self.user_input["x_label"]

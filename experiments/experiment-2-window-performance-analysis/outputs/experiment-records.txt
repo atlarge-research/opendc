@@ -1,0 +1,23 @@
+Sample-Rate = 1s
+Simulation Time: 1759 seconds
+Multi-Meta-Model:
+
+
+Sample-Rate = 3s
+Simulation Time: 592 seconds
+Multi-Meta-Model:
+
+
+Sample-Rate = 30s
+Simulation Time: 56 seconds
+Multi-Meta-Model:
+
+
+Sample-Rate = 60s
+Simulation Time: 28 seconds
+Multi-Meta-Model:
+
+
+Sample-Rate = 300s
+Simulation Time: 9 seconds
+Multi-Meta-Model:
