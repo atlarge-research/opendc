@@ -20,12 +20,11 @@ def main():
     print("ARGV2 is " + sys.argv[2])
     print("The current path is " + os.getcwd())
     user_input = read_input(sys.argv[2])
-    # comm
-    # if user wants to run a multi-model
-    if (user_input["multimodel"]):
+
+    if (user_input["multimodel"]):  # if user wants to run a Multi-Model
         multimodel = MultiModel(
             user_input,
-            path=sys.argv[2]
+            path=sys.argv[1]
         )
         multimodel.generate_plot()
 
