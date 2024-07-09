@@ -1,0 +1,33 @@
+{
+    "clusters": [
+        {
+            "name": "DataCenterCluster",
+            "count": 16,
+            "hosts": [
+                {
+                    "count": 32,
+                    "name": "HighPerformanceHost",
+                    "cpu": {
+                        "vendor": "Intel Xeon Sapphire Rapids",
+                        "arch": "x86-64",
+                        "coreCount": 32,
+                        "coreSpeed": 2600.0,
+                        "count": 1
+                    },
+                    "memory": {
+                        "vendor": "Generic",
+                        "arch": "DDR4",
+                        "memorySize": 1099511627776
+                    },
+                    "powerModel": {
+                        "modelType": "linear",
+                        "power": 350.0,
+                        "maxPower": 500.0,
+                        "idlePower": 200.0
+                    }
+
+                }
+            ]
+        }
+    ]
+}

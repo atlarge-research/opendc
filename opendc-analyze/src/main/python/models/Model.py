@@ -27,7 +27,6 @@ class Model:
 
     def parse_trackr(self):
         trackr_path = self.path + "/trackr.json"
-
         with open(trackr_path) as f:
             trackr = json.load(f)
             self.experiment_name = trackr[self.id]['name']

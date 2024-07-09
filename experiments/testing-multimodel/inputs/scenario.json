@@ -1,0 +1,34 @@
+{
+    "name": "testing",
+    "topologies": [
+        {
+            "pathToFile": "experiments/testing-multimodel/inputs/topologies/topology_sqrt.json"
+        },
+        {
+            "pathToFile": "experiments/testing-multimodel/inputs/topologies/topology_linear.json"
+        },
+        {
+            "pathToFile": "experiments/testing-multimodel/inputs/topologies/topology_square.json"
+        },
+        {
+            "pathToFile": "experiments/testing-multimodel/inputs/topologies/topology_cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/testing-multimodel/inputs/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/testing-multimodel/inputs/carbon_intensity.parquet"
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "analyzerPath": "experiments/testing-multimodel/inputs/analyzer.json",
+    "outputFolder": "experiments/testing-multimodel/outputs/",
+    "runs": 1
+}

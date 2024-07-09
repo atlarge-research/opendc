@@ -44,11 +44,11 @@ public fun analyzeResults(outputFolderPath: String, analyzerSetupPath: String) {
 
     val exitCode = process.waitFor()
     if (exitCode == 0) {
-        println("Analysis completed successfully.")
+        println("[Analyzr.kt says] Analysis completed successfully.")
     } else if (exitCode == 1918) {
-        println("Error. Please configure the Multi(-Meta)-Model setup file, and link the file to the scenario.")
+        println("[Analyzr.kt says] Exit code ${exitCode}; Error(s): Please configure the Multi(-Meta)-Model setup file, and link the file to the scenario.")
     } else {
         val errors = process.errorStream.bufferedReader().readText()
-        println("Errors: $errors")
+        println("[Analyzr.kt says] Exit code ${exitCode}; Error(s): $errors")
     }
 }

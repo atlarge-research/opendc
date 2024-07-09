@@ -1,0 +1,14 @@
+{
+    "multimodel": true,
+    "metamodel": true,
+    "metric": "power_draw",
+    "window_size": 10,
+    "aggregation_function": "mean",
+    "plot_type": "cumulative_total",
+    "samples_per_minute": 0.2,
+    "plot_title": "",
+    "x_label": "Time",
+    "y_label": "Power Draw (W)",
+    "current_unit": "W",
+    "unit_scaling_factor": 1000000
+}
