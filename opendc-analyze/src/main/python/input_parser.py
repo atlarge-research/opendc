@@ -53,7 +53,9 @@ def parse_input(input_json):
         "x_label": "Time",
         "y_label": "Metric Unit",
         "y_min": None,
-        "y_max": None
+        "y_max": None,
+        "x_min": None,
+        "x_max": None,
     }
 
     # Apply default values where not specified

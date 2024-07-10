@@ -37,3 +37,12 @@ Time taken for window size 1: 252.483 seconds
 Time taken for window size 10: 202.858 seconds
 Time taken for window size 100: 182.329 seconds
 Time taken for window size 1000: 190.405 seconds
+
+    *******************************************
+    * Running Experiment 2
+    * Time: 2024-07-10 19:17:55
+    *******************************************
+    
+
+===Sample rate: 30===
+Time taken for window size 1000: 10.196 seconds

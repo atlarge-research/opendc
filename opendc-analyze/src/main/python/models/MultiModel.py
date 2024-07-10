@@ -46,6 +46,8 @@ class MultiModel:
         self.plot_title = None
         self.x_label = None
         self.y_label = None
+        self.x_min = None
+        self.x_max = None
         self.y_min = None
         self.y_max = None
 
@@ -76,6 +78,8 @@ class MultiModel:
         self.y_label = self.user_input["y_label"]
         self.y_min = self.user_input["y_min"]
         self.y_max = self.user_input["y_max"]
+        self.x_min = self.user_input["x_min"]
+        self.x_max = self.user_input["x_max"]
 
     """
     This function matches the prefixes with the scaling factors. The prefixes are used to adjust the unit of measurement.
@@ -196,7 +200,8 @@ class MultiModel:
         plt.figure(figsize=(20, 10))
         plt.title(self.plot_title)
         plt.xlabel(self.x_label)
-        plt.ylim(self.get_axis_lim())
+        self.set_x_axis_lim()
+        self.set_y_axis_lim()
         plt.ylabel(self.metric + " " + self.measure_unit)
         plt.grid()
 
@@ -271,15 +276,30 @@ class MultiModel:
         axis_max = max(model_sums)
         return [axis_min * 0.9, axis_max * 1.1]
 
+    def set_x_axis_lim(self):
+        if self.x_min is not None:
+            plt.xlim(left=self.x_min)
+
+        if self.x_max is not None:
+            plt.xlim(right=self.x_max)
+
     """
     Dynamically sets the y limit for the plot, which is 10% higher than the maximum value in the computed data, and 10%
     smaller than the minimum value in the computed data. This is done to ensure that the plot is not too zoomed in or out.
     """
 
-    def get_axis_lim(self):
+    def set_y_axis_lim(self):
         axis_min = min([min(model.processed_host_data - model.margins_of_error) for model in self.models])
         axis_max = max([max(model.processed_host_data + model.margins_of_error) for model in self.models])
-        return [axis_min * 0.95, axis_max * 1.05]
+
+        # handles user input
+        if self.y_min is not None:
+            axis_min = self.y_min
+        if self.y_max is not None:
+            axis_max = self.y_max
+
+        plt.ylim([axis_min * 0.95, axis_max * 1.05])
+
 
     """
     Computes the total of energy consumption / co2 emissions (depending on the input metric)
