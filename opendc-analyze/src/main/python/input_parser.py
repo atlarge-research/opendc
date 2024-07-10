@@ -46,6 +46,8 @@ def parse_input(input_json):
         "aggregation_function": "mean",
         "metamodel_function": "mean",
         "samples_per_minute": 0,
+        "current_unit": "",
+        "unit_scaling_magnitude": 0,
         "plot_type": "time_series",
         "plot_title": "",
         "x_label": "Time",
