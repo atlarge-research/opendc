@@ -61,7 +61,7 @@ class Metamodel:
         plt.title(self.metric)
         plt.xlabel("Time [s]")
         plt.ylabel(self.metric + self.measure_unit)
-        plt.ylim(0, self.multimodel.get_y_lim())
+        plt.ylim(0, self.multimodel.get_axis_lim())
 
         # multiply all the values from the x-axis by the window size
         plt.xticks(
