@@ -24,7 +24,7 @@ technique is similar to a convolution / moving average, which takes chunks of da
 
 
 class MultiModel:
-    def __init__(self, user_input, path):
+    def __init__(self, user_input, path, window_size=-1):
         self.user_input = user_input
 
         self.metric = None
@@ -36,7 +36,7 @@ class MultiModel:
         self.output_folder_path = None
         self.raw_output_path = None
         self.analysis_file_path = None
-        self.unit_scaling_factor = 1
+        self.unit_scaling = 1
         self.window_size = -1
         self.aggregation_function = "median"
         self.workload_time = 0
@@ -50,7 +50,7 @@ class MultiModel:
         self.y_max = None
 
         # run init functions
-        self.parse_user_input()
+        self.parse_user_input(window_size)
         self.set_paths()
         self.init_models()
 
@@ -61,8 +61,11 @@ class MultiModel:
     Multi-Model.
     """
 
-    def parse_user_input(self):
-        self.window_size = self.user_input["window_size"]
+    def parse_user_input(self, window_size):
+        if window_size == -1:
+            self.window_size = self.user_input["window_size"]
+        else:
+            self.window_size = window_size
         self.metric = self.user_input["metric"]
         self.measure_unit = self.adjust_unit()
         self.aggregation_function = self.user_input["aggregation_function"]
@@ -81,16 +84,17 @@ class MultiModel:
 
     def adjust_unit(self):
         prefixes = ['n', 'μ', 'm', '', 'k', 'M', 'G', 'T']
-        scaling_factors = [10 ** -9, 10 ** -6, 10 ** -3, 1, 10 ** 3, 10 ** 6, 10 ** 9, 10 ** 12]
+        scaling_factors = [-9, -6, -3, 0, 3, 6, 9]
         given_metric = self.user_input["current_unit"]
-        self.unit_scaling_factor = self.user_input["unit_scaling_factor"]
+        self.unit_scaling = self.user_input["unit_scaling_magnitude"]
 
-        if self.unit_scaling_factor not in scaling_factors:
+        if self.unit_scaling not in scaling_factors:
             raise ValueError(
-                "Unit scaling factor not found. Please enter a valid unit from [10^-9, 10^-6, 10^-3, 1, 10^3, 10^6, 10^9, 10^12].")
+                "Unit scaling factor not found. Please enter a valid unit from [-9, -6, -3, 0, 3, 6, 9].")
 
         for i in range(len(scaling_factors)):
-            if self.unit_scaling_factor == scaling_factors[i]:
+            if self.unit_scaling == scaling_factors[i]:
+                self.unit_scaling = 10 ** self.unit_scaling
                 result = prefixes[i] + given_metric
                 return result
 
@@ -131,10 +135,10 @@ class MultiModel:
             raw_data = parquet_file.select_dtypes(include=[np.number]).groupby("timestamp")
             raw_data = raw_data[self.metric].aggregate("sum")
 
-            if self.unit_scaling_factor is None:
+            if self.unit_scaling is None:
                 raise ValueError("Unit scaling factor is not set. Please ensure it is set correctly.")
 
-            raw_data = np.divide(raw_data, self.unit_scaling_factor)
+            raw_data = np.divide(raw_data, self.unit_scaling)
             raw_data = raw_data.round(2)
 
             if self.user_input["samples_per_minute"] > 0:
@@ -195,10 +199,14 @@ class MultiModel:
         plt.ylim(self.get_axis_lim())
         plt.ylabel(self.metric + " " + self.measure_unit)
         plt.grid()
+
         for model in self.models:
-            plt.plot(model.processed_host_data, label=("Model " + str(model.id) + "-" + model.experiment_name))
+            means, errors = self.mean_of_chunks_and_margin_error(model.raw_host_data, self.window_size)
+            repeated_means = np.repeat(means, self.window_size)[:len(model.raw_host_data)]
+            plt.plot(repeated_means, drawstyle='steps-mid', label=("Model " + str(model.id)))
 
         plt.legend()
+
 
     def generate_cumulative_plot(self):
         plt.figure(figsize=(20, 10))
@@ -233,19 +241,19 @@ class MultiModel:
     """
 
     def compute_cumulative_time_series(self):
-        sum = 0
+        _sum = 0
         for model in self.models:
             cumulative_array = []
-            sum = 0
+            _sum = 0
             for i in range(len(model.processed_host_data)):
-                sum += model.processed_host_data[i]
-                cumulative_array.append(sum)
+                _sum += model.processed_host_data[i]
+                cumulative_array.append(_sum)
             model.time_cumulative = cumulative_array
 
     def save_plot(self):
         folder_prefix = self.output_folder_path + "/simulation-analysis/" + self.metric + "/"
         plt.savefig(
-            folder_prefix + "multimodel_metric=" + self.metric + "_window=" + str(self.window_size) + ".png")
+            folder_prefix + self.plot_type + "_plot_multimodel_metric=" + self.metric + "_window=" + str(self.window_size) + ".png")
 
     """
     Takes the mean of the chunks, depending on the window size (i.e., chunk size).
@@ -256,6 +264,7 @@ class MultiModel:
         means = [np.mean(chunk) for chunk in chunks]
         errors = [np.std(chunk) / np.sqrt(len(chunk)) for chunk in chunks]
         return np.array(means), np.array(errors)
+
 
     def get_cumulative_limits(self, model_sums):
         axis_min = min(model_sums)
@@ -284,7 +293,7 @@ class MultiModel:
     def sum_models_entries(self):
         models_sums = []
         for (i, model) in enumerate(self.models):
-            cumulated_energy = model.processed_host_data.sum()
+            cumulated_energy = model.processed_host_data.sum() * self.window_size
             cumulated_energy = round(cumulated_energy, 2)
 
             models_sums.append(cumulated_energy)
