@@ -4,7 +4,7 @@
     "metric": "power_draw",
     "window_size": 10,
     "aggregation_function": "mean",
-    "plot_type": "cumulative_total",
+    "plot_type": "cumulative_time_series",
     "samples_per_minute": 0.2,
     "plot_title": "",
     "x_label": "Time",

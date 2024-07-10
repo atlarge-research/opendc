@@ -14,6 +14,7 @@ class Model:
         self.path = path
         self.raw_host_data = raw_host_data
         self.processed_host_data = []
+        self.time_cumulative = []
         self.experiment_name = id
         self.id = id
 

@@ -147,7 +147,7 @@ class MultiModel:
             model = Model(
                 raw_host_data=raw_data,
                 id=model_id,
-                path=self.output_folder_path
+                path=self.output_folder_path,
             )
 
             self.models.append(model)
@@ -166,11 +166,8 @@ class MultiModel:
 
     def compute_windowed_aggregation(self):
         for model in self.models:
-            numeric_values = model.raw_host_data  # Select only numeric data for aggregation
-
-            # Calculate the median for each window
-            model.processed_host_data, model.margins_of_error = self.mean_of_chunks_and_margin_error(numeric_values,
-                                                                                                     self.window_size)
+            numeric_values = model.raw_host_data
+            model.processed_host_data, model.margins_of_error = self.mean_of_chunks_and_margin_error(numeric_values, self.window_size)
 
     """
     Generates plot for the MultiModel from the already computed data. The plot is saved in the analysis folder.
@@ -220,13 +217,30 @@ class MultiModel:
             plt.barh(label=("Model " + str(model.id)), y=i, width=cumulated_energies[i])
             plt.text(cumulated_energies[i], i, str(cumulated_energies[i]), ha='left', va='center', size=16)
 
-
     def generate_cumulative_time_series_plot(self):
-        print("Function setup_cumulative_time_series_plot not implemented yet.")
+        self.compute_cumulative_time_series()
+
+        plt.figure(figsize=(20, 10))
+        plt.title(self.plot_title)
+        plt.xlabel(self.x_label)
+
+        for i, model in enumerate(self.models):
+            print(model.time_cumulative)
+            plt.plot(model.time_cumulative)
 
     """
     Save the plot in the analysis folder.
     """
+
+    def compute_cumulative_time_series(self):
+        sum = 0
+        for model in self.models:
+            cumulative_array = []
+            sum = 0
+            for i in range(len(model.processed_host_data)):
+                sum += model.processed_host_data[i]
+                cumulative_array.append(sum)
+            model.time_cumulative = cumulative_array
 
     def save_plot(self):
         folder_prefix = self.output_folder_path + "/simulation-analysis/" + self.metric + "/"
