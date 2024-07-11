@@ -41,7 +41,7 @@ def read_input(path=""):
 def parse_input(input_json):
     DEFAULTS = {
         "multimodel": True,
-        "metamodel": True,
+        "metamodel": False,
         "window_size": 1,
         "aggregation_function": "mean",
         "metamodel_function": "mean",
@@ -50,8 +50,8 @@ def parse_input(input_json):
         "unit_scaling_magnitude": 0,
         "plot_type": "time_series",
         "plot_title": "",
-        "x_label": "Time",
-        "y_label": "Metric Unit",
+        "x_label": "",
+        "y_label": "",
         "y_min": None,
         "y_max": None,
         "x_min": None,

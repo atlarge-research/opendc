@@ -23,6 +23,19 @@ technique is similar to a convolution / moving average, which takes chunks of da
 """
 
 
+def mean_of_chunks_and_margin_error(np_array, window_size):
+    chunks = [np_array[i:i + window_size] for i in range(0, len(np_array), window_size)]
+    means = [np.mean(chunk) for chunk in chunks]
+    errors = [np.std(chunk) / np.sqrt(len(chunk)) for chunk in chunks]
+    return np.array(means), np.array(errors)
+
+
+def get_cumulative_limits(model_sums):
+    axis_min = min(model_sums)
+    axis_max = max(model_sums)
+    return [axis_min * 0.9, axis_max * 1.1]
+
+
 class MultiModel:
     def __init__(self, user_input, path, window_size=-1):
         self.user_input = user_input
@@ -74,8 +87,16 @@ class MultiModel:
 
         self.plot_type = self.user_input["plot_type"]
         self.plot_title = self.user_input["plot_title"]
-        self.x_label = self.user_input["x_label"]
-        self.y_label = self.user_input["y_label"]
+        if self.user_input["x_label"] == "":
+            self.x_label = "Samples"
+        else:
+            self.x_label = self.user_input["x_label"]
+
+        if self.user_input["y_label"] == "":
+            self.y_label = self.metric + " [" + self.measure_unit + "]"
+        else:
+            self.y_label = self.user_input["y_label"]
+
         self.y_min = self.user_input["y_min"]
         self.y_max = self.user_input["y_max"]
         self.x_min = self.user_input["x_min"]
@@ -175,13 +196,25 @@ class MultiModel:
     def compute_windowed_aggregation(self):
         for model in self.models:
             numeric_values = model.raw_host_data
-            model.processed_host_data, model.margins_of_error = self.mean_of_chunks_and_margin_error(numeric_values, self.window_size)
+            model.processed_host_data, model.margins_of_error = mean_of_chunks_and_margin_error(numeric_values,
+                                                                                                self.window_size)
 
     """
     Generates plot for the MultiModel from the already computed data. The plot is saved in the analysis folder.
     """
 
     def generate_plot(self):
+        plt.figure(figsize=(10, 10))
+        plt.xticks(size=22)
+        plt.yticks(size=22)
+        plt.ylabel(self.y_label, size=26)
+        plt.xlabel(self.x_label, size=26)
+        plt.title(self.plot_title, size=26)
+        plt.grid()
+
+        self.set_x_axis_lim()
+        self.set_y_axis_lim()
+
         if self.plot_type == "time_series":
             self.generate_time_series_plot()
         elif self.plot_type == "cumulative_total":
@@ -194,87 +227,56 @@ class MultiModel:
                 "'time_series', 'cumulative_total', or 'cumulative_time_series'."
             )
 
+        plt.legend()
         self.save_plot()
 
     def generate_time_series_plot(self):
-        plt.figure(figsize=(20, 10))
-        plt.title(self.plot_title)
-        plt.xlabel(self.x_label)
-        self.set_x_axis_lim()
-        self.set_y_axis_lim()
-        plt.ylabel(self.metric + " " + self.measure_unit)
-        plt.grid()
-
         for model in self.models:
-            means, errors = self.mean_of_chunks_and_margin_error(model.raw_host_data, self.window_size)
+            means, errors = mean_of_chunks_and_margin_error(model.raw_host_data, self.window_size)
             repeated_means = np.repeat(means, self.window_size)[:len(model.raw_host_data)]
             plt.plot(repeated_means, drawstyle='steps-mid', label=("Model " + str(model.id)))
 
-        plt.legend()
-
-
     def generate_cumulative_plot(self):
-        plt.figure(figsize=(20, 10))
-        plt.title(self.plot_title)
-        plt.ylabel(self.x_label)
-        plt.xlim(self.get_cumulative_limits(model_sums=self.sum_models_entries()))
-
-        plt.xlabel(self.metric + " [" + self.measure_unit + "]", size=20)
+        plt.xlim(get_cumulative_limits(model_sums=self.sum_models_entries()))
         plt.ylabel("Model ID", size=20)
-        plt.yticks(range(len(self.models)), [model.id for model in self.models], size=16)
-        plt.xticks(size=16)
+        plt.xlabel("Total " + self.metric + " [" + self.measure_unit + "]")
+        plt.yticks(range(len(self.models)), [model.id for model in self.models])
+        plt.grid(False)
 
         cumulated_energies = self.sum_models_entries()
-
         for i, model in enumerate(self.models):
             plt.barh(label=("Model " + str(model.id)), y=i, width=cumulated_energies[i])
-            plt.text(cumulated_energies[i], i, str(cumulated_energies[i]), ha='left', va='center', size=16)
+            plt.text(cumulated_energies[i], i, str(cumulated_energies[i]), ha='left', va='center', size=26)
 
     def generate_cumulative_time_series_plot(self):
         self.compute_cumulative_time_series()
 
-        plt.figure(figsize=(20, 10))
-        plt.title(self.plot_title)
-        plt.xlabel(self.x_label)
-
-        for i, model in enumerate(self.models):
-            print(model.time_cumulative)
-            plt.plot(model.time_cumulative)
+        for model in self.models:
+            cumulative_repeated = np.repeat(model.time_cumulative, self.window_size)[:len(model.raw_host_data)]
+            plt.plot(cumulative_repeated, drawstyle='steps-mid', label=("Model " + str(model.id) + " cumulative"))
 
     """
     Save the plot in the analysis folder.
     """
 
     def compute_cumulative_time_series(self):
-        _sum = 0
         for model in self.models:
             cumulative_array = []
             _sum = 0
-            for i in range(len(model.processed_host_data)):
-                _sum += model.processed_host_data[i]
-                cumulative_array.append(_sum)
+            for value in model.processed_host_data:
+                _sum += value
+                cumulative_array.append(_sum * self.window_size)
             model.time_cumulative = cumulative_array
 
     def save_plot(self):
         folder_prefix = self.output_folder_path + "/simulation-analysis/" + self.metric + "/"
         plt.savefig(
-            folder_prefix + self.plot_type + "_plot_multimodel_metric=" + self.metric + "_window=" + str(self.window_size) + ".png")
+            folder_prefix + self.plot_type + "_plot_multimodel_metric=" + self.metric + "_window=" + str(
+                self.window_size) + ".png")
 
     """
     Takes the mean of the chunks, depending on the window size (i.e., chunk size).
     """
-
-    def mean_of_chunks_and_margin_error(self, np_array, window_size):
-        chunks = [np_array[i:i + window_size] for i in range(0, len(np_array), window_size)]
-        means = [np.mean(chunk) for chunk in chunks]
-        errors = [np.std(chunk) / np.sqrt(len(chunk)) for chunk in chunks]
-        return np.array(means), np.array(errors)
-
-
-    def get_cumulative_limits(self, model_sums):
-        axis_min = min(model_sums)
-        axis_max = max(model_sums)
-        return [axis_min * 0.9, axis_max * 1.1]
 
     def set_x_axis_lim(self):
         if self.x_min is not None:
@@ -289,17 +291,15 @@ class MultiModel:
     """
 
     def set_y_axis_lim(self):
-        axis_min = min([min(model.processed_host_data - model.margins_of_error) for model in self.models])
-        axis_max = max([max(model.processed_host_data + model.margins_of_error) for model in self.models])
+        # axis_min = min([min(model.processed_host_data - model.margins_of_error) for model in self.models])
+        # axis_max = max([max(model.processed_host_data + model.margins_of_error) for model in self.models])
+        # plt.ylim([axis_min * 0.95, axis_max * 1.05])
 
         # handles user input
         if self.y_min is not None:
-            axis_min = self.y_min
+            plt.ylim(bottom=self.y_min)
         if self.y_max is not None:
-            axis_max = self.y_max
-
-        plt.ylim([axis_min * 0.95, axis_max * 1.05])
-
+            plt.ylim(top=self.y_max)
 
     """
     Computes the total of energy consumption / co2 emissions (depending on the input metric)
