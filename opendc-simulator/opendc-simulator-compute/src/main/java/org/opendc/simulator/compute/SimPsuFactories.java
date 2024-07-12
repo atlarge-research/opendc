@@ -207,10 +207,11 @@ public class SimPsuFactories {
         @Override
         public void setTemperature() {
             double rHS = 0.298; // thermal resistance of the heat sink
+            double rCase = 0.00061; // thermal resistance of the case
             double ambientTemp = 22; // ambient temperature in degrees Celsius
             double totalPowerDissipated = getThermalPower();
 
-            machineTemp = ambientTemp + (totalPowerDissipated * rHS);
+            machineTemp = ambientTemp + (totalPowerDissipated * (rHS + rCase));
         }
 
         @Override
