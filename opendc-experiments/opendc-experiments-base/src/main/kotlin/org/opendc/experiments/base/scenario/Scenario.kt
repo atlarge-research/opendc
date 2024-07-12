@@ -22,12 +22,13 @@
 
 package org.opendc.experiments.base.scenario
 
-import AllocationPolicySpec
-import CheckpointModelSpec
-import ExportModelSpec
-import ScenarioTopologySpec
-import WorkloadSpec
+
+import org.opendc.experiments.base.scenario.specs.ScenarioTopologySpec
+import org.opendc.experiments.base.scenario.specs.WorkloadSpec
+import org.opendc.experiments.base.scenario.specs.AllocationPolicySpec
 import org.opendc.experiments.base.scenario.specs.FailureModelSpec
+import org.opendc.experiments.base.scenario.specs.CheckpointModelSpec
+import org.opendc.experiments.base.scenario.specs.ExportModelSpec
 
 /**
  * A data class representing a scenario for a set of experiments.
