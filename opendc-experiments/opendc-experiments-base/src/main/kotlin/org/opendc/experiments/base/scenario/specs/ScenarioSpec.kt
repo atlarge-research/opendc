@@ -22,11 +22,6 @@
 
 package org.opendc.experiments.base.scenario.specs
 
-import AllocationPolicySpec
-import CheckpointModelSpec
-import ExportModelSpec
-import ScenarioTopologySpec
-import WorkloadSpec
 import kotlinx.serialization.Serializable
 import java.util.UUID
 
@@ -46,13 +41,13 @@ import java.util.UUID
 public data class ScenarioSpec(
     var id: Int = -1,
     var name: String = "",
-    val topologies: List<ScenarioTopologySpec>,
-    val workloads: List<WorkloadSpec>,
-    val allocationPolicies: List<AllocationPolicySpec>,
-    val failureModels: List<FailureModelSpec?> = listOf(null),
-    val checkpointModels: List<CheckpointModelSpec?> = listOf(null),
-    val carbonTracePaths: List<String?> = listOf(null),
-    val exportModels: List<ExportModelSpec> = listOf(ExportModelSpec()),
+    val topologies: Set<ScenarioTopologySpec>,
+    val workloads: Set<WorkloadSpec>,
+    val allocationPolicies: Set<AllocationPolicySpec>,
+    val failureModels: Set<FailureModelSpec?> = setOf(null),
+    val checkpointModels: Set<CheckpointModelSpec?> = setOf(null),
+    val carbonTracePaths: Set<String?> = setOf(null),
+    val exportModels: Set<ExportModelSpec> = setOf(ExportModelSpec()),
     val outputFolder: String = "output",
     val initialSeed: Int = 0,
     val runs: Int = 1,

@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+package org.opendc.experiments.base.scenario.specs
+
 import kotlinx.serialization.Serializable
 import org.opendc.compute.workload.ComputeWorkload
 import org.opendc.compute.workload.sampleByLoad

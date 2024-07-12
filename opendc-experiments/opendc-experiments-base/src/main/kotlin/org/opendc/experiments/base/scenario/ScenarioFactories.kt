@@ -23,6 +23,12 @@
 package org.opendc.experiments.base.scenario
 
 import org.opendc.experiments.base.scenario.specs.ScenarioSpec
+import org.opendc.experiments.base.scenario.specs.ScenarioTopologySpec
+import org.opendc.experiments.base.scenario.specs.WorkloadSpec
+import org.opendc.experiments.base.scenario.specs.AllocationPolicySpec
+import org.opendc.experiments.base.scenario.specs.FailureModelSpec
+import org.opendc.experiments.base.scenario.specs.CheckpointModelSpec
+import org.opendc.experiments.base.scenario.specs.ExportModelSpec
 import java.io.File
 
 private val scenarioReader = ScenarioReader()
@@ -48,6 +54,22 @@ public fun getScenarios(file: File): List<Scenario> {
     return getScenarios(scenarioReader.read(file))
 }
 
+
+public operator fun <T> List<T>.component6(): T = get(5)
+public operator fun <T> List<T>.component7(): T = get(6)
+
+/**
+ * Cartesian product of two or more sets of variables
+ */
+public fun cartesianProduct(a: Set<ScenarioTopologySpec>, b: Set<WorkloadSpec>, c: Set<AllocationPolicySpec>,
+                            d: Set<FailureModelSpec?>, e: Set<CheckpointModelSpec?>, f: Set<String?>,
+                            g: Set<ExportModelSpec>): Set<List<*>> =
+    (setOf(a, b).plus(listOf(c, d, e, f, g))
+        .fold(listOf(listOf<Any?>())) { acc, set ->
+            acc.flatMap { list -> set.map { element -> list + element } }
+        }
+        .toSet()
+
 /**
  * Returns a list of Scenarios from a given ScenarioSpec by generating all possible combinations of
  * workloads, allocation policies, failure models, and export models within a topology.
@@ -64,37 +86,68 @@ public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
 
     val scenarios = mutableListOf<Scenario>()
 
-    for ((scenarioID, scenarioTopologySpec) in scenarioSpec.topologies.withIndex()) {
-        for (workloadSpec in scenarioSpec.workloads) {
-            for (allocationPolicySpec in scenarioSpec.allocationPolicies) {
-                for (failureModelSpec in scenarioSpec.failureModels) {
-                    for (checkpointModelSpec in scenarioSpec.checkpointModels) {
-                        for (carbonTracePath in scenarioSpec.carbonTracePaths) {
-                            for (exportModelSpec in scenarioSpec.exportModels) {
-                                val scenario =
-                                    Scenario(
-                                        id = scenarioID,
-                                        topologySpec = scenarioTopologySpec,
-                                        workloadSpec = workloadSpec,
-                                        allocationPolicySpec = allocationPolicySpec,
-                                        failureModelSpec = failureModelSpec,
-                                        checkpointModelSpec = checkpointModelSpec,
-                                        carbonTracePath = carbonTracePath,
-                                        exportModelSpec = exportModelSpec,
-                                        outputFolder = outputFolder,
-                                        name = scenarioID.toString(),
-                                        runs = scenarioSpec.runs,
-                                        initialSeed = scenarioSpec.initialSeed,
-                                    )
-                                trackScenario(scenarioSpec, outputFolder, scenario)
-                                scenarios.add(scenario)
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    val cartesianInput = cartesianProduct(scenarioSpec.topologies,
+                                          scenarioSpec.workloads,
+                                          scenarioSpec.allocationPolicies,
+                                          scenarioSpec.failureModels,
+                                          scenarioSpec.checkpointModels,
+                                          scenarioSpec.carbonTracePaths,
+                                          scenarioSpec.exportModels)
+
+    for ((scenarioID, scenarioInfo) in cartesianInput.withIndex()) {
+        val (scenarioTopologySpec, workloadSpec, allocationPolicySpec, failureModelSpec,
+            checkpointModelSpec, carbonTracePath, exportModelSpec) = scenarioInfo
+
+        val scenario =
+            Scenario(
+                id = scenarioID,
+                topologySpec = scenarioTopologySpec,
+                workloadSpec = workloadSpec,
+                allocationPolicySpec = allocationPolicySpec,
+                failureModelSpec = failureModelSpec,
+                checkpointModelSpec = checkpointModelSpec,
+                carbonTracePath = carbonTracePath,
+                exportModelSpec = exportModelSpec,
+                outputFolder = outputFolder,
+                name = scenarioID.toString(),
+                runs = scenarioSpec.runs,
+                initialSeed = scenarioSpec.initialSeed,
+            )
+        trackScenario(scenarioSpec, outputFolder, scenario)
+        scenarios.add(scenario)
     }
+
+//    for ((scenarioID, scenarioTopologySpec) in scenarioSpec.topologies.withIndex()) {
+//        for (workloadSpec in scenarioSpec.workloads) {
+//            for (allocationPolicySpec in scenarioSpec.allocationPolicies) {
+//                for (failureModelSpec in scenarioSpec.failureModels) {
+//                    for (checkpointModelSpec in scenarioSpec.checkpointModels) {
+//                        for (carbonTracePath in scenarioSpec.carbonTracePaths) {
+//                            for (exportModelSpec in scenarioSpec.exportModels) {
+//                                val scenario =
+//                                    Scenario(
+//                                        id = scenarioID,
+//                                        topologySpec = scenarioTopologySpec,
+//                                        workloadSpec = workloadSpec,
+//                                        allocationPolicySpec = allocationPolicySpec,
+//                                        failureModelSpec = failureModelSpec,
+//                                        checkpointModelSpec = checkpointModelSpec,
+//                                        carbonTracePath = carbonTracePath,
+//                                        exportModelSpec = exportModelSpec,
+//                                        outputFolder = outputFolder,
+//                                        name = scenarioID.toString(),
+//                                        runs = scenarioSpec.runs,
+//                                        initialSeed = scenarioSpec.initialSeed,
+//                                    )
+//                                trackScenario(scenarioSpec, outputFolder, scenario)
+//                                scenarios.add(scenario)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     return scenarios
 }
@@ -118,13 +171,13 @@ public fun trackScenario(
         ScenarioSpec(
             id = scenario.id,
             name = scenarioSpec.name,
-            topologies = listOf(scenario.topologySpec),
-            workloads = listOf(scenario.workloadSpec),
-            allocationPolicies = listOf(scenario.allocationPolicySpec),
-            failureModels = listOf(scenario.failureModelSpec),
-            checkpointModels = listOf(scenario.checkpointModelSpec),
-            carbonTracePaths = listOf(scenario.carbonTracePath),
-            exportModels = listOf(scenario.exportModelSpec),
+            topologies = setOf(scenario.topologySpec),
+            workloads = setOf(scenario.workloadSpec),
+            allocationPolicies = setOf(scenario.allocationPolicySpec),
+            failureModels = setOf(scenario.failureModelSpec),
+            checkpointModels = setOf(scenario.checkpointModelSpec),
+            carbonTracePaths = setOf(scenario.carbonTracePath),
+            exportModels = setOf(scenario.exportModelSpec),
             outputFolder = scenario.outputFolder,
             initialSeed = scenario.initialSeed,
             runs = scenario.runs,
