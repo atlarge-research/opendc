@@ -22,7 +22,7 @@
 
 @file:JvmName("ScenarioCli")
 
-package org.opendc.experiments.scenario
+package org.opendc.experiments.base.runner
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
@@ -30,7 +30,6 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
-import org.opendc.experiments.base.runner.runScenarios
 import org.opendc.experiments.base.scenario.getScenarios
 import java.io.File
 
