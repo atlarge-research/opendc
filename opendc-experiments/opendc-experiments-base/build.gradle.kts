@@ -27,6 +27,7 @@ plugins {
     `kotlin-library-conventions`
     `testing-conventions`
     `jacoco-conventions`
+    distribution
     kotlin("plugin.serialization") version "1.9.22"
 }
 
@@ -34,6 +35,8 @@ dependencies {
 
     api(projects.opendcCompute.opendcComputeService)
     api(projects.opendcCompute.opendcComputeSimulator)
+
+    implementation(libs.clikt)
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation(libs.progressbar)
@@ -47,4 +50,37 @@ dependencies {
 
     runtimeOnly(libs.log4j.core)
     runtimeOnly(libs.log4j.slf4j)
+}
+
+val createScenarioApp by tasks.creating(CreateStartScripts::class) {
+    dependsOn(tasks.jar)
+
+    applicationName = "OpenDCScenarioRunner"
+    mainClass.set("org.opendc.experiments.base.ScenarioCLI")
+    classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
+    outputDir = project.buildDir.resolve("scripts")
+}
+
+// Create custom Scenario distribution
+distributions {
+    main {
+        distributionBaseName.set("OpenDCScenarioRunner")
+
+        contents {
+            from("README.md")
+            from("LICENSE.txt")
+            from("../../LICENSE.txt") {
+                rename { "LICENSE-OpenDC.txt" }
+            }
+
+            into("bin") {
+                from(createScenarioApp)
+            }
+
+            into("lib") {
+                from(tasks.jar)
+                from(configurations["runtimeClasspath"])
+            }
+        }
+    }
 }
