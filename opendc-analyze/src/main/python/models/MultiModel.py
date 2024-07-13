@@ -23,21 +23,12 @@ technique is similar to a convolution / moving average, which takes chunks of da
 """
 
 
-def mean_of_chunks_and_margin_error(np_array, window_size):
-    chunks = [np_array[i:i + window_size] for i in range(0, len(np_array), window_size)]
-    means = [np.mean(chunk) for chunk in chunks]
-    errors = [np.std(chunk) / np.sqrt(len(chunk)) for chunk in chunks]
-    return np.array(means), np.array(errors)
-
-
-def get_cumulative_limits(model_sums):
-    axis_min = min(model_sums)
-    axis_max = max(model_sums)
-    return [axis_min * 0.9, axis_max * 1.1]
-
-
 class MultiModel:
     def __init__(self, user_input, path, window_size=-1):
+        self.starting_time = time.time()
+        self.end_time = None
+        self.workload_time = None
+
         self.user_input = user_input
 
         self.metric = None
@@ -52,7 +43,6 @@ class MultiModel:
         self.unit_scaling = 1
         self.window_size = -1
         self.aggregation_function = "median"
-        self.workload_time = 0
         self.max_model_len = 0
 
         self.plot_type = None
@@ -63,6 +53,7 @@ class MultiModel:
         self.x_max = None
         self.y_min = None
         self.y_max = None
+        self.plot_path = None
 
         # run init functions
         self.parse_user_input(window_size)
@@ -109,13 +100,16 @@ class MultiModel:
 
     def adjust_unit(self):
         prefixes = ['n', 'μ', 'm', '', 'k', 'M', 'G', 'T']
-        scaling_factors = [-9, -6, -3, 0, 3, 6, 9]
+        scaling_factors = [-9, -6, -3, 1, 3, 6, 9]
         given_metric = self.user_input["current_unit"]
         self.unit_scaling = self.user_input["unit_scaling_magnitude"]
 
         if self.unit_scaling not in scaling_factors:
             raise ValueError(
-                "Unit scaling factor not found. Please enter a valid unit from [-9, -6, -3, 0, 3, 6, 9].")
+                "Unit scaling factor not found. Please enter a valid unit from [-9, -6, -3, 1, 3, 6, 9].")
+
+        if self.unit_scaling == 1:
+            return given_metric
 
         for i in range(len(scaling_factors)):
             if self.unit_scaling == scaling_factors[i]:
@@ -134,7 +128,6 @@ class MultiModel:
     """
 
     def set_paths(self):
-        # the output folder is the current path + self.path
         self.output_folder_path = os.getcwd() + "/" + self.path
         self.raw_output_path = os.getcwd() + "/" + self.path + "/raw-output"
         self.analysis_file_path = os.getcwd() + "/" + self.path + "/simulation-analysis/"
@@ -164,27 +157,16 @@ class MultiModel:
                 raise ValueError("Unit scaling factor is not set. Please ensure it is set correctly.")
 
             raw_data = np.divide(raw_data, self.unit_scaling)
-            raw_data = raw_data.round(2)
 
             if self.user_input["samples_per_minute"] > 0:
-                total_values = len(raw_data)
-                total_time = total_values * self.user_input["samples_per_minute"] / 60 / 24
-                print("There are " + str(
-                    total_values) + " values in the raw data, hence the data is measured for a time of"
-                                    " " + str(total_time) + " days.")
+                MINUTES_IN_DAY = 1440
+                self.workload_time = len(raw_data) * self.user_input["samples_per_minute"] / MINUTES_IN_DAY
 
-            model = Model(
-                raw_host_data=raw_data,
-                id=model_id,
-                path=self.output_folder_path
-            )
-
+            model = Model(raw_host_data=raw_data, id=model_id, path=self.output_folder_path)
             self.models.append(model)
             model_id += 1
 
         self.max_model_len = max([len(model.raw_host_data) for model in self.models])
-        self.workload_time = math.floor(
-            300 * self.max_model_len / 3600 / 24)  # a sample is taken every 300 seconds and converted to days
 
     """
     The MultiModel uses a "windowed aggregation" technique to aggregate the data using a window size and a function. This
@@ -196,8 +178,7 @@ class MultiModel:
     def compute_windowed_aggregation(self):
         for model in self.models:
             numeric_values = model.raw_host_data
-            model.processed_host_data, model.margins_of_error = mean_of_chunks_and_margin_error(numeric_values,
-                                                                                                self.window_size)
+            model.processed_host_data = self.mean_of_chunks(numeric_values, self.window_size)
 
     """
     Generates plot for the MultiModel from the already computed data. The plot is saved in the analysis folder.
@@ -229,15 +210,16 @@ class MultiModel:
 
         plt.legend()
         self.save_plot()
+        self.output_stats()
 
     def generate_time_series_plot(self):
         for model in self.models:
-            means, errors = mean_of_chunks_and_margin_error(model.raw_host_data, self.window_size)
+            means = self.mean_of_chunks(model.raw_host_data, self.window_size)
             repeated_means = np.repeat(means, self.window_size)[:len(model.raw_host_data)]
             plt.plot(repeated_means, drawstyle='steps-mid', label=("Model " + str(model.id)))
 
     def generate_cumulative_plot(self):
-        plt.xlim(get_cumulative_limits(model_sums=self.sum_models_entries()))
+        plt.xlim(self.get_cumulative_limits(model_sums=self.sum_models_entries()))
         plt.ylabel("Model ID", size=20)
         plt.xlabel("Total " + self.metric + " [" + self.measure_unit + "]")
         plt.yticks(range(len(self.models)), [model.id for model in self.models])
@@ -270,13 +252,9 @@ class MultiModel:
 
     def save_plot(self):
         folder_prefix = self.output_folder_path + "/simulation-analysis/" + self.metric + "/"
-        plt.savefig(
-            folder_prefix + self.plot_type + "_plot_multimodel_metric=" + self.metric + "_window=" + str(
-                self.window_size) + ".png")
-
-    """
-    Takes the mean of the chunks, depending on the window size (i.e., chunk size).
-    """
+        self.plot_path = folder_prefix + self.plot_type + "_plot_multimodel_metric=" + self.metric + "_window=" + str(
+            self.window_size) + ".pdf"
+        plt.savefig(self.plot_path)
 
     def set_x_axis_lim(self):
         if self.x_min is not None:
@@ -291,11 +269,6 @@ class MultiModel:
     """
 
     def set_y_axis_lim(self):
-        # axis_min = min([min(model.processed_host_data - model.margins_of_error) for model in self.models])
-        # axis_max = max([max(model.processed_host_data + model.margins_of_error) for model in self.models])
-        # plt.ylim([axis_min * 0.95, axis_max * 1.05])
-
-        # handles user input
         if self.y_min is not None:
             plt.ylim(bottom=self.y_min)
         if self.y_max is not None:
@@ -333,10 +306,25 @@ class MultiModel:
         return average_cpu_utilizations
 
     def output_stats(self):
-        analysis_file_path = utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + self.metric + "/analysis.txt"
-        with open(analysis_file_path, "a") as f:
+        self.end_time = time.time()
+        with open(self.analysis_file_path, "a") as f:
             f.write("\n\n========================================\n")
             f.write("Simulation made at " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
-            f.write(
-                "We are running MultiModel for " + self.metric + ", with window size " + str(self.window_size) + "\n")
+            f.write("Metric: " + self.metric + "\n")
+            f.write("Unit: " + self.measure_unit + "\n")
+            f.write("Window size: " + str(self.window_size) + "\n")
             f.write("Sample count in raw host data: " + str(self.max_model_len) + "\n")
+            f.write("Computing time " + str(round(self.end_time - self.starting_time, 1)) + "s\n")
+            f.write("Workload time: " + str(round(self.workload_time, 2)) + " days\n")
+            f.write("Plot path" + self.plot_path + "\n")
+            f.write("========================================\n")
+
+    def mean_of_chunks(self, np_array, window_size):
+        chunks = [np_array[i:i + window_size] for i in range(0, len(np_array), window_size)]
+        means = [np.mean(chunk) for chunk in chunks]
+        return np.array(means)
+
+    def get_cumulative_limits(self, model_sums):
+        axis_min = min(model_sums)
+        axis_max = max(model_sums)
+        return [axis_min * 0.9, axis_max * 1.1]
