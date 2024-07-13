@@ -2,15 +2,13 @@
     "multimodel": true,
     "metamodel": true,
     "metric": "power_draw",
-    "window_size": 10,
+    "window_size": 100,
     "aggregation_function": "mean",
     "samples_per_minute": 0.2,
-    "plot_type": "time_series",
-    "plot_title": "Window Size = 10",
+    "plot_type": "time_series_total",
+    "plot_title": "time_series_total plot, window_size=1",
     "x_label": "Sample count",
-    "y_label": "Energy Usage [KW]",
-    "y_min": 0,
-    "y_max": 15,
+    "y_label": "Energy Usage [MW]",
     "current_unit": "W",
-    "unit_scaling_magnitude": 3
+    "unit_scaling_magnitude": 6
 }

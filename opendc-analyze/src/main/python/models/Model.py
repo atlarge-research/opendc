@@ -17,6 +17,7 @@ class Model:
         self.time_cumulative = []
         self.experiment_name = id
         self.id = id
+        self.cumulated = 0
 
         self.margins_of_error = []
         self.topologies = []

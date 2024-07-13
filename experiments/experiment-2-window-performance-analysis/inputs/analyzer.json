@@ -4,5 +4,6 @@
     "metric": "power_draw",
     "window_size": 100,
     "aggregation_function": "mean",
-    "plot_type": "time_series"
+    "plot_type": "cumulative_total",
+    "unit_scaling_magnitude": 6
 }

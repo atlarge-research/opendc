@@ -23,23 +23,27 @@ from input_parser import read_input
 # parameter input for main
 # "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json", "experiments/experiment-2-window-performance-analysis/outputs/window-size-performance-analysis"
 
+# argv for Alexandru's demo "demo_alex/outputs/" "demo_alex/inputs/analyzer.json"
+print("The current path is " + os.getcwd())
 def main():
+    experiment2.experiment_2()
+
+
     print("ARGV1 is " + sys.argv[1])
     print("ARGV2 is " + sys.argv[2])
 
-    # argv for Alexandru's demo "demo_alex/outputs/" "demo_alex/inputs/analyzer.json"
-    print("The current path is " + os.getcwd())
 
 
 
-    user_input = read_input(sys.argv[2])
 
-    if (user_input["multimodel"]):  # if user wants to run a Multi-Model
-        multimodel = MultiModel(
-            user_input,
-            path=sys.argv[1]
-        )
-        multimodel.generate_plot()
+    # user_input = read_input(sys.argv[2])
+    #
+    # if (user_input["multimodel"]):  # if user wants to run a Multi-Model
+    #     multimodel = MultiModel(
+    #         user_input,
+    #         path=sys.argv[1]
+    #     )
+    #     multimodel.generate_plot()
 
 
 if __name__ == "__main__":

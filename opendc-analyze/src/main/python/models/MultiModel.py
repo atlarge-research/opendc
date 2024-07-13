@@ -176,9 +176,10 @@ class MultiModel:
     """
 
     def compute_windowed_aggregation(self):
-        for model in self.models:
-            numeric_values = model.raw_host_data
-            model.processed_host_data = self.mean_of_chunks(numeric_values, self.window_size)
+        if self.plot_type != "cumulative":
+            for model in self.models:
+                numeric_values = model.raw_host_data
+                model.processed_host_data = self.mean_of_chunks(numeric_values, self.window_size)
 
     """
     Generates plot for the MultiModel from the already computed data. The plot is saved in the analysis folder.
@@ -198,17 +199,18 @@ class MultiModel:
 
         if self.plot_type == "time_series":
             self.generate_time_series_plot()
-        elif self.plot_type == "cumulative_total":
+        elif self.plot_type == "cumulative":
             self.generate_cumulative_plot()
         elif self.plot_type == "cumulative_time_series":
             self.generate_cumulative_time_series_plot()
         else:
             raise ValueError(
                 "Plot type not recognized. Please enter a valid plot type. The plot can be either "
-                "'time_series', 'cumulative_total', or 'cumulative_time_series'."
+                "'time_series', 'cumulative', or 'cumulative_time_series'."
             )
 
-        plt.legend()
+        # make legend 3 times bigger
+        plt.legend(fontsize=22)
         self.save_plot()
         self.output_stats()
 
@@ -286,7 +288,7 @@ class MultiModel:
     def sum_models_entries(self):
         models_sums = []
         for (i, model) in enumerate(self.models):
-            cumulated_energy = model.processed_host_data.sum() * self.window_size
+            cumulated_energy = model.raw_host_data.sum()
             cumulated_energy = round(cumulated_energy, 2)
 
             models_sums.append(cumulated_energy)
@@ -315,7 +317,8 @@ class MultiModel:
             f.write("Window size: " + str(self.window_size) + "\n")
             f.write("Sample count in raw host data: " + str(self.max_model_len) + "\n")
             f.write("Computing time " + str(round(self.end_time - self.starting_time, 1)) + "s\n")
-            f.write("Workload time: " + str(round(self.workload_time, 2)) + " days\n")
+            if (self.user_input["samples_per_minute"] > 0):
+                f.write("Workload time: " + str(round(self.workload_time, 2)) + " days\n")
             f.write("Plot path" + self.plot_path + "\n")
             f.write("========================================\n")
 

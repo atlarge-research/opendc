@@ -1,0 +1,33 @@
+
+    *******************************************
+    * Running Experiment 2
+    * Time: 2024-07-13 19:36:39
+    *******************************************
+    
+
+===Sample rate: 300===
+Time taken for window size 1000: 0.676 seconds
+Time taken for window size 100: 0.472 seconds
+Time taken for window size 10: 0.454 seconds
+Time taken for window size 1: 0.458 seconds
+
+
+===Sample rate: 60===
+Time taken for window size 1000: 2.525 seconds
+Time taken for window size 100: 2.353 seconds
+Time taken for window size 10: 2.375 seconds
+Time taken for window size 1: 2.298 seconds
+
+
+===Sample rate: 30===
+Time taken for window size 1000: 5.802 seconds
+Time taken for window size 100: 5.287 seconds
+Time taken for window size 10: 5.208 seconds
+Time taken for window size 1: 5.376 seconds
+
+
+===Sample rate: 3===
+Time taken for window size 1000: 179.289 seconds
+Time taken for window size 100: 208.494 seconds
+Time taken for window size 10: 229.015 seconds
+Time taken for window size 1: 230.667 seconds
