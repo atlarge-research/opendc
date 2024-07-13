@@ -1,0 +1,14 @@
+{
+    "multimodel": true,
+    "metric": "power_draw",
+    "window_size": 25,
+    "aggregation_function": "mean",
+    "samples_per_minute": 0.2,
+    "plot_type": "time_series",
+    "x_label": "Sample count",
+    "y_label": "Energy Usage [kW]",
+    "current_unit": "W",
+    "y_min": 0,
+    "y_max": 40,
+    "unit_scaling_magnitude": 3
+}

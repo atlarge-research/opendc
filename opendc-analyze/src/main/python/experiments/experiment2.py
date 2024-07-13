@@ -13,16 +13,15 @@ every 3, 30, 60 and 300 seconds respectively.
 We save the data results in analysis.txt file, in the directory corresponding to experiment 2.
 """
 def experiment_2():
-    analysis_file_path = 'analysis.txt'
-    sample_rates = [3, 30, 60, 300]
-    window_sizes = [1]
+    analysis_file_path = 'cumulative-total.txt'
+    sample_rates = [300, 60, 30, 3]
+    window_sizes = [1000, 100, 10, 1]
     argv1 = "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json"
 
-    ascii_art = """
+    ascii_art = f"""
     *******************************************
-    *                                         *
-    *            Running Experiment 2         *
-    *                                         *
+    * Running Experiment 2
+    * Time: {time.strftime('%Y-%m-%d %H:%M:%S')}
     *******************************************
     """
 
@@ -39,13 +38,11 @@ def experiment_2():
                 multimodel = MultiModel(
                     read_input(argv1),
                     path=argv2,
-                    window_size=window_size
+                    window_size=window_size,
                 )
-
                 multimodel.generate_plot()
 
                 ending_time = time.time()
                 elapsed_time = ending_time - starting_time
                 f.write(f"Time taken for window size {window_size}: {round(elapsed_time, 3)} seconds\n")
 
-# Ensure the experiments/experiment-2-window-performance-analysis/outputs//window_size_performance_analysis directory exists

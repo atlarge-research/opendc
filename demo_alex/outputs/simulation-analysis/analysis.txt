@@ -1,0 +1,552 @@
+
+
+========================================
+Simulation made at 2024-07-13 13:42:38
+Metric: power_draw
+Unit: MW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 0.6s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=1.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 13:43:19
+Metric: power_draw
+Unit: MW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=10.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:02:24
+Metric: power_draw
+Unit: MW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.4s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=10.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:02:31
+Metric: power_draw
+Unit: MW
+Window size: 100
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=100.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:02:34
+Metric: power_draw
+Unit: MW
+Window size: 1000
+Sample count in raw host data: 3677
+Computing time 0.2s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=1000.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:03:16
+Metric: power_draw
+Unit: MW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 0.7s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=1.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:03:19
+Metric: power_draw
+Unit: MW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=10.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:03:22
+Metric: power_draw
+Unit: MW
+Window size: 100
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=100.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:03:26
+Metric: power_draw
+Unit: MW
+Window size: 1000
+Sample count in raw host data: 3677
+Computing time 0.2s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=1000.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:03:34
+Metric: power_draw
+Unit: MW
+Window size: 1000
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1000.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:03:37
+Metric: power_draw
+Unit: MW
+Window size: 100
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=100.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:03:40
+Metric: power_draw
+Unit: MW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:03:44
+Metric: power_draw
+Unit: MW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 1.0s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:03:48
+Metric: power_draw
+Unit: MW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 0.6s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_total_plot_multimodel_metric=power_draw_window=1.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:03:52
+Metric: power_draw
+Unit: MW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_total_plot_multimodel_metric=power_draw_window=10.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:03:57
+Metric: power_draw
+Unit: MW
+Window size: 100
+Sample count in raw host data: 3677
+Computing time 0.2s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_total_plot_multimodel_metric=power_draw_window=100.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:04:00
+Metric: power_draw
+Unit: MW
+Window size: 1000
+Sample count in raw host data: 3677
+Computing time 0.2s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_total_plot_multimodel_metric=power_draw_window=1000.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:04:51
+Metric: power_draw
+Unit: kW
+Window size: 1000
+Sample count in raw host data: 3677
+Computing time 0.2s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_total_plot_multimodel_metric=power_draw_window=1000.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:05:17
+Metric: power_draw
+Unit: MW
+Window size: 1000
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_total_plot_multimodel_metric=power_draw_window=1000.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:05:30
+Metric: power_draw
+Unit: MW
+Window size: 1000
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1000.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:05:45
+Metric: power_draw
+Unit: kW
+Window size: 1000
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1000.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:05:53
+Metric: power_draw
+Unit: kW
+Window size: 100
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=100.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:05:56
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:05:59
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 1.0s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:06:30
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 1.0s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:06:40
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.png
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:13:54
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.5s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:21:53
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 1.1s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:22:25
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 1.1s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:22:34
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.4s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:22:40
+Metric: power_draw
+Unit: kW
+Window size: 100
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:22:43
+Metric: power_draw
+Unit: kW
+Window size: 100
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:22:46
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:23:19
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 1.1s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:23:29
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 1.0s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:23:45
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 1.1s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:23:54
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.4s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:23:59
+Metric: power_draw
+Unit: kW
+Window size: 100
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:25:23
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 0.7s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_total_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:25:35
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 0.7s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_total_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:25:46
+Metric: power_draw
+Unit: MW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 0.7s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_total_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:26:05
+Metric: power_draw
+Unit: MW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.4s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_total_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:26:09
+Metric: power_draw
+Unit: MW
+Window size: 100
+Sample count in raw host data: 3677
+Computing time 0.2s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_total_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:26:28
+Metric: power_draw
+Unit: MW
+Window size: 100
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:26:32
+Metric: power_draw
+Unit: MW
+Window size: 10
+Sample count in raw host data: 3677
+Computing time 0.3s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-13 14:26:35
+Metric: power_draw
+Unit: MW
+Window size: 1
+Sample count in raw host data: 3677
+Computing time 0.6s
+Workload time: 0.51 days
+Plot path/Users/raz/atlarge/opendc/demo_alex/outputs//simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================

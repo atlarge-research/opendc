@@ -1,0 +1,33 @@
+    *******************************************
+    * Running Experiment 2
+    * Time: 2024-07-13 17:50:40
+    * Plotting time-series plots
+    *******************************************
+
+
+===Sample rate: 3===
+Time taken for window size 1000: 238.339 seconds
+Time taken for window size 100: 220.016 seconds
+Time taken for window size 10: 187.711 seconds
+Time taken for window size 1: 264.727 seconds
+
+
+===Sample rate: 30===
+Time taken for window size 1000: 6.031 seconds
+Time taken for window size 100: 5.518 seconds
+Time taken for window size 10: 5.931 seconds
+Time taken for window size 1: 9.757 seconds
+
+
+===Sample rate: 60===
+Time taken for window size 1000: 2.579 seconds
+Time taken for window size 100: 2.518 seconds
+Time taken for window size 10: 2.63 seconds
+Time taken for window size 1: 4.352 seconds
+
+
+===Sample rate: 300===
+Time taken for window size 1000: 0.437 seconds
+Time taken for window size 100: 0.423 seconds
+Time taken for window size 10: 0.435 seconds
+Time taken for window size 1: 0.776 seconds
