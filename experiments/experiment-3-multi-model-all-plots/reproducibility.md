@@ -13,12 +13,12 @@ def main():
 
 ScenarioCLI arguments:
 ```
---scenario-path "experiments/experiment-2-window-performance-analysis/inputs/scenario.json" -p 4 -a
+--scenario-path "experiments/experiment-3-multi-model-all-plots/inputs/scenario.json" -p 4 -a
 ```
 
 ScenarioCLI working directory:
 ```
-/Users/raz/atlarge/opendc/
+/your/path/opendc/
 ```
 
 

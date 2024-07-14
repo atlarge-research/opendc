@@ -13,7 +13,7 @@ every 3, 30, 60 and 300 seconds respectively.
 We save the data results in analysis.txt file, in the directory corresponding to experiment 2.
 """
 def experiment_2():
-    analysis_file_path = 'cumulative-total.txt'
+    analysis_file_path = 'cumulative.txt'
     sample_rates = [300, 60, 30, 3]
     window_sizes = [1000, 100, 10, 1]
     argv1 = "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json"
