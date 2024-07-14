@@ -323,6 +323,9 @@ class MultiModel:
             f.write("========================================\n")
 
     def mean_of_chunks(self, np_array, window_size):
+        if window_size == 1:
+            return np_array
+
         chunks = [np_array[i:i + window_size] for i in range(0, len(np_array), window_size)]
         means = [np.mean(chunk) for chunk in chunks]
         return np.array(means)
