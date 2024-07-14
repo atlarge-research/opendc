@@ -323,11 +323,20 @@ class MultiModel:
             f.write("========================================\n")
 
     def mean_of_chunks(self, np_array, window_size):
+        if window_size == 1:
+            return np_array
+
         chunks = [np_array[i:i + window_size] for i in range(0, len(np_array), window_size)]
         means = [np.mean(chunk) for chunk in chunks]
         return np.array(means)
 
     def get_cumulative_limits(self, model_sums):
-        axis_min = min(model_sums)
-        axis_max = max(model_sums)
+        axis_min = min(model_sums) * 0.9
+        axis_max = max(model_sums) * 1.1
+
+        if self.user_input["x_min"] is not None:
+            axis_min = self.user_input["x_min"]
+        if self.user_input["x_max"] is not None:
+            axis_max = self.user_input["x_max"]
+
         return [axis_min * 0.9, axis_max * 1.1]

@@ -219,3 +219,25 @@ Sample count in raw host data: 2016
 Computing time 0.5s
 Plot path/Users/raz/atlarge/opendc/experiments/experiment-2-window-performance-analysis/outputs/sample-rate=300s/simulation-analysis/power_draw/cumulative_total_plot_multimodel_metric=power_draw_window=1.pdf
 ========================================
+
+
+========================================
+Simulation made at 2024-07-14 19:18:00
+Metric: power_draw
+Unit: M
+Window size: 1000
+Sample count in raw host data: 2016
+Computing time 0.9s
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-2-window-performance-analysis/outputs/sample-rate=300s/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-14 19:18:01
+Metric: power_draw
+Unit: M
+Window size: 100
+Sample count in raw host data: 2016
+Computing time 0.5s
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-2-window-performance-analysis/outputs/sample-rate=300s/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
