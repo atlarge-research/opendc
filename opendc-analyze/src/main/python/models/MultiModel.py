@@ -9,19 +9,8 @@ import time
 import utils
 from .Model import Model
 
-"""
-A MultiModel is a collection of models. It is used to aggregate data from multiple instances of the Model class, and
-further analyze it. The MultiModel takes the raw data from the simulation output and loads it into the model attributes.
-
-The MultiModel uses a "windowed aggregation" technique to aggregate the data using a window size and a function. This
-technique is similar to a convolution / moving average, which takes chunks of data and aggregates (e.g., average).
-
-:param input_metric: the metric to analyze, either "power_draw" or "carbon_emission"
-:param window_size: the size of the window to aggregate the data (e.g., an array of 1000 elements, windowed with window_size=10,
-                    would result in 100 elements)
-:param aggregation_function: the function to aggregate the data, default is "median"
-"""
-
+def isMetaModel(model):
+    return model.id == 101
 
 class MultiModel:
     def __init__(self, user_input, path, window_size=-1):
@@ -216,9 +205,13 @@ class MultiModel:
 
     def generate_time_series_plot(self):
         for model in self.models:
-            means = self.mean_of_chunks(model.raw_host_data, self.window_size)
-            repeated_means = np.repeat(means, self.window_size)[:len(model.raw_host_data)]
-            plt.plot(repeated_means, drawstyle='steps-mid', label=("Model " + str(model.id)))
+            if not isMetaModel(model):
+                means = self.mean_of_chunks(model.raw_host_data, self.window_size)
+                repeated_means = np.repeat(means, self.window_size)[:len(model.raw_host_data)]
+            else:
+                repeated_means = np.repeat(model.processed_host_data, self.window_size)
+            label = "Metamodel" if isMetaModel(model) else "Model " + str(model.id)
+            plt.plot(repeated_means, drawstyle='steps-mid', label=label)
 
     def generate_cumulative_plot(self):
         plt.xlim(self.get_cumulative_limits(model_sums=self.sum_models_entries()))
@@ -236,7 +229,7 @@ class MultiModel:
         self.compute_cumulative_time_series()
 
         for model in self.models:
-            cumulative_repeated = np.repeat(model.time_cumulative, self.window_size)[:len(model.raw_host_data)]
+            cumulative_repeated = np.repeat(model.cumulative_time_series_values, self.window_size)[:len(model.raw_host_data)]
             plt.plot(cumulative_repeated, drawstyle='steps-mid', label=("Model " + str(model.id) + " cumulative"))
 
     """
@@ -250,7 +243,7 @@ class MultiModel:
             for value in model.processed_host_data:
                 _sum += value
                 cumulative_array.append(_sum * self.window_size)
-            model.time_cumulative = cumulative_array
+            model.cumulative_time_series_values = cumulative_array
 
     def save_plot(self):
         folder_prefix = self.output_folder_path + "/simulation-analysis/" + self.metric + "/"
