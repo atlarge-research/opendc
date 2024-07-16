@@ -5,31 +5,26 @@ import sys
 
 def read_input(path=""):
     if not path:
-        print("No input path provided.")
-        sys.exit(1918)
+        raise ValueError("No input path provided.")
 
     path = path.strip().strip(',')
 
     project_root = find_root_dir()
     if not project_root:
-        print("Project root not found.")
-        sys.exit(1)
+        raise ValueError("Project root not found.")
 
     full_path = os.path.join(project_root, path)
 
     if not os.path.exists(full_path):
-        print(f"File does not exist: {full_path}")
-        sys.exit(1)
+        raise ValueError(f"File does not exist: {full_path}")
 
     try:
         with open(full_path, 'r') as raw_json:
             input_json = json.load(raw_json)
     except json.JSONDecodeError:
-        print("Failed to decode JSON.")
-        sys.exit(1)
+        raise ValueError("Failed to decode JSON.")
     except IOError:
-        print("MultiModel's parser says: Error opening file.")
-        sys.exit(1)
+        raise ValueError("MultiModel's parser says: Error opening file.")
 
     switch_to_root_dir()
 
@@ -44,7 +39,7 @@ def parse_input(input_json):
         "metamodel": False,
         "window_size": 1,
         "aggregation_function": "mean",
-        "metamodel_function": "mean",
+        "meta_simulation_function": "mean",
         "samples_per_minute": 0,
         "current_unit": "",
         "unit_scaling_magnitude": 1,
@@ -65,8 +60,14 @@ def parse_input(input_json):
 
     # Special handling for required fields without default values
     if "metric" not in input_json:
-        print("Required field 'metric' is missing.")
-        sys.exit(1)
+        raise ValueError("Required field 'metric' is missing.")
+
+    if ("meta_simulation_function" not in input_json) and input_json["metamodel"]:
+        raise ValueError("Required field 'meta_simulation_function' is missing. Please select between 'mean' and 'median'. Alternatively,"
+              "disable metamodel in the config file.")
+
+    if input_json["meta_simulation_function"] not in ["mean", "median"]:
+        raise ValueError("Invalid value for meta_simulation_function. Please select between 'mean' and 'median'.")
 
     return input_json
 
