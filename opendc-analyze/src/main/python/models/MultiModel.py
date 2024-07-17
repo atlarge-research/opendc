@@ -155,7 +155,7 @@ class MultiModel:
             self.models.append(model)
             model_id += 1
 
-        self.max_model_len = max([len(model.raw_host_data) for model in self.models])
+        self.max_model_len = min([len(model.raw_host_data) for model in self.models])
 
     """
     The MultiModel uses a "windowed aggregation" technique to aggregate the data using a window size and a function. This
@@ -204,13 +204,14 @@ class MultiModel:
         self.output_stats()
 
     def generate_time_series_plot(self):
+
         for model in self.models:
             if not isMetaModel(model):
                 means = self.mean_of_chunks(model.raw_host_data, self.window_size)
                 repeated_means = np.repeat(means, self.window_size)[:len(model.raw_host_data)]
             else:
-                repeated_means = np.repeat(model.processed_host_data, self.window_size)
-            label = "Metamodel" if isMetaModel(model) else "Model " + str(model.id)
+                repeated_means = np.repeat(means, self.window_size)[:len(model.raw_host_data) * self.window_size]
+            label = "Meta-Model" if isMetaModel(model) else "Model " + str(model.id)
             plt.plot(repeated_means, drawstyle='steps-mid', label=label)
 
     def generate_cumulative_plot(self):
@@ -222,7 +223,8 @@ class MultiModel:
 
         cumulated_energies = self.sum_models_entries()
         for i, model in enumerate(self.models):
-            plt.barh(label=("Model " + str(model.id)), y=i, width=cumulated_energies[i])
+            label = "Meta-Model" if isMetaModel(model) else "Model " + str(model.id)
+            plt.barh(label=label, y=i, width=cumulated_energies[i])
             plt.text(cumulated_energies[i], i, str(cumulated_energies[i]), ha='left', va='center', size=26)
 
     def generate_cumulative_time_series_plot(self):
@@ -281,10 +283,12 @@ class MultiModel:
     def sum_models_entries(self):
         models_sums = []
         for (i, model) in enumerate(self.models):
-            cumulated_energy = model.raw_host_data.sum()
-            cumulated_energy = round(cumulated_energy, 2)
-
-            models_sums.append(cumulated_energy)
+            if isMetaModel(model):
+                models_sums.append(model.cumulated)
+            else:
+                cumulated_energy = model.raw_host_data.sum()
+                cumulated_energy = round(cumulated_energy, 2)
+                models_sums.append(cumulated_energy)
 
         return models_sums
 
