@@ -10,21 +10,19 @@ from experiments import experiment3
 from experiments import experiment4
 
 from models.MultiModel import MultiModel
-# from models.MetaModel import Metamodel
+from models.MetaModel import Metamodel
 from input_parser import read_input
 
 
 def main():
-    experiment4.experiment_4(
-        argv1=sys.argv[1],
-        argv2=sys.argv[2]
+    multi_model = MultiModel(
+        user_input=read_input(sys.argv[2]),
+        path=sys.argv[1],
     )
 
-    # experiment3.experiment_3(
-    #     argv1=sys.argv[1],
-    #     argv2=sys.argv[2]
-    # )
+    metaModel = Metamodel(multi_model)
 
+    metaModel.plot()
 
 
 

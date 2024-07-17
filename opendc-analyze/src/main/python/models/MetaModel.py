@@ -1,86 +1,115 @@
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
+from scipy.stats import mstats
 
 import utils
 from .Model import Model
 
-"""
-The MetaModel class is used to compute / aggregate a new model, by using the MultiModel class. The MetaModel takes
-data from MultiModel and computes a new model, at a certain granularity, using a function (e.g., median, mean).
-
-While mean succeeded in various sciences, we will further use median, as it is more robust to outliers. We will also
-further analyze, integrate, and evaluate the MetaModel against individual models and test various methodologies of
-aggregation (e.g., mathematical functions, machine learning models).
-"""
+META_MODEL_ID = 101
 
 
 class Metamodel:
     def __init__(self, multimodel):
+        if not multimodel.user_input.get('metamodel', False):
+            raise ValueError("Metamodel is not enabled in the config file")
+
+        self.function_map = {
+            'mean': self.mean,
+            'median': self.median,
+            'equation1': self.meta_equation1,
+        }
+
         self.multimodel = multimodel
-        self.models = multimodel.models
-        self.metric = multimodel.metric
-        self.measure_unit = multimodel.measure_unit
-        self.window_size = multimodel.window_size
-        self.metamodel_data = []
-        self.compute()  # compute the metamodel on initialization
+        self.metamodel = Model(
+            raw_host_data=[],
+            id=META_MODEL_ID,
+            path=self.multimodel.output_folder_path
+        )
 
-    """
-    The compute function takes each model and computes the mean of the chunks of the host data,
-    at a granularity defined by the window-size.
-
-    This function is called on initialization and computes the MetaModel data.
-    """
+        self.meta_simulation_function = self.function_map.get(multimodel.user_input['meta_simulation_function'], self.mean)
+        self.min_raw_model_len = min([len(model.raw_host_data) for model in self.multimodel.models])
+        self.min_processed_model_len = min([len(model.processed_host_data) for model in self.multimodel.models])
+        self.number_of_models = len(self.multimodel.models)
+        self.compute()
 
     def compute(self):
-        for index in range(len(self.models[0].processed_host_data)):
-            array_at_index = []
-            for model in self.models:
-                if index + self.window_size < len(model.processed_host_data):
-                    array_at_index.append(model.processed_host_data[index])
+        if self.multimodel.user_input['plot_type'] == 'time_series':
+            self.compute_time_series()
 
-            median_at_granularity = np.median(array_at_index)
-            self.metamodel_data.append(median_at_granularity)
+        elif self.multimodel.user_input['plot_type'] == 'cumulative':
+            self.compute_cumulative()
 
-    """
-    The generate function sets up the plot, plots the data and saves the plot.
-    """
-
-    def generate(self):
-        self.setup_plot()
-        self.plot()
-        self.save_plot()
-
-    """
-    Set up the plot for the MetaModel.
-    """
-
-    def setup_plot(self):
-        plt.figure(figsize=(30, 10))
-        plt.title(self.metric)
-        plt.xlabel("Time [s]")
-        plt.ylabel(self.metric + self.measure_unit)
-        plt.ylim(0, self.multimodel.set_y_axis_lim())
-
-        # multiply all the values from the x-axis by the window size
-        plt.xticks(
-            np.arange(0, len(self.metamodel_data), step=self.window_size),
-            np.arange(0, len(self.metamodel_data) * self.window_size, step=100 * self.window_size)
-        )
-        plt.grid()
-
-    """
-    Plot the processed MetaModel data.
-    """
+        elif self.multimodel.user_input['plot_type'] == 'cumulative_time_series':
+            self.compute_cumulative_time_series()
 
     def plot(self):
-        plt.plot(self.metamodel_data)
+        if self.multimodel.user_input['plot_type'] == 'time_series':
+            self.plot_time_series()
 
-    """
-    Save the plot in the analysis folder.
-    """
+        elif self.multimodel.user_input['plot_type'] == 'cumulative':
+            self.plot_cumulative()
 
-    def save_plot(self):
-        folder_prefix = "./" + utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + self.metric + "/"
-        plt.savefig(folder_prefix + "metamodel_metric=" + self.metric + "_window=" + str(self.window_size) + ".png")
+        elif self.multimodel.user_input['plot_type'] == 'cumulative_time_series':
+            self.plot_cumulative_time_series()
+
+    def compute_time_series(self):
+        for i in range(0, self.min_raw_model_len):
+            data_entries = []
+            for j in range(self.number_of_models):
+                data_entries.append(self.multimodel.models[j].processed_host_data[i])
+            self.metamodel.processed_host_data.append(self.meta_simulation_function(data_entries))
+
+    def plot_time_series(self):
+        self.multimodel.models.append(self.metamodel)
+        self.multimodel.generate_plot()
+
+    def compute_cumulative(self):
+        for i in range(0, self.min_raw_model_len):
+            data_entries = []
+            for j in range(self.number_of_models):
+                host_data = self.multimodel.models[j].raw_host_data
+                ith_element = host_data[i]
+                data_entries.append(ith_element)
+            self.metamodel.cumulated += self.mean(data_entries)
+        self.metamodel.cumulated = round(self.metamodel.cumulated, 2)
+
+    def plot_cumulative(self):
+        self.multimodel.models.append(self.metamodel)
+        self.multimodel.generate_plot()
+
+    def compute_cumulative_time_series(self):
+        for i in range(0, self.min_processed_model_len):
+            data_entries = []
+            for j in range(self.number_of_models):
+                data_entries.append(self.multimodel.models[j].processed_host_data[i])
+            self.metamodel.processed_host_data.append(self.meta_simulation_function(data_entries))
+
+    def plot_cumulative_time_series(self):
+        self.multimodel.models.append(self.metamodel)
+        self.multimodel.generate_plot()
+
+    def mean(self, chunks):
+        return np.mean(chunks)
+
+    def median(self, chunks):
+        return np.median(chunks)
+
+
+    def meta_equation1(self, chunks):
+        median_val = np.median(chunks)
+        proximity_weights = 1 / (1 + np.abs(chunks - median_val))  # Avoid division by zero
+        weighted_mean = np.sum(proximity_weights * chunks) / np.sum(proximity_weights)
+        return weighted_mean
+
+
+    ####IN "BETA"####
+    #
+    # def meta_equation2(self, chunks, trim_percentage=10):
+    #     sorted_chunks = np.sort(chunks)
+    #     n = len(chunks)
+    #     trim_count = int(trim_percentage / 100 * n)
+    #     trimmed_chunks = sorted_chunks[trim_count:-trim_count]  # Remove trim_count elements from both ends
+    #     return np.mean(trimmed_chunks)
+    #
+    # def meta_equation3(self, chunks, limits=0.1):
+    #     winsorized_chunks = mstats.winsorize(chunks, limits=[limits, limits])
+    #     return np.mean(winsorized_chunks)

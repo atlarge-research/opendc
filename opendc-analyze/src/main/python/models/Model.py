@@ -14,7 +14,7 @@ class Model:
         self.path = path
         self.raw_host_data = raw_host_data
         self.processed_host_data = []
-        self.time_cumulative = []
+        self.cumulative_time_series_values = []
         self.experiment_name = id
         self.id = id
         self.cumulated = 0
@@ -25,7 +25,7 @@ class Model:
         self.allocation_policies = []
         self.carbon_trace_paths = []
 
-        self.parse_trackr()
+        # self.parse_trackr()
 
     def parse_trackr(self):
         trackr_path = self.path + "/trackr.json"
