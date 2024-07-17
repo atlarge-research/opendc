@@ -6,7 +6,7 @@
     "aggregation_function": "mean",
     "meta_simulation_function": "mean",
     "samples_per_minute": 0.2,
-    "plot_type": "time_series",
+    "plot_type": "cumulative",
     "plot_title": "First Meta Model",
     "x_label": "Sample count",
     "y_label": "Energy Usage [kW]",
