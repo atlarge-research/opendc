@@ -2,14 +2,14 @@
     "multimodel": true,
     "metamodel": true,
     "metric": "power_draw",
-    "window_size": 10,
+    "window_size": 100,
     "aggregation_function": "mean",
-    "meta_simulation_function": "mean",
+    "meta_simulation_function": "median",
     "samples_per_minute": 0.2,
-    "plot_type": "cumulative",
+    "plot_type": "cumulative_time_series",
     "plot_title": "First Meta Model",
     "x_label": "Sample count",
-    "y_label": "Energy Usage [kW]",
+    "y_label": "Energy Usage [MW]",
     "current_unit": "W",
-    "unit_scaling_magnitude": 3
+    "unit_scaling_magnitude": 6
 }

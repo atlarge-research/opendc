@@ -66,8 +66,8 @@ def parse_input(input_json):
         raise ValueError("Required field 'meta_simulation_function' is missing. Please select between 'mean' and 'median'. Alternatively,"
               "disable metamodel in the config file.")
 
-    if input_json["meta_simulation_function"] not in ["mean", "median"]:
-        raise ValueError("Invalid value for meta_simulation_function. Please select between 'mean' and 'median'.")
+    if input_json["meta_simulation_function"] not in ["mean", "median", "equation1", "equation2", "equation3"]:
+        raise ValueError("Invalid value for meta_simulation_function. Please select between 'mean', 'median', !!!!!!!to be updated in the end!!!!!!!!.")
 
     return input_json
 

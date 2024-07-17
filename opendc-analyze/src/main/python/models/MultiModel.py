@@ -140,7 +140,7 @@ class MultiModel:
             path_of_parquet_file = f"{self.raw_output_path}/{simulation_folder}/seed=0/host.parquet"
             parquet_file = pq.read_table(path_of_parquet_file).to_pandas()
             raw_data = parquet_file.select_dtypes(include=[np.number]).groupby("timestamp")
-            raw_data = raw_data[self.metric].aggregate("sum")
+            raw_data = raw_data[self.metric].sum().values
 
             if self.unit_scaling is None:
                 raise ValueError("Unit scaling factor is not set. Please ensure it is set correctly.")
@@ -204,13 +204,12 @@ class MultiModel:
         self.output_stats()
 
     def generate_time_series_plot(self):
-
         for model in self.models:
             if not isMetaModel(model):
                 means = self.mean_of_chunks(model.raw_host_data, self.window_size)
                 repeated_means = np.repeat(means, self.window_size)[:len(model.raw_host_data)]
             else:
-                repeated_means = np.repeat(means, self.window_size)[:len(model.raw_host_data) * self.window_size]
+                repeated_means = np.repeat(means, self.window_size)[:len(model.processed_host_data) * self.window_size]
             label = "Meta-Model" if isMetaModel(model) else "Model " + str(model.id)
             plt.plot(repeated_means, drawstyle='steps-mid', label=label)
 
@@ -231,7 +230,10 @@ class MultiModel:
         self.compute_cumulative_time_series()
 
         for model in self.models:
-            cumulative_repeated = np.repeat(model.cumulative_time_series_values, self.window_size)[:len(model.raw_host_data)]
+            if isMetaModel(model):
+                cumulative_repeated = np.repeat(model.cumulative_time_series_values, self.window_size)[:len(model.processed_host_data) * self.window_size]
+            else:
+                cumulative_repeated = np.repeat(model.cumulative_time_series_values, self.window_size)[:len(model.raw_host_data)]
             plt.plot(cumulative_repeated, drawstyle='steps-mid', label=("Model " + str(model.id) + " cumulative"))
 
     """
