@@ -56,7 +56,7 @@ val createScenarioApp by tasks.creating(CreateStartScripts::class) {
     dependsOn(tasks.jar)
 
     applicationName = "OpenDCScenarioRunner"
-    mainClass.set("org.opendc.experiments.base.ScenarioCLI")
+    mainClass.set("org.opendc.experiments.base.runner.ScenarioCli")
     classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
     outputDir = project.buildDir.resolve("scripts")
 }
