@@ -22,7 +22,7 @@ def main():
 
     metaModel = Metamodel(multi_model)
 
-    metaModel.plot()
+    metaModel.output()
 
 
 

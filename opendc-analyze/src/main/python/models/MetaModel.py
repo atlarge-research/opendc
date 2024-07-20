@@ -1,5 +1,6 @@
 import numpy as np
-from scipy.stats import mstats
+import pandas as pd
+import os
 
 import utils
 from .Model import Model
@@ -31,28 +32,33 @@ class Metamodel:
         self.number_of_models = len(self.multimodel.models)
         self.compute()
 
+    def output(self):
+        self.plot()
+        self.output_metamodel()
+
     def compute(self):
         if self.multimodel.user_input['plot_type'] == 'time_series':
             self.compute_time_series()
-
         elif self.multimodel.user_input['plot_type'] == 'cumulative':
             self.compute_cumulative()
-
         elif self.multimodel.user_input['plot_type'] == 'cumulative_time_series':
             self.compute_cumulative_time_series()
+        else:
+            raise ValueError("Invalid plot type in config file")
 
     def plot(self):
         if self.multimodel.user_input['plot_type'] == 'time_series':
             self.plot_time_series()
-
         elif self.multimodel.user_input['plot_type'] == 'cumulative':
             self.plot_cumulative()
-
         elif self.multimodel.user_input['plot_type'] == 'cumulative_time_series':
             self.plot_cumulative_time_series()
 
+        else:
+            raise ValueError("Invalid plot type in config file")
+
     def compute_time_series(self):
-        for i in range(0, self.min_raw_model_len):
+        for i in range(0, self.min_processed_model_len):
             data_entries = []
             for j in range(self.number_of_models):
                 data_entries.append(self.multimodel.models[j].processed_host_data[i])
@@ -86,6 +92,19 @@ class Metamodel:
     def plot_cumulative_time_series(self):
         self.multimodel.models.append(self.metamodel)
         self.multimodel.generate_plot()
+
+    """
+    This function outputs the metamodel in a parquet file with a single column, containing the processed_host_data.
+    The function outputs in a ```.parquet``` file format.
+    """
+    def output_metamodel(self):
+        directory_path = os.path.join(self.multimodel.output_folder_path, "raw-output/metamodel/seed=0")
+        os.makedirs(directory_path, exist_ok=True)
+        current_path = os.path.join(directory_path, f"{self.multimodel.metric}.parquet")
+        df = pd.DataFrame({'processed_host_data': self.metamodel.processed_host_data})
+        df.to_parquet(current_path, index=False)
+
+
 
     def mean(self, chunks):
         return np.mean(chunks)

@@ -1,0 +1,73 @@
+Analysis file created.
+
+
+========================================
+Simulation made at 2024-07-20 19:11:20
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 22.9s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-20 19:11:44
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 7.7s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-20 19:16:10
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 4.2s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-20 19:16:25
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 3.4s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-20 19:17:15
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 4.0s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-20 19:17:32
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 3.9s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
