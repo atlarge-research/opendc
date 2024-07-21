@@ -197,6 +197,8 @@ class MultiModel:
         model_id = 0
 
         for simulation_folder in os.listdir(self.raw_output_path):
+            if simulation_folder == "metamodel":
+                continue
             path_of_parquet_file = f"{self.raw_output_path}/{simulation_folder}/seed=0/host.parquet"
             parquet_file = pq.read_table(path_of_parquet_file).to_pandas()
             raw_data = parquet_file.select_dtypes(include=[np.number]).groupby("timestamp")
