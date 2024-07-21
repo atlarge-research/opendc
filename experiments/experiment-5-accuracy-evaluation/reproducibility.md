@@ -23,3 +23,15 @@ your/path/experiment-5-accuracy-evaluation/outputs/raw-output
 ```
 
 We analyze the results in the Jupyter notebook 'output_analyzer.ipynb', located in the ```outputs``` directory.
+
+#### Step 3
+If running from main.py, main.py should contain
+```python
+def main():
+    experiment5.experiment_5(
+        MultiModel(
+            user_input=read_input(sys.argv[2]),
+            path=sys.argv[1],
+        )
+    )
+```

@@ -1,9 +1,12 @@
 import numpy as np
+from models.Model import Model
+from models.MultiModel import MultiModel
+from models.MetaModel import MetaModel
 
 
 def accuracy_evaluator(
-    real_data=None,
-    multi_model=None,
+    real_data,
+    multi_model,
     compute_mape=True,
     compute_nad=True,
     compute_rmsle=True,
@@ -22,33 +25,53 @@ def accuracy_evaluator(
         e.g., RMSLE_hyperparameter=0.3 -> 30% penalty for overestimations, 70% penalty for underestimations (3:7 ratio)
     :return: None, but prints the accuracy metrics
     """
+    # create a file called "accuracy_report.txt" in the output folder
 
-    for model in multi_model.models:
-        simulation_data = model.raw_host_data
-        min_len = min(len(real_data), len(simulation_data))
-        real_data = real_data[:min_len]
-        simulation_data = simulation_data[:min_len]
-        if compute_mape:
-            accuracy_mape = mape(
-                real_data=real_data,
-                simulation_data=simulation_data
-            )
-            print("Mean Absolute Percentage Error (MAPE): ", accuracy_mape)
+    meta_model = MetaModel(multimodel=multi_model)
 
-        if compute_nad:
-            accuracy_nad = nad(
-                real_data=real_data,
-                simulation_data=simulation_data
-            )
-            print("Normalized Absolute Differences (NAD): ", accuracy_nad)
+    multi_model.models.append(meta_model.meta_model) # metamodel
+    multi_model.models.append(Model(raw_host_data=real_data, id=-1, path=None)) # real-world data
 
-        if compute_rmsle:
-            accuracy_rmsle = rmsle(
-                real_data=real_data,
-                simulation_data=simulation_data,
-                alpha=rmsle_hyperparameter
-            )
-            print("Root Mean Square Logarithmic Error (RMSLE), alpha=", rmsle_hyperparameter, ": ", accuracy_rmsle)
+    with open(multi_model.output_folder_path + "/accuracy_report.txt", "a") as f:
+        f.write("====================================\n")
+        f.write("Accuracy Report, against ground truth\n")
+
+        for model in multi_model.models:
+            if model.id == -1:
+                f.write("Real-World data")
+            elif model.id == 101:
+                f.write(f"Meta-Model, meta-function: {multi_model.user_input['meta_simulation_function']}")
+            else:
+                f.write(f"Model {model.id}")
+
+            simulation_data = model.raw_host_data
+            min_len = min(len(real_data), len(simulation_data))
+            real_data = real_data[:min_len]
+            simulation_data = simulation_data[:min_len]
+            if compute_mape:
+                accuracy_mape = mape(
+                    real_data=real_data,
+                    simulation_data=simulation_data
+                )
+                f.write(f"\nMean Absolute Percentage Error (MAPE): {accuracy_mape}%")
+
+            if compute_nad:
+                accuracy_nad = nad(
+                    real_data=real_data,
+                    simulation_data=simulation_data
+                )
+                f.write(f"\nNormalized Absolute Differences (NAD): {accuracy_nad}%")
+
+            if compute_rmsle:
+                accuracy_rmsle = rmsle(
+                    real_data=real_data,
+                    simulation_data=simulation_data,
+                    alpha=rmsle_hyperparameter
+                )
+                f.write(
+                    f"\nRoot Mean Square Logarithmic Error (RMSLE), alpha={rmsle_hyperparameter}:{accuracy_rmsle}\n\n")
+
+        f.write("====================================\n")
 
 
 def mape(real_data, simulation_data):
@@ -60,7 +83,7 @@ def mape(real_data, simulation_data):
     """
     real_data = np.array(real_data)
     simulation_data = np.array(simulation_data)
-    return np.mean(np.abs((real_data - simulation_data) / real_data)) * 100
+    return round(np.mean(np.abs((real_data - simulation_data) / real_data)) * 100, 3)
 
 
 def nad(real_data, simulation_data):
@@ -72,7 +95,7 @@ def nad(real_data, simulation_data):
     """
     real_data = np.array(real_data)
     simulation_data = np.array(simulation_data)
-    return np.sum(np.abs(real_data - simulation_data)) / np.sum(real_data) * 100
+    return round(np.sum(np.abs(real_data - simulation_data)) / np.sum(real_data) * 100, 3)
 
 
 def rmsle(real_data, simulation_data, alpha=0.5):
@@ -86,4 +109,4 @@ def rmsle(real_data, simulation_data, alpha=0.5):
     real_data = np.array(real_data)
     simulation_data = np.array(simulation_data)
     log_diff = alpha * np.log(real_data) - (1 - alpha) * np.log(simulation_data)
-    return np.sqrt(np.mean(log_diff ** 2))
+    return round(np.sqrt(np.mean(log_diff ** 2)), 3)

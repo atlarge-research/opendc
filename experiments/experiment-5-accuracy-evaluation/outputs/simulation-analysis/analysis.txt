@@ -71,3 +71,87 @@ Computing time 3.9s
 Workload time: 2.8 days
 Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
 ========================================
+
+
+========================================
+Simulation made at 2024-07-21 18:29:48
+Metric: power_draw
+Unit: kW
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 3.7s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-21 18:30:04
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 4.5s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-21 18:30:35
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 4.2s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-21 18:32:18
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 4.9s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-21 18:33:07
+Metric: power_draw
+Unit: kW
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 3.9s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-21 18:33:24
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 4.2s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-21 18:33:37
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 4.2s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-5-accuracy-evaluation/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================

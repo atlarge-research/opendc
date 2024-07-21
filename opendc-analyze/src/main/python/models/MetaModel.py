@@ -8,7 +8,7 @@ from .Model import Model
 META_MODEL_ID = 101
 
 
-class Metamodel:
+class MetaModel:
     """
     A class that aggregates results from multiple simulation models based on user-defined functions, producing
     consolidated outputs for analysis.
@@ -36,7 +36,7 @@ class Metamodel:
         self.function_map = {
             'mean': self.mean,
             'median': self.median,
-            'equation1': self.meta_equation1,
+            'meta_equation1': self.meta_equation1,
         }
 
         self.multi_model = multimodel
@@ -102,6 +102,7 @@ class Metamodel:
             for j in range(self.number_of_models):
                 data_entries.append(self.multi_model.models[j].processed_host_data[i])
             self.meta_model.processed_host_data.append(self.meta_simulation_function(data_entries))
+        self.meta_model.raw_host_data = self.meta_model.processed_host_data
 
     def plot_time_series(self):
         """

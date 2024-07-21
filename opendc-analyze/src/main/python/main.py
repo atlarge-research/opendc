@@ -12,7 +12,7 @@ from experiments import experiment4
 from experiments import experiment5
 
 from models.MultiModel import MultiModel
-from models.MetaModel import Metamodel
+from models.MetaModel import MetaModel
 from input_parser import read_input
 
 
