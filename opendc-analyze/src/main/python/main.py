@@ -16,15 +16,15 @@ from input_parser import read_input
 
 
 def main():
-    experiment5.accuracy_evaluator(None, None)
-    # multi_model = MultiModel(
-    #     user_input=read_input(sys.argv[2]),
-    #     path=sys.argv[1],
-    # )
-    #
-    # metaModel = Metamodel(multi_model)
-    #
-    # metaModel.output()
+    # experiment5.accuracy_evaluator(None, None)
+    multi_model = MultiModel(
+        user_input=read_input(sys.argv[2]),
+        path=sys.argv[1],
+    )
+
+    meta_model = Metamodel(multi_model)
+
+    meta_model.output()
 
 
 
