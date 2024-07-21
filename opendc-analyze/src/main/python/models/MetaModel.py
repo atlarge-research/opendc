@@ -105,7 +105,6 @@ class Metamodel:
         df.to_parquet(current_path, index=False)
 
 
-
     def mean(self, chunks):
         return np.mean(chunks)
 
@@ -120,15 +119,3 @@ class Metamodel:
         return weighted_mean
 
 
-    ####IN "BETA"####
-    #
-    # def meta_equation2(self, chunks, trim_percentage=10):
-    #     sorted_chunks = np.sort(chunks)
-    #     n = len(chunks)
-    #     trim_count = int(trim_percentage / 100 * n)
-    #     trimmed_chunks = sorted_chunks[trim_count:-trim_count]  # Remove trim_count elements from both ends
-    #     return np.mean(trimmed_chunks)
-    #
-    # def meta_equation3(self, chunks, limits=0.1):
-    #     winsorized_chunks = mstats.winsorize(chunks, limits=[limits, limits])
-    #     return np.mean(winsorized_chunks)
