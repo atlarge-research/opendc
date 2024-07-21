@@ -29,20 +29,50 @@ class MultiModel:
     and generates plots and statistics.
 
     Attributes:
-        user_input (dict): User configurations for model processing.
-        path (str): Base path for output and analysis files.
-        window_size (int): Size of the window for aggregation operations.
+        user_input (dict): Configuration dictionary containing user settings for model processing.
+        path (str): The base directory path where output files and analysis results are stored.
+        window_size (int): The size of the window for data aggregation, which affects how data smoothing and granularity are handled.
+        models (list of Model): A list of Model instances that store the simulation data.
+        metric (str): The specific metric to be analyzed and plotted, as defined by the user.
+        measure_unit (str): The unit of measurement for the simulation data, adjusted according to the user's specifications.
+        output_folder_path (str): Path to the folder where output files are saved.
+        raw_output_path (str): Directory path where raw simulation data is stored.
+        analysis_file_path (str): Path to the file where detailed analysis results are recorded.
+        plot_type (str): The type of plot to generate, which can be 'time_series', 'cumulative', or 'cumulative_time_series'.
+        plot_title (str): The title of the plot.
+        x_label (str), y_label (str): Labels for the x and y axes of the plot.
+        x_min (float), x_max (float), y_min (float), y_max (float): Optional parameters to define axis limits for the plots.
+
+    Methods:
+        parse_user_input(window_size): Parses and sets the class attributes based on the provided user input.
+        adjust_unit(): Adjusts the unit of measurement based on user settings, applying appropriate metric prefixes.
+        set_paths(): Initializes the directory paths for storing outputs and analysis results.
+        init_models(): Reads simulation data from Parquet files and initializes Model instances.
+        compute_windowed_aggregation(): Processes the raw data by applying a windowed aggregation function for smoothing.
+        generate_plot(): Orchestrates the generation of the specified plot type by calling the respective plotting functions.
+        generate_time_series_plot(): Generates a time series plot of the aggregated data.
+        generate_cumulative_plot(): Creates a bar chart showing cumulative data for each model.
+        generate_cumulative_time_series_plot(): Produces a plot that displays cumulative data over time for each model.
+        save_plot(): Saves the generated plot to a PDF file in the specified directory.
+        output_stats(): Writes detailed statistics of the simulation to an analysis file for record-keeping.
+        mean_of_chunks(np_array, window_size): Calculates the mean of data segments for smoothing and processing.
+        get_cumulative_limits(model_sums): Determines appropriate x-axis limits for cumulative plots based on the model data.
+
+    Usage:
+        To use this class, instantiate it with a dictionary of user settings, a path for outputs, and optionally a window size.
+        Call the `generate_plot` method to process the data and generate plots as configured by the user.
     """
 
     def __init__(self, user_input, path, window_size=-1):
         """
         Initializes the MultiModel with provided user settings and prepares the environment.
 
-        Args:
-            user_input (dict): Configurations and settings from user.
-            path (str): Path where output and analysis will be stored.
-            window_size (int): The size of the window to aggregate data; uses user input if -1.
+        :param user_input (dict): Configurations and settings from the user.
+        :param path (str): Path where output and analysis will be stored.
+        :param window_size (int): The size of the window to aggregate data; uses user input if -1.
+        :return: None
         """
+
         self.starting_time = time.time()
         self.end_time = None
         self.workload_time = None
@@ -84,11 +114,8 @@ class MultiModel:
         """
         Parses and sets attributes based on user input.
 
-        Args:
-            window_size (int): Specified window size for data aggregation.
-
-        Raises:
-            ValueError: If required keys are missing in user_input.
+        :param window_size (int): Specified window size for data aggregation, defaults to user_input if -1.
+        :return: None
         """
         if window_size == -1:
             self.window_size = self.user_input["window_size"]
@@ -117,15 +144,11 @@ class MultiModel:
 
     def adjust_unit(self):
         """
-        Adjusts the unit of measurement according to the scaling magnitude specified by the user. This method
-        translates the given measurement scale into a scientifically accepted metric prefix, facilitating the
-        appropriate representation of data scales.
+        Adjusts the unit of measurement according to the scaling magnitude specified by the user.
+        This method translates the given measurement scale into a scientifically accepted metric prefix.
 
-        Returns:
-            str: The metric prefixed by the appropriate scale (e.g., 'kWh' for kilo-watt-hour if the scale is 3).
-
-        Raises:
-            ValueError: If the unit scaling magnitude provided by the user is not within the accepted range of scaling factors.
+        :return str: The metric prefixed by the appropriate scale (e.g., 'kWh' for kilo-watt-hour if the scale is 3).
+        :raise ValueError: If the unit scaling magnitude provided by the user is not within the accepted range of scaling factors.
         """
         prefixes = ['n', 'μ', 'm', '', 'k', 'M', 'G', 'T']
         scaling_factors = [-9, -6, -3, 1, 3, 6, 9]
@@ -151,10 +174,8 @@ class MultiModel:
         This method sets paths for the raw output and detailed analysis results, ensuring directories are created if
         they do not already exist, and prepares a base file for capturing analytical summaries.
 
-        Creates:
-            - Output folder at the specified path.
-            - Raw output directory for storing simulation raw data.
-            - Analysis directory and a default analysis file.
+        :return: None
+        :side effect: Creates necessary directories and files for output and analysis.
         """
         self.output_folder_path = os.getcwd() + "/" + self.path
         self.raw_output_path = os.getcwd() + "/" + self.path + "/raw-output"
@@ -170,8 +191,8 @@ class MultiModel:
         Initializes models from the simulation output stored in Parquet files. This method reads each Parquet file,
         processes the relevant data, and initializes Model instances which are stored in the model list.
 
-        Raises:
-            ValueError: If the unit scaling has not been set prior to model initialization.
+        :return: None
+        :raise ValueError: If the unit scaling has not been set prior to model initialization.
         """
         model_id = 0
 
@@ -202,9 +223,8 @@ class MultiModel:
         or reducing data granularity. It involves segmenting the dataset into windows of specified size and applying
         an aggregation function to each segment.
 
-        Notes:
-            The default aggregation function is the median, but this can be changed by modifying the
-            `aggregation_function` attribute.
+        :return: None
+        :side effect: Modifies each model's processed_host_data attribute to contain aggregated data.
         """
         if self.plot_type != "cumulative":
             for model in self.models:
@@ -216,12 +236,15 @@ class MultiModel:
         Creates and saves plots based on the processed data from multiple models. This method determines
         the type of plot to generate based on user input and invokes the appropriate plotting function.
 
-        Raises:
-            ValueError: If the plot type specified is not recognized or supported by the system.
+        The plotting options supported are 'time_series', 'cumulative', and 'cumulative_time_series'.
+        Depending on the type specified, this method delegates to specific plot-generating functions.
 
-        Side Effects:
+        :return: None
+        :raises ValueError: If the plot type specified is not recognized or supported by the system.
+        :side effect:
             - Generates and saves a plot to the file system.
             - Updates the plot attributes based on the generated plot.
+            - Displays the plot on the matplotlib figure canvas.
         """
         plt.figure(figsize=(10, 10))
         plt.xticks(size=22)
@@ -246,7 +269,6 @@ class MultiModel:
                 "'time_series', 'cumulative', or 'cumulative_time_series'."
             )
 
-        # make legend 3 times bigger
         plt.legend(fontsize=22)
         self.save_plot()
         self.output_stats()
@@ -256,8 +278,8 @@ class MultiModel:
         Plots time series data for each model. This function iterates over each model, applies the defined
         windowing function to smooth the data, and plots the resulting series.
 
-        Side Effects:
-            - Plots are displayed on the matplotlib figure canvas.
+        :return: None
+        :side effect: Plots are displayed on the matplotlib figure canvas.
         """
         for model in self.models:
             if not is_meta_model(model):
@@ -274,8 +296,8 @@ class MultiModel:
         aggregates total values per model and displays them in a bar chart, providing a visual
         comparison of total values across models.
 
-        Side Effects:
-            - Plots are displayed on the matplotlib figure canvas.
+        :return: None
+        :side effect: Plots are displayed on the matplotlib figure canvas.
         """
         plt.xlim(self.get_cumulative_limits(model_sums=self.sum_models_entries()))
         plt.ylabel("Model ID", size=20)
@@ -291,12 +313,11 @@ class MultiModel:
 
     def generate_cumulative_time_series_plot(self):
         """
-        Generates a plot that shows the cumulative data over time for each model. This function calculates
-        cumulative values over time and plots these as a time series, which can be useful for understanding
-        trends and comparing the accumulation of values over time among different models.
+        Generates a plot showing the cumulative data over time for each model. This visual representation is
+        useful for analyzing trends and the accumulation of values over time.
 
-        Side Effects:
-            - Plots are displayed on the matplotlib figure canvas.
+        :return: None
+        :side effect: Displays the cumulative data over time on the matplotlib figure canvas.
         """
         self.compute_cumulative_time_series()
 
@@ -311,12 +332,10 @@ class MultiModel:
 
     def compute_cumulative_time_series(self):
         """
-        Computes the cumulative sum of processed data over time for each model and stores it for time series plotting.
-        This method is essential for generating cumulative time series plots, which show the accumulation of data over time.
+        Computes the cumulative sum of processed data over time for each model, storing the result for use in plotting.
 
-        Side Effects:
-            - Updates each model's 'cumulative_time_series_values' with cumulative sums extended by the window size,
-              which is used later in cumulative time series plotting.
+        :return: None
+        :side effect: Updates each model's 'cumulative_time_series_values' attribute with the cumulative sums.
         """
         for model in self.models:
             cumulative_array = []
@@ -328,11 +347,11 @@ class MultiModel:
 
     def save_plot(self):
         """
-        Saves the current plot to a file in a specified directory, constructing the file path from the
+        Saves the current plot to a PDF file in the specified directory, constructing the file path from the
         plot attributes and ensuring that the directory exists before saving.
 
-        Side Effects:
-            - A plot file is created or overwritten in the specified directory.
+        :return: None
+        :side effect: Creates or overwrites a PDF file containing the plot in the designated folder.
         """
         folder_prefix = self.output_folder_path + "/simulation-analysis/" + self.metric + "/"
         self.plot_path = folder_prefix + self.plot_type + "_plot_multimodel_metric=" + self.metric + "_window=" + str(
@@ -344,8 +363,8 @@ class MultiModel:
         Sets the x-axis limits for the plot based on user-defined minimum and maximum values. If values
         are not specified, the axis limits will default to encompassing all data points.
 
-        Side Effects:
-            - The x-axis limits of the current matplotlib plot are adjusted.
+        :return: None
+        :side effect: Adjusts the x-axis limits of the current matplotlib plot.
         """
         if self.x_min is not None:
             plt.xlim(left=self.x_min)
@@ -358,8 +377,8 @@ class MultiModel:
         Dynamically sets the y-axis limits to be slightly larger than the range of the data, enhancing
         the readability of the plot by ensuring all data points are comfortably within the view.
 
-        Side Effects:
-            - The y-axis limits of the current matplotlib plot are adjusted.
+        :return: None
+        :side effect: Adjusts the y-axis limits of the current matplotlib plot.
         """
         if self.y_min is not None:
             plt.ylim(bottom=self.y_min)
@@ -368,12 +387,10 @@ class MultiModel:
 
     def sum_models_entries(self):
         """
-        Outputs simulation statistics to a predefined analysis file. This includes the total duration of the simulation,
-        the number of samples processed, and other relevant metrics, providing a textual record of the simulation's
-        execution and results.
+        Computes the total values from each model for use in cumulative plotting. This method aggregates
+        the data across all models and prepares it for cumulative display.
 
-        Side Effects:
-            - Writes simulation details to an analysis file, appending to any existing content.
+        :return: List of summed values for each model, useful for plotting and analysis.
         """
         models_sums = []
         for (i, model) in enumerate(self.models):
@@ -387,6 +404,13 @@ class MultiModel:
         return models_sums
 
     def output_stats(self):
+        """
+        Records and writes detailed simulation statistics to an analysis file. This includes time stamps,
+        performance metrics, and other relevant details.
+
+        :return: None
+        :side effect: Appends detailed simulation statistics to an existing file for record-keeping and analysis.
+        """
         self.end_time = time.time()
         with open(self.analysis_file_path, "a") as f:
             f.write("\n\n========================================\n")
@@ -406,15 +430,10 @@ class MultiModel:
         Calculates the mean of data within each chunk for a given array. This method helps in smoothing the data by
         averaging over specified 'window_size' segments.
 
-        Args:
-            data_array (np.array): Array of numerical data to be chunked and averaged.
-            window_size (int): The size of each segment to average over.
-
-        Returns:
-            np.array: An array of mean values for each chunk.
-
-        Note:
-            If 'window_size' is 1, it returns the original array without modification.
+        :param np_array (np.array): Array of numerical data to be chunked and averaged.
+        :param window_size (int): The size of each segment to average over.
+        :return: np.array: An array of mean values for each chunk.
+        :side effect: None
         """
         if window_size == 1:
             return np_array
@@ -425,17 +444,10 @@ class MultiModel:
 
     def get_cumulative_limits(self, model_sums):
         """
-        Determines the x-axis limits for cumulative plots based on the sum of model outputs. This method ensures
-        the plot's x-axis is appropriately scaled to include all data points comfortably.
+        Calculates the appropriate x-axis limits for cumulative plots based on the summarized data from each model.
 
-        Args:
-            model_sums (list): List of sum values from each model for which the limits are calculated.
-
-        Returns:
-            list: A list containing the minimum and maximum x-axis limits.
-
-        Note:
-            The limits are adjusted by a factor to provide a margin around the displayed data.
+        :param model_sums (list of float): The total values for each model.
+        :return: tuple: A tuple containing the minimum and maximum x-axis limits.
         """
         axis_min = min(model_sums) * 0.9
         axis_max = max(model_sums) * 1.1
