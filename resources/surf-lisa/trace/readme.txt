@@ -11,7 +11,6 @@ trace.parquet
 
 
 
-
 background of the data:
 1. we selected nodes with only CPUs
 2. we selected only jobs that run on single nodes (aka not distributed jobs) and no shared nodes
