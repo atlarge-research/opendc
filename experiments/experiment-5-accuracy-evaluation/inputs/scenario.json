@@ -12,6 +12,18 @@
         },
         {
             "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_cubic.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_sqrt_adjusted.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_linear_adjusted.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_square_adjusted.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_cubic_adjusted.json"
         }
     ],
     "workloads": [

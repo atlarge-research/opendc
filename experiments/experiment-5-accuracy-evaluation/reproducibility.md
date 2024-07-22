@@ -35,3 +35,6 @@ def main():
         )
     )
 ```
+
+#### Step 4
+Analysis can be done using accuracy_evaluator, located in the same directory as main.py.

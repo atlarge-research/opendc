@@ -97,4 +97,104 @@
     ],
     "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
     "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
+},
+{
+    "id": 4,
+    "name": "outputs/",
+    "topologies": [
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_sqrt_adjusted.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
+    ],
+    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
+},
+{
+    "id": 5,
+    "name": "outputs/",
+    "topologies": [
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_linear_adjusted.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
+    ],
+    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
+},
+{
+    "id": 6,
+    "name": "outputs/",
+    "topologies": [
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_square_adjusted.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
+    ],
+    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
+},
+{
+    "id": 7,
+    "name": "outputs/",
+    "topologies": [
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_cubic_adjusted.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
+    ],
+    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
 }]
