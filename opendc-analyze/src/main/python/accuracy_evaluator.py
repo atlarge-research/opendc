@@ -25,12 +25,10 @@ def accuracy_evaluator(
         e.g., RMSLE_hyperparameter=0.3 -> 30% penalty for overestimations, 70% penalty for underestimations (3:7 ratio)
     :return: None, but prints the accuracy metrics
     """
-    # create a file called "accuracy_report.txt" in the output folder
 
     meta_model = MetaModel(multimodel=multi_model)
-
-    multi_model.models.append(meta_model.meta_model) # metamodel
-    multi_model.models.append(Model(raw_host_data=real_data, id=-1, path=None)) # real-world data
+    multi_model.models.append(meta_model.meta_model)  # metamodel
+    multi_model.models.append(Model(raw_host_data=real_data, id=-1, path=None))  # real-world data
 
     with open(multi_model.output_folder_path + "/accuracy_report.txt", "a") as f:
         f.write("====================================\n")

@@ -195,7 +195,21 @@ class MetaModel:
         :param chunks (list): Data chunks from which to calculate the weighted mean.
         :return: float: The calculated weighted mean.
         """
-        median_val = np.median(chunks)
-        proximity_weights = 1 / (1 + np.abs(chunks - median_val))  # Avoid division by zero
-        weighted_mean = np.sum(proximity_weights * chunks) / np.sum(proximity_weights)
-        return weighted_mean
+
+        """Attempt 1"""
+        # median_val = np.median(chunks)
+        # proximity_weights = 1 / (1 + np.abs(chunks - median_val))  # Avoid division by zero
+        # weighted_mean = np.sum(proximity_weights * chunks) / np.sum(proximity_weights)
+        # return weighted_mean
+
+        """Attempt 2 Inter-Quartile Mean (same accuracy as mean)"""
+        # sorted_preds = np.sort(chunks, axis=0)
+        # Q1 = int(np.floor(0.25 * len(sorted_preds)))
+        # Q3 = int(np.floor(0.75 * len(sorted_preds)))
+        #
+        # iqm = np.mean(sorted_preds[Q1:Q3], axis=0)
+        # return iqm
+
+
+
+
