@@ -1,0 +1,17 @@
+{
+    "multimodel": true,
+    "metamodel": true,
+    "metric": "power_draw",
+    "window_size": 10,
+    "window_function": "mean",
+    "meta_function": "median",
+    "samples_per_minute": 1,
+    "plot_type": "cumulative_time_series",
+    "x_label": "Sample count",
+    "y_label": "Energy Usage [MW]",
+    "plot_title": "Cumulative Time Series Plot",
+    "x_ticks_count": 5,
+    "y_ticks_count": 5,
+    "current_unit": "W",
+    "unit_scaling_magnitude": 6
+}
