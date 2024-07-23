@@ -1,5 +1,8 @@
 # Experiment 6
 
+#### Step 0
+Ensure a sample rate of 1 sample per minute.
+
 #### Step 1
 Run Scenario CLI, with the following setup.
 
@@ -30,7 +33,6 @@ def main():
         path=sys.argv[1],
     )
 ```
-
 
 #### Utils
 
