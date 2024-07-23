@@ -1,12 +1,10 @@
-import math
-import os
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import os
 import pyarrow.parquet as pq
 import time
+from matplotlib.ticker import MaxNLocator, FuncFormatter
 
-import utils
 from .Model import Model
 
 
@@ -90,7 +88,7 @@ class MultiModel:
         self.analysis_file_path = None
         self.unit_scaling = 1
         self.window_size = -1
-        self.aggregation_function = "median"
+        self.window_function = "median"
         self.max_model_len = 0
 
         self.plot_type = None
@@ -123,7 +121,7 @@ class MultiModel:
             self.window_size = window_size
         self.metric = self.user_input["metric"]
         self.measure_unit = self.adjust_unit()
-        self.aggregation_function = self.user_input["aggregation_function"]
+        self.window_function = self.user_input["window_function"]
 
         self.plot_type = self.user_input["plot_type"]
         self.plot_title = self.user_input["plot_title"]
@@ -256,6 +254,19 @@ class MultiModel:
         plt.title(self.plot_title, size=26)
         plt.grid()
 
+        formatter = FuncFormatter(lambda x, _: '{:,}'.format(int(x)) if x >= 1000 else int(x))
+        ax = plt.gca()
+        ax.xaxis.set_major_formatter(formatter)
+        # ax.yaxis.set_major_formatter(formatter) yaxis has formatting issues - to solve in a future iteration
+
+        if self.user_input['x_ticks_count'] is not None:
+            ax = plt.gca()
+            ax.xaxis.set_major_locator(MaxNLocator(self.user_input['x_ticks_count']))
+
+        if self.user_input['y_ticks_count'] is not None:
+            ax = plt.gca()
+            ax.yaxis.set_major_locator(MaxNLocator(self.user_input['y_ticks_count']))
+
         self.set_x_axis_lim()
         self.set_y_axis_lim()
 
@@ -284,13 +295,23 @@ class MultiModel:
         :side effect: Plots are displayed on the matplotlib figure canvas.
         """
         for model in self.models:
-            if not is_meta_model(model):
+            label = "Meta-Model" if is_meta_model(model) else "Model " + str(model.id)
+            if is_meta_model(model):
+                repeated_means = np.repeat(means, self.window_size)[:len(model.processed_host_data) * self.window_size]
+                plt.plot(
+                    repeated_means,
+                    drawstyle='steps-mid',
+                    label=label,
+                    color="red",
+                    linestyle="--",
+                    marker="o",
+                    markevery=max(1, len(repeated_means) // 50),
+                    linewidth=2
+                )
+            else:
                 means = self.mean_of_chunks(model.raw_host_data, self.window_size)
                 repeated_means = np.repeat(means, self.window_size)[:len(model.raw_host_data)]
-            else:
-                repeated_means = np.repeat(means, self.window_size)[:len(model.processed_host_data) * self.window_size]
-            label = "Meta-Model" if is_meta_model(model) else "Model " + str(model.id)
-            plt.plot(repeated_means, drawstyle='steps-mid', label=label)
+                plt.plot(repeated_means, drawstyle='steps-mid', label=label)
 
     def generate_cumulative_plot(self):
         """
@@ -310,7 +331,10 @@ class MultiModel:
         cumulated_energies = self.sum_models_entries()
         for i, model in enumerate(self.models):
             label = "Meta-Model" if is_meta_model(model) else "Model " + str(model.id)
-            plt.barh(label=label, y=i, width=cumulated_energies[i])
+            if is_meta_model(model):
+                plt.barh(label=label, y=i, width=cumulated_energies[i], color="red")
+            else:
+                plt.barh(label=label, y=i, width=cumulated_energies[i])
             plt.text(cumulated_energies[i], i, str(cumulated_energies[i]), ha='left', va='center', size=26)
 
     def generate_cumulative_time_series_plot(self):
@@ -327,10 +351,20 @@ class MultiModel:
             if is_meta_model(model):
                 cumulative_repeated = np.repeat(model.cumulative_time_series_values, self.window_size)[
                                       :len(model.processed_host_data) * self.window_size]
+                plt.plot(
+                    cumulative_repeated,
+                    drawstyle='steps-mid',
+                    label=("Meta-Model cumulative"),
+                    color="red",
+                    linestyle="--",
+                    marker="o",
+                    markevery=max(1, len(cumulative_repeated) // 10),
+                    linewidth=3
+                )
             else:
                 cumulative_repeated = np.repeat(model.cumulative_time_series_values, self.window_size)[
                                       :len(model.raw_host_data)]
-            plt.plot(cumulative_repeated, drawstyle='steps-mid', label=("Model " + str(model.id) + " cumulative"))
+                plt.plot(cumulative_repeated, drawstyle='steps-mid', label=("Model " + str(model.id) + " cumulative"))
 
     def compute_cumulative_time_series(self):
         """
