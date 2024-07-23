@@ -1,6 +1,7 @@
 import os
 import json
 import sys
+import warnings
 
 
 def read_input(path=""):
@@ -38,8 +39,8 @@ def parse_input(input_json):
         "multimodel": True,
         "metamodel": False,
         "window_size": 1,
-        "aggregation_function": "mean",
-        "meta_simulation_function": "mean",
+        "window_function": "mean",
+        "meta_function": "mean",
         "samples_per_minute": 0,
         "current_unit": "",
         "unit_scaling_magnitude": 1,
@@ -47,11 +48,15 @@ def parse_input(input_json):
         "plot_title": "",
         "x_label": "",
         "y_label": "",
+        "y_ticks_count": None,
+        "x_ticks_count": None,
         "y_min": None,
         "y_max": None,
         "x_min": None,
         "x_max": None,
     }
+
+
 
     # Apply default values where not specified
     for key, default_value in DEFAULTS.items():
@@ -62,12 +67,16 @@ def parse_input(input_json):
     if "metric" not in input_json:
         raise ValueError("Required field 'metric' is missing.")
 
-    if ("meta_simulation_function" not in input_json) and input_json["metamodel"]:
-        raise ValueError("Required field 'meta_simulation_function' is missing. Please select between 'mean' and 'median'. Alternatively,"
+    if ("meta_function" not in input_json) and input_json["metamodel"]:
+        raise ValueError("Required field 'meta_function' is missing. Please select between 'mean' and 'median'. Alternatively,"
               "disable metamodel in the config file.")
 
-    if input_json["meta_simulation_function"] not in ["mean", "median", "meta_equation1", "equation2", "equation3"]:
-        raise ValueError("Invalid value for meta_simulation_function. Please select between 'mean', 'median', !!!!!!!to be updated in the end!!!!!!!!.")
+    if input_json["meta_function"] not in ["mean", "median", "meta_equation1", "equation2", "equation3"]:
+        raise ValueError("Invalid value for meta_function. Please select between 'mean', 'median', !!!!!!!to be updated in the end!!!!!!!!.")
+
+    # raise a warning
+    if not input_json["multimodel"] and input_json["metamodel"]:
+        warnings.warn("Warning: Cannot have a Meta-Model without a Multi-Model. No computation made.")
 
     return input_json
 
