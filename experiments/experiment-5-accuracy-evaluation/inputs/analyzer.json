@@ -3,13 +3,13 @@
     "metamodel": true,
     "metric": "power_draw",
     "window_size": 1,
-    "aggregation_function": "mean",
-    "meta_simulation_function": "meta_equation1",
+    "window_function": "mean",
+    "meta_function": "median",
     "samples_per_minute": 0.2,
     "plot_type": "time_series",
     "x_label": "Sample count",
-    "y_label": "Energy Usage [W]",
+    "y_label": "Energy Usage [kW]",
     "plot_title": "Time Series Plot",
-    "current_unit": "W",
-    "unit_scaling_magnitude": 1
+    "current_unit": "kW",
+    "unit_scaling_magnitude": 3
 }

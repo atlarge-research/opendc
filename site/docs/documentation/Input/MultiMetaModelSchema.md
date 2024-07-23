@@ -37,7 +37,7 @@ A setup file can be validated using a JSON schema validator, such as https://www
             "minimum": 1,
             "description": "The size of the window, used for aggregating the chunks."
         },
-        "aggregation_function": {
+        "window_function": {
             "type": "string",
             "default": "mean",
             "enum": ["mean", "median"],

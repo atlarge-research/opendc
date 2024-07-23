@@ -4,12 +4,7 @@ import sys
 import time
 import pandas as pd
 
-from experiments import experiment0
-from experiments import experiment1
-from experiments import experiment2
-from experiments import experiment3
-from experiments import experiment4
-from experiments import experiment5
+from experiments import experiment0, experiment1, experiment2, experiment3, experiment4, experiment5, experiment6
 
 from models.MultiModel import MultiModel
 from models.MetaModel import MetaModel
@@ -17,11 +12,9 @@ from input_parser import read_input
 
 
 def main():
-    experiment5.experiment_5(
-        MultiModel(
-            user_input=read_input(sys.argv[2]),
-            path=sys.argv[1],
-        )
+    experiment6.experiment_6(
+        user_input=read_input(sys.argv[2]),
+        path=sys.argv[1],
     )
 
 

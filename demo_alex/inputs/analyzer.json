@@ -3,7 +3,7 @@
     "metamodel": true,
     "metric": "power_draw",
     "window_size": 100,
-    "aggregation_function": "mean",
+    "window_function": "mean",
     "meta_simulation_function": "median",
     "samples_per_minute": 0.2,
     "plot_type": "cumulative_time_series",

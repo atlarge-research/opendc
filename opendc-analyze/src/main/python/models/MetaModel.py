@@ -46,7 +46,7 @@ class MetaModel:
             path=self.multi_model.output_folder_path
         )
 
-        self.meta_simulation_function = self.function_map.get(multimodel.user_input['meta_simulation_function'],
+        self.meta_simulation_function = self.function_map.get(multimodel.user_input['meta_function'],
                                                               self.mean)
         self.min_raw_model_len = min([len(model.raw_host_data) for model in self.multi_model.models])
         self.min_processed_model_len = min([len(model.processed_host_data) for model in self.multi_model.models])
@@ -67,11 +67,11 @@ class MetaModel:
         Computes aggregated data based on the specified plot type from the configuration.
         :raise ValueError: If an unsupported plot type is specified in the configuration.
         """
-        if self.multi_model.user_input['plot_type'] == 'time_series':
+        if self.multi_model.plot_type == 'time_series':
             self.compute_time_series()
-        elif self.multi_model.user_input['plot_type'] == 'cumulative':
+        elif self.multi_model.plot_type == 'cumulative':
             self.compute_cumulative()
-        elif self.multi_model.user_input['plot_type'] == 'cumulative_time_series':
+        elif self.multi_model.plot_type == 'cumulative_time_series':
             self.compute_cumulative_time_series()
         else:
             raise ValueError("Invalid plot type in config file")
@@ -81,11 +81,11 @@ class MetaModel:
         Plots the aggregated data according to the specified plot type from the configuration.
         :raise ValueError: If an unsupported plot type is specified.
         """
-        if self.multi_model.user_input['plot_type'] == 'time_series':
+        if self.multi_model.plot_type == 'time_series':
             self.plot_time_series()
-        elif self.multi_model.user_input['plot_type'] == 'cumulative':
+        elif self.multi_model.plot_type == 'cumulative':
             self.plot_cumulative()
-        elif self.multi_model.user_input['plot_type'] == 'cumulative_time_series':
+        elif self.multi_model.plot_type == 'cumulative_time_series':
             self.plot_cumulative_time_series()
 
         else:
