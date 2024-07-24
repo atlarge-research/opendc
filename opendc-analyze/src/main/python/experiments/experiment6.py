@@ -1,13 +1,7 @@
 import os
-import time
-from matplotlib import pyplot as plt
-from input_parser import read_input
-from models.MultiModel import MultiModel
-from models.MetaModel import MetaModel
-import pandas as pd
-from copy import deepcopy  # Import deepcopy
 
-from accuracy_evaluator import accuracy_evaluator
+from models.MetaModel import MetaModel
+from models.MultiModel import MultiModel
 
 """
 Goal: analyze the accuracy, per model, using MAPE, NAD, RMSLE.
@@ -53,5 +47,30 @@ def experiment_6(user_input, path):
     metamodel_cumulative_time_series.output()
 
 
+def experiment6_fr6(user_input, path):
+    """
+    Goal: plot the Meta-Model by itself (without other models), in a time series graph, with the window size of 1, 100, and 1000.
+    :param user_input: dictionary of user input
+    :param path: string of the path to the input file
+    :return:
+    """
+    user_input["window_size"] = 10
+    multimodel_window_10 = MultiModel(user_input=user_input, path=path)
+    multimodel_window_10.plot_type = "time_series"
+    multimodel_window_10.plot_title = "Window 10"
+    metamodel_window_10 = MetaModel(multimodel=multimodel_window_10)
+    metamodel_window_10.output()
 
+    user_input["window_size"] = 250
+    multimodel_window_250 = MultiModel(user_input=user_input, path=path)
+    multimodel_window_250.plot_type = "time_series"
+    multimodel_window_250.plot_title = "Window 250"
+    metamodel_window_250 = MetaModel(multimodel=multimodel_window_250)
+    metamodel_window_250.output()
 
+    user_input["window_size"] = 5000
+    multimodel_window_5000 = MultiModel(user_input=user_input, path=path)
+    multimodel_window_5000.plot_type = "time_series"
+    multimodel_window_5000.plot_title = "Window 5000"
+    metamodel_window_5000 = MetaModel(multimodel=multimodel_window_5000)
+    metamodel_window_5000.output()

@@ -101,3 +101,27 @@ def main():
     "unit_scaling_magnitude": 6
 }
 ```
+
+- analyzer.json file, for FR6
+
+```json
+{
+    "multimodel": true,
+    "metamodel": true,
+    "metric": "power_draw",
+    "window_size": 10,
+    "window_function": "mean",
+    "meta_function": "median",
+    "samples_per_minute": 1,
+    "plot_type": "cumulative_time_series",
+    "x_label": "Sample count",
+    "y_label": "Energy Usage [kW]",
+    "plot_title": "Cumulative Time Series Plot",
+    "x_ticks_count": 5,
+    "y_ticks_count": 3,
+    "y_min": 0,
+    "y_max": 30,
+    "current_unit": "W",
+    "unit_scaling_magnitude": 3
+}
+```
