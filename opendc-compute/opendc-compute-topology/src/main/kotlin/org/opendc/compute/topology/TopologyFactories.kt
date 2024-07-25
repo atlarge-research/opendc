@@ -34,6 +34,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.getPowerModel
+import org.opendc.simulator.compute.thermal.getThermalModel
 import java.io.File
 import java.io.InputStream
 import java.util.SplittableRandom
@@ -130,6 +131,15 @@ private fun HostJSONSpec.toHostSpecs(
         )
 
     val powerModel = getPowerModel(powerModel.modelType, powerModel.power, powerModel.maxPower, powerModel.idlePower)
+    val thermalModel =
+        getThermalModel(
+            thermalModel.modelType,
+            thermalModel.rHS,
+            thermalModel.rCase,
+            thermalModel.ambientTemperature,
+            thermalModel.minLeakageCurrent,
+            thermalModel.maxLeakageCurrent,
+        )
 
     var hostName: String
     if (name == null) {
@@ -144,7 +154,7 @@ private fun HostJSONSpec.toHostSpecs(
             hostName,
             mapOf("cluster" to clusterId),
             machineModel,
-            SimPsuFactories.simple(powerModel),
+            SimPsuFactories.simple(powerModel, thermalModel),
         )
     hostId++
 

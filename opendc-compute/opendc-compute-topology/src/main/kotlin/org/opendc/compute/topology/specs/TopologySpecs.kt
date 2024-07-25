@@ -65,6 +65,15 @@ public data class HostJSONSpec(
     val cpu: CPUSpec,
     val memory: MemorySpec,
     val powerModel: PowerModelSpec = PowerModelSpec("linear", 350.0, 400.0, 200.0),
+    val thermalModel: ThermalModelSpec =
+        ThermalModelSpec(
+            "rcmodel",
+            0.298,
+            0.00061,
+            0.00035,
+            0.0041,
+            22.0,
+        ),
     val count: Int = 1,
 )
 
@@ -116,3 +125,13 @@ public data class PowerModelSpec(
         require(maxPower >= idlePower) { "The max power of a power model can not be less than the idle power" }
     }
 }
+
+@Serializable
+public data class ThermalModelSpec(
+    val modelType: String,
+    val rHS: Double,
+    val rCase: Double,
+    val minLeakageCurrent: Double,
+    val maxLeakageCurrent: Double,
+    val ambientTemperature: Double,
+)

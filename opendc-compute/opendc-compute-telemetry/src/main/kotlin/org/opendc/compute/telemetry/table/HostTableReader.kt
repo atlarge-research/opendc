@@ -118,11 +118,6 @@ public interface HostTableReader {
     public val energyUsage: Double
 
     /**
-     * The thermal power of the host in W (i.e., the power that is dissipated as heat).
-     */
-    public val thermalPower: Double
-
-    /**
      * The current temperature of the host in degrees Celsius.
      */
     public val temperature: Double

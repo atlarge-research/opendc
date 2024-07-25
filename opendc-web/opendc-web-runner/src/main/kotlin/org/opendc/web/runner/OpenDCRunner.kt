@@ -42,6 +42,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.CpuPowerModels
+import org.opendc.simulator.compute.thermal.ThermalModels
 import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.web.proto.runner.Job
 import org.opendc.web.proto.runner.Scenario
@@ -346,6 +347,7 @@ public class OpenDCRunner(
 
             val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
             val powerModel = CpuPowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
+            val thermalModel = ThermalModels.rcmodel(0.298, 0.00061, 0.00035, 0.0041, 22.0)
 
             val spec =
                 HostSpec(
@@ -353,7 +355,7 @@ public class OpenDCRunner(
                     "node-$clusterId-$position",
                     mapOf("cluster" to clusterId),
                     MachineModel(processors, memoryUnits),
-                    SimPsuFactories.simple(powerModel),
+                    SimPsuFactories.simple(powerModel, thermalModel),
                 )
 
             res += spec

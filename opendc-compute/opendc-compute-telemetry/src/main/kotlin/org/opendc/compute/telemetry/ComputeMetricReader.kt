@@ -247,7 +247,6 @@ public class ComputeMetricReader(
             _cpuLostTime = table.cpuLostTime
             _powerDraw = table.powerDraw
             _energyUsage = table.energyUsage
-            _thermalPower = table.thermalPower
             _temperature = table.temperature
             _carbonIntensity = table.carbonIntensity
             _carbonEmission = table.carbonEmission
@@ -330,10 +329,6 @@ public class ComputeMetricReader(
         private var _energyUsage = 0.0
         private var previousPowerTotal = 0.0
 
-        override val thermalPower: Double
-            get() = _thermalPower
-        private var _thermalPower = 0.0
-
         override val temperature: Double
             get() = _temperature
         private var _temperature = 0.0
@@ -388,7 +383,6 @@ public class ComputeMetricReader(
             _cpuLostTime = hostCpuStats.lostTime
             _powerDraw = hostSysStats.powerDraw
             _energyUsage = hostSysStats.energyUsage
-            _thermalPower = hostSysStats.thermalPower
             _temperature = hostSysStats.temperatureC
             _carbonIntensity = carbonTrace.getCarbonIntensity(timestampAbsolute)
 
@@ -424,7 +418,6 @@ public class ComputeMetricReader(
 
             _powerDraw = 0.0
             _energyUsage = 0.0
-            _thermalPower = 0.0
             _temperature = 0.0
             _carbonIntensity = 0.0
             _carbonEmission = 0.0

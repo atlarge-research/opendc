@@ -46,11 +46,6 @@ public abstract class SimPsu extends SimPowerInlet {
     public abstract double getPowerDraw();
 
     /**
-     * Return the thermal power of the machine (in W).
-     */
-    public abstract double getThermalPower();
-
-    /**
      * Return the temperature of the Host in degrees Celsius based on a power equation.
      */
     public abstract double getTemperature();
@@ -59,11 +54,6 @@ public abstract class SimPsu extends SimPowerInlet {
      * Set the temperature of the Host in degrees Celsius based on a power equation.
      */
     public abstract void setTemperature();
-
-    /**
-     * Set the leakage current of the machine (in A).
-     */
-    public abstract void setStaticPower();
 
     /**
      * Return the cumulated energy usage of the machine (in J) measured at the inlet of the powers supply.
