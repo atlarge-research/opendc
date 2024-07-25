@@ -1,0 +1,26 @@
+{
+    "clusters": [
+        {
+            "name": "C01",
+            "hosts": [
+                {
+                    "name": "H01",
+                    "count": 277,
+                    "cpu": {
+                        "coreCount": 16,
+                        "coreSpeed": 2100
+                    },
+                    "memory": {
+                        "memorySize": 128000000
+                    },
+                    "powerModel": {
+                        "modelType": "sqrt",
+                        "power": 300.0,
+                        "idlePower": 41.0,
+                        "maxPower": 220.0
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,21 +1,24 @@
-# Experiment 2 - reproducibility
+# Experiment 7 - performance analysis
 
 **Option 1:** Run Scenario CLI, with the following setup.
 
 Main.py code:
 
 ```python
-from experiments import experiment2
+from experiments import experiment7
 # other imports
 
 def main():
-    experiment2.experiment_2()
+    experiment7.experiment_7(
+        user_input=read_input(sys.argv[2]),
+        path=sys.argv[1],
+    )
 ```
 
 ScenarioCLI arguments:
 
 ```
---scenario-path "experiments/experiment-2-window-performance-analysis/inputs/scenario.json" -p 4 -a
+--scenario-path "experiments/experiment-7-metamodel-performance-analysis/inputs/scenario.json" -p 4 -a
 ```
 
 ScenarioCLI working directory:
@@ -29,12 +32,20 @@ ScenarioCLI working directory:
 Main.py code:
 
 ```python
-from experiments import experiment2
+from experiments import experiment7
 # other imports
 
 def main():
-    experiment2.experiment_2()
+    experiment7.experiment_7(
+        user_input=read_input(sys.argv[2]),
+        path=sys.argv[1],
+    )
 ```
 
-The output of the experiment is generated in
-```opendc-analyze/src/main/python/analysis.txt```.
+Main.py arguments:
+
+```
+"experiments/experiment-7-metamodel-performance-analysis/outputs/" "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json"
+```
+
+

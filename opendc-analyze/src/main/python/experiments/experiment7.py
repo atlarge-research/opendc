@@ -23,7 +23,8 @@ def experiment_7(user_input, path):
 
     analysis_file_path = path + "/performance_report.txt"
     # samples_folders = ["samples=2,016", "samples=10,080", "samples=20,160", "samples=100,800", "samples=201,600"]
-    samples_folders = ["samples=201,600"]
+    samples_folders = ["samples=2,016", "samples=10,080"]
+    # samples_folders = ["samples=201,600"]
     window_sizes = [1, 10, 100, 1000]
     plot_types = ['time_series', 'cumulative', 'cumulative_time_series']
     meta_functions = ['mean', 'median']
@@ -49,10 +50,9 @@ def experiment_7(user_input, path):
                             path=argv2,
                             window_size=window_size
                         )
+                        multimodel.plot_type = plot_type
                         metamodel = MetaModel(multimodel=multimodel)
                         metamodel.meta_function = meta_function
-                        metamodel.plot_type = plot_type
-                        metamodel.multi_model.plot_type = plot_type
 
                         metamodel.output()
 

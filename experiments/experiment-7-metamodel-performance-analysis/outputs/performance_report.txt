@@ -148,3 +148,70 @@ Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1: 193.7 sec
 Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=10: 179.225 seconds
 Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=100: 186.892 seconds
 Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1000: 181.52 seconds
+
+    *******************************************
+    * Running Experiment 2
+    * Time: 2024-07-25 12:39:16
+    *******************************************
+    
+
+===Sample folder: samples=2,016===
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1: 1.131 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=10: 0.891 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=100: 0.895 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1000: 0.873 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1: 0.858 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=10: 0.831 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=100: 0.878 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1000: 0.845 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1: 0.821 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=10: 0.778 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=100: 0.767 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1000: 0.756 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=1: 0.867 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=10: 0.784 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=100: 0.779 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=1000: 0.782 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1: 0.813 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=10: 0.787 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=100: 0.832 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1000: 0.808 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1: 0.752 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=10: 0.74 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=100: 0.745 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1000: 0.724 seconds
+
+
+===Sample folder: samples=10,080===
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1: 4.8 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=10: 4.281 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=100: 5.455 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1000: 4.629 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1: 4.156 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=10: 4.417 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=100: 5.049 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1000: 4.393 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1: 4.417 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=10: 4.269 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=100: 4.31 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1000: 4.219 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=1: 4.881 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=10: 4.789 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=100: 4.469 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=1000: 4.412 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1: 4.359 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=10: 4.323 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=100: 4.302 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1000: 4.251 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1: 4.266 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=10: 4.172 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=100: 4.821 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1000: 4.684 seconds
+
+    *******************************************
+    * Running Experiment 2
+    * Time: 2024-07-25 13:30:37
+    *******************************************
+    
+
+===Sample folder: samples=2,016===
