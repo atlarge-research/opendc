@@ -246,7 +246,7 @@ class MultiModel:
             - Updates the plot attributes based on the generated plot.
             - Displays the plot on the matplotlib figure canvas.
         """
-        plt.figure(figsize=(10, 10))
+        plt.figure(figsize=(12, 10))
         plt.xticks(size=22)
         plt.yticks(size=22)
         plt.ylabel(self.y_label, size=26)
@@ -282,7 +282,9 @@ class MultiModel:
                 "'time_series', 'cumulative', or 'cumulative_time_series'."
             )
 
-        plt.legend(fontsize=22)
+        plt.tight_layout()
+        plt.subplots_adjust(right=0.85)
+        plt.legend(fontsize=12, bbox_to_anchor=(1, 1))
         self.save_plot()
         self.output_stats()
 
@@ -354,7 +356,7 @@ class MultiModel:
                 plt.plot(
                     cumulative_repeated,
                     drawstyle='steps-mid',
-                    label=("Meta-Model cumulative"),
+                    label=("Meta-Model"),
                     color="red",
                     linestyle="--",
                     marker="o",
@@ -364,7 +366,7 @@ class MultiModel:
             else:
                 cumulative_repeated = np.repeat(model.cumulative_time_series_values, self.window_size)[
                                       :len(model.raw_host_data)]
-                plt.plot(cumulative_repeated, drawstyle='steps-mid', label=("Model " + str(model.id) + " cumulative"))
+                plt.plot(cumulative_repeated, drawstyle='steps-mid', label=("Model " + str(model.id)))
 
     def compute_cumulative_time_series(self):
         """

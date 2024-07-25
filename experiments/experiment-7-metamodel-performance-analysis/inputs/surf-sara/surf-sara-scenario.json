@@ -1,0 +1,24 @@
+{
+    "name": "surf-sara-sim",
+    "topologies": [
+        {
+            "pathToFile": "topologies/surf-sara/sara-topology.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "traces/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "carbonTracePaths": [
+        "traces/carbon_intensity.parquet"
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "outputFolder": "output/",
+    "runs": 1
+}

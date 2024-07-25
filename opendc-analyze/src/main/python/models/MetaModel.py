@@ -1,8 +1,7 @@
 import numpy as np
-import pandas as pd
 import os
+import pandas as pd
 
-import utils
 from .Model import Model
 
 META_MODEL_ID = 101
@@ -16,7 +15,7 @@ class MetaModel:
     Attributes:
         multi_model (MultiModel): The container of models whose results are aggregated.
         meta_model (Model): Model instance that stores aggregated results.
-        meta_simulation_function (function): Function used to calculate aggregated data.
+        meta_function (function): Function used to calculate aggregated data.
         min_raw_model_len (int): Minimum length of raw data arrays across all models.
         min_processed_model_len (int): Minimum length of processed data arrays across all models.
         number_of_models (int): Number of models being aggregated.
@@ -46,8 +45,7 @@ class MetaModel:
             path=self.multi_model.output_folder_path
         )
 
-        self.meta_simulation_function = self.function_map.get(multimodel.user_input['meta_function'],
-                                                              self.mean)
+        self.meta_function = self.function_map.get(multimodel.user_input['meta_function'], self.mean)
         self.min_raw_model_len = min([len(model.raw_host_data) for model in self.multi_model.models])
         self.min_processed_model_len = min([len(model.processed_host_data) for model in self.multi_model.models])
         self.number_of_models = len(self.multi_model.models)
@@ -101,7 +99,7 @@ class MetaModel:
             data_entries = []
             for j in range(self.number_of_models):
                 data_entries.append(self.multi_model.models[j].processed_host_data[i])
-            self.meta_model.processed_host_data.append(self.meta_simulation_function(data_entries))
+            self.meta_model.processed_host_data.append(self.meta_function(data_entries))
         self.meta_model.raw_host_data = self.meta_model.processed_host_data
 
     def plot_time_series(self):
@@ -148,7 +146,7 @@ class MetaModel:
             data_entries = []
             for j in range(self.number_of_models):
                 data_entries.append(self.multi_model.models[j].processed_host_data[i])
-            self.meta_model.processed_host_data.append(self.meta_simulation_function(data_entries))
+            self.meta_model.processed_host_data.append(self.meta_function(data_entries))
 
     def plot_cumulative_time_series(self):
         """

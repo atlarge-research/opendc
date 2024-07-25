@@ -1,0 +1,150 @@
+
+    *******************************************
+    * Running Experiment 2
+    * Time: 2024-07-24 17:47:42
+    *******************************************
+|
+|
+|
+===Sample folder: samples=2,016===
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1: 0.998 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=10: 0.841 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=100: 0.789 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1000: 0.828 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1: 0.797 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=10: 0.827 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=100: 0.764 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1000: 0.764 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1: 0.765 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=10: 0.797 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=100: 0.795 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1000: 0.812 seconds
+
+Meta-Function=median, Plot-Type=time_series, Window-Size=1: 0.802 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=10: 0.802 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=100: 0.834 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=1000: 0.779 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1: 0.773 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=10: 0.792 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=100: 0.801 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1000: 0.79 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1: 0.797 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=10: 0.814 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=100: 0.834 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1000: 0.774 seconds
+|
+|
+|
+===Sample folder: samples=10,080===
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1: 4.41 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=10: 3.967 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=100: 4.008 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1000: 4.069 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1: 3.975 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=10: 4.111 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=100: 4.377 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1000: 4.364 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1: 4.263 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=10: 4.298 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=100: 4.266 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1000: 4.286 seconds
+
+Meta-Function=median, Plot-Type=time_series, Window-Size=1: 4.15 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=10: 3.952 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=100: 3.923 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=1000: 3.886 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1: 3.883 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=10: 3.926 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=100: 4.065 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1000: 4.064 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1: 4.106 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=10: 4.027 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=100: 4.025 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1000: 3.916 seconds
+|
+|
+|
+===Sample folder: samples=20,160===
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1: 9.871 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=10: 9.219 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=100: 9.331 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1000: 9.628 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1: 9.362 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=10: 9.55 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=100: 9.473 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1000: 9.348 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1: 9.617 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=10: 9.638 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=100: 9.626 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1000: 9.624 seconds
+
+Meta-Function=median, Plot-Type=time_series, Window-Size=1: 9.369 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=10: 9.552 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=100: 9.563 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=1000: 9.619 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1: 9.601 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=10: 9.646 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=100: 9.478 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1000: 9.78 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1: 9.642 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=10: 9.536 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=100: 9.439 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1000: 9.653 seconds
+|
+|
+|
+===Sample folder: samples=100,800===
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1: 83.308 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=10: 82.99 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=100: 82.775 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1000: 84.451 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1: 82.767 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=10: 85.143 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=100: 84.84 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1000: 81.87 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1: 82.824 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=10: 83.83 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=100: 83.507 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1000: 83.671 seconds
+
+Meta-Function=median, Plot-Type=time_series, Window-Size=1: 82.693 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=10: 83.695 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=100: 83.005 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=1000: 82.961 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1: 83.208 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=10: 82.77 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=100: 84.688 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1000: 85.223 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1: 83.656 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=10: 84.978 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=100: 83.728 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1000: 85.333 seconds
+|
+|
+|
+===Sample folder: samples=201,600===
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1: 188.051 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=10: 181.965 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=100: 191.707 seconds
+Meta-Function=mean, Plot-Type=time_series, Window-Size=1000: 185.33 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1: 196.761 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=10: 184.51 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=100: 193.478 seconds
+Meta-Function=mean, Plot-Type=cumulative, Window-Size=1000: 189.192 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1: 185.283 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=10: 188.955 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=100: 191.533 seconds
+Meta-Function=mean, Plot-Type=cumulative_time_series, Window-Size=1000: 184.638 seconds
+
+Meta-Function=median, Plot-Type=time_series, Window-Size=1: 182.951 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=10: 187.927 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=100: 183.346 seconds
+Meta-Function=median, Plot-Type=time_series, Window-Size=1000: 185.136 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1: 185.409 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=10: 190.447 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=100: 182.985 seconds
+Meta-Function=median, Plot-Type=cumulative, Window-Size=1000: 186.687 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1: 193.7 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=10: 179.225 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=100: 186.892 seconds
+Meta-Function=median, Plot-Type=cumulative_time_series, Window-Size=1000: 181.52 seconds

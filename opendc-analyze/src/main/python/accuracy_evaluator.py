@@ -1,6 +1,5 @@
 import numpy as np
-from models.Model import Model
-from models.MultiModel import MultiModel
+
 from models.MetaModel import MetaModel
 
 
@@ -28,7 +27,7 @@ def accuracy_evaluator(
 
     meta_model = MetaModel(multimodel=multi_model)
     multi_model.models.append(meta_model.meta_model)  # metamodel
-    multi_model.models.append(Model(raw_host_data=real_data, id=-1, path=None))  # real-world data
+    # multi_model.models.append(Model(raw_host_data=real_data, id=-1, path=None))  # real-world data
 
     with open(multi_model.output_folder_path + "/accuracy_report.txt", "a") as f:
         f.write("====================================\n")
@@ -38,7 +37,7 @@ def accuracy_evaluator(
             if model.id == -1:
                 f.write("Real-World data")
             elif model.id == 101:
-                f.write(f"Meta-Model, meta-function: {multi_model.user_input['meta_simulation_function']}")
+                f.write(f"Meta-Model, meta-function: {multi_model.user_input['meta_function']}")
             else:
                 f.write(f"Model {model.id}")
 
