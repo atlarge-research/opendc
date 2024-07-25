@@ -4,12 +4,12 @@
     "metric": "power_draw",
     "window_size": 1,
     "window_function": "mean",
-    "meta_function": "median",
+    "meta_function": "mean",
     "samples_per_minute": 0.2,
     "plot_type": "time_series",
     "x_label": "Sample count",
-    "y_label": "Energy Usage [kW]",
+    "y_label": "Energy Usage [W]",
     "plot_title": "Time Series Plot",
-    "current_unit": "kW",
-    "unit_scaling_magnitude": 3
+    "current_unit": "W",
+    "unit_scaling_magnitude": 1
 }

@@ -3,6 +3,9 @@
 In this experiment, we are building a tool to evaluate the accuracy of the simulator, overall, and the 
 accuracy of the meta-model tool.
 
+#### Step 0
+Ensure that the data from analyzer.json is not scaled. In other words, ensure ```"unit_scaling_magnitude": 1```.
+
 #### Step 1
 Run Scenario CLI, with the following setup.
 
@@ -15,6 +18,8 @@ ScenarioCLI working directory:
 ```
 /your/path/opendc/
 ```
+
+Make sure to have the sampling rate of the simulator set to 30. (Can be adjusted from ```ExportModelSpec.kt```)
 
 #### Step 2
 Now, if the simulation was successful, we should have the results in 
@@ -34,6 +39,11 @@ def main():
             path=sys.argv[1],
         )
     )
+```
+
+Run main.py with the following arguments:
+```
+"experiments/experiment-5-accuracy-evaluation/outputs/" "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json"
 ```
 
 #### Step 4

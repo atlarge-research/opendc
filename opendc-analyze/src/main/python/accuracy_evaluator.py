@@ -9,7 +9,8 @@ def accuracy_evaluator(
     compute_mape=True,
     compute_nad=True,
     compute_rmsle=True,
-    rmsle_hyperparameter=0.5
+    rmsle_hyperparameter=0.5,
+    only_metamodel=False
 ):
     """
     :param real_data: the real-world data of the simulation
@@ -34,10 +35,14 @@ def accuracy_evaluator(
         f.write("Accuracy Report, against ground truth\n")
 
         for model in multi_model.models:
+            if only_metamodel and model.id != 101:
+                continue
+
             if model.id == -1:
                 f.write("Real-World data")
             elif model.id == 101:
-                f.write(f"Meta-Model, meta-function: {multi_model.user_input['meta_function']}")
+                f.write(
+                    f"Meta-Model, meta-function: {multi_model.user_input['meta_function']}, window_size: {meta_model.multi_model.window_size}")
             else:
                 f.write(f"Model {model.id}")
 
@@ -106,4 +111,4 @@ def rmsle(real_data, simulation_data, alpha=0.5):
     real_data = np.array(real_data)
     simulation_data = np.array(simulation_data)
     log_diff = alpha * np.log(real_data) - (1 - alpha) * np.log(simulation_data)
-    return round(np.sqrt(np.mean(log_diff ** 2)), 3)
+    return round(np.sqrt(np.mean(log_diff ** 2)) * 100, 3)
