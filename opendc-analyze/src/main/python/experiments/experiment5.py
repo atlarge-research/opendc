@@ -29,7 +29,7 @@ def experiment_5(multimodel):
         compute_mape=True,
         compute_nad=True,
         compute_rmsle=True,
-        rmsle_hyperparameter=0.5
+        rmsle_hyperparameter=0.5,
     )
 
 

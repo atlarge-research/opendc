@@ -118,3 +118,8 @@ gradle-app.setting
 
 # Demo files
 demo
+
+
+# Large experimental files
+./experiments/experiment-7-metamodel-performance-analysis/outputs/samples=100,800/
+./experiments/experiment-7-metamodel-performance-analysis/outputs/samples=201,600/

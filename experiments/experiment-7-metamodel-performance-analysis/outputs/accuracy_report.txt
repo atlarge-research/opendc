@@ -1,0 +1,142 @@
+====================================
+Accuracy Report, against ground truth
+Model 0
+Mean Absolute Percentage Error (MAPE): 13.143%
+Normalized Absolute Differences (NAD): 12.969%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.072
+
+Model 1
+Mean Absolute Percentage Error (MAPE): 3.792%
+Normalized Absolute Differences (NAD): 3.713%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.022
+
+Model 2
+Mean Absolute Percentage Error (MAPE): 20.245%
+Normalized Absolute Differences (NAD): 20.269%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.116
+
+Model 3
+Mean Absolute Percentage Error (MAPE): 14.184%
+Normalized Absolute Differences (NAD): 14.178%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.067
+
+Model 4
+Mean Absolute Percentage Error (MAPE): 27.227%
+Normalized Absolute Differences (NAD): 27.191%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.161
+
+Model 5
+Mean Absolute Percentage Error (MAPE): 18.192%
+Normalized Absolute Differences (NAD): 18.161%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.084
+
+Model 6
+Mean Absolute Percentage Error (MAPE): 5.616%
+Normalized Absolute Differences (NAD): 5.488%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.032
+
+Model 7
+Mean Absolute Percentage Error (MAPE): 3.756%
+Normalized Absolute Differences (NAD): 3.817%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.025
+
+Meta-Model, meta-function: mean
+Mean Absolute Percentage Error (MAPE): 4.53%
+Normalized Absolute Differences (NAD): 4.537%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.028
+
+
+====================================
+====================================
+Accuracy Report, against ground truth
+Model 0
+Mean Absolute Percentage Error (MAPE): 3.701%
+Normalized Absolute Differences (NAD): 3.642%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.022
+
+Model 1
+Mean Absolute Percentage Error (MAPE): 13.143%
+Normalized Absolute Differences (NAD): 12.969%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.072
+
+Model 2
+Mean Absolute Percentage Error (MAPE): 5.396%
+Normalized Absolute Differences (NAD): 5.24%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.031
+
+Model 3
+Mean Absolute Percentage Error (MAPE): 10.937%
+Normalized Absolute Differences (NAD): 10.828%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.055
+
+Model 4
+Mean Absolute Percentage Error (MAPE): 11.833%
+Normalized Absolute Differences (NAD): 11.78%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.066
+
+Model 5
+Mean Absolute Percentage Error (MAPE): 14.184%
+Normalized Absolute Differences (NAD): 14.178%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.067
+
+Model 6
+Mean Absolute Percentage Error (MAPE): 17.198%
+Normalized Absolute Differences (NAD): 17.198%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.097
+
+Model 7
+Mean Absolute Percentage Error (MAPE): 24.316%
+Normalized Absolute Differences (NAD): 24.258%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.142
+
+Model 8
+Mean Absolute Percentage Error (MAPE): 19.186%
+Normalized Absolute Differences (NAD): 19.077%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.109
+
+Model 9
+Mean Absolute Percentage Error (MAPE): 3.792%
+Normalized Absolute Differences (NAD): 3.713%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.022
+
+Model 10
+Mean Absolute Percentage Error (MAPE): 18.192%
+Normalized Absolute Differences (NAD): 18.161%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.084
+
+Model 11
+Mean Absolute Percentage Error (MAPE): 27.227%
+Normalized Absolute Differences (NAD): 27.191%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.161
+
+Model 12
+Mean Absolute Percentage Error (MAPE): 5.616%
+Normalized Absolute Differences (NAD): 5.488%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.032
+
+Model 13
+Mean Absolute Percentage Error (MAPE): 3.756%
+Normalized Absolute Differences (NAD): 3.817%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.025
+
+Model 14
+Mean Absolute Percentage Error (MAPE): 7.205%
+Normalized Absolute Differences (NAD): 7.116%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.039
+
+Model 15
+Mean Absolute Percentage Error (MAPE): 20.245%
+Normalized Absolute Differences (NAD): 20.269%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.116
+
+Meta-Model, meta-function: mean
+Mean Absolute Percentage Error (MAPE): 5.351%
+Normalized Absolute Differences (NAD): 5.372%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.032
+
+Meta-Model, meta-function: mean
+Mean Absolute Percentage Error (MAPE): 5.351%
+Normalized Absolute Differences (NAD): 5.372%
+Root Mean Square Logarithmic Error (RMSLE), alpha=0.5:0.032
+
+====================================

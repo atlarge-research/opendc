@@ -3,7 +3,7 @@
     "metamodel": false,
     "metric": "power_draw",
     "window_size": 100,
-    "aggregation_function": "mean",
+    "window_function": "mean",
     "plot_type": "cumulative",
     "unit_scaling_magnitude": 6,
     "x_min": 0,
