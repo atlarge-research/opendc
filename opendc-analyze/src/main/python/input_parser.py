@@ -1,5 +1,5 @@
-import os
 import json
+import os
 import sys
 import warnings
 
@@ -55,8 +55,6 @@ def parse_input(input_json):
         "x_min": None,
         "x_max": None,
     }
-
-
 
     # Apply default values where not specified
     for key, default_value in DEFAULTS.items():

@@ -23,7 +23,8 @@ def experiment_7(user_input, path):
 
     analysis_file_path = path + "/performance_report.txt"
     # samples_folders = ["samples=2,016", "samples=10,080", "samples=20,160", "samples=100,800", "samples=201,600"]
-    samples_folders = ["samples=2,016", "samples=10,080"]
+    samples_folders = ["samples=20,160", "samples=2,016", "samples=10,080", "samples=100,800", "samples=201,600"]
+    # samples_folders = ["samples=2,016", "samples=10,080"]
     # samples_folders = ["samples=201,600"]
     window_sizes = [1, 10, 100, 1000]
     plot_types = ['time_series', 'cumulative', 'cumulative_time_series']
@@ -31,7 +32,7 @@ def experiment_7(user_input, path):
 
     ascii_art = f"""
     *******************************************
-    * Running Experiment 2
+    * Running Experiment 7
     * Time: {time.strftime('%Y-%m-%d %H:%M:%S')}
     *******************************************
     """
@@ -59,6 +60,6 @@ def experiment_7(user_input, path):
                         ending_time = time.time()
                         elapsed_time = ending_time - starting_time
                         f.write(
-                            f"Meta-Function={meta_function}, Plot-Type={plot_type}, Window-Size={window_size}: {round(elapsed_time, 3)} seconds\n")
+                            f"Sample_folder={samples_folder}, Meta-Function={meta_function}, Plot-Type={plot_type}, Window-Size={window_size}: {round(elapsed_time, 3)} seconds\n")
                         print(
-                            f"Meta-Function={meta_function}, Plot-Type={plot_type}, Window-Size={window_size}: {round(elapsed_time, 3)} seconds\n")
+                            f"Sample_folder={samples_folder}, Meta-Function={meta_function}, Plot-Type={plot_type}, Window-Size={window_size}: {round(elapsed_time, 3)} seconds\n")
