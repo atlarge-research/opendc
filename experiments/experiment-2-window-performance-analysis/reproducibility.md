@@ -33,6 +33,11 @@ def main():
     experiment2.experiment_2()
 ```
 
+Main.py arguments
+
+```
+"experiments/experiment-2-window-performance-analysis/outputs/" "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json"
+```
 
 The output of the experiment is generated in 
 ```opendc-analyze/src/main/python/analysis.txt```.
