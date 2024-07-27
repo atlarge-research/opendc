@@ -43,7 +43,7 @@ A setup file can be validated using a JSON schema validator, such as https://www
             "enum": ["mean", "median"],
             "description": "The function used by the window for aggregating the chunks (e.g., for 'mean', the window will compute the mean of the samples)."
         },
-        "metamodel_function": {
+        "meta_function": {
             "type": "string",
             "default": "mean",
             "enum": ["mean", "median"],
@@ -90,6 +90,16 @@ A setup file can be validated using a JSON schema validator, such as https://www
         "x_max": {
             "type": "number",
             "description": "The maximum value for the horizontal axis of the plot."
+        },
+        "x_ticks_count": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "The number of ticks on x-axis."
+        },
+        "y_ticks_count": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "The number of ticks on y-axis."
         }
     },
     "required": [
