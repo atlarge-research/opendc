@@ -136,9 +136,10 @@ private fun HostJSONSpec.toHostSpecs(
             thermalModel.modelType,
             thermalModel.rHS,
             thermalModel.rCase,
-            thermalModel.ambientTemperature,
             thermalModel.minLeakageCurrent,
             thermalModel.maxLeakageCurrent,
+            thermalModel.supplyVoltage,
+            thermalModel.ambientTemperature,
         )
 
     var hostName: String

@@ -72,6 +72,7 @@ public data class HostJSONSpec(
             0.00061,
             0.00035,
             0.0041,
+            1.8,
             22.0,
         ),
     val count: Int = 1,
@@ -133,5 +134,6 @@ public data class ThermalModelSpec(
     val rCase: Double,
     val minLeakageCurrent: Double,
     val maxLeakageCurrent: Double,
+    val supplyVoltage: Double,
     val ambientTemperature: Double,
 )

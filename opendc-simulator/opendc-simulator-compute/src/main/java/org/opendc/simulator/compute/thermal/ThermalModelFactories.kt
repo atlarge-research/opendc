@@ -28,6 +28,7 @@ public fun getThermalModel(
     rCase: Double,
     minLeakageCurrent: Double,
     maxLeakageCurrent: Double,
+    supplyVoltage: Double,
     ambientTemperature: Double,
 ): ThermalModel {
     return when (modelType) {
@@ -37,6 +38,7 @@ public fun getThermalModel(
                 rCase,
                 minLeakageCurrent,
                 maxLeakageCurrent,
+                supplyVoltage,
                 ambientTemperature,
             )
 
@@ -52,8 +54,11 @@ public fun getThermalModel(modelType: String): ThermalModel {
                 0.00061,
                 0.00035,
                 0.0041,
+                1.8,
                 22.0,
             )
+        "manufacturerModel" ->
+            ThermalModels.manufacturerModel(0.278, 47.0)
 
         else -> throw IllegalArgumentException("Unknown power modelType $modelType")
     }

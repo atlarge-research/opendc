@@ -25,8 +25,12 @@ package org.opendc.simulator.compute.thermal;
 public class ThermalModels {
 
     public static ThermalModel rcmodel(
-            double rHS, double rCase, double minLeakageCurrent, double maxLeakageCurrent, double ambientTemperature) {
-        return new RCModel(rHS, rCase, minLeakageCurrent, maxLeakageCurrent, ambientTemperature);
+            double rHS, double rCase, double minLeakageCurrent, double maxLeakageCurrent, double supplyVoltage, double ambientTemperature) {
+        return new RCModel(rHS, rCase, minLeakageCurrent, maxLeakageCurrent, supplyVoltage, ambientTemperature);
+    }
+
+    public static ThermalModel manufacturerModel(double slope, double intercept) {
+        return new ManufacturerModel(slope, intercept);
     }
 
     private static class RCModel implements ThermalModel {
@@ -35,42 +39,57 @@ public class ThermalModels {
         protected final double minLeakageCurrent;
         protected final double maxLeakageCurrent;
         protected final double ambientTemperature;
+        protected final double supplyVoltage;
+
+        private double currentStaticPower;
+        private double totalPowerDissipated;
 
         private RCModel(
                 double rHS,
                 double rCase,
                 double minLeakageCurrent,
                 double maxLeakageCurrent,
+                double supplyVoltage,
                 double ambientTemperature) {
             this.rHS = rHS;
             this.rCase = rCase;
             this.minLeakageCurrent = minLeakageCurrent;
             this.maxLeakageCurrent = maxLeakageCurrent;
+            this.supplyVoltage = supplyVoltage;
             this.ambientTemperature = ambientTemperature;
         }
 
-        private double setThermalPower(double dynamicPower, double minPower, double maxPower) {
-            double staticPower =
-                    ((maxLeakageCurrent - minLeakageCurrent) / (maxPower - minPower) * (dynamicPower - minPower))
-                            + minLeakageCurrent;
+        private void setStaticPower(double dynamicPower, double minPower, double maxPower) {
+            currentStaticPower =
+                ((maxLeakageCurrent - minLeakageCurrent) / (maxPower - minPower) * (dynamicPower - minPower))
+                    + minLeakageCurrent;
+        }
 
-            return dynamicPower + minPower + staticPower;
+        private void setThermalPower(double dynamicPower, double minPower) {
+            totalPowerDissipated = dynamicPower + minPower + currentStaticPower;
         }
 
         @Override
         public double setTemperature(double dynamicPower, double minPower, double maxPower) {
-            double totalPowerDissipated = setThermalPower(dynamicPower, minPower, maxPower);
+            setStaticPower(dynamicPower, minPower, maxPower);
+            setThermalPower(dynamicPower, minPower);
 
-            return ambientTemperature + (totalPowerDissipated * (rHS + rCase));
+           return ambientTemperature + (totalPowerDissipated * (rHS + rCase));
         }
     }
 
-    // TODO Implement this model
     private static class ManufacturerModel implements ThermalModel {
+        protected final double slope;
+        protected final double intercept;
+
+        private ManufacturerModel(double slope, double intercept) {
+            this.slope = slope;
+            this.intercept = intercept;
+        }
 
         @Override
         public double setTemperature(double dynamicPower, double minPower, double maxPower) {
-            return 0;
+            return slope * dynamicPower + intercept;
         }
     }
 }
