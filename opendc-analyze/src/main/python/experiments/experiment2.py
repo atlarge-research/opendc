@@ -1,9 +1,7 @@
-import os
 import time
-from matplotlib import pyplot as plt
+
 from input_parser import read_input
 from models.MultiModel import MultiModel
-
 
 """
 Experiment 2 analyses the time required to compute a multimodel, using different window sizes, for different sizes of datasets.
@@ -13,8 +11,8 @@ every 3, 30, 60 and 300 seconds respectively.
 We save the data results in analysis.txt file, in the directory corresponding to experiment 2.
 """
 def experiment_2():
-    analysis_file_path = 'cumulative.txt'
-    sample_rates = [300, 60, 30, 3]
+    analysis_file_path = 'time_series.txt'
+    sample_rates = [300, 60, 30, 6, 3]
     window_sizes = [1000, 100, 10, 1]
     argv1 = "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json"
 

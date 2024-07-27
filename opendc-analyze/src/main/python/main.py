@@ -1,23 +1,9 @@
-import sys
+from experiments import experiment2
 
-from experiments import experiment7, experiment8, experiment5
-from input_parser import read_input
-from models.MultiModel import MultiModel
-
-
-# def main():
-#     experiment8.experiment_8(
-#         user_input=read_input(sys.argv[2]),
-#         path=sys.argv[1],
-#     )
 
 def main():
-    experiment5.experiment_5(
-        MultiModel(
-            user_input=read_input(sys.argv[2]),
-            path=sys.argv[1],
-        )
-    )
+    experiment2.experiment_2()
+
 
 if __name__ == "__main__":
     main()
