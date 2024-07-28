@@ -71,6 +71,7 @@ def parse_input(input_json):
         "plot_title": "",
         "x_label": "",
         "y_label": "",
+        "seed": 0,
         "y_ticks_count": None,
         "x_ticks_count": None,
         "y_min": None,
