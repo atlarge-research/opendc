@@ -15,7 +15,7 @@ def experiment_1(window_sizes=[1, 10, 100, 1000], metric="power_draw", max_sampl
 
     for window_size in window_sizes:
         multimodel = MultiModel(metric, window_size)
-        data_to_plot = multimodel.models[0].processed_host_data
+        data_to_plot = multimodel.models[0].processed_sim_data
         data_to_plot = augment_data(data_to_plot, window_size)
         data_to_plot = [x / 1000 for x in data_to_plot][:max_samples]
         models_data.append(data_to_plot)
@@ -48,10 +48,6 @@ def plot_individual_model(export_path, model_data, plot_title):
     plt.yticks(fontsize=32, ticks=[135, 140, 145])
     plt.ylim([131.5, 146])
 
-    # plt.xlabel("Sample count", fontsize=32)
-    # plt.ylabel("Energy usage [kW]", fontsize=32)
-
-    # make the space under 135 gray
     plt.fill_between([0, 5000], 131, 133, color='lightgray', alpha=0.2)
 
     # write a "~" on the gray area from above

@@ -1,10 +1,6 @@
-import os
-
-from matplotlib import pyplot as plt
-
-import utils
 import time
 
+import utils
 from models.MultiModel import MultiModel
 
 """
@@ -24,14 +20,14 @@ We obtained for power_draw:
 @:param window_sizes: list of window sizes to compare, default is [1, 10, 100, 1000, 10000], increasing order of magnitude
 @:param metrics: list of metrics to compare, default is ["power_draw", "carbon_emission"]
 """
-import matplotlib.ticker as ticker
+
 
 def experiment_0(window_sizes=[1, 10, 100, 1000]):
     metric = "power_draw"
     analysis_file_path = utils.SIMULATION_ANALYSIS_FOLDER_NAME + "/" + metric + "/" + "window_size_time_analysis-small.txt"
     with open(analysis_file_path, "a") as f:
         multimodel = MultiModel(metric, 1)
-        number_of_samples = len(multimodel.models[0].raw_host_data)
+        number_of_samples = len(multimodel.models[0].raw_sim_data)
         f.write("\n\nWe are running window_size_time_analysis.experiment_small() for power_draw\n")
         f.write("Sample count in raw host data: " + str(number_of_samples) + "\n")
 
