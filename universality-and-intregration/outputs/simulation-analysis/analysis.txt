@@ -1,0 +1,73 @@
+Analysis file created.
+
+
+========================================
+Simulation made at 2024-07-28 17:56:18
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw sim data: 20160
+Computing time 27.9s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/universality-and-intregration/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-28 17:56:30
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw sim data: 20160
+Computing time 39.8s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/universality-and-intregration/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-28 17:58:30
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw sim data: 20160
+Computing time 3.5s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/universality-and-intregration/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-28 17:58:30
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw sim data: 20160
+Computing time 3.8s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/universality-and-intregration/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-28 18:00:02
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw sim data: 20160
+Computing time 3.9s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/universality-and-intregration/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-28 18:00:02
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw sim data: 20160
+Computing time 4.2s
+Workload time: 2.8 days
+Plot path/Users/raz/atlarge/opendc/universality-and-intregration/outputs//simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
