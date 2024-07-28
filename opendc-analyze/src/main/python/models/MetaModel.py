@@ -4,8 +4,6 @@ import pandas as pd
 
 from .Model import Model
 
-META_MODEL_ID = 101
-
 
 class MetaModel:
     """
@@ -21,6 +19,8 @@ class MetaModel:
         number_of_models (int): Number of models being aggregated.
         function_map (dict): Mapping of aggregation function names to function implementations.
     """
+
+    META_MODEL_ID = -101
 
     def __init__(self, multimodel, meta_function=None):
         """
@@ -41,7 +41,7 @@ class MetaModel:
         self.multi_model = multimodel
         self.meta_model = Model(
             raw_sim_data=[],
-            id=META_MODEL_ID,
+            id=self.META_MODEL_ID,
             path=self.multi_model.output_folder_path
         )
 
@@ -212,7 +212,3 @@ class MetaModel:
         #
         # iqm = np.mean(sorted_preds[Q1:Q3], axis=0)
         # return iqm
-
-
-
-

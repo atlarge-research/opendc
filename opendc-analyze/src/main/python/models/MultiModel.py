@@ -6,12 +6,13 @@ import time
 from matplotlib.ticker import MaxNLocator, FuncFormatter
 
 from simulator_specifics import *
+from .MetaModel import MetaModel
 from .Model import Model
 
 
 def is_meta_model(model):
     """
-    Check if the given model is a MetaModel based on its ID. A metamodel will always have an id of 101.
+    Check if the given model is a MetaModel based on its ID. A metamodel will always have an id of -101.
 
     Args:
         model (Model): The model to check.
@@ -19,7 +20,7 @@ def is_meta_model(model):
     Returns:
         bool: True if model is MetaModel, False otherwise.
     """
-    return model.id == 101
+    return model.id == MetaModel.META_MODEL_ID
 
 
 class MultiModel:
@@ -196,7 +197,6 @@ class MultiModel:
         """
         model_id = 0
 
-        dirs = os.listdir(self.raw_output_path)
         for simulation_folder in os.listdir(self.raw_output_path):
             if simulation_folder == "metamodel":
                 continue
