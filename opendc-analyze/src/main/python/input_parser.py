@@ -5,6 +5,18 @@ import warnings
 
 
 def read_input(path=""):
+    """
+    Reads and processes the input JSON file from the specified path. Validates the input path,
+    ensures the file exists, and decodes the JSON content. Switches to the project root directory
+    before returning the parsed input.
+
+    :param path: The relative path to the input JSON file.
+    :type path: str
+    :raises ValueError: If the input path is not provided, file does not exist, or JSON decoding fails.
+    :return: Parsed JSON content.
+    :rtype: dict
+    :side effect: Changes the working directory to the project root.
+    """
     if not path:
         raise ValueError("No input path provided.")
 
@@ -35,6 +47,17 @@ def read_input(path=""):
 
 
 def parse_input(input_json):
+    """
+    Validates and applies default values to the input JSON content. Ensures required fields are present
+    and raises warnings or errors for missing or invalid values.
+
+    :param input_json: The input JSON content.
+    :type input_json: dict
+    :raises ValueError: If required fields are missing or invalid values are provided.
+    :return: Validated and processed JSON content with defaults applied.
+    :rtype: dict
+    """
+
     DEFAULTS = {
         "multimodel": True,
         "metamodel": False,
@@ -80,6 +103,13 @@ def parse_input(input_json):
 
 
 def find_root_dir():
+    """
+    Searches for the project root directory by looking for a 'README.md' file in the current
+    and parent directories.
+
+    :return: The path to the project root directory if found, otherwise None.
+    :rtype: str or None
+    """
     current_dir = os.path.dirname(os.path.abspath(__file__))
     root = os.path.abspath(os.sep)
     while current_dir and current_dir != root:
@@ -90,6 +120,12 @@ def find_root_dir():
 
 
 def switch_to_root_dir():
+    """
+    Switches the current working directory to the project root directory. Exits the program if the
+    root directory is not found.
+
+    :side effect: Changes the current working directory or exits the program.
+    """
     root_dir = find_root_dir()
     if root_dir:
         os.chdir(root_dir)

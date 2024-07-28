@@ -37,14 +37,10 @@ def experiment_6(user_input, path):
     input_folder_path = '/'.join(input_folder_path[:-4])
     input_folder_path = input_folder_path + "/inputs/surf-sara/trace/ground_truth.parquet"
 
-    metamodel_time_series = MetaModel(multimodel=multimodel_time_series)
-    metamodel_time_series.output()
+    MetaModel(multimodel=multimodel_time_series)
+    MetaModel(multimodel=multimodel_cumulative)
+    MetaModel(multimodel=multimodel_cumulative_time_series)
 
-    metamodel_cumulative = MetaModel(multimodel=multimodel_cumulative)
-    metamodel_cumulative.output()
-
-    metamodel_cumulative_time_series = MetaModel(multimodel=multimodel_cumulative_time_series)
-    metamodel_cumulative_time_series.output()
 
 
 def experiment6_fr6(user_input, path):
@@ -58,19 +54,16 @@ def experiment6_fr6(user_input, path):
     multimodel_window_10 = MultiModel(user_input=user_input, path=path)
     multimodel_window_10.plot_type = "time_series"
     multimodel_window_10.plot_title = "Window 10"
-    metamodel_window_10 = MetaModel(multimodel=multimodel_window_10)
-    metamodel_window_10.output()
+    MetaModel(multimodel=multimodel_window_10)
 
     user_input["window_size"] = 250
     multimodel_window_250 = MultiModel(user_input=user_input, path=path)
     multimodel_window_250.plot_type = "time_series"
     multimodel_window_250.plot_title = "Window 250"
-    metamodel_window_250 = MetaModel(multimodel=multimodel_window_250)
-    metamodel_window_250.output()
+    MetaModel(multimodel=multimodel_window_250)
 
     user_input["window_size"] = 5000
     multimodel_window_5000 = MultiModel(user_input=user_input, path=path)
     multimodel_window_5000.plot_type = "time_series"
     multimodel_window_5000.plot_title = "Window 5000"
-    metamodel_window_5000 = MetaModel(multimodel=multimodel_window_5000)
-    metamodel_window_5000.output()
+    MetaModel(multimodel=multimodel_window_5000)
