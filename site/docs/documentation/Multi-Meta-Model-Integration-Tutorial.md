@@ -147,8 +147,8 @@ in [Analyzr.kt](opendc-analyze/src/main/kotlin/Analyzr.kt).
 Below, we provide a snippet of the code:
 
 ```kotlin
- val ANALYSIS_SCRIPTS_DIRECTORY: String = "./opendc-analyze/src/main/python"
-var ABSOLUTE_SCRIPT_PATH: String =
+val ANALYSIS_SCRIPTS_DIRECTORY: String = "./opendc-analyze/src/main/python"
+val ABSOLUTE_SCRIPT_PATH: String =
     Path("$ANALYSIS_SCRIPTS_DIRECTORY/main.py").toAbsolutePath().normalize().toString()
 val SCRIPT_LANGUAGE: String = "python3"
 
