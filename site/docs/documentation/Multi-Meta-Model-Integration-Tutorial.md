@@ -94,6 +94,15 @@ every 30 seconds, the file will look like this:
 
 ## Step 3: Running the Multi-Meta-Model
 
+### 3.1 Setup the Simulator Specifics
+
+Update the simulation folder name ([9], [13], [17] from Step 1), in the
+file [simulator_specifics.py](opendc/src/python/simulator_specifics.py).
+
+### 3.2 Setup the python program arguments
+
+```python
+
 ### Arguments for Main.py Setup
 
 [//]: # ("experiments/experiment-2-window-performance-analysis/outputs/" ")
@@ -110,7 +119,7 @@ e.g.,
 "simulation-123/outputs/" "simulation-123/inputs/multi-meta-configurator.json"
 ```
 
-### Working directory Main.py Setup
+### 3.3 Working directory Main.py Setup
 
 Make sure to set the working directory to the directory where the main.py file is located.
 
