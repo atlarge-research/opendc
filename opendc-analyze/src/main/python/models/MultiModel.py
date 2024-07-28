@@ -5,6 +5,7 @@ import pyarrow.parquet as pq
 import time
 from matplotlib.ticker import MaxNLocator, FuncFormatter
 
+from simulator_specifics import *
 from .Model import Model
 
 
@@ -90,6 +91,7 @@ class MultiModel:
         self.window_size = -1
         self.window_function = "median"
         self.max_model_len = 0
+        self.seed = 0
 
         self.plot_type = None
         self.plot_title = None
@@ -101,7 +103,6 @@ class MultiModel:
         self.y_max = None
         self.plot_path = None
 
-        # run init functions
         self.parse_user_input(window_size)
         self.set_paths()
         self.init_models()
@@ -122,6 +123,7 @@ class MultiModel:
         self.metric = self.user_input["metric"]
         self.measure_unit = self.adjust_unit()
         self.window_function = self.user_input["window_function"]
+        self.seed = self.user_input["seed"]
 
         self.plot_type = self.user_input["plot_type"]
         self.plot_title = self.user_input["plot_title"]
@@ -194,28 +196,29 @@ class MultiModel:
         """
         model_id = 0
 
+        dirs = os.listdir(self.raw_output_path)
         for simulation_folder in os.listdir(self.raw_output_path):
             if simulation_folder == "metamodel":
                 continue
-            path_of_parquet_file = f"{self.raw_output_path}/{simulation_folder}/seed=0/host.parquet"
+            path_of_parquet_file = f"{self.raw_output_path}/{simulation_folder}/seed={self.seed}/{SIMULATION_DATA_FILE}.parquet"
             parquet_file = pq.read_table(path_of_parquet_file).to_pandas()
-            raw_data = parquet_file.select_dtypes(include=[np.number]).groupby("timestamp")
-            raw_data = raw_data[self.metric].sum().values
+            raw = parquet_file.select_dtypes(include=[np.number]).groupby("timestamp")
+            raw = raw[self.metric].sum().values
 
             if self.unit_scaling is None:
                 raise ValueError("Unit scaling factor is not set. Please ensure it is set correctly.")
 
-            raw_data = np.divide(raw_data, self.unit_scaling)
+            raw = np.divide(raw, self.unit_scaling)
 
             if self.user_input["samples_per_minute"] > 0:
                 MINUTES_IN_DAY = 1440
-                self.workload_time = len(raw_data) * self.user_input["samples_per_minute"] / MINUTES_IN_DAY
+                self.workload_time = len(raw) * self.user_input["samples_per_minute"] / MINUTES_IN_DAY
 
-            model = Model(raw_host_data=raw_data, id=model_id, path=self.output_folder_path)
+            model = Model(raw_sim_data=raw, id=model_id, path=self.output_folder_path)
             self.models.append(model)
             model_id += 1
 
-        self.max_model_len = min([len(model.raw_host_data) for model in self.models])
+        self.max_model_len = min([len(model.raw_sim_data) for model in self.models])
 
     def compute_windowed_aggregation(self):
         """
@@ -224,12 +227,12 @@ class MultiModel:
         an aggregation function to each segment.
 
         :return: None
-        :side effect: Modifies each model's processed_host_data attribute to contain aggregated data.
+        :side effect: Modifies each model's processed_sim_data attribute to contain aggregated data.
         """
         if self.plot_type != "cumulative":
             for model in self.models:
-                numeric_values = model.raw_host_data
-                model.processed_host_data = self.mean_of_chunks(numeric_values, self.window_size)
+                numeric_values = model.raw_sim_data
+                model.processed_sim_data = self.mean_of_chunks(numeric_values, self.window_size)
 
     def generate_plot(self):
         """
@@ -299,7 +302,7 @@ class MultiModel:
         for model in self.models:
             label = "Meta-Model" if is_meta_model(model) else "Model " + str(model.id)
             if is_meta_model(model):
-                repeated_means = np.repeat(means, self.window_size)[:len(model.processed_host_data) * self.window_size]
+                repeated_means = np.repeat(means, self.window_size)[:len(model.processed_sim_data) * self.window_size]
                 plt.plot(
                     repeated_means,
                     drawstyle='steps-mid',
@@ -311,8 +314,8 @@ class MultiModel:
                     linewidth=2
                 )
             else:
-                means = self.mean_of_chunks(model.raw_host_data, self.window_size)
-                repeated_means = np.repeat(means, self.window_size)[:len(model.raw_host_data)]
+                means = self.mean_of_chunks(model.raw_sim_data, self.window_size)
+                repeated_means = np.repeat(means, self.window_size)[:len(model.raw_sim_data)]
                 plt.plot(repeated_means, drawstyle='steps-mid', label=label)
 
     def generate_cumulative_plot(self):
@@ -352,7 +355,7 @@ class MultiModel:
         for model in self.models:
             if is_meta_model(model):
                 cumulative_repeated = np.repeat(model.cumulative_time_series_values, self.window_size)[
-                                      :len(model.processed_host_data) * self.window_size]
+                                      :len(model.processed_sim_data) * self.window_size]
                 plt.plot(
                     cumulative_repeated,
                     drawstyle='steps-mid',
@@ -365,7 +368,7 @@ class MultiModel:
                 )
             else:
                 cumulative_repeated = np.repeat(model.cumulative_time_series_values, self.window_size)[
-                                      :len(model.raw_host_data)]
+                                      :len(model.raw_sim_data)]
                 plt.plot(cumulative_repeated, drawstyle='steps-mid', label=("Model " + str(model.id)))
 
     def compute_cumulative_time_series(self):
@@ -378,7 +381,7 @@ class MultiModel:
         for model in self.models:
             cumulative_array = []
             _sum = 0
-            for value in model.processed_host_data:
+            for value in model.processed_sim_data:
                 _sum += value
                 cumulative_array.append(_sum * self.window_size)
             model.cumulative_time_series_values = cumulative_array
@@ -435,7 +438,7 @@ class MultiModel:
             if is_meta_model(model):
                 models_sums.append(model.cumulated)
             else:
-                cumulated_energy = model.raw_host_data.sum()
+                cumulated_energy = model.raw_sim_data.sum()
                 cumulated_energy = round(cumulated_energy, 2)
                 models_sums.append(cumulated_energy)
 
@@ -456,7 +459,7 @@ class MultiModel:
             f.write("Metric: " + self.metric + "\n")
             f.write("Unit: " + self.measure_unit + "\n")
             f.write("Window size: " + str(self.window_size) + "\n")
-            f.write("Sample count in raw host data: " + str(self.max_model_len) + "\n")
+            f.write("Sample count in raw sim data: " + str(self.max_model_len) + "\n")
             f.write("Computing time " + str(round(self.end_time - self.starting_time, 1)) + "s\n")
             if (self.user_input["samples_per_minute"] > 0):
                 f.write("Workload time: " + str(round(self.workload_time, 2)) + " days\n")

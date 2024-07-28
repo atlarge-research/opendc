@@ -40,7 +40,7 @@ class MetaModel:
 
         self.multi_model = multimodel
         self.meta_model = Model(
-            raw_host_data=[],
+            raw_sim_data=[],
             id=META_MODEL_ID,
             path=self.multi_model.output_folder_path
         )
@@ -50,8 +50,8 @@ class MetaModel:
         else:
             self.meta_function = self.function_map.get(multimodel.user_input['meta_function'], self.mean)
 
-        self.min_raw_model_len = min([len(model.raw_host_data) for model in self.multi_model.models])
-        self.min_processed_model_len = min([len(model.processed_host_data) for model in self.multi_model.models])
+        self.min_raw_model_len = min([len(model.raw_sim_data) for model in self.multi_model.models])
+        self.min_processed_model_len = min([len(model.processed_sim_data) for model in self.multi_model.models])
         self.number_of_models = len(self.multi_model.models)
         self.compute()
         self.output()
@@ -103,9 +103,9 @@ class MetaModel:
         for i in range(0, self.min_processed_model_len):
             data_entries = []
             for j in range(self.number_of_models):
-                data_entries.append(self.multi_model.models[j].processed_host_data[i])
-            self.meta_model.processed_host_data.append(self.meta_function(data_entries))
-        self.meta_model.raw_host_data = self.meta_model.processed_host_data
+                data_entries.append(self.multi_model.models[j].processed_sim_data[i])
+            self.meta_model.processed_sim_data.append(self.meta_function(data_entries))
+        self.meta_model.raw_sim_data = self.meta_model.processed_sim_data
 
     def plot_time_series(self):
         """
@@ -126,8 +126,8 @@ class MetaModel:
         for i in range(0, self.min_raw_model_len):
             data_entries = []
             for j in range(self.number_of_models):
-                host_data = self.multi_model.models[j].raw_host_data
-                ith_element = host_data[i]
+                sim_data = self.multi_model.models[j].raw_sim_data
+                ith_element = sim_data[i]
                 data_entries.append(ith_element)
             self.meta_model.cumulated += self.mean(data_entries)
         self.meta_model.cumulated = round(self.meta_model.cumulated, 2)
@@ -150,8 +150,8 @@ class MetaModel:
         for i in range(0, self.min_processed_model_len):
             data_entries = []
             for j in range(self.number_of_models):
-                data_entries.append(self.multi_model.models[j].processed_host_data[i])
-            self.meta_model.processed_host_data.append(self.meta_function(data_entries))
+                data_entries.append(self.multi_model.models[j].processed_sim_data[i])
+            self.meta_model.processed_sim_data.append(self.meta_function(data_entries))
 
     def plot_cumulative_time_series(self):
         """
@@ -164,14 +164,14 @@ class MetaModel:
 
     def output_metamodel(self):
         """
-        Exports the processed host data of the metamodel to a parquet file for further analysis or record keeping.
+        Exports the processed sim data of the metamodel to a parquet file for further analysis or record keeping.
         :return: None
         :side effect: Writes data to a parquet file at the specified directory path.
         """
         directory_path = os.path.join(self.multi_model.output_folder_path, "raw-output/metamodel/seed=0")
         os.makedirs(directory_path, exist_ok=True)
         current_path = os.path.join(directory_path, f"{self.multi_model.metric}.parquet")
-        df = pd.DataFrame({'processed_host_data': self.meta_model.processed_host_data})
+        df = pd.DataFrame({'processed_sim_data': self.meta_model.processed_sim_data})
         df.to_parquet(current_path, index=False)
 
     def mean(self, chunks):

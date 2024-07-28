@@ -3,10 +3,9 @@ A model is the output of simulator. It contains the data the simulator output, u
 workload, datacenter configuration, etc. A model is further used in the analyzer as part of the MultiModel class,
 and further in the MetaModel class.
 
-:param host: the host data of the model
+:param sim: the simulation data of the model
 """
 import json
-import os
 
 
 class Model:
@@ -16,8 +15,8 @@ class Model:
     MultiModel and MetaModel for complex data analysis.
 
     Attributes:
-        raw_host_data (list): Initial raw data from the simulator output, specific to a given host in the simulation.
-        processed_host_data (list): Data derived from raw_host_data after applying certain processing operations like aggregation or smoothing.
+        raw_sim_data (list): Initial raw data from the simulator output.
+        processed_sim_data (list): Data derived from raw_sim_data after applying certain processing operations like aggregation or smoothing.
         cumulative_time_series_values (list): Stores cumulative data values useful for time series analysis.
         id (int): Unique identifier for the model, typically used for tracking and referencing within analysis tools.
         path (str): Base path for storing or accessing related data files.
@@ -36,10 +35,11 @@ class Model:
         Model objects are typically instantiated with raw data from simulation outputs and an identifier. After instantiation,
         the 'parse_trackr' method can be called to load additional experimental details from a corresponding JSON file.
     """
-    def __init__(self, raw_host_data, id, path):
+
+    def __init__(self, raw_sim_data, id, path):
         self.path = path
-        self.raw_host_data = raw_host_data
-        self.processed_host_data = []
+        self.raw_sim_data = raw_sim_data
+        self.processed_sim_data = []
         self.cumulative_time_series_values = []
         self.experiment_name = id
         self.id = id
