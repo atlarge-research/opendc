@@ -52,10 +52,7 @@ def experiment_7(user_input, path):
                             window_size=window_size
                         )
                         multimodel.plot_type = plot_type
-                        metamodel = MetaModel(multimodel=multimodel)
-                        metamodel.meta_function = meta_function
-
-                        metamodel.output()
+                        MetaModel(multimodel=multimodel, meta_function=meta_function)
 
                         ending_time = time.time()
                         elapsed_time = ending_time - starting_time

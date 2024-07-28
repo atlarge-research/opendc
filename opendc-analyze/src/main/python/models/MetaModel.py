@@ -22,7 +22,7 @@ class MetaModel:
         function_map (dict): Mapping of aggregation function names to function implementations.
     """
 
-    def __init__(self, multimodel):
+    def __init__(self, multimodel, meta_function=None):
         """
         Initializes the Metamodel with a MultiModel instance and prepares aggregation functions based on configuration.
 
@@ -45,11 +45,16 @@ class MetaModel:
             path=self.multi_model.output_folder_path
         )
 
-        self.meta_function = self.function_map.get(multimodel.user_input['meta_function'], self.mean)
+        if meta_function is not None:
+            self.meta_function = meta_function
+        else:
+            self.meta_function = self.function_map.get(multimodel.user_input['meta_function'], self.mean)
+
         self.min_raw_model_len = min([len(model.raw_host_data) for model in self.multi_model.models])
         self.min_processed_model_len = min([len(model.processed_host_data) for model in self.multi_model.models])
         self.number_of_models = len(self.multi_model.models)
         self.compute()
+        self.output()
 
     def output(self):
         """
