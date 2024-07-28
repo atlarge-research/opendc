@@ -31,6 +31,12 @@ A setup file can be validated using a JSON schema validator, such as https://www
             "enum": [-9, -6, -3, 1, 3, 6, 9],
             "description": "The scaling factor to be applied to the metric (10^-9, 10^-6, 10^3, 10^3, 10^6, 10^9). For no scaling, input 1."
         },
+        "seed": {
+            "type": "integer",
+            "default": 0,
+            "minimum": 0,
+            "description": "The seed of the simulation. This must correspond to the seed from the output folder (from seed=x)."
+        },
         "window_size": {
             "type": "integer",
             "default": 1,

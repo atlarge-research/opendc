@@ -1,16 +1,19 @@
-from .models import MultiModel, MetaModel
+from os import sys
+
+from input_parser import read_input
+from models.MetaModel import MetaModel
+from models.MultiModel import MultiModel
 
 
 def main():
     multimodel = MultiModel(
-        read_input(sys.argv[1]),
-        path=sys.argv[2],
+        user_input=read_input(sys.argv[2]),
+        path=sys.argv[1],
     )
 
     multimodel.generate_plot()
 
-    meta_model = MetaModel(multimodel)
-    meta_model
+    MetaModel(multimodel)
 
 
 if __name__ == "__main__":

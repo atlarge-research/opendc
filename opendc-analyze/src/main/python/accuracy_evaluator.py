@@ -46,7 +46,7 @@ def accuracy_evaluator(
             else:
                 f.write(f"Model {model.id}")
 
-            simulation_data = model.raw_host_data
+            simulation_data = model.raw_sim_data
             min_len = min(len(real_data), len(simulation_data))
             real_data = real_data[:min_len]
             simulation_data = simulation_data[:min_len]
