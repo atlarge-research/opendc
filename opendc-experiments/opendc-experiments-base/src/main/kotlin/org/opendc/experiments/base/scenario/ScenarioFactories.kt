@@ -83,7 +83,7 @@ public fun getScenarios(scenariosSpec: ScenariosSpec): List<Scenario> {
                 runs = scenariosSpec.runs,
                 initialSeed = scenariosSpec.initialSeed,
             )
-        trackScenario(scenarioSpec, outputFolder, scenario)
+        trackScenario(scenarioSpec, outputFolder)
         scenarios.add(scenario)
     }
 
@@ -101,8 +101,7 @@ public fun getScenarios(scenariosSpec: ScenariosSpec): List<Scenario> {
  */
 public fun trackScenario(
     scenarioSpec: ScenarioSpec,
-    outputFolder: String,
-    scenario: Scenario,
+    outputFolder: String
 ) {
     val trackrPath = "$outputFolder/trackr.json"
     scenarioWriter.write(
@@ -113,18 +112,3 @@ public fun trackScenario(
     // remove the last comma
     File(trackrPath).writeText(File(trackrPath).readText().dropLast(3) + "]")
 }
-
-//        ScenariosSpec(
-//            id = scenario.id,
-//            name = scenariosSpec.name,
-//            topologies = setOf(scenario.topologySpec),
-//            workloads = setOf(scenario.workloadSpec),
-//            allocationPolicies = setOf(scenario.allocationPolicySpec),
-//            failureModels = setOf(scenario.failureModelSpec),
-//            checkpointModels = setOf(scenario.checkpointModelSpec),
-//            carbonTracePaths = setOf(scenario.carbonTracePath),
-//            exportModels = setOf(scenario.exportModelSpec),
-//            outputFolder = scenario.outputFolder,
-//            initialSeed = scenario.initialSeed,
-//            runs = scenario.runs,
-//        ),

@@ -83,31 +83,38 @@ public data class ScenariosSpec(
 
     public fun getCartesian(): Sequence<ScenarioSpec> {
         return sequence {
-            val checkpoint_div = carbonTracePaths.size
-            val failure_div = checkpoint_div * checkpointModels.size
-            val export_div = failure_div * failureModels.size
-            val allocation_div = export_div * exportModels.size
-            val workload_div = allocation_div * allocationPolicies.size
-            val topology_div = workload_div * workloads.size
-            val num_scenarios = topology_div * topologies.size
+            val checkpointDiv = carbonTracePaths.size
+            val failureDiv = checkpointDiv * checkpointModels.size
+            val exportDiv = failureDiv * failureModels.size
+            val allocationDiv = exportDiv * exportModels.size
+            val workloadDiv = allocationDiv * allocationPolicies.size
+            val topologyDiv = workloadDiv * workloads.size
+            val numScenarios = topologyDiv * topologies.size
 
-            for (i in 0 until num_scenarios) {
+            val topologyList = topologies.toList()
+            val workloadList = workloads.toList()
+            val allocationPolicyList = allocationPolicies.toList()
+            val exportModelList = exportModels.toList()
+            val failureModelList = failureModels.toList()
+            val checkpointModelList = checkpointModels.toList()
+            val carbonTracePathList = carbonTracePaths.toList()
+
+            for (i in 0 until numScenarios) {
                 yield(
                     ScenarioSpec(
                         id,
                         name,
                         outputFolder,
-                        topologies.toList()[(i/topology_div) % topologies.size],
-                        workloads.toList()[(i/workload_div) % workloads.size],
-                        allocationPolicies.toList()[(i/allocation_div) % allocationPolicies.size],
-                        exportModels.toList()[(i/export_div) % exportModels.size],
-                        failureModels.toList()[(i/failure_div) % failureModels.size],
-                        checkpointModels.toList()[(i/checkpoint_div) % checkpointModels.size],
-                        carbonTracePaths.toList()[i % carbonTracePaths.size]
+                        topologyList[(i/topologyDiv) % topologyList.size],
+                        workloadList[(i/workloadDiv) % workloadList.size],
+                        allocationPolicyList[(i/allocationDiv) % allocationPolicyList.size],
+                        exportModelList[(i/exportDiv) % exportModelList.size],
+                        failureModelList[(i/failureDiv) % failureModelList.size],
+                        checkpointModelList[(i/checkpointDiv) % checkpointModelList.size],
+                        carbonTracePathList[i % carbonTracePathList.size]
                     )
                 )
             }
         }
     }
-
 }
