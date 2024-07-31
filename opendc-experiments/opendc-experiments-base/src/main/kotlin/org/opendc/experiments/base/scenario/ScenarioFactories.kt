@@ -77,7 +77,7 @@ public fun getScenarios(scenariosSpec: ScenariosSpec): List<Scenario> {
                 failureModelSpec = scenarioSpec.failureModel,
                 checkpointModelSpec = scenarioSpec.checkpointModel,
                 carbonTracePath = scenarioSpec.carbonTracePath,
-                exportModelSpec = scenarioSpec.carbonTracePath,
+                exportModelSpec = scenarioSpec.exportModel,
                 outputFolder = outputFolder,
                 name = scenarioID.toString(),
                 runs = scenariosSpec.runs,
