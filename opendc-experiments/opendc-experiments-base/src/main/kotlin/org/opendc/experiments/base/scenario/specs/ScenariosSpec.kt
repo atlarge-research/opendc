@@ -30,15 +30,13 @@ public data class ScenarioSpec(
     var id: Int = -1,
     var name: String = "",
     val outputFolder: String = "output",
-
     val topology: ScenarioTopologySpec,
     val workload: WorkloadSpec,
-
     val allocationPolicy: AllocationPolicySpec = AllocationPolicySpec(),
     val exportModel: ExportModelSpec = ExportModelSpec(),
     val failureModel: FailureModelSpec? = null,
     val checkpointModel: CheckpointModelSpec? = null,
-    val carbonTracePath: String? = null
+    val carbonTracePath: String? = null,
 )
 
 /**
@@ -60,10 +58,8 @@ public data class ScenariosSpec(
     val outputFolder: String = "output",
     val initialSeed: Int = 0,
     val runs: Int = 1,
-
     val topologies: Set<ScenarioTopologySpec>,
     val workloads: Set<WorkloadSpec>,
-
     val allocationPolicies: Set<AllocationPolicySpec> = setOf(AllocationPolicySpec()),
     val exportModels: Set<ExportModelSpec> = setOf(ExportModelSpec()),
     val failureModels: Set<FailureModelSpec?> = setOf(null),
@@ -105,14 +101,14 @@ public data class ScenariosSpec(
                         id,
                         name,
                         outputFolder,
-                        topologyList[(i/topologyDiv) % topologyList.size],
-                        workloadList[(i/workloadDiv) % workloadList.size],
-                        allocationPolicyList[(i/allocationDiv) % allocationPolicyList.size],
-                        exportModelList[(i/exportDiv) % exportModelList.size],
-                        failureModelList[(i/failureDiv) % failureModelList.size],
-                        checkpointModelList[(i/checkpointDiv) % checkpointModelList.size],
-                        carbonTracePathList[i % carbonTracePathList.size]
-                    )
+                        topologyList[(i / topologyDiv) % topologyList.size],
+                        workloadList[(i / workloadDiv) % workloadList.size],
+                        allocationPolicyList[(i / allocationDiv) % allocationPolicyList.size],
+                        exportModelList[(i / exportDiv) % exportModelList.size],
+                        failureModelList[(i / failureDiv) % failureModelList.size],
+                        checkpointModelList[(i / checkpointDiv) % checkpointModelList.size],
+                        carbonTracePathList[i % carbonTracePathList.size],
+                    ),
                 )
             }
         }

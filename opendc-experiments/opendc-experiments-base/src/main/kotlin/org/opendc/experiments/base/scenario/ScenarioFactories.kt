@@ -101,7 +101,7 @@ public fun getScenarios(scenariosSpec: ScenariosSpec): List<Scenario> {
  */
 public fun trackScenario(
     scenarioSpec: ScenarioSpec,
-    outputFolder: String
+    outputFolder: String,
 ) {
     val trackrPath = "$outputFolder/trackr.json"
     scenarioWriter.write(
