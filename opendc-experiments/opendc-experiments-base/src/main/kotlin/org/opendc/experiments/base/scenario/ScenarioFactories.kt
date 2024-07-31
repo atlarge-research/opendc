@@ -23,6 +23,7 @@
 package org.opendc.experiments.base.scenario
 
 import org.opendc.experiments.base.scenario.specs.ScenarioSpec
+import org.opendc.experiments.base.scenario.specs.ScenariosSpec
 import java.io.File
 
 private val scenarioReader = ScenarioReader()
@@ -52,11 +53,11 @@ public fun getScenarios(file: File): List<Scenario> {
  * Returns a list of Scenarios from a given ScenarioSpec by generating all possible combinations of
  * workloads, allocation policies, failure models, and export models within a topology.
  *
- * @param scenarioSpec The ScenarioSpec containing the scenario specifications.
+ * @param scenariosSpec The ScenarioSpec containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
-    val outputFolder = scenarioSpec.outputFolder + "/" + scenarioSpec.name
+public fun getScenarios(scenariosSpec: ScenariosSpec): List<Scenario> {
+    val outputFolder = scenariosSpec.outputFolder + "/" + scenariosSpec.name
     File(outputFolder).mkdirs()
 
     val trackrPath = "$outputFolder/trackr.json"
@@ -64,36 +65,26 @@ public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
 
     val scenarios = mutableListOf<Scenario>()
 
-    for ((scenarioID, scenarioTopologySpec) in scenarioSpec.topologies.withIndex()) {
-        for (workloadSpec in scenarioSpec.workloads) {
-            for (allocationPolicySpec in scenarioSpec.allocationPolicies) {
-                for (failureModelSpec in scenarioSpec.failureModels) {
-                    for (checkpointModelSpec in scenarioSpec.checkpointModels) {
-                        for (carbonTracePath in scenarioSpec.carbonTracePaths) {
-                            for (exportModelSpec in scenarioSpec.exportModels) {
-                                val scenario =
-                                    Scenario(
-                                        id = scenarioID,
-                                        topologySpec = scenarioTopologySpec,
-                                        workloadSpec = workloadSpec,
-                                        allocationPolicySpec = allocationPolicySpec,
-                                        failureModelSpec = failureModelSpec,
-                                        checkpointModelSpec = checkpointModelSpec,
-                                        carbonTracePath = carbonTracePath,
-                                        exportModelSpec = exportModelSpec,
-                                        outputFolder = outputFolder,
-                                        name = scenarioID.toString(),
-                                        runs = scenarioSpec.runs,
-                                        initialSeed = scenarioSpec.initialSeed,
-                                    )
-                                trackScenario(scenarioSpec, outputFolder, scenario)
-                                scenarios.add(scenario)
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    val cartesianInput = scenariosSpec.getCartesian()
+
+    for ((scenarioID, scenarioSpec) in cartesianInput.withIndex()) {
+        val scenario =
+            Scenario(
+                id = scenarioID,
+                topologySpec = scenarioSpec.topology,
+                workloadSpec = scenarioSpec.workload,
+                allocationPolicySpec = scenarioSpec.allocationPolicy,
+                failureModelSpec = scenarioSpec.failureModel,
+                checkpointModelSpec = scenarioSpec.checkpointModel,
+                carbonTracePath = scenarioSpec.carbonTracePath,
+                exportModelSpec = scenarioSpec.exportModel,
+                outputFolder = outputFolder,
+                name = scenarioID.toString(),
+                runs = scenariosSpec.runs,
+                initialSeed = scenariosSpec.initialSeed,
+            )
+        trackScenario(scenarioSpec, outputFolder)
+        scenarios.add(scenario)
     }
 
     return scenarios
@@ -102,7 +93,7 @@ public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
 /**
  * Writes a ScenarioSpec to a file.
  *
- * @param scenarioSpec The ScenarioSpec.
+ * @param scenariosSpec The ScenarioSpec.
  * @param outputFolder The output folder path.
  * @param scenario The Scenario.
  * @param topologySpec The TopologySpec.
@@ -111,24 +102,10 @@ public fun getScenarios(scenarioSpec: ScenarioSpec): List<Scenario> {
 public fun trackScenario(
     scenarioSpec: ScenarioSpec,
     outputFolder: String,
-    scenario: Scenario,
 ) {
     val trackrPath = "$outputFolder/trackr.json"
     scenarioWriter.write(
-        ScenarioSpec(
-            id = scenario.id,
-            name = scenarioSpec.name,
-            topologies = listOf(scenario.topologySpec),
-            workloads = listOf(scenario.workloadSpec),
-            allocationPolicies = listOf(scenario.allocationPolicySpec),
-            failureModels = listOf(scenario.failureModelSpec),
-            checkpointModels = listOf(scenario.checkpointModelSpec),
-            carbonTracePaths = listOf(scenario.carbonTracePath),
-            exportModels = listOf(scenario.exportModelSpec),
-            outputFolder = scenario.outputFolder,
-            initialSeed = scenario.initialSeed,
-            runs = scenario.runs,
-        ),
+        scenarioSpec,
         File(trackrPath),
     )
 
