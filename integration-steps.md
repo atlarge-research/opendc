@@ -12,7 +12,7 @@ following format:
 ```
 🔧  [1] - simulation-folder-name
 🔒  [2] | - inputs
-🔧  [3] | | - {multi-meta-model-config-file}.json
+🔧  [3] | | - {m3sa-config-file}.json
 🔧  [4] | | - {other input files / folders}
 🔒  [5] | - outputs
 🔒  [6] | | - raw-output
@@ -37,7 +37,7 @@ following format:
 
 - [1] = the name of the analyzed folder
 - [2] = the inputs folder, containing various inputs / configuration files
-- [3] = the name of the configuration file for the Multi-Meta-Model, can be (almost) any name, but needs to be a JSON
+- [3] = the name of the configuration file for M3SA, can be (almost) any name, but needs to be a JSON
   file
 - [4] = any other input files or folders
 - [5] = output folder, containing the raw-output. can contain any other files or folders, besides the raw-output folder.
@@ -87,7 +87,7 @@ every
 
 ---
 
-## Step 3: Running the Multi-Meta-Model
+## Step 3: Running M3SA
 
 #### Arguments for Main.py Setup
 
@@ -95,8 +95,8 @@ every
 experiments/experiment-2-window-performance-analysis/inputs/analyzer.json"
 Main.py takes two arguments:
 
-1. Argument 1 is the path to the output directory where the Multi-Meta-Model output files will be stored.
-2. Argument 2 is the path to the input file that contains the configuration of the Multi-Meta-Model.
+1. Argument 1 is the path to the output directory where M3SA output files will be stored.
+2. Argument 2 is the path to the input file that contains the configuration of M3SA.
 
 e.g.,
 

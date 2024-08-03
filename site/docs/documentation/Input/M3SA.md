@@ -1,4 +1,4 @@
-The Multi-Meta-Model analysis is setup using a json file. The Multi-Model is a top-layer applied on top of the
+M3SA is setup using a json file. The Multi-Model is a top-layer applied on top of the
 simulator,
 capable to leverage into a singular tool the prediction of multiple models. The Meta-Model is a model generated from the
 Multi-Model, and predicts using the predictions of individual models.
@@ -42,12 +42,12 @@ In the following section, we describe the different components of the schema.
 
 ## Examples
 
-In the following section, we discuss several examples of Multi-Meta-Model setup files. Any setup file can be verified
-using the JSON schema defined in [schema](MultiMetaModelSchema).
+In the following section, we discuss several examples of M3SA setup files. Any setup file can be verified
+using the JSON schema defined in [schema](M3SASchema.md).
 
 ### Simple
 
-The simplest Multi-Meta-Model setup that can be provided to OpenDC is shown below:
+The simplest M3SA setup that can be provided to OpenDC is shown below:
 
 ```json
 {
@@ -60,7 +60,7 @@ default values, towards reducing the complexity of the setup.
 
 ### Complex
 
-A more complex Multi-Meta-Model setup, where the user has more control on teh generated output, is show below:
+A more complex M3SA setup, where the user has more control on teh generated output, is show below:
 
 ```json
 {
