@@ -1,4 +1,4 @@
-# Integration Steps of the Multi-Meta-Model
+# Integration Steps of M3SA
 
 We build our tool towards performance, scalability, and **universality**. In this document, we present the steps to
 integrate our tool into your simulation infrastructure.
@@ -15,7 +15,7 @@ following format:
 ```
 [1] ── {simulation-folder-name} 📁 🔧  
 [2]    ├── inputs 📁 🔒  
-[3]    │   └── {multi-meta-model-config-file}.json 📄 🔧  
+[3]    │   └── {m3sa-config-file}.json 📄 🔧  
 [4]    │   └── {other input files / folders} 🔧  
 [5]    ├── outputs 📁 🔒   
 [6]    │   ├── raw-output 📁 🔒  
@@ -43,7 +43,7 @@ following format:
 
 - [1] = the name of the analyzed folder.
 - [2] = the _inputs_ folder, containing various inputs / configuration files.
-- [3] = the configuration file for the Multi-Meta-Model, flexible naming, but needs to be a JSON file
+- [3] = the configuration file for M3SA, flexible naming, but needs to be a JSON file
 - [4],[10],[14],[18],[19],[20] = any other input files or folders.
 - [5] = the _outputs_ folder, containing the raw-output. can contain any other files or folders, besides the raw-output
   folder.
@@ -92,7 +92,7 @@ every 30 seconds, the file will look like this:
 
 ---
 
-## Step 3: Running the Multi-Meta-Model
+## Step 3: Running M3SA
 
 ### 3.1 Setup the Simulator Specifics
 
@@ -110,8 +110,35 @@ file [simulator_specifics.py](opendc/src/python/simulator_specifics.py).
 [//]: # (experiments/experiment-2-window-performance-analysis/inputs/analyzer.json")
 Main.py takes two arguments:
 
-1. Argument 1 is the path to the output directory where the Multi-Meta-Model output files will be stored.
-2. Argument 2 is the path to the input file that contains the configuration of the Multi-Meta-Model.
+1.
+Argument
+1 is the
+path
+to
+the
+output
+directory
+where
+M3SA
+output
+files
+will
+be
+stored.
+2.
+Argument
+2 is the
+path
+to
+the
+input
+file
+that
+contains
+the
+configuration
+of
+M3SA.
 
 e.g.,
 
@@ -141,17 +168,17 @@ If you are using OpenDC, you can set the working directory to the following path
 
 The simulation and analysis can be executed as a single command; if no errors are encountered, from the user
 perspective,
-this operation is atomic. We integrated the Multi-Meta-Model into OpenDC to facilitate this process.
+this operation is atomic. We integrated M3SA into OpenDC to facilitate this process.
 
-To further integrate the Multi-Meta-Model into any simulation infrastructure, the Multi-Meta-Model needs to called from
+To further integrate M3SA into any simulation infrastructure, M3SA needs to called from
 the simulation infrastructure, and provided the following running setup:
 
 1. script language: Python
-2. argument 1: the path of the output directory, in which the Multi-Meta-Model output files will be stored
-3. argument 2: the path of the input file, containing the configuration of the Multi-Meta-Model
+2. argument 1: the path of the output directory, in which M3SA output files will be stored
+3. argument 2: the path of the input file, containing the configuration of M3SA
 4. other language-specific setup
 
-For example, the integration of the Multi-Meta-Model into OpenDC can be found
+For example, the integration of the M3SA into OpenDC can be found
 in [Analyzr.kt](opendc-analyze/src/main/kotlin/Analyzr.kt).
 Below, we provide a snippet of the code:
 

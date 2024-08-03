@@ -1,5 +1,5 @@
 """
-This file is the integration layer of the Multi-Meta-Model tool upon any (ICT) simulator.
+This file is the integration layer of the M3SA tool upon any (ICT) simulator.
 
 The system will use the elements from this file in the analysis / meta-simulation process.
 """
