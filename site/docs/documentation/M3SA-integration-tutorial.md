@@ -143,7 +143,7 @@ M3SA.
 e.g.,
 
 ```json
-"simulation-123/outputs/" "simulation-123/inputs/multi-meta-configurator.json"
+"simulation-123/outputs/" "simulation-123/inputs/m3sa-configurator.json"
 ```
 
 ### 3.3 Working directory Main.py Setup
