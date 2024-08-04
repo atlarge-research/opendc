@@ -5,19 +5,19 @@
             "hosts": [
                 {
                     "name": "H01",
-                    "count": 277,
+                    "count": 280,
                     "cpu": {
                         "coreCount": 16,
-                        "coreSpeed": 2100
+                        "coreSpeed": 3000
                     },
                     "memory": {
                         "memorySize": 128000000
                     },
                     "powerModel": {
                         "modelType": "square",
-                        "power": 300.0,
-                        "idlePower": 25.0,
-                        "maxPower": 174.0
+                        "power": 400.0,
+                        "idlePower": 36.0,
+                        "maxPower": 192.0
                     }
                 }
             ]
