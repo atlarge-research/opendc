@@ -43,9 +43,9 @@ public fun analyzeResults(outputFolderPath: String, analyzerSetupPath: String) {
 
     val exitCode = process.waitFor()
     if (exitCode == 0) {
-        println("[Analyzr.kt says] Analysis completed successfully.")
+        println("[M3SA says] M3SA operation(s) completed successfully.")
     } else {
         val errors = process.errorStream.bufferedReader().readText()
-        println("[Analyzr.kt says] Exit code ${exitCode}; Error(s): $errors")
+        println("[M3SA says] Exit code ${exitCode}; Error(s): $errors")
     }
 }
