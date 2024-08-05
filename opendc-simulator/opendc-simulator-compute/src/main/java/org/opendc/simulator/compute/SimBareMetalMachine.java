@@ -61,7 +61,6 @@ public final class SimBareMetalMachine extends SimAbstractMachine {
     private final Memory memory;
     private final List<NetworkAdapter> net;
     private final List<StorageDevice> disk;
-
     /**
      * Construct a {@link SimBareMetalMachine} instance.
      *

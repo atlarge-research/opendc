@@ -237,6 +237,7 @@ public class SimHost(
             localBootTime,
             machine.psu.powerDraw,
             machine.psu.energyUsage,
+            machine.psu.temperature,
             terminated,
             running,
             error,
