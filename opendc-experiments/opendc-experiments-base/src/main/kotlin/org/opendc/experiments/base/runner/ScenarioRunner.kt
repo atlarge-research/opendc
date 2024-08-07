@@ -22,7 +22,6 @@
 
 package org.opendc.experiments.base.runner
 
-import getWorkloadType
 import me.tongfei.progressbar.ProgressBarBuilder
 import me.tongfei.progressbar.ProgressBarStyle
 import org.opendc.compute.carbon.CarbonTrace
@@ -37,6 +36,7 @@ import org.opendc.compute.telemetry.export.parquet.ParquetComputeMonitor
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.experiments.base.scenario.Scenario
+import org.opendc.experiments.base.scenario.specs.getWorkloadType
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
 import java.time.Duration
@@ -60,7 +60,7 @@ public fun runScenarios(
 
     setupOutputFolderStructure(scenarios[0].outputFolder)
 
-    for ((i, scenario) in scenarios.withIndex()) {
+    for (scenario in scenarios) {
         val pool = ForkJoinPool(parallelism)
         println(
             "\n\n$ansiGreen================================================================================$ansiReset",
@@ -70,7 +70,6 @@ public fun runScenarios(
         runScenario(
             scenario,
             pool,
-            i,
         )
     }
 }
@@ -85,7 +84,6 @@ public fun runScenarios(
 public fun runScenario(
     scenario: Scenario,
     pool: ForkJoinPool,
-    index: Int = -1,
 ) {
     val pb =
         ProgressBarBuilder().setInitialMax(scenario.runs.toLong()).setStyle(ProgressBarStyle.ASCII)
@@ -93,7 +91,7 @@ public fun runScenario(
 
     pool.submit {
         LongStream.range(0, scenario.runs.toLong()).parallel().forEach {
-            runScenario(scenario, scenario.initialSeed + it, index)
+            runScenario(scenario, scenario.initialSeed + it)
             pb.step()
         }
         pb.close()
@@ -109,7 +107,6 @@ public fun runScenario(
 public fun runScenario(
     scenario: Scenario,
     seed: Long,
-    index: Int = 0,
 ): Unit =
     runSimulation {
         val serviceDomain = "compute.opendc.org"
@@ -129,7 +126,7 @@ public fun runScenario(
 
             val carbonTrace = getCarbonTrace(scenario.carbonTracePath)
             val startTime = Duration.ofMillis(vms.minOf { it.startTime }.toEpochMilli())
-            addExportModel(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace, index)
+            addExportModel(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace, scenario.id)
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
             service.replay(timeSource, vms, failureModelSpec = scenario.failureModelSpec, seed = seed)

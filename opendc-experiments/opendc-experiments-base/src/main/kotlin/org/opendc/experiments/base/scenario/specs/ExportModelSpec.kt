@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+package org.opendc.experiments.base.scenario.specs
+
 import kotlinx.serialization.Serializable
 
 /**

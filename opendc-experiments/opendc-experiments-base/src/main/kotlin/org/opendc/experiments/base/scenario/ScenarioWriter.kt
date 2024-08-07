@@ -37,7 +37,7 @@ public class ScenarioWriter {
     private val json = Json { prettyPrint = true }
 
     /**
-     * Write the given [scenarioSpec] to the given [file].
+     * Write the given [scenariosSpec] to the given [file].
      */
     public fun write(
         scenarioSpec: ScenarioSpec,
