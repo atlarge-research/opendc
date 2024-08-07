@@ -31,12 +31,12 @@ public val ANALYSIS_SCRIPTS_DIRECTORY: String = "./opendc-analyze/src/main/pytho
 public var ABSOLUTE_SCRIPT_PATH: String = Path("$ANALYSIS_SCRIPTS_DIRECTORY/main.py").toAbsolutePath().normalize().toString()
 public val SCRIPT_LANGUAGE: String = "python3"
 
-public fun analyzeResults(outputFolderPath: String, analyzerSetupPath: String) {
+public fun analyzeResults(outputFolderPath: String, m3saSetupPath: String) {
     val process = ProcessBuilder(
         SCRIPT_LANGUAGE,
         ABSOLUTE_SCRIPT_PATH,
-        outputFolderPath, // argument 1
-        analyzerSetupPath // argument 2
+        outputFolderPath,
+        m3saSetupPath
     )
         .directory(Path(ANALYSIS_SCRIPTS_DIRECTORY).toFile())
         .start()

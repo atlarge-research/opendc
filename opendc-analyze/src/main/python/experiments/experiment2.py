@@ -14,7 +14,7 @@ def experiment_2():
     analysis_file_path = 'time_series.txt'
     sample_rates = [300, 60, 30, 6, 3]
     window_sizes = [1000, 100, 10, 1]
-    argv1 = "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json"
+    argv1 = "experiments/experiment-2-window-performance-analysis/inputs/m3saSetup.json"
 
     ascii_art = f"""
     *******************************************
