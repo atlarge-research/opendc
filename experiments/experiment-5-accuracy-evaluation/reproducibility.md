@@ -4,7 +4,8 @@ In this experiment, we are building a tool to evaluate the accuracy of the simul
 accuracy of the meta-model tool.
 
 #### Step 0
-Ensure that the data from analyzer.json is not scaled. In other words, ensure ```"unit_scaling_magnitude": 1```.
+
+Ensure that the data from m3saSetup.json is not scaled. In other words, ensure ```"unit_scaling_magnitude": 1```.
 
 #### Step 1
 Run Scenario CLI, with the following setup.
@@ -43,7 +44,7 @@ def main():
 
 Run main.py with the following arguments:
 ```
-"experiments/experiment-5-accuracy-evaluation/outputs/" "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json"
+"experiments/experiment-5-accuracy-evaluation/outputs/" "experiments/experiment-5-accuracy-evaluation/inputs/m3saSetup.json"
 ```
 
 #### Step 4

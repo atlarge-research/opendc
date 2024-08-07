@@ -28,7 +28,7 @@
             "policyType": "Mem"
         }
     ],
-    "analyzerPath": "experiments/experiment-3-multi-model-all-plots/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-3-multi-model-all-plots/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-3-multi-model-all-plots/",
     "runs": 1
 }

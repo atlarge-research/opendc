@@ -21,7 +21,7 @@
         "carbonTracePaths": [
             "experiments/use-case-scenario/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
+        "m3saSetupPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
         "outputFolder": "experiments/use-case-scenario//outputs/"
     },
     {
@@ -46,7 +46,7 @@
         "carbonTracePaths": [
             "experiments/use-case-scenario/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
+        "m3saSetupPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
         "outputFolder": "experiments/use-case-scenario//outputs/"
     },
     {
@@ -71,7 +71,7 @@
         "carbonTracePaths": [
             "experiments/use-case-scenario/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
+        "m3saSetupPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
         "outputFolder": "experiments/use-case-scenario//outputs/"
     },
     {
@@ -96,7 +96,7 @@
         "carbonTracePaths": [
             "experiments/use-case-scenario/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
+        "m3saSetupPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
         "outputFolder": "experiments/use-case-scenario//outputs/"
     },
     {
@@ -121,7 +121,7 @@
         "carbonTracePaths": [
             "experiments/use-case-scenario/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
+        "m3saSetupPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
         "outputFolder": "experiments/use-case-scenario//outputs/"
     },
     {
@@ -146,7 +146,7 @@
         "carbonTracePaths": [
             "experiments/use-case-scenario/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
+        "m3saSetupPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
         "outputFolder": "experiments/use-case-scenario//outputs/"
     },
     {
@@ -171,7 +171,7 @@
         "carbonTracePaths": [
             "experiments/use-case-scenario/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
+        "m3saSetupPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
         "outputFolder": "experiments/use-case-scenario//outputs/"
     },
     {
@@ -196,7 +196,7 @@
         "carbonTracePaths": [
             "experiments/use-case-scenario/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
+        "m3saSetupPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions.json",
         "outputFolder": "experiments/use-case-scenario//outputs/"
     }
 ]

@@ -20,7 +20,7 @@
     "carbonTracePaths": [
         "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-5-accuracy-evaluation/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
 },
 {
@@ -45,7 +45,7 @@
     "carbonTracePaths": [
         "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-5-accuracy-evaluation/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
 },
 {
@@ -70,7 +70,7 @@
     "carbonTracePaths": [
         "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-5-accuracy-evaluation/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
 },
 {
@@ -95,7 +95,7 @@
     "carbonTracePaths": [
         "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-5-accuracy-evaluation/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
 },
 {
@@ -120,7 +120,7 @@
     "carbonTracePaths": [
         "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-5-accuracy-evaluation/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
 },
 {
@@ -145,7 +145,7 @@
     "carbonTracePaths": [
         "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-5-accuracy-evaluation/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
 },
 {
@@ -170,7 +170,7 @@
     "carbonTracePaths": [
         "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-5-accuracy-evaluation/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
 },
 {
@@ -195,6 +195,6 @@
     "carbonTracePaths": [
         "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-5-accuracy-evaluation/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-5-accuracy-evaluation//outputs/"
 }]

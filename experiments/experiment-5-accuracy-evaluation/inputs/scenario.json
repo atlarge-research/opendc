@@ -40,7 +40,7 @@
             "policyType": "Mem"
         }
     ],
-    "analyzerPath": "experiments/experiment-5-accuracy-evaluation/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-5-accuracy-evaluation/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-5-accuracy-evaluation/",
     "runs": 1
 }

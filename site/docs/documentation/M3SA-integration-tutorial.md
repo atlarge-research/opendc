@@ -107,7 +107,7 @@ file [simulator_specifics.py](opendc/src/python/simulator_specifics.py).
 
 [//]: # ("experiments/experiment-2-window-performance-analysis/outputs/" ")
 
-[//]: # (experiments/experiment-2-window-performance-analysis/inputs/analyzer.json")
+[ //]:  # (experiments/experiment-2-window-performance-analysis/inputs/m3saSetup.json")
 Main.py takes two arguments:
 
 1.

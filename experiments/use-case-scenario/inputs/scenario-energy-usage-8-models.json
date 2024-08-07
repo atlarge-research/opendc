@@ -40,7 +40,7 @@
             "policyType": "Mem"
         }
     ],
-    "analyzerPath": "experiments/use-case-scenario/inputs/m3sa-setup-energy-usage-8-models.json",
+    "m3saSetupPath": "experiments/use-case-scenario/inputs/m3sa-setup-energy-usage-8-models.json",
     "outputFolder": "experiments/use-case-scenario/",
     "runs": 1
 }

@@ -45,5 +45,5 @@ def main():
 Main.py arguments:
 
 ```
-"experiments/experiment-8-metamodel-accuracy-analysis/outputs/" "experiments/experiment-8-metamodel-accuracy-analysis/inputs/analyzer.json"
+"experiments/experiment-8-metamodel-accuracy-analysis/outputs/" "experiments/experiment-8-metamodel-accuracy-analysis/inputs/m3saSetup.json"
 ```

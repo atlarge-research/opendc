@@ -64,7 +64,7 @@
             "policyType": "Mem"
         }
     ],
-    "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=201,600/",
     "runs": 1
 }

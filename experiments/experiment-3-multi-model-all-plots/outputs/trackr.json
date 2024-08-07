@@ -20,7 +20,7 @@
     "carbonTracePaths": [
         "experiments/experiment-3-multi-model-all-plots/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-3-multi-model-all-plots/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-3-multi-model-all-plots/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-3-multi-model-all-plots//outputs/"
 },
 {
@@ -45,7 +45,7 @@
     "carbonTracePaths": [
         "experiments/experiment-3-multi-model-all-plots/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-3-multi-model-all-plots/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-3-multi-model-all-plots/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-3-multi-model-all-plots//outputs/"
 },
 {
@@ -70,7 +70,7 @@
     "carbonTracePaths": [
         "experiments/experiment-3-multi-model-all-plots/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-3-multi-model-all-plots/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-3-multi-model-all-plots/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-3-multi-model-all-plots//outputs/"
 },
 {
@@ -95,6 +95,6 @@
     "carbonTracePaths": [
         "experiments/experiment-3-multi-model-all-plots/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-3-multi-model-all-plots/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-3-multi-model-all-plots/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-3-multi-model-all-plots//outputs/"
 }]

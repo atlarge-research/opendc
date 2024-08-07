@@ -19,7 +19,7 @@
             "policyType": "Mem"
         }
     ],
-    "analyzerPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions-1-model.json",
+    "m3saSetupPath": "experiments/use-case-scenario/inputs/m3sa-setup-co2-emissions-1-model.json",
     "outputFolder": "experiments/use-case-scenario/",
     "runs": 1
 }

@@ -28,7 +28,7 @@
             "policyType": "Mem"
         }
     ],
-    "analyzerPath": "experiments/experiment-6-metamodel-plotting/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-6-metamodel-plotting/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-6-metamodel-plotting/",
     "runs": 1
 }

@@ -45,7 +45,7 @@ def main():
 Main.py arguments:
 
 ```
-"experiments/experiment-7-metamodel-performance-analysis/outputs/" "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json"
+"experiments/experiment-7-metamodel-performance-analysis/outputs/" "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json"
 ```
 
 

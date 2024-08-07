@@ -92,7 +92,7 @@ every
 #### Arguments for Main.py Setup
 
 "experiments/experiment-2-window-performance-analysis/outputs/" "
-experiments/experiment-2-window-performance-analysis/inputs/analyzer.json"
+experiments/experiment-2-window-performance-analysis/inputs/m3saSetup.json"
 Main.py takes two arguments:
 
 1. Argument 1 is the path to the output directory where M3SA output files will be stored.

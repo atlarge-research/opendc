@@ -1,100 +1,48 @@
 [{
-    "id": 0,
     "name": "outputs/",
-    "topologies": [
-        {
-            "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/topologies/topology_truth_sqrt.json"
-        }
-    ],
-    "workloads": [
-        {
-            "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/surf-sara",
-            "type": "ComputeWorkload"
-        }
-    ],
-    "allocationPolicies": [
-        {
-            "policyType": "Mem"
-        }
-    ],
-    "carbonTracePaths": [
-        "experiments/experiment-6-metamodel-plotting/inputs/carbon_intensity.parquet"
-    ],
-    "analyzerPath": "experiments/experiment-6-metamodel-plotting/inputs/analyzer.json",
-    "outputFolder": "experiments/experiment-6-metamodel-plotting//outputs/"
+    "outputFolder": "experiments/experiment-6-metamodel-plotting/",
+    "topology": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/topologies/topology_truth_sqrt.json"
+    },
+    "workload": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/surf-sara",
+        "type": "ComputeWorkload"
+    },
+    "carbonTracePath": "experiments/experiment-6-metamodel-plotting/inputs/carbon_intensity.parquet"
 },
 {
-    "id": 1,
     "name": "outputs/",
-    "topologies": [
-        {
-            "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/topologies/topology_truth_linear.json"
-        }
-    ],
-    "workloads": [
-        {
-            "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/surf-sara",
-            "type": "ComputeWorkload"
-        }
-    ],
-    "allocationPolicies": [
-        {
-            "policyType": "Mem"
-        }
-    ],
-    "carbonTracePaths": [
-        "experiments/experiment-6-metamodel-plotting/inputs/carbon_intensity.parquet"
-    ],
-    "analyzerPath": "experiments/experiment-6-metamodel-plotting/inputs/analyzer.json",
-    "outputFolder": "experiments/experiment-6-metamodel-plotting//outputs/"
+    "outputFolder": "experiments/experiment-6-metamodel-plotting/",
+    "topology": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/topologies/topology_truth_linear.json"
+    },
+    "workload": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/surf-sara",
+        "type": "ComputeWorkload"
+    },
+    "carbonTracePath": "experiments/experiment-6-metamodel-plotting/inputs/carbon_intensity.parquet"
 },
 {
-    "id": 2,
     "name": "outputs/",
-    "topologies": [
-        {
-            "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/topologies/topology_truth_square.json"
-        }
-    ],
-    "workloads": [
-        {
-            "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/surf-sara",
-            "type": "ComputeWorkload"
-        }
-    ],
-    "allocationPolicies": [
-        {
-            "policyType": "Mem"
-        }
-    ],
-    "carbonTracePaths": [
-        "experiments/experiment-6-metamodel-plotting/inputs/carbon_intensity.parquet"
-    ],
-    "analyzerPath": "experiments/experiment-6-metamodel-plotting/inputs/analyzer.json",
-    "outputFolder": "experiments/experiment-6-metamodel-plotting//outputs/"
+    "outputFolder": "experiments/experiment-6-metamodel-plotting/",
+    "topology": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/topologies/topology_truth_square.json"
+    },
+    "workload": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/surf-sara",
+        "type": "ComputeWorkload"
+    },
+    "carbonTracePath": "experiments/experiment-6-metamodel-plotting/inputs/carbon_intensity.parquet"
 },
 {
-    "id": 3,
     "name": "outputs/",
-    "topologies": [
-        {
-            "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/topologies/topology_truth_cubic.json"
-        }
-    ],
-    "workloads": [
-        {
-            "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/surf-sara",
-            "type": "ComputeWorkload"
-        }
-    ],
-    "allocationPolicies": [
-        {
-            "policyType": "Mem"
-        }
-    ],
-    "carbonTracePaths": [
-        "experiments/experiment-6-metamodel-plotting/inputs/carbon_intensity.parquet"
-    ],
-    "analyzerPath": "experiments/experiment-6-metamodel-plotting/inputs/analyzer.json",
-    "outputFolder": "experiments/experiment-6-metamodel-plotting//outputs/"
+    "outputFolder": "experiments/experiment-6-metamodel-plotting/",
+    "topology": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/topologies/topology_truth_cubic.json"
+    },
+    "workload": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/surf-sara",
+        "type": "ComputeWorkload"
+    },
+    "carbonTracePath": "experiments/experiment-6-metamodel-plotting/inputs/carbon_intensity.parquet"
 }]

@@ -1,9 +1,0 @@
-{
-    "multimodel": true,
-    "metamodel": false,
-    "metric": "power_draw",
-    "window_size": 100,
-    "window_function": "mean",
-    "plot_type": "time_series",
-    "unit_scaling_magnitude": 1
-}

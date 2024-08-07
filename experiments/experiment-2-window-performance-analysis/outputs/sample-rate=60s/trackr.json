@@ -20,7 +20,7 @@
     "carbonTracePaths": [
         "experiments/experiment-2-window-performance-analysis/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-2-window-performance-analysis/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-2-window-performance-analysis/outputs//sample-rate=60s"
 },
 {
@@ -45,7 +45,7 @@
     "carbonTracePaths": [
         "experiments/experiment-2-window-performance-analysis/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-2-window-performance-analysis/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-2-window-performance-analysis/outputs//sample-rate=60s"
 },
 {
@@ -70,7 +70,7 @@
     "carbonTracePaths": [
         "experiments/experiment-2-window-performance-analysis/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-2-window-performance-analysis/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-2-window-performance-analysis/outputs//sample-rate=60s"
 },
 {
@@ -95,6 +95,6 @@
     "carbonTracePaths": [
         "experiments/experiment-2-window-performance-analysis/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-2-window-performance-analysis/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-2-window-performance-analysis/outputs//sample-rate=60s"
 }]

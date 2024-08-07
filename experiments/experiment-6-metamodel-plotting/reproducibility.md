@@ -36,7 +36,7 @@ def main():
 
 #### Utils
 
-- analyzer.json file, for FR2
+- m3saSetup.json file, for FR2
 ```json
 {
     "multimodel": true,
@@ -57,8 +57,7 @@ def main():
 }
 ```
 
-
-- analyzer.json file, for FR3 - CO2 emissions
+- m3saSetup.json file, for FR3 - CO2 emissions
 ```json
 {
     "multimodel": true,
@@ -80,8 +79,7 @@ def main():
 
 ```
 
-
-- analyzer.json file, for FR3 - Energy Usage
+- m3saSetup.json file, for FR3 - Energy Usage
 ```json
 {
     "multimodel": true,
@@ -102,7 +100,7 @@ def main():
 }
 ```
 
-- analyzer.json file, for FR6
+- m3saSetup.json file, for FR6
 
 ```json
 {

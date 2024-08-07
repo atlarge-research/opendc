@@ -28,7 +28,7 @@
             "policyType": "Mem"
         }
     ],
-    "analyzerPath": "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-2-window-performance-analysis/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-2-window-performance-analysis/outputs/",
     "runs": 1
 }

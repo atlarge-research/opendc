@@ -20,7 +20,7 @@
     "carbonTracePaths": [
         "experiments/experiment-4-more-than-4-models/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-4-more-than-4-models/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-4-more-than-4-models/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-4-more-than-4-models//outputs/"
 },
 {
@@ -45,7 +45,7 @@
     "carbonTracePaths": [
         "experiments/experiment-4-more-than-4-models/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-4-more-than-4-models/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-4-more-than-4-models/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-4-more-than-4-models//outputs/"
 },
 {
@@ -70,7 +70,7 @@
     "carbonTracePaths": [
         "experiments/experiment-4-more-than-4-models/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-4-more-than-4-models/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-4-more-than-4-models/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-4-more-than-4-models//outputs/"
 },
 {
@@ -95,7 +95,7 @@
     "carbonTracePaths": [
         "experiments/experiment-4-more-than-4-models/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-4-more-than-4-models/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-4-more-than-4-models/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-4-more-than-4-models//outputs/"
 },
 {
@@ -120,7 +120,7 @@
     "carbonTracePaths": [
         "experiments/experiment-4-more-than-4-models/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-4-more-than-4-models/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-4-more-than-4-models/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-4-more-than-4-models//outputs/"
 },
 {
@@ -145,7 +145,7 @@
     "carbonTracePaths": [
         "experiments/experiment-4-more-than-4-models/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-4-more-than-4-models/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-4-more-than-4-models/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-4-more-than-4-models//outputs/"
 },
 {
@@ -170,7 +170,7 @@
     "carbonTracePaths": [
         "experiments/experiment-4-more-than-4-models/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-4-more-than-4-models/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-4-more-than-4-models/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-4-more-than-4-models//outputs/"
 },
 {
@@ -195,6 +195,6 @@
     "carbonTracePaths": [
         "experiments/experiment-4-more-than-4-models/inputs/carbon_intensity.parquet"
     ],
-    "analyzerPath": "experiments/experiment-4-more-than-4-models/inputs/analyzer.json",
+    "m3saSetup": "experiments/experiment-4-more-than-4-models/inputs/m3saSetup.json",
     "outputFolder": "experiments/experiment-4-more-than-4-models//outputs/"
 }]

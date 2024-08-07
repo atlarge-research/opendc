@@ -36,7 +36,7 @@ def main():
 Main.py arguments
 
 ```
-"experiments/experiment-2-window-performance-analysis/outputs/" "experiments/experiment-2-window-performance-analysis/inputs/analyzer.json"
+"experiments/experiment-2-window-performance-analysis/outputs/" "experiments/experiment-2-window-performance-analysis/inputs/m3saSetup.json"
 ```
 
 The output of the experiment is generated in 

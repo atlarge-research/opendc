@@ -21,7 +21,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetup": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -46,7 +46,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetup": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -71,7 +71,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetup": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -96,7 +96,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetup": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -121,7 +121,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetup": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -146,7 +146,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetup": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -171,7 +171,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetup": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -196,7 +196,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetup": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -221,7 +221,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetup": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -246,7 +246,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetup": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -271,7 +271,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetup": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -296,7 +296,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetupPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -321,7 +321,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetupPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -346,7 +346,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetupPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -371,7 +371,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetupPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     },
     {
@@ -396,7 +396,7 @@
         "carbonTracePaths": [
             "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
         ],
-        "analyzerPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/analyzer.json",
+        "m3saSetupPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
         "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=10,080//outputs/"
     }
 ]
