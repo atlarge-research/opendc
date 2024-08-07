@@ -9,7 +9,7 @@ to follow the structure below.
 
 ## Schema
 
-The schema for the scenario file is provided in [schema](MultiMetaModelSchema.md)
+The schema for the scenario file is provided in [schema](M3SASchema.md)
 In the following section, we describe the different components of the schema.
 
 ### General Structure
