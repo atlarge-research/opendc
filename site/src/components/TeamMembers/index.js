@@ -95,6 +95,11 @@ const members = [
         url: 'https://www.atlarge-research.com/wlai/',
     },
     {
+        name: 'Radu Nicolae',
+        avatar: 'https://atlarge-research.com/images/people/rnicolae_large.png',
+        url: 'https://atlarge-research.com/rnicolae/',
+    },
+    {
         name: 'Leon Overweel',
         avatar: 'https://www.atlarge-research.com/images/people/loverweel_large.png',
         url: 'https://www.atlarge-research.com/loverweel/',
