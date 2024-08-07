@@ -28,24 +28,29 @@ import kotlin.io.path.Path
  */
 
 public val ANALYSIS_SCRIPTS_DIRECTORY: String = "./opendc-analyze/src/main/python"
-public var ABSOLUTE_SCRIPT_PATH: String = Path("$ANALYSIS_SCRIPTS_DIRECTORY/main.py").toAbsolutePath().normalize().toString()
+public val ABSOLUTE_SCRIPT_PATH: String =
+    Path("$ANALYSIS_SCRIPTS_DIRECTORY/main.py").toAbsolutePath().normalize().toString()
 public val SCRIPT_LANGUAGE: String = "python3"
 
-public fun analyzeResults(outputFolderPath: String, m3saSetupPath: String) {
-    val process = ProcessBuilder(
-        SCRIPT_LANGUAGE,
-        ABSOLUTE_SCRIPT_PATH,
-        outputFolderPath,
-        m3saSetupPath
-    )
-        .directory(Path(ANALYSIS_SCRIPTS_DIRECTORY).toFile())
-        .start()
+public fun analyzeResults(
+    outputFolderPath: String,
+    m3saSetupPath: String,
+) {
+    val process =
+        ProcessBuilder(
+            SCRIPT_LANGUAGE,
+            ABSOLUTE_SCRIPT_PATH,
+            outputFolderPath,
+            m3saSetupPath,
+        )
+            .directory(Path(ANALYSIS_SCRIPTS_DIRECTORY).toFile())
+            .start()
 
     val exitCode = process.waitFor()
     if (exitCode == 0) {
         println("[M3SA says] M3SA operation(s) completed successfully.")
     } else {
         val errors = process.errorStream.bufferedReader().readText()
-        println("[M3SA says] Exit code ${exitCode}; Error(s): $errors")
+        println("[M3SA says] Exit code $exitCode; Error(s): $errors")
     }
 }
