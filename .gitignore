@@ -123,3 +123,9 @@ demo
 # Large experimental files
 experiments/experiment-7-metamodel-performance-analysis/outputs/samples=100,800/raw-output
 experiments/experiment-7-metamodel-performance-analysis/outputs/samples=201,600/raw-output
+
+
+**/__pycache__/
+**/*.pyc
+
+
