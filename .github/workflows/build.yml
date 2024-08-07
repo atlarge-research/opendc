@@ -71,6 +71,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Clean Docker System
+        run: docker system prune -af
+      - name: Disk Usage Before Build
+        run: df -h
+      - name: Build Runner
+        uses: docker/build-push-action@v5
+        with:
+          file: opendc-web/opendc-web-runner/Dockerfile
+      - name: Disk Usage After Runner Build
+        run: df -h
       - name: Build UI
         uses: docker/build-push-action@v5
         with:
@@ -80,10 +90,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           file: opendc-web/opendc-web-server/Dockerfile
-      - name: Build Runner
-        uses: docker/build-push-action@v5
-        with:
-          file: opendc-web/opendc-web-runner/Dockerfile
+      - name: Final Disk Usage Check
+        run: df -h
   build-docs:
     defaults:
       run:
