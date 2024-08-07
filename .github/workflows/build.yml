@@ -71,16 +71,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Clean Docker System
-        run: docker system prune -af
-      - name: Disk Usage Before Build
-        run: df -h
-      - name: Build Runner
-        uses: docker/build-push-action@v5
-        with:
-          file: opendc-web/opendc-web-runner/Dockerfile
-      - name: Disk Usage After Runner Build
-        run: df -h
       - name: Build UI
         uses: docker/build-push-action@v5
         with:
@@ -90,8 +80,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           file: opendc-web/opendc-web-server/Dockerfile
-      - name: Final Disk Usage Check
-        run: df -h
+      - name: Build Runner
+        uses: docker/build-push-action@v5
+        with:
+          file: opendc-web/opendc-web-runner/Dockerfile
   build-docs:
     defaults:
       run:
@@ -110,9 +102,6 @@ jobs:
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          enablement: true
       - name: Install dependencies
         run: npm ci
       - name: Build with Docusaurus
