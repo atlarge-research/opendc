@@ -8,7 +8,7 @@ sidebar_label: M3SA Integration
 # M3SA integration tutorial
 
 M3SA is a tool able to perform "Multi-Meta-Model Simulation Analysis". The tool is designed to analyze the output of
-simulations, by leveraging predictions, generate Multi-Model graphs, novel models, and more. M3SA can integrate wiht any
+simulations, by leveraging predictions, generate Multi-Model graphs, novel models, and more. M3SA can integrate with any
 simulation infrastructure, as long as integration steps are followed.
 
 We build our tool towards performance, scalability, and **universality**. In this document, we present the steps to
@@ -112,44 +112,11 @@ file ```simulator_specifics.py```, from ```opendc/src/python/simulator_specifics
 
 ### 3.2 Setup the python program arguments
 
-```python
-
 ### Arguments for Main.py Setup
-
-[//]: # ("experiments/experiment-2-window-performance-analysis/outputs/" ")
-
-[ //]:  # (experiments/experiment-2-window-performance-analysis/inputs/m3saSetup.json")
 Main.py takes two arguments:
 
-1.
-Argument
-1 is the
-path
-to
-the
-output
-directory
-where
-M3SA
-output
-files
-will
-be
-stored.
-2.
-Argument
-2 is the
-path
-to
-the
-input
-file
-that
-contains
-the
-configuration
-of
-M3SA.
+1. Argument 1 is the path to the output directory where M3SA output files will be stored.
+2. Argument 2 is the path to the input file that contains the configuration of M3SA.
 
 e.g.,
 
