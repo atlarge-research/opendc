@@ -1,0 +1,25 @@
+{
+    "name": "outputs/",
+    "topologies": [
+        {
+            "pathToFile": "experiments/use-case-scenario/inputs/topologies/sqrt_1.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/use-case-scenario/inputs/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/use-case-scenario/inputs/carbon_intensity.parquet"
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "m3saSetupPath": "experiments/use-case-scenario/inputs/m3sa-setup-energy-usage-1-model.json",
+    "outputFolder": "experiments/use-case-scenario/",
+    "runs": 1
+}

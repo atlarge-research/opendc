@@ -1,0 +1,70 @@
+{
+    "name": "outputs/",
+    "topologies": [
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_sqrt_1.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_sqrt_2.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_sqrt_3.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_sqrt_4.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_linear_1.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_linear_2.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_linear_3.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_linear_4.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_square_1.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_square_2.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_square_3.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_square_4.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_cubic_1.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_cubic_2.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_cubic_3.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/topologies/topology_truth_cubic_4.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/experiment-7-metamodel-performance-analysis/inputs/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/experiment-7-metamodel-performance-analysis/inputs/carbon_intensity.parquet"
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "m3saSetupPath": "experiments/experiment-7-metamodel-performance-analysis/inputs/m3saSetup.json",
+    "outputFolder": "experiments/experiment-7-metamodel-performance-analysis/samples=201,600/",
+    "runs": 1
+}

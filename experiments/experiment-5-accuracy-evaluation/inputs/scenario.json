@@ -1,0 +1,46 @@
+{
+    "name": "outputs/",
+    "topologies": [
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_sqrt.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_linear.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_square.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_cubic.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_sqrt_adjusted.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_linear_adjusted.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_square_adjusted.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/topologies/topology_truth_cubic_adjusted.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/experiment-5-accuracy-evaluation/inputs/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/experiment-5-accuracy-evaluation/inputs/carbon_intensity.parquet"
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "m3saSetup": "experiments/experiment-5-accuracy-evaluation/inputs/m3saSetup.json",
+    "outputFolder": "experiments/experiment-5-accuracy-evaluation/",
+    "runs": 1
+}

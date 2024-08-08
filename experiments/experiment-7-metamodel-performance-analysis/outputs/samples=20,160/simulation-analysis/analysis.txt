@@ -1,0 +1,577 @@
+Analysis file created.
+
+
+========================================
+Simulation made at 2024-07-24 17:53:19
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 9.9s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:53:28
+Metric: power_draw
+Unit: W
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 9.2s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:53:37
+Metric: power_draw
+Unit: W
+Window size: 100
+Sample count in raw host data: 20160
+Computing time 9.3s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:53:47
+Metric: power_draw
+Unit: W
+Window size: 1000
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:53:56
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 9.4s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:54:06
+Metric: power_draw
+Unit: W
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 9.5s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:54:15
+Metric: power_draw
+Unit: W
+Window size: 100
+Sample count in raw host data: 20160
+Computing time 9.5s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:54:25
+Metric: power_draw
+Unit: W
+Window size: 1000
+Sample count in raw host data: 20160
+Computing time 9.3s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:54:34
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:54:44
+Metric: power_draw
+Unit: W
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:54:54
+Metric: power_draw
+Unit: W
+Window size: 100
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:55:03
+Metric: power_draw
+Unit: W
+Window size: 1000
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:55:13
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 9.4s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:55:22
+Metric: power_draw
+Unit: W
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 9.5s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:55:32
+Metric: power_draw
+Unit: W
+Window size: 100
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:55:41
+Metric: power_draw
+Unit: W
+Window size: 1000
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:55:51
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:56:01
+Metric: power_draw
+Unit: W
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:56:10
+Metric: power_draw
+Unit: W
+Window size: 100
+Sample count in raw host data: 20160
+Computing time 9.5s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:56:20
+Metric: power_draw
+Unit: W
+Window size: 1000
+Sample count in raw host data: 20160
+Computing time 9.8s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:56:29
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:56:39
+Metric: power_draw
+Unit: W
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 9.5s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:56:48
+Metric: power_draw
+Unit: W
+Window size: 100
+Sample count in raw host data: 20160
+Computing time 9.4s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-24 17:56:58
+Metric: power_draw
+Unit: W
+Window size: 1000
+Sample count in raw host data: 20160
+Computing time 9.7s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:25:51
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 15.8s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:26:03
+Metric: power_draw
+Unit: W
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 11.5s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:26:15
+Metric: power_draw
+Unit: W
+Window size: 100
+Sample count in raw host data: 20160
+Computing time 12.1s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:26:27
+Metric: power_draw
+Unit: W
+Window size: 1000
+Sample count in raw host data: 20160
+Computing time 12.4s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:26:40
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 12.3s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:26:52
+Metric: power_draw
+Unit: W
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 12.5s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:27:05
+Metric: power_draw
+Unit: W
+Window size: 100
+Sample count in raw host data: 20160
+Computing time 12.5s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:27:18
+Metric: power_draw
+Unit: W
+Window size: 1000
+Sample count in raw host data: 20160
+Computing time 13.0s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:27:28
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 9.9s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:27:37
+Metric: power_draw
+Unit: W
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:27:47
+Metric: power_draw
+Unit: W
+Window size: 100
+Sample count in raw host data: 20160
+Computing time 9.8s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:27:56
+Metric: power_draw
+Unit: W
+Window size: 1000
+Sample count in raw host data: 20160
+Computing time 8.8s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:28:06
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 10.1s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:28:17
+Metric: power_draw
+Unit: W
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 10.9s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:28:28
+Metric: power_draw
+Unit: W
+Window size: 100
+Sample count in raw host data: 20160
+Computing time 11.2s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:28:38
+Metric: power_draw
+Unit: W
+Window size: 1000
+Sample count in raw host data: 20160
+Computing time 10.0s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/time_series_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:28:48
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 10.0s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:28:57
+Metric: power_draw
+Unit: W
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 9.5s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:29:07
+Metric: power_draw
+Unit: W
+Window size: 100
+Sample count in raw host data: 20160
+Computing time 10.0s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:29:17
+Metric: power_draw
+Unit: W
+Window size: 1000
+Sample count in raw host data: 20160
+Computing time 9.4s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:29:27
+Metric: power_draw
+Unit: W
+Window size: 1
+Sample count in raw host data: 20160
+Computing time 9.8s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=1.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:29:36
+Metric: power_draw
+Unit: W
+Window size: 10
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=10.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:29:46
+Metric: power_draw
+Unit: W
+Window size: 100
+Sample count in raw host data: 20160
+Computing time 9.5s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=100.pdf
+========================================
+
+
+========================================
+Simulation made at 2024-07-26 15:29:55
+Metric: power_draw
+Unit: W
+Window size: 1000
+Sample count in raw host data: 20160
+Computing time 9.6s
+Workload time: 28.0 days
+Plot path/Users/raz/atlarge/opendc/experiments/experiment-7-metamodel-performance-analysis/outputs/samples=20,160/simulation-analysis/power_draw/cumulative_time_series_plot_multimodel_metric=power_draw_window=1000.pdf
+========================================

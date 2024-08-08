@@ -1,0 +1,48 @@
+[{
+    "name": "outputs/",
+    "outputFolder": "experiments/experiment-6-metamodel-plotting/",
+    "topology": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/topologies/topology_truth_sqrt.json"
+    },
+    "workload": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/surf-sara",
+        "type": "ComputeWorkload"
+    },
+    "carbonTracePath": "experiments/experiment-6-metamodel-plotting/inputs/carbon_intensity.parquet"
+},
+{
+    "name": "outputs/",
+    "outputFolder": "experiments/experiment-6-metamodel-plotting/",
+    "topology": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/topologies/topology_truth_linear.json"
+    },
+    "workload": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/surf-sara",
+        "type": "ComputeWorkload"
+    },
+    "carbonTracePath": "experiments/experiment-6-metamodel-plotting/inputs/carbon_intensity.parquet"
+},
+{
+    "name": "outputs/",
+    "outputFolder": "experiments/experiment-6-metamodel-plotting/",
+    "topology": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/topologies/topology_truth_square.json"
+    },
+    "workload": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/surf-sara",
+        "type": "ComputeWorkload"
+    },
+    "carbonTracePath": "experiments/experiment-6-metamodel-plotting/inputs/carbon_intensity.parquet"
+},
+{
+    "name": "outputs/",
+    "outputFolder": "experiments/experiment-6-metamodel-plotting/",
+    "topology": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/topologies/topology_truth_cubic.json"
+    },
+    "workload": {
+        "pathToFile": "experiments/experiment-6-metamodel-plotting/inputs/surf-sara",
+        "type": "ComputeWorkload"
+    },
+    "carbonTracePath": "experiments/experiment-6-metamodel-plotting/inputs/carbon_intensity.parquet"
+}]

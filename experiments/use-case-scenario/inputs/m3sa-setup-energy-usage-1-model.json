@@ -1,0 +1,18 @@
+{
+    "multimodel": true,
+    "metamodel": false,
+    "metric": "power_draw",
+    "window_size": 1,
+    "window_function": "mean",
+    "meta_function": "mean",
+    "samples_per_minute": 0.2,
+    "plot_type": "time_series",
+    "x_label": "Sample count (288 samples per day)",
+    "y_label": "Energy Usage [kW]",
+    "y_min": 0,
+    "y_max": 50,
+    "x_ticks_count": 8,
+    "plot_title": "",
+    "current_unit": "W",
+    "unit_scaling_magnitude": 3
+}

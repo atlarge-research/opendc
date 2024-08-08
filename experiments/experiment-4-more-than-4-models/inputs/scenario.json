@@ -1,0 +1,46 @@
+{
+    "name": "outputs/",
+    "topologies": [
+        {
+            "pathToFile": "experiments/experiment-4-more-than-4-models/inputs/topologies/topology_sqrt_1.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-4-more-than-4-models/inputs/topologies/topology_linear_1.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-4-more-than-4-models/inputs/topologies/topology_square_1.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-4-more-than-4-models/inputs/topologies/topology_cubic_1.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-4-more-than-4-models/inputs/topologies/topology_sqrt_2.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-4-more-than-4-models/inputs/topologies/topology_linear_2.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-4-more-than-4-models/inputs/topologies/topology_square_2.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-4-more-than-4-models/inputs/topologies/topology_cubic_2.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/experiment-4-more-than-4-models/inputs/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/experiment-4-more-than-4-models/inputs/carbon_intensity.parquet"
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "m3saSetup": "experiments/experiment-4-more-than-4-models/inputs/m3saSetup.json",
+    "outputFolder": "experiments/experiment-4-more-than-4-models/",
+    "runs": 1
+}

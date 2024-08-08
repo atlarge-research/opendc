@@ -1,0 +1,34 @@
+{
+    "name": "outputs/",
+    "topologies": [
+        {
+            "pathToFile": "experiments/experiment-3-multi-model-all-plots/inputs/topologies/topology_sqrt.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-3-multi-model-all-plots/inputs/topologies/topology_linear.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-3-multi-model-all-plots/inputs/topologies/topology_square.json"
+        },
+        {
+            "pathToFile": "experiments/experiment-3-multi-model-all-plots/inputs/topologies/topology_cubic.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "experiments/experiment-3-multi-model-all-plots/inputs/surf-sara",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "carbonTracePaths": [
+        "experiments/experiment-3-multi-model-all-plots/inputs/carbon_intensity.parquet"
+    ],
+    "allocationPolicies": [
+        {
+            "policyType": "Mem"
+        }
+    ],
+    "m3saSetup": "experiments/experiment-3-multi-model-all-plots/inputs/m3saSetup.json",
+    "outputFolder": "experiments/experiment-3-multi-model-all-plots/",
+    "runs": 1
+}
