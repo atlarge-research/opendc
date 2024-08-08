@@ -58,6 +58,7 @@ public data class ScenariosSpec(
     val outputFolder: String = "output",
     val initialSeed: Int = 0,
     val runs: Int = 1,
+    val m3saSetup: String = "",
     val topologies: Set<ScenarioTopologySpec>,
     val workloads: Set<WorkloadSpec>,
     val allocationPolicies: Set<AllocationPolicySpec> = setOf(AllocationPolicySpec()),

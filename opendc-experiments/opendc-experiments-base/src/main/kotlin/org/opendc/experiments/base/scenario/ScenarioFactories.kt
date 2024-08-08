@@ -82,6 +82,7 @@ public fun getScenarios(scenariosSpec: ScenariosSpec): List<Scenario> {
                 name = scenarioID.toString(),
                 runs = scenariosSpec.runs,
                 initialSeed = scenariosSpec.initialSeed,
+                m3saSetup = scenariosSpec.m3saSetup,
             )
         trackScenario(scenarioSpec, outputFolder)
         scenarios.add(scenario)
