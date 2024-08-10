@@ -118,6 +118,11 @@ public interface HostTableReader {
     public val energyUsage: Double
 
     /**
+     * The current temperature of the host in degrees Celsius.
+     */
+    public val cpuTemperature: Double
+
+    /**
      * The current carbon intensity of the host in gCO2 / kW.
      */
     public val carbonIntensity: Double

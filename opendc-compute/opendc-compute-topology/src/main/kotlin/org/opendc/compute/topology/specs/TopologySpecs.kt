@@ -58,6 +58,7 @@ public data class ClusterSpec(
  * @param memory The amount of RAM memory available in Byte
  * @param powerModel The power model used to determine the power draw of a host
  * @param count The power model used to determine the power draw of a host
+ * @param thermalModel The thermal model used to determine the temperature of a host - defaults to Intel Xeon Platinum 8160
  */
 @Serializable
 public data class HostJSONSpec(
@@ -65,6 +66,16 @@ public data class HostJSONSpec(
     val cpu: CPUSpec,
     val memory: MemorySpec,
     val powerModel: PowerModelSpec = PowerModelSpec("linear", 350.0, 400.0, 200.0),
+    val thermalModel: ThermalModelSpec =
+        ThermalModelSpec(
+            "rcmodel",
+            0.298,
+            0.00061,
+            0.00035,
+            0.0041,
+            1.8,
+            22.0,
+        ),
     val count: Int = 1,
 )
 
@@ -116,3 +127,14 @@ public data class PowerModelSpec(
         require(maxPower >= idlePower) { "The max power of a power model can not be less than the idle power" }
     }
 }
+
+@Serializable
+public data class ThermalModelSpec(
+    val modelType: String,
+    val rHS: Double,
+    val rCase: Double,
+    val minLeakageCurrent: Double,
+    val maxLeakageCurrent: Double,
+    val supplyVoltage: Double,
+    val ambientTemperature: Double,
+)

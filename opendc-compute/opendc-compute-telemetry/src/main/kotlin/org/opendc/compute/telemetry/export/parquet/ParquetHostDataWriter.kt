@@ -152,34 +152,38 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             consumer.addDouble(data.energyUsage)
             consumer.endField("energy_usage", 19)
 
-            consumer.startField("carbon_intensity", 20)
+            consumer.startField("cpuTemperature", 20)
+            consumer.addDouble(data.cpuTemperature)
+            consumer.endField("cpuTemperature", 20)
+
+            consumer.startField("carbon_intensity", 21)
             consumer.addDouble(data.carbonIntensity)
-            consumer.endField("carbon_intensity", 20)
+            consumer.endField("carbon_intensity", 21)
 
-            consumer.startField("carbon_emission", 21)
+            consumer.startField("carbon_emission", 22)
             consumer.addDouble(data.carbonEmission)
-            consumer.endField("carbon_emission", 21)
+            consumer.endField("carbon_emission", 22)
 
-            consumer.startField("uptime", 22)
+            consumer.startField("uptime", 23)
             consumer.addLong(data.uptime)
-            consumer.endField("uptime", 22)
+            consumer.endField("uptime", 23)
 
-            consumer.startField("downtime", 23)
+            consumer.startField("downtime", 24)
             consumer.addLong(data.downtime)
-            consumer.endField("downtime", 23)
+            consumer.endField("downtime", 24)
 
             val bootTime = data.bootTime
             if (bootTime != null) {
-                consumer.startField("boot_time", 24)
+                consumer.startField("boot_time", 25)
                 consumer.addLong(bootTime.toEpochMilli())
-                consumer.endField("boot_time", 24)
+                consumer.endField("boot_time", 25)
             }
 
             val bootTimeAbsolute = data.bootTimeAbsolute
             if (bootTimeAbsolute != null) {
-                consumer.startField("boot_time_absolute", 25)
+                consumer.startField("boot_time_absolute", 26)
                 consumer.addLong(bootTimeAbsolute.toEpochMilli())
-                consumer.endField("boot_time_absolute", 25)
+                consumer.endField("boot_time_absolute", 26)
             }
 
             consumer.endMessage()
@@ -256,6 +260,9 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                         .named("energy_usage"),
+                    Types
+                        .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("cpuTemperature"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                         .named("carbon_intensity"),

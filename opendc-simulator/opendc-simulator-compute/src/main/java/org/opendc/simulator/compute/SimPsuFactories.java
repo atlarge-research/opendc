@@ -26,6 +26,7 @@ import java.time.InstantSource;
 import org.jetbrains.annotations.NotNull;
 import org.opendc.simulator.compute.model.ProcessingUnit;
 import org.opendc.simulator.compute.power.CpuPowerModel;
+import org.opendc.simulator.compute.thermal.ThermalModel;
 import org.opendc.simulator.flow2.FlowGraph;
 import org.opendc.simulator.flow2.FlowStage;
 import org.opendc.simulator.flow2.FlowStageLogic;
@@ -57,8 +58,8 @@ public class SimPsuFactories {
      *
      * @param model The power model to estimate the power consumption based on the CPU usage.
      */
-    public static SimPsuFactory simple(CpuPowerModel model) {
-        return (machine, graph) -> new SimplePsu(graph, model);
+    public static SimPsuFactory simple(CpuPowerModel model, ThermalModel thermalModel) {
+        return (machine, graph) -> new SimplePsu(graph, model, thermalModel);
     }
 
     /**
@@ -92,6 +93,14 @@ public class SimPsuFactories {
         }
 
         @Override
+        public double getCpuTemperature() {
+            return 0;
+        }
+
+        @Override
+        public void setTemperature() {}
+
+        @Override
         InPort getCpuPower(int id, ProcessingUnit model) {
             final InPort port = stage.getInlet("cpu" + id);
             port.setMask(true);
@@ -117,6 +126,7 @@ public class SimPsuFactories {
         private final FlowStage stage;
         private final OutPort out;
         private final CpuPowerModel model;
+        private final ThermalModel thermalModel;
         private final InstantSource clock;
 
         private double targetFreq;
@@ -125,6 +135,10 @@ public class SimPsuFactories {
 
         private double powerDraw;
         private double energyUsage;
+        private double voltage = 1.8; // FIXME implement voltage when PSU is fully implemented
+        private double current; // FIXME implement current when PSU is fully implemented
+        private double staticPower;
+        private double machineTemp;
 
         private final InHandler handler = new InHandler() {
             @Override
@@ -138,10 +152,11 @@ public class SimPsuFactories {
             }
         };
 
-        SimplePsu(FlowGraph graph, CpuPowerModel model) {
+        SimplePsu(FlowGraph graph, CpuPowerModel model, ThermalModel thermalModel) {
             this.stage = graph.newStage(this);
             this.model = model;
             this.clock = graph.getEngine().getClock();
+            this.thermalModel = thermalModel;
             this.out = stage.getOutlet("out");
             this.out.setMask(true);
 
@@ -156,6 +171,19 @@ public class SimPsuFactories {
         @Override
         public double getPowerDraw() {
             return powerDraw;
+        }
+
+        @Override
+        public void setTemperature() {
+            double minPower = model.computePower(0.0);
+            double maxPower = model.computePower(1.0);
+
+            machineTemp = thermalModel.setTemperature(powerDraw, minPower, maxPower);
+        }
+
+        @Override
+        public double getCpuTemperature() {
+            return machineTemp;
         }
 
         @Override
@@ -187,6 +215,8 @@ public class SimPsuFactories {
             double usage = model.computePower(totalUsage / targetFreq);
             out.push((float) usage);
             powerDraw = usage;
+
+            setTemperature();
 
             return Long.MAX_VALUE;
         }
