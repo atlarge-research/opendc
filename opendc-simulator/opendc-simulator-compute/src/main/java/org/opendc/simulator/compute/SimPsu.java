@@ -48,7 +48,7 @@ public abstract class SimPsu extends SimPowerInlet {
     /**
      * Return the temperature of the Host in degrees Celsius based on a power equation.
      */
-    public abstract double getTemperature();
+    public abstract double getCpuTemperature();
 
     /**
      * Set the temperature of the Host in degrees Celsius based on a power equation.

@@ -25,7 +25,12 @@ package org.opendc.simulator.compute.thermal;
 public class ThermalModels {
 
     public static ThermalModel rcmodel(
-            double rHS, double rCase, double minLeakageCurrent, double maxLeakageCurrent, double supplyVoltage, double ambientTemperature) {
+            double rHS,
+            double rCase,
+            double minLeakageCurrent,
+            double maxLeakageCurrent,
+            double supplyVoltage,
+            double ambientTemperature) {
         return new RCModel(rHS, rCase, minLeakageCurrent, maxLeakageCurrent, supplyVoltage, ambientTemperature);
     }
 
@@ -61,8 +66,8 @@ public class ThermalModels {
 
         private void setStaticPower(double dynamicPower, double minPower, double maxPower) {
             currentStaticPower =
-                ((maxLeakageCurrent - minLeakageCurrent) / (maxPower - minPower) * (dynamicPower - minPower))
-                    + minLeakageCurrent;
+                    ((maxLeakageCurrent - minLeakageCurrent) / (maxPower - minPower) * (dynamicPower - minPower))
+                            + minLeakageCurrent;
         }
 
         private void setThermalPower(double dynamicPower, double minPower) {
@@ -74,7 +79,7 @@ public class ThermalModels {
             setStaticPower(dynamicPower, minPower, maxPower);
             setThermalPower(dynamicPower, minPower);
 
-           return ambientTemperature + (totalPowerDissipated * (rHS + rCase));
+            return ambientTemperature + (totalPowerDissipated * (rHS + rCase));
         }
     }
 

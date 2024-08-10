@@ -152,9 +152,9 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             consumer.addDouble(data.energyUsage)
             consumer.endField("energy_usage", 19)
 
-            consumer.startField("temperature_C", 20)
-            consumer.addDouble(data.temperature)
-            consumer.endField("temperature_C", 20)
+            consumer.startField("cpuTemperature", 20)
+            consumer.addDouble(data.cpuTemperature)
+            consumer.endField("cpuTemperature", 20)
 
             consumer.startField("carbon_intensity", 21)
             consumer.addDouble(data.carbonIntensity)
@@ -262,7 +262,7 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
                         .named("energy_usage"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                        .named("temperature_C"),
+                        .named("cpuTemperature"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                         .named("carbon_intensity"),

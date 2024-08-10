@@ -22,6 +22,19 @@
 
 package org.opendc.simulator.compute.thermal
 
+// FIXME: This currently only works for RC models, we need to generalize this to support more models.
+
+/**
+ * A factory for creating thermal models.
+ * @param modelType The type of the thermal model to create.
+ * @param rHS The thermal resistance between the heat source and the heat sink.
+ * @param rCase The thermal resistance between the heat sink and the ambient.
+ * @param minLeakageCurrent The minimum leakage current of the heat source.
+ * @param maxLeakageCurrent The maximum leakage current of the heat source.
+ * @param supplyVoltage The supply voltage of the heat source.
+ * @param ambientTemperature The ambient temperature of the heat source.
+ * @return The thermal model.
+ */
 public fun getThermalModel(
     modelType: String,
     rHS: Double,
@@ -42,10 +55,13 @@ public fun getThermalModel(
                 ambientTemperature,
             )
 
-        else -> throw IllegalArgumentException("Unknown power modelType $modelType")
+        else -> throw IllegalArgumentException("Unknown thermal modelType $modelType")
     }
 }
 
+/**
+ * The default factory for creating RC thermal model using the values from an Intel Xeon Platinum 8160.
+ */
 public fun getThermalModel(modelType: String): ThermalModel {
     return when (modelType) {
         "rcmodel" ->
@@ -57,9 +73,7 @@ public fun getThermalModel(modelType: String): ThermalModel {
                 1.8,
                 22.0,
             )
-        "manufacturerModel" ->
-            ThermalModels.manufacturerModel(0.278, 47.0)
 
-        else -> throw IllegalArgumentException("Unknown power modelType $modelType")
+        else -> throw IllegalArgumentException("Unknown thermal modelType $modelType")
     }
 }

@@ -44,7 +44,7 @@ public record HostSystemStats(
         Instant bootTime,
         double powerDraw,
         double energyUsage,
-        double temperatureC,
+        double cpuTemperature,
         int guestsTerminated,
         int guestsRunning,
         int guestsError,

@@ -83,7 +83,7 @@ class ThermalTest {
             yield()
             assertAll({
                 assertEquals(expectedPower, machine.psu.thermalPower, 0.0001, "The power draw should be $expectedPower W")
-                assertEquals(expectedTemperature, machine.psu.temperature, 0.0001, "The temperature should be $expectedTemperature C")
+                assertEquals(expectedTemperature, machine.psu.cpuTemperature, 0.0001, "The temperature should be $expectedTemperature C")
             })
         }
     }

@@ -58,6 +58,7 @@ public data class ClusterSpec(
  * @param memory The amount of RAM memory available in Byte
  * @param powerModel The power model used to determine the power draw of a host
  * @param count The power model used to determine the power draw of a host
+ * @param thermalModel The thermal model used to determine the temperature of a host - defaults to Intel Xeon Platinum 8160
  */
 @Serializable
 public data class HostJSONSpec(

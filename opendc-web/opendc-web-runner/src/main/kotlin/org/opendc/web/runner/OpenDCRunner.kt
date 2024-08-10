@@ -347,7 +347,15 @@ public class OpenDCRunner(
 
             val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
             val powerModel = CpuPowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
-            val thermalModel = ThermalModels.rcmodel(0.298, 0.00061, 0.00035, 0.0041, 22.0)
+            val thermalModel =
+                ThermalModels.rcmodel(
+                    0.298,
+                    0.00061,
+                    0.00035,
+                    0.0041,
+                    1.8,
+                    22.0,
+                )
 
             val spec =
                 HostSpec(

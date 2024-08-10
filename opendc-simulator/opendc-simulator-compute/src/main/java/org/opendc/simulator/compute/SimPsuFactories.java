@@ -93,7 +93,7 @@ public class SimPsuFactories {
         }
 
         @Override
-        public double getTemperature() {
+        public double getCpuTemperature() {
             return 0;
         }
 
@@ -182,7 +182,7 @@ public class SimPsuFactories {
         }
 
         @Override
-        public double getTemperature() {
+        public double getCpuTemperature() {
             return machineTemp;
         }
 
