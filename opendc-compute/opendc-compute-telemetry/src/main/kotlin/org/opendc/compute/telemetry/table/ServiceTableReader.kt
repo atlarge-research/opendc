@@ -22,12 +22,13 @@
 
 package org.opendc.compute.telemetry.table
 
+import org.opendc.trace.util.parquet.exporter.Exportable
 import java.time.Instant
 
 /**
  * An interface that is used to read a row of a service trace entry.
  */
-public interface ServiceTableReader {
+public interface ServiceTableReader : Exportable {
     public fun copy(): ServiceTableReader
 
     public fun setValues(table: ServiceTableReader)

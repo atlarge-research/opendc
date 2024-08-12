@@ -25,9 +25,17 @@ description = "Parquet helpers for traces in OpenDC"
 // Build configuration
 plugins {
     `kotlin-library-conventions`
+    kotlin("plugin.serialization") version "1.9.22"
 }
 
 dependencies {
+    // Needed for ParquetDataWriter
+    implementation(libs.kotlin.logging)
+
+    implementation(projects.opendcCommon)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
     // This configuration is necessary for a slim dependency on Apache Parquet
     api(libs.parquet) {
         exclude(group = "org.apache.hadoop")

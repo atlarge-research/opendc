@@ -22,12 +22,13 @@
 
 package org.opendc.compute.telemetry.table
 
+import org.opendc.trace.util.parquet.exporter.Exportable
 import java.time.Instant
 
 /**
  * An interface that is used to read a row of a host trace entry.
  */
-public interface HostTableReader {
+public interface HostTableReader : Exportable {
     public fun copy(): HostTableReader
 
     public fun setValues(table: HostTableReader)

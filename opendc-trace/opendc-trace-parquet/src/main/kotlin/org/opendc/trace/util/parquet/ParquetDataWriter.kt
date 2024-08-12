@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.telemetry.export.parquet
+package org.opendc.trace.util.parquet
 
 import mu.KotlinLogging
 import org.apache.parquet.column.ParquetProperties
@@ -28,7 +28,6 @@ import org.apache.parquet.hadoop.ParquetFileWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import org.opendc.trace.util.parquet.LocalParquetWriter
 import java.io.File
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
