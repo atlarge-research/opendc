@@ -22,6 +22,7 @@
 
 package org.opendc.common.utils
 
+import org.slf4j.Logger
 import kotlin.math.abs
 
 /**
@@ -60,7 +61,7 @@ public fun Double.approx(
 public infix fun Double.approx(other: Double): Boolean = approx(other, epsilon = DFLT_EPS_MULTIPLIER)
 
 /**
- * @return [this] approximated to [to] if within `0 - epsilon` and `0 + epsilon`.
+ * @return [this] approximated to [to] if within `[to] - epsilon` and `[to] + epsilon`.
  */
 @JvmOverloads
 public fun Double.roundToIfWithinEpsilon(
@@ -209,3 +210,16 @@ internal fun adaptiveEps(
  * @return [this] formatted by [fmt].
  */
 public fun Double.fmt(fmt: String): String = String.format(fmt, this)
+
+/**
+ * If [this] is a `-.0` [Double], it converts it to a `+.0` one.
+ * Useful for comparisons, since `-.0 >= +.0` is `false`.
+ * @param[warnLogger] the [Logger] to use to log the warning msg if any.
+ */
+public fun Double.ifNeg0thenPos0(warnLogger: Logger? = null): Double =
+    if (this == -.0) {
+        warnLogger?.warn("negative 0 floating point converted to positive 0")
+        .0
+    } else {
+        this
+    }

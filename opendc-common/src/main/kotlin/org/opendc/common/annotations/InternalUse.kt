@@ -24,5 +24,5 @@ package org.opendc.common.annotations
 
 @RequiresOptIn(message = "This symbol is for internal use only")
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.CONSTRUCTOR)
 public annotation class InternalUse
