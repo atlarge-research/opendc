@@ -122,7 +122,7 @@ private fun HostJSONSpec.toHostSpecs(
     val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cpu.coreCount)
     val units = List(cpu.count) { ProcessingUnit(unknownProcessingNode, globalCoreId++, cpu.coreSpeed.toMHz()) }
 
-    val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed.toMHz(), memory.memorySize.toMB().toLong())
+    val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed.toMHz(), memory.memorySize.toMiB().toLong())
     val machineModel =
         MachineModel(
             units,

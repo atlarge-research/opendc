@@ -44,11 +44,11 @@ public value class Frequency private constructor(
 
     public fun toHz(): Double = value
 
-    public fun toKHz(): Double = value / 1e-3
+    public fun toKHz(): Double = value / 1e3
 
-    public fun toMHz(): Double = value / 1e-6
+    public fun toMHz(): Double = value / 1e6
 
-    public fun toGHz(): Double = value / 1e-9
+    public fun toGHz(): Double = value / 1e9
 
     override fun toString(): String = fmtValue()
 
@@ -108,8 +108,8 @@ public value class Frequency private constructor(
          */
         internal object FrequencySerializer : UnitSerializer<Frequency>(
             ifNumber = {
-                LOG.warn("deserialization of number with no unit of measure, assuming it is in Hertz...")
-                ofHz(it.toDouble())
+                LOG.warn("deserialization of number with no unit of measure, assuming it is in MHz...")
+                ofMHz(it.toDouble())
             },
             serializerFun = { this.encodeString(it.toString()) },
             ifMatches(hzRegex) { ofHz(json.decNumFromStr(groupValues[1])) },

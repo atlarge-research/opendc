@@ -145,7 +145,7 @@ public value class DataSize private constructor(
             ifNumber = {
                 LOG.warn(
                     "deserialization of number with no unit of measure for unit 'DataSize', " +
-                        "assuming it is in Mib. Keep in mind that you can also specify the value as '$it Mib'",
+                        "assuming it is in MiB. Keep in mind that you can also specify the value as '$it MiB'",
                 )
                 ofMiB(it.toDouble())
             },
