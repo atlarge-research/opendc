@@ -39,25 +39,26 @@ import kotlin.text.RegexOption.IGNORE_CASE
 @JvmInline
 @Serializable(with = Energy.Companion.EnergySerializer::class)
 public value class Energy private constructor(
+    // In Joule
     override val value: Double,
 ) : Unit<Energy> {
     override fun new(value: Double): Energy = Energy(value.ifNeg0thenPos0())
 
-    public fun toWh(): Double = value
+    public fun toJoule(): Double = value
 
-    public fun toKWh(): Double = value / 1000
+    public fun toKJoule(): Double = value / 1000
 
-    public fun toJoule(): Double = value * 3600
+    public fun toWh(): Double = value / 3600
 
-    public fun toKJoule(): Double = value * 3600 / 1000
+    public fun toKWh(): Double = toWh() / 1000
 
     override fun toString(): String = fmtValue()
 
     override fun fmtValue(fmt: String): String =
         if (value >= 1000.0) {
-            "${toKWh().fmt(fmt)} KWh"
+            "${toJoule().fmt(fmt)} Joule"
         } else {
-            "${toWh().fmt(fmt)} Wh"
+            "${toKJoule().fmt(fmt)} KJoule"
         }
 
     public operator fun div(time: Time): Power = Power.ofWatts(toWh() / time.toHours())
@@ -69,25 +70,22 @@ public value class Energy private constructor(
         public val ZERO: Energy = Energy(.0)
 
         @JvmStatic
-        @JvmName("ofWh")
-        public fun ofWh(wh: Number): Energy = Energy(wh.toDouble())
-
-        @JvmStatic
-        @JvmName("ofKWh")
-        public fun ofKWh(kWh: Number): Energy = Energy(kWh.toDouble() * 1000.0)
-
-        @JvmStatic
         @JvmName("ofJoule")
-        public fun ofJoule(joule: Number): Energy = Energy(joule.toDouble() / 3600)
+        public fun ofJoule(joule: Number): Energy = Energy(joule.toDouble())
 
         @JvmStatic
         @JvmName("ofKJoule")
-        public fun ofKJoule(joule: Number): Energy = Energy(joule.toDouble() * 1000 / 3600)
+        public fun ofKJoule(kJoule: Number): Energy = ofJoule(kJoule.toDouble() * 1000)
 
-        private val whReg = Regex("\\s*([\\de.-]+)\\s*(?:w|watt|watts)-*(?:h|hour|hours)\\s*", IGNORE_CASE)
-        private val kWhReg = Regex("\\s*([\\de.-]+)\\s*(?:k|kilo)\\s*(?:w|watt|watts)-*(?:h|hour|hours)\\s*", IGNORE_CASE)
-        private val jouleReg = Regex("\\s*([\\de.-]+)\\s*(?:j|joule|joules)\\s*", IGNORE_CASE)
-        private val kJouleReg = Regex("\\s*([\\de.-]+)\\s*(?:k|kilo)\\s*(?:j|joule|joules)\\s*", IGNORE_CASE)
+        @JvmStatic
+        @JvmName("ofWh")
+        public fun ofWh(wh: Number): Energy = ofJoule(wh.toDouble() * 3600)
+
+        @JvmStatic
+        @JvmName("ofKWh")
+        public fun ofKWh(kWh: Number): Energy = ofWh(kWh.toDouble() * 1000.0)
+
+        private val JOULES = Regex("\\s*(?:j|(?:joule|Joule)(?:|s))")
 
         /**
          * Serializer for [Energy] value class. It needs to be a compile
@@ -111,10 +109,10 @@ public value class Energy private constructor(
                 ofJoule(it.toDouble())
             },
             serializerFun = { this.encodeString(it.toString()) },
-            ifMatches(whReg) { ofWh(json.decNumFromStr(groupValues[1])) },
-            ifMatches(kWhReg) { ofKWh(json.decNumFromStr(groupValues[1])) },
-            ifMatches(jouleReg) { ofJoule(json.decNumFromStr(groupValues[1])) },
-            ifMatches(kJouleReg) { ofKJoule(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$WATTS$PER$HOUR", IGNORE_CASE) { ofWh(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KILO$WATTS$PER$HOUR", IGNORE_CASE) { ofKWh(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$JOULES", IGNORE_CASE) { ofJoule(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KILO$JOULES", IGNORE_CASE) { ofKJoule(json.decNumFromStr(groupValues[1])) },
         )
     }
 }

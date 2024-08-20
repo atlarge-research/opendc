@@ -32,12 +32,12 @@ import java.time.Duration
 
 /**
  * Represents data-rate values.
- * @param[value] the store value in bits/s.
  * @see[Unit]
  */
 @JvmInline
 @Serializable(with = DataRate.Companion.DataRateSerializer::class)
 public value class DataRate private constructor(
+    // In bits/s.
     override val value: Double,
 ) : Unit<DataRate> {
     @InternalUse
@@ -71,18 +71,13 @@ public value class DataRate private constructor(
 
     override fun toString(): String = fmtValue()
 
-    public override fun fmtValue(fmt: String): String {
-        val bps100 = 100.0
-        val kibps100 = bps100 * 1024
-        val mibps100 = kibps100 * 1024
-
-        return when (value) {
-            in Double.MIN_VALUE..bps100 -> "${String.format(fmt, tobps())} bps"
-            in bps100..kibps100 -> "${String.format(fmt, toKibps())} Kibps"
-            in kibps100..mibps100 -> "${String.format(fmt, toMibps())} Mibps"
-            else -> "${String.format(fmt, toGibps())} Gibps"
+    public override fun fmtValue(fmt: String): String =
+        when (abs()) {
+            in ZERO..ofBps(100) -> "${String.format(fmt, tobps())} bps"
+            in ofbps(100)..ofKbps(100) -> "${String.format(fmt, toKbps())} Kbps"
+            in ofKbps(100)..ofMbps(100) -> "${String.format(fmt, toMbps())} Mbps"
+            else -> "${String.format(fmt, toGbps())} Gbps"
         }
-    }
 
     public operator fun times(time: Time): DataSize = DataSize.ofKiB(toKiBps() * time.toSec())
 
@@ -147,21 +142,6 @@ public value class DataRate private constructor(
         @JvmName("ofGBps")
         public fun ofGBps(gBps: Number): DataRate = ofGbps(gBps.toDouble() * 8)
 
-        private val bitsPsReg = Regex("\\s*([\\de.-]+)\\s*bps\\s*")
-        private val bytesPsReg = Regex("\\s*([\\de.-]+)\\s*Bps\\s*")
-        private val kibpsReg = Regex("\\s*([\\de.-]+)\\s*(?:Kibps|kibps)\\s*")
-        private val kbpsReg = Regex("\\s*([\\de.-]+)\\s*(?:Kbps|kbps)\\s*")
-        private val kiBpsReg = Regex("\\s*([\\de.-]+)\\s*(?:KiBps|kiBps)\\s*")
-        private val kBpsReg = Regex("\\s*([\\de.-]+)\\s*(?:KBps|kBps)\\s*")
-        private val mibpsReg = Regex("\\s*([\\de.-]+)\\s*(?:Mibps|mibps)\\s*")
-        private val mbpsReg = Regex("\\s*([\\de.-]+)\\s*(?:Mbps|mbps)\\s*")
-        private val miBpsReg = Regex("\\s*([\\de.-]+)\\s*(?:MiBps|miBps)\\s*")
-        private val mBpsReg = Regex("\\s*([\\de.-]+)\\s*(?:MBps|mBps)\\s*")
-        private val gibpsReg = Regex("\\s*([\\de.-]+)\\s*(?:Gibps|gibps)\\s*")
-        private val gbpsReg = Regex("\\s*([\\de.-]+)\\s*(?:Gbps|gbps)\\s*")
-        private val giBpsReg = Regex("\\s*([\\de.-]+)\\s*(?:GiBps|giBps)\\s*")
-        private val gBpsReg = Regex("\\s*([\\de.-]+)\\s*(?:GBps|gBps)\\s*")
-
         /**
          * Serializer for [DataRate] value class. It needs to be a compile
          * time constant in order to be used as serializer automatically,
@@ -184,20 +164,20 @@ public value class DataRate private constructor(
                 ofKibps(it.toDouble())
             },
             serializerFun = { this.encodeString(it.toString()) },
-            ifMatches(bitsPsReg) { ofbps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(bytesPsReg) { ofBps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(kibpsReg) { ofKibps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(kbpsReg) { ofKbps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(kiBpsReg) { ofKiBps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(kBpsReg) { ofKBps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(mibpsReg) { ofMibps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(mbpsReg) { ofMbps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(miBpsReg) { ofMiBps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(mBpsReg) { ofMBps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(gibpsReg) { ofGibps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(gbpsReg) { ofGbps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(giBpsReg) { ofGiBps(json.decNumFromStr(groupValues[1])) },
-            ifMatches(gBpsReg) { ofGBps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$BITS$PER$SEC") { ofbps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$BYTES$PER$SEC") { ofBps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KIBI$BITS$PER$SEC") { ofKibps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KILO$BITS$PER$SEC") { ofKbps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KIBI$BYTES$PER$SEC") { ofKiBps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KILO$BYTES$PER$SEC") { ofKBps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$MEBI$BITS$PER$SEC") { ofMibps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$MEGA$BITS$PER$SEC") { ofMbps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$MEBI$BYTES$PER$SEC") { ofMiBps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$MEGA$BYTES$PER$SEC") { ofMBps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$GIBI$BITS$PER$SEC") { ofGibps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$GIGA$BITS$PER$SEC") { ofGbps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$GIBI$BYTES$PER$SEC") { ofGiBps(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$GIGA$BYTES$PER$SEC") { ofGBps(json.decNumFromStr(groupValues[1])) },
         )
     }
 }

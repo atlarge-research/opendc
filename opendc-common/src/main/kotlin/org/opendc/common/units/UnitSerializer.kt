@@ -103,6 +103,18 @@ internal open class UnitSerializer<T : Unit<T>>(
         /**
          * @return a lambda that can be passed as condition to [UnitSerializer] constructor.
          */
+        fun <T> ifMatches(
+            regexStr: String,
+            vararg options: RegexOption = emptyArray(),
+            block: MatchResult.() -> T,
+        ): String.() -> T? =
+            {
+                Regex(regexStr, options.toSet()).matchEntire(this)?.block()
+            }
+
+        /**
+         * @return a lambda that can be passed as condition to [UnitSerializer] constructor.
+         */
         fun <T> ifNoExc(block: String.() -> T): String.() -> T? =
             {
                 try {
@@ -111,6 +123,50 @@ internal open class UnitSerializer<T : Unit<T>>(
                     null
                 }
             }
+
+        // Constants that are used by multiple serializers to build consistent
+        // (and easy to change) regexes for deserialization.
+        // There is no guarantee that they are used with `IGNORE_CASE` option.
+
+        @JvmStatic
+        protected val NUM_GROUP = Regex("\\s*([\\de.-]+)\\s*?")
+
+        @JvmStatic
+        protected val BITS = Regex("\\s*(?:b|(?:bit|Bit)(?:|s))\\s?")
+        @JvmStatic
+        protected val BYTES = Regex("\\s*(?:B|(?:byte|Byte)(?:|s))\\s?")
+        @JvmStatic
+        protected val NANO = Regex("\\s*(?:n|nano|Nano)\\s*?")
+        @JvmStatic
+        protected val MICRO = Regex("\\s*(?:micro|Micro)\\s*?")
+        @JvmStatic
+        protected val MILLI = Regex("\\s*(?:m|milli|Milli)\\s*?")
+        @JvmStatic
+        protected val KILO = Regex("\\s*(?:K|Kilo|k|kilo)\\s*?")
+        @JvmStatic
+        protected val KIBI = Regex("\\s*(?:Ki|Kibi|ki|kibi)\\s?")
+        @JvmStatic
+        protected val MEGA = Regex("\\s*(?:M|Mega|m|mega)\\s*?")
+        @JvmStatic
+        protected val MEBI = Regex("\\s*(?:Mi|Mebi|mi|mebi)\\s*?")
+        @JvmStatic
+        protected val GIGA = Regex("\\s*(?:G|Giga|g|giga)\\s*?")
+        @JvmStatic
+        protected val GIBI = Regex("\\s*(?:Gi|Gibi|gi|gibi)\\s*?")
+        @JvmStatic
+        protected val TERA = Regex("\\s*(?:T|Tera|t|tera)\\s*?")
+        @JvmStatic
+        protected val TEBI = Regex("\\s*(?:Ti|Tebi|ti|tebi)\\s*?")
+        @JvmStatic
+        protected val WATTS = Regex("\\s*(?:w|watts|W|Watts)\\s*?")
+        @JvmStatic
+        protected val PER = Regex("\\s*(?:p|per|/)\\s*?")
+        @JvmStatic
+        protected val SEC = Regex("\\s*(?:s|sec|Sec|second|Second)\\s*?")
+        @JvmStatic
+        protected val MIN = Regex("\\s*(?:m|min|Min|minute|Minute)\\s*?")
+        @JvmStatic
+        protected val HOUR = Regex("\\s*(?:h|hour|Hour)\\s*?")
     }
 }
 

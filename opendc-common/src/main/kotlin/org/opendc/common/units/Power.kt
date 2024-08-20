@@ -39,6 +39,7 @@ import kotlin.text.RegexOption.IGNORE_CASE
 @JvmInline
 @Serializable(with = Power.Companion.PowerSerializer::class)
 public value class Power private constructor(
+    // In Watts.
     override val value: Double,
 ) : Unit<Power> {
     @InternalUse
@@ -73,9 +74,6 @@ public value class Power private constructor(
         @JvmName("ofKWatts")
         public fun ofKWatts(kWatts: Number): Power = Power(kWatts.toDouble() * 1000.0)
 
-        private val wattsReg = Regex("\\s*([\\de.-]+)\\s*(?:w|watts)\\s*", IGNORE_CASE)
-        private val kWattsReg = Regex("\\s*([\\de.-]+)\\s*(?:kw|kwatts)\\s*", IGNORE_CASE)
-
         /**
          * Serializer for [Power] value class. It needs to be a compile
          * time constant in order to be used as serializer automatically,
@@ -97,8 +95,8 @@ public value class Power private constructor(
                 ofWatts(it.toDouble())
             },
             serializerFun = { this.encodeString(it.toString()) },
-            ifMatches(wattsReg) { ofWatts(json.decNumFromStr(groupValues[1])) },
-            ifMatches(kWattsReg) { ofKWatts(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$WATTS", IGNORE_CASE) { ofWatts(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KILO$WATTS", IGNORE_CASE) { ofKWatts(json.decNumFromStr(groupValues[1])) },
         )
     }
 }

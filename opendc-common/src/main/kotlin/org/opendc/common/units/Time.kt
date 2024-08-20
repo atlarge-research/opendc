@@ -33,12 +33,12 @@ import kotlin.text.RegexOption.IGNORE_CASE
 
 /**
  * Represents time values.
- * @property[value] the time value in milliseconds.
  * @see[Unit]
  */
 @JvmInline
 @Serializable(with = Time.Companion.TimeSerializer::class)
 public value class Time private constructor(
+    // In milliseconds.
     public override val value: Double,
 ) : Unit<Time> {
     @InternalUse
@@ -106,13 +106,6 @@ public value class Time private constructor(
         @JvmName("ofInstantFromEpoch")
         public fun ofInstantFromEpoch(instant: Instant): Time = ofMillis(instant.toEpochMilli())
 
-        private val nanoReg = Regex("\\s*([\\de.-]+)\\s*(?:ns|nanos|nanosec|nanoseconds)\\s*", IGNORE_CASE)
-        private val microReg = Regex("\\s*([\\de.-]+)\\s*(?:μs|micros|microsec|microseconds)\\s*", IGNORE_CASE)
-        private val msReg = Regex("\\s*([\\de.-]+)\\s*(?:ms|millis|millisec|milliseconds)\\s*", IGNORE_CASE)
-        private val secReg = Regex("\\s*([\\de.-]+)\\s*(?:sec|seconds)\\s*", IGNORE_CASE)
-        private val minReg = Regex("\\s*([\\de.-]+)\\s*(?:min|minutes)\\s*", IGNORE_CASE)
-        private val hoursReg = Regex("\\s*([\\de.-]+)\\s*(?:h|hours)\\s*", IGNORE_CASE)
-
         /**
          * Serializer for [Time] value class. It needs to be a compile
          * time constant in order to be used as serializer automatically,
@@ -136,12 +129,12 @@ public value class Time private constructor(
                 ofMillis(it.toDouble())
             },
             serializerFun = { this.encodeString(it.toString()) },
-            ifMatches(nanoReg) { ofNanos(json.decNumFromStr(groupValues[1])) },
-            ifMatches(microReg) { ofMicros(json.decNumFromStr(groupValues[1])) },
-            ifMatches(msReg) { ofMillis(json.decNumFromStr(groupValues[1])) },
-            ifMatches(secReg) { ofSec(json.decNumFromStr(groupValues[1])) },
-            ifMatches(minReg) { ofMin(json.decNumFromStr(groupValues[1])) },
-            ifMatches(hoursReg) { ofHours(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$NANO$SEC(?:|s)\\s*", IGNORE_CASE) { ofNanos(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$MICRO$SEC(?:|s)\\s*", IGNORE_CASE) { ofMicros(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$MILLI$SEC(?:|s)\\s*", IGNORE_CASE) { ofMillis(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$SEC(?:|s)\\s*", IGNORE_CASE) { ofSec(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$MIN(?:|s)\\s*") { ofMin(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$HOUR(?:|s)\\s*") { ofHours(json.decNumFromStr(groupValues[1])) },
             ifNoExc { ofDuration(Duration.parse(this)) },
             ifNoExc { ofInstantFromEpoch(Instant.parse(this)) },
         )
@@ -166,7 +159,7 @@ public value class Time private constructor(
                 ?: tryNoThrow { ofHours(this.toHours()) }
                 ?: throw RuntimeException(
                     "duration $this cannot be converted to ${Time::class.simpleName}, " +
-                        "duration value overflow Long representation of nanos, millis, seconds, minutes or hours",
+                        "duration value overflow Long representation of nanos, millis, seconds, minutes and hours",
                 )
         }
     }

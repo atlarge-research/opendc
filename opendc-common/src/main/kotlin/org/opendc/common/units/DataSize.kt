@@ -32,49 +32,66 @@ import java.time.Duration
 
 /**
  * Represents data size value.
- * @param[value] the stored value in Bytes.
  * @see[Unit]
  */
 @JvmInline
 @Serializable(with = DataSize.Companion.DataSerializer::class)
 public value class DataSize private constructor(
+    // In MiB.
     override val value: Double,
 ) : Unit<DataSize> {
     @InternalUse
     override fun new(value: Double): DataSize = DataSize(value)
 
-    public fun toBytes(): Double = value
+    public fun toBits(): Double = toKib() * 1024
 
-    public fun toKiB(): Double = value / 1024
+    public fun toBytes(): Double = toKiB() * 1024
 
-    public fun toKB(): Double = value / 1e3
+    // Metric prefixes.
 
-    public fun toMiB(): Double = toKiB() / 1024
+    public fun toKb(): Double = toBits() / 1e3
+
+    public fun toKB(): Double = toBytes() / 1e3
+
+    public fun toMb(): Double = toKb() / 1e3
 
     public fun toMB(): Double = toKB() / 1e3
 
-    public fun toGiB(): Double = toMiB() / 1024
+    public fun toGb(): Double = toMb() / 1e3
 
     public fun toGB(): Double = toMB() / 1e3
 
-    public fun toTiB(): Double = toGiB() / 1024
+    public fun toTb(): Double = toGb() / 1e3
 
     public fun toTB(): Double = toGB() / 1e3
 
+    // Binary prefixes.
+
+    public fun toKib(): Double = toMib() * 1024
+
+    public fun toKiB(): Double = toMiB() * 1024
+
+    public fun toMib(): Double = toMiB() * 8
+
+    public fun toMiB(): Double = value
+
+    public fun toGib(): Double = toMib() / 1024
+
+    public fun toGiB(): Double = toMiB() / 1024
+
+    public fun toTib(): Double = toGib() / 1024
+
+    public fun toTiB(): Double = toGiB() / 1024
+
     override fun toString(): String = fmtValue()
 
-    override fun fmtValue(fmt: String): String {
-        val bytes100 = 1.0 / 1024 * 100
-        val kB100 = 100.0
-        val mB100 = 100.0 * 1024
-
-        return when (value) {
-            in (Double.MIN_VALUE..bytes100) -> "${toBytes().fmt(fmt)} Bytes"
-            in (bytes100..kB100) -> "${toKiB().fmt(fmt)} KiB"
-            in (kB100..mB100) -> "${toMiB().fmt(fmt)} MiB"
+    override fun fmtValue(fmt: String): String =
+        when (abs()) {
+            in ZERO..ofBytes(100) -> "${toBytes().fmt(fmt)} Bytes"
+            in ofBytes(100)..ofKiB(100) -> "${toKiB().fmt(fmt)} KiB"
+            in ofKiB(100)..ofMiB(100) -> "${toMiB().fmt(fmt)} MiB"
             else -> "${toGiB().fmt(fmt)} GiB"
         }
-    }
 
     public operator fun div(time: Time): DataRate = DataRate.ofKBps(this.toKiB() / time.toSec())
 
@@ -84,50 +101,80 @@ public value class DataSize private constructor(
         @JvmStatic public val ZERO: DataSize = DataSize(.0)
 
         @JvmStatic
-        @JvmName("ofBytes")
-        public fun ofBytes(bytes: Number): DataSize = DataSize(bytes.toDouble())
+        @JvmName("ofBits")
+        public fun ofBits(bits: Number): DataSize = ofKib(bits.toDouble() / 1024)
 
         @JvmStatic
-        @JvmName("ofKiB")
-        public fun ofKiB(kiB: Number): DataSize = ofBytes(kiB.toDouble() * 1024)
+        @JvmName("ofBytes")
+        public fun ofBytes(bytes: Number): DataSize = ofKiB(bytes.toDouble() / 1024)
+
+        // Metric prefixes.
+
+        @JvmStatic
+        @JvmName("ofKb")
+        public fun ofKb(kb: Number): DataSize = ofBits(kb.toDouble() * 1e3)
 
         @JvmStatic
         @JvmName("ofKB")
         public fun ofKB(kB: Number): DataSize = ofBytes(kB.toDouble() * 1e3)
 
         @JvmStatic
-        @JvmName("ofMiB")
-        public fun ofMiB(miB: Number): DataSize = ofKiB(miB.toDouble() * 1024)
+        @JvmName("ofMb")
+        public fun ofMb(mb: Number): DataSize = ofKb(mb.toDouble() * 1e3)
 
         @JvmStatic
         @JvmName("ofMB")
         public fun ofMB(mB: Number): DataSize = ofKB(mB.toDouble() * 1e3)
 
         @JvmStatic
-        @JvmName("ofGiB")
-        public fun ofGiB(giB: Number): DataSize = ofMiB(giB.toDouble() * 1024)
+        @JvmName("ofGb")
+        public fun ofGb(gb: Number): DataSize = ofMb(gb.toDouble() * 1e3)
 
         @JvmStatic
         @JvmName("ofGB")
         public fun ofGB(gB: Number): DataSize = ofMB(gB.toDouble() * 1e3)
 
         @JvmStatic
-        @JvmName("ofTiB")
-        public fun ofTiB(tiB: Number): DataSize = ofGiB(tiB.toDouble() * 1024)
+        @JvmName("ofTb")
+        public fun ofTb(tb: Number): DataSize = ofGb(tb.toDouble() * 1e3)
 
         @JvmStatic
         @JvmName("ofTB")
         public fun ofTB(tB: Number): DataSize = ofGB(tB.toDouble() * 1e3)
 
-        private val bytesReg = Regex("\\s*([\\de.-]+)\\s*(?:B|Bytes)\\s*")
-        private val kiBReg = Regex("\\s*([\\de.-]+)\\s*(?:KiB|KiBytes)\\s*")
-        private val kBReg = Regex("\\s*([\\de.-]+)\\s*(?:KB|KBytes)\\s*")
-        private val miBReg = Regex("\\s*([\\de.-]+)\\s*(?:MiB|MiBytes)\\s*")
-        private val mBReg = Regex("\\s*([\\de.-]+)\\s*(?:MB|MBytes)\\s*")
-        private val giBReg = Regex("\\s*([\\de.-]+)\\s*(?:GiB|GiBytes)\\s*")
-        private val gBReg = Regex("\\s*([\\de.-]+)\\s*(?:GB|GBytes)\\s*")
-        private val tiBReg = Regex("\\s*([\\de.-]+)\\s*(?:TiB|TiBytes)\\s*")
-        private val tBReg = Regex("\\s*([\\de.-]+)\\s*(?:TB|TBytes)\\s*")
+        // Binary prefixes.
+
+        @JvmStatic
+        @JvmName("ofKib")
+        public fun ofKib(kib: Number): DataSize = ofMib(kib.toDouble() / 1024)
+
+        @JvmStatic
+        @JvmName("ofKiB")
+        public fun ofKiB(kiB: Number): DataSize = ofMiB(kiB.toDouble() / 1024)
+
+        @JvmStatic
+        @JvmName("ofMib")
+        public fun ofMib(mib: Number): DataSize = ofMiB(mib.toDouble() / 8)
+
+        @JvmStatic
+        @JvmName("ofMiB")
+        public fun ofMiB(miB: Number): DataSize = DataSize(miB.toDouble())
+
+        @JvmStatic
+        @JvmName("ofGib")
+        public fun ofGib(gib: Number): DataSize = ofMib(gib.toDouble() * 1024)
+
+        @JvmStatic
+        @JvmName("ofGiB")
+        public fun ofGiB(giB: Number): DataSize = ofMiB(giB.toDouble() * 1024)
+
+        @JvmStatic
+        @JvmName("ofTib")
+        public fun ofTib(tib: Number): DataSize = ofGib(tib.toDouble() * 1024)
+
+        @JvmStatic
+        @JvmName("ofTiB")
+        public fun ofTiB(tiB: Number): DataSize = ofGiB(tiB.toDouble() * 1024)
 
         /**
          * Serializer for [DataSize] value class. It needs to be a compile
@@ -150,15 +197,24 @@ public value class DataSize private constructor(
                 ofMiB(it.toDouble())
             },
             serializerFun = { this.encodeString(it.toString()) },
-            ifMatches(bytesReg) { ofBytes(json.decNumFromStr(groupValues[1])) },
-            ifMatches(kiBReg) { ofKiB(json.decNumFromStr(groupValues[1])) },
-            ifMatches(kBReg) { ofKB(json.decNumFromStr(groupValues[1])) },
-            ifMatches(miBReg) { ofMiB(json.decNumFromStr(groupValues[1])) },
-            ifMatches(mBReg) { ofMB(json.decNumFromStr(groupValues[1])) },
-            ifMatches(giBReg) { ofGiB(json.decNumFromStr(groupValues[1])) },
-            ifMatches(gBReg) { ofGB(json.decNumFromStr(groupValues[1])) },
-            ifMatches(tiBReg) { ofTiB(json.decNumFromStr(groupValues[1])) },
-            ifMatches(tBReg) { ofTB(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$BITS") { ofBits(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$BYTES") { ofBytes(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KIBI$BITS") { ofKib(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KILO$BITS") { ofKb(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KIBI$BYTES") { ofKiB(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KILO$BYTES") { ofKB(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$MEBI$BITS") { ofMib(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$MEGA$BITS") { ofMb(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$MEBI$BYTES") { ofMiB(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$MEGA$BYTES") { ofMB(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$GIBI$BITS") { ofGib(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$GIGA$BITS") { ofGb(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$GIBI$BYTES") { ofGiB(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$GIGA$BYTES") { ofGB(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$TEBI$BITS") { ofTib(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$TERA$BITS") { ofTb(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$TEBI$BYTES") { ofTiB(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$TERA$BYTES") { ofTB(json.decNumFromStr(groupValues[1])) },
         )
     }
 }

@@ -230,6 +230,11 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
     public infix fun min(other: T): T = if (this.value < other.value) this as T else other
 
     /**
+     * @return the absolute value of *this*.
+     */
+    public fun abs(): T = new(kotlin.math.abs(value))
+
+    /**
      * @return *this* approximated to [to] if within `0 - epsilon` and `0 + epsilon`.
      */
     @Suppress("UNCHECKED_CAST")

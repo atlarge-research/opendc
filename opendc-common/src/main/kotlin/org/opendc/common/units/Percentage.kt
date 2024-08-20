@@ -121,7 +121,7 @@ public sealed interface Percentage : Unit<Percentage> {
          */
         public infix fun <T : Unit<T>> T.boundedPercentageOf(other: T): BoundedPercentage = BoundedPercentage(this.value / other.value)
 
-        private val percReg = Regex("\\s*([\\de.-]+)\\s*(?:percentage|%|perc)\\s*", IGNORE_CASE)
+        private val PERCENTAGE = Regex("\\s*(?:percentage|Percentage|%)\\s*?")
 
         /**
          * Serializer for [Percentage] value class. It needs to be a compile
@@ -147,7 +147,7 @@ public sealed interface Percentage : Unit<Percentage> {
                 ofRatio(it.toDouble())
             },
             serializerFun = { this.encodeString(it.toString()) },
-            ifMatches(percReg) { ofPercentage(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$PERCENTAGE", IGNORE_CASE) { ofPercentage(json.decNumFromStr(groupValues[1])) },
         )
     }
 }
