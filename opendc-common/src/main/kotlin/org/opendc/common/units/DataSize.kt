@@ -192,9 +192,9 @@ public value class DataSize private constructor(
             ifNumber = {
                 LOG.warn(
                     "deserialization of number with no unit of measure for unit 'DataSize', " +
-                        "assuming it is in MiB. Keep in mind that you can also specify the value as '$it MB'",
+                        "assuming it is in MiB. Keep in mind that you can also specify the value as '$it MiB'",
                 )
-                ofMB(it.toDouble())
+                ofMiB(it.toDouble())
             },
             serializerFun = { this.encodeString(it.toString()) },
             ifMatches("$NUM_GROUP$BITS") { ofBits(json.decNumFromStr(groupValues[1])) },

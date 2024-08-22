@@ -314,7 +314,6 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
 
         public operator fun Number.div(duration: Duration): Frequency = this / duration.toTime()
 
-
         // Defined here so that they can overload the same method name, instead of having a different name forEach unit.
         // You can not overload `sumOf` and using that name results in not being able to use the overloads for unit and for number in the same file.
 

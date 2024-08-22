@@ -133,38 +133,55 @@ internal open class UnitSerializer<T : Unit<T>>(
 
         @JvmStatic
         protected val BITS = Regex("\\s*(?:b|(?:bit|Bit)(?:|s))\\s?")
+
         @JvmStatic
         protected val BYTES = Regex("\\s*(?:B|(?:byte|Byte)(?:|s))\\s?")
+
         @JvmStatic
         protected val NANO = Regex("\\s*(?:n|nano|Nano)\\s*?")
+
         @JvmStatic
         protected val MICRO = Regex("\\s*(?:micro|Micro)\\s*?")
+
         @JvmStatic
         protected val MILLI = Regex("\\s*(?:m|milli|Milli)\\s*?")
+
         @JvmStatic
         protected val KILO = Regex("\\s*(?:K|Kilo|k|kilo)\\s*?")
+
         @JvmStatic
         protected val KIBI = Regex("\\s*(?:Ki|Kibi|ki|kibi)\\s?")
+
         @JvmStatic
         protected val MEGA = Regex("\\s*(?:M|Mega|m|mega)\\s*?")
+
         @JvmStatic
         protected val MEBI = Regex("\\s*(?:Mi|Mebi|mi|mebi)\\s*?")
+
         @JvmStatic
         protected val GIGA = Regex("\\s*(?:G|Giga|g|giga)\\s*?")
+
         @JvmStatic
         protected val GIBI = Regex("\\s*(?:Gi|Gibi|gi|gibi)\\s*?")
+
         @JvmStatic
         protected val TERA = Regex("\\s*(?:T|Tera|t|tera)\\s*?")
+
         @JvmStatic
         protected val TEBI = Regex("\\s*(?:Ti|Tebi|ti|tebi)\\s*?")
+
         @JvmStatic
         protected val WATTS = Regex("\\s*(?:w|watts|W|Watts)\\s*?")
+
         @JvmStatic
         protected val PER = Regex("\\s*(?:p|per|/)\\s*?")
+
         @JvmStatic
         protected val SEC = Regex("\\s*(?:s|sec|Sec|second|Second)\\s*?")
+
         @JvmStatic
         protected val MIN = Regex("\\s*(?:m|min|Min|minute|Minute)\\s*?")
+
         @JvmStatic
         protected val HOUR = Regex("\\s*(?:h|hour|Hour)\\s*?")
     }
