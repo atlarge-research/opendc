@@ -120,16 +120,17 @@ private fun HostJSONSpec.toHostSpecs(
     random: RandomGenerator,
 ): HostSpec {
     val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cpu.coreCount)
-    val units = List(cpu.count) { ProcessingUnit(unknownProcessingNode, globalCoreId++, cpu.coreSpeed) }
+    val units = List(cpu.count) { ProcessingUnit(unknownProcessingNode, globalCoreId++, cpu.coreSpeed.toMHz()) }
 
-    val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed, memory.memorySize)
+    val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed.toMHz(), memory.memorySize.toMiB().toLong())
     val machineModel =
         MachineModel(
             units,
             listOf(unknownMemoryUnit),
         )
 
-    val powerModel = getPowerModel(powerModel.modelType, powerModel.power, powerModel.maxPower, powerModel.idlePower)
+    val powerModel =
+        getPowerModel(powerModel.modelType, powerModel.power.toWatts(), powerModel.maxPower.toWatts(), powerModel.idlePower.toWatts())
 
     var hostName: String
     if (name == null) {

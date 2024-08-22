@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,9 @@
  * SOFTWARE.
  */
 
-group = "org.opendc"
-description = "Common functionality used across OpenDC modules"
+package org.opendc.common.annotations
 
-// Build configuration
-plugins {
-    `kotlin-library-conventions`
-    kotlin("plugin.serialization") version "1.9.22"
-}
-
-val serializationVersion = "1.6.0"
-
-dependencies {
-    api(libs.kotlinx.coroutines)
-    implementation(libs.kotlin.logging)
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-}
+@RequiresOptIn(message = "This symbol is for internal use only")
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.CONSTRUCTOR)
+public annotation class InternalUse
