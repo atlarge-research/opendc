@@ -25,6 +25,7 @@ package org.opendc.experiments.base.scenario
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import org.opendc.compute.telemetry.export.parquet.ComputeExportConfig
 import org.opendc.experiments.base.scenario.specs.ScenariosSpec
 import java.io.File
 import java.io.InputStream
@@ -35,25 +36,19 @@ public class ScenarioReader {
 //    private val jsonReader = Json { serializersModule = failureModule }
     private val jsonReader = Json
 
-    @OptIn(ExperimentalSerializationApi::class)
-    public fun read(file: File): ScenariosSpec {
-        val input = file.inputStream()
+    public fun read(file: File): ScenariosSpec = read(file.inputStream())
 
-        return jsonReader.decodeFromStream<ScenariosSpec>(input)
-    }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    public fun read(path: Path): ScenariosSpec {
-        val input = path.inputStream()
-
-        return jsonReader.decodeFromStream<ScenariosSpec>(input)
-    }
+    public fun read(path: Path): ScenariosSpec = read(path.inputStream())
 
     /**
      * Read the specified [input].
      */
     @OptIn(ExperimentalSerializationApi::class)
     public fun read(input: InputStream): ScenariosSpec {
+        // Loads the default parquet output fields,
+        // so that they can be deserialized
+        ComputeExportConfig.loadDfltColumns()
+
         return jsonReader.decodeFromStream<ScenariosSpec>(input)
     }
 }

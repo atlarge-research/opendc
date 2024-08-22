@@ -22,12 +22,14 @@
 
 package org.opendc.compute.telemetry.table
 
+import org.opendc.compute.telemetry.export.parquet.DfltServerExportColumns
+import org.opendc.trace.util.parquet.exporter.Exportable
 import java.time.Instant
 
 /**
  * An interface that is used to read a row of a server trace entry.
  */
-public interface ServerTableReader {
+public interface ServerTableReader : Exportable {
     public fun copy(): ServerTableReader
 
     public fun setValues(table: ServerTableReader)
@@ -102,3 +104,6 @@ public interface ServerTableReader {
      */
     public val cpuLostTime: Long
 }
+
+// Loads the default export fields for deserialization whenever this file is loaded.
+private val _ignore = DfltServerExportColumns

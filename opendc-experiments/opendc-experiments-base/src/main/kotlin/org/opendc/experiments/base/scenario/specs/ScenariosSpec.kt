@@ -23,6 +23,9 @@
 package org.opendc.experiments.base.scenario.specs
 
 import kotlinx.serialization.Serializable
+import org.opendc.common.logger.infoNewLine
+import org.opendc.common.logger.logger
+import org.opendc.compute.telemetry.export.parquet.ComputeExportConfig
 import java.util.UUID
 
 @Serializable
@@ -30,6 +33,7 @@ public data class ScenarioSpec(
     var id: Int = -1,
     var name: String = "",
     val outputFolder: String = "output",
+    val computeExportConfig: ComputeExportConfig,
     val topology: ScenarioTopologySpec,
     val workload: WorkloadSpec,
     val allocationPolicy: AllocationPolicySpec = AllocationPolicySpec(),
@@ -50,6 +54,8 @@ public data class ScenarioSpec(
  * @property outputFolder
  * @property initialSeed
  * @property runs
+ * @property computeExportConfig configures which parquet columns are to
+ * be included in the output files.
  */
 @Serializable
 public data class ScenariosSpec(
@@ -65,6 +71,7 @@ public data class ScenariosSpec(
     val failureModels: Set<FailureModelSpec?> = setOf(null),
     val checkpointModels: Set<CheckpointModelSpec?> = setOf(null),
     val carbonTracePaths: Set<String?> = setOf(null),
+    val computeExportConfig: ComputeExportConfig = ComputeExportConfig.ALL_COLUMNS,
 ) {
     init {
         require(runs > 0) { "The number of runs should always be positive" }
@@ -75,6 +82,8 @@ public data class ScenariosSpec(
             name = "unnamed-simulation-${UUID.randomUUID().toString().substring(0, 4)}"
 //                "workload=${workloads[0].name}_topology=${topologies[0].name}_allocationPolicy=${allocationPolicies[0].name}"
         }
+
+        LOG.infoNewLine(computeExportConfig.fmt())
     }
 
     public fun getCartesian(): Sequence<ScenarioSpec> {
@@ -101,6 +110,7 @@ public data class ScenariosSpec(
                         id,
                         name,
                         outputFolder,
+                        computeExportConfig = computeExportConfig,
                         topologyList[(i / topologyDiv) % topologyList.size],
                         workloadList[(i / workloadDiv) % workloadList.size],
                         allocationPolicyList[(i / allocationDiv) % allocationPolicyList.size],
@@ -112,5 +122,9 @@ public data class ScenariosSpec(
                 )
             }
         }
+    }
+
+    internal companion object {
+        private val LOG by logger()
     }
 }

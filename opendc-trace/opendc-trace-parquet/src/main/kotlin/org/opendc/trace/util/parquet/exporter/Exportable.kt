@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.telemetry.export.parquet
-
-import org.apache.parquet.io.api.Binary
-import java.nio.ByteBuffer
-import java.util.UUID
+package org.opendc.trace.util.parquet.exporter
 
 /**
- * Helper method to convert a [UUID] into a [Binary] object consumed by Parquet.
+ * Classes that implement this interface can be exported
+ * as records in a parquet file through an [Exporter].
  */
-internal fun UUID.toBinary(): Binary {
-    val bb = ByteBuffer.allocate(16)
-    bb.putLong(mostSignificantBits)
-    bb.putLong(leastSignificantBits)
-    bb.rewind()
-    return Binary.fromConstantByteBuffer(bb)
+public interface Exportable {
+    public companion object {
+        public inline fun <reified T : Exportable> getAllLoadedColumns(): List<ExportColumn<T>> {
+            return ExportColumn.getAllLoadedColumns()
+        }
+    }
 }

@@ -36,5 +36,9 @@ dependencies {
     implementation(libs.kotlin.logging)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
 
+    api(libs.log4j.core)
+    api(libs.log4j.slf4j)
+    api(libs.kotlin.logging)
+
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
 }
