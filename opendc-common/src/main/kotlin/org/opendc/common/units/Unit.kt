@@ -34,6 +34,7 @@ import org.opendc.common.utils.approxLargerOrEq
 import org.opendc.common.utils.approxSmaller
 import org.opendc.common.utils.approxSmallerOrEq
 import java.time.Duration
+import kotlin.experimental.ExperimentalTypeInference
 
 /**
  * Value classes can extend this interface to represent
@@ -312,5 +313,75 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
         public operator fun Number.div(time: Time): Frequency = Frequency.ofHz(this.toDouble() / time.toSec())
 
         public operator fun Number.div(duration: Duration): Frequency = this / duration.toTime()
+
+
+        // Defined here so that they can overload the same method name, instead of having a different name forEach unit.
+        // You can not overload `sumOf` and using that name results in not being able to use the overloads for unit and for number in the same file.
+
+        // A reified version that does not need overloads can be also be defined, with a switch statement on the reified unit type for the base value.
+        // Then, if a unit is not included in the switch, a runtime error occurs, not compile time.
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("sumOfDataRate")
+        public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> DataRate): DataRate {
+            var sum: DataRate = DataRate.ZERO
+            forEach { sum += selector(it) }
+            return sum
+        }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("sumOfDataSize")
+        public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> DataSize): DataSize {
+            var sum: DataSize = DataSize.ZERO
+            forEach { sum += selector(it) }
+            return sum
+        }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("sumOfEnergy")
+        public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> Energy): Energy {
+            var sum: Energy = Energy.ZERO
+            forEach { sum += selector(it) }
+            return sum
+        }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("sumOfPower")
+        public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> Power): Power {
+            var sum: Power = Power.ZERO
+            forEach { sum += selector(it) }
+            return sum
+        }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("sumOfTime")
+        public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> Time): Time {
+            var sum: Time = Time.ZERO
+            forEach { sum += selector(it) }
+            return sum
+        }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("sumOfFrequency")
+        public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> Frequency): Frequency {
+            var sum: Frequency = Frequency.ZERO
+            forEach { sum += selector(it) }
+            return sum
+        }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("sumOfPercentage")
+        public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> Percentage): Percentage {
+            var sum: Percentage = Percentage.ZERO
+            forEach { sum += selector(it) }
+            return sum
+        }
     }
 }
