@@ -26,7 +26,7 @@ package org.opendc.common.units
 
 import kotlinx.serialization.Serializable
 import org.opendc.common.annotations.InternalUse
-import org.opendc.common.units.Time.Companion.toTime
+import org.opendc.common.units.TimeDelta.Companion.toTimeDelta
 import org.opendc.common.utils.ifNeg0thenPos0
 import java.time.Duration
 
@@ -79,9 +79,9 @@ public value class DataRate private constructor(
             else -> "${String.format(fmt, toGbps())} Gbps"
         }
 
-    public operator fun times(time: Time): DataSize = DataSize.ofKiB(toKiBps() * time.toSec())
+    public operator fun times(timeDelta: TimeDelta): DataSize = DataSize.ofKiB(toKiBps() * timeDelta.toSec())
 
-    public operator fun times(duration: Duration): DataSize = this * duration.toTime()
+    public operator fun times(duration: Duration): DataSize = this * duration.toTimeDelta()
 
     public companion object {
         @JvmStatic public val ZERO: DataRate = DataRate(.0)

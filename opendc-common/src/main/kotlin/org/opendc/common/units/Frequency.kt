@@ -26,7 +26,7 @@ package org.opendc.common.units
 
 import kotlinx.serialization.Serializable
 import org.opendc.common.annotations.InternalUse
-import org.opendc.common.units.Time.Companion.toTime
+import org.opendc.common.units.TimeDelta.Companion.toTimeDelta
 import org.opendc.common.utils.fmt
 import org.opendc.common.utils.ifNeg0thenPos0
 import java.time.Duration
@@ -62,9 +62,9 @@ public value class Frequency private constructor(
             else -> "${toGHz().fmt(fmt)} GHz"
         }
 
-    public operator fun times(time: Time): Double = toHz() * time.toSec()
+    public operator fun times(timeDelta: TimeDelta): Double = toHz() * timeDelta.toSec()
 
-    public operator fun times(duration: Duration): Double = toHz() * duration.toTime().toSec()
+    public operator fun times(duration: Duration): Double = toHz() * duration.toTimeDelta().toSec()
 
     public companion object {
         @JvmStatic public val ZERO: Frequency = Frequency(.0)

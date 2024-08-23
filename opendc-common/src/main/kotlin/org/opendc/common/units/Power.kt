@@ -26,7 +26,7 @@ package org.opendc.common.units
 
 import kotlinx.serialization.Serializable
 import org.opendc.common.annotations.InternalUse
-import org.opendc.common.units.Time.Companion.toTime
+import org.opendc.common.units.TimeDelta.Companion.toTimeDelta
 import org.opendc.common.utils.fmt
 import org.opendc.common.utils.ifNeg0thenPos0
 import java.time.Duration
@@ -58,9 +58,9 @@ public value class Power private constructor(
             "${toWatts().fmt(fmt)} Watts"
         }
 
-    public operator fun times(time: Time): Energy = Energy.ofWh(toWatts() * time.toHours())
+    public operator fun times(timeDelta: TimeDelta): Energy = Energy.ofWh(toWatts() * timeDelta.toHours())
 
-    public operator fun times(duration: Duration): Energy = this * duration.toTime()
+    public operator fun times(duration: Duration): Energy = this * duration.toTimeDelta()
 
     public companion object {
         @JvmStatic

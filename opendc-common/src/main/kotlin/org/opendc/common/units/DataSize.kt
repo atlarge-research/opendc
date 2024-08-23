@@ -26,7 +26,7 @@ package org.opendc.common.units
 
 import kotlinx.serialization.Serializable
 import org.opendc.common.annotations.InternalUse
-import org.opendc.common.units.Time.Companion.toTime
+import org.opendc.common.units.TimeDelta.Companion.toTimeDelta
 import org.opendc.common.utils.fmt
 import java.time.Duration
 
@@ -93,9 +93,9 @@ public value class DataSize private constructor(
             else -> "${toGiB().fmt(fmt)} GiB"
         }
 
-    public operator fun div(time: Time): DataRate = DataRate.ofKBps(this.toKiB() / time.toSec())
+    public operator fun div(timeDelta: TimeDelta): DataRate = DataRate.ofKBps(this.toKiB() / timeDelta.toSec())
 
-    public operator fun div(duration: Duration): DataRate = this / duration.toTime()
+    public operator fun div(duration: Duration): DataRate = this / duration.toTimeDelta()
 
     public companion object {
         @JvmStatic public val ZERO: DataSize = DataSize(.0)
