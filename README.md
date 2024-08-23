@@ -17,8 +17,8 @@ This repository is the home of the OpenDC project, a free and open-source platfo
 
 ## Latest Release
 
-- General Availability (GA): [OpenDC v2.0](https://github.com/atlarge-research/opendc/releases/tag/v2.0) (May 10, 2021)
-- Preview (Release Candidate): [OpenDC v3.0-rc1](https://github.com/atlarge-research/opendc/releases/tag/v3.0-rc1) (Jan 27, 2023)
+All releases of OpenDC can be found [here](https://github.com/atlarge-research/opendc/releases).
+The latest release will be marked _latest_.
 
 ## Documentation
 
