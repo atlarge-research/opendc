@@ -32,6 +32,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.DOUBLE
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
+import org.apache.parquet.schema.Type
 import org.apache.parquet.schema.Types
 import org.opendc.trace.util.parquet.ParquetDataWriter
 import java.io.File
@@ -122,7 +123,13 @@ public class Exporter<T : Exportable>
                                 val valueToAdd: Any =
                                     column.getValue(
                                         record,
-                                    ) ?: return@forEachIndexed // Maybe add explicit check for optional fields
+                                    ) ?: let {
+                                        if (column.field.isRepetition(Type.Repetition.OPTIONAL)) {
+                                            return@forEachIndexed
+                                        } else {
+                                            throw RuntimeException("trying to insert null value in required column $column")
+                                        }
+                                    }
 
                                 startField(column.name, idx)
                                 when (column.primitiveTypeName) {
