@@ -30,7 +30,7 @@ import java.time.Instant;
  *
  * @param uptime The cumulative uptime of the host since last boot (in ms).
  * @param downtime The cumulative downtime of the host since last boot (in ms).
- * @param bootTime The time at which the server started.
+ * @param bootTime The time at which the task started.
  * @param powerDraw Instantaneous power draw of the system (in W).
  * @param energyUsage The cumulative energy usage of the system (in J).
  * @param guestsTerminated The number of guests that are in a terminated state.

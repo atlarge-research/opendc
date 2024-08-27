@@ -131,11 +131,11 @@ public class OdcVmTraceFormat : TraceFormat {
     ): TableReader {
         return when (table) {
             TABLE_RESOURCES -> {
-                val reader = LocalParquetReader(path.resolve("meta.parquet"), ResourceReadSupport(projection))
+                val reader = LocalParquetReader(path.resolve("tasks.parquet"), ResourceReadSupport(projection))
                 OdcVmResourceTableReader(reader)
             }
             TABLE_RESOURCE_STATES -> {
-                val reader = LocalParquetReader(path.resolve("trace.parquet"), ResourceStateReadSupport(projection))
+                val reader = LocalParquetReader(path.resolve("fragments.parquet"), ResourceStateReadSupport(projection))
                 OdcVmResourceStateTableReader(reader)
             }
             TABLE_INTERFERENCE_GROUPS -> {
@@ -160,7 +160,7 @@ public class OdcVmTraceFormat : TraceFormat {
         return when (table) {
             TABLE_RESOURCES -> {
                 val writer =
-                    LocalParquetWriter.builder(path.resolve("meta.parquet"), ResourceWriteSupport())
+                    LocalParquetWriter.builder(path.resolve("tasks.parquet"), ResourceWriteSupport())
                         .withCompressionCodec(CompressionCodecName.ZSTD)
                         .withPageWriteChecksumEnabled(true)
                         .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
@@ -170,7 +170,7 @@ public class OdcVmTraceFormat : TraceFormat {
             }
             TABLE_RESOURCE_STATES -> {
                 val writer =
-                    LocalParquetWriter.builder(path.resolve("trace.parquet"), ResourceStateWriteSupport())
+                    LocalParquetWriter.builder(path.resolve("fragments.parquet"), ResourceStateWriteSupport())
                         .withCompressionCodec(CompressionCodecName.ZSTD)
                         .withDictionaryEncoding("id", true)
                         .withBloomFilterEnabled("id", true)

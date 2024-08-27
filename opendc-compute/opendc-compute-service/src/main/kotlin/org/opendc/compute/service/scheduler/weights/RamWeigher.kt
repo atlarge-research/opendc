@@ -22,7 +22,7 @@
 
 package org.opendc.compute.service.scheduler.weights
 
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.service.HostView
 
 /**
@@ -34,7 +34,7 @@ import org.opendc.compute.service.HostView
 public class RamWeigher(override val multiplier: Double = 1.0) : HostWeigher {
     override fun getWeight(
         host: HostView,
-        server: Server,
+        task: Task,
     ): Double {
         return host.availableMemory.toDouble()
     }

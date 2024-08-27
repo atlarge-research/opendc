@@ -22,20 +22,20 @@
 
 package org.opendc.compute.service.scheduler.filters
 
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.service.HostView
 
 /**
- * A [HostFilter] that filters hosts based on the memory requirements of a [Server] and the RAM available on the host.
+ * A [HostFilter] that filters hosts based on the memory requirements of a [Task] and the RAM available on the host.
  *
  * @param allocationRatio Virtual RAM to physical RAM allocation ratio.
  */
 public class RamFilter(private val allocationRatio: Double) : HostFilter {
     override fun test(
         host: HostView,
-        server: Server,
+        task: Task,
     ): Boolean {
-        val requestedMemory = server.flavor.memorySize
+        val requestedMemory = task.flavor.memorySize
         val availableMemory = host.availableMemory
         val memoryCapacity = host.host.model.memoryCapacity
 

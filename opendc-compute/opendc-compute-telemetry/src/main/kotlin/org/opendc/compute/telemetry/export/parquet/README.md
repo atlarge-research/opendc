@@ -1,8 +1,8 @@
 ### Summary
-Added output configuration, that can be defined in the scenario `.json` file, that allows to select which columns are to be included in the raw oputput files `host.parquet`, `server.parquet` and `service.parquet`.
+Added output configuration, that can be defined in the scenario `.json` file, that allows to select which columns are to be included in the raw oputput files `host.parquet`, `task.parquet` and `service.parquet`.
 
 ### Columns
-The 'default' columns are defined in `DfltHostExportcolumns`, `DfltServerExportColumns` and `DfltServiceExportColumns`. Any number of additional columns can be definied anywhere (`ExportColumn<Exportable>`) and it is going to be deserializable as long as it is loaded by the jvm.
+The 'default' columns are defined in `DfltHostExportcolumns`, `DfltTaskExportColumns` and `DfltServiceExportColumns`. Any number of additional columns can be definied anywhere (`ExportColumn<Exportable>`) and it is going to be deserializable as long as it is loaded by the jvm.
 
 ### Deserialization
 Each `ExportColumn` has a `Regex`, used for deserialization. If no custom regex is provided, the default one is used. The default regex matches the column name in case-insensitive manner, either with `_` as in the name or with ` ` (blank space).
@@ -21,7 +21,7 @@ Each `ExportColumn` has a `Regex`, used for deserialization. If no custom regex 
 		"type": "object",
 		"properties": {
 			"hostExportColumns": { "type": "array" }, 
-			"serverExportColumns": { "type": "array" } ,
+			"taskExportColumns": { "type": "array" } ,
 			"serviceExportColumns": { "type": "array" } ,
 			"required": [ /* NONE REQUIRED */ ]
 		}
@@ -49,8 +49,8 @@ Each `ExportColumn` has a `Regex`, used for deserialization. If no custom regex 
 	...
 	"computeExportConfig": {
 		"hostExportColumns": ["timestamp", "timestamp_absolute", "invalid-entry1", "guests_invalid"],
-		"serverExportColumns": ["invalid-entry2"],
-		"serviceExportColumns": ["timestamp", "servers_active", "servers_pending"]
+		"taskExportColumns": ["invalid-entry2"],
+		"serviceExportColumns": ["timestamp", "tasks_active", "tasks_pending"]
 	},
 	...
 ```
@@ -59,12 +59,12 @@ Each `ExportColumn` has a `Regex`, used for deserialization. If no custom regex 
 // console output
 10:51:56.561 [ERROR] ColListSerializer - no match found for column "invalid-entry1", ignoring...
 10:51:56.563 [ERROR] ColListSerializer - no match found for column "invalid-entry2", ignoring...
-10:51:56.564 [WARN] ComputeExportConfig - deserialized list of export columns for exportable ServerTableReader produced empty list, falling back to all loaded columns
+10:51:56.564 [WARN] ComputeExportConfig - deserialized list of export columns for exportable TaskTableReader produced empty list, falling back to all loaded columns
 10:51:56.584 [INFO] ScenariosSpec - 
 | === Compute Export Config ===
 | Host columns    : timestamp, timestamp_absolute, guests_invalid
-| Server columns  : timestamp, timestamp_absolute, server_id, server_name, cpu_count, mem_capacity, cpu_limit, cpu_time_active, cpu_time_idle, cpu_time_steal, cpu_time_lost, uptime, downtime, provision_time, boot_time, boot_time_absolute
-| Service columns : timestamp, servers_active, servers_pending
+| Task columns  : timestamp, timestamp_absolute, task_id, task_name, cpu_count, mem_capacity, cpu_limit, cpu_time_active, cpu_time_idle, cpu_time_steal, cpu_time_lost, uptime, downtime, provision_time, boot_time, boot_time_absolute
+| Service columns : timestamp, tasks_active, tasks_pending
 
 ```
 

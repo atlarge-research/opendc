@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.service.HostView
 import org.opendc.compute.service.driver.HostModel
 import org.opendc.compute.service.driver.HostState
@@ -78,11 +78,11 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
 
-        assertNull(scheduler.select(server))
+        assertNull(scheduler.select(task))
     }
 
     @Test
@@ -102,14 +102,14 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
 
         // Make sure we get the first host both times
         assertAll(
-            { assertEquals(hostA, scheduler.select(server)) },
-            { assertEquals(hostA, scheduler.select(server)) },
+            { assertEquals(hostA, scheduler.select(task)) },
+            { assertEquals(hostA, scheduler.select(task)) },
         )
     }
 
@@ -132,14 +132,14 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
 
         // Make sure we get the first host both times
         assertAll(
-            { assertEquals(hostB, scheduler.select(server)) },
-            { assertEquals(hostA, scheduler.select(server)) },
+            { assertEquals(hostB, scheduler.select(task)) },
+            { assertEquals(hostA, scheduler.select(task)) },
         )
     }
 
@@ -156,11 +156,11 @@ internal class FilterSchedulerTest {
 
         scheduler.addHost(host)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
 
-        assertNull(scheduler.select(server))
+        assertNull(scheduler.select(task))
     }
 
     @Test
@@ -176,11 +176,11 @@ internal class FilterSchedulerTest {
 
         scheduler.addHost(host)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
 
-        assertEquals(host, scheduler.select(server))
+        assertEquals(host, scheduler.select(task))
     }
 
     @Test
@@ -204,11 +204,11 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostB, scheduler.select(server))
+        assertEquals(hostB, scheduler.select(task))
     }
 
     @Test
@@ -226,11 +226,11 @@ internal class FilterSchedulerTest {
 
         scheduler.addHost(host)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 2300
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 2300
 
-        assertNull(scheduler.select(server))
+        assertNull(scheduler.select(task))
     }
 
     @Test
@@ -254,11 +254,11 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostB, scheduler.select(server))
+        assertEquals(hostB, scheduler.select(task))
     }
 
     @Test
@@ -276,11 +276,11 @@ internal class FilterSchedulerTest {
 
         scheduler.addHost(host)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 8
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 8
+        every { task.flavor.memorySize } returns 1024
 
-        assertNull(scheduler.select(server))
+        assertNull(scheduler.select(task))
     }
 
 // TODO: fix when schedulers are reworked
@@ -305,12 +305,12 @@ internal class FilterSchedulerTest {
 
         scheduler.addHost(hostB)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
-        every { server.flavor.meta } returns mapOf("cpu-capacity" to 2 * 3200.0)
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
+        every { task.flavor.meta } returns mapOf("cpu-capacity" to 2 * 3200.0)
 
-        assertEquals(hostB, scheduler.select(server))
+        assertEquals(hostB, scheduler.select(task))
     }
 
     @Test
@@ -334,11 +334,11 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostB, scheduler.select(server))
+        assertEquals(hostB, scheduler.select(task))
     }
 
     @Test
@@ -349,10 +349,10 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val serverA = mockk<Server>()
-        every { serverA.uid } returns UUID.randomUUID()
-        every { serverA.flavor.coreCount } returns 2
-        every { serverA.flavor.memorySize } returns 1024
+        val taskA = mockk<Task>()
+        every { taskA.uid } returns UUID.randomUUID()
+        every { taskA.flavor.coreCount } returns 2
+        every { taskA.flavor.memorySize } returns 1024
 
         val hostA = mockk<HostView>()
         every { hostA.host.state } returns HostState.UP
@@ -363,22 +363,22 @@ internal class FilterSchedulerTest {
         val hostB = mockk<HostView>()
         every { hostB.host.state } returns HostState.UP
         every { hostB.host.model } returns HostModel(4 * 2600.0, 1, 4, 2048)
-        every { hostB.host.instances } returns setOf(serverA)
+        every { hostB.host.instances } returns setOf(taskA)
         every { hostB.provisionedCores } returns 0
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
-        val serverB = mockk<Server>()
-        every { serverB.flavor.coreCount } returns 2
-        every { serverB.flavor.memorySize } returns 1024
-        every { serverB.meta } returns emptyMap()
+        val taskB = mockk<Task>()
+        every { taskB.flavor.coreCount } returns 2
+        every { taskB.flavor.memorySize } returns 1024
+        every { taskB.meta } returns emptyMap()
 
-        assertEquals(hostA, scheduler.select(serverB))
+        assertEquals(hostA, scheduler.select(taskB))
 
-        every { serverB.meta } returns mapOf("scheduler_hint:same_host" to setOf(serverA.uid))
+        every { taskB.meta } returns mapOf("scheduler_hint:same_host" to setOf(taskA.uid))
 
-        assertEquals(hostB, scheduler.select(serverB))
+        assertEquals(hostB, scheduler.select(taskB))
     }
 
     @Test
@@ -389,15 +389,15 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val serverA = mockk<Server>()
-        every { serverA.uid } returns UUID.randomUUID()
-        every { serverA.flavor.coreCount } returns 2
-        every { serverA.flavor.memorySize } returns 1024
+        val taskA = mockk<Task>()
+        every { taskA.uid } returns UUID.randomUUID()
+        every { taskA.flavor.coreCount } returns 2
+        every { taskA.flavor.memorySize } returns 1024
 
         val hostA = mockk<HostView>()
         every { hostA.host.state } returns HostState.UP
         every { hostA.host.model } returns HostModel(4 * 2600.0, 1, 4, 2048)
-        every { hostA.host.instances } returns setOf(serverA)
+        every { hostA.host.instances } returns setOf(taskA)
         every { hostA.provisionedCores } returns 3
 
         val hostB = mockk<HostView>()
@@ -409,16 +409,16 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
-        val serverB = mockk<Server>()
-        every { serverB.flavor.coreCount } returns 2
-        every { serverB.flavor.memorySize } returns 1024
-        every { serverB.meta } returns emptyMap()
+        val taskB = mockk<Task>()
+        every { taskB.flavor.coreCount } returns 2
+        every { taskB.flavor.memorySize } returns 1024
+        every { taskB.meta } returns emptyMap()
 
-        assertEquals(hostA, scheduler.select(serverB))
+        assertEquals(hostA, scheduler.select(taskB))
 
-        every { serverB.meta } returns mapOf("scheduler_hint:different_host" to setOf(serverA.uid))
+        every { taskB.meta } returns mapOf("scheduler_hint:different_host" to setOf(taskA.uid))
 
-        assertEquals(hostB, scheduler.select(serverB))
+        assertEquals(hostB, scheduler.select(taskB))
     }
 
     @Test
@@ -442,11 +442,11 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostA, scheduler.select(server))
+        assertEquals(hostA, scheduler.select(task))
     }
 
     // TODO: fix test when updating schedulers
@@ -471,11 +471,11 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostB, scheduler.select(server))
+        assertEquals(hostB, scheduler.select(task))
     }
 
     @Test
@@ -499,11 +499,11 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostB, scheduler.select(server))
+        assertEquals(hostB, scheduler.select(task))
     }
 
     @Test
@@ -527,10 +527,10 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
-        val server = mockk<Server>()
-        every { server.flavor.coreCount } returns 2
-        every { server.flavor.memorySize } returns 1024
+        val task = mockk<Task>()
+        every { task.flavor.coreCount } returns 2
+        every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostB, scheduler.select(server))
+        assertEquals(hostB, scheduler.select(task))
     }
 }

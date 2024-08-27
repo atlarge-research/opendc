@@ -22,7 +22,7 @@
 
 package org.opendc.compute.service.scheduler
 
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.service.HostView
 import org.opendc.compute.service.scheduler.filters.HostFilter
 import org.opendc.compute.service.scheduler.weights.HostWeigher
@@ -32,7 +32,7 @@ import kotlin.math.min
 
 /**
  * A [ComputeScheduler] implementation that uses filtering and weighing passes to select
- * the host to schedule a [Server] on.
+ * the host to schedule a [Task] on.
  *
  * This implementation is based on the filter scheduler from OpenStack Nova.
  * See: https://docs.openstack.org/nova/latest/user/filter-scheduler.html
@@ -65,13 +65,13 @@ public class FilterScheduler(
         hosts.remove(host)
     }
 
-    override fun select(server: Server): HostView? {
+    override fun select(task: Task): HostView? {
         val hosts = hosts
-        val filteredHosts = hosts.filter { host -> filters.all { filter -> filter.test(host, server) } }
+        val filteredHosts = hosts.filter { host -> filters.all { filter -> filter.test(host, task) } }
 
         val subset =
             if (weighers.isNotEmpty()) {
-                val results = weighers.map { it.getWeights(filteredHosts, server) }
+                val results = weighers.map { it.getWeights(filteredHosts, task) }
                 val weights = DoubleArray(filteredHosts.size)
 
                 for (result in results) {

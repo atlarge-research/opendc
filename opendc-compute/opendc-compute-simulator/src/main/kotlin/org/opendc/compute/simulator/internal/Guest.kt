@@ -23,8 +23,8 @@
 package org.opendc.compute.simulator.internal
 
 import mu.KotlinLogging
-import org.opendc.compute.api.Server
-import org.opendc.compute.api.ServerState
+import org.opendc.compute.api.Task
+import org.opendc.compute.api.TaskState
 import org.opendc.compute.service.driver.telemetry.GuestCpuStats
 import org.opendc.compute.service.driver.telemetry.GuestSystemStats
 import org.opendc.compute.simulator.SimHost
@@ -46,16 +46,16 @@ internal class Guest(
     private val hypervisor: SimHypervisor,
     private val mapper: SimWorkloadMapper,
     private val listener: GuestListener,
-    val server: Server,
+    val task: Task,
     val machine: SimVirtualMachine,
 ) {
     /**
      * The state of the [Guest].
      *
-     * [ServerState.PROVISIONING] is an invalid value for a guest, since it applies before the host is selected for
-     * a server.
+     * [TaskState.PROVISIONING] is an invalid value for a guest, since it applies before the host is selected for
+     * a task.
      */
-    var state: ServerState = ServerState.TERMINATED
+    var state: TaskState = TaskState.TERMINATED
         private set
 
     /**
@@ -63,14 +63,14 @@ internal class Guest(
      */
     fun start() {
         when (state) {
-            ServerState.TERMINATED, ServerState.ERROR -> {
-                LOGGER.info { "User requested to start server ${server.uid}" }
+            TaskState.TERMINATED, TaskState.ERROR -> {
+                LOGGER.info { "User requested to start task ${task.uid}" }
                 doStart()
             }
-            ServerState.RUNNING -> return
-            ServerState.DELETED -> {
-                LOGGER.warn { "User tried to start deleted server" }
-                throw IllegalArgumentException("Server is deleted")
+            TaskState.RUNNING -> return
+            TaskState.DELETED -> {
+                LOGGER.warn { "User tried to start deleted task" }
+                throw IllegalArgumentException("Task is deleted")
             }
             else -> assert(false) { "Invalid state transition" }
         }
@@ -81,9 +81,9 @@ internal class Guest(
      */
     fun stop() {
         when (state) {
-            ServerState.RUNNING -> doStop(ServerState.TERMINATED)
-            ServerState.ERROR -> doRecover()
-            ServerState.TERMINATED, ServerState.DELETED -> return
+            TaskState.RUNNING -> doStop(TaskState.TERMINATED)
+            TaskState.ERROR -> doRecover()
+            TaskState.TERMINATED, TaskState.DELETED -> return
             else -> assert(false) { "Invalid state transition" }
         }
     }
@@ -97,28 +97,28 @@ internal class Guest(
     fun delete() {
         stop()
 
-        state = ServerState.DELETED
+        state = TaskState.DELETED
         hypervisor.removeMachine(machine)
     }
 
     /**
      * Fail the guest if it is active.
      *
-     * This operation forcibly stops the guest and puts the server into an error state.
+     * This operation forcibly stops the guest and puts the task into an error state.
      */
     fun fail() {
-        if (state != ServerState.RUNNING) {
+        if (state != TaskState.RUNNING) {
             return
         }
 
-        doStop(ServerState.ERROR)
+        doStop(TaskState.ERROR)
     }
 
     /**
      * Recover the guest if it is in an error state.
      */
     fun recover() {
-        if (state != ServerState.ERROR) {
+        if (state != TaskState.ERROR) {
             return
         }
 
@@ -170,23 +170,23 @@ internal class Guest(
 
         onStart()
 
-        val workload: SimWorkload = mapper.createWorkload(server)
+        val workload: SimWorkload = mapper.createWorkload(task)
         workload.setOffset(clock.millis())
-        val meta = mapOf("driver" to host, "server" to server) + server.meta
+        val meta = mapOf("driver" to host, "task" to task) + task.meta
         ctx =
             machine.startWorkload(workload, meta) { cause ->
-                onStop(if (cause != null) ServerState.ERROR else ServerState.TERMINATED)
+                onStop(if (cause != null) TaskState.ERROR else TaskState.TERMINATED)
                 ctx = null
             }
     }
 
     /**
-     * Attempt to stop the server and put it into [target] state.
+     * Attempt to stop the task and put it into [target] state.
      */
-    private fun doStop(target: ServerState) {
+    private fun doStop(target: TaskState) {
         assert(ctx != null) { "Invalid job state" }
         val ctx = ctx ?: return
-        if (target == ServerState.ERROR) {
+        if (target == TaskState.ERROR) {
             ctx.shutdown(Exception("Stopped because of ERROR"))
         } else {
             ctx.shutdown()
@@ -199,7 +199,7 @@ internal class Guest(
      * Attempt to recover from an error state.
      */
     private fun doRecover() {
-        state = ServerState.TERMINATED
+        state = TaskState.TERMINATED
     }
 
     /**
@@ -207,14 +207,14 @@ internal class Guest(
      */
     private fun onStart() {
         localBootTime = clock.instant()
-        state = ServerState.RUNNING
+        state = TaskState.RUNNING
         listener.onStart(this)
     }
 
     /**
      * This method is invoked when the guest stopped.
      */
-    private fun onStop(target: ServerState) {
+    private fun onStop(target: TaskState) {
         updateUptime()
 
         state = target
@@ -235,9 +235,9 @@ internal class Guest(
         val duration = now - localLastReport
         localLastReport = now
 
-        if (state == ServerState.RUNNING) {
+        if (state == TaskState.RUNNING) {
             localUptime += duration
-        } else if (state == ServerState.ERROR) {
+        } else if (state == TaskState.ERROR) {
             localDowntime += duration
         }
     }

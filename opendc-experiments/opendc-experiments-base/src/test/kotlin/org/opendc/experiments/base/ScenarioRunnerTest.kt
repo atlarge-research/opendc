@@ -51,7 +51,7 @@ class ScenarioRunnerTest {
      Topology("topology"),
      Workload("bitbrains-small", trace("bitbrains-small")),
      OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
-     "active-servers"
+     "active-tasks"
      )
 
      assertDoesNotThrow { runner.runScenario(scenario, seed = 0L) }
@@ -70,7 +70,7 @@ class ScenarioRunnerTest {
      Topology("topology"),
      Workload("bitbrains-small", trace("bitbrains-small")),
      OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
-     "active-servers"
+     "active-tasks"
      )
 
      assertDoesNotThrow { runner.runScenario(scenario, seed = 0L) }

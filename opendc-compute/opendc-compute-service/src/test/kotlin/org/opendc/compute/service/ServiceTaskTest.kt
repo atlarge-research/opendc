@@ -31,16 +31,16 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.compute.api.Server
-import org.opendc.compute.api.ServerState
+import org.opendc.compute.api.Task
+import org.opendc.compute.api.TaskState
 import org.opendc.compute.service.driver.Host
 import org.opendc.simulator.kotlin.runSimulation
 import java.util.UUID
 
 /**
- * Test suite for the [ServiceServer] implementation.
+ * Test suite for the [ServiceTask] implementation.
  */
-class ServiceServerTest {
+class ServiceTaskTest {
     @Test
     fun testEquality() {
         val service = mockk<ComputeService>()
@@ -48,8 +48,26 @@ class ServiceServerTest {
         val flavor = mockFlavor()
         val image = mockImage()
 
-        val a = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
-        val b = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+        val a =
+            ServiceTask(
+                service,
+                uid,
+                "test",
+                flavor,
+                image,
+                mutableMapOf(),
+                mutableMapOf<String, Any>(),
+            )
+        val b =
+            ServiceTask(
+                service,
+                uid,
+                "test",
+                flavor,
+                image,
+                mutableMapOf(),
+                mutableMapOf<String, Any>(),
+            )
 
         assertEquals(a, b)
     }
@@ -60,9 +78,18 @@ class ServiceServerTest {
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
         val image = mockImage()
-        val a = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+        val a =
+            ServiceTask(
+                service,
+                uid,
+                "test",
+                flavor,
+                image,
+                mutableMapOf(),
+                mutableMapOf<String, Any>(),
+            )
 
-        val b = mockk<Server>(relaxUnitFun = true)
+        val b = mockk<Task>(relaxUnitFun = true)
         every { b.uid } returns UUID.randomUUID()
 
         assertNotEquals(a, b)
@@ -74,7 +101,16 @@ class ServiceServerTest {
         val uid = UUID.randomUUID()
         val flavor = mockFlavor()
         val image = mockImage()
-        val a = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+        val a =
+            ServiceTask(
+                service,
+                uid,
+                "test",
+                flavor,
+                image,
+                mutableMapOf(),
+                mutableMapOf<String, Any>(),
+            )
 
         assertNotEquals(a, Unit)
     }
@@ -86,14 +122,23 @@ class ServiceServerTest {
             val uid = UUID.randomUUID()
             val flavor = mockFlavor()
             val image = mockImage()
-            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val server =
+                ServiceTask(
+                    service,
+                    uid,
+                    "test",
+                    flavor,
+                    image,
+                    mutableMapOf(),
+                    mutableMapOf<String, Any>(),
+                )
 
-            every { service.schedule(any()) } answers { ComputeService.SchedulingRequest(it.invocation.args[0] as ServiceServer, 0) }
+            every { service.schedule(any()) } answers { ComputeService.SchedulingRequest(it.invocation.args[0] as ServiceTask, 0) }
 
             server.start()
 
             verify(exactly = 1) { service.schedule(server) }
-            assertEquals(ServerState.PROVISIONING, server.state)
+            assertEquals(TaskState.PROVISIONING, server.state)
         }
 
     @Test
@@ -103,9 +148,18 @@ class ServiceServerTest {
             val uid = UUID.randomUUID()
             val flavor = mockFlavor()
             val image = mockImage()
-            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val server =
+                ServiceTask(
+                    service,
+                    uid,
+                    "test",
+                    flavor,
+                    image,
+                    mutableMapOf(),
+                    mutableMapOf<String, Any>(),
+                )
 
-            server.setState(ServerState.DELETED)
+            server.setState(TaskState.DELETED)
 
             assertThrows<IllegalStateException> { server.start() }
         }
@@ -117,13 +171,22 @@ class ServiceServerTest {
             val uid = UUID.randomUUID()
             val flavor = mockFlavor()
             val image = mockImage()
-            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val server =
+                ServiceTask(
+                    service,
+                    uid,
+                    "test",
+                    flavor,
+                    image,
+                    mutableMapOf(),
+                    mutableMapOf<String, Any>(),
+                )
 
-            server.setState(ServerState.PROVISIONING)
+            server.setState(TaskState.PROVISIONING)
 
             server.start()
 
-            assertEquals(ServerState.PROVISIONING, server.state)
+            assertEquals(TaskState.PROVISIONING, server.state)
         }
 
     @Test
@@ -133,13 +196,22 @@ class ServiceServerTest {
             val uid = UUID.randomUUID()
             val flavor = mockFlavor()
             val image = mockImage()
-            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val server =
+                ServiceTask(
+                    service,
+                    uid,
+                    "test",
+                    flavor,
+                    image,
+                    mutableMapOf(),
+                    mutableMapOf<String, Any>(),
+                )
 
-            server.setState(ServerState.RUNNING)
+            server.setState(TaskState.RUNNING)
 
             server.start()
 
-            assertEquals(ServerState.RUNNING, server.state)
+            assertEquals(TaskState.RUNNING, server.state)
         }
 
     @Test
@@ -149,7 +221,16 @@ class ServiceServerTest {
             val uid = UUID.randomUUID()
             val flavor = mockFlavor()
             val image = mockImage()
-            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val server =
+                ServiceTask(
+                    service,
+                    uid,
+                    "test",
+                    flavor,
+                    image,
+                    mutableMapOf(),
+                    mutableMapOf<String, Any>(),
+                )
             val request = ComputeService.SchedulingRequest(server, 0)
 
             every { service.schedule(any()) } returns request
@@ -158,7 +239,7 @@ class ServiceServerTest {
             server.stop()
 
             assertTrue(request.isCancelled)
-            assertEquals(ServerState.TERMINATED, server.state)
+            assertEquals(TaskState.TERMINATED, server.state)
         }
 
     @Test
@@ -168,12 +249,21 @@ class ServiceServerTest {
             val uid = UUID.randomUUID()
             val flavor = mockFlavor()
             val image = mockImage()
-            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val server =
+                ServiceTask(
+                    service,
+                    uid,
+                    "test",
+                    flavor,
+                    image,
+                    mutableMapOf(),
+                    mutableMapOf<String, Any>(),
+                )
 
-            server.setState(ServerState.TERMINATED)
+            server.setState(TaskState.TERMINATED)
             server.stop()
 
-            assertEquals(ServerState.TERMINATED, server.state)
+            assertEquals(TaskState.TERMINATED, server.state)
         }
 
     @Test
@@ -183,12 +273,21 @@ class ServiceServerTest {
             val uid = UUID.randomUUID()
             val flavor = mockFlavor()
             val image = mockImage()
-            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val server =
+                ServiceTask(
+                    service,
+                    uid,
+                    "test",
+                    flavor,
+                    image,
+                    mutableMapOf(),
+                    mutableMapOf<String, Any>(),
+                )
 
-            server.setState(ServerState.DELETED)
+            server.setState(TaskState.DELETED)
             server.stop()
 
-            assertEquals(ServerState.DELETED, server.state)
+            assertEquals(TaskState.DELETED, server.state)
         }
 
     @Test
@@ -198,10 +297,19 @@ class ServiceServerTest {
             val uid = UUID.randomUUID()
             val flavor = mockFlavor()
             val image = mockImage()
-            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val server =
+                ServiceTask(
+                    service,
+                    uid,
+                    "test",
+                    flavor,
+                    image,
+                    mutableMapOf(),
+                    mutableMapOf<String, Any>(),
+                )
             val host = mockk<Host>(relaxUnitFun = true)
 
-            server.setState(ServerState.RUNNING)
+            server.setState(TaskState.RUNNING)
             server.host = host
             server.stop()
             yield()
@@ -216,7 +324,16 @@ class ServiceServerTest {
             val uid = UUID.randomUUID()
             val flavor = mockFlavor()
             val image = mockImage()
-            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val server =
+                ServiceTask(
+                    service,
+                    uid,
+                    "test",
+                    flavor,
+                    image,
+                    mutableMapOf(),
+                    mutableMapOf<String, Any>(),
+                )
             val request = ComputeService.SchedulingRequest(server, 0)
 
             every { service.schedule(any()) } returns request
@@ -225,7 +342,7 @@ class ServiceServerTest {
             server.delete()
 
             assertTrue(request.isCancelled)
-            assertEquals(ServerState.DELETED, server.state)
+            assertEquals(TaskState.DELETED, server.state)
             verify { service.delete(server) }
         }
 
@@ -236,12 +353,21 @@ class ServiceServerTest {
             val uid = UUID.randomUUID()
             val flavor = mockFlavor()
             val image = mockImage()
-            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val server =
+                ServiceTask(
+                    service,
+                    uid,
+                    "test",
+                    flavor,
+                    image,
+                    mutableMapOf(),
+                    mutableMapOf<String, Any>(),
+                )
 
-            server.setState(ServerState.TERMINATED)
+            server.setState(TaskState.TERMINATED)
             server.delete()
 
-            assertEquals(ServerState.DELETED, server.state)
+            assertEquals(TaskState.DELETED, server.state)
 
             verify { service.delete(server) }
         }
@@ -253,12 +379,21 @@ class ServiceServerTest {
             val uid = UUID.randomUUID()
             val flavor = mockFlavor()
             val image = mockImage()
-            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val server =
+                ServiceTask(
+                    service,
+                    uid,
+                    "test",
+                    flavor,
+                    image,
+                    mutableMapOf(),
+                    mutableMapOf<String, Any>(),
+                )
 
-            server.setState(ServerState.DELETED)
+            server.setState(TaskState.DELETED)
             server.delete()
 
-            assertEquals(ServerState.DELETED, server.state)
+            assertEquals(TaskState.DELETED, server.state)
         }
 
     @Test
@@ -268,10 +403,19 @@ class ServiceServerTest {
             val uid = UUID.randomUUID()
             val flavor = mockFlavor()
             val image = mockImage()
-            val server = ServiceServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf<String, Any>())
+            val server =
+                ServiceTask(
+                    service,
+                    uid,
+                    "test",
+                    flavor,
+                    image,
+                    mutableMapOf(),
+                    mutableMapOf<String, Any>(),
+                )
             val host = mockk<Host>(relaxUnitFun = true)
 
-            server.setState(ServerState.RUNNING)
+            server.setState(TaskState.RUNNING)
             server.host = host
             server.delete()
             yield()

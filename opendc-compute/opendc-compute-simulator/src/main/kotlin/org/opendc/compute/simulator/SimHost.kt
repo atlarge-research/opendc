@@ -23,8 +23,8 @@
 package org.opendc.compute.simulator
 
 import org.opendc.compute.api.Flavor
-import org.opendc.compute.api.Server
-import org.opendc.compute.api.ServerState
+import org.opendc.compute.api.Task
+import org.opendc.compute.api.TaskState
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostModel
@@ -60,7 +60,7 @@ import java.util.function.Supplier
  * @param clock The (virtual) clock used to track time.
  * @param machine The [SimBareMetalMachine] on which the host runs.
  * @param hypervisor The [SimHypervisor] to run on top of the machine.
- * @param mapper A [SimWorkloadMapper] to map a [Server] to a [SimWorkload].
+ * @param mapper A [SimWorkloadMapper] to map a [Task] to a [SimWorkload].
  * @param bootModel A [Supplier] providing the [SimWorkload] to execute during the boot procedure of the hypervisor.
  * @param optimize A flag to indicate to optimize the machine models of the virtual machines.
  */
@@ -83,7 +83,7 @@ public class SimHost(
     /**
      * The virtual machines running on the hypervisor.
      */
-    private val guests = HashMap<Server, Guest>()
+    private val guests = HashMap<Task, Guest>()
     private val localGuests = mutableListOf<Guest>()
 
     private var localState: HostState = HostState.DOWN
@@ -108,11 +108,11 @@ public class SimHost(
     private val guestListener =
         object : GuestListener {
             override fun onStart(guest: Guest) {
-                listeners.forEach { it.onStateChanged(this@SimHost, guest.server, guest.state) }
+                listeners.forEach { it.onStateChanged(this@SimHost, guest.task, guest.state) }
             }
 
             override fun onStop(guest: Guest) {
-                listeners.forEach { it.onStateChanged(this@SimHost, guest.server, guest.state) }
+                listeners.forEach { it.onStateChanged(this@SimHost, guest.task, guest.state) }
             }
         }
 
@@ -140,21 +140,21 @@ public class SimHost(
         return localState
     }
 
-    override fun getInstances(): Set<Server> {
+    override fun getInstances(): Set<Task> {
         return guests.keys
     }
 
-    override fun canFit(server: Server): Boolean {
-        val sufficientMemory = model.memoryCapacity >= server.flavor.memorySize
-        val enoughCpus = model.coreCount >= server.flavor.coreCount
-        val canFit = hypervisor.canFit(server.flavor.toMachineModel())
+    override fun canFit(task: Task): Boolean {
+        val sufficientMemory = model.memoryCapacity >= task.flavor.memorySize
+        val enoughCpus = model.coreCount >= task.flavor.coreCount
+        val canFit = hypervisor.canFit(task.flavor.toMachineModel())
 
         return sufficientMemory && enoughCpus && canFit
     }
 
-    override fun spawn(server: Server) {
-        guests.computeIfAbsent(server) { key ->
-            require(canFit(key)) { "Server does not fit" }
+    override fun spawn(task: Task) {
+        guests.computeIfAbsent(task) { key ->
+            require(canFit(key)) { "Task does not fit" }
 
             val machine = hypervisor.newMachine(key.flavor.toMachineModel())
             val newGuest =
@@ -164,7 +164,7 @@ public class SimHost(
                     hypervisor,
                     mapper,
                     guestListener,
-                    server,
+                    task,
                     machine,
                 )
 
@@ -173,25 +173,25 @@ public class SimHost(
         }
     }
 
-    override fun contains(server: Server): Boolean {
-        return server in guests
+    override fun contains(task: Task): Boolean {
+        return task in guests
     }
 
-    override fun start(server: Server) {
-        val guest = requireNotNull(guests[server]) { "Unknown server ${server.uid} at host $uid" }
+    override fun start(task: Task) {
+        val guest = requireNotNull(guests[task]) { "Unknown task ${task.uid} at host $uid" }
         guest.start()
     }
 
-    override fun stop(server: Server) {
-        val guest = requireNotNull(guests[server]) { "Unknown server ${server.uid} at host $uid" }
+    override fun stop(task: Task) {
+        val guest = requireNotNull(guests[task]) { "Unknown task ${task.uid} at host $uid" }
         guest.stop()
     }
 
-    override fun delete(server: Server) {
-        val guest = guests[server] ?: return
+    override fun delete(task: Task) {
+        val guest = guests[task] ?: return
         guest.delete()
 
-        guests.remove(server)
+        guests.remove(task)
         localGuests.remove(guest)
     }
 
@@ -219,12 +219,12 @@ public class SimHost(
         val guests = localGuests.listIterator()
         for (guest in guests) {
             when (guest.state) {
-                ServerState.TERMINATED -> terminated++
-                ServerState.RUNNING -> running++
-                ServerState.ERROR -> error++
-                ServerState.DELETED -> {
+                TaskState.TERMINATED -> terminated++
+                TaskState.RUNNING -> running++
+                TaskState.ERROR -> error++
+                TaskState.DELETED -> {
                     // Remove guests that have been deleted
-                    this.guests.remove(guest.server)
+                    this.guests.remove(guest.task)
                     guests.remove()
                 }
                 else -> invalid++
@@ -244,8 +244,8 @@ public class SimHost(
         )
     }
 
-    override fun getSystemStats(server: Server): GuestSystemStats {
-        val guest = requireNotNull(guests[server]) { "Unknown server ${server.uid} at host $uid" }
+    override fun getSystemStats(task: Task): GuestSystemStats {
+        val guest = requireNotNull(guests[task]) { "Unknown task ${task.uid} at host $uid" }
         return guest.getSystemStats()
     }
 
@@ -265,8 +265,8 @@ public class SimHost(
         )
     }
 
-    override fun getCpuStats(server: Server): GuestCpuStats {
-        val guest = requireNotNull(guests[server]) { "Unknown server ${server.uid} at host $uid" }
+    override fun getCpuStats(task: Task): GuestCpuStats {
+        val guest = requireNotNull(guests[task]) { "Unknown task ${task.uid} at host $uid" }
         return guest.getCpuStats()
     }
 

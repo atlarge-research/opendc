@@ -30,9 +30,9 @@ package org.opendc.compute.service.telemetry;
  * @param attemptsSuccess Scheduling attempts that resulted into an allocation onto a host.
  * @param attemptsFailure The number of failed scheduling attempt due to insufficient capacity at the moment.
  * @param attemptsError The number of scheduling attempts that failed due to system error.
- * @param serversTotal The number of servers registered with the service.
- * @param serversPending The number of servers that are pending to be scheduled.
- * @param serversActive The number of servers that are currently managed by the service and running.
+ * @param tasksTotal The number of tasks registered with the service.
+ * @param tasksPending The number of tasks that are pending to be scheduled.
+ * @param tasksActive The number of tasks that are currently managed by the service and running.
  */
 public record SchedulerStats(
         int hostsAvailable,
@@ -40,6 +40,6 @@ public record SchedulerStats(
         long attemptsSuccess,
         long attemptsFailure,
         long attemptsError,
-        int serversTotal,
-        int serversPending,
-        int serversActive) {}
+        int tasksTotal,
+        int tasksPending,
+        int tasksActive) {}

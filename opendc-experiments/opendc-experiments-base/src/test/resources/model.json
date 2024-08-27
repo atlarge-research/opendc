@@ -1,0 +1,15 @@
+{
+    "version": "1.0",
+    "defaultSchema": "trace",
+    "schemas": [
+        {
+            "name": "trace",
+            "type": "custom",
+            "factory": "org.opendc.trace.calcite.TraceSchemaFactory",
+            "operand": {
+                "path": "trace",
+                "format": "opendc-vm"
+            }
+        }
+    ]
+}

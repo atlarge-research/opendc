@@ -20,24 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.workflow.service.scheduler.task
-
-import org.opendc.workflow.service.internal.TaskState
-import org.opendc.workflow.service.internal.WorkflowServiceImpl
+package org.opendc.compute.telemetry.table
 
 /**
- * A [TaskEligibilityPolicy] that limits the total number of active tasks in the system.
+ * Static information about a task exposed to the telemetry service.
  */
-public data class LimitTaskEligibilityPolicy(val limit: Int) : TaskEligibilityPolicy {
-    override fun invoke(scheduler: WorkflowServiceImpl): TaskEligibilityPolicy.Logic =
-        object : TaskEligibilityPolicy.Logic {
-            override fun invoke(task: TaskState): TaskEligibilityPolicy.Advice =
-                if (scheduler.activeTasks.size < limit) {
-                    TaskEligibilityPolicy.Advice.ADMIT
-                } else {
-                    TaskEligibilityPolicy.Advice.STOP
-                }
-        }
-
-    override fun toString(): String = "Limit-Active($limit)"
-}
+public data class TaskInfo(
+    val id: String,
+    val name: String,
+    val type: String,
+    val arch: String,
+    val imageId: String,
+    val imageName: String,
+    val cpuCount: Int,
+    val memCapacity: Long,
+)

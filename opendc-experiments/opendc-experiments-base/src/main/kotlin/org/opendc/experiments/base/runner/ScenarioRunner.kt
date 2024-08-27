@@ -122,14 +122,14 @@ public fun runScenario(
             )
 
             val workloadLoader = ComputeWorkloadLoader(File(scenario.workloadSpec.pathToFile))
-            val vms = getWorkloadType(scenario.workloadSpec.type).resolve(workloadLoader, Random(seed))
+            val tasks = getWorkloadType(scenario.workloadSpec.type).resolve(workloadLoader, Random(seed))
 
             val carbonTrace = getCarbonTrace(scenario.carbonTracePath)
-            val startTime = Duration.ofMillis(vms.minOf { it.startTime }.toEpochMilli())
+            val startTime = Duration.ofMillis(tasks.minOf { it.startTime }.toEpochMilli())
             addExportModel(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace, scenario.id)
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
-            service.replay(timeSource, vms, failureModelSpec = scenario.failureModelSpec, seed = seed)
+            service.replay(timeSource, tasks, failureModelSpec = scenario.failureModelSpec, seed = seed)
         }
     }
 

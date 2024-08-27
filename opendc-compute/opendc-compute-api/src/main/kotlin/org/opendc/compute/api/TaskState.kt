@@ -20,17 +20,34 @@
  * SOFTWARE.
  */
 
-package org.opendc.workflow.service.scheduler
-
-import org.opendc.workflow.service.internal.WorkflowServiceImpl
-import java.io.Serializable
+package org.opendc.compute.api
 
 /**
- * A scheduling stage policy.
+ * An enumeration describing the possible states of a task.
  */
-public interface StagePolicy<T : Any> : Serializable {
+public enum class TaskState {
     /**
-     * Build the logic of the stage policy.
+     * Resources are being allocated for the instance. The instance is not running yet.
      */
-    public operator fun invoke(scheduler: WorkflowServiceImpl): T
+    PROVISIONING,
+
+    /**
+     * A user shut down the instance.
+     */
+    TERMINATED,
+
+    /**
+     * The task instance is booting up or running.
+     */
+    RUNNING,
+
+    /**
+     * The task is in an error state.
+     */
+    ERROR,
+
+    /**
+     * The task has been deleted and cannot be started later on.
+     */
+    DELETED,
 }

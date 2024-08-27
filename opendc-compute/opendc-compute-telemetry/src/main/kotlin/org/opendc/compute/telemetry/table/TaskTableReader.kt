@@ -22,17 +22,17 @@
 
 package org.opendc.compute.telemetry.table
 
-import org.opendc.compute.telemetry.export.parquet.DfltServerExportColumns
+import org.opendc.compute.telemetry.export.parquet.DfltTaskExportColumns
 import org.opendc.trace.util.parquet.exporter.Exportable
 import java.time.Instant
 
 /**
- * An interface that is used to read a row of a server trace entry.
+ * An interface that is used to read a row of a task trace entry.
  */
-public interface ServerTableReader : Exportable {
-    public fun copy(): ServerTableReader
+public interface TaskTableReader : Exportable {
+    public fun copy(): TaskTableReader
 
-    public fun setValues(table: ServerTableReader)
+    public fun setValues(table: TaskTableReader)
 
     /**
      * The timestamp of the current entry of the reader relative to the start of the workload.
@@ -45,12 +45,12 @@ public interface ServerTableReader : Exportable {
     public val timestampAbsolute: Instant
 
     /**
-     * The [ServerInfo] of the server to which the row belongs to.
+     * The [TaskInfo] of the task to which the row belongs to.
      */
-    public val server: ServerInfo
+    public val task: TaskInfo
 
     /**
-     * The [HostInfo] of the host on which the server is hosted or `null` if it has no host.
+     * The [HostInfo] of the host on which the task is hosted or `null` if it has no host.
      */
     public val host: HostInfo?
 
@@ -65,32 +65,32 @@ public interface ServerTableReader : Exportable {
     public val downtime: Long
 
     /**
-     * The [Instant] at which the server was enqueued for the scheduler.
+     * The [Instant] at which the task was enqueued for the scheduler.
      */
     public val provisionTime: Instant?
 
     /**
-     * The [Instant] at which the server booted relative to the start of the workload.
+     * The [Instant] at which the task booted relative to the start of the workload.
      */
     public val bootTime: Instant?
 
     /**
-     * The [Instant] at which the server booted.
+     * The [Instant] at which the task booted.
      */
     public val bootTimeAbsolute: Instant?
 
     /**
-     * The capacity of the CPUs of Host on which the server is running (in MHz).
+     * The capacity of the CPUs of Host on which the task is running (in MHz).
      */
     public val cpuLimit: Double
 
     /**
-     * The duration (in seconds) that a CPU was active in the server.
+     * The duration (in seconds) that a CPU was active in the task.
      */
     public val cpuActiveTime: Long
 
     /**
-     * The duration (in seconds) that a CPU was idle in the server.
+     * The duration (in seconds) that a CPU was idle in the task.
      */
     public val cpuIdleTime: Long
 
@@ -106,4 +106,4 @@ public interface ServerTableReader : Exportable {
 }
 
 // Loads the default export fields for deserialization whenever this file is loaded.
-private val _ignore = DfltServerExportColumns
+private val _ignore = DfltTaskExportColumns

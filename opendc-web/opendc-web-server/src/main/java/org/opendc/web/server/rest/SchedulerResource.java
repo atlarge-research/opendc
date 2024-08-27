@@ -43,8 +43,8 @@ public final class SchedulerResource {
                 "mem-inv",
                 "core-mem",
                 "core-mem-inv",
-                "active-servers",
-                "active-servers-inv",
+                "active-tasks",
+                "active-tasks-inv",
                 "provisioned-cores",
                 "provisioned-cores-inv",
                 "random");
