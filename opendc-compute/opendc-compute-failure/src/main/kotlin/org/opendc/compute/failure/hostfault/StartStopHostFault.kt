@@ -43,7 +43,8 @@ public class StartStopHostFault(
         for (host in victims) {
             val servers = host.instances
 
-            val snapshots = servers.map { (it.meta["workload"] as SimWorkload).snapshot() }
+            val sortedServers = servers.sortedBy { it.name }
+            val snapshots = sortedServers.map { (it.meta["workload"] as SimWorkload).snapshot() }
             host.fail()
 
             for ((server, snapshot) in servers.zip(snapshots)) {
