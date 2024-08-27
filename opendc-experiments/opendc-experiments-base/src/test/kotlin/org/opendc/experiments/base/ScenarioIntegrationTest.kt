@@ -110,16 +110,16 @@ class ScenarioIntegrationTest {
                     "Success=${monitor.attemptsSuccess} " +
                     "Failure=${monitor.attemptsFailure} " +
                     "Error=${monitor.attemptsError} " +
-                    "Pending=${monitor.serversPending} " +
-                    "Active=${monitor.serversActive}",
+                    "Pending=${monitor.tasksPending} " +
+                    "Active=${monitor.tasksActive}",
             )
 
             // Note that these values have been verified beforehand
             assertAll(
                 { assertEquals(50, monitor.attemptsSuccess, "The scheduler should schedule 50 VMs") },
-                { assertEquals(0, monitor.serversActive, "All VMs should finish after a run") },
+                { assertEquals(0, monitor.tasksActive, "All VMs should finish after a run") },
                 { assertEquals(0, monitor.attemptsFailure, "No VM should be unscheduled") },
-                { assertEquals(0, monitor.serversPending, "No VM should not be in the queue") },
+                { assertEquals(0, monitor.tasksPending, "No VM should not be in the queue") },
                 { assertEquals(43795971955, monitor.idleTime) { "Incorrect idle time" } },
                 { assertEquals(2864995687, monitor.activeTime) { "Incorrect active time" } },
                 { assertEquals(148, monitor.stealTime) { "Incorrect steal time" } },
@@ -156,8 +156,8 @@ class ScenarioIntegrationTest {
                     "Success=${monitor.attemptsSuccess} " +
                     "Failure=${monitor.attemptsFailure} " +
                     "Error=${monitor.attemptsError} " +
-                    "Pending=${monitor.serversPending} " +
-                    "Active=${monitor.serversActive}",
+                    "Pending=${monitor.tasksPending} " +
+                    "Active=${monitor.tasksActive}",
             )
 
             // Note that these values have been verified beforehand
@@ -197,8 +197,8 @@ class ScenarioIntegrationTest {
                     "Success=${monitor.attemptsSuccess} " +
                     "Failure=${monitor.attemptsFailure} " +
                     "Error=${monitor.attemptsError} " +
-                    "Pending=${monitor.serversPending} " +
-                    "Active=${monitor.serversActive}",
+                    "Pending=${monitor.tasksPending} " +
+                    "Active=${monitor.tasksActive}",
             )
 
             // Note that these values have been verified beforehand
@@ -265,15 +265,15 @@ class ScenarioIntegrationTest {
         var attemptsSuccess = 0
         var attemptsFailure = 0
         var attemptsError = 0
-        var serversPending = 0
-        var serversActive = 0
+        var tasksPending = 0
+        var tasksActive = 0
 
         override fun record(reader: ServiceTableReader) {
             attemptsSuccess = reader.attemptsSuccess
             attemptsFailure = reader.attemptsFailure
             attemptsError = reader.attemptsError
-            serversPending = reader.serversPending
-            serversActive = reader.serversActive
+            tasksPending = reader.tasksPending
+            tasksActive = reader.tasksActive
         }
 
         var idleTime = 0L

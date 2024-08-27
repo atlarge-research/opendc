@@ -59,15 +59,15 @@ public object DfltServiceExportColumns {
             field = Types.required(INT32).named("hosts_up"),
         ) { it.hostsUp }
 
-    public val SERVERS_PENDING: ExportColumn<ServiceTableReader> =
+    public val TASKS_PENDING: ExportColumn<ServiceTableReader> =
         ExportColumn(
-            field = Types.required(INT32).named("servers_pending"),
-        ) { it.serversPending }
+            field = Types.required(INT32).named("tasks_pending"),
+        ) { it.tasksPending }
 
-    public val SERVERS_ACTIVE: ExportColumn<ServiceTableReader> =
+    public val TASKS_ACTIVE: ExportColumn<ServiceTableReader> =
         ExportColumn(
-            field = Types.required(INT32).named("servers_active"),
-        ) { it.serversActive }
+            field = Types.required(INT32).named("tasks_active"),
+        ) { it.tasksActive }
 
     public val ATTEMPTS_SUCCESS: ExportColumn<ServiceTableReader> =
         ExportColumn(

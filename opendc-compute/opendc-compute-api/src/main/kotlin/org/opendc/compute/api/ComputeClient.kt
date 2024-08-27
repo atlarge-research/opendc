@@ -84,38 +84,38 @@ public interface ComputeClient : AutoCloseable {
     ): Image
 
     /**
-     * Obtain the list of [Server]s accessible by the requesting user.
+     * Obtain the list of [Task]s accessible by the requesting user.
      */
-    public fun queryServers(): List<Server>
+    public fun queryTasks(): List<Task>
 
     /**
-     * Obtain a [Server] by its unique identifier.
+     * Obtain a [Task] by its unique identifier.
      *
-     * @param id The identifier of the server.
+     * @param id The identifier of the task.
      */
-    public fun findServer(id: UUID): Server?
+    public fun findTask(id: UUID): Task?
 
     /**
-     * Create a new [Server] instance at this compute service.
+     * Create a new [Task] instance at this compute service.
      *
-     * @param name The name of the server to deploy.
+     * @param name The name of the task to deploy.
      * @param image The image to be deployed.
      * @param flavor The flavor of the machine instance to run this [image] on.
-     * @param labels The identifying labels of the server.
-     * @param meta The non-identifying meta-data of the server.
-     * @param start A flag to indicate that the server should be started immediately.
+     * @param labels The identifying labels of the task.
+     * @param meta The non-identifying meta-data of the task.
+     * @param start A flag to indicate that the task should be started immediately.
      */
-    public fun newServer(
+    public fun newTask(
         name: String,
         image: Image,
         flavor: Flavor,
         labels: Map<String, String> = emptyMap(),
         meta: Map<String, Any> = emptyMap(),
         start: Boolean = true,
-    ): Server
+    ): Task
 
-    public fun rescheduleServer(
-        server: Server,
+    public fun rescheduleTask(
+        task: Task,
         workload: SimWorkload,
     )
 

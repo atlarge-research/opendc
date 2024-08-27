@@ -41,14 +41,14 @@ public class StartStopHostFault(
         val client: ComputeClient = service.newClient()
 
         for (host in victims) {
-            val servers = host.instances
+            val tasks = host.instances
 
-            val sortedServers = servers.sortedBy { it.name }
-            val snapshots = sortedServers.map { (it.meta["workload"] as SimWorkload).snapshot() }
+            val sortedTasks = tasks.sortedBy { it.name }
+            val snapshots = sortedTasks.map { (it.meta["workload"] as SimWorkload).snapshot() }
             host.fail()
 
-            for ((server, snapshot) in servers.zip(snapshots)) {
-                client.rescheduleServer(server, snapshot)
+            for ((task, snapshot) in sortedTasks.zip(snapshots)) {
+                client.rescheduleTask(task, snapshot)
             }
         }
 

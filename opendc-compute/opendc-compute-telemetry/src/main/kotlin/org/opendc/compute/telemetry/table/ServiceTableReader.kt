@@ -54,19 +54,19 @@ public interface ServiceTableReader : Exportable {
     public val hostsDown: Int
 
     /**
-     * The number of servers that are registered with the compute service.
+     * The number of tasks that are registered with the compute service.
      */
-    public val serversTotal: Int
+    public val tasksTotal: Int
 
     /**
-     * The number of servers that are pending to be scheduled.
+     * The number of tasks that are pending to be scheduled.
      */
-    public val serversPending: Int
+    public val tasksPending: Int
 
     /**
-     * The number of servers that are currently active.
+     * The number of tasks that are currently active.
      */
-    public val serversActive: Int
+    public val tasksActive: Int
 
     /**
      * The scheduling attempts that were successful.

@@ -29,9 +29,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.yield
-import org.opendc.compute.api.Server
-import org.opendc.compute.api.ServerState
-import org.opendc.compute.api.ServerWatcher
+import org.opendc.compute.api.Task
+import org.opendc.compute.api.TaskState
+import org.opendc.compute.api.TaskWatcher
 import org.opendc.compute.failure.models.FailureModel
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.workload.VirtualMachine
@@ -44,13 +44,13 @@ import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 
 /**
- * A watcher that is locked and waits for a change in the server state to unlock
- * @param unlockStates determine which [ServerState] triggers an unlock.
+ * A watcher that is locked and waits for a change in the task state to unlock
+ * @param unlockStates determine which [TaskState] triggers an unlock.
  *                     Default values are TERMINATED, ERROR, and DELETED.
  */
-public class RunningServerWatcher : ServerWatcher {
+public class RunningTaskWatcher : TaskWatcher {
     // TODO: make this changeable
-    private val unlockStates: List<ServerState> = listOf(ServerState.DELETED, ServerState.TERMINATED)
+    private val unlockStates: List<TaskState> = listOf(TaskState.DELETED, TaskState.TERMINATED)
 
     private val mutex: Mutex = Mutex()
 
@@ -63,8 +63,8 @@ public class RunningServerWatcher : ServerWatcher {
     }
 
     override fun onStateChanged(
-        server: Server,
-        newState: ServerState,
+        task: Task,
+        newState: TaskState,
     ) {
         if (unlockStates.contains(newState)) {
             mutex.unlock()
@@ -78,7 +78,7 @@ public class RunningServerWatcher : ServerWatcher {
  * @param clock The simulation clock.
  * @param trace The trace to simulate.
  * @param seed The seed to use for randomness.
- * @param submitImmediately A flag to indicate that the servers are scheduled immediately (so not at their start time).
+ * @param submitImmediately A flag to indicate that the tasks are scheduled immediately (so not at their start time).
  * @param failureModelSpec A failure model to use for injecting failures.
  */
 public suspend fun ComputeService.replay(
@@ -111,12 +111,12 @@ public suspend fun ComputeService.replay(
                 val now = clock.millis()
                 val start = entry.startTime.toEpochMilli()
 
-                // Set the simulationOffset based on the starting time of the first server
+                // Set the simulationOffset based on the starting time of the first task
                 if (simulationOffset == Long.MIN_VALUE) {
                     simulationOffset = start - now
                 }
 
-                // Delay the server based on the startTime given by the trace.
+                // Delay the task based on the startTime given by the trace.
                 if (!submitImmediately) {
                     delay(max(0, (start - now - simulationOffset)))
                 }
@@ -135,8 +135,8 @@ public suspend fun ComputeService.replay(
                 val meta = mutableMapOf<String, Any>("workload" to workload)
 
                 launch {
-                    val server =
-                        client.newServer(
+                    val task =
+                        client.newTask(
                             entry.name,
                             image,
                             client.newFlavor(
@@ -148,15 +148,15 @@ public suspend fun ComputeService.replay(
                             meta = meta,
                         )
 
-                    val serverWatcher = RunningServerWatcher()
-                    serverWatcher.lock()
-                    server.watch(serverWatcher)
+                    val taskWatcher = RunningTaskWatcher()
+                    taskWatcher.lock()
+                    task.watch(taskWatcher)
 
-                    // Wait until the server is terminated
-                    serverWatcher.wait()
+                    // Wait until the task is terminated
+                    taskWatcher.wait()
 
-                    // Stop the server after reaching the end-time of the virtual machine
-                    server.delete()
+                    // Stop the task after reaching the end-time of the virtual machine
+                    task.delete()
                 }
             }
         }

@@ -33,7 +33,7 @@ public class CpuPowerModels {
     /**
      * Construct a constant {@link CpuPowerModel}.
      *
-     * @param power The power consumption fo the server at all times (in W).
+     * @param power The power consumption of the host at all times (in W).
      */
     public static CpuPowerModel constant(double power) {
         return new ConstantPowerModel(power);
@@ -42,8 +42,8 @@ public class CpuPowerModels {
     /**
      * Construct a square root {@link CpuPowerModel} that is adapted from CloudSim.
      *
-     * @param maxPower  The maximum power draw of the server in W.
-     * @param idlePower The power draw of the server at its lowest utilization level in W.
+     * @param maxPower  The maximum power draw of the host in W.
+     * @param idlePower The power draw of the host at its lowest utilization level in W.
      */
     public static CpuPowerModel sqrt(double maxPower, double idlePower) {
         return new SqrtPowerModel(maxPower, idlePower);
@@ -52,8 +52,8 @@ public class CpuPowerModels {
     /**
      * Construct a linear {@link CpuPowerModel} that is adapted from CloudSim.
      *
-     * @param maxPower  The maximum power draw of the server in W.
-     * @param idlePower The power draw of the server at its lowest utilization level in W.
+     * @param maxPower  The maximum power draw of the host in W.
+     * @param idlePower The power draw of the host at its lowest utilization level in W.
      */
     public static CpuPowerModel linear(double maxPower, double idlePower) {
         return new LinearPowerModel(maxPower, idlePower);
@@ -62,8 +62,8 @@ public class CpuPowerModels {
     /**
      * Construct a square {@link CpuPowerModel} that is adapted from CloudSim.
      *
-     * @param maxPower  The maximum power draw of the server in W.
-     * @param idlePower The power draw of the server at its lowest utilization level in W.
+     * @param maxPower  The maximum power draw of the host in W.
+     * @param idlePower The power draw of the host at its lowest utilization level in W.
      */
     public static CpuPowerModel square(double maxPower, double idlePower) {
         return new SquarePowerModel(maxPower, idlePower);
@@ -72,8 +72,8 @@ public class CpuPowerModels {
     /**
      * Construct a cubic {@link CpuPowerModel} that is adapted from CloudSim.
      *
-     * @param maxPower  The maximum power draw of the server in W.
-     * @param idlePower The power draw of the server at its lowest utilization level in W.
+     * @param maxPower  The maximum power draw of the host in W.
+     * @param idlePower The power draw of the host at its lowest utilization level in W.
      */
     public static CpuPowerModel cubic(double maxPower, double idlePower) {
         return new CubicPowerModel(maxPower, idlePower);
@@ -83,8 +83,8 @@ public class CpuPowerModels {
      * Construct a {@link CpuPowerModel} that minimizes the mean squared error (MSE)
      * to the actual power measurement by tuning the calibration parameter.
      *
-     * @param maxPower          The maximum power draw of the server in W.
-     * @param idlePower         The power draw of the server at its lowest utilization level in W.
+     * @param maxPower          The maximum power draw of the host in W.
+     * @param idlePower         The power draw of the host at its lowest utilization level in W.
      * @param calibrationFactor The parameter set to minimize the MSE.
      * @see <a href="https://dl.acm.org/doi/abs/10.1145/1273440.1250665">
      * Fan et al., Power provisioning for a warehouse-sized computer, ACM SIGARCH'07</a>
@@ -96,9 +96,9 @@ public class CpuPowerModels {
     /**
      * Construct an asymptotic {@link CpuPowerModel} adapted from GreenCloud.
      *
-     * @param maxPower  The maximum power draw of the server in W.
-     * @param idlePower The power draw of the server at its lowest utilization level in W.
-     * @param asymUtil  A utilization level at which the server attains asymptotic,
+     * @param maxPower  The maximum power draw of the host in W.
+     * @param idlePower The power draw of the host at its lowest utilization level in W.
+     * @param asymUtil  A utilization level at which the host attains asymptotic,
      *                  i.e., close to linear power consumption versus the offered load.
      *                  For most of the CPUs,a is in [0.2, 0.5].
      * @param dvfs      A flag indicates whether DVFS is enabled.

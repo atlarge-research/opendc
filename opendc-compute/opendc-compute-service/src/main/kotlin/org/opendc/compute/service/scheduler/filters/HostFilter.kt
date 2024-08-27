@@ -22,7 +22,7 @@
 
 package org.opendc.compute.service.scheduler.filters
 
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.service.HostView
 import org.opendc.compute.service.scheduler.FilterScheduler
 
@@ -32,10 +32,10 @@ import org.opendc.compute.service.scheduler.FilterScheduler
 public fun interface HostFilter {
     /**
      * Test whether the specified [host] should be included in the selection
-     * for scheduling the specified [server].
+     * for scheduling the specified [task].
      */
     public fun test(
         host: HostView,
-        server: Server,
+        task: Task,
     ): Boolean
 }

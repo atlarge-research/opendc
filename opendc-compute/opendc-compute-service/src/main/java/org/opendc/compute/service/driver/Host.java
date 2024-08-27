@@ -25,14 +25,14 @@ package org.opendc.compute.service.driver;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import org.opendc.compute.api.Server;
+import org.opendc.compute.api.Task;
 import org.opendc.compute.service.driver.telemetry.GuestCpuStats;
 import org.opendc.compute.service.driver.telemetry.GuestSystemStats;
 import org.opendc.compute.service.driver.telemetry.HostCpuStats;
 import org.opendc.compute.service.driver.telemetry.HostSystemStats;
 
 /**
- * Base interface for representing compute resources that host virtualized {@link Server} instances.
+ * Base interface for representing compute resources that host virtualized {@link Task} instances.
  */
 public interface Host {
     /**
@@ -61,43 +61,43 @@ public interface Host {
     Map<String, ?> getMeta();
 
     /**
-     * Return the {@link Server} instances known to the host.
+     * Return the {@link Task} instances known to the host.
      */
-    Set<Server> getInstances();
+    Set<Task> getInstances();
 
     /**
-     * Determine whether the specified <code>server</code> can still fit on this host.
+     * Determine whether the specified <code>task</code> can still fit on this host.
      */
-    boolean canFit(Server server);
+    boolean canFit(Task task);
 
     /**
-     * Register the specified <code>server</code> on the host.
+     * Register the specified <code>task</code> on the host.
      */
-    void spawn(Server server);
+    void spawn(Task task);
 
     /**
-     * Determine whether the specified <code>server</code> exists on the host.
+     * Determine whether the specified <code>task</code> exists on the host.
      */
-    boolean contains(Server server);
+    boolean contains(Task task);
 
     /**
-     * Start the server if it is currently not running on this host.
+     * Start the task if it is currently not running on this host.
      *
-     * @throws IllegalArgumentException if the server is not present on the host.
+     * @throws IllegalArgumentException if the task is not present on the host.
      */
-    void start(Server server);
+    void start(Task task);
 
     /**
-     * Stop the server if it is currently running on this host.
+     * Stop the task if it is currently running on this host.
      *
-     * @throws IllegalArgumentException if the server is not present on the host.
+     * @throws IllegalArgumentException if the task is not present on the host.
      */
-    void stop(Server server);
+    void stop(Task task);
 
     /**
-     * Delete the specified <code>server</code> on this host and cleanup all resources associated with it.
+     * Delete the specified <code>task</code> on this host and cleanup all resources associated with it.
      */
-    void delete(Server server);
+    void delete(Task task);
 
     /**
      * Add a [HostListener] to this host.
@@ -115,12 +115,12 @@ public interface Host {
     HostSystemStats getSystemStats();
 
     /**
-     * Query the system statistics of a {@link Server} that is located on this host.
+     * Query the system statistics of a {@link Task} that is located on this host.
      *
-     * @param server The {@link Server} to obtain the system statistics of.
-     * @throws IllegalArgumentException if the server is not present on the host.
+     * @param task The {@link Task} to obtain the system statistics of.
+     * @throws IllegalArgumentException if the task is not present on the host.
      */
-    GuestSystemStats getSystemStats(Server server);
+    GuestSystemStats getSystemStats(Task task);
 
     /**
      * Query the CPU statistics of the host.
@@ -128,10 +128,10 @@ public interface Host {
     HostCpuStats getCpuStats();
 
     /**
-     * Query the CPU statistics of a {@link Server} that is located on this host.
+     * Query the CPU statistics of a {@link Task} that is located on this host.
      *
-     * @param server The {@link Server} to obtain the CPU statistics of.
-     * @throws IllegalArgumentException if the server is not present on the host.
+     * @param task The {@link Task} to obtain the CPU statistics of.
+     * @throws IllegalArgumentException if the task is not present on the host.
      */
-    GuestCpuStats getCpuStats(Server server);
+    GuestCpuStats getCpuStats(Task task);
 }

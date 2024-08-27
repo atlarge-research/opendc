@@ -29,7 +29,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.DOUBLE
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
-import org.opendc.compute.telemetry.table.ServerTableReader
+import org.opendc.compute.telemetry.table.TaskTableReader
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 
 /**
@@ -43,30 +43,30 @@ import org.opendc.trace.util.parquet.exporter.ExportColumn
  * ```kotlin
  * ...
  * // Loads the column
- * DfltServerExportColumns
+ * DfltTaskExportColumns
  * ...
  * ```
  */
-public object DfltServerExportColumns {
-    public val TIMESTAMP: ExportColumn<ServerTableReader> =
+public object DfltTaskExportColumns {
+    public val TIMESTAMP: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("timestamp"),
         ) { it.timestamp.toEpochMilli() }
 
-    public val TIMESTAMP_ABS: ExportColumn<ServerTableReader> =
+    public val TIMESTAMP_ABS: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
-    public val SERVER_ID: ExportColumn<ServerTableReader> =
+    public val TASK_ID: ExportColumn<TaskTableReader> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
-                    .named("server_id"),
-        ) { Binary.fromString(it.server.id) }
+                    .named("task_id"),
+        ) { Binary.fromString(it.task.id) }
 
-    public val HOST_ID: ExportColumn<ServerTableReader> =
+    public val HOST_ID: ExportColumn<TaskTableReader> =
         ExportColumn(
             field =
                 Types.optional(BINARY)
@@ -74,70 +74,70 @@ public object DfltServerExportColumns {
                     .named("host_id"),
         ) { it.host?.id?.let { Binary.fromString(it) } }
 
-    public val SERVER_NAME: ExportColumn<ServerTableReader> =
+    public val TASK_NAME: ExportColumn<TaskTableReader> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
-                    .named("server_name"),
-        ) { Binary.fromString(it.server.name) }
+                    .named("task_name"),
+        ) { Binary.fromString(it.task.name) }
 
-    public val CPU_COUNT: ExportColumn<ServerTableReader> =
+    public val CPU_COUNT: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT32).named("cpu_count"),
-        ) { it.server.cpuCount }
+        ) { it.task.cpuCount }
 
-    public val MEM_CAPACITY: ExportColumn<ServerTableReader> =
+    public val MEM_CAPACITY: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("mem_capacity"),
-        ) { it.server.memCapacity }
+        ) { it.task.memCapacity }
 
-    public val CPU_LIMIT: ExportColumn<ServerTableReader> =
+    public val CPU_LIMIT: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(DOUBLE).named("cpu_limit"),
         ) { it.cpuLimit }
 
-    public val CPU_TIME_ACTIVE: ExportColumn<ServerTableReader> =
+    public val CPU_TIME_ACTIVE: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_active"),
         ) { it.cpuActiveTime }
 
-    public val CPU_TIME_IDLE: ExportColumn<ServerTableReader> =
+    public val CPU_TIME_IDLE: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_idle"),
         ) { it.cpuIdleTime }
 
-    public val CPU_TIME_STEAL: ExportColumn<ServerTableReader> =
+    public val CPU_TIME_STEAL: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_steal"),
         ) { it.cpuStealTime }
 
-    public val CPU_TIME_LOST: ExportColumn<ServerTableReader> =
+    public val CPU_TIME_LOST: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_lost"),
         ) { it.cpuLostTime }
 
-    public val UP_TIME: ExportColumn<ServerTableReader> =
+    public val UP_TIME: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("uptime"),
         ) { it.uptime }
 
-    public val DOWN_TIME: ExportColumn<ServerTableReader> =
+    public val DOWN_TIME: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("downtime"),
         ) { it.downtime }
 
-    public val PROVISION_TIME: ExportColumn<ServerTableReader> =
+    public val PROVISION_TIME: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("provision_time"),
         ) { it.provisionTime?.toEpochMilli() }
 
-    public val BOOT_TIME: ExportColumn<ServerTableReader> =
+    public val BOOT_TIME: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("boot_time"),
         ) { it.bootTime?.toEpochMilli() }
 
-    public val BOOT_TIME_ABS: ExportColumn<ServerTableReader> =
+    public val BOOT_TIME_ABS: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("boot_time_absolute"),
         ) { it.bootTimeAbsolute?.toEpochMilli() }

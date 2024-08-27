@@ -20,25 +20,12 @@
  * SOFTWARE.
  */
 
-description = "Workflow orchestration service for OpenDC"
+package org.opendc.compute.api
 
-// Build configuration
-plugins {
-    `kotlin-library-conventions`
-}
-
-dependencies {
-    api(projects.opendcWorkflow.opendcWorkflowApi)
-    api(projects.opendcCompute.opendcComputeApi)
-    implementation(projects.opendcCommon)
-    implementation(libs.kotlin.logging)
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-service")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-simulator")))
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testImplementation(projects.opendcExperiments.opendcExperimentsWorkflow)
-    testImplementation(projects.opendcTrace.opendcTraceApi)
-    testRuntimeOnly(libs.log4j.core)
-    testRuntimeOnly(libs.log4j.slf4j)
-}
+/**
+ * This exception is thrown to indicate that the compute service does not have enough capacity at the moment to
+ * fulfill a launch request.
+ */
+public class InsufficientTaskCapacityException(
+    override val cause: Throwable? = null,
+) : Exception("There was insufficient capacity available to satisfy the launch request")

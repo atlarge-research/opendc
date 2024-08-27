@@ -29,15 +29,15 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.common.Dispatcher
 import org.opendc.common.asCoroutineDispatcher
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.carbon.CarbonTrace
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.telemetry.table.HostInfo
 import org.opendc.compute.telemetry.table.HostTableReader
-import org.opendc.compute.telemetry.table.ServerInfo
-import org.opendc.compute.telemetry.table.ServerTableReader
 import org.opendc.compute.telemetry.table.ServiceTableReader
+import org.opendc.compute.telemetry.table.TaskInfo
+import org.opendc.compute.telemetry.table.TaskTableReader
 import java.time.Duration
 import java.time.Instant
 
@@ -73,9 +73,9 @@ public class ComputeMetricReader(
     private val hostTableReaders = mutableMapOf<Host, HostTableReaderImpl>()
 
     /**
-     * Mapping from [Server] instances to [ServerTableReaderImpl]
+     * Mapping from [Task] instances to [TaskTableReaderImpl]
      */
-    private val serverTableReaders = mutableMapOf<Server, ServerTableReaderImpl>()
+    private val taskTableReaders = mutableMapOf<Task, TaskTableReaderImpl>()
 
     /**
      * The background job that is responsible for collecting the metrics every cycle.
@@ -109,8 +109,8 @@ public class ComputeMetricReader(
                 reader.reset()
             }
 
-            for (server in this.service.servers) {
-                val reader = this.serverTableReaders.computeIfAbsent(server) { ServerTableReaderImpl(service, it, startTime) }
+            for (task in this.service.tasks) {
+                val reader = this.taskTableReaders.computeIfAbsent(task) { TaskTableReaderImpl(service, it, startTime) }
                 reader.record(now)
                 this.monitor.record(reader.copy())
                 reader.reset()
@@ -147,9 +147,9 @@ public class ComputeMetricReader(
 
             _hostsUp = table.hostsUp
             _hostsDown = table.hostsDown
-            _serversTotal = table.serversTotal
-            _serversPending = table.serversPending
-            _serversActive = table.serversActive
+            _tasksTotal = table.tasksTotal
+            _tasksPending = table.tasksPending
+            _tasksActive = table.tasksActive
             _attemptsSuccess = table.attemptsSuccess
             _attemptsFailure = table.attemptsFailure
             _attemptsError = table.attemptsError
@@ -171,17 +171,17 @@ public class ComputeMetricReader(
             get() = _hostsDown
         private var _hostsDown = 0
 
-        override val serversTotal: Int
-            get() = _serversTotal
-        private var _serversTotal = 0
+        override val tasksTotal: Int
+            get() = _tasksTotal
+        private var _tasksTotal = 0
 
-        override val serversPending: Int
-            get() = _serversPending
-        private var _serversPending = 0
+        override val tasksPending: Int
+            get() = _tasksPending
+        private var _tasksPending = 0
 
-        override val serversActive: Int
-            get() = _serversActive
-        private var _serversActive = 0
+        override val tasksActive: Int
+            get() = _tasksActive
+        private var _tasksActive = 0
 
         override val attemptsSuccess: Int
             get() = _attemptsSuccess
@@ -205,9 +205,9 @@ public class ComputeMetricReader(
             val stats = service.getSchedulerStats()
             _hostsUp = stats.hostsAvailable
             _hostsDown = stats.hostsUnavailable
-            _serversTotal = stats.serversTotal
-            _serversPending = stats.serversPending
-            _serversActive = stats.serversActive
+            _tasksTotal = stats.tasksTotal
+            _tasksPending = stats.tasksPending
+            _tasksActive = stats.tasksActive
             _attemptsSuccess = stats.attemptsSuccess.toInt()
             _attemptsFailure = stats.attemptsFailure.toInt()
             _attemptsError = stats.attemptsError.toInt()
@@ -418,21 +418,21 @@ public class ComputeMetricReader(
     }
 
     /**
-     * An aggregator for server metrics before they are reported.
+     * An aggregator for task metrics before they are reported.
      */
-    private class ServerTableReaderImpl(
+    private class TaskTableReaderImpl(
         private val service: ComputeService,
-        server: Server,
+        task: Task,
         private val startTime: Duration = Duration.ofMillis(0),
-    ) : ServerTableReader {
-        override fun copy(): ServerTableReader {
-            val newServerTable = ServerTableReaderImpl(service, _server)
-            newServerTable.setValues(this)
+    ) : TaskTableReader {
+        override fun copy(): TaskTableReader {
+            val newTaskTable = TaskTableReaderImpl(service, _task)
+            newTaskTable.setValues(this)
 
-            return newServerTable
+            return newTaskTable
         }
 
-        override fun setValues(table: ServerTableReader) {
+        override fun setValues(table: TaskTableReader) {
             host = table.host
 
             _timestamp = table.timestamp
@@ -450,25 +450,25 @@ public class ComputeMetricReader(
             _bootTimeAbsolute = table.bootTimeAbsolute
         }
 
-        private val _server = server
+        private val _task = task
 
         /**
-         * The static information about this server.
+         * The static information about this task.
          */
-        override val server =
-            ServerInfo(
-                server.uid.toString(),
-                server.name,
+        override val task =
+            TaskInfo(
+                task.uid.toString(),
+                task.name,
                 "vm",
                 "x86",
-                server.image.uid.toString(),
-                server.image.name,
-                server.flavor.coreCount,
-                server.flavor.memorySize,
+                task.image.uid.toString(),
+                task.image.name,
+                task.flavor.coreCount,
+                task.flavor.memorySize,
             )
 
         /**
-         * The [HostInfo] of the host on which the server is hosted.
+         * The [HostInfo] of the host on which the task is hosted.
          */
         override var host: HostInfo? = null
         private var _host: Host? = null
@@ -531,14 +531,14 @@ public class ComputeMetricReader(
          * Record the next cycle.
          */
         fun record(now: Instant) {
-            val newHost = service.lookupHost(_server)
+            val newHost = service.lookupHost(_task)
             if (newHost != null && newHost.uid != _host?.uid) {
                 _host = newHost
                 host = HostInfo(newHost.uid.toString(), newHost.name, "x86", newHost.model.cpuCount, newHost.model.memoryCapacity)
             }
 
-            val cpuStats = _host?.getCpuStats(_server)
-            val sysStats = _host?.getSystemStats(_server)
+            val cpuStats = _host?.getCpuStats(_task)
+            val sysStats = _host?.getSystemStats(_task)
 
             _timestamp = now
             _timestampAbsolute = now + startTime
@@ -550,7 +550,7 @@ public class ComputeMetricReader(
             _cpuLostTime = cpuStats?.lostTime ?: 0
             _uptime = sysStats?.uptime?.toMillis() ?: 0
             _downtime = sysStats?.downtime?.toMillis() ?: 0
-            _provisionTime = _server.launchedAt
+            _provisionTime = _task.launchedAt
             _bootTime = sysStats?.bootTime
 
             if (sysStats != null) {

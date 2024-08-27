@@ -44,8 +44,8 @@ import org.opendc.common.util.Pacer;
 import org.opendc.compute.api.ComputeClient;
 import org.opendc.compute.api.Flavor;
 import org.opendc.compute.api.Image;
-import org.opendc.compute.api.Server;
-import org.opendc.compute.api.ServerState;
+import org.opendc.compute.api.Task;
+import org.opendc.compute.api.TaskState;
 import org.opendc.compute.service.driver.Host;
 import org.opendc.compute.service.driver.HostListener;
 import org.opendc.compute.service.driver.HostModel;
@@ -68,7 +68,7 @@ public final class ComputeService implements AutoCloseable {
     private final InstantSource clock;
 
     /**
-     * The {@link ComputeScheduler} responsible for placing the servers onto hosts.
+     * The {@link ComputeScheduler} responsible for placing the tasks onto hosts.
      */
     private final ComputeScheduler scheduler;
 
@@ -98,14 +98,14 @@ public final class ComputeService implements AutoCloseable {
     private final Set<HostView> availableHosts = new HashSet<>();
 
     /**
-     * The servers that should be launched by the service.
+     * The tasks that should be launched by the service.
      */
-    private final Deque<SchedulingRequest> queue = new ArrayDeque<>();
+    private final Deque<SchedulingRequest> taskQueue = new ArrayDeque<>();
 
     /**
-     * The active servers in the system.
+     * The active tasks in the system.
      */
-    private final Map<Server, Host> activeServers = new HashMap<>();
+    private final Map<Task, Host> activeTasks = new HashMap<>();
 
     /**
      * The registered flavors for this compute service.
@@ -122,14 +122,14 @@ public final class ComputeService implements AutoCloseable {
     private final List<ServiceImage> images = new ArrayList<>();
 
     /**
-     * The registered servers for this compute service.
+     * The registered tasks for this compute service.
      */
-    private final Map<UUID, ServiceServer> serverById = new HashMap<>();
+    private final Map<UUID, ServiceTask> taskById = new HashMap<>();
 
-    private final List<ServiceServer> servers = new ArrayList<>();
+    private final List<ServiceTask> tasks = new ArrayList<>();
 
     /**
-     * A [HostListener] used to track the active servers.
+     * A [HostListener] used to track the active tasks.
      */
     private final HostListener hostListener = new HostListener() {
         @Override
@@ -151,28 +151,26 @@ public final class ComputeService implements AutoCloseable {
         }
 
         @Override
-        public void onStateChanged(@NotNull Host host, @NotNull Server server, @NotNull ServerState newState) {
-            final ServiceServer serviceServer = (ServiceServer) server;
+        public void onStateChanged(@NotNull Host host, @NotNull Task task, @NotNull TaskState newState) {
+            final ServiceTask serviceTask = (ServiceTask) task;
 
-            if (serviceServer.getHost() != host) {
-                // This can happen when a server is rescheduled and started on another machine, while being deleted from
+            if (serviceTask.getHost() != host) {
+                // This can happen when a task is rescheduled and started on another machine, while being deleted from
                 // the old machine.
                 return;
             }
 
-            serviceServer.setState(newState);
+            serviceTask.setState(newState);
 
-            if (newState == ServerState.TERMINATED
-                    || newState == ServerState.DELETED
-                    || newState == ServerState.ERROR) {
-                LOGGER.info("Server {} {} {} finished", server.getUid(), server.getName(), server.getFlavor());
+            if (newState == TaskState.TERMINATED || newState == TaskState.DELETED || newState == TaskState.ERROR) {
+                LOGGER.info("task {} {} {} finished", task.getUid(), task.getName(), task.getFlavor());
 
-                if (activeServers.remove(server) != null) {
-                    serversActive--;
+                if (activeTasks.remove(task) != null) {
+                    tasksActive--;
                 }
 
                 HostView hv = hostToView.get(host);
-                final ServiceFlavor flavor = serviceServer.getFlavor();
+                final ServiceFlavor flavor = serviceTask.getFlavor();
                 if (hv != null) {
                     hv.provisionedCores -= flavor.getCoreCount();
                     hv.instanceCount--;
@@ -192,8 +190,8 @@ public final class ComputeService implements AutoCloseable {
     private long attemptsSuccess = 0L;
     private long attemptsFailure = 0L;
     private long attemptsError = 0L;
-    private int serversPending = 0;
-    private int serversActive = 0;
+    private int tasksPending = 0;
+    private int tasksActive = 0;
 
     /**
      * Construct a {@link ComputeService} instance.
@@ -222,10 +220,10 @@ public final class ComputeService implements AutoCloseable {
     }
 
     /**
-     * Return the {@link Server}s hosted by this service.
+     * Return the {@link Task}s hosted by this service.
      */
-    public List<Server> getServers() {
-        return Collections.unmodifiableList(servers);
+    public List<Task> getTasks() {
+        return Collections.unmodifiableList(tasks);
     }
 
     /**
@@ -265,15 +263,14 @@ public final class ComputeService implements AutoCloseable {
     }
 
     /**
-     * Lookup the {@link Host} that currently hosts the specified {@link Server}.
+     * Lookup the {@link Host} that currently hosts the specified {@link Task}.
      */
-    public Host lookupHost(Server server) {
-        if (server instanceof ServiceServer) {
-            return ((ServiceServer) server).getHost();
+    public Host lookupHost(Task task) {
+        if (task instanceof ServiceTask) {
+            return ((ServiceTask) task).getHost();
         }
 
-        ServiceServer internal =
-                Objects.requireNonNull(serverById.get(server.getUid()), "Invalid server passed to lookupHost");
+        ServiceTask internal = Objects.requireNonNull(taskById.get(task.getUid()), "Invalid task passed to lookupHost");
         return internal.getHost();
     }
 
@@ -294,9 +291,9 @@ public final class ComputeService implements AutoCloseable {
                 attemptsSuccess,
                 attemptsFailure,
                 attemptsError,
-                servers.size(),
-                serversPending,
-                serversActive);
+                tasks.size(),
+                tasksPending,
+                tasksActive);
     }
 
     @Override
@@ -310,17 +307,17 @@ public final class ComputeService implements AutoCloseable {
     }
 
     /**
-     * Enqueue the specified [server] to be scheduled onto a host.
+     * Enqueue the specified [task] to be scheduled onto a host.
      */
-    SchedulingRequest schedule(ServiceServer server) {
-        LOGGER.debug("Enqueueing server {} to be assigned to host", server.getUid());
+    SchedulingRequest schedule(ServiceTask task) {
+        LOGGER.debug("Enqueueing task {} to be assigned to host", task.getUid());
 
         long now = clock.millis();
-        SchedulingRequest request = new SchedulingRequest(server, now);
+        SchedulingRequest request = new SchedulingRequest(task, now);
 
-        server.launchedAt = Instant.ofEpochMilli(now);
-        queue.add(request);
-        serversPending++;
+        task.launchedAt = Instant.ofEpochMilli(now);
+        taskQueue.add(request);
+        tasksPending++;
         requestSchedulingCycle();
         return request;
     }
@@ -335,9 +332,9 @@ public final class ComputeService implements AutoCloseable {
         images.remove(image);
     }
 
-    void delete(ServiceServer server) {
-        serverById.remove(server.getUid());
-        servers.remove(server);
+    void delete(ServiceTask task) {
+        taskById.remove(task.getUid());
+        tasks.remove(task);
     }
 
     /**
@@ -345,7 +342,7 @@ public final class ComputeService implements AutoCloseable {
      */
     private void requestSchedulingCycle() {
         // Bail out in case the queue is empty.
-        if (queue.isEmpty()) {
+        if (taskQueue.isEmpty()) {
             return;
         }
 
@@ -358,35 +355,34 @@ public final class ComputeService implements AutoCloseable {
     private void doSchedule() {
         // reorder tasks
 
-        while (!queue.isEmpty()) {
-            SchedulingRequest request = queue.peek();
+        while (!taskQueue.isEmpty()) {
+            SchedulingRequest request = taskQueue.peek();
 
             if (request.isCancelled) {
-                queue.poll();
-                serversPending--;
+                taskQueue.poll();
+                tasksPending--;
                 continue;
             }
 
-            final ServiceServer server = request.server;
+            final ServiceTask task = request.task;
             // Check if all dependencies are met
             // otherwise continue
 
-            final ServiceFlavor flavor = server.getFlavor();
-            final HostView hv = scheduler.select(request.server);
+            final ServiceFlavor flavor = task.getFlavor();
+            final HostView hv = scheduler.select(request.task);
 
-            if (hv == null || !hv.getHost().canFit(server)) {
-                LOGGER.trace(
-                        "Server {} selected for scheduling but no capacity available for it at the moment", server);
+            if (hv == null || !hv.getHost().canFit(task)) {
+                LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);
 
                 if (flavor.getMemorySize() > maxMemory || flavor.getCoreCount() > maxCores) {
                     // Remove the incoming image
-                    queue.poll();
-                    serversPending--;
+                    taskQueue.poll();
+                    tasksPending--;
                     attemptsFailure++;
 
-                    LOGGER.warn("Failed to spawn {}: does not fit", server);
+                    LOGGER.warn("Failed to spawn {}: does not fit", task);
 
-                    server.setState(ServerState.TERMINATED);
+                    task.setState(TaskState.TERMINATED);
                     continue;
                 } else {
                     break;
@@ -396,25 +392,25 @@ public final class ComputeService implements AutoCloseable {
             Host host = hv.getHost();
 
             // Remove request from queue
-            queue.poll();
-            serversPending--;
+            taskQueue.poll();
+            tasksPending--;
 
-            LOGGER.info("Assigned server {} to host {}", server, host);
+            LOGGER.info("Assigned task {} to host {}", task, host);
 
             try {
-                server.host = host;
+                task.host = host;
 
-                host.spawn(server);
-                host.start(server);
+                host.spawn(task);
+                host.start(task);
 
-                serversActive++;
+                tasksActive++;
                 attemptsSuccess++;
 
                 hv.instanceCount++;
                 hv.provisionedCores += flavor.getCoreCount();
                 hv.availableMemory -= flavor.getMemorySize();
 
-                activeServers.put(server, host);
+                activeTasks.put(task, host);
             } catch (Exception cause) {
                 LOGGER.error("Failed to deploy VM", cause);
                 attemptsError++;
@@ -537,7 +533,7 @@ public final class ComputeService implements AutoCloseable {
 
         @NotNull
         @Override
-        public Server newServer(
+        public Task newTask(
                 @NotNull String name,
                 @NotNull Image image,
                 @NotNull Flavor flavor,
@@ -554,31 +550,31 @@ public final class ComputeService implements AutoCloseable {
             final ServiceImage internalImage =
                     Objects.requireNonNull(service.imageById.get(image.getUid()), "Unknown image");
 
-            ServiceServer server = new ServiceServer(service, uid, name, internalFlavor, internalImage, labels, meta);
+            ServiceTask task = new ServiceTask(service, uid, name, internalFlavor, internalImage, labels, meta);
 
-            service.serverById.put(uid, server);
-            service.servers.add(server);
+            service.taskById.put(uid, task);
+            service.tasks.add(task);
 
             if (start) {
-                server.start();
+                task.start();
             }
 
-            return server;
+            return task;
         }
 
         @Nullable
         @Override
-        public Server findServer(@NotNull UUID id) {
+        public Task findTask(@NotNull UUID id) {
             checkOpen();
-            return service.serverById.get(id);
+            return service.taskById.get(id);
         }
 
         @NotNull
         @Override
-        public List<Server> queryServers() {
+        public List<Task> queryTasks() {
             checkOpen();
 
-            return new ArrayList<>(service.servers);
+            return new ArrayList<>(service.tasks);
         }
 
         @Override
@@ -593,30 +589,30 @@ public final class ComputeService implements AutoCloseable {
 
         @Nullable
         @Override
-        public void rescheduleServer(@NotNull Server server, @NotNull SimWorkload workload) {
-            ServiceServer internalServer = (ServiceServer) findServer(server.getUid());
-            Host from = service.lookupHost(internalServer);
+        public void rescheduleTask(@NotNull Task task, @NotNull SimWorkload workload) {
+            ServiceTask internalTask = (ServiceTask) findTask(task.getUid());
+            Host from = service.lookupHost(internalTask);
 
-            from.delete(internalServer);
+            from.delete(internalTask);
 
-            internalServer.host = null;
+            internalTask.host = null;
 
-            internalServer.setWorkload(workload);
-            internalServer.start();
+            internalTask.setWorkload(workload);
+            internalTask.start();
         }
     }
 
     /**
-     * A request to schedule a {@link ServiceServer} onto one of the {@link Host}s.
+     * A request to schedule a {@link ServiceTask} onto one of the {@link Host}s.
      */
     static class SchedulingRequest {
-        final ServiceServer server;
+        final ServiceTask task;
         final long submitTime;
 
         boolean isCancelled;
 
-        SchedulingRequest(ServiceServer server, long submitTime) {
-            this.server = server;
+        SchedulingRequest(ServiceTask task, long submitTime) {
+            this.task = task;
             this.submitTime = submitTime;
         }
     }

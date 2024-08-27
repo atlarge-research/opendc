@@ -22,22 +22,22 @@
 
 package org.opendc.compute.service.scheduler.filters
 
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.service.HostView
 
 /**
- * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [Server] and the available
+ * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [Task] and the available
  * capacity on the host.
  */
 public class VCpuCapacityFilter : HostFilter {
     override fun test(
         host: HostView,
-        server: Server,
+        task: Task,
     ): Boolean {
-        val requiredCapacity = server.flavor.meta["cpu-capacity"] as? Double
+        val requiredCapacity = task.flavor.meta["cpu-capacity"] as? Double
         val hostModel = host.host.model
         val availableCapacity = hostModel.cpuCapacity / hostModel.cpuCount
 
-        return requiredCapacity == null || availableCapacity >= (requiredCapacity / server.flavor.coreCount)
+        return requiredCapacity == null || availableCapacity >= (requiredCapacity / task.flavor.coreCount)
     }
 }

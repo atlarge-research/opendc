@@ -22,7 +22,7 @@
 
 package org.opendc.compute.service.scheduler.weights
 
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.service.HostView
 
 /**
@@ -37,7 +37,7 @@ public class VCpuWeigher(private val allocationRatio: Double, override val multi
 
     override fun getWeight(
         host: HostView,
-        server: Server,
+        task: Task,
     ): Double {
         return host.host.model.cpuCount * allocationRatio - host.provisionedCores
     }

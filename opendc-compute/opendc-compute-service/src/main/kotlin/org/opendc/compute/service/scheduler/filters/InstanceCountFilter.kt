@@ -22,7 +22,7 @@
 
 package org.opendc.compute.service.scheduler.filters
 
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.service.HostView
 
 /**
@@ -33,7 +33,7 @@ import org.opendc.compute.service.HostView
 public class InstanceCountFilter(private val limit: Int) : HostFilter {
     override fun test(
         host: HostView,
-        server: Server,
+        task: Task,
     ): Boolean {
         return host.instanceCount < limit
     }

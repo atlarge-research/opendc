@@ -22,20 +22,20 @@
 
 package org.opendc.compute.service.scheduler.filters
 
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.service.HostView
 
 /**
- * A [HostFilter] that filters hosts based on the vCPU requirements of a [Server] and the available vCPUs on the host.
+ * A [HostFilter] that filters hosts based on the vCPU requirements of a [Task] and the available vCPUs on the host.
  *
  * @param allocationRatio Virtual CPU to physical CPU allocation ratio.
  */
 public class VCpuFilter(private val allocationRatio: Double) : HostFilter {
     override fun test(
         host: HostView,
-        server: Server,
+        task: Task,
     ): Boolean {
-        val requested = server.flavor.coreCount
+        val requested = task.flavor.coreCount
         val totalCores = host.host.model.coreCount
         val limit = totalCores * allocationRatio
 

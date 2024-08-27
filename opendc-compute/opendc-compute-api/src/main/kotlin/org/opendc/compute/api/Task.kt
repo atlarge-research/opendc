@@ -22,10 +22,53 @@
 
 package org.opendc.compute.api
 
+import java.time.Instant
+
 /**
- * This exception is thrown to indicate that the compute service does not have enough capacity at the moment to
- * fulfill a launch request.
+ * A stateful object representing a task instance that is running on some physical or virtual machine.
  */
-public class InsufficientServerCapacityException(
-    override val cause: Throwable? = null,
-) : Exception("There was insufficient capacity available to satisfy the launch request")
+public interface Task : Resource {
+    /**
+     * The flavor of the task.
+     */
+    public val flavor: Flavor
+
+    /**
+     * The image of the task.
+     */
+    public val image: Image
+
+    /**
+     * The last known state of the task.
+     */
+    public val state: TaskState
+
+    /**
+     * The most recent moment in time when the task was launched.
+     */
+    public val launchedAt: Instant?
+
+    /**
+     * Request the task to be started.
+     */
+    public fun start()
+
+    /**
+     * Request the task to be stopped.
+     */
+    public fun stop()
+
+    /**
+     * Register the specified [TaskWatcher] to watch the state of the task.
+     *
+     * @param watcher The watcher to register for the task.
+     */
+    public fun watch(watcher: TaskWatcher)
+
+    /**
+     * De-register the specified [TaskWatcher] from the task to stop it from receiving events.
+     *
+     * @param watcher The watcher to de-register from the task.
+     */
+    public fun unwatch(watcher: TaskWatcher)
+}

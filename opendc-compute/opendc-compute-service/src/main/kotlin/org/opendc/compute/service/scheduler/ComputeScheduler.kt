@@ -22,12 +22,12 @@
 
 package org.opendc.compute.service.scheduler
 
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.HostView
 
 /**
- * A generic scheduler interface used by the [ComputeService] to select hosts to place [Server]s on.
+ * A generic scheduler interface used by the [ComputeService] to select hosts to place [Task]s on.
  */
 public interface ComputeScheduler {
     /**
@@ -41,10 +41,10 @@ public interface ComputeScheduler {
     public fun removeHost(host: HostView)
 
     /**
-     * Select a host for the specified [server].
+     * Select a host for the specified [task].
      *
-     * @param server The server to select a host for.
+     * @param task The server to select a host for.
      * @return The host to schedule the server on or `null` if no server is available.
      */
-    public fun select(server: Server): HostView?
+    public fun select(task: Task): HostView?
 }

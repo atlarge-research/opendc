@@ -23,17 +23,17 @@
 package org.opendc.compute.api
 
 /**
- * An interface used to watch the state of [Server] instances.
+ * An interface used to watch the state of [Task] instances.
  */
-public interface ServerWatcher {
+public interface TaskWatcher {
     /**
-     * This method is invoked when the state of a [Server] changes.
+     * This method is invoked when the state of a [Task] changes.
      *
-     * @param server The server whose state has changed.
-     * @param newState The new state of the server.
+     * @param task The task whose state has changed.
+     * @param newState The new state of the task.
      */
     public fun onStateChanged(
-        server: Server,
-        newState: ServerState,
+        task: Task,
+        newState: TaskState,
     ) {}
 }
