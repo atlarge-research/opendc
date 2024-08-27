@@ -22,7 +22,8 @@
 
 package org.opendc.simulator.compute.workload;
 
-import java.util.Arrays;
+import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.List;
 import org.opendc.simulator.compute.SimMachineContext;
 import org.opendc.simulator.compute.SimProcessingUnit;
@@ -35,34 +36,16 @@ import org.opendc.simulator.flow2.OutPort;
  * A workload trace that describes the resource utilization over time in a collection of {@link SimTraceFragment}s.
  */
 public final class SimTrace {
-    private final double[] usageCol;
-    private final long[] deadlineCol;
-    private final int[] coresCol;
-    private final int size;
-
+    private final ArrayDeque<SimTraceFragment> fragments;
     /**
      * Construct a {@link SimTrace} instance.
      *
-     * @param usageCol The column containing the CPU usage of each fragment (in MHz).
-     * @param deadlineCol The column containing the ending timestamp for each fragment (in epoch millis).
-     * @param coresCol The column containing the utilized cores.
-     * @param size The number of fragments in the trace.
      */
-    private SimTrace(double[] usageCol, long[] deadlineCol, int[] coresCol, int size) {
-        if (size < 0) {
-            throw new IllegalArgumentException("Invalid trace size");
-        } else if (usageCol.length < size) {
-            throw new IllegalArgumentException("Invalid number of usage entries");
-        } else if (deadlineCol.length < size) {
-            throw new IllegalArgumentException("Invalid number of deadline entries");
-        } else if (coresCol.length < size) {
-            throw new IllegalArgumentException("Invalid number of core entries");
+    private SimTrace(ArrayDeque<SimTraceFragment> fragments) {
+        if (fragments.isEmpty()) {
+            throw new IllegalArgumentException("No Fragments found for the Trace");
         }
-
-        this.usageCol = usageCol;
-        this.deadlineCol = deadlineCol;
-        this.coresCol = coresCol;
-        this.size = size;
+        this.fragments = fragments;
     }
 
     /**
@@ -80,21 +63,14 @@ public final class SimTrace {
      * //     * @param offset The offset for the timestamps.
      */
     public SimWorkload createWorkload(long start, long checkpointTime, long checkpointWait) {
-        return new Workload(start, usageCol, deadlineCol, coresCol, size, 0, checkpointTime, checkpointWait);
+        return new Workload(start, fragments, checkpointTime, checkpointWait);
     }
 
-    /**
-     * Create a new {@link Builder} instance with the specified initial capacity.
-     */
-    public static Builder builder(int initialCapacity) {
-        return new Builder(initialCapacity);
-    }
-
-    /**
-     * Create a new {@link Builder} instance with a default initial capacity.
-     */
+    //    /**
+    //     * Create a new {@link Builder} instance with a default initial capacity.
+    //     */
     public static Builder builder() {
-        return builder(256);
+        return new Builder();
     }
 
     /**
@@ -103,10 +79,10 @@ public final class SimTrace {
      * @param fragments The array of fragments to construct the trace from.
      */
     public static SimTrace ofFragments(SimTraceFragment... fragments) {
-        final Builder builder = builder(fragments.length);
+        final Builder builder = builder();
 
         for (SimTraceFragment fragment : fragments) {
-            builder.add(fragment.timestamp + fragment.duration, fragment.usage, fragment.cores);
+            builder.add(fragment.deadline(), fragment.cpuUsage(), fragment.coreCount());
         }
 
         return builder.build();
@@ -118,10 +94,10 @@ public final class SimTrace {
      * @param fragments The fragments to construct the trace from.
      */
     public static SimTrace ofFragments(List<SimTraceFragment> fragments) {
-        final Builder builder = builder(fragments.size());
+        final Builder builder = builder();
 
         for (SimTraceFragment fragment : fragments) {
-            builder.add(fragment.timestamp + fragment.duration, fragment.usage, fragment.cores);
+            builder.add(fragment.deadline(), fragment.cpuUsage(), fragment.coreCount());
         }
 
         return builder.build();
@@ -131,20 +107,15 @@ public final class SimTrace {
      * Builder class for a {@link SimTrace}.
      */
     public static final class Builder {
-        private double[] usageCol;
-        private long[] deadlineCol;
-        private int[] coresCol;
+        private final ArrayDeque<SimTraceFragment> fragments;
 
-        private int size;
         private boolean isBuilt;
 
         /**
          * Construct a new {@link Builder} instance.
          */
-        private Builder(int initialCapacity) {
-            this.usageCol = new double[initialCapacity];
-            this.deadlineCol = new long[initialCapacity];
-            this.coresCol = new int[initialCapacity];
+        private Builder() {
+            this.fragments = new ArrayDeque<>();
         }
 
         /**
@@ -159,19 +130,7 @@ public final class SimTrace {
                 recreate();
             }
 
-            int size = this.size;
-            double[] usageCol = this.usageCol;
-
-            if (size == usageCol.length) {
-                grow();
-                usageCol = this.usageCol;
-            }
-
-            deadlineCol[size] = deadline;
-            usageCol[size] = usage;
-            coresCol[size] = cores;
-
-            this.size++;
+            fragments.add(new SimTraceFragment(deadline, usage, cores));
         }
 
         /**
@@ -179,19 +138,7 @@ public final class SimTrace {
          */
         public SimTrace build() {
             isBuilt = true;
-            return new SimTrace(usageCol, deadlineCol, coresCol, size);
-        }
-
-        /**
-         * Helper method to grow the capacity of the trace.
-         */
-        private void grow() {
-            int arraySize = usageCol.length;
-            int newSize = arraySize + (arraySize >> 1);
-
-            usageCol = Arrays.copyOf(usageCol, newSize);
-            deadlineCol = Arrays.copyOf(deadlineCol, newSize);
-            coresCol = Arrays.copyOf(coresCol, newSize);
+            return new SimTrace(fragments);
         }
 
         /**
@@ -203,9 +150,7 @@ public final class SimTrace {
          */
         private void recreate() {
             isBuilt = false;
-            usageCol = usageCol.clone();
-            deadlineCol = deadlineCol.clone();
-            coresCol = coresCol.clone();
+            this.fragments.clear();
         }
     }
 
@@ -218,33 +163,17 @@ public final class SimTrace {
         private long offset;
 
         private final long start;
-        private final double[] usageCol;
-        private final long[] deadlineCol;
-        private final int[] coresCol;
-        private final int size;
-        private final int index;
+        private final ArrayDeque<SimTraceFragment> fragments;
 
-        private long checkpointTime; // How long does it take to make a checkpoint?
-        private long checkpointWait; // How long to wait until a new checkpoint is made?
-        private long total_checks;
+        private long checkpointTime; // How long does it take to make a checkpoint
+        private long checkpointWait; // How long to wait until a new checkpoint is made
 
-        private Workload(
-                long start,
-                double[] usageCol,
-                long[] deadlineCol,
-                int[] coresCol,
-                int size,
-                int index,
-                long checkpointTime,
-                long checkpointWait) {
+        private Workload(long start, ArrayDeque<SimTraceFragment> fragments, long checkpointTime, long checkpointWait) {
             this.start = start;
-            this.usageCol = usageCol;
-            this.deadlineCol = deadlineCol;
-            this.coresCol = coresCol;
-            this.size = size;
-            this.index = index;
             this.checkpointTime = checkpointTime;
             this.checkpointWait = checkpointWait;
+
+            this.fragments = fragments;
         }
 
         @Override
@@ -256,12 +185,14 @@ public final class SimTrace {
         public void onStart(SimMachineContext ctx) {
             final WorkloadStageLogic logic;
             if (ctx.getCpus().size() == 1) {
-                logic = new SingleWorkloadLogic(ctx, offset, usageCol, deadlineCol, size, index);
+                logic = new SingleWorkloadLogic(ctx, offset, fragments.iterator());
             } else {
-                logic = new MultiWorkloadLogic(ctx, offset, usageCol, deadlineCol, coresCol, size, index);
+                logic = new MultiWorkloadLogic(ctx, offset, fragments.iterator());
             }
             this.logic = logic;
         }
+
+        public void injectFragment(long duration, double usage, int coreCount) {}
 
         @Override
         public void onStop(SimMachineContext ctx) {
@@ -276,13 +207,16 @@ public final class SimTrace {
         @Override
         public SimWorkload snapshot() {
             final WorkloadStageLogic logic = this.logic;
-            int index = this.index;
 
             if (logic != null) {
-                index = logic.getIndex();
+                int index = logic.getIndex();
+
+                for (int i = 0; i < index; i++) {
+                    this.fragments.removeFirst();
+                }
             }
 
-            return new Workload(start, usageCol, deadlineCol, coresCol, size, index, checkpointTime, checkpointWait);
+            return new Workload(start, this.fragments, checkpointTime, checkpointWait);
         }
     }
 
@@ -307,23 +241,19 @@ public final class SimTrace {
     private static class SingleWorkloadLogic implements WorkloadStageLogic {
         private final FlowStage stage;
         private final OutPort output;
-        private int index;
+        private int index = 0;
 
         private final long workloadOffset;
-        private final double[] cpuUsages;
-        private final long[] deadlines;
-        private final int traceSize;
-
         private final SimMachineContext ctx;
 
-        private SingleWorkloadLogic(
-                SimMachineContext ctx, long offset, double[] usageCol, long[] deadlineCol, int size, int index) {
+        private final Iterator<SimTraceFragment> fragments;
+        private SimTraceFragment currentFragment;
+
+        private SingleWorkloadLogic(SimMachineContext ctx, long offset, Iterator<SimTraceFragment> fragments) {
             this.ctx = ctx;
             this.workloadOffset = offset;
-            this.cpuUsages = usageCol;
-            this.deadlines = deadlineCol;
-            this.traceSize = size;
-            this.index = index;
+            this.fragments = fragments;
+            this.currentFragment = this.fragments.next();
 
             final FlowGraph graph = ctx.getGraph();
             final List<? extends SimProcessingUnit> cpus = ctx.getCpus();
@@ -339,19 +269,24 @@ public final class SimTrace {
 
         @Override
         public long onUpdate(FlowStage ctx, long now) {
+
             // Shift the current time to align with the starting time of the workload
             long nowOffset = now - this.workloadOffset;
-            long deadline = this.deadlines[this.index];
+
+            long deadline = currentFragment.deadline();
 
             // Loop through the deadlines until the next deadline is reached.
             while (deadline <= nowOffset) {
-                if (++this.index >= this.traceSize) {
+                if (!this.fragments.hasNext()) {
                     return doStop(ctx);
                 }
-                deadline = this.deadlines[this.index];
+
+                this.index++;
+                currentFragment = this.fragments.next();
+                deadline = currentFragment.deadline();
             }
 
-            this.output.push((float) this.cpuUsages[this.index]);
+            this.output.push((float) currentFragment.cpuUsage());
             return deadline + this.workloadOffset;
         }
 
@@ -384,38 +319,27 @@ public final class SimTrace {
     private static class MultiWorkloadLogic implements WorkloadStageLogic {
         private final FlowStage stage;
         private final OutPort[] outputs;
-        private int index;
-        private final int coreCount;
+        private int index = 0;
 
+        private final int coreCount;
         private final long offset;
-        private final double[] usageCol;
-        private final long[] deadlineCol;
-        private final int[] coresCol;
-        private final int traceSize;
+
+        private final Iterator<SimTraceFragment> fragments;
+        private SimTraceFragment currentFragment;
 
         private final SimMachineContext ctx;
 
-        private MultiWorkloadLogic(
-                SimMachineContext ctx,
-                long offset,
-                double[] usageCol,
-                long[] deadlineCol,
-                int[] coresCol,
-                int traceSize,
-                int index) {
+        private MultiWorkloadLogic(SimMachineContext ctx, long offset, Iterator<SimTraceFragment> fragments) {
             this.ctx = ctx;
             this.offset = offset;
-            this.usageCol = usageCol;
-            this.deadlineCol = deadlineCol;
-            this.coresCol = coresCol;
-            this.traceSize = traceSize;
-            this.index = index;
+            this.fragments = fragments;
+            this.currentFragment = this.fragments.next();
 
             final FlowGraph graph = ctx.getGraph();
             final List<? extends SimProcessingUnit> cpus = ctx.getCpus();
 
             stage = graph.newStage(this);
-            coreCount = cpus.size();
+            this.coreCount = cpus.size();
 
             final OutPort[] outputs = new OutPort[cpus.size()];
             this.outputs = outputs;
@@ -434,35 +358,34 @@ public final class SimTrace {
             long offset = this.offset;
             long nowOffset = now - offset;
 
-            int index = this.index;
+            long deadline = currentFragment.deadline();
 
-            long[] deadlines = deadlineCol;
-            long deadline = deadlines[index];
-
-            while (deadline <= nowOffset && ++index < this.traceSize) {
-                deadline = deadlines[index];
-            }
-
-            if (index >= this.traceSize) {
-                final SimMachineContext machineContext = this.ctx;
-                if (machineContext != null) {
-                    machineContext.shutdown();
+            while (deadline <= nowOffset) {
+                if (!this.fragments.hasNext()) {
+                    final SimMachineContext machineContext = this.ctx;
+                    if (machineContext != null) {
+                        machineContext.shutdown();
+                    }
+                    ctx.close();
+                    return Long.MAX_VALUE;
                 }
-                ctx.close();
-                return Long.MAX_VALUE;
+
+                this.index++;
+                currentFragment = this.fragments.next();
+                deadline = currentFragment.deadline();
             }
 
-            this.index = index;
-
-            int cores = Math.min(coreCount, coresCol[index]);
-            float usage = (float) usageCol[index] / cores;
+            int cores = Math.min(this.coreCount, currentFragment.coreCount());
+            float usage = (float) currentFragment.cpuUsage() / cores;
 
             final OutPort[] outputs = this.outputs;
 
+            // Push the usage to all active cores
             for (int i = 0; i < cores; i++) {
                 outputs[i].push(usage);
             }
 
+            // Push a usage of 0 to all non-active cores
             for (int i = cores; i < outputs.length; i++) {
                 outputs[i].push(0.f);
             }
