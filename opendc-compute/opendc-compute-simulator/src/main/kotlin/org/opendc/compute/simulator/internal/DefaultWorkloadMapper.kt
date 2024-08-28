@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.internal
 
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.simulator.SimMetaWorkloadMapper
 import org.opendc.compute.simulator.SimWorkloadMapper
 import org.opendc.simulator.compute.workload.SimWorkload
@@ -36,8 +36,8 @@ import java.time.Duration
 internal object DefaultWorkloadMapper : SimWorkloadMapper {
     private val delegate = SimMetaWorkloadMapper()
 
-    override fun createWorkload(server: Server): SimWorkload {
-        val workload = delegate.createWorkload(server)
+    override fun createWorkload(task: Task): SimWorkload {
+        val workload = delegate.createWorkload(task)
         // FIXME: look at connecting this to frontend. Probably not needed since the duration is so small
         val bootWorkload = SimWorkloads.runtime(Duration.ofMillis(1), 0.8, 0L, 0L)
         return SimWorkloads.chain(bootWorkload, workload)

@@ -23,6 +23,9 @@
 package org.opendc.compute.topology.specs
 
 import kotlinx.serialization.Serializable
+import org.opendc.common.units.DataSize
+import org.opendc.common.units.Frequency
+import org.opendc.common.units.Power
 
 /**
  * Definition of a Topology modeled in the simulation.
@@ -64,7 +67,7 @@ public data class HostJSONSpec(
     val name: String? = null,
     val cpu: CPUSpec,
     val memory: MemorySpec,
-    val powerModel: PowerModelSpec = PowerModelSpec("linear", 350.0, 400.0, 200.0),
+    val powerModel: PowerModelSpec = PowerModelSpec.DFLT,
     val count: Int = 1,
 )
 
@@ -75,7 +78,7 @@ public data class HostJSONSpec(
  * @param modelName The model name of the device.
  * @param arch The micro-architecture of the processor node.
  * @param coreCount The number of cores in the CPU
- * @param coreSpeed The speed of the cores in Mhz
+ * @param coreSpeed The speed of the cores
  */
 @Serializable
 public data class CPUSpec(
@@ -83,7 +86,7 @@ public data class CPUSpec(
     val modelName: String = "unknown",
     val arch: String = "unknown",
     val coreCount: Int,
-    val coreSpeed: Double,
+    val coreSpeed: Frequency,
     val count: Int = 1,
 )
 
@@ -93,26 +96,36 @@ public data class CPUSpec(
  * @param vendor The vendor of the storage device.
  * @param modelName The model name of the device.
  * @param arch The micro-architecture of the processor node.
- * @param memorySpeed The speed of the cores in ?
- * @param memorySize The size of the memory Unit in MiB
+ * @param memorySpeed The speed of the cores
+ * @param memorySize The size of the memory Unit
  */
 @Serializable
 public data class MemorySpec(
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val arch: String = "unknown",
-    val memorySpeed: Double = -1.0,
-    val memorySize: Long,
+    val memorySpeed: Frequency = Frequency.ofMHz(-1),
+    val memorySize: DataSize,
 )
 
 @Serializable
 public data class PowerModelSpec(
     val modelType: String,
-    val power: Double = 400.0,
-    val maxPower: Double,
-    val idlePower: Double,
+    val power: Power = Power.ofWatts(400),
+    val maxPower: Power,
+    val idlePower: Power,
 ) {
     init {
         require(maxPower >= idlePower) { "The max power of a power model can not be less than the idle power" }
+    }
+
+    public companion object {
+        public val DFLT: PowerModelSpec =
+            PowerModelSpec(
+                modelType = "linear",
+                power = Power.ofWatts(350),
+                maxPower = Power.ofWatts(400.0),
+                idlePower = Power.ofWatts(200.0),
+            )
     }
 }

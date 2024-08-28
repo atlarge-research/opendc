@@ -31,9 +31,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.Image
-import org.opendc.compute.api.Server
-import org.opendc.compute.api.ServerState
-import org.opendc.compute.api.ServerWatcher
+import org.opendc.compute.api.Task
+import org.opendc.compute.api.TaskState
+import org.opendc.compute.api.TaskWatcher
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.simulator.compute.SimBareMetalMachine
@@ -119,16 +119,16 @@ internal class SimHostTest {
 
                         override fun onStateChanged(
                             host: Host,
-                            server: Server,
-                            newState: ServerState,
+                            task: Task,
+                            newState: TaskState,
                         ) {
-                            if (newState == ServerState.TERMINATED && ++finished == 1) {
+                            if (newState == TaskState.TERMINATED && ++finished == 1) {
                                 cont.resume(Unit)
                             }
                         }
                     },
                 )
-                val server = MockServer(UUID.randomUUID(), "a", flavor, vmImage)
+                val server = MockTask(UUID.randomUUID(), "a", flavor, vmImage)
                 host.spawn(server)
                 host.start(server)
             }
@@ -211,18 +211,18 @@ internal class SimHostTest {
 
                             override fun onStateChanged(
                                 host: Host,
-                                server: Server,
-                                newState: ServerState,
+                                task: Task,
+                                newState: TaskState,
                             ) {
-                                if (newState == ServerState.TERMINATED && ++finished == 2) {
+                                if (newState == TaskState.TERMINATED && ++finished == 2) {
                                     cont.resume(Unit)
                                 }
                             }
                         },
                     )
-                    val serverA = MockServer(UUID.randomUUID(), "a", flavor, vmImageA)
+                    val serverA = MockTask(UUID.randomUUID(), "a", flavor, vmImageA)
                     host.spawn(serverA)
-                    val serverB = MockServer(UUID.randomUUID(), "b", flavor, vmImageB)
+                    val serverB = MockTask(UUID.randomUUID(), "b", flavor, vmImageB)
                     host.spawn(serverB)
 
                     host.start(serverA)
@@ -282,7 +282,7 @@ internal class SimHostTest {
                     ),
                 )
             val flavor = MockFlavor(2, 0)
-            val server = MockServer(UUID.randomUUID(), "a", flavor, image)
+            val server = MockTask(UUID.randomUUID(), "a", flavor, image)
 
             coroutineScope {
                 host.spawn(server)
@@ -297,10 +297,10 @@ internal class SimHostTest {
                         object : HostListener {
                             override fun onStateChanged(
                                 host: Host,
-                                server: Server,
-                                newState: ServerState,
+                                task: Task,
+                                newState: TaskState,
                             ) {
-                                if (newState == ServerState.TERMINATED) {
+                                if (newState == TaskState.TERMINATED) {
                                     cont.resume(Unit)
                                 }
                             }
@@ -360,17 +360,17 @@ internal class SimHostTest {
         }
     }
 
-    private class MockServer(
+    private class MockTask(
         override val uid: UUID,
         override val name: String,
         override val flavor: Flavor,
         override val image: Image,
-    ) : Server {
+    ) : Task {
         override val labels: Map<String, String> = emptyMap()
 
         override val meta: Map<String, Any> = emptyMap()
 
-        override val state: ServerState = ServerState.TERMINATED
+        override val state: TaskState = TaskState.TERMINATED
 
         override val launchedAt: Instant? = null
 
@@ -380,9 +380,9 @@ internal class SimHostTest {
 
         override fun delete() {}
 
-        override fun watch(watcher: ServerWatcher) {}
+        override fun watch(watcher: TaskWatcher) {}
 
-        override fun unwatch(watcher: ServerWatcher) {}
+        override fun unwatch(watcher: TaskWatcher) {}
 
         override fun reload() {}
     }

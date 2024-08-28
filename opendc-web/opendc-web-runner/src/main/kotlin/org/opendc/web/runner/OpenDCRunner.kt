@@ -297,8 +297,8 @@ public class OpenDCRunner(
                             "Success=${serviceMetrics.attemptsSuccess} " +
                             "Failure=${serviceMetrics.attemptsFailure} " +
                             "Error=${serviceMetrics.attemptsError} " +
-                            "Pending=${serviceMetrics.serversPending} " +
-                            "Active=${serviceMetrics.serversActive}"
+                            "Pending=${serviceMetrics.tasksPending} " +
+                            "Active=${serviceMetrics.tasksActive}"
                     }
                 }
             }

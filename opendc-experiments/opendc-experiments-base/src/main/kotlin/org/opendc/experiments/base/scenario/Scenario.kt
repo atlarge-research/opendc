@@ -22,6 +22,7 @@
 
 package org.opendc.experiments.base.scenario
 
+import org.opendc.compute.telemetry.export.parquet.ComputeExportConfig
 import org.opendc.experiments.base.scenario.specs.AllocationPolicySpec
 import org.opendc.experiments.base.scenario.specs.CheckpointModelSpec
 import org.opendc.experiments.base.scenario.specs.ExportModelSpec
@@ -41,6 +42,7 @@ import org.opendc.experiments.base.scenario.specs.WorkloadSpec
  * @property name The String representing the name of the scenario. It defaults to an empty string.
  * @property runs The Int representing the number of runs of the scenario. It defaults to 1.
  * @property initialSeed The Int representing the initial seed of the scenario. It defaults to 0.
+ * @property computeExportConfig configures which parquet columns are to be included in the output files.
  */
 public data class Scenario(
     var id: Int = -1,
@@ -53,6 +55,7 @@ public data class Scenario(
     val exportModelSpec: ExportModelSpec = ExportModelSpec(),
     val m3saSetup: String = "",
     val outputFolder: String = "output",
+    val computeExportConfig: ComputeExportConfig,
     val name: String = "",
     val runs: Int = 1,
     val initialSeed: Int = 0,

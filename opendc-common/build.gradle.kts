@@ -26,10 +26,19 @@ description = "Common functionality used across OpenDC modules"
 // Build configuration
 plugins {
     `kotlin-library-conventions`
+    kotlin("plugin.serialization") version "1.9.22"
 }
+
+val serializationVersion = "1.6.0"
 
 dependencies {
     api(libs.kotlinx.coroutines)
+    implementation(libs.kotlin.logging)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
+
+    api(libs.log4j.core)
+    api(libs.log4j.slf4j)
+    api(libs.kotlin.logging)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
 }

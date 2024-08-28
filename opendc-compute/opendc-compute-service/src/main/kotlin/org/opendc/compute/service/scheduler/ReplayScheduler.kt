@@ -23,7 +23,7 @@
 package org.opendc.compute.service.scheduler
 
 import mu.KotlinLogging
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.service.HostView
 
 /**
@@ -48,14 +48,14 @@ public class ReplayScheduler(private val vmPlacements: Map<String, String>) : Co
         hosts.remove(host)
     }
 
-    override fun select(server: Server): HostView? {
+    override fun select(task: Task): HostView? {
         val clusterName =
-            vmPlacements[server.name]
-                ?: throw IllegalStateException("Could not find placement data in VM placement file for VM ${server.name}")
+            vmPlacements[task.name]
+                ?: throw IllegalStateException("Could not find placement data in VM placement file for VM ${task.name}")
         val machinesInCluster = hosts.filter { it.host.name.contains(clusterName) }
 
         if (machinesInCluster.isEmpty()) {
-            logger.info { "Could not find any machines belonging to cluster $clusterName for image ${server.name}, assigning randomly." }
+            logger.info { "Could not find any machines belonging to cluster $clusterName for image ${task.name}, assigning randomly." }
             return hosts.maxByOrNull { it.availableMemory }
         }
 

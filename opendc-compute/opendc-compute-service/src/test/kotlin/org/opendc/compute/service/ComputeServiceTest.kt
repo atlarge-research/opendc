@@ -36,9 +36,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.Image
-import org.opendc.compute.api.Server
-import org.opendc.compute.api.ServerState
-import org.opendc.compute.api.ServerWatcher
+import org.opendc.compute.api.Task
+import org.opendc.compute.api.TaskState
+import org.opendc.compute.api.TaskWatcher
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostModel
@@ -78,21 +78,21 @@ internal class ComputeServiceTest {
 
             assertEquals(emptyList<Flavor>(), client.queryFlavors())
             assertEquals(emptyList<Image>(), client.queryImages())
-            assertEquals(emptyList<Server>(), client.queryServers())
+            assertEquals(emptyList<Task>(), client.queryTasks())
 
             client.close()
 
             assertThrows<IllegalStateException> { client.queryFlavors() }
             assertThrows<IllegalStateException> { client.queryImages() }
-            assertThrows<IllegalStateException> { client.queryServers() }
+            assertThrows<IllegalStateException> { client.queryTasks() }
 
             assertThrows<IllegalStateException> { client.findFlavor(UUID.randomUUID()) }
             assertThrows<IllegalStateException> { client.findImage(UUID.randomUUID()) }
-            assertThrows<IllegalStateException> { client.findServer(UUID.randomUUID()) }
+            assertThrows<IllegalStateException> { client.findTask(UUID.randomUUID()) }
 
             assertThrows<IllegalStateException> { client.newFlavor("test", 1, 2) }
             assertThrows<IllegalStateException> { client.newImage("test") }
-            assertThrows<IllegalStateException> { client.newServer("test", mockk(), mockk()) }
+            assertThrows<IllegalStateException> { client.newTask("test", mockk(), mockk()) }
         }
 
     @Test
@@ -106,12 +106,12 @@ internal class ComputeServiceTest {
             val image = client.newImage("test")
             assertEquals(listOf(image), client.queryImages())
             assertEquals(image, client.findImage(image.uid))
-            val server = client.newServer("test", image, flavor, start = false)
-            assertEquals(listOf(server), client.queryServers())
-            assertEquals(server, client.findServer(server.uid))
+            val server = client.newTask("test", image, flavor, start = false)
+            assertEquals(listOf(server), client.queryTasks())
+            assertEquals(server, client.findTask(server.uid))
 
             server.delete()
-            assertNull(client.findServer(server.uid))
+            assertNull(client.findTask(server.uid))
 
             image.delete()
             assertNull(client.findImage(image.uid))
@@ -174,12 +174,12 @@ internal class ComputeServiceTest {
             val client = service.newClient()
             val flavor = client.newFlavor("test", 1, 0)
             val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+            val server = client.newTask("test", image, flavor, start = false)
 
             server.start()
             delay(5L * 60 * 1000)
             server.reload()
-            assertEquals(ServerState.TERMINATED, server.state)
+            assertEquals(TaskState.TERMINATED, server.state)
         }
 
     @Test
@@ -188,12 +188,12 @@ internal class ComputeServiceTest {
             val client = service.newClient()
             val flavor = client.newFlavor("test", 0, 1024)
             val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+            val server = client.newTask("test", image, flavor, start = false)
 
             server.start()
             delay(5L * 60 * 1000)
             server.reload()
-            assertEquals(ServerState.TERMINATED, server.state)
+            assertEquals(TaskState.TERMINATED, server.state)
         }
 
     @Test
@@ -202,12 +202,12 @@ internal class ComputeServiceTest {
             val client = service.newClient()
             val flavor = client.newFlavor("test", 1, 1024)
             val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+            val server = client.newTask("test", image, flavor, start = false)
 
             server.start()
             delay(5L * 60 * 1000)
             server.reload()
-            assertEquals(ServerState.TERMINATED, server.state)
+            assertEquals(TaskState.TERMINATED, server.state)
         }
 
     @Test
@@ -216,13 +216,13 @@ internal class ComputeServiceTest {
             val client = service.newClient()
             val flavor = client.newFlavor("test", 1, 1024)
             val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+            val server = client.newTask("test", image, flavor, start = false)
 
             server.start()
             server.stop()
             delay(5L * 60 * 1000)
             server.reload()
-            assertEquals(ServerState.TERMINATED, server.state)
+            assertEquals(TaskState.TERMINATED, server.state)
         }
 
     @Test
@@ -239,12 +239,12 @@ internal class ComputeServiceTest {
             val client = service.newClient()
             val flavor = client.newFlavor("test", 1, 1024)
             val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+            val server = client.newTask("test", image, flavor, start = false)
 
             server.start()
             delay(10L * 60 * 1000)
             server.reload()
-            assertEquals(ServerState.PROVISIONING, server.state)
+            assertEquals(TaskState.PROVISIONING, server.state)
 
             verify { host.canFit(server) }
         }
@@ -266,7 +266,7 @@ internal class ComputeServiceTest {
             val client = service.newClient()
             val flavor = client.newFlavor("test", 1, 1024)
             val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+            val server = client.newTask("test", image, flavor, start = false)
 
             server.start()
             delay(5L * 60 * 1000)
@@ -276,7 +276,7 @@ internal class ComputeServiceTest {
 
             delay(5L * 60 * 1000)
             server.reload()
-            assertEquals(ServerState.PROVISIONING, server.state)
+            assertEquals(TaskState.PROVISIONING, server.state)
 
             verify { host.canFit(server) }
         }
@@ -298,7 +298,7 @@ internal class ComputeServiceTest {
             val client = service.newClient()
             val flavor = client.newFlavor("test", 1, 1024)
             val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+            val server = client.newTask("test", image, flavor, start = false)
 
             delay(5L * 60 * 1000)
 
@@ -308,7 +308,7 @@ internal class ComputeServiceTest {
             server.start()
             delay(5L * 60 * 1000)
             server.reload()
-            assertEquals(ServerState.PROVISIONING, server.state)
+            assertEquals(TaskState.PROVISIONING, server.state)
 
             verify(exactly = 0) { host.canFit(server) }
         }
@@ -330,10 +330,10 @@ internal class ComputeServiceTest {
             val client = service.newClient()
             val flavor = client.newFlavor("test", 1, 1024)
             val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
-            val slot = slot<Server>()
+            val server = client.newTask("test", image, flavor, start = false)
+            val slot = slot<Task>()
 
-            val watcher = mockk<ServerWatcher>(relaxUnitFun = true)
+            val watcher = mockk<TaskWatcher>(relaxUnitFun = true)
             server.watch(watcher)
 
             // Start server
@@ -341,20 +341,20 @@ internal class ComputeServiceTest {
             delay(5L * 60 * 1000)
             coVerify { host.spawn(capture(slot)) }
 
-            listeners.forEach { it.onStateChanged(host, slot.captured, ServerState.RUNNING) }
+            listeners.forEach { it.onStateChanged(host, slot.captured, TaskState.RUNNING) }
 
             server.reload()
-            assertEquals(ServerState.RUNNING, server.state)
+            assertEquals(TaskState.RUNNING, server.state)
 
-            verify { watcher.onStateChanged(server, ServerState.RUNNING) }
+            verify { watcher.onStateChanged(server, TaskState.RUNNING) }
 
             // Stop server
-            listeners.forEach { it.onStateChanged(host, slot.captured, ServerState.TERMINATED) }
+            listeners.forEach { it.onStateChanged(host, slot.captured, TaskState.TERMINATED) }
 
             server.reload()
-            assertEquals(ServerState.TERMINATED, server.state)
+            assertEquals(TaskState.TERMINATED, server.state)
 
-            verify { watcher.onStateChanged(server, ServerState.TERMINATED) }
+            verify { watcher.onStateChanged(server, TaskState.TERMINATED) }
         }
 
     @Test
@@ -375,12 +375,12 @@ internal class ComputeServiceTest {
             val client = service.newClient()
             val flavor = client.newFlavor("test", 1, 1024)
             val image = client.newImage("test")
-            val server = client.newServer("test", image, flavor, start = false)
+            val server = client.newTask("test", image, flavor, start = false)
 
             server.start()
             delay(5L * 60 * 1000)
 
             server.reload()
-            assertEquals(ServerState.PROVISIONING, server.state)
+            assertEquals(TaskState.PROVISIONING, server.state)
         }
 }

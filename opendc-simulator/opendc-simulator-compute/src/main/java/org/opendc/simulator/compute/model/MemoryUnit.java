@@ -39,7 +39,7 @@ public final class MemoryUnit {
      * @param vendor The vendor of the storage device.
      * @param modelName The model name of the device.
      * @param speed The access speed of the memory in MHz.
-     * @param size The size of the memory unit in MBs.
+     * @param size The size of the memory unit in MiBs.
      */
     public MemoryUnit(String vendor, String modelName, double speed, long size) {
         this.vendor = vendor;

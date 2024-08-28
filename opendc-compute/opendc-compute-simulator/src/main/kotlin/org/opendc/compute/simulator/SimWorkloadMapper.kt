@@ -23,15 +23,15 @@
 package org.opendc.compute.simulator
 
 import org.opendc.compute.api.Image
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
- * A [SimWorkloadMapper] is responsible for mapping a [Server] and [Image] to a [SimWorkload] that can be simulated.
+ * A [SimWorkloadMapper] is responsible for mapping a [Task] and [Image] to a [SimWorkload] that can be simulated.
  */
 public fun interface SimWorkloadMapper {
     /**
-     * Map the specified [server] to a [SimWorkload] that can be simulated.
+     * Map the specified [task] to a [SimWorkload] that can be simulated.
      */
-    public fun createWorkload(server: Server): SimWorkload
+    public fun createWorkload(task: Task): SimWorkload
 }

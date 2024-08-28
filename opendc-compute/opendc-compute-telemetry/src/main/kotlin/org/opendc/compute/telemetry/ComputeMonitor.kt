@@ -23,8 +23,8 @@
 package org.opendc.compute.telemetry
 
 import org.opendc.compute.telemetry.table.HostTableReader
-import org.opendc.compute.telemetry.table.ServerTableReader
 import org.opendc.compute.telemetry.table.ServiceTableReader
+import org.opendc.compute.telemetry.table.TaskTableReader
 
 /**
  * A monitor that tracks the metrics and events of the OpenDC Compute service.
@@ -33,7 +33,7 @@ public interface ComputeMonitor {
     /**
      * Record an entry with the specified [reader].
      */
-    public fun record(reader: ServerTableReader) {}
+    public fun record(reader: TaskTableReader) {}
 
     /**
      * Record an entry with the specified [reader].

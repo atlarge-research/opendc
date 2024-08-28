@@ -22,14 +22,14 @@
 
 package org.opendc.compute.simulator
 
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
- * A [SimWorkloadMapper] that maps a [Server] to a workload via the meta-data.
+ * A [SimWorkloadMapper] that maps a [Task] to a workload via the meta-data.
  */
 public class SimMetaWorkloadMapper(private val key: String = "workload") : SimWorkloadMapper {
-    override fun createWorkload(server: Server): SimWorkload {
-        return requireNotNull(server.meta[key] ?: server.image.meta[key]) as SimWorkload
+    override fun createWorkload(task: Task): SimWorkload {
+        return requireNotNull(task.meta[key] ?: task.image.meta[key]) as SimWorkload
     }
 }

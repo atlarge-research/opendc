@@ -22,7 +22,7 @@
 
 package org.opendc.compute.service.scheduler.weights
 
-import org.opendc.compute.api.Server
+import org.opendc.compute.api.Task
 import org.opendc.compute.service.HostView
 
 /**
@@ -31,11 +31,11 @@ import org.opendc.compute.service.HostView
 public class VCpuCapacityWeigher(override val multiplier: Double = 1.0) : HostWeigher {
     override fun getWeight(
         host: HostView,
-        server: Server,
+        task: Task,
     ): Double {
         val model = host.host.model
-        val requiredCapacity = server.flavor.meta["cpu-capacity"] as? Double ?: 0.0
-        return model.cpuCapacity / model.cpuCount - requiredCapacity / server.flavor.coreCount
+        val requiredCapacity = task.flavor.meta["cpu-capacity"] as? Double ?: 0.0
+        return model.cpuCapacity / model.cpuCount - requiredCapacity / task.flavor.coreCount
     }
 
     override fun toString(): String = "VCpuWeigher"

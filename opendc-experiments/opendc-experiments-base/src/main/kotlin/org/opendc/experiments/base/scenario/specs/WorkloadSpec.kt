@@ -67,6 +67,6 @@ public enum class WorkloadTypes {
  */
 public fun getWorkloadType(type: WorkloadTypes): ComputeWorkload {
     return when (type) {
-        WorkloadTypes.ComputeWorkload -> trace("trace").sampleByLoad(1.0)
+        WorkloadTypes.ComputeWorkload -> trace().sampleByLoad(1.0)
     }
 }

@@ -104,9 +104,9 @@ internal class WebComputeMonitor : ComputeMonitor {
             hostAggregateMetrics.totalPowerDraw,
             hostAggregateMetrics.totalFailureSlices.roundToLong(),
             hostAggregateMetrics.totalFailureVmSlices.roundToLong(),
-            serviceData.serversTotal,
-            serviceData.serversPending,
-            serviceData.serversTotal - serviceData.serversPending - serviceData.serversActive,
+            serviceData.tasksTotal,
+            serviceData.tasksPending,
+            serviceData.tasksTotal - serviceData.tasksPending - serviceData.tasksActive,
             serviceData.attemptsError + serviceData.attemptsFailure,
         )
     }

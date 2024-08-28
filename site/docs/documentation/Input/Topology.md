@@ -178,3 +178,38 @@ Following is an example of a more complex topology:
 
 This topology defines two types of hosts with different coreCount, and coreSpeed.
 Both types of hosts are created twice. 
+
+
+### With Units of Measure
+
+Aside from using number to indicate values it is also possible to define values using strings. This allows the user to define the unit of the input parameter.
+```json
+{
+    "clusters": [
+        {
+            "count": 2,
+            "hosts" :
+            [
+                {
+                    "name": "H01",
+                    "cpu":
+                    {
+                        "coreCount": 8,
+                        "coreSpeed": "3.2 Ghz"
+                    },
+                    "memory": {
+                        "memorySize": "128e3 MiB",
+                        "memorySpeed": "1 Mhz"
+                    },
+                    "powerModel": {
+                        "modelType": "linear",
+                        "power": "400 Watts",
+                        "maxPower": "1 KW",
+                        "idlePower": "0.4W"
+                    }
+                }
+            ]
+        }
+    ]
+}
+```

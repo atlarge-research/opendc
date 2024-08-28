@@ -33,7 +33,7 @@ import org.opendc.compute.workload.internal.TraceComputeWorkload
  * Construct a workload from a trace.
  */
 public fun trace(
-    name: String,
+    name: String = "",
     format: String = "opendc-vm",
 ): ComputeWorkload = TraceComputeWorkload(name, format)
 
