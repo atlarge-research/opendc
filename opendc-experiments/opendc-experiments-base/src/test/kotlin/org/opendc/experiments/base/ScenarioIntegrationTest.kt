@@ -119,7 +119,8 @@ class ScenarioIntegrationTest {
                 { assertEquals(50, monitor.attemptsSuccess, "The scheduler should schedule 50 VMs") },
                 { assertEquals(0, monitor.tasksActive, "All VMs should finish after a run") },
                 { assertEquals(0, monitor.attemptsFailure, "No VM should be unscheduled") },
-                { assertEquals(0, monitor.serversPending, "No VM should not be in the queue") },
+//              { assertEquals(0, monitor.serversPending, "No VM should not be in the queue") },
+//              monitor.serversPending are not anymore in monitor. Consider reviewing, or removing this test.
                 { assertEquals(43795635985, monitor.idleTime) { "Incorrect idle time" } },
                 { assertEquals(2865062014, monitor.activeTime) { "Incorrect active time" } },
                 { assertEquals(148, monitor.stealTime) { "Incorrect steal time" } },
