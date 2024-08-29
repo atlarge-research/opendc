@@ -26,29 +26,29 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import org.opendc.compute.telemetry.export.parquet.ComputeExportConfig
-import org.opendc.experiments.base.scenario.specs.ScenariosSpec
+import org.opendc.experiments.base.scenario.specs.ExperimentSpec
 import java.io.File
 import java.io.InputStream
 import java.nio.file.Path
 import kotlin.io.path.inputStream
 
-public class ScenarioReader {
+public class ExperimentReader {
 //    private val jsonReader = Json { serializersModule = failureModule }
     private val jsonReader = Json
 
-    public fun read(file: File): ScenariosSpec = read(file.inputStream())
+    public fun read(file: File): ExperimentSpec = read(file.inputStream())
 
-    public fun read(path: Path): ScenariosSpec = read(path.inputStream())
+    public fun read(path: Path): ExperimentSpec = read(path.inputStream())
 
     /**
      * Read the specified [input].
      */
     @OptIn(ExperimentalSerializationApi::class)
-    public fun read(input: InputStream): ScenariosSpec {
+    public fun read(input: InputStream): ExperimentSpec {
         // Loads the default parquet output fields,
         // so that they can be deserialized
         ComputeExportConfig.loadDfltColumns()
 
-        return jsonReader.decodeFromStream<ScenariosSpec>(input)
+        return jsonReader.decodeFromStream<ExperimentSpec>(input)
     }
 }

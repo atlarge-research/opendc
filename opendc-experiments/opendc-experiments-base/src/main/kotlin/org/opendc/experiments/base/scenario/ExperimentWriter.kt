@@ -32,7 +32,7 @@ import java.io.File
  * @param jsonText The JSON text to write to the file, which is constantly updated during the writing process.
  * @param json The JSON object used to encode the scenario specification.
  */
-public class ScenarioWriter {
+public class ExperimentWriter {
     private var jsonText = "["
     private val json = Json { prettyPrint = true }
 

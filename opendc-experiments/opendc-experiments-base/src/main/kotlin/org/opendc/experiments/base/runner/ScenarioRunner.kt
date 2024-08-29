@@ -45,36 +45,6 @@ import java.util.concurrent.ForkJoinPool
 import java.util.stream.LongStream
 
 /**
- * Run scenario when no pool is available for parallel execution
- *
- * @param scenarios The scenarios to run
- * @param parallelism The number of scenarios that can be run in parallel
- */
-public fun runScenarios(
-    scenarios: List<Scenario>,
-    parallelism: Int,
-) {
-    val ansiReset = "\u001B[0m"
-    val ansiGreen = "\u001B[32m"
-    val ansiBlue = "\u001B[34m"
-
-    setupOutputFolderStructure(scenarios[0].outputFolder)
-
-    for (scenario in scenarios) {
-        val pool = ForkJoinPool(parallelism)
-        println(
-            "\n\n$ansiGreen================================================================================$ansiReset",
-        )
-        println("$ansiBlue Running scenario: ${scenario.name} $ansiReset")
-        println("$ansiGreen================================================================================$ansiReset")
-        runScenario(
-            scenario,
-            pool,
-        )
-    }
-}
-
-/**
  * Run scenario when a pool is available for parallel execution
  * The scenario is run multiple times based on the user input
  *
@@ -180,7 +150,7 @@ public fun clearOutputFolder(outputFolderPath: String) {
  * Utility function to create the output folder structure for the simulation results.
  * @param folderPath The path to the output folder
  */
-private fun setupOutputFolderStructure(folderPath: String) {
+public fun setupOutputFolderStructure(folderPath: String) {
     val trackrPath = "$folderPath/trackr.json"
     val simulationAnalysisPath = "$folderPath/simulation-analysis/"
     val energyAnalysisPath = "$simulationAnalysisPath/power_draw/"
