@@ -22,12 +22,12 @@
 
 package org.opendc.experiments.base.scenario
 
+import org.opendc.experiments.base.scenario.specs.ExperimentSpec
 import org.opendc.experiments.base.scenario.specs.ScenarioSpec
-import org.opendc.experiments.base.scenario.specs.ScenariosSpec
 import java.io.File
 
-private val scenarioReader = ScenarioReader()
-private val scenarioWriter = ScenarioWriter()
+private val experimentReader = ExperimentReader()
+private val experimentWriter = ExperimentWriter()
 
 /**
  * Returns a list of Scenarios from a given file path (input).
@@ -35,8 +35,8 @@ private val scenarioWriter = ScenarioWriter()
  * @param filePath The path to the file containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getScenarios(filePath: String): List<Scenario> {
-    return getScenarios(File(filePath))
+public fun getExperiment(filePath: String): List<Scenario> {
+    return getExperiment(File(filePath))
 }
 
 /**
@@ -45,19 +45,19 @@ public fun getScenarios(filePath: String): List<Scenario> {
  * @param file The file containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getScenarios(file: File): List<Scenario> {
-    return getScenarios(scenarioReader.read(file))
+public fun getExperiment(file: File): List<Scenario> {
+    return getExperiment(experimentReader.read(file))
 }
 
 /**
  * Returns a list of Scenarios from a given ScenarioSpec by generating all possible combinations of
  * workloads, allocation policies, failure models, and export models within a topology.
  *
- * @param scenariosSpec The ScenarioSpec containing the scenario specifications.
+ * @param experimentSpec The ScenarioSpec containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getScenarios(scenariosSpec: ScenariosSpec): List<Scenario> {
-    val outputFolder = scenariosSpec.outputFolder + "/" + scenariosSpec.name
+public fun getExperiment(experimentSpec: ExperimentSpec): List<Scenario> {
+    val outputFolder = experimentSpec.outputFolder + "/" + experimentSpec.name
     File(outputFolder).mkdirs()
 
     val trackrPath = "$outputFolder/trackr.json"
@@ -65,7 +65,7 @@ public fun getScenarios(scenariosSpec: ScenariosSpec): List<Scenario> {
 
     val scenarios = mutableListOf<Scenario>()
 
-    val cartesianInput = scenariosSpec.getCartesian()
+    val cartesianInput = experimentSpec.getCartesian()
 
     for ((scenarioID, scenarioSpec) in cartesianInput.withIndex()) {
         val scenario =
@@ -80,8 +80,8 @@ public fun getScenarios(scenariosSpec: ScenariosSpec): List<Scenario> {
                 exportModelSpec = scenarioSpec.exportModel,
                 outputFolder = outputFolder,
                 name = scenarioID.toString(),
-                runs = scenariosSpec.runs,
-                initialSeed = scenariosSpec.initialSeed,
+                runs = experimentSpec.runs,
+                initialSeed = experimentSpec.initialSeed,
                 computeExportConfig = scenarioSpec.computeExportConfig,
             )
         trackScenario(scenarioSpec, outputFolder)
@@ -105,7 +105,7 @@ public fun trackScenario(
     outputFolder: String,
 ) {
     val trackrPath = "$outputFolder/trackr.json"
-    scenarioWriter.write(
+    experimentWriter.write(
         scenarioSpec,
         File(trackrPath),
     )

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-@file:JvmName("ScenarioCli")
+@file:JvmName("ExperimentCli")
 
 package org.opendc.experiments.base.runner
 
@@ -30,24 +30,24 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
-import org.opendc.experiments.base.scenario.getScenarios
+import org.opendc.experiments.base.scenario.getExperiment
 import java.io.File
 
 /**
  * Main entrypoint of the application.
  */
-public fun main(args: Array<String>): Unit = ScenarioCommand().main(args)
+public fun main(args: Array<String>): Unit = ExperimentCommand().main(args)
 
 /**
  * Represents the command for the Scenario experiments.
  */
-internal class ScenarioCommand : CliktCommand(name = "scenario") {
+internal class ExperimentCommand : CliktCommand(name = "experiment") {
     /**
      * The path to the environment directory.
      */
-    private val scenarioPath by option("--scenario-path", help = "path to scenario file")
+    private val scenarioPath by option("--experiment-path", help = "path to experiment file")
         .file(canBeDir = false, canBeFile = true)
-        .defaultLazy { File("resources/scenario.json") }
+        .defaultLazy { File("resources/experiment.json") }
 
     /**
      * The number of threads to use for parallelism.
@@ -57,9 +57,7 @@ internal class ScenarioCommand : CliktCommand(name = "scenario") {
         .default(Runtime.getRuntime().availableProcessors() - 1)
 
     override fun run() {
-        val scenarios = getScenarios(scenarioPath)
-        runScenarios(scenarios, parallelism)
-
-        // TODO: implement outputResults(scenario) // this will take the results, from a folder, and output them visually
+        val experiment = getExperiment(scenarioPath)
+        runExperiment(experiment, parallelism)
     }
 }

@@ -28,21 +28,6 @@ import org.opendc.common.logger.logger
 import org.opendc.compute.telemetry.export.parquet.ComputeExportConfig
 import java.util.UUID
 
-@Serializable
-public data class ScenarioSpec(
-    var id: Int = -1,
-    var name: String = "",
-    val outputFolder: String = "output",
-    val computeExportConfig: ComputeExportConfig,
-    val topology: ScenarioTopologySpec,
-    val workload: WorkloadSpec,
-    val allocationPolicy: AllocationPolicySpec = AllocationPolicySpec(),
-    val exportModel: ExportModelSpec = ExportModelSpec(),
-    val failureModel: FailureModelSpec? = null,
-    val checkpointModel: CheckpointModelSpec? = null,
-    val carbonTracePath: String? = null,
-)
-
 /**
  * specification describing a scenario
  *
@@ -58,7 +43,7 @@ public data class ScenarioSpec(
  * be included in the output files.
  */
 @Serializable
-public data class ScenariosSpec(
+public data class ExperimentSpec(
     var id: Int = -1,
     var name: String = "",
     val outputFolder: String = "output",
