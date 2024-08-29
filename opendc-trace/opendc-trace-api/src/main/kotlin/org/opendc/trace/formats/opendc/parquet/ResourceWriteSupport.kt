@@ -63,13 +63,13 @@ internal class ResourceWriteSupport : WriteSupport<Resource>() {
         consumer.addBinary(Binary.fromCharSequence(record.id))
         consumer.endField("id", 0)
 
-        consumer.startField("start_time", 1)
-        consumer.addLong(record.startTime.toEpochMilli())
-        consumer.endField("start_time", 1)
+        consumer.startField("submission_time", 1)
+        consumer.addLong(record.submissionTime.toEpochMilli())
+        consumer.endField("submission_time", 1)
 
-        consumer.startField("stop_time", 2)
-        consumer.addLong(record.stopTime.toEpochMilli())
-        consumer.endField("stop_time", 2)
+        consumer.startField("duration", 2)
+        consumer.addLong(record.durationTime)
+        consumer.endField("duration", 2)
 
         consumer.startField("cpu_count", 3)
         consumer.addInteger(record.cpuCount)
@@ -101,11 +101,10 @@ internal class ResourceWriteSupport : WriteSupport<Resource>() {
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
                         .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                        .named("start_time"),
+                        .named("submission_time"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
-                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                        .named("stop_time"),
+                        .named("duration"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT32)
                         .named("cpu_count"),

@@ -40,7 +40,7 @@ public val resourceClusterID: String = "cluster_id"
  * Start time for the resource.
  */
 @JvmField
-public val resourceStartTime: String = "start_time"
+public val resourceSubmissionTime: String = "submission_time"
 
 /**
  * Start time for the resource.
@@ -52,7 +52,7 @@ public val resourceCarbonIntensity: String = "carbon_intensity"
  * End time for the resource.
  */
 @JvmField
-public val resourceStopTime: String = "stop_time"
+public val resourceDuration: String = "stop_time"
 
 /**
  * Number of CPUs for the resource.

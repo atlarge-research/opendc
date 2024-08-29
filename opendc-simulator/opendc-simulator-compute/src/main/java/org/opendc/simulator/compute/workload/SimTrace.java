@@ -82,7 +82,7 @@ public final class SimTrace {
         final Builder builder = builder();
 
         for (SimTraceFragment fragment : fragments) {
-            builder.add(fragment.deadline(), fragment.cpuUsage(), fragment.coreCount());
+            builder.add(fragment.duration(), fragment.cpuUsage(), fragment.coreCount());
         }
 
         return builder.build();
@@ -97,7 +97,7 @@ public final class SimTrace {
         final Builder builder = builder();
 
         for (SimTraceFragment fragment : fragments) {
-            builder.add(fragment.deadline(), fragment.cpuUsage(), fragment.coreCount());
+            builder.add(fragment.duration(), fragment.cpuUsage(), fragment.coreCount());
         }
 
         return builder.build();
@@ -121,16 +121,16 @@ public final class SimTrace {
         /**
          * Add a fragment to the trace.
          *
-         * @param deadline The timestamp at which the fragment ends (in epoch millis).
+         * @param duration The timestamp at which the fragment ends (in epoch millis).
          * @param usage The CPU usage at this fragment.
          * @param cores The number of cores used during this fragment.
          */
-        public void add(long deadline, double usage, int cores) {
+        public void add(long duration, double usage, int cores) {
             if (isBuilt) {
                 recreate();
             }
 
-            fragments.add(new SimTraceFragment(deadline, usage, cores));
+            fragments.add(new SimTraceFragment(duration, usage, cores));
         }
 
         /**
@@ -273,21 +273,22 @@ public final class SimTrace {
             // Shift the current time to align with the starting time of the workload
             long nowOffset = now - this.workloadOffset;
 
-            long deadline = currentFragment.deadline();
+//            long deadline = currentFragment.deadline();
+//
+//            // Loop through the deadlines until the next deadline is reached.
+//            while (deadline <= nowOffset) {
+//                if (!this.fragments.hasNext()) {
+//                    return doStop(ctx);
+//                }
+//
+//                this.index++;
+//                currentFragment = this.fragments.next();
+//                deadline = currentFragment.deadline();
+//            }
 
-            // Loop through the deadlines until the next deadline is reached.
-            while (deadline <= nowOffset) {
-                if (!this.fragments.hasNext()) {
-                    return doStop(ctx);
-                }
-
-                this.index++;
-                currentFragment = this.fragments.next();
-                deadline = currentFragment.deadline();
-            }
-
-            this.output.push((float) currentFragment.cpuUsage());
-            return deadline + this.workloadOffset;
+//            this.output.push((float) currentFragment.cpuUsage());
+//            return deadline + this.workloadOffset;
+            return 0;
         }
 
         @Override
@@ -358,39 +359,40 @@ public final class SimTrace {
             long offset = this.offset;
             long nowOffset = now - offset;
 
-            long deadline = currentFragment.deadline();
-
-            while (deadline <= nowOffset) {
-                if (!this.fragments.hasNext()) {
-                    final SimMachineContext machineContext = this.ctx;
-                    if (machineContext != null) {
-                        machineContext.shutdown();
-                    }
-                    ctx.close();
-                    return Long.MAX_VALUE;
-                }
-
-                this.index++;
-                currentFragment = this.fragments.next();
-                deadline = currentFragment.deadline();
-            }
-
-            int cores = Math.min(this.coreCount, currentFragment.coreCount());
-            float usage = (float) currentFragment.cpuUsage() / cores;
-
-            final OutPort[] outputs = this.outputs;
-
-            // Push the usage to all active cores
-            for (int i = 0; i < cores; i++) {
-                outputs[i].push(usage);
-            }
-
-            // Push a usage of 0 to all non-active cores
-            for (int i = cores; i < outputs.length; i++) {
-                outputs[i].push(0.f);
-            }
-
-            return deadline + offset;
+//            long deadline = currentFragment.deadline();
+//
+//            while (deadline <= nowOffset) {
+//                if (!this.fragments.hasNext()) {
+//                    final SimMachineContext machineContext = this.ctx;
+//                    if (machineContext != null) {
+//                        machineContext.shutdown();
+//                    }
+//                    ctx.close();
+//                    return Long.MAX_VALUE;
+//                }
+//
+//                this.index++;
+//                currentFragment = this.fragments.next();
+//                deadline = currentFragment.deadline();
+//            }
+//
+//            int cores = Math.min(this.coreCount, currentFragment.coreCount());
+//            float usage = (float) currentFragment.cpuUsage() / cores;
+//
+//            final OutPort[] outputs = this.outputs;
+//
+//            // Push the usage to all active cores
+//            for (int i = 0; i < cores; i++) {
+//                outputs[i].push(usage);
+//            }
+//
+//            // Push a usage of 0 to all non-active cores
+//            for (int i = cores; i < outputs.length; i++) {
+//                outputs[i].push(0.f);
+//            }
+//
+//            return deadline + offset;
+            return 0;
         }
 
         @Override
