@@ -82,7 +82,7 @@ public final class SimTrace {
         final Builder builder = builder();
 
         for (SimTraceFragment fragment : fragments) {
-            builder.add(fragment.deadline(), fragment.cpuUsage(), fragment.coreCount());
+            builder.add(fragment.duration(), fragment.cpuUsage(), fragment.coreCount());
         }
 
         return builder.build();
@@ -97,7 +97,7 @@ public final class SimTrace {
         final Builder builder = builder();
 
         for (SimTraceFragment fragment : fragments) {
-            builder.add(fragment.deadline(), fragment.cpuUsage(), fragment.coreCount());
+            builder.add(fragment.duration(), fragment.cpuUsage(), fragment.coreCount());
         }
 
         return builder.build();
@@ -121,16 +121,16 @@ public final class SimTrace {
         /**
          * Add a fragment to the trace.
          *
-         * @param deadline The timestamp at which the fragment ends (in epoch millis).
+         * @param duration The timestamp at which the fragment ends (in epoch millis).
          * @param usage The CPU usage at this fragment.
          * @param cores The number of cores used during this fragment.
          */
-        public void add(long deadline, double usage, int cores) {
+        public void add(long duration, double usage, int cores) {
             if (isBuilt) {
                 recreate();
             }
 
-            fragments.add(new SimTraceFragment(deadline, usage, cores));
+            fragments.add(new SimTraceFragment(duration, usage, cores));
         }
 
         /**
@@ -178,7 +178,7 @@ public final class SimTrace {
 
         @Override
         public void setOffset(long now) {
-            this.offset = now - this.start;
+            this.offset = now;
         }
 
         @Override
@@ -191,8 +191,6 @@ public final class SimTrace {
             }
             this.logic = logic;
         }
-
-        public void injectFragment(long duration, double usage, int coreCount) {}
 
         @Override
         public void onStop(SimMachineContext ctx) {
@@ -243,17 +241,16 @@ public final class SimTrace {
         private final OutPort output;
         private int index = 0;
 
-        private final long workloadOffset;
         private final SimMachineContext ctx;
 
         private final Iterator<SimTraceFragment> fragments;
         private SimTraceFragment currentFragment;
+        private long startOffFragment;
 
         private SingleWorkloadLogic(SimMachineContext ctx, long offset, Iterator<SimTraceFragment> fragments) {
             this.ctx = ctx;
-            this.workloadOffset = offset;
+
             this.fragments = fragments;
-            this.currentFragment = this.fragments.next();
 
             final FlowGraph graph = ctx.getGraph();
             final List<? extends SimProcessingUnit> cpus = ctx.getCpus();
@@ -265,29 +262,46 @@ public final class SimTrace {
             this.output = output;
 
             graph.connect(output, cpu.getInput());
+
+            // Start the first Fragment
+            this.currentFragment = this.fragments.next();
+            this.output.push((float) currentFragment.cpuUsage());
+            this.startOffFragment = offset;
         }
 
         @Override
         public long onUpdate(FlowStage ctx, long now) {
+            long passedTime = now - this.startOffFragment;
+            long duration = this.currentFragment.duration();
 
-            // Shift the current time to align with the starting time of the workload
-            long nowOffset = now - this.workloadOffset;
+            // The current Fragment has not yet been finished, continue
+            if (passedTime < duration) {
+                return now + (duration - passedTime);
+            }
 
-            long deadline = currentFragment.deadline();
-
-            // Loop through the deadlines until the next deadline is reached.
-            while (deadline <= nowOffset) {
+            // Loop through fragments until the passed time is filled.
+            // We need a while loop to account for skipping of fragments.
+            while (passedTime >= duration) {
                 if (!this.fragments.hasNext()) {
                     return doStop(ctx);
                 }
 
+                passedTime = passedTime - duration;
+
+                // get next Fragment
                 this.index++;
                 currentFragment = this.fragments.next();
-                deadline = currentFragment.deadline();
+                duration = currentFragment.duration();
             }
 
+            // start new fragment
+            this.startOffFragment = now - passedTime;
+
+            // Change the cpu Usage to the new Fragment
             this.output.push((float) currentFragment.cpuUsage());
-            return deadline + this.workloadOffset;
+
+            // Return the time when the current fragment will complete
+            return this.startOffFragment + duration;
         }
 
         @Override
@@ -322,18 +336,16 @@ public final class SimTrace {
         private int index = 0;
 
         private final int coreCount;
-        private final long offset;
 
         private final Iterator<SimTraceFragment> fragments;
         private SimTraceFragment currentFragment;
+        private long startOffFragment;
 
         private final SimMachineContext ctx;
 
         private MultiWorkloadLogic(SimMachineContext ctx, long offset, Iterator<SimTraceFragment> fragments) {
             this.ctx = ctx;
-            this.offset = offset;
             this.fragments = fragments;
-            this.currentFragment = this.fragments.next();
 
             final FlowGraph graph = ctx.getGraph();
             final List<? extends SimProcessingUnit> cpus = ctx.getCpus();
@@ -351,16 +363,40 @@ public final class SimTrace {
                 graph.connect(output, cpu.getInput());
                 outputs[i] = output;
             }
+
+            this.currentFragment = this.fragments.next();
+
+            int cores = Math.min(this.coreCount, currentFragment.coreCount());
+            float usage = (float) currentFragment.cpuUsage() / cores;
+
+            // Push the usage to all active cores
+            for (int i = 0; i < cores; i++) {
+                outputs[i].push(usage);
+            }
+
+            // Push a usage of 0 to all non-active cores
+            for (int i = cores; i < outputs.length; i++) {
+                outputs[i].push(0.f);
+            }
+
+            this.startOffFragment = offset;
         }
 
         @Override
         public long onUpdate(FlowStage ctx, long now) {
-            long offset = this.offset;
-            long nowOffset = now - offset;
+            long passedTime = now - this.startOffFragment;
+            long duration = this.currentFragment.duration();
 
-            long deadline = currentFragment.deadline();
+            // The current Fragment has not yet been finished, continue
+            if (passedTime < duration) {
+                return now + (duration - passedTime);
+            }
 
-            while (deadline <= nowOffset) {
+            // Loop through fragments until the passed time is filled.
+            // We need a while loop to account for skipping of fragments.
+            while (passedTime >= duration) {
+
+                // Stop running
                 if (!this.fragments.hasNext()) {
                     final SimMachineContext machineContext = this.ctx;
                     if (machineContext != null) {
@@ -370,10 +406,16 @@ public final class SimTrace {
                     return Long.MAX_VALUE;
                 }
 
+                passedTime = passedTime - duration;
+
+                // get next Fragment
                 this.index++;
                 currentFragment = this.fragments.next();
-                deadline = currentFragment.deadline();
+                duration = currentFragment.duration();
             }
+
+            // start the new fragment
+            this.startOffFragment = now - passedTime;
 
             int cores = Math.min(this.coreCount, currentFragment.coreCount());
             float usage = (float) currentFragment.cpuUsage() / cores;
@@ -390,7 +432,8 @@ public final class SimTrace {
                 outputs[i].push(0.f);
             }
 
-            return deadline + offset;
+            // Return the time when the current fragment will complete
+            return now + (duration - passedTime);
         }
 
         @Override

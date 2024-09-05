@@ -43,15 +43,15 @@ import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
-import org.opendc.trace.conv.resourceStartTime
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateCpuUsagePct
 import org.opendc.trace.conv.resourceStateDuration
 import org.opendc.trace.conv.resourceStateMemUsage
 import org.opendc.trace.conv.resourceStateTimestamp
-import org.opendc.trace.conv.resourceStopTime
+import org.opendc.trace.conv.resourceSubmissionTime
 import java.io.File
 import java.time.Duration
 import java.time.Instant
@@ -286,8 +286,8 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
 
                 writer.startRow()
                 writer.setString(resourceID, id)
-                writer.setInstant(resourceStartTime, startInstant)
-                writer.setInstant(resourceStopTime, stopInstant)
+                writer.setInstant(resourceSubmissionTime, startInstant)
+                writer.setInstant(resourceDuration, stopInstant)
                 writer.setInt(resourceCpuCount, cpuCount)
                 writer.setDouble(resourceCpuCapacity, cpuCapacity)
                 writer.setDouble(resourceMemCapacity, max(memCapacity, memUsage))
@@ -403,8 +403,8 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
             val reader = checkNotNull(trace.getTable(TABLE_RESOURCES)).newReader()
 
             val idCol = reader.resolve(resourceID)
-            val startTimeCol = reader.resolve(resourceStartTime)
-            val stopTimeCol = reader.resolve(resourceStopTime)
+            val startTimeCol = reader.resolve(resourceSubmissionTime)
+            val stopTimeCol = reader.resolve(resourceDuration)
             val cpuCountCol = reader.resolve(resourceCpuCount)
             val memCapacityCol = reader.resolve(resourceMemCapacity)
 
@@ -434,8 +434,8 @@ internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert b
 
                 writer.startRow()
                 writer.setString(resourceID, id)
-                writer.setInstant(resourceStartTime, startInstant)
-                writer.setInstant(resourceStopTime, stopInstant)
+                writer.setInstant(resourceSubmissionTime, startInstant)
+                writer.setInstant(resourceDuration, stopInstant)
                 writer.setInt(resourceCpuCount, cpuCount)
                 writer.setDouble(resourceCpuCapacity, cpuCapacity)
                 writer.setDouble(resourceMemCapacity, memCapacity)

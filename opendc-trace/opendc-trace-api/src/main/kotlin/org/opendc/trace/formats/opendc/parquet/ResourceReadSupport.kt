@@ -33,10 +33,10 @@ import org.apache.parquet.schema.Types
 import org.opendc.trace.TableColumn
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
-import org.opendc.trace.conv.resourceStartTime
-import org.opendc.trace.conv.resourceStopTime
+import org.opendc.trace.conv.resourceSubmissionTime
 
 /**
  * A [ReadSupport] instance for [Resource] objects.
@@ -48,10 +48,9 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
     private val fieldMap =
         mapOf(
             "id" to resourceID,
-            "submissionTime" to resourceStartTime,
-            "start_time" to resourceStartTime,
-            "endTime" to resourceStopTime,
-            "stop_time" to resourceStopTime,
+            "submissionTime" to resourceSubmissionTime,
+            "submission_time" to resourceSubmissionTime,
+            "duration" to resourceDuration,
             "maxCores" to resourceCpuCount,
             "cpu_count" to resourceCpuCount,
             "cpu_capacity" to resourceCpuCapacity,
@@ -106,8 +105,7 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
                         .named("submissionTime"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
-                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                        .named("endTime"),
+                        .named("duration"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT32)
                         .named("maxCores"),
@@ -131,11 +129,10 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
                         .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                        .named("start_time"),
+                        .named("submission_time"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
-                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
-                        .named("stop_time"),
+                        .named("duration"),
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT32)
                         .named("cpu_count"),

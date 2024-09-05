@@ -26,10 +26,10 @@ import org.apache.parquet.hadoop.ParquetWriter
 import org.opendc.trace.TableWriter
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
-import org.opendc.trace.conv.resourceStartTime
-import org.opendc.trace.conv.resourceStopTime
+import org.opendc.trace.conv.resourceSubmissionTime
 import org.opendc.trace.formats.opendc.parquet.Resource
 import java.time.Duration
 import java.time.Instant
@@ -44,8 +44,8 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
      */
     private var localIsActive = false
     private var localId: String = ""
-    private var localStartTime: Instant = Instant.MIN
-    private var localStopTime: Instant = Instant.MIN
+    private var localSubmissionTime: Instant = Instant.MIN
+    private var localDuration: Long = 0L
     private var localCpuCount: Int = 0
     private var localCpuCapacity: Double = Double.NaN
     private var localMemCapacity: Double = Double.NaN
@@ -53,8 +53,8 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
     override fun startRow() {
         localIsActive = true
         localId = ""
-        localStartTime = Instant.MIN
-        localStopTime = Instant.MIN
+        localSubmissionTime = Instant.MIN
+        localDuration = 0L
         localCpuCount = 0
         localCpuCapacity = Double.NaN
         localMemCapacity = Double.NaN
@@ -63,14 +63,14 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
     override fun endRow() {
         check(localIsActive) { "No active row" }
         localIsActive = false
-        writer.write(Resource(localId, localStartTime, localStopTime, localCpuCount, localCpuCapacity, localMemCapacity))
+        writer.write(Resource(localId, localSubmissionTime, localDuration, localCpuCount, localCpuCapacity, localMemCapacity))
     }
 
     override fun resolve(name: String): Int {
         return when (name) {
             resourceID -> colID
-            resourceStartTime -> colStartTime
-            resourceStopTime -> colStopTime
+            resourceSubmissionTime -> colSubmissionTime
+            resourceDuration -> colDuration
             resourceCpuCount -> colCpuCount
             resourceCpuCapacity -> colCpuCapacity
             resourceMemCapacity -> colMemCapacity
@@ -100,7 +100,11 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
         index: Int,
         value: Long,
     ) {
-        throw IllegalArgumentException("Invalid column or type [index $index]")
+        check(localIsActive) { "No active row" }
+        when (index) {
+            colDuration -> localDuration = value
+            else -> throw IllegalArgumentException("Invalid column index $index")
+        }
     }
 
     override fun setFloat(
@@ -146,8 +150,7 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
     ) {
         check(localIsActive) { "No active row" }
         when (index) {
-            colStartTime -> localStartTime = value
-            colStopTime -> localStopTime = value
+            colSubmissionTime -> localSubmissionTime = value
             else -> throw IllegalArgumentException("Invalid column index $index")
         }
     }
@@ -189,8 +192,8 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
     }
 
     private val colID = 0
-    private val colStartTime = 1
-    private val colStopTime = 2
+    private val colSubmissionTime = 1
+    private val colDuration = 2
     private val colCpuCount = 3
     private val colCpuCapacity = 4
     private val colMemCapacity = 5

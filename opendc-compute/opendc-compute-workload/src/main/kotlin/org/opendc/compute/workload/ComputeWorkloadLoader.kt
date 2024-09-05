@@ -34,17 +34,15 @@ import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
-import org.opendc.trace.conv.resourceStartTime
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
-import org.opendc.trace.conv.resourceStateTimestamp
-import org.opendc.trace.conv.resourceStopTime
+import org.opendc.trace.conv.resourceSubmissionTime
 import java.io.File
 import java.lang.ref.SoftReference
 import java.time.Duration
-import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.roundToLong
@@ -72,7 +70,6 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCE_STATES)).newReader()
 
         val idCol = reader.resolve(resourceID)
-        val timestampCol = reader.resolve(resourceStateTimestamp)
         val durationCol = reader.resolve(resourceStateDuration)
         val coresCol = reader.resolve(resourceCpuCount)
         val usageCol = reader.resolve(resourceStateCpuUsage)
@@ -82,13 +79,12 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         return try {
             while (reader.nextRow()) {
                 val id = reader.getString(idCol)!!
-                val time = reader.getInstant(timestampCol)!!
                 val durationMs = reader.getDuration(durationCol)!!
                 val cores = reader.getInt(coresCol)
                 val cpuUsage = reader.getDouble(usageCol)
 
                 val builder = fragments.computeIfAbsent(id) { Builder() }
-                builder.add(time, durationMs, cpuUsage, cores)
+                builder.add(durationMs, cpuUsage, cores)
             }
 
             fragments
@@ -108,8 +104,8 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCES)).newReader()
 
         val idCol = reader.resolve(resourceID)
-        val startTimeCol = reader.resolve(resourceStartTime)
-        val stopTimeCol = reader.resolve(resourceStopTime)
+        val submissionTimeCol = reader.resolve(resourceSubmissionTime)
+        val durationCol = reader.resolve(resourceDuration)
         val cpuCountCol = reader.resolve(resourceCpuCount)
         val cpuCapacityCol = reader.resolve(resourceCpuCapacity)
         val memCol = reader.resolve(resourceMemCapacity)
@@ -124,8 +120,8 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                     continue
                 }
 
-                val submissionTime = reader.getInstant(startTimeCol)!!
-                val endTime = reader.getInstant(stopTimeCol)!!
+                val submissionTime = reader.getInstant(submissionTimeCol)!!
+                val duration = reader.getLong(durationCol)
                 val cpuCount = reader.getInt(cpuCountCol)
                 val cpuCapacity = reader.getDouble(cpuCapacityCol)
                 val memCapacity = reader.getDouble(memCol) / 1000.0 // Convert from KB to MB
@@ -143,7 +139,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                         memCapacity.roundToLong(),
                         totalLoad,
                         submissionTime,
-                        endTime,
+                        duration,
                         builder.build(),
                         interferenceModel.getProfile(id),
                     ),
@@ -241,11 +237,6 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         private val builder = SimTrace.builder()
 
         /**
-         * The deadline of the previous fragment.
-         */
-        private var previousDeadline = Long.MIN_VALUE
-
-        /**
          * Add a fragment to the trace.
          *
          * @param timestamp Timestamp at which the fragment starts (in epoch millis).
@@ -254,21 +245,13 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
          * @param cores Number of cores used.
          */
         fun add(
-            deadline: Instant,
             duration: Duration,
             usage: Double,
             cores: Int,
         ) {
-            val startTimeMs = (deadline - duration).toEpochMilli()
             totalLoad += (usage * duration.toMillis()) / 1000.0 // avg MHz * duration = MFLOPs
 
-            if ((startTimeMs != previousDeadline) && (previousDeadline != Long.MIN_VALUE)) {
-                // There is a gap between the previous and current fragment; fill the gap
-                builder.add(startTimeMs, 0.0, cores)
-            }
-
-            builder.add(deadline.toEpochMilli(), usage, cores)
-            previousDeadline = deadline.toEpochMilli()
+            builder.add(duration.toMillis(), usage, cores)
         }
 
         /**

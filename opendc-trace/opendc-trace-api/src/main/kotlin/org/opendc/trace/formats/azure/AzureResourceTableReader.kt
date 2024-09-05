@@ -27,10 +27,10 @@ import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import org.opendc.trace.TableReader
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
-import org.opendc.trace.conv.resourceStartTime
-import org.opendc.trace.conv.resourceStopTime
+import org.opendc.trace.conv.resourceSubmissionTime
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
@@ -87,8 +87,8 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     override fun resolve(name: String): Int {
         return when (name) {
             resourceID -> colID
-            resourceStartTime -> colStartTime
-            resourceStopTime -> colStopTime
+            resourceSubmissionTime -> colStartTime
+            resourceDuration -> colStopTime
             resourceCpuCount -> colCpuCount
             resourceMemCapacity -> colMemCapacity
             else -> -1
