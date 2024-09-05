@@ -27,10 +27,10 @@ import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import org.opendc.trace.TableReader
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
 import org.opendc.trace.conv.resourceSubmissionTime
-import org.opendc.trace.conv.resourceDuration
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID

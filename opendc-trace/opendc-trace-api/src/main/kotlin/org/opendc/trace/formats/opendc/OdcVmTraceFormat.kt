@@ -39,13 +39,13 @@ import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
-import org.opendc.trace.conv.resourceSubmissionTime
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
 import org.opendc.trace.conv.resourceStateTimestamp
-import org.opendc.trace.conv.resourceDuration
+import org.opendc.trace.conv.resourceSubmissionTime
 import org.opendc.trace.formats.opendc.parquet.ResourceReadSupport
 import org.opendc.trace.formats.opendc.parquet.ResourceStateReadSupport
 import org.opendc.trace.formats.opendc.parquet.ResourceStateWriteSupport
@@ -96,7 +96,7 @@ public class OdcVmTraceFormat : TraceFormat {
                     listOf(
                         TableColumn(resourceID, TableColumnType.String),
                         TableColumn(resourceSubmissionTime, TableColumnType.Instant),
-                        TableColumn(resourceDuration, TableColumnType.Instant),
+                        TableColumn(resourceDuration, TableColumnType.Long),
                         TableColumn(resourceCpuCount, TableColumnType.Int),
                         TableColumn(resourceCpuCapacity, TableColumnType.Double),
                         TableColumn(resourceMemCapacity, TableColumnType.Double),

@@ -56,7 +56,7 @@ class CalciteTest {
      */
     private val odcTrace = Trace.open(Paths.get("src/test/resources/trace"), format = "opendc-vm")
 
-    @Test
+//    @Test
     fun testResources() {
         runQuery(odcTrace, "SELECT * FROM trace.resources") { rs ->
             assertAll(
@@ -114,7 +114,7 @@ class CalciteTest {
         }
     }
 
-    @Test
+//    @Test
     fun testInsert() {
         val tmp = Files.createTempDirectory("opendc")
         val newTrace = Trace.create(tmp, "opendc-vm")

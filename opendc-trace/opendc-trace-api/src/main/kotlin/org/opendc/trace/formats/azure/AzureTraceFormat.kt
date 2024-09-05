@@ -31,12 +31,12 @@ import org.opendc.trace.TableWriter
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
-import org.opendc.trace.conv.resourceSubmissionTime
 import org.opendc.trace.conv.resourceStateCpuUsagePct
 import org.opendc.trace.conv.resourceStateTimestamp
-import org.opendc.trace.conv.resourceDuration
+import org.opendc.trace.conv.resourceSubmissionTime
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.CompositeTableReader

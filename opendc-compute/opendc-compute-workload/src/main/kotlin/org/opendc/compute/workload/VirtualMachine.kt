@@ -51,5 +51,4 @@ public data class VirtualMachine(
     val duration: Long,
     val trace: SimTrace,
     val interferenceProfile: VmInterferenceProfile?,
-) {
-}
+)

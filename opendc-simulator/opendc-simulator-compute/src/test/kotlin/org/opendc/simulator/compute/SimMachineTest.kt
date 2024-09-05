@@ -95,9 +95,9 @@ class SimMachineTest {
             val random = ThreadLocalRandom.current()
             val builder = SimTrace.builder()
             repeat(1000000) {
-                val timestamp = it.toLong() * 1000
-                val deadline = timestamp + 1000
-                builder.add(deadline, random.nextDouble(0.0, 4500.0), 1)
+//                val timestamp = it.toLong() * 1000
+//                val deadline = timestamp + 1000
+                builder.add(1000, random.nextDouble(0.0, 4500.0), 1)
             }
             val trace = builder.build()
 
