@@ -25,10 +25,10 @@ package org.opendc.trace.formats.opendc
 import org.opendc.trace.TableReader
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
-import org.opendc.trace.conv.resourceStartTime
-import org.opendc.trace.conv.resourceStopTime
+import org.opendc.trace.conv.resourceSubmissionTime
 import org.opendc.trace.formats.opendc.parquet.Resource
 import org.opendc.trace.util.parquet.LocalParquetReader
 import java.time.Duration
@@ -57,8 +57,8 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
     }
 
     private val colID = 0
-    private val colStartTime = 1
-    private val colStopTime = 2
+    private val colSubmissionTime = 1
+    private val colDurationTime = 2
     private val colCpuCount = 3
     private val colCpuCapacity = 4
     private val colMemCapacity = 5
@@ -66,8 +66,8 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
     override fun resolve(name: String): Int {
         return when (name) {
             resourceID -> colID
-            resourceStartTime -> colStartTime
-            resourceStopTime -> colStopTime
+            resourceSubmissionTime -> colSubmissionTime
+            resourceDuration -> colDurationTime
             resourceCpuCount -> colCpuCount
             resourceCpuCapacity -> colCpuCapacity
             resourceMemCapacity -> colMemCapacity
@@ -94,7 +94,11 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
     }
 
     override fun getLong(index: Int): Long {
-        throw IllegalArgumentException("Invalid column")
+        val record = checkNotNull(record) { "Reader in invalid state" }
+        return when (index) {
+            colDurationTime -> record.durationTime
+            else -> throw IllegalArgumentException("Invalid column")
+        }
     }
 
     override fun getFloat(index: Int): Float {
@@ -128,8 +132,7 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
-            colStartTime -> record.startTime
-            colStopTime -> record.stopTime
+            colSubmissionTime -> record.submissionTime
             else -> throw IllegalArgumentException("Invalid column")
         }
     }

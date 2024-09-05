@@ -48,9 +48,7 @@ public data class VirtualMachine(
     val memCapacity: Long,
     val totalLoad: Double,
     val startTime: Instant,
-    val stopTime: Instant,
+    val duration: Long,
     val trace: SimTrace,
     val interferenceProfile: VmInterferenceProfile?,
-) {
-    val duration: Long = stopTime.toEpochMilli() - startTime.toEpochMilli()
-}
+)
