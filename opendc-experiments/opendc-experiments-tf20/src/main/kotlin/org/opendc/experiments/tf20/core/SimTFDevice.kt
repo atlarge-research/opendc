@@ -119,7 +119,7 @@ public class SimTFDevice(
 
             override fun setOffset(now: Long) {}
 
-            override fun snapshot(): SimWorkload = throw UnsupportedOperationException()
+            override fun getSnapshot(): SimWorkload = throw UnsupportedOperationException()
 
             override fun onUpdate(
                 ctx: FlowStage,

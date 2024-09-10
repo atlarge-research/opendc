@@ -44,6 +44,7 @@ public class SimFlopsWorkload implements SimWorkload, FlowStageLogic {
 
     private float remainingAmount;
     private long lastUpdate;
+    private SimFlopsWorkload snapshot;
 
     /**
      * Construct a new {@link SimFlopsWorkload}.
@@ -62,6 +63,19 @@ public class SimFlopsWorkload implements SimWorkload, FlowStageLogic {
         this.utilization = utilization;
         this.remainingAmount = flops;
     }
+
+    @Override
+    public long getCheckpointInterval() {return -1;};
+
+    @Override
+    public long getCheckpointDuration() {return -1;}
+
+    @Override
+    public double getCheckpointIntervalScaling() {
+        return -1;
+    }
+
+    ;
 
     @Override
     public void setOffset(long now) {}
@@ -102,13 +116,25 @@ public class SimFlopsWorkload implements SimWorkload, FlowStageLogic {
     }
 
     @Override
-    public SimFlopsWorkload snapshot() {
+    public void makeSnapshot(long now) {
         final FlowStage stage = this.stage;
         if (stage != null) {
             stage.sync();
         }
 
-        return new SimFlopsWorkload((long) remainingAmount, utilization);
+        this.snapshot =  new SimFlopsWorkload((long) remainingAmount, utilization);
+    }
+
+    @Override
+    public SimFlopsWorkload getSnapshot() {
+        this.makeSnapshot(0);
+
+        return this.snapshot;
+    }
+
+    @Override
+    public void createCheckpointModel() {
+
     }
 
     @Override

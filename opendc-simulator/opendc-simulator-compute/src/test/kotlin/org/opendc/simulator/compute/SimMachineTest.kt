@@ -193,7 +193,7 @@ class SimMachineTest {
 
                     override fun onStop(ctx: SimMachineContext) {}
 
-                    override fun snapshot(): SimWorkload = TODO()
+                    override fun getSnapshot(): SimWorkload = TODO()
                 },
             )
         }
@@ -221,7 +221,7 @@ class SimMachineTest {
 
                     override fun onStop(ctx: SimMachineContext) {}
 
-                    override fun snapshot(): SimWorkload = TODO()
+                    override fun getSnapshot(): SimWorkload = TODO()
                 },
             )
         }
@@ -249,7 +249,7 @@ class SimMachineTest {
 
                     override fun onStop(ctx: SimMachineContext) {}
 
-                    override fun snapshot(): SimWorkload = TODO()
+                    override fun getSnapshot(): SimWorkload = TODO()
                 },
             )
 
@@ -287,7 +287,7 @@ class SimMachineTest {
 
                     override fun onStop(ctx: SimMachineContext) {}
 
-                    override fun snapshot(): SimWorkload = TODO()
+                    override fun getSnapshot(): SimWorkload = TODO()
                 },
             )
 
@@ -318,7 +318,7 @@ class SimMachineTest {
 
                     override fun onStop(ctx: SimMachineContext) {}
 
-                    override fun snapshot(): SimWorkload = TODO()
+                    override fun getSnapshot(): SimWorkload = TODO()
                 },
             )
 
@@ -349,7 +349,7 @@ class SimMachineTest {
 
                     override fun onStop(ctx: SimMachineContext) {}
 
-                    override fun snapshot(): SimWorkload = TODO()
+                    override fun getSnapshot(): SimWorkload = TODO()
                 },
             )
 

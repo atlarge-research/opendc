@@ -57,8 +57,8 @@ public class SimWorkloads {
      * @param duration The duration of the workload in milliseconds.
      * @param utilization The CPU utilization of the workload.
      */
-    public static SimWorkload runtime(long duration, double utilization, long checkpoint_time, long checkpoint_wait) {
-        return new SimRuntimeWorkload(duration, utilization, checkpoint_time, checkpoint_wait);
+    public static SimWorkload runtime(long duration, double utilization, long checkpointInterval, long checkpointDuration) {
+        return new SimRuntimeWorkload(duration, utilization, checkpointInterval, checkpointDuration);
     }
 
     /**
@@ -68,8 +68,8 @@ public class SimWorkloads {
      * @param utilization The CPU utilization of the workload.
      */
     public static SimWorkload runtime(
-            Duration duration, double utilization, long checkpoint_time, long checkpoint_wait) {
-        return runtime(duration.toMillis(), utilization, checkpoint_time, checkpoint_wait);
+            Duration duration, double utilization, long checkpointInterval, long checkpointDuration) {
+        return runtime(duration.toMillis(), utilization, checkpointInterval, checkpointDuration);
     }
 
     /**

@@ -292,7 +292,7 @@ class SimChainWorkloadTest {
 
             val job = launch { machine.runWorkload(workload) }
             delay(500L)
-            val snapshot = workload.snapshot()
+            val snapshot = workload.getSnapshot()
 
             job.join()
 
