@@ -57,7 +57,8 @@ public class SimWorkloads {
      * @param duration The duration of the workload in milliseconds.
      * @param utilization The CPU utilization of the workload.
      */
-    public static SimWorkload runtime(long duration, double utilization, long checkpointInterval, long checkpointDuration) {
+    public static SimWorkload runtime(
+            long duration, double utilization, long checkpointInterval, long checkpointDuration) {
         return new SimRuntimeWorkload(duration, utilization, checkpointInterval, checkpointDuration);
     }
 

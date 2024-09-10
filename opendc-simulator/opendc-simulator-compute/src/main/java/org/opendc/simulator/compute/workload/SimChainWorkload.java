@@ -46,8 +46,6 @@ final class SimChainWorkload implements SimWorkload {
     private long checkpointInterval = 0;
     private long checkpointDuration = 0;
 
-
-
     private double checkpointIntervalScaling = 1.0;
     private CheckPointModel checkpointModel;
     private SimChainWorkload snapshot;
@@ -161,30 +159,30 @@ final class SimChainWorkload implements SimWorkload {
 
     @Override
     public void createCheckpointModel() {
-        this.checkpointModel = new CheckPointModel(activeContext, this, this.checkpointInterval, this.checkpointDuration, this.checkpointIntervalScaling);
+        this.checkpointModel = new CheckPointModel(
+                activeContext, this, this.checkpointInterval, this.checkpointDuration, this.checkpointIntervalScaling);
     }
 
     private class CheckPointModel implements FlowStageLogic {
         private SimChainWorkload workload;
         private long checkpointInterval;
         private long checkpointDuration;
-        private double checkpointIntervalScaling = 1.0;
+        private double checkpointIntervalScaling;
         private FlowStage stage;
 
         private long startOfInterval;
         private Boolean firstCheckPoint = true;
 
-        CheckPointModel(Context context,
-                        SimChainWorkload workload,
-                        long checkpointInterval,
-                        long checkpointDuration,
-                        double checkpointIntervalScaling) {
+        CheckPointModel(
+                Context context,
+                SimChainWorkload workload,
+                long checkpointInterval,
+                long checkpointDuration,
+                double checkpointIntervalScaling) {
             this.checkpointInterval = checkpointInterval;
             this.checkpointDuration = checkpointDuration;
             this.checkpointIntervalScaling = checkpointIntervalScaling;
             this.workload = workload;
-
-
 
             this.stage = context.getGraph().newStage(this);
 
@@ -208,7 +206,9 @@ final class SimChainWorkload implements SimWorkload {
             }
 
             workload.makeSnapshot(now);
-            if (firstCheckPoint) {this.firstCheckPoint = false;}
+            if (firstCheckPoint) {
+                this.firstCheckPoint = false;
+            }
 
             // Scale the interval time between checkpoints based on the provided scaling
             this.checkpointInterval = (long) (this.checkpointInterval * this.checkpointIntervalScaling);

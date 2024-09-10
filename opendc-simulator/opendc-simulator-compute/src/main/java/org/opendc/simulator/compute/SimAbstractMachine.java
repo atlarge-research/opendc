@@ -133,7 +133,7 @@ public abstract class SimAbstractMachine implements SimMachine {
 
         @Override
         public void makeSnapshot(long now) {
-            this.snapshot =  workload.getSnapshot();
+            this.snapshot = workload.getSnapshot();
         }
 
         @Override

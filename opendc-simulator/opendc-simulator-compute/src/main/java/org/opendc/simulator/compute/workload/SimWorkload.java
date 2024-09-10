@@ -56,7 +56,9 @@ public interface SimWorkload {
     void createCheckpointModel();
 
     long getCheckpointInterval();
+
     long getCheckpointDuration();
+
     double getCheckpointIntervalScaling();
 
     void setOffset(long now);

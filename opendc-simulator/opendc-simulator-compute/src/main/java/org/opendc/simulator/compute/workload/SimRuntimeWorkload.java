@@ -167,17 +167,18 @@ public class SimRuntimeWorkload implements SimWorkload, FlowStageLogic {
             var processed_time = this.duration - this.remainingDuration;
             var processed_checks = (int) (processed_time / total_check_time);
             var processed_time_last_check =
-                (processed_checks * total_check_time); // The processed time after the last checkpoint
+                    (processed_checks * total_check_time); // The processed time after the last checkpoint
 
             remaining_time = this.duration
-                - processed_time_last_check; // The remaining duration to process after last checkpoint
+                    - processed_time_last_check; // The remaining duration to process after last checkpoint
             var remaining_checks = (int) (remaining_time / total_check_time);
             remaining_time -= (remaining_checks * checkpointDuration);
         } else {
             remaining_time = duration;
         }
 
-        this.snapshot = new SimRuntimeWorkload(remaining_time, utilization, this.checkpointInterval, this.checkpointDuration);
+        this.snapshot =
+                new SimRuntimeWorkload(remaining_time, utilization, this.checkpointInterval, this.checkpointDuration);
     }
 
     @Override

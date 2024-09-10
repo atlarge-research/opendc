@@ -69,7 +69,7 @@ internal class SimFaaSServiceTest {
             val random = Random(0)
             val workload =
                 spyk(
-                    object createCheckpointModel : SimFaaSWorkload, SimWorkload by SimWorkloads.runtime(1000, 1.0) {
+                    object : SimFaaSWorkload, SimWorkload by SimWorkloads.runtime(1000, 1.0) {
                         override suspend fun invoke() {
                             delay(random.nextInt(1000).toLong())
                         }

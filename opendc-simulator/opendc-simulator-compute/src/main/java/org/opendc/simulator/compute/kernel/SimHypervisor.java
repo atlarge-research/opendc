@@ -244,7 +244,9 @@ public final class SimHypervisor implements SimWorkload {
     }
 
     @Override
-    public void makeSnapshot(long now) {throw new UnsupportedOperationException("Unable to snapshot hypervisor");}
+    public void makeSnapshot(long now) {
+        throw new UnsupportedOperationException("Unable to snapshot hypervisor");
+    }
 
     @Override
     public SimWorkload getSnapshot() {
@@ -252,7 +254,9 @@ public final class SimHypervisor implements SimWorkload {
     }
 
     @Override
-    public void createCheckpointModel() {throw new UnsupportedOperationException("Unable to create a checkpointing system for a hypervisor");}
+    public void createCheckpointModel() {
+        throw new UnsupportedOperationException("Unable to create a checkpointing system for a hypervisor");
+    }
 
     @Override
     public long getCheckpointInterval() {

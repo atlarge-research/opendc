@@ -65,16 +65,20 @@ public class SimFlopsWorkload implements SimWorkload, FlowStageLogic {
     }
 
     @Override
-    public long getCheckpointInterval() {return -1;};
+    public long getCheckpointInterval() {
+        return -1;
+    }
+    ;
 
     @Override
-    public long getCheckpointDuration() {return -1;}
+    public long getCheckpointDuration() {
+        return -1;
+    }
 
     @Override
     public double getCheckpointIntervalScaling() {
         return -1;
     }
-
     ;
 
     @Override
@@ -122,7 +126,7 @@ public class SimFlopsWorkload implements SimWorkload, FlowStageLogic {
             stage.sync();
         }
 
-        this.snapshot =  new SimFlopsWorkload((long) remainingAmount, utilization);
+        this.snapshot = new SimFlopsWorkload((long) remainingAmount, utilization);
     }
 
     @Override
@@ -133,9 +137,7 @@ public class SimFlopsWorkload implements SimWorkload, FlowStageLogic {
     }
 
     @Override
-    public void createCheckpointModel() {
-
-    }
+    public void createCheckpointModel() {}
 
     @Override
     public long onUpdate(FlowStage ctx, long now) {

@@ -62,7 +62,8 @@ public final class SimTrace {
      *
      * //     * @param offset The offset for the timestamps.
      */
-    public SimWorkload createWorkload(long start, long checkpointInterval, long checkpointDuration, double checkpointIntervalScaling) {
+    public SimWorkload createWorkload(
+            long start, long checkpointInterval, long checkpointDuration, double checkpointIntervalScaling) {
         return new Workload(start, fragments, checkpointInterval, checkpointDuration, checkpointIntervalScaling);
     }
 
@@ -170,7 +171,12 @@ public final class SimTrace {
         private double checkpointIntervalScaling;
         private SimWorkload snapshot;
 
-        private Workload(long start, ArrayDeque<SimTraceFragment> fragments, long checkpointInterval, long checkpointDuration, double checkpointIntervalScaling) {
+        private Workload(
+                long start,
+                ArrayDeque<SimTraceFragment> fragments,
+                long checkpointInterval,
+                long checkpointDuration,
+                double checkpointIntervalScaling) {
             this.start = start;
             this.checkpointInterval = checkpointInterval;
             this.checkpointDuration = checkpointDuration;
@@ -239,8 +245,7 @@ public final class SimTrace {
                 for (int i = 0; i < index; i++) {
                     newFragments.removeFirst();
                 }
-            }
-            else {
+            } else {
                 return;
             }
 
@@ -250,15 +255,14 @@ public final class SimTrace {
             long remainingTime = currentFragment.duration() - passedTime;
 
             if (remainingTime > 0) {
-                SimTraceFragment newFragment = new SimTraceFragment(remainingTime, currentFragment.cpuUsage(), currentFragment.coreCount());
+                SimTraceFragment newFragment =
+                        new SimTraceFragment(remainingTime, currentFragment.cpuUsage(), currentFragment.coreCount());
 
                 newFragments.addFirst(newFragment);
             }
 
-
-
             // Add snapshot Fragment
-            //TODO: improve CPUUsage and coreCount here
+            // TODO: improve CPUUsage and coreCount here
             SimTraceFragment snapshotFragment = new SimTraceFragment(checkpointDuration, 123456, 1);
             newFragments.addFirst(snapshotFragment);
 
@@ -269,7 +273,8 @@ public final class SimTrace {
             newFragments.removeFirst();
             this.fragments = newFragments;
 
-            this.snapshot = new Workload(start, this.fragments, checkpointInterval, checkpointDuration, checkpointIntervalScaling);
+            this.snapshot = new Workload(
+                    start, this.fragments, checkpointInterval, checkpointDuration, checkpointIntervalScaling);
         }
 
         @Override
