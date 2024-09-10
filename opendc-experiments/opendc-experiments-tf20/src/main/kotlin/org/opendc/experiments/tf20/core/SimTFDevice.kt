@@ -122,13 +122,20 @@ public class SimTFDevice(
             override fun setOffset(now: Long) {}
 
             override fun getSnapshot(): SimWorkload = throw UnsupportedOperationException()
+
             override fun createCheckpointModel() {}
 
-            override fun getCheckpointInterval(): Long {return -1;}
+            override fun getCheckpointInterval(): Long {
+                return -1
+            }
 
-            override fun getCheckpointDuration(): Long {return -1;}
+            override fun getCheckpointDuration(): Long {
+                return -1
+            }
 
-            override fun getCheckpointIntervalScaling(): Double {return -1.0;}
+            override fun getCheckpointIntervalScaling(): Double {
+                return -1.0
+            }
 
             override fun onUpdate(
                 ctx: FlowStage,
