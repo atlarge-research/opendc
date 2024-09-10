@@ -8,18 +8,19 @@ In the following section, we describe the different components of the schema.
 
 ### General Structure
 
-| Variable             | Type                                         | Required? | Default | Description                                                              |
-|----------------------|----------------------------------------------|-----------|-------|--------------------------------------------------------------------------|
-| name                 | string                                       | no        | ""      | Name of the scenario, used for identification and referencing.            |
-| topologies           | List[[Topology](#topology)]                  | yes       | N/A   | List of topologies used in the scenario.                                 |
-| workloads            | List[[Workload](#workload)]                  | yes       | N/A   | List of workloads to be executed within the scenario.                    |
-| allocationPolicies   | List[[AllocationPolicy](#allocation-policy)] | yes       | N/A   | Allocation policies used for resource management in the scenario.        |
-| failureModels        | List[[FailureModel](#failuremodel)]          | no        | empty | List of failure models to simulate various types of failures.            |
-| exportModels         | List[[ExportModel](#exportmodel)]            | no        | empty | Specifications for exporting data from the simulation.                   |
-| carbonTracePaths     | List[string]                                 | no        | null  | Paths to carbon footprint trace files.                                   |
-| outputFolder         | string                                       | no        | "output" | Directory where the simulation outputs will be stored.                   |
-| initialSeed          | integer                                      | no        | 0     | Seed used for random number generation to ensure reproducibility.        |
-| runs                 | integer                                      | no        | 1     | Number of times the scenario should be run.                              |
+| Variable           | Type                                         | Required? | Default  | Description                                                       |
+|--------------------|----------------------------------------------|-----------|----------|-------------------------------------------------------------------|
+| name               | string                                       | no        | ""       | Name of the scenario, used for identification and referencing.    |
+| topologies         | List[[Topology](#topology)]                  | yes       | N/A      | List of topologies used in the scenario.                          |
+| workloads          | List[[Workload](#workload)]                  | yes       | N/A      | List of workloads to be executed within the scenario.             |
+| allocationPolicies | List[[AllocationPolicy](#allocation-policy)] | yes       | N/A      | Allocation policies used for resource management in the scenario. |
+| failureModels      | List[[FailureModel](#failuremodel)]          | no        | empty    | List of failure models to simulate various types of failures.     |
+| exportModels       | List[[ExportModel](#exportmodel)]            | no        | empty    | Specifications for exporting data from the simulation.            |
+| carbonTracePaths   | List[string]                                 | no        | null     | Paths to carbon footprint trace files.                            |
+| m3saSetup          | string                                       | no        | null     | Path to the cofigurator file of M3SA.                             | 
+| outputFolder       | string                                       | no        | "output" | Directory where the simulation outputs will be stored.            |
+| initialSeed        | integer                                      | no        | 0        | Seed used for random number generation to ensure reproducibility. |
+| runs               | integer                                      | no        | 1        | Number of times the scenario should be run.                       |
 
 ### Topology
 
@@ -117,9 +118,15 @@ Following is an example of a more complex topology:
         {
             "policyType": "Mem-Inv"
         }
-    ]
+    ],
+    "m3saSetup": "experiments/experiment-2-window-performance-analysis/inputs/m3saSetup.json",
+    "outputFolder": "experiments/experiment-2-window-performance-analysis/outputs/",
+    "runs": 1
 }
 ```
 
 This scenario runs a total of 12 experiments. We have 3 topologies (3 datacenter configurations), each simulated with
-2 distinct workloads, each using a different allocation policy (either Mem or Mem-Inv). 
+2 distinct workloads, each using a different allocation policy (either Mem or Mem-Inv). The simulation is run once and
+is outputted in the folder "experiments/experiment-2-window-performance-analysis/outputs/". The configurator for M3SA is
+located in "experiments/experiment-2-window-performance-analysis/inputs/m3saSetup.json".
+```
