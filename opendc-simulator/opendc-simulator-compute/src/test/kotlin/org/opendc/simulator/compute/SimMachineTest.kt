@@ -192,8 +192,18 @@ class SimMachineTest {
                     override fun setOffset(now: Long) {}
 
                     override fun onStop(ctx: SimMachineContext) {}
+                    override fun makeSnapshot(now: Long) {
 
-                    override fun getSnapshot(): SimWorkload = TODO()
+                    }
+
+                    override fun getSnapshot(): SimWorkload = this
+                    override fun createCheckpointModel() {}
+
+                    override fun getCheckpointInterval(): Long {return -1;}
+
+                    override fun getCheckpointDuration(): Long {return -1;}
+
+                    override fun getCheckpointIntervalScaling(): Double {return -1.0;}
                 },
             )
         }
@@ -220,8 +230,16 @@ class SimMachineTest {
                     override fun setOffset(now: Long) {}
 
                     override fun onStop(ctx: SimMachineContext) {}
+                    override fun makeSnapshot(now: Long) {}
 
-                    override fun getSnapshot(): SimWorkload = TODO()
+                    override fun getSnapshot(): SimWorkload = this
+                    override fun createCheckpointModel() {}
+
+                    override fun getCheckpointInterval(): Long {return -1;}
+
+                    override fun getCheckpointDuration(): Long {return -1;}
+
+                    override fun getCheckpointIntervalScaling(): Double {return -1.0;}
                 },
             )
         }
@@ -248,8 +266,18 @@ class SimMachineTest {
                     override fun setOffset(now: Long) {}
 
                     override fun onStop(ctx: SimMachineContext) {}
+                    override fun makeSnapshot(now: Long) {
 
-                    override fun getSnapshot(): SimWorkload = TODO()
+                    }
+
+                    override fun getSnapshot(): SimWorkload = this
+                    override fun createCheckpointModel() {}
+
+                    override fun getCheckpointInterval(): Long {return -1;}
+
+                    override fun getCheckpointDuration(): Long {return -1;}
+
+                    override fun getCheckpointIntervalScaling(): Double {return -1.0;}
                 },
             )
 
@@ -286,8 +314,18 @@ class SimMachineTest {
                     override fun setOffset(now: Long) {}
 
                     override fun onStop(ctx: SimMachineContext) {}
+                    override fun makeSnapshot(now: Long) {
 
-                    override fun getSnapshot(): SimWorkload = TODO()
+                    }
+
+                    override fun getSnapshot(): SimWorkload = this
+                    override fun createCheckpointModel() {}
+
+                    override fun getCheckpointInterval(): Long {return -1;}
+
+                    override fun getCheckpointDuration(): Long {return -1;}
+
+                    override fun getCheckpointIntervalScaling(): Double {return -1.0;}
                 },
             )
 
@@ -317,8 +355,16 @@ class SimMachineTest {
                     override fun setOffset(now: Long) {}
 
                     override fun onStop(ctx: SimMachineContext) {}
+                    override fun makeSnapshot(now: Long) {}
 
-                    override fun getSnapshot(): SimWorkload = TODO()
+                    override fun getSnapshot(): SimWorkload = this
+                    override fun createCheckpointModel() {}
+
+                    override fun getCheckpointInterval(): Long {return -1;}
+
+                    override fun getCheckpointDuration(): Long {return -1;}
+
+                    override fun getCheckpointIntervalScaling(): Double {return -1.0;}
                 },
             )
 
@@ -348,8 +394,16 @@ class SimMachineTest {
                     override fun setOffset(now: Long) {}
 
                     override fun onStop(ctx: SimMachineContext) {}
+                    override fun makeSnapshot(now: Long) {}
 
-                    override fun getSnapshot(): SimWorkload = TODO()
+                    override fun getSnapshot(): SimWorkload = this
+                    override fun createCheckpointModel() {}
+
+                    override fun getCheckpointInterval(): Long {return -1;}
+
+                    override fun getCheckpointDuration(): Long {return -1;}
+
+                    override fun getCheckpointIntervalScaling(): Double {return -1.0;}
                 },
             )
 
