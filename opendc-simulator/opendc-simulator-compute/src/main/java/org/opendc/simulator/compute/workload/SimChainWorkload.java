@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute.workload;
 
+import java.time.InstantSource;
 import java.util.List;
 import java.util.Map;
 import org.opendc.simulator.compute.SimMachineContext;
@@ -30,6 +31,8 @@ import org.opendc.simulator.compute.SimNetworkInterface;
 import org.opendc.simulator.compute.SimProcessingUnit;
 import org.opendc.simulator.compute.SimStorageInterface;
 import org.opendc.simulator.flow2.FlowGraph;
+import org.opendc.simulator.flow2.FlowStage;
+import org.opendc.simulator.flow2.FlowStageLogic;
 
 /**
  * A {@link SimWorkload} that composes two {@link SimWorkload}s.
@@ -40,6 +43,13 @@ final class SimChainWorkload implements SimWorkload {
 
     private Context activeContext;
 
+    private long checkpointInterval = 0;
+    private long checkpointDuration = 0;
+
+    private double checkpointIntervalScaling = 1.0;
+    private CheckPointModel checkpointModel;
+    private SimChainWorkload snapshot;
+
     /**
      * Construct a {@link SimChainWorkload} instance.
      *
@@ -48,6 +58,13 @@ final class SimChainWorkload implements SimWorkload {
      */
     SimChainWorkload(SimWorkload[] workloads, int activeWorkloadIndex) {
         this.workloads = workloads;
+
+        if (this.workloads.length > 1) {
+            checkpointInterval = this.workloads[1].getCheckpointInterval();
+            checkpointDuration = this.workloads[1].getCheckpointDuration();
+            checkpointIntervalScaling = this.workloads[1].getCheckpointIntervalScaling();
+        }
+
         this.activeWorkloadIndex = activeWorkloadIndex;
     }
 
@@ -58,6 +75,21 @@ final class SimChainWorkload implements SimWorkload {
      */
     SimChainWorkload(SimWorkload... workloads) {
         this(workloads, 0);
+    }
+
+    @Override
+    public long getCheckpointInterval() {
+        return checkpointInterval;
+    }
+
+    @Override
+    public long getCheckpointDuration() {
+        return checkpointDuration;
+    }
+
+    @Override
+    public double getCheckpointIntervalScaling() {
+        return checkpointIntervalScaling;
     }
 
     @Override
@@ -79,6 +111,11 @@ final class SimChainWorkload implements SimWorkload {
         final Context context = new Context(ctx);
         activeContext = context;
 
+        if (checkpointInterval > 0) {
+            this.createCheckpointModel();
+            this.checkpointModel.start();
+        }
+
         tryThrow(context.doStart(workloads[activeWorkloadIndex]));
     }
 
@@ -94,20 +131,98 @@ final class SimChainWorkload implements SimWorkload {
         final Context context = activeContext;
         activeContext = null;
 
+        if (this.checkpointModel != null) {
+            this.checkpointModel.stop();
+        }
+
         tryThrow(context.doStop(workloads[activeWorkloadIndex]));
     }
 
     @Override
-    public SimChainWorkload snapshot() {
+    public void makeSnapshot(long now) {
         final int activeWorkloadIndex = this.activeWorkloadIndex;
         final SimWorkload[] workloads = this.workloads;
         final SimWorkload[] newWorkloads = new SimWorkload[workloads.length - activeWorkloadIndex];
 
         for (int i = 0; i < newWorkloads.length; i++) {
-            newWorkloads[i] = workloads[activeWorkloadIndex + i].snapshot();
+            workloads[activeWorkloadIndex + i].makeSnapshot(now);
+            newWorkloads[i] = workloads[activeWorkloadIndex + i].getSnapshot();
         }
 
-        return new SimChainWorkload(newWorkloads, 0);
+        this.snapshot = new SimChainWorkload(newWorkloads, 0);
+    }
+
+    @Override
+    public SimChainWorkload getSnapshot() {
+        return this.snapshot;
+    }
+
+    @Override
+    public void createCheckpointModel() {
+        this.checkpointModel = new CheckPointModel(
+                activeContext, this, this.checkpointInterval, this.checkpointDuration, this.checkpointIntervalScaling);
+    }
+
+    private class CheckPointModel implements FlowStageLogic {
+        private SimChainWorkload workload;
+        private long checkpointInterval;
+        private long checkpointDuration;
+        private double checkpointIntervalScaling;
+        private FlowStage stage;
+
+        private long startOfInterval;
+        private Boolean firstCheckPoint = true;
+
+        CheckPointModel(
+                Context context,
+                SimChainWorkload workload,
+                long checkpointInterval,
+                long checkpointDuration,
+                double checkpointIntervalScaling) {
+            this.checkpointInterval = checkpointInterval;
+            this.checkpointDuration = checkpointDuration;
+            this.checkpointIntervalScaling = checkpointIntervalScaling;
+            this.workload = workload;
+
+            this.stage = context.getGraph().newStage(this);
+
+            InstantSource clock = this.stage.getGraph().getEngine().getClock();
+
+            this.startOfInterval = clock.millis();
+        }
+
+        @Override
+        public long onUpdate(FlowStage ctx, long now) {
+            long passedTime = now - startOfInterval;
+            long remainingTime = this.checkpointInterval - passedTime;
+
+            if (!this.firstCheckPoint) {
+                remainingTime += this.checkpointDuration;
+            }
+
+            // Interval not completed
+            if (remainingTime > 0) {
+                return now + remainingTime;
+            }
+
+            workload.makeSnapshot(now);
+            if (firstCheckPoint) {
+                this.firstCheckPoint = false;
+            }
+
+            // Scale the interval time between checkpoints based on the provided scaling
+            this.checkpointInterval = (long) (this.checkpointInterval * this.checkpointIntervalScaling);
+
+            return now + this.checkpointInterval + this.checkpointDuration;
+        }
+
+        public void start() {
+            this.stage.sync();
+        }
+
+        public void stop() {
+            this.stage.close();
+        }
     }
 
     /**
@@ -115,6 +230,7 @@ final class SimChainWorkload implements SimWorkload {
      */
     private class Context implements SimMachineContext {
         private final SimMachineContext ctx;
+        private SimWorkload snapshot;
 
         private Context(SimMachineContext ctx) {
             this.ctx = ctx;
@@ -151,9 +267,16 @@ final class SimChainWorkload implements SimWorkload {
         }
 
         @Override
-        public SimWorkload snapshot() {
+        public void makeSnapshot(long now) {
             final SimWorkload workload = workloads[activeWorkloadIndex];
-            return workload.snapshot();
+            this.snapshot = workload.getSnapshot();
+        }
+
+        @Override
+        public SimWorkload getSnapshot(long now) {
+            this.makeSnapshot(now);
+
+            return this.snapshot;
         }
 
         @Override
@@ -192,6 +315,9 @@ final class SimChainWorkload implements SimWorkload {
                 }
             }
 
+            if (SimChainWorkload.this.checkpointModel != null) {
+                SimChainWorkload.this.checkpointModel.stop();
+            }
             ctx.shutdown(cause);
         }
 

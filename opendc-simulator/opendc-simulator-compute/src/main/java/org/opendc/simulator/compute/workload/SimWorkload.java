@@ -49,7 +49,17 @@ public interface SimWorkload {
     /**
      * Create a snapshot of this workload.
      */
-    SimWorkload snapshot();
+    void makeSnapshot(long now);
+
+    SimWorkload getSnapshot();
+
+    void createCheckpointModel();
+
+    long getCheckpointInterval();
+
+    long getCheckpointDuration();
+
+    double getCheckpointIntervalScaling();
 
     void setOffset(long now);
 }

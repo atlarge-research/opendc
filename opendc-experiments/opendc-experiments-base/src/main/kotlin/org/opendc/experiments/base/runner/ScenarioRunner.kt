@@ -99,7 +99,13 @@ public fun runScenario(
             addExportModel(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace, scenario.id)
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
-            service.replay(timeSource, tasks, failureModelSpec = scenario.failureModelSpec, seed = seed)
+            service.replay(
+                timeSource,
+                tasks,
+                failureModelSpec = scenario.failureModelSpec,
+                checkpointModelSpec = scenario.checkpointModelSpec,
+                seed = seed,
+            )
         }
     }
 
