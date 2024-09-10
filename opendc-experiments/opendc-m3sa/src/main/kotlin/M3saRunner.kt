@@ -36,15 +36,13 @@ public fun m3saRun(
     outputFolderPath: String,
     m3saSetupPath: String,
 ) {
-    val process =
-        ProcessBuilder(
-            SCRIPT_LANGUAGE,
-            ABSOLUTE_SCRIPT_PATH,
-            outputFolderPath,
-            m3saSetupPath,
-        )
-            .directory(Path(ANALYSIS_SCRIPTS_DIRECTORY).toFile())
-            .start()
+    val process = ProcessBuilder(
+        SCRIPT_LANGUAGE,
+        ABSOLUTE_SCRIPT_PATH,
+        outputFolderPath,
+        m3saSetupPath,
+    ).directory(Path(ANALYSIS_SCRIPTS_DIRECTORY).toFile())
+        .start()
 
     val exitCode = process.waitFor()
     if (exitCode == 0) {

@@ -79,6 +79,7 @@ public fun getExperiments(experimentSpec: ExperimentSpec): List<Scenario> {
                 carbonTracePath = scenarioSpec.carbonTracePath,
                 exportModelSpec = scenarioSpec.exportModel,
                 outputFolder = outputFolder,
+                m3saSetup = experimentSpec.m3saSetup,
                 name = scenarioID.toString(),
                 runs = experimentSpec.runs,
                 initialSeed = experimentSpec.initialSeed,
