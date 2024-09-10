@@ -42,6 +42,7 @@ import java.util.UUID
  * @property computeExportConfig configures which parquet columns are to
  * be included in the output files.
  */
+
 @Serializable
 public data class ExperimentSpec(
     var id: Int = -1,
@@ -49,6 +50,7 @@ public data class ExperimentSpec(
     val outputFolder: String = "output",
     val initialSeed: Int = 0,
     val runs: Int = 1,
+    val m3saSetup: String = "",
     val topologies: Set<ScenarioTopologySpec>,
     val workloads: Set<WorkloadSpec>,
     val allocationPolicies: Set<AllocationPolicySpec> = setOf(AllocationPolicySpec()),

@@ -21,6 +21,7 @@
  */
 rootProject.name = "opendc"
 
+
 include(":opendc-common")
 include(":opendc-compute:opendc-compute-api")
 include(":opendc-compute:opendc-compute-carbon")
@@ -40,6 +41,7 @@ include(":opendc-experiments:opendc-experiments-workflow")
 include(":opendc-experiments:opendc-experiments-faas")
 include(":opendc-experiments:opendc-experiments-scenario")
 include(":opendc-experiments:opendc-experiments-tf20")
+include(":opendc-experiments:opendc-m3sa")
 include(":opendc-web:opendc-web-proto")
 include(":opendc-web:opendc-web-server")
 include(":opendc-web:opendc-web-client")
