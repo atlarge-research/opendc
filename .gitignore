@@ -117,4 +117,4 @@ gradle-app.setting
 .gradletasknamecache
 
 # Demo files
-./demo
+demo/*
