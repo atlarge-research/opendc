@@ -121,8 +121,9 @@ public suspend fun ComputeService.replay(
                     delay(max(0, (start - now - simulationOffset)))
                 }
 
-                val checkpointTime = checkpointModelSpec?.checkpointTime ?: 0L
-                val checkpointWait = checkpointModelSpec?.checkpointWait ?: 0L
+                val checkpointInterval = checkpointModelSpec?.checkpointInterval ?: 0L
+                val checkpointDuration = checkpointModelSpec?.checkpointDuration ?: 0L
+                val checkpointIntervalScaling = checkpointModelSpec?.checkpointIntervalScaling ?: 1.0
 
 //                val workload = SimRuntimeWorkload(
 //                    entry.duration,
@@ -131,7 +132,7 @@ public suspend fun ComputeService.replay(
 //                    checkpointWait
 //                )
 
-                val workload = entry.trace.createWorkload(start, checkpointTime, checkpointWait)
+                val workload = entry.trace.createWorkload(start, checkpointInterval, checkpointDuration, checkpointIntervalScaling)
                 val meta = mutableMapOf<String, Any>("workload" to workload)
 
                 launch {
