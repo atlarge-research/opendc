@@ -23,6 +23,7 @@
 package org.opendc.compute.service.scheduler
 
 import org.opendc.compute.api.Task
+import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.HostView
 import org.opendc.compute.service.scheduler.filters.HostFilter
 import org.opendc.compute.service.scheduler.weights.HostWeigher
@@ -65,7 +66,8 @@ public class FilterScheduler(
         hosts.remove(host)
     }
 
-    override fun select(task: Task): HostView? {
+    override fun select(iter: MutableIterator<Task>): HostView? {
+        val task = iter.next()
         val hosts = hosts
         val filteredHosts = hosts.filter { host -> filters.all { filter -> filter.test(host, task) } }
 
@@ -107,5 +109,9 @@ public class FilterScheduler(
             1 -> subset[0]
             else -> subset[random.nextInt(maxSize)]
         }
+    }
+
+    override fun removeTask(task: Task, hv: HostView) {
+        TODO("Not yet implemented")
     }
 }

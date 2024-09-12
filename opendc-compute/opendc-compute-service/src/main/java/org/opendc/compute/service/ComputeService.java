@@ -25,12 +25,12 @@ package org.opendc.compute.service;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -100,7 +100,7 @@ public final class ComputeService implements AutoCloseable {
     /**
      * The tasks that should be launched by the service.
      */
-    private final Deque<SchedulingRequest> taskQueue = new ArrayDeque<>();
+    private final LinkedHashSet<ServiceTask> taskQueue = new LinkedHashSet<>();
 
     /**
      * The active tasks in the system.
@@ -175,6 +175,8 @@ public final class ComputeService implements AutoCloseable {
                     hv.provisionedCores -= flavor.getCoreCount();
                     hv.instanceCount--;
                     hv.availableMemory += flavor.getMemorySize();
+
+                    scheduler.removeTask(task, hv);
                 } else {
                     LOGGER.error("Unknown host {}", host);
                 }
@@ -309,17 +311,17 @@ public final class ComputeService implements AutoCloseable {
     /**
      * Enqueue the specified [task] to be scheduled onto a host.
      */
-    SchedulingRequest schedule(ServiceTask task) {
+    void schedule(ServiceTask task) {
         LOGGER.debug("Enqueueing task {} to be assigned to host", task.getUid());
 
         long now = clock.millis();
-        SchedulingRequest request = new SchedulingRequest(task, now);
+        task.submitTime = now;
+        task.isCancelled = false;
 
         task.launchedAt = Instant.ofEpochMilli(now);
-        taskQueue.add(request);
+        taskQueue.add(task);
         tasksPending++;
         requestSchedulingCycle();
-        return request;
     }
 
     void delete(ServiceFlavor flavor) {
@@ -354,29 +356,28 @@ public final class ComputeService implements AutoCloseable {
      */
     private void doSchedule() {
         // reorder tasks
+        Iterator<ServiceTask> iterator = taskQueue.iterator();
 
-        while (!taskQueue.isEmpty()) {
-            SchedulingRequest request = taskQueue.peek();
+        while (iterator.hasNext()) {
+            ServiceTask task = iterator.next();
 
-            if (request.isCancelled) {
-                taskQueue.poll();
+            if (task.isCancelled) {
+                iterator.remove();
                 tasksPending--;
                 continue;
             }
-
-            final ServiceTask task = request.task;
             // Check if all dependencies are met
             // otherwise continue
 
             final ServiceFlavor flavor = task.getFlavor();
-            final HostView hv = scheduler.select(request.task);
+            final HostView hv = scheduler.select(iterator);
 
             if (hv == null || !hv.getHost().canFit(task)) {
                 LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);
 
                 if (flavor.getMemorySize() > maxMemory || flavor.getCoreCount() > maxCores) {
                     // Remove the incoming image
-                    taskQueue.poll();
+                    iterator.remove();
                     tasksPending--;
                     attemptsFailure++;
 
@@ -392,7 +393,7 @@ public final class ComputeService implements AutoCloseable {
             Host host = hv.getHost();
 
             // Remove request from queue
-            taskQueue.poll();
+            iterator.remove();
             tasksPending--;
 
             LOGGER.info("Assigned task {} to host {}", task, host);
@@ -413,6 +414,7 @@ public final class ComputeService implements AutoCloseable {
                 activeTasks.put(task, host);
             } catch (Exception cause) {
                 LOGGER.error("Failed to deploy VM", cause);
+                scheduler.removeTask(task, hv);
                 attemptsError++;
             }
         }
@@ -599,21 +601,6 @@ public final class ComputeService implements AutoCloseable {
 
             internalTask.setWorkload(workload);
             internalTask.start();
-        }
-    }
-
-    /**
-     * A request to schedule a {@link ServiceTask} onto one of the {@link Host}s.
-     */
-    static class SchedulingRequest {
-        final ServiceTask task;
-        final long submitTime;
-
-        boolean isCancelled;
-
-        SchedulingRequest(ServiceTask task, long submitTime) {
-            this.task = task;
-            this.submitTime = submitTime;
         }
     }
 }

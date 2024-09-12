@@ -49,6 +49,11 @@ public interface Task : Resource {
     public val launchedAt: Instant?
 
     /**
+     * Time the task was skipped by the scheduler because no host with enough resources was available.
+     */
+    public var timesSkipped: Int
+
+    /**
      * Request the task to be started.
      */
     public fun start()
