@@ -30,6 +30,7 @@ import mu.KotlinLogging
 import org.opendc.common.Dispatcher
 import org.opendc.common.asCoroutineDispatcher
 import org.opendc.compute.api.Task
+import org.opendc.compute.api.TaskState
 import org.opendc.compute.carbon.CarbonTrace
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
@@ -448,6 +449,8 @@ public class ComputeMetricReader(
             _provisionTime = table.provisionTime
             _bootTime = table.bootTime
             _bootTimeAbsolute = table.bootTimeAbsolute
+
+            _taskState = table.taskState
         }
 
         private val _task = task
@@ -455,7 +458,7 @@ public class ComputeMetricReader(
         /**
          * The static information about this task.
          */
-        override val task =
+        override val taskInfo =
             TaskInfo(
                 task.uid.toString(),
                 task.name,
@@ -464,7 +467,7 @@ public class ComputeMetricReader(
                 task.image.uid.toString(),
                 task.image.name,
                 task.flavor.coreCount,
-                task.flavor.memorySize,
+                task.flavor.memorySize
             )
 
         /**
@@ -527,6 +530,11 @@ public class ComputeMetricReader(
             get() = _bootTimeAbsolute
         private var _bootTimeAbsolute: Instant? = null
 
+        override val taskState: TaskState?
+            get() = _taskState
+        private var _taskState: TaskState? = null;
+
+
         /**
          * Record the next cycle.
          */
@@ -552,6 +560,9 @@ public class ComputeMetricReader(
             _downtime = sysStats?.downtime?.toMillis() ?: 0
             _provisionTime = _task.launchedAt
             _bootTime = sysStats?.bootTime
+
+            _taskState = _task.state
+
 
             if (sysStats != null) {
                 _bootTimeAbsolute = sysStats.bootTime + startTime

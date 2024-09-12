@@ -365,8 +365,18 @@ public final class ComputeService implements AutoCloseable {
             }
 
             final ServiceTask task = request.task;
-            // Check if all dependencies are met
-            // otherwise continue
+
+            int maxFailures = 5;
+            int taskFailures = task.getNumFailures();
+            // Remove task from scheduling if it has failed too many times
+            if (taskFailures > maxFailures) {
+                LOGGER.warn("Failed to spawn {}: Task has failed more than {} times", task, maxFailures);
+
+                taskQueue.poll();
+                tasksPending--;
+                task.setState(TaskState.TERMINATED);
+                continue;
+            }
 
             final ServiceFlavor flavor = task.getFlavor();
             final HostView hv = scheduler.select(request.task);
