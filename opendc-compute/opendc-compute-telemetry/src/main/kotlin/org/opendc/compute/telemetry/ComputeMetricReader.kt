@@ -30,6 +30,7 @@ import mu.KotlinLogging
 import org.opendc.common.Dispatcher
 import org.opendc.common.asCoroutineDispatcher
 import org.opendc.compute.api.Task
+import org.opendc.compute.api.TaskState
 import org.opendc.compute.carbon.CarbonTrace
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
@@ -422,11 +423,11 @@ public class ComputeMetricReader(
      */
     private class TaskTableReaderImpl(
         private val service: ComputeService,
-        task: Task,
+        private val task: Task,
         private val startTime: Duration = Duration.ofMillis(0),
     ) : TaskTableReader {
         override fun copy(): TaskTableReader {
-            val newTaskTable = TaskTableReaderImpl(service, _task)
+            val newTaskTable = TaskTableReaderImpl(service, task)
             newTaskTable.setValues(this)
 
             return newTaskTable
@@ -448,14 +449,14 @@ public class ComputeMetricReader(
             _provisionTime = table.provisionTime
             _bootTime = table.bootTime
             _bootTimeAbsolute = table.bootTimeAbsolute
-        }
 
-        private val _task = task
+            _taskState = table.taskState
+        }
 
         /**
          * The static information about this task.
          */
-        override val task =
+        override val taskInfo =
             TaskInfo(
                 task.uid.toString(),
                 task.name,
@@ -527,18 +528,22 @@ public class ComputeMetricReader(
             get() = _bootTimeAbsolute
         private var _bootTimeAbsolute: Instant? = null
 
+        override val taskState: TaskState?
+            get() = _taskState
+        private var _taskState: TaskState? = null
+
         /**
          * Record the next cycle.
          */
         fun record(now: Instant) {
-            val newHost = service.lookupHost(_task)
+            val newHost = service.lookupHost(task)
             if (newHost != null && newHost.uid != _host?.uid) {
                 _host = newHost
                 host = HostInfo(newHost.uid.toString(), newHost.name, "x86", newHost.model.cpuCount, newHost.model.memoryCapacity)
             }
 
-            val cpuStats = _host?.getCpuStats(_task)
-            val sysStats = _host?.getSystemStats(_task)
+            val cpuStats = _host?.getCpuStats(task)
+            val sysStats = _host?.getSystemStats(task)
 
             _timestamp = now
             _timestampAbsolute = now + startTime
@@ -550,8 +555,10 @@ public class ComputeMetricReader(
             _cpuLostTime = cpuStats?.lostTime ?: 0
             _uptime = sysStats?.uptime?.toMillis() ?: 0
             _downtime = sysStats?.downtime?.toMillis() ?: 0
-            _provisionTime = _task.launchedAt
+            _provisionTime = task.launchedAt
             _bootTime = sysStats?.bootTime
+
+            _taskState = task.state
 
             if (sysStats != null) {
                 _bootTimeAbsolute = sysStats.bootTime + startTime

@@ -37,11 +37,13 @@ public class ComputeServiceProvisioningStep internal constructor(
     private val serviceDomain: String,
     private val scheduler: (ProvisioningContext) -> ComputeScheduler,
     private val schedulingQuantum: Duration,
+    private val maxNumFailures: Int,
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service =
             ComputeService.builder(ctx.dispatcher, scheduler(ctx))
                 .withQuantum(schedulingQuantum)
+                .withMaxNumFailures(maxNumFailures)
                 .build()
         ctx.registry.register(serviceDomain, ComputeService::class.java, service)
 

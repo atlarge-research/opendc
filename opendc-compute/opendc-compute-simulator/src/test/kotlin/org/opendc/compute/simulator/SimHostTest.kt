@@ -365,6 +365,7 @@ internal class SimHostTest {
         override val name: String,
         override val flavor: Flavor,
         override val image: Image,
+        override val numFailures: Int = 10,
     ) : Task {
         override val labels: Map<String, String> = emptyMap()
 

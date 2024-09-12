@@ -64,7 +64,7 @@ public object DfltTaskExportColumns {
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("task_id"),
-        ) { Binary.fromString(it.task.id) }
+        ) { Binary.fromString(it.taskInfo.id) }
 
     public val HOST_ID: ExportColumn<TaskTableReader> =
         ExportColumn(
@@ -80,17 +80,17 @@ public object DfltTaskExportColumns {
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("task_name"),
-        ) { Binary.fromString(it.task.name) }
+        ) { Binary.fromString(it.taskInfo.name) }
 
     public val CPU_COUNT: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT32).named("cpu_count"),
-        ) { it.task.cpuCount }
+        ) { it.taskInfo.cpuCount }
 
     public val MEM_CAPACITY: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("mem_capacity"),
-        ) { it.task.memCapacity }
+        ) { it.taskInfo.memCapacity }
 
     public val CPU_LIMIT: ExportColumn<TaskTableReader> =
         ExportColumn(
@@ -141,6 +141,14 @@ public object DfltTaskExportColumns {
         ExportColumn(
             field = Types.optional(INT64).named("boot_time_absolute"),
         ) { it.bootTimeAbsolute?.toEpochMilli() }
+
+    public val TASK_STATE: ExportColumn<TaskTableReader> =
+        ExportColumn(
+            field =
+                Types.optional(BINARY)
+                    .`as`(LogicalTypeAnnotation.stringType())
+                    .named("task_state"),
+        ) { Binary.fromString(it.taskState?.name) }
 
     /**
      * The columns that are always included in the output file.
