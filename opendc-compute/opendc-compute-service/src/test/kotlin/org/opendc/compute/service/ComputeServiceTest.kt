@@ -68,7 +68,7 @@ internal class ComputeServiceTest {
                 filters = listOf(ComputeFilter(), VCpuFilter(allocationRatio = 1.0), RamFilter(allocationRatio = 1.0)),
                 weighers = listOf(RamWeigher()),
             )
-        service = ComputeService(scope.dispatcher, computeScheduler, Duration.ofMinutes(5))
+        service = ComputeService(scope.dispatcher, computeScheduler, Duration.ofMinutes(5), 10)
     }
 
     @Test
