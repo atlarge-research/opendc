@@ -41,10 +41,17 @@ public interface ComputeScheduler {
     public fun removeHost(host: HostView)
 
     /**
-     * Select a host for the specified [task].
+     * Select a host for the specified [iter].
+     * We implicity assume that the task has been scheduled onto the host.
      *
-     * @param task The server to select a host for.
+     * @param iter The server to select a host for.
      * @return The host to schedule the server on or `null` if no server is available.
      */
-    public fun select(task: Task): HostView?
+    public fun select(iter: MutableIterator<Task>): HostView?
+
+    /**
+     * Inform the scheduler that a task has been removed from the host.
+     * Could be due to completion or failure.
+     */
+    public fun removeTask(task: Task, hv: HostView)
 }

@@ -48,7 +48,8 @@ public class ReplayScheduler(private val vmPlacements: Map<String, String>) : Co
         hosts.remove(host)
     }
 
-    override fun select(task: Task): HostView? {
+    override fun select(iter: MutableIterator<Task>): HostView? {
+        val task = iter.next()
         val clusterName =
             vmPlacements[task.name]
                 ?: throw IllegalStateException("Could not find placement data in VM placement file for VM ${task.name}")
@@ -61,5 +62,9 @@ public class ReplayScheduler(private val vmPlacements: Map<String, String>) : Co
 
         return machinesInCluster.maxByOrNull { it.availableMemory }
             ?: throw IllegalStateException("Cloud not find any machine and could not randomly assign")
+    }
+
+    override fun removeTask(task: Task, hv: HostView) {
+        TODO("Not yet implemented")
     }
 }
