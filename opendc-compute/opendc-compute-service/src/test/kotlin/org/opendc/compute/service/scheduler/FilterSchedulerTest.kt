@@ -82,7 +82,7 @@ internal class FilterSchedulerTest {
         every { task.flavor.coreCount } returns 2
         every { task.flavor.memorySize } returns 1024
 
-        assertNull(scheduler.select(task))
+        assertNull(scheduler.select(mutableListOf(task).iterator()))
     }
 
     @Test
@@ -108,8 +108,8 @@ internal class FilterSchedulerTest {
 
         // Make sure we get the first host both times
         assertAll(
-            { assertEquals(hostA, scheduler.select(task)) },
-            { assertEquals(hostA, scheduler.select(task)) },
+            { assertEquals(hostA, scheduler.select(mutableListOf(task).iterator())) },
+            { assertEquals(hostA, scheduler.select(mutableListOf(task).iterator())) },
         )
     }
 
@@ -138,8 +138,8 @@ internal class FilterSchedulerTest {
 
         // Make sure we get the first host both times
         assertAll(
-            { assertEquals(hostB, scheduler.select(task)) },
-            { assertEquals(hostA, scheduler.select(task)) },
+            { assertEquals(hostB, scheduler.select(mutableListOf(task).iterator())) },
+            { assertEquals(hostA, scheduler.select(mutableListOf(task).iterator())) },
         )
     }
 
@@ -160,7 +160,7 @@ internal class FilterSchedulerTest {
         every { task.flavor.coreCount } returns 2
         every { task.flavor.memorySize } returns 1024
 
-        assertNull(scheduler.select(task))
+        assertNull(scheduler.select(mutableListOf(task).iterator()))
     }
 
     @Test
@@ -180,7 +180,7 @@ internal class FilterSchedulerTest {
         every { task.flavor.coreCount } returns 2
         every { task.flavor.memorySize } returns 1024
 
-        assertEquals(host, scheduler.select(task))
+        assertEquals(host, scheduler.select(mutableListOf(task).iterator()))
     }
 
     @Test
@@ -208,7 +208,7 @@ internal class FilterSchedulerTest {
         every { task.flavor.coreCount } returns 2
         every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostB, scheduler.select(task))
+        assertEquals(hostB, scheduler.select(mutableListOf(task).iterator()))
     }
 
     @Test
@@ -230,7 +230,7 @@ internal class FilterSchedulerTest {
         every { task.flavor.coreCount } returns 2
         every { task.flavor.memorySize } returns 2300
 
-        assertNull(scheduler.select(task))
+        assertNull(scheduler.select(mutableListOf(task).iterator()))
     }
 
     @Test
@@ -258,7 +258,7 @@ internal class FilterSchedulerTest {
         every { task.flavor.coreCount } returns 2
         every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostB, scheduler.select(task))
+        assertEquals(hostB, scheduler.select(mutableListOf(task).iterator()))
     }
 
     @Test
@@ -280,7 +280,7 @@ internal class FilterSchedulerTest {
         every { task.flavor.coreCount } returns 8
         every { task.flavor.memorySize } returns 1024
 
-        assertNull(scheduler.select(task))
+        assertNull(scheduler.select(mutableListOf(task).iterator()))
     }
 
 // TODO: fix when schedulers are reworked
@@ -310,7 +310,7 @@ internal class FilterSchedulerTest {
         every { task.flavor.memorySize } returns 1024
         every { task.flavor.meta } returns mapOf("cpu-capacity" to 2 * 3200.0)
 
-        assertEquals(hostB, scheduler.select(task))
+        assertEquals(hostB, scheduler.select(mutableListOf(task).iterator()))
     }
 
     @Test
@@ -338,7 +338,7 @@ internal class FilterSchedulerTest {
         every { task.flavor.coreCount } returns 2
         every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostB, scheduler.select(task))
+        assertEquals(hostB, scheduler.select(mutableListOf(task).iterator()))
     }
 
     @Test
@@ -374,11 +374,11 @@ internal class FilterSchedulerTest {
         every { taskB.flavor.memorySize } returns 1024
         every { taskB.meta } returns emptyMap()
 
-        assertEquals(hostA, scheduler.select(taskB))
+        assertEquals(hostA, scheduler.select(mutableListOf(taskB).iterator()))
 
         every { taskB.meta } returns mapOf("scheduler_hint:same_host" to setOf(taskA.uid))
 
-        assertEquals(hostB, scheduler.select(taskB))
+        assertEquals(hostB, scheduler.select(mutableListOf(taskB).iterator()))
     }
 
     @Test
@@ -414,11 +414,11 @@ internal class FilterSchedulerTest {
         every { taskB.flavor.memorySize } returns 1024
         every { taskB.meta } returns emptyMap()
 
-        assertEquals(hostA, scheduler.select(taskB))
+        assertEquals(hostA, scheduler.select(mutableListOf(taskB).iterator()))
 
         every { taskB.meta } returns mapOf("scheduler_hint:different_host" to setOf(taskA.uid))
 
-        assertEquals(hostB, scheduler.select(taskB))
+        assertEquals(hostB, scheduler.select(mutableListOf(taskB).iterator()))
     }
 
     @Test
@@ -446,7 +446,7 @@ internal class FilterSchedulerTest {
         every { task.flavor.coreCount } returns 2
         every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostA, scheduler.select(task))
+        assertEquals(hostA, scheduler.select(mutableListOf(task).iterator()))
     }
 
     // TODO: fix test when updating schedulers
@@ -475,7 +475,7 @@ internal class FilterSchedulerTest {
         every { task.flavor.coreCount } returns 2
         every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostB, scheduler.select(task))
+        assertEquals(hostB, scheduler.select(mutableListOf(task).iterator()))
     }
 
     @Test
@@ -503,7 +503,7 @@ internal class FilterSchedulerTest {
         every { task.flavor.coreCount } returns 2
         every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostB, scheduler.select(task))
+        assertEquals(hostB, scheduler.select(mutableListOf(task).iterator()))
     }
 
     @Test
@@ -531,6 +531,6 @@ internal class FilterSchedulerTest {
         every { task.flavor.coreCount } returns 2
         every { task.flavor.memorySize } returns 1024
 
-        assertEquals(hostB, scheduler.select(task))
+        assertEquals(hostB, scheduler.select(mutableListOf(task).iterator()))
     }
 }

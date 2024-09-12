@@ -58,7 +58,11 @@ public final class ServiceTask implements Task {
     private TaskState state = TaskState.TERMINATED;
     Instant launchedAt = null;
     Host host = null;
-    private ComputeService.SchedulingRequest request = null;
+
+    // Scheduling request related fields
+    long submitTime;
+    boolean isCancelled;
+    int timesSkipped;
 
     ServiceTask(
             ComputeService service,
@@ -75,6 +79,9 @@ public final class ServiceTask implements Task {
         this.image = image;
         this.labels = labels;
         this.meta = meta;
+
+        this.submitTime = -1;
+        this.isCancelled = false;
     }
 
     @NotNull
@@ -153,8 +160,8 @@ public final class ServiceTask implements Task {
             default:
                 LOGGER.info("User requested to start task {}", uid);
                 setState(TaskState.PROVISIONING);
-                assert request == null : "Scheduling request already active";
-                request = service.schedule(this);
+                assert submitTime == -1 : "Scheduling request already active";
+                service.schedule(this);
                 break;
         }
     }
@@ -246,10 +253,16 @@ public final class ServiceTask implements Task {
      * Cancel the provisioning request if active.
      */
     private void cancelProvisioningRequest() {
-        final ComputeService.SchedulingRequest request = this.request;
-        if (request != null) {
-            this.request = null;
-            request.isCancelled = true;
-        }
+        this.isCancelled = true;
+    }
+
+    @Override
+    public int getTimesSkipped() {
+        return timesSkipped;
+    }
+
+    @Override
+    public void setTimesSkipped(int i) {
+        timesSkipped = i;
     }
 }

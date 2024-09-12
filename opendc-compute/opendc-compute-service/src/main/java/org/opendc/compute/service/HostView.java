@@ -33,6 +33,10 @@ public class HostView {
     long availableMemory;
     int provisionedCores;
 
+    // Additional metadata to be used by scheduler
+    public int priorityIndex = -1;
+    public int listIndex = -1;
+
     /**
      * Construct a {@link HostView} instance.
      *

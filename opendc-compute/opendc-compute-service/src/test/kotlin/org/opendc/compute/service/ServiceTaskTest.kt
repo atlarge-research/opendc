@@ -23,6 +23,7 @@
 package org.opendc.compute.service
 
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.yield
@@ -133,7 +134,7 @@ class ServiceTaskTest {
                     mutableMapOf<String, Any>(),
                 )
 
-            every { service.schedule(any()) } answers { ComputeService.SchedulingRequest(it.invocation.args[0] as ServiceTask, 0) }
+            every { service.schedule(any()) } answers {  }
 
             server.start()
 
@@ -231,14 +232,13 @@ class ServiceTaskTest {
                     mutableMapOf(),
                     mutableMapOf<String, Any>(),
                 )
-            val request = ComputeService.SchedulingRequest(server, 0)
 
-            every { service.schedule(any()) } returns request
+            justRun { service.schedule(any()) }
 
             server.start()
             server.stop()
 
-            assertTrue(request.isCancelled)
+            assertTrue(server.isCancelled)
             assertEquals(TaskState.TERMINATED, server.state)
         }
 
@@ -334,14 +334,13 @@ class ServiceTaskTest {
                     mutableMapOf(),
                     mutableMapOf<String, Any>(),
                 )
-            val request = ComputeService.SchedulingRequest(server, 0)
 
-            every { service.schedule(any()) } returns request
+            justRun { service.schedule(any()) }
 
             server.start()
             server.delete()
 
-            assertTrue(request.isCancelled)
+            assertTrue(server.isCancelled)
             assertEquals(TaskState.DELETED, server.state)
             verify { service.delete(server) }
         }
