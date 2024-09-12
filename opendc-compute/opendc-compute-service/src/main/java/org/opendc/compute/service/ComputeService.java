@@ -82,6 +82,8 @@ public final class ComputeService implements AutoCloseable {
      */
     private final SplittableRandom random = new SplittableRandom(0);
 
+    private final int maxNumFailures;
+
     /**
      * A flag to indicate that the service is closed.
      */
@@ -162,6 +164,7 @@ public final class ComputeService implements AutoCloseable {
 
             serviceTask.setState(newState);
 
+            // TODO: move the removal of tasks when max Failures are reached to here
             if (newState == TaskState.TERMINATED || newState == TaskState.DELETED || newState == TaskState.ERROR) {
                 LOGGER.info("task {} {} {} finished", task.getUid(), task.getName(), task.getFlavor());
 
@@ -196,10 +199,11 @@ public final class ComputeService implements AutoCloseable {
     /**
      * Construct a {@link ComputeService} instance.
      */
-    ComputeService(Dispatcher dispatcher, ComputeScheduler scheduler, Duration quantum) {
+    ComputeService(Dispatcher dispatcher, ComputeScheduler scheduler, Duration quantum, int maxNumFailures) {
         this.clock = dispatcher.getTimeSource();
         this.scheduler = scheduler;
         this.pacer = new Pacer(dispatcher, quantum.toMillis(), (time) -> doSchedule());
+        this.maxNumFailures = maxNumFailures;
     }
 
     /**
@@ -366,11 +370,9 @@ public final class ComputeService implements AutoCloseable {
 
             final ServiceTask task = request.task;
 
-            int maxFailures = 5;
-            int taskFailures = task.getNumFailures();
             // Remove task from scheduling if it has failed too many times
-            if (taskFailures > maxFailures) {
-                LOGGER.warn("Failed to spawn {}: Task has failed more than {} times", task, maxFailures);
+            if (task.getNumFailures() > maxNumFailures) {
+                LOGGER.warn("Failed to spawn {}: Task has failed more than the allowed {} times", task, maxNumFailures);
 
                 taskQueue.poll();
                 tasksPending--;
@@ -435,6 +437,7 @@ public final class ComputeService implements AutoCloseable {
         private final Dispatcher dispatcher;
         private final ComputeScheduler computeScheduler;
         private Duration quantum = Duration.ofMinutes(5);
+        private int maxNumFailures = 10;
 
         Builder(Dispatcher dispatcher, ComputeScheduler computeScheduler) {
             this.dispatcher = dispatcher;
@@ -449,11 +452,16 @@ public final class ComputeService implements AutoCloseable {
             return this;
         }
 
+        public Builder withMaxNumFailures(int maxNumFailures) {
+            this.maxNumFailures = maxNumFailures;
+            return this;
+        }
+
         /**
          * Build a {@link ComputeService}.
          */
         public ComputeService build() {
-            return new ComputeService(dispatcher, computeScheduler, quantum);
+            return new ComputeService(dispatcher, computeScheduler, quantum, maxNumFailures);
         }
     }
 

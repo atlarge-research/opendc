@@ -423,11 +423,11 @@ public class ComputeMetricReader(
      */
     private class TaskTableReaderImpl(
         private val service: ComputeService,
-        task: Task,
+        private val task: Task,
         private val startTime: Duration = Duration.ofMillis(0),
     ) : TaskTableReader {
         override fun copy(): TaskTableReader {
-            val newTaskTable = TaskTableReaderImpl(service, _task)
+            val newTaskTable = TaskTableReaderImpl(service, task)
             newTaskTable.setValues(this)
 
             return newTaskTable
@@ -453,8 +453,6 @@ public class ComputeMetricReader(
             _taskState = table.taskState
         }
 
-        private val _task = task
-
         /**
          * The static information about this task.
          */
@@ -467,7 +465,7 @@ public class ComputeMetricReader(
                 task.image.uid.toString(),
                 task.image.name,
                 task.flavor.coreCount,
-                task.flavor.memorySize
+                task.flavor.memorySize,
             )
 
         /**
@@ -532,21 +530,20 @@ public class ComputeMetricReader(
 
         override val taskState: TaskState?
             get() = _taskState
-        private var _taskState: TaskState? = null;
-
+        private var _taskState: TaskState? = null
 
         /**
          * Record the next cycle.
          */
         fun record(now: Instant) {
-            val newHost = service.lookupHost(_task)
+            val newHost = service.lookupHost(task)
             if (newHost != null && newHost.uid != _host?.uid) {
                 _host = newHost
                 host = HostInfo(newHost.uid.toString(), newHost.name, "x86", newHost.model.cpuCount, newHost.model.memoryCapacity)
             }
 
-            val cpuStats = _host?.getCpuStats(_task)
-            val sysStats = _host?.getSystemStats(_task)
+            val cpuStats = _host?.getCpuStats(task)
+            val sysStats = _host?.getSystemStats(task)
 
             _timestamp = now
             _timestampAbsolute = now + startTime
@@ -558,11 +555,10 @@ public class ComputeMetricReader(
             _cpuLostTime = cpuStats?.lostTime ?: 0
             _uptime = sysStats?.uptime?.toMillis() ?: 0
             _downtime = sysStats?.downtime?.toMillis() ?: 0
-            _provisionTime = _task.launchedAt
+            _provisionTime = task.launchedAt
             _bootTime = sysStats?.bootTime
 
-            _taskState = _task.state
-
+            _taskState = task.state
 
             if (sysStats != null) {
                 _bootTimeAbsolute = sysStats.bootTime + startTime

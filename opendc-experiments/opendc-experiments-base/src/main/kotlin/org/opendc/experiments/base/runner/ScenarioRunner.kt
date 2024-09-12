@@ -87,6 +87,7 @@ public fun runScenario(
                 setupComputeService(
                     serviceDomain,
                     { createComputeScheduler(scenario.allocationPolicySpec.policyType, Random(it.seeder.nextLong())) },
+                    maxNumFailures = scenario.maxNumFailures,
                 ),
                 setupHosts(serviceDomain, topology, optimize = true),
             )

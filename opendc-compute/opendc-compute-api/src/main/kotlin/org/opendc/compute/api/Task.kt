@@ -46,7 +46,7 @@ public interface Task : Resource {
     /**
      * The number of times a Task has been stopped due to failures
      */
-    public val numFailures: Int;
+    public val numFailures: Int
 
     /**
      * The most recent moment in time when the task was launched.
