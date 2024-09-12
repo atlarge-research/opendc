@@ -64,7 +64,7 @@ public class ReplayScheduler(private val vmPlacements: Map<String, String>) : Co
             ?: throw IllegalStateException("Cloud not find any machine and could not randomly assign")
     }
 
-    override fun removeTask(task: Task, hv: HostView) {
+    override fun removeTask(task: Task, host: HostView) {
         TODO("Not yet implemented")
     }
 }

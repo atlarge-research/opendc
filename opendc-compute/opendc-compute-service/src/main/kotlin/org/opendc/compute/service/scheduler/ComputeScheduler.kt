@@ -50,8 +50,11 @@ public interface ComputeScheduler {
     public fun select(iter: MutableIterator<Task>): HostView?
 
     /**
-     * Inform the scheduler that a task has been removed from the host.
+     * Inform the scheduler that a [task] has been removed from the [host].
      * Could be due to completion or failure.
      */
-    public fun removeTask(task: Task, hv: HostView)
+    public fun removeTask(
+        task: Task,
+        host: HostView,
+    )
 }

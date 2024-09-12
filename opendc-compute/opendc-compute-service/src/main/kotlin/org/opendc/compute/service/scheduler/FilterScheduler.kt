@@ -23,7 +23,6 @@
 package org.opendc.compute.service.scheduler
 
 import org.opendc.compute.api.Task
-import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.HostView
 import org.opendc.compute.service.scheduler.filters.HostFilter
 import org.opendc.compute.service.scheduler.weights.HostWeigher
@@ -111,7 +110,10 @@ public class FilterScheduler(
         }
     }
 
-    override fun removeTask(task: Task, hv: HostView) {
+    override fun removeTask(
+        task: Task,
+        host: HostView,
+    ) {
         TODO("Not yet implemented")
     }
 }
