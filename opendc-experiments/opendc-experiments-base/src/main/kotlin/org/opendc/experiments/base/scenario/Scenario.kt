@@ -59,11 +59,5 @@ public data class Scenario(
     val checkpointModelSpec: CheckpointModelSpec?,
     val carbonTracePath: String? = null,
     val m3saSetup: String = "",
-    val exportModelSpec: ExportModelSpec = ExportModelSpec(),
-    val outputFolder: String = "output",
-    val computeExportConfig: ComputeExportConfig,
-    val name: String = "",
-    val runs: Int = 1,
-    val initialSeed: Int = 0,
     val maxNumFailures: Int = 10,
 )
