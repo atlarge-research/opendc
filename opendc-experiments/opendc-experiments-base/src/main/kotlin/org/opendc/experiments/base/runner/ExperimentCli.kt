@@ -32,7 +32,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import m3saRun
-import org.opendc.experiments.base.scenario.getExperiments
+import org.opendc.experiments.base.scenario.getExperiment
 import java.io.File
 
 /**
@@ -62,13 +62,13 @@ internal class ExperimentCommand : CliktCommand(name = "experiment") {
         .flag(default = false)
 
     override fun run() {
-        val experiments = getExperiments(scenarioPath)
-        runExperiment(experiments, parallelism)
+        val experiment = getExperiment(scenarioPath)
+        runExperiment(experiment, parallelism)
 
         if (analyzeResults) {
             m3saRun(
-                outputFolderPath = experiments[0].outputFolder,
-                m3saSetupPath = experiments[0].m3saSetup,
+                outputFolderPath = experiment[0].outputFolder,
+                m3saSetupPath = experiment[0].m3saSetup,
             )
         }
     }
