@@ -46,9 +46,15 @@ import org.opendc.experiments.base.scenario.specs.WorkloadSpec
  */
 public data class Scenario(
     var id: Int = -1,
+    val name: String = "",
+    val outputFolder: String = "output",
+    val runs: Int = 1,
+    val initialSeed: Int = 0,
+    val computeExportConfig: ComputeExportConfig,
     val topologySpec: ScenarioTopologySpec,
     val workloadSpec: WorkloadSpec,
     val allocationPolicySpec: AllocationPolicySpec,
+    val exportModelSpec: ExportModelSpec = ExportModelSpec(),
     val failureModelSpec: FailureModelSpec?,
     val checkpointModelSpec: CheckpointModelSpec?,
     val carbonTracePath: String? = null,
@@ -59,4 +65,5 @@ public data class Scenario(
     val name: String = "",
     val runs: Int = 1,
     val initialSeed: Int = 0,
+    val maxNumFailures: Int = 10,
 )

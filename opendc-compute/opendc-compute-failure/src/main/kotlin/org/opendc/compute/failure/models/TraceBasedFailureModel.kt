@@ -23,7 +23,6 @@
 package org.opendc.compute.failure.models
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.opendc.compute.service.ComputeService
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.FAILURE_DURATION
@@ -72,19 +71,18 @@ public class TraceBasedFailureModel(
     service: ComputeService,
     random: RandomGenerator,
     pathToTrace: String,
-    private val repeat: Boolean = false,
+    private val repeat: Boolean = true,
 ) : FailureModel(context, clock, service, random) {
     private val failureList = loadTrace(pathToTrace)
 
     override suspend fun runInjector() {
         do {
             for (failure in failureList) {
-                delay(failure.failureInterval - clock.millis())
+                delay(failure.failureInterval)
 
                 val victims = victimSelector.select(hosts, failure.failureIntensity)
-                scope.launch {
-                    fault.apply(victims, failure.failureDuration)
-                }
+
+                fault.apply(victims, failure.failureDuration)
             }
         } while (repeat)
     }

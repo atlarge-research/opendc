@@ -54,7 +54,7 @@ public final class SimTrace {
      * //     * @param offset The offset for the timestamps.
      */
     public SimWorkload createWorkload(long start) {
-        return createWorkload(start, 0, 0);
+        return createWorkload(start, 0, 0, 1);
     }
 
     /**
@@ -62,8 +62,9 @@ public final class SimTrace {
      *
      * //     * @param offset The offset for the timestamps.
      */
-    public SimWorkload createWorkload(long start, long checkpointTime, long checkpointWait) {
-        return new Workload(start, fragments, checkpointTime, checkpointWait);
+    public SimWorkload createWorkload(
+            long start, long checkpointInterval, long checkpointDuration, double checkpointIntervalScaling) {
+        return new Workload(start, fragments, checkpointInterval, checkpointDuration, checkpointIntervalScaling);
     }
 
     //    /**
@@ -163,17 +164,42 @@ public final class SimTrace {
         private long offset;
 
         private final long start;
-        private final ArrayDeque<SimTraceFragment> fragments;
+        private ArrayDeque<SimTraceFragment> fragments;
 
-        private long checkpointTime; // How long does it take to make a checkpoint
-        private long checkpointWait; // How long to wait until a new checkpoint is made
+        private long checkpointInterval; // How long to wait until a new checkpoint is made
+        private long checkpointDuration; // How long does it take to make a checkpoint
+        private double checkpointIntervalScaling;
+        private SimWorkload snapshot;
 
-        private Workload(long start, ArrayDeque<SimTraceFragment> fragments, long checkpointTime, long checkpointWait) {
+        private Workload(
+                long start,
+                ArrayDeque<SimTraceFragment> fragments,
+                long checkpointInterval,
+                long checkpointDuration,
+                double checkpointIntervalScaling) {
             this.start = start;
-            this.checkpointTime = checkpointTime;
-            this.checkpointWait = checkpointWait;
+            this.checkpointInterval = checkpointInterval;
+            this.checkpointDuration = checkpointDuration;
+            this.checkpointIntervalScaling = checkpointIntervalScaling;
 
             this.fragments = fragments;
+
+            this.snapshot = this;
+        }
+
+        @Override
+        public long getCheckpointInterval() {
+            return checkpointInterval;
+        }
+
+        @Override
+        public long getCheckpointDuration() {
+            return checkpointDuration;
+        }
+
+        @Override
+        public double getCheckpointIntervalScaling() {
+            return checkpointIntervalScaling;
         }
 
         @Override
@@ -203,19 +229,61 @@ public final class SimTrace {
         }
 
         @Override
-        public SimWorkload snapshot() {
+        public void makeSnapshot(long now) {
             final WorkloadStageLogic logic = this.logic;
+            final ArrayDeque<SimTraceFragment> newFragments = this.fragments;
 
             if (logic != null) {
                 int index = logic.getIndex();
 
-                for (int i = 0; i < index; i++) {
-                    this.fragments.removeFirst();
+                if (index == 0 && (logic.getPassedTime(now) == 0)) {
+                    this.snapshot = this;
+                    return;
                 }
+
+                // Remove all finished fragments
+                for (int i = 0; i < index; i++) {
+                    newFragments.removeFirst();
+                }
+            } else {
+                return;
             }
 
-            return new Workload(start, this.fragments, checkpointTime, checkpointWait);
+            // Reduce the current Fragment to a fragment with the remaining time.
+            SimTraceFragment currentFragment = newFragments.pop();
+            long passedTime = logic.getPassedTime(now);
+            long remainingTime = currentFragment.duration() - passedTime;
+
+            if (remainingTime > 0) {
+                SimTraceFragment newFragment =
+                        new SimTraceFragment(remainingTime, currentFragment.cpuUsage(), currentFragment.coreCount());
+
+                newFragments.addFirst(newFragment);
+            }
+
+            // Add snapshot Fragment
+            // TODO: improve CPUUsage and coreCount here
+            SimTraceFragment snapshotFragment = new SimTraceFragment(checkpointDuration, 123456, 1);
+            newFragments.addFirst(snapshotFragment);
+
+            // Update the logic
+            this.logic.updateFragments(newFragments.iterator(), now);
+
+            // remove the snapshot Fragment and update fragments
+            newFragments.removeFirst();
+            this.fragments = newFragments;
+
+            this.snapshot = new Workload(
+                    start, this.fragments, checkpointInterval, checkpointDuration, checkpointIntervalScaling);
         }
+
+        @Override
+        public SimWorkload getSnapshot() {
+            return this.snapshot;
+        }
+
+        @Override
+        public void createCheckpointModel() {}
     }
 
     /**
@@ -226,6 +294,10 @@ public final class SimTrace {
          * Return the {@link FlowStage} belonging to this instance.
          */
         FlowStage getStage();
+
+        long getPassedTime(long now);
+
+        void updateFragments(Iterator<SimTraceFragment> newFragments, long offset);
 
         /**
          * Return the current index of the workload.
@@ -243,7 +315,7 @@ public final class SimTrace {
 
         private final SimMachineContext ctx;
 
-        private final Iterator<SimTraceFragment> fragments;
+        private Iterator<SimTraceFragment> fragments;
         private SimTraceFragment currentFragment;
         private long startOffFragment;
 
@@ -269,9 +341,27 @@ public final class SimTrace {
             this.startOffFragment = offset;
         }
 
+        public long getPassedTime(long now) {
+            return now - this.startOffFragment;
+        }
+
+        @Override
+        public void updateFragments(Iterator<SimTraceFragment> newFragments, long offset) {
+            this.fragments = newFragments;
+
+            // Start the first Fragment
+            this.currentFragment = this.fragments.next();
+            this.output.push((float) currentFragment.cpuUsage());
+            this.startOffFragment = offset;
+
+            this.index = -1;
+
+            this.stage.invalidate();
+        }
+
         @Override
         public long onUpdate(FlowStage ctx, long now) {
-            long passedTime = now - this.startOffFragment;
+            long passedTime = getPassedTime(now);
             long duration = this.currentFragment.duration();
 
             // The current Fragment has not yet been finished, continue
@@ -337,7 +427,7 @@ public final class SimTrace {
 
         private final int coreCount;
 
-        private final Iterator<SimTraceFragment> fragments;
+        private Iterator<SimTraceFragment> fragments;
         private SimTraceFragment currentFragment;
         private long startOffFragment;
 
@@ -379,6 +469,31 @@ public final class SimTrace {
                 outputs[i].push(0.f);
             }
 
+            this.startOffFragment = offset;
+        }
+
+        public long getPassedTime(long now) {
+            return now - this.startOffFragment;
+        }
+
+        @Override
+        public void updateFragments(Iterator<SimTraceFragment> newFragments, long offset) {
+            this.fragments = newFragments;
+
+            // Start the first Fragment
+            this.currentFragment = this.fragments.next();
+            int cores = Math.min(this.coreCount, currentFragment.coreCount());
+            float usage = (float) currentFragment.cpuUsage() / cores;
+
+            // Push the usage to all active cores
+            for (int i = 0; i < cores; i++) {
+                outputs[i].push(usage);
+            }
+
+            // Push a usage of 0 to all non-active cores
+            for (int i = cores; i < outputs.length; i++) {
+                outputs[i].push(0.f);
+            }
             this.startOffFragment = offset;
         }
 

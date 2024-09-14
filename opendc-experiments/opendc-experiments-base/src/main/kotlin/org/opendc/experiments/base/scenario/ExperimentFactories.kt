@@ -71,9 +71,15 @@ public fun getExperiment(experimentSpec: ExperimentSpec): List<Scenario> {
         val scenario =
             Scenario(
                 id = scenarioID,
+                name = scenarioID.toString(),
+                outputFolder = outputFolder,
+                runs = experimentSpec.runs,
+                initialSeed = experimentSpec.initialSeed,
+                computeExportConfig = scenarioSpec.computeExportConfig,
                 topologySpec = scenarioSpec.topology,
                 workloadSpec = scenarioSpec.workload,
                 allocationPolicySpec = scenarioSpec.allocationPolicy,
+                exportModelSpec = scenarioSpec.exportModel,
                 failureModelSpec = scenarioSpec.failureModel,
                 checkpointModelSpec = scenarioSpec.checkpointModel,
                 carbonTracePath = scenarioSpec.carbonTracePath,
@@ -84,6 +90,7 @@ public fun getExperiment(experimentSpec: ExperimentSpec): List<Scenario> {
                 runs = experimentSpec.runs,
                 initialSeed = experimentSpec.initialSeed,
                 computeExportConfig = scenarioSpec.computeExportConfig,
+                maxNumFailures = scenarioSpec.maxNumFailures,
             )
         trackScenario(scenarioSpec, outputFolder)
         scenarios.add(scenario)

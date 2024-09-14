@@ -193,7 +193,24 @@ class SimMachineTest {
 
                     override fun onStop(ctx: SimMachineContext) {}
 
-                    override fun snapshot(): SimWorkload = TODO()
+                    override fun makeSnapshot(now: Long) {
+                    }
+
+                    override fun getSnapshot(): SimWorkload = this
+
+                    override fun createCheckpointModel() {}
+
+                    override fun getCheckpointInterval(): Long {
+                        return -1
+                    }
+
+                    override fun getCheckpointDuration(): Long {
+                        return -1
+                    }
+
+                    override fun getCheckpointIntervalScaling(): Double {
+                        return -1.0
+                    }
                 },
             )
         }
@@ -221,7 +238,23 @@ class SimMachineTest {
 
                     override fun onStop(ctx: SimMachineContext) {}
 
-                    override fun snapshot(): SimWorkload = TODO()
+                    override fun makeSnapshot(now: Long) {}
+
+                    override fun getSnapshot(): SimWorkload = this
+
+                    override fun createCheckpointModel() {}
+
+                    override fun getCheckpointInterval(): Long {
+                        return -1
+                    }
+
+                    override fun getCheckpointDuration(): Long {
+                        return -1
+                    }
+
+                    override fun getCheckpointIntervalScaling(): Double {
+                        return -1.0
+                    }
                 },
             )
         }
@@ -249,7 +282,24 @@ class SimMachineTest {
 
                     override fun onStop(ctx: SimMachineContext) {}
 
-                    override fun snapshot(): SimWorkload = TODO()
+                    override fun makeSnapshot(now: Long) {
+                    }
+
+                    override fun getSnapshot(): SimWorkload = this
+
+                    override fun createCheckpointModel() {}
+
+                    override fun getCheckpointInterval(): Long {
+                        return -1
+                    }
+
+                    override fun getCheckpointDuration(): Long {
+                        return -1
+                    }
+
+                    override fun getCheckpointIntervalScaling(): Double {
+                        return -1.0
+                    }
                 },
             )
 
@@ -287,7 +337,24 @@ class SimMachineTest {
 
                     override fun onStop(ctx: SimMachineContext) {}
 
-                    override fun snapshot(): SimWorkload = TODO()
+                    override fun makeSnapshot(now: Long) {
+                    }
+
+                    override fun getSnapshot(): SimWorkload = this
+
+                    override fun createCheckpointModel() {}
+
+                    override fun getCheckpointInterval(): Long {
+                        return -1
+                    }
+
+                    override fun getCheckpointDuration(): Long {
+                        return -1
+                    }
+
+                    override fun getCheckpointIntervalScaling(): Double {
+                        return -1.0
+                    }
                 },
             )
 
@@ -318,7 +385,23 @@ class SimMachineTest {
 
                     override fun onStop(ctx: SimMachineContext) {}
 
-                    override fun snapshot(): SimWorkload = TODO()
+                    override fun makeSnapshot(now: Long) {}
+
+                    override fun getSnapshot(): SimWorkload = this
+
+                    override fun createCheckpointModel() {}
+
+                    override fun getCheckpointInterval(): Long {
+                        return -1
+                    }
+
+                    override fun getCheckpointDuration(): Long {
+                        return -1
+                    }
+
+                    override fun getCheckpointIntervalScaling(): Double {
+                        return -1.0
+                    }
                 },
             )
 
@@ -349,7 +432,23 @@ class SimMachineTest {
 
                     override fun onStop(ctx: SimMachineContext) {}
 
-                    override fun snapshot(): SimWorkload = TODO()
+                    override fun makeSnapshot(now: Long) {}
+
+                    override fun getSnapshot(): SimWorkload = this
+
+                    override fun createCheckpointModel() {}
+
+                    override fun getCheckpointInterval(): Long {
+                        return -1
+                    }
+
+                    override fun getCheckpointDuration(): Long {
+                        return -1
+                    }
+
+                    override fun getCheckpointIntervalScaling(): Double {
+                        return -1.0
+                    }
                 },
             )
 

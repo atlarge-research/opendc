@@ -22,6 +22,7 @@
 
 package org.opendc.compute.telemetry.table
 
+import org.opendc.compute.api.TaskState
 import org.opendc.compute.telemetry.export.parquet.DfltTaskExportColumns
 import org.opendc.trace.util.parquet.exporter.Exportable
 import java.time.Instant
@@ -47,7 +48,7 @@ public interface TaskTableReader : Exportable {
     /**
      * The [TaskInfo] of the task to which the row belongs to.
      */
-    public val task: TaskInfo
+    public val taskInfo: TaskInfo
 
     /**
      * The [HostInfo] of the host on which the task is hosted or `null` if it has no host.
@@ -103,6 +104,11 @@ public interface TaskTableReader : Exportable {
      * The duration (in seconds) of CPU time that was lost due to interference.
      */
     public val cpuLostTime: Long
+
+    /**
+     * The state of the task
+     */
+    public val taskState: TaskState?
 }
 
 // Loads the default export fields for deserialization whenever this file is loaded.

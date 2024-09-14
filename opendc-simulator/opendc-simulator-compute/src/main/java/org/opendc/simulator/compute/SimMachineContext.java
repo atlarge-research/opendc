@@ -73,7 +73,9 @@ public interface SimMachineContext {
      *
      * @throws UnsupportedOperationException if the workload does not support snapshotting.
      */
-    SimWorkload snapshot();
+    void makeSnapshot(long now);
+
+    SimWorkload getSnapshot(long now);
 
     /**
      * Reset all resources of the machine.

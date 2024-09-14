@@ -60,6 +60,8 @@ public final class ServiceTask implements Task {
     Host host = null;
     private ComputeService.SchedulingRequest request = null;
 
+    private int numFailures = 0;
+
     ServiceTask(
             ComputeService service,
             UUID uid,
@@ -232,14 +234,19 @@ public final class ServiceTask implements Task {
         return "Task[uid=" + uid + ",name=" + name + ",state=" + state + "]";
     }
 
-    void setState(TaskState state) {
-        if (this.state != state) {
-            for (TaskWatcher watcher : watchers) {
-                watcher.onStateChanged(this, state);
-            }
+    void setState(TaskState newState) {
+        if (this.state == newState) {
+            return;
         }
 
-        this.state = state;
+        for (TaskWatcher watcher : watchers) {
+            watcher.onStateChanged(this, newState);
+        }
+        if (newState == TaskState.ERROR) {
+            this.numFailures++;
+        }
+
+        this.state = newState;
     }
 
     /**
@@ -251,5 +258,10 @@ public final class ServiceTask implements Task {
             this.request = null;
             request.isCancelled = true;
         }
+    }
+
+    @Override
+    public int getNumFailures() {
+        return this.numFailures;
     }
 }

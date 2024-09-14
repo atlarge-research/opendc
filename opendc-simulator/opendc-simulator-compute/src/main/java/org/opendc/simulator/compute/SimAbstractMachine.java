@@ -105,6 +105,7 @@ public abstract class SimAbstractMachine implements SimMachine {
         private final Map<String, Object> meta;
         private final Consumer<Exception> completion;
         private boolean isClosed;
+        private SimWorkload snapshot;
 
         /**
          * Construct a new {@link Context} instance.
@@ -131,8 +132,13 @@ public abstract class SimAbstractMachine implements SimMachine {
         }
 
         @Override
-        public SimWorkload snapshot() {
-            return workload.snapshot();
+        public void makeSnapshot(long now) {
+            this.snapshot = workload.getSnapshot();
+        }
+
+        @Override
+        public SimWorkload getSnapshot(long now) {
+            return this.snapshot;
         }
 
         @Override

@@ -42,8 +42,9 @@ public fun setupComputeService(
     serviceDomain: String,
     scheduler: (ProvisioningContext) -> ComputeScheduler,
     schedulingQuantum: Duration = Duration.ofMinutes(5),
+    maxNumFailures: Int = 10,
 ): ProvisioningStep {
-    return ComputeServiceProvisioningStep(serviceDomain, scheduler, schedulingQuantum)
+    return ComputeServiceProvisioningStep(serviceDomain, scheduler, schedulingQuantum, maxNumFailures)
 }
 
 /**

@@ -59,6 +59,7 @@ public data class ExperimentSpec(
     val checkpointModels: Set<CheckpointModelSpec?> = setOf(null),
     val carbonTracePaths: Set<String?> = setOf(null),
     val computeExportConfig: ComputeExportConfig = ComputeExportConfig.ALL_COLUMNS,
+    val maxNumFailures: Set<Int> = setOf(10),
 ) {
     init {
         require(runs > 0) { "The number of runs should always be positive" }
@@ -75,7 +76,8 @@ public data class ExperimentSpec(
 
     public fun getCartesian(): Sequence<ScenarioSpec> {
         return sequence {
-            val checkpointDiv = carbonTracePaths.size
+            val carbonTracePathDiv = maxNumFailures.size
+            val checkpointDiv = carbonTracePathDiv * carbonTracePaths.size
             val failureDiv = checkpointDiv * checkpointModels.size
             val exportDiv = failureDiv * failureModels.size
             val allocationDiv = exportDiv * exportModels.size
@@ -90,6 +92,7 @@ public data class ExperimentSpec(
             val failureModelList = failureModels.toList()
             val checkpointModelList = checkpointModels.toList()
             val carbonTracePathList = carbonTracePaths.toList()
+            val maxNumFailuresList = maxNumFailures.toList()
 
             for (i in 0 until numScenarios) {
                 yield(
@@ -104,7 +107,8 @@ public data class ExperimentSpec(
                         exportModelList[(i / exportDiv) % exportModelList.size],
                         failureModelList[(i / failureDiv) % failureModelList.size],
                         checkpointModelList[(i / checkpointDiv) % checkpointModelList.size],
-                        carbonTracePathList[i % carbonTracePathList.size],
+                        carbonTracePathList[(i / carbonTracePathDiv) % carbonTracePathList.size],
+                        maxNumFailuresList[i % maxNumFailuresList.size],
                     ),
                 )
             }
