@@ -27,7 +27,7 @@ import kotlin.io.path.Path
  * PATH_TO_PYTHON_MAIN should point to the main python file, ran when the analysis starts.
  */
 
-public val ANALYSIS_SCRIPTS_DIRECTORY: String = "./opendc-experiments/opendc-m3sa/src/main/python"
+public val ANALYSIS_SCRIPTS_DIRECTORY: String = "./opendc-experiments/opendc-experiments-m3sa/src/main/python"
 public val ABSOLUTE_SCRIPT_PATH: String =
     Path("$ANALYSIS_SCRIPTS_DIRECTORY/main.py").toAbsolutePath().normalize().toString()
 public val SCRIPT_LANGUAGE: String = "python3"
