@@ -6,8 +6,9 @@ and further in the MetaModel class.
 :param sim: the simulation data of the model
 """
 import json
+from dataclasses import dataclass, field
 
-
+@dataclass
 class Model:
     """
     Represents a single simulation output containing various data metrics collected under specific simulation conditions.
@@ -36,22 +37,18 @@ class Model:
         the 'parse_trackr' method can be called to load additional experimental details from a corresponding JSON file.
     """
 
-    def __init__(self, raw_sim_data, id, path):
-        self.path = path
-        self.raw_sim_data = raw_sim_data
-        self.processed_sim_data = []
-        self.cumulative_time_series_values = []
-        self.experiment_name = id
-        self.id = id
-        self.cumulated = 0
-
-        self.margins_of_error = []
-        self.topologies = []
-        self.workloads = []
-        self.allocation_policies = []
-        self.carbon_trace_paths = []
-
-        # self.parse_trackr()
+    path: str
+    raw_sim_data: list
+    id: int
+    processed_sim_data: list = field(default_factory=list)
+    cumulative_time_series_values: list = field(default_factory=list)
+    cumulated: float = 0.0
+    experiment_name: str = ""
+    margins_of_error: list = field(default_factory=list)
+    topologies: list = field(default_factory=list)
+    workloads: list = field(default_factory=list)
+    allocation_policies: list = field(default_factory=list)
+    carbon_trace_paths: list = field(default_factory=list)
 
     def parse_trackr(self):
         """
@@ -66,8 +63,8 @@ class Model:
         trackr_path = self.path + "/trackr.json"
         with open(trackr_path) as f:
             trackr = json.load(f)
-            self.experiment_name = trackr[self.id]['name']
-            self.topologies = trackr[self.id]['topologies']
-            self.workloads = trackr[self.id]['workloads']
-            self.allocation_policies = trackr[self.id]['allocationPolicies']
-            self.carbon_trace_paths = trackr[self.id]['carbonTracePaths']
+            self.experiment_name = trackr.get(self.id, {}).get('name', "")
+            self.topologies = trackr.get(self.id, {}).get('topologies', [])
+            self.workloads = trackr.get(self.id, {}).get('workloads', [])
+            self.allocation_policies = trackr.get(self.id, {}).get('allocationPolicies', [])
+            self.carbon_trace_paths = trackr.get(self.id, {}).get('carbonTracePaths', [])
