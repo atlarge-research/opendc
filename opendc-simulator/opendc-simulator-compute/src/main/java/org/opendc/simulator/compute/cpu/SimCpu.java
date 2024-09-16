@@ -38,17 +38,17 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
     private final CpuPowerModel cpuPowerModel;
 
-    private float currentCpuDemand = 0.0f; // cpu capacity demanded by the mux
-    private float currentCpuUtilization = 0.0f;
-    private float currentPowerDemand = 0.0f; // power demanded of the psu
-    private float currentCpuSupplied = 0.0f; // cpu capacity supplied to the mux
-    private float currentPowerSupplied = 0.0f; // cpu capacity supplied by the psu
+    private double currentCpuDemand = 0.0f; // cpu capacity demanded by the mux
+    private double currentCpuUtilization = 0.0f;
+    private double currentPowerDemand = 0.0f; // power demanded of the psu
+    private double currentCpuSupplied = 0.0f; // cpu capacity supplied to the mux
+    private double currentPowerSupplied = 0.0f; // cpu capacity supplied by the psu
 
-    private float maxCapacity;
+    private double maxCapacity;
 
     private PerformanceCounters performanceCounters = new PerformanceCounters();
     private long lastCounterUpdate;
-    private final float cpuFrequencyInv;
+    private final double cpuFrequencyInv;
 
     private FlowEdge muxEdge;
     private FlowEdge psuEdge;
@@ -68,7 +68,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     }
 
     @Override
-    public float getCapacity() {
+    public double getCapacity() {
         return maxCapacity;
     }
 
@@ -123,8 +123,8 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         updateCounters(now);
 
         // Calculate Power Demand and send to PSU
-        // TODO: look at the float / double thing
-        float powerDemand = (float) this.cpuPowerModel.computePower((double) this.currentCpuUtilization);
+        // TODO: look at the double / double thing
+        double powerDemand = (double) this.cpuPowerModel.computePower((double) this.currentCpuUtilization);
 
         if (powerDemand != this.currentPowerDemand) {
             this.pushDemand(this.psuEdge, powerDemand);
@@ -133,7 +133,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
         // Calculate the amount of cpu this can provide
         // TODO: This should be based on the provided power
-        float cpuSupply = this.currentCpuDemand;
+        double cpuSupply = this.currentCpuDemand;
 
         if (cpuSupply != this.currentCpuSupplied) {
             this.pushSupply(this.muxEdge, cpuSupply);
@@ -158,11 +158,11 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         long delta = now - lastUpdate;
 
         if (delta > 0) {
-            float demand = this.currentCpuDemand;
-            float rate = this.currentCpuSupplied;
-            float capacity = this.maxCapacity;
+            double demand = this.currentCpuDemand;
+            double rate = this.currentCpuSupplied;
+            double capacity = this.maxCapacity;
 
-            final float factor = this.cpuFrequencyInv * delta;
+            final double factor = this.cpuFrequencyInv * delta;
 
             this.performanceCounters.addCpuActiveTime(Math.round(rate * factor));
             this.performanceCounters.addCpuIdleTime(Math.round((capacity - rate) * factor));
@@ -182,7 +182,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
      * Push new demand to the psu
      */
     @Override
-    public void pushDemand(FlowEdge supplierEdge, float newPowerDemand) {
+    public void pushDemand(FlowEdge supplierEdge, double newPowerDemand) {
         this.psuEdge.pushDemand(newPowerDemand);
     }
 
@@ -190,7 +190,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
      * Push updated supply to the mux
      */
     @Override
-    public void pushSupply(FlowEdge consumerEdge, float newCpuSupply) {
+    public void pushSupply(FlowEdge consumerEdge, double newCpuSupply) {
         updateCounters();
         this.currentCpuSupplied = newCpuSupply;
         this.muxEdge.pushSupply(newCpuSupply);
@@ -200,7 +200,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
      * Handle new demand coming in from the mux
      */
     @Override
-    public void handleDemand(FlowEdge consumerEdge, float newCpuDemand) {
+    public void handleDemand(FlowEdge consumerEdge, double newCpuDemand) {
         if (newCpuDemand == this.currentCpuDemand) {
             return;
         }
@@ -216,7 +216,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
      * Handle updated supply from the psu
      */
     @Override
-    public void handleSupply(FlowEdge supplierEdge, float newPowerSupply) {
+    public void handleSupply(FlowEdge supplierEdge, double newPowerSupply) {
         // TODO: Implement this
         updateCounters();
         this.currentPowerSupplied = newPowerSupply;

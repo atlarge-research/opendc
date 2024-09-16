@@ -32,10 +32,10 @@ public class FlowEdge {
     private FlowConsumer consumer;
     private FlowSupplier supplier;
 
-    private float demand = 0.0f;
-    private float supply = 0.0f;
+    private double demand = 0.0;
+    private double supply = 0.0;
 
-    private float capacity;
+    private double capacity;
 
     public FlowEdge(FlowConsumer consumer, FlowSupplier supplier) {
         if (!(consumer instanceof FlowNode)) {
@@ -74,25 +74,22 @@ public class FlowEdge {
         return supplier;
     }
 
-    public float getCapacity() {
+    public double getCapacity() {
         return capacity;
     }
 
-    public float getDemand() {
+    public double getDemand() {
         return this.demand;
     }
 
-    public float getSupply() {
+    public double getSupply() {
         return this.supply;
     }
 
     /**
      * Push new demand from the Consumer to the Supplier
      */
-    public void pushDemand(float newDemand) {
-        if (newDemand == this.demand) {
-            return;
-        }
+    public void pushDemand(double newDemand) {
 
         this.demand = newDemand;
         this.supplier.handleDemand(this, newDemand);
@@ -102,10 +99,7 @@ public class FlowEdge {
     /**
      * Push new supply from the Supplier to the Consumer
      */
-    public void pushSupply(float newSupply) {
-        if (newSupply == this.supply) {
-            return;
-        }
+    public void pushSupply(double newSupply) {
 
         this.supply = newSupply;
         this.consumer.handleSupply(this, newSupply);

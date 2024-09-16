@@ -48,8 +48,6 @@ public class StartStopHostFault(
             for ((task, snapshot) in tasks.zip(snapshots)) {
                 client.rescheduleTask(task, snapshot)
             }
-
-            print("test")
         }
 
         delay(faultDuration)

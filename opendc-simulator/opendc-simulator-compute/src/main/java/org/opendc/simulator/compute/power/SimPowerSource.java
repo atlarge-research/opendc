@@ -37,13 +37,13 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
 
     private long lastUpdate;
 
-    private float powerDemand = 0.0f;
-    private float powerSupplied = 0.0f;
-    private float totalEnergyUsage = 0.0f;
+    private double powerDemand = 0.0f;
+    private double powerSupplied = 0.0f;
+    private double totalEnergyUsage = 0.0f;
 
     private FlowEdge cpuEdge;
 
-    private float capacity = Long.MAX_VALUE;
+    private double capacity = Long.MAX_VALUE;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
@@ -70,20 +70,20 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     /**
      * Return the instantaneous power usage of the machine (in W) measured at the InPort of the power supply.
      */
-    public float getPowerDraw() {
+    public double getPowerDraw() {
         return this.powerSupplied;
     }
 
     /**
      * Return the cumulated energy usage of the machine (in J) measured at the InPort of the powers supply.
      */
-    public float getEnergyUsage() {
+    public double getEnergyUsage() {
         updateCounters();
         return totalEnergyUsage;
     }
 
     @Override
-    public float getCapacity() {
+    public double getCapacity() {
         return this.capacity;
     }
 
@@ -106,7 +106,7 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     @Override
     public long onUpdate(long now) {
         updateCounters();
-        float powerSupply = this.powerDemand;
+        double powerSupply = this.powerDemand;
 
         if (powerSupply != this.powerSupplied) {
             this.pushSupply(this.cpuEdge, powerSupply);
@@ -129,7 +129,7 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
         long duration = now - lastUpdate;
         if (duration > 0) {
             // Compute the energy usage of the machine
-            this.totalEnergyUsage += (float) (this.powerSupplied * duration * 0.001);
+            this.totalEnergyUsage += (double) (this.powerSupplied * duration * 0.001);
         }
     }
 
@@ -138,7 +138,7 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void handleDemand(FlowEdge consumerEdge, float newPowerDemand) {
+    public void handleDemand(FlowEdge consumerEdge, double newPowerDemand) {
         if (newPowerDemand == this.powerDemand) {
             return;
         }
@@ -148,7 +148,7 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     }
 
     @Override
-    public void pushSupply(FlowEdge consumerEdge, float newSupply) {
+    public void pushSupply(FlowEdge consumerEdge, double newSupply) {
         if (newSupply == this.powerSupplied) {
             return;
         }

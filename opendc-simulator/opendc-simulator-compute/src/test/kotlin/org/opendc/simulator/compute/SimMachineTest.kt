@@ -48,7 +48,7 @@ class SimMachineTest {
                 CpuModel(
                     0,
                     2,
-                    1000.0f,
+                    1000.0,
                     "Intel",
                     "Xeon",
                     "amd64",

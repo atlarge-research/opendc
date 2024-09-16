@@ -46,9 +46,9 @@ public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSuppli
     private FlowEdge cpuEdge; // The edge to the cpu
     private FlowEdge workloadEdge; // The edge to the workload
 
-    private float cpuDemand;
-    private float cpuSupply;
-    private float cpuCapacity;
+    private double cpuDemand;
+    private double cpuSupply;
+    private double cpuCapacity;
 
     private PerformanceCounters performanceCounters = new PerformanceCounters();
 
@@ -66,19 +66,19 @@ public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSuppli
         return activeWorkload;
     }
 
-    public float getDemand() {
+    public double getDemand() {
         return cpuDemand;
     }
 
-    public void setDemand(float demand) {
+    public void setDemand(double demand) {
         this.cpuDemand = demand;
     }
 
-    public float getCpuCapacity() {
+    public double getCpuCapacity() {
         return cpuCapacity;
     }
 
-    public void setCpuCapacity(float cpuCapacity) {
+    public void setCpuCapacity(double cpuCapacity) {
         this.cpuCapacity = cpuCapacity;
     }
 
@@ -185,7 +185,7 @@ public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSuppli
      * Push demand to the cpuMux if the demand has changed
      **/
     @Override
-    public void pushDemand(FlowEdge supplierEdge, float newDemand) {
+    public void pushDemand(FlowEdge supplierEdge, double newDemand) {
         this.cpuEdge.pushDemand(newDemand);
     }
 
@@ -193,15 +193,15 @@ public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSuppli
      * Push supply to the workload if the supply has changed
      **/
     @Override
-    public void pushSupply(FlowEdge consumerEdge, float newSupply) {
-        this.workloadEdge.pushDemand(newSupply);
+    public void pushSupply(FlowEdge consumerEdge, double newSupply) {
+        this.workloadEdge.pushSupply(newSupply);
     }
 
     /**
      * Handle new demand from the workload by sending it through to the cpuMux
      **/
     @Override
-    public void handleDemand(FlowEdge consumerEdge, float newDemand) {
+    public void handleDemand(FlowEdge consumerEdge, double newDemand) {
         if (this.cpuDemand == newDemand) {
             return;
         }
@@ -216,7 +216,7 @@ public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSuppli
      * Handle a new supply pushed by the cpuMux by sending it through to the workload
      **/
     @Override
-    public void handleSupply(FlowEdge supplierEdge, float newCpuSupply) {
+    public void handleSupply(FlowEdge supplierEdge, double newCpuSupply) {
         if (newCpuSupply == this.cpuSupply) {
             return;
         }
@@ -234,7 +234,7 @@ public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSuppli
     }
 
     @Override
-    public float getCapacity() {
+    public double getCapacity() {
         return this.cpuCapacity;
     }
 

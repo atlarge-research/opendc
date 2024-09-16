@@ -29,4 +29,4 @@ package org.opendc.compute.simulator.host;
  * @param coreCount The number of logical processing cores available for this host.
  * @param memoryCapacity The amount of memory available for this host in MB.
  */
-public record HostModel(float cpuCapacity, int coreCount, long memoryCapacity) {}
+public record HostModel(double cpuCapacity, int coreCount, long memoryCapacity) {}

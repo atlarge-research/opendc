@@ -40,7 +40,7 @@ import java.time.Instant
 public data class CarbonFragment(
     var startTime: Long,
     var endTime: Long,
-    var carbonIntensity: Float,
+    var carbonIntensity: Double,
 ) {
     init {
         require(endTime > startTime) {
@@ -67,7 +67,7 @@ public class CarbonTrace(reports: List<CarbonFragment>? = null) {
         return index < numberOfReports
     }
 
-    public fun getCarbonIntensity(timestamp: Instant): Float {
+    public fun getCarbonIntensity(timestamp: Instant): Double {
         return getCarbonIntensity(timestamp.toEpochMilli())
     }
 
@@ -79,9 +79,9 @@ public class CarbonTrace(reports: List<CarbonFragment>? = null) {
      * @param timestamp
      * @return The carbon intensity at the given timestamp in gCO2/kWh
      */
-    public fun getCarbonIntensity(timestamp: Long): Float {
+    public fun getCarbonIntensity(timestamp: Long): Double {
         if (reports == null) {
-            return 0.0f
+            return 0.0
         }
 
         var currentFragment: CarbonFragment
