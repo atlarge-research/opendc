@@ -23,26 +23,53 @@
 package org.opendc.compute.simulator
 
 /**
- * A read-only registry of services used during experiments to resolve services.
- *
- * The service registry is similar conceptually to the Domain Name System (DNS), which is a naming system used to
- * identify computers reachable via the Internet. The service registry should be used in a similar fashion.
+ * Implementation of the [ServiceRegistry] interface.
  */
-public interface ServiceRegistry {
-    /**
-     * Lookup the service with the specified [name] and [type].
-     *
-     * @param name The name of the service to resolve, which should follow the rules for domain names as defined by DNS.
-     * @param type The type of the service to resolve, identified by the interface that is implemented by the service.
-     * @return The service with specified [name] and implementing [type] or `null` if it does not exist.
-     */
+public class ServiceRegistry(private val registry: MutableMap<String, MutableMap<Class<*>, Any>> = mutableMapOf()) {
     public fun <T : Any> resolve(
         name: String,
         type: Class<T>,
-    ): T?
+    ): T? {
+        val servicesForName = registry[name] ?: return null
 
-    /**
-     * Create a copy of the registry.
-     */
-    public fun clone(): ServiceRegistry
+        @Suppress("UNCHECKED_CAST")
+        return servicesForName[type] as T?
+    }
+
+    public fun <T : Any> register(
+        name: String,
+        type: Class<T>,
+        service: T,
+    ) {
+        val services = registry.computeIfAbsent(name) { mutableMapOf() }
+
+        if (type in services) {
+            throw IllegalStateException("Duplicate service $type registered for name $name")
+        }
+
+        services[type] = service
+    }
+
+    public fun remove(
+        name: String,
+        type: Class<*>,
+    ) {
+        val services = registry[name] ?: return
+        services.remove(type)
+    }
+
+    public fun remove(name: String) {
+        registry.remove(name)
+    }
+
+    public fun clone(): ServiceRegistry {
+        val res = mutableMapOf<String, MutableMap<Class<*>, Any>>()
+        registry.mapValuesTo(res) { (_, v) -> v.toMutableMap() }
+        return ServiceRegistry(res)
+    }
+
+    override fun toString(): String {
+        val entries = registry.map { "${it.key}=${it.value}" }.joinToString()
+        return "ServiceRegistry{$entries}"
+    }
 }

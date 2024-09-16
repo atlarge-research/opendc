@@ -22,11 +22,11 @@
 
 package org.opendc.web.runner.internal
 
-import org.opendc.compute.telemetry.ComputeMonitor
-import org.opendc.compute.telemetry.table.HostTableReader
-import org.opendc.compute.telemetry.table.ServiceData
-import org.opendc.compute.telemetry.table.ServiceTableReader
-import org.opendc.compute.telemetry.table.toServiceData
+import org.opendc.compute.simulator.telemetry.ComputeMonitor
+import org.opendc.compute.simulator.telemetry.table.HostTableReader
+import org.opendc.compute.simulator.telemetry.table.ServiceData
+import org.opendc.compute.simulator.telemetry.table.ServiceTableReader
+import org.opendc.compute.simulator.telemetry.table.toServiceData
 import kotlin.math.roundToLong
 
 /**
@@ -107,7 +107,7 @@ internal class WebComputeMonitor : ComputeMonitor {
             serviceData.tasksTotal,
             serviceData.tasksPending,
             serviceData.tasksTotal - serviceData.tasksPending - serviceData.tasksActive,
-            serviceData.attemptsError + serviceData.attemptsFailure,
+            serviceData.attemptsTerminated,
         )
     }
 

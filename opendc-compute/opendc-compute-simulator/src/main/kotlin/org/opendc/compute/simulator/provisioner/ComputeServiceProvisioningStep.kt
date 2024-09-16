@@ -22,8 +22,8 @@
 
 package org.opendc.compute.simulator.provisioner
 
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.scheduler.ComputeScheduler
+import org.opendc.compute.simulator.scheduler.ComputeScheduler
+import org.opendc.compute.simulator.service.ComputeService
 import java.time.Duration
 
 /**

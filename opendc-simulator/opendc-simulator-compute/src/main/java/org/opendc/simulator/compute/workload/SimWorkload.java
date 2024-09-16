@@ -22,7 +22,9 @@
 
 package org.opendc.simulator.compute.workload;
 
-import org.opendc.simulator.compute.SimMachineContext;
+import org.opendc.simulator.engine.FlowConsumer;
+import org.opendc.simulator.engine.FlowGraph;
+import org.opendc.simulator.engine.FlowNode;
 
 /**
  * A model that characterizes the runtime behavior of some particular workload.
@@ -31,35 +33,33 @@ import org.opendc.simulator.compute.SimMachineContext;
  * Workloads are stateful objects that may be paused and resumed at a later moment. As such, be careful when using the
  * same {@link SimWorkload} from multiple contexts.
  */
-public interface SimWorkload {
+public abstract class SimWorkload extends FlowNode implements FlowConsumer {
     /**
-     * This method is invoked when the workload is started.
+     * Construct a new {@link FlowNode} instance.
      *
-     * @param ctx The execution context in which the machine runs.
+     * @param parentGraph The {@link FlowGraph} this stage belongs to.
      */
-    void onStart(SimMachineContext ctx);
+    public SimWorkload(FlowGraph parentGraph) {
+        super(parentGraph);
+    }
 
     /**
      * This method is invoked when the workload is stopped.
-     *
-     * @param ctx The execution context in which the machine runs.
      */
-    void onStop(SimMachineContext ctx);
+    public abstract void stopWorkload();
 
     /**
      * Create a snapshot of this workload.
      */
-    void makeSnapshot(long now);
+    public abstract void makeSnapshot(long now);
 
-    SimWorkload getSnapshot();
+    public abstract Workload getSnapshot();
 
-    void createCheckpointModel();
+    abstract void createCheckpointModel();
 
-    long getCheckpointInterval();
+    abstract long getCheckpointInterval();
 
-    long getCheckpointDuration();
+    abstract long getCheckpointDuration();
 
-    double getCheckpointIntervalScaling();
-
-    void setOffset(long now);
+    abstract double getCheckpointIntervalScaling();
 }

@@ -25,22 +25,21 @@ package org.opendc.web.runner
 import mu.KotlinLogging
 import org.opendc.compute.failure.prefab.FailurePrefab
 import org.opendc.compute.failure.prefab.createFailureModelPrefab
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.scheduler.createComputeScheduler
 import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
+import org.opendc.compute.simulator.scheduler.createComputeScheduler
+import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.sampleByLoad
 import org.opendc.compute.workload.trace
 import org.opendc.experiments.base.runner.replay
-import org.opendc.simulator.compute.SimPsuFactories
-import org.opendc.simulator.compute.model.Cpu
-import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.power.CpuPowerModels
+import org.opendc.simulator.compute.cpu.CpuPowerModels
+import org.opendc.simulator.compute.models.CpuModel
+import org.opendc.simulator.compute.models.MachineModel
+import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.web.proto.runner.Job
 import org.opendc.web.proto.runner.Scenario
@@ -86,7 +85,7 @@ public class OpenDCRunner(
     /**
      * Helper class to load the workloads.
      */
-    private val workloadLoader = ComputeWorkloadLoader(tracePath)
+    private val workloadLoader = ComputeWorkloadLoader(tracePath, 0L, 0L, 0.0)
 
     /**
      * The [ForkJoinPool] that is used to execute the simulation jobs.
@@ -295,7 +294,6 @@ public class OpenDCRunner(
                         "Scheduler " +
                             "Success=${serviceMetrics.attemptsSuccess} " +
                             "Failure=${serviceMetrics.attemptsFailure} " +
-                            "Error=${serviceMetrics.attemptsError} " +
                             "Pending=${serviceMetrics.tasksPending} " +
                             "Active=${serviceMetrics.tasksActive}"
                     }
@@ -325,7 +323,14 @@ public class OpenDCRunner(
 
             val processors =
                 machine.cpus.map { cpu ->
-                    Cpu(0, cpu.numberOfCores, cpu.clockRateMhz, "Intel", "amd64", cpu.name)
+                    CpuModel(
+                        0,
+                        cpu.numberOfCores,
+                        cpu.clockRateMhz.toFloat(),
+                        "Intel",
+                        "amd64",
+                        cpu.name,
+                    )
                 }
 
             val memoryUnits =
@@ -347,7 +352,7 @@ public class OpenDCRunner(
                     "node-$clusterId-$position",
                     mapOf("cluster" to clusterId),
                     MachineModel(processors, memoryUnits[0]),
-                    SimPsuFactories.simple(powerModel),
+                    powerModel,
                 )
 
             res += spec

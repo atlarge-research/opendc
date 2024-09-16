@@ -27,14 +27,15 @@ package org.opendc.compute.api
  */
 public enum class TaskState {
     /**
+     * A static task is created
+     *
+     */
+    CREATED,
+
+    /**
      * Resources are being allocated for the instance. The instance is not running yet.
      */
     PROVISIONING,
-
-    /**
-     * A user shut down the instance.
-     */
-    TERMINATED,
 
     /**
      * The task instance is booting up or running.
@@ -42,12 +43,26 @@ public enum class TaskState {
     RUNNING,
 
     /**
-     * The task is in an error state.
+     * The task is in a failed state.
      */
-    ERROR,
+    FAILED,
 
     /**
-     * The task has been deleted and cannot be started later on.
+     * The task has been terminated due to too many failures
+     *
+     */
+    TERMINATED,
+
+    /**
+     * The task has been completed successfully
+     *
+     */
+    COMPLETED,
+
+    /**
+     * Task has been deleted
+     *
+     * @constructor Create empty Deleted
      */
     DELETED,
 }

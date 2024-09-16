@@ -25,7 +25,7 @@ package org.opendc.compute.workload.internal
 import mu.KotlinLogging
 import org.opendc.compute.workload.ComputeWorkload
 import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.compute.workload.VirtualMachine
+import org.opendc.compute.workload.Task
 import java.util.random.RandomGenerator
 
 /**
@@ -40,12 +40,12 @@ internal class CompositeComputeWorkload(val sources: Map<ComputeWorkload, Double
     override fun resolve(
         loader: ComputeWorkloadLoader,
         random: RandomGenerator,
-    ): List<VirtualMachine> {
+    ): List<Task> {
         val traces = sources.map { (source, fraction) -> fraction to source.resolve(loader, random) }
 
         val totalLoad = traces.sumOf { (_, vms) -> vms.sumOf { it.totalLoad } }
 
-        val res = mutableListOf<VirtualMachine>()
+        val res = mutableListOf<Task>()
 
         for ((fraction, vms) in traces) {
             var currentLoad = 0.0

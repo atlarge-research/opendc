@@ -93,8 +93,8 @@ class FlowBenchmarks {
             val sinkA = SimpleFlowSink(graph, 3000.0f)
             val sinkB = SimpleFlowSink(graph, 3000.0f)
 
-            graph.connect(switch.newOutput(), sinkA.input)
-            graph.connect(switch.newOutput(), sinkB.input)
+            graph.connect(switch.newOutPort(), sinkA.input)
+            graph.connect(switch.newOutPort(), sinkB.input)
 
             val source = TraceFlowSource(graph, trace)
             graph.connect(source.output, switch.newInput())
@@ -111,8 +111,8 @@ class FlowBenchmarks {
             val sinkA = SimpleFlowSink(graph, 3000.0f)
             val sinkB = SimpleFlowSink(graph, 3000.0f)
 
-            graph.connect(switch.newOutput(), sinkA.input)
-            graph.connect(switch.newOutput(), sinkB.input)
+            graph.connect(switch.newOutPort(), sinkA.input)
+            graph.connect(switch.newOutPort(), sinkB.input)
 
             repeat(3) {
                 launch {

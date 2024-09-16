@@ -33,7 +33,7 @@ The host output file, contains all metrics of related to the host run.
 | timestamp          | int64    | ms         | Timestamp of the sample                                                                         |
 | absolute timestamp | int64    | ms         | The absolute timestamp based on the given workload                                              |
 | host_id            | binary   | string     | The id of the host given by OpenDC                                                              |
-| cpu_count          | int32    | count      | The number of available cpu cores                                                               |
+| cpu_count          | int32    | count      | The number of available cpuModel cores                                                               |
 | mem_capacity       | int64    | Mb         | The amount of available memory                                                                  |
 | guests_terminated  | int32    | count      | The number of guests that are in a terminated state.                                            |
 | guests_running     | int32    | count      | The number of guests that are in a running state.                                               |

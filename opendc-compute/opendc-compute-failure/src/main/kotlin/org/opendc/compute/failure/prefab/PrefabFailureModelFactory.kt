@@ -25,7 +25,7 @@
 package org.opendc.compute.failure.prefab
 
 import org.opendc.compute.failure.models.SampleBasedFailureModel
-import org.opendc.compute.service.ComputeService
+import org.opendc.compute.simulator.service.ComputeService
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext

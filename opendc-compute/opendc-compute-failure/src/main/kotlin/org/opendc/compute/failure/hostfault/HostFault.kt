@@ -22,8 +22,8 @@
 
 package org.opendc.compute.failure.hostfault
 
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.simulator.SimHost
+import org.opendc.compute.simulator.host.SimHost
+import org.opendc.compute.simulator.service.ComputeService
 
 /**
  * Interface responsible for applying the fault to a host.

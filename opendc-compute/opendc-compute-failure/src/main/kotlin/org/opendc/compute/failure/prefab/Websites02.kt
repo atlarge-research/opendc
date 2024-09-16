@@ -29,7 +29,7 @@ import org.apache.commons.math3.distribution.UniformRealDistribution
 import org.apache.commons.math3.distribution.WeibullDistribution
 import org.apache.commons.math3.random.Well19937c
 import org.opendc.compute.failure.models.SampleBasedFailureModel
-import org.opendc.compute.service.ComputeService
+import org.opendc.compute.simulator.service.ComputeService
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext

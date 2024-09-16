@@ -23,9 +23,7 @@
 package org.opendc.compute.simulator.provisioner
 
 import org.opendc.common.Dispatcher
-import org.opendc.compute.simulator.MutableServiceRegistry
 import org.opendc.compute.simulator.ServiceRegistry
-import org.opendc.compute.simulator.ServiceRegistryImpl
 import java.util.ArrayDeque
 import java.util.SplittableRandom
 
@@ -47,7 +45,7 @@ public class Provisioner(dispatcher: Dispatcher, seed: Long) : AutoCloseable {
         object : ProvisioningContext {
             override val dispatcher: Dispatcher = dispatcher
             override val seeder: SplittableRandom = SplittableRandom(seed)
-            override val registry: MutableServiceRegistry = ServiceRegistryImpl()
+            override val registry: ServiceRegistry = ServiceRegistry()
 
             override fun toString(): String = "Provisioner.ProvisioningContext"
         }

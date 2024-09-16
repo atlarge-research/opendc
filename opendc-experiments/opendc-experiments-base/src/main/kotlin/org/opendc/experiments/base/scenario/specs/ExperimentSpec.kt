@@ -25,7 +25,7 @@ package org.opendc.experiments.base.scenario.specs
 import kotlinx.serialization.Serializable
 import org.opendc.common.logger.infoNewLine
 import org.opendc.common.logger.logger
-import org.opendc.compute.telemetry.export.parquet.ComputeExportConfig
+import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 import java.util.UUID
 
 /**

@@ -22,13 +22,10 @@
 
 package org.opendc.compute.simulator.provisioner
 
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.simulator.SimHost
+import org.opendc.compute.simulator.host.SimHost
+import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.HostSpec
-import org.opendc.simulator.compute.SimBareMetalMachine
-import org.opendc.simulator.compute.kernel.SimHypervisor
-import org.opendc.simulator.flow2.FlowEngine
-import java.util.SplittableRandom
+import org.opendc.simulator.engine.FlowEngine
 
 /**
  * A [ProvisioningStep] that provisions a list of hosts for a [ComputeService].
@@ -40,30 +37,27 @@ import java.util.SplittableRandom
 public class HostsProvisioningStep internal constructor(
     private val serviceDomain: String,
     private val specs: List<HostSpec>,
-    private val optimize: Boolean,
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service =
             requireNotNull(
                 ctx.registry.resolve(serviceDomain, ComputeService::class.java),
             ) { "Compute service $serviceDomain does not exist" }
-        val engine = FlowEngine.create(ctx.dispatcher)
-        val graph = engine.newGraph()
         val hosts = mutableSetOf<SimHost>()
 
-        for (spec in specs) {
-            val machine = SimBareMetalMachine.create(graph, spec.model, spec.psuFactory)
-            val hypervisor = SimHypervisor.create(spec.multiplexerFactory, SplittableRandom(ctx.seeder.nextLong()))
+        val flowEngine = FlowEngine.create(ctx.dispatcher)
+        val flowGraph = flowEngine.newGraph()
 
+        for (spec in specs) {
             val host =
                 SimHost(
                     spec.uid,
                     spec.name,
                     spec.meta,
                     ctx.dispatcher.timeSource,
-                    machine,
-                    hypervisor,
-                    optimize = optimize,
+                    flowGraph,
+                    spec.model,
+                    spec.cpuPowerModel,
                 )
 
             require(hosts.add(host)) { "Host with uid ${spec.uid} already exists" }

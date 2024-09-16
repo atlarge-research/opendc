@@ -23,7 +23,7 @@
 package org.opendc.compute.api
 
 /**
- * Flavors define the compute and memory capacity of [Task] instance. To put it simply, a flavor is an available
+ * Flavors define the compute and memory capacity of [ServiceTask] instance. To put it simply, a flavor is an available
  * hardware configuration for a task. It defines the size of a virtual task that can be launched.
  */
 public interface Flavor : Resource {

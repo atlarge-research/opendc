@@ -28,11 +28,10 @@ import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostJSONSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.TopologySpec
-import org.opendc.simulator.compute.SimPsuFactories
-import org.opendc.simulator.compute.model.Cpu
-import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.power.getPowerModel
+import org.opendc.simulator.compute.cpu.getPowerModel
+import org.opendc.simulator.compute.models.CpuModel
+import org.opendc.simulator.compute.models.MachineModel
+import org.opendc.simulator.compute.models.MemoryUnit
 import java.io.File
 import java.io.InputStream
 import java.util.SplittableRandom
@@ -120,10 +119,10 @@ private fun HostJSONSpec.toHostSpecs(
 ): HostSpec {
     val units =
         List(cpu.count) {
-            Cpu(
+            CpuModel(
                 globalCoreId++,
                 cpu.coreCount,
-                cpu.coreSpeed.toMHz(),
+                cpu.coreSpeed.toMHz().toFloat(),
             )
         }
 
@@ -150,7 +149,7 @@ private fun HostJSONSpec.toHostSpecs(
             hostName,
             mapOf("cluster" to clusterId),
             machineModel,
-            SimPsuFactories.simple(powerModel),
+            powerModel,
         )
     hostId++
 

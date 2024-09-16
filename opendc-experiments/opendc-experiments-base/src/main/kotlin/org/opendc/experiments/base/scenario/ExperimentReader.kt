@@ -25,7 +25,7 @@ package org.opendc.experiments.base.scenario
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import org.opendc.compute.telemetry.export.parquet.ComputeExportConfig
+import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 import org.opendc.experiments.base.scenario.specs.ExperimentSpec
 import java.io.File
 import java.io.InputStream

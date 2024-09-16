@@ -5,11 +5,11 @@ import UnitAddContainer from './UnitAddContainer'
 import UnitListContainer from './UnitListContainer'
 
 function UnitTabsComponent({ machineId }) {
-    const [activeTab, setActiveTab] = useState('cpu-units')
+    const [activeTab, setActiveTab] = useState('cpuModel-units')
 
     return (
         <Tabs activeKey={activeTab} onSelect={(_, tab) => setActiveTab(tab)}>
-            <Tab eventKey="cpu-units" title={<TabTitleText>CPU</TabTitleText>}>
+            <Tab eventKey="cpuModel-units" title={<TabTitleText>CPU</TabTitleText>}>
                 <UnitAddContainer machineId={machineId} unitType="cpus" />
                 <UnitListContainer machineId={machineId} unitType="cpus" />
             </Tab>

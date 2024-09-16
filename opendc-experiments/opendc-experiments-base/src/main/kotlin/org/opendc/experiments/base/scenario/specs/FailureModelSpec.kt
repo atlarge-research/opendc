@@ -61,7 +61,7 @@ import org.opendc.compute.failure.models.SampleBasedFailureModel
 import org.opendc.compute.failure.models.TraceBasedFailureModel
 import org.opendc.compute.failure.prefab.FailurePrefab
 import org.opendc.compute.failure.prefab.createFailureModelPrefab
-import org.opendc.compute.service.ComputeService
+import org.opendc.compute.simulator.service.ComputeService
 import java.io.File
 import java.time.InstantSource
 import kotlin.coroutines.CoroutineContext
