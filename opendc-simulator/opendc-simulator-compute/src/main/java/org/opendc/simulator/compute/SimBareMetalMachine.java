@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.opendc.simulator.compute.device.SimPeripheral;
+import org.opendc.simulator.compute.model.Cpu;
 import org.opendc.simulator.compute.model.MachineModel;
-import org.opendc.simulator.compute.model.ProcessingUnit;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.flow2.FlowGraph;
 import org.opendc.simulator.flow2.InPort;
@@ -56,7 +56,7 @@ public final class SimBareMetalMachine extends SimAbstractMachine {
     /**
      * The resources of this machine.
      */
-    private final List<Cpu> cpus;
+    private final SimCpu cpu;
 
     private final Memory memory;
     private final List<NetworkAdapter> net;
@@ -75,13 +75,7 @@ public final class SimBareMetalMachine extends SimAbstractMachine {
         this.graph = graph;
         this.psu = psuFactory.newPsu(this, graph);
 
-        int cpuIndex = 0;
-        final ArrayList<Cpu> cpus = new ArrayList<>();
-        this.cpus = cpus;
-        for (ProcessingUnit cpu : model.getCpus()) {
-            cpus.add(new Cpu(psu, cpu, cpuIndex++));
-        }
-
+        this.cpu = new SimCpu(psu, model.getCpu(), 0);
         this.memory = new Memory(graph, model.getMemory());
 
         int netIndex = 0;
@@ -139,76 +133,58 @@ public final class SimBareMetalMachine extends SimAbstractMachine {
      * Return the CPU capacity of the machine in MHz.
      */
     public double getCpuCapacity() {
-        final Context context = (Context) getActiveContext();
+        final SimAbstractMachineContext context = (SimAbstractMachineContext) getActiveContext();
 
         if (context == null) {
             return 0.0;
         }
 
-        float capacity = 0.f;
-
-        for (SimProcessingUnit cpu : context.cpus) {
-            capacity += cpu.getFrequency();
-        }
-
-        return capacity;
+        return cpu.getFrequency();
     }
 
     /**
      * The CPU demand of the machine in MHz.
      */
     public double getCpuDemand() {
-        final Context context = (Context) getActiveContext();
+        final SimAbstractMachineContext context = (SimAbstractMachineContext) getActiveContext();
 
         if (context == null) {
             return 0.0;
         }
 
-        float demand = 0.f;
-
-        for (SimProcessingUnit cpu : context.cpus) {
-            demand += cpu.getDemand();
-        }
-
-        return demand;
+        return cpu.getDemand();
     }
 
     /**
      * The CPU usage of the machine in MHz.
      */
     public double getCpuUsage() {
-        final Context context = (Context) getActiveContext();
+        final SimAbstractMachineContext context = (SimAbstractMachineContext) getActiveContext();
 
         if (context == null) {
             return 0.0;
         }
 
-        float rate = 0.f;
-
-        for (SimProcessingUnit cpu : context.cpus) {
-            rate += cpu.getSpeed();
-        }
-
-        return rate;
+        return cpu.getSpeed();
     }
 
     @Override
-    protected SimAbstractMachine.Context createContext(
+    protected SimAbstractMachine.SimAbstractMachineContext createContext(
             SimWorkload workload, Map<String, Object> meta, Consumer<Exception> completion) {
-        return new Context(this, workload, meta, completion);
+        return new SimAbstractMachineContext(this, workload, meta, completion);
     }
 
     /**
      * The execution context for a {@link SimBareMetalMachine}.
      */
-    private static final class Context extends SimAbstractMachine.Context {
+    private static final class SimAbstractMachineContext extends SimAbstractMachine.SimAbstractMachineContext {
         private final FlowGraph graph;
-        private final List<Cpu> cpus;
+        private final SimCpu cpu;
         private final Memory memory;
         private final List<NetworkAdapter> net;
         private final List<StorageDevice> disk;
 
-        private Context(
+        private SimAbstractMachineContext(
                 SimBareMetalMachine machine,
                 SimWorkload workload,
                 Map<String, Object> meta,
@@ -216,7 +192,7 @@ public final class SimBareMetalMachine extends SimAbstractMachine {
             super(machine, workload, meta, completion);
 
             this.graph = machine.graph;
-            this.cpus = machine.cpus;
+            this.cpu = machine.cpu;
             this.memory = machine.memory;
             this.net = machine.net;
             this.disk = machine.disk;
@@ -228,8 +204,8 @@ public final class SimBareMetalMachine extends SimAbstractMachine {
         }
 
         @Override
-        public List<? extends SimProcessingUnit> getCpus() {
-            return cpus;
+        public SimCpu getCpu() {
+            return cpu;
         }
 
         @Override
@@ -251,17 +227,17 @@ public final class SimBareMetalMachine extends SimAbstractMachine {
     /**
      * A {@link SimProcessingUnit} of a bare-metal machine.
      */
-    private static final class Cpu implements SimProcessingUnit {
+    private static final class SimCpu implements SimProcessingUnit {
         private final SimPsu psu;
-        private final ProcessingUnit model;
+        private final Cpu cpuModel;
         private final InPort port;
 
-        private Cpu(SimPsu psu, ProcessingUnit model, int id) {
+        private SimCpu(SimPsu psu, Cpu cpuModel, int id) {
             this.psu = psu;
-            this.model = model;
-            this.port = psu.getCpuPower(id, model);
+            this.cpuModel = cpuModel;
+            this.port = psu.getCpuPower(id, cpuModel);
 
-            this.port.pull((float) model.getFrequency());
+            this.port.pull((float) cpuModel.getTotalCapacity());
         }
 
         @Override
@@ -272,7 +248,7 @@ public final class SimBareMetalMachine extends SimAbstractMachine {
         @Override
         public void setFrequency(double frequency) {
             // Clamp the capacity of the CPU between [0.0, maxFreq]
-            frequency = Math.max(0, Math.min(model.getFrequency(), frequency));
+            frequency = Math.max(0, Math.min(cpuModel.getTotalCapacity(), frequency));
             psu.setCpuFrequency(port, frequency);
         }
 
@@ -287,8 +263,8 @@ public final class SimBareMetalMachine extends SimAbstractMachine {
         }
 
         @Override
-        public ProcessingUnit getModel() {
-            return model;
+        public org.opendc.simulator.compute.model.Cpu getCpuModel() {
+            return cpuModel;
         }
 
         @Override
@@ -298,7 +274,7 @@ public final class SimBareMetalMachine extends SimAbstractMachine {
 
         @Override
         public String toString() {
-            return "SimBareMetalMachine.Cpu[model=" + model + "]";
+            return "SimBareMetalMachine.Cpu[model=" + cpuModel + "]";
         }
     }
 }

@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.compute;
 
-import java.util.List;
 import org.opendc.simulator.compute.model.MemoryUnit;
 import org.opendc.simulator.flow2.sink.FlowSink;
 
@@ -38,5 +37,5 @@ public interface SimMemory extends FlowSink {
     /**
      * Return the models representing the static information of the memory units supporting this interface.
      */
-    List<MemoryUnit> getModels();
+    MemoryUnit getMemoryUnit();
 }

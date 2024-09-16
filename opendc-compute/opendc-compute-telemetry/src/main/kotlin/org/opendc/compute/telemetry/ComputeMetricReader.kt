@@ -258,7 +258,8 @@ public class ComputeMetricReader(
 
         private val _host = host
 
-        override val host: HostInfo = HostInfo(host.uid.toString(), host.name, "x86", host.model.cpuCount, host.model.memoryCapacity)
+        override val host: HostInfo =
+            HostInfo(host.uid.toString(), host.name, "x86", host.model.coreCount, host.model.cpuCapacity, host.model.memoryCapacity)
 
         override val timestamp: Instant
             get() = _timestamp
@@ -539,7 +540,15 @@ public class ComputeMetricReader(
             val newHost = service.lookupHost(task)
             if (newHost != null && newHost.uid != _host?.uid) {
                 _host = newHost
-                host = HostInfo(newHost.uid.toString(), newHost.name, "x86", newHost.model.cpuCount, newHost.model.memoryCapacity)
+                host =
+                    HostInfo(
+                        newHost.uid.toString(),
+                        newHost.name,
+                        "x86",
+                        newHost.model.coreCount,
+                        newHost.model.cpuCapacity,
+                        newHost.model.memoryCapacity,
+                    )
             }
 
             val cpuStats = _host?.getCpuStats(task)

@@ -31,7 +31,6 @@ import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.simulator.SimWorkloadMapper
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.kernel.SimHypervisor
-import org.opendc.simulator.compute.kernel.SimVirtualMachine
 import org.opendc.simulator.compute.workload.SimWorkload
 import java.time.Duration
 import java.time.Instant
@@ -47,7 +46,7 @@ internal class Guest(
     private val mapper: SimWorkloadMapper,
     private val listener: GuestListener,
     val task: Task,
-    val machine: SimVirtualMachine,
+    val machine: SimHypervisor.SimVirtualMachine,
 ) {
     /**
      * The state of the [Guest].
@@ -225,7 +224,7 @@ internal class Guest(
     private var localDowntime = 0L
     private var localLastReport = clock.millis()
     private var localBootTime: Instant? = null
-    private val localCpuLimit = machine.model.cpus.sumOf { it.frequency }
+    private val localCpuLimit = machine.model.cpu.totalCapacity
 
     /**
      * Helper function to track the uptime and downtime of the guest.

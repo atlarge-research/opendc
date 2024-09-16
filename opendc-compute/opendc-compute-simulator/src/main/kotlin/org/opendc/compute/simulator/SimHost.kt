@@ -41,8 +41,6 @@ import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.compute.workload.SimWorkloads
 import java.time.Duration
@@ -96,10 +94,9 @@ public class SimHost(
 
     private val model: HostModel =
         HostModel(
-            machine.model.cpus.sumOf { it.frequency },
-            machine.model.cpus.size,
-            machine.model.cpus.sumOf { it.node.coreCount },
-            machine.model.memory.sumOf { it.size },
+            machine.model.cpu.totalCapacity,
+            machine.model.cpu.coreCount,
+            machine.model.memory.size,
         )
 
     /**
@@ -349,22 +346,14 @@ public class SimHost(
      * Convert flavor to machine model.
      */
     private fun Flavor.toMachineModel(): MachineModel {
-        val originalCpu = machine.model.cpus[0]
-        val originalNode = originalCpu.node
-        val cpuCapacity = (this.meta["cpu-capacity"] as? Double ?: Double.MAX_VALUE).coerceAtMost(originalCpu.frequency)
-        val processingNode = ProcessingNode(originalNode.vendor, originalNode.modelName, originalNode.architecture, coreCount)
-        val processingUnits = (0 until coreCount).map { ProcessingUnit(processingNode, it, cpuCapacity) }
-        val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
-
-        val model = MachineModel(processingUnits, memoryUnits)
-        return if (optimize) model.optimize() else model
+        return MachineModel(machine.model.cpu, MemoryUnit("Generic", "Generic", 3200.0, memorySize))
     }
 
     private var localLastReport = clock.millis()
     private var localUptime = 0L
     private var localDowntime = 0L
     private var localBootTime: Instant? = null
-    private val localCpuLimit = machine.model.cpus.sumOf { it.frequency * it.node.coreCount }
+    private val localCpuLimit = machine.model.cpu.totalCapacity
 
     /**
      * Helper function to track the uptime of a machine.

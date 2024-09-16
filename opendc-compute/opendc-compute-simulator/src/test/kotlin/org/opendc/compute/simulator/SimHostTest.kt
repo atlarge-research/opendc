@@ -38,10 +38,9 @@ import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.kernel.SimHypervisor
+import org.opendc.simulator.compute.model.Cpu
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.flow2.FlowEngine
@@ -60,14 +59,18 @@ internal class SimHostTest {
 
     @BeforeEach
     fun setUp() {
-        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
-
         machineModel =
             MachineModel(
-                // cpus
-                List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
+                Cpu(
+                    0,
+                    2,
+                    3200.0,
+                    "Intel",
+                    "Xeon",
+                    "amd64",
+                ),
                 // memory
-                List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+                MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000 * 4),
             )
     }
 
@@ -102,11 +105,11 @@ internal class SimHostTest {
                     mapOf(
                         "workload" to
                             SimTrace.ofFragments(
-                                SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
-                                SimTraceFragment(duration * 1000, duration * 1000, 2 * 3500.0, 2),
+                                SimTraceFragment(0, duration * 1000, 0.0, 2),
+                                SimTraceFragment(duration * 1000, duration * 1000, 3200.0, 2),
                                 SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
-                                SimTraceFragment(duration * 3000, duration * 1000, 2 * 183.0, 2),
-                            ).createWorkload(1),
+                                SimTraceFragment(duration * 3000, duration * 1000, 6500.0, 2),
+                            ).createWorkload(0),
                     ),
                 )
 
@@ -134,16 +137,16 @@ internal class SimHostTest {
             }
 
             // Ensure last cycle is collected
-            delay(1000L * duration)
+//            delay(1000L * duration)
             host.close()
 
             val cpuStats = host.getCpuStats()
 
             assertAll(
-                { assertEquals(347908, cpuStats.activeTime, "Active time does not match") },
-                { assertEquals(2652092, cpuStats.idleTime, "Idle time does not match") },
-                { assertEquals(1, cpuStats.stealTime, "Steal time does not match") },
-                { assertEquals(1500000, timeSource.millis()) },
+                { assertEquals(450000, cpuStats.activeTime, "Active time does not match") },
+                { assertEquals(750000, cpuStats.idleTime, "Idle time does not match") },
+                { assertEquals(4688, cpuStats.stealTime, "Steal time does not match") },
+                { assertEquals(1200000, timeSource.millis()) },
             )
         }
 
@@ -178,11 +181,11 @@ internal class SimHostTest {
                     mapOf(
                         "workload" to
                             SimTrace.ofFragments(
-                                SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
-                                SimTraceFragment(duration * 1000, duration * 1000, 2 * 3500.0, 2),
+                                SimTraceFragment(0, duration * 1000, 0.0, 2),
+                                SimTraceFragment(duration * 1000, duration * 1000, 3200.0, 2),
                                 SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
-                                SimTraceFragment(duration * 3000, duration * 1000, 2 * 183.0, 2),
-                            ).createWorkload(1),
+                                SimTraceFragment(duration * 3000, duration * 1000, 6500.0, 2),
+                            ).createWorkload(0),
                     ),
                 )
             val vmImageB =
@@ -193,11 +196,11 @@ internal class SimHostTest {
                     mapOf(
                         "workload" to
                             SimTrace.ofFragments(
-                                SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
-                                SimTraceFragment(duration * 1000, duration * 1000, 2 * 3100.0, 2),
+                                SimTraceFragment(0, duration * 1000, 0.0, 2),
+                                SimTraceFragment(duration * 1000, duration * 1000, 3200.0, 2),
                                 SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
-                                SimTraceFragment(duration * 3000, duration * 1000, 2 * 73.0, 2),
-                            ).createWorkload(1),
+                                SimTraceFragment(duration * 3000, duration * 1000, 6500.0, 2),
+                            ).createWorkload(0),
                     ),
                 )
 
@@ -237,9 +240,9 @@ internal class SimHostTest {
             val cpuStats = host.getCpuStats()
 
             assertAll(
-                { assertEquals(629252, cpuStats.activeTime, "Active time does not match") },
-                { assertEquals(2370748, cpuStats.idleTime, "Idle time does not match") },
-                { assertEquals(18754, cpuStats.stealTime, "Steal time does not match") },
+                { assertEquals(600000, cpuStats.activeTime, "Active time does not match") },
+                { assertEquals(900000, cpuStats.idleTime, "Idle time does not match") },
+                { assertEquals(309375, cpuStats.stealTime, "Steal time does not match") },
                 { assertEquals(1500000, timeSource.millis()) },
             )
         }
@@ -274,11 +277,11 @@ internal class SimHostTest {
                     mapOf(
                         "workload" to
                             SimTrace.ofFragments(
-                                SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
-                                SimTraceFragment(duration * 1000L, duration * 1000, 2 * 3500.0, 2),
-                                SimTraceFragment(duration * 2000L, duration * 1000, 0.0, 2),
-                                SimTraceFragment(duration * 3000L, duration * 1000, 2 * 183.0, 2),
-                            ).createWorkload(1),
+                                SimTraceFragment(0, duration * 1000, 0.0, 2),
+                                SimTraceFragment(duration * 1000, duration * 1000, 3200.0, 2),
+                                SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
+                                SimTraceFragment(duration * 3000, duration * 1000, 6500.0, 2),
+                            ).createWorkload(0),
                     ),
                 )
             val flavor = MockFlavor(2, 0)
@@ -318,8 +321,8 @@ internal class SimHostTest {
             val guestSysStats = host.getSystemStats(server)
 
             assertAll(
-                { assertEquals(2062046, cpuStats.idleTime, "Idle time does not match") },
-                { assertEquals(347954, cpuStats.activeTime, "Active time does not match") },
+                { assertEquals(755000, cpuStats.idleTime, "Idle time does not match") },
+                { assertEquals(450000, cpuStats.activeTime, "Active time does not match") },
                 { assertEquals(1205000, sysStats.uptime.toMillis(), "Uptime does not match") },
                 { assertEquals(300000, sysStats.downtime.toMillis(), "Downtime does not match") },
                 { assertEquals(1205000, guestSysStats.uptime.toMillis(), "Guest uptime does not match") },

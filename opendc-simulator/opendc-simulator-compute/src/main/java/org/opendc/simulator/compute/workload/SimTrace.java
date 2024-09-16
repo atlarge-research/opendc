@@ -210,11 +210,7 @@ public final class SimTrace {
         @Override
         public void onStart(SimMachineContext ctx) {
             final WorkloadStageLogic logic;
-            if (ctx.getCpus().size() == 1) {
-                logic = new SingleWorkloadLogic(ctx, offset, fragments.iterator());
-            } else {
-                logic = new MultiWorkloadLogic(ctx, offset, fragments.iterator());
-            }
+            logic = new SingleWorkloadLogic(ctx, offset, fragments.iterator());
             this.logic = logic;
         }
 
@@ -325,11 +321,9 @@ public final class SimTrace {
             this.fragments = fragments;
 
             final FlowGraph graph = ctx.getGraph();
-            final List<? extends SimProcessingUnit> cpus = ctx.getCpus();
-
             stage = graph.newStage(this);
 
-            final SimProcessingUnit cpu = cpus.get(0);
+            final SimProcessingUnit cpu = ctx.getCpu();
             final OutPort output = stage.getOutlet("cpu");
             this.output = output;
 
@@ -414,151 +408,6 @@ public final class SimTrace {
             }
             ctx.close();
             return Long.MAX_VALUE;
-        }
-    }
-
-    /**
-     * Implementation of {@link FlowStageLogic} for multiple CPUs.
-     */
-    private static class MultiWorkloadLogic implements WorkloadStageLogic {
-        private final FlowStage stage;
-        private final OutPort[] outputs;
-        private int index = 0;
-
-        private final int coreCount;
-
-        private Iterator<SimTraceFragment> fragments;
-        private SimTraceFragment currentFragment;
-        private long startOffFragment;
-
-        private final SimMachineContext ctx;
-
-        private MultiWorkloadLogic(SimMachineContext ctx, long offset, Iterator<SimTraceFragment> fragments) {
-            this.ctx = ctx;
-            this.fragments = fragments;
-
-            final FlowGraph graph = ctx.getGraph();
-            final List<? extends SimProcessingUnit> cpus = ctx.getCpus();
-
-            stage = graph.newStage(this);
-            this.coreCount = cpus.size();
-
-            final OutPort[] outputs = new OutPort[cpus.size()];
-            this.outputs = outputs;
-
-            for (int i = 0; i < cpus.size(); i++) {
-                final SimProcessingUnit cpu = cpus.get(i);
-                final OutPort output = stage.getOutlet("cpu" + i);
-
-                graph.connect(output, cpu.getInput());
-                outputs[i] = output;
-            }
-
-            this.currentFragment = this.fragments.next();
-
-            int cores = Math.min(this.coreCount, currentFragment.coreCount());
-            float usage = (float) currentFragment.cpuUsage() / cores;
-
-            // Push the usage to all active cores
-            for (int i = 0; i < cores; i++) {
-                outputs[i].push(usage);
-            }
-
-            // Push a usage of 0 to all non-active cores
-            for (int i = cores; i < outputs.length; i++) {
-                outputs[i].push(0.f);
-            }
-
-            this.startOffFragment = offset;
-        }
-
-        public long getPassedTime(long now) {
-            return now - this.startOffFragment;
-        }
-
-        @Override
-        public void updateFragments(Iterator<SimTraceFragment> newFragments, long offset) {
-            this.fragments = newFragments;
-
-            // Start the first Fragment
-            this.currentFragment = this.fragments.next();
-            int cores = Math.min(this.coreCount, currentFragment.coreCount());
-            float usage = (float) currentFragment.cpuUsage() / cores;
-
-            // Push the usage to all active cores
-            for (int i = 0; i < cores; i++) {
-                outputs[i].push(usage);
-            }
-
-            // Push a usage of 0 to all non-active cores
-            for (int i = cores; i < outputs.length; i++) {
-                outputs[i].push(0.f);
-            }
-            this.startOffFragment = offset;
-        }
-
-        @Override
-        public long onUpdate(FlowStage ctx, long now) {
-            long passedTime = now - this.startOffFragment;
-            long duration = this.currentFragment.duration();
-
-            // The current Fragment has not yet been finished, continue
-            if (passedTime < duration) {
-                return now + (duration - passedTime);
-            }
-
-            // Loop through fragments until the passed time is filled.
-            // We need a while loop to account for skipping of fragments.
-            while (passedTime >= duration) {
-
-                // Stop running
-                if (!this.fragments.hasNext()) {
-                    final SimMachineContext machineContext = this.ctx;
-                    if (machineContext != null) {
-                        machineContext.shutdown();
-                    }
-                    ctx.close();
-                    return Long.MAX_VALUE;
-                }
-
-                passedTime = passedTime - duration;
-
-                // get next Fragment
-                this.index++;
-                currentFragment = this.fragments.next();
-                duration = currentFragment.duration();
-            }
-
-            // start the new fragment
-            this.startOffFragment = now - passedTime;
-
-            int cores = Math.min(this.coreCount, currentFragment.coreCount());
-            float usage = (float) currentFragment.cpuUsage() / cores;
-
-            final OutPort[] outputs = this.outputs;
-
-            // Push the usage to all active cores
-            for (int i = 0; i < cores; i++) {
-                outputs[i].push(usage);
-            }
-
-            // Push a usage of 0 to all non-active cores
-            for (int i = cores; i < outputs.length; i++) {
-                outputs[i].push(0.f);
-            }
-
-            // Return the time when the current fragment will complete
-            return now + (duration - passedTime);
-        }
-
-        @Override
-        public FlowStage getStage() {
-            return stage;
-        }
-
-        @Override
-        public int getIndex() {
-            return index;
         }
     }
 }

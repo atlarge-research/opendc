@@ -31,29 +31,23 @@ import java.util.Objects;
  * A description of the physical or virtual machine on which a bootable image runs.
  */
 public final class MachineModel {
-    private final List<ProcessingUnit> cpus;
-    private final List<MemoryUnit> memory;
+    private final Cpu cpu;
+    private final MemoryUnit memory;
     private final List<NetworkAdapter> net;
     private final List<StorageDevice> storage;
 
     /**
      * Construct a {@link MachineModel} instance.
      *
-     * @param cpus The list of processing units available to the image.
+     * @param cpu The cpu available to the image.
      * @param memory The list of memory units available to the image.
      * @param net A list of network adapters available to the machine.
      * @param storage A list of storage devices available to the machine.
      */
-    public MachineModel(
-            Iterable<ProcessingUnit> cpus,
-            Iterable<MemoryUnit> memory,
-            Iterable<NetworkAdapter> net,
-            Iterable<StorageDevice> storage) {
-        this.cpus = new ArrayList<>();
-        cpus.forEach(this.cpus::add);
+    public MachineModel(Cpu cpu, MemoryUnit memory, Iterable<NetworkAdapter> net, Iterable<StorageDevice> storage) {
+        this.cpu = cpu;
 
-        this.memory = new ArrayList<>();
-        memory.forEach(this.memory::add);
+        this.memory = memory;
 
         this.net = new ArrayList<>();
         net.forEach(this.net::add);
@@ -62,54 +56,50 @@ public final class MachineModel {
         storage.forEach(this.storage::add);
     }
 
+    public MachineModel(Cpu cpu, MemoryUnit memory) {
+        this(cpu, memory, Collections.emptyList(), Collections.emptyList());
+    }
+
     /**
      * Construct a {@link MachineModel} instance.
+     * A list of the same cpus, are automatically converted to a single CPU with the number of cores of
+     * all cpus in the list combined.
      *
      * @param cpus The list of processing units available to the image.
      * @param memory The list of memory units available to the image.
      */
-    public MachineModel(Iterable<ProcessingUnit> cpus, Iterable<MemoryUnit> memory) {
-        this(cpus, memory, Collections.emptyList(), Collections.emptyList());
+    public MachineModel(
+            List<Cpu> cpus, MemoryUnit memory, Iterable<NetworkAdapter> net, Iterable<StorageDevice> storage) {
+
+        this(
+                new Cpu(
+                        cpus.get(0).getId(),
+                        cpus.get(0).getCoreCount() * cpus.size(),
+                        cpus.get(0).getCoreSpeed(),
+                        cpus.get(0).getVendor(),
+                        cpus.get(0).getModelName(),
+                        cpus.get(0).getArchitecture()),
+                memory,
+                net,
+                storage);
     }
 
-    /**
-     * Optimize the [MachineModel] by merging all resources of the same type into a single resource with the combined
-     * capacity. Such configurations can be simulated more efficiently by OpenDC.
-     */
-    public MachineModel optimize() {
-        ProcessingUnit originalCpu = cpus.get(0);
-
-        double freq = 0.0;
-        for (ProcessingUnit cpu : cpus) {
-            freq += cpu.getFrequency();
-        }
-
-        ProcessingNode originalNode = originalCpu.getNode();
-        ProcessingNode processingNode = new ProcessingNode(
-                originalNode.getVendor(), originalNode.getModelName(), originalNode.getArchitecture(), 1);
-        ProcessingUnit processingUnit = new ProcessingUnit(processingNode, originalCpu.getId(), freq);
-
-        long memorySize = 0;
-        for (MemoryUnit mem : memory) {
-            memorySize += mem.getSize();
-        }
-        MemoryUnit memoryUnit = new MemoryUnit("Generic", "Generic", 3200.0, memorySize);
-
-        return new MachineModel(List.of(processingUnit), List.of(memoryUnit));
+    public MachineModel(List<Cpu> cpus, MemoryUnit memory) {
+        this(cpus, memory, Collections.emptyList(), Collections.emptyList());
     }
 
     /**
      * Return the processing units of this machine.
      */
-    public List<ProcessingUnit> getCpus() {
-        return Collections.unmodifiableList(cpus);
+    public Cpu getCpu() {
+        return this.cpu;
     }
 
     /**
      * Return the memory units of this machine.
      */
-    public List<MemoryUnit> getMemory() {
-        return Collections.unmodifiableList(memory);
+    public MemoryUnit getMemory() {
+        return memory;
     }
 
     /**
@@ -131,7 +121,7 @@ public final class MachineModel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MachineModel that = (MachineModel) o;
-        return cpus.equals(that.cpus)
+        return cpu.equals(that.cpu)
                 && memory.equals(that.memory)
                 && net.equals(that.net)
                 && storage.equals(that.storage);
@@ -139,11 +129,11 @@ public final class MachineModel {
 
     @Override
     public int hashCode() {
-        return Objects.hash(cpus, memory, net, storage);
+        return Objects.hash(cpu, memory, net, storage);
     }
 
     @Override
     public String toString() {
-        return "MachineModel[cpus=" + cpus + ",memory=" + memory + ",net=" + net + ",storage=" + storage + "]";
+        return "MachineModel[cpus=" + cpu + ",memory=" + memory + ",net=" + net + ",storage=" + storage + "]";
     }
 }

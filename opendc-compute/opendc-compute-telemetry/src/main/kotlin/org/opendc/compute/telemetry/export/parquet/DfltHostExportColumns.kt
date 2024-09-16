@@ -76,8 +76,8 @@ public object DfltHostExportColumns {
 
     public val CPU_COUNT: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(INT32).named("cpu_count"),
-        ) { it.host.cpuCount }
+            field = Types.required(INT32).named("core_count"),
+        ) { it.host.coreCount }
 
     public val MEM_CAPACITY: ExportColumn<HostTableReader> =
         ExportColumn(
