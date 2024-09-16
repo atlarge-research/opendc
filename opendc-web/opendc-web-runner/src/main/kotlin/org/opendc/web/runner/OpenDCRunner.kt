@@ -37,10 +37,9 @@ import org.opendc.compute.workload.sampleByLoad
 import org.opendc.compute.workload.trace
 import org.opendc.experiments.base.runner.replay
 import org.opendc.simulator.compute.SimPsuFactories
+import org.opendc.simulator.compute.model.Cpu
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.CpuPowerModels
 import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.web.proto.runner.Job
@@ -325,15 +324,10 @@ public class OpenDCRunner(
             val position = machine.position
 
             val processors =
-                machine.cpus.flatMap { cpu ->
-                    val cores = cpu.numberOfCores
-                    val speed = cpu.clockRateMhz
-                    // TODO: Remove hard coding of vendor
-                    val node = ProcessingNode("Intel", "amd64", cpu.name, cores)
-                    List(cores) { coreId ->
-                        ProcessingUnit(node, coreId, speed)
-                    }
+                machine.cpus.map { cpu ->
+                    Cpu(0, cpu.numberOfCores, cpu.clockRateMhz, "Intel", "amd64", cpu.name)
                 }
+
             val memoryUnits =
                 machine.memory.map { memory ->
                     MemoryUnit(
@@ -352,7 +346,7 @@ public class OpenDCRunner(
                     UUID(random.nextLong(), random.nextLong()),
                     "node-$clusterId-$position",
                     mapOf("cluster" to clusterId),
-                    MachineModel(processors, memoryUnits),
+                    MachineModel(processors, memoryUnits[0]),
                     SimPsuFactories.simple(powerModel),
                 )
 

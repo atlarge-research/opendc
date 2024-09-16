@@ -26,7 +26,7 @@ package org.opendc.compute.service.driver;
  * Record describing the static machine properties of the host.
  *
  * @param cpuCapacity The total CPU capacity of the host in MHz.
- * @param cpuCount The number of logical processing cores available for this host.
+ * @param coreCount The number of logical processing cores available for this host.
  * @param memoryCapacity The amount of memory available for this host in MB.
  */
-public record HostModel(double cpuCapacity, int cpuCount, int coreCount, long memoryCapacity) {}
+public record HostModel(double cpuCapacity, int coreCount, long memoryCapacity) {}

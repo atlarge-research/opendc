@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute;
 
-import org.opendc.simulator.compute.model.ProcessingUnit;
+import org.opendc.simulator.compute.model.Cpu;
 import org.opendc.simulator.flow2.sink.FlowSink;
 
 /**
@@ -58,5 +58,5 @@ public interface SimProcessingUnit extends FlowSink {
     /**
      *  The model representing the static properties of the processing unit.
      */
-    ProcessingUnit getModel();
+    Cpu getCpuModel();
 }

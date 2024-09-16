@@ -35,11 +35,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.compute.device.SimNetworkAdapter
+import org.opendc.simulator.compute.model.Cpu
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.NetworkAdapter
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.model.StorageDevice
 import org.opendc.simulator.compute.power.CpuPowerModels
 import org.opendc.simulator.compute.workload.SimTrace
@@ -60,12 +59,17 @@ class SimMachineTest {
 
     @BeforeEach
     fun setUp() {
-        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
-
         machineModel =
             MachineModel(
-                List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
-                List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+                Cpu(
+                    0,
+                    2,
+                    1000.0,
+                    "Intel",
+                    "Xeon",
+                    "amd64",
+                ),
+                MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000 * 4),
                 listOf(NetworkAdapter("Mellanox", "ConnectX-5", 25000.0)),
                 listOf(StorageDevice("Samsung", "EVO", 1000.0, 250.0, 250.0)),
             )
@@ -121,11 +125,17 @@ class SimMachineTest {
             val engine = FlowEngine.create(dispatcher)
             val graph = engine.newGraph()
 
-            val cpuNode = machineModel.cpus[0].node
+            val cpuNode = machineModel.cpu
             val machineModel =
                 MachineModel(
-                    List(cpuNode.coreCount * 2) { ProcessingUnit(cpuNode, it % 2, 1000.0) },
-                    List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+                    List(cpuNode.coreCount * 2) {
+                        Cpu(
+                            it,
+                            cpuNode.coreCount,
+                            1000.0,
+                        )
+                    },
+                    MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000 * 4),
                 )
             val machine =
                 SimBareMetalMachine.create(
@@ -179,10 +189,10 @@ class SimMachineTest {
             machine.runWorkload(
                 object : SimWorkload {
                     override fun onStart(ctx: SimMachineContext) {
-                        val cpu = ctx.cpus[0]
+                        val cpu = ctx.cpu
 
-                        cpu.frequency = (cpu.model.frequency + 1000.0)
-                        assertEquals(cpu.model.frequency, cpu.frequency)
+                        cpu.frequency = (cpu.cpuModel.totalCapacity + 1000.0)
+                        assertEquals(cpu.cpuModel.totalCapacity, cpu.frequency)
                         cpu.frequency = -1.0
                         assertEquals(0.0, cpu.frequency)
 

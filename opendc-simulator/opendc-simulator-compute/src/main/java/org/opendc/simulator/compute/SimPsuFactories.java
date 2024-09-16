@@ -24,7 +24,7 @@ package org.opendc.simulator.compute;
 
 import java.time.InstantSource;
 import org.jetbrains.annotations.NotNull;
-import org.opendc.simulator.compute.model.ProcessingUnit;
+import org.opendc.simulator.compute.model.Cpu;
 import org.opendc.simulator.compute.power.CpuPowerModel;
 import org.opendc.simulator.flow2.FlowGraph;
 import org.opendc.simulator.flow2.FlowStage;
@@ -92,7 +92,7 @@ public class SimPsuFactories {
         }
 
         @Override
-        InPort getCpuPower(int id, ProcessingUnit model) {
+        InPort getCpuPower(int id, Cpu model) {
             final InPort port = stage.getInlet("cpu" + id);
             port.setMask(true);
             return port;
@@ -165,8 +165,8 @@ public class SimPsuFactories {
         }
 
         @Override
-        InPort getCpuPower(int id, ProcessingUnit model) {
-            targetFreq += model.getFrequency();
+        InPort getCpuPower(int id, Cpu model) {
+            targetFreq += model.getTotalCapacity();
 
             final InPort port = stage.getInlet("cpu" + id);
             port.setHandler(handler);

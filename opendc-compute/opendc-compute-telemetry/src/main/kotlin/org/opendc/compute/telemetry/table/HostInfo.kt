@@ -25,4 +25,11 @@ package org.opendc.compute.telemetry.table
 /**
  * Information about a host exposed to the telemetry service.
  */
-public data class HostInfo(val id: String, val name: String, val arch: String, val cpuCount: Int, val memCapacity: Long)
+public data class HostInfo(
+    val id: String,
+    val name: String,
+    val arch: String,
+    val coreCount: Int,
+    val coreSpeed: Double,
+    val memCapacity: Long,
+)

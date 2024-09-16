@@ -25,10 +25,9 @@ package org.opendc.experiments.tf20.util
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import org.opendc.simulator.compute.model.Cpu
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.CpuPowerModels
 import java.io.InputStream
 import java.util.UUID
@@ -54,36 +53,50 @@ public class MLEnvironmentReader {
                             var maxPower = 350.0
                             var minPower = 200.0
                             val cores =
-                                machine.cpus.flatMap { id ->
+                                machine.cpus.map { id ->
                                     when (id) {
                                         1 -> {
                                             // ref: https://www.guru3d.com/articles-pages/nvidia-geforce-gtx-titan-x-review,8.html#:~:text=GeForce%20GTX%20Titan%20X%20%2D%20On,power%20supply%20unit%20as%20minimum.
-                                            maxPower = 334.0
-                                            minPower = 90.0
-                                            val node = ProcessingNode("NVidia", "TITAN X", "Pascal", 4992)
-                                            List(node.coreCount) { ProcessingUnit(node, it, 824.0) }
+                                            Cpu(
+                                                0,
+                                                4992,
+                                                824.0,
+                                                "NVidia",
+                                                "TITAN X",
+                                                "Pascal",
+                                            )
                                         }
                                         2 -> {
                                             // ref: https://www.microway.com/hpc-tech-tips/nvidia-tesla-p100-pci-e-16gb-gpu-accelerator-pascal-gp100-close/
-                                            maxPower = 250.0
-                                            minPower = 125.0
-                                            val node = ProcessingNode("NVIDIA", "Tesla P100", "Pascal", 3584)
-                                            List(node.coreCount) { ProcessingUnit(node, it, 1190.0) }
+                                            Cpu(
+                                                0,
+                                                3584,
+                                                1190.0,
+                                                "NVIDIA",
+                                                "Tesla P100",
+                                                "Pascal",
+                                            )
                                         }
                                         3 -> {
                                             // ref: https://www.anandtech.com/show/10923/openpower-saga-tyans-1u-power8-gt75/7
-                                            minPower = 84.0
-                                            maxPower = 135.0
-                                            val node = ProcessingNode("Intel", "E5-2690v3 Haswell24", "amd64", 24)
-                                            isGpuFlag = false
-                                            List(node.coreCount) { ProcessingUnit(node, it, 3498.0) }
+                                            Cpu(
+                                                0,
+                                                24,
+                                                3498.0,
+                                                "Intel",
+                                                "E5-2690v3 Haswell24",
+                                                "amd64",
+                                            )
                                         }
                                         4 -> {
-                                            minPower = 130.0
-                                            maxPower = 190.0
-                                            val node = ProcessingNode("IBM", "POWER8", "RISC", 10)
-                                            isGpuFlag = false
-                                            List(node.coreCount) { ProcessingUnit(node, it, 143000.0) } // 28600.0 3690
+                                            Cpu(
+                                                0,
+                                                10,
+                                                143000.0,
+                                                "IBM",
+                                                "POWER8",
+                                                "RISC",
+                                            )
                                         }
                                         else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                     }
@@ -103,7 +116,7 @@ public class MLEnvironmentReader {
                                 UUID(0, counter.toLong()),
                                 "node-${counter++}",
                                 mapOf("gpu" to isGpuFlag),
-                                MachineModel(cores, memories),
+                                MachineModel(cores, memories[0]),
                                 CpuPowerModels.linear(maxPower, minPower),
                             )
                         }

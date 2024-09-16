@@ -25,10 +25,10 @@ package org.opendc.simulator.compute
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.opendc.simulator.compute.kernel.SimHypervisor
+import org.opendc.simulator.compute.model.Cpu
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.flow2.FlowEngine
 import org.opendc.simulator.flow2.mux.FlowMultiplexerFactory
@@ -59,7 +59,13 @@ class SimMachineBenchmarks {
         machineModel =
             MachineModel(
                 // cpus
-                List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
+                List(cpuNode.coreCount) {
+                    Cpu(
+                        cpuNode,
+                        it,
+                        1000.0,
+                    )
+                },
                 // memory
                 List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
             )

@@ -37,7 +37,7 @@ public class CoreRamWeigher(override val multiplier: Double = 1.0) : HostWeigher
         host: HostView,
         task: Task,
     ): Double {
-        return host.availableMemory.toDouble() / host.host.model.cpuCount
+        return host.availableMemory.toDouble()
     }
 
     override fun toString(): String = "CoreRamWeigher"

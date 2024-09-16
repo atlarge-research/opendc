@@ -36,10 +36,9 @@ import org.opendc.faas.service.router.RandomRoutingPolicy
 import org.opendc.faas.simulator.delay.ColdStartModel
 import org.opendc.faas.simulator.delay.StochasticDelayInjector
 import org.opendc.faas.simulator.workload.SimFaaSWorkload
+import org.opendc.simulator.compute.model.Cpu
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.compute.workload.SimWorkloads
 import org.opendc.simulator.kotlin.runSimulation
@@ -54,12 +53,17 @@ internal class SimFaaSServiceTest {
 
     @BeforeEach
     fun setUp() {
-        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
-
         machineModel =
             MachineModel(
-                List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
-                List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+                Cpu(
+                    0,
+                    2,
+                    1000.0,
+                    "Intel",
+                    "Xeon",
+                    "amd64",
+                ),
+                MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000 * 4),
             )
     }
 

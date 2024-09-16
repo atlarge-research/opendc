@@ -41,7 +41,7 @@ final class SimChainWorkload implements SimWorkload {
     private final SimWorkload[] workloads;
     private int activeWorkloadIndex;
 
-    private Context activeContext;
+    private SimChainWorkloadContext activeContext;
 
     private long checkpointInterval = 0;
     private long checkpointDuration = 0;
@@ -108,7 +108,7 @@ final class SimChainWorkload implements SimWorkload {
             return;
         }
 
-        final Context context = new Context(ctx);
+        final SimChainWorkloadContext context = new SimChainWorkloadContext(ctx);
         activeContext = context;
 
         if (checkpointInterval > 0) {
@@ -128,7 +128,7 @@ final class SimChainWorkload implements SimWorkload {
             return;
         }
 
-        final Context context = activeContext;
+        final SimChainWorkloadContext context = activeContext;
         activeContext = null;
 
         if (this.checkpointModel != null) {
@@ -174,7 +174,7 @@ final class SimChainWorkload implements SimWorkload {
         private Boolean firstCheckPoint = true;
 
         CheckPointModel(
-                Context context,
+                SimChainWorkloadContext context,
                 SimChainWorkload workload,
                 long checkpointInterval,
                 long checkpointDuration,
@@ -228,11 +228,11 @@ final class SimChainWorkload implements SimWorkload {
     /**
      * A {@link SimMachineContext} that intercepts the shutdown calls.
      */
-    private class Context implements SimMachineContext {
+    private class SimChainWorkloadContext implements SimMachineContext {
         private final SimMachineContext ctx;
         private SimWorkload snapshot;
 
-        private Context(SimMachineContext ctx) {
+        private SimChainWorkloadContext(SimMachineContext ctx) {
             this.ctx = ctx;
         }
 
@@ -247,8 +247,8 @@ final class SimChainWorkload implements SimWorkload {
         }
 
         @Override
-        public List<? extends SimProcessingUnit> getCpus() {
-            return ctx.getCpus();
+        public SimProcessingUnit getCpu() {
+            return ctx.getCpu();
         }
 
         @Override

@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SplittableRandom;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import org.opendc.simulator.compute.SimAbstractMachine;
 import org.opendc.simulator.compute.SimMachine;
 import org.opendc.simulator.compute.SimMachineContext;
@@ -44,8 +43,8 @@ import org.opendc.simulator.compute.kernel.cpufreq.ScalingPolicy;
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain;
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceMember;
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceProfile;
+import org.opendc.simulator.compute.model.Cpu;
 import org.opendc.simulator.compute.model.MachineModel;
-import org.opendc.simulator.compute.model.ProcessingUnit;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.flow2.FlowGraph;
 import org.opendc.simulator.flow2.FlowStage;
@@ -68,8 +67,8 @@ public final class SimHypervisor implements SimWorkload {
     private final ScalingGovernorFactory scalingGovernorFactory;
     private final VmInterferenceDomain interferenceDomain;
 
-    private Context activeContext;
-    private final ArrayList<VirtualMachine> vms = new ArrayList<>();
+    private SimHyperVisorContext activeContext;
+    private final ArrayList<SimVirtualMachine> vms = new ArrayList<>();
     private final HvCounters counters = new HvCounters();
 
     @Override
@@ -156,7 +155,7 @@ public final class SimHypervisor implements SimWorkload {
             throw new IllegalArgumentException("Machine does not fit");
         }
 
-        VirtualMachine vm = new VirtualMachine(model);
+        SimVirtualMachine vm = new SimVirtualMachine(model);
         vms.add(vm);
         return vm;
     }
@@ -169,7 +168,7 @@ public final class SimHypervisor implements SimWorkload {
     public void removeMachine(SimVirtualMachine machine) {
         if (vms.remove(machine)) {
             // This cast must always succeed, since `_vms` only contains `VirtualMachine` types.
-            ((VirtualMachine) machine).close();
+            ((SimVirtualMachine) machine).close();
         }
     }
 
@@ -177,7 +176,7 @@ public final class SimHypervisor implements SimWorkload {
      * Return the CPU capacity of the hypervisor in MHz.
      */
     public double getCpuCapacity() {
-        final Context context = activeContext;
+        final SimHyperVisorContext context = activeContext;
 
         if (context == null) {
             return 0.0;
@@ -190,7 +189,7 @@ public final class SimHypervisor implements SimWorkload {
      * The CPU demand of the hypervisor in MHz.
      */
     public double getCpuDemand() {
-        final Context context = activeContext;
+        final SimHyperVisorContext context = activeContext;
 
         if (context == null) {
             return 0.0;
@@ -203,7 +202,7 @@ public final class SimHypervisor implements SimWorkload {
      * The CPU usage of the hypervisor in MHz.
      */
     public double getCpuUsage() {
-        final Context context = activeContext;
+        final SimHyperVisorContext context = activeContext;
 
         if (context == null) {
             return 0.0;
@@ -217,26 +216,26 @@ public final class SimHypervisor implements SimWorkload {
      * moment.
      */
     public boolean canFit(MachineModel model) {
-        final Context context = activeContext;
+        final SimHyperVisorContext context = activeContext;
         if (context == null) {
             return false;
         }
 
         final FlowMultiplexer multiplexer = context.multiplexer;
-        return (multiplexer.getMaxInputs() - multiplexer.getInputCount())
-                >= model.getCpus().size();
+        return (multiplexer.getMaxInputs() - multiplexer.getInputCount()) >= 1;
     }
 
     @Override
     public void onStart(SimMachineContext ctx) {
-        final Context context = new Context(ctx, muxFactory, scalingGovernorFactory, counters);
+        final SimHyperVisorContext context =
+                new SimHyperVisorContext(ctx, muxFactory, scalingGovernorFactory, counters);
         context.start();
         activeContext = context;
     }
 
     @Override
     public void onStop(SimMachineContext ctx) {
-        final Context context = activeContext;
+        final SimHyperVisorContext context = activeContext;
         if (context != null) {
             activeContext = null;
             context.stop();
@@ -276,11 +275,11 @@ public final class SimHypervisor implements SimWorkload {
     /**
      * The context which carries the state when the hypervisor is running on a machine.
      */
-    private static final class Context implements FlowStageLogic {
+    private static final class SimHyperVisorContext implements FlowStageLogic {
         private final SimMachineContext ctx;
         private final FlowMultiplexer multiplexer;
         private final FlowStage stage;
-        private final List<ScalingGovernor> scalingGovernors;
+        private final ScalingGovernor scalingGovernor;
         private final InstantSource clock;
         private final HvCounters counters;
 
@@ -290,7 +289,7 @@ public final class SimHypervisor implements SimWorkload {
         private float previousRate;
         private float previousCapacity;
 
-        private Context(
+        private SimHyperVisorContext(
                 SimMachineContext ctx,
                 FlowMultiplexerFactory muxFactory,
                 ScalingGovernorFactory scalingGovernorFactory,
@@ -306,20 +305,15 @@ public final class SimHypervisor implements SimWorkload {
 
             this.lastCounterUpdate = clock.millis();
 
+            final SimProcessingUnit cpu = ctx.getCpu();
+
             if (scalingGovernorFactory != null) {
-                this.scalingGovernors = ctx.getCpus().stream()
-                        .map(cpu -> scalingGovernorFactory.newGovernor(new ScalingPolicyImpl(cpu)))
-                        .collect(Collectors.toList());
+                this.scalingGovernor = scalingGovernorFactory.newGovernor(new ScalingPolicyImpl(cpu));
             } else {
-                this.scalingGovernors = Collections.emptyList();
+                this.scalingGovernor = null;
             }
 
-            float cpuCapacity = 0.f;
-            final List<? extends SimProcessingUnit> cpus = ctx.getCpus();
-            for (SimProcessingUnit cpu : cpus) {
-                cpuCapacity += cpu.getFrequency();
-            }
-            this.d = cpus.size() / cpuCapacity;
+            this.d = 1 / cpu.getFrequency();
         }
 
         /**
@@ -329,12 +323,10 @@ public final class SimHypervisor implements SimWorkload {
             final FlowGraph graph = ctx.getGraph();
             final FlowMultiplexer multiplexer = this.multiplexer;
 
-            for (SimProcessingUnit cpu : ctx.getCpus()) {
-                graph.connect(multiplexer.newOutput(), cpu.getInput());
-            }
+            graph.connect(multiplexer.newOutput(), ctx.getCpu().getInput());
 
-            for (ScalingGovernor governor : scalingGovernors) {
-                governor.onStart();
+            if (this.scalingGovernor != null) {
+                this.scalingGovernor.onStart();
             }
         }
 
@@ -392,7 +384,7 @@ public final class SimHypervisor implements SimWorkload {
             updateCounters(now);
 
             final FlowMultiplexer multiplexer = this.multiplexer;
-            final List<ScalingGovernor> scalingGovernors = this.scalingGovernors;
+            final ScalingGovernor scalingGovernors = this.scalingGovernor;
 
             float demand = multiplexer.getDemand();
             float rate = multiplexer.getRate();
@@ -404,10 +396,8 @@ public final class SimHypervisor implements SimWorkload {
 
             double load = rate / Math.min(1.0, capacity);
 
-            if (!scalingGovernors.isEmpty()) {
-                for (ScalingGovernor governor : scalingGovernors) {
-                    governor.onLimit(load);
-                }
+            if (scalingGovernor != null) {
+                scalingGovernor.onLimit(load);
             }
 
             return Long.MAX_VALUE;
@@ -446,27 +436,25 @@ public final class SimHypervisor implements SimWorkload {
 
         @Override
         public double getMax() {
-            return cpu.getModel().getFrequency();
+            return cpu.getCpuModel().getTotalCapacity();
         }
     }
 
     /**
      * A virtual machine running on the hypervisor.
      */
-    private class VirtualMachine extends SimAbstractMachine implements SimVirtualMachine {
+    public class SimVirtualMachine extends SimAbstractMachine {
         private boolean isClosed;
         private final VmCounters counters = new VmCounters(this);
 
-        private VirtualMachine(MachineModel model) {
+        private SimVirtualMachine(MachineModel model) {
             super(model);
         }
 
-        @Override
         public SimHypervisorCounters getCounters() {
             return counters;
         }
 
-        @Override
         public double getCpuDemand() {
             final VmContext context = (VmContext) getActiveContext();
 
@@ -477,7 +465,6 @@ public final class SimHypervisor implements SimWorkload {
             return context.previousDemand;
         }
 
-        @Override
         public double getCpuUsage() {
             final VmContext context = (VmContext) getActiveContext();
 
@@ -488,7 +475,6 @@ public final class SimHypervisor implements SimWorkload {
             return context.usage;
         }
 
-        @Override
         public double getCpuCapacity() {
             final VmContext context = (VmContext) getActiveContext();
 
@@ -505,13 +491,13 @@ public final class SimHypervisor implements SimWorkload {
         }
 
         @Override
-        protected Context createContext(
+        protected SimAbstractMachineContext createContext(
                 SimWorkload workload, Map<String, Object> meta, Consumer<Exception> completion) {
             if (isClosed) {
                 throw new IllegalStateException("Virtual machine does not exist anymore");
             }
 
-            final SimHypervisor.Context context = activeContext;
+            final SimHyperVisorContext context = activeContext;
             if (context == null) {
                 throw new IllegalStateException("Hypervisor is inactive");
             }
@@ -529,7 +515,7 @@ public final class SimHypervisor implements SimWorkload {
         }
 
         @Override
-        public Context getActiveContext() {
+        public SimAbstractMachineContext getActiveContext() {
             return super.getActiveContext();
         }
 
@@ -544,10 +530,11 @@ public final class SimHypervisor implements SimWorkload {
     }
 
     /**
-     * A {@link SimAbstractMachine.Context} for a virtual machine instance.
+     * A {@link SimAbstractMachine.SimAbstractMachineContext} for a virtual machine instance.
      */
-    private static final class VmContext extends SimAbstractMachine.Context implements FlowStageLogic {
-        private final Context context;
+    private static final class VmContext extends SimAbstractMachine.SimAbstractMachineContext
+            implements FlowStageLogic {
+        private final SimHyperVisorContext simHyperVisorContext;
         private final SplittableRandom random;
         private final VmCounters vmCounters;
         private final HvCounters hvCounters;
@@ -556,7 +543,7 @@ public final class SimHypervisor implements SimWorkload {
         private final FlowMultiplexer multiplexer;
         private final InstantSource clock;
 
-        private final List<VCpu> cpus;
+        private final VCpu cpu;
         private final SimAbstractMachine.Memory memory;
         private final List<SimAbstractMachine.NetworkAdapter> net;
         private final List<SimAbstractMachine.StorageDevice> disk;
@@ -574,8 +561,8 @@ public final class SimHypervisor implements SimWorkload {
         private float previousCapacity;
 
         private VmContext(
-                Context context,
-                VirtualMachine machine,
+                SimHyperVisorContext simHyperVisorContext,
+                SimVirtualMachine machine,
                 SplittableRandom random,
                 VmInterferenceDomain interferenceDomain,
                 VmCounters vmCounters,
@@ -585,11 +572,11 @@ public final class SimHypervisor implements SimWorkload {
                 Consumer<Exception> completion) {
             super(machine, workload, meta, completion);
 
-            this.context = context;
+            this.simHyperVisorContext = simHyperVisorContext;
             this.random = random;
             this.vmCounters = vmCounters;
             this.hvCounters = hvCounters;
-            this.clock = context.clock;
+            this.clock = simHyperVisorContext.clock;
 
             final VmInterferenceProfile interferenceProfile = (VmInterferenceProfile) meta.get("interference-profile");
             VmInterferenceMember interferenceMember = null;
@@ -599,45 +586,36 @@ public final class SimHypervisor implements SimWorkload {
             }
             this.interferenceMember = interferenceMember;
 
-            final FlowGraph graph = context.ctx.getGraph();
+            final FlowGraph graph = simHyperVisorContext.ctx.getGraph();
             final FlowStage stage = graph.newStage(this);
             this.stage = stage;
             this.lastUpdate = clock.millis();
             this.lastCounterUpdate = clock.millis();
 
-            final FlowMultiplexer multiplexer = context.multiplexer;
+            final FlowMultiplexer multiplexer = simHyperVisorContext.multiplexer;
             this.multiplexer = multiplexer;
 
             final MachineModel model = machine.getModel();
-            final List<ProcessingUnit> cpuModels = model.getCpus();
-            final Inlet[] muxInlets = new Inlet[cpuModels.size()];
-            final ArrayList<VCpu> cpus = new ArrayList<>();
+            final Cpu cpuModel = model.getCpu();
+            final Inlet[] muxInlets = new Inlet[1];
 
             this.muxInlets = muxInlets;
-            this.cpus = cpus;
 
-            float capacity = 0.f;
+            final Inlet muxInlet = multiplexer.newInput();
+            muxInlets[0] = muxInlet;
 
-            for (int i = 0; i < cpuModels.size(); i++) {
-                final Inlet muxInlet = multiplexer.newInput();
-                muxInlets[i] = muxInlet;
+            final InPort input = stage.getInlet("cpu");
+            final OutPort output = stage.getOutlet("mux");
 
-                final InPort input = stage.getInlet("cpu" + i);
-                final OutPort output = stage.getOutlet("mux" + i);
+            final Handler handler = new Handler(this, input, output);
+            input.setHandler(handler);
+            output.setHandler(handler);
 
-                final Handler handler = new Handler(this, input, output);
-                input.setHandler(handler);
-                output.setHandler(handler);
+            this.cpu = new VCpu(cpuModel, input);
 
-                final ProcessingUnit cpuModel = cpuModels.get(i);
-                capacity += cpuModel.getFrequency();
+            graph.connect(output, muxInlet);
 
-                final VCpu cpu = new VCpu(cpuModel, input);
-                cpus.add(cpu);
-
-                graph.connect(output, muxInlet);
-            }
-            this.d = cpuModels.size() / capacity;
+            this.d = 1 / cpuModel.getTotalCapacity();
 
             this.memory = new SimAbstractMachine.Memory(graph, model.getMemory());
 
@@ -664,7 +642,7 @@ public final class SimHypervisor implements SimWorkload {
         void updateCounters(long now) {
             long lastUpdate = this.lastCounterUpdate;
             this.lastCounterUpdate = now;
-            long delta = now - lastUpdate;
+            long delta = now - lastUpdate; // time between updates
 
             if (delta > 0) {
                 final VmCounters counters = this.vmCounters;
@@ -673,7 +651,7 @@ public final class SimHypervisor implements SimWorkload {
                 float rate = this.usage;
                 float capacity = this.previousCapacity;
 
-                final double factor = this.d * delta;
+                final double factor = this.d * delta; // time between divided by total capacity
                 final double active = rate * factor;
 
                 counters.cpuActiveTime += Math.round(active);
@@ -695,8 +673,8 @@ public final class SimHypervisor implements SimWorkload {
         }
 
         @Override
-        public List<? extends SimProcessingUnit> getCpus() {
-            return cpus;
+        public SimProcessingUnit getCpu() {
+            return cpu;
         }
 
         @Override
@@ -746,7 +724,7 @@ public final class SimHypervisor implements SimWorkload {
             }
 
             // Invalidate the FlowStage of the hypervisor to update its counters (via onUpdate)
-            context.invalidate();
+            simHyperVisorContext.invalidate();
 
             return Long.MAX_VALUE;
         }
@@ -776,14 +754,14 @@ public final class SimHypervisor implements SimWorkload {
      * A {@link SimProcessingUnit} of a virtual machine.
      */
     private static final class VCpu implements SimProcessingUnit {
-        private final ProcessingUnit model;
+        private final Cpu model;
         private final InPort input;
 
-        private VCpu(ProcessingUnit model, InPort input) {
+        private VCpu(Cpu model, InPort input) {
             this.model = model;
             this.input = input;
 
-            input.pull((float) model.getFrequency());
+            input.pull((float) model.getTotalCapacity());
         }
 
         @Override
@@ -807,7 +785,7 @@ public final class SimHypervisor implements SimWorkload {
         }
 
         @Override
-        public ProcessingUnit getModel() {
+        public Cpu getCpuModel() {
             return model;
         }
 
@@ -901,7 +879,7 @@ public final class SimHypervisor implements SimWorkload {
 
         @Override
         public void sync() {
-            final Context context = activeContext;
+            final SimHyperVisorContext context = activeContext;
 
             if (context != null) {
                 context.updateCounters();
@@ -913,13 +891,13 @@ public final class SimHypervisor implements SimWorkload {
      * Implementation of {@link SimHypervisorCounters} for the virtual machine.
      */
     private static class VmCounters implements SimHypervisorCounters {
-        private final VirtualMachine vm;
+        private final SimVirtualMachine vm;
         private long cpuActiveTime;
         private long cpuIdleTime;
         private long cpuStealTime;
         private long cpuLostTime;
 
-        private VmCounters(VirtualMachine vm) {
+        private VmCounters(SimVirtualMachine vm) {
             this.vm = vm;
         }
 
