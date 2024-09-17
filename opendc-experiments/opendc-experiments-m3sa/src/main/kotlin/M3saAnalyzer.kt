@@ -32,7 +32,7 @@ public val ABSOLUTE_SCRIPT_PATH: String =
     Path("$ANALYSIS_SCRIPTS_DIRECTORY/main.py").toAbsolutePath().normalize().toString()
 public val SCRIPT_LANGUAGE: String = "python3"
 
-public fun m3saRun(
+public fun m3saAnalyze(
     outputFolderPath: String,
     m3saSetupPath: String,
 ) {

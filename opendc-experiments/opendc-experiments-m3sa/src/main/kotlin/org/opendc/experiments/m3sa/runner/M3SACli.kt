@@ -20,17 +20,20 @@
  * SOFTWARE.
  */
 
-@file:JvmName("ExperimentCli")
+@file:JvmName("M3SACli")
+
 
 package org.opendc.experiments.base.runner
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.defaultLazy
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import org.opendc.experiments.base.scenario.getExperiment
+import m3saAnalyze
 import java.io.File
 
 /**
@@ -56,8 +59,18 @@ internal class ExperimentCommand : CliktCommand(name = "experiment") {
         .int()
         .default(Runtime.getRuntime().availableProcessors() - 1)
 
+    private val analyzeResults by option("-a", "--analyze-results", help = "analyze the results")
+        .flag(default = false)
+
     override fun run() {
         val experiment = getExperiment(scenarioPath)
         runExperiment(experiment, parallelism)
+
+        if (analyzeResults) {
+            m3saAnalyze(
+                outputFolderPath = experiment[0].outputFolder,
+                m3saSetupPath = experiment[0].m3saSetup,
+            )
+        }
     }
 }
