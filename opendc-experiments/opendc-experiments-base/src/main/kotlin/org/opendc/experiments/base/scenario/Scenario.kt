@@ -58,6 +58,5 @@ public data class Scenario(
     val failureModelSpec: FailureModelSpec?,
     val checkpointModelSpec: CheckpointModelSpec?,
     val carbonTracePath: String? = null,
-    val m3saSetup: String = "",
     val maxNumFailures: Int = 10,
 )

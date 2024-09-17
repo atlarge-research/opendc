@@ -33,6 +33,8 @@ import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import m3saAnalyze
 import org.opendc.experiments.base.scenario.getExperiment
+import org.opendc.experiments.m3sa.scenario.getM3SAPath
+import org.opendc.experiments.m3sa.scenario.getOutputFolder
 import java.io.File
 
 /**
@@ -67,8 +69,8 @@ internal class M3SACommand : CliktCommand(name = "experiment") {
 
         if (analyzeResults) {
             m3saAnalyze(
-                outputFolderPath = experiment[0].outputFolder,
-                m3saSetupPath = experiment[0].m3saSetup,
+                outputFolderPath = getOutputFolder(scenarioPath),
+                m3saSetupPath = getM3SAPath(scenarioPath)
             )
         }
     }
