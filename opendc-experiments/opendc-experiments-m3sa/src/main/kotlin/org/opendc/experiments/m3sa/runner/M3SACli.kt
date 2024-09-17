@@ -22,7 +22,6 @@
 
 @file:JvmName("M3SACli")
 
-
 package org.opendc.experiments.base.runner
 
 import com.github.ajalt.clikt.core.CliktCommand
@@ -32,19 +31,19 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
-import org.opendc.experiments.base.scenario.getExperiment
 import m3saAnalyze
+import org.opendc.experiments.base.scenario.getExperiment
 import java.io.File
 
 /**
  * Main entrypoint of the application.
  */
-public fun main(args: Array<String>): Unit = ExperimentCommand().main(args)
+public fun main(args: Array<String>): Unit = M3SACommand().main(args)
 
 /**
  * Represents the command for the Scenario experiments.
  */
-internal class ExperimentCommand : CliktCommand(name = "experiment") {
+internal class M3SACommand : CliktCommand(name = "experiment") {
     /**
      * The path to the environment directory.
      */
