@@ -29,10 +29,9 @@ import org.opendc.compute.topology.specs.HostJSONSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.TopologySpec
 import org.opendc.simulator.compute.SimPsuFactories
+import org.opendc.simulator.compute.model.Cpu
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.getPowerModel
 import java.io.File
 import java.io.InputStream
@@ -119,14 +118,20 @@ private fun HostJSONSpec.toHostSpecs(
     clusterId: Int,
     random: RandomGenerator,
 ): HostSpec {
-    val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cpu.coreCount)
-    val units = List(cpu.count) { ProcessingUnit(unknownProcessingNode, globalCoreId++, cpu.coreSpeed.toMHz()) }
+    val units =
+        List(cpu.count) {
+            Cpu(
+                globalCoreId++,
+                cpu.coreCount,
+                cpu.coreSpeed.toMHz(),
+            )
+        }
 
     val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed.toMHz(), memory.memorySize.toMiB().toLong())
     val machineModel =
         MachineModel(
             units,
-            listOf(unknownMemoryUnit),
+            unknownMemoryUnit,
         )
 
     val powerModel =

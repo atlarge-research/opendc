@@ -49,8 +49,8 @@ class TensorFlowTest {
                     def.uid,
                     def.meta["gpu"] as Boolean,
                     dispatcher,
-                    def.model.cpus[0],
-                    def.model.memory[0],
+                    def.model.cpu,
+                    def.model.memory,
                     CpuPowerModels.linear(250.0, 60.0),
                 )
             val strategy = OneDeviceStrategy(device)
@@ -84,8 +84,8 @@ class TensorFlowTest {
                     def.uid,
                     def.meta["gpu"] as Boolean,
                     dispatcher,
-                    def.model.cpus[0],
-                    def.model.memory[0],
+                    def.model.cpu,
+                    def.model.memory,
                     CpuPowerModels.linear(250.0, 60.0),
                 )
             val strategy = OneDeviceStrategy(device)
@@ -119,8 +119,8 @@ class TensorFlowTest {
                     def.uid,
                     def.meta["gpu"] as Boolean,
                     dispatcher,
-                    def.model.cpus[0],
-                    def.model.memory[0],
+                    def.model.cpu,
+                    def.model.memory,
                     CpuPowerModels.linear(250.0, 60.0),
                 )
 
@@ -129,8 +129,8 @@ class TensorFlowTest {
                     UUID.randomUUID(),
                     def.meta["gpu"] as Boolean,
                     dispatcher,
-                    def.model.cpus[0],
-                    def.model.memory[0],
+                    def.model.cpu,
+                    def.model.memory,
                     CpuPowerModels.linear(250.0, 60.0),
                 )
 

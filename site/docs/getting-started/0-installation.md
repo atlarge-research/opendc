@@ -40,7 +40,7 @@ __  ____  __  _____   ___  __ ____  ______
 2022-09-12 10:30:22,282 INFO  [org.ope.web.run.run.OpenDCRunnerRecorder] (main) Starting OpenDC Runner in background (polling every PT30S)
 2022-09-12 10:30:22,347 INFO  [io.quarkus] (main) opendc-web-server 2.1-rc1 on JVM (powered by Quarkus 2.11.1.Final) started in 1.366s. Listening on: http://0.0.0.0:8080
 2022-09-12 10:30:22,348 INFO  [io.quarkus] (main) Profile prod activated.
-2022-09-12 10:30:22,348 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, flyway, hibernate-orm, hibernate-validator, jdbc-h2, jdbc-postgresql, kotlin, narayana-jta, opendc-runner, opendc-ui, resteasy, resteasy-jackson, security, smallrye-context-propagation, smallrye-openapi, swagger-ui, vertx]
+2022-09-12 10:30:22,348 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, flyway, hibernate-orm, hibernate-validator, jdbc-h2, jdbc-postgresql, kotlin, narayana-jta, opendc-runner, opendc-ui, resteasy, resteasy-jackson, security, smallrye-simHyperVisorContext-propagation, smallrye-openapi, swagger-ui, vertx]
 ```
 This will launch the built-in single-user OpenDC server on port 8080. Visit
 [http://localhost:8080](http://localhost:8080) to access the bundled web UI.

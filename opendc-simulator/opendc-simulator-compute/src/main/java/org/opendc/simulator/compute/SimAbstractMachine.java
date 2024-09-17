@@ -23,7 +23,6 @@
 package org.opendc.simulator.compute;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.opendc.simulator.compute.device.SimNetworkAdapter;
@@ -43,7 +42,7 @@ import org.opendc.simulator.flow2.util.FlowTransforms;
 public abstract class SimAbstractMachine implements SimMachine {
     private final MachineModel model;
 
-    private Context activeContext;
+    private SimAbstractMachineContext activeContext;
 
     /**
      * Construct a {@link SimAbstractMachine} instance.
@@ -66,40 +65,40 @@ public abstract class SimAbstractMachine implements SimMachine {
             throw new IllegalStateException("A machine cannot run multiple workloads concurrently");
         }
 
-        final Context ctx = createContext(workload, new HashMap<>(meta), completion);
+        final SimAbstractMachineContext ctx = createContext(workload, new HashMap<>(meta), completion);
         ctx.start();
         return ctx;
     }
 
     @Override
     public final void cancel() {
-        final Context context = activeContext;
+        final SimAbstractMachineContext context = activeContext;
         if (context != null) {
             context.shutdown();
         }
     }
 
     /**
-     * Construct a new {@link Context} instance representing the active execution.
+     * Construct a new {@link SimAbstractMachineContext} instance representing the active execution.
      *
      * @param workload   The workload to start on the machine.
      * @param meta       The metadata to pass to the workload.
      * @param completion A block that is invoked when the workload completes carrying an exception if thrown by the workload.
      */
-    protected abstract Context createContext(
+    protected abstract SimAbstractMachineContext createContext(
             SimWorkload workload, Map<String, Object> meta, Consumer<Exception> completion);
 
     /**
-     * Return the active {@link Context} instance (if any).
+     * Return the active {@link SimAbstractMachineContext} instance (if any).
      */
-    protected Context getActiveContext() {
+    protected SimAbstractMachineContext getActiveContext() {
         return activeContext;
     }
 
     /**
      * The execution context in which the workload runs.
      */
-    public abstract static class Context implements SimMachineContext {
+    public abstract static class SimAbstractMachineContext implements SimMachineContext {
         private final SimAbstractMachine machine;
         private final SimWorkload workload;
         private final Map<String, Object> meta;
@@ -108,14 +107,14 @@ public abstract class SimAbstractMachine implements SimMachine {
         private SimWorkload snapshot;
 
         /**
-         * Construct a new {@link Context} instance.
+         * Construct a new {@link SimAbstractMachineContext} instance.
          *
          * @param machine The {@link SimAbstractMachine} to which the context belongs.
          * @param workload The {@link SimWorkload} to which the context belongs.
          * @param meta The metadata passed to the context.
          * @param completion A block that is invoked when the workload completes carrying an exception if thrown by the workload.
          */
-        public Context(
+        public SimAbstractMachineContext(
                 SimAbstractMachine machine,
                 SimWorkload workload,
                 Map<String, Object> meta,
@@ -145,10 +144,8 @@ public abstract class SimAbstractMachine implements SimMachine {
         public void reset() {
             final FlowGraph graph = getMemory().getInput().getGraph();
 
-            for (SimProcessingUnit cpu : getCpus()) {
-                final Inlet inlet = cpu.getInput();
-                graph.disconnect(inlet);
-            }
+            final Inlet inlet = getCpu().getInput();
+            graph.disconnect(inlet);
 
             graph.disconnect(getMemory().getInput());
 
@@ -225,16 +222,12 @@ public abstract class SimAbstractMachine implements SimMachine {
      */
     public static final class Memory implements SimMemory {
         private final SimpleFlowSink sink;
-        private final List<MemoryUnit> models;
+        private final MemoryUnit memoryUnit;
 
-        public Memory(FlowGraph graph, List<MemoryUnit> models) {
-            long memorySize = 0;
-            for (MemoryUnit mem : models) {
-                memorySize += mem.getSize();
-            }
+        public Memory(FlowGraph graph, MemoryUnit memoryUnit) {
 
-            this.sink = new SimpleFlowSink(graph, (float) memorySize);
-            this.models = models;
+            this.memoryUnit = memoryUnit;
+            this.sink = new SimpleFlowSink(graph, (float) memoryUnit.getSize());
         }
 
         @Override
@@ -243,8 +236,8 @@ public abstract class SimAbstractMachine implements SimMachine {
         }
 
         @Override
-        public List<MemoryUnit> getModels() {
-            return models;
+        public MemoryUnit getMemoryUnit() {
+            return memoryUnit;
         }
 
         @Override

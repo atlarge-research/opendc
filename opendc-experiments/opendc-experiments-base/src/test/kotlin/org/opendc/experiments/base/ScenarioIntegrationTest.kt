@@ -120,12 +120,12 @@ class ScenarioIntegrationTest {
                 { assertEquals(0, monitor.tasksActive, "All VMs should finish after a run") },
                 { assertEquals(0, monitor.attemptsFailure, "No VM should be unscheduled") },
                 { assertEquals(0, monitor.tasksPending, "No VM should not be in the queue") },
-                { assertEquals(43101695530, monitor.idleTime) { "Incorrect idle time" } },
-                { assertEquals(3489503997, monitor.activeTime) { "Incorrect active time" } },
-                { assertEquals(142, monitor.stealTime) { "Incorrect steal time" } },
+                { assertEquals(43101769345, monitor.idleTime) { "Incorrect idle time" } },
+                { assertEquals(3489430672, monitor.activeTime) { "Incorrect active time" } },
+                { assertEquals(0, monitor.stealTime) { "Incorrect steal time" } },
                 { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
                 { assertEquals(3.3388920269258898E7, monitor.powerDraw, 1E4) { "Incorrect power draw" } },
-                { assertEquals(1.0016142948422823E10, monitor.energyUsage, 1E4) { "Incorrect energy usage" } },
+                { assertEquals(1.0016127451211525E10, monitor.energyUsage, 1E4) { "Incorrect energy usage" } },
             )
         }
 
@@ -162,9 +162,9 @@ class ScenarioIntegrationTest {
 
             // Note that these values have been verified beforehand
             assertAll(
-                { assertEquals(1373412033, monitor.idleTime) { "Idle time incorrect" } },
-                { assertEquals(1217675912, monitor.activeTime) { "Active time incorrect" } },
-                { assertEquals(19, monitor.stealTime) { "Steal time incorrect" } },
+                { assertEquals(1373419781, monitor.idleTime) { "Idle time incorrect" } },
+                { assertEquals(1217668222, monitor.activeTime) { "Active time incorrect" } },
+                { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
                 { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
                 { assertEquals(2539987.394500494, monitor.powerDraw, 1E4) { "Incorrect power draw" } },
                 { assertEquals(7.617527900379665E8, monitor.energyUsage, 1E4) { "Incorrect energy usage" } },

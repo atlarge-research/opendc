@@ -51,7 +51,7 @@ public interface SimMachineContext {
     /**
      * Return the CPUs available on the machine.
      */
-    List<? extends SimProcessingUnit> getCpus();
+    SimProcessingUnit getCpu();
 
     /**
      * Return the memory interface of the machine.

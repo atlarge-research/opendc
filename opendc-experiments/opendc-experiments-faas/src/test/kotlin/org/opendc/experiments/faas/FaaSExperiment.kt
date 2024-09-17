@@ -30,10 +30,9 @@ import org.opendc.faas.service.FaaSService
 import org.opendc.faas.service.autoscaler.FunctionTerminationPolicyFixed
 import org.opendc.faas.service.router.RandomRoutingPolicy
 import org.opendc.faas.simulator.delay.ColdStartModel
+import org.opendc.simulator.compute.model.Cpu
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
 import java.time.Duration
@@ -80,13 +79,11 @@ class FaaSExperiment {
      * Construct the machine model to test with.
      */
     private fun createMachineModel(): MachineModel {
-        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
-
         return MachineModel(
             // cpus
-            List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
+            Cpu(0, 2, 1000.0, "Intel", "Xeon", "amd64"),
             // memory
-            List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+            MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000 * 4),
         )
     }
 }

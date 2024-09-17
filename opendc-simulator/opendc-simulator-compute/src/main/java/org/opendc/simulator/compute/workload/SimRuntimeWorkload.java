@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.compute.workload;
 
-import java.util.List;
 import org.opendc.simulator.compute.SimMachineContext;
 import org.opendc.simulator.compute.SimProcessingUnit;
 import org.opendc.simulator.flow2.FlowGraph;
@@ -122,17 +121,14 @@ public class SimRuntimeWorkload implements SimWorkload, FlowStageLogic {
         final FlowStage stage = graph.newStage(this);
         this.stage = stage;
 
-        final List<? extends SimProcessingUnit> cpus = ctx.getCpus();
-        final OutPort[] outputs = new OutPort[cpus.size()];
+        final OutPort[] outputs = new OutPort[1];
         this.outputs = outputs;
 
-        for (int i = 0; i < cpus.size(); i++) {
-            final SimProcessingUnit cpu = cpus.get(i);
-            final OutPort output = stage.getOutlet("cpu" + i);
+        final SimProcessingUnit cpu = ctx.getCpu();
+        final OutPort output = stage.getOutlet("cpu");
 
-            graph.connect(output, cpu.getInput());
-            outputs[i] = output;
-        }
+        graph.connect(output, cpu.getInput());
+        outputs[0] = output;
 
         this.remainingDuration = duration;
         this.lastUpdate = graph.getEngine().getClock().millis();

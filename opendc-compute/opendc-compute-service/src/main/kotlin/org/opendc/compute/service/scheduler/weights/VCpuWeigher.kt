@@ -39,7 +39,7 @@ public class VCpuWeigher(private val allocationRatio: Double, override val multi
         host: HostView,
         task: Task,
     ): Double {
-        return host.host.model.cpuCount * allocationRatio - host.provisionedCores
+        return allocationRatio - host.provisionedCores
     }
 
     override fun toString(): String = "VCpuWeigher"

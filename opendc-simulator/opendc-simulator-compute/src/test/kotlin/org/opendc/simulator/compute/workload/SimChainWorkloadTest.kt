@@ -33,10 +33,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachineContext
+import org.opendc.simulator.compute.model.Cpu
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.flow2.FlowEngine
 import org.opendc.simulator.kotlin.runSimulation
@@ -49,14 +48,18 @@ class SimChainWorkloadTest {
 
     @BeforeEach
     fun setUp() {
-        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
-
         machineModel =
             MachineModel(
-                // cpus
-                List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
+                Cpu(
+                    0,
+                    2,
+                    1000.0,
+                    "Intel",
+                    "Xeon",
+                    "amd64",
+                ),
                 // memory
-                List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+                MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000 * 4),
             )
     }
 

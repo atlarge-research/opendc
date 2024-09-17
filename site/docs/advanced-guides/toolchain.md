@@ -41,7 +41,7 @@ Open the project once it's ready fetching the codebase, and let it set up with t
 that this is a Gradle codebase).
 
 You will now be prompted in a dialogue to enable auto-import for Gradle, which we suggest you do. Wait for any progress
-bars in the lower bar to disappear and then look for the Gradle context menu on the right-hand side. In it, go
+bars in the lower bar to disappear and then look for the Gradle simHyperVisorContext menu on the right-hand side. In it, go
 to `opendc > Tasks > verification > test`. This will build the codebase and run checks to verify that tests
 pass. If you get a `BUILD SUCCESSFUL` message, you're ready to go to the [next section](architecture)!
 

@@ -29,9 +29,9 @@ import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.SimPsuFactories
+import org.opendc.simulator.compute.model.Cpu
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.CpuPowerModel
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow2.FlowEngine
@@ -52,7 +52,7 @@ public class SimTFDevice(
     override val uid: UUID,
     override val isGpu: Boolean,
     dispatcher: Dispatcher,
-    pu: ProcessingUnit,
+    pu: Cpu,
     private val memory: MemoryUnit,
     powerModel: CpuPowerModel,
 ) : TFDevice {
@@ -62,7 +62,7 @@ public class SimTFDevice(
     private val machine =
         SimBareMetalMachine.create(
             FlowEngine.create(dispatcher).newGraph(),
-            MachineModel(listOf(pu), listOf(memory)),
+            MachineModel(pu, memory),
             SimPsuFactories.simple(powerModel),
         )
 
@@ -108,7 +108,7 @@ public class SimTFDevice(
                 output = stage.getOutlet("out")
                 lastPull = ctx.graph.engine.clock.millis()
 
-                ctx.graph.connect(output, ctx.cpus[0].input)
+                ctx.graph.connect(output, ctx.cpu.input)
             }
 
             override fun onStop(ctx: SimMachineContext) {
