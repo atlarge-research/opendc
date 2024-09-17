@@ -25,7 +25,7 @@
 package org.opendc.common.units
 
 import org.opendc.common.annotations.InternalUse
-import org.opendc.common.units.Time.Companion.toTime
+import org.opendc.common.units.TimeDelta.Companion.toTimeDelta
 import org.opendc.common.utils.DFLT_MIN_EPS
 import org.opendc.common.utils.adaptiveEps
 import org.opendc.common.utils.approx
@@ -65,7 +65,11 @@ import kotlin.experimental.ExperimentalTypeInference
  *
  * // e.g. operations between different unit of measures
  * val a: DataRate = DataRate.ofMBps(1)
+<<<<<<< HEAD
  * val b: Time = Time.ofSec(3)
+=======
+ * val b: TimeDelta = TimeDelta.ofSec(3)
+>>>>>>> 799f5da3 (isk)
  * val c: DataSize = a * b
  * c.fmt() // "3MB"
  * ```
@@ -83,6 +87,7 @@ import kotlin.experimental.ExperimentalTypeInference
  * ```kotlin
  * // kotlin
  * @JvmStatic @JvmName("function")
+<<<<<<< HEAD
  * fun function(time: Time) {  }
  * ```
  * ```java
@@ -91,6 +96,16 @@ import kotlin.experimental.ExperimentalTypeInference
  * function(time)
  * // or
  * function(Time.ofHours(2))
+=======
+ * fun function(time: TimeDelta) {  }
+ * ```
+ * ```java
+ * // java
+ * double time = TimeDelta.ofHours(2);
+ * function(time)
+ * // or
+ * function(TimeDelta.ofHours(2))
+>>>>>>> 799f5da3 (isk)
  * ```
  *
  * @param[T] the unit of measure that is represented (e.g. [DataRate])
@@ -306,13 +321,13 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
         // Operations whose 'this' is not a `Unit` are defined in their classes
         // and not as extension function so that they do not need to be imported
 
-        public operator fun Duration.times(dataRate: DataRate): DataSize = toTime() * dataRate
+        public operator fun Duration.times(dataRate: DataRate): DataSize = toTimeDelta() * dataRate
 
-        public operator fun Duration.times(power: Power): Energy = toTime() * power
+        public operator fun Duration.times(power: Power): Energy = toTimeDelta() * power
 
-        public operator fun Number.div(time: Time): Frequency = Frequency.ofHz(this.toDouble() / time.toSec())
+        public operator fun Number.div(timeDelta: TimeDelta): Frequency = Frequency.ofHz(this.toDouble() / timeDelta.toSec())
 
-        public operator fun Number.div(duration: Duration): Frequency = this / duration.toTime()
+        public operator fun Number.div(duration: Duration): Frequency = this / duration.toTimeDelta()
 
         // Defined here so that they can overload the same method name, instead of having a different name forEach unit.
         // You can not overload `sumOf` and using that name results in not being able to use the overloads for unit and for number in the same file.
@@ -359,8 +374,8 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
         @OptIn(ExperimentalTypeInference::class)
         @OverloadResolutionByLambdaReturnType
         @JvmName("sumOfTime")
-        public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> Time): Time {
-            var sum: Time = Time.ZERO
+        public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> TimeDelta): TimeDelta {
+            var sum: TimeDelta = TimeDelta.ZERO
             forEach { sum += selector(it) }
             return sum
         }
