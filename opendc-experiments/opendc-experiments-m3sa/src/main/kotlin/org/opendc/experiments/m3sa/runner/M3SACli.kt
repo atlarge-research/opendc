@@ -70,7 +70,7 @@ internal class M3SACommand : CliktCommand(name = "experiment") {
         if (analyzeResults) {
             m3saAnalyze(
                 outputFolderPath = getOutputFolder(scenarioPath),
-                m3saSetupPath = getM3SAPath(scenarioPath)
+                m3saSetupPath = getM3SAPath(scenarioPath),
             )
         }
     }

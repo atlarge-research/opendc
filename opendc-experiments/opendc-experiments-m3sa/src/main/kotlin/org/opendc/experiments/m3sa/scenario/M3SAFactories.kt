@@ -23,10 +23,6 @@
 package org.opendc.experiments.m3sa.scenario
 
 import org.opendc.experiments.base.scenario.ExperimentReader
-import org.opendc.experiments.base.scenario.ExperimentWriter
-import org.opendc.experiments.base.scenario.Scenario
-import org.opendc.experiments.base.scenario.specs.ExperimentSpec
-import org.opendc.experiments.base.scenario.specs.ScenarioSpec
 import java.io.File
 
 private val experimentReader = ExperimentReader()
