@@ -33,7 +33,6 @@ import java.nio.file.Path
 import kotlin.io.path.inputStream
 
 public class ExperimentReader {
-//    private val jsonReader = Json { serializersModule = failureModule }
     private val jsonReader = Json
 
     public fun read(file: File): ExperimentSpec = read(file.inputStream())

@@ -33,7 +33,6 @@ import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import m3saAnalyze
 import org.opendc.experiments.base.scenario.getExperiment
-import org.opendc.experiments.m3sa.scenario.getM3SAPath
 import org.opendc.experiments.m3sa.scenario.getOutputFolder
 import java.io.File
 
@@ -60,18 +59,27 @@ internal class M3SACommand : CliktCommand(name = "experiment") {
         .int()
         .default(Runtime.getRuntime().availableProcessors() - 1)
 
-    private val analyzeResults by option("-a", "--analyze-results", help = "analyze the results")
-        .flag(default = false)
+    private val m3saPath by option("-m", "--m3sa-setup-path", help = "path to m3sa setup file")
+        .file(canBeDir = false, canBeFile = true)
+        .defaultLazy { File("") }
+
 
     override fun run() {
+        println("The provided m3saPath is $m3saPath")
+
         val experiment = getExperiment(scenarioPath)
         runExperiment(experiment, parallelism)
 
-        if (analyzeResults) {
+        if (m3saPath.toString().isNotEmpty()) {
             m3saAnalyze(
                 outputFolderPath = getOutputFolder(scenarioPath),
-                m3saSetupPath = getM3SAPath(scenarioPath),
+                m3saSetupPath = m3saPath.toString()
             )
+        } else {
+            println("\n"+
+                "===================================================\n" +
+                "|M3SA path is not provided. Skipping M3SA analysis.|\n" +
+                "===================================================")
         }
     }
 }

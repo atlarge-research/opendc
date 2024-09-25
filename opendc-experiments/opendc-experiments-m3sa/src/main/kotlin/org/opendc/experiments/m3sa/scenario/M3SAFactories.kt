@@ -33,10 +33,6 @@ private val experimentReader = ExperimentReader()
  * @param filePath The path to the file containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getM3SAPath(file: File): String {
-    return experimentReader.read(file).m3saSetup
-}
-
 public fun getOutputFolder(file: File): String {
     return experimentReader.read(file).outputFolder
 }
