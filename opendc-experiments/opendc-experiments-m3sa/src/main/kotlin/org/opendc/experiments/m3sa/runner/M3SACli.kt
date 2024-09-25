@@ -27,7 +27,6 @@ package org.opendc.experiments.base.runner
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.defaultLazy
-import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
@@ -63,7 +62,6 @@ internal class M3SACommand : CliktCommand(name = "experiment") {
         .file(canBeDir = false, canBeFile = true)
         .defaultLazy { File("") }
 
-
     override fun run() {
         println("The provided m3saPath is $m3saPath")
 
@@ -73,13 +71,15 @@ internal class M3SACommand : CliktCommand(name = "experiment") {
         if (m3saPath.toString().isNotEmpty()) {
             m3saAnalyze(
                 outputFolderPath = getOutputFolder(scenarioPath),
-                m3saSetupPath = m3saPath.toString()
+                m3saSetupPath = m3saPath.toString(),
             )
         } else {
-            println("\n"+
-                "===================================================\n" +
-                "|M3SA path is not provided. Skipping M3SA analysis.|\n" +
-                "===================================================")
+            println(
+                "\n" +
+                    "===================================================\n" +
+                    "|M3SA path is not provided. Skipping M3SA analysis.|\n" +
+                    "===================================================",
+            )
         }
     }
 }
