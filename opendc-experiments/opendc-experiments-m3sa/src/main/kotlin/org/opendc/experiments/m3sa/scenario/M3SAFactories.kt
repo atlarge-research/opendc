@@ -34,5 +34,5 @@ private val experimentReader = ExperimentReader()
  * @return A list of Scenarios.
  */
 public fun getOutputFolder(file: File): String {
-    return experimentReader.read(file).outputFolder
+    return experimentReader.read(file).outputFolder + "/outputs"
 }

@@ -30,7 +30,7 @@ import kotlin.io.path.Path
 public val ANALYSIS_SCRIPTS_DIRECTORY: String = "./opendc-experiments/opendc-experiments-m3sa/src/main/python"
 public val ABSOLUTE_SCRIPT_PATH: String =
     Path("$ANALYSIS_SCRIPTS_DIRECTORY/main.py").toAbsolutePath().normalize().toString()
-public val SCRIPT_LANGUAGE: String = "python3"
+public val SCRIPT_LANGUAGE: String = Path("$ANALYSIS_SCRIPTS_DIRECTORY/venv/bin/python3").toAbsolutePath().normalize().toString()
 
 public fun m3saAnalyze(
     outputFolderPath: String,
