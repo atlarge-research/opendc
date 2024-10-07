@@ -20,34 +20,39 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.scenario
+@file:JvmName("M3saCliKt")
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
-import org.opendc.compute.telemetry.export.parquet.ComputeExportConfig
-import org.opendc.experiments.base.scenario.specs.ExperimentSpec
-import java.io.File
-import java.io.InputStream
-import java.nio.file.Path
-import kotlin.io.path.inputStream
+package org.opendc.experiments.base.runner
 
-public class ExperimentReader {
-    private val jsonReader = Json
+import org.opendc.experiments.base.scenario.Scenario
+import java.util.concurrent.ForkJoinPool
 
-    public fun read(file: File): ExperimentSpec = read(file.inputStream())
+/**
+ * Run scenario when no pool is available for parallel execution
+ *
+ * @param experiment The scenarios to run
+ * @param parallelism The number of scenarios that can be run in parallel
+ */
+public fun runExperiment(
+    experiment: List<Scenario>,
+    parallelism: Int,
+) {
+    val ansiReset = "\u001B[0m"
+    val ansiGreen = "\u001B[32m"
+    val ansiBlue = "\u001B[34m"
 
-    public fun read(path: Path): ExperimentSpec = read(path.inputStream())
+    setupOutputFolderStructure(experiment[0].outputFolder)
 
-    /**
-     * Read the specified [input].
-     */
-    @OptIn(ExperimentalSerializationApi::class)
-    public fun read(input: InputStream): ExperimentSpec {
-        // Loads the default parquet output fields,
-        // so that they can be deserialized
-        ComputeExportConfig.loadDfltColumns()
-
-        return jsonReader.decodeFromStream<ExperimentSpec>(input)
+    for (scenario in experiment) {
+        val pool = ForkJoinPool(parallelism)
+        println(
+            "\n\n$ansiGreen================================================================================$ansiReset",
+        )
+        println("$ansiBlue Running scenario: ${scenario.name} $ansiReset")
+        println("$ansiGreen================================================================================$ansiReset")
+        runScenario(
+            scenario,
+            pool,
+        )
     }
 }
