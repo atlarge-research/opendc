@@ -117,13 +117,13 @@ Based on this information, we could choose to purchase a new machine for every v
 Such a design will most certainly be able to handle the workload. At the same time, it is much more expensive and
 probably unnecessary.
 
-In [Figure 2](#cpuModel-usage), the CPU Usage (in MHz) of the virtual machines in the workload is depicted over time. Observe that the
+In [Figure 2](#cpu-usage), the CPU Usage (in MHz) of the virtual machines in the workload is depicted over time. Observe that the
 median CPU usage of the virtual machines over the whole trace is approximately 100 MHz. This means that a 2-core
 processor with a base clock 3500 MHz would have utilization of only 1.4% (`100 MHz / (3500 MHz x 2)`) for such a median
 workload.
 
-<figure className="figure" id="cpuModel-usage">
-    <img src={require("./img/cpuModel-usage.png").default} alt="CPU usage over time for the workload" />
+<figure className="figure" id="cpu-usage">
+    <img src={require("./img/cpu-usage.png").default} alt="CPU usage over time for the workload" />
     <figcaption>CPU Usage of the virtual machines in the workload over time.</figcaption>
 </figure>
 
