@@ -22,7 +22,7 @@
 
 package org.opendc.compute.failure.victimselector
 
-import org.opendc.compute.simulator.SimHost
+import org.opendc.compute.simulator.host.SimHost
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
 import kotlin.math.max

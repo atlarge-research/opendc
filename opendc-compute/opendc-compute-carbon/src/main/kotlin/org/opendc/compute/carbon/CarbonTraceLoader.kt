@@ -56,7 +56,7 @@ public class CarbonTraceLoader {
         try {
             while (reader.nextRow()) {
                 val startTime = reader.getInstant(startTimeCol)!!
-                val carbonIntensity = reader.getDouble(carbonIntensityCol)
+                val carbonIntensity = reader.getFloat(carbonIntensityCol)
 
                 builder.add(startTime, carbonIntensity)
             }
@@ -106,7 +106,7 @@ public class CarbonTraceLoader {
          */
         fun add(
             startTime: Instant,
-            carbonIntensity: Double,
+            carbonIntensity: Float,
         ) {
             fragments.add(
                 CarbonFragment(startTime.toEpochMilli(), Long.MAX_VALUE, carbonIntensity),

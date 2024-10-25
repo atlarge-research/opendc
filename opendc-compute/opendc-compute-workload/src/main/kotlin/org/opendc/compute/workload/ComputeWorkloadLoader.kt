@@ -23,13 +23,8 @@
 package org.opendc.compute.workload
 
 import mu.KotlinLogging
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
-import org.opendc.simulator.compute.workload.SimTrace
+import org.opendc.simulator.compute.workload.TraceWorkload
 import org.opendc.trace.Trace
-import org.opendc.trace.conv.INTERFERENCE_GROUP_MEMBERS
-import org.opendc.trace.conv.INTERFERENCE_GROUP_SCORE
-import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
-import org.opendc.trace.conv.TABLE_INTERFERENCE_GROUPS
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.conv.resourceCpuCapacity
@@ -52,7 +47,12 @@ import kotlin.math.roundToLong
  *
  * @param baseDir The directory containing the traces.
  */
-public class ComputeWorkloadLoader(private val baseDir: File) {
+public class ComputeWorkloadLoader(
+    private val baseDir: File,
+    private val checkpointInterval: Long,
+    private val checkpointDuration: Long,
+    private val checkpointIntervalScaling: Double,
+) {
     /**
      * The logger for this instance.
      */
@@ -61,7 +61,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     /**
      * The cache of workloads.
      */
-    private val cache = ConcurrentHashMap<String, SoftReference<List<VirtualMachine>>>()
+    private val cache = ConcurrentHashMap<String, SoftReference<List<Task>>>()
 
     /**
      * Read the fragments into memory.
@@ -83,7 +83,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                 val cores = reader.getInt(coresCol)
                 val cpuUsage = reader.getDouble(usageCol)
 
-                val builder = fragments.computeIfAbsent(id) { Builder() }
+                val builder = fragments.computeIfAbsent(id) { Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling) }
                 builder.add(durationMs, cpuUsage, cores)
             }
 
@@ -99,8 +99,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     private fun parseMeta(
         trace: Trace,
         fragments: Map<String, Builder>,
-        interferenceModel: VmInterferenceModel,
-    ): List<VirtualMachine> {
+    ): List<Task> {
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCES)).newReader()
 
         val idCol = reader.resolve(resourceID)
@@ -111,7 +110,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         val memCol = reader.resolve(resourceMemCapacity)
 
         var counter = 0
-        val entries = mutableListOf<VirtualMachine>()
+        val entries = mutableListOf<Task>()
 
         return try {
             while (reader.nextRow()) {
@@ -131,7 +130,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                 val totalLoad = builder.totalLoad
 
                 entries.add(
-                    VirtualMachine(
+                    Task(
                         uid,
                         id,
                         cpuCount,
@@ -141,13 +140,12 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                         submissionTime,
                         duration,
                         builder.build(),
-                        interferenceModel.getProfile(id),
                     ),
                 )
             }
 
             // Make sure the virtual machines are ordered by start time
-            entries.sortBy { it.startTime }
+            entries.sortBy { it.submissionTime }
 
             entries
         } catch (e: Exception) {
@@ -159,40 +157,12 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     }
 
     /**
-     * Read the interference model associated with the specified [trace].
-     */
-    private fun parseInterferenceModel(trace: Trace): VmInterferenceModel {
-        val reader = checkNotNull(trace.getTable(TABLE_INTERFERENCE_GROUPS)).newReader()
-
-        return try {
-            val membersCol = reader.resolve(INTERFERENCE_GROUP_MEMBERS)
-            val targetCol = reader.resolve(INTERFERENCE_GROUP_TARGET)
-            val scoreCol = reader.resolve(INTERFERENCE_GROUP_SCORE)
-
-            val modelBuilder = VmInterferenceModel.builder()
-
-            while (reader.nextRow()) {
-                val members = reader.getSet(membersCol, String::class.java)!!
-                val target = reader.getDouble(targetCol)
-                val score = reader.getDouble(scoreCol)
-
-                modelBuilder
-                    .addGroup(members, target, score)
-            }
-
-            modelBuilder.build()
-        } finally {
-            reader.close()
-        }
-    }
-
-    /**
      * Load the trace with the specified [name] and [format].
      */
     public fun get(
         name: String,
         format: String,
-    ): List<VirtualMachine> {
+    ): List<Task> {
         val ref =
             cache.compute(name) { key, oldVal ->
                 val inst = oldVal?.get()
@@ -203,8 +173,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
 
                     val trace = Trace.open(path, format)
                     val fragments = parseFragments(trace)
-                    val interferenceModel = parseInterferenceModel(trace)
-                    val vms = parseMeta(trace, fragments, interferenceModel)
+                    val vms = parseMeta(trace, fragments)
 
                     SoftReference(vms)
                 } else {
@@ -225,7 +194,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     /**
      * A builder for a VM trace.
      */
-    private class Builder {
+    private class Builder(checkpointInterval: Long, checkpointDuration: Long, checkpointIntervalScaling: Double) {
         /**
          * The total load of the trace.
          */
@@ -234,13 +203,12 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         /**
          * The internal builder for the trace.
          */
-        private val builder = SimTrace.builder()
+        private val builder = TraceWorkload.builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling)
 
         /**
          * Add a fragment to the trace.
          *
-         * @param timestamp Timestamp at which the fragment starts (in epoch millis).
-         * @param deadline Timestamp at which the fragment ends (in epoch millis).
+         * @param duration The duration of the fragment (in epoch millis).
          * @param usage CPU usage of this fragment.
          * @param cores Number of cores used.
          */
@@ -257,6 +225,6 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         /**
          * Build the trace.
          */
-        fun build(): SimTrace = builder.build()
+        fun build(): TraceWorkload = builder.build()
     }
 }

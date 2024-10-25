@@ -23,7 +23,7 @@
 package org.opendc.compute.simulator.provisioner
 
 import org.opendc.common.Dispatcher
-import org.opendc.compute.simulator.MutableServiceRegistry
+import org.opendc.compute.simulator.ServiceRegistry
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
 
@@ -44,7 +44,7 @@ public interface ProvisioningContext {
     public val seeder: RandomGenerator
 
     /**
-     * A [MutableServiceRegistry] where the provisioned services are registered.
+     * A [ServiceRegistry] where the provisioned services are registered.
      */
-    public val registry: MutableServiceRegistry
+    public val registry: ServiceRegistry
 }

@@ -5,8 +5,8 @@ A topology file can be validated using a JSON schema validator, such as https://
 {
     "$schema": "OpenDC/Topology",
     "$defs": {
-        "cpu": {
-            "description": "definition of a cpu",
+        "cpuModel": {
+            "description": "definition of a cpuModel",
             "type": "object",
             "properties": {
                 "vendor": {
@@ -25,7 +25,7 @@ A topology file can be validated using a JSON schema validator, such as https://
                     "type": "integer"
                 },
                 "coreSpeed": {
-                    "description": "The core speed of the cpu in Mhz",
+                    "description": "The core speed of the cpuModel in Mhz",
                     "type": "number"
                 },
                 "count": {
@@ -106,15 +106,15 @@ A topology file can be validated using a JSON schema validator, such as https://
                     "type": "integer",
                     "default": 1
                 },
-                "cpu": {
-                    "$ref": "#/$defs/cpu"
+                "cpuModel": {
+                    "$ref": "#/$defs/cpuModel"
                 },
                 "memory": {
                     "$ref": "#/$defs/memory"
                 }
             },
             "required": [
-                "cpu",
+                "cpuModel",
                 "memory"
             ]
         },

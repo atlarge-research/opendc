@@ -25,7 +25,7 @@ package org.opendc.compute.workload.internal
 import mu.KotlinLogging
 import org.opendc.compute.workload.ComputeWorkload
 import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.compute.workload.VirtualMachine
+import org.opendc.compute.workload.Task
 import java.util.UUID
 import java.util.random.RandomGenerator
 
@@ -53,7 +53,7 @@ internal class HpcSampledComputeWorkload(
     override fun resolve(
         loader: ComputeWorkloadLoader,
         random: RandomGenerator,
-    ): List<VirtualMachine> {
+    ): List<Task> {
         val vms = source.resolve(loader, random)
 
         val (hpc, nonHpc) =
@@ -65,7 +65,7 @@ internal class HpcSampledComputeWorkload(
         val hpcSequence =
             generateSequence(0) { it + 1 }
                 .map { index ->
-                    val res = mutableListOf<VirtualMachine>()
+                    val res = mutableListOf<Task>()
                     hpc.mapTo(res) { sample(it, index) }
                     res
                 }
@@ -74,7 +74,7 @@ internal class HpcSampledComputeWorkload(
         val nonHpcSequence =
             generateSequence(0) { it + 1 }
                 .map { index ->
-                    val res = mutableListOf<VirtualMachine>()
+                    val res = mutableListOf<Task>()
                     nonHpc.mapTo(res) { sample(it, index) }
                     res
                 }
@@ -90,7 +90,7 @@ internal class HpcSampledComputeWorkload(
         var nonHpcCount = 0
         var nonHpcLoad = 0.0
 
-        val res = mutableListOf<VirtualMachine>()
+        val res = mutableListOf<Task>()
 
         if (sampleLoad) {
             var currentLoad = 0.0
@@ -146,9 +146,9 @@ internal class HpcSampledComputeWorkload(
      * Sample a random trace entry.
      */
     private fun sample(
-        entry: VirtualMachine,
+        entry: Task,
         i: Int,
-    ): VirtualMachine {
+    ): Task {
         val uid = UUID.nameUUIDFromBytes("${entry.uid}-$i".toByteArray())
         return entry.copy(uid = uid)
     }

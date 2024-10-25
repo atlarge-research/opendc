@@ -23,7 +23,7 @@
 package org.opendc.compute.failure.models
 
 import kotlinx.coroutines.delay
-import org.opendc.compute.service.ComputeService
+import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.FAILURE_DURATION
 import org.opendc.trace.conv.FAILURE_INTENSITY
@@ -71,7 +71,7 @@ public class TraceBasedFailureModel(
     service: ComputeService,
     random: RandomGenerator,
     pathToTrace: String,
-    private val repeat: Boolean = true,
+    private val repeat: Boolean = false,
 ) : FailureModel(context, clock, service, random) {
     private val failureList = loadTrace(pathToTrace)
 

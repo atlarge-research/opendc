@@ -19,7 +19,7 @@ function MachineComponent({ machine, onClick }) {
 
     return (
         <Flex onClick={() => onClick()}>
-            {machine.cpus.length > 0 ? <UnitIcon id="cpu" type="CPU" /> : undefined}
+            {machine.cpus.length > 0 ? <UnitIcon id="cpuModel" type="CPU" /> : undefined}
             {machine.gpus.length > 0 ? <UnitIcon id="gpu" type="GPU" /> : undefined}
             {machine.memories.length > 0 ? <UnitIcon id="memory" type="memory" /> : undefined}
             {machine.storages.length > 0 ? <UnitIcon id="storage" type="storage" /> : undefined}

@@ -24,7 +24,7 @@ package org.opendc.compute.workload.internal
 
 import org.opendc.compute.workload.ComputeWorkload
 import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.compute.workload.VirtualMachine
+import org.opendc.compute.workload.Task
 import java.util.random.RandomGenerator
 
 /**
@@ -34,7 +34,7 @@ internal class TraceComputeWorkload(val name: String, val format: String) : Comp
     override fun resolve(
         loader: ComputeWorkloadLoader,
         random: RandomGenerator,
-    ): List<VirtualMachine> {
+    ): List<Task> {
         return loader.get(name, format)
     }
 }

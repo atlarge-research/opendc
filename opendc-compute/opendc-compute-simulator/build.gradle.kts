@@ -25,22 +25,25 @@ description = "Simulator for OpenDC Compute"
 // Build configuration
 plugins {
     `kotlin-library-conventions`
+    kotlin("plugin.serialization") version "1.9.22"
 }
 
 dependencies {
-    api(projects.opendcCompute.opendcComputeService)
     api(projects.opendcSimulator.opendcSimulatorCompute)
+    api(projects.opendcTrace.opendcTraceParquet)
     api(libs.commons.math3)
     implementation(projects.opendcCommon)
     implementation(libs.kotlin.logging)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
     api(libs.microprofile.config)
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
 
     implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))
+    implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-parquet")))
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testRuntimeOnly(libs.slf4j.simple)
+    testRuntimeOnly(libs.log4j.slf4j)
 }

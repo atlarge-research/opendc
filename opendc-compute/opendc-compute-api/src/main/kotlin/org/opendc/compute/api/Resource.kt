@@ -39,11 +39,6 @@ public interface Resource {
     public val name: String
 
     /**
-     * The identifying labels attached to the resource.
-     */
-    public val labels: Map<String, String>
-
-    /**
      * The non-identifying metadata attached to the resource.
      */
     public val meta: Map<String, Any>

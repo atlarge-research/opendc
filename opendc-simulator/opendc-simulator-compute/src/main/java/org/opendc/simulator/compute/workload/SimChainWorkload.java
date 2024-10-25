@@ -22,59 +22,46 @@
 
 package org.opendc.simulator.compute.workload;
 
-import java.time.InstantSource;
-import java.util.List;
-import java.util.Map;
-import org.opendc.simulator.compute.SimMachineContext;
-import org.opendc.simulator.compute.SimMemory;
-import org.opendc.simulator.compute.SimNetworkInterface;
-import org.opendc.simulator.compute.SimProcessingUnit;
-import org.opendc.simulator.compute.SimStorageInterface;
-import org.opendc.simulator.flow2.FlowGraph;
-import org.opendc.simulator.flow2.FlowStage;
-import org.opendc.simulator.flow2.FlowStageLogic;
+import java.util.LinkedList;
+import org.opendc.simulator.engine.FlowEdge;
+import org.opendc.simulator.engine.FlowNode;
+import org.opendc.simulator.engine.FlowSupplier;
 
 /**
- * A {@link SimWorkload} that composes two {@link SimWorkload}s.
+ * A {@link SimChainWorkload} that composes multiple {@link SimWorkload}s.
  */
-final class SimChainWorkload implements SimWorkload {
-    private final SimWorkload[] workloads;
-    private int activeWorkloadIndex;
+final class SimChainWorkload extends SimWorkload implements FlowSupplier {
+    private final LinkedList<Workload> workloads;
+    private int workloadIndex;
 
-    private SimChainWorkloadContext activeContext;
+    private SimWorkload activeWorkload;
+    private float demand = 0.0f;
+    private float supply = 0.0f;
+
+    private FlowEdge workloadEdge;
+    private FlowEdge machineEdge;
+
+    private float capacity = 0;
 
     private long checkpointInterval = 0;
     private long checkpointDuration = 0;
-
     private double checkpointIntervalScaling = 1.0;
-    private CheckPointModel checkpointModel;
-    private SimChainWorkload snapshot;
+    private CheckpointModel checkpointModel;
 
-    /**
-     * Construct a {@link SimChainWorkload} instance.
-     *
-     * @param workloads The workloads to chain.
-     * @param activeWorkloadIndex The index of the active workload.
-     */
-    SimChainWorkload(SimWorkload[] workloads, int activeWorkloadIndex) {
-        this.workloads = workloads;
+    private ChainWorkload snapshot;
 
-        if (this.workloads.length > 1) {
-            checkpointInterval = this.workloads[1].getCheckpointInterval();
-            checkpointDuration = this.workloads[1].getCheckpointDuration();
-            checkpointIntervalScaling = this.workloads[1].getCheckpointIntervalScaling();
-        }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Basic Getters and Setters
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        this.activeWorkloadIndex = activeWorkloadIndex;
+    @Override
+    public float getCapacity() {
+        return this.capacity;
     }
 
-    /**
-     * Construct a {@link SimChainWorkload} instance.
-     *
-     * @param workloads The workloads to chain.
-     */
-    SimChainWorkload(SimWorkload... workloads) {
-        this(workloads, 0);
+    @Override
+    public ChainWorkload getSnapshot() {
+        return this.snapshot;
     }
 
     @Override
@@ -92,270 +79,202 @@ final class SimChainWorkload implements SimWorkload {
         return checkpointIntervalScaling;
     }
 
-    @Override
-    public void setOffset(long now) {
-        for (SimWorkload workload : this.workloads) {
-            workload.setOffset(now);
-        }
-    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Constructors
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @Override
-    public void onStart(SimMachineContext ctx) {
-        final SimWorkload[] workloads = this.workloads;
-        final int activeWorkloadIndex = this.activeWorkloadIndex;
+    SimChainWorkload(FlowSupplier supplier, ChainWorkload workload, long now) {
+        super(((FlowNode) supplier).getGraph());
 
-        if (activeWorkloadIndex >= workloads.length) {
-            return;
-        }
+        this.snapshot = workload;
 
-        final SimChainWorkloadContext context = new SimChainWorkloadContext(ctx);
-        activeContext = context;
+        this.parentGraph = ((FlowNode) supplier).getGraph();
+        this.parentGraph.addEdge(this, supplier);
+
+        this.clock = this.parentGraph.getEngine().getClock();
+        this.workloads = new LinkedList<>(workload.getWorkloads());
+        this.checkpointInterval = workload.getCheckpointInterval();
+        this.checkpointDuration = workload.getCheckpointDuration();
+        this.checkpointIntervalScaling = workload.getCheckpointIntervalScaling();
 
         if (checkpointInterval > 0) {
             this.createCheckpointModel();
-            this.checkpointModel.start();
         }
 
-        tryThrow(context.doStart(workloads[activeWorkloadIndex]));
+        this.workloadIndex = -1;
+
+        this.onStart();
     }
 
-    @Override
-    public void onStop(SimMachineContext ctx) {
-        final SimWorkload[] workloads = this.workloads;
-        final int activeWorkloadIndex = this.activeWorkloadIndex;
+    public Workload getNextWorkload() {
+        this.workloadIndex++;
+        return workloads.pop();
+    }
 
-        if (activeWorkloadIndex >= workloads.length) {
+    // TODO: Combine with Constructor
+    public void onStart() {
+        if (this.workloads.isEmpty()) {
             return;
         }
 
-        final SimChainWorkloadContext context = activeContext;
-        activeContext = null;
-
-        if (this.checkpointModel != null) {
-            this.checkpointModel.stop();
+        // Create and start a checkpoint model if initiated
+        if (checkpointInterval > 0) {
+            this.checkpointModel.start();
         }
 
-        tryThrow(context.doStop(workloads[activeWorkloadIndex]));
+        this.activeWorkload = this.getNextWorkload().startWorkload(this, this.clock.millis());
+    }
+
+    @Override
+    public long onUpdate(long now) {
+        return Long.MAX_VALUE;
+    }
+
+    @Override
+    public void stopWorkload() {
+        if (this.checkpointModel != null) {
+            this.checkpointModel.close();
+            this.checkpointModel = null;
+        }
+
+        if (this.activeWorkload != null) {
+            this.activeWorkload.stopWorkload();
+            this.activeWorkload = null;
+        }
+
+        this.closeNode();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Checkpoint related functionality
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public void createCheckpointModel() {
+        this.checkpointModel = new CheckpointModel(this);
     }
 
     @Override
     public void makeSnapshot(long now) {
-        final int activeWorkloadIndex = this.activeWorkloadIndex;
-        final SimWorkload[] workloads = this.workloads;
-        final SimWorkload[] newWorkloads = new SimWorkload[workloads.length - activeWorkloadIndex];
 
-        for (int i = 0; i < newWorkloads.length; i++) {
-            workloads[activeWorkloadIndex + i].makeSnapshot(now);
-            newWorkloads[i] = workloads[activeWorkloadIndex + i].getSnapshot();
-        }
+        this.snapshot.removeWorkloads(this.workloadIndex);
+        this.workloadIndex = 0;
 
-        this.snapshot = new SimChainWorkload(newWorkloads, 0);
+        activeWorkload.makeSnapshot(now);
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // FlowGraph Related functionality
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Add connection to the active workload
+     *
+     * @param consumerEdge
+     */
     @Override
-    public SimChainWorkload getSnapshot() {
-        return this.snapshot;
-    }
-
-    @Override
-    public void createCheckpointModel() {
-        this.checkpointModel = new CheckPointModel(
-                activeContext, this, this.checkpointInterval, this.checkpointDuration, this.checkpointIntervalScaling);
-    }
-
-    private class CheckPointModel implements FlowStageLogic {
-        private SimChainWorkload workload;
-        private long checkpointInterval;
-        private long checkpointDuration;
-        private double checkpointIntervalScaling;
-        private FlowStage stage;
-
-        private long startOfInterval;
-        private Boolean firstCheckPoint = true;
-
-        CheckPointModel(
-                SimChainWorkloadContext context,
-                SimChainWorkload workload,
-                long checkpointInterval,
-                long checkpointDuration,
-                double checkpointIntervalScaling) {
-            this.checkpointInterval = checkpointInterval;
-            this.checkpointDuration = checkpointDuration;
-            this.checkpointIntervalScaling = checkpointIntervalScaling;
-            this.workload = workload;
-
-            this.stage = context.getGraph().newStage(this);
-
-            InstantSource clock = this.stage.getGraph().getEngine().getClock();
-
-            this.startOfInterval = clock.millis();
-        }
-
-        @Override
-        public long onUpdate(FlowStage ctx, long now) {
-            long passedTime = now - startOfInterval;
-            long remainingTime = this.checkpointInterval - passedTime;
-
-            if (!this.firstCheckPoint) {
-                remainingTime += this.checkpointDuration;
-            }
-
-            // Interval not completed
-            if (remainingTime > 0) {
-                return now + remainingTime;
-            }
-
-            workload.makeSnapshot(now);
-            if (firstCheckPoint) {
-                this.firstCheckPoint = false;
-            }
-
-            // Scale the interval time between checkpoints based on the provided scaling
-            this.checkpointInterval = (long) (this.checkpointInterval * this.checkpointIntervalScaling);
-
-            return now + this.checkpointInterval + this.checkpointDuration;
-        }
-
-        public void start() {
-            this.stage.sync();
-        }
-
-        public void stop() {
-            this.stage.close();
-        }
+    public void addConsumerEdge(FlowEdge consumerEdge) {
+        this.workloadEdge = consumerEdge;
     }
 
     /**
-     * A {@link SimMachineContext} that intercepts the shutdown calls.
+     * Add Connection to the cpuMux
+     * @param supplierEdge
      */
-    private class SimChainWorkloadContext implements SimMachineContext {
-        private final SimMachineContext ctx;
-        private SimWorkload snapshot;
+    @Override
+    public void addSupplierEdge(FlowEdge supplierEdge) {
+        this.machineEdge = supplierEdge;
+        this.capacity = supplierEdge.getCapacity();
+    }
 
-        private SimChainWorkloadContext(SimMachineContext ctx) {
-            this.ctx = ctx;
+    /**
+     * Push demand to the cpuMux
+     *
+     * @param supplierEdge
+     * @param newDemand
+     */
+    @Override
+    public void pushDemand(FlowEdge supplierEdge, float newDemand) {
+        this.machineEdge.pushDemand(newDemand);
+    }
+
+    /**
+     * Push supply to the workload
+     *
+     * @param consumerEdge
+     * @param newSupply
+     */
+    @Override
+    public void pushSupply(FlowEdge consumerEdge, float newSupply) {
+        this.workloadEdge.pushSupply(newSupply);
+    }
+
+    /**
+     * Handle new demand coming from the workload
+     *
+     * @param consumerEdge
+     * @param newDemand
+     */
+    @Override
+    public void handleDemand(FlowEdge consumerEdge, float newDemand) {
+        if (newDemand == this.demand) {
+            return;
         }
 
-        @Override
-        public FlowGraph getGraph() {
-            return ctx.getGraph();
+        this.demand = newDemand;
+        this.pushDemand(this.machineEdge, newDemand);
+    }
+
+    /**
+     * Handle new supply coming from the cpuMux
+     *
+     * @param supplierEdge
+     * @param newSupply
+     */
+    @Override
+    public void handleSupply(FlowEdge supplierEdge, float newSupply) {
+        if (newSupply == this.supply) {
+            return;
         }
 
-        @Override
-        public Map<String, Object> getMeta() {
-            return ctx.getMeta();
+        this.pushSupply(this.machineEdge, newSupply);
+    }
+
+    /**
+     * Handle the removal of the workload.
+     * If there is a next workload available, start this workload
+     * Otherwise, close this SimChainWorkload
+     *
+     * @param consumerEdge
+     */
+    @Override
+    public void removeConsumerEdge(FlowEdge consumerEdge) {
+        if (this.workloadEdge == null) {
+            return;
         }
 
-        @Override
-        public SimProcessingUnit getCpu() {
-            return ctx.getCpu();
+        // Remove the connection to the active workload
+        this.activeWorkload = null;
+        this.workloadEdge = null;
+
+        // Start next workload
+        if (!this.workloads.isEmpty()) {
+            this.activeWorkload = getNextWorkload().startWorkload(this, this.clock.millis());
+            return;
         }
 
-        @Override
-        public SimMemory getMemory() {
-            return ctx.getMemory();
-        }
+        this.stopWorkload();
+    }
 
-        @Override
-        public List<? extends SimNetworkInterface> getNetworkInterfaces() {
-            return ctx.getNetworkInterfaces();
-        }
-
-        @Override
-        public List<? extends SimStorageInterface> getStorageInterfaces() {
-            return ctx.getStorageInterfaces();
-        }
-
-        @Override
-        public void makeSnapshot(long now) {
-            final SimWorkload workload = workloads[activeWorkloadIndex];
-            this.snapshot = workload.getSnapshot();
-        }
-
-        @Override
-        public SimWorkload getSnapshot(long now) {
-            this.makeSnapshot(now);
-
-            return this.snapshot;
-        }
-
-        @Override
-        public void reset() {
-            ctx.reset();
-        }
-
-        @Override
-        public void shutdown() {
-            shutdown(null);
-        }
-
-        @Override
-        public void shutdown(Exception cause) {
-            final SimWorkload[] workloads = SimChainWorkload.this.workloads;
-            final int activeWorkloadIndex = ++SimChainWorkload.this.activeWorkloadIndex;
-
-            final Exception stopException = doStop(workloads[activeWorkloadIndex - 1]);
-            if (cause == null) {
-                cause = stopException;
-            } else if (stopException != null) {
-                cause.addSuppressed(stopException);
-            }
-
-            if (stopException == null && activeWorkloadIndex < workloads.length) {
-                ctx.reset();
-
-                final Exception startException = doStart(workloads[activeWorkloadIndex]);
-
-                if (startException == null) {
-                    return;
-                } else if (cause == null) {
-                    cause = startException;
-                } else {
-                    cause.addSuppressed(startException);
-                }
-            }
-
-            if (SimChainWorkload.this.checkpointModel != null) {
-                SimChainWorkload.this.checkpointModel.stop();
-            }
-            ctx.shutdown(cause);
-        }
-
-        /**
-         * Start the specified workload.
-         *
-         * @return The {@link Exception} that occurred while starting the workload or <code>null</code> if the workload
-         *         started successfully.
-         */
-        private Exception doStart(SimWorkload workload) {
-            try {
-                workload.onStart(this);
-            } catch (Exception cause) {
-                final Exception stopException = doStop(workload);
-                if (stopException != null) {
-                    cause.addSuppressed(stopException);
-                }
-                return cause;
-            }
-
-            return null;
-        }
-
-        /**
-         * Stop the specified workload.
-         *
-         * @return The {@link Exception} that occurred while stopping the workload or <code>null</code> if the workload
-         *         stopped successfully.
-         */
-        private Exception doStop(SimWorkload workload) {
-            try {
-                workload.onStop(this);
-            } catch (Exception cause) {
-                return cause;
-            }
-
-            return null;
-        }
+    /**
+     * Handle the removal of the connection to the cpuMux
+     * When this happens, close the SimChainWorkload
+     *
+     * @param supplierEdge
+     */
+    @Override
+    public void removeSupplierEdge(FlowEdge supplierEdge) {
+        this.stopWorkload();
     }
 
     @SuppressWarnings("unchecked")

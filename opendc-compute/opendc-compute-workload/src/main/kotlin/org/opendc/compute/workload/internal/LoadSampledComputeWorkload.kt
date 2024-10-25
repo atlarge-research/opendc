@@ -25,7 +25,7 @@ package org.opendc.compute.workload.internal
 import mu.KotlinLogging
 import org.opendc.compute.workload.ComputeWorkload
 import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.compute.workload.VirtualMachine
+import org.opendc.compute.workload.Task
 import java.util.random.RandomGenerator
 
 /**
@@ -40,9 +40,9 @@ internal class LoadSampledComputeWorkload(val source: ComputeWorkload, val fract
     override fun resolve(
         loader: ComputeWorkloadLoader,
         random: RandomGenerator,
-    ): List<VirtualMachine> {
+    ): List<Task> {
         val vms = source.resolve(loader, random) // fixme: Should be shuffled, otherwise the first fraction is always chosen
-        val res = mutableListOf<VirtualMachine>()
+        val res = mutableListOf<Task>()
 
         val totalLoad = vms.sumOf { it.totalLoad }
         var currentLoad = 0.0

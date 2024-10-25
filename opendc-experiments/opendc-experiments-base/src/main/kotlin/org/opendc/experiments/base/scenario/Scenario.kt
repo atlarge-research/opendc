@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.base.scenario
 
-import org.opendc.compute.telemetry.export.parquet.ComputeExportConfig
+import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 import org.opendc.experiments.base.scenario.specs.AllocationPolicySpec
 import org.opendc.experiments.base.scenario.specs.CheckpointModelSpec
 import org.opendc.experiments.base.scenario.specs.ExportModelSpec

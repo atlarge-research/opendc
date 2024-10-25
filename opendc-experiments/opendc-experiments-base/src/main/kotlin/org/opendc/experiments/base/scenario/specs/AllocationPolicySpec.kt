@@ -23,7 +23,7 @@
 package org.opendc.experiments.base.scenario.specs
 
 import kotlinx.serialization.Serializable
-import org.opendc.compute.service.scheduler.ComputeSchedulerEnum
+import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
 
 /**
  * specification describing how tasks are allocated

@@ -23,7 +23,7 @@
 package org.opendc.experiments.base.scenario.specs
 
 import kotlinx.serialization.Serializable
-import org.opendc.compute.telemetry.export.parquet.ComputeExportConfig
+import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 
 @Serializable
 public data class ScenarioSpec(

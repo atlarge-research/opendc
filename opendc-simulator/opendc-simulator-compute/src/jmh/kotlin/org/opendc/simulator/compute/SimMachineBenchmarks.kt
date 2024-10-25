@@ -24,12 +24,13 @@ package org.opendc.simulator.compute
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import org.opendc.simulator.compute.kernel.SimHypervisor
-import org.opendc.simulator.compute.model.Cpu
-import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.workload.SimTrace
+import org.opendc.simulator.compute.old.SimBareMetalMachine
+import org.opendc.simulator.compute.old.kernel.SimHypervisor
+import org.opendc.simulator.compute.old.model.CpuModel
+import org.opendc.simulator.compute.old.model.MachineModel
+import org.opendc.simulator.compute.old.model.MemoryUnit
+import org.opendc.simulator.compute.old.model.ProcessingNode
+import org.opendc.simulator.compute.old.workload.SimTrace
 import org.opendc.simulator.flow2.FlowEngine
 import org.opendc.simulator.flow2.mux.FlowMultiplexerFactory
 import org.opendc.simulator.kotlin.runSimulation
@@ -60,7 +61,7 @@ class SimMachineBenchmarks {
             MachineModel(
                 // cpus
                 List(cpuNode.coreCount) {
-                    Cpu(
+                    CpuModel(
                         cpuNode,
                         it,
                         1000.0,

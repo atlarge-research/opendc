@@ -23,9 +23,9 @@
 package org.opendc.compute.simulator.provisioner
 
 import org.opendc.compute.carbon.CarbonTrace
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.telemetry.ComputeMetricReader
-import org.opendc.compute.telemetry.ComputeMonitor
+import org.opendc.compute.simulator.service.ComputeService
+import org.opendc.compute.simulator.telemetry.ComputeMetricReader
+import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import java.time.Duration
 
 /**
@@ -44,7 +44,15 @@ public class ComputeMonitorProvisioningStep(
             requireNotNull(
                 ctx.registry.resolve(serviceDomain, ComputeService::class.java),
             ) { "Compute service $serviceDomain does not exist" }
-        val metricReader = ComputeMetricReader(ctx.dispatcher, service, monitor, exportInterval, startTime, carbonTrace)
+        val metricReader =
+            ComputeMetricReader(
+                ctx.dispatcher,
+                service,
+                monitor,
+                exportInterval,
+                startTime,
+                carbonTrace,
+            )
         return AutoCloseable { metricReader.close() }
     }
 }

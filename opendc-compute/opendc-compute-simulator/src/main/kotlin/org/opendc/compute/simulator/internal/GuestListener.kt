@@ -25,14 +25,14 @@ package org.opendc.compute.simulator.internal
 /**
  * Helper interface to listen for [Guest] events.
  */
-internal interface GuestListener {
+public interface GuestListener {
     /**
      * This method is invoked when the guest machine is running.
      */
-    fun onStart(guest: Guest)
+    public fun onStart(guest: Guest)
 
     /**
      * This method is invoked when the guest machine is stopped.
      */
-    fun onStop(guest: Guest)
+    public fun onStop(guest: Guest)
 }

@@ -22,7 +22,7 @@
 
 @file:JvmName("M3SACli")
 
-package org.opendc.experiments.base.runner
+package org.opendc.experiments.m3sa.runner
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
@@ -30,8 +30,9 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
-import m3saAnalyze
+import org.opendc.experiments.base.runner.runExperiment
 import org.opendc.experiments.base.scenario.getExperiment
+import org.opendc.experiments.m3sa.m3saAnalyze
 import org.opendc.experiments.m3sa.scenario.getOutputFolder
 import java.io.File
 

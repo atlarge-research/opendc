@@ -23,10 +23,8 @@
 package org.opendc.compute.failure.hostfault
 
 import kotlinx.coroutines.delay
-import org.opendc.compute.api.ComputeClient
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.simulator.SimHost
-import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.compute.simulator.host.SimHost
+import org.opendc.compute.simulator.service.ComputeService
 
 /**
  * A type of [HostFault] where the hosts are stopped and recover after a given amount of time.
@@ -38,18 +36,20 @@ public class StartStopHostFault(
         victims: List<SimHost>,
         faultDuration: Long,
     ) {
-        val client: ComputeClient = service.newClient()
+        val client: ComputeService.ComputeClient = service.newClient()
 
         for (host in victims) {
-            val tasks = host.instances
+            val guests = host.getGuests()
 
-            val sortedTasks = tasks.sortedBy { it.name }
-            val snapshots = sortedTasks.map { (it.meta["workload"] as SimWorkload).getSnapshot() }
+            val snapshots = guests.map { it.virtualMachine!!.getActiveWorkload().getSnapshot() }
+            val tasks = guests.map { it.task }
             host.fail()
 
-            for ((task, snapshot) in sortedTasks.zip(snapshots)) {
+            for ((task, snapshot) in tasks.zip(snapshots)) {
                 client.rescheduleTask(task, snapshot)
             }
+
+            print("test")
         }
 
         delay(faultDuration)

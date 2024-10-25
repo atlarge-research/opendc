@@ -26,13 +26,13 @@ import me.tongfei.progressbar.ProgressBarBuilder
 import me.tongfei.progressbar.ProgressBarStyle
 import org.opendc.compute.carbon.CarbonTrace
 import org.opendc.compute.carbon.getCarbonTrace
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.scheduler.createComputeScheduler
 import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
-import org.opendc.compute.telemetry.export.parquet.ParquetComputeMonitor
+import org.opendc.compute.simulator.scheduler.createComputeScheduler
+import org.opendc.compute.simulator.service.ComputeService
+import org.opendc.compute.simulator.telemetry.parquet.ParquetComputeMonitor
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.experiments.base.scenario.Scenario
@@ -89,14 +89,24 @@ public fun runScenario(
                     { createComputeScheduler(scenario.allocationPolicySpec.policyType, Random(it.seeder.nextLong())) },
                     maxNumFailures = scenario.maxNumFailures,
                 ),
-                setupHosts(serviceDomain, topology, optimize = true),
+                setupHosts(serviceDomain, topology),
             )
 
-            val workloadLoader = ComputeWorkloadLoader(File(scenario.workloadSpec.pathToFile))
+            val checkpointInterval = scenario.checkpointModelSpec?.checkpointInterval ?: 0L
+            val checkpointDuration = scenario.checkpointModelSpec?.checkpointDuration ?: 0L
+            val checkpointIntervalScaling = scenario.checkpointModelSpec?.checkpointIntervalScaling ?: 1.0
+
+            val workloadLoader =
+                ComputeWorkloadLoader(
+                    File(scenario.workloadSpec.pathToFile),
+                    checkpointInterval,
+                    checkpointDuration,
+                    checkpointIntervalScaling,
+                )
             val tasks = getWorkloadType(scenario.workloadSpec.type).resolve(workloadLoader, Random(seed))
 
             val carbonTrace = getCarbonTrace(scenario.carbonTracePath)
-            val startTime = Duration.ofMillis(tasks.minOf { it.startTime }.toEpochMilli())
+            val startTime = Duration.ofMillis(tasks.minOf { it.submissionTime }.toEpochMilli())
             addExportModel(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace, scenario.id)
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
@@ -104,7 +114,6 @@ public fun runScenario(
                 timeSource,
                 tasks,
                 failureModelSpec = scenario.failureModelSpec,
-                checkpointModelSpec = scenario.checkpointModelSpec,
                 seed = seed,
             )
         }
