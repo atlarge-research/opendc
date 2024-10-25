@@ -22,8 +22,10 @@
 
 @file:JvmName("M3saCliKt")
 
-package org.opendc.experiments.base.runner
+package org.opendc.experiments.m3sa.runner
 
+import org.opendc.experiments.base.runner.runScenario
+import org.opendc.experiments.base.runner.setupOutputFolderStructure
 import org.opendc.experiments.base.scenario.Scenario
 import java.util.concurrent.ForkJoinPool
 

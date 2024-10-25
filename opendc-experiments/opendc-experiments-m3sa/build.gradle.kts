@@ -31,7 +31,6 @@ dependencies {
     api(libs.kotlinx.coroutines)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    api(projects.opendcCompute.opendcComputeService)
     api(projects.opendcCompute.opendcComputeSimulator)
 
     implementation(libs.clikt)
@@ -42,7 +41,6 @@ dependencies {
     implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-core")))
 
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-workload")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-failure")))
