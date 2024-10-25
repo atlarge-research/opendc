@@ -75,7 +75,7 @@ A scenario file can be validated using a JSON schema validator, such as https://
     "required": [
         "topologies",
         "workloads",
-        "allocationPolicies",
+        "allocationPolicies"
     ]
 }
 ```

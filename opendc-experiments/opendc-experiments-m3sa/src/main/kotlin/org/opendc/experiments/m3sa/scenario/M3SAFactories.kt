@@ -20,34 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.scenario
+package org.opendc.experiments.m3sa.scenario
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
-import org.opendc.compute.telemetry.export.parquet.ComputeExportConfig
-import org.opendc.experiments.base.scenario.specs.ExperimentSpec
+import org.opendc.experiments.base.scenario.ExperimentReader
 import java.io.File
-import java.io.InputStream
-import java.nio.file.Path
-import kotlin.io.path.inputStream
 
-public class ExperimentReader {
-    private val jsonReader = Json
+private val experimentReader = ExperimentReader()
 
-    public fun read(file: File): ExperimentSpec = read(file.inputStream())
-
-    public fun read(path: Path): ExperimentSpec = read(path.inputStream())
-
-    /**
-     * Read the specified [input].
-     */
-    @OptIn(ExperimentalSerializationApi::class)
-    public fun read(input: InputStream): ExperimentSpec {
-        // Loads the default parquet output fields,
-        // so that they can be deserialized
-        ComputeExportConfig.loadDfltColumns()
-
-        return jsonReader.decodeFromStream<ExperimentSpec>(input)
-    }
+/**
+ * Returns a list of Scenarios from a given file path (input).
+ *
+ * @param filePath The path to the file containing the scenario specifications.
+ * @return A list of Scenarios.
+ */
+public fun getOutputFolder(file: File): String {
+    return experimentReader.read(file).outputFolder + "/outputs"
 }

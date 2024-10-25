@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +20,23 @@
  * SOFTWARE.
  */
 
-description = "Support library for simulating VM-based workloads with OpenDC"
+description = "Multi-Meta-Model Simulation Analysis (M3SA) used across OpenDC modules"
 
 // Build configuration
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-    distribution
-    kotlin("plugin.serialization") version "1.9.22"
 }
 
 dependencies {
+    api(libs.kotlinx.coroutines)
 
+    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     api(projects.opendcCompute.opendcComputeService)
     api(projects.opendcCompute.opendcComputeSimulator)
 
     implementation(libs.clikt)
+
+    implementation(project(":opendc-experiments:opendc-experiments-base"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation(libs.progressbar)
     implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-core")))
@@ -51,35 +51,9 @@ dependencies {
     runtimeOnly(libs.log4j.slf4j)
 }
 
-val createScenarioApp by tasks.creating(CreateStartScripts::class) {
-    dependsOn(tasks.jar)
-
-    applicationName = "OpenDCScenarioRunner"
-    mainClass.set("org.opendc.experiments.base.runner.ScenarioCli")
-    classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
-    outputDir = project.buildDir.resolve("scripts")
-}
-
-// Create custom Scenario distribution
-distributions {
+sourceSets {
     main {
-        distributionBaseName.set("OpenDCScenarioRunner")
-
-        contents {
-            from("README.md")
-            from("LICENSE.txt")
-            from("../../LICENSE.txt") {
-                rename { "LICENSE-OpenDC.txt" }
-            }
-
-            into("bin") {
-                from(createScenarioApp)
-            }
-
-            into("lib") {
-                from(tasks.jar)
-                from(configurations["runtimeClasspath"])
-            }
-        }
+        kotlin.srcDirs("src/main/kotlin", "src/main/python")
+        resources.srcDir("src/main/resources")
     }
 }
