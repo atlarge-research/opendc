@@ -79,7 +79,7 @@ public class TraceWorkload implements Workload {
     }
 
     public static Builder builder() {
-        return builder(0L, 0L, 0L);
+        return builder(0L, 0L, 0.0);
     }
 
     public static Builder builder(long checkpointInterval, long checkpointDuration, double checkpointIntervalScaling) {

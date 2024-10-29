@@ -71,22 +71,22 @@ public interface HostTableReader : Exportable {
     /**
      * The capacity of the CPUs in the host (in MHz).
      */
-    public val cpuLimit: Float
+    public val cpuLimit: Double
 
     /**
      * The usage of all CPUs in the host (in MHz).
      */
-    public val cpuUsage: Float
+    public val cpuUsage: Double
 
     /**
      * The demand of all vCPUs of the guests (in MHz)
      */
-    public val cpuDemand: Float
+    public val cpuDemand: Double
 
     /**
      * The CPU utilization of the host.
      */
-    public val cpuUtilization: Float
+    public val cpuUtilization: Double
 
     /**
      * The duration (in ms) that a CPU was active in the host.
@@ -111,22 +111,22 @@ public interface HostTableReader : Exportable {
     /**
      * The current power draw of the host in W.
      */
-    public val powerDraw: Float
+    public val powerDraw: Double
 
     /**
      * The total energy consumption of the host since last sample in J.
      */
-    public val energyUsage: Float
+    public val energyUsage: Double
 
     /**
      * The current carbon intensity of the host in gCO2 / kW.
      */
-    public val carbonIntensity: Float
+    public val carbonIntensity: Double
 
     /**
      * The current carbon emission since the last deadline in g.
      */
-    public val carbonEmission: Float
+    public val carbonEmission: Double
 
     /**
      * The uptime of the host since last time in ms.

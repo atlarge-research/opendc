@@ -35,13 +35,13 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
     private int workloadIndex;
 
     private SimWorkload activeWorkload;
-    private float demand = 0.0f;
-    private float supply = 0.0f;
+    private double demand = 0.0f;
+    private double supply = 0.0f;
 
     private FlowEdge workloadEdge;
     private FlowEdge machineEdge;
 
-    private float capacity = 0;
+    private double capacity = 0;
 
     private long checkpointInterval = 0;
     private long checkpointDuration = 0;
@@ -55,7 +55,7 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public float getCapacity() {
+    public double getCapacity() {
         return this.capacity;
     }
 
@@ -194,7 +194,7 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      * @param newDemand
      */
     @Override
-    public void pushDemand(FlowEdge supplierEdge, float newDemand) {
+    public void pushDemand(FlowEdge supplierEdge, double newDemand) {
         this.machineEdge.pushDemand(newDemand);
     }
 
@@ -205,7 +205,7 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      * @param newSupply
      */
     @Override
-    public void pushSupply(FlowEdge consumerEdge, float newSupply) {
+    public void pushSupply(FlowEdge consumerEdge, double newSupply) {
         this.workloadEdge.pushSupply(newSupply);
     }
 
@@ -216,7 +216,7 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      * @param newDemand
      */
     @Override
-    public void handleDemand(FlowEdge consumerEdge, float newDemand) {
+    public void handleDemand(FlowEdge consumerEdge, double newDemand) {
         if (newDemand == this.demand) {
             return;
         }
@@ -232,7 +232,7 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      * @param newSupply
      */
     @Override
-    public void handleSupply(FlowEdge supplierEdge, float newSupply) {
+    public void handleSupply(FlowEdge supplierEdge, double newSupply) {
         if (newSupply == this.supply) {
             return;
         }

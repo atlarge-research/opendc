@@ -30,6 +30,6 @@ public data class HostInfo(
     val name: String,
     val arch: String,
     val coreCount: Int,
-    val coreSpeed: Float,
+    val coreSpeed: Double,
     val memCapacity: Long,
 )

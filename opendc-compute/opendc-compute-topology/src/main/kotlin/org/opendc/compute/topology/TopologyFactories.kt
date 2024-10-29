@@ -122,7 +122,7 @@ private fun HostJSONSpec.toHostSpecs(
             CpuModel(
                 globalCoreId++,
                 cpu.coreCount,
-                cpu.coreSpeed.toMHz().toFloat(),
+                cpu.coreSpeed.toMHz(),
             )
         }
 

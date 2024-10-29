@@ -326,7 +326,7 @@ public class OpenDCRunner(
                     CpuModel(
                         0,
                         cpu.numberOfCores,
-                        cpu.clockRateMhz.toFloat(),
+                        cpu.clockRateMhz,
                         "Intel",
                         "amd64",
                         cpu.name,

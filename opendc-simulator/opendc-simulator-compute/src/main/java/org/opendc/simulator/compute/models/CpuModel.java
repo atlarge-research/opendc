@@ -30,8 +30,8 @@ import java.util.Objects;
 public final class CpuModel {
     private final int id;
     private final int coreCount;
-    private final float coreSpeed;
-    private final float totalCapacity;
+    private final double coreSpeed;
+    private final double totalCapacity;
 
     private final String vendor;
     private final String modelName;
@@ -47,7 +47,7 @@ public final class CpuModel {
      * @param modelName The name of the CPU
      * @param arch The architecture of the CPU
      */
-    public CpuModel(int id, int coreCount, float coreSpeed, String vendor, String modelName, String arch) {
+    public CpuModel(int id, int coreCount, double coreSpeed, String vendor, String modelName, String arch) {
         this.id = id;
         this.coreCount = coreCount;
         this.coreSpeed = coreSpeed;
@@ -57,7 +57,7 @@ public final class CpuModel {
         this.arch = arch;
     }
 
-    public CpuModel(int id, int coreCount, float coreSpeed) {
+    public CpuModel(int id, int coreCount, double coreSpeed) {
         this(id, coreCount, coreSpeed, "unkown", "unkown", "unkown");
     }
 
@@ -78,14 +78,14 @@ public final class CpuModel {
     /**
      * Return the clock rate of a single core of the CPU MHz.
      */
-    public float getCoreSpeed() {
+    public double getCoreSpeed() {
         return coreSpeed;
     }
 
     /**
      * Return the clock rate of the CPU in MHz.
      */
-    public float getTotalCapacity() {
+    public double getTotalCapacity() {
         return totalCapacity;
     }
 

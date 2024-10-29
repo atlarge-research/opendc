@@ -217,7 +217,7 @@ public class ComputeWorkloadLoader(
             usage: Double,
             cores: Int,
         ) {
-            totalLoad += (usage * duration.toMillis()) / 1000.0 // avg MHz * duration = MFLOPs
+            totalLoad += (usage * duration.toMillis()) / 1000 // avg MHz * duration = MFLOPs
 
             builder.add(duration.toMillis(), usage, cores)
         }

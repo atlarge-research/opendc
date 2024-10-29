@@ -37,8 +37,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     private long startOfFragment;
 
     private FlowEdge machineEdge;
-    private float currentDemand;
-    private float currentSupply;
+    private double currentDemand;
+    private double currentSupply;
 
     private long checkpointInterval;
     private long checkpointDuration;
@@ -98,7 +98,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         graph.addEdge(this, supplier);
 
         this.currentFragment = this.getNextFragment();
-        pushDemand(machineEdge, (float) this.currentFragment.cpuUsage());
+        pushDemand(machineEdge, (double) this.currentFragment.cpuUsage());
         this.startOfFragment = now;
     }
 
@@ -135,7 +135,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.startOfFragment = now - passedTime;
 
         // Change the cpu Usage to the new Fragment
-        pushDemand(machineEdge, (float) this.currentFragment.cpuUsage());
+        pushDemand(machineEdge, (double) this.currentFragment.cpuUsage());
 
         // Return the time when the current fragment will complete
         return this.startOfFragment + duration;
@@ -190,7 +190,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         this.fragmentIndex = -1;
         this.currentFragment = getNextFragment();
-        pushDemand(this.machineEdge, (float) this.currentFragment.cpuUsage());
+        pushDemand(this.machineEdge, (double) this.currentFragment.cpuUsage());
         this.startOfFragment = now;
 
         this.invalidate();
@@ -206,7 +206,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         // Start the first Fragment
         this.currentFragment = this.remainingFragments.pop();
-        pushDemand(this.machineEdge, (float) this.currentFragment.cpuUsage());
+        pushDemand(this.machineEdge, (double) this.currentFragment.cpuUsage());
         this.startOfFragment = offset;
 
         this.invalidate();
@@ -223,7 +223,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      * @param newSupply
      */
     @Override
-    public void handleSupply(FlowEdge supplierEdge, float newSupply) {
+    public void handleSupply(FlowEdge supplierEdge, double newSupply) {
         if (newSupply == this.currentSupply) {
             return;
         }
@@ -238,7 +238,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      * @param newDemand
      */
     @Override
-    public void pushDemand(FlowEdge supplierEdge, float newDemand) {
+    public void pushDemand(FlowEdge supplierEdge, double newDemand) {
         if (newDemand == this.currentDemand) {
             return;
         }

@@ -38,6 +38,6 @@ public record GuestCpuStats(
         long idleTime,
         long stealTime,
         long lostTime,
-        float capacity,
-        float usage,
-        float utilization) {}
+        double capacity,
+        double usage,
+        double utilization) {}

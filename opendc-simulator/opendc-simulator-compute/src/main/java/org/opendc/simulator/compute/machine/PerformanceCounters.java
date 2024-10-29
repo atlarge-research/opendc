@@ -28,9 +28,9 @@ public class PerformanceCounters {
     private long cpuStealTime = 0;
     private long cpuLostTime = 0;
 
-    private float cpuCapacity = 0.0f;
-    private float cpuDemand = 0.0f;
-    private float cpuSupply = 0.0f;
+    private double cpuCapacity = 0.0f;
+    private double cpuDemand = 0.0f;
+    private double cpuSupply = 0.0f;
 
     public long getCpuActiveTime() {
         return cpuActiveTime;
@@ -76,27 +76,27 @@ public class PerformanceCounters {
         this.cpuLostTime = cpuLostTime;
     }
 
-    public float getCpuCapacity() {
+    public double getCpuCapacity() {
         return cpuCapacity;
     }
 
-    public void setCpuCapacity(float cpuCapacity) {
+    public void setCpuCapacity(double cpuCapacity) {
         this.cpuCapacity = cpuCapacity;
     }
 
-    public float getCpuDemand() {
+    public double getCpuDemand() {
         return cpuDemand;
     }
 
-    public void setCpuDemand(float cpuDemand) {
+    public void setCpuDemand(double cpuDemand) {
         this.cpuDemand = cpuDemand;
     }
 
-    public float getCpuSupply() {
+    public double getCpuSupply() {
         return cpuSupply;
     }
 
-    public void setCpuSupply(float cpuSupply) {
+    public void setCpuSupply(double cpuSupply) {
         this.cpuSupply = cpuSupply;
     }
 }
