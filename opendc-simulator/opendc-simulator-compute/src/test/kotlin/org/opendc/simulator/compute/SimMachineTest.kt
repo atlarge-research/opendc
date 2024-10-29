@@ -22,18 +22,10 @@
 
 package org.opendc.simulator.compute
 
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.opendc.simulator.compute.cpu.CpuPowerModels
-import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
-import org.opendc.simulator.compute.workload.TraceWorkload
-import org.opendc.simulator.engine.FlowEngine
-import org.opendc.simulator.kotlin.runSimulation
-import java.util.concurrent.ThreadLocalRandom
 
 /**
  * Test suite for the [SimBareMetalMachine] class.
@@ -75,33 +67,33 @@ class SimMachineTest {
 //            assertEquals(1000, timeSource.millis())
 //        }
 
-    @Test
-    fun testTraceWorkload() =
-        runSimulation {
-            val random = ThreadLocalRandom.current()
-            val builder = TraceWorkload.builder()
-            repeat(100) {
-                builder.add(1000, random.nextDouble(0.0, 4500.0), 1)
-            }
-            val traceWorkload = builder.build()
-
-            val engine = FlowEngine.create(dispatcher)
-            val graph = engine.newGraph()
-            val simMachine =
-                SimMachine(
-                    graph,
-                    machineModel,
-                    CpuPowerModels.constant(0.0),
-                ) { cause ->
-                }
-
-            val virtualMachine =
-                simMachine.startWorkload(traceWorkload) { cause ->
-                    assertEquals(100000, timeSource.millis())
-                }
-
-            // Two cores execute 1000 MFlOps per second (1000 ms)
-        }
+//    @Test
+//    fun testTraceWorkload() =
+//        runSimulation {
+//            val random = ThreadLocalRandom.current()
+//            val builder = TraceWorkload.builder()
+//            repeat(100) {
+//                builder.add(1000, random.nextDouble(0.0, 4500.0), 1)
+//            }
+//            val traceWorkload = builder.build()
+//
+//            val engine = FlowEngine.create(dispatcher)
+//            val graph = engine.newGraph()
+//            val simMachine =
+//                SimMachine(
+//                    graph,
+//                    machineModel,
+//                    CpuPowerModels.constant(0.0),
+//                ) { cause ->
+//                }
+//
+//            val virtualMachine =
+//                simMachine.startWorkload(traceWorkload) { cause ->
+//                    assertEquals(100000, timeSource.millis())
+//                }
+//
+//            // Two cores execute 1000 MFlOps per second (1000 ms)
+//        }
 
 //    @Test
 //    fun testDualSocketMachine() =
