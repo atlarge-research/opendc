@@ -34,7 +34,7 @@ import org.opendc.common.units.Power
  */
 @Serializable
 public data class TopologySpec(
-    val clusters: List<ClusterSpec>,
+    val clusters: List<ClusterJSONSpec>,
     val schemaVersion: Int = 1,
 )
 
@@ -46,10 +46,11 @@ public data class TopologySpec(
  * @param location Location of the cluster. This can impact the carbon intensity
  */
 @Serializable
-public data class ClusterSpec(
+public data class ClusterJSONSpec(
     val name: String = "Cluster",
     val count: Int = 1,
     val hosts: List<HostJSONSpec>,
+    val powerSource: PowerSourceJSONSpec = PowerSourceJSONSpec.DFLT,
     val location: String = "NL",
 )
 
@@ -65,8 +66,8 @@ public data class ClusterSpec(
 @Serializable
 public data class HostJSONSpec(
     val name: String? = null,
-    val cpu: CPUSpec,
-    val memory: MemorySpec,
+    val cpu: CPUJSONSpec,
+    val memory: MemoryJSONSpec,
     val powerModel: PowerModelSpec = PowerModelSpec.DFLT,
     val count: Int = 1,
 )
@@ -81,7 +82,7 @@ public data class HostJSONSpec(
  * @param coreSpeed The speed of the cores
  */
 @Serializable
-public data class CPUSpec(
+public data class CPUJSONSpec(
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val arch: String = "unknown",
@@ -100,7 +101,7 @@ public data class CPUSpec(
  * @param memorySize The size of the memory Unit
  */
 @Serializable
-public data class MemorySpec(
+public data class MemoryJSONSpec(
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val arch: String = "unknown",
@@ -126,6 +127,29 @@ public data class PowerModelSpec(
                 power = Power.ofWatts(350),
                 maxPower = Power.ofWatts(400.0),
                 idlePower = Power.ofWatts(200.0),
+            )
+    }
+}
+
+/**
+ * Definition of a power source used for JSON input.
+ *
+ * @property vendor
+ * @property modelName
+ * @property arch
+ * @property totalPower
+ */
+@Serializable
+public data class PowerSourceJSONSpec(
+    val vendor: String = "unknown",
+    val modelName: String = "unknown",
+    val arch: String = "unknown",
+    val totalPower: Long,
+) {
+    public companion object {
+        public val DFLT: PowerSourceJSONSpec =
+            PowerSourceJSONSpec(
+                totalPower = 10000,
             )
     }
 }

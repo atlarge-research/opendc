@@ -27,6 +27,7 @@ package org.opendc.compute.simulator.provisioner
 import org.opendc.compute.carbon.CarbonTrace
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
+import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import java.time.Duration
 
@@ -74,7 +75,7 @@ public fun registerComputeMonitor(
  */
 public fun setupHosts(
     serviceDomain: String,
-    specs: List<HostSpec>,
+    specs: List<ClusterSpec>,
 ): ProvisioningStep {
     return HostsProvisioningStep(serviceDomain, specs)
 }

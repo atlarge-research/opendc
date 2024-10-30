@@ -112,13 +112,20 @@ public class SimMachine {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public SimMachine(
-            FlowGraph graph, MachineModel machineModel, CpuPowerModel cpuPowerModel, Consumer<Exception> completion) {
+            FlowGraph graph,
+            MachineModel machineModel,
+            CpuPowerModel cpuPowerModel,
+            Multiplexer powerMux,
+            Consumer<Exception> completion) {
         this.graph = graph;
         this.machineModel = machineModel;
         this.clock = graph.getEngine().getClock();
 
         // Create the psu and cpu and connect them
         this.psu = new SimPsu(graph);
+
+        graph.addEdge(this.psu, powerMux);
+
         this.cpu = new SimCpu(graph, this.machineModel.getCpu(), 0);
 
         graph.addEdge(this.cpu, this.psu);

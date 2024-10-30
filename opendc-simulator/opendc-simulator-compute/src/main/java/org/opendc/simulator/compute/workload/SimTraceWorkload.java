@@ -196,22 +196,6 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.invalidate();
     }
 
-    /**
-     * Update the Fragments that are being used by the SimTraceWorkload
-     * @param newFragments
-     * @param offset
-     */
-    public void updateFragments(LinkedList<TraceFragment> newFragments, long offset) {
-        this.remainingFragments = newFragments;
-
-        // Start the first Fragment
-        this.currentFragment = this.remainingFragments.pop();
-        pushDemand(this.machineEdge, (double) this.currentFragment.cpuUsage());
-        this.startOfFragment = offset;
-
-        this.invalidate();
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // FlowGraph Related functionality
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

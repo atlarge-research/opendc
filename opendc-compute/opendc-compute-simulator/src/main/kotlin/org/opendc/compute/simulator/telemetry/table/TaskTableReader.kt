@@ -35,6 +35,10 @@ public interface TaskTableReader : Exportable {
 
     public fun setValues(table: TaskTableReader)
 
+    public fun record(now: Instant)
+
+    public fun reset()
+
     /**
      * The timestamp of the current entry of the reader relative to the start of the workload.
      */
