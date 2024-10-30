@@ -52,8 +52,7 @@ public class HostsProvisioningStep internal constructor(
         val engine = FlowEngine.create(ctx.dispatcher)
         val graph = engine.newGraph()
 
-        for (cluster in clusterSpecs){
-
+        for (cluster in clusterSpecs) {
             // Create the Power Source to which hosts are connected
             // TODO: Add connection to totalPower
             val simPowerSource = SimPowerSource(graph)
@@ -74,7 +73,7 @@ public class HostsProvisioningStep internal constructor(
                         graph,
                         hostSpec.model,
                         hostSpec.cpuPowerModel,
-                        powerMux
+                        powerMux,
                     )
 
                 require(simHosts.add(simHost)) { "Host with uid ${hostSpec.uid} already exists" }
@@ -87,7 +86,7 @@ public class HostsProvisioningStep internal constructor(
                 simHost.close()
             }
 
-            for (simPowerSource in simPowerSources){
+            for (simPowerSource in simPowerSources) {
                 // TODO: add close function
 //                simPowerSource.close()
             }

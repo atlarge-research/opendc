@@ -101,12 +101,15 @@ private fun ClusterJSONSpec.toClusterSpec(random: RandomGenerator): ClusterSpec 
                         random,
                     )
                 }
-                )
+            )
         }
-    val powerSourceSpec = PowerSourceSpec(UUID(random.nextLong(), (clusterId).toLong()),
-        totalPower = this.powerSource.totalPower)
+    val powerSourceSpec =
+        PowerSourceSpec(
+            UUID(random.nextLong(), (clusterId).toLong()),
+            totalPower = this.powerSource.totalPower,
+        )
     clusterId++
-    return ClusterSpec(this.name, hostSpecs, powerSourceSpec);
+    return ClusterSpec(this.name, hostSpecs, powerSourceSpec)
 }
 
 /**

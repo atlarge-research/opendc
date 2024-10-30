@@ -144,12 +144,12 @@ public data class PowerSourceJSONSpec(
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val arch: String = "unknown",
-    val totalPower: Long
+    val totalPower: Long,
 ) {
     public companion object {
         public val DFLT: PowerSourceJSONSpec =
             PowerSourceJSONSpec(
-                totalPower = 10000
+                totalPower = 10000,
             )
     }
 }

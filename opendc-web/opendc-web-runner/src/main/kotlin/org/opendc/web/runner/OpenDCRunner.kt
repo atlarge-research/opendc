@@ -264,8 +264,11 @@ public class OpenDCRunner(
 
                 val scenario = scenario
 
-                val powerSourceSpec = PowerSourceSpec(UUID(0, 0),
-                    totalPower = Long.MAX_VALUE)
+                val powerSourceSpec =
+                    PowerSourceSpec(
+                        UUID(0, 0),
+                        totalPower = Long.MAX_VALUE,
+                    )
                 val topology = listOf(ClusterSpec("cluster", topologyHosts, powerSourceSpec))
 
                 Provisioner(dispatcher, seed).use { provisioner ->

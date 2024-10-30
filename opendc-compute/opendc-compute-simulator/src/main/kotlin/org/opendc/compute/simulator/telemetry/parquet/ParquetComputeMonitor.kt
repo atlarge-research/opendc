@@ -123,11 +123,11 @@ public class ParquetComputeMonitor(
                         bufferSize = bufferSize,
                     ),
                 powerSourceExporter =
-                Exporter(
-                    outputFile = File(base, "$partition/powerSource.parquet").also { it.parentFile.mkdirs() },
-                    columns = powerSourceExportColumns ?: Exportable.getAllLoadedColumns(),
-                    bufferSize = bufferSize,
-                ),
+                    Exporter(
+                        outputFile = File(base, "$partition/powerSource.parquet").also { it.parentFile.mkdirs() },
+                        columns = powerSourceExportColumns ?: Exportable.getAllLoadedColumns(),
+                        bufferSize = bufferSize,
+                    ),
                 serviceExporter =
                     Exporter(
                         outputFile = File(base, "$partition/service.parquet").also { it.parentFile.mkdirs() },

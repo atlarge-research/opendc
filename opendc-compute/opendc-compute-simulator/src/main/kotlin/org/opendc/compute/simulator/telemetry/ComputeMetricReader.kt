@@ -87,7 +87,6 @@ public class ComputeMetricReader(
      */
     private val powerSourceTableReaders = mutableMapOf<SimPowerSource, PowerSourceTableReaderImpl>()
 
-
     /**
      * The background job that is responsible for collecting the metrics every cycle.
      */
@@ -148,13 +147,14 @@ public class ComputeMetricReader(
             this.service.clearTasksToRemove()
 
             for (simPowerSource in this.service.powerSources) {
-                val reader = this.powerSourceTableReaders.computeIfAbsent(simPowerSource) {
-                    PowerSourceTableReaderImpl(
-                        it,
-                        startTime,
-                        carbonTrace
-                    )
-                }
+                val reader =
+                    this.powerSourceTableReaders.computeIfAbsent(simPowerSource) {
+                        PowerSourceTableReaderImpl(
+                            it,
+                            startTime,
+                            carbonTrace,
+                        )
+                    }
 
                 reader.record(now)
                 this.monitor.record(reader.copy())

@@ -36,6 +36,7 @@ public interface PowerSourceTableReader : Exportable {
     public fun record(now: Instant)
 
     public fun reset()
+
     /**
      * The timestamp of the current entry of the reader relative to the start of the workload.
      */
