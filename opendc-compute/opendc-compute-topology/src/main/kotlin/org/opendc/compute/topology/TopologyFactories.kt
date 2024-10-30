@@ -24,9 +24,11 @@
 
 package org.opendc.compute.topology
 
+import org.opendc.compute.topology.specs.ClusterJSONSpec
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostJSONSpec
 import org.opendc.compute.topology.specs.HostSpec
+import org.opendc.compute.topology.specs.PowerSourceSpec
 import org.opendc.compute.topology.specs.TopologySpec
 import org.opendc.simulator.compute.cpu.getPowerModel
 import org.opendc.simulator.compute.models.CpuModel
@@ -49,7 +51,7 @@ private val reader = TopologyReader()
 public fun clusterTopology(
     pathToFile: String,
     random: RandomGenerator = SplittableRandom(0),
-): List<HostSpec> {
+): List<ClusterSpec> {
     return clusterTopology(File(pathToFile), random)
 }
 
@@ -59,9 +61,9 @@ public fun clusterTopology(
 public fun clusterTopology(
     file: File,
     random: RandomGenerator = SplittableRandom(0),
-): List<HostSpec> {
+): List<ClusterSpec> {
     val topology = reader.read(file)
-    return topology.toHostSpecs(random)
+    return topology.toClusterSpec(random)
 }
 
 /**
@@ -70,41 +72,41 @@ public fun clusterTopology(
 public fun clusterTopology(
     input: InputStream,
     random: RandomGenerator = SplittableRandom(0),
-): List<HostSpec> {
+): List<ClusterSpec> {
     val topology = reader.read(input)
-    return topology.toHostSpecs(random)
+    return topology.toClusterSpec(random)
 }
 
 /**
  * Helper method to convert a [TopologySpec] into a list of [HostSpec]s.
  */
-private fun TopologySpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
-    return clusters.flatMap { cluster ->
-        List(cluster.count) {
-            cluster.toHostSpecs(random)
-        }.flatten()
+private fun TopologySpec.toClusterSpec(random: RandomGenerator): List<ClusterSpec> {
+    return clusters.map { cluster ->
+        cluster.toClusterSpec(random)
     }
 }
 
 /**
- * Helper method to convert a [ClusterSpec] into a list of [HostSpec]s.
+ * Helper method to convert a [ClusterJSONSpec] into a list of [HostSpec]s.
  */
 private var clusterId = 0
 
-private fun ClusterSpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
+private fun ClusterJSONSpec.toClusterSpec(random: RandomGenerator): ClusterSpec {
     val hostSpecs =
         hosts.flatMap { host ->
             (
                 List(host.count) {
-                    host.toHostSpecs(
+                    host.toHostSpec(
                         clusterId,
                         random,
                     )
                 }
-            )
+                )
         }
+    val powerSourceSpec = PowerSourceSpec(UUID(random.nextLong(), (clusterId).toLong()),
+        totalPower = this.powerSource.totalPower)
     clusterId++
-    return hostSpecs
+    return ClusterSpec(this.name, hostSpecs, powerSourceSpec);
 }
 
 /**
@@ -113,7 +115,7 @@ private fun ClusterSpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
 private var hostId = 0
 private var globalCoreId = 0
 
-private fun HostJSONSpec.toHostSpecs(
+private fun HostJSONSpec.toHostSpec(
     clusterId: Int,
     random: RandomGenerator,
 ): HostSpec {

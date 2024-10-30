@@ -50,6 +50,7 @@ import org.opendc.compute.simulator.host.HostState;
 import org.opendc.compute.simulator.host.SimHost;
 import org.opendc.compute.simulator.scheduler.ComputeScheduler;
 import org.opendc.compute.simulator.telemetry.SchedulerStats;
+import org.opendc.simulator.compute.power.SimPowerSource;
 import org.opendc.simulator.compute.workload.Workload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +97,11 @@ public final class ComputeService implements AutoCloseable {
      * The available hypervisors.
      */
     private final Set<HostView> availableHosts = new HashSet<>();
+
+    /**
+     * The available powerSources
+     */
+    private final Set<SimPowerSource> powerSources = new HashSet<>();
 
     /**
      * The tasks that should be launched by the service.
@@ -283,6 +289,15 @@ public final class ComputeService implements AutoCloseable {
         host.addListener(hostListener);
     }
 
+    public void addPowerSource(SimPowerSource simPowerSource) {
+        // Check if host is already known
+        if (powerSources.contains(simPowerSource)) {
+            return;
+        }
+
+        powerSources.add(simPowerSource);
+    }
+
     /**
      * Remove a {@link SimHost} from the scheduling pool of the compute service.
      */
@@ -311,6 +326,10 @@ public final class ComputeService implements AutoCloseable {
 
     public InstantSource getClock() {
         return this.clock;
+    }
+
+    public Set<SimPowerSource> getPowerSources() {
+        return Collections.unmodifiableSet(this.powerSources);
     }
 
     /**

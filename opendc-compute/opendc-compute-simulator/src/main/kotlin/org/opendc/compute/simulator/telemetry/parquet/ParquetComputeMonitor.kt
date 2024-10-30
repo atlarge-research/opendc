@@ -24,6 +24,7 @@ package org.opendc.compute.simulator.telemetry.parquet
 
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.table.HostTableReader
+import org.opendc.compute.simulator.telemetry.table.PowerSourceTableReader
 import org.opendc.compute.simulator.telemetry.table.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.TaskTableReader
 import org.opendc.trace.util.parquet.exporter.ExportColumn
@@ -37,6 +38,7 @@ import java.io.File
 public class ParquetComputeMonitor(
     private val hostExporter: Exporter<HostTableReader>,
     private val taskExporter: Exporter<TaskTableReader>,
+    private val powerSourceExporter: Exporter<PowerSourceTableReader>,
     private val serviceExporter: Exporter<ServiceTableReader>,
 ) : ComputeMonitor, AutoCloseable {
     override fun record(reader: HostTableReader) {
@@ -47,6 +49,10 @@ public class ParquetComputeMonitor(
         taskExporter.write(reader)
     }
 
+    override fun record(reader: PowerSourceTableReader) {
+        powerSourceExporter.write(reader)
+    }
+
     override fun record(reader: ServiceTableReader) {
         serviceExporter.write(reader)
     }
@@ -54,6 +60,7 @@ public class ParquetComputeMonitor(
     override fun close() {
         hostExporter.close()
         taskExporter.close()
+        powerSourceExporter.close()
         serviceExporter.close()
     }
 
@@ -77,12 +84,13 @@ public class ParquetComputeMonitor(
                 bufferSize = bufferSize,
                 hostExportColumns = computeExportConfig.hostExportColumns,
                 taskExportColumns = computeExportConfig.taskExportColumns,
+                powerSourceExportColumns = computeExportConfig.powerSourceExportColumns,
                 serviceExportColumns = computeExportConfig.serviceExportColumns,
             )
 
         /**
          * Constructor that loads default [ExportColumn]s defined in
-         * [DfltHostExportColumns], [DfltTaskExportColumns], [DfltServiceExportColumns]
+         * [DfltHostExportColumns], [DfltTaskExportColumns], [DfltPowerSourceExportColumns], [DfltServiceExportColumns]
          * in case optional parameters are omitted and all fields need to be retrieved.
          *
          * @param[base]         parent pathname for output file.
@@ -95,6 +103,7 @@ public class ParquetComputeMonitor(
             bufferSize: Int,
             hostExportColumns: Collection<ExportColumn<HostTableReader>>? = null,
             taskExportColumns: Collection<ExportColumn<TaskTableReader>>? = null,
+            powerSourceExportColumns: Collection<ExportColumn<PowerSourceTableReader>>? = null,
             serviceExportColumns: Collection<ExportColumn<ServiceTableReader>>? = null,
         ): ParquetComputeMonitor {
             // Loads the fields in case they need to be retrieved if optional params are omitted.
@@ -113,6 +122,12 @@ public class ParquetComputeMonitor(
                         columns = taskExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
                     ),
+                powerSourceExporter =
+                Exporter(
+                    outputFile = File(base, "$partition/powerSource.parquet").also { it.parentFile.mkdirs() },
+                    columns = powerSourceExportColumns ?: Exportable.getAllLoadedColumns(),
+                    bufferSize = bufferSize,
+                ),
                 serviceExporter =
                     Exporter(
                         outputFile = File(base, "$partition/service.parquet").also { it.parentFile.mkdirs() },

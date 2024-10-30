@@ -40,7 +40,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
     private double totalEnergyUsage = 0.0;
 
     private FlowEdge cpuEdge;
-    private FlowEdge powerEdge;
+    private FlowEdge powerSupplyEdge;
 
     private double capacity = Long.MAX_VALUE;
 
@@ -126,7 +126,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
         long duration = now - lastUpdate;
         if (duration > 0) {
             // Compute the energy usage of the psu
-            this.totalEnergyUsage += (double) (this.powerSupplied * duration * 0.001);
+            this.totalEnergyUsage += (this.powerSupplied * duration * 0.001);
         }
     }
 
@@ -136,20 +136,12 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void pushDemand(FlowEdge supplierEdge, double newDemand) {
-        if (newDemand == this.powerDemand) {
-            return;
-        }
-
         this.powerDemand = newDemand;
-        powerEdge.pushSupply(newDemand);
+        powerSupplyEdge.pushDemand(newDemand);
     }
 
     @Override
     public void pushSupply(FlowEdge consumerEdge, double newSupply) {
-        if (newSupply == this.powerSupplied) {
-            return;
-        }
-
         this.powerSupplied = newSupply;
         cpuEdge.pushSupply(newSupply);
     }
@@ -160,8 +152,10 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
             return;
         }
 
+        updateCounters();
         this.powerDemand = newPowerDemand;
-        this.invalidate();
+
+        pushDemand(this.powerSupplyEdge, newPowerDemand);
     }
 
     @Override
@@ -170,8 +164,10 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
             return;
         }
 
+        updateCounters();
         this.powerSupplied = newPowerSupply;
-        this.invalidate();
+
+        pushSupply(this.cpuEdge, newPowerSupply);
     }
 
     @Override
@@ -181,7 +177,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void addSupplierEdge(FlowEdge supplierEdge) {
-        this.powerEdge = supplierEdge;
+        this.powerSupplyEdge = supplierEdge;
     }
 
     @Override
@@ -191,6 +187,6 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void removeSupplierEdge(FlowEdge supplierEdge) {
-        this.powerEdge = null;
+        this.powerSupplyEdge = null;
     }
 }

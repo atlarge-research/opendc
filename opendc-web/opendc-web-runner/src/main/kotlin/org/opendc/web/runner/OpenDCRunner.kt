@@ -31,7 +31,9 @@ import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
 import org.opendc.compute.simulator.scheduler.createComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
+import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
+import org.opendc.compute.topology.specs.PowerSourceSpec
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.sampleByLoad
 import org.opendc.compute.workload.trace
@@ -233,7 +235,7 @@ public class OpenDCRunner(
     private inner class SimulationTask(
         private val scenario: Scenario,
         private val repeat: Int,
-        private val topology: List<HostSpec>,
+        private val topologyHosts: List<HostSpec>,
     ) : RecursiveTask<WebComputeMonitor.Results>() {
         override fun compute(): WebComputeMonitor.Results {
             val monitor = WebComputeMonitor()
@@ -261,6 +263,10 @@ public class OpenDCRunner(
                 val seed = repeat.toLong()
 
                 val scenario = scenario
+
+                val powerSourceSpec = PowerSourceSpec(UUID(0, 0),
+                    totalPower = Long.MAX_VALUE)
+                val topology = listOf(ClusterSpec("cluster", topologyHosts, powerSourceSpec))
 
                 Provisioner(dispatcher, seed).use { provisioner ->
                     provisioner.runSteps(

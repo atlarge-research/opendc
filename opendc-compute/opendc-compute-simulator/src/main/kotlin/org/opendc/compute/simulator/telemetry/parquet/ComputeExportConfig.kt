@@ -36,6 +36,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import org.opendc.common.logger.logger
 import org.opendc.compute.simulator.telemetry.table.HostTableReader
+import org.opendc.compute.simulator.telemetry.table.PowerSourceTableReader
 import org.opendc.compute.simulator.telemetry.table.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.TaskTableReader
 import org.opendc.trace.util.parquet.exporter.ColListSerializer
@@ -49,21 +50,25 @@ import org.opendc.trace.util.parquet.exporter.columnSerializer
  *
  * @param[hostExportColumns]     the columns that will be included in the `host.parquet` raw output file.
  * @param[taskExportColumns]   the columns that will be included in the `task.parquet` raw output file.
+ * @param[powerSourceExportColumns]  the columns that will be included in the `power.parquet` raw output file.
  * @param[serviceExportColumns]  the columns that will be included in the `service.parquet` raw output file.
  */
 @Serializable(with = ComputeExportConfig.Companion.ComputeExportConfigSerializer::class)
 public data class ComputeExportConfig(
     public val hostExportColumns: Set<ExportColumn<HostTableReader>>,
     public val taskExportColumns: Set<ExportColumn<TaskTableReader>>,
+    public val powerSourceExportColumns: Set<ExportColumn<PowerSourceTableReader>>,
     public val serviceExportColumns: Set<ExportColumn<ServiceTableReader>>,
 ) {
     public constructor(
         hostExportColumns: Collection<ExportColumn<HostTableReader>>,
         taskExportColumns: Collection<ExportColumn<TaskTableReader>>,
+        powerSourceExportColumns: Collection<ExportColumn<PowerSourceTableReader>>,
         serviceExportColumns: Collection<ExportColumn<ServiceTableReader>>,
     ) : this(
         hostExportColumns.toSet() + DfltHostExportColumns.BASE_EXPORT_COLUMNS,
         taskExportColumns.toSet() + DfltTaskExportColumns.BASE_EXPORT_COLUMNS,
+        powerSourceExportColumns.toSet() + DfltPowerSourceExportColumns.BASE_EXPORT_COLUMNS,
         serviceExportColumns.toSet() + DfltServiceExportColumns.BASE_EXPORT_COLUMNS,
     )
 
@@ -75,6 +80,7 @@ public data class ComputeExportConfig(
         | === Compute Export Config ===
         | Host columns    : ${hostExportColumns.map { it.name }.toString().trim('[', ']')}
         | Task columns  : ${taskExportColumns.map { it.name }.toString().trim('[', ']')}
+        | Power Source columns : ${powerSourceExportColumns.map { it.name }.toString().trim('[', ']')}
         | Service columns : ${serviceExportColumns.map { it.name }.toString().trim('[', ']')}
         """.trimIndent()
 
@@ -88,19 +94,21 @@ public data class ComputeExportConfig(
         public fun loadDfltColumns() {
             DfltHostExportColumns
             DfltTaskExportColumns
+            DfltPowerSourceExportColumns
             DfltServiceExportColumns
         }
 
         /**
-         * Config that includes all columns defined in [DfltHostExportColumns],
-         * [DfltTaskExportColumns], [DfltServiceExportColumns] among all other loaded
+         * Config that includes all columns defined in [DfltHostExportColumns], [DfltTaskExportColumns],
+         * [DfltPowerSourceExportColumns], [DfltServiceExportColumns] among all other loaded
          * columns for [HostTableReader], [TaskTableReader] and [ServiceTableReader].
          */
         public val ALL_COLUMNS: ComputeExportConfig by lazy {
-            ComputeExportConfig.Companion.loadDfltColumns()
+            loadDfltColumns()
             ComputeExportConfig(
                 hostExportColumns = ExportColumn.getAllLoadedColumns(),
                 taskExportColumns = ExportColumn.getAllLoadedColumns(),
+                powerSourceExportColumns = ExportColumn.getAllLoadedColumns(),
                 serviceExportColumns = ExportColumn.getAllLoadedColumns(),
             )
         }
@@ -122,6 +130,10 @@ public data class ComputeExportConfig(
                         ListSerializer(columnSerializer<TaskTableReader>()).descriptor,
                     )
                     element(
+                        "powerSourceExportColumns",
+                        ListSerializer(columnSerializer<ServiceTableReader>()).descriptor,
+                    )
+                    element(
                         "serviceExportColumns",
                         ListSerializer(columnSerializer<ServiceTableReader>()).descriptor,
                     )
@@ -135,16 +147,18 @@ public data class ComputeExportConfig(
                     }
 
                 // Loads the default columns so that they are available for deserialization.
-                ComputeExportConfig.Companion.loadDfltColumns()
+                loadDfltColumns()
                 val elem = jsonDec.decodeJsonElement().jsonObject
 
                 val hostFields: List<ExportColumn<HostTableReader>> = elem["hostExportColumns"].toFieldList()
                 val taskFields: List<ExportColumn<TaskTableReader>> = elem["taskExportColumns"].toFieldList()
+                val powerSourceFields: List<ExportColumn<PowerSourceTableReader>> = elem["powerSourceExportColumns"].toFieldList()
                 val serviceFields: List<ExportColumn<ServiceTableReader>> = elem["serviceExportColumns"].toFieldList()
 
                 return ComputeExportConfig(
                     hostExportColumns = hostFields,
                     taskExportColumns = taskFields,
+                    powerSourceExportColumns = powerSourceFields,
                     serviceExportColumns = serviceFields,
                 )
             }
@@ -153,22 +167,28 @@ public data class ComputeExportConfig(
                 encoder: Encoder,
                 value: ComputeExportConfig,
             ) {
-                encoder.encodeStructure(ComputeExportConfig.Companion.ComputeExportConfigSerializer.descriptor) {
+                encoder.encodeStructure(descriptor) {
                     encodeSerializableElement(
-                        ComputeExportConfig.Companion.ComputeExportConfigSerializer.descriptor,
+                        descriptor,
                         0,
                         ColListSerializer(columnSerializer<HostTableReader>()),
                         value.hostExportColumns.toList(),
                     )
                     encodeSerializableElement(
-                        ComputeExportConfig.Companion.ComputeExportConfigSerializer.descriptor,
+                        descriptor,
                         1,
                         ColListSerializer(columnSerializer<TaskTableReader>()),
                         value.taskExportColumns.toList(),
                     )
                     encodeSerializableElement(
-                        ComputeExportConfig.Companion.ComputeExportConfigSerializer.descriptor,
+                        descriptor,
                         2,
+                        ColListSerializer(columnSerializer<PowerSourceTableReader>()),
+                        value.powerSourceExportColumns.toList(),
+                    )
+                    encodeSerializableElement(
+                        descriptor,
+                        3,
                         ColListSerializer(columnSerializer<ServiceTableReader>()),
                         value.serviceExportColumns.toList(),
                     )

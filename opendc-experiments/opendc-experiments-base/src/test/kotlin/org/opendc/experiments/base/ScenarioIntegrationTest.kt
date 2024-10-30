@@ -40,7 +40,7 @@ import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.table.HostTableReader
 import org.opendc.compute.simulator.telemetry.table.ServiceTableReader
 import org.opendc.compute.topology.clusterTopology
-import org.opendc.compute.topology.specs.HostSpec
+import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.Task
 import org.opendc.compute.workload.sampleByLoad
@@ -358,7 +358,7 @@ class ScenarioIntegrationTest {
     /**
      * Obtain the topology factory for the test.
      */
-    private fun createTopology(name: String): List<HostSpec> {
+    private fun createTopology(name: String): List<ClusterSpec> {
         val stream = checkNotNull(object {}.javaClass.getResourceAsStream("/topologies/$name"))
         return stream.use { clusterTopology(stream) }
     }

@@ -33,6 +33,10 @@ public interface HostTableReader : Exportable {
 
     public fun setValues(table: HostTableReader)
 
+    public fun record(now: Instant)
+
+    public fun reset()
+
     /**
      * The [HostInfo] of the host to which the row belongs to.
      */

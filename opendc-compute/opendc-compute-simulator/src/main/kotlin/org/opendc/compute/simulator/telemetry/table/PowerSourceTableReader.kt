@@ -26,17 +26,18 @@ import org.opendc.trace.util.parquet.exporter.Exportable
 import java.time.Instant
 
 /**
- * An interface that is used to read a row of a service trace entry.
+ * An interface that is used to read a row of a host trace entry.
  */
-public interface ServiceTableReader : Exportable {
-    public fun copy(): ServiceTableReader
+public interface PowerSourceTableReader : Exportable {
+    public fun copy(): PowerSourceTableReader
 
-    public fun setValues(table: ServiceTableReader)
+    public fun setValues(table: PowerSourceTableReader)
 
     public fun record(now: Instant)
 
+    public fun reset()
     /**
-     * The timestamp of the current entry of the reader.
+     * The timestamp of the current entry of the reader relative to the start of the workload.
      */
     public val timestamp: Instant
 
@@ -46,47 +47,27 @@ public interface ServiceTableReader : Exportable {
     public val timestampAbsolute: Instant
 
     /**
-     * The number of hosts that are up at this instant.
+     * The number of connected hosts
      */
-    public val hostsUp: Int
+    public val hostsConnected: Int
 
     /**
-     * The number of hosts that are down at this instant.
+     * The current power draw of the host in W.
      */
-    public val hostsDown: Int
+    public val powerDraw: Double
 
     /**
-     * The number of tasks that are registered with the compute service.
+     * The total energy consumption of the host since last sample in J.
      */
-    public val tasksTotal: Int
+    public val energyUsage: Double
 
     /**
-     * The number of tasks that are pending to be scheduled.
+     * The current carbon intensity of the host in gCO2 / kW.
      */
-    public val tasksPending: Int
+    public val carbonIntensity: Double
 
     /**
-     * The number of tasks that are currently active.
+     * The current carbon emission since the last deadline in g.
      */
-    public val tasksActive: Int
-
-    /**
-     * The number of tasks that completed the tasks successfully
-     */
-    public val tasksCompleted: Int
-
-    /**
-     * The number of tasks that failed more times than allowed and are thus terminated
-     */
-    public val tasksTerminated: Int
-
-    /**
-     * The scheduling attempts that were successful.
-     */
-    public val attemptsSuccess: Int
-
-    /**
-     * The scheduling attempts that were unsuccessful due to client error.
-     */
-    public val attemptsFailure: Int
+    public val carbonEmission: Double
 }
