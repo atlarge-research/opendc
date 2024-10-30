@@ -76,7 +76,7 @@ public class PowerSourceTableReaderImpl(
         _hostsConnected = 0
         _powerDraw = powerSource.powerDraw
         _energyUsage = powerSource.energyUsage
-        _carbonIntensity = carbonTrace.getCarbonIntensity(timestampAbsolute)
+        _carbonIntensity = 0.0
         _carbonEmission = carbonIntensity * (energyUsage / 3600000.0)
     }
 
