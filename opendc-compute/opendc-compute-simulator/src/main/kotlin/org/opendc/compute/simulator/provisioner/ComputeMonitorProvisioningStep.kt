@@ -53,6 +53,6 @@ public class ComputeMonitorProvisioningStep(
                 startTime,
                 carbonTrace,
             )
-        return AutoCloseable { metricReader.close() }
+        return metricReader
     }
 }

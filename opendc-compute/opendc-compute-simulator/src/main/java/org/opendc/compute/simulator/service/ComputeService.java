@@ -49,6 +49,7 @@ import org.opendc.compute.simulator.host.HostModel;
 import org.opendc.compute.simulator.host.HostState;
 import org.opendc.compute.simulator.host.SimHost;
 import org.opendc.compute.simulator.scheduler.ComputeScheduler;
+import org.opendc.compute.simulator.telemetry.ComputeMetricReader;
 import org.opendc.compute.simulator.telemetry.SchedulerStats;
 import org.opendc.simulator.compute.power.SimPowerSource;
 import org.opendc.simulator.compute.workload.Workload;
@@ -141,6 +142,8 @@ public final class ComputeService implements AutoCloseable {
 
     private final List<ServiceTask> tasksToRemove = new ArrayList<>();
 
+    private ComputeMetricReader metricReader;
+
     /**
      * A [HostListener] used to track the active tasks.
      */
@@ -201,7 +204,7 @@ public final class ComputeService implements AutoCloseable {
                 }
 
                 if (task.getState() == TaskState.COMPLETED || task.getState() == TaskState.TERMINATED) {
-                    tasksToRemove.add(task);
+                    setTaskToBeRemoved(task);
                 }
 
                 // Try to reschedule if needed
@@ -214,11 +217,12 @@ public final class ComputeService implements AutoCloseable {
     private long maxMemory = 0L;
     private long attemptsSuccess = 0L;
     private long attemptsFailure = 0L;
-    private int tasksTotal = 0;
-    private int tasksPending = 0;
-    private int tasksActive = 0;
-    private int tasksTerminated = 0;
-    private int tasksCompleted = 0;
+    private int tasksExpected = 0; // Number of tasks expected from the input trace
+    private int tasksTotal = 0; // Number of tasks seen by the service
+    private int tasksPending = 0; // Number of tasks waiting to be scheduled
+    private int tasksActive = 0; // Number of tasks that are currently running
+    private int tasksTerminated = 0; // Number of tasks that were terminated due to too much failures
+    private int tasksCompleted = 0; // Number of tasks completed successfully
 
     /**
      * Construct a {@link ComputeService} instance.
@@ -332,6 +336,21 @@ public final class ComputeService implements AutoCloseable {
         return Collections.unmodifiableSet(this.powerSources);
     }
 
+    public void setMetricReader(ComputeMetricReader metricReader) {
+        this.metricReader = metricReader;
+    }
+
+    public void setTasksExpected(int numberOfTasks) {
+        this.tasksExpected = numberOfTasks;
+    }
+
+    public void setTaskToBeRemoved(ServiceTask task) {
+        this.tasksToRemove.add(task);
+        if ((tasksTerminated + tasksCompleted) == tasksExpected) {
+            metricReader.loggState(); // Logg the state for the final time. This will also delete all remaining tasks.
+        }
+    }
+
     /**
      * Collect the statistics about the scheduler component of this service.
      */
@@ -426,7 +445,8 @@ public final class ComputeService implements AutoCloseable {
                 tasksPending--;
                 tasksTerminated++;
                 task.setState(TaskState.TERMINATED);
-                tasksToRemove.add(task);
+
+                this.setTaskToBeRemoved(task);
                 continue;
             }
 

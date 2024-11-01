@@ -109,7 +109,11 @@ public fun runScenario(
             val startTime = Duration.ofMillis(tasks.minOf { it.submissionTime }.toEpochMilli())
             addExportModel(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace, scenario.id)
 
+            val monitor = provisioner.getMonitor()
+
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
+            service.setMetricReader(monitor)
+            service.setTasksExpected(tasks.size)
             service.replay(
                 timeSource,
                 tasks,
