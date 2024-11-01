@@ -108,7 +108,7 @@ public class ComputeMetricReader(
             }
         }
 
-    private fun loggState() {
+    public fun loggState() {
         loggCounter++
         try {
             val now = this.clock.instant()

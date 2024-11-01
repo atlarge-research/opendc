@@ -24,6 +24,7 @@ package org.opendc.compute.simulator.provisioner
 
 import org.opendc.common.Dispatcher
 import org.opendc.compute.simulator.ServiceRegistry
+import org.opendc.compute.simulator.telemetry.ComputeMetricReader
 import java.util.ArrayDeque
 import java.util.SplittableRandom
 
@@ -60,6 +61,16 @@ public class Provisioner(dispatcher: Dispatcher, seed: Long) : AutoCloseable {
      */
     public val registry: ServiceRegistry
         get() = context.registry
+
+    public fun getMonitor(): ComputeMetricReader? {
+        for (element in stack) {
+            if (element is ComputeMetricReader) {
+                return element
+            }
+        }
+
+        return null
+    }
 
     /**
      * Run a single [ProvisioningStep] for this environment.
