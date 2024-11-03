@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,40 @@
  * SOFTWARE.
  */
 
-@file:JvmName("ComputeWorkloadsNew")
+package org.opendc.simulator.compute.power;
 
-package org.opendc.compute.carbon
+public class CarbonFragmentNew {
+    private long endTime;
+    private long startTime;
+    private double carbonIntensity;
 
-import org.opendc.simulator.compute.power.CarbonFragmentNew
-import java.io.File
-import javax.management.InvalidAttributeValueException
-
-/**
- * Construct a workload from a trace.
- */
-public fun getCarbonFragments(pathToFile: String?): List<CarbonFragmentNew>? {
-    if (pathToFile == null) {
-        return null
+    public CarbonFragmentNew(long startTime, long endTime, double carbonIntensity) {
+        this.setStartTime(startTime);
+        this.setEndTime(endTime);
+        this.setCarbonIntensity(carbonIntensity);
     }
 
-    return getCarbonFragments(File(pathToFile))
-}
-
-/**
- * Construct a workload from a trace.
- */
-public fun getCarbonFragments(file: File): List<CarbonFragmentNew> {
-    if (!file.exists()) {
-        throw InvalidAttributeValueException("The carbon trace cannot be found")
+    public double getCarbonIntensity() {
+        return carbonIntensity;
     }
 
-    return CarbonTraceLoader().get(file)
+    public void setCarbonIntensity(double carbonIntensity) {
+        this.carbonIntensity = carbonIntensity;
+    }
+
+    public long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
 }

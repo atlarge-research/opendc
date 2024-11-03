@@ -29,7 +29,6 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.common.Dispatcher
 import org.opendc.common.asCoroutineDispatcher
-import org.opendc.compute.carbon.CarbonTrace
 import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceTask
@@ -55,7 +54,6 @@ public class ComputeMetricReader(
     private val monitor: ComputeMonitor,
     private val exportInterval: Duration = Duration.ofMinutes(5),
     private val startTime: Duration = Duration.ofMillis(0),
-    private val carbonTrace: CarbonTrace = CarbonTrace(null),
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(dispatcher.asCoroutineDispatcher())
@@ -119,7 +117,6 @@ public class ComputeMetricReader(
                         HostTableReaderImpl(
                             it,
                             startTime,
-                            carbonTrace,
                         )
                     }
                 reader.record(now)
@@ -152,7 +149,6 @@ public class ComputeMetricReader(
                         PowerSourceTableReaderImpl(
                             it,
                             startTime,
-                            carbonTrace,
                         )
                     }
 

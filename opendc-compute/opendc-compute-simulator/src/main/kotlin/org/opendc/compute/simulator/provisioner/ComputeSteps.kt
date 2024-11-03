@@ -24,7 +24,6 @@
 
 package org.opendc.compute.simulator.provisioner
 
-import org.opendc.compute.carbon.CarbonTrace
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.topology.specs.ClusterSpec
@@ -60,9 +59,8 @@ public fun registerComputeMonitor(
     monitor: ComputeMonitor,
     exportInterval: Duration = Duration.ofMinutes(5),
     startTime: Duration = Duration.ofMillis(0),
-    carbonTrace: CarbonTrace = CarbonTrace(null),
 ): ProvisioningStep {
-    return ComputeMonitorProvisioningStep(serviceDomain, monitor, exportInterval, startTime, carbonTrace)
+    return ComputeMonitorProvisioningStep(serviceDomain, monitor, exportInterval, startTime)
 }
 
 /**
@@ -76,6 +74,7 @@ public fun registerComputeMonitor(
 public fun setupHosts(
     serviceDomain: String,
     specs: List<ClusterSpec>,
+    startTime: Long = 0L,
 ): ProvisioningStep {
-    return HostsProvisioningStep(serviceDomain, specs)
+    return HostsProvisioningStep(serviceDomain, specs, startTime)
 }

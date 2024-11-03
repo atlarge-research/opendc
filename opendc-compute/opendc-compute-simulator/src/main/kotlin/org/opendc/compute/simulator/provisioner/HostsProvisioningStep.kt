@@ -22,6 +22,7 @@
 
 package org.opendc.compute.simulator.provisioner
 
+import org.opendc.compute.carbon.getCarbonFragments
 import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
@@ -40,6 +41,7 @@ import org.opendc.simulator.engine.FlowEngine
 public class HostsProvisioningStep internal constructor(
     private val serviceDomain: String,
     private val clusterSpecs: List<ClusterSpec>,
+    private val startTime: Long = 0L,
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service =
@@ -54,8 +56,11 @@ public class HostsProvisioningStep internal constructor(
 
         for (cluster in clusterSpecs) {
             // Create the Power Source to which hosts are connected
-            // TODO: Add connection to totalPower
-            val simPowerSource = SimPowerSource(graph)
+
+            val carbonFragments = getCarbonFragments(cluster.powerSource.carbonTracePath)
+
+            val simPowerSource = SimPowerSource(graph, cluster.powerSource.totalPower.toDouble(), carbonFragments, startTime)
+
             service.addPowerSource(simPowerSource)
             simPowerSources.add(simPowerSource)
 
@@ -88,7 +93,7 @@ public class HostsProvisioningStep internal constructor(
 
             for (simPowerSource in simPowerSources) {
                 // TODO: add close function
-//                simPowerSource.close()
+                simPowerSource.close()
             }
         }
     }

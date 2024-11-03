@@ -22,7 +22,6 @@
 
 package org.opendc.compute.simulator.telemetry.table
 
-import org.opendc.compute.carbon.CarbonTrace
 import org.opendc.compute.simulator.host.SimHost
 import java.time.Duration
 import java.time.Instant
@@ -33,7 +32,6 @@ import java.time.Instant
 public class HostTableReaderImpl(
     host: SimHost,
     private val startTime: Duration = Duration.ofMillis(0),
-    private val carbonTrace: CarbonTrace = CarbonTrace(null),
 ) : HostTableReader {
     override fun copy(): HostTableReader {
         val newHostTable =
@@ -61,8 +59,6 @@ public class HostTableReaderImpl(
         _cpuLostTime = table.cpuLostTime
         _powerDraw = table.powerDraw
         _energyUsage = table.energyUsage
-        _carbonIntensity = table.carbonIntensity
-        _carbonEmission = table.carbonEmission
         _uptime = table.uptime
         _downtime = table.downtime
         _bootTime = table.bootTime
@@ -150,14 +146,6 @@ public class HostTableReaderImpl(
     private var _energyUsage = 0.0
     private var previousEnergyUsage = 0.0
 
-    override val carbonIntensity: Double
-        get() = _carbonIntensity
-    private var _carbonIntensity = 0.0
-
-    override val carbonEmission: Double
-        get() = _carbonEmission
-    private var _carbonEmission = 0.0
-
     override val uptime: Long
         get() = _uptime - previousUptime
     private var _uptime = 0L
@@ -200,9 +188,6 @@ public class HostTableReaderImpl(
         _cpuLostTime = hostCpuStats.lostTime
         _powerDraw = hostSysStats.powerDraw
         _energyUsage = hostSysStats.energyUsage
-        _carbonIntensity = carbonTrace.getCarbonIntensity(timestampAbsolute)
-
-        _carbonEmission = carbonIntensity * (energyUsage / 3600000.0) // convert energy usage from J to kWh
         _uptime = hostSysStats.uptime.toMillis()
         _downtime = hostSysStats.downtime.toMillis()
         _bootTime = hostSysStats.bootTime
@@ -234,7 +219,5 @@ public class HostTableReaderImpl(
 
         _powerDraw = 0.0
         _energyUsage = 0.0
-        _carbonIntensity = 0.0
-        _carbonEmission = 0.0
     }
 }

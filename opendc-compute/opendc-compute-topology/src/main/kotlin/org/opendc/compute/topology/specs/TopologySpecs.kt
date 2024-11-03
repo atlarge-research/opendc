@@ -115,6 +115,7 @@ public data class PowerModelSpec(
     val power: Power = Power.ofWatts(400),
     val maxPower: Power,
     val idlePower: Power,
+    val carbonTracePaths: String? = null,
 ) {
     init {
         require(maxPower >= idlePower) { "The max power of a power model can not be less than the idle power" }
@@ -144,7 +145,8 @@ public data class PowerSourceJSONSpec(
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val arch: String = "unknown",
-    val totalPower: Long,
+    val totalPower: Long = Long.MAX_VALUE,
+    val carbonTracePath: String? = null,
 ) {
     public companion object {
         public val DFLT: PowerSourceJSONSpec =

@@ -24,8 +24,6 @@ package org.opendc.experiments.base.runner
 
 import me.tongfei.progressbar.ProgressBarBuilder
 import me.tongfei.progressbar.ProgressBarStyle
-import org.opendc.compute.carbon.CarbonTrace
-import org.opendc.compute.carbon.getCarbonTrace
 import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
@@ -82,16 +80,6 @@ public fun runScenario(
         val serviceDomain = "compute.opendc.org"
         Provisioner(dispatcher, seed).use { provisioner ->
 
-            val topology = clusterTopology(scenario.topologySpec.pathToFile, Random(seed))
-            provisioner.runSteps(
-                setupComputeService(
-                    serviceDomain,
-                    { createComputeScheduler(scenario.allocationPolicySpec.policyType, Random(it.seeder.nextLong())) },
-                    maxNumFailures = scenario.maxNumFailures,
-                ),
-                setupHosts(serviceDomain, topology),
-            )
-
             val checkpointInterval = scenario.checkpointModelSpec?.checkpointInterval ?: 0L
             val checkpointDuration = scenario.checkpointModelSpec?.checkpointDuration ?: 0L
             val checkpointIntervalScaling = scenario.checkpointModelSpec?.checkpointIntervalScaling ?: 1.0
@@ -105,15 +93,27 @@ public fun runScenario(
                 )
             val tasks = getWorkloadType(scenario.workloadSpec.type).resolve(workloadLoader, Random(seed))
 
-            val carbonTrace = getCarbonTrace(scenario.carbonTracePath)
-            val startTime = Duration.ofMillis(tasks.minOf { it.submissionTime }.toEpochMilli())
-            addExportModel(provisioner, serviceDomain, scenario, seed, startTime, carbonTrace, scenario.id)
+            val startTimeLong = tasks.minOf { it.submissionTime }.toEpochMilli()
+            val startTime = Duration.ofMillis(startTimeLong)
 
-            val monitor = provisioner.getMonitor()
+            val topology = clusterTopology(scenario.topologySpec.pathToFile, Random(seed))
+            provisioner.runSteps(
+                setupComputeService(
+                    serviceDomain,
+                    { createComputeScheduler(scenario.allocationPolicySpec.policyType, Random(it.seeder.nextLong())) },
+                    maxNumFailures = scenario.maxNumFailures,
+                ),
+                setupHosts(serviceDomain, topology, startTimeLong),
+            )
+
+            addExportModel(provisioner, serviceDomain, scenario, seed, startTime, scenario.id)
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
-            service.setMetricReader(monitor)
             service.setTasksExpected(tasks.size)
+
+            val monitor = provisioner.getMonitor()
+            service.setMetricReader(monitor)
+
             service.replay(
                 timeSource,
                 tasks,
@@ -139,7 +139,6 @@ public fun addExportModel(
     scenario: Scenario,
     seed: Long,
     startTime: Duration,
-    carbonTrace: CarbonTrace,
     index: Int,
 ) {
     provisioner.runStep(
@@ -153,7 +152,6 @@ public fun addExportModel(
             ),
             Duration.ofSeconds(scenario.exportModelSpec.exportInterval),
             startTime,
-            carbonTrace,
         ),
     )
 }

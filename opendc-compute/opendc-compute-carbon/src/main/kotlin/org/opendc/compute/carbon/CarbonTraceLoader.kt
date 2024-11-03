@@ -22,6 +22,7 @@
 
 package org.opendc.compute.carbon
 
+import org.opendc.simulator.compute.power.CarbonFragmentNew
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.CARBON_INTENSITY_TIMESTAMP
 import org.opendc.trace.conv.CARBON_INTENSITY_VALUE
@@ -40,14 +41,14 @@ public class CarbonTraceLoader {
     /**
      * The cache of workloads.
      */
-    private val cache = ConcurrentHashMap<String, SoftReference<List<CarbonFragment>>>()
+    private val cache = ConcurrentHashMap<String, SoftReference<List<CarbonFragmentNew>>>()
 
-    private val builder = CarbonFragmentBuilder()
+    private val builder = CarbonFragmentNewBuilder()
 
     /**
      * Read the metadata into a workload.
      */
-    private fun parseCarbon(trace: Trace): List<CarbonFragment> {
+    private fun parseCarbon(trace: Trace): List<CarbonFragmentNew> {
         val reader = checkNotNull(trace.getTable(TABLE_CARBON_INTENSITIES)).newReader()
 
         val startTimeCol = reader.resolve(CARBON_INTENSITY_TIMESTAMP)
@@ -76,7 +77,7 @@ public class CarbonTraceLoader {
     /**
      * Load the trace with the specified [name] and [format].
      */
-    public fun get(pathToFile: File): List<CarbonFragment> {
+    public fun get(pathToFile: File): List<CarbonFragmentNew> {
         val trace = Trace.open(pathToFile, "carbon")
 
         return parseCarbon(trace)
@@ -92,11 +93,11 @@ public class CarbonTraceLoader {
     /**
      * A builder for a VM trace.
      */
-    private class CarbonFragmentBuilder {
+    private class CarbonFragmentNewBuilder {
         /**
          * The total load of the trace.
          */
-        public val fragments: MutableList<CarbonFragment> = mutableListOf<CarbonFragment>()
+        public val fragments: MutableList<CarbonFragmentNew> = mutableListOf()
 
         /**
          * Add a fragment to the trace.
@@ -109,7 +110,7 @@ public class CarbonTraceLoader {
             carbonIntensity: Double,
         ) {
             fragments.add(
-                CarbonFragment(startTime.toEpochMilli(), Long.MAX_VALUE, carbonIntensity),
+                CarbonFragmentNew(startTime.toEpochMilli(), Long.MAX_VALUE, carbonIntensity),
             )
         }
 

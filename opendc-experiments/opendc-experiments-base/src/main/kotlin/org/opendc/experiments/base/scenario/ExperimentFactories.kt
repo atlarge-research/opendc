@@ -82,7 +82,6 @@ public fun getExperiment(experimentSpec: ExperimentSpec): List<Scenario> {
                 exportModelSpec = scenarioSpec.exportModel,
                 failureModelSpec = scenarioSpec.failureModel,
                 checkpointModelSpec = scenarioSpec.checkpointModel,
-                carbonTracePath = scenarioSpec.carbonTracePath,
                 maxNumFailures = scenarioSpec.maxNumFailures,
             )
         trackScenario(scenarioSpec, outputFolder)

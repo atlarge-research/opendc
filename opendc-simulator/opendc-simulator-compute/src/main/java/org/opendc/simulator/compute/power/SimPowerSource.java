@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute.power;
 
+import java.util.List;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.engine.FlowEdge;
 import org.opendc.simulator.engine.FlowGraph;
@@ -38,6 +39,10 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     private double powerSupplied = 0.0f;
     private double totalEnergyUsage = 0.0f;
 
+    private double carbonIntensity = 0.0f;
+    private double totalCarbonEmission = 0.0f;
+
+    private CarbonModel carbonModel = null;
     private FlowEdge muxEdge;
 
     private double capacity = Long.MAX_VALUE;
@@ -71,12 +76,19 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
         return this.powerSupplied;
     }
 
+    public double getCarbonIntensity() {
+        return this.carbonIntensity;
+    }
+
     /**
      * Return the cumulated energy usage of the machine (in J) measured at the InPort of the powers supply.
      */
     public double getEnergyUsage() {
-        updateCounters();
         return totalEnergyUsage;
+    }
+
+    public double getCarbonEmission() {
+        return this.totalCarbonEmission;
     }
 
     @Override
@@ -88,10 +100,25 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimPowerSource(FlowGraph graph) {
+    public SimPowerSource(
+            FlowGraph graph, double max_capacity, List<CarbonFragmentNew> carbonFragments, long startTime) {
         super(graph);
 
+        this.capacity = max_capacity;
+
+        if (carbonFragments != null) {
+            this.carbonModel = new CarbonModel(graph, this, carbonFragments, startTime);
+        }
         lastUpdate = this.clock.millis();
+    }
+
+    public void close() {
+        if (this.carbonModel != null) {
+            this.carbonModel.close();
+            this.carbonModel = null;
+        }
+
+        this.closeNode();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,8 +150,11 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
 
         long duration = now - lastUpdate;
         if (duration > 0) {
+            double energyUsage = (this.powerSupplied * duration * 0.001);
+
             // Compute the energy usage of the machine
-            this.totalEnergyUsage += (double) (this.powerSupplied * duration * 0.001);
+            this.totalEnergyUsage += energyUsage;
+            this.totalCarbonEmission += this.carbonIntensity * (energyUsage / 3600000.0);
         }
     }
 
@@ -160,5 +190,11 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     @Override
     public void removeConsumerEdge(FlowEdge consumerEdge) {
         this.muxEdge = null;
+    }
+
+    // Update the carbon intensity of the power source
+    public void updateCarbonIntensity(double carbonIntensity) {
+        this.updateCounters();
+        this.carbonIntensity = carbonIntensity;
     }
 }

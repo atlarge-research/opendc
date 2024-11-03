@@ -22,7 +22,6 @@
 
 package org.opendc.compute.simulator.provisioner
 
-import org.opendc.compute.carbon.CarbonTrace
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.telemetry.ComputeMetricReader
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
@@ -37,7 +36,6 @@ public class ComputeMonitorProvisioningStep(
     private val monitor: ComputeMonitor,
     private val exportInterval: Duration,
     private val startTime: Duration = Duration.ofMillis(0),
-    private val carbonTrace: CarbonTrace = CarbonTrace(null),
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service =
@@ -51,7 +49,6 @@ public class ComputeMonitorProvisioningStep(
                 monitor,
                 exportInterval,
                 startTime,
-                carbonTrace,
             )
         return metricReader
     }
