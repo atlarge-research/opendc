@@ -272,20 +272,22 @@ public class OpenDCRunner(
                 val topology = listOf(ClusterSpec("cluster", topologyHosts, powerSourceSpec))
 
                 Provisioner(dispatcher, seed).use { provisioner ->
+
+                    val workload =
+                        trace(scenario.workload.trace.id).sampleByLoad(scenario.workload.samplingFraction)
+                    val vms = workload.resolve(workloadLoader, Random(seed))
+                    val startTime = vms.minOf { it.submissionTime }.toEpochMilli()
+
                     provisioner.runSteps(
                         setupComputeService(
                             serviceDomain,
                             { createComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong())) },
                         ),
                         registerComputeMonitor(serviceDomain, monitor),
-                        setupHosts(serviceDomain, topology),
+                        setupHosts(serviceDomain, topology, startTime),
                     )
 
                     val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
-
-                    val workload =
-                        trace(scenario.workload.trace.id).sampleByLoad(scenario.workload.samplingFraction)
-                    val vms = workload.resolve(workloadLoader, Random(seed))
 
                     val phenomena = scenario.phenomena
                     val failureModel =

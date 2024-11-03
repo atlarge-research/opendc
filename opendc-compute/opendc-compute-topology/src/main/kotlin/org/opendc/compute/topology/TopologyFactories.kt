@@ -107,6 +107,7 @@ private fun ClusterJSONSpec.toClusterSpec(random: RandomGenerator): ClusterSpec 
         PowerSourceSpec(
             UUID(random.nextLong(), (clusterId).toLong()),
             totalPower = this.powerSource.totalPower,
+            carbonTracePath = this.powerSource.carbonTracePath,
         )
     clusterId++
     return ClusterSpec(this.name, hostSpecs, powerSourceSpec)

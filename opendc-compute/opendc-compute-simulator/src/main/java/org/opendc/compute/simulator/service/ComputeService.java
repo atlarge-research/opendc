@@ -346,8 +346,11 @@ public final class ComputeService implements AutoCloseable {
 
     public void setTaskToBeRemoved(ServiceTask task) {
         this.tasksToRemove.add(task);
-        if ((tasksTerminated + tasksCompleted) == tasksExpected) {
-            metricReader.loggState(); // Logg the state for the final time. This will also delete all remaining tasks.
+        if ((this.tasksTerminated + this.tasksCompleted) == this.tasksExpected) {
+            if (this.metricReader != null) {
+                this.metricReader
+                        .loggState(); // Logg the state for the final time. This will also delete all remaining tasks.
+            }
         }
     }
 

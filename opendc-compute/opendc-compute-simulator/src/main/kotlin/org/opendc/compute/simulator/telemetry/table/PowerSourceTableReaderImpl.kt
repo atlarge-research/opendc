@@ -22,7 +22,6 @@
 
 package org.opendc.compute.simulator.telemetry.table
 
-import org.opendc.compute.carbon.CarbonTrace
 import org.opendc.simulator.compute.power.SimPowerSource
 import java.time.Duration
 import java.time.Instant
@@ -33,7 +32,6 @@ import java.time.Instant
 public class PowerSourceTableReaderImpl(
     powerSource: SimPowerSource,
     private val startTime: Duration = Duration.ofMillis(0),
-    private val carbonTrace: CarbonTrace = CarbonTrace(null),
 ) : PowerSourceTableReader {
     override fun copy(): PowerSourceTableReader {
         val newPowerSourceTable =
@@ -84,8 +82,9 @@ public class PowerSourceTableReaderImpl(
     private var _carbonIntensity = 0.0
 
     override val carbonEmission: Double
-        get() = _carbonEmission
+        get() = _carbonEmission - previousCarbonEmission
     private var _carbonEmission = 0.0
+    private var previousCarbonEmission = 0.0
 
     /**
      * Record the next cycle.
@@ -95,10 +94,12 @@ public class PowerSourceTableReaderImpl(
         _timestampAbsolute = now + startTime
 
         _hostsConnected = 0
+
+        powerSource.updateCounters()
         _powerDraw = powerSource.powerDraw
         _energyUsage = powerSource.energyUsage
-        _carbonIntensity = 0.0
-        _carbonEmission = carbonIntensity * (energyUsage / 3600000.0)
+        _carbonIntensity = powerSource.carbonIntensity
+        _carbonEmission = powerSource.carbonEmission
     }
 
     /**
@@ -106,6 +107,7 @@ public class PowerSourceTableReaderImpl(
      */
     override fun reset() {
         previousEnergyUsage = _energyUsage
+        previousCarbonEmission = _carbonEmission
 
         _hostsConnected = 0
         _powerDraw = 0.0

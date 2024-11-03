@@ -56,7 +56,6 @@ public data class ExperimentSpec(
     val exportModels: Set<ExportModelSpec> = setOf(ExportModelSpec()),
     val failureModels: Set<FailureModelSpec?> = setOf(null),
     val checkpointModels: Set<CheckpointModelSpec?> = setOf(null),
-    val carbonTracePaths: Set<String?> = setOf(null),
     val computeExportConfig: ComputeExportConfig = ComputeExportConfig.ALL_COLUMNS,
     val maxNumFailures: Set<Int> = setOf(10),
 ) {
@@ -75,8 +74,7 @@ public data class ExperimentSpec(
 
     public fun getCartesian(): Sequence<ScenarioSpec> {
         return sequence {
-            val carbonTracePathDiv = maxNumFailures.size
-            val checkpointDiv = carbonTracePathDiv * carbonTracePaths.size
+            val checkpointDiv = maxNumFailures.size
             val failureDiv = checkpointDiv * checkpointModels.size
             val exportDiv = failureDiv * failureModels.size
             val allocationDiv = exportDiv * exportModels.size
@@ -90,7 +88,6 @@ public data class ExperimentSpec(
             val exportModelList = exportModels.toList()
             val failureModelList = failureModels.toList()
             val checkpointModelList = checkpointModels.toList()
-            val carbonTracePathList = carbonTracePaths.toList()
             val maxNumFailuresList = maxNumFailures.toList()
 
             for (i in 0 until numScenarios) {
@@ -106,7 +103,6 @@ public data class ExperimentSpec(
                         exportModelList[(i / exportDiv) % exportModelList.size],
                         failureModelList[(i / failureDiv) % failureModelList.size],
                         checkpointModelList[(i / checkpointDiv) % checkpointModelList.size],
-                        carbonTracePathList[(i / carbonTracePathDiv) % carbonTracePathList.size],
                         maxNumFailuresList[i % maxNumFailuresList.size],
                     ),
                 )

@@ -37,6 +37,5 @@ public data class ScenarioSpec(
     val exportModel: ExportModelSpec = ExportModelSpec(),
     val failureModel: FailureModelSpec? = null,
     val checkpointModel: CheckpointModelSpec? = null,
-    val carbonTracePath: String? = null,
     val maxNumFailures: Int = 10,
 )
