@@ -103,10 +103,6 @@ const config = {
                             {
                                 label: "Tutorials",
                                 to: "/docs/category/tutorials"
-                            },
-                            {
-                                label: "Advanced Guides",
-                                to: "/docs/category/advanced-guides"
                             }
                         ]
                     },

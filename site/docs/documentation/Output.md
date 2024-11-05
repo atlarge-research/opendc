@@ -1,6 +1,7 @@
 
-Running OpenDC results in three output files. The first file ([Server](#server)) contains metrics related to the jobs being executed. 
-The second file ([Host](#host)) contains all metrics related to the hosts on which jobs can be executed. Finally, the third file ([Service](#service))
+Running OpenDC results in three output files. The first file ([Task](#task)) contains metrics related to the jobs being executed. 
+The second file ([Host](#host)) contains all metrics related to the hosts on which jobs can be executed. The third file ([Power](#power))
+contains all metrics related to the power sources that power the hosts. Finally, the third file ([Service](#service))
 contains metrics describing the overall performance. An experiment in OpenDC has 
 
 ### Task
