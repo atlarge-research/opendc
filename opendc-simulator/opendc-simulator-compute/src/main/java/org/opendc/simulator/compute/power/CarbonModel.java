@@ -51,10 +51,7 @@ public class CarbonModel extends FlowNode {
      *                  to absolute time (used by carbon fragments).
      */
     public CarbonModel(
-            FlowGraph parentGraph,
-            SimPowerSource powerSource,
-            List<CarbonFragment> carbonFragments,
-            long startTime) {
+            FlowGraph parentGraph, SimPowerSource powerSource, List<CarbonFragment> carbonFragments, long startTime) {
         super(parentGraph);
 
         this.powerSource = powerSource;
