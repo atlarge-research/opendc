@@ -33,8 +33,8 @@ import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.telemetry.parquet.ParquetComputeMonitor
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.experiments.base.scenario.Scenario
-import org.opendc.experiments.base.scenario.specs.getWorkloadType
+import org.opendc.experiments.base.experiment.Scenario
+import org.opendc.experiments.base.experiment.specs.getWorkloadType
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
 import java.time.Duration

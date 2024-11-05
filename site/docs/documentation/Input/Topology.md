@@ -2,6 +2,11 @@ The topology of a datacenter is defined using a JSON file. A topology consist of
 Each cluster consist of at least one host on which jobs can be executed. Each host consist of one or more CPUs,
 a memory unit and a power model.
 
+:::info Code
+The code related to reading and processing topology files can be found [here](https://github.com/atlarge-research/opendc/tree/master/opendc-compute/opendc-compute-topology/src/main/kotlin/org/opendc/compute/topology)
+:::
+
+
 ## Schema
 
 The schema for the topology file is provided in [schema](TopologySchema).
@@ -17,12 +22,12 @@ In the following section, we describe the different components of the schema.
 
 ### Host
 
-| variable   | type                  | required? | default | description                                                                    |
-|------------|-----------------------|-----------|---------|--------------------------------------------------------------------------------|
-| name       | string                | no        | Host    | The name of the host. This is only important for debugging and post-processing |
-| count      | integer               | no        | 1       | The amount of hosts of this type are in the cluster                            |
-| cpuModel        | [CPU](#cpuModel)           | yes       | N/A     | The CPUs in the host                                                           |
-| memory     | [Memory](#memory)     | yes       | N/A     | The memory used by the host                                                    |
+| variable    | type                        | required? | default | description                                                                    |
+|-------------|-----------------------------|-----------|---------|--------------------------------------------------------------------------------|
+| name        | string                      | no        | Host    | The name of the host. This is only important for debugging and post-processing |
+| count       | integer                     | no        | 1       | The amount of hosts of this type are in the cluster                            |
+| cpuModel    | [CPU](#cpu)                 | yes       | N/A     | The CPUs in the host                                                           |
+| memory      | [Memory](#memory)           | yes       | N/A     | The memory used by the host                                                    |
 | power model | [Power Model](#power-model) | yes       | N/A     | The power model used to determine the power draw of the host                   |
 
 ### CPU
@@ -49,12 +54,13 @@ In the following section, we describe the different components of the schema.
 
 ### Power Model
 
-| variable  | type    | Unit | required? | default | description                                                                |
-|-----------|---------|------|-----------|---------|----------------------------------------------------------------------------|
-| modelType | string  | N/A  | yes       | N/A     | The type of model used to determine power draw                             |
-| power     | string  | Watt | no        | 400     | The constant power draw when using the 'constant' power model type in Watt |
-| maxPower  | string  | Watt | yes       | N/A     | The power draw of a host when using max capacity in Watt                   |
-| idlePower | integer | Watt | yes       | N/A     | The power draw of a host when idle in Watt                                 |
+| variable        | type   | Unit | required? | default  | description                                                                   |
+|-----------------|--------|------|-----------|----------|-------------------------------------------------------------------------------|
+| vendor          | string | N/A  | yes       | N/A      | The type of model used to determine power draw                                |
+| modelName       | string | N/A  | yes       | N/A      | The type of model used to determine power draw                                |
+| arch            | string | N/A  | yes       | N/A      | The type of model used to determine power draw                                |
+| totalPower      | Int64  | Watt | no        | max long | The power draw of a host when using max capacity in Watt                      |
+| carbonTracePath | string | N/A  | no        | null     | Path to a carbon intensity trace. If not given, carbon intensity is always 0. |
 
 ## Examples
 
@@ -71,12 +77,11 @@ The simplest data center that can be provided to OpenDC is shown below:
         {
             "hosts": [
                 {
-                    "cpus": [
-                        {
-                            "coreCount": 16,
-                            "coreSpeed": 1000
-                        }
-                    ],
+                    "cpu":
+                    {
+                        "coreCount": 16,
+                        "coreSpeed": 1000
+                    },
                     "memory": {
                         "memorySize": 100000
                     }
@@ -87,7 +92,7 @@ The simplest data center that can be provided to OpenDC is shown below:
 }
 ```
 
-This is creates a data center with a single cluster containing a single host. This host consist of a single 16 core CPU
+This creates a data center with a single cluster containing a single host. This host consist of a single 16 core CPU
 with a speed of 1 Ghz, and 100 MiB RAM memory.
 
 ### Count
@@ -102,14 +107,14 @@ Duplicating clusters, hosts, or CPUs is easy using the "count" keyword:
             "hosts": [
                 {
                     "count": 5,
-                    "cpus": [
-                        {
-                            "coreCount": 16,
-                            "coreSpeed": 1000,
-                            "count": 10
-                        }
-                    ],
-                    "memory": {
+                    "cpu":
+                    {
+                        "coreCount": 16,
+                        "coreSpeed": 1000,
+                        "count": 10
+                    },
+                    "memory": 
+                    {
                         "memorySize": 100000
                     }
                 }
@@ -205,7 +210,7 @@ Aside from using number to indicate values it is also possible to define values 
                         "modelType": "linear",
                         "power": "400 Watts",
                         "maxPower": "1 KW",
-                        "idlePower": "0.4W"
+                        "idlePower": "0.4 W"
                     }
                 }
             ]

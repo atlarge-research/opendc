@@ -101,7 +101,7 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public SimPowerSource(
-            FlowGraph graph, double max_capacity, List<CarbonFragmentNew> carbonFragments, long startTime) {
+        FlowGraph graph, double max_capacity, List<CarbonFragment> carbonFragments, long startTime) {
         super(graph);
 
         this.capacity = max_capacity;

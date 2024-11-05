@@ -20,21 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.scenario.specs
+package org.opendc.experiments.base.experiment.specs
 
 import kotlinx.serialization.Serializable
-import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
 
-/**
- * specification describing how tasks are allocated
- *
- * @property policyType
- *
- * TODO: expand with more variables such as allowed over-subscription
- */
 @Serializable
-public data class AllocationPolicySpec(
-    val policyType: ComputeSchedulerEnum = ComputeSchedulerEnum.Mem,
-) {
-    public val name: String = policyType.toString()
-}
+public data class PowerModelSpec(
+    val type: String = "constant",
+    val idlePower: Double = 200.0,
+    val maxPower: Double = 350.0,
+)

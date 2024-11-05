@@ -31,7 +31,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import org.opendc.experiments.base.runner.runExperiment
-import org.opendc.experiments.base.scenario.getExperiment
+import org.opendc.experiments.base.experiment.getExperiment
 import org.opendc.experiments.m3sa.m3saAnalyze
 import org.opendc.experiments.m3sa.scenario.getOutputFolder
 import java.io.File

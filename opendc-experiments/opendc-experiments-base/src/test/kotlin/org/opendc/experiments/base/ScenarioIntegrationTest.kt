@@ -46,7 +46,7 @@ import org.opendc.compute.workload.Task
 import org.opendc.compute.workload.sampleByLoad
 import org.opendc.compute.workload.trace
 import org.opendc.experiments.base.runner.replay
-import org.opendc.experiments.base.scenario.specs.TraceBasedFailureModelSpec
+import org.opendc.experiments.base.experiment.specs.TraceBasedFailureModelSpec
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
 import java.util.Random

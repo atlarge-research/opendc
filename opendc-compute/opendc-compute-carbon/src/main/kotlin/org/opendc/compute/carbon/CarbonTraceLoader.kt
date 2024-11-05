@@ -22,7 +22,7 @@
 
 package org.opendc.compute.carbon
 
-import org.opendc.simulator.compute.power.CarbonFragmentNew
+import org.opendc.simulator.compute.power.CarbonFragment
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.CARBON_INTENSITY_TIMESTAMP
 import org.opendc.trace.conv.CARBON_INTENSITY_VALUE
@@ -41,14 +41,14 @@ public class CarbonTraceLoader {
     /**
      * The cache of workloads.
      */
-    private val cache = ConcurrentHashMap<String, SoftReference<List<CarbonFragmentNew>>>()
+    private val cache = ConcurrentHashMap<String, SoftReference<List<CarbonFragment>>>()
 
     private val builder = CarbonFragmentNewBuilder()
 
     /**
      * Read the metadata into a workload.
      */
-    private fun parseCarbon(trace: Trace): List<CarbonFragmentNew> {
+    private fun parseCarbon(trace: Trace): List<CarbonFragment> {
         val reader = checkNotNull(trace.getTable(TABLE_CARBON_INTENSITIES)).newReader()
 
         val startTimeCol = reader.resolve(CARBON_INTENSITY_TIMESTAMP)
@@ -77,7 +77,7 @@ public class CarbonTraceLoader {
     /**
      * Load the trace with the specified [name] and [format].
      */
-    public fun get(pathToFile: File): List<CarbonFragmentNew> {
+    public fun get(pathToFile: File): List<CarbonFragment> {
         val trace = Trace.open(pathToFile, "carbon")
 
         return parseCarbon(trace)
@@ -97,7 +97,7 @@ public class CarbonTraceLoader {
         /**
          * The total load of the trace.
          */
-        public val fragments: MutableList<CarbonFragmentNew> = mutableListOf()
+        public val fragments: MutableList<CarbonFragment> = mutableListOf()
 
         /**
          * Add a fragment to the trace.
@@ -110,7 +110,11 @@ public class CarbonTraceLoader {
             carbonIntensity: Double,
         ) {
             fragments.add(
-                CarbonFragmentNew(startTime.toEpochMilli(), Long.MAX_VALUE, carbonIntensity),
+                CarbonFragment(
+                    startTime.toEpochMilli(),
+                    Long.MAX_VALUE,
+                    carbonIntensity
+                ),
             )
         }
 

@@ -20,48 +20,34 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.scenario
+package org.opendc.experiments.base.experiment
 
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import org.opendc.experiments.base.scenario.specs.ScenarioSpec
+import kotlinx.serialization.json.decodeFromStream
+import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
+import org.opendc.experiments.base.experiment.specs.ExperimentSpec
 import java.io.File
+import java.io.InputStream
+import java.nio.file.Path
+import kotlin.io.path.inputStream
 
-/**
- * A writer for writing scenarios to a file.
- * @param jsonText The JSON text to write to the file, which is constantly updated during the writing process.
- * @param json The JSON object used to encode the scenario specification.
- */
-public class ExperimentWriter {
-    private var jsonText = "["
-    private val json = Json { prettyPrint = true }
+public class ExperimentReader {
+    private val jsonReader = Json
 
-    /**
-     * Write the given [scenariosSpec] to the given [file].
-     */
-    public fun write(
-        scenarioSpec: ScenarioSpec,
-        file: File,
-    ) {
-        openArray(file)
-        val jsonString = json.encodeToString(scenarioSpec) + ","
-        jsonText += jsonString + "\n"
-        file.writeText(jsonText)
-        closeArray(file)
-    }
+    public fun read(file: File): ExperimentSpec = read(file.inputStream())
+
+    public fun read(path: Path): ExperimentSpec = read(path.inputStream())
 
     /**
-     * Delete the last character of the file.
+     * Read the specified [input].
      */
-    private fun openArray(file: File) {
-        val text = file.readText()
-        file.writeText(text.dropLast(0))
-    }
+    @OptIn(ExperimentalSerializationApi::class)
+    public fun read(input: InputStream): ExperimentSpec {
+        // Loads the default parquet output fields,
+        // so that they can be deserialized
+        ComputeExportConfig.loadDfltColumns()
 
-    /**
-     * Add the closing bracket to the file.
-     */
-    private fun closeArray(file: File) {
-        file.appendText("]")
+        return jsonReader.decodeFromStream<ExperimentSpec>(input)
     }
 }

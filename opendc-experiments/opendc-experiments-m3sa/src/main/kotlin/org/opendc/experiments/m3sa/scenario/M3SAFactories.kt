@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.m3sa.scenario
 
-import org.opendc.experiments.base.scenario.ExperimentReader
+import org.opendc.experiments.base.experiment.ExperimentReader
 import java.io.File
 
 private val experimentReader = ExperimentReader()

@@ -1,14 +1,18 @@
-OpenDC provides three types of failure models: [Trace-based](#trace-based-failure-models), [Sample-based](#sample-based-failure-models), 
-and [Prefab](#prefab-failure-models). 
+OpenDC provides three types of failure models: [Trace-based](#trace-based-failure-models), [Sample-based](#sample-based-failure-models),
+and [Prefab](#prefab-failure-models).
 
-All failure models have a similar structure containing three simple steps. 
+All failure models have a similar structure containing three simple steps.
 
 1. The _interval_ time determines the time between two failures.
 2. The _duration_ time determines how long a single failure takes.
 3. The _intensity_ determines how many hosts are effected by a failure.
 
-# Trace based failure models
-Trace-based failure models are defined by a parquet file. This file defines the interval, duration, and intensity of 
+:::info Code
+The code that defines the Failure Models can found [here](https://github.com/atlarge-research/opendc/blob/master/opendc-experiments/opendc-experiments-base/src/main/kotlin/org/opendc/experiments/base/experiment/specs/FailureModelSpec.kt).
+:::
+
+## Trace based failure models
+Trace-based failure models are defined by a parquet file. This file defines the interval, duration, and intensity of
 several failures. The failures defined in the file are looped. A valid failure model file follows the format defined below:
 
 | Metric            | Datatype   | Unit          | Summary                                    |
@@ -17,7 +21,11 @@ several failures. The failures defined in the file are looped. A valid failure m
 | failure_duration  | int64      | milli seconds | The duration of the failure                |
 | failure_intensity | float64    | ratio         | The ratio of hosts effected by the failure |
 
-## Schema
+:::info Code
+The code implementation of Trace Based Failure Models can be found [here](https://github.com/atlarge-research/opendc/blob/master/opendc-compute/opendc-compute-failure/src/main/kotlin/org/opendc/compute/failure/models/TraceBasedFailureModel.kt)
+:::
+
+### Example
 A trace-based failure model is specified by setting "type" to "trace-based".
 After, the user can define the path to the failure trace using "pathToFile":
 ```json
@@ -36,17 +44,21 @@ The "repeat" value can be set to false if the user does not want the failures to
 }
 ```
 
-# Sample based failure models
-Sample based failure models sample from three distributions to get the _interval_, _duration_, and _intensity_ of 
-each failure. Sample-based failure models are effected by randomness and will thus create different results based 
-on the provided seed. 
+## Sample based failure models
+Sample based failure models sample from three distributions to get the _interval_, _duration_, and _intensity_ of
+each failure. Sample-based failure models are effected by randomness and will thus create different results based
+on the provided seed.
 
-## Distributions
+:::info Code
+The code implementation for the Sample based failure models can be found [here](https://github.com/atlarge-research/opendc/blob/master/opendc-compute/opendc-compute-failure/src/main/kotlin/org/opendc/compute/failure/models/SampleBasedFailureModel.kt)
+:::
+
+### Distributions
 OpenDC supports eight different distributions based on java's [RealDistributions](https://commons.apache.org/proper/commons-math/javadocs/api-3.6.1/org/apache/commons/math3/distribution/RealDistribution.html).
 Because the different distributions require different variables, they have to be specified with a specific "type".
+Next, we show an example of a correct specification of all available distributions in OpenDC.
 
 #### [ConstantRealDistribution](https://commons.apache.org/proper/commons-math/javadocs/api-3.6.1/org/apache/commons/math3/distribution/ConstantRealDistribution.html)
-A distribution that always returns the same value. 
 
 ```json
 {
@@ -71,7 +83,7 @@ A distribution that always returns the same value.
     "scale": 0.5
 }
 ```
- 
+
 #### [LogNormalDistribution](https://commons.apache.org/proper/commons-math/javadocs/api-3.6.1/org/apache/commons/math3/distribution/LogNormalDistribution.html)
 ```json
 {
@@ -93,7 +105,7 @@ A distribution that always returns the same value.
 #### [ParetoDistribution](https://commons.apache.org/proper/commons-math/javadocs/api-3.6.1/org/apache/commons/math3/distribution/ParetoDistribution.html)
 ```json
 {
-    "type": "constant",
+    "type": "pareto",
     "scale": 1.0,
     "shape": 0.6
 }
@@ -117,9 +129,9 @@ A distribution that always returns the same value.
 }
 ```
 
-## Schema
+### Example
 A sample-based failure model is defined using three distributions for _intensity_, _duration_, and _intensity_.
-Distributions can be mixed however the user wants. Note, values for _intensity_ and _duration_ are clamped to be positive. 
+Distributions can be mixed however the user wants. Note, values for _intensity_ and _duration_ are clamped to be positive.
 The _intensity_ is clamped to the range [0.0, 1.0).
 To specify a sample-based failure model, the type needs to be set to "custom".
 
@@ -143,13 +155,13 @@ Example:
 }
 ```
 
-# Prefab failure models
-The final type of failure models is the prefab models. These are models that are predefined in OpenDC and are based on 
-research. Currently, OpenDC has 9 prefab models based on [The Failure Trace Archive: Enabling the comparison of failure measurements and models of distributed systems](https://www-sciencedirect-com.vu-nl.idm.oclc.org/science/article/pii/S0743731513000634) 
+## Prefab failure models
+The final type of failure models is the prefab models. These are models that are predefined in OpenDC and are based on
+research. Currently, OpenDC has 9 prefab models based on [The Failure Trace Archive: Enabling the comparison of failure measurements and models of distributed systems](https://www-sciencedirect-com.vu-nl.idm.oclc.org/science/article/pii/S0743731513000634)
 The figure below shows the values used to define the failure models.
 ![img.png](img.png)
 
-Each failure model is defined four times, on for each of the four distribution. 
+Each failure model is defined four times, on for each of the four distribution.
 The final list of available prefabs is thus:
 
     G5k06Exp
@@ -189,7 +201,11 @@ The final list of available prefabs is thus:
     Websites02LogN
     Websites02Gam
 
-## Schema
+:::info Code
+The different Prefab models can be found [here](https://github.com/atlarge-research/opendc/tree/master/opendc-compute/opendc-compute-failure/src/main/kotlin/org/opendc/compute/failure/prefab)
+:::
+
+### Example
 To specify a prefab model, the "type" needs to be set to "prefab".
 After, the prefab can be defined with "prefabName":
 

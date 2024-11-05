@@ -35,8 +35,8 @@ import org.opendc.compute.simulator.TaskWatcher
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.workload.Task
-import org.opendc.experiments.base.scenario.specs.FailureModelSpec
-import org.opendc.experiments.base.scenario.specs.createFailureModel
+import org.opendc.experiments.base.experiment.specs.FailureModelSpec
+import org.opendc.experiments.base.experiment.specs.createFailureModel
 import java.time.InstantSource
 import java.util.Random
 import kotlin.coroutines.coroutineContext

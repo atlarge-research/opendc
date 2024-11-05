@@ -26,7 +26,7 @@ package org.opendc.experiments.m3sa.runner
 
 import org.opendc.experiments.base.runner.runScenario
 import org.opendc.experiments.base.runner.setupOutputFolderStructure
-import org.opendc.experiments.base.scenario.Scenario
+import org.opendc.experiments.base.experiment.Scenario
 import java.util.concurrent.ForkJoinPool
 
 /**
