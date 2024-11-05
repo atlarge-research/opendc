@@ -113,7 +113,7 @@ public class CarbonTraceLoader {
                 CarbonFragment(
                     startTime.toEpochMilli(),
                     Long.MAX_VALUE,
-                    carbonIntensity
+                    carbonIntensity,
                 ),
             )
         }
