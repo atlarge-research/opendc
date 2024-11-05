@@ -30,7 +30,7 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
-import org.opendc.experiments.base.scenario.getExperiment
+import org.opendc.experiments.base.experiment.getExperiment
 import java.io.File
 
 /**

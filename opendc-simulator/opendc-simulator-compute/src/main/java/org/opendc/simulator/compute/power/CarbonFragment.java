@@ -20,53 +20,44 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.scenario.specs
-
-import kotlinx.serialization.Serializable
-import org.opendc.compute.workload.ComputeWorkload
-import org.opendc.compute.workload.sampleByLoad
-import org.opendc.compute.workload.trace
-import java.io.File
+package org.opendc.simulator.compute.power;
 
 /**
- * specification describing a workload
- *
- * @property pathToFile
- * @property type
+ * An object holding the carbon intensity during a specific time frame.
+ * Used by {@link CarbonModel}.
  */
-@Serializable
-public data class WorkloadSpec(
-    val pathToFile: String,
-    val type: WorkloadTypes,
-) {
-    public val name: String = File(pathToFile).nameWithoutExtension
+public class CarbonFragment {
+    private long startTime;
+    private long endTime;
+    private double carbonIntensity;
 
-    init {
-        require(File(pathToFile).exists()) { "The provided path to the workload: $pathToFile does not exist " }
+    public CarbonFragment(long startTime, long endTime, double carbonIntensity) {
+        this.setStartTime(startTime);
+        this.setEndTime(endTime);
+        this.setCarbonIntensity(carbonIntensity);
     }
-}
 
-/**
- * specification describing a workload type
- *
- * @constructor Create empty Workload types
- */
-public enum class WorkloadTypes {
-    /**
-     * Compute workload
-     *
-     * @constructor Create empty Compute workload
-     */
-    ComputeWorkload,
-}
+    public double getCarbonIntensity() {
+        return carbonIntensity;
+    }
 
-/**
- *
- *TODO: move to separate file
- * @param type
- */
-public fun getWorkloadType(type: WorkloadTypes): ComputeWorkload {
-    return when (type) {
-        WorkloadTypes.ComputeWorkload -> trace().sampleByLoad(1.0)
+    public void setCarbonIntensity(double carbonIntensity) {
+        this.carbonIntensity = carbonIntensity;
+    }
+
+    public long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
     }
 }

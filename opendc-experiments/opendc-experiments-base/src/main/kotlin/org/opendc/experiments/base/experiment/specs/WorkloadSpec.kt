@@ -20,20 +20,53 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.scenario.specs
+package org.opendc.experiments.base.experiment.specs
 
 import kotlinx.serialization.Serializable
+import org.opendc.compute.workload.ComputeWorkload
+import org.opendc.compute.workload.sampleByLoad
+import org.opendc.compute.workload.trace
+import java.io.File
 
 /**
- * specification describing how the results should be exported
+ * specification describing a workload
  *
- * @property exportInterval The interval of exporting results in s. Should be higher than 0.0
+ * @property pathToFile
+ * @property type
  */
 @Serializable
-public data class ExportModelSpec(
-    val exportInterval: Long = 5 * 60,
+public data class WorkloadSpec(
+    val pathToFile: String,
+    val type: WorkloadTypes,
 ) {
+    public val name: String = File(pathToFile).nameWithoutExtension
+
     init {
-        require(exportInterval > 0) { "The Export interval has to be higher than 0" }
+        require(File(pathToFile).exists()) { "The provided path to the workload: $pathToFile does not exist " }
+    }
+}
+
+/**
+ * specification describing a workload type
+ *
+ * @constructor Create empty Workload types
+ */
+public enum class WorkloadTypes {
+    /**
+     * Compute workload
+     *
+     * @constructor Create empty Compute workload
+     */
+    ComputeWorkload,
+}
+
+/**
+ *
+ *TODO: move to separate file
+ * @param type
+ */
+public fun getWorkloadType(type: WorkloadTypes): ComputeWorkload {
+    return when (type) {
+        WorkloadTypes.ComputeWorkload -> trace().sampleByLoad(1.0)
     }
 }

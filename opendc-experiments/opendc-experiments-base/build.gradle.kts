@@ -52,8 +52,8 @@ dependencies {
 val createScenarioApp by tasks.creating(CreateStartScripts::class) {
     dependsOn(tasks.jar)
 
-    applicationName = "OpenDCScenarioRunner"
-    mainClass.set("org.opendc.experiments.base.runner.ScenarioCli")
+    applicationName = "OpenDCExperimentRunner"
+    mainClass.set("org.opendc.experiments.base.runner.ExperimentCli")
     classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
     outputDir = project.buildDir.resolve("scripts")
 }
@@ -61,7 +61,7 @@ val createScenarioApp by tasks.creating(CreateStartScripts::class) {
 // Create custom Scenario distribution
 distributions {
     main {
-        distributionBaseName.set("OpenDCScenarioRunner")
+        distributionBaseName.set("OpenDCExperimentRunner")
 
         contents {
             from("README.md")

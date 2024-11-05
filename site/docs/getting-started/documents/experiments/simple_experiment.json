@@ -1,0 +1,13 @@
+{
+    "name": "simple",
+    "topologies": [{
+        "pathToFile": "topologies/small.json"
+    },
+    {
+        "pathToFile": "topologies/big.json"
+    }],
+    "workloads": [{
+        "pathToFile": "traces/bitbrains-small",
+        "type": "ComputeWorkload"
+    }]
+}

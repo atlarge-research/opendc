@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.scenario.specs
+package org.opendc.experiments.base.experiment.specs
 
 import kotlinx.serialization.Serializable
 import org.opendc.common.logger.infoNewLine
@@ -50,14 +50,14 @@ public data class ExperimentSpec(
     val outputFolder: String = "output",
     val initialSeed: Int = 0,
     val runs: Int = 1,
+    val exportModels: Set<ExportModelSpec> = setOf(ExportModelSpec()),
+    val computeExportConfig: ComputeExportConfig = ComputeExportConfig.ALL_COLUMNS,
+    val maxNumFailures: Set<Int> = setOf(10),
     val topologies: Set<ScenarioTopologySpec>,
     val workloads: Set<WorkloadSpec>,
     val allocationPolicies: Set<AllocationPolicySpec> = setOf(AllocationPolicySpec()),
-    val exportModels: Set<ExportModelSpec> = setOf(ExportModelSpec()),
     val failureModels: Set<FailureModelSpec?> = setOf(null),
     val checkpointModels: Set<CheckpointModelSpec?> = setOf(null),
-    val computeExportConfig: ComputeExportConfig = ComputeExportConfig.ALL_COLUMNS,
-    val maxNumFailures: Set<Int> = setOf(10),
 ) {
     init {
         require(runs > 0) { "The number of runs should always be positive" }

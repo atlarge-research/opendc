@@ -20,40 +20,23 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.power;
+package org.opendc.experiments.base.experiment.specs
 
-public class CarbonFragmentNew {
-    private long endTime;
-    private long startTime;
-    private double carbonIntensity;
+import kotlinx.serialization.Serializable
+import java.io.File
 
-    public CarbonFragmentNew(long startTime, long endTime, double carbonIntensity) {
-        this.setStartTime(startTime);
-        this.setEndTime(endTime);
-        this.setCarbonIntensity(carbonIntensity);
-    }
+/**
+ * specification describing a topology
+ *
+ * @property pathToFile
+ */
+@Serializable
+public data class ScenarioTopologySpec(
+    val pathToFile: String,
+) {
+    public val name: String = File(pathToFile).nameWithoutExtension
 
-    public double getCarbonIntensity() {
-        return carbonIntensity;
-    }
-
-    public void setCarbonIntensity(double carbonIntensity) {
-        this.carbonIntensity = carbonIntensity;
-    }
-
-    public long getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(long endTime) {
-        this.endTime = endTime;
-    }
-
-    public long getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
+    init {
+        require(File(pathToFile).exists()) { "The provided path to the topology: $pathToFile does not exist " }
     }
 }

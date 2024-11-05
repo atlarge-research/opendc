@@ -26,26 +26,32 @@ import java.util.List;
 import org.opendc.simulator.engine.FlowGraph;
 import org.opendc.simulator.engine.FlowNode;
 
+/**
+ * CarbonModel used to provide the Carbon Intensity of a {@link SimPowerSource}
+ * A CarbonModel is based on a list of {@link CarbonFragment} that define the carbon intensity at specific time frames.
+ */
 public class CarbonModel extends FlowNode {
 
     private SimPowerSource powerSource;
 
     private long startTime = 0L; // The absolute timestamp on which the workload started
 
-    private List<CarbonFragmentNew> fragments;
-    private CarbonFragmentNew current_fragment;
+    private List<CarbonFragment> fragments;
+    private CarbonFragment current_fragment;
 
     private int fragment_index;
+
     /**
-     * Construct a new {@link FlowNode} instance.
+     * Construct a CarbonModel
      *
-     * @param parentGraph The {@link FlowGraph} this stage belongs to.
+     * @param parentGraph The active FlowGraph which should be used to make the new FlowNode
+     * @param powerSource The Power Source which should be updated with the carbon intensity
+     * @param carbonFragments A list of Carbon Fragments defining the carbon intensity at different time frames
+     * @param startTime The start time of the simulation. This is used to go from relative time (used by the clock)
+     *                  to absolute time (used by carbon fragments).
      */
     public CarbonModel(
-            FlowGraph parentGraph,
-            SimPowerSource powerSource,
-            List<CarbonFragmentNew> carbonFragments,
-            long startTime) {
+            FlowGraph parentGraph, SimPowerSource powerSource, List<CarbonFragment> carbonFragments, long startTime) {
         super(parentGraph);
 
         this.powerSource = powerSource;
@@ -62,27 +68,31 @@ public class CarbonModel extends FlowNode {
     }
 
     /**
-     * Convert the given time to the absolute time by adding the start of workload
-     *
-     * @param time
+     * Convert the given relative time to the absolute time by adding the start of workload
      */
     private long getAbsoluteTime(long time) {
         return time + startTime;
     }
 
+    /**
+     * Convert the given absolute time to the relative time by subtracting the start of workload
+     */
     private long getRelativeTime(long time) {
         return time - startTime;
     }
 
-    private void findCorrectFragment(long absolute_time) {
+    /**
+     * Traverse the fragments to find the fragment that matches the given absoluteTime
+     */
+    private void findCorrectFragment(long absoluteTime) {
 
         // Traverse to the previous fragment, until you reach the correct fragment
-        while (absolute_time < this.current_fragment.getStartTime()) {
+        while (absoluteTime < this.current_fragment.getStartTime()) {
             this.current_fragment = fragments.get(--this.fragment_index);
         }
 
         // Traverse to the next fragment, until you reach the correct fragment
-        while (absolute_time >= this.current_fragment.getEndTime()) {
+        while (absoluteTime >= this.current_fragment.getEndTime()) {
             this.current_fragment = fragments.get(++this.fragment_index);
         }
     }

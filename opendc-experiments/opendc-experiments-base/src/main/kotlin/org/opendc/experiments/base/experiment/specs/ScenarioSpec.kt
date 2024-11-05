@@ -20,13 +20,22 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.scenario.specs
+package org.opendc.experiments.base.experiment.specs
 
 import kotlinx.serialization.Serializable
+import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 
 @Serializable
-public data class PowerModelSpec(
-    val type: String = "constant",
-    val idlePower: Double = 200.0,
-    val maxPower: Double = 350.0,
+public data class ScenarioSpec(
+    var id: Int = -1,
+    var name: String = "",
+    val outputFolder: String = "output",
+    val computeExportConfig: ComputeExportConfig,
+    val topology: ScenarioTopologySpec,
+    val workload: WorkloadSpec,
+    val allocationPolicy: AllocationPolicySpec = AllocationPolicySpec(),
+    val exportModel: ExportModelSpec = ExportModelSpec(),
+    val failureModel: FailureModelSpec? = null,
+    val checkpointModel: CheckpointModelSpec? = null,
+    val maxNumFailures: Int = 10,
 )

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.scenario.specs
+package org.opendc.experiments.base.experiment.specs
 
 /*
  * Copyright (c) 2024 AtLarge Research

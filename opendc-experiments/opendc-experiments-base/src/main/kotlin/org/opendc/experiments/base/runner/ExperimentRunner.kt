@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.base.runner
 
-import org.opendc.experiments.base.scenario.Scenario
+import org.opendc.experiments.base.experiment.Scenario
 import java.util.concurrent.ForkJoinPool
 
 /**

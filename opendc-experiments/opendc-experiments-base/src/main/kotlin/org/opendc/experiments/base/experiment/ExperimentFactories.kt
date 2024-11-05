@@ -20,10 +20,10 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.scenario
+package org.opendc.experiments.base.experiment
 
-import org.opendc.experiments.base.scenario.specs.ExperimentSpec
-import org.opendc.experiments.base.scenario.specs.ScenarioSpec
+import org.opendc.experiments.base.experiment.specs.ExperimentSpec
+import org.opendc.experiments.base.experiment.specs.ScenarioSpec
 import java.io.File
 
 private val experimentReader = ExperimentReader()

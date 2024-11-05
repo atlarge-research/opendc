@@ -24,14 +24,14 @@
 
 package org.opendc.compute.carbon
 
-import org.opendc.simulator.compute.power.CarbonFragmentNew
+import org.opendc.simulator.compute.power.CarbonFragment
 import java.io.File
 import javax.management.InvalidAttributeValueException
 
 /**
  * Construct a workload from a trace.
  */
-public fun getCarbonFragments(pathToFile: String?): List<CarbonFragmentNew>? {
+public fun getCarbonFragments(pathToFile: String?): List<CarbonFragment>? {
     if (pathToFile == null) {
         return null
     }
@@ -42,7 +42,7 @@ public fun getCarbonFragments(pathToFile: String?): List<CarbonFragmentNew>? {
 /**
  * Construct a workload from a trace.
  */
-public fun getCarbonFragments(file: File): List<CarbonFragmentNew> {
+public fun getCarbonFragments(file: File): List<CarbonFragment> {
     if (!file.exists()) {
         throw InvalidAttributeValueException("The carbon trace cannot be found")
     }
