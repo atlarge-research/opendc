@@ -463,10 +463,13 @@ public final class ComputeService implements AutoCloseable {
                     // Remove the incoming image
                     taskQueue.poll();
                     tasksPending--;
+                    tasksTerminated++;
 
                     LOGGER.warn("Failed to spawn {}: does not fit", task);
 
-                    task.setState(TaskState.FAILED);
+                    task.setState(TaskState.TERMINATED);
+
+                    this.setTaskToBeRemoved(task);
                     continue;
                 } else {
                     break;
