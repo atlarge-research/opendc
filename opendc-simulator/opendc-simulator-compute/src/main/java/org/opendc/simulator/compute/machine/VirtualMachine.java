@@ -202,9 +202,6 @@ public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSuppli
      **/
     @Override
     public void handleDemand(FlowEdge consumerEdge, double newDemand) {
-        if (this.cpuDemand == newDemand) {
-            return;
-        }
 
         updateCounters(this.clock.millis());
         this.cpuDemand = newDemand;
@@ -217,9 +214,6 @@ public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSuppli
      **/
     @Override
     public void handleSupply(FlowEdge supplierEdge, double newCpuSupply) {
-        if (newCpuSupply == this.cpuSupply) {
-            return;
-        }
 
         updateCounters(this.clock.millis());
         this.cpuSupply = newCpuSupply;

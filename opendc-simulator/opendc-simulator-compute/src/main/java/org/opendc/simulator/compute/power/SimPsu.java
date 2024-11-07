@@ -148,9 +148,6 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void handleDemand(FlowEdge consumerEdge, double newPowerDemand) {
-        if (newPowerDemand == this.powerDemand) {
-            return;
-        }
 
         updateCounters();
         this.powerDemand = newPowerDemand;
@@ -160,9 +157,6 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void handleSupply(FlowEdge supplierEdge, double newPowerSupply) {
-        if (newPowerSupply == this.powerSupplied) {
-            return;
-        }
 
         updateCounters();
         this.powerSupplied = newPowerSupply;
