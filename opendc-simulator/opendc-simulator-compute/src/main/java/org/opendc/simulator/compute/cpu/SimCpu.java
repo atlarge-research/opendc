@@ -124,7 +124,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
         // Calculate Power Demand and send to PSU
         // TODO: look at the double / double thing
-        double powerDemand = (double) this.cpuPowerModel.computePower((double) this.currentCpuUtilization);
+        double powerDemand = this.cpuPowerModel.computePower(this.currentCpuUtilization);
 
         if (powerDemand != this.currentPowerDemand) {
             this.pushDemand(this.psuEdge, powerDemand);
@@ -201,10 +201,6 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
      */
     @Override
     public void handleDemand(FlowEdge consumerEdge, double newCpuDemand) {
-        if (newCpuDemand == this.currentCpuDemand) {
-            return;
-        }
-
         updateCounters();
         this.currentCpuDemand = newCpuDemand;
         this.currentCpuUtilization = this.currentCpuDemand / this.maxCapacity;

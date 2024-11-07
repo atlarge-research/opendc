@@ -130,6 +130,8 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         this.consumerEdges.add(consumerEdge);
         this.demands.add(0.0);
         this.supplies.add(0.0);
+
+        this.invalidate();
     }
 
     @Override
@@ -137,6 +139,8 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         this.supplierEdge = supplierEdge;
         this.capacity = supplierEdge.getCapacity();
         this.totalSupply = 0;
+
+        this.invalidate();
     }
 
     @Override
@@ -176,15 +180,12 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         demands.set(idx, newDemand);
 
         this.totalDemand += (newDemand - prevDemand);
+        this.invalidate();
     }
 
     @Override
     public void handleSupply(FlowEdge supplierEdge, double newSupply) {
-        if (newSupply == this.totalSupply) {
-            return;
-        }
-
-        this.totalSupply = newSupply;
+        this.invalidate();
     }
 
     @Override

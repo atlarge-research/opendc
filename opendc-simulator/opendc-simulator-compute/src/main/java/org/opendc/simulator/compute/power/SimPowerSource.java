@@ -163,9 +163,6 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
 
     @Override
     public void handleDemand(FlowEdge consumerEdge, double newPowerDemand) {
-        if (newPowerDemand == this.powerDemand) {
-            return;
-        }
 
         this.powerDemand = newPowerDemand;
         this.invalidate();
@@ -173,9 +170,6 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
 
     @Override
     public void pushSupply(FlowEdge consumerEdge, double newSupply) {
-        if (newSupply == this.powerSupplied) {
-            return;
-        }
 
         this.powerSupplied = newSupply;
         consumerEdge.pushSupply(newSupply);

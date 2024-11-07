@@ -151,7 +151,7 @@ public data class PowerSourceJSONSpec(
     public companion object {
         public val DFLT: PowerSourceJSONSpec =
             PowerSourceJSONSpec(
-                totalPower = 10000,
+                totalPower = Long.MAX_VALUE,
             )
     }
 }
