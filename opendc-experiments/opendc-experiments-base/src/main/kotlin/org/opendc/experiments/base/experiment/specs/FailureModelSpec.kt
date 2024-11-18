@@ -78,6 +78,12 @@ public sealed interface FailureModelSpec {
     public var name: String
 }
 
+@Serializable
+@SerialName("no")
+public data class NoFailureModel(
+    override var name: String = "no failure model"
+) : FailureModelSpec
+
 /**
  * A failure model spec for failure models based on a failure trace.
  *
@@ -87,11 +93,15 @@ public sealed interface FailureModelSpec {
 @SerialName("trace-based")
 public data class TraceBasedFailureModelSpec(
     public val pathToFile: String,
+    public val startPoint: Double = 0.0,
+    public val repeat: Boolean = true
 ) : FailureModelSpec {
     override var name: String = File(pathToFile).nameWithoutExtension
 
     init {
         require(File(pathToFile).exists()) { "Path to file $pathToFile does not exist" }
+        require(startPoint < 1.0) { "Starting point must be smaller than 1.0" }
+        require(startPoint >= 0.0) { "Starting point must be equal or larger than 0.0" }
     }
 }
 
@@ -267,7 +277,7 @@ public fun createFailureModel(
     random: java.util.random.RandomGenerator,
     failureModel: TraceBasedFailureModelSpec,
 ): FailureModel {
-    return TraceBasedFailureModel(context, clock, service, random, failureModel.pathToFile)
+    return TraceBasedFailureModel(context, clock, service, random, failureModel.pathToFile, failureModel.startPoint, failureModel.repeat)
 }
 
 /**

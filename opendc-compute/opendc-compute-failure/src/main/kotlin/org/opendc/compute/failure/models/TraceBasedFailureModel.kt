@@ -33,6 +33,8 @@ import java.io.File
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.floor
+import kotlin.time.times
 
 /**
  * A definition of a Failure
@@ -71,9 +73,10 @@ public class TraceBasedFailureModel(
     service: ComputeService,
     random: RandomGenerator,
     pathToTrace: String,
-    private val repeat: Boolean = false,
+    startPoint: Double,
+    private val repeat: Boolean = true,
 ) : FailureModel(context, clock, service, random) {
-    private val failureList = loadTrace(pathToTrace)
+    private val failureList = loadTrace(pathToTrace, startPoint)
 
     override suspend fun runInjector() {
         do {
@@ -92,7 +95,7 @@ public class TraceBasedFailureModel(
      *
      * @param pathToFile
      */
-    private fun loadTrace(pathToFile: String): List<Failure> {
+    private fun loadTrace(pathToFile: String, startPoint: Double): List<Failure> {
         val trace = Trace.open(File(pathToFile), "failure")
 
         val reader = checkNotNull(trace.getTable(TABLE_FAILURES)).newReader()
@@ -112,7 +115,8 @@ public class TraceBasedFailureModel(
                 entries.add(Failure(failureStartTime, failureDuration, failureIntensity))
             }
 
-            return entries
+            val startIndex: Int = (entries.size * startPoint).toInt()
+            return entries.subList(startIndex, entries.size) + entries.subList(startIndex, entries.size)
         } catch (e: Exception) {
             e.printStackTrace()
             throw e
