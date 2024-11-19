@@ -135,7 +135,11 @@ class ScenarioIntegrationTest {
             val workload = createTestWorkload("single_task", 1.0, seed)
             val topology = createTopology("single.json")
             val monitor = monitor
-            val failureModelSpec = TraceBasedFailureModelSpec("src/test/resources/failureTraces/single_failure.parquet")
+            val failureModelSpec =
+                TraceBasedFailureModelSpec(
+                    "src/test/resources/failureTraces/single_failure.parquet",
+                    repeat = false,
+                )
 
             Provisioner(dispatcher, seed).use { provisioner ->
                 provisioner.runSteps(
@@ -145,6 +149,8 @@ class ScenarioIntegrationTest {
                 )
 
                 val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
+                service.setTasksExpected(workload.size)
+
                 service.replay(timeSource, workload, failureModelSpec = failureModelSpec, seed = seed)
             }
 
