@@ -33,7 +33,6 @@ import java.io.File
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.floor
 import kotlin.time.times
 
 /**
@@ -95,7 +94,10 @@ public class TraceBasedFailureModel(
      *
      * @param pathToFile
      */
-    private fun loadTrace(pathToFile: String, startPoint: Double): List<Failure> {
+    private fun loadTrace(
+        pathToFile: String,
+        startPoint: Double,
+    ): List<Failure> {
         val trace = Trace.open(File(pathToFile), "failure")
 
         val reader = checkNotNull(trace.getTable(TABLE_FAILURES)).newReader()

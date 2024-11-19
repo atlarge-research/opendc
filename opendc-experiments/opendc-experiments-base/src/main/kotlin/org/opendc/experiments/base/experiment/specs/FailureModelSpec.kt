@@ -81,7 +81,7 @@ public sealed interface FailureModelSpec {
 @Serializable
 @SerialName("no")
 public data class NoFailureModel(
-    override var name: String = "no failure model"
+    override var name: String = "no failure model",
 ) : FailureModelSpec
 
 /**
@@ -94,7 +94,7 @@ public data class NoFailureModel(
 public data class TraceBasedFailureModelSpec(
     public val pathToFile: String,
     public val startPoint: Double = 0.0,
-    public val repeat: Boolean = true
+    public val repeat: Boolean = true,
 ) : FailureModelSpec {
     override var name: String = File(pathToFile).nameWithoutExtension
 
