@@ -135,8 +135,11 @@ class ScenarioIntegrationTest {
             val workload = createTestWorkload("single_task", 1.0, seed)
             val topology = createTopology("single.json")
             val monitor = monitor
-            val failureModelSpec = TraceBasedFailureModelSpec(
-                "src/test/resources/failureTraces/single_failure.parquet", repeat=false)
+            val failureModelSpec =
+                TraceBasedFailureModelSpec(
+                    "src/test/resources/failureTraces/single_failure.parquet",
+                    repeat = false,
+                )
 
             Provisioner(dispatcher, seed).use { provisioner ->
                 provisioner.runSteps(
