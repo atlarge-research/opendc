@@ -118,7 +118,7 @@ public class TraceBasedFailureModel(
             }
 
             val startIndex: Int = (entries.size * startPoint).toInt()
-            return entries.subList(startIndex, entries.size) + entries.subList(startIndex, entries.size)
+            return entries.subList(startIndex, entries.size) + entries.subList(0, startIndex)
         } catch (e: Exception) {
             e.printStackTrace()
             throw e
