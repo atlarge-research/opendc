@@ -36,7 +36,7 @@ import org.opendc.simulator.engine.FlowSupplier;
   A virtual Machine created to run a single workload
 */
 public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSupplier {
-    private SimMachine machine;
+    private final SimMachine machine;
 
     private SimWorkload activeWorkload;
 

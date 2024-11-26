@@ -25,11 +25,9 @@
 package org.opendc.experiments.base.runner
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
-import com.github.ajalt.clikt.parameters.types.int
 import org.opendc.experiments.base.experiment.getExperiment
 import java.io.File
 
@@ -49,15 +47,8 @@ internal class ExperimentCommand : CliktCommand(name = "experiment") {
         .file(canBeDir = false, canBeFile = true)
         .defaultLazy { File("resources/experiment.json") }
 
-    /**
-     * The number of threads to use for parallelism.
-     */
-    private val parallelism by option("-p", "--parallelism", help = "number of worker threads")
-        .int()
-        .default(Runtime.getRuntime().availableProcessors() - 1)
-
     override fun run() {
         val experiment = getExperiment(scenarioPath)
-        runExperiment(experiment, parallelism)
+        runExperiment(experiment)
     }
 }

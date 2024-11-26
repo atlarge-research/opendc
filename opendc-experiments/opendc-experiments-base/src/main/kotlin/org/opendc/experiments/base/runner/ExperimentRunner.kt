@@ -22,35 +22,39 @@
 
 package org.opendc.experiments.base.runner
 
+import me.tongfei.progressbar.ProgressBarBuilder
+import me.tongfei.progressbar.ProgressBarStyle
 import org.opendc.experiments.base.experiment.Scenario
-import java.util.concurrent.ForkJoinPool
 
 /**
  * Run scenario when no pool is available for parallel execution
  *
  * @param experiment The scenarios to run
- * @param parallelism The number of scenarios that can be run in parallel
  */
-public fun runExperiment(
-    experiment: List<Scenario>,
-    parallelism: Int,
-) {
+public fun runExperiment(experiment: List<Scenario>) {
     val ansiReset = "\u001B[0m"
     val ansiGreen = "\u001B[32m"
     val ansiBlue = "\u001B[34m"
 
     setupOutputFolderStructure(experiment[0].outputFolder)
 
+    val pb =
+        ProgressBarBuilder().setInitialMax(experiment.sumOf { scenario -> scenario.runs.toLong() })
+            .setStyle(ProgressBarStyle.ASCII)
+            .setTaskName("Simulating...").build()
+
     for (scenario in experiment) {
-        val pool = ForkJoinPool(parallelism)
         println(
             "\n\n$ansiGreen================================================================================$ansiReset",
         )
         println("$ansiBlue Running scenario: ${scenario.name} $ansiReset")
         println("$ansiGreen================================================================================$ansiReset")
-        runScenario(
-            scenario,
-            pool,
-        )
+
+        for (seed in 0..<scenario.runs) {
+            println("$ansiBlue Starting seed: $seed $ansiReset")
+            runScenario(scenario, seed.toLong())
+            pb.step()
+        }
     }
+    pb.close()
 }

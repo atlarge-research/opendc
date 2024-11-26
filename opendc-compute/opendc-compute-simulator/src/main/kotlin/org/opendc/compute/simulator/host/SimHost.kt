@@ -32,7 +32,6 @@ import org.opendc.compute.simulator.telemetry.GuestSystemStats
 import org.opendc.compute.simulator.telemetry.HostCpuStats
 import org.opendc.compute.simulator.telemetry.HostSystemStats
 import org.opendc.simulator.Multiplexer
-import org.opendc.simulator.compute.cpu.CpuPowerModel
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
@@ -61,7 +60,6 @@ public class SimHost(
     private val clock: InstantSource,
     private val graph: FlowGraph,
     private val machineModel: MachineModel,
-    private val powerModel: CpuPowerModel,
     private val powerMux: Multiplexer,
 ) : AutoCloseable {
     /**
@@ -131,7 +129,6 @@ public class SimHost(
             SimMachine(
                 this.graph,
                 this.machineModel,
-                this.powerModel,
                 this.powerMux,
             ) { cause ->
                 hostState = if (cause != null) HostState.ERROR else HostState.DOWN
