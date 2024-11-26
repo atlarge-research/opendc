@@ -32,6 +32,7 @@ import org.opendc.compute.simulator.telemetry.GuestSystemStats
 import org.opendc.compute.simulator.telemetry.HostCpuStats
 import org.opendc.compute.simulator.telemetry.HostSystemStats
 import org.opendc.simulator.Multiplexer
+import org.opendc.simulator.compute.cpu.CpuPowerModel
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
@@ -60,6 +61,7 @@ public class SimHost(
     private val clock: InstantSource,
     private val graph: FlowGraph,
     private val machineModel: MachineModel,
+    private val cpuPowerModel: CpuPowerModel,
     private val powerMux: Multiplexer,
 ) : AutoCloseable {
     /**
@@ -83,8 +85,8 @@ public class SimHost(
 
     private val model: HostModel =
         HostModel(
-            machineModel.cpu.totalCapacity,
-            machineModel.cpu.coreCount,
+            machineModel.cpuModel.totalCapacity,
+            machineModel.cpuModel.coreCount,
             machineModel.memory.size,
         )
 
@@ -108,7 +110,7 @@ public class SimHost(
     private var totalUptime = 0L
     private var totalDowntime = 0L
     private var bootTime: Instant? = null
-    private val cpuLimit = machineModel.cpu.totalCapacity
+    private val cpuLimit = machineModel.cpuModel.totalCapacity
 
     init {
         launch()
@@ -130,6 +132,7 @@ public class SimHost(
                 this.graph,
                 this.machineModel,
                 this.powerMux,
+                this.cpuPowerModel,
             ) { cause ->
                 hostState = if (cause != null) HostState.ERROR else HostState.DOWN
             }
@@ -343,7 +346,7 @@ public class SimHost(
      * Convert flavor to machine model.
      */
     private fun Flavor.toMachineModel(): MachineModel {
-        return MachineModel(simMachine!!.machineModel.cpu, MemoryUnit("Generic", "Generic", 3200.0, memorySize))
+        return MachineModel(simMachine!!.machineModel.cpuModel, MemoryUnit("Generic", "Generic", 3200.0, memorySize))
     }
 
     /**

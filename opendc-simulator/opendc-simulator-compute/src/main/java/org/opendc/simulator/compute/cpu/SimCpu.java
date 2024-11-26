@@ -101,13 +101,13 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimCpu(FlowGraph graph, CpuModel cpuModel, int id) {
+    public SimCpu(FlowGraph graph, CpuModel cpuModel, CpuPowerModel powerModel, int id) {
         super(graph);
         this.cpuModel = cpuModel;
         this.maxCapacity = this.cpuModel.getTotalCapacity();
 
         // TODO: connect this to the front-end
-        this.cpuPowerModel = CpuPowerModels.linear(400, 200);
+        this.cpuPowerModel = powerModel;
 
         this.lastCounterUpdate = graph.getEngine().getClock().millis();
 

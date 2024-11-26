@@ -77,6 +77,7 @@ public class HostsProvisioningStep internal constructor(
                         ctx.dispatcher.timeSource,
                         graph,
                         hostSpec.model,
+                        hostSpec.cpuPowerModel,
                         powerMux,
                     )
 

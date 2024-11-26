@@ -25,6 +25,7 @@ package org.opendc.simulator.compute.machine;
 import java.time.InstantSource;
 import java.util.function.Consumer;
 import org.opendc.simulator.Multiplexer;
+import org.opendc.simulator.compute.cpu.CpuPowerModel;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.compute.memory.Memory;
 import org.opendc.simulator.compute.models.MachineModel;
@@ -111,7 +112,11 @@ public class SimMachine {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public SimMachine(
-            FlowGraph graph, MachineModel machineModel, Multiplexer powerMux, Consumer<Exception> completion) {
+            FlowGraph graph,
+            MachineModel machineModel,
+            Multiplexer powerMux,
+            CpuPowerModel cpuPowerModel,
+            Consumer<Exception> completion) {
         this.graph = graph;
         this.machineModel = machineModel;
         this.clock = graph.getEngine().getClock();
@@ -121,7 +126,7 @@ public class SimMachine {
 
         graph.addEdge(this.psu, powerMux);
 
-        this.cpu = new SimCpu(graph, this.machineModel.getCpu(), 0);
+        this.cpu = new SimCpu(graph, this.machineModel.getCpuModel(), cpuPowerModel, 0);
 
         graph.addEdge(this.cpu, this.psu);
 
