@@ -112,8 +112,11 @@ public class SimMachine {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public SimMachine(
-        FlowGraph graph, MachineModel machineModel, Multiplexer powerMux,
-        CpuPowerModel cpuPowerModel, Consumer<Exception> completion) {
+            FlowGraph graph,
+            MachineModel machineModel,
+            Multiplexer powerMux,
+            CpuPowerModel cpuPowerModel,
+            Consumer<Exception> completion) {
         this.graph = graph;
         this.machineModel = machineModel;
         this.clock = graph.getEngine().getClock();
