@@ -90,19 +90,23 @@ public class FlowEdge {
      * Push new demand from the Consumer to the Supplier
      */
     public void pushDemand(double newDemand) {
+        if (newDemand == this.demand) {
+            return;
+        }
 
         this.demand = newDemand;
         this.supplier.handleDemand(this, newDemand);
-        ((FlowNode) this.supplier).invalidate();
     }
 
     /**
      * Push new supply from the Supplier to the Consumer
      */
     public void pushSupply(double newSupply) {
+        if (newSupply == this.supply) {
+            return;
+        }
 
         this.supply = newSupply;
         this.consumer.handleSupply(this, newSupply);
-        ((FlowNode) this.consumer).invalidate();
     }
 }

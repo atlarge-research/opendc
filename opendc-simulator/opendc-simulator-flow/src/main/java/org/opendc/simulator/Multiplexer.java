@@ -31,11 +31,11 @@ import org.opendc.simulator.engine.FlowNode;
 import org.opendc.simulator.engine.FlowSupplier;
 
 public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer {
-    private ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
+    private final ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
     private FlowEdge supplierEdge;
 
-    private ArrayList<Double> demands = new ArrayList<>(); // What is demanded by the consumers
-    private ArrayList<Double> supplies = new ArrayList<>(); // What is supplied to the consumers
+    private final ArrayList<Double> demands = new ArrayList<>(); // What is demanded by the consumers
+    private final ArrayList<Double> supplies = new ArrayList<>(); // What is supplied to the consumers
 
     private double totalDemand; // The total demand of all the consumers
     private double totalSupply; // The total supply from the supplier
@@ -180,13 +180,19 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         demands.set(idx, newDemand);
 
         this.totalDemand += (newDemand - prevDemand);
-        this.invalidate();
+
+        if (this.totalDemand <= this.capacity) {
+
+            this.totalSupply = this.totalDemand;
+            this.pushDemand(this.supplierEdge, this.totalSupply);
+
+            this.pushSupply(consumerEdge, newDemand);
+        }
+        // TODO: add behaviour if capacity is reached
     }
 
     @Override
-    public void handleSupply(FlowEdge supplierEdge, double newSupply) {
-        this.invalidate();
-    }
+    public void handleSupply(FlowEdge supplierEdge, double newSupply) {}
 
     @Override
     public void pushDemand(FlowEdge supplierEdge, double newDemand) {
@@ -199,6 +205,10 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
 
         if (idx == -1) {
             System.out.println("Error (Multiplexer): pushing supply to an unknown consumer");
+        }
+
+        if (supplies.get(idx) == newSupply) {
+            return;
         }
 
         supplies.set(idx, newSupply);

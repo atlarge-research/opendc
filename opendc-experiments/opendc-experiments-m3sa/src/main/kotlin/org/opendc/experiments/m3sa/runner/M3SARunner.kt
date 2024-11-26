@@ -25,9 +25,7 @@
 package org.opendc.experiments.m3sa.runner
 
 import org.opendc.experiments.base.experiment.Scenario
-import org.opendc.experiments.base.runner.runScenario
 import org.opendc.experiments.base.runner.setupOutputFolderStructure
-import java.util.concurrent.ForkJoinPool
 
 /**
  * Run scenario when no pool is available for parallel execution
@@ -39,22 +37,7 @@ public fun runExperiment(
     experiment: List<Scenario>,
     parallelism: Int,
 ) {
-    val ansiReset = "\u001B[0m"
-    val ansiGreen = "\u001B[32m"
-    val ansiBlue = "\u001B[34m"
-
     setupOutputFolderStructure(experiment[0].outputFolder)
 
-    for (scenario in experiment) {
-        val pool = ForkJoinPool(parallelism)
-        println(
-            "\n\n$ansiGreen================================================================================$ansiReset",
-        )
-        println("$ansiBlue Running scenario: ${scenario.name} $ansiReset")
-        println("$ansiGreen================================================================================$ansiReset")
-        runScenario(
-            scenario,
-            pool,
-        )
-    }
+    runExperiment(experiment, parallelism)
 }

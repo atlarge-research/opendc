@@ -47,16 +47,13 @@ import java.util.stream.LongStream
  * The scenario is run multiple times based on the user input
  *
  * @param scenario The scenario to run
- * @param pool The pool on which to run the scenarios
  */
-public fun runScenario(
-    scenario: Scenario,
-    pool: ForkJoinPool,
-) {
+public fun runScenario(scenario: Scenario) {
     val pb =
         ProgressBarBuilder().setInitialMax(scenario.runs.toLong()).setStyle(ProgressBarStyle.ASCII)
             .setTaskName("Simulating...").build()
 
+    val pool = ForkJoinPool(5)
     pool.submit {
         LongStream.range(0, scenario.runs.toLong()).parallel().forEach {
             runScenario(scenario, scenario.initialSeed + it)

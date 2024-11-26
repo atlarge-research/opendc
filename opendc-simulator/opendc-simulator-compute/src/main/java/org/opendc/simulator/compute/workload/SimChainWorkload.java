@@ -170,7 +170,7 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
     /**
      * Add connection to the active workload
      *
-     * @param consumerEdge
+     * @param consumerEdge The edge to the workload
      */
     @Override
     public void addConsumerEdge(FlowEdge consumerEdge) {
@@ -179,7 +179,8 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
 
     /**
      * Add Connection to the cpuMux
-     * @param supplierEdge
+     *
+     * @param supplierEdge The edge to the cpuMux
      */
     @Override
     public void addSupplierEdge(FlowEdge supplierEdge) {
@@ -190,53 +191,48 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
     /**
      * Push demand to the cpuMux
      *
-     * @param supplierEdge
-     * @param newDemand
+     * @param supplierEdge The edge to the cpuMux
+     * @param newDemand new demand to sent to the cpu
      */
     @Override
     public void pushDemand(FlowEdge supplierEdge, double newDemand) {
+
+        this.demand = newDemand;
         this.machineEdge.pushDemand(newDemand);
     }
 
     /**
      * Push supply to the workload
      *
-     * @param consumerEdge
-     * @param newSupply
+     * @param consumerEdge The edge to the cpuMux
+     * @param newSupply new supply to sent to the workload
      */
     @Override
     public void pushSupply(FlowEdge consumerEdge, double newSupply) {
+
+        this.supply = newSupply;
         this.workloadEdge.pushSupply(newSupply);
     }
 
     /**
      * Handle new demand coming from the workload
      *
-     * @param consumerEdge
-     * @param newDemand
+     * @param consumerEdge The edge to the workload
+     * @param newDemand new demand coming from the workload
      */
     @Override
     public void handleDemand(FlowEdge consumerEdge, double newDemand) {
-        if (newDemand == this.demand) {
-            return;
-        }
-
-        this.demand = newDemand;
         this.pushDemand(this.machineEdge, newDemand);
     }
 
     /**
      * Handle new supply coming from the cpuMux
      *
-     * @param supplierEdge
-     * @param newSupply
+     * @param supplierEdge The edge to the cpuMux
+     * @param newSupply The new supply that is sent to the workload
      */
     @Override
     public void handleSupply(FlowEdge supplierEdge, double newSupply) {
-        if (newSupply == this.supply) {
-            return;
-        }
-
         this.pushSupply(this.machineEdge, newSupply);
     }
 
@@ -245,7 +241,7 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      * If there is a next workload available, start this workload
      * Otherwise, close this SimChainWorkload
      *
-     * @param consumerEdge
+     * @param consumerEdge The edge to the active workload
      */
     @Override
     public void removeConsumerEdge(FlowEdge consumerEdge) {
@@ -270,18 +266,10 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      * Handle the removal of the connection to the cpuMux
      * When this happens, close the SimChainWorkload
      *
-     * @param supplierEdge
+     * @param supplierEdge The edge to the cpuMux
      */
     @Override
     public void removeSupplierEdge(FlowEdge supplierEdge) {
         this.stopWorkload();
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T extends Throwable> void tryThrow(Throwable e) throws T {
-        if (e == null) {
-            return;
-        }
-        throw (T) e;
     }
 }

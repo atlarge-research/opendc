@@ -40,9 +40,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     private double currentDemand;
     private double currentSupply;
 
-    private long checkpointInterval;
     private long checkpointDuration;
-    private double checkpointIntervalScaling;
 
     private TraceWorkload snapshot;
 
@@ -88,9 +86,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         super(((FlowNode) supplier).getGraph());
 
         this.snapshot = workload;
-        this.checkpointInterval = workload.getCheckpointInterval();
         this.checkpointDuration = workload.getCheckpointDuration();
-        this.checkpointIntervalScaling = workload.getCheckpointIntervalScaling();
         this.remainingFragments = new LinkedList<>(workload.getFragments());
         this.fragmentIndex = 0;
 
@@ -98,7 +94,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         graph.addEdge(this, supplier);
 
         this.currentFragment = this.getNextFragment();
-        pushDemand(machineEdge, (double) this.currentFragment.cpuUsage());
+        pushDemand(machineEdge, this.currentFragment.cpuUsage());
         this.startOfFragment = now;
     }
 
@@ -135,7 +131,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.startOfFragment = now - passedTime;
 
         // Change the cpu Usage to the new Fragment
-        pushDemand(machineEdge, (double) this.currentFragment.cpuUsage());
+        pushDemand(machineEdge, this.currentFragment.cpuUsage());
 
         // Return the time when the current fragment will complete
         return this.startOfFragment + duration;
@@ -163,7 +159,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
     /**
      * Create a new snapshot based on the current status of the workload.
-     * @param now
+     * @param now Moment on which the snapshot is made in milliseconds
      */
     public void makeSnapshot(long now) {
 
@@ -190,7 +186,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         this.fragmentIndex = -1;
         this.currentFragment = getNextFragment();
-        pushDemand(this.machineEdge, (double) this.currentFragment.cpuUsage());
+        pushDemand(this.machineEdge, this.currentFragment.cpuUsage());
         this.startOfFragment = now;
 
         this.invalidate();
@@ -203,8 +199,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     /**
      * Handle updates in supply from the Virtual Machine
      *
-     * @param supplierEdge
-     * @param newSupply
+     * @param supplierEdge edge to the VM on which this is running
+     * @param newSupply The new demand that needs to be sent to the VM
      */
     @Override
     public void handleSupply(FlowEdge supplierEdge, double newSupply) {
@@ -218,8 +214,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     /**
      * Push a new demand to the Virtual Machine
      *
-     * @param supplierEdge
-     * @param newDemand
+     * @param supplierEdge edge to the VM on which this is running
+     * @param newDemand The new demand that needs to be sent to the VM
      */
     @Override
     public void pushDemand(FlowEdge supplierEdge, double newDemand) {
@@ -234,7 +230,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     /**
      * Add the connection to the Virtual Machine
      *
-     * @param supplierEdge
+     * @param supplierEdge edge to the VM on which this is running
      */
     @Override
     public void addSupplierEdge(FlowEdge supplierEdge) {
@@ -245,7 +241,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      * Handle the removal of the connection to the Virtual Machine
      * When the connection to the Virtual Machine is removed, the SimTraceWorkload is removed
      *
-     * @param supplierEdge
+     * @param supplierEdge edge to the VM on which this is running
      */
     @Override
     public void removeSupplierEdge(FlowEdge supplierEdge) {
