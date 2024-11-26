@@ -67,7 +67,7 @@ public final class MachineModel {
     /**
      * Return the processing units of this machine.
      */
-    public CpuModel getCpu() {
+    public CpuModel getCpuModel() {
         return this.cpuModel;
     }
 
