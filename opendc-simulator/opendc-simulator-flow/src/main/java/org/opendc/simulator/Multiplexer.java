@@ -127,6 +127,8 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
      */
     @Override
     public void addConsumerEdge(FlowEdge consumerEdge) {
+        consumerEdge.setConsumerIndex(this.consumerEdges.size());
+
         this.consumerEdges.add(consumerEdge);
         this.demands.add(0.0);
         this.supplies.add(0.0);
@@ -145,7 +147,7 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
 
     @Override
     public void removeConsumerEdge(FlowEdge consumerEdge) {
-        int idx = this.consumerEdges.indexOf(consumerEdge);
+        int idx = consumerEdge.getConsumerIndex();
 
         if (idx == -1) {
             return;
@@ -156,6 +158,11 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         this.consumerEdges.remove(idx);
         this.demands.remove(idx);
         this.supplies.remove(idx);
+
+        // update the consumer index for all consumerEdges higher than this.
+        for (int i = idx; i < this.consumerEdges.size(); i++) {
+            this.consumerEdges.get(i).setConsumerIndex(i);
+        }
 
         this.invalidate();
     }
@@ -169,7 +176,7 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
 
     @Override
     public void handleDemand(FlowEdge consumerEdge, double newDemand) {
-        int idx = consumerEdges.indexOf(consumerEdge);
+        int idx = consumerEdge.getConsumerIndex();
 
         if (idx == -1) {
             System.out.println("Error (Multiplexer): Demand pushed by an unknown consumer");
@@ -201,7 +208,7 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
 
     @Override
     public void pushSupply(FlowEdge consumerEdge, double newSupply) {
-        int idx = consumerEdges.indexOf(consumerEdge);
+        int idx = consumerEdge.getConsumerIndex();
 
         if (idx == -1) {
             System.out.println("Error (Multiplexer): pushing supply to an unknown consumer");

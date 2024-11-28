@@ -32,6 +32,9 @@ public class FlowEdge {
     private FlowConsumer consumer;
     private FlowSupplier supplier;
 
+    private int consumerIndex = -1;
+    private int supplierIndex = -1;
+
     private double demand = 0.0;
     private double supply = 0.0;
 
@@ -84,6 +87,22 @@ public class FlowEdge {
 
     public double getSupply() {
         return this.supply;
+    }
+
+    public int getConsumerIndex() {
+        return consumerIndex;
+    }
+
+    public void setConsumerIndex(int consumerIndex) {
+        this.consumerIndex = consumerIndex;
+    }
+
+    public int getSupplierIndex() {
+        return supplierIndex;
+    }
+
+    public void setSupplierIndex(int supplierIndex) {
+        this.supplierIndex = supplierIndex;
     }
 
     /**
