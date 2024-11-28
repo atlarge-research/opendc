@@ -39,6 +39,8 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
 
     private double totalDemand; // The total demand of all the consumers
     private double totalSupply; // The total supply from the supplier
+
+    private boolean overProvisioned = false;
     private double capacity; // What is the max capacity
 
     public Multiplexer(FlowGraph graph) {
@@ -59,52 +61,58 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
 
     public long onUpdate(long now) {
 
-        if (this.totalDemand > this.capacity) {
-            redistributeSupply(this.consumerEdges, this.supplies, this.capacity);
-        } else {
-            for (int i = 0; i < this.demands.size(); i++) {
-                this.supplies.set(i, this.demands.get(i));
-            }
-        }
-
-        double totalSupply = 0;
-        for (int i = 0; i < this.consumerEdges.size(); i++) {
-            this.pushSupply(this.consumerEdges.get(i), this.supplies.get(i));
-            totalSupply += this.supplies.get(i);
-        }
-
-        // Only update supplier if supply has changed
-        if (this.totalSupply != totalSupply) {
-            this.totalSupply = totalSupply;
-
-            pushDemand(this.supplierEdge, this.totalSupply);
-        }
-
         return Long.MAX_VALUE;
     }
 
-    private static double redistributeSupply(
-            ArrayList<FlowEdge> consumerEdges, ArrayList<Double> supplies, double capacity) {
-        final long[] consumers = new long[consumerEdges.size()];
+    private void distributeSupply() {
+        // if supply >= demand -> push supplies to all tasks
+        // TODO: possible optimization -> Only has to be done for the specific consumer that changed demand
+        if (this.totalSupply >= this.totalDemand) {
+            this.overProvisioned = false;
 
-        for (int i = 0; i < consumers.length; i++) {
-            FlowEdge consumer = consumerEdges.get(i);
-
-            if (consumer == null) {
-                break;
+            for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
+                this.pushSupply(this.consumerEdges.get(idx), this.demands.get(idx));
             }
-
-            consumers[i] = (Double.doubleToRawLongBits(consumer.getDemand()) << 32) | (i & 0xFFFFFFFFL);
         }
-        Arrays.sort(consumers);
 
-        double availableCapacity = capacity;
-        int inputSize = consumers.length;
+        // if supply < demand -> distribute the supply over all consumers
+        else {
+            this.overProvisioned = true;
+            double[] supplies = redistributeSupply(this.demands, this.totalSupply);
+
+            for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
+                this.pushSupply(this.consumerEdges.get(idx), supplies[idx]);
+            }
+        }
+    }
+
+    private record Demand(int idx, double value) {}
+
+    private static double[] redistributeSupply(ArrayList<Double> demands, double totalSupply) {
+        int inputSize = demands.size();
+
+        final double[] supplies = new double[inputSize];
+        final Demand[] tempDemands = new Demand[inputSize];
 
         for (int i = 0; i < inputSize; i++) {
-            long v = consumers[i];
-            int slot = (int) v;
-            double d = Double.longBitsToDouble((int) (v >> 32));
+
+            tempDemands[i] = new Demand(i, demands.get(i));
+
+            //             TODO: does not work
+            //            tempDemands[i] = (Double.doubleToRawLongBits(demands.get(i)) << 32) | (i & 0xFFFFFFFFL); //
+            // demands
+        }
+
+        Arrays.sort(tempDemands, (o1, o2) -> {
+            Double i1 = o1.value;
+            Double i2 = o2.value;
+            return i1.compareTo(i2);
+        });
+
+        double availableCapacity = totalSupply; // totalSupply
+
+        for (int i = 0; i < inputSize; i++) {
+            double d = tempDemands[i].value;
 
             if (d == 0.0) {
                 continue;
@@ -113,12 +121,13 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
             double availableShare = availableCapacity / (inputSize - i);
             double r = Math.min(d, availableShare);
 
-            supplies.set(slot, r); // Update the rates
+            int idx = tempDemands[i].idx;
+            supplies[idx] = r; // Update the rates
             availableCapacity -= r;
         }
 
         // Return the used capacity
-        return capacity - availableCapacity;
+        return supplies;
     }
 
     /**
@@ -164,7 +173,7 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
             this.consumerEdges.get(i).setConsumerIndex(i);
         }
 
-        this.invalidate();
+        this.pushDemand(this.supplierEdge, this.totalDemand);
     }
 
     @Override
@@ -183,23 +192,27 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
             return;
         }
 
+        // Update the total demand (This is cheaper than summing over all demands)
         double prevDemand = demands.get(idx);
-        demands.set(idx, newDemand);
 
+        demands.set(idx, newDemand);
         this.totalDemand += (newDemand - prevDemand);
 
-        if (this.totalDemand <= this.capacity) {
-
-            this.totalSupply = this.totalDemand;
-            this.pushDemand(this.supplierEdge, this.totalSupply);
-
-            this.pushSupply(consumerEdge, newDemand);
+        if (overProvisioned) {
+            distributeSupply();
         }
-        // TODO: add behaviour if capacity is reached
+
+        // Send new totalDemand to CPU
+        // TODO: Look at what happens if total demand is not changed (if total demand is higher than totalSupply)
+        this.pushDemand(this.supplierEdge, this.totalDemand);
     }
 
     @Override
-    public void handleSupply(FlowEdge supplierEdge, double newSupply) {}
+    public void handleSupply(FlowEdge supplierEdge, double newSupply) {
+        this.totalSupply = newSupply; // Currently this is from a single supply, might turn into multiple suppliers
+
+        this.distributeSupply();
+    }
 
     @Override
     public void pushDemand(FlowEdge supplierEdge, double newDemand) {

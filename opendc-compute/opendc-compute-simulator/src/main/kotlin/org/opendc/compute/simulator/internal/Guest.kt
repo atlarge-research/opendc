@@ -233,6 +233,7 @@ public class Guest(
             counters.cpuLostTime / 1000L,
             counters.cpuCapacity,
             counters.cpuSupply,
+            counters.cpuDemand,
             counters.cpuSupply / cpuLimit,
         )
     }

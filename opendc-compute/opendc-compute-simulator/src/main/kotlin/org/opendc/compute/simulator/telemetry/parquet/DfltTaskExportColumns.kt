@@ -97,6 +97,16 @@ public object DfltTaskExportColumns {
             field = Types.required(FLOAT).named("cpu_limit"),
         ) { it.cpuLimit }
 
+    public val CPU_USAGE: ExportColumn<TaskTableReader> =
+        ExportColumn(
+            field = Types.required(FLOAT).named("cpu_usage"),
+        ) { it.cpuUsage }
+
+    public val CPU_DEMAND: ExportColumn<TaskTableReader> =
+        ExportColumn(
+            field = Types.required(FLOAT).named("cpu_demand"),
+        ) { it.cpuDemand }
+
     public val CPU_TIME_ACTIVE: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_active"),

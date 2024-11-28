@@ -100,6 +100,16 @@ public interface TaskTableReader : Exportable {
     public val cpuLimit: Double
 
     /**
+     * The CPU given to this task (in MHz).
+     */
+    public val cpuUsage: Double
+
+    /**
+     * The CPU demanded by this task (in MHz).
+     */
+    public val cpuDemand: Double
+
+    /**
      * The duration (in seconds) that a CPU was active in the task.
      */
     public val cpuActiveTime: Long
