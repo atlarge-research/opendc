@@ -40,8 +40,9 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
     private double currentCpuDemand = 0.0f; // cpu capacity demanded by the mux
     private double currentCpuUtilization = 0.0f;
-    private double currentPowerDemand = 0.0f; // power demanded of the psu
     private double currentCpuSupplied = 0.0f; // cpu capacity supplied to the mux
+
+    private double currentPowerDemand = 0.0f; // power demanded of the psu
     private double currentPowerSupplied = 0.0f; // cpu capacity supplied by the psu
 
     private double maxCapacity;
@@ -122,7 +123,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     public long onUpdate(long now) {
         updateCounters(now);
 
-        this.currentCpuUtilization = this.currentCpuDemand / this.maxCapacity;
+        this.currentCpuUtilization = Math.min(this.currentCpuDemand / this.maxCapacity, 1.0);
 
         // Calculate Power Demand and send to PSU
         double powerDemand = this.cpuPowerModel.computePower(this.currentCpuUtilization);
@@ -132,7 +133,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         }
 
         // Calculate the amount of cpu this can provide
-        double cpuSupply = this.currentCpuDemand;
+        double cpuSupply = Math.min(this.currentCpuDemand, this.maxCapacity);
 
         if (cpuSupply != this.currentCpuSupplied) {
             this.pushSupply(this.muxEdge, cpuSupply);
@@ -205,6 +206,8 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         this.currentCpuDemand = newCpuDemand;
         this.currentCpuUtilization = this.currentCpuDemand / this.maxCapacity;
 
+        this.currentCpuUtilization = Math.min(this.currentCpuDemand / this.maxCapacity, 1.0);
+
         // Calculate Power Demand and send to PSU
         double powerDemand = this.cpuPowerModel.computePower(this.currentCpuUtilization);
 
@@ -223,7 +226,8 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         this.currentPowerSupplied = newPowerSupply;
 
         // Calculate the amount of cpu this can provide
-        double cpuSupply = this.currentCpuDemand;
+        double cpuSupply = Math.min(this.currentCpuDemand, this.maxCapacity);
+        ;
 
         if (cpuSupply != this.currentCpuSupplied) {
             this.pushSupply(this.muxEdge, cpuSupply);

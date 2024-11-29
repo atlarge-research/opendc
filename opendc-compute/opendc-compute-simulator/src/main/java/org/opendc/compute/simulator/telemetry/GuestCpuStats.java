@@ -40,4 +40,5 @@ public record GuestCpuStats(
         long lostTime,
         double capacity,
         double usage,
+        double demand,
         double utilization) {}
