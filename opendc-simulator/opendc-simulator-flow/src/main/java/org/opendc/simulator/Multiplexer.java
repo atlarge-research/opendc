@@ -41,6 +41,8 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
     private double totalSupply; // The total supply from the supplier
 
     private boolean overProvisioned = false;
+    private int currentConsumerIdx = -1;
+
     private double capacity; // What is the max capacity
 
     public Multiplexer(FlowGraph graph) {
@@ -68,11 +70,21 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         // if supply >= demand -> push supplies to all tasks
         // TODO: possible optimization -> Only has to be done for the specific consumer that changed demand
         if (this.totalSupply >= this.totalDemand) {
-            this.overProvisioned = false;
 
-            for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
-                this.pushSupply(this.consumerEdges.get(idx), this.demands.get(idx));
+            // If this came from a state of over provisioning, provide all consumers with their demand
+            if (this.overProvisioned) {
+                for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
+                    this.pushSupply(this.consumerEdges.get(idx), this.demands.get(idx));
+                }
             }
+
+            if (this.currentConsumerIdx != -1) {
+                this.pushSupply(
+                        this.consumerEdges.get(this.currentConsumerIdx), this.demands.get(this.currentConsumerIdx));
+                this.currentConsumerIdx = -1;
+            }
+
+            this.overProvisioned = false;
         }
 
         // if supply < demand -> distribute the supply over all consumers
@@ -95,12 +107,7 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         final Demand[] tempDemands = new Demand[inputSize];
 
         for (int i = 0; i < inputSize; i++) {
-
             tempDemands[i] = new Demand(i, demands.get(i));
-
-            //             TODO: does not work
-            //            tempDemands[i] = (Double.doubleToRawLongBits(demands.get(i)) << 32) | (i & 0xFFFFFFFFL); //
-            // demands
         }
 
         Arrays.sort(tempDemands, (o1, o2) -> {
@@ -141,8 +148,6 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         this.consumerEdges.add(consumerEdge);
         this.demands.add(0.0);
         this.supplies.add(0.0);
-
-        this.invalidate();
     }
 
     @Override
@@ -150,8 +155,6 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         this.supplierEdge = supplierEdge;
         this.capacity = supplierEdge.getCapacity();
         this.totalSupply = 0;
-
-        this.invalidate();
     }
 
     @Override
@@ -173,6 +176,8 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
             this.consumerEdges.get(i).setConsumerIndex(i);
         }
 
+        this.currentConsumerIdx = -1;
+
         this.pushDemand(this.supplierEdge, this.totalDemand);
     }
 
@@ -186,6 +191,8 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
     @Override
     public void handleDemand(FlowEdge consumerEdge, double newDemand) {
         int idx = consumerEdge.getConsumerIndex();
+
+        this.currentConsumerIdx = idx;
 
         if (idx == -1) {
             System.out.println("Error (Multiplexer): Demand pushed by an unknown consumer");
