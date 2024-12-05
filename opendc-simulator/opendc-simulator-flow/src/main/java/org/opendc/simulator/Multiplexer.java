@@ -40,7 +40,7 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
     private double totalDemand; // The total demand of all the consumers
     private double totalSupply; // The total supply from the supplier
 
-    private boolean overProvisioned = false;
+    private boolean overLoaded = false;
     private int currentConsumerIdx = -1;
 
     private double capacity; // What is the max capacity
@@ -68,11 +68,10 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
 
     private void distributeSupply() {
         // if supply >= demand -> push supplies to all tasks
-        // TODO: possible optimization -> Only has to be done for the specific consumer that changed demand
-        if (this.totalSupply >= this.totalDemand) {
+        if (this.totalSupply > this.totalDemand) {
 
             // If this came from a state of over provisioning, provide all consumers with their demand
-            if (this.overProvisioned) {
+            if (this.overLoaded) {
                 for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
                     this.pushSupply(this.consumerEdges.get(idx), this.demands.get(idx));
                 }
@@ -84,12 +83,12 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
                 this.currentConsumerIdx = -1;
             }
 
-            this.overProvisioned = false;
+            this.overLoaded = false;
         }
 
         // if supply < demand -> distribute the supply over all consumers
         else {
-            this.overProvisioned = true;
+            this.overLoaded = true;
             double[] supplies = redistributeSupply(this.demands, this.totalSupply);
 
             for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
@@ -178,6 +177,10 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
 
         this.currentConsumerIdx = -1;
 
+        if (this.overLoaded) {
+            this.distributeSupply();
+        }
+
         this.pushDemand(this.supplierEdge, this.totalDemand);
     }
 
@@ -205,7 +208,7 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         demands.set(idx, newDemand);
         this.totalDemand += (newDemand - prevDemand);
 
-        if (overProvisioned) {
+        if (overLoaded) {
             distributeSupply();
         }
 
@@ -216,7 +219,7 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
 
     @Override
     public void handleSupply(FlowEdge supplierEdge, double newSupply) {
-        this.totalSupply = newSupply; // Currently this is from a single supply, might turn into multiple suppliers
+        this.totalSupply = newSupply;
 
         this.distributeSupply();
     }
