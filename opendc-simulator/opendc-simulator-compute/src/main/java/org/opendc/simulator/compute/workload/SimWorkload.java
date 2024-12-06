@@ -22,9 +22,9 @@
 
 package org.opendc.simulator.compute.workload;
 
-import org.opendc.simulator.engine.FlowConsumer;
-import org.opendc.simulator.engine.FlowGraph;
-import org.opendc.simulator.engine.FlowNode;
+import org.opendc.simulator.engine.graph.FlowConsumer;
+import org.opendc.simulator.engine.graph.FlowGraph;
+import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
  * A model that characterizes the runtime behavior of some particular workload.

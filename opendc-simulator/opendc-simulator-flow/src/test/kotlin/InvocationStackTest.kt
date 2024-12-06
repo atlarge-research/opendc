@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.opendc.simulator.engine.InvocationStack
+import org.opendc.simulator.engine.engine.InvocationStack
 
 /**
  * Test suite for the [InvocationStack] class.

@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute.workload;
 
-import org.opendc.simulator.engine.FlowSupplier;
+import org.opendc.simulator.engine.graph.FlowSupplier;
 
 public interface Workload {
 

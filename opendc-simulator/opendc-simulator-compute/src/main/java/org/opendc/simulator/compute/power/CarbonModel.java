@@ -23,8 +23,8 @@
 package org.opendc.simulator.compute.power;
 
 import java.util.List;
-import org.opendc.simulator.engine.FlowGraph;
-import org.opendc.simulator.engine.FlowNode;
+import org.opendc.simulator.engine.graph.FlowGraph;
+import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
  * CarbonModel used to provide the Carbon Intensity of a {@link SimPowerSource}

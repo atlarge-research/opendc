@@ -23,11 +23,11 @@
 package org.opendc.simulator.compute.power;
 
 import org.opendc.simulator.compute.cpu.SimCpu;
-import org.opendc.simulator.engine.FlowConsumer;
-import org.opendc.simulator.engine.FlowEdge;
-import org.opendc.simulator.engine.FlowGraph;
-import org.opendc.simulator.engine.FlowNode;
-import org.opendc.simulator.engine.FlowSupplier;
+import org.opendc.simulator.engine.graph.FlowConsumer;
+import org.opendc.simulator.engine.graph.FlowEdge;
+import org.opendc.simulator.engine.graph.FlowGraph;
+import org.opendc.simulator.engine.graph.FlowNode;
+import org.opendc.simulator.engine.graph.FlowSupplier;
 
 /**
  * A {@link SimPsu} implementation that estimates the power consumption based on CPU usage.

@@ -29,8 +29,8 @@ package org.opendc.simulator.compute.workload;
 
 import java.time.InstantSource;
 import org.jetbrains.annotations.NotNull;
-import org.opendc.simulator.engine.FlowGraph;
-import org.opendc.simulator.engine.FlowNode;
+import org.opendc.simulator.engine.graph.FlowGraph;
+import org.opendc.simulator.engine.graph.FlowNode;
 
 public class CheckpointModel extends FlowNode {
     private SimWorkload simWorkload;

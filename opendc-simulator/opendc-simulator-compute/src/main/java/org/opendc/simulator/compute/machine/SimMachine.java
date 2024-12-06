@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.machine;
 
 import java.time.InstantSource;
 import java.util.function.Consumer;
-import org.opendc.simulator.Multiplexer;
 import org.opendc.simulator.compute.cpu.CpuPowerModel;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.compute.memory.Memory;
@@ -32,7 +31,8 @@ import org.opendc.simulator.compute.models.MachineModel;
 import org.opendc.simulator.compute.power.SimPsu;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
-import org.opendc.simulator.engine.FlowGraph;
+import org.opendc.simulator.engine.graph.FlowDistributor;
+import org.opendc.simulator.engine.graph.FlowGraph;
 
 /**
  * A machine that is able to execute {@link SimWorkload} objects.
@@ -44,7 +44,7 @@ public class SimMachine {
     private final InstantSource clock;
 
     private SimCpu cpu;
-    private Multiplexer cpuMux;
+    private FlowDistributor cpuMux;
     private SimPsu psu;
     private Memory memory;
 
@@ -74,7 +74,7 @@ public class SimMachine {
         return cpu;
     }
 
-    public Multiplexer getCpuMux() {
+    public FlowDistributor getCpuMux() {
         return cpuMux;
     }
 
@@ -114,7 +114,7 @@ public class SimMachine {
     public SimMachine(
             FlowGraph graph,
             MachineModel machineModel,
-            Multiplexer powerMux,
+            FlowDistributor powerMux,
             CpuPowerModel cpuPowerModel,
             Consumer<Exception> completion) {
         this.graph = graph;
@@ -132,8 +132,8 @@ public class SimMachine {
 
         this.memory = new Memory(graph, this.machineModel.getMemory());
 
-        // Create a Multiplexer and add the cpu as supplier
-        this.cpuMux = new Multiplexer(this.graph);
+        // Create a FlowDistributor and add the cpu as supplier
+        this.cpuMux = new FlowDistributor(this.graph);
         graph.addEdge(this.cpuMux, this.cpu);
 
         this.completion = completion;

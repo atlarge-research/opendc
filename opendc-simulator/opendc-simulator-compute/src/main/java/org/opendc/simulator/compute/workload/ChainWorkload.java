@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.workload;
 
 import java.util.ArrayList;
-import org.opendc.simulator.engine.FlowSupplier;
+import org.opendc.simulator.engine.graph.FlowSupplier;
 
 public class ChainWorkload implements Workload {
     private ArrayList<Workload> workloads;

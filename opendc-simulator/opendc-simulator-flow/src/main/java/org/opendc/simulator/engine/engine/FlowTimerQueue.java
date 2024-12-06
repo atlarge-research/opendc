@@ -20,9 +20,10 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine;
+package org.opendc.simulator.engine.engine;
 
 import java.util.Arrays;
+import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
  * A specialized priority queue for timers of {@link FlowNode}s.
@@ -55,9 +56,9 @@ public final class FlowTimerQueue {
      */
     public void enqueue(FlowNode node) {
         FlowNode[] es = queue;
-        int k = node.timerIndex;
+        int k = node.getTimerIndex();
 
-        if (node.deadline != Long.MAX_VALUE) {
+        if (node.getDeadline() != Long.MAX_VALUE) {
             if (k >= 0) {
                 update(es, node, k);
             } else {
@@ -82,7 +83,7 @@ public final class FlowTimerQueue {
         final FlowNode[] es = queue;
         final FlowNode head = es[0];
 
-        if (now < head.deadline) {
+        if (now < head.getDeadline()) {
             return null;
         }
 
@@ -95,7 +96,7 @@ public final class FlowTimerQueue {
             siftDown(0, next, es, n);
         }
 
-        head.timerIndex = -1;
+        head.setTimerIndex(-1);
         return head;
     }
 
@@ -104,7 +105,7 @@ public final class FlowTimerQueue {
      */
     public long peekDeadline() {
         if (this.size > 0) {
-            return this.queue[0].deadline;
+            return this.queue[0].getDeadline();
         }
 
         return Long.MAX_VALUE;
@@ -130,7 +131,7 @@ public final class FlowTimerQueue {
     private void update(FlowNode[] es, FlowNode node, int k) {
         if (k > 0) {
             int parent = (k - 1) >>> 1;
-            if (es[parent].deadline > node.deadline) {
+            if (es[parent].getDeadline() > node.getDeadline()) {
                 siftUp(k, node, es);
                 return;
             }
@@ -175,13 +176,13 @@ public final class FlowTimerQueue {
         while (k > 0) {
             int parent = (k - 1) >>> 1;
             FlowNode e = es[parent];
-            if (key.deadline >= e.deadline) break;
+            if (key.getDeadline() >= e.getDeadline()) break;
             es[k] = e;
-            e.timerIndex = k;
+            e.setTimerIndex(k);
             k = parent;
         }
         es[k] = key;
-        key.timerIndex = k;
+        key.setTimerIndex(k);
     }
 
     private static void siftDown(int k, FlowNode key, FlowNode[] es, int n) {
@@ -190,16 +191,16 @@ public final class FlowTimerQueue {
             int child = (k << 1) + 1; // assume left child is least
             FlowNode c = es[child];
             int right = child + 1;
-            if (right < n && c.deadline > es[right].deadline) c = es[child = right];
+            if (right < n && c.getDeadline() > es[right].getDeadline()) c = es[child = right];
 
-            if (key.deadline <= c.deadline) break;
+            if (key.getDeadline() <= c.getDeadline()) break;
 
             es[k] = c;
-            c.timerIndex = k;
+            c.setTimerIndex(k);
             k = child;
         }
 
         es[k] = key;
-        key.timerIndex = k;
+        key.setTimerIndex(k);
     }
 }

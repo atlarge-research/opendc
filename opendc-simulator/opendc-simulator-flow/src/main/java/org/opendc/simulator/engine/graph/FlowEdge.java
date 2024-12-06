@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine;
+package org.opendc.simulator.engine.graph;
 
 /**
  * An edge that connects two FlowStages.
