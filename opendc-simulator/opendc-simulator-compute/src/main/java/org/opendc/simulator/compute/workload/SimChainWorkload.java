@@ -23,9 +23,9 @@
 package org.opendc.simulator.compute.workload;
 
 import java.util.LinkedList;
-import org.opendc.simulator.engine.FlowEdge;
-import org.opendc.simulator.engine.FlowNode;
-import org.opendc.simulator.engine.FlowSupplier;
+import org.opendc.simulator.engine.graph.FlowEdge;
+import org.opendc.simulator.engine.graph.FlowNode;
+import org.opendc.simulator.engine.graph.FlowSupplier;
 
 /**
  * A {@link SimChainWorkload} that composes multiple {@link SimWorkload}s.

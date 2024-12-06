@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.memory;
 
 import org.opendc.simulator.compute.models.MemoryUnit;
-import org.opendc.simulator.engine.FlowGraph;
+import org.opendc.simulator.engine.graph.FlowGraph;
 
 /**
  * The [SimMemory] implementation for a machine.

@@ -55,9 +55,9 @@ import java.util.ArrayList
 import java.util.UUID
 
 /**
- * Testing suite containing tests that specifically test the Multiplexer
+ * Testing suite containing tests that specifically test the FlowDistributor
  */
-class MultiplexerTest {
+class FlowDistributorTest {
     /**
      * The monitor used to keep track of the metrics.
      */
@@ -73,7 +73,7 @@ class MultiplexerTest {
      */
     private lateinit var workloadLoader: ComputeWorkloadLoader
 
-    private val basePath = "src/test/resources/Multiplexer"
+    private val basePath = "src/test/resources/FlowDistributor"
 
     /**
      * Set up the experimental environment.
@@ -135,12 +135,12 @@ class MultiplexerTest {
     }
 
     /**
-     * Multiplexer test 1: A single fitting task
-     * In this test, a single task is scheduled that should fit the Multiplexer
+     * FlowDistributor test 1: A single fitting task
+     * In this test, a single task is scheduled that should fit the FlowDistributor
      * We check if both the host and the Task show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer1() {
+    fun testFlowDistributor1() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -171,13 +171,13 @@ class MultiplexerTest {
     }
 
     /**
-     * Multiplexer test 2: A single overloaded task
-     * In this test, a single task is scheduled that does not fit the Multiplexer
+     * FlowDistributor test 2: A single overloaded task
+     * In this test, a single task is scheduled that does not fit the FlowDistributor
      * In this test we expect the usage to be lower than the demand.
      * We check if both the host and the Task show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer2() {
+    fun testFlowDistributor2() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -208,13 +208,13 @@ class MultiplexerTest {
     }
 
     /**
-     * Multiplexer test 3: A single task transition fit to overloaded
+     * FlowDistributor test 3: A single task transition fit to overloaded
      * In this test, a single task is scheduled where the first fragment fits, but the second does not.
      * For the first fragment, we expect the usage of the second fragment to be lower than the demand
      * We check if both the host and the Task show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer3() {
+    fun testFlowDistributor3() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -245,13 +245,13 @@ class MultiplexerTest {
     }
 
     /**
-     * Multiplexer test 4: A single task transition overload to fit
+     * FlowDistributor test 4: A single task transition overload to fit
      * In this test, a single task is scheduled where the first fragment does not fit, and the second does.
      * For the first fragment, we expect the usage of the first fragment to be lower than the demand
      * We check if both the host and the Task show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer4() {
+    fun testFlowDistributor4() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -282,13 +282,13 @@ class MultiplexerTest {
     }
 
     /**
-     * Multiplexer test 5: Two task, same time, both fit
+     * FlowDistributor test 5: Two task, same time, both fit
      * In this test, two tasks are scheduled, and they fit together on the host . The tasks start and finish at the same time
-     * This test shows how the multiplexer handles two tasks that can fit and no redistribution is required.
+     * This test shows how the FlowDistributor handles two tasks that can fit and no redistribution is required.
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer5() {
+    fun testFlowDistributor5() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -331,13 +331,13 @@ class MultiplexerTest {
     }
 
     /**
-     * Multiplexer test 6: Two task, same time, can not fit
+     * FlowDistributor test 6: Two task, same time, can not fit
      * In this test, two tasks are scheduled, and they can not both fit. The tasks start and finish at the same time
-     * This test shows how the multiplexer handles two tasks that both do not fit and redistribution is required.
+     * This test shows how the FlowDistributor handles two tasks that both do not fit and redistribution is required.
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer6() {
+    fun testFlowDistributor6() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -380,12 +380,12 @@ class MultiplexerTest {
     }
 
     /**
-     * Multiplexer test 7: Two task, both fit, second task is delayed
+     * FlowDistributor test 7: Two task, both fit, second task is delayed
      * In this test, two tasks are scheduled, the second task is delayed.
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer7() {
+    fun testFlowDistributor7() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -437,15 +437,15 @@ class MultiplexerTest {
     }
 
     /**
-     * Multiplexer test 8: Two task, both fit on their own but not together, second task is delayed
+     * FlowDistributor test 8: Two task, both fit on their own but not together, second task is delayed
      * In this test, two tasks are scheduled, the second task is delayed.
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      * When the second task comes in, the host is overloaded.
-     * This test shows how the multiplexer can handle redistribution when a new task comes in.
+     * This test shows how the FlowDistributor can handle redistribution when a new task comes in.
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer8() {
+    fun testFlowDistributor8() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -494,14 +494,14 @@ class MultiplexerTest {
     }
 
     /**
-     * Multiplexer test 9: Two task, one changes demand, causing overload
+     * FlowDistributor test 9: Two task, one changes demand, causing overload
      * In this test, two tasks are scheduled, and they can both fit.
-     * However, task 0 increases its demand which overloads the multiplexer.
-     * This test shows how the multiplexer handles transition from fitting to overloading when multiple tasks are running.
+     * However, task 0 increases its demand which overloads the FlowDistributor.
+     * This test shows how the FlowDistributor handles transition from fitting to overloading when multiple tasks are running.
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer9() {
+    fun testFlowDistributor9() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -560,7 +560,7 @@ class MultiplexerTest {
      * Obtain the topology factory for the test.
      */
     private fun createTopology(name: String): List<ClusterSpec> {
-        val stream = checkNotNull(object {}.javaClass.getResourceAsStream("/Multiplexer/topologies/$name"))
+        val stream = checkNotNull(object {}.javaClass.getResourceAsStream("/FlowDistributor/topologies/$name"))
         return stream.use { clusterTopology(stream) }
     }
 

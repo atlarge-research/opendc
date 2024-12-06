@@ -20,12 +20,14 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine;
+package org.opendc.simulator.engine.engine;
 
 import java.time.Clock;
 import java.time.InstantSource;
 import kotlin.coroutines.CoroutineContext;
 import org.opendc.common.Dispatcher;
+import org.opendc.simulator.engine.graph.FlowGraph;
+import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
  * A {@link FlowEngine} simulates a generic flow network.
@@ -89,7 +91,7 @@ public final class FlowEngine implements Runnable {
      * This method should be used when the state of a flow context is invalidated/interrupted and needs to be
      * re-computed.
      */
-    void scheduleImmediate(long now, FlowNode ctx) {
+    public void scheduleImmediate(long now, FlowNode ctx) {
         scheduleImmediateInContext(ctx);
 
         // In-case the engine is already running in the call-stack, return immediately. The changes will be picked
@@ -109,14 +111,14 @@ public final class FlowEngine implements Runnable {
      * <p>
      * This method should only be invoked while inside an engine cycle.
      */
-    void scheduleImmediateInContext(FlowNode ctx) {
+    public void scheduleImmediateInContext(FlowNode ctx) {
         queue.add(ctx);
     }
 
     /**
      * Enqueue the specified {@link FlowNode} to be updated at its updated deadline.
      */
-    void scheduleDelayed(FlowNode ctx) {
+    public void scheduleDelayed(FlowNode ctx) {
         scheduleDelayedInContext(ctx);
 
         // In-case the engine is already running in the call-stack, return immediately. The changes will be picked
@@ -136,7 +138,7 @@ public final class FlowEngine implements Runnable {
      * <p>
      * This method should only be invoked while inside an engine cycle.
      */
-    void scheduleDelayedInContext(FlowNode ctx) {
+    public void scheduleDelayedInContext(FlowNode ctx) {
         FlowTimerQueue timerQueue = this.timerQueue;
         timerQueue.enqueue(ctx);
     }

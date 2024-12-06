@@ -24,7 +24,7 @@ package org.opendc.simulator.compute.workload;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.opendc.simulator.engine.FlowSupplier;
+import org.opendc.simulator.engine.graph.FlowSupplier;
 
 public class TraceWorkload implements Workload {
     private ArrayList<TraceFragment> fragments;

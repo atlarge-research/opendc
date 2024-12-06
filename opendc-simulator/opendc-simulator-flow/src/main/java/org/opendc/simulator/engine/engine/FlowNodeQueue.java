@@ -20,7 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine;
+package org.opendc.simulator.engine.engine;
+
+import org.opendc.simulator.engine.graph.FlowNode;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;

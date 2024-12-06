@@ -20,17 +20,12 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator;
+package org.opendc.simulator.engine.graph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.opendc.simulator.engine.FlowConsumer;
-import org.opendc.simulator.engine.FlowEdge;
-import org.opendc.simulator.engine.FlowGraph;
-import org.opendc.simulator.engine.FlowNode;
-import org.opendc.simulator.engine.FlowSupplier;
 
-public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer {
+public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
     private final ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
     private FlowEdge supplierEdge;
 
@@ -45,7 +40,7 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
 
     private double capacity; // What is the max capacity
 
-    public Multiplexer(FlowGraph graph) {
+    public FlowDistributor(FlowGraph graph) {
         super(graph);
     }
 
@@ -70,7 +65,7 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         // if supply >= demand -> push supplies to all tasks
         if (this.totalSupply > this.totalDemand) {
 
-            // If this came from a state of over provisioning, provide all consumers with their demand
+            // If this came from a state of overload, provide all consumers with their demand
             if (this.overLoaded) {
                 for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
                     this.pushSupply(this.consumerEdges.get(idx), this.demands.get(idx));
@@ -99,6 +94,12 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
 
     private record Demand(int idx, double value) {}
 
+    /**
+     * Distributed the available supply over the different demands.
+     * The supply is distributed using MaxMin Fairness.
+     *
+     * TODO: Move this outside of the Distributor so we can easily add different redistribution methods
+     */
     private static double[] redistributeSupply(ArrayList<Double> demands, double totalSupply) {
         int inputSize = demands.size();
 
@@ -198,7 +199,7 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         this.currentConsumerIdx = idx;
 
         if (idx == -1) {
-            System.out.println("Error (Multiplexer): Demand pushed by an unknown consumer");
+            System.out.println("Error (FlowDistributor): Demand pushed by an unknown consumer");
             return;
         }
 
@@ -234,7 +235,7 @@ public class Multiplexer extends FlowNode implements FlowSupplier, FlowConsumer 
         int idx = consumerEdge.getConsumerIndex();
 
         if (idx == -1) {
-            System.out.println("Error (Multiplexer): pushing supply to an unknown consumer");
+            System.out.println("Error (FlowDistributor): pushing supply to an unknown consumer");
         }
 
         if (supplies.get(idx) == newSupply) {

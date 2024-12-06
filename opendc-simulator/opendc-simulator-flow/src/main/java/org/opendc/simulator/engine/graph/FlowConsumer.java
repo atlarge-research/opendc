@@ -20,17 +20,15 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine;
+package org.opendc.simulator.engine.graph;
 
-public interface FlowSupplier {
+public interface FlowConsumer {
 
-    void handleDemand(FlowEdge consumerEdge, double newDemand);
+    void handleSupply(FlowEdge supplierEdge, double newSupply);
 
-    void pushSupply(FlowEdge consumerEdge, double newSupply);
+    void pushDemand(FlowEdge supplierEdge, double newDemand);
 
-    void addConsumerEdge(FlowEdge consumerEdge);
+    void addSupplierEdge(FlowEdge supplierEdge);
 
-    void removeConsumerEdge(FlowEdge consumerEdge);
-
-    double getCapacity();
+    void removeSupplierEdge(FlowEdge supplierEdge);
 }

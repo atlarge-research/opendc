@@ -20,9 +20,12 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine;
+package org.opendc.simulator.engine.graph;
 
 import java.time.InstantSource;
+
+import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.engine.engine.FlowTimerQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,19 +45,73 @@ public abstract class FlowNode {
 
     protected NodeState nodeState = NodeState.PENDING;
 
+    public NodeState getNodeState() {
+        return nodeState;
+    }
+    public void setNodeState(NodeState nodeState) {
+        this.nodeState = nodeState;
+    }
+    public int getTimerIndex() {
+        return timerIndex;
+    }
+    public void setTimerIndex(int index) {
+        this.timerIndex = index;
+    }
+    public InstantSource getClock() {
+        return clock;
+    }
+    public void setClock(InstantSource clock) {
+        this.clock = clock;
+    }
+    public FlowGraph getParentGraph() {
+        return parentGraph;
+    }
+    public void setParentGraph(FlowGraph parentGraph) {
+        this.parentGraph = parentGraph;
+    }
+
+    public FlowEngine getEngine() {
+        return engine;
+    }
+
+    public void setEngine(FlowEngine engine) {
+        this.engine = engine;
+    }
+
+    /**
+     * Return the current deadline of the {@link FlowNode}'s timer (in milliseconds after epoch).
+     */
+    public long getDeadline() {
+        return deadline;
+    }
+
+    public void setDeadline(long deadline) {
+        this.deadline = deadline;
+    }
+
+
+
     /**
      * The deadline of the stage after which an update should run.
      */
-    long deadline = Long.MAX_VALUE;
+    private long deadline = Long.MAX_VALUE;
 
     /**
      * The index of the timer in the {@link FlowTimerQueue}.
      */
-    int timerIndex = -1;
+    private int timerIndex = -1;
 
     protected InstantSource clock;
     protected FlowGraph parentGraph;
     protected FlowEngine engine;
+
+    /**
+     * Return the {@link FlowGraph} to which this stage belongs.
+     */
+    public FlowGraph getGraph() {
+        return parentGraph;
+    }
+
 
     /**
      * Construct a new {@link FlowNode} instance.
@@ -69,27 +126,7 @@ public abstract class FlowNode {
         this.parentGraph.addNode(this);
     }
 
-    /**
-     * Return the {@link FlowGraph} to which this stage belongs.
-     */
-    public FlowGraph getGraph() {
-        return parentGraph;
-    }
 
-    /**
-     * Return the current deadline of the {@link FlowNode}'s timer (in milliseconds after epoch).
-     */
-    public long getDeadline() {
-        return deadline;
-    }
-
-    public void setDeadline(long deadline) {
-        this.deadline = deadline;
-    }
-
-    public void setTimerIndex(int index) {
-        this.timerIndex = index;
-    }
     /**
      * Invalidate the {@link FlowNode} forcing the stage to update.
      *

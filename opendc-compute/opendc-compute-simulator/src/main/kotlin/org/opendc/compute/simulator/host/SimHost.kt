@@ -31,12 +31,12 @@ import org.opendc.compute.simulator.telemetry.GuestCpuStats
 import org.opendc.compute.simulator.telemetry.GuestSystemStats
 import org.opendc.compute.simulator.telemetry.HostCpuStats
 import org.opendc.compute.simulator.telemetry.HostSystemStats
-import org.opendc.simulator.Multiplexer
+import org.opendc.simulator.engine.graph.FlowDistributor
 import org.opendc.simulator.compute.cpu.CpuPowerModel
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
-import org.opendc.simulator.engine.FlowGraph
+import org.opendc.simulator.engine.graph.FlowGraph
 import java.time.Duration
 import java.time.Instant
 import java.time.InstantSource
@@ -62,7 +62,7 @@ public class SimHost(
     private val graph: FlowGraph,
     private val machineModel: MachineModel,
     private val cpuPowerModel: CpuPowerModel,
-    private val powerMux: Multiplexer,
+    private val powerMux: FlowDistributor,
 ) : AutoCloseable {
     /**
      * The event listeners registered with this host.
