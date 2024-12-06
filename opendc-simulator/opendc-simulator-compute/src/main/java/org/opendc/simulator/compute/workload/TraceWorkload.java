@@ -43,6 +43,10 @@ public class TraceWorkload implements Workload {
         this.checkpointIntervalScaling = checkpointIntervalScaling;
     }
 
+    public TraceWorkload(ArrayList<TraceFragment> fragments) {
+        this(fragments, 0L, 0L, 1.0);
+    }
+
     public ArrayList<TraceFragment> getFragments() {
         return fragments;
     }

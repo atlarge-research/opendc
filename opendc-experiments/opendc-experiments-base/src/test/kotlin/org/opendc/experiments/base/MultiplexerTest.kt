@@ -43,14 +43,16 @@ import org.opendc.compute.topology.clusterTopology
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.Task
-import org.opendc.compute.workload.sampleByLoad
-import org.opendc.compute.workload.trace
 import org.opendc.experiments.base.runner.replay
+import org.opendc.simulator.compute.workload.TraceFragment
+import org.opendc.simulator.compute.workload.TraceWorkload
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
 import java.time.Duration
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.ArrayList
-import java.util.Random
+import java.util.UUID
 
 /**
  * Testing suite containing tests that specifically test the Multiplexer
@@ -87,19 +89,37 @@ class MultiplexerTest {
         workloadLoader = ComputeWorkloadLoader(File("$basePath/traces"), 0L, 0L, 0.0)
     }
 
-    /**
-     * Multiplexer test 1: A single fitting task
-     * In this test, a single task is scheduled that should fit the Multiplexer
-     * We check if both the host and the Task show the correct cpu usage and demand during the two fragments.
-     */
-    @Test
-    fun testMultiplexer1() =
-        runSimulation {
-            val seed = 1L
-            val workload = createTestWorkload("multiplexer_test_1", 1.0, seed)
-            val topology = createTopology("single_1_2000.json")
-            val monitor = monitor
+    private fun createTestTask(
+        name: String,
+        cpuCount: Int = 1,
+        cpuCapacity: Double = 0.0,
+        memCapacity: Long = 0L,
+        submissionTime: String = "1970-01-01T00:00",
+        duration: Long = 0L,
+        fragments: ArrayList<TraceFragment>,
+    ): Task {
+        return Task(
+            UUID.nameUUIDFromBytes(name.toByteArray()),
+            name,
+            cpuCount,
+            cpuCapacity,
+            memCapacity,
+            1800000.0,
+            LocalDateTime.parse(submissionTime).atZone(ZoneId.systemDefault()).toInstant(),
+            duration,
+            TraceWorkload(
+                fragments,
+            ),
+        )
+    }
 
+    private fun runTest(
+        topology: List<ClusterSpec>,
+        workload: ArrayList<Task>,
+    ): TestComputeMonitor {
+        runSimulation {
+            val monitor = monitor
+            val seed = 0L
             Provisioner(dispatcher, seed).use { provisioner ->
                 provisioner.runSteps(
                     setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
@@ -108,22 +128,47 @@ class MultiplexerTest {
                 )
 
                 val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed = seed)
+                service.replay(timeSource, workload)
             }
-
-            assertAll(
-                { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(2000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(1000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(2000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(0.0, monitor.hostCpuDemands.last()) { "When the task is finished, the host should have 0.0 demand" } },
-                { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "When the task is finished, the host should have 0.0 demand" } },
-            )
         }
+        return monitor
+    }
+
+    /**
+     * Multiplexer test 1: A single fitting task
+     * In this test, a single task is scheduled that should fit the Multiplexer
+     * We check if both the host and the Task show the correct cpu usage and demand during the two fragments.
+     */
+    @Test
+    fun testMultiplexer1() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                        ),
+                ),
+            )
+        val topology = createTopology("single_1_2000.json")
+
+        monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(1000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "When the task is finished, the host should have 0.0 demand" } },
+            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "When the task is finished, the host should have 0.0 demand" } },
+        )
+    }
 
     /**
      * Multiplexer test 2: A single overloaded task
@@ -132,37 +177,35 @@ class MultiplexerTest {
      * We check if both the host and the Task show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer2() =
-        runSimulation {
-            val seed = 1L
-            val workload = createTestWorkload("multiplexer_test_2", 1.0, seed)
-            val topology = createTopology("single_1_2000.json")
-            val monitor = monitor
-
-            Provisioner(dispatcher, seed).use { provisioner ->
-                provisioner.runSteps(
-                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
-                    setupHosts(serviceDomain = "compute.opendc.org", topology),
-                )
-
-                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed = seed)
-            }
-
-            assertAll(
-                { assertEquals(3000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(4000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(3000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(2000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(2000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(0.0, monitor.hostCpuDemands.last()) { "When the task is finished, the host should have 0.0 demand" } },
-                { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "When the task is finished, the host should have 0.0 demand" } },
+    fun testMultiplexer2() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 3000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
+                        ),
+                ),
             )
-        }
+        val topology = createTopology("single_1_2000.json")
+
+        monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals(3000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(4000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
+            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
+        )
+    }
 
     /**
      * Multiplexer test 3: A single task transition fit to overloaded
@@ -171,37 +214,35 @@ class MultiplexerTest {
      * We check if both the host and the Task show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer3() =
-        runSimulation {
-            val seed = 1L
-            val workload = createTestWorkload("multiplexer_test_3", 1.0, seed)
-            val topology = createTopology("single_1_2000.json")
-            val monitor = monitor
-
-            Provisioner(dispatcher, seed).use { provisioner ->
-                provisioner.runSteps(
-                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
-                    setupHosts(serviceDomain = "compute.opendc.org", topology),
-                )
-
-                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed = seed)
-            }
-
-            assertAll(
-                { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(4000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(1000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(2000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(0.0, monitor.hostCpuDemands.last()) { "When the task is finished, the host should have 0.0 demand" } },
-                { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "When the task is finished, the host should have 0.0 demand" } },
+    fun testMultiplexer3() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
+                        ),
+                ),
             )
-        }
+        val topology = createTopology("single_1_2000.json")
+
+        monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(4000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(1000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
+            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
+        )
+    }
 
     /**
      * Multiplexer test 4: A single task transition overload to fit
@@ -210,37 +251,35 @@ class MultiplexerTest {
      * We check if both the host and the Task show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer4() =
-        runSimulation {
-            val seed = 1L
-            val workload = createTestWorkload("multiplexer_test_4", 1.0, seed)
-            val topology = createTopology("single_1_2000.json")
-            val monitor = monitor
-
-            Provisioner(dispatcher, seed).use { provisioner ->
-                provisioner.runSteps(
-                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
-                    setupHosts(serviceDomain = "compute.opendc.org", topology),
-                )
-
-                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed = seed)
-            }
-
-            assertAll(
-                { assertEquals(4000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(1000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(2000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(1000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(0.0, monitor.hostCpuDemands.last()) { "When the task is finished, the host should have 0.0 demand" } },
-                { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "When the task is finished, the host should have 0.0 demand" } },
+    fun testMultiplexer4() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                        ),
+                ),
             )
-        }
+        val topology = createTopology("single_1_2000.json")
+
+        monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals(4000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(1000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(1000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
+            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
+        )
+    }
 
     /**
      * Multiplexer test 5: Two task, same time, both fit
@@ -249,41 +288,47 @@ class MultiplexerTest {
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer5() =
-        runSimulation {
-            val seed = 1L
-            val workload = createTestWorkload("multiplexer_test_5", 1.0, seed)
-            val topology = createTopology("single_2_2000.json")
-            val monitor = monitor
-
-            Provisioner(dispatcher, seed).use { provisioner ->
-                provisioner.runSteps(
-                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
-                    setupHosts(serviceDomain = "compute.opendc.org", topology),
-                )
-
-                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed = seed)
-            }
-
-            assertAll(
-                { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuDemands["1"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuDemands["1"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuSupplied["1"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuSupplied["1"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(0.0, monitor.hostCpuDemands.last()) { "When the task is finished, the host should have 0.0 demand" } },
-                { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "When the task is finished, the host should have 0.0 demand" } },
+    fun testMultiplexer5() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 3000.0, 1),
+                        ),
+                ),
+                createTestTask(
+                    name = "1",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 3000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                        ),
+                ),
             )
-        }
+        val topology = createTopology("single_2_2000.json")
+
+        monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuDemands["1"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuDemands["1"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuSupplied["1"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied["1"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
+            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
+        )
+    }
 
     /**
      * Multiplexer test 6: Two task, same time, can not fit
@@ -292,44 +337,47 @@ class MultiplexerTest {
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer6() =
-        runSimulation {
-            val seed = 1L
-            val workload = createTestWorkload("multiplexer_test_6", 1.0, seed)
-            val topology = createTopology("single_2_2000.json")
-            val monitor = monitor
-
-            Provisioner(dispatcher, seed).use { provisioner ->
-                provisioner.runSteps(
-                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
-                    setupHosts(serviceDomain = "compute.opendc.org", topology),
-                )
-
-                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed = seed)
-            }
-
-            println(monitor.taskCpuDemands)
-            println(monitor.hostCpuDemands)
-
-            assertAll(
-                { assertEquals(6000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(5000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(5000.0, monitor.taskCpuDemands["1"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(6000.0, monitor.taskCpuDemands["1"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["1"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["1"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(11000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(11000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(0.0, monitor.hostCpuDemands.last()) { "When the task is finished, the host should have 0.0 demand" } },
-                { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "When the task is finished, the host should have 0.0 demand" } },
+    fun testMultiplexer6() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 6000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 5000.0, 1),
+                        ),
+                ),
+                createTestTask(
+                    name = "1",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 5000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 6000.0, 1),
+                        ),
+                ),
             )
-        }
+        val topology = createTopology("single_2_2000.json")
+
+        monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals(6000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(5000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(5000.0, monitor.taskCpuDemands["1"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(6000.0, monitor.taskCpuDemands["1"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["1"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["1"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(11000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(11000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
+            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
+        )
+    }
 
     /**
      * Multiplexer test 7: Two task, both fit, second task is delayed
@@ -337,52 +385,56 @@ class MultiplexerTest {
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer7() =
-        runSimulation {
-            val seed = 1L
-            val workload = createTestWorkload("multiplexer_test_7", 1.0, seed)
-            val topology = createTopology("single_2_2000.json")
-            val monitor = monitor
-
-            Provisioner(dispatcher, seed).use { provisioner ->
-                provisioner.runSteps(
-                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
-                    setupHosts(serviceDomain = "compute.opendc.org", topology),
-                )
-
-                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed = seed)
-            }
-
-            println(monitor.taskCpuDemands)
-            println(monitor.hostCpuDemands)
-
-            assertAll(
-                { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(5)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuDemands["0"]?.get(14)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(5)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(9)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(14)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuDemands["1"]?.get(1)) { "The cpu demanded by task 1 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuDemands["1"]?.get(6)) { "The cpu demanded by task 1 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["1"]?.get(1)) { "The cpu used by task 1 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["1"]?.get(6)) { "The cpu used by task 1 is incorrect" } },
-                { assertEquals(1000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(3000.0, monitor.hostCpuDemands[5]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuDemands[9]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(2000.0, monitor.hostCpuDemands[14]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(1000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(3000.0, monitor.hostCpuSupplied[5]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuSupplied[9]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(2000.0, monitor.hostCpuSupplied[14]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(0.0, monitor.hostCpuDemands.last()) { "When the task is finished, the host should have 0.0 demand" } },
-                { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "When the task is finished, the host should have 0.0 demand" } },
+    fun testMultiplexer7() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    submissionTime = "2024-02-01T10:00",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                        ),
+                ),
+                createTestTask(
+                    name = "1",
+                    submissionTime = "2024-02-01T10:05",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                        ),
+                ),
             )
-        }
+        val topology = createTopology("single_2_2000.json")
+
+        monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(5)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuDemands["0"]?.get(14)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(5)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(9)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(14)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuDemands["1"]?.get(1)) { "The cpu demanded by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuDemands["1"]?.get(6)) { "The cpu demanded by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["1"]?.get(1)) { "The cpu used by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["1"]?.get(6)) { "The cpu used by task 1 is incorrect" } },
+            { assertEquals(1000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(3000.0, monitor.hostCpuDemands[5]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuDemands[9]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuDemands[14]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(1000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(3000.0, monitor.hostCpuSupplied[5]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuSupplied[9]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuSupplied[14]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
+            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
+        )
+    }
 
     /**
      * Multiplexer test 8: Two task, both fit on their own but not together, second task is delayed
@@ -393,50 +445,53 @@ class MultiplexerTest {
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer8() =
-        runSimulation {
-            val seed = 1L
-            val workload = createTestWorkload("multiplexer_test_8", 1.0, seed)
-            val topology = createTopology("single_2_2000.json")
-            val monitor = monitor
-
-            Provisioner(dispatcher, seed).use { provisioner ->
-                provisioner.runSteps(
-                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
-                    setupHosts(serviceDomain = "compute.opendc.org", topology),
-                )
-
-                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed = seed)
-            }
-
-            println(monitor.taskCpuDemands)
-            println(monitor.hostCpuDemands)
-
-            assertAll(
-                { assertEquals(3000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuDemands["0"]?.get(5)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuDemands["0"]?.get(14)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(2500.0, monitor.taskCpuSupplied["0"]?.get(5)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(2500.0, monitor.taskCpuSupplied["0"]?.get(9)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuSupplied["0"]?.get(14)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(1500.0, monitor.taskCpuDemands["1"]?.get(1)) { "The cpu demanded by task 1 is incorrect" } },
-                { assertEquals(1500.0, monitor.taskCpuDemands["1"]?.get(6)) { "The cpu demanded by task 1 is incorrect" } },
-                { assertEquals(1500.0, monitor.taskCpuSupplied["1"]?.get(1)) { "The cpu used by task 1 is incorrect" } },
-                { assertEquals(1500.0, monitor.taskCpuSupplied["1"]?.get(6)) { "The cpu used by task 1 is incorrect" } },
-                { assertEquals(3000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(4500.0, monitor.hostCpuDemands[5]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(3000.0, monitor.hostCpuDemands[14]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(3000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuSupplied[5]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(3000.0, monitor.hostCpuSupplied[14]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(0.0, monitor.hostCpuDemands.last()) { "When the task is finished, the host should have 0.0 demand" } },
-                { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "When the task is finished, the host should have 0.0 demand" } },
+    fun testMultiplexer8() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    submissionTime = "2024-02-01T10:00",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(20 * 60 * 1000, 3000.0, 1),
+                        ),
+                ),
+                createTestTask(
+                    name = "1",
+                    submissionTime = "2024-02-01T10:05",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 1500.0, 1),
+                        ),
+                ),
             )
-        }
+        val topology = createTopology("single_2_2000.json")
+
+        monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals(3000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuDemands["0"]?.get(5)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuDemands["0"]?.get(14)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(2500.0, monitor.taskCpuSupplied["0"]?.get(5)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(2500.0, monitor.taskCpuSupplied["0"]?.get(9)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuSupplied["0"]?.get(14)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(1500.0, monitor.taskCpuDemands["1"]?.get(1)) { "The cpu demanded by task 1 is incorrect" } },
+            { assertEquals(1500.0, monitor.taskCpuDemands["1"]?.get(6)) { "The cpu demanded by task 1 is incorrect" } },
+            { assertEquals(1500.0, monitor.taskCpuSupplied["1"]?.get(1)) { "The cpu used by task 1 is incorrect" } },
+            { assertEquals(1500.0, monitor.taskCpuSupplied["1"]?.get(6)) { "The cpu used by task 1 is incorrect" } },
+            { assertEquals(3000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(4500.0, monitor.hostCpuDemands[5]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(3000.0, monitor.hostCpuDemands[14]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(3000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuSupplied[5]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(3000.0, monitor.hostCpuSupplied[14]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
+            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
+        )
+    }
 
     /**
      * Multiplexer test 9: Two task, one changes demand, causing overload
@@ -446,67 +501,59 @@ class MultiplexerTest {
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testMultiplexer9() =
-        runSimulation {
-            val seed = 1L
-            val workload = createTestWorkload("multiplexer_test_9", 1.0, seed)
-            val topology = createTopology("single_2_2000.json")
-            val monitor = monitor
-
-            Provisioner(dispatcher, seed).use { provisioner ->
-                provisioner.runSteps(
-                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
-                    setupHosts(serviceDomain = "compute.opendc.org", topology),
-                )
-
-                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload, seed = seed)
-            }
-
-            println(monitor.taskCpuDemands)
-            println(monitor.hostCpuDemands)
-
-            assertAll(
-                { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(1500.0, monitor.taskCpuDemands["0"]?.get(5)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(2500.0, monitor.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(14)) { "The cpu demanded by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(1500.0, monitor.taskCpuSupplied["0"]?.get(5)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(9)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(14)) { "The cpu used by task 0 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuDemands["1"]?.get(1)) { "The cpu demanded by task 1 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuDemands["1"]?.get(5)) { "The cpu demanded by task 1 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuDemands["1"]?.get(9)) { "The cpu demanded by task 1 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuDemands["1"]?.get(14)) { "The cpu demanded by task 1 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuSupplied["1"]?.get(1)) { "The cpu used by task 1 is incorrect" } },
-                { assertEquals(2500.0, monitor.taskCpuSupplied["1"]?.get(5)) { "The cpu used by task 1 is incorrect" } },
-                { assertEquals(2000.0, monitor.taskCpuSupplied["1"]?.get(9)) { "The cpu used by task 1 is incorrect" } },
-                { assertEquals(3000.0, monitor.taskCpuSupplied["1"]?.get(14)) { "The cpu used by task 1 is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(4500.0, monitor.hostCpuDemands[5]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(5500.0, monitor.hostCpuDemands[9]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuDemands[14]) { "The cpu demanded by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuSupplied[5]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuSupplied[9]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(4000.0, monitor.hostCpuSupplied[14]) { "The cpu used by the host is incorrect" } },
-                { assertEquals(0.0, monitor.hostCpuDemands.last()) { "When the task is finished, the host should have 0.0 demand" } },
-                { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "When the task is finished, the host should have 0.0 demand" } },
+    fun testMultiplexer9() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(5 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(5 * 60 * 1000, 1500.0, 1),
+                            TraceFragment(5 * 60 * 1000, 2500.0, 1),
+                            TraceFragment(5 * 60 * 1000, 1000.0, 1),
+                        ),
+                ),
+                createTestTask(
+                    name = "1",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(20 * 60 * 1000, 3000.0, 1),
+                        ),
+                ),
             )
-        }
+        val topology = createTopology("single_2_2000.json")
 
-    /**
-     * Obtain the trace reader for the test.
-     */
-    private fun createTestWorkload(
-        traceName: String,
-        fraction: Double,
-        seed: Long,
-    ): List<Task> {
-        val source = trace(traceName).sampleByLoad(fraction)
-        return source.resolve(workloadLoader, Random(seed))
+        monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1500.0, monitor.taskCpuDemands["0"]?.get(5)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2500.0, monitor.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(14)) { "The cpu demanded is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(1500.0, monitor.taskCpuSupplied["0"]?.get(5)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(9)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(14)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuDemands["1"]?.get(1)) { "The cpu demanded by task 1 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuDemands["1"]?.get(5)) { "The cpu demanded by task 1 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuDemands["1"]?.get(9)) { "The cpu demanded by task 1 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuDemands["1"]?.get(14)) { "The cpu demanded by task 1 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuSupplied["1"]?.get(1)) { "The cpu used by task 1 is incorrect" } },
+            { assertEquals(2500.0, monitor.taskCpuSupplied["1"]?.get(5)) { "The cpu used by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["1"]?.get(9)) { "The cpu used by task 1 is incorrect" } },
+            { assertEquals(3000.0, monitor.taskCpuSupplied["1"]?.get(14)) { "The cpu used by task 1 is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(4500.0, monitor.hostCpuDemands[5]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(5500.0, monitor.hostCpuDemands[9]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuDemands[14]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuSupplied[5]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuSupplied[9]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuSupplied[14]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
+            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
+        )
     }
 
     /**
