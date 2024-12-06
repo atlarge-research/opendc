@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.machine;
 
 import java.time.InstantSource;
 import java.util.function.Consumer;
-import org.opendc.simulator.engine.graph.FlowDistributor;
 import org.opendc.simulator.compute.cpu.CpuPowerModel;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.compute.memory.Memory;
@@ -32,6 +31,7 @@ import org.opendc.simulator.compute.models.MachineModel;
 import org.opendc.simulator.compute.power.SimPsu;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
+import org.opendc.simulator.engine.graph.FlowDistributor;
 import org.opendc.simulator.engine.graph.FlowGraph;
 
 /**

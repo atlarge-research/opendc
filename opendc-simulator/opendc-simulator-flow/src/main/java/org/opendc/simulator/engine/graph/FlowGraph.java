@@ -22,10 +22,9 @@
 
 package org.opendc.simulator.engine.graph;
 
-import org.opendc.simulator.engine.engine.FlowEngine;
-
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.opendc.simulator.engine.engine.FlowEngine;
 
 public class FlowGraph {
     private final FlowEngine engine;

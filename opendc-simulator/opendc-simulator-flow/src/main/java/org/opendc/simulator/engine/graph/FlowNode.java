@@ -23,7 +23,6 @@
 package org.opendc.simulator.engine.graph;
 
 import java.time.InstantSource;
-
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.engine.FlowTimerQueue;
 import org.slf4j.Logger;
@@ -48,24 +47,31 @@ public abstract class FlowNode {
     public NodeState getNodeState() {
         return nodeState;
     }
+
     public void setNodeState(NodeState nodeState) {
         this.nodeState = nodeState;
     }
+
     public int getTimerIndex() {
         return timerIndex;
     }
+
     public void setTimerIndex(int index) {
         this.timerIndex = index;
     }
+
     public InstantSource getClock() {
         return clock;
     }
+
     public void setClock(InstantSource clock) {
         this.clock = clock;
     }
+
     public FlowGraph getParentGraph() {
         return parentGraph;
     }
+
     public void setParentGraph(FlowGraph parentGraph) {
         this.parentGraph = parentGraph;
     }
@@ -89,8 +95,6 @@ public abstract class FlowNode {
         this.deadline = deadline;
     }
 
-
-
     /**
      * The deadline of the stage after which an update should run.
      */
@@ -112,7 +116,6 @@ public abstract class FlowNode {
         return parentGraph;
     }
 
-
     /**
      * Construct a new {@link FlowNode} instance.
      *
@@ -125,7 +128,6 @@ public abstract class FlowNode {
 
         this.parentGraph.addNode(this);
     }
-
 
     /**
      * Invalidate the {@link FlowNode} forcing the stage to update.

@@ -22,9 +22,8 @@
 
 package org.opendc.simulator.engine.engine;
 
-import org.opendc.simulator.engine.graph.FlowNode;
-
 import java.util.Arrays;
+import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
  * A specialized priority queue for timers of {@link FlowNode}s.

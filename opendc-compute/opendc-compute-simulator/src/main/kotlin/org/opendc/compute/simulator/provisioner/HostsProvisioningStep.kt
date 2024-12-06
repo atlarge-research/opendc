@@ -27,9 +27,9 @@ import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
-import org.opendc.simulator.engine.graph.FlowDistributor
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.engine.engine.FlowEngine
+import org.opendc.simulator.engine.graph.FlowDistributor
 
 /**
  * A [ProvisioningStep] that provisions a list of hosts for a [ComputeService].
