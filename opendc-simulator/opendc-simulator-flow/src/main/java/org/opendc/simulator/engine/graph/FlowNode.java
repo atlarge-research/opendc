@@ -157,6 +157,11 @@ public abstract class FlowNode {
      * Update the state of the stage.
      */
     public void update(long now) {
+        if (this.nodeState == NodeState.CLOSED) {
+            this.deadline = Long.MAX_VALUE;
+            return;
+        }
+
         this.nodeState = NodeState.UPDATING;
 
         long newDeadline = this.deadline;
