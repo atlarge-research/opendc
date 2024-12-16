@@ -270,6 +270,10 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void removeSupplierEdge(FlowEdge supplierEdge) {
+        if (this.machineEdge == null) {
+            return;
+        }
+
         this.stopWorkload();
     }
 }

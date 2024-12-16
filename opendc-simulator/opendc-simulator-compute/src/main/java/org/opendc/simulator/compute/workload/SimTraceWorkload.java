@@ -139,6 +139,10 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
     @Override
     public void stopWorkload() {
+        if (this.machineEdge == null) {
+            return;
+        }
+
         this.closeNode();
 
         this.machineEdge = null;
