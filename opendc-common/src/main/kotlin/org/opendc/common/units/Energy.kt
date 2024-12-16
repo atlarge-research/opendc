@@ -55,7 +55,7 @@ public value class Energy private constructor(
     override fun toString(): String = fmtValue()
 
     override fun fmtValue(fmt: String): String =
-        if (value >= 1000.0) {
+        if (value <= 1000.0) {
             "${toJoule().fmt(fmt)} Joule"
         } else {
             "${toKJoule().fmt(fmt)} KJoule"
