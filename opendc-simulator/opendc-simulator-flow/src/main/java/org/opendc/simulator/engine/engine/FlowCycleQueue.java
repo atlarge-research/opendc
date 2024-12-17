@@ -28,28 +28,32 @@ import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
  * A specialized {@link ArrayDeque} implementation that contains the {@link FlowNode}s
- * that have been updated during the engine cycle and should converge.
+ * that should be updated in the current cycle, because of a change caused by another update in the current cycle.
  * <p>
  * By using a specialized class, we reduce the overhead caused by type-erasure.
  */
-final class FlowNodeQueue {
+final class FlowCycleQueue {
     /**
      * The array of elements in the queue.
      */
-    private FlowNode[] elements;
+    private FlowNode[] nodeQueue;
 
     private int head = 0;
     private int tail = 0;
 
-    public FlowNodeQueue(int initialCapacity) {
-        elements = new FlowNode[initialCapacity];
+    public FlowCycleQueue(int initialCapacity) {
+        nodeQueue = new FlowNode[initialCapacity];
     }
 
     /**
      * Add the specified context to the queue.
      */
     void add(FlowNode ctx) {
-        final FlowNode[] es = elements;
+        if (ctx.getInCycleQueue()) {
+            return;
+        }
+
+        final FlowNode[] es = nodeQueue;
         int tail = this.tail;
 
         es[tail] = ctx;
@@ -60,19 +64,22 @@ final class FlowNodeQueue {
         if (head == tail) {
             doubleCapacity();
         }
+
+        ctx.setInCycleQueue(true);
     }
 
     /**
      * Remove a {@link FlowNode} from the queue or <code>null</code> if the queue is empty.
      */
     FlowNode poll() {
-        final FlowNode[] es = elements;
+        final FlowNode[] es = nodeQueue;
         int head = this.head;
         FlowNode ctx = es[head];
 
         if (ctx != null) {
             es[head] = null;
             this.head = inc(head, es.length);
+            ctx.setInCycleQueue(false);
         }
 
         return ctx;
@@ -82,13 +89,13 @@ final class FlowNodeQueue {
      * Doubles the capacity of this deque
      */
     private void doubleCapacity() {
-        int oldCapacity = elements.length;
+        int oldCapacity = nodeQueue.length;
         int newCapacity = oldCapacity + (oldCapacity >> 1);
         if (newCapacity < 0) {
             throw new IllegalStateException("Sorry, deque too big");
         }
 
-        final FlowNode[] es = elements = Arrays.copyOf(elements, newCapacity);
+        final FlowNode[] es = nodeQueue = Arrays.copyOf(nodeQueue, newCapacity);
 
         // Exceptionally, here tail == head needs to be disambiguated
         if (tail < head || (tail == head && es[head] != null)) {
