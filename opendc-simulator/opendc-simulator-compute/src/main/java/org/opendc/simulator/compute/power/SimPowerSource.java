@@ -43,7 +43,7 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     private double totalCarbonEmission = 0.0f;
 
     private CarbonModel carbonModel = null;
-    private FlowEdge muxEdge;
+    private FlowEdge distributorEdge;
 
     private double capacity = Long.MAX_VALUE;
 
@@ -57,7 +57,7 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
      * @return <code>true</code> if the InPort is connected to an OutPort, <code>false</code> otherwise.
      */
     public boolean isConnected() {
-        return muxEdge != null;
+        return distributorEdge != null;
     }
 
     /**
@@ -156,30 +156,30 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void handleDemand(FlowEdge consumerEdge, double newPowerDemand) {
+    public void handleIncomingDemand(FlowEdge consumerEdge, double newPowerDemand) {
         this.powerDemand = newPowerDemand;
 
         double powerSupply = this.powerDemand;
 
         if (powerSupply != this.powerSupplied) {
-            this.pushSupply(this.muxEdge, powerSupply);
+            this.pushOutgoingSupply(this.distributorEdge, powerSupply);
         }
     }
 
     @Override
-    public void pushSupply(FlowEdge consumerEdge, double newSupply) {
+    public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
         this.powerSupplied = newSupply;
         consumerEdge.pushSupply(newSupply);
     }
 
     @Override
     public void addConsumerEdge(FlowEdge consumerEdge) {
-        this.muxEdge = consumerEdge;
+        this.distributorEdge = consumerEdge;
     }
 
     @Override
     public void removeConsumerEdge(FlowEdge consumerEdge) {
-        this.muxEdge = null;
+        this.distributorEdge = null;
     }
 
     // Update the carbon intensity of the power source

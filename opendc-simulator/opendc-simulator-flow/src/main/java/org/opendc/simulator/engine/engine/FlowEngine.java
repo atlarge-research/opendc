@@ -44,7 +44,7 @@ public final class FlowEngine implements Runnable {
     /**
      * A priority queue containing the {@link FlowNode} updates to be scheduled in the future.
      */
-    private final FlowTimerQueue timerQueue = new FlowTimerQueue(256);
+    private final FlowEventQueue eventQueue = new FlowEventQueue(256);
 
     /**
      * The stack of engine invocations to occur in the future.
@@ -127,7 +127,7 @@ public final class FlowEngine implements Runnable {
             return;
         }
 
-        long deadline = timerQueue.peekDeadline();
+        long deadline = eventQueue.peekDeadline();
         if (deadline != Long.MAX_VALUE) {
             trySchedule(futureInvocations, clock.millis(), deadline);
         }
@@ -139,7 +139,7 @@ public final class FlowEngine implements Runnable {
      * This method should only be invoked while inside an engine cycle.
      */
     public void scheduleDelayedInContext(FlowNode ctx) {
-        FlowTimerQueue timerQueue = this.timerQueue;
+        FlowEventQueue timerQueue = this.eventQueue;
         timerQueue.enqueue(ctx);
     }
 
@@ -148,7 +148,7 @@ public final class FlowEngine implements Runnable {
      */
     private void doRunEngine(long now) {
         final FlowCycleQueue queue = this.cycleQueue;
-        final FlowTimerQueue timerQueue = this.timerQueue;
+        final FlowEventQueue timerQueue = this.eventQueue;
 
         try {
             // Mark the engine as active to prevent concurrent calls to this method

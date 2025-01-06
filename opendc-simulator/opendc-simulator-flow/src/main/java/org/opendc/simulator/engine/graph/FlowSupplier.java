@@ -24,9 +24,9 @@ package org.opendc.simulator.engine.graph;
 
 public interface FlowSupplier {
 
-    void handleDemand(FlowEdge consumerEdge, double newDemand);
+    void handleIncomingDemand(FlowEdge consumerEdge, double newDemand);
 
-    void pushSupply(FlowEdge consumerEdge, double newSupply);
+    void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply);
 
     void addConsumerEdge(FlowEdge consumerEdge);
 

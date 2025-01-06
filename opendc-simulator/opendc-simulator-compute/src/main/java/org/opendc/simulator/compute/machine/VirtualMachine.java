@@ -100,7 +100,7 @@ public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSuppli
         this.clock = this.machine.getClock();
 
         this.parentGraph = machine.getGraph();
-        this.parentGraph.addEdge(this, this.machine.getCpuMux());
+        this.parentGraph.addEdge(this, this.machine.getCpuDistributor());
 
         this.lastUpdate = clock.millis();
         this.lastUpdate = clock.millis();
@@ -185,7 +185,7 @@ public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSuppli
      * Push demand to the cpuMux if the demand has changed
      **/
     @Override
-    public void pushDemand(FlowEdge supplierEdge, double newDemand) {
+    public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
         this.cpuEdge.pushDemand(newDemand);
     }
 
@@ -193,7 +193,7 @@ public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSuppli
      * Push supply to the workload if the supply has changed
      **/
     @Override
-    public void pushSupply(FlowEdge consumerEdge, double newSupply) {
+    public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
         this.workloadEdge.pushSupply(newSupply);
     }
 
@@ -201,24 +201,24 @@ public class VirtualMachine extends FlowNode implements FlowConsumer, FlowSuppli
      * Handle new demand from the workload by sending it through to the cpuMux
      **/
     @Override
-    public void handleDemand(FlowEdge consumerEdge, double newDemand) {
+    public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand) {
 
         updateCounters(this.clock.millis());
         this.cpuDemand = newDemand;
 
-        pushDemand(this.cpuEdge, newDemand);
+        pushOutgoingDemand(this.cpuEdge, newDemand);
     }
 
     /**
      * Handle a new supply pushed by the cpuMux by sending it through to the workload
      **/
     @Override
-    public void handleSupply(FlowEdge supplierEdge, double newCpuSupply) {
+    public void handleIncomingSupply(FlowEdge supplierEdge, double newCpuSupply) {
 
         updateCounters(this.clock.millis());
         this.cpuSupply = newCpuSupply;
 
-        pushSupply(this.workloadEdge, newCpuSupply);
+        pushOutgoingSupply(this.workloadEdge, newCpuSupply);
     }
 
     @Override

@@ -31,7 +31,7 @@ import org.opendc.simulator.compute.models.MachineModel;
 import org.opendc.simulator.compute.power.SimPsu;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
-import org.opendc.simulator.engine.graph.FlowDistributor;
+import org.opendc.simulator.engine.graph.FlowDistributorNew;
 import org.opendc.simulator.engine.graph.FlowGraph;
 
 /**
@@ -44,7 +44,7 @@ public class SimMachine {
     private final InstantSource clock;
 
     private SimCpu cpu;
-    private FlowDistributor cpuMux;
+    private FlowDistributorNew cpuDistributor;
     private SimPsu psu;
     private Memory memory;
 
@@ -74,8 +74,8 @@ public class SimMachine {
         return cpu;
     }
 
-    public FlowDistributor getCpuMux() {
-        return cpuMux;
+    public FlowDistributorNew getCpuDistributor() {
+        return cpuDistributor;
     }
 
     public Memory getMemory() {
@@ -114,7 +114,7 @@ public class SimMachine {
     public SimMachine(
             FlowGraph graph,
             MachineModel machineModel,
-            FlowDistributor powerMux,
+            FlowDistributorNew powerDistributor,
             CpuPowerModel cpuPowerModel,
             Consumer<Exception> completion) {
         this.graph = graph;
@@ -124,7 +124,7 @@ public class SimMachine {
         // Create the psu and cpu and connect them
         this.psu = new SimPsu(graph);
 
-        graph.addEdge(this.psu, powerMux);
+        graph.addEdge(this.psu, powerDistributor);
 
         this.cpu = new SimCpu(graph, this.machineModel.getCpuModel(), cpuPowerModel, 0);
 
@@ -133,8 +133,8 @@ public class SimMachine {
         this.memory = new Memory(graph, this.machineModel.getMemory());
 
         // Create a FlowDistributor and add the cpu as supplier
-        this.cpuMux = new FlowDistributor(this.graph);
-        graph.addEdge(this.cpuMux, this.cpu);
+        this.cpuDistributor = new FlowDistributorNew(this.graph);
+        graph.addEdge(this.cpuDistributor, this.cpu);
 
         this.completion = completion;
     }
@@ -153,8 +153,8 @@ public class SimMachine {
         this.graph.removeNode(this.cpu);
         this.cpu = null;
 
-        this.graph.removeNode(this.cpuMux);
-        this.cpuMux = null;
+        this.graph.removeNode(this.cpuDistributor);
+        this.cpuDistributor = null;
 
         this.memory = null;
 

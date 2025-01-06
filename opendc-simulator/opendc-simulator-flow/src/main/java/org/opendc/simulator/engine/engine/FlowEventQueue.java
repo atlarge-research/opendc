@@ -26,12 +26,12 @@ import java.util.Arrays;
 import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
- * A specialized priority queue for timers of {@link FlowNode}s.
+ * A specialized priority queue for future event of {@link FlowNode}s sorted on time.
  * <p>
  * By using a specialized priority queue, we reduce the overhead caused by the default priority queue implementation
  * being generic.
  */
-public final class FlowTimerQueue {
+public final class FlowEventQueue {
     /**
      * Array representation of binary heap of {@link FlowNode} instances.
      */
@@ -43,11 +43,11 @@ public final class FlowTimerQueue {
     private int size = 0;
 
     /**
-     * Construct a {@link FlowTimerQueue} with the specified initial capacity.
+     * Construct a {@link FlowEventQueue} with the specified initial capacity.
      *
      * @param initialCapacity The initial capacity of the queue.
      */
-    public FlowTimerQueue(int initialCapacity) {
+    public FlowEventQueue(int initialCapacity) {
         this.queue = new FlowNode[initialCapacity];
     }
 

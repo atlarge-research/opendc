@@ -24,7 +24,7 @@ package org.opendc.simulator.engine.graph;
 
 import java.time.InstantSource;
 import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.engine.FlowTimerQueue;
+import org.opendc.simulator.engine.engine.FlowEventQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +109,7 @@ public abstract class FlowNode {
     private long deadline = Long.MAX_VALUE;
 
     /**
-     * The index of the timer in the {@link FlowTimerQueue}.
+     * The index of the timer in the {@link FlowEventQueue}.
      */
     private int timerIndex = -1;
 

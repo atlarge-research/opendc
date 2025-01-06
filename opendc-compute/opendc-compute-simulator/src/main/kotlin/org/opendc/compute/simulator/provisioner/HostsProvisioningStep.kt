@@ -29,7 +29,7 @@ import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.engine.engine.FlowEngine
-import org.opendc.simulator.engine.graph.FlowDistributor
+import org.opendc.simulator.engine.graph.FlowDistributorNew
 
 /**
  * A [ProvisioningStep] that provisions a list of hosts for a [ComputeService].
@@ -64,8 +64,8 @@ public class HostsProvisioningStep internal constructor(
             service.addPowerSource(simPowerSource)
             simPowerSources.add(simPowerSource)
 
-            val powerMux = FlowDistributor(graph)
-            graph.addEdge(powerMux, simPowerSource)
+            val powerDistributor = FlowDistributorNew(graph)
+            graph.addEdge(powerDistributor, simPowerSource)
 
             // Create hosts, they are connected to the powerMux when SimMachine is created
             for (hostSpec in cluster.hostSpecs) {
@@ -78,7 +78,7 @@ public class HostsProvisioningStep internal constructor(
                         graph,
                         hostSpec.model,
                         hostSpec.cpuPowerModel,
-                        powerMux,
+                        powerDistributor,
                     )
 
                 require(simHosts.add(simHost)) { "Host with uid ${hostSpec.uid} already exists" }

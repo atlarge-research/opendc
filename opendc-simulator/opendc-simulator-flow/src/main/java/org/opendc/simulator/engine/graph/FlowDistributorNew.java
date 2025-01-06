@@ -25,31 +25,34 @@ package org.opendc.simulator.engine.graph;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
+public class FlowDistributorNew extends FlowNode implements FlowSupplier, FlowConsumer {
     private final ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
     private FlowEdge supplierEdge;
 
-    private final ArrayList<Double> demands = new ArrayList<>(); // What is demanded by the consumers
-    private final ArrayList<Double> supplies = new ArrayList<>(); // What is supplied to the consumers
+    private final ArrayList<Double> incomingDemands = new ArrayList<>(); // What is demanded by the consumers
+    private final ArrayList<Double> outgoingSupplies = new ArrayList<>(); // What is supplied to the consumers
 
-    private double totalDemand; // The total demand of all the consumers
-    private double totalSupply; // The total supply from the supplier
+    private double totalIncomingDemand; // The total demand of all the consumers
+    private double currentIncomingSupply; // The current supply provided by the supplier
 
-    private boolean overLoaded = false;
-    private int currentConsumerIdx = -1;
+    private boolean outgoingDemandUpdateNeeded = false;
 
-    private double capacity; // What is the max capacity
+    private boolean overloaded = false;
 
-    public FlowDistributor(FlowGraph graph) {
+    private double capacity; // What is the max capacity. Can probably be removed
+
+    private final ArrayList<Integer> updatedDemands = new ArrayList<>();
+
+    public FlowDistributorNew(FlowGraph graph) {
         super(graph);
     }
 
-    public double getTotalDemand() {
-        return totalDemand;
+    public double getTotalIncomingDemand() {
+        return totalIncomingDemand;
     }
 
-    public double getTotalSupply() {
-        return totalSupply;
+    public double getCurrentIncomingSupply() {
+        return currentIncomingSupply;
     }
 
     public double getCapacity() {
@@ -58,38 +61,61 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
 
     public long onUpdate(long now) {
 
+        // Check if current supply is different from total demand
+        if (this.outgoingDemandUpdateNeeded) {
+            this.updateOutgoingDemand();
+
+            return Long.MAX_VALUE;
+        }
+
+        this.updateOutgoingSupplies();
+
         return Long.MAX_VALUE;
     }
 
-    private void distributeSupply() {
-        // if supply >= demand -> push supplies to all tasks
-        if (this.totalSupply > this.totalDemand) {
+    private void updateOutgoingDemand() {
+        this.pushOutgoingDemand(this.supplierEdge, this.totalIncomingDemand);
 
-            // If this came from a state of overload, provide all consumers with their demand
-            if (this.overLoaded) {
-                for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
-                    this.pushOutgoingSupply(this.consumerEdges.get(idx), this.demands.get(idx));
-                }
-            }
+        this.outgoingDemandUpdateNeeded = false;
 
-            if (this.currentConsumerIdx != -1) {
-                this.pushOutgoingSupply(
-                        this.consumerEdges.get(this.currentConsumerIdx), this.demands.get(this.currentConsumerIdx));
-                this.currentConsumerIdx = -1;
-            }
+        this.invalidate();
+    }
 
-            this.overLoaded = false;
-        }
+    private void updateOutgoingSupplies() {
 
-        // if supply < demand -> distribute the supply over all consumers
-        else {
-            this.overLoaded = true;
-            double[] supplies = redistributeSupply(this.demands, this.totalSupply);
+        // If the demand is higher than the current supply, the system is overloaded.
+        // The available supply is distributed based on the current distribution function.
+        if (this.totalIncomingDemand > this.currentIncomingSupply) {
+            this.overloaded = true;
+
+            double[] supplies = distributeSupply(this.incomingDemands, this.currentIncomingSupply);
 
             for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
                 this.pushOutgoingSupply(this.consumerEdges.get(idx), supplies[idx]);
             }
+
+        } else {
+
+            // If the distributor was overloaded before, but is not anymore:
+            //      provide all consumers with their demand
+            if (this.overloaded) {
+                for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
+                    if (this.outgoingSupplies.get(idx) != this.incomingDemands.get(idx)) {
+                        this.pushOutgoingSupply(this.consumerEdges.get(idx), this.incomingDemands.get(idx));
+                    }
+                }
+                this.overloaded = false;
+            }
+
+            // Update the supplies of the consumers that changed their demand in the current cycle
+            else {
+                for (int idx : this.updatedDemands) {
+                    this.pushOutgoingSupply(this.consumerEdges.get(idx), this.incomingDemands.get(idx));
+                }
+            }
         }
+
+        this.updatedDemands.clear();
     }
 
     private record Demand(int idx, double value) {}
@@ -97,10 +123,8 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     /**
      * Distributed the available supply over the different demands.
      * The supply is distributed using MaxMin Fairness.
-     *
-     * TODO: Move this outside of the Distributor so we can easily add different redistribution methods
      */
-    private static double[] redistributeSupply(ArrayList<Double> demands, double totalSupply) {
+    private static double[] distributeSupply(ArrayList<Double> demands, double currentSupply) {
         int inputSize = demands.size();
 
         final double[] supplies = new double[inputSize];
@@ -116,7 +140,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             return i1.compareTo(i2);
         });
 
-        double availableCapacity = totalSupply; // totalSupply
+        double availableCapacity = currentSupply; // totalSupply
 
         for (int i = 0; i < inputSize; i++) {
             double d = tempDemands[i].value;
@@ -133,7 +157,6 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             availableCapacity -= r;
         }
 
-        // Return the used capacity
         return supplies;
     }
 
@@ -146,15 +169,15 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         consumerEdge.setConsumerIndex(this.consumerEdges.size());
 
         this.consumerEdges.add(consumerEdge);
-        this.demands.add(0.0);
-        this.supplies.add(0.0);
+        this.incomingDemands.add(0.0);
+        this.outgoingSupplies.add(0.0);
     }
 
     @Override
     public void addSupplierEdge(FlowEdge supplierEdge) {
         this.supplierEdge = supplierEdge;
         this.capacity = supplierEdge.getCapacity();
-        this.totalSupply = 0;
+        this.currentIncomingSupply = 0;
     }
 
     @Override
@@ -165,38 +188,44 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             return;
         }
 
-        this.totalDemand -= consumerEdge.getDemand();
+        this.totalIncomingDemand -= consumerEdge.getDemand();
 
         this.consumerEdges.remove(idx);
-        this.demands.remove(idx);
-        this.supplies.remove(idx);
+        this.incomingDemands.remove(idx);
+        this.outgoingSupplies.remove(idx);
 
         // update the consumer index for all consumerEdges higher than this.
         for (int i = idx; i < this.consumerEdges.size(); i++) {
             this.consumerEdges.get(i).setConsumerIndex(i);
         }
 
-        this.currentConsumerIdx = -1;
+        for (int i = 0; i < this.updatedDemands.size(); i++) {
+            int j = this.updatedDemands.get(i);
 
-        if (this.overLoaded) {
-            this.distributeSupply();
+            if (j == idx) {
+                this.updatedDemands.remove(idx);
+            }
+            if (j > idx) {
+                this.updatedDemands.set(i, j - 1);
+            }
         }
 
-        this.pushOutgoingDemand(this.supplierEdge, this.totalDemand);
+        this.outgoingDemandUpdateNeeded = true;
+        this.invalidate();
     }
 
     @Override
     public void removeSupplierEdge(FlowEdge supplierEdge) {
         this.supplierEdge = null;
         this.capacity = 0;
-        this.totalSupply = 0;
+        this.currentIncomingSupply = 0;
+
+        this.invalidate();
     }
 
     @Override
     public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand) {
         int idx = consumerEdge.getConsumerIndex();
-
-        this.currentConsumerIdx = idx;
 
         if (idx == -1) {
             System.out.println("Error (FlowDistributor): Demand pushed by an unknown consumer");
@@ -204,25 +233,22 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         }
 
         // Update the total demand (This is cheaper than summing over all demands)
-        double prevDemand = demands.get(idx);
+        double prevDemand = incomingDemands.get(idx);
 
-        demands.set(idx, newDemand);
-        this.totalDemand += (newDemand - prevDemand);
+        incomingDemands.set(idx, newDemand);
+        this.totalIncomingDemand += (newDemand - prevDemand);
 
-        if (overLoaded) {
-            distributeSupply();
-        }
+        this.updatedDemands.add(idx);
 
-        // Send new totalDemand to CPU
-        // TODO: Look at what happens if total demand is not changed (if total demand is higher than totalSupply)
-        this.pushOutgoingDemand(this.supplierEdge, this.totalDemand);
+        this.outgoingDemandUpdateNeeded = true;
+        this.invalidate();
     }
 
     @Override
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply) {
-        this.totalSupply = newSupply;
+        this.currentIncomingSupply = newSupply;
 
-        this.distributeSupply();
+        this.invalidate();
     }
 
     @Override
@@ -238,11 +264,11 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             System.out.println("Error (FlowDistributor): pushing supply to an unknown consumer");
         }
 
-        if (supplies.get(idx) == newSupply) {
+        if (outgoingSupplies.get(idx) == newSupply) {
             return;
         }
 
-        supplies.set(idx, newSupply);
+        outgoingSupplies.set(idx, newSupply);
         consumerEdge.pushSupply(newSupply);
     }
 }
