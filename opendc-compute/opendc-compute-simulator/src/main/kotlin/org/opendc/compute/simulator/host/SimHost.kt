@@ -35,7 +35,7 @@ import org.opendc.simulator.compute.cpu.CpuPowerModel
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
-import org.opendc.simulator.engine.graph.FlowDistributorNew
+import org.opendc.simulator.engine.graph.FlowDistributor
 import org.opendc.simulator.engine.graph.FlowGraph
 import java.time.Duration
 import java.time.Instant
@@ -62,7 +62,7 @@ public class SimHost(
     private val graph: FlowGraph,
     private val machineModel: MachineModel,
     private val cpuPowerModel: CpuPowerModel,
-    private val powerDistributor: FlowDistributorNew,
+    private val powerDistributor: FlowDistributor,
 ) : AutoCloseable {
     /**
      * The event listeners registered with this host.

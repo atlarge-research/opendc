@@ -31,7 +31,7 @@ import org.opendc.simulator.compute.models.MachineModel;
 import org.opendc.simulator.compute.power.SimPsu;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
-import org.opendc.simulator.engine.graph.FlowDistributorNew;
+import org.opendc.simulator.engine.graph.FlowDistributor;
 import org.opendc.simulator.engine.graph.FlowGraph;
 
 /**
@@ -44,7 +44,7 @@ public class SimMachine {
     private final InstantSource clock;
 
     private SimCpu cpu;
-    private FlowDistributorNew cpuDistributor;
+    private FlowDistributor cpuDistributor;
     private SimPsu psu;
     private Memory memory;
 
@@ -74,7 +74,7 @@ public class SimMachine {
         return cpu;
     }
 
-    public FlowDistributorNew getCpuDistributor() {
+    public FlowDistributor getCpuDistributor() {
         return cpuDistributor;
     }
 
@@ -114,7 +114,7 @@ public class SimMachine {
     public SimMachine(
             FlowGraph graph,
             MachineModel machineModel,
-            FlowDistributorNew powerDistributor,
+            FlowDistributor powerDistributor,
             CpuPowerModel cpuPowerModel,
             Consumer<Exception> completion) {
         this.graph = graph;
@@ -133,7 +133,7 @@ public class SimMachine {
         this.memory = new Memory(graph, this.machineModel.getMemory());
 
         // Create a FlowDistributor and add the cpu as supplier
-        this.cpuDistributor = new FlowDistributorNew(this.graph);
+        this.cpuDistributor = new FlowDistributor(this.graph);
         graph.addEdge(this.cpuDistributor, this.cpu);
 
         this.completion = completion;
