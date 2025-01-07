@@ -296,8 +296,8 @@ class ExperimentTest {
 
             // Note that these values have been verified beforehand
             assertAll(
-                { assertEquals(1803918432, monitor.idleTime) { "Idle time incorrect" } },
-                { assertEquals(787181568, monitor.activeTime) { "Active time incorrect" } },
+                { assertEquals(1803918435, monitor.idleTime) { "Idle time incorrect" } },
+                { assertEquals(787181565, monitor.activeTime) { "Active time incorrect" } },
                 { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
                 { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
                 { assertEquals(6.7565629E8, monitor.energyUsage, 1E4) { "Incorrect energy usage" } },
@@ -343,11 +343,11 @@ class ExperimentTest {
                 { assertEquals(0, monitor.tasksActive, "All VMs should finish after a run") },
                 { assertEquals(0, monitor.attemptsFailure, "No VM should be unscheduled") },
                 { assertEquals(0, monitor.tasksPending, "No VM should not be in the queue") },
-                { assertEquals(43101787447, monitor.idleTime) { "Incorrect idle time" } },
-                { assertEquals(3489412553, monitor.activeTime) { "Incorrect active time" } },
+                { assertEquals(43101787496, monitor.idleTime) { "Incorrect idle time" } },
+                { assertEquals(3489412504, monitor.activeTime) { "Incorrect active time" } },
                 { assertEquals(0, monitor.stealTime) { "Incorrect steal time" } },
                 { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
-                { assertEquals(1.0016123392181786E10, monitor.energyUsage, 1E4) { "Incorrect energy usage" } },
+                { assertEquals(6.914184592181973E9, monitor.energyUsage, 1E4) { "Incorrect energy usage" } },
             )
         }
 

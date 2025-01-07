@@ -64,8 +64,8 @@ public class HostsProvisioningStep internal constructor(
             service.addPowerSource(simPowerSource)
             simPowerSources.add(simPowerSource)
 
-            val powerMux = FlowDistributor(graph)
-            graph.addEdge(powerMux, simPowerSource)
+            val powerDistributor = FlowDistributor(graph)
+            graph.addEdge(powerDistributor, simPowerSource)
 
             // Create hosts, they are connected to the powerMux when SimMachine is created
             for (hostSpec in cluster.hostSpecs) {
@@ -78,7 +78,7 @@ public class HostsProvisioningStep internal constructor(
                         graph,
                         hostSpec.model,
                         hostSpec.cpuPowerModel,
-                        powerMux,
+                        powerDistributor,
                     )
 
                 require(simHosts.add(simHost)) { "Host with uid ${hostSpec.uid} already exists" }

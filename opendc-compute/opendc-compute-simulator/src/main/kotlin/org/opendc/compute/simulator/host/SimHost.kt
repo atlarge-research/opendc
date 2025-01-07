@@ -62,7 +62,7 @@ public class SimHost(
     private val graph: FlowGraph,
     private val machineModel: MachineModel,
     private val cpuPowerModel: CpuPowerModel,
-    private val powerMux: FlowDistributor,
+    private val powerDistributor: FlowDistributor,
 ) : AutoCloseable {
     /**
      * The event listeners registered with this host.
@@ -131,7 +131,7 @@ public class SimHost(
             SimMachine(
                 this.graph,
                 this.machineModel,
-                this.powerMux,
+                this.powerDistributor,
                 this.cpuPowerModel,
             ) { cause ->
                 hostState = if (cause != null) HostState.ERROR else HostState.DOWN

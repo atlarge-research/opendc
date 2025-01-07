@@ -195,7 +195,7 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      * @param newDemand new demand to sent to the cpu
      */
     @Override
-    public void pushDemand(FlowEdge supplierEdge, double newDemand) {
+    public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
 
         this.demand = newDemand;
         this.machineEdge.pushDemand(newDemand);
@@ -208,7 +208,7 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      * @param newSupply new supply to sent to the workload
      */
     @Override
-    public void pushSupply(FlowEdge consumerEdge, double newSupply) {
+    public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
 
         this.supply = newSupply;
         this.workloadEdge.pushSupply(newSupply);
@@ -221,8 +221,8 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      * @param newDemand new demand coming from the workload
      */
     @Override
-    public void handleDemand(FlowEdge consumerEdge, double newDemand) {
-        this.pushDemand(this.machineEdge, newDemand);
+    public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand) {
+        this.pushOutgoingDemand(this.machineEdge, newDemand);
     }
 
     /**
@@ -232,8 +232,8 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      * @param newSupply The new supply that is sent to the workload
      */
     @Override
-    public void handleSupply(FlowEdge supplierEdge, double newSupply) {
-        this.pushSupply(this.machineEdge, newSupply);
+    public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply) {
+        this.pushOutgoingSupply(this.machineEdge, newSupply);
     }
 
     /**

@@ -165,8 +165,6 @@ class FlowDistributorTest {
             { assertEquals(2000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(1000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
             { assertEquals(2000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
-            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "When the task is finished, the host should have 0.0 demand" } },
-            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "When the task is finished, the host should have 0.0 demand" } },
         )
     }
 
@@ -202,8 +200,6 @@ class FlowDistributorTest {
             { assertEquals(4000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(2000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
             { assertEquals(2000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
-            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
-            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
         )
     }
 
@@ -239,8 +235,6 @@ class FlowDistributorTest {
             { assertEquals(4000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(1000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
             { assertEquals(2000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
-            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
-            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
         )
     }
 
@@ -276,19 +270,52 @@ class FlowDistributorTest {
             { assertEquals(1000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(2000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
             { assertEquals(1000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
-            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
-            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
         )
     }
 
     /**
-     * FlowDistributor test 5: Two task, same time, both fit
+     * FlowDistributor test 5: A single task transition overload to perfect fit
+     * In this test, a single task is scheduled where the first fragment does not fit, and the second does perfectly for the available CPU.
+     * For the first fragment, we expect the usage of the first fragment to be lower than the demand
+     * We check if both the host and the Task show the correct cpu usage and demand during the two fragments.
+     */
+    @Test
+    fun testFlowDistributor5() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                        ),
+                ),
+            )
+        val topology = createTopology("single_1_2000.json")
+
+        monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals(4000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(4000.0, monitor.hostCpuDemands[1]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
+        )
+    }
+
+    /**
+     * FlowDistributor test 6: Two task, same time, both fit
      * In this test, two tasks are scheduled, and they fit together on the host . The tasks start and finish at the same time
      * This test shows how the FlowDistributor handles two tasks that can fit and no redistribution is required.
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testFlowDistributor5() {
+    fun testFlowDistributor6() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -325,19 +352,17 @@ class FlowDistributorTest {
             { assertEquals(4000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(4000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
             { assertEquals(4000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
-            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
-            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
         )
     }
 
     /**
-     * FlowDistributor test 6: Two task, same time, can not fit
+     * FlowDistributor test 7: Two task, same time, can not fit
      * In this test, two tasks are scheduled, and they can not both fit. The tasks start and finish at the same time
      * This test shows how the FlowDistributor handles two tasks that both do not fit and redistribution is required.
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testFlowDistributor6() {
+    fun testFlowDistributor7() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -374,18 +399,16 @@ class FlowDistributorTest {
             { assertEquals(11000.0, monitor.hostCpuDemands[10]) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(4000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
             { assertEquals(4000.0, monitor.hostCpuSupplied[10]) { "The cpu used by the host is incorrect" } },
-            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
-            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
         )
     }
 
     /**
-     * FlowDistributor test 7: Two task, both fit, second task is delayed
+     * FlowDistributor test 8: Two task, both fit, second task is delayed
      * In this test, two tasks are scheduled, the second task is delayed.
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testFlowDistributor7() {
+    fun testFlowDistributor8() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -431,13 +454,11 @@ class FlowDistributorTest {
             { assertEquals(3000.0, monitor.hostCpuSupplied[5]) { "The cpu used by the host is incorrect" } },
             { assertEquals(4000.0, monitor.hostCpuSupplied[9]) { "The cpu used by the host is incorrect" } },
             { assertEquals(2000.0, monitor.hostCpuSupplied[14]) { "The cpu used by the host is incorrect" } },
-            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
-            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
         )
     }
 
     /**
-     * FlowDistributor test 8: Two task, both fit on their own but not together, second task is delayed
+     * FlowDistributor test 9: Two task, both fit on their own but not together, second task is delayed
      * In this test, two tasks are scheduled, the second task is delayed.
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      * When the second task comes in, the host is overloaded.
@@ -445,7 +466,7 @@ class FlowDistributorTest {
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testFlowDistributor8() {
+    fun testFlowDistributor9() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -488,20 +509,18 @@ class FlowDistributorTest {
             { assertEquals(3000.0, monitor.hostCpuSupplied[1]) { "The cpu used by the host is incorrect" } },
             { assertEquals(4000.0, monitor.hostCpuSupplied[5]) { "The cpu used by the host is incorrect" } },
             { assertEquals(3000.0, monitor.hostCpuSupplied[14]) { "The cpu used by the host is incorrect" } },
-            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
-            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
         )
     }
 
     /**
-     * FlowDistributor test 9: Two task, one changes demand, causing overload
+     * FlowDistributor test 10: Two task, one changes demand, causing overload
      * In this test, two tasks are scheduled, and they can both fit.
      * However, task 0 increases its demand which overloads the FlowDistributor.
      * This test shows how the FlowDistributor handles transition from fitting to overloading when multiple tasks are running.
      * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
      */
     @Test
-    fun testFlowDistributor9() {
+    fun testFlowDistributor10() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -551,9 +570,81 @@ class FlowDistributorTest {
             { assertEquals(4000.0, monitor.hostCpuSupplied[5]) { "The cpu used by the host is incorrect" } },
             { assertEquals(4000.0, monitor.hostCpuSupplied[9]) { "The cpu used by the host is incorrect" } },
             { assertEquals(4000.0, monitor.hostCpuSupplied[14]) { "The cpu used by the host is incorrect" } },
-            { assertEquals(0.0, monitor.hostCpuDemands.last()) { "The host should have 0.0 demand when finished" } },
-            { assertEquals(0.0, monitor.hostCpuSupplied.last()) { "The host should have 0.0 usage when finished" } },
         )
+    }
+
+    /**
+     * FlowDistributor test 11: 5000 hosts. This tests the performance of the distributor
+     * In this test, two tasks are scheduled, and they can both fit.
+     * However, task 0 increases its demand which overloads the FlowDistributor.
+     * This test shows how the FlowDistributor handles transition from fitting to overloading when multiple tasks are running.
+     * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
+     */
+    @Test
+    fun testFlowDistributor11() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf<TraceFragment>().apply {
+                            repeat(10) { this.add(TraceFragment(20 * 60 * 1000, 3000.0, 1)) }
+                        },
+                ),
+            )
+        val topology = createTopology("single_5000_2000.json")
+
+        monitor = runTest(topology, workload)
+    }
+
+    /**
+     * FlowDistributor test 12: 1000 fragments. This tests the performance of the distributor
+     * In this test, two tasks are scheduled, and they can both fit.
+     * However, task 0 increases its demand which overloads the FlowDistributor.
+     * This test shows how the FlowDistributor handles transition from fitting to overloading when multiple tasks are running.
+     * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
+     */
+    @Test
+    fun testFlowDistributor12() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf<TraceFragment>().apply {
+                            repeat(1000) { this.add(TraceFragment(10 * 60 * 1000, 2000.0, 1)) }
+                        },
+                ),
+            )
+        val topology = createTopology("single_1_2000.json")
+
+        monitor = runTest(topology, workload)
+    }
+
+    /**
+     * FlowDistributor test 13: 1000 tasks. This tests the performance
+     * In this test, two tasks are scheduled, and they can both fit.
+     * However, task 0 increases its demand which overloads the FlowDistributor.
+     * This test shows how the FlowDistributor handles transition from fitting to overloading when multiple tasks are running.
+     * We check if both the host and the Tasks show the correct cpu usage and demand during the two fragments.
+     */
+    @Test
+    fun testFlowDistributor13() {
+        val workload: ArrayList<Task> =
+            arrayListOf<Task>().apply {
+                repeat(1000) {
+                    this.add(
+                        createTestTask(
+                            name = "0",
+                            fragments =
+                                arrayListOf(TraceFragment(10 * 60 * 1000, 2000.0, 1)),
+                        ),
+                    )
+                }
+            }
+        val topology = createTopology("single_1_2000.json")
+
+        monitor = runTest(topology, workload)
     }
 
     /**

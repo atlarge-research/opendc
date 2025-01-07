@@ -106,7 +106,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
         double powerSupply = this.powerDemand;
 
         if (powerSupply != this.powerSupplied) {
-            this.pushSupply(this.cpuEdge, powerSupply);
+            this.pushOutgoingSupply(this.cpuEdge, powerSupply);
         }
 
         return Long.MAX_VALUE;
@@ -135,33 +135,33 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void pushDemand(FlowEdge supplierEdge, double newDemand) {
+    public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
         this.powerDemand = newDemand;
         powerSupplyEdge.pushDemand(newDemand);
     }
 
     @Override
-    public void pushSupply(FlowEdge consumerEdge, double newSupply) {
+    public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
         this.powerSupplied = newSupply;
         cpuEdge.pushSupply(newSupply);
     }
 
     @Override
-    public void handleDemand(FlowEdge consumerEdge, double newPowerDemand) {
+    public void handleIncomingDemand(FlowEdge consumerEdge, double newPowerDemand) {
 
         updateCounters();
         this.powerDemand = newPowerDemand;
 
-        pushDemand(this.powerSupplyEdge, newPowerDemand);
+        pushOutgoingDemand(this.powerSupplyEdge, newPowerDemand);
     }
 
     @Override
-    public void handleSupply(FlowEdge supplierEdge, double newPowerSupply) {
+    public void handleIncomingSupply(FlowEdge supplierEdge, double newPowerSupply) {
 
         updateCounters();
         this.powerSupplied = newPowerSupply;
 
-        pushSupply(this.cpuEdge, newPowerSupply);
+        pushOutgoingSupply(this.cpuEdge, newPowerSupply);
     }
 
     @Override
