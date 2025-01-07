@@ -24,6 +24,9 @@ package org.opendc.simulator.engine.graph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
     private final ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
@@ -36,12 +39,12 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     private double currentIncomingSupply; // The current supply provided by the supplier
 
     private boolean outgoingDemandUpdateNeeded = false;
+    private final Set<Integer> updatedDemands = new HashSet<>(); // Array of consumers that updated their demand in this cycle
 
     private boolean overloaded = false;
 
     private double capacity; // What is the max capacity. Can probably be removed
 
-    private final ArrayList<Integer> updatedDemands = new ArrayList<>();
 
     public FlowDistributor(FlowGraph graph) {
         super(graph);
@@ -68,7 +71,9 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             return Long.MAX_VALUE;
         }
 
-        this.updateOutgoingSupplies();
+        if (!this.outgoingSupplies.isEmpty()) {
+            this.updateOutgoingSupplies();
+        }
 
         return Long.MAX_VALUE;
     }
@@ -100,7 +105,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             //      provide all consumers with their demand
             if (this.overloaded) {
                 for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
-                    if (this.outgoingSupplies.get(idx) != this.incomingDemands.get(idx)) {
+                    if (!Objects.equals(this.outgoingSupplies.get(idx), this.incomingDemands.get(idx))) {
                         this.pushOutgoingSupply(this.consumerEdges.get(idx), this.incomingDemands.get(idx));
                     }
                 }
@@ -190,23 +195,25 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
 
         this.totalIncomingDemand -= consumerEdge.getDemand();
 
+        // Remove idx from consumers that updated their demands
+        this.updatedDemands.remove(idx);
+
         this.consumerEdges.remove(idx);
         this.incomingDemands.remove(idx);
         this.outgoingSupplies.remove(idx);
 
         // update the consumer index for all consumerEdges higher than this.
         for (int i = idx; i < this.consumerEdges.size(); i++) {
-            this.consumerEdges.get(i).setConsumerIndex(i);
+            FlowEdge other = this.consumerEdges.get(i);
+
+            other.setConsumerIndex(other.getConsumerIndex() - 1);
         }
 
-        for (int i = 0; i < this.updatedDemands.size(); i++) {
-            int j = this.updatedDemands.get(i);
+        for (int idx_other : this.updatedDemands) {
 
-            if (j == idx) {
-                this.updatedDemands.remove(idx);
-            }
-            if (j > idx) {
-                this.updatedDemands.set(i, j - 1);
+            if (idx_other > idx) {
+                this.updatedDemands.remove(idx_other);
+                this.updatedDemands.add(idx_other - 1);
             }
         }
 
@@ -220,7 +227,9 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         this.capacity = 0;
         this.currentIncomingSupply = 0;
 
-        this.invalidate();
+        this.updatedDemands.clear();
+
+        this.closeNode();
     }
 
     @Override

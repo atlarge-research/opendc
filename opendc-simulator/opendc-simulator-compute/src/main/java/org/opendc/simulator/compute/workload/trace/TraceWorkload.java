@@ -20,10 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.workload;
+package org.opendc.simulator.compute.workload.trace;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+
+import org.opendc.simulator.compute.workload.SimWorkload;
+import org.opendc.simulator.compute.workload.Workload;
+import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling;
+import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
 public class TraceWorkload implements Workload {
@@ -31,20 +37,32 @@ public class TraceWorkload implements Workload {
     private final long checkpointInterval;
     private final long checkpointDuration;
     private final double checkpointIntervalScaling;
+    private final double maxCpuDemand;
+
+    public ScalingPolicy getScalingPolicy() {
+        return scalingPolicy;
+    }
+
+    private final ScalingPolicy scalingPolicy;
 
     public TraceWorkload(
-            ArrayList<TraceFragment> fragments,
-            long checkpointInterval,
-            long checkpointDuration,
-            double checkpointIntervalScaling) {
+        ArrayList<TraceFragment> fragments,
+        long checkpointInterval,
+        long checkpointDuration,
+        double checkpointIntervalScaling,
+        ScalingPolicy scalingPolicy) {
         this.fragments = fragments;
         this.checkpointInterval = checkpointInterval;
         this.checkpointDuration = checkpointDuration;
         this.checkpointIntervalScaling = checkpointIntervalScaling;
+        this.scalingPolicy = scalingPolicy;
+
+        // TODO: remove if we decide not to use it.
+        this.maxCpuDemand = fragments.stream().max(Comparator.comparing(TraceFragment::cpuUsage)).get().cpuUsage();
     }
 
     public TraceWorkload(ArrayList<TraceFragment> fragments) {
-        this(fragments, 0L, 0L, 1.0);
+        this(fragments, 0L, 0L, 1.0, new NoDelayScaling());
     }
 
     public ArrayList<TraceFragment> getFragments() {
@@ -83,11 +101,11 @@ public class TraceWorkload implements Workload {
     }
 
     public static Builder builder() {
-        return builder(0L, 0L, 0.0);
+        return builder(0L, 0L, 0.0, new NoDelayScaling());
     }
 
-    public static Builder builder(long checkpointInterval, long checkpointDuration, double checkpointIntervalScaling) {
-        return new Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling);
+    public static Builder builder(long checkpointInterval, long checkpointDuration, double checkpointIntervalScaling, ScalingPolicy scalingPolicy) {
+        return new Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy);
     }
 
     /**
@@ -125,15 +143,17 @@ public class TraceWorkload implements Workload {
         private final long checkpointInterval;
         private final long checkpointDuration;
         private final double checkpointIntervalScaling;
+        private final ScalingPolicy scalingPolicy;
 
         /**
          * Construct a new {@link Builder} instance.
          */
-        private Builder(long checkpointInterval, long checkpointDuration, double checkpointIntervalScaling) {
+        private Builder(long checkpointInterval, long checkpointDuration, double checkpointIntervalScaling, ScalingPolicy scalingPolicy) {
             this.fragments = new ArrayList<>();
             this.checkpointInterval = checkpointInterval;
             this.checkpointDuration = checkpointDuration;
             this.checkpointIntervalScaling = checkpointIntervalScaling;
+            this.scalingPolicy = scalingPolicy;
         }
 
         /**
@@ -152,7 +172,7 @@ public class TraceWorkload implements Workload {
          */
         public TraceWorkload build() {
             return new TraceWorkload(
-                    this.fragments, this.checkpointInterval, this.checkpointDuration, this.checkpointIntervalScaling);
+                this.fragments, this.checkpointInterval, this.checkpointDuration, this.checkpointIntervalScaling, this.scalingPolicy);
         }
     }
 }

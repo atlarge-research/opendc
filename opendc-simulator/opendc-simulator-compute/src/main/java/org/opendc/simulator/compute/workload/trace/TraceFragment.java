@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.workload;
+package org.opendc.simulator.compute.workload.trace;
 
 public record TraceFragment(long duration, double cpuUsage, int coreCount) {
 

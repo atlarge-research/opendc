@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.workload.Task
 import org.opendc.experiments.base.experiment.specs.TraceBasedFailureModelSpec
-import org.opendc.simulator.compute.workload.TraceFragment
+import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
 
 /**
@@ -225,7 +225,7 @@ class FailuresAndCheckpointingTest {
     }
 
     /**
-     * Failure test 1: Single Task with checkpointing
+     * Checkpointing test 1: Single Task with checkpointing
      * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
      * Because there is no checkpointing, the full task has to be rerun.
      *
@@ -263,7 +263,7 @@ class FailuresAndCheckpointingTest {
     }
 
     /**
-     * Failure test 2: Single Task with scaling checkpointing
+     * Checkpointing test 2: Single Task with scaling checkpointing
      * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
      * Because there is no checkpointing, the full task has to be rerun.
      *
@@ -302,7 +302,7 @@ class FailuresAndCheckpointingTest {
     }
 
     /**
-     * Checkpoint test 3: Single Task, single failure with checkpointing
+     * Checkpointing test 3: Single Task, single failure with checkpointing
      * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
      * Because there is no checkpointing, the full task has to be rerun.
      *
@@ -360,7 +360,7 @@ class FailuresAndCheckpointingTest {
     }
 
     /**
-     * Checkpoint test 4: Single Task, repeated failure with checkpointing
+     * Checkpointing test 4: Single Task, repeated failure with checkpointing
      * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
      * Because there is no checkpointing, the full task has to be rerun.
      *

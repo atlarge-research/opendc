@@ -23,7 +23,9 @@
 package org.opendc.compute.workload
 
 import mu.KotlinLogging
-import org.opendc.simulator.compute.workload.TraceWorkload
+import org.opendc.simulator.compute.workload.trace.TraceWorkload
+import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
+import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
@@ -53,6 +55,7 @@ public class ComputeWorkloadLoader(
     private val checkpointInterval: Long = 0L,
     private val checkpointDuration: Long = 0L,
     private val checkpointIntervalScaling: Double = 1.0,
+    private val scalingPolicy: ScalingPolicy = NoDelayScaling()
 ) : WorkloadLoader(subMissionTime) {
     /**
      * The logger for this instance.
@@ -84,7 +87,7 @@ public class ComputeWorkloadLoader(
                 val cores = reader.getInt(coresCol)
                 val cpuUsage = reader.getDouble(usageCol)
 
-                val builder = fragments.computeIfAbsent(id) { Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling) }
+                val builder = fragments.computeIfAbsent(id) { Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy) }
                 builder.add(durationMs, cpuUsage, cores)
             }
 
@@ -178,7 +181,7 @@ public class ComputeWorkloadLoader(
     /**
      * A builder for a VM trace.
      */
-    private class Builder(checkpointInterval: Long, checkpointDuration: Long, checkpointIntervalScaling: Double) {
+    private class Builder(checkpointInterval: Long, checkpointDuration: Long, checkpointIntervalScaling: Double, scalingPolicy: ScalingPolicy) {
         /**
          * The total load of the trace.
          */
@@ -187,7 +190,7 @@ public class ComputeWorkloadLoader(
         /**
          * The internal builder for the trace.
          */
-        private val builder = TraceWorkload.builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling)
+        private val builder = TraceWorkload.builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy)
 
         /**
          * Add a fragment to the trace.

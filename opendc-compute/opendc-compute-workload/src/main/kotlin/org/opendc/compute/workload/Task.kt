@@ -22,7 +22,7 @@
 
 package org.opendc.compute.workload
 
-import org.opendc.simulator.compute.workload.TraceWorkload
+import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import java.time.Instant
 import java.util.UUID
 

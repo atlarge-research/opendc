@@ -24,7 +24,7 @@ package org.opendc.simulator.compute
 
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.opendc.simulator.compute.machine.SimMachine
-import org.opendc.simulator.compute.workload.TraceWorkload
+import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 

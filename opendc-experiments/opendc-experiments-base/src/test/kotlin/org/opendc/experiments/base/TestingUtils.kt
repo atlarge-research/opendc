@@ -43,8 +43,10 @@ import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.workload.Task
 import org.opendc.experiments.base.experiment.specs.FailureModelSpec
 import org.opendc.experiments.base.runner.replay
-import org.opendc.simulator.compute.workload.TraceFragment
-import org.opendc.simulator.compute.workload.TraceWorkload
+import org.opendc.simulator.compute.workload.trace.TraceFragment
+import org.opendc.simulator.compute.workload.trace.TraceWorkload
+import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
+import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy
 import org.opendc.simulator.kotlin.runSimulation
 import java.time.Duration
 import java.time.LocalDateTime
@@ -69,6 +71,7 @@ fun createTestTask(
     checkpointInterval: Long = 0L,
     checkpointDuration: Long = 0L,
     checkpointIntervalScaling: Double = 1.0,
+    scalingPolicy: ScalingPolicy = NoDelayScaling()
 ): Task {
     return Task(
         UUID.nameUUIDFromBytes(name.toByteArray()),
@@ -84,6 +87,7 @@ fun createTestTask(
             checkpointInterval,
             checkpointDuration,
             checkpointIntervalScaling,
+            scalingPolicy
         ),
     )
 }
