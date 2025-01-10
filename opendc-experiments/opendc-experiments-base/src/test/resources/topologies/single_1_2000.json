@@ -14,6 +14,12 @@
                     },
                     "memory": {
                         "memorySize": 140457600000
+                    },
+                    "powerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
                     }
                 }
             ]

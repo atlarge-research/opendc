@@ -173,6 +173,11 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         long passedTime = getPassedTime(now);
         long remainingTime = currentFragment.duration() - passedTime;
 
+        // If this is the end of the Task, don't make a snapshot
+        if (remainingTime <= 0 && remainingFragments.isEmpty()) {
+            return;
+        }
+
         // Create a new fragment based on the current fragment and remaining duration
         TraceFragment newFragment =
                 new TraceFragment(remainingTime, currentFragment.cpuUsage(), currentFragment.coreCount());
