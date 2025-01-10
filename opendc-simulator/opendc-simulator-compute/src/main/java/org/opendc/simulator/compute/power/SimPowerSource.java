@@ -168,6 +168,8 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
 
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
+        updateCounters();
+
         this.powerSupplied = newSupply;
         consumerEdge.pushSupply(newSupply);
     }

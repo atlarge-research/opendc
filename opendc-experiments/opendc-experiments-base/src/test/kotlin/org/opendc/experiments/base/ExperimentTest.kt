@@ -66,6 +66,7 @@ class ExperimentTest {
             { assertEquals((10 * 30000).toLong(), monitor.hostActiveTimes["H01"]?.sum()) { "Active time incorrect" } },
             { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect energy usage" } },
             { assertEquals(600 * 150.0, monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
+            { assertEquals(600 * 150.0, monitor.energyUsages.sum()) { "Incorrect energy usage" } },
         )
     }
 
@@ -108,6 +109,7 @@ class ExperimentTest {
             { assertEquals(((10 * 30000) + (5 * 60000)).toLong(), monitor.hostActiveTimes["H01"]?.sum()) { "Active time incorrect" } },
             { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect energy usage" } },
             { assertEquals((600 * 150.0) + (300 * 200.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
+            { assertEquals((600 * 150.0) + (300 * 200.0), monitor.energyUsages.sum()) { "Incorrect energy usage" } },
         )
     }
 
@@ -201,133 +203,4 @@ class ExperimentTest {
             },
         )
     }
-
-//    /**
-//     * Test a small simulation setup.
-//     */
-//    @Test
-//    fun testSingleTask() =
-//        runSimulation {
-//            val seed = 1L
-//            val workload = createTestWorkload("single_task", 1.0, seed)
-//            val topology = createTopology("single.json")
-//            val monitor = monitor
-//
-//            Provisioner(dispatcher, seed).use { provisioner ->
-//                provisioner.runSteps(
-//                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-//                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-//                    setupHosts(serviceDomain = "compute.opendc.org", topology),
-//                )
-//
-//                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-//                service.replay(timeSource, workload, seed = seed)
-//            }
-//
-//            println(
-//                "Scheduler " +
-//                    "Success=${monitor.attemptsSuccess} " +
-//                    "Failure=${monitor.attemptsFailure} " +
-//                    "Error=${monitor.attemptsError} " +
-//                    "Pending=${monitor.tasksPending} " +
-//                    "Active=${monitor.tasksActive}",
-//            )
-//
-//            // Note that these values have been verified beforehand
-//            assertAll(
-//                { assertEquals(0, monitor.idleTime) { "Idle time incorrect" } },
-//                { assertEquals(3000000, monitor.activeTime) { "Active time incorrect" } },
-//                { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
-//                { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-//                { assertEquals(1200000.0, monitor.hostEnergyUsage.sum(), 1E4) { "Incorrect energy usage" } },
-//            )
-//        }
-//
-//    /**
-//     * Test a small simulation setup.
-//     */
-//    @Test
-//    fun testSmall() =
-//        runSimulation {
-//            val seed = 1L
-//            val workload = createTestWorkload("bitbrains-small", 0.25, seed)
-//            val topology = createTopology("single.json")
-//            val monitor = monitor
-//
-//            Provisioner(dispatcher, seed).use { provisioner ->
-//                provisioner.runSteps(
-//                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-//                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-//                    setupHosts(serviceDomain = "compute.opendc.org", topology),
-//                )
-//
-//                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-//                service.replay(timeSource, workload, seed = seed)
-//            }
-//
-//            println(
-//                "Scheduler " +
-//                    "Success=${monitor.attemptsSuccess} " +
-//                    "Failure=${monitor.attemptsFailure} " +
-//                    "Error=${monitor.attemptsError} " +
-//                    "Pending=${monitor.tasksPending} " +
-//                    "Active=${monitor.tasksActive}",
-//            )
-//
-//            // Note that these values have been verified beforehand
-//            assertAll(
-//                { assertEquals(1803918435, monitor.idleTime) { "Idle time incorrect" } },
-//                { assertEquals(787181565, monitor.activeTime) { "Active time incorrect" } },
-//                { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
-//                { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-//                { assertEquals(6.7565629E8, monitor.hostEnergyUsage.sum(), 1E4) { "Incorrect energy usage" } },
-//            )
-//        }
-//
-//    /**
-//     * Test a large simulation setup.
-//     */
-//    @Test
-//    fun testLarge() =
-//        runSimulation {
-//            val seed = 0L
-//            val workload = createTestWorkload("bitbrains-small", 1.0, seed)
-//            val topology = createTopology("multi.json")
-//            val monitor = monitor
-//
-//            Provisioner(dispatcher, seed).use { provisioner ->
-//                provisioner.runSteps(
-//                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-//                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor),
-//                    setupHosts(serviceDomain = "compute.opendc.org", topology),
-//                )
-//
-//                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-//                service.replay(timeSource, workload, seed = seed)
-//            }
-//
-//            println(
-//                "Scheduler " +
-//                    "Success=${monitor.attemptsSuccess} " +
-//                    "Failure=${monitor.attemptsFailure} " +
-//                    "Error=${monitor.attemptsError} " +
-//                    "Pending=${monitor.tasksPending} " +
-//                    "Active=${monitor.tasksActive}",
-//            )
-//
-//            // Note that these values have been verified beforehand
-//            assertAll(
-//                { assertEquals(50, monitor.attemptsSuccess, "The scheduler should schedule 50 VMs") },
-//                { assertEquals(50, monitor.tasksCompleted, "The scheduler should schedule 50 VMs") },
-//                { assertEquals(0, monitor.tasksTerminated, "The scheduler should schedule 50 VMs") },
-//                { assertEquals(0, monitor.tasksActive, "All VMs should finish after a run") },
-//                { assertEquals(0, monitor.attemptsFailure, "No VM should be unscheduled") },
-//                { assertEquals(0, monitor.tasksPending, "No VM should not be in the queue") },
-//                { assertEquals(43101787496, monitor.idleTime) { "Incorrect idle time" } },
-//                { assertEquals(3489412504, monitor.activeTime) { "Incorrect active time" } },
-//                { assertEquals(0, monitor.stealTime) { "Incorrect steal time" } },
-//                { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
-//                { assertEquals(6.914184592181973E9, monitor.hostEnergyUsage.sum(), 1E4) { "Incorrect energy usage" } },
-//            )
-//        }
 }
