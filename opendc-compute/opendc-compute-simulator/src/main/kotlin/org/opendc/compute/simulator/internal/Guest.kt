@@ -108,18 +108,26 @@ public class Guest(
                 0,
                 0.0,
             )
-        val newChainWorkload =
-            ChainWorkload(
-                ArrayList(listOf(task.workload)),
-                task.workload.checkpointInterval,
-                task.workload.checkpointDuration,
-                task.workload.checkpointIntervalScaling,
-            )
 
-        virtualMachine =
-            simMachine.startWorkload(newChainWorkload) { cause ->
-                onStop(if (cause != null) TaskState.FAILED else TaskState.COMPLETED)
-            }
+        if (task.workload is TraceWorkload) {
+            val newChainWorkload =
+                ChainWorkload(
+                    ArrayList(listOf(task.workload)),
+                    task.workload.checkpointInterval,
+                    task.workload.checkpointDuration,
+                    task.workload.checkpointIntervalScaling,
+                )
+
+            virtualMachine =
+                simMachine.startWorkload(newChainWorkload) { cause ->
+                    onStop(if (cause != null) TaskState.FAILED else TaskState.COMPLETED)
+                }
+        } else {
+            virtualMachine =
+                simMachine.startWorkload(task.workload) { cause ->
+                    onStop(if (cause != null) TaskState.FAILED else TaskState.COMPLETED)
+                }
+        }
     }
 
     /**

@@ -73,7 +73,7 @@ public class CheckpointModel extends FlowNode {
         simWorkload.makeSnapshot(now);
 
         // start new fragment
-        this.startOfInterval = now - passedTime;
+        this.startOfInterval = now;
 
         // Scale the interval time between checkpoints based on the provided scaling
         this.checkpointInterval = (long) (this.checkpointInterval * this.checkpointIntervalScaling);

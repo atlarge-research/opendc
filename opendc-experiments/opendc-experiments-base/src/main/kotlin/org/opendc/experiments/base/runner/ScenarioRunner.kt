@@ -107,9 +107,7 @@ public fun runScenario(
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
             service.setTasksExpected(tasks.size)
-
-            val monitor = provisioner.getMonitor()
-            service.setMetricReader(monitor)
+            service.setMetricReader(provisioner.getMonitor())
 
             service.replay(
                 timeSource,
