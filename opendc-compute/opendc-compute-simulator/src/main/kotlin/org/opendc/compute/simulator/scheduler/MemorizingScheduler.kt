@@ -131,7 +131,9 @@ public class MemorizingScheduler(
         return result
     }
 
-    override fun removeTask(task: ServiceTask, host: HostView) {
+    override fun removeTask(task: ServiceTask, host: HostView?) {
+        if (host == null) return
+
         val priorityIdx = host.priorityIndex
         val listIdx = host.listIndex
         val chosenList = hostsQueue[priorityIdx]

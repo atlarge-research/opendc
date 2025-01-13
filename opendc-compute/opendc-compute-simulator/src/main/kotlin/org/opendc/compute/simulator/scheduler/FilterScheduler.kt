@@ -126,7 +126,7 @@ public class FilterScheduler(
 
     override fun removeTask(
         task: ServiceTask,
-        host: HostView,
+        host: HostView?,
     ) {
     }
 }

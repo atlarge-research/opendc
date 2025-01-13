@@ -26,6 +26,7 @@ import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
+import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.scheduler.FilterScheduler
 import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
 import org.opendc.compute.simulator.scheduler.filters.RamFilter
@@ -87,18 +88,13 @@ fun createTestTask(
     )
 }
 
-fun runTest(
+fun runTestWithScheduler(
     topology: List<ClusterSpec>,
     workload: ArrayList<Task>,
+    computeScheduler: ComputeScheduler,
     failureModelSpec: FailureModelSpec? = null,
 ): TestComputeMonitor {
     val monitor = TestComputeMonitor()
-
-    val computeScheduler =
-        FilterScheduler(
-            filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
-            weighers = listOf(CoreRamWeigher(multiplier = 1.0)),
-        )
 
     runSimulation {
         val seed = 0L
@@ -116,7 +112,22 @@ fun runTest(
             service.replay(timeSource, workload, failureModelSpec = failureModelSpec)
         }
     }
+
     return monitor
+}
+
+fun runTest(
+    topology: List<ClusterSpec>,
+    workload: ArrayList<Task>,
+    failureModelSpec: FailureModelSpec? = null,
+): TestComputeMonitor {
+    val computeScheduler =
+        FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
+            weighers = listOf(CoreRamWeigher(multiplier = 1.0)),
+        )
+
+    return runTestWithScheduler(topology, workload, computeScheduler, failureModelSpec)
 }
 
 class TestComputeMonitor : ComputeMonitor {

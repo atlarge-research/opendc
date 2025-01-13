@@ -54,7 +54,7 @@ public interface ComputeScheduler {
      */
     public fun removeTask(
         task: ServiceTask,
-        host: HostView,
+        host: HostView?,
     )
 }
 

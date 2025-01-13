@@ -437,13 +437,26 @@ public final class ComputeService implements AutoCloseable {
 
         for (Iterator<SchedulingRequest> iterator = taskQueue.iterator(); iterator.hasNext(); iterator = taskQueue.iterator()) {
             final SchedResult result = scheduler.select(iterator);
-            if (result.getResultType() == SchedResultType.FAILURE) {
+            if (result.getResultType() == SchedResultType.EMPTY) {
                 break;
             }
             final HostView hv = result.getHost();
             final SchedulingRequest req = result.getReq();
             final ServiceTask task = req.getTask();
             final ServiceFlavor flavor = task.getFlavor();
+
+            if (task.getNumFailures() >= maxNumFailures) {
+                LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
+
+                taskQueue.remove(req);
+                tasksPending--;
+                tasksTerminated++;
+                task.setState(TaskState.TERMINATED);
+
+                scheduler.removeTask(task, hv);
+                this.setTaskToBeRemoved(task);
+                continue;
+            }
 
             if (result.getResultType() == SchedResultType.FAILURE) {
                 LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);
@@ -464,19 +477,6 @@ public final class ComputeService implements AutoCloseable {
                     // VM fits, but we don't have enough capacity
                     break;
                 }
-            }
-
-            if (task.getNumFailures() >= maxNumFailures) {
-                LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
-
-                taskQueue.remove(req);
-                tasksPending--;
-                tasksTerminated++;
-                task.setState(TaskState.TERMINATED);
-
-                scheduler.removeTask(task, hv);
-                this.setTaskToBeRemoved(task);
-                continue;
             }
 
             SimHost host = hv.getHost();
