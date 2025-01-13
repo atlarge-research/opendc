@@ -33,6 +33,10 @@ public class HostView {
     long availableMemory;
     int provisionedCores;
 
+    // Scheduler bookkeeping
+    public int priorityIndex;
+    public int listIndex;
+
     /**
      * Construct a {@link HostView} instance.
      *

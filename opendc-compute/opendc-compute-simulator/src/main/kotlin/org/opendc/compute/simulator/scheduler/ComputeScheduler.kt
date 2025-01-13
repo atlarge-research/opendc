@@ -40,10 +40,36 @@ public interface ComputeScheduler {
     public fun removeHost(host: HostView)
 
     /**
-     * Select a host for the specified [task].
+     * Select a host for the specified [iter].
+     * We implicity assume that the task has been scheduled onto the host.
      *
-     * @param task The server to select a host for.
+     * @param iter The server to select a host for.
      * @return The host to schedule the server on or `null` if no server is available.
      */
-    public fun select(task: ServiceTask): HostView?
+    public fun select(iter: MutableIterator<SchedulingRequest>): SchedResult
+
+    /**
+     * Inform the scheduler that a [task] has been removed from the [host].
+     * Could be due to completion or failure.
+     */
+    public fun removeTask(
+        task: ServiceTask,
+        host: HostView,
+    )
 }
+
+/**
+ * A request to schedule a [ServiceTask] onto one of the [SimHost]s.
+ */
+public data class SchedulingRequest internal constructor(public val task: ServiceTask,
+                                                         public val submitTime: Long) {
+    public var isCancelled: Boolean = false
+    public var timesSkipped: Int = 0
+}
+
+public enum class SchedResultType {
+    SUCCESS, FAILURE, EMPTY
+}
+
+public data class SchedResult(val resultType: SchedResultType,
+                              val host: HostView? = null, val req: SchedulingRequest? = null)
