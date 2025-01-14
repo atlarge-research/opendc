@@ -61,15 +61,22 @@ public interface ComputeScheduler {
 /**
  * A request to schedule a [ServiceTask] onto one of the [SimHost]s.
  */
-public data class SchedulingRequest internal constructor(public val task: ServiceTask,
-                                                         public val submitTime: Long) {
+public data class SchedulingRequest internal constructor(
+    public val task: ServiceTask,
+    public val submitTime: Long,
+) {
     public var isCancelled: Boolean = false
     public var timesSkipped: Int = 0
 }
 
 public enum class SchedResultType {
-    SUCCESS, FAILURE, EMPTY
+    SUCCESS,
+    FAILURE,
+    EMPTY,
 }
 
-public data class SchedResult(val resultType: SchedResultType,
-                              val host: HostView? = null, val req: SchedulingRequest? = null)
+public data class SchedResult(
+    val resultType: SchedResultType,
+    val host: HostView? = null,
+    val req: SchedulingRequest? = null,
+)

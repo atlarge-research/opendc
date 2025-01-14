@@ -89,7 +89,7 @@ internal class MemorizingSchedulerTest {
             MemorizingScheduler(
                 filters = listOf(RamFilter(1.0)),
                 random = r,
-                maxTimesSkipped = 3
+                maxTimesSkipped = 3,
             )
 
         every { r.nextInt(any()) } returns 0
@@ -112,7 +112,7 @@ internal class MemorizingSchedulerTest {
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
         val skipped = slot<Int>()
-        justRun { req.setProperty("timesSkipped") value capture(skipped)  }
+        justRun { req.setProperty("timesSkipped") value capture(skipped) }
         every { req.getProperty("timesSkipped") } answers { skipped.captured }
         req.timesSkipped = 0
 
@@ -125,7 +125,7 @@ internal class MemorizingSchedulerTest {
     fun testRamFilterOvercommit() {
         val scheduler =
             MemorizingScheduler(
-                filters = listOf(RamFilter(1.5))
+                filters = listOf(RamFilter(1.5)),
             )
 
         val host = mockk<HostView>()
@@ -140,7 +140,7 @@ internal class MemorizingSchedulerTest {
         every { req.task.flavor.memorySize } returns 2300
         every { req.isCancelled } returns false
         val skipped = slot<Int>()
-        justRun { req.setProperty("timesSkipped") value capture(skipped)  }
+        justRun { req.setProperty("timesSkipped") value capture(skipped) }
         every { req.getProperty("timesSkipped") } answers { skipped.captured }
         req.timesSkipped = 0
 

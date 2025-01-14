@@ -28,7 +28,6 @@ import org.opendc.compute.simulator.service.ServiceTask
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
 
-
 /*
 This scheduler records the number of tasks scheduled on each host.
 When scheduling a new task, it assign the next task to the host with the least number of tasks.
@@ -90,7 +89,7 @@ public class MemorizingScheduler(
             if (req.isCancelled) {
                 iter.remove()
             }
-            var satisfied = false
+
             for (chosenListIndex in minAvailableHost until hostsQueue.size) {
                 chosenList = hostsQueue[chosenListIndex]
 
@@ -131,7 +130,10 @@ public class MemorizingScheduler(
         return result
     }
 
-    override fun removeTask(task: ServiceTask, host: HostView?) {
+    override fun removeTask(
+        task: ServiceTask,
+        host: HostView?,
+    ) {
         if (host == null) return
 
         val priorityIdx = host.priorityIndex

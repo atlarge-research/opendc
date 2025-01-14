@@ -48,7 +48,7 @@ public enum class ComputeSchedulerEnum {
 
 public fun createComputeScheduler(
     name: String,
-    seeder: RandomGenerator
+    seeder: RandomGenerator,
 ): ComputeScheduler {
     return createComputeScheduler(ComputeSchedulerEnum.valueOf(name.uppercase()), seeder)
 }

@@ -197,7 +197,7 @@ internal class FilterSchedulerTest {
 
         val hostA = mockk<HostView>()
         every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4,2048)
+        every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostA.availableMemory } returns 512
 
         val hostB = mockk<HostView>()

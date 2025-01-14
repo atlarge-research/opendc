@@ -435,7 +435,9 @@ public final class ComputeService implements AutoCloseable {
     private void doSchedule() {
         // reorder tasks
 
-        for (Iterator<SchedulingRequest> iterator = taskQueue.iterator(); iterator.hasNext(); iterator = taskQueue.iterator()) {
+        for (Iterator<SchedulingRequest> iterator = taskQueue.iterator();
+                iterator.hasNext();
+                iterator = taskQueue.iterator()) {
             final SchedResult result = scheduler.select(iterator);
             if (result.getResultType() == SchedResultType.EMPTY) {
                 break;
