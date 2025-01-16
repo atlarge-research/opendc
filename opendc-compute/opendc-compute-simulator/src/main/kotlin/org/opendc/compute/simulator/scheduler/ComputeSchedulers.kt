@@ -44,15 +44,13 @@ public enum class ComputeSchedulerEnum {
     ProvisionedCores,
     ProvisionedCoresInv,
     Random,
-    Replay,
 }
 
 public fun createComputeScheduler(
     name: String,
     seeder: RandomGenerator,
-    placements: Map<String, String> = emptyMap(),
 ): ComputeScheduler {
-    return createComputeScheduler(ComputeSchedulerEnum.valueOf(name.uppercase()), seeder, placements)
+    return createComputeScheduler(ComputeSchedulerEnum.valueOf(name.uppercase()), seeder)
 }
 
 /**
@@ -61,7 +59,6 @@ public fun createComputeScheduler(
 public fun createComputeScheduler(
     name: ComputeSchedulerEnum,
     seeder: RandomGenerator,
-    placements: Map<String, String> = emptyMap(),
 ): ComputeScheduler {
     val cpuAllocationRatio = 1.0
     val ramAllocationRatio = 1.5
@@ -113,6 +110,5 @@ public fun createComputeScheduler(
                 subsetSize = Int.MAX_VALUE,
                 random = SplittableRandom(seeder.nextLong()),
             )
-        ComputeSchedulerEnum.Replay -> ReplayScheduler(placements)
     }
 }

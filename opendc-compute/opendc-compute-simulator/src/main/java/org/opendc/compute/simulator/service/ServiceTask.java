@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import org.opendc.compute.api.TaskState;
 import org.opendc.compute.simulator.TaskWatcher;
 import org.opendc.compute.simulator.host.SimHost;
+import org.opendc.compute.simulator.scheduler.SchedulingRequest;
 import org.opendc.simulator.compute.workload.Workload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,7 @@ public class ServiceTask {
     Instant createdAt;
     Instant finishedAt;
     SimHost host = null;
-    private ComputeService.SchedulingRequest request = null;
+    private SchedulingRequest request = null;
 
     private int numFailures = 0;
 
@@ -221,10 +222,10 @@ public class ServiceTask {
      * Cancel the provisioning request if active.
      */
     private void cancelProvisioningRequest() {
-        final ComputeService.SchedulingRequest request = this.request;
+        final SchedulingRequest request = this.request;
         if (request != null) {
             this.request = null;
-            request.isCancelled = true;
+            request.setCancelled(true);
         }
     }
 }

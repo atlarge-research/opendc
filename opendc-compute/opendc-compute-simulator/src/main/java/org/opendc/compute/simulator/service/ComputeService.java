@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,6 +50,9 @@ import org.opendc.compute.simulator.host.HostModel;
 import org.opendc.compute.simulator.host.HostState;
 import org.opendc.compute.simulator.host.SimHost;
 import org.opendc.compute.simulator.scheduler.ComputeScheduler;
+import org.opendc.compute.simulator.scheduler.SchedulingRequest;
+import org.opendc.compute.simulator.scheduler.SchedulingResult;
+import org.opendc.compute.simulator.scheduler.SchedulingResultType;
 import org.opendc.compute.simulator.telemetry.ComputeMetricReader;
 import org.opendc.compute.simulator.telemetry.SchedulerStats;
 import org.opendc.simulator.compute.power.SimPowerSource;
@@ -204,6 +208,7 @@ public final class ComputeService implements AutoCloseable {
                 }
 
                 if (task.getState() == TaskState.COMPLETED || task.getState() == TaskState.TERMINATED) {
+                    scheduler.removeTask(task, hv);
                     setTaskToBeRemoved(task);
                 }
 
@@ -430,38 +435,37 @@ public final class ComputeService implements AutoCloseable {
     private void doSchedule() {
         // reorder tasks
 
-        while (!taskQueue.isEmpty()) {
-            SchedulingRequest request = taskQueue.peek();
-
-            if (request.isCancelled) {
-                taskQueue.poll();
-                tasksPending--;
-                continue;
+        for (Iterator<SchedulingRequest> iterator = taskQueue.iterator();
+                iterator.hasNext();
+                iterator = taskQueue.iterator()) {
+            final SchedulingResult result = scheduler.select(iterator);
+            if (result.getResultType() == SchedulingResultType.EMPTY) {
+                break;
             }
-
-            final ServiceTask task = request.task;
+            final HostView hv = result.getHost();
+            final SchedulingRequest req = result.getReq();
+            final ServiceTask task = req.getTask();
+            final ServiceFlavor flavor = task.getFlavor();
 
             if (task.getNumFailures() >= maxNumFailures) {
                 LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
 
-                taskQueue.poll();
+                taskQueue.remove(req);
                 tasksPending--;
                 tasksTerminated++;
                 task.setState(TaskState.TERMINATED);
 
+                scheduler.removeTask(task, hv);
                 this.setTaskToBeRemoved(task);
                 continue;
             }
 
-            final ServiceFlavor flavor = task.getFlavor();
-            final HostView hv = scheduler.select(request.task);
-
-            if (hv == null || !hv.getHost().canFit(task)) {
+            if (result.getResultType() == SchedulingResultType.FAILURE) {
                 LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);
 
                 if (flavor.getMemorySize() > maxMemory || flavor.getCoreCount() > maxCores) {
                     // Remove the incoming image
-                    taskQueue.poll();
+                    taskQueue.remove(req);
                     tasksPending--;
                     tasksTerminated++;
 
@@ -472,6 +476,7 @@ public final class ComputeService implements AutoCloseable {
                     this.setTaskToBeRemoved(task);
                     continue;
                 } else {
+                    // VM fits, but we don't have enough capacity
                     break;
                 }
             }
@@ -479,7 +484,7 @@ public final class ComputeService implements AutoCloseable {
             SimHost host = hv.getHost();
 
             // Remove request from queue
-            taskQueue.poll();
+            taskQueue.remove(req);
             tasksPending--;
 
             LOGGER.info("Assigned task {} to host {}", task, host);
@@ -488,7 +493,6 @@ public final class ComputeService implements AutoCloseable {
                 task.host = host;
 
                 host.spawn(task);
-                //                host.start(task);
 
                 tasksActive++;
                 attemptsSuccess++;
@@ -500,6 +504,7 @@ public final class ComputeService implements AutoCloseable {
                 activeTasks.put(task, host);
             } catch (Exception cause) {
                 LOGGER.error("Failed to deploy VM", cause);
+                scheduler.removeTask(task, hv);
                 attemptsFailure++;
             }
         }
@@ -677,21 +682,6 @@ public final class ComputeService implements AutoCloseable {
 
             internalTask.setWorkload(workload);
             internalTask.start();
-        }
-    }
-
-    /**
-     * A request to schedule a {@link ServiceTask} onto one of the {@link SimHost}s.
-     */
-    static class SchedulingRequest {
-        final ServiceTask task;
-        final long submitTime;
-
-        boolean isCancelled;
-
-        SchedulingRequest(ServiceTask task, long submitTime) {
-            this.task = task;
-            this.submitTime = submitTime;
         }
     }
 }

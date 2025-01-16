@@ -65,7 +65,20 @@ public class FilterScheduler(
         hosts.remove(host)
     }
 
-    override fun select(task: ServiceTask): HostView? {
+    override fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult {
+        var req = iter.next()
+
+        while (req.isCancelled) {
+            iter.remove()
+            if (iter.hasNext()) {
+                req = iter.next()
+            } else {
+                // No tasks in queue
+                return SchedulingResult(SchedulingResultType.EMPTY)
+            }
+        }
+
+        val task = req.task
         val hosts = hosts
         val filteredHosts = hosts.filter { host -> filters.all { filter -> filter.test(host, task) } }
 
@@ -102,10 +115,18 @@ public class FilterScheduler(
             }
 
         // fixme: currently finding no matching hosts can result in an error
-        return when (val maxSize = min(subsetSize, subset.size)) {
-            0 -> null
-            1 -> subset[0]
-            else -> subset[random.nextInt(maxSize)]
+        val maxSize = min(subsetSize, subset.size)
+        if (maxSize == 0) {
+            return SchedulingResult(SchedulingResultType.FAILURE, null, req)
+        } else {
+            iter.remove()
+            return SchedulingResult(SchedulingResultType.SUCCESS, subset[random.nextInt(maxSize)], req)
         }
+    }
+
+    override fun removeTask(
+        task: ServiceTask,
+        host: HostView?,
+    ) {
     }
 }
