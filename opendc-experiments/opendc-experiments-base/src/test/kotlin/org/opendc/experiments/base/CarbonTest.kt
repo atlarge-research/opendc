@@ -81,9 +81,13 @@ class CarbonTest {
     }
 
     /**
-     * Carbon test 2: A single fitting task
-     * In this test, a single task is scheduled that should fit the FlowDistributor
-     * We check if both the host and the Task show the correct cpu usage and demand during the two fragments.
+     * Carbon test 2: One changing task running on 4 different carbon traces
+     * In this test, a single task is scheduled that takes 320 min to complete.
+     * The demanded cpu is changing every 40 minutes.
+     *
+     * Four different carbon traces are used to calculate the carbon emissions.
+     *
+     * We check if the energy is the same for all four carbon traces, while the carbon emissions are different.
      */
     @Test
     fun testCarbon2() {
@@ -127,9 +131,12 @@ class CarbonTest {
     }
 
     /**
-     * Carbon test 3: A single fitting task
-     * In this test, a single task is scheduled that should fit the FlowDistributor
-     * We check if both the host and the Task show the correct cpu usage and demand during the two fragments.
+     * Carbon test 3: A single task on the NL carbon trace
+     * In this test, a single task is scheduled with a carbon trace from the Netherlands
+     *
+     *
+     * We check if the carbon intensity and carbon emission change at the correct moments.
+     * We also check the total energy usage, and total carbon emissions.
      */
     @Test
     fun testCarbon3() {
@@ -167,8 +174,10 @@ class CarbonTest {
             { assertEquals(0.418734, monitorNl.carbonEmissions.get(45), 1e-3) { "The Carbon Intensity is incorrect" } },
             { assertEquals(0.418734, monitorNl.carbonEmissions.get(59), 1e-3) { "The Carbon Intensity is incorrect" } },
             { assertEquals(0.0, monitorNl.carbonEmissions.get(60), 1e-3) { "The Carbon Intensity is incorrect" } },
+
             { assertEquals((60*60*150.0), monitorNl.energyUsages.sum()) { "The total energy usage is incorrect" } },
-            { assertEquals((0.420346 * 15) + (0.417625 * 15) + (0.411382 * 15) + (0.418734 * 15), monitorNl.carbonEmissions.sum(), 1e-3) { "The total energy usage is incorrect" } },
+            { assertEquals((0.420346 * 15) + (0.417625 * 15) +
+                (0.411382 * 15) + (0.418734 * 15), monitorNl.carbonEmissions.sum(), 1e-3) { "The total energy usage is incorrect" } },
         )
     }
 }
