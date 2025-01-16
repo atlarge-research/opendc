@@ -103,11 +103,16 @@ fun runTest(
     runSimulation {
         val seed = 0L
         Provisioner(dispatcher, seed).use { provisioner ->
+
+
+            val startTimeLong = workload.minOf { it.submissionTime }.toEpochMilli()
+
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
-                setupHosts(serviceDomain = "compute.opendc.org", topology),
+                setupHosts(serviceDomain = "compute.opendc.org", topology, startTimeLong),
             )
+
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
             service.setTasksExpected(workload.size)
@@ -145,6 +150,7 @@ class TestComputeMonitor : ComputeMonitor {
     var tasksCompleted = 0
 
     var timestamps = ArrayList<Long>()
+    var absoluteTimestamps = ArrayList<Long>()
 
     var maxTimestamp = 0L
 
@@ -158,6 +164,7 @@ class TestComputeMonitor : ComputeMonitor {
         tasksCompleted = reader.tasksCompleted
 
         timestamps.add(reader.timestamp.toEpochMilli())
+        absoluteTimestamps.add(reader.timestampAbsolute.toEpochMilli())
         maxTimestamp = reader.timestamp.toEpochMilli()
     }
 
@@ -200,8 +207,14 @@ class TestComputeMonitor : ComputeMonitor {
     var powerDraws = ArrayList<Double>()
     var energyUsages = ArrayList<Double>()
 
+    var carbonIntensities = ArrayList<Double>()
+    var carbonEmissions = ArrayList<Double>()
+
     override fun record(reader: PowerSourceTableReader) {
         powerDraws.add(reader.powerDraw)
         energyUsages.add(reader.energyUsage)
+
+        carbonIntensities.add(reader.carbonIntensity)
+        carbonEmissions.add(reader.carbonEmission)
     }
 }
