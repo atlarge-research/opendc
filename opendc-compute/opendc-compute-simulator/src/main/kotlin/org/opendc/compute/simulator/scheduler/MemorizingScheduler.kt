@@ -76,15 +76,15 @@ public class MemorizingScheduler(
         numHosts--
     }
 
-    override fun select(iter: MutableIterator<SchedulingRequest>): SchedResult {
+    override fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult {
         if (numHosts == 0) {
-            return SchedResult(SchedResultType.FAILURE)
+            return SchedulingResult(SchedulingResultType.FAILURE)
         }
 
         var chosenList: MutableList<HostView>? = null
         var chosenHost: HostView? = null
 
-        var result: SchedResult? = null
+        var result: SchedulingResult? = null
         taskloop@ for (req in iter) {
             if (req.isCancelled) {
                 iter.remove()
@@ -98,17 +98,17 @@ public class MemorizingScheduler(
                     if (satisfied) {
                         iter.remove()
                         chosenHost = host
-                        result = SchedResult(SchedResultType.SUCCESS, host, req)
+                        result = SchedulingResult(SchedulingResultType.SUCCESS, host, req)
                         break@taskloop
                     } else if (req.timesSkipped >= maxTimesSkipped) {
-                        return SchedResult(SchedResultType.FAILURE, null, req)
+                        return SchedulingResult(SchedulingResultType.FAILURE, null, req)
                     }
                 }
             }
             req.timesSkipped++
         }
 
-        if (result == null) return SchedResult(SchedResultType.EMPTY) // No tasks to schedule that fit
+        if (result == null) return SchedulingResult(SchedulingResultType.EMPTY) // No tasks to schedule that fit
 
         // Bookkeeping to maintain the calendar priority queue
         val listIdx = chosenHost!!.listIndex

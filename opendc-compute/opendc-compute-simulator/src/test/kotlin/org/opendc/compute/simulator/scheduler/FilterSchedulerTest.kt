@@ -82,7 +82,7 @@ internal class FilterSchedulerTest {
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
-        assertEquals(SchedResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
+        assertEquals(SchedulingResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
     }
 
     @Test
@@ -163,7 +163,7 @@ internal class FilterSchedulerTest {
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
-        assertEquals(SchedResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
+        assertEquals(SchedulingResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
     }
 
     @Test
@@ -236,7 +236,7 @@ internal class FilterSchedulerTest {
         every { req.task.flavor.memorySize } returns 2300
         every { req.isCancelled } returns false
 
-        assertEquals(SchedResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
+        assertEquals(SchedulingResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
     }
 
     @Test
@@ -288,7 +288,7 @@ internal class FilterSchedulerTest {
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
-        assertEquals(SchedResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
+        assertEquals(SchedulingResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
     }
 
     @Test

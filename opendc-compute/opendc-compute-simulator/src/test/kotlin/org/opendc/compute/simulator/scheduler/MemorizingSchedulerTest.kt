@@ -49,7 +49,7 @@ internal class MemorizingSchedulerTest {
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
-        assertEquals(SchedResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
+        assertEquals(SchedulingResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
     }
 
     @Test
@@ -116,7 +116,7 @@ internal class MemorizingSchedulerTest {
         every { req.getProperty("timesSkipped") } answers { skipped.captured }
         req.timesSkipped = 0
 
-        assertEquals(SchedResultType.EMPTY, scheduler.select(mutableListOf(req).iterator()).resultType)
+        assertEquals(SchedulingResultType.EMPTY, scheduler.select(mutableListOf(req).iterator()).resultType)
         every { hostB.availableMemory } returns 2048
         assertEquals(hostB, scheduler.select(mutableListOf(req).iterator()).host)
     }
@@ -144,6 +144,6 @@ internal class MemorizingSchedulerTest {
         every { req.getProperty("timesSkipped") } answers { skipped.captured }
         req.timesSkipped = 0
 
-        assertEquals(SchedResultType.EMPTY, scheduler.select(mutableListOf(req).iterator()).resultType)
+        assertEquals(SchedulingResultType.EMPTY, scheduler.select(mutableListOf(req).iterator()).resultType)
     }
 }

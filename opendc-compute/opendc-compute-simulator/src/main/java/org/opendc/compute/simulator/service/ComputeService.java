@@ -50,9 +50,9 @@ import org.opendc.compute.simulator.host.HostModel;
 import org.opendc.compute.simulator.host.HostState;
 import org.opendc.compute.simulator.host.SimHost;
 import org.opendc.compute.simulator.scheduler.ComputeScheduler;
-import org.opendc.compute.simulator.scheduler.SchedResult;
-import org.opendc.compute.simulator.scheduler.SchedResultType;
 import org.opendc.compute.simulator.scheduler.SchedulingRequest;
+import org.opendc.compute.simulator.scheduler.SchedulingResult;
+import org.opendc.compute.simulator.scheduler.SchedulingResultType;
 import org.opendc.compute.simulator.telemetry.ComputeMetricReader;
 import org.opendc.compute.simulator.telemetry.SchedulerStats;
 import org.opendc.simulator.compute.power.SimPowerSource;
@@ -438,8 +438,8 @@ public final class ComputeService implements AutoCloseable {
         for (Iterator<SchedulingRequest> iterator = taskQueue.iterator();
                 iterator.hasNext();
                 iterator = taskQueue.iterator()) {
-            final SchedResult result = scheduler.select(iterator);
-            if (result.getResultType() == SchedResultType.EMPTY) {
+            final SchedulingResult result = scheduler.select(iterator);
+            if (result.getResultType() == SchedulingResultType.EMPTY) {
                 break;
             }
             final HostView hv = result.getHost();
@@ -460,7 +460,7 @@ public final class ComputeService implements AutoCloseable {
                 continue;
             }
 
-            if (result.getResultType() == SchedResultType.FAILURE) {
+            if (result.getResultType() == SchedulingResultType.FAILURE) {
                 LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);
 
                 if (flavor.getMemorySize() > maxMemory || flavor.getCoreCount() > maxCores) {

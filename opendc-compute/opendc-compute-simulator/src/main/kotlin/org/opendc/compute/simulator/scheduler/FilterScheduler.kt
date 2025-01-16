@@ -65,7 +65,7 @@ public class FilterScheduler(
         hosts.remove(host)
     }
 
-    override fun select(iter: MutableIterator<SchedulingRequest>): SchedResult {
+    override fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult {
         var req = iter.next()
 
         while (req.isCancelled) {
@@ -74,7 +74,7 @@ public class FilterScheduler(
                 req = iter.next()
             } else {
                 // No tasks in queue
-                return SchedResult(SchedResultType.EMPTY)
+                return SchedulingResult(SchedulingResultType.EMPTY)
             }
         }
 
@@ -117,10 +117,10 @@ public class FilterScheduler(
         // fixme: currently finding no matching hosts can result in an error
         val maxSize = min(subsetSize, subset.size)
         if (maxSize == 0) {
-            return SchedResult(SchedResultType.FAILURE, null, req)
+            return SchedulingResult(SchedulingResultType.FAILURE, null, req)
         } else {
             iter.remove()
-            return SchedResult(SchedResultType.SUCCESS, subset[random.nextInt(maxSize)], req)
+            return SchedulingResult(SchedulingResultType.SUCCESS, subset[random.nextInt(maxSize)], req)
         }
     }
 

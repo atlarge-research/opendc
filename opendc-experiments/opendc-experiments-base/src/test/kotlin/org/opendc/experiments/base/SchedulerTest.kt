@@ -61,7 +61,7 @@ class SchedulerTest {
             MemorizingScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
             )
-        val monitor = runTestWithScheduler(topology, workload, computeScheduler)
+        val monitor = runTest(topology, workload, computeScheduler = computeScheduler)
 
         assertAll(
             { assertEquals(25 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },

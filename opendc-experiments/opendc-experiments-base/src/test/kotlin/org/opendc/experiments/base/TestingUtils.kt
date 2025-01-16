@@ -88,11 +88,15 @@ fun createTestTask(
     )
 }
 
-fun runTestWithScheduler(
+fun runTest(
     topology: List<ClusterSpec>,
     workload: ArrayList<Task>,
-    computeScheduler: ComputeScheduler,
     failureModelSpec: FailureModelSpec? = null,
+    computeScheduler: ComputeScheduler =
+        FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
+            weighers = listOf(CoreRamWeigher(multiplier = 1.0)),
+        ),
 ): TestComputeMonitor {
     val monitor = TestComputeMonitor()
 
@@ -114,20 +118,6 @@ fun runTestWithScheduler(
     }
 
     return monitor
-}
-
-fun runTest(
-    topology: List<ClusterSpec>,
-    workload: ArrayList<Task>,
-    failureModelSpec: FailureModelSpec? = null,
-): TestComputeMonitor {
-    val computeScheduler =
-        FilterScheduler(
-            filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
-            weighers = listOf(CoreRamWeigher(multiplier = 1.0)),
-        )
-
-    return runTestWithScheduler(topology, workload, computeScheduler, failureModelSpec)
 }
 
 class TestComputeMonitor : ComputeMonitor {

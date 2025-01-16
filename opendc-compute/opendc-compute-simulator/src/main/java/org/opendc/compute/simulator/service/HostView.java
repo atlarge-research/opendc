@@ -33,8 +33,20 @@ public class HostView {
     long availableMemory;
     int provisionedCores;
 
-    // Scheduler bookkeeping
+    /**
+     * Scheduler bookkeeping
+     * Use by schedulers which use a priority queue data structure
+     * to keep track of the order of hosts to scheduler tasks on.
+     * {@link MemorizingScheduler} for example.
+     * MemorizingScheduler has an array of lists
+     * The 0th index of the array has a list of hosts with 0 tasks,
+     * 1st index of the array has hosts with 1 task, and so on.
+     * The priorityIndex points to the index of this the list this host
+     * belongs to in the array.
+     * The listIndex is the position of this host in the list.
+     */
     public int priorityIndex;
+
     public int listIndex;
 
     /**

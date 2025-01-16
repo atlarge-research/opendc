@@ -46,7 +46,7 @@ public interface ComputeScheduler {
      * @param iter The server to select a host for.
      * @return The host to schedule the server on or `null` if no server is available.
      */
-    public fun select(iter: MutableIterator<SchedulingRequest>): SchedResult
+    public fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult
 
     /**
      * Inform the scheduler that a [task] has been removed from the [host].
@@ -69,14 +69,14 @@ public data class SchedulingRequest internal constructor(
     public var timesSkipped: Int = 0
 }
 
-public enum class SchedResultType {
+public enum class SchedulingResultType {
     SUCCESS,
     FAILURE,
     EMPTY,
 }
 
-public data class SchedResult(
-    val resultType: SchedResultType,
+public data class SchedulingResult(
+    val resultType: SchedulingResultType,
     val host: HostView? = null,
     val req: SchedulingRequest? = null,
 )
