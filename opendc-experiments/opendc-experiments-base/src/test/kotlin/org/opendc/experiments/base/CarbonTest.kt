@@ -49,34 +49,33 @@ class CarbonTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(120 * 60 * 1000, 1000.0, 1)
+                            TraceFragment(120 * 60 * 1000, 1000.0, 1),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
             )
 
-        val topology_BE = createTopology("single_1_2000_BE.json")
-        val monitor_BE = runTest(topology_BE, workload)
+        val topologyBe = createTopology("single_1_2000_BE.json")
+        val monitorBe = runTest(topologyBe, workload)
 
-        val topology_DE = createTopology("single_1_2000_DE.json")
-        val monitor_DE = runTest(topology_DE, workload)
+        val topologyDe = createTopology("single_1_2000_DE.json")
+        val monitorDe = runTest(topologyDe, workload)
 
-        val topology_FR = createTopology("single_1_2000_FR.json")
-        val monitor_FR = runTest(topology_FR, workload)
+        val topologyFr = createTopology("single_1_2000_FR.json")
+        val monitorFr = runTest(topologyFr, workload)
 
-        val topology_NL = createTopology("single_1_2000_NL.json")
-        val monitor_NL = runTest(topology_NL, workload)
+        val topologyNl = createTopology("single_1_2000_NL.json")
+        val monitorNl = runTest(topologyNl, workload)
 
         assertAll(
-            { assertEquals(120*60*150.0, monitor_BE.energyUsages.sum()) { "The total power usage is not correct" } },
-            { assertEquals(120*60*150.0, monitor_DE.energyUsages.sum()) { "The total power usage is not correct" } },
-            { assertEquals(120*60*150.0, monitor_FR.energyUsages.sum()) { "The total power usage is not correct" } },
-            { assertEquals(120*60*150.0, monitor_NL.energyUsages.sum()) { "The total power usage is not correct" } },
-
-            { assertEquals(8.4765, monitor_BE.carbonEmissions.sum(), 1e-1) { "The total power usage is not correct" } },
-            { assertEquals(31.1729, monitor_DE.carbonEmissions.sum(), 1e-1) { "The total power usage is not correct" } },
-            { assertEquals(4.4759, monitor_FR.carbonEmissions.sum(), 1e-1) { "The total power usage is not correct" } },
-            { assertEquals(49.7469, monitor_NL.carbonEmissions.sum(), 1e-1) { "The total power usage is not correct" } },
+            { assertEquals(120 * 60 * 150.0, monitorBe.energyUsages.sum()) { "The total power usage is not correct" } },
+            { assertEquals(120 * 60 * 150.0, monitorDe.energyUsages.sum()) { "The total power usage is not correct" } },
+            { assertEquals(120 * 60 * 150.0, monitorFr.energyUsages.sum()) { "The total power usage is not correct" } },
+            { assertEquals(120 * 60 * 150.0, monitorNl.energyUsages.sum()) { "The total power usage is not correct" } },
+            { assertEquals(8.4765, monitorBe.carbonEmissions.sum(), 1e-1) { "The total power usage is not correct" } },
+            { assertEquals(31.1729, monitorDe.carbonEmissions.sum(), 1e-1) { "The total power usage is not correct" } },
+            { assertEquals(4.4759, monitorFr.carbonEmissions.sum(), 1e-1) { "The total power usage is not correct" } },
+            { assertEquals(49.7469, monitorNl.carbonEmissions.sum(), 1e-1) { "The total power usage is not correct" } },
         )
     }
 
@@ -123,10 +122,30 @@ class CarbonTest {
         val monitorNl = runTest(topologyNl, workload)
 
         assertAll(
-            { assertEquals((160*60*150.0) + (160*60*200.0), monitorBe.energyUsages.sum()) { "The total power usage is not correct" } },
-            { assertEquals((160*60*150.0) + (160*60*200.0), monitorDe.energyUsages.sum()) { "The total power usage is not correct" } },
-            { assertEquals((160*60*150.0) + (160*60*200.0), monitorFr.energyUsages.sum()) { "The total power usage is not correct" } },
-            { assertEquals((160*60*150.0) + (160*60*200.0), monitorNl.energyUsages.sum()) { "The total power usage is not correct" } },
+            {
+                assertEquals(
+                    (160 * 60 * 150.0) + (160 * 60 * 200.0),
+                    monitorBe.energyUsages.sum(),
+                ) { "The total power usage is not correct" }
+            },
+            {
+                assertEquals(
+                    (160 * 60 * 150.0) + (160 * 60 * 200.0),
+                    monitorDe.energyUsages.sum(),
+                ) { "The total power usage is not correct" }
+            },
+            {
+                assertEquals(
+                    (160 * 60 * 150.0) + (160 * 60 * 200.0),
+                    monitorFr.energyUsages.sum(),
+                ) { "The total power usage is not correct" }
+            },
+            {
+                assertEquals(
+                    (160 * 60 * 150.0) + (160 * 60 * 200.0),
+                    monitorNl.energyUsages.sum(),
+                ) { "The total power usage is not correct" }
+            },
         )
     }
 
@@ -164,7 +183,6 @@ class CarbonTest {
             { assertEquals(164.5529, monitorNl.carbonIntensities.get(43), 1e-3) { "The Carbon Intensity is incorrect" } },
             { assertEquals(167.4937, monitorNl.carbonIntensities.get(44), 1e-3) { "The Carbon Intensity is incorrect" } },
             { assertEquals(167.4937, monitorNl.carbonIntensities.get(58), 1e-3) { "The Carbon Intensity is incorrect" } },
-
             { assertEquals(0.420346, monitorNl.carbonEmissions.get(0), 1e-3) { "The Carbon Emissions are incorrect" } },
             { assertEquals(0.420346, monitorNl.carbonEmissions.get(14), 1e-3) { "The Carbon Intensity is incorrect" } },
             { assertEquals(0.417625, monitorNl.carbonEmissions.get(15), 1e-3) { "The Carbon Intensity is incorrect" } },
@@ -174,10 +192,15 @@ class CarbonTest {
             { assertEquals(0.418734, monitorNl.carbonEmissions.get(45), 1e-3) { "The Carbon Intensity is incorrect" } },
             { assertEquals(0.418734, monitorNl.carbonEmissions.get(59), 1e-3) { "The Carbon Intensity is incorrect" } },
             { assertEquals(0.0, monitorNl.carbonEmissions.get(60), 1e-3) { "The Carbon Intensity is incorrect" } },
-
-            { assertEquals((60*60*150.0), monitorNl.energyUsages.sum()) { "The total energy usage is incorrect" } },
-            { assertEquals((0.420346 * 15) + (0.417625 * 15) +
-                (0.411382 * 15) + (0.418734 * 15), monitorNl.carbonEmissions.sum(), 1e-3) { "The total energy usage is incorrect" } },
+            { assertEquals((60 * 60 * 150.0), monitorNl.energyUsages.sum()) { "The total energy usage is incorrect" } },
+            {
+                assertEquals(
+                    (0.420346 * 15) + (0.417625 * 15) +
+                        (0.411382 * 15) + (0.418734 * 15),
+                    monitorNl.carbonEmissions.sum(),
+                    1e-3,
+                ) { "The total energy usage is incorrect" }
+            },
         )
     }
 }

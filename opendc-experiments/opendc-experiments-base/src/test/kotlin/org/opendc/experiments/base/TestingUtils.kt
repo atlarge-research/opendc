@@ -104,7 +104,6 @@ fun runTest(
         val seed = 0L
         Provisioner(dispatcher, seed).use { provisioner ->
 
-
             val startTimeLong = workload.minOf { it.submissionTime }.toEpochMilli()
 
             provisioner.runSteps(
@@ -112,7 +111,6 @@ fun runTest(
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
                 setupHosts(serviceDomain = "compute.opendc.org", topology, startTimeLong),
             )
-
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
             service.setTasksExpected(workload.size)
