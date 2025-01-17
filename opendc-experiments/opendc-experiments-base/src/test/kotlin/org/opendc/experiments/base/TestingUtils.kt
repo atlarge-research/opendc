@@ -49,6 +49,8 @@ import org.opendc.simulator.kotlin.runSimulation
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
+import java.util.TimeZone
 import java.util.UUID
 import kotlin.collections.ArrayList
 
@@ -70,6 +72,7 @@ fun createTestTask(
     checkpointDuration: Long = 0L,
     checkpointIntervalScaling: Double = 1.0,
 ): Task {
+
     return Task(
         UUID.nameUUIDFromBytes(name.toByteArray()),
         name,
@@ -77,7 +80,7 @@ fun createTestTask(
         fragments.maxOf { it.cpuUsage },
         memCapacity,
         1800000.0,
-        LocalDateTime.parse(submissionTime).atZone(ZoneId.systemDefault()).toInstant(),
+        LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC),
         duration,
         TraceWorkload(
             fragments,
@@ -105,10 +108,11 @@ fun runTest(
         Provisioner(dispatcher, seed).use { provisioner ->
 
             val startTimeLong = workload.minOf { it.submissionTime }.toEpochMilli()
+            val startTime = Duration.ofMillis(startTimeLong)
 
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
+                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1), startTime),
                 setupHosts(serviceDomain = "compute.opendc.org", topology, startTimeLong),
             )
 
