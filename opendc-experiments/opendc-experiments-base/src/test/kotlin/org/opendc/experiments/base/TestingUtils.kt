@@ -48,9 +48,7 @@ import org.opendc.simulator.compute.workload.TraceWorkload
 import org.opendc.simulator.kotlin.runSimulation
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZoneOffset
-import java.util.TimeZone
 import java.util.UUID
 import kotlin.collections.ArrayList
 
@@ -72,7 +70,6 @@ fun createTestTask(
     checkpointDuration: Long = 0L,
     checkpointIntervalScaling: Double = 1.0,
 ): Task {
-
     return Task(
         UUID.nameUUIDFromBytes(name.toByteArray()),
         name,

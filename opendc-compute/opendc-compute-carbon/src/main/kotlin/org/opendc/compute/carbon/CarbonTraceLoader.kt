@@ -30,7 +30,6 @@ import org.opendc.trace.conv.TABLE_CARBON_INTENSITIES
 import java.io.File
 import java.lang.ref.SoftReference
 import java.time.Instant
-import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
 
 /**
