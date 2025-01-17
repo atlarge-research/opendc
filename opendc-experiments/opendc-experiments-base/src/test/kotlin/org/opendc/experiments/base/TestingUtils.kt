@@ -48,7 +48,7 @@ import org.opendc.simulator.compute.workload.TraceWorkload
 import org.opendc.simulator.kotlin.runSimulation
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.collections.ArrayList
 
@@ -77,7 +77,7 @@ fun createTestTask(
         fragments.maxOf { it.cpuUsage },
         memCapacity,
         1800000.0,
-        LocalDateTime.parse(submissionTime).atZone(ZoneId.systemDefault()).toInstant(),
+        LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC),
         duration,
         TraceWorkload(
             fragments,
@@ -103,10 +103,14 @@ fun runTest(
     runSimulation {
         val seed = 0L
         Provisioner(dispatcher, seed).use { provisioner ->
+
+            val startTimeLong = workload.minOf { it.submissionTime }.toEpochMilli()
+            val startTime = Duration.ofMillis(startTimeLong)
+
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
-                setupHosts(serviceDomain = "compute.opendc.org", topology),
+                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1), startTime),
+                setupHosts(serviceDomain = "compute.opendc.org", topology, startTimeLong),
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
@@ -145,6 +149,7 @@ class TestComputeMonitor : ComputeMonitor {
     var tasksCompleted = 0
 
     var timestamps = ArrayList<Long>()
+    var absoluteTimestamps = ArrayList<Long>()
 
     var maxTimestamp = 0L
 
@@ -158,6 +163,7 @@ class TestComputeMonitor : ComputeMonitor {
         tasksCompleted = reader.tasksCompleted
 
         timestamps.add(reader.timestamp.toEpochMilli())
+        absoluteTimestamps.add(reader.timestampAbsolute.toEpochMilli())
         maxTimestamp = reader.timestamp.toEpochMilli()
     }
 
@@ -200,8 +206,14 @@ class TestComputeMonitor : ComputeMonitor {
     var powerDraws = ArrayList<Double>()
     var energyUsages = ArrayList<Double>()
 
+    var carbonIntensities = ArrayList<Double>()
+    var carbonEmissions = ArrayList<Double>()
+
     override fun record(reader: PowerSourceTableReader) {
         powerDraws.add(reader.powerDraw)
         energyUsages.add(reader.energyUsage)
+
+        carbonIntensities.add(reader.carbonIntensity)
+        carbonEmissions.add(reader.carbonEmission)
     }
 }
