@@ -68,6 +68,7 @@ class CarbonTest {
         val monitorNl = runTest(topologyNl, workload)
 
         println("TESTS")
+        println(monitorBe.carbonIntensities.average())
         println(monitorBe.carbonEmissions.sum())
 
         assertAll(
