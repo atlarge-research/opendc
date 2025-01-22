@@ -38,6 +38,7 @@ public class TraceWorkload implements Workload {
     private final long checkpointDuration;
     private final double checkpointIntervalScaling;
     private final double maxCpuDemand;
+    private final int maxCoreCount;
 
     public ScalingPolicy getScalingPolicy() {
         return scalingPolicy;
@@ -59,6 +60,7 @@ public class TraceWorkload implements Workload {
 
         // TODO: remove if we decide not to use it.
         this.maxCpuDemand = fragments.stream().max(Comparator.comparing(TraceFragment::cpuUsage)).get().cpuUsage();
+        this.maxCoreCount = fragments.stream().max(Comparator.comparing(TraceFragment::coreCount)).get().coreCount();
     }
 
     public TraceWorkload(ArrayList<TraceFragment> fragments) {
@@ -82,6 +84,14 @@ public class TraceWorkload implements Workload {
     @Override
     public double getCheckpointIntervalScaling() {
         return checkpointIntervalScaling;
+    }
+
+    public int getMaxCoreCount() {
+        return maxCoreCount;
+    }
+
+    public double getMaxCpuDemand() {
+        return maxCpuDemand;
     }
 
     public void removeFragments(int numberOfFragments) {
