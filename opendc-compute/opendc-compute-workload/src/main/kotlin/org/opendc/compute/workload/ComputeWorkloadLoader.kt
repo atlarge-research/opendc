@@ -48,11 +48,11 @@ import kotlin.math.roundToLong
  * @param baseDir The directory containing the traces.
  */
 public class ComputeWorkloadLoader(
-    private val baseDir: File,
+    private val pathToFile: File,
     private val checkpointInterval: Long,
     private val checkpointDuration: Long,
     private val checkpointIntervalScaling: Double,
-) {
+) : WorkloadLoader() {
     /**
      * The logger for this instance.
      */
@@ -61,7 +61,7 @@ public class ComputeWorkloadLoader(
     /**
      * The cache of workloads.
      */
-    private val cache = ConcurrentHashMap<String, SoftReference<List<Task>>>()
+    private val cache = ConcurrentHashMap<File, SoftReference<List<Task>>>()
 
     /**
      * Read the fragments into memory.
@@ -157,21 +157,18 @@ public class ComputeWorkloadLoader(
     }
 
     /**
-     * Load the trace with the specified [name] and [format].
+     * Load the trace at the specified [pathToFile].
      */
-    public fun get(
-        name: String,
-        format: String,
-    ): List<Task> {
+    override fun load(): List<Task> {
         val ref =
-            cache.compute(name) { key, oldVal ->
+            cache.compute(pathToFile) { key, oldVal ->
                 val inst = oldVal?.get()
                 if (inst == null) {
-                    val path = baseDir.resolve(key)
+//                    val path = baseDir.resolve(key)
 
-                    logger.info { "Loading trace $key at $path" }
+                    logger.info { "Loading trace $key at $pathToFile" }
 
-                    val trace = Trace.open(path, format)
+                    val trace = Trace.open(pathToFile, "opendc-vm")
                     val fragments = parseFragments(trace)
                     val vms = parseMeta(trace, fragments)
 

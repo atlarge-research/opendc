@@ -23,9 +23,8 @@
 package org.opendc.experiments.base.experiment.specs
 
 import kotlinx.serialization.Serializable
-import org.opendc.compute.workload.ComputeWorkload
-import org.opendc.compute.workload.sampleByLoad
-import org.opendc.compute.workload.trace
+import org.opendc.compute.workload.ComputeWorkloadLoader
+import org.opendc.compute.workload.WorkloadLoader
 import java.io.File
 
 /**
@@ -61,12 +60,22 @@ public enum class WorkloadTypes {
 }
 
 /**
- *
- *TODO: move to separate file
- * @param type
+ * Create a workload loader for the given workload
  */
-public fun getWorkloadType(type: WorkloadTypes): ComputeWorkload {
+public fun getWorkloadLoader(
+    type: WorkloadTypes,
+    pathToFile: File,
+    checkpointInterval: Long,
+    checkpointDuration: Long,
+    checkpointIntervalScaling: Double,
+): WorkloadLoader {
     return when (type) {
-        WorkloadTypes.ComputeWorkload -> trace().sampleByLoad(1.0)
+        WorkloadTypes.ComputeWorkload ->
+            ComputeWorkloadLoader(
+                pathToFile,
+                checkpointInterval,
+                checkpointDuration,
+                checkpointIntervalScaling,
+            )
     }
 }

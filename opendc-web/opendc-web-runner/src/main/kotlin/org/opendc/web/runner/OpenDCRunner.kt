@@ -35,8 +35,6 @@ import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.PowerSourceSpec
 import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.compute.workload.sampleByLoad
-import org.opendc.compute.workload.trace
 import org.opendc.experiments.base.runner.replay
 import org.opendc.simulator.compute.cpu.CpuPowerModels
 import org.opendc.simulator.compute.models.CpuModel
@@ -273,9 +271,11 @@ public class OpenDCRunner(
 
                 Provisioner(dispatcher, seed).use { provisioner ->
 
-                    val workload =
-                        trace(scenario.workload.trace.id).sampleByLoad(scenario.workload.samplingFraction)
-                    val vms = workload.resolve(workloadLoader, Random(seed))
+//                    val workload =
+//                        trace(scenario.workload.trace.id).sampleByLoad(scenario.workload.samplingFraction)
+//                    val vms = workload.resolve(workloadLoader, Random(seed))
+
+                    val vms = workloadLoader.sampleByLoad(scenario.workload.samplingFraction)
                     val startTime = vms.minOf { it.submissionTime }.toEpochMilli()
 
                     provisioner.runSteps(

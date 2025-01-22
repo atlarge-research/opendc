@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,28 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.internal
-
+package org.opendc.compute.workload
 import mu.KotlinLogging
-import org.opendc.compute.workload.ComputeWorkload
-import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.compute.workload.Task
-import java.util.random.RandomGenerator
 
-/**
- * A [ComputeWorkload] that is sampled based on total load.
- */
-internal class LoadSampledComputeWorkload(val source: ComputeWorkload, val fraction: Double) : ComputeWorkload {
-    /**
-     * The logging instance of this class.
-     */
+public abstract class WorkloadLoader {
     private val logger = KotlinLogging.logger {}
 
-    override fun resolve(
-        loader: ComputeWorkloadLoader,
-        random: RandomGenerator,
-    ): List<Task> {
-        val vms = source.resolve(loader, random) // fixme: Should be shuffled, otherwise the first fraction is always chosen
+    public abstract fun load(): List<Task>
+
+    /**
+     * Load the workload at sample tasks until a fraction of the workload is loaded
+     */
+    public fun sampleByLoad(fraction: Double): List<Task> {
+        val vms = this.load()
         val res = mutableListOf<Task>()
 
         val totalLoad = vms.sumOf { it.totalLoad }
