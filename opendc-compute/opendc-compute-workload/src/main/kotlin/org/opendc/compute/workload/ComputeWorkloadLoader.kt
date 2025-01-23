@@ -49,10 +49,11 @@ import kotlin.math.roundToLong
  */
 public class ComputeWorkloadLoader(
     private val pathToFile: File,
-    private val checkpointInterval: Long,
-    private val checkpointDuration: Long,
-    private val checkpointIntervalScaling: Double,
-) : WorkloadLoader() {
+    private val subMissionTime: String? = null,
+    private val checkpointInterval: Long = 0L,
+    private val checkpointDuration: Long = 0L,
+    private val checkpointIntervalScaling: Double = 1.0,
+) : WorkloadLoader(subMissionTime) {
     /**
      * The logger for this instance.
      */
@@ -160,25 +161,29 @@ public class ComputeWorkloadLoader(
      * Load the trace at the specified [pathToFile].
      */
     override fun load(): List<Task> {
-        val ref =
-            cache.compute(pathToFile) { key, oldVal ->
-                val inst = oldVal?.get()
-                if (inst == null) {
-//                    val path = baseDir.resolve(key)
+        val trace = Trace.open(pathToFile, "opendc-vm")
+        val fragments = parseFragments(trace)
+        val vms = parseMeta(trace, fragments)
 
-                    logger.info { "Loading trace $key at $pathToFile" }
+        return vms
 
-                    val trace = Trace.open(pathToFile, "opendc-vm")
-                    val fragments = parseFragments(trace)
-                    val vms = parseMeta(trace, fragments)
-
-                    SoftReference(vms)
-                } else {
-                    oldVal
-                }
-            }
-
-        return checkNotNull(ref?.get()) { "Memory pressure" }
+//        val ref =
+//            cache.compute(pathToFile) { key, oldVal ->
+//                val inst = oldVal?.get()
+//                if (inst == null) {
+//                    logger.info { "Loading trace $key at $pathToFile" }
+//
+//                    val trace = Trace.open(pathToFile, "opendc-vm")
+//                    val fragments = parseFragments(trace)
+//                    val vms = parseMeta(trace, fragments)
+//
+//                    SoftReference(vms)
+//                } else {
+//                    oldVal
+//                }
+//            }
+//
+//        return checkNotNull(ref?.get()) { "Memory pressure" }
     }
 
     /**

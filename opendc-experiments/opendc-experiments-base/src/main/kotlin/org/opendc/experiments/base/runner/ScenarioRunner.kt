@@ -93,11 +93,12 @@ public fun runScenario(
                 getWorkloadLoader(
                     scenario.workloadSpec.type,
                     File(scenario.workloadSpec.pathToFile),
+                    scenario.workloadSpec.submissionTime,
                     checkpointInterval,
                     checkpointDuration,
                     checkpointIntervalScaling,
                 )
-            val workload = workloadLoader.load()
+            val workload = workloadLoader.sampleByLoad(scenario.workloadSpec.sampleFraction)
 
             val startTimeLong = workload.minOf { it.submissionTime }.toEpochMilli()
             val startTime = Duration.ofMillis(startTimeLong)

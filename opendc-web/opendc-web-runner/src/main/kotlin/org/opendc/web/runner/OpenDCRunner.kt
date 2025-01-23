@@ -85,7 +85,7 @@ public class OpenDCRunner(
     /**
      * Helper class to load the workloads.
      */
-    private val workloadLoader = ComputeWorkloadLoader(tracePath, 0L, 0L, 0.0)
+    private val workloadLoader = ComputeWorkloadLoader(tracePath)
 
     /**
      * The [ForkJoinPool] that is used to execute the simulation jobs.
