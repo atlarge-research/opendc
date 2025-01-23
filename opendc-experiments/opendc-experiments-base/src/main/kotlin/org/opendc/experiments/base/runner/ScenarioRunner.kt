@@ -80,15 +80,6 @@ public fun runScenario(
             val checkpointDuration = scenario.checkpointModelSpec?.checkpointDuration ?: 0L
             val checkpointIntervalScaling = scenario.checkpointModelSpec?.checkpointIntervalScaling ?: 1.0
 
-//            val workloadLoader =
-//                ComputeWorkloadLoader(
-//                    File(scenario.workloadSpec.pathToFile),
-//                    checkpointInterval,
-//                    checkpointDuration,
-//                    checkpointIntervalScaling,
-//                )
-//            val tasks = getWorkloadType(scenario.workloadSpec.type).resolve(workloadLoader, Random(seed))
-
             val workloadLoader =
                 getWorkloadLoader(
                     scenario.workloadSpec.type,

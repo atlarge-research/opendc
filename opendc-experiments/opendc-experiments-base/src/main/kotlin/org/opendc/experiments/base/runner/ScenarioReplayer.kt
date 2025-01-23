@@ -139,9 +139,6 @@ public suspend fun ComputeService.replay(
 
                     // Wait until the task is terminated
                     taskWatcher.wait()
-
-                    // Stop the task after reaching the end-time of the virtual machine
-//                    task.delete()
                 }
             }
         }

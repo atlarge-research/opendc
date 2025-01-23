@@ -166,24 +166,6 @@ public class ComputeWorkloadLoader(
         val vms = parseMeta(trace, fragments)
 
         return vms
-
-//        val ref =
-//            cache.compute(pathToFile) { key, oldVal ->
-//                val inst = oldVal?.get()
-//                if (inst == null) {
-//                    logger.info { "Loading trace $key at $pathToFile" }
-//
-//                    val trace = Trace.open(pathToFile, "opendc-vm")
-//                    val fragments = parseFragments(trace)
-//                    val vms = parseMeta(trace, fragments)
-//
-//                    SoftReference(vms)
-//                } else {
-//                    oldVal
-//                }
-//            }
-//
-//        return checkNotNull(ref?.get()) { "Memory pressure" }
     }
 
     /**
