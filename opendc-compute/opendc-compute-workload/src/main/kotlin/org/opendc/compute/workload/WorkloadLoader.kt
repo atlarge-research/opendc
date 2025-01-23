@@ -22,9 +22,27 @@
 
 package org.opendc.compute.workload
 import mu.KotlinLogging
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
-public abstract class WorkloadLoader {
+public abstract class WorkloadLoader(private val submissionTime: String? = null) {
     private val logger = KotlinLogging.logger {}
+
+    public fun reScheduleTasks(workload: List<Task>) {
+        if (submissionTime == null) {
+            return
+        }
+
+        val workloadSubmissionTime = workload.minOf({ it.submissionTime }).toEpochMilli()
+        val submissionTimeLong = LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli()
+
+        val timeShift = submissionTimeLong - workloadSubmissionTime
+
+        for (task in workload) {
+            task.submissionTime = Instant.ofEpochMilli(task.submissionTime.toEpochMilli() + timeShift)
+        }
+    }
 
     public abstract fun load(): List<Task>
 
@@ -32,14 +50,28 @@ public abstract class WorkloadLoader {
      * Load the workload at sample tasks until a fraction of the workload is loaded
      */
     public fun sampleByLoad(fraction: Double): List<Task> {
-        val vms = this.load()
+        val workload = this.load()
+
+        reScheduleTasks(workload)
+
+        if (fraction >= 1.0) {
+            return workload
+        }
+
+        if (fraction <= 0.0) {
+            throw Error("The fraction of tasks to load cannot be 0.0 or lower")
+        }
+
         val res = mutableListOf<Task>()
 
-        val totalLoad = vms.sumOf { it.totalLoad }
+        val totalLoad = workload.sumOf { it.totalLoad }
         var currentLoad = 0.0
 
-        for (entry in vms) {
+        val shuffledWorkload = workload.shuffled()
+        for (entry in shuffledWorkload) {
             val entryLoad = entry.totalLoad
+
+            // TODO: ask Sacheen
             if ((currentLoad + entryLoad) / totalLoad > fraction) {
                 break
             }
@@ -48,7 +80,7 @@ public abstract class WorkloadLoader {
             res += entry
         }
 
-        logger.info { "Sampled ${vms.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
+        logger.info { "Sampled ${workload.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
 
         return res
     }

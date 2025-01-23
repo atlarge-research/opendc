@@ -45,7 +45,7 @@ public data class Task(
     val cpuCapacity: Double,
     val memCapacity: Long,
     val totalLoad: Double,
-    val submissionTime: Instant,
+    var submissionTime: Instant,
     val duration: Long,
     val trace: TraceWorkload,
 )

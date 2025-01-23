@@ -32,15 +32,20 @@ import java.io.File
  *
  * @property pathToFile
  * @property type
+ * @property sampleFraction
+ * @property submissionTime
  */
 @Serializable
 public data class WorkloadSpec(
     val pathToFile: String,
     val type: WorkloadTypes,
+    val sampleFraction: Double = 1.0,
+    val submissionTime: String? = null,
 ) {
     public val name: String = File(pathToFile).nameWithoutExtension
 
     init {
+        require(sampleFraction > 0) { "The fraction of the tasks can not be 0.0 or lower" }
         require(File(pathToFile).exists()) { "The provided path to the workload: $pathToFile does not exist " }
     }
 }
@@ -65,6 +70,7 @@ public enum class WorkloadTypes {
 public fun getWorkloadLoader(
     type: WorkloadTypes,
     pathToFile: File,
+    submissionTime: String?,
     checkpointInterval: Long,
     checkpointDuration: Long,
     checkpointIntervalScaling: Double,
@@ -73,6 +79,7 @@ public fun getWorkloadLoader(
         WorkloadTypes.ComputeWorkload ->
             ComputeWorkloadLoader(
                 pathToFile,
+                submissionTime,
                 checkpointInterval,
                 checkpointDuration,
                 checkpointIntervalScaling,
