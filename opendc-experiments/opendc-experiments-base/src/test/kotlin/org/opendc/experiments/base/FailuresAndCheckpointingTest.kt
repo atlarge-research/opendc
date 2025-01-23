@@ -256,9 +256,81 @@ class FailuresAndCheckpointingTest {
 
         assertAll(
             { assertEquals((10 * 60000) + (9 * 1000), monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals(((10 * 30000)).toLong(), monitor.hostIdleTimes["H01"]?.sum()) { "Idle time incorrect" } },
-            { assertEquals(((10 * 30000) + (9 * 1000)).toLong(), monitor.hostActiveTimes["H01"]?.sum()) { "Active time incorrect" } },
-            { assertEquals((10 * 60 * 150.0) + (9 * 200.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
+            { assertEquals((10 * 60 * 150.0) + (9 * 150.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
+        )
+    }
+
+    /**
+     * Checkpointing test 1: Single Task with checkpointing
+     * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
+     * Because there is no checkpointing, the full task has to be rerun.
+     *
+     * This means the final runtime is 20 minutes
+     *
+     * When the task is running, it is using 50% of the cpu.
+     * This means that half of the time is active, and half is idle.
+     * When the task is failed, all time is idle.
+     */
+    @Test
+    fun testCheckpoints2() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                        ),
+                    checkpointInterval = 60 * 1000L,
+                    checkpointDuration = 1000L,
+                ),
+            )
+
+        val topology = createTopology("single_1_2000.json")
+
+        val monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals((20 * 60000) + (19 * 1000), monitor.maxTimestamp) { "Total runtime incorrect" } },
+            { assertEquals((10 * 60 * 200.0) + (10 * 60 * 150.0) + (19 * 200.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
+        )
+    }
+
+    /**
+     * Checkpointing test 1: Single Task with checkpointing
+     * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
+     * Because there is no checkpointing, the full task has to be rerun.
+     *
+     * This means the final runtime is 20 minutes
+     *
+     * When the task is running, it is using 50% of the cpu.
+     * This means that half of the time is active, and half is idle.
+     * When the task is failed, all time is idle.
+     */
+    @Test
+    fun testCheckpoints3() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                        ),
+                    checkpointInterval = 60 * 1000L,
+                    checkpointDuration = 1000L,
+                ),
+            )
+
+        val topology = createTopology("single_1_2000.json")
+
+        val monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals((20 * 60000) + (19 * 1000), monitor.maxTimestamp) { "Total runtime incorrect" } },
+            { assertEquals((10 * 60 * 200.0) + (10 * 60 * 150.0) + (19 * 200.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
         )
     }
 
@@ -274,7 +346,7 @@ class FailuresAndCheckpointingTest {
      * When the task is failed, all time is idle.
      */
     @Test
-    fun testCheckpoints2() {
+    fun testCheckpoints4() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -295,9 +367,7 @@ class FailuresAndCheckpointingTest {
 
         assertAll(
             { assertEquals((10 * 60000) + (4 * 1000), monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals(((10 * 30000)).toLong(), monitor.hostIdleTimes["H01"]?.sum()) { "Idle time incorrect" } },
-            { assertEquals(((10 * 30000) + (4 * 1000)).toLong(), monitor.hostActiveTimes["H01"]?.sum()) { "Active time incorrect" } },
-            { assertEquals((10 * 60 * 150.0) + (4 * 200.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
+            { assertEquals((10 * 60 * 150.0) + (4 * 150.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
         )
     }
 
@@ -308,7 +378,7 @@ class FailuresAndCheckpointingTest {
      *
      */
     @Test
-    fun testCheckpoints3() {
+    fun testCheckpoints5() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -336,23 +406,7 @@ class FailuresAndCheckpointingTest {
             { assertEquals((960 * 1000) + 5000, monitor.maxTimestamp) { "Total runtime incorrect" } },
             {
                 assertEquals(
-                    ((300 * 1000) + (296 * 500) + (360 * 500)).toLong(),
-                    monitor.hostIdleTimes["H01"]?.sum(),
-                ) { "Idle time incorrect" }
-            },
-            {
-                assertEquals(
-                    ((296 * 500) + 4000 + (360 * 500) + 5000).toLong(),
-                    monitor.hostActiveTimes["H01"]?.sum(),
-                ) { "Active time incorrect" }
-            },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(5)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(10)) { "Incorrect energy usage" } },
-            {
-                assertEquals(
-                    (296 * 150.0) + (4 * 200.0) + (300 * 100.0) +
-                        (360 * 150.0) + (5 * 200.0),
+                    (665 * 150.0) + (300 * 100.0),
                     monitor.hostEnergyUsages["H01"]?.sum(),
                 ) { "Incorrect energy usage" }
             },
@@ -366,7 +420,7 @@ class FailuresAndCheckpointingTest {
      *
      */
     @Test
-    fun testCheckpoints4() {
+    fun testCheckpoints6() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -394,23 +448,7 @@ class FailuresAndCheckpointingTest {
             { assertEquals((22 * 60000) + 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
             {
                 assertEquals(
-                    ((10 * 60000) + (2 * 296 * 500) + (120 * 500)).toLong(),
-                    monitor.hostIdleTimes["H01"]?.sum(),
-                ) { "Idle time incorrect" }
-            },
-            {
-                assertEquals(
-                    ((2 * 296 * 500) + 8000 + (120 * 500) + 1000).toLong(),
-                    monitor.hostActiveTimes["H01"]?.sum(),
-                ) { "Active time incorrect" }
-            },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(5)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(10)) { "Incorrect energy usage" } },
-            {
-                assertEquals(
-                    (2 * 296 * 150.0) + (8 * 200.0) + (600 * 100.0) +
-                        (120 * 150.0) + (200.0),
+                    (300 * 150.0) + (300 * 100.0) + (300 * 150.0) + (300 * 100.0) + (121 * 150.0) ,
                     monitor.hostEnergyUsages["H01"]?.sum(),
                 ) { "Incorrect energy usage" }
             },

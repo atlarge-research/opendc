@@ -30,7 +30,7 @@ import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
 import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
 import org.opendc.compute.workload.Task
-import org.opendc.simulator.compute.workload.TraceFragment
+import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
 
 class SchedulerTest {

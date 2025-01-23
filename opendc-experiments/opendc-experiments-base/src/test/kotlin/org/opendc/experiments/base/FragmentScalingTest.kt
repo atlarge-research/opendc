@@ -64,86 +64,6 @@ import java.util.UUID
  */
 class FragmentScalingTest {
     /**
-     * The monitor used to keep track of the metrics.
-     */
-    private lateinit var monitor: TestComputeMonitor
-
-    /**
-     * The [FilterScheduler] to use for all experiments.
-     */
-    private lateinit var computeScheduler: FilterScheduler
-
-    /**
-     * The [ComputeWorkloadLoader] responsible for loading the traces.
-     */
-    private lateinit var workloadLoader: ComputeWorkloadLoader
-
-    private val basePath = "src/test/resources/FragmentScaling"
-
-    /**
-     * Set up the experimental environment.
-     */
-    @BeforeEach
-    fun setUp() {
-        monitor = TestComputeMonitor()
-        computeScheduler =
-            FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
-                weighers = listOf(CoreRamWeigher(multiplier = 1.0)),
-            )
-        workloadLoader = ComputeWorkloadLoader(File("$basePath/traces"), 0L, 0L, 0.0)
-    }
-
-    private fun createTestTask(
-        name: String,
-        cpuCount: Int = 1,
-        cpuCapacity: Double = 0.0,
-        memCapacity: Long = 0L,
-        submissionTime: String = "1970-01-01T00:00",
-        duration: Long = 0L,
-        fragments: ArrayList<TraceFragment>,
-        scalingPolicy: ScalingPolicy = NoDelayScaling(),
-    ): Task {
-        return Task(
-            UUID.nameUUIDFromBytes(name.toByteArray()),
-            name,
-            cpuCount,
-            cpuCapacity,
-            memCapacity,
-            1800000.0,
-            LocalDateTime.parse(submissionTime).atZone(ZoneId.systemDefault()).toInstant(),
-            duration,
-            TraceWorkload(
-                fragments,
-                0L, 0L, 0.0,
-                scalingPolicy
-            ),
-        )
-    }
-
-    private fun runTest(
-        topology: List<ClusterSpec>,
-        workload: ArrayList<Task>
-    ): TestComputeMonitor {
-
-        val monitor = TestComputeMonitor()
-        runSimulation {
-            val seed = 0L
-            Provisioner(dispatcher, seed).use { provisioner ->
-                provisioner.runSteps(
-                    setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                    registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1)),
-                    setupHosts(serviceDomain = "compute.opendc.org", topology),
-                )
-
-                val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-                service.replay(timeSource, workload)
-            }
-        }
-        return monitor
-    }
-
-    /**
      * Scaling test 1: A single fitting task
      * In this test, a single task is scheduled that should fit the system.
      * This means nothing will be delayed regardless of the scaling policy
@@ -181,8 +101,8 @@ class FragmentScalingTest {
         val monitorPerfect = runTest(topology, workloadPerfect)
 
         assertAll(
-            { assertEquals(1200000, monitorNoDelay.finalTimestamp) { "The workload took longer to finish than expected." } },
-            { assertEquals(1200000, monitorPerfect.finalTimestamp) { "The workload took longer to finish than expected." } },
+            { assertEquals(1200000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
+            { assertEquals(1200000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
 
             { assertEquals(2000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(2000.0, monitorPerfect.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
@@ -237,8 +157,8 @@ class FragmentScalingTest {
         val monitorPerfect = runTest(topology, workloadPerfect)
 
         assertAll(
-            { assertEquals(600000, monitorNoDelay.finalTimestamp) { "The workload took longer to finish than expected." } },
-            { assertEquals(1200000, monitorPerfect.finalTimestamp) { "The workload took longer to finish than expected." } },
+            { assertEquals(600000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
+            { assertEquals(1200000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
 
             { assertEquals(4000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(4000.0, monitorPerfect.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
@@ -292,8 +212,8 @@ class FragmentScalingTest {
         val monitorPerfect = runTest(topology, workloadPerfect)
 
         assertAll(
-            { assertEquals(1800000, monitorNoDelay.finalTimestamp) { "The workload took longer to finish than expected." } },
-            { assertEquals(2400000, monitorPerfect.finalTimestamp) { "The workload took longer to finish than expected." } },
+            { assertEquals(1800000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
+            { assertEquals(2400000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
 
             { assertEquals(1000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(1000.0, monitorPerfect.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
@@ -371,8 +291,8 @@ class FragmentScalingTest {
         val monitorPerfect = runTest(topology, workloadPerfect)
 
         assertAll(
-            { assertEquals(600000, monitorNoDelay.finalTimestamp) { "The workload took longer to finish than expected." } },
-            { assertEquals(600000, monitorPerfect.finalTimestamp) { "The workload took longer to finish than expected." } },
+            { assertEquals(600000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
+            { assertEquals(600000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
 
             { assertEquals(1000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(3000.0, monitorNoDelay.taskCpuDemands["1"]?.get(0)) { "The cpu demanded by task 1 is incorrect" } },
@@ -443,8 +363,8 @@ class FragmentScalingTest {
         val monitorPerfect = runTest(topology, workloadPerfect)
 
 //        assertAll(
-//            { assertEquals(600000, monitorNoDelay.finalTimestamp) { "The workload took longer to finish than expected." } },
-//            { assertEquals(900000, monitorPerfect.finalTimestamp) { "The workload took longer to finish than expected." } },
+//            { assertEquals(600000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
+//            { assertEquals(900000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
 //
 //            { assertEquals(1000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
 //            { assertEquals(3000.0, monitorNoDelay.taskCpuDemands["1"]?.get(0)) { "The cpu demanded by task 1 is incorrect" } },
@@ -456,48 +376,5 @@ class FragmentScalingTest {
 //            { assertEquals(1000.0, monitorPerfect.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
 //            { assertEquals(3000.0, monitorPerfect.taskCpuSupplied["1"]?.get(0)) { "The cpu supplied to task 1 is incorrect" } },
 //        )
-    }
-    /**
-     * Obtain the topology factory for the test.
-     */
-    private fun createTopology(name: String): List<ClusterSpec> {
-        val stream = checkNotNull(object {}.javaClass.getResourceAsStream("/FragmentScaling/topologies/$name"))
-        return stream.use { clusterTopology(stream) }
-    }
-
-    class TestComputeMonitor : ComputeMonitor {
-        var finalTimestamp: Long = 0L;
-
-
-        override fun record(reader: ServiceTableReader) {
-            finalTimestamp = reader.timestamp.toEpochMilli();
-
-            super.record(reader)
-        }
-
-
-
-        var hostCpuDemands = ArrayList<Double>()
-        var hostCpuSupplied = ArrayList<Double>()
-
-        override fun record(reader: HostTableReader) {
-            hostCpuDemands.add(reader.cpuDemand)
-            hostCpuSupplied.add(reader.cpuUsage)
-        }
-
-        var taskCpuDemands = mutableMapOf<String, ArrayList<Double>>()
-        var taskCpuSupplied = mutableMapOf<String, ArrayList<Double>>()
-
-        override fun record(reader: TaskTableReader) {
-            val taskName: String = reader.taskInfo.name
-
-            if (taskName in taskCpuDemands) {
-                taskCpuDemands[taskName]?.add(reader.cpuDemand)
-                taskCpuSupplied[taskName]?.add(reader.cpuUsage)
-            } else {
-                taskCpuDemands[taskName] = arrayListOf(reader.cpuDemand)
-                taskCpuSupplied[taskName] = arrayListOf(reader.cpuUsage)
-            }
-        }
     }
 }
