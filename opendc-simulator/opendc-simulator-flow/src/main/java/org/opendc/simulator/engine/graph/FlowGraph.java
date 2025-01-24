@@ -63,7 +63,7 @@ public class FlowGraph {
 
         // Remove all edges connected to node
         final ArrayList<FlowEdge> connectedEdges = nodeToEdge.get(node);
-        while (connectedEdges.size() > 0) {
+        while (!connectedEdges.isEmpty()) {
             removeEdge(connectedEdges.get(0));
         }
 
@@ -90,7 +90,7 @@ public class FlowGraph {
             throw new IllegalArgumentException("The consumer is not a node in this graph");
         }
         if (!(this.nodes.contains((FlowNode) flowSupplier))) {
-            throw new IllegalArgumentException("The consumer is not a node in this graph");
+            throw new IllegalArgumentException("The supplier is not a node in this graph");
         }
 
         final FlowEdge flowEdge = new FlowEdge(flowConsumer, flowSupplier);

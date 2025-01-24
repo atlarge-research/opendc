@@ -139,16 +139,16 @@ public final class FlowEngine implements Runnable {
      * This method should only be invoked while inside an engine cycle.
      */
     public void scheduleDelayedInContext(FlowNode ctx) {
-        FlowEventQueue timerQueue = this.eventQueue;
-        timerQueue.enqueue(ctx);
+        FlowEventQueue eventQueue = this.eventQueue;
+        eventQueue.enqueue(ctx);
     }
 
     /**
      * Run all the enqueued actions for the specified timestamp (<code>now</code>).
      */
     private void doRunEngine(long now) {
-        final FlowCycleQueue queue = this.cycleQueue;
-        final FlowEventQueue timerQueue = this.eventQueue;
+        final FlowCycleQueue cycleQueue = this.cycleQueue;
+        final FlowEventQueue eventQueue = this.eventQueue;
 
         try {
             // Mark the engine as active to prevent concurrent calls to this method
@@ -156,7 +156,7 @@ public final class FlowEngine implements Runnable {
 
             // Execute all scheduled updates at current timestamp
             while (true) {
-                final FlowNode ctx = timerQueue.poll(now);
+                final FlowNode ctx = eventQueue.poll(now);
                 if (ctx == null) {
                     break;
                 }
@@ -166,7 +166,7 @@ public final class FlowEngine implements Runnable {
 
             // Execute all immediate updates
             while (true) {
-                final FlowNode ctx = queue.poll();
+                final FlowNode ctx = cycleQueue.poll();
                 if (ctx == null) {
                     break;
                 }
@@ -178,7 +178,7 @@ public final class FlowEngine implements Runnable {
         }
 
         // Schedule an engine invocation for the next update to occur.
-        long headDeadline = timerQueue.peekDeadline();
+        long headDeadline = eventQueue.peekDeadline();
         if (headDeadline != Long.MAX_VALUE && headDeadline >= now) {
             trySchedule(futureInvocations, now, headDeadline);
         }

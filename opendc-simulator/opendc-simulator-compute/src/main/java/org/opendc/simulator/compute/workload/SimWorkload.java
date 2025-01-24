@@ -55,11 +55,11 @@ public abstract class SimWorkload extends FlowNode implements FlowConsumer {
 
     public abstract Workload getSnapshot();
 
-    abstract void createCheckpointModel();
+    public abstract void createCheckpointModel();
 
-    abstract long getCheckpointInterval();
+    public abstract long getCheckpointInterval();
 
-    abstract long getCheckpointDuration();
+    public abstract long getCheckpointDuration();
 
-    abstract double getCheckpointIntervalScaling();
+    public abstract double getCheckpointIntervalScaling();
 }

@@ -33,6 +33,7 @@ import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.telemetry.parquet.ParquetComputeMonitor
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.experiments.base.experiment.Scenario
+import org.opendc.experiments.base.experiment.specs.getScalingPolicy
 import org.opendc.experiments.base.experiment.specs.getWorkloadLoader
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
@@ -80,6 +81,8 @@ public fun runScenario(
             val checkpointDuration = scenario.checkpointModelSpec?.checkpointDuration ?: 0L
             val checkpointIntervalScaling = scenario.checkpointModelSpec?.checkpointIntervalScaling ?: 1.0
 
+            val scalingPolicy = getScalingPolicy(scenario.workloadSpec.scalingPolicy)
+
             val workloadLoader =
                 getWorkloadLoader(
                     scenario.workloadSpec.type,
@@ -88,6 +91,7 @@ public fun runScenario(
                     checkpointInterval,
                     checkpointDuration,
                     checkpointIntervalScaling,
+                    scalingPolicy,
                 )
             val workload = workloadLoader.sampleByLoad(scenario.workloadSpec.sampleFraction)
 

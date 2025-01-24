@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,11 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload
+package org.opendc.simulator.compute.workload.trace;
 
-import org.opendc.simulator.compute.workload.trace.TraceWorkload
-import java.time.Instant
-import java.util.UUID
+public record TraceFragment(long duration, double cpuUsage, int coreCount) {
 
-/**
- * A virtual machine workload.
- *
- * @param uid The unique identifier of the virtual machine.
- * @param name The name of the virtual machine.
- * @param cpuCapacity The required CPU capacity for the VM in MHz.
- * @param cpuCount The number of vCPUs in the VM.
- * @param memCapacity The provisioned memory for the VM in MB.
- * @param submissionTime The start time of the VM.
- * @param trace The trace that belong to this VM.
- * @param interferenceProfile The interference profile of this virtual machine.
- */
-public data class Task(
-    val uid: UUID,
-    val name: String,
-    val cpuCount: Int,
-    val cpuCapacity: Double,
-    val memCapacity: Long,
-    val totalLoad: Double,
-    var submissionTime: Instant,
-    val duration: Long,
-    val trace: TraceWorkload,
-)
+    public TraceFragment(long start, long duration, double cpuUsage, int coreCount) {
+        this(duration, cpuUsage, coreCount);
+    }
+}

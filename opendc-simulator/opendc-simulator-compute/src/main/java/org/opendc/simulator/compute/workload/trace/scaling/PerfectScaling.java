@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,28 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload
-
-import org.opendc.simulator.compute.workload.trace.TraceWorkload
-import java.time.Instant
-import java.util.UUID
+package org.opendc.simulator.compute.workload.trace.scaling;
 
 /**
- * A virtual machine workload.
+ * PerfectScaling scales the workload duration perfectly
+ * based on the CPU capacity.
  *
- * @param uid The unique identifier of the virtual machine.
- * @param name The name of the virtual machine.
- * @param cpuCapacity The required CPU capacity for the VM in MHz.
- * @param cpuCount The number of vCPUs in the VM.
- * @param memCapacity The provisioned memory for the VM in MB.
- * @param submissionTime The start time of the VM.
- * @param trace The trace that belong to this VM.
- * @param interferenceProfile The interference profile of this virtual machine.
+ * This means that if a fragment has a duration of 10 min at 4000 mHz,
+ * it will take 20 min and 2000 mHz.
  */
-public data class Task(
-    val uid: UUID,
-    val name: String,
-    val cpuCount: Int,
-    val cpuCapacity: Double,
-    val memCapacity: Long,
-    val totalLoad: Double,
-    var submissionTime: Instant,
-    val duration: Long,
-    val trace: TraceWorkload,
-)
+public class PerfectScaling implements ScalingPolicy {
+    @Override
+    public double getFinishedWork(double cpuFreqDemand, double cpuFreqSupplied, long passedTime) {
+        return cpuFreqSupplied * passedTime;
+    }
+
+    @Override
+    public long getRemainingDuration(double cpuFreqDemand, double cpuFreqSupplied, double remainingWork) {
+        return (long) (remainingWork / cpuFreqSupplied);
+    }
+
+    @Override
+    public double getRemainingWork(double cpuFreqDemand, long duration) {
+        return cpuFreqDemand * duration;
+    }
+}

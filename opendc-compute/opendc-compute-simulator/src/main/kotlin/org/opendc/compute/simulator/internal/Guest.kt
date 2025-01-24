@@ -31,8 +31,9 @@ import org.opendc.compute.simulator.telemetry.GuestSystemStats
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.machine.VirtualMachine
 import org.opendc.simulator.compute.workload.ChainWorkload
-import org.opendc.simulator.compute.workload.TraceFragment
-import org.opendc.simulator.compute.workload.TraceWorkload
+import org.opendc.simulator.compute.workload.trace.TraceFragment
+import org.opendc.simulator.compute.workload.trace.TraceWorkload
+import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
 import java.time.Duration
 import java.time.Instant
 import java.time.InstantSource
@@ -93,6 +94,8 @@ public class Guest(
 
         onStart()
 
+        val scalingPolicy = NoDelayScaling()
+
         val bootworkload =
             TraceWorkload(
                 ArrayList(
@@ -107,6 +110,7 @@ public class Guest(
                 0,
                 0,
                 0.0,
+                scalingPolicy,
             )
 
         if (task.workload is TraceWorkload) {
