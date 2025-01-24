@@ -227,13 +227,10 @@ class FailuresAndCheckpointingTest {
     /**
      * Checkpointing test 1: Single Task with checkpointing
      * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
-     * Because there is no checkpointing, the full task has to be rerun.
+     * The system is using checkpointing, taking snapshots every minute.
      *
-     * This means the final runtime is 20 minutes
-     *
-     * When the task is running, it is using 50% of the cpu.
-     * This means that half of the time is active, and half is idle.
-     * When the task is failed, all time is idle.
+     * This means that after failure, only 6 minutes of the task is left.
+     * However, taking a snapshot takes 1 second, which means 9 seconds have to be added to the total runtime.
      */
     @Test
     fun testCheckpoints1() {
@@ -261,15 +258,15 @@ class FailuresAndCheckpointingTest {
     }
 
     /**
-     * Checkpointing test 1: Single Task with checkpointing
+     * Checkpointing test 2: Single Task with checkpointing, higher cpu demand
      * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
-     * Because there is no checkpointing, the full task has to be rerun.
+     * The system is using checkpointing, taking snapshots every minute.
      *
-     * This means the final runtime is 20 minutes
+     * This means that after failure, only 16 minutes of the task is left.
+     * However, taking a snapshot takes 1 second, which means 19 seconds have to be added to the total runtime.
      *
-     * When the task is running, it is using 50% of the cpu.
-     * This means that half of the time is active, and half is idle.
-     * When the task is failed, all time is idle.
+     * This is similar to the previous test, but the cpu demand of taking a snapshot is higher.
+     * The cpu demand of taking a snapshot is as high as the highest fragment
      */
     @Test
     fun testCheckpoints2() {
@@ -293,20 +290,25 @@ class FailuresAndCheckpointingTest {
 
         assertAll(
             { assertEquals((20 * 60000) + (19 * 1000), monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals((10 * 60 * 200.0) + (10 * 60 * 150.0) + (19 * 200.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
+            {
+                assertEquals(
+                    (10 * 60 * 200.0) + (10 * 60 * 150.0) + (19 * 200.0),
+                    monitor.hostEnergyUsages["H01"]?.sum(),
+                ) { "Incorrect energy usage" }
+            },
         )
     }
 
     /**
-     * Checkpointing test 1: Single Task with checkpointing
+     * Checkpointing test 3: Single Task with checkpointing, higher cpu demand
      * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
-     * Because there is no checkpointing, the full task has to be rerun.
+     * The system is using checkpointing, taking snapshots every minute.
      *
-     * This means the final runtime is 20 minutes
+     * This means that after failure, only 16 minutes of the task is left.
+     * However, taking a snapshot takes 1 second, which means 19 seconds have to be added to the total runtime.
      *
-     * When the task is running, it is using 50% of the cpu.
-     * This means that half of the time is active, and half is idle.
-     * When the task is failed, all time is idle.
+     * This is similar to the previous test, but the fragments are reversed
+     *
      */
     @Test
     fun testCheckpoints3() {
@@ -330,20 +332,21 @@ class FailuresAndCheckpointingTest {
 
         assertAll(
             { assertEquals((20 * 60000) + (19 * 1000), monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals((10 * 60 * 200.0) + (10 * 60 * 150.0) + (19 * 200.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
+            {
+                assertEquals(
+                    (10 * 60 * 200.0) + (10 * 60 * 150.0) + (19 * 200.0),
+                    monitor.hostEnergyUsages["H01"]?.sum(),
+                ) { "Incorrect energy usage" }
+            },
         )
     }
 
     /**
-     * Checkpointing test 2: Single Task with scaling checkpointing
-     * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
-     * Because there is no checkpointing, the full task has to be rerun.
+     * Checkpointing test 4: Single Task with scaling checkpointing
+     * In this test, checkpointing is used, with a scaling factor of 1.5
      *
-     * This means the final runtime is 20 minutes
+     * This means that the interval between checkpoints starts at 1 min, but is multiplied by 1.5 every snapshot.
      *
-     * When the task is running, it is using 50% of the cpu.
-     * This means that half of the time is active, and half is idle.
-     * When the task is failed, all time is idle.
      */
     @Test
     fun testCheckpoints4() {
@@ -372,7 +375,7 @@ class FailuresAndCheckpointingTest {
     }
 
     /**
-     * Checkpointing test 3: Single Task, single failure with checkpointing
+     * Checkpointing test 5: Single Task, single failure with checkpointing
      * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
      * Because there is no checkpointing, the full task has to be rerun.
      *
@@ -414,7 +417,7 @@ class FailuresAndCheckpointingTest {
     }
 
     /**
-     * Checkpointing test 4: Single Task, repeated failure with checkpointing
+     * Checkpointing test 6: Single Task, repeated failure with checkpointing
      * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
      * Because there is no checkpointing, the full task has to be rerun.
      *
@@ -448,7 +451,7 @@ class FailuresAndCheckpointingTest {
             { assertEquals((22 * 60000) + 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
             {
                 assertEquals(
-                    (300 * 150.0) + (300 * 100.0) + (300 * 150.0) + (300 * 100.0) + (121 * 150.0) ,
+                    (300 * 150.0) + (300 * 100.0) + (300 * 150.0) + (300 * 100.0) + (121 * 150.0),
                     monitor.hostEnergyUsages["H01"]?.sum(),
                 ) { "Incorrect energy usage" }
             },

@@ -23,41 +23,13 @@
 package org.opendc.experiments.base
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.simulator.provisioner.Provisioner
-import org.opendc.compute.simulator.provisioner.registerComputeMonitor
-import org.opendc.compute.simulator.provisioner.setupComputeService
-import org.opendc.compute.simulator.provisioner.setupHosts
-import org.opendc.compute.simulator.scheduler.FilterScheduler
-import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
-import org.opendc.compute.simulator.scheduler.filters.RamFilter
-import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
-import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
-import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.simulator.telemetry.ComputeMonitor
-import org.opendc.compute.simulator.telemetry.table.HostTableReader
-import org.opendc.compute.simulator.telemetry.table.ServiceTableReader
-import org.opendc.compute.simulator.telemetry.table.TaskTableReader
-import org.opendc.compute.topology.clusterTopology
-import org.opendc.compute.topology.specs.ClusterSpec
-import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.Task
-import org.opendc.experiments.base.runner.replay
 import org.opendc.simulator.compute.workload.trace.TraceFragment
-import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
 import org.opendc.simulator.compute.workload.trace.scaling.PerfectScaling
-import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy
-import org.opendc.simulator.kotlin.runSimulation
-import java.io.File
-import java.time.Duration
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
 import java.util.ArrayList
-import java.util.UUID
 
 /**
  * Testing suite containing tests that specifically test the scaling of trace fragments
@@ -79,7 +51,7 @@ class FragmentScalingTest {
                             TraceFragment(10 * 60 * 1000, 2000.0, 1),
                             TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
-                    scalingPolicy = NoDelayScaling()
+                    scalingPolicy = NoDelayScaling(),
                 ),
             )
 
@@ -92,7 +64,7 @@ class FragmentScalingTest {
                             TraceFragment(10 * 60 * 1000, 2000.0, 1),
                             TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
-                    scalingPolicy = PerfectScaling()
+                    scalingPolicy = PerfectScaling(),
                 ),
             )
         val topology = createTopology("single_1_2000.json")
@@ -103,16 +75,12 @@ class FragmentScalingTest {
         assertAll(
             { assertEquals(1200000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
             { assertEquals(1200000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
-
             { assertEquals(2000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(2000.0, monitorPerfect.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-
             { assertEquals(2000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
             { assertEquals(2000.0, monitorPerfect.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
-
             { assertEquals(1000.0, monitorNoDelay.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(1000.0, monitorPerfect.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
-
             { assertEquals(1000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(9)) { "The cpu supplied to task 0 is incorrect" } },
             { assertEquals(1000.0, monitorPerfect.taskCpuSupplied["0"]?.get(9)) { "The cpu supplied to task 0 is incorrect" } },
         )
@@ -136,7 +104,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 4000.0, 1),
                         ),
-                    scalingPolicy = NoDelayScaling()
+                    scalingPolicy = NoDelayScaling(),
                 ),
             )
 
@@ -148,7 +116,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 4000.0, 1),
                         ),
-                    scalingPolicy = PerfectScaling()
+                    scalingPolicy = PerfectScaling(),
                 ),
             )
         val topology = createTopology("single_1_2000.json")
@@ -159,10 +127,8 @@ class FragmentScalingTest {
         assertAll(
             { assertEquals(600000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
             { assertEquals(1200000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
-
             { assertEquals(4000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(4000.0, monitorPerfect.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-
             { assertEquals(2000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
             { assertEquals(2000.0, monitorPerfect.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
         )
@@ -189,7 +155,7 @@ class FragmentScalingTest {
                             TraceFragment(10 * 60 * 1000, 4000.0, 1),
                             TraceFragment(10 * 60 * 1000, 1500.0, 1),
                         ),
-                    scalingPolicy = NoDelayScaling()
+                    scalingPolicy = NoDelayScaling(),
                 ),
             )
 
@@ -203,7 +169,7 @@ class FragmentScalingTest {
                             TraceFragment(10 * 60 * 1000, 4000.0, 1),
                             TraceFragment(10 * 60 * 1000, 1500.0, 1),
                         ),
-                    scalingPolicy = PerfectScaling()
+                    scalingPolicy = PerfectScaling(),
                 ),
             )
         val topology = createTopology("single_1_2000.json")
@@ -214,25 +180,18 @@ class FragmentScalingTest {
         assertAll(
             { assertEquals(1800000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
             { assertEquals(2400000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
-
             { assertEquals(1000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(1000.0, monitorPerfect.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-
             { assertEquals(1000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
             { assertEquals(1000.0, monitorPerfect.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
-
             { assertEquals(4000.0, monitorNoDelay.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(4000.0, monitorPerfect.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
-
             { assertEquals(2000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(9)) { "The cpu supplied to task 0 is incorrect" } },
             { assertEquals(2000.0, monitorPerfect.taskCpuSupplied["0"]?.get(9)) { "The cpu supplied to task 0 is incorrect" } },
-
             { assertEquals(1500.0, monitorNoDelay.taskCpuDemands["0"]?.get(19)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(4000.0, monitorPerfect.taskCpuDemands["0"]?.get(19)) { "The cpu demanded by task 0 is incorrect" } },
-
             { assertEquals(1500.0, monitorNoDelay.taskCpuSupplied["0"]?.get(19)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(2000.0, monitorPerfect.taskCpuSupplied["0"]?.get(19)) { "The cpu supplied to task 0 is incorrect" } },
-
             { assertEquals(1500.0, monitorPerfect.taskCpuDemands["0"]?.get(29)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(1500.0, monitorPerfect.taskCpuSupplied["0"]?.get(29)) { "The cpu supplied to task 0 is incorrect" } },
         )
@@ -254,7 +213,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
-                    scalingPolicy = NoDelayScaling()
+                    scalingPolicy = NoDelayScaling(),
                 ),
                 createTestTask(
                     name = "1",
@@ -262,7 +221,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 3000.0, 1),
                         ),
-                    scalingPolicy = NoDelayScaling()
+                    scalingPolicy = NoDelayScaling(),
                 ),
             )
 
@@ -274,7 +233,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
-                    scalingPolicy = PerfectScaling()
+                    scalingPolicy = PerfectScaling(),
                 ),
                 createTestTask(
                     name = "1",
@@ -282,7 +241,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 3000.0, 1),
                         ),
-                    scalingPolicy = PerfectScaling()
+                    scalingPolicy = PerfectScaling(),
                 ),
             )
         val topology = createTopology("single_2_2000.json")
@@ -293,12 +252,10 @@ class FragmentScalingTest {
         assertAll(
             { assertEquals(600000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
             { assertEquals(600000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
-
             { assertEquals(1000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(3000.0, monitorNoDelay.taskCpuDemands["1"]?.get(0)) { "The cpu demanded by task 1 is incorrect" } },
             { assertEquals(1000.0, monitorPerfect.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
             { assertEquals(3000.0, monitorPerfect.taskCpuDemands["1"]?.get(0)) { "The cpu demanded by task 1 is incorrect" } },
-
             { assertEquals(1000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
             { assertEquals(3000.0, monitorNoDelay.taskCpuSupplied["1"]?.get(0)) { "The cpu supplied to task 1 is incorrect" } },
             { assertEquals(1000.0, monitorPerfect.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
@@ -326,7 +283,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 2000.0, 1),
                         ),
-                    scalingPolicy = NoDelayScaling()
+                    scalingPolicy = NoDelayScaling(),
                 ),
                 createTestTask(
                     name = "1",
@@ -334,7 +291,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 4000.0, 1),
                         ),
-                    scalingPolicy = NoDelayScaling()
+                    scalingPolicy = NoDelayScaling(),
                 ),
             )
 
@@ -346,7 +303,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 2000.0, 1),
                         ),
-                    scalingPolicy = PerfectScaling()
+                    scalingPolicy = PerfectScaling(),
                 ),
                 createTestTask(
                     name = "1",
@@ -354,7 +311,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 4000.0, 1),
                         ),
-                    scalingPolicy = PerfectScaling()
+                    scalingPolicy = PerfectScaling(),
                 ),
             )
         val topology = createTopology("single_2_2000.json")

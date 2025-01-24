@@ -110,7 +110,7 @@ public class Guest(
                 0,
                 0,
                 0.0,
-                scalingPolicy
+                scalingPolicy,
             )
 
         if (task.workload is TraceWorkload) {

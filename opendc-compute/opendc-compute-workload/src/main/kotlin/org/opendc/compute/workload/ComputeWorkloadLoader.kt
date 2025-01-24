@@ -55,7 +55,7 @@ public class ComputeWorkloadLoader(
     private val checkpointInterval: Long = 0L,
     private val checkpointDuration: Long = 0L,
     private val checkpointIntervalScaling: Double = 1.0,
-    private val scalingPolicy: ScalingPolicy = NoDelayScaling()
+    private val scalingPolicy: ScalingPolicy = NoDelayScaling(),
 ) : WorkloadLoader(subMissionTime) {
     /**
      * The logger for this instance.
@@ -87,7 +87,10 @@ public class ComputeWorkloadLoader(
                 val cores = reader.getInt(coresCol)
                 val cpuUsage = reader.getDouble(usageCol)
 
-                val builder = fragments.computeIfAbsent(id) { Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy) }
+                val builder =
+                    fragments.computeIfAbsent(
+                        id,
+                    ) { Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy) }
                 builder.add(durationMs, cpuUsage, cores)
             }
 
@@ -181,7 +184,12 @@ public class ComputeWorkloadLoader(
     /**
      * A builder for a VM trace.
      */
-    private class Builder(checkpointInterval: Long, checkpointDuration: Long, checkpointIntervalScaling: Double, scalingPolicy: ScalingPolicy) {
+    private class Builder(
+        checkpointInterval: Long,
+        checkpointDuration: Long,
+        checkpointIntervalScaling: Double,
+        scalingPolicy: ScalingPolicy,
+    ) {
         /**
          * The total load of the trace.
          */

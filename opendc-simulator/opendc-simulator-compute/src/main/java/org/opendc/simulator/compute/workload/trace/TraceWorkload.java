@@ -25,7 +25,6 @@ package org.opendc.simulator.compute.workload.trace;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling;
@@ -47,11 +46,11 @@ public class TraceWorkload implements Workload {
     private final ScalingPolicy scalingPolicy;
 
     public TraceWorkload(
-        ArrayList<TraceFragment> fragments,
-        long checkpointInterval,
-        long checkpointDuration,
-        double checkpointIntervalScaling,
-        ScalingPolicy scalingPolicy) {
+            ArrayList<TraceFragment> fragments,
+            long checkpointInterval,
+            long checkpointDuration,
+            double checkpointIntervalScaling,
+            ScalingPolicy scalingPolicy) {
         this.fragments = fragments;
         this.checkpointInterval = checkpointInterval;
         this.checkpointDuration = checkpointDuration;
@@ -59,8 +58,14 @@ public class TraceWorkload implements Workload {
         this.scalingPolicy = scalingPolicy;
 
         // TODO: remove if we decide not to use it.
-        this.maxCpuDemand = fragments.stream().max(Comparator.comparing(TraceFragment::cpuUsage)).get().cpuUsage();
-        this.maxCoreCount = fragments.stream().max(Comparator.comparing(TraceFragment::coreCount)).get().coreCount();
+        this.maxCpuDemand = fragments.stream()
+                .max(Comparator.comparing(TraceFragment::cpuUsage))
+                .get()
+                .cpuUsage();
+        this.maxCoreCount = fragments.stream()
+                .max(Comparator.comparing(TraceFragment::coreCount))
+                .get()
+                .coreCount();
     }
 
     public TraceWorkload(ArrayList<TraceFragment> fragments) {
@@ -114,7 +119,11 @@ public class TraceWorkload implements Workload {
         return builder(0L, 0L, 0.0, new NoDelayScaling());
     }
 
-    public static Builder builder(long checkpointInterval, long checkpointDuration, double checkpointIntervalScaling, ScalingPolicy scalingPolicy) {
+    public static Builder builder(
+            long checkpointInterval,
+            long checkpointDuration,
+            double checkpointIntervalScaling,
+            ScalingPolicy scalingPolicy) {
         return new Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy);
     }
 
@@ -158,7 +167,11 @@ public class TraceWorkload implements Workload {
         /**
          * Construct a new {@link Builder} instance.
          */
-        private Builder(long checkpointInterval, long checkpointDuration, double checkpointIntervalScaling, ScalingPolicy scalingPolicy) {
+        private Builder(
+                long checkpointInterval,
+                long checkpointDuration,
+                double checkpointIntervalScaling,
+                ScalingPolicy scalingPolicy) {
             this.fragments = new ArrayList<>();
             this.checkpointInterval = checkpointInterval;
             this.checkpointDuration = checkpointDuration;
@@ -182,7 +195,11 @@ public class TraceWorkload implements Workload {
          */
         public TraceWorkload build() {
             return new TraceWorkload(
-                this.fragments, this.checkpointInterval, this.checkpointDuration, this.checkpointIntervalScaling, this.scalingPolicy);
+                    this.fragments,
+                    this.checkpointInterval,
+                    this.checkpointDuration,
+                    this.checkpointIntervalScaling,
+                    this.scalingPolicy);
         }
     }
 }

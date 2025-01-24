@@ -25,6 +25,9 @@ package org.opendc.experiments.base.experiment.specs
 import kotlinx.serialization.Serializable
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.WorkloadLoader
+import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
+import org.opendc.simulator.compute.workload.trace.scaling.PerfectScaling
+import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy
 import java.io.File
 
 /**
@@ -41,6 +44,7 @@ public data class WorkloadSpec(
     val type: WorkloadTypes,
     val sampleFraction: Double = 1.0,
     val submissionTime: String? = null,
+    val scalingPolicy: ScalingPolicyEnum = ScalingPolicyEnum.NoDelay
 ) {
     public val name: String = File(pathToFile).nameWithoutExtension
 
@@ -56,11 +60,6 @@ public data class WorkloadSpec(
  * @constructor Create empty Workload types
  */
 public enum class WorkloadTypes {
-    /**
-     * Compute workload
-     *
-     * @constructor Create empty Compute workload
-     */
     ComputeWorkload,
 }
 
@@ -74,6 +73,7 @@ public fun getWorkloadLoader(
     checkpointInterval: Long,
     checkpointDuration: Long,
     checkpointIntervalScaling: Double,
+    scalingPolicy: ScalingPolicy
 ): WorkloadLoader {
     return when (type) {
         WorkloadTypes.ComputeWorkload ->
@@ -83,6 +83,19 @@ public fun getWorkloadLoader(
                 checkpointInterval,
                 checkpointDuration,
                 checkpointIntervalScaling,
+                scalingPolicy
             )
+    }
+}
+
+public enum class ScalingPolicyEnum {
+    NoDelay,
+    Perfect
+}
+
+public fun getScalingPolicy(scalingPolicyEnum: ScalingPolicyEnum): ScalingPolicy {
+    return when (scalingPolicyEnum) {
+        ScalingPolicyEnum.NoDelay -> NoDelayScaling()
+        ScalingPolicyEnum.Perfect -> PerfectScaling()
     }
 }

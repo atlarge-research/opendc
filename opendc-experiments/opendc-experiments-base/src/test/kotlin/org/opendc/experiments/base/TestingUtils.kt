@@ -71,7 +71,7 @@ fun createTestTask(
     checkpointInterval: Long = 0L,
     checkpointDuration: Long = 0L,
     checkpointIntervalScaling: Double = 1.0,
-    scalingPolicy: ScalingPolicy = NoDelayScaling()
+    scalingPolicy: ScalingPolicy = NoDelayScaling(),
 ): Task {
     return Task(
         UUID.nameUUIDFromBytes(name.toByteArray()),
@@ -87,7 +87,7 @@ fun createTestTask(
             checkpointInterval,
             checkpointDuration,
             checkpointIntervalScaling,
-            scalingPolicy
+            scalingPolicy,
         ),
     )
 }

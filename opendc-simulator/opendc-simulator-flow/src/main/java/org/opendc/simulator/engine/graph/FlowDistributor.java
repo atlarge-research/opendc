@@ -39,12 +39,12 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     private double currentIncomingSupply; // The current supply provided by the supplier
 
     private boolean outgoingDemandUpdateNeeded = false;
-    private final Set<Integer> updatedDemands = new HashSet<>(); // Array of consumers that updated their demand in this cycle
+    private final Set<Integer> updatedDemands =
+            new HashSet<>(); // Array of consumers that updated their demand in this cycle
 
     private boolean overloaded = false;
 
     private double capacity; // What is the max capacity. Can probably be removed
-
 
     public FlowDistributor(FlowGraph graph) {
         super(graph);

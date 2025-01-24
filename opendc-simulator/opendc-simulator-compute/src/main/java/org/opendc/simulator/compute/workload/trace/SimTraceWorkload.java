@@ -23,15 +23,14 @@
 package org.opendc.simulator.compute.workload.trace;
 
 import java.util.LinkedList;
+import org.opendc.simulator.compute.workload.SimWorkload;
+import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling;
+import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowGraph;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
-
-import org.opendc.simulator.compute.workload.SimWorkload;
-import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling;
-import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
 
 public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     private LinkedList<TraceFragment> remainingFragments;
@@ -122,7 +121,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.cpuFreqSupplied = this.newCpuFreqSupplied;
 
         // The amount of time required to finish the fragment at this speed
-        long remainingDuration = this.scalingPolicy.getRemainingDuration(this.cpuFreqDemand, this.newCpuFreqSupplied, this.remainingWork);
+        long remainingDuration = this.scalingPolicy.getRemainingDuration(
+                this.cpuFreqDemand, this.newCpuFreqSupplied, this.remainingWork);
 
         return now + remainingDuration;
     }
@@ -139,7 +139,6 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
     private void startNextFragment() {
 
-        // TODO: turn this into a loop, should not be needed, but might be safer
         TraceFragment nextFragment = this.getNextFragment();
         if (nextFragment == null) {
             this.stopWorkload();
@@ -149,8 +148,6 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.remainingWork = this.scalingPolicy.getRemainingWork(demand, nextFragment.duration());
         this.pushOutgoingDemand(this.machineEdge, demand);
     }
-
-
 
     @Override
     public void stopWorkload() {
@@ -193,7 +190,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.remainingWork -= finishedWork;
 
         // The amount of time required to finish the fragment at this speed
-        long remainingTime = this.scalingPolicy.getRemainingDuration(this.cpuFreqDemand, this.cpuFreqDemand, this.remainingWork);
+        long remainingTime =
+                this.scalingPolicy.getRemainingDuration(this.cpuFreqDemand, this.cpuFreqDemand, this.remainingWork);
 
         // If this is the end of the Task, don't make a snapshot
         if (remainingTime <= 0 && remainingFragments.isEmpty()) {
@@ -202,7 +200,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         // Create a new fragment based on the current fragment and remaining duration
         TraceFragment newFragment =
-            new TraceFragment(remainingTime, currentFragment.cpuUsage(), currentFragment.coreCount());
+                new TraceFragment(remainingTime, currentFragment.cpuUsage(), currentFragment.coreCount());
 
         // Alter the snapshot by removing finished fragments
         this.snapshot.removeFragments(this.fragmentIndex);
@@ -211,8 +209,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.remainingFragments.addFirst(newFragment);
 
         // Create and add a fragment for processing the snapshot process
-        // TODO: improve the implementation of cpuUsage and coreCount
-        TraceFragment snapshotFragment = new TraceFragment(this.checkpointDuration, this.snapshot.getMaxCpuDemand(), this.snapshot.getMaxCoreCount());
+        TraceFragment snapshotFragment = new TraceFragment(
+                this.checkpointDuration, this.snapshot.getMaxCpuDemand(), this.snapshot.getMaxCoreCount());
         this.remainingFragments.addFirst(snapshotFragment);
 
         this.fragmentIndex = -1;
