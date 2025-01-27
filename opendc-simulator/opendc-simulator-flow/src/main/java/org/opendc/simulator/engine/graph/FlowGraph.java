@@ -76,7 +76,7 @@ public class FlowGraph {
     /**
      * Add an edge between the specified consumer and supplier in this graph.
      */
-    public void addEdge(FlowConsumer flowConsumer, FlowSupplier flowSupplier) {
+    public FlowEdge addEdge(FlowConsumer flowConsumer, FlowSupplier flowSupplier) {
         // Check if the consumer and supplier are both FlowNodes
         if (!(flowConsumer instanceof FlowNode)) {
             throw new IllegalArgumentException("Flow consumer is not a FlowNode");
@@ -99,6 +99,8 @@ public class FlowGraph {
 
         nodeToEdge.get((FlowNode) flowConsumer).add(flowEdge);
         nodeToEdge.get((FlowNode) flowSupplier).add(flowEdge);
+
+        return flowEdge;
     }
 
     public void removeEdge(FlowEdge flowEdge) {

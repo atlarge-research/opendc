@@ -155,6 +155,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             return;
         }
 
+        // TODO: Maybe move this to the end
+        // Currently stopWorkload is called twice
         this.closeNode();
 
         this.machineEdge = null;

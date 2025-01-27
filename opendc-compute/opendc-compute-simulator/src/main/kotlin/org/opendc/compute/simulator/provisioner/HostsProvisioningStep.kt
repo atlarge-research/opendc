@@ -27,7 +27,11 @@ import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
+import org.opendc.simulator.compute.power.CarbonModel
 import org.opendc.simulator.compute.power.SimPowerSource
+import org.opendc.simulator.compute.power.batteries.BatteryAggregator
+import org.opendc.simulator.compute.power.batteries.BatteryPolicy
+import org.opendc.simulator.compute.power.batteries.SimBattery
 import org.opendc.simulator.engine.engine.FlowEngine
 import org.opendc.simulator.engine.graph.FlowDistributor
 
@@ -57,15 +61,50 @@ public class HostsProvisioningStep internal constructor(
         for (cluster in clusterSpecs) {
             // Create the Power Source to which hosts are connected
 
+
+
+            // Create Power Source
+            val simPowerSource = SimPowerSource(graph, cluster.powerSource.totalPower.toDouble())
+            simPowerSources.add(simPowerSource)
+            service.addPowerSource(simPowerSource)
+
+            val hostDistributor = FlowDistributor(graph)
+
             val carbonFragments = getCarbonFragments(cluster.powerSource.carbonTracePath)
 
-            val simPowerSource = SimPowerSource(graph, cluster.powerSource.totalPower.toDouble(), carbonFragments, startTime)
+            var carbonModel: CarbonModel? = null;
+            // Create Carbon Model
+            if (carbonFragments != null) {
+                carbonModel = CarbonModel(graph, carbonFragments, startTime);
+                carbonModel.addReceiver(simPowerSource);
+            }
 
-            service.addPowerSource(simPowerSource)
-            simPowerSources.add(simPowerSource)
+            if (cluster.battery != null) {
+                // Create Battery Distributor
+                val batteryDistributor = FlowDistributor(graph)
+                graph.addEdge(batteryDistributor, simPowerSource)
 
-            val powerDistributor = FlowDistributor(graph)
-            graph.addEdge(powerDistributor, simPowerSource)
+                // Create Battery
+                val battery = SimBattery(graph, cluster.battery!!.capacity, cluster.battery!!.chargingSpeed)
+                graph.addEdge(battery, batteryDistributor);
+
+                // Create Aggregator
+                val batteryAggregator = BatteryAggregator(graph, battery, batteryDistributor)
+
+                // Create BatteryPolicy
+                val batteryPolicy = BatteryPolicy(graph, battery, batteryAggregator, cluster.battery!!.batteryPolicy.carbonThreshold)
+
+                carbonModel?.addReceiver(batteryPolicy)
+
+                graph.addEdge(hostDistributor, batteryAggregator)
+            }
+
+            else {
+                graph.addEdge(hostDistributor, simPowerSource)
+            }
+
+
+
 
             // Create hosts, they are connected to the powerMux when SimMachine is created
             for (hostSpec in cluster.hostSpecs) {
@@ -78,7 +117,7 @@ public class HostsProvisioningStep internal constructor(
                         graph,
                         hostSpec.model,
                         hostSpec.cpuPowerModel,
-                        powerDistributor,
+                        hostDistributor,
                     )
 
                 require(simHosts.add(simHost)) { "Host with uid ${hostSpec.uid} already exists" }
@@ -92,7 +131,6 @@ public class HostsProvisioningStep internal constructor(
             }
 
             for (simPowerSource in simPowerSources) {
-                // TODO: add close function
                 simPowerSource.close()
             }
         }

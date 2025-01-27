@@ -32,7 +32,7 @@ import org.opendc.simulator.engine.graph.FlowSupplier;
 /**
  * A {@link SimPsu} implementation that estimates the power consumption based on CPU usage.
  */
-public final class SimPowerSource extends FlowNode implements FlowSupplier {
+public final class SimPowerSource extends FlowNode implements FlowSupplier, CarbonReceiver {
     private long lastUpdate;
 
     private double powerDemand = 0.0f;
@@ -42,10 +42,11 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     private double carbonIntensity = 0.0f;
     private double totalCarbonEmission = 0.0f;
 
-    private CarbonModel carbonModel = null;
     private FlowEdge distributorEdge;
 
-    private double capacity = Long.MAX_VALUE;
+    private double capacity;
+
+    private CarbonModel carbonModel = null;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
@@ -100,21 +101,17 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimPowerSource(FlowGraph graph, double max_capacity, List<CarbonFragment> carbonFragments, long startTime) {
+    public SimPowerSource(FlowGraph graph, double max_capacity) {
         super(graph);
 
         this.capacity = max_capacity;
 
-        if (carbonFragments != null) {
-            this.carbonModel = new CarbonModel(graph, this, carbonFragments, startTime);
-        }
         lastUpdate = this.clock.millis();
     }
 
     public void close() {
         if (this.carbonModel != null) {
             this.carbonModel.close();
-            this.carbonModel = null;
         }
 
         this.closeNode();
@@ -126,7 +123,6 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
 
     @Override
     public long onUpdate(long now) {
-
         return Long.MAX_VALUE;
     }
 
@@ -188,5 +184,15 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier {
     public void updateCarbonIntensity(double carbonIntensity) {
         this.updateCounters();
         this.carbonIntensity = carbonIntensity;
+    }
+
+    @Override
+    public void setCarbonModel(CarbonModel carbonModel) {
+        this.carbonModel = carbonModel;
+    }
+
+    @Override
+    public void removeCarbonModel(CarbonModel carbonModel) {
+        this.carbonModel = null;
     }
 }

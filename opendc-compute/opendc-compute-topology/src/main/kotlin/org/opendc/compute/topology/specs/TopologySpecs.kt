@@ -22,6 +22,7 @@
 
 package org.opendc.compute.topology.specs
 
+import jdk.jfr.Threshold
 import kotlinx.serialization.Serializable
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
@@ -51,6 +52,7 @@ public data class ClusterJSONSpec(
     val count: Int = 1,
     val hosts: List<HostJSONSpec>,
     val powerSource: PowerSourceJSONSpec = PowerSourceJSONSpec.DFLT,
+    val battery: BatteryJSONSpec? = null,
     val location: String = "NL",
 )
 
@@ -155,3 +157,23 @@ public data class PowerSourceJSONSpec(
             )
     }
 }
+
+/**
+ * Definition of a power source used for JSON input.
+ *
+ * @property vendor
+ * @property modelName
+ * @property arch
+ * @property totalPower
+ */
+@Serializable
+public data class BatteryJSONSpec(
+    val capacity: Double,
+    val chargingSpeed: Double,
+    val batteryPolicy: BatteryPolicyJSONSpec
+)
+
+@Serializable
+public data class BatteryPolicyJSONSpec(
+    val carbonThreshold: Double,
+)
