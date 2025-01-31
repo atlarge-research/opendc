@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.compute.power;
 
-import java.util.List;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowGraph;

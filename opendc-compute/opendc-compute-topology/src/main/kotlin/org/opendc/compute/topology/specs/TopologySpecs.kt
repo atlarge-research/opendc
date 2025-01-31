@@ -22,7 +22,6 @@
 
 package org.opendc.compute.topology.specs
 
-import jdk.jfr.Threshold
 import kotlinx.serialization.Serializable
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
@@ -168,10 +167,16 @@ public data class PowerSourceJSONSpec(
  */
 @Serializable
 public data class BatteryJSONSpec(
-    val capacity: Double,
+    var capacity: Double,
     val chargingSpeed: Double,
-    val batteryPolicy: BatteryPolicyJSONSpec
-)
+    val batteryPolicy: BatteryPolicyJSONSpec,
+    var initialCharge: Double = 0.0,
+) {
+    init {
+        this.capacity *= 3600000
+        this.initialCharge *= 3600000
+    }
+}
 
 @Serializable
 public data class BatteryPolicyJSONSpec(

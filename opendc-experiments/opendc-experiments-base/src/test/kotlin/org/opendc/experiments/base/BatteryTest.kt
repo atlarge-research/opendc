@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.workload.Task
+import org.opendc.experiments.base.experiment.specs.TraceBasedFailureModelSpec
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
 
@@ -35,7 +36,7 @@ import java.util.ArrayList
 class BatteryTest {
     /**
      * Battery test 1: One static task High Carbon, Empty battery
-    */
+     */
     @Test
     fun testBattery1() {
         val workload: ArrayList<Task> =
@@ -60,34 +61,6 @@ class BatteryTest {
     }
 
     /**
-     * Battery test 1: One static task High Carbon, Empty battery
-     */
-    @Test
-    fun testBattery7() {
-        val workload: ArrayList<Task> =
-            arrayListOf(
-                createTestTask(
-                    name = "0",
-                    fragments =
-                        arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 3000.0, 1),
-                        ),
-                    submissionTime = "2022-01-01T00:00",
-                ),
-            )
-
-        val topology = createTopology("batteries/experiment1.json")
-        val monitor = runTest(topology, workload)
-
-//        assertAll(
-//            { assertEquals(150.0, monitor.powerDraws[0]) { "The power usage at timestamp 0 is not correct" } },
-//            { assertEquals(10 * 60 * 150.0, monitor.energyUsages.sum()) { "The total power usage is not correct" } },
-//        )
-    }
-
-    /**
      * Battery test 2: One static task Low Carbon, Empty battery
      */
     @Test
@@ -109,12 +82,10 @@ class BatteryTest {
 
         assertAll(
             { assertEquals(1150.0, monitor.powerDraws[0]) { "The power usage at timestamp 0 is not correct" } },
-            { assertEquals(150.0, monitor.powerDraws[1]) { "The power usage at timestamp 0 is not correct" } },
-            { assertEquals(10 * 60 * 150.0 + 2 * 60 * 1000, monitor.energyUsages.sum()) { "The total power usage is not correct" } },
+            { assertEquals(150.0, monitor.powerDraws[5]) { "The power usage at timestamp 0 is not correct" } },
+            { assertEquals(10 * 60 * 150.0 + 360000, monitor.energyUsages.sum()) { "The total power usage is not correct" } },
         )
     }
-
-
 
     /**
      * Battery test 3: One static task Low Carbon followed by High Carbon, Empty battery
@@ -138,8 +109,9 @@ class BatteryTest {
 
         assertAll(
             { assertEquals(1150.0, monitor.powerDraws[0]) { "The power usage at timestamp 0 is not correct" } },
-            { assertEquals(150.0, monitor.powerDraws[1]) { "The power usage at timestamp 0 is not correct" } },
-            { assertEquals(2 * 60 * 1150.0 + 8 * 60 * 150, monitor.energyUsages.sum()) { "The total power usage is not correct" } },
+            { assertEquals(150.0, monitor.powerDraws[5]) { "The power usage at timestamp 0 is not correct" } },
+            { assertEquals(0.0, monitor.powerDraws[9]) { "The power usage at timestamp 0 is not correct" } },
+            { assertEquals(72000.0 + 12 * 60 * 150, monitor.energyUsages.sum()) { "The total power usage is not correct" } },
         )
     }
 
@@ -165,8 +137,8 @@ class BatteryTest {
 
         assertAll(
             { assertEquals(1150.0, monitor.powerDraws[0]) { "The power usage at timestamp 0 is not correct" } },
-            { assertEquals(150.0, monitor.powerDraws[1]) { "The power usage at timestamp 0 is not correct" } },
-            { assertEquals(30 * 60 * 150.0, monitor.energyUsages.sum()) { "The total power usage is not correct" } },
+            { assertEquals(150.0, monitor.powerDraws[5]) { "The power usage at timestamp 0 is not correct" } },
+            { assertEquals(3 * 60 * 1000.0 + 10 * 60 * 150, monitor.energyUsages.sum()) { "The total power usage is not correct" } },
         )
     }
 
@@ -200,24 +172,20 @@ class BatteryTest {
             { assertEquals(9000.0, monitorBat.energyUsages[2]) { "The power usage at timestamp 2 is not correct" } },
             { assertEquals(9000.0, monitor.energyUsages[10]) { "The power usage at timestamp 2 is not correct" } },
             { assertEquals(0.0, monitorBat.energyUsages[10]) { "The power usage at timestamp 2 is not correct" } },
-            { assertEquals(9000.0, monitor.energyUsages[24]) { "The power usage at timestamp 2 is not correct" } },
-            { assertEquals(9000.0, monitorBat.energyUsages[24]) { "The power usage at timestamp 2 is not correct" } },
+            { assertEquals(9000.0, monitor.energyUsages[18]) { "The power usage at timestamp 2 is not correct" } },
+            { assertEquals(9000.0, monitorBat.energyUsages[18]) { "The power usage at timestamp 2 is not correct" } },
             { assertEquals(30 * 60 * 150.0, monitor.energyUsages.sum()) { "The total power usage is not correct" } },
             { assertEquals(30 * 60 * 150.0, monitorBat.energyUsages.sum()) { "The total power usage is not correct" } },
             { assertEquals(8.0, monitor.carbonEmissions.sum(), 1e-2) { "The total power usage is not correct" } },
-            { assertEquals(6.67, monitorBat.carbonEmissions.sum(),1e-2) { "The total power usage is not correct" } },
+            { assertEquals(7.2, monitorBat.carbonEmissions.sum(), 1e-2) { "The total power usage is not correct" } },
         )
     }
 
     /**
      * Battery test 6: One static task Alternating Low / High battery, battery never charges fully
      */
-    /**
-     * Battery test 5: One static task Alternating Low / High battery, battery never charges fully
-     */
     @Test
     fun testBattery6() {
-
         val numTasks = 1000
 
         val workload: ArrayList<Task> =
@@ -228,7 +196,6 @@ class BatteryTest {
                             name = "0",
                             fragments =
                                 arrayListOf(TraceFragment(10 * 60 * 1000, 1000.0, 1)),
-
                             submissionTime = "2022-01-01T00:00",
                         ),
                     )
@@ -243,5 +210,75 @@ class BatteryTest {
         )
     }
 
+    /**
+     * Battery test 7: One static task High Carbon, Empty battery with failures
+     */
+    @Test
+    fun testBattery7() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                        ),
+                    submissionTime = "2022-01-01T00:00",
+                ),
+            )
 
+        val failureModelSpec =
+            TraceBasedFailureModelSpec(
+                "src/test/resources/failureTraces/single_failure.parquet",
+                repeat = false,
+            )
+
+        val topology = createTopology("batteries/experiment1.json")
+        val monitor = runTest(topology, workload, failureModelSpec = failureModelSpec)
+
+        assertAll(
+            { assertEquals(20 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
+            { assertEquals(150.0, monitor.powerDraws[0]) { "The power usage at timestamp 0 is not correct" } },
+            { assertEquals(15 * 60 * 150.0 + 5 * 60 * 100.0, monitor.energyUsages.sum()) { "The total power usage is not correct" } },
+        )
+    }
+
+    /**
+     * Battery test 8: One static task High Carbon, Empty battery with failures and checkpointing
+     */
+    @Test
+    fun testBattery8() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                        ),
+                    checkpointInterval = 60 * 1000L,
+                    checkpointDuration = 1000L,
+                    submissionTime = "2022-01-01T00:00",
+                ),
+            )
+
+        val failureModelSpec =
+            TraceBasedFailureModelSpec(
+                "src/test/resources/failureTraces/single_failure.parquet",
+                repeat = false,
+            )
+
+        val topology = createTopology("batteries/experiment1.json")
+        val monitor = runTest(topology, workload, failureModelSpec = failureModelSpec)
+
+        assertAll(
+            { assertEquals((960 * 1000) + 5000, monitor.maxTimestamp) { "Total runtime incorrect" } },
+            {
+                assertEquals(
+                    (665 * 150.0) + (300 * 100.0),
+                    monitor.hostEnergyUsages["H01"]?.sum(),
+                ) { "Incorrect energy usage" }
+            },
+        )
+    }
 }

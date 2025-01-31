@@ -50,8 +50,7 @@ public class CarbonModel extends FlowNode {
      * @param startTime The start time of the simulation. This is used to go from relative time (used by the clock)
      *                  to absolute time (used by carbon fragments).
      */
-    public CarbonModel(
-            FlowGraph parentGraph, List<CarbonFragment> carbonFragments, long startTime) {
+    public CarbonModel(FlowGraph parentGraph, List<CarbonFragment> carbonFragments, long startTime) {
         super(parentGraph);
 
         this.startTime = startTime;

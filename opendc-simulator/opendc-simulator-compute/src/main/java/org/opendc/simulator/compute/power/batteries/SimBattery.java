@@ -1,5 +1,28 @@
+/*
+ * Copyright (c) 2025 AtLarge Research
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package org.opendc.simulator.compute.power.batteries;
 
+import org.opendc.simulator.compute.power.batteries.policy.BatteryPolicy;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowGraph;
@@ -54,22 +77,25 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
 
     public boolean isFull() {
         return (this.charge >= this.capacity);
-    };
+    }
+    ;
 
     public boolean isEmpty() {
         return (this.charge <= 0.0);
-    };
-
+    }
+    ;
 
     /**
      * Construct a new {@link FlowNode} instance.
      *
      * @param parentGraph The {@link FlowGraph} this stage belongs to.
      */
-    public SimBattery(FlowGraph parentGraph, double capacity, double chargingSpeed) {
+    public SimBattery(FlowGraph parentGraph, double capacity, double chargingSpeed, double initialCharge) {
         super(parentGraph);
         this.capacity = capacity;
         this.chargingSpeed = chargingSpeed;
+
+        this.charge = initialCharge;
     }
 
     public void close() {
@@ -117,7 +143,7 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
 
         long nextUpdate = now + remainingTime;
 
-        if (nextUpdate < 0 ) {
+        if (nextUpdate < 0) {
             nextUpdate = Long.MAX_VALUE;
         }
         return nextUpdate;
@@ -126,11 +152,11 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
     private long calculateRemainingTime() {
         if ((this.batteryState == BatteryState.Charging) && (this.incomingSupply > 0.0)) {
             double remainingCharge = this.capacity - this.charge;
-            return (long) (remainingCharge / this.incomingSupply) * 1000;
+            return (long) Math.ceil((remainingCharge / this.incomingSupply) * 1000);
         }
 
         if ((this.batteryState == BatteryState.Discharging) && (this.outgoingSupply > 0.0)) {
-            return (long) (this.charge / this.outgoingSupply) * 1000;
+            return (long) Math.ceil((this.charge / this.outgoingSupply) * 1000);
         }
 
         return Long.MAX_VALUE;

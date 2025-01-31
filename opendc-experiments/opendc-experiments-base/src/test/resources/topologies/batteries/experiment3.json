@@ -27,7 +27,7 @@
                 "carbonTracePath": "src/test/resources/carbonTraces/2022-01-01_two_80_120.parquet"
             },
             "battery": {
-                "capacity": 120000,
+                "capacity": 0.02,
                 "chargingSpeed": 1000,
                 "batteryPolicy":
                 {
