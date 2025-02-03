@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +22,12 @@
 
 package org.opendc.compute.topology.specs
 
-public data class ClusterSpec(
-    val name: String,
-    val hostSpecs: List<HostSpec>,
-    val powerSource: PowerSourceSpec,
-    val battery: BatterySpec? = null,
+import java.util.UUID
+
+public data class BatterySpec(
+    val uid: UUID,
+    val capacity: Double,
+    val chargingSpeed: Double,
+    val batteryPolicy: BatteryPolicyJSONSpec,
+    val initialCharge: Double,
 )

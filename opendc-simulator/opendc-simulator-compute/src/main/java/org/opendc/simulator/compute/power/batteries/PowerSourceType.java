@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.topology.specs
+package org.opendc.simulator.compute.power.batteries;
 
-public data class ClusterSpec(
-    val name: String,
-    val hostSpecs: List<HostSpec>,
-    val powerSource: PowerSourceSpec,
-    val battery: BatterySpec? = null,
-)
+public enum PowerSourceType {
+    PowerSource,
+    Battery
+}

@@ -24,6 +24,7 @@
 
 package org.opendc.compute.topology
 
+import org.opendc.compute.topology.specs.BatterySpec
 import org.opendc.compute.topology.specs.ClusterJSONSpec
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostJSONSpec
@@ -109,8 +110,21 @@ private fun ClusterJSONSpec.toClusterSpec(random: RandomGenerator): ClusterSpec 
             totalPower = this.powerSource.totalPower,
             carbonTracePath = this.powerSource.carbonTracePath,
         )
+
+    var batterySpec: BatterySpec? = null
+    if (this.battery != null) {
+        batterySpec =
+            BatterySpec(
+                UUID(random.nextLong(), clusterId.toLong()),
+                this.battery.capacity,
+                this.battery.chargingSpeed,
+                this.battery.batteryPolicy,
+                this.battery.initialCharge,
+            )
+    }
+
     clusterId++
-    return ClusterSpec(this.name, hostSpecs, powerSourceSpec)
+    return ClusterSpec(this.name, hostSpecs, powerSourceSpec, batterySpec)
 }
 
 /**

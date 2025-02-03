@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute.power;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.opendc.simulator.engine.graph.FlowGraph;
 import org.opendc.simulator.engine.graph.FlowNode;
@@ -32,11 +33,11 @@ import org.opendc.simulator.engine.graph.FlowNode;
  */
 public class CarbonModel extends FlowNode {
 
-    private SimPowerSource powerSource;
+    private final ArrayList<CarbonReceiver> receivers = new ArrayList<>();
 
-    private long startTime = 0L; // The absolute timestamp on which the workload started
+    private final long startTime; // The absolute timestamp on which the workload started
 
-    private List<CarbonFragment> fragments;
+    private final List<CarbonFragment> fragments;
     private CarbonFragment current_fragment;
 
     private int fragment_index;
@@ -45,16 +46,13 @@ public class CarbonModel extends FlowNode {
      * Construct a CarbonModel
      *
      * @param parentGraph The active FlowGraph which should be used to make the new FlowNode
-     * @param powerSource The Power Source which should be updated with the carbon intensity
      * @param carbonFragments A list of Carbon Fragments defining the carbon intensity at different time frames
      * @param startTime The start time of the simulation. This is used to go from relative time (used by the clock)
      *                  to absolute time (used by carbon fragments).
      */
-    public CarbonModel(
-            FlowGraph parentGraph, SimPowerSource powerSource, List<CarbonFragment> carbonFragments, long startTime) {
+    public CarbonModel(FlowGraph parentGraph, List<CarbonFragment> carbonFragments, long startTime) {
         super(parentGraph);
 
-        this.powerSource = powerSource;
         this.startTime = startTime;
         this.fragments = carbonFragments;
 
@@ -64,6 +62,10 @@ public class CarbonModel extends FlowNode {
     }
 
     public void close() {
+        for (CarbonReceiver receiver : receivers) {
+            receiver.removeCarbonModel(this);
+        }
+
         this.closeNode();
     }
 
@@ -114,6 +116,16 @@ public class CarbonModel extends FlowNode {
     }
 
     private void pushCarbonIntensity(double carbonIntensity) {
-        this.powerSource.updateCarbonIntensity(carbonIntensity);
+        for (CarbonReceiver receiver : this.receivers) {
+            receiver.updateCarbonIntensity(carbonIntensity);
+        }
+    }
+
+    public void addReceiver(CarbonReceiver receiver) {
+        this.receivers.add(receiver);
+
+        receiver.setCarbonModel(this);
+
+        receiver.updateCarbonIntensity(this.current_fragment.getCarbonIntensity());
     }
 }

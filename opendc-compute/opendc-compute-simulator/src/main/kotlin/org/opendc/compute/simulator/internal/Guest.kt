@@ -96,6 +96,7 @@ public class Guest(
 
         val scalingPolicy = NoDelayScaling()
 
+        // TODO: This is not being used at the moment
         val bootworkload =
             TraceWorkload(
                 ArrayList(

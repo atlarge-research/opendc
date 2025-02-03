@@ -51,6 +51,7 @@ public data class ClusterJSONSpec(
     val count: Int = 1,
     val hosts: List<HostJSONSpec>,
     val powerSource: PowerSourceJSONSpec = PowerSourceJSONSpec.DFLT,
+    val battery: BatteryJSONSpec? = null,
     val location: String = "NL",
 )
 
@@ -155,3 +156,29 @@ public data class PowerSourceJSONSpec(
             )
     }
 }
+
+/**
+ * Definition of a power source used for JSON input.
+ *
+ * @property vendor
+ * @property modelName
+ * @property arch
+ * @property totalPower
+ */
+@Serializable
+public data class BatteryJSONSpec(
+    var capacity: Double,
+    val chargingSpeed: Double,
+    val batteryPolicy: BatteryPolicyJSONSpec,
+    var initialCharge: Double = 0.0,
+) {
+    init {
+        this.capacity *= 3600000
+        this.initialCharge *= 3600000
+    }
+}
+
+@Serializable
+public data class BatteryPolicyJSONSpec(
+    val carbonThreshold: Double,
+)
