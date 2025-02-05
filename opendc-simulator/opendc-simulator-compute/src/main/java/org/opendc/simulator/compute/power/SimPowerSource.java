@@ -43,9 +43,12 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
 
     private FlowEdge distributorEdge;
 
-    private double capacity;
+    private final double capacity;
 
     private CarbonModel carbonModel = null;
+
+    private final String name;
+    private final String clusterName;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
@@ -96,16 +99,27 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
         return this.capacity;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getClusterName() {
+        return clusterName;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimPowerSource(FlowGraph graph, double max_capacity) {
+    public SimPowerSource(FlowGraph graph, double max_capacity, String name, String clusterName) {
         super(graph);
 
         this.capacity = max_capacity;
 
         lastUpdate = this.clock.millis();
+
+        this.name = name;
+        this.clusterName = clusterName;
     }
 
     public void close() {
@@ -136,9 +150,9 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
         long lastUpdate = this.lastUpdate;
         this.lastUpdate = now;
 
-        long duration = now - lastUpdate;
-        if (duration > 0) {
-            double energyUsage = (this.powerSupplied * duration * 0.001);
+        long passedTime = now - lastUpdate;
+        if (passedTime > 0) {
+            double energyUsage = (this.powerSupplied * passedTime * 0.001);
 
             // Compute the energy usage of the machine
             this.totalEnergyUsage += energyUsage;

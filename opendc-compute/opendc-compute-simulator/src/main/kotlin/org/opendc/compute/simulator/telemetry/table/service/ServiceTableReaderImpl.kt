@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.telemetry.table
+package org.opendc.compute.simulator.telemetry.table.service
 
 import org.opendc.compute.simulator.service.ComputeService
 import java.time.Duration

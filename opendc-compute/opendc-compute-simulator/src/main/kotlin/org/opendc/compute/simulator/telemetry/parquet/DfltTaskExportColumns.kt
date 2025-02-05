@@ -29,7 +29,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
-import org.opendc.compute.simulator.telemetry.table.TaskTableReader
+import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 
 /**
@@ -66,13 +66,13 @@ public object DfltTaskExportColumns {
                     .named("task_id"),
         ) { Binary.fromString(it.taskInfo.id) }
 
-    public val HOST_ID: ExportColumn<TaskTableReader> =
-        ExportColumn(
-            field =
-                Types.optional(BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("host_id"),
-        ) { it.host?.id?.let { Binary.fromString(it) } }
+//    public val HOST_ID: ExportColumn<TaskTableReader> =
+//        ExportColumn(
+//            field =
+//                Types.optional(BINARY)
+//                    .`as`(LogicalTypeAnnotation.stringType())
+//                    .named("host_id"),
+//        ) { it.host?.id?.let { Binary.fromString(it) } }
 
     public val TASK_NAME: ExportColumn<TaskTableReader> =
         ExportColumn(

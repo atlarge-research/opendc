@@ -50,7 +50,6 @@ import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.Random
-import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory
@@ -228,7 +227,7 @@ public class OpenDCRunner(
      *
      * @param scenario The scenario to simulate.
      * @param repeat The repeat number used to seed the simulation.
-     * @param topology The topology to simulate.
+     * @param topologyHosts The topology to simulate.
      */
     private inner class SimulationTask(
         private val scenario: Scenario,
@@ -264,7 +263,6 @@ public class OpenDCRunner(
 
                 val powerSourceSpec =
                     PowerSourceSpec(
-                        UUID(0, 0),
                         totalPower = Long.MAX_VALUE,
                     )
                 val topology = listOf(ClusterSpec("cluster", topologyHosts, powerSourceSpec))
@@ -359,9 +357,8 @@ public class OpenDCRunner(
 
             val spec =
                 HostSpec(
-                    UUID(random.nextLong(), random.nextLong()),
                     "node-$clusterId-$position",
-                    mapOf("cluster" to clusterId),
+                    clusterId,
                     MachineModel(processors, memoryUnits[0]),
                     powerModel,
                 )

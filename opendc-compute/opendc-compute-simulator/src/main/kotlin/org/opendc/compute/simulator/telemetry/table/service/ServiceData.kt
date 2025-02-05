@@ -20,21 +20,36 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.topology.specs
+package org.opendc.compute.simulator.telemetry.table.service
 
-import org.opendc.simulator.compute.cpu.CpuPowerModel
-import org.opendc.simulator.compute.models.MachineModel
+import java.time.Instant
 
 /**
- * Description of a physical host that will be simulated by OpenDC and host the virtual machines.
- *
- * @param name The name of the host.
- * @param model The physical model of the machine.
- * @param cpuPowerModel The [cpuPowerModel] that determines the power draw based on cpu utilization
+ * A trace entry for the compute service.
  */
-public data class HostSpec(
-    val name: String,
-    val clusterName: String,
-    val model: MachineModel,
-    val cpuPowerModel: CpuPowerModel,
+public data class ServiceData(
+    val timestamp: Instant,
+    val hostsUp: Int,
+    val hostsDown: Int,
+    val tasksTotal: Int,
+    val tasksPending: Int,
+    val tasksActive: Int,
+    val attemptsSuccess: Int,
+    val attemptsTerminated: Int,
 )
+
+/**
+ * Convert a [ServiceTableReader] into a persistent object.
+ */
+public fun ServiceTableReader.toServiceData(): ServiceData {
+    return ServiceData(
+        timestamp,
+        hostsUp,
+        hostsDown,
+        tasksTotal,
+        tasksPending,
+        tasksActive,
+        attemptsSuccess,
+        attemptsFailure,
+    )
+}

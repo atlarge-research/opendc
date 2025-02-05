@@ -20,25 +20,23 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.telemetry.table
+package org.opendc.compute.simulator.telemetry.table.service
 
 import org.opendc.trace.util.parquet.exporter.Exportable
 import java.time.Instant
 
 /**
- * An interface that is used to read a row of a host trace entry.
+ * An interface that is used to read a row of a service trace entry.
  */
-public interface PowerSourceTableReader : Exportable {
-    public fun copy(): PowerSourceTableReader
+public interface ServiceTableReader : Exportable {
+    public fun copy(): ServiceTableReader
 
-    public fun setValues(table: PowerSourceTableReader)
+    public fun setValues(table: ServiceTableReader)
 
     public fun record(now: Instant)
 
-    public fun reset()
-
     /**
-     * The timestamp of the current entry of the reader relative to the start of the workload.
+     * The timestamp of the current entry of the reader.
      */
     public val timestamp: Instant
 
@@ -48,27 +46,47 @@ public interface PowerSourceTableReader : Exportable {
     public val timestampAbsolute: Instant
 
     /**
-     * The number of connected hosts
+     * The number of hosts that are up at this instant.
      */
-    public val hostsConnected: Int
+    public val hostsUp: Int
 
     /**
-     * The current power draw of the host in W.
+     * The number of hosts that are down at this instant.
      */
-    public val powerDraw: Double
+    public val hostsDown: Int
 
     /**
-     * The total energy consumption of the host since last sample in J.
+     * The number of tasks that are registered with the compute service.
      */
-    public val energyUsage: Double
+    public val tasksTotal: Int
 
     /**
-     * The current carbon intensity of the host in gCO2 / kW.
+     * The number of tasks that are pending to be scheduled.
      */
-    public val carbonIntensity: Double
+    public val tasksPending: Int
 
     /**
-     * The current carbon emission since the last deadline in g.
+     * The number of tasks that are currently active.
      */
-    public val carbonEmission: Double
+    public val tasksActive: Int
+
+    /**
+     * The number of tasks that completed the tasks successfully
+     */
+    public val tasksCompleted: Int
+
+    /**
+     * The number of tasks that failed more times than allowed and are thus terminated
+     */
+    public val tasksTerminated: Int
+
+    /**
+     * The scheduling attempts that were successful.
+     */
+    public val attemptsSuccess: Int
+
+    /**
+     * The scheduling attempts that were unsuccessful due to client error.
+     */
+    public val attemptsFailure: Int
 }

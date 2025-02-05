@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.telemetry.table
+package org.opendc.compute.simulator.telemetry.table.task
 
 import org.opendc.compute.api.TaskState
 import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.telemetry.table.host.HostInfo
 import java.time.Duration
 import java.time.Instant
 
@@ -171,12 +172,12 @@ public class TaskTableReaderImpl(
      */
     override fun record(now: Instant) {
         val newHost = service.lookupHost(task)
-        if (newHost != null && newHost.getUid() != _host?.getUid()) {
+        if (newHost != null && newHost.getName() != _host?.getName()) {
             _host = newHost
             host =
                 HostInfo(
-                    newHost.getUid().toString(),
                     newHost.getName(),
+                    newHost.getClusterName(),
                     "x86",
                     newHost.getModel().coreCount,
                     newHost.getModel().cpuCapacity,

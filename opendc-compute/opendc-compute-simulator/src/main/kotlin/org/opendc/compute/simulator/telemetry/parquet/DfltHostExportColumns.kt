@@ -29,7 +29,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
-import org.opendc.compute.simulator.telemetry.table.HostTableReader
+import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 
 /**
@@ -58,31 +58,31 @@ public object DfltHostExportColumns {
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
-    public val HOST_ID: ExportColumn<HostTableReader> =
+    public val NAME: ExportColumn<HostTableReader> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
-                    .named("host_id"),
-        ) { Binary.fromString(it.host.id) }
+                    .named("name"),
+        ) { Binary.fromString(it.hostInfo.name) }
 
-    public val HOST_NAME: ExportColumn<HostTableReader> =
+    public val CLUSTER_NAME: ExportColumn<HostTableReader> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
-                    .named("host_name"),
-        ) { Binary.fromString(it.host.name) }
+                    .named("cluster_name"),
+        ) { Binary.fromString(it.hostInfo.clusterName) }
 
     public val CPU_COUNT: ExportColumn<HostTableReader> =
         ExportColumn(
             field = Types.required(INT32).named("core_count"),
-        ) { it.host.coreCount }
+        ) { it.hostInfo.coreCount }
 
     public val MEM_CAPACITY: ExportColumn<HostTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("mem_capacity"),
-        ) { it.host.memCapacity }
+        ) { it.hostInfo.memCapacity }
 
     public val GUESTS_TERMINATED: ExportColumn<HostTableReader> =
         ExportColumn(
@@ -181,5 +181,7 @@ public object DfltHostExportColumns {
         setOf(
             TIMESTAMP_ABS,
             TIMESTAMP,
+            NAME,
+            CLUSTER_NAME,
         )
 }

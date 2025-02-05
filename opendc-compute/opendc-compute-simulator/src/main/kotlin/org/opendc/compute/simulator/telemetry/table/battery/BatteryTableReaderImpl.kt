@@ -20,41 +20,49 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.telemetry.table
+package org.opendc.compute.simulator.telemetry.table.battery
 
-import org.opendc.simulator.compute.power.SimPowerSource
+import org.opendc.simulator.compute.power.batteries.BatteryState
+import org.opendc.simulator.compute.power.batteries.SimBattery
 import java.time.Duration
 import java.time.Instant
 
 /**
  * An aggregator for task metrics before they are reported.
  */
-public class PowerSourceTableReaderImpl(
-    powerSource: SimPowerSource,
+public class BatteryTableReaderImpl(
+    private val battery: SimBattery,
     private val startTime: Duration = Duration.ofMillis(0),
-) : PowerSourceTableReader {
-    override fun copy(): PowerSourceTableReader {
+) : BatteryTableReader {
+    override fun copy(): BatteryTableReader {
         val newPowerSourceTable =
-            PowerSourceTableReaderImpl(
-                powerSource,
+            BatteryTableReaderImpl(
+                battery,
             )
         newPowerSourceTable.setValues(this)
 
         return newPowerSourceTable
     }
 
-    override fun setValues(table: PowerSourceTableReader) {
+    override fun setValues(table: BatteryTableReader) {
         _timestamp = table.timestamp
         _timestampAbsolute = table.timestampAbsolute
 
         _hostsConnected = table.hostsConnected
         _powerDraw = table.powerDraw
         _energyUsage = table.energyUsage
-        _carbonIntensity = table.carbonIntensity
-        _carbonEmission = table.carbonEmission
+        _charge = table.charge
+        _capacity = table.capacity
+        _batteryState = table.batteryState
     }
 
-    private val powerSource = powerSource
+    public override val batteryInfo: BatteryInfo =
+        BatteryInfo(
+            battery.name,
+            battery.clusterName,
+            "XXX",
+            battery.capacity,
+        )
 
     private var _timestamp = Instant.MIN
     override val timestamp: Instant
@@ -77,14 +85,17 @@ public class PowerSourceTableReaderImpl(
     private var _energyUsage = 0.0
     private var previousEnergyUsage = 0.0
 
-    override val carbonIntensity: Double
-        get() = _carbonIntensity
-    private var _carbonIntensity = 0.0
+    override val charge: Double
+        get() = _charge
+    private var _charge = 0.0
 
-    override val carbonEmission: Double
-        get() = _carbonEmission - previousCarbonEmission
-    private var _carbonEmission = 0.0
-    private var previousCarbonEmission = 0.0
+    override val capacity: Double
+        get() = _capacity
+    private var _capacity = 0.0
+
+    override val batteryState: BatteryState
+        get() = _batteryState
+    private var _batteryState = BatteryState.IDLE
 
     /**
      * Record the next cycle.
@@ -95,11 +106,13 @@ public class PowerSourceTableReaderImpl(
 
         _hostsConnected = 0
 
-        powerSource.updateCounters()
-        _powerDraw = powerSource.powerDraw
-        _energyUsage = powerSource.energyUsage
-        _carbonIntensity = powerSource.carbonIntensity
-        _carbonEmission = powerSource.carbonEmission
+        battery.updateCounters()
+        _powerDraw = battery.outgoingSupply
+        _energyUsage = battery.totalEnergyUsage
+
+        _charge = battery.charge
+        _capacity = battery.capacity
+        _batteryState = battery.batteryState
     }
 
     /**
@@ -107,12 +120,12 @@ public class PowerSourceTableReaderImpl(
      */
     override fun reset() {
         previousEnergyUsage = _energyUsage
-        previousCarbonEmission = _carbonEmission
 
         _hostsConnected = 0
         _powerDraw = 0.0
         _energyUsage = 0.0
-        _carbonIntensity = 0.0
-        _carbonEmission = 0.0
+        _charge = 0.0
+        _capacity = 0.0
+        _batteryState = BatteryState.IDLE
     }
 }
