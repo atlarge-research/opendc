@@ -25,8 +25,8 @@
 package org.opendc.common.units
 
 import kotlinx.serialization.Serializable
-import mu.KotlinLogging
 import org.opendc.common.annotations.InternalUse
+import org.opendc.common.logger.logger
 import org.opendc.common.utils.fmt
 import org.opendc.common.utils.ifNeg0thenPos0
 import kotlin.text.RegexOption.IGNORE_CASE
@@ -210,8 +210,7 @@ public value class BoundedPercentage
             }
 
         public companion object {
-            // TODO: replace with `by logger()` if pr #241 is approved
-            private val LOG = KotlinLogging.logger(name = this::class.java.enclosingClass.simpleName)
+            private val LOG by logger()
         }
     }
 

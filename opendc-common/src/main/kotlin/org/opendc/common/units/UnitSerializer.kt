@@ -32,7 +32,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.JsonTransformingSerializer
-import mu.KotlinLogging
+import org.opendc.common.logger.logger
 
 /**
  * Serializer for [T].
@@ -84,8 +84,7 @@ internal open class UnitSerializer<T : Unit<T>>(
         },
     ) {
     companion object {
-        // TODO: replace with `by logger()` if pr #241 is approved
-        val LOG = KotlinLogging.logger(name = this::class.java.enclosingClass.simpleName)
+        val LOG by logger()
 
         val json = Json
 
