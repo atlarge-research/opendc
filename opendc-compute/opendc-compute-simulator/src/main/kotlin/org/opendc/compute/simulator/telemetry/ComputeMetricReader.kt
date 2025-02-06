@@ -32,11 +32,13 @@ import org.opendc.common.asCoroutineDispatcher
 import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceTask
-import org.opendc.compute.simulator.telemetry.table.HostTableReaderImpl
-import org.opendc.compute.simulator.telemetry.table.PowerSourceTableReaderImpl
-import org.opendc.compute.simulator.telemetry.table.ServiceTableReaderImpl
-import org.opendc.compute.simulator.telemetry.table.TaskTableReaderImpl
+import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReaderImpl
+import org.opendc.compute.simulator.telemetry.table.host.HostTableReaderImpl
+import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReaderImpl
+import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReaderImpl
+import org.opendc.compute.simulator.telemetry.table.task.TaskTableReaderImpl
 import org.opendc.simulator.compute.power.SimPowerSource
+import org.opendc.simulator.compute.power.batteries.SimBattery
 import java.time.Duration
 
 /**
@@ -84,6 +86,11 @@ public class ComputeMetricReader(
      * Mapping from [SimPowerSource] instances to [PowerSourceTableReaderImpl]
      */
     private val powerSourceTableReaders = mutableMapOf<SimPowerSource, PowerSourceTableReaderImpl>()
+
+    /**
+     * Mapping from [SimPowerSource] instances to [PowerSourceTableReaderImpl]
+     */
+    private val batteryTableReaders = mutableMapOf<SimBattery, BatteryTableReaderImpl>()
 
     /**
      * The background job that is responsible for collecting the metrics every cycle.
@@ -145,6 +152,20 @@ public class ComputeMetricReader(
                 val reader =
                     this.powerSourceTableReaders.computeIfAbsent(simPowerSource) {
                         PowerSourceTableReaderImpl(
+                            it,
+                            startTime,
+                        )
+                    }
+
+                reader.record(now)
+                this.monitor.record(reader.copy())
+                reader.reset()
+            }
+
+            for (simBattery in this.service.batteries) {
+                val reader =
+                    this.batteryTableReaders.computeIfAbsent(simBattery) {
+                        BatteryTableReaderImpl(
                             it,
                             startTime,
                         )

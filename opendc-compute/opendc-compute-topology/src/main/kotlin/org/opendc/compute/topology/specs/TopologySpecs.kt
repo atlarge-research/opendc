@@ -66,7 +66,7 @@ public data class ClusterJSONSpec(
  */
 @Serializable
 public data class HostJSONSpec(
-    val name: String? = null,
+    val name: String = "Host",
     val cpu: CPUJSONSpec,
     val memory: MemoryJSONSpec,
     val powerModel: PowerModelSpec = PowerModelSpec.DFLT,
@@ -143,6 +143,7 @@ public data class PowerModelSpec(
  */
 @Serializable
 public data class PowerSourceJSONSpec(
+    val name: String = "PowerSource",
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val arch: String = "unknown",
@@ -158,15 +159,17 @@ public data class PowerSourceJSONSpec(
 }
 
 /**
- * Definition of a power source used for JSON input.
+ * Definition of a battery used for JSON input.
  *
- * @property vendor
- * @property modelName
- * @property arch
- * @property totalPower
+ * @property name The name of the battery
+ * @property capacity The capacity of the battery in kWh
+ * @property chargingSpeed The charging speed of the battery in J
+ * @property batteryPolicy The policy used to decide when the battery charges and discharges
+ * @property initialCharge The initial charge in the battery
  */
 @Serializable
 public data class BatteryJSONSpec(
+    val name: String = "Battery",
     var capacity: Double,
     val chargingSpeed: Double,
     val batteryPolicy: BatteryPolicyJSONSpec,

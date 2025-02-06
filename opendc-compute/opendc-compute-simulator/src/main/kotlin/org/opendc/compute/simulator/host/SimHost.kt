@@ -40,24 +40,21 @@ import org.opendc.simulator.engine.graph.FlowGraph
 import java.time.Duration
 import java.time.Instant
 import java.time.InstantSource
-import java.util.UUID
 
 /**
- * A [Host] implementation that simulates virtual machines on a physical machine.
+ * A [SimHost] implementation that simulates virtual machines on a physical machine.
  *
- * @param uid The unique identifier of the host.
  * @param name The name of the host.
- * @param meta The metadata of the host.
  * @param clock The (virtual) clock used to track time.
  * @param graph The Flow Graph that the Host is part of
  * @param machineModel The static model of the host
- * @param powerModel The static powerModel of the CPU TODO: can this be combined with machinemodel?
+ * @param cpuPowerModel The power model of the host
+ * @param powerDistributor The power distributor to which the host is connected
  * @constructor Create empty Sim host
  */
 public class SimHost(
-    private val uid: UUID,
     private val name: String,
-    private val meta: Map<String, Any>,
+    private val clusterName: String,
     private val clock: InstantSource,
     private val graph: FlowGraph,
     private val machineModel: MachineModel,
@@ -170,20 +167,16 @@ public class SimHost(
         hostState = state
     }
 
-    public fun getUid(): UUID {
-        return uid
-    }
-
     public fun getName(): String {
         return name
     }
 
-    public fun getModel(): HostModel {
-        return model
+    public fun getClusterName(): String {
+        return clusterName
     }
 
-    public fun getMeta(): Map<String, *> {
-        return meta
+    public fun getModel(): HostModel {
+        return model
     }
 
     public fun getState(): HostState {
@@ -236,12 +229,12 @@ public class SimHost(
     }
 
     public fun start(task: ServiceTask) {
-        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.uid} at host $uid" }
+        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
         guest.start()
     }
 
     public fun stop(task: ServiceTask) {
-        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.uid} at host $uid" }
+        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
         guest.stop()
     }
 
@@ -308,7 +301,7 @@ public class SimHost(
     }
 
     public fun getSystemStats(task: ServiceTask): GuestSystemStats {
-        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.uid} at host $uid" }
+        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
         return guest.getSystemStats()
     }
 
@@ -330,17 +323,17 @@ public class SimHost(
     }
 
     public fun getCpuStats(task: ServiceTask): GuestCpuStats {
-        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.uid} at host $uid" }
+        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
         return guest.getCpuStats()
     }
 
-    override fun hashCode(): Int = uid.hashCode()
+    override fun hashCode(): Int = name.hashCode()
 
     override fun equals(other: Any?): Boolean {
-        return other is SimHost && uid == other.uid
+        return other is SimHost && name == other.name
     }
 
-    override fun toString(): String = "SimHost[uid=$uid,name=$name,model=$model]"
+    override fun toString(): String = "SimHost[uid=$name,name=$name,model=$model]"
 
     /**
      * Convert flavor to machine model.

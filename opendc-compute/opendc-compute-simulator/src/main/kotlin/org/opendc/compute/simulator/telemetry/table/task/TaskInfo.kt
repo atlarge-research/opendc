@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.topology.specs
-
-import org.opendc.simulator.compute.cpu.CpuPowerModel
-import org.opendc.simulator.compute.models.MachineModel
+package org.opendc.compute.simulator.telemetry.table.task
 
 /**
- * Description of a physical host that will be simulated by OpenDC and host the virtual machines.
- *
- * @param name The name of the host.
- * @param model The physical model of the machine.
- * @param cpuPowerModel The [cpuPowerModel] that determines the power draw based on cpu utilization
+ * Static information about a task exposed to the telemetry service.
  */
-public data class HostSpec(
+public data class TaskInfo(
+    val id: String,
     val name: String,
-    val clusterName: String,
-    val model: MachineModel,
-    val cpuPowerModel: CpuPowerModel,
+    val type: String,
+    val arch: String,
+    val cpuCount: Int,
+    val memCapacity: Long,
 )

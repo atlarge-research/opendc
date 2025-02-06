@@ -38,7 +38,7 @@ public abstract class BatteryPolicy extends FlowNode implements CarbonReceiver {
 
     protected double carbonIntensity;
 
-    protected BatteryState batteryState = BatteryState.Idle;
+    protected BatteryState batteryState = BatteryState.IDLE;
 
     /**
      * Construct a new {@link FlowNode} instance.
@@ -68,20 +68,20 @@ public abstract class BatteryPolicy extends FlowNode implements CarbonReceiver {
 
         this.batteryState = newBatteryState;
 
-        if (newBatteryState == BatteryState.Charging) {
-            this.battery.setBatteryState(BatteryState.Charging);
+        if (newBatteryState == BatteryState.CHARGING) {
+            this.battery.setBatteryState(BatteryState.CHARGING);
             this.aggregator.setPowerSourceType(PowerSourceType.PowerSource);
             return;
         }
 
-        if (newBatteryState == BatteryState.Idle) {
-            this.battery.setBatteryState(BatteryState.Idle);
+        if (newBatteryState == BatteryState.IDLE) {
+            this.battery.setBatteryState(BatteryState.IDLE);
             this.aggregator.setPowerSourceType(PowerSourceType.PowerSource);
             return;
         }
 
-        if (newBatteryState == BatteryState.Discharging) {
-            this.battery.setBatteryState(BatteryState.Discharging);
+        if (newBatteryState == BatteryState.DISCHARGING) {
+            this.battery.setBatteryState(BatteryState.DISCHARGING);
             this.aggregator.setPowerSourceType(PowerSourceType.Battery);
         }
     }

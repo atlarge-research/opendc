@@ -98,7 +98,7 @@ public fun runScenario(
             val startTimeLong = workload.minOf { it.submissionTime }.toEpochMilli()
             val startTime = Duration.ofMillis(startTimeLong)
 
-            val topology = clusterTopology(scenario.topologySpec.pathToFile, Random(seed))
+            val topology = clusterTopology(scenario.topologySpec.pathToFile)
             provisioner.runSteps(
                 setupComputeService(
                     serviceDomain,
@@ -131,7 +131,6 @@ public fun runScenario(
  * @param scenario The scenario being run.
  * @param seed The seed of the current run
  * @param startTime The start time of the simulation given by the workload trace.
- * @param carbonTrace The carbon trace used to determine carbon emissions.
  */
 public fun addExportModel(
     provisioner: Provisioner,

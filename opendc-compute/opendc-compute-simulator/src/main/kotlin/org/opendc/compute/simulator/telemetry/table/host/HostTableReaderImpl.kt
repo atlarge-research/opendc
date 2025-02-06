@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.telemetry.table
+package org.opendc.compute.simulator.telemetry.table.host
 
 import org.opendc.compute.simulator.host.SimHost
 import java.time.Duration
@@ -30,12 +30,12 @@ import java.time.Instant
  * An aggregator for host metrics before they are reported.
  */
 public class HostTableReaderImpl(
-    host: SimHost,
+    private val host: SimHost,
     private val startTime: Duration = Duration.ofMillis(0),
 ) : HostTableReader {
     override fun copy(): HostTableReader {
         val newHostTable =
-            HostTableReaderImpl(_host)
+            HostTableReaderImpl(host)
         newHostTable.setValues(this)
 
         return newHostTable
@@ -65,12 +65,10 @@ public class HostTableReaderImpl(
         _bootTimeAbsolute = table.bootTimeAbsolute
     }
 
-    private val _host = host
-
-    override val host: HostInfo =
+    override val hostInfo: HostInfo =
         HostInfo(
-            host.getUid().toString(),
             host.getName(),
+            host.getClusterName(),
             "x86",
             host.getModel().coreCount,
             host.getModel().cpuCapacity,
@@ -168,8 +166,8 @@ public class HostTableReaderImpl(
      * Record the next cycle.
      */
     override fun record(now: Instant) {
-        val hostCpuStats = _host.getCpuStats()
-        val hostSysStats = _host.getSystemStats()
+        val hostCpuStats = host.getCpuStats()
+        val hostSysStats = host.getSystemStats()
 
         _timestamp = now
         _timestampAbsolute = now + startTime

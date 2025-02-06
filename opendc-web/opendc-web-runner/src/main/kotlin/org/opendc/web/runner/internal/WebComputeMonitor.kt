@@ -23,10 +23,10 @@
 package org.opendc.web.runner.internal
 
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
-import org.opendc.compute.simulator.telemetry.table.HostTableReader
-import org.opendc.compute.simulator.telemetry.table.ServiceData
-import org.opendc.compute.simulator.telemetry.table.ServiceTableReader
-import org.opendc.compute.simulator.telemetry.table.toServiceData
+import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
+import org.opendc.compute.simulator.telemetry.table.service.ServiceData
+import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
+import org.opendc.compute.simulator.telemetry.table.service.toServiceData
 import kotlin.math.roundToLong
 
 /**
@@ -47,7 +47,7 @@ internal class WebComputeMonitor : ComputeMonitor {
                 hostAggregateMetrics.totalFailureVmSlices + reader.guestsRunning * slices,
             )
 
-        hostMetrics.compute(reader.host.id) { _, prev ->
+        hostMetrics.compute(reader.hostInfo.name) { _, prev ->
             HostMetrics(
                 reader.cpuUsage + (prev?.cpuUsage ?: 0.0),
                 reader.cpuDemand + (prev?.cpuDemand ?: 0.0),

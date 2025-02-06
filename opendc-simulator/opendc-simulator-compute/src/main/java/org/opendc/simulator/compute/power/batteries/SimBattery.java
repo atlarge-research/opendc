@@ -32,21 +32,49 @@ import org.opendc.simulator.engine.graph.FlowSupplier;
 public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
 
     private final double capacity;
-    private double chargingSpeed;
+    private final double chargingSpeed;
 
     private FlowEdge distributorEdge;
     private FlowEdge aggregatorEdge;
 
-    private BatteryState batteryState = BatteryState.Idle;
+    private BatteryState batteryState = BatteryState.IDLE;
 
     private double charge;
 
     private long lastUpdate;
     private double incomingSupply;
     private double incomingDemand;
-
     private double outgoingDemand;
     private double outgoingSupply;
+
+    private final String name;
+    private final String clusterName;
+
+    public String getName() {
+        return name;
+    }
+
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public double getTotalEnergyUsage() {
+        return totalEnergyUsage;
+    }
+
+    public void setTotalEnergyUsage(double totalEnergyUsage) {
+        this.totalEnergyUsage = totalEnergyUsage;
+    }
+
+    public double getOutgoingSupply() {
+        return outgoingSupply;
+    }
+
+    public void setOutgoingSupply(double outgoingSupply) {
+        this.outgoingSupply = outgoingSupply;
+    }
+
+    private double totalEnergyUsage = 0.0f;
 
     public BatteryPolicy getBatteryPolicy() {
         return batteryPolicy;
@@ -78,24 +106,31 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
     public boolean isFull() {
         return (this.charge >= this.capacity);
     }
-    ;
 
     public boolean isEmpty() {
         return (this.charge <= 0.0);
     }
-    ;
 
     /**
      * Construct a new {@link FlowNode} instance.
      *
      * @param parentGraph The {@link FlowGraph} this stage belongs to.
      */
-    public SimBattery(FlowGraph parentGraph, double capacity, double chargingSpeed, double initialCharge) {
+    public SimBattery(
+            FlowGraph parentGraph,
+            double capacity,
+            double chargingSpeed,
+            double initialCharge,
+            String name,
+            String clusterName) {
+
         super(parentGraph);
         this.capacity = capacity;
         this.chargingSpeed = chargingSpeed;
 
         this.charge = initialCharge;
+        this.name = name;
+        this.clusterName = clusterName;
     }
 
     public void close() {
@@ -112,17 +147,15 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
     @Override
     public long onUpdate(long now) {
 
-        long passedTime = now - lastUpdate;
-        this.lastUpdate = now;
+        this.updateCounters(now);
 
-        if (this.batteryState == BatteryState.Idle) {
+        if (this.batteryState == BatteryState.IDLE) {
             return Long.MAX_VALUE;
         }
 
-        this.updateCharge(passedTime);
         long remainingTime = 0L;
 
-        if (this.batteryState == BatteryState.Charging) {
+        if (this.batteryState == BatteryState.CHARGING) {
             if (this.isFull()) {
                 this.batteryPolicy.invalidate();
                 return Long.MAX_VALUE;
@@ -131,7 +164,7 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
             remainingTime = this.calculateRemainingTime();
         }
 
-        if (this.batteryState == BatteryState.Discharging) {
+        if (this.batteryState == BatteryState.DISCHARGING) {
             if (this.isEmpty()) {
                 this.batteryPolicy.invalidate();
                 return Long.MAX_VALUE;
@@ -149,27 +182,45 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
         return nextUpdate;
     }
 
+    public void updateCounters(long now) {
+        long lastUpdate = this.lastUpdate;
+        this.lastUpdate = now;
+
+        long passedTime = now - lastUpdate;
+
+        this.updateCharge(passedTime);
+        if (passedTime > 0) {
+            double energyUsage = (this.outgoingSupply * passedTime * 0.001);
+
+            this.totalEnergyUsage += energyUsage;
+        }
+    }
+
+    public void updateCounters() {
+        updateCounters(clock.millis());
+    }
+
+    private void updateCharge(long passedTime) {
+        if (this.batteryState == BatteryState.CHARGING) {
+            this.charge += this.incomingSupply * (passedTime / 1000.0);
+        }
+
+        if (this.batteryState == BatteryState.DISCHARGING) {
+            this.charge -= this.outgoingSupply * (passedTime / 1000.0);
+        }
+    }
+
     private long calculateRemainingTime() {
-        if ((this.batteryState == BatteryState.Charging) && (this.incomingSupply > 0.0)) {
+        if ((this.batteryState == BatteryState.CHARGING) && (this.incomingSupply > 0.0)) {
             double remainingCharge = this.capacity - this.charge;
             return (long) Math.ceil((remainingCharge / this.incomingSupply) * 1000);
         }
 
-        if ((this.batteryState == BatteryState.Discharging) && (this.outgoingSupply > 0.0)) {
+        if ((this.batteryState == BatteryState.DISCHARGING) && (this.outgoingSupply > 0.0)) {
             return (long) Math.ceil((this.charge / this.outgoingSupply) * 1000);
         }
 
         return Long.MAX_VALUE;
-    }
-
-    private void updateCharge(long passedTime) {
-        if (this.batteryState == BatteryState.Charging) {
-            this.charge += this.incomingSupply * (passedTime / 1000.0);
-        }
-
-        if (this.batteryState == BatteryState.Discharging) {
-            this.charge -= this.outgoingSupply * (passedTime / 1000.0);
-        }
     }
 
     public void setBatteryState(BatteryState newBatteryState) {
@@ -178,25 +229,22 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
         }
 
         long now = this.clock.millis();
-        long passedTime = now - lastUpdate;
 
-        updateCharge(passedTime);
-
-        this.lastUpdate = now;
+        updateCounters(now);
 
         this.batteryState = newBatteryState;
 
-        if (this.batteryState == BatteryState.Idle) {
+        if (this.batteryState == BatteryState.IDLE) {
             this.pushOutgoingDemand(this.distributorEdge, 0.0f);
             this.pushOutgoingSupply(this.distributorEdge, 0.0f);
         }
 
-        if (this.batteryState == BatteryState.Charging) {
+        if (this.batteryState == BatteryState.CHARGING) {
             this.pushOutgoingDemand(this.distributorEdge, this.chargingSpeed);
             this.pushOutgoingSupply(this.aggregatorEdge, 0.0f);
         }
 
-        if (this.batteryState == BatteryState.Discharging) {
+        if (this.batteryState == BatteryState.DISCHARGING) {
             this.pushOutgoingDemand(this.distributorEdge, 0.0f);
         }
 

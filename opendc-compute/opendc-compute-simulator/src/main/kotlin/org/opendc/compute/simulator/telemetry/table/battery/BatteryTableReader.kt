@@ -20,36 +20,54 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.telemetry.table
+package org.opendc.compute.simulator.telemetry.table.battery
 
+import org.opendc.simulator.compute.power.batteries.BatteryState
+import org.opendc.trace.util.parquet.exporter.Exportable
 import java.time.Instant
 
 /**
- * A trace entry for the compute service.
+ * An interface that is used to read a row of a host trace entry.
  */
-public data class ServiceData(
-    val timestamp: Instant,
-    val hostsUp: Int,
-    val hostsDown: Int,
-    val tasksTotal: Int,
-    val tasksPending: Int,
-    val tasksActive: Int,
-    val attemptsSuccess: Int,
-    val attemptsTerminated: Int,
-)
+public interface BatteryTableReader : Exportable {
+    public fun copy(): BatteryTableReader
 
-/**
- * Convert a [ServiceTableReader] into a persistent object.
- */
-public fun ServiceTableReader.toServiceData(): ServiceData {
-    return ServiceData(
-        timestamp,
-        hostsUp,
-        hostsDown,
-        tasksTotal,
-        tasksPending,
-        tasksActive,
-        attemptsSuccess,
-        attemptsFailure,
-    )
+    public fun setValues(table: BatteryTableReader)
+
+    public fun record(now: Instant)
+
+    public fun reset()
+
+    public val batteryInfo: BatteryInfo
+
+    /**
+     * The timestamp of the current entry of the reader relative to the start of the workload.
+     */
+    public val timestamp: Instant
+
+    /**
+     * The timestamp of the current entry of the reader.
+     */
+    public val timestampAbsolute: Instant
+
+    /**
+     * The number of connected hosts
+     */
+    public val hostsConnected: Int
+
+    /**
+     * The current power draw of the host in W.
+     */
+    public val powerDraw: Double
+
+    /**
+     * The current power draw of the host in W.
+     */
+    public val energyUsage: Double
+
+    public val batteryState: BatteryState
+
+    public val charge: Double
+
+    public val capacity: Double
 }

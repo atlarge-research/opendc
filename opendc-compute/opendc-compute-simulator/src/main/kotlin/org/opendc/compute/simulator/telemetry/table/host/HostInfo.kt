@@ -20,21 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.topology.specs
-
-import org.opendc.simulator.compute.cpu.CpuPowerModel
-import org.opendc.simulator.compute.models.MachineModel
+package org.opendc.compute.simulator.telemetry.table.host
 
 /**
- * Description of a physical host that will be simulated by OpenDC and host the virtual machines.
- *
- * @param name The name of the host.
- * @param model The physical model of the machine.
- * @param cpuPowerModel The [cpuPowerModel] that determines the power draw based on cpu utilization
+ * Information about a host exposed to the telemetry service.
  */
-public data class HostSpec(
+public data class HostInfo(
     val name: String,
     val clusterName: String,
-    val model: MachineModel,
-    val cpuPowerModel: CpuPowerModel,
+    val arch: String,
+    val coreCount: Int,
+    val coreSpeed: Double,
+    val memCapacity: Long,
 )

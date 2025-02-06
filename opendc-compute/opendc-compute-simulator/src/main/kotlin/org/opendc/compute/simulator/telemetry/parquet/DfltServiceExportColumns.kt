@@ -25,7 +25,7 @@ package org.opendc.compute.simulator.telemetry.parquet
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
-import org.opendc.compute.simulator.telemetry.table.ServiceTableReader
+import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 
 /**

@@ -39,8 +39,8 @@ import org.opendc.simulator.engine.graph.FlowDistributor
  * A [ProvisioningStep] that provisions a list of hosts for a [ComputeService].
  *
  * @param serviceDomain The domain name under which the compute service is registered.
- * @param specs A list of [HostSpec] objects describing the simulated hosts to provision.
- * @param optimize A flag to indicate that the CPU resources of the host should be merged into a single CPU resource.
+ * @param clusterSpecs A list of [HostSpec] objects describing the simulated hosts to provision.
+ * @param startTime The absolute start time of the simulation. Used to determine the carbon trace offset.
  */
 public class HostsProvisioningStep internal constructor(
     private val serviceDomain: String,
@@ -62,7 +62,7 @@ public class HostsProvisioningStep internal constructor(
             // Create the Power Source to which hosts are connected
 
             // Create Power Source
-            val simPowerSource = SimPowerSource(graph, cluster.powerSource.totalPower.toDouble())
+            val simPowerSource = SimPowerSource(graph, cluster.powerSource.totalPower.toDouble(), cluster.powerSource.name, cluster.name)
             simPowerSources.add(simPowerSource)
             service.addPowerSource(simPowerSource)
 
@@ -84,7 +84,14 @@ public class HostsProvisioningStep internal constructor(
 
                 // Create Battery
                 val battery =
-                    SimBattery(graph, cluster.battery!!.capacity, cluster.battery!!.chargingSpeed, cluster.battery!!.initialCharge)
+                    SimBattery(
+                        graph,
+                        cluster.battery!!.capacity,
+                        cluster.battery!!.chargingSpeed,
+                        cluster.battery!!.initialCharge,
+                        cluster.battery!!.name,
+                        cluster.name,
+                    )
                 graph.addEdge(battery, batteryDistributor)
 
                 // Create Aggregator
@@ -102,6 +109,8 @@ public class HostsProvisioningStep internal constructor(
                 carbonModel?.addReceiver(batteryPolicy)
 
                 graph.addEdge(hostDistributor, batteryAggregator)
+
+                service.addBattery(battery)
             } else {
                 graph.addEdge(hostDistributor, simPowerSource)
             }
@@ -110,9 +119,8 @@ public class HostsProvisioningStep internal constructor(
             for (hostSpec in cluster.hostSpecs) {
                 val simHost =
                     SimHost(
-                        hostSpec.uid,
                         hostSpec.name,
-                        hostSpec.meta,
+                        cluster.name,
                         ctx.dispatcher.timeSource,
                         graph,
                         hostSpec.model,
@@ -120,7 +128,7 @@ public class HostsProvisioningStep internal constructor(
                         hostDistributor,
                     )
 
-                require(simHosts.add(simHost)) { "Host with uid ${hostSpec.uid} already exists" }
+                require(simHosts.add(simHost)) { "Host with name ${hostSpec.name} already exists" }
                 service.addHost(simHost)
             }
         }

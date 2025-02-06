@@ -34,10 +34,10 @@ import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
 import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
-import org.opendc.compute.simulator.telemetry.table.HostTableReader
-import org.opendc.compute.simulator.telemetry.table.PowerSourceTableReader
-import org.opendc.compute.simulator.telemetry.table.ServiceTableReader
-import org.opendc.compute.simulator.telemetry.table.TaskTableReader
+import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
+import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
+import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
+import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.workload.Task
@@ -182,7 +182,7 @@ class TestComputeMonitor : ComputeMonitor {
     var hostEnergyUsages = mutableMapOf<String, ArrayList<Double>>()
 
     override fun record(reader: HostTableReader) {
-        val hostName: String = reader.host.name
+        val hostName: String = reader.hostInfo.name
 
         if (!(hostName in hostCpuDemands)) {
             hostIdleTimes[hostName] = ArrayList()

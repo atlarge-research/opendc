@@ -271,6 +271,8 @@ class BatteryTest {
         val topology = createTopology("batteries/experiment1.json")
         val monitor = runTest(topology, workload, failureModelSpec = failureModelSpec)
 
+        println(monitor.hostEnergyUsages["H01"])
+
         assertAll(
             { assertEquals((960 * 1000) + 5000, monitor.maxTimestamp) { "Total runtime incorrect" } },
             {

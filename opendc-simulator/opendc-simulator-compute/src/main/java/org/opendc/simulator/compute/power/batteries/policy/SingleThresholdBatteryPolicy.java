@@ -33,9 +33,9 @@ public class SingleThresholdBatteryPolicy extends BatteryPolicy {
     /**
      *
      * @param parentGraph     The {@link FlowGraph} this stage belongs to.
-     * @param battery
-     * @param aggregator
-     * @param carbonThreshold
+     * @param battery        The {@link SimBattery} to control.
+     * @param aggregator    The {@link BatteryAggregator} to use.
+     * @param carbonThreshold The carbon intensity threshold to trigger charging or discharging.
      */
     public SingleThresholdBatteryPolicy(
             FlowGraph parentGraph, SimBattery battery, BatteryAggregator aggregator, double carbonThreshold) {
@@ -48,16 +48,16 @@ public class SingleThresholdBatteryPolicy extends BatteryPolicy {
     public long onUpdate(long now) {
 
         if (this.carbonIntensity >= this.carbonThreshold & !this.battery.isEmpty()) {
-            this.setBatteryState(BatteryState.Discharging);
+            this.setBatteryState(BatteryState.DISCHARGING);
             return Long.MAX_VALUE;
         }
 
         if (this.carbonIntensity < this.carbonThreshold & !this.battery.isFull()) {
-            this.setBatteryState(BatteryState.Charging);
+            this.setBatteryState(BatteryState.CHARGING);
             return Long.MAX_VALUE;
         }
 
-        this.setBatteryState(BatteryState.Idle);
+        this.setBatteryState(BatteryState.IDLE);
         return Long.MAX_VALUE;
     }
 }
