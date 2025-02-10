@@ -48,9 +48,9 @@ public class BatteryTableReaderImpl(
         _timestamp = table.timestamp
         _timestampAbsolute = table.timestampAbsolute
 
-        _hostsConnected = table.hostsConnected
         _powerDraw = table.powerDraw
         _energyUsage = table.energyUsage
+        _embodiedCarbonEmission = table.embodiedCarbonEmission
         _charge = table.charge
         _capacity = table.capacity
         _batteryState = table.batteryState
@@ -72,10 +72,6 @@ public class BatteryTableReaderImpl(
     override val timestampAbsolute: Instant
         get() = _timestampAbsolute
 
-    override val hostsConnected: Int
-        get() = _hostsConnected
-    private var _hostsConnected: Int = 0
-
     override val powerDraw: Double
         get() = _powerDraw
     private var _powerDraw = 0.0
@@ -84,6 +80,11 @@ public class BatteryTableReaderImpl(
         get() = _energyUsage - previousEnergyUsage
     private var _energyUsage = 0.0
     private var previousEnergyUsage = 0.0
+
+    override val embodiedCarbonEmission: Double
+        get() = _embodiedCarbonEmission - previousEmbodiedCarbonEmission
+    private var _embodiedCarbonEmission = 0.0
+    private var previousEmbodiedCarbonEmission = 0.0
 
     override val charge: Double
         get() = _charge
@@ -104,11 +105,10 @@ public class BatteryTableReaderImpl(
         _timestamp = now
         _timestampAbsolute = now + startTime
 
-        _hostsConnected = 0
-
         battery.updateCounters()
         _powerDraw = battery.outgoingSupply
         _energyUsage = battery.totalEnergyUsage
+        _embodiedCarbonEmission = battery.embodiedCarbonEmission
 
         _charge = battery.charge
         _capacity = battery.capacity
@@ -120,10 +120,11 @@ public class BatteryTableReaderImpl(
      */
     override fun reset() {
         previousEnergyUsage = _energyUsage
+        previousEmbodiedCarbonEmission = _embodiedCarbonEmission
 
-        _hostsConnected = 0
         _powerDraw = 0.0
         _energyUsage = 0.0
+        _embodiedCarbonEmission = 0.0
         _charge = 0.0
         _capacity = 0.0
         _batteryState = BatteryState.IDLE

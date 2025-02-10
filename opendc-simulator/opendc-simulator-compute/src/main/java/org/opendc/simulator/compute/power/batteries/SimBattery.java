@@ -49,6 +49,12 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
 
     private final String name;
     private final String clusterName;
+    private final Double embodiedCarbonRate; // The rate of carbon emissions per millisecond
+    private Double embodiedCarbonEmission = 0.0;
+
+    public Double getEmbodiedCarbonEmission() {
+        return embodiedCarbonEmission;
+    }
 
     public String getName() {
         return name;
@@ -112,9 +118,16 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
     }
 
     /**
-     * Construct a new {@link FlowNode} instance.
+     * Construct a new {@link SimBattery} instance.
      *
-     * @param parentGraph The {@link FlowGraph} this stage belongs to.
+     * @param parentGraph The {@link FlowGraph} instance this battery is part of.
+     * @param capacity The capacity of the battery in kWh.
+     * @param chargingSpeed The charging speed of the battery in J.
+     * @param initialCharge The initial charge of the battery in kWh.
+     * @param name The name of the battery.
+     * @param clusterName The name of the cluster the battery is part of.
+     * @param totalEmbodiedCarbon The total embodied carbon used to manufacture the battery in kg.
+     * @param expectedLifeTime The expected lifetime of the battery in years.
      */
     public SimBattery(
             FlowGraph parentGraph,
@@ -122,15 +135,21 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
             double chargingSpeed,
             double initialCharge,
             String name,
-            String clusterName) {
+            String clusterName,
+            Double totalEmbodiedCarbon,
+            Double expectedLifeTime) {
 
         super(parentGraph);
-        this.capacity = capacity;
+        this.capacity = capacity * 3600000;
         this.chargingSpeed = chargingSpeed;
 
-        this.charge = initialCharge;
+        this.charge = initialCharge * 3600000;
         this.name = name;
         this.clusterName = clusterName;
+
+        // TODO: maybe change this to days instead of years?
+        this.embodiedCarbonRate =
+                (totalEmbodiedCarbon * 1000) / (expectedLifeTime * 365.0 * 24.0 * 60.0 * 60.0 * 1000.0);
     }
 
     public void close() {
@@ -187,6 +206,8 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
         this.lastUpdate = now;
 
         long passedTime = now - lastUpdate;
+
+        this.embodiedCarbonEmission += this.embodiedCarbonRate * passedTime;
 
         this.updateCharge(passedTime);
         if (passedTime > 0) {

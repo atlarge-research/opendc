@@ -91,6 +91,8 @@ public class HostsProvisioningStep internal constructor(
                         cluster.battery!!.initialCharge,
                         cluster.battery!!.name,
                         cluster.name,
+                        cluster.battery!!.embodiedCarbon,
+                        cluster.battery!!.expectedLifetime,
                     )
                 graph.addEdge(battery, batteryDistributor)
 

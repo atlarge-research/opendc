@@ -143,6 +143,8 @@ private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
                 this.battery.chargingSpeed,
                 this.battery.batteryPolicy,
                 this.battery.initialCharge,
+                this.battery.embodiedCarbon,
+                this.battery.expectedLifetime,
             )
     }
 

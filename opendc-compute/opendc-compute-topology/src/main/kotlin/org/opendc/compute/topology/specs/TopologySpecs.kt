@@ -166,6 +166,9 @@ public data class PowerSourceJSONSpec(
  * @property chargingSpeed The charging speed of the battery in J
  * @property batteryPolicy The policy used to decide when the battery charges and discharges
  * @property initialCharge The initial charge in the battery
+ * @property embodiedCarbon The embodied carbon needed to create the battery in gram
+ * @property expectedLifetime The expected lifetime of the battery in years
+ *
  */
 @Serializable
 public data class BatteryJSONSpec(
@@ -174,12 +177,9 @@ public data class BatteryJSONSpec(
     val chargingSpeed: Double,
     val batteryPolicy: BatteryPolicyJSONSpec,
     var initialCharge: Double = 0.0,
-) {
-    init {
-        this.capacity *= 3600000
-        this.initialCharge *= 3600000
-    }
-}
+    var embodiedCarbon: Double = 0.0,
+    var expectedLifetime: Double = 0.0,
+)
 
 @Serializable
 public data class BatteryPolicyJSONSpec(

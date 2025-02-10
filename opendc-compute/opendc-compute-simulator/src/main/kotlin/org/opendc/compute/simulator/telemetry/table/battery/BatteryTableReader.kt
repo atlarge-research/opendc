@@ -51,11 +51,6 @@ public interface BatteryTableReader : Exportable {
     public val timestampAbsolute: Instant
 
     /**
-     * The number of connected hosts
-     */
-    public val hostsConnected: Int
-
-    /**
      * The current power draw of the host in W.
      */
     public val powerDraw: Double
@@ -65,9 +60,23 @@ public interface BatteryTableReader : Exportable {
      */
     public val energyUsage: Double
 
+    /**
+     * The embodied carbon cost of the Battery in kg
+     */
+    public val embodiedCarbonEmission: Double
+
+    /**
+     * The current state of the battery
+     */
     public val batteryState: BatteryState
 
+    /**
+     * The current charge of the battery in J
+     */
     public val charge: Double
 
+    /**
+     * The capacity of the battery in J
+     */
     public val capacity: Double
 }

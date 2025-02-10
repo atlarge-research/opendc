@@ -83,6 +83,11 @@ public object DfltBatteryExportColumns {
             field = Types.required(FLOAT).named("energy_usage"),
         ) { it.energyUsage }
 
+    public val EMBODIED_CARBON: ExportColumn<BatteryTableReader> =
+        ExportColumn(
+            field = Types.required(FLOAT).named("embodied_carbon_emission"),
+        ) { it.embodiedCarbonEmission }
+
     public val CHARGE: ExportColumn<BatteryTableReader> =
         ExportColumn(
             field = Types.required(FLOAT).named("charge"),
