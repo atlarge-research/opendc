@@ -197,7 +197,7 @@ public class ComputeMetricReader(
                 monitor.record(this.serviceTableReader.copy())
             }
 
-            if (loggCounter >= 100) {
+            if (loggCounter >= 250) {
                 var loggString = "\n\t\t\t\t\tMetrics after ${now.toEpochMilli() / 1000 / 60 / 60} hours:\n"
                 loggString += "\t\t\t\t\t\tTasks Total: ${this.serviceTableReader.tasksTotal}\n"
                 loggString += "\t\t\t\t\t\tTasks Active: ${this.serviceTableReader.tasksActive}\n"
