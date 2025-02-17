@@ -9,6 +9,10 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: read
+      checks: write
+      id-token: write
     name: Build (Java ${{ matrix.java }} - ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
@@ -41,7 +45,7 @@ jobs:
         with:
           check_name: test (Java ${{ matrix.java }})
           report_paths: '**/build/test-results/test/TEST-*.xml'
-          github_token: ${{ secrets.OPENDC_CICD_REPORT }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload reports
         if: always()
         continue-on-error: true # See https://github.com/actions/upload-artifact/issues/270
