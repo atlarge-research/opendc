@@ -39,8 +39,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     private double currentIncomingSupply; // The current supply provided by the supplier
 
     private boolean outgoingDemandUpdateNeeded = false;
-    private final Set<Integer> updatedDemands =
-            new HashSet<>(); // Array of consumers that updated their demand in this cycle
+    private Set<Integer> updatedDemands = new HashSet<>(); // Array of consumers that updated their demand in this cycle
 
     private boolean overloaded = false;
 
@@ -209,13 +208,17 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             other.setConsumerIndex(other.getConsumerIndex() - 1);
         }
 
-        for (int idx_other : this.updatedDemands) {
+        HashSet newUpdatedDemands = new HashSet<>();
 
+        for (int idx_other : this.updatedDemands) {
             if (idx_other > idx) {
-                this.updatedDemands.remove(idx_other);
-                this.updatedDemands.add(idx_other - 1);
+                newUpdatedDemands.add(idx_other - 1);
+            } else {
+                newUpdatedDemands.add(idx_other);
             }
         }
+
+        this.updatedDemands = newUpdatedDemands;
 
         this.outgoingDemandUpdateNeeded = true;
         this.invalidate();

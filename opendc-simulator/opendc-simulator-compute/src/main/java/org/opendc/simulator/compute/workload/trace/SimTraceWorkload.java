@@ -124,6 +124,10 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         long remainingDuration = this.scalingPolicy.getRemainingDuration(
                 this.cpuFreqDemand, this.newCpuFreqSupplied, this.remainingWork);
 
+        if (remainingDuration == 0.0) {
+            this.remainingWork = 0.0;
+        }
+
         return now + remainingDuration;
     }
 
