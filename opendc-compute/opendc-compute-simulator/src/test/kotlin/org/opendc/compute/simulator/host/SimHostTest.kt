@@ -26,26 +26,26 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.compute.models.CpuModel
-import org.opendc.simulator.compute.models.MemoryUnit
-import org.opendc.simulator.compute.models.MachineModel
-import org.opendc.simulator.engine.graph.FlowGraph
-import org.opendc.simulator.compute.cpu.CpuPowerModels
-import org.opendc.simulator.engine.engine.FlowEngine
-import org.opendc.simulator.engine.graph.FlowDistributor
-import java.time.Clock
 import org.opendc.common.Dispatcher
 import org.opendc.compute.api.TaskState
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceFlavor
 import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.simulator.compute.cpu.CpuPowerModels
+import org.opendc.simulator.compute.models.CpuModel
+import org.opendc.simulator.compute.models.MachineModel
+import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.compute.workload.Workload
+import org.opendc.simulator.engine.engine.FlowEngine
+import org.opendc.simulator.engine.graph.FlowDistributor
+import org.opendc.simulator.engine.graph.FlowGraph
+import java.time.Clock
 import java.time.InstantSource
 import java.util.UUID
 
@@ -53,7 +53,6 @@ import java.util.UUID
  * Test suite for the [SimHost].
  */
 internal class SimHostTest {
-
     /**
      * Initialize a SimHost for testing purposes. The dispatcher and the FlowGraph are mocked.
      */
@@ -68,9 +67,9 @@ internal class SimHostTest {
         val engine2 = FlowEngine.create(dispatcher)
         val flowGraph = mockk<FlowGraph>()
         every { flowGraph.engine } returns engine
-        every {flowGraph.addNode(any())} just Runs
-        every {flowGraph.removeNode(any())} just Runs
-        every {flowGraph.addEdge(any(), any())} returns null
+        every { flowGraph.addNode(any()) } just Runs
+        every { flowGraph.removeNode(any()) } just Runs
+        every { flowGraph.addEdge(any(), any()) } returns null
         val flowGraph2 = FlowGraph(engine2)
         val clock = Clock.systemUTC()
         val cpuPowerModel = CpuPowerModels.constant(500.0)
@@ -82,9 +81,12 @@ internal class SimHostTest {
     /**
      * Initialize Workload
      */
-    private fun initVmWorkload(coreCount: Int = 1, memorySize: Long = 1024): ServiceTask {
+    private fun initVmWorkload(
+        coreCount: Int = 1,
+        memorySize: Long = 1024,
+    ): ServiceTask {
         val computeService = mockk<ComputeService>()
-        every {computeService.clock } returns InstantSource.system()
+        every { computeService.clock } returns InstantSource.system()
         val vmID = UUID.randomUUID()
         val vmName = "name_of_a_vm"
         val meta = mockk<Map<String, Int>>()
@@ -100,7 +102,10 @@ internal class SimHostTest {
     fun testInitSimHost() {
         val host = initSimHost()
         assertEquals("C1", host.getClusterName())
-        assertEquals("SimHost[uid=test,name=test,model=HostModel[cpuCapacity=24000.0, coreCount=8, memoryCapacity=320000]]", host.toString())
+        assertEquals(
+            "SimHost[uid=test,name=test,model=HostModel[cpuCapacity=24000.0, coreCount=8, memoryCapacity=320000]]",
+            host.toString(),
+        )
         assertEquals("test", host.getName())
         assertEquals("HostModel[cpuCapacity=24000.0, coreCount=8, memoryCapacity=320000]", host.getModel().toString())
         assertFalse(host.equals("TEST-TEST"))
@@ -203,9 +208,10 @@ internal class SimHostTest {
         host.spawn(serviceTask1)
         host.start(serviceTask1)
         assertFalse(host.canFit(serviceTask2))
-        val exception = assertThrows<java.lang.IllegalArgumentException> {
-            host.spawn(serviceTask2)
-        }
+        val exception =
+            assertThrows<java.lang.IllegalArgumentException> {
+                host.spawn(serviceTask2)
+            }
         assertEquals(exception.message, "Task does not fit")
     }
 
