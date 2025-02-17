@@ -202,7 +202,7 @@ public class SimHost(
      *
      * @return Total memory used by tasks currently in the RUNNING state, in bytes.
      */
-    private fun usedMemoryByRunningTasks(): Long  {
+    private fun usedMemoryByRunningTasks(): Long {
         var usedMemory: Long = 0
         for (vm in this.taskToGuestMap) {
             if (vm.value.state == TaskState.RUNNING) {
