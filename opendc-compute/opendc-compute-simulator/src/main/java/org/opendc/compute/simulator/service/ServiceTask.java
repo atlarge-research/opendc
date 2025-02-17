@@ -64,7 +64,7 @@ public class ServiceTask {
 
     private int numFailures = 0;
 
-    ServiceTask(
+    public ServiceTask(
             ComputeService service,
             UUID uid,
             String name,
