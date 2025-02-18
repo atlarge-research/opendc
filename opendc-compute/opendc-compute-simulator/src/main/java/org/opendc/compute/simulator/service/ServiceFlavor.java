@@ -40,7 +40,8 @@ public final class ServiceFlavor implements Flavor {
     private final long memorySize;
     private final Map<String, ?> meta;
 
-    ServiceFlavor(ComputeService service, UUID uid, String name, int coreCount, long memorySize, Map<String, ?> meta) {
+    public ServiceFlavor(
+            ComputeService service, UUID uid, String name, int coreCount, long memorySize, Map<String, ?> meta) {
         this.service = service;
         this.uid = uid;
         this.name = name;
