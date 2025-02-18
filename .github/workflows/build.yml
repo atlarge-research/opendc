@@ -72,7 +72,6 @@ jobs:
         with:
           files: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
           disable_search: true
-          verbose: true
   build-docker:
     name: Build Docker Images
     runs-on: ubuntu-22.04
