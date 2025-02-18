@@ -66,16 +66,14 @@ jobs:
           path: |
             ./**/build/distributions/**/*.zip
           retention-days: 5
-      - name: Clean up after build
-        if: matrix.os == 'ubuntu-22.04'
-        run: rm -rf /home/runner/work/opendc/opendc/opendc-web/opendc-web-server/build/jacoco-report/jacoco.xml
       - name: Upload code coverage
         if: matrix.os == 'ubuntu-22.04'
         uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
           verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   build-docker:
     name: Build Docker Images
     runs-on: ubuntu-22.04
