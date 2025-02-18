@@ -34,9 +34,6 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
-      - name: Clean up before build
-        if: matrix.os == 'ubuntu-22.04'
-        run: rm -rf /home/runner/work/opendc/opendc/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
       - name: Build with Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
@@ -69,6 +66,9 @@ jobs:
           path: |
             ./**/build/distributions/**/*.zip
           retention-days: 5
+      - name: Clean up after build
+        if: matrix.os == 'ubuntu-22.04'
+        run: rm -rf /home/runner/work/opendc/opendc/opendc-web/opendc-web-server/build/jacoco-report/jacoco.xml
       - name: Upload code coverage
         if: matrix.os == 'ubuntu-22.04'
         uses: codecov/codecov-action@v5
