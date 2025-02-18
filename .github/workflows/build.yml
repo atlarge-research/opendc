@@ -7,12 +7,6 @@ on:
     branches: [ master ]
   merge_group:
 
-permissions:
-  contents: read
-  checks: write
-  id-token: write
-  pull-requests: write
-
 jobs:
   build:
     name: Build (Java ${{ matrix.java }} - ${{ matrix.os }})
@@ -69,6 +63,8 @@ jobs:
       - name: Upload code coverage
         if: matrix.os == 'ubuntu-22.04'
         uses: codecov/codecov-action@v5
+        with:
+          files: /home/runner/work/opendc/opendc/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
   build-docker:
     name: Build Docker Images
     runs-on: ubuntu-22.04
