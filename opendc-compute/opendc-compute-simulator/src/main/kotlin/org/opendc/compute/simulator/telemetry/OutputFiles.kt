@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,31 +20,25 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.base.experiment.specs
+package org.opendc.compute.simulator.telemetry
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.opendc.compute.simulator.telemetry.OutputFiles
-import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 
-/**
- * specification describing how the results should be exported
- *
- * @property exportInterval The interval of exporting results in s. Should be higher than 0.0
- */
 @Serializable
-public data class ExportModelSpec(
-    val exportInterval: Long = 5 * 60,
-    val computeExportConfig: ComputeExportConfig = ComputeExportConfig.ALL_COLUMNS,
-    val filesToExport: List<OutputFiles> = OutputFiles.entries.toList(),
-    var filesToExportDict: MutableMap<OutputFiles, Boolean> = OutputFiles.entries.associateWith { false }.toMutableMap(),
-) {
-    init {
-        require(exportInterval > 0) { "The Export interval has to be higher than 0" }
+public enum class OutputFiles {
+    @SerialName("host")
+    HOST,
 
-        // Create a dictionary with each output file to false.
-        // Set each file in [filesToExport] to true in the dictionary.
-        for (file in filesToExport) {
-            filesToExportDict[file] = true
-        }
-    }
+    @SerialName("task")
+    TASK,
+
+    @SerialName("powerSource")
+    POWER_SOURCE,
+
+    @SerialName("battery")
+    BATTERY,
+
+    @SerialName("service")
+    SERVICE,
 }

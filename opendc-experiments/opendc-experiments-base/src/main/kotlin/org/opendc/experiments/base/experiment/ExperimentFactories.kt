@@ -75,7 +75,6 @@ public fun getExperiment(experimentSpec: ExperimentSpec): List<Scenario> {
                 outputFolder = outputFolder,
                 runs = experimentSpec.runs,
                 initialSeed = experimentSpec.initialSeed,
-                computeExportConfig = scenarioSpec.computeExportConfig,
                 topologySpec = scenarioSpec.topology,
                 workloadSpec = scenarioSpec.workload,
                 allocationPolicySpec = scenarioSpec.allocationPolicy,
