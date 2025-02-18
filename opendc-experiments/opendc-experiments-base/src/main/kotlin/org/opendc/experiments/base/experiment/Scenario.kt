@@ -22,7 +22,6 @@
 
 package org.opendc.experiments.base.experiment
 
-import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 import org.opendc.experiments.base.experiment.specs.AllocationPolicySpec
 import org.opendc.experiments.base.experiment.specs.CheckpointModelSpec
 import org.opendc.experiments.base.experiment.specs.ExportModelSpec
@@ -50,7 +49,6 @@ public data class Scenario(
     val outputFolder: String = "output",
     val runs: Int = 1,
     val initialSeed: Int = 0,
-    val computeExportConfig: ComputeExportConfig,
     val topologySpec: ScenarioTopologySpec,
     val workloadSpec: WorkloadSpec,
     val allocationPolicySpec: AllocationPolicySpec,

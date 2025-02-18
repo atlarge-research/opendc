@@ -23,6 +23,7 @@
 package org.opendc.compute.simulator.telemetry.parquet
 
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
+import org.opendc.compute.simulator.telemetry.OutputFiles
 import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReader
 import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
@@ -37,38 +38,38 @@ import java.io.File
  * A [ComputeMonitor] that logs the events to a Parquet file.
  */
 public class ParquetComputeMonitor(
-    private val hostExporter: Exporter<HostTableReader>,
-    private val taskExporter: Exporter<TaskTableReader>,
-    private val powerSourceExporter: Exporter<PowerSourceTableReader>,
-    private val batteryExporter: Exporter<BatteryTableReader>,
-    private val serviceExporter: Exporter<ServiceTableReader>,
+    private val hostExporter: Exporter<HostTableReader>?,
+    private val taskExporter: Exporter<TaskTableReader>?,
+    private val powerSourceExporter: Exporter<PowerSourceTableReader>?,
+    private val batteryExporter: Exporter<BatteryTableReader>?,
+    private val serviceExporter: Exporter<ServiceTableReader>?,
 ) : ComputeMonitor, AutoCloseable {
     override fun record(reader: HostTableReader) {
-        hostExporter.write(reader)
+        hostExporter?.write(reader)
     }
 
     override fun record(reader: TaskTableReader) {
-        taskExporter.write(reader)
+        taskExporter?.write(reader)
     }
 
     override fun record(reader: PowerSourceTableReader) {
-        powerSourceExporter.write(reader)
+        powerSourceExporter?.write(reader)
     }
 
     override fun record(reader: BatteryTableReader) {
-        batteryExporter.write(reader)
+        batteryExporter?.write(reader)
     }
 
     override fun record(reader: ServiceTableReader) {
-        serviceExporter.write(reader)
+        serviceExporter?.write(reader)
     }
 
     override fun close() {
-        hostExporter.close()
-        taskExporter.close()
-        powerSourceExporter.close()
-        batteryExporter.close()
-        serviceExporter.close()
+        hostExporter?.close()
+        taskExporter?.close()
+        powerSourceExporter?.close()
+        batteryExporter?.close()
+        serviceExporter?.close()
     }
 
     public companion object {
@@ -83,12 +84,14 @@ public class ParquetComputeMonitor(
             base: File,
             partition: String,
             bufferSize: Int,
+            filesToExport: Map<OutputFiles, Boolean>,
             computeExportConfig: ComputeExportConfig,
         ): ParquetComputeMonitor =
             invoke(
                 base = base,
                 partition = partition,
                 bufferSize = bufferSize,
+                filesToExport = filesToExport,
                 hostExportColumns = computeExportConfig.hostExportColumns,
                 taskExportColumns = computeExportConfig.taskExportColumns,
                 powerSourceExportColumns = computeExportConfig.powerSourceExportColumns,
@@ -109,6 +112,7 @@ public class ParquetComputeMonitor(
             base: File,
             partition: String,
             bufferSize: Int,
+            filesToExport: Map<OutputFiles, Boolean>,
             hostExportColumns: Collection<ExportColumn<HostTableReader>>? = null,
             taskExportColumns: Collection<ExportColumn<TaskTableReader>>? = null,
             powerSourceExportColumns: Collection<ExportColumn<PowerSourceTableReader>>? = null,
@@ -118,37 +122,72 @@ public class ParquetComputeMonitor(
             // Loads the fields in case they need to be retrieved if optional params are omitted.
             ComputeExportConfig.loadDfltColumns()
 
-            return ParquetComputeMonitor(
-                hostExporter =
+            val hostExporter =
+                if (filesToExport[OutputFiles.HOST] == true) {
                     Exporter(
                         outputFile = File(base, "$partition/host.parquet").also { it.parentFile.mkdirs() },
                         columns = hostExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
-                    ),
-                taskExporter =
+                    )
+                } else {
+                    null
+                }
+
+            val taskExporter =
+                if (filesToExport[OutputFiles.TASK] == true) {
                     Exporter(
                         outputFile = File(base, "$partition/task.parquet").also { it.parentFile.mkdirs() },
                         columns = taskExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
-                    ),
-                powerSourceExporter =
+                    )
+                } else {
+                    null
+                }
+
+            val powerSourceExporter =
+                if (filesToExport[OutputFiles.POWER_SOURCE] == true) {
                     Exporter(
                         outputFile = File(base, "$partition/powerSource.parquet").also { it.parentFile.mkdirs() },
                         columns = powerSourceExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
-                    ),
-                batteryExporter =
+                    )
+                } else {
+                    null
+                }
+
+            val batteryExporter =
+                if (filesToExport[OutputFiles.BATTERY] == true) {
                     Exporter(
                         outputFile = File(base, "$partition/battery.parquet").also { it.parentFile.mkdirs() },
                         columns = batteryExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
-                    ),
-                serviceExporter =
+                    )
+                } else {
+                    null
+                }
+
+            val serviceExporter =
+                if (filesToExport[OutputFiles.SERVICE] == true) {
                     Exporter(
                         outputFile = File(base, "$partition/service.parquet").also { it.parentFile.mkdirs() },
                         columns = serviceExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
-                    ),
+                    )
+                } else {
+                    null
+                }
+
+            return ParquetComputeMonitor(
+                hostExporter =
+                hostExporter,
+                taskExporter =
+                taskExporter,
+                powerSourceExporter =
+                powerSourceExporter,
+                batteryExporter =
+                batteryExporter,
+                serviceExporter =
+                serviceExporter,
             )
         }
     }
