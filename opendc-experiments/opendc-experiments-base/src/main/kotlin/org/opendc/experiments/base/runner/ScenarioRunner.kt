@@ -147,10 +147,12 @@ public fun addExportModel(
                 File("${scenario.outputFolder}/raw-output/$index"),
                 "seed=$seed",
                 bufferSize = 4096,
-                computeExportConfig = scenario.computeExportConfig,
+                scenario.exportModelSpec.filesToExportDict,
+                computeExportConfig = scenario.exportModelSpec.computeExportConfig,
             ),
             Duration.ofSeconds(scenario.exportModelSpec.exportInterval),
             startTime,
+            scenario.exportModelSpec.filesToExportDict,
         ),
     )
 }

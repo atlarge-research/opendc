@@ -96,7 +96,6 @@ public data class ExperimentSpec(
                         id,
                         name,
                         outputFolder,
-                        computeExportConfig = computeExportConfig,
                         topologyList[(i / topologyDiv) % topologyList.size],
                         workloadList[(i / workloadDiv) % workloadList.size],
                         allocationPolicyList[(i / allocationDiv) % allocationPolicyList.size],

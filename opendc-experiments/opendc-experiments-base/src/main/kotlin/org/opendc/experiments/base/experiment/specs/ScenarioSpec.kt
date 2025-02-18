@@ -23,14 +23,12 @@
 package org.opendc.experiments.base.experiment.specs
 
 import kotlinx.serialization.Serializable
-import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 
 @Serializable
 public data class ScenarioSpec(
     var id: Int = -1,
     var name: String = "",
     val outputFolder: String = "output",
-    val computeExportConfig: ComputeExportConfig,
     val topology: ScenarioTopologySpec,
     val workload: WorkloadSpec,
     val allocationPolicy: AllocationPolicySpec = AllocationPolicySpec(),

@@ -26,6 +26,7 @@ package org.opendc.compute.simulator.provisioner
 
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
+import org.opendc.compute.simulator.telemetry.OutputFiles
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import java.time.Duration
@@ -59,8 +60,16 @@ public fun registerComputeMonitor(
     monitor: ComputeMonitor,
     exportInterval: Duration = Duration.ofMinutes(5),
     startTime: Duration = Duration.ofMillis(0),
+    filesToExport: Map<OutputFiles, Boolean> =
+        mapOf(
+            OutputFiles.HOST to true,
+            OutputFiles.TASK to true,
+            OutputFiles.SERVICE to true,
+            OutputFiles.POWER_SOURCE to true,
+            OutputFiles.BATTERY to true,
+        ),
 ): ProvisioningStep {
-    return ComputeMonitorProvisioningStep(serviceDomain, monitor, exportInterval, startTime)
+    return ComputeMonitorProvisioningStep(serviceDomain, monitor, exportInterval, startTime, filesToExport)
 }
 
 /**

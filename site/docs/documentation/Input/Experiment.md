@@ -24,7 +24,6 @@ This means that if all list based values have a single value, only one Scenario 
 | initialSeed         | integer                                      | no        | 0        | Seed used for random number generation to ensure reproducibility. |
 | runs                | integer                                      | no        | 1        | Number of times the scenario should be run.                       |
 | exportModels        | List[[ExportModel](#exportmodel)]            | no        | Default  | Specifications for exporting data from the simulation.            |
-| computeExportConfig | [ComputeExportConfig](#checkpointmodel)      | no        | Default  | The features that should be exported during the simulation        |
 | maxNumFailures      | List[integer]                                | no        | [10]     | The max number of times a task can fail before being terminated.  |
 | topologies          | List[[Topology](#topology)]                  | yes       | N/A      | List of topologies used in the scenario.                          |
 | workloads           | List[[Workload](#workload)]                  | yes       | N/A      | List of workloads to be executed within the scenario.             |
@@ -39,9 +38,12 @@ type of each of these fields.
 
 ### ExportModel
 
-| Variable       | Type  | Required? | Default | Description                                 |
-|----------------|-------|-----------|---------|---------------------------------------------|
-| exportInterval | Int64 | no         | 300       | The duration between two exports in seconds |
+| Variable            | Type                                    | Required? | Default   | Description                                                                                                                                                   |
+|---------------------|-----------------------------------------|-----------|-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| exportInterval      | Int64                                   | no        | 300       | The duration between two exports in seconds                                                                                                                   |
+| computeExportConfig | [ComputeExportConfig](#checkpointmodel) | no        | Default   | The features that should be exported during the simulation                                                                                                    |
+| filesToExport       | List[string]                            | no        | all files | List of the files that should be exported during simulation. The elements should be picked from the set ("host", "task", "powerSource", "battery", "service") |
+
 
 
 ### ComputeExportConfig

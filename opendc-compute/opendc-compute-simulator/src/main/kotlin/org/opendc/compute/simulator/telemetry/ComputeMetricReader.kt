@@ -56,6 +56,14 @@ public class ComputeMetricReader(
     private val monitor: ComputeMonitor,
     private val exportInterval: Duration = Duration.ofMinutes(5),
     private val startTime: Duration = Duration.ofMillis(0),
+    private val toMonitor: Map<OutputFiles, Boolean> =
+        mapOf(
+            OutputFiles.HOST to true,
+            OutputFiles.TASK to true,
+            OutputFiles.POWER_SOURCE to true,
+            OutputFiles.BATTERY to true,
+            OutputFiles.SERVICE to true,
+        ),
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(dispatcher.asCoroutineDispatcher())
@@ -116,31 +124,35 @@ public class ComputeMetricReader(
         try {
             val now = this.clock.instant()
 
-            for (host in this.service.hosts) {
-                val reader =
-                    this.hostTableReaders.computeIfAbsent(host) {
-                        HostTableReaderImpl(
-                            it,
-                            startTime,
-                        )
-                    }
-                reader.record(now)
-                this.monitor.record(reader.copy())
-                reader.reset()
+            if (toMonitor[OutputFiles.HOST] == true) {
+                for (host in this.service.hosts) {
+                    val reader =
+                        this.hostTableReaders.computeIfAbsent(host) {
+                            HostTableReaderImpl(
+                                it,
+                                startTime,
+                            )
+                        }
+                    reader.record(now)
+                    this.monitor.record(reader.copy())
+                    reader.reset()
+                }
             }
 
-            for (task in this.service.tasks) {
-                val reader =
-                    this.taskTableReaders.computeIfAbsent(task) {
-                        TaskTableReaderImpl(
-                            service,
-                            it,
-                            startTime,
-                        )
-                    }
-                reader.record(now)
-                this.monitor.record(reader.copy())
-                reader.reset()
+            if (toMonitor[OutputFiles.TASK] == true) {
+                for (task in this.service.tasks) {
+                    val reader =
+                        this.taskTableReaders.computeIfAbsent(task) {
+                            TaskTableReaderImpl(
+                                service,
+                                it,
+                                startTime,
+                            )
+                        }
+                    reader.record(now)
+                    this.monitor.record(reader.copy())
+                    reader.reset()
+                }
             }
 
             for (task in this.service.tasksToRemove) {
@@ -148,36 +160,42 @@ public class ComputeMetricReader(
             }
             this.service.clearTasksToRemove()
 
-            for (simPowerSource in this.service.powerSources) {
-                val reader =
-                    this.powerSourceTableReaders.computeIfAbsent(simPowerSource) {
-                        PowerSourceTableReaderImpl(
-                            it,
-                            startTime,
-                        )
-                    }
+            if (toMonitor[OutputFiles.POWER_SOURCE] == true) {
+                for (simPowerSource in this.service.powerSources) {
+                    val reader =
+                        this.powerSourceTableReaders.computeIfAbsent(simPowerSource) {
+                            PowerSourceTableReaderImpl(
+                                it,
+                                startTime,
+                            )
+                        }
 
-                reader.record(now)
-                this.monitor.record(reader.copy())
-                reader.reset()
+                    reader.record(now)
+                    this.monitor.record(reader.copy())
+                    reader.reset()
+                }
             }
 
-            for (simBattery in this.service.batteries) {
-                val reader =
-                    this.batteryTableReaders.computeIfAbsent(simBattery) {
-                        BatteryTableReaderImpl(
-                            it,
-                            startTime,
-                        )
-                    }
+            if (toMonitor[OutputFiles.BATTERY] == true) {
+                for (simBattery in this.service.batteries) {
+                    val reader =
+                        this.batteryTableReaders.computeIfAbsent(simBattery) {
+                            BatteryTableReaderImpl(
+                                it,
+                                startTime,
+                            )
+                        }
 
-                reader.record(now)
-                this.monitor.record(reader.copy())
-                reader.reset()
+                    reader.record(now)
+                    this.monitor.record(reader.copy())
+                    reader.reset()
+                }
             }
 
-            this.serviceTableReader.record(now)
-            monitor.record(this.serviceTableReader.copy())
+            if (toMonitor[OutputFiles.SERVICE] == true) {
+                this.serviceTableReader.record(now)
+                monitor.record(this.serviceTableReader.copy())
+            }
 
             if (loggCounter >= 100) {
                 var loggString = "\n\t\t\t\t\tMetrics after ${now.toEpochMilli() / 1000 / 60 / 60} hours:\n"

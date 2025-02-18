@@ -25,6 +25,7 @@ package org.opendc.compute.simulator.provisioner
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.telemetry.ComputeMetricReader
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
+import org.opendc.compute.simulator.telemetry.OutputFiles
 import java.time.Duration
 
 /**
@@ -36,6 +37,14 @@ public class ComputeMonitorProvisioningStep(
     private val monitor: ComputeMonitor,
     private val exportInterval: Duration,
     private val startTime: Duration = Duration.ofMillis(0),
+    private val filesToExport: Map<OutputFiles, Boolean> =
+        mapOf(
+            OutputFiles.HOST to true,
+            OutputFiles.TASK to true,
+            OutputFiles.SERVICE to true,
+            OutputFiles.POWER_SOURCE to true,
+            OutputFiles.BATTERY to true,
+        ),
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service =
@@ -49,6 +58,7 @@ public class ComputeMonitorProvisioningStep(
                 monitor,
                 exportInterval,
                 startTime,
+                filesToExport,
             )
         return metricReader
     }
