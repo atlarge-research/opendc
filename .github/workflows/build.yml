@@ -60,12 +60,6 @@ jobs:
           path: |
             ./**/build/distributions/**/*.zip
           retention-days: 5
-      - name: check files
-        if: matrix.os == 'ubuntu-22.04'
-        run:
-          ls -lha /home/runner/work/opendc/opendc/build/
-          ls -lha /home/runner/work/opendc/opendc/build/reports/
-          ls -lha /home/runner/work/opendc/opendc/build/reports/jacoco/codeCoverageReport
       - name: Upload code coverage
         if: matrix.os == 'ubuntu-22.04'
         uses: codecov/codecov-action@v5
