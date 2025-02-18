@@ -68,7 +68,7 @@ jobs:
           retention-days: 5
       - name: Upload code coverage
         if: matrix.os == 'ubuntu-22.04'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v5.0.4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
