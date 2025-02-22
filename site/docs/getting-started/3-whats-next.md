@@ -9,3 +9,4 @@ Congratulations! You have just learned how to design and experiment with a (virt
 - Follow one of the [tutorials](/docs/category/tutorials) using OpenDC.
 - Read about [existing work using OpenDC](/community/research).
 - Get involved in the [OpenDC Community](/community/support).
+- If you are interested in contributing to OpenDC you can find a How-To here [4-start-using-intellij](4-start-using-intellij.md), please also read https://github.com/atlarge-research/opendc/blob/master/CONTRIBUTING.md.
