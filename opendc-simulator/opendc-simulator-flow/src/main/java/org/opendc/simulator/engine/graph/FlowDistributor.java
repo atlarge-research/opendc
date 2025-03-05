@@ -25,6 +25,7 @@ package org.opendc.simulator.engine.graph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 
@@ -208,7 +209,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             other.setConsumerIndex(other.getConsumerIndex() - 1);
         }
 
-        HashSet newUpdatedDemands = new HashSet<>();
+        HashSet<Integer> newUpdatedDemands = new HashSet<>();
 
         for (int idx_other : this.updatedDemands) {
             if (idx_other > idx) {
