@@ -24,10 +24,10 @@
 
 package org.opendc.compute.simulator.provisioner
 
-import org.opendc.compute.carbon.CarbonTrace
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.scheduler.ComputeScheduler
-import org.opendc.compute.telemetry.ComputeMonitor
+import org.opendc.compute.simulator.scheduler.ComputeScheduler
+import org.opendc.compute.simulator.telemetry.ComputeMonitor
+import org.opendc.compute.simulator.telemetry.OutputFiles
+import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import java.time.Duration
 
@@ -41,9 +41,10 @@ import java.time.Duration
 public fun setupComputeService(
     serviceDomain: String,
     scheduler: (ProvisioningContext) -> ComputeScheduler,
-    schedulingQuantum: Duration = Duration.ofMinutes(5),
+    schedulingQuantum: Duration = Duration.ofSeconds(1),
+    maxNumFailures: Int = 10,
 ): ProvisioningStep {
-    return ComputeServiceProvisioningStep(serviceDomain, scheduler, schedulingQuantum)
+    return ComputeServiceProvisioningStep(serviceDomain, scheduler, schedulingQuantum, maxNumFailures)
 }
 
 /**
@@ -59,9 +60,16 @@ public fun registerComputeMonitor(
     monitor: ComputeMonitor,
     exportInterval: Duration = Duration.ofMinutes(5),
     startTime: Duration = Duration.ofMillis(0),
-    carbonTrace: CarbonTrace = CarbonTrace(null),
+    filesToExport: Map<OutputFiles, Boolean> =
+        mapOf(
+            OutputFiles.HOST to true,
+            OutputFiles.TASK to true,
+            OutputFiles.SERVICE to true,
+            OutputFiles.POWER_SOURCE to true,
+            OutputFiles.BATTERY to true,
+        ),
 ): ProvisioningStep {
-    return ComputeMonitorProvisioningStep(serviceDomain, monitor, exportInterval, startTime, carbonTrace)
+    return ComputeMonitorProvisioningStep(serviceDomain, monitor, exportInterval, startTime, filesToExport)
 }
 
 /**
@@ -74,8 +82,8 @@ public fun registerComputeMonitor(
  */
 public fun setupHosts(
     serviceDomain: String,
-    specs: List<HostSpec>,
-    optimize: Boolean = false,
+    specs: List<ClusterSpec>,
+    startTime: Long = 0L,
 ): ProvisioningStep {
-    return HostsProvisioningStep(serviceDomain, specs, optimize)
+    return HostsProvisioningStep(serviceDomain, specs, startTime)
 }

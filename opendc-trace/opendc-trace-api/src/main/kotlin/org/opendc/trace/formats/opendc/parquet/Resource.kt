@@ -29,8 +29,8 @@ import java.time.Instant
  */
 internal data class Resource(
     val id: String,
-    val startTime: Instant,
-    val stopTime: Instant,
+    val submissionTime: Instant,
+    val durationTime: Long,
     val cpuCount: Int,
     val cpuCapacity: Double,
     val memCapacity: Double,

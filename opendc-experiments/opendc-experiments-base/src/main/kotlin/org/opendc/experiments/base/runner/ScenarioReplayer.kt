@@ -29,28 +29,27 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.yield
-import org.opendc.compute.api.Server
-import org.opendc.compute.api.ServerState
-import org.opendc.compute.api.ServerWatcher
+import org.opendc.compute.api.TaskState
 import org.opendc.compute.failure.models.FailureModel
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.workload.VirtualMachine
-import org.opendc.experiments.base.scenario.specs.CheckpointModelSpec
-import org.opendc.experiments.base.scenario.specs.FailureModelSpec
-import org.opendc.experiments.base.scenario.specs.createFailureModel
+import org.opendc.compute.simulator.TaskWatcher
+import org.opendc.compute.simulator.service.ComputeService
+import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.workload.Task
+import org.opendc.experiments.base.experiment.specs.FailureModelSpec
+import org.opendc.experiments.base.experiment.specs.createFailureModel
 import java.time.InstantSource
 import java.util.Random
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 
 /**
- * A watcher that is locked and waits for a change in the server state to unlock
- * @param unlockStates determine which [ServerState] triggers an unlock.
+ * A watcher that is locked and waits for a change in the task state to unlock
+ * @param unlockStates determine which [TaskState] triggers an unlock.
  *                     Default values are TERMINATED, ERROR, and DELETED.
  */
-public class RunningServerWatcher : ServerWatcher {
+public class RunningTaskWatcher : TaskWatcher {
     // TODO: make this changeable
-    private val unlockStates: List<ServerState> = listOf(ServerState.DELETED, ServerState.TERMINATED)
+    private val unlockStates: List<TaskState> = listOf(TaskState.DELETED)
 
     private val mutex: Mutex = Mutex()
 
@@ -63,8 +62,8 @@ public class RunningServerWatcher : ServerWatcher {
     }
 
     override fun onStateChanged(
-        server: Server,
-        newState: ServerState,
+        task: ServiceTask,
+        newState: TaskState,
     ) {
         if (unlockStates.contains(newState)) {
             mutex.unlock()
@@ -73,19 +72,18 @@ public class RunningServerWatcher : ServerWatcher {
 }
 
 /**
- * Helper method to replay the specified list of [VirtualMachine] and suspend execution util all VMs have finished.
+ * Helper method to replay the specified list of [Task] and suspend execution util all VMs have finished.
  *
  * @param clock The simulation clock.
  * @param trace The trace to simulate.
  * @param seed The seed to use for randomness.
- * @param submitImmediately A flag to indicate that the servers are scheduled immediately (so not at their start time).
+ * @param submitImmediately A flag to indicate that the tasks are scheduled immediately (so not at their start time).
  * @param failureModelSpec A failure model to use for injecting failures.
  */
 public suspend fun ComputeService.replay(
     clock: InstantSource,
-    trace: List<VirtualMachine>,
+    trace: List<Task>,
     failureModelSpec: FailureModelSpec? = null,
-    checkpointModelSpec: CheckpointModelSpec? = null,
     seed: Long = 0,
     submitImmediately: Boolean = false,
 ) {
@@ -97,9 +95,6 @@ public suspend fun ComputeService.replay(
             createFailureModel(coroutineContext, clock, this, Random(seed), it)
         }
 
-    // Create new image for the virtual machine
-    val image = client.newImage("vm-image")
-
     try {
         coroutineScope {
             // Start the fault injector
@@ -107,56 +102,43 @@ public suspend fun ComputeService.replay(
 
             var simulationOffset = Long.MIN_VALUE
 
-            for (entry in trace.sortedBy { it.startTime }) {
+            for (entry in trace.sortedBy { it.submissionTime }) {
                 val now = clock.millis()
-                val start = entry.startTime.toEpochMilli()
+                val start = entry.submissionTime.toEpochMilli()
 
-                // Set the simulationOffset based on the starting time of the first server
+                // Set the simulationOffset based on the starting time of the first task
                 if (simulationOffset == Long.MIN_VALUE) {
                     simulationOffset = start - now
                 }
 
-                // Delay the server based on the startTime given by the trace.
+                // Delay the task based on the startTime given by the trace.
                 if (!submitImmediately) {
                     delay(max(0, (start - now - simulationOffset)))
                 }
 
-                val checkpointTime = checkpointModelSpec?.checkpointTime ?: 0L
-                val checkpointWait = checkpointModelSpec?.checkpointWait ?: 0L
-
-//                val workload = SimRuntimeWorkload(
-//                    entry.duration,
-//                    1.0,
-//                    checkpointTime,
-//                    checkpointWait
-//                )
-
-                val workload = entry.trace.createWorkload(start, checkpointTime, checkpointWait)
+                val workload = entry.trace
                 val meta = mutableMapOf<String, Any>("workload" to workload)
 
                 launch {
-                    val server =
-                        client.newServer(
+                    val task =
+                        client.newTask(
                             entry.name,
-                            image,
                             client.newFlavor(
                                 entry.name,
                                 entry.cpuCount,
                                 entry.memCapacity,
-                                meta = if (entry.cpuCapacity > 0.0) mapOf("cpu-capacity" to entry.cpuCapacity) else emptyMap(),
+                                if (entry.cpuCapacity > 0.0) mapOf("cpu-capacity" to entry.cpuCapacity) else emptyMap(),
                             ),
-                            meta = meta,
+                            workload,
+                            meta,
                         )
 
-                    val serverWatcher = RunningServerWatcher()
-                    serverWatcher.lock()
-                    server.watch(serverWatcher)
+                    val taskWatcher = RunningTaskWatcher()
+                    taskWatcher.lock()
+                    task.watch(taskWatcher)
 
-                    // Wait until the server is terminated
-                    serverWatcher.wait()
-
-                    // Stop the server after reaching the end-time of the virtual machine
-                    server.delete()
+                    // Wait until the task is terminated
+                    taskWatcher.wait()
                 }
             }
         }

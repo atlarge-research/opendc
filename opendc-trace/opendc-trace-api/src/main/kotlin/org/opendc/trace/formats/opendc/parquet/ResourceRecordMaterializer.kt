@@ -38,8 +38,8 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
      * State of current record being read.
      */
     private var localId = ""
-    private var localStartTime = Instant.MIN
-    private var localStopTime = Instant.MIN
+    private var localSubmissionTime = Instant.MIN
+    private var localDuration = 0L
     private var localCpuCount = 0
     private var localCpuCapacity = 0.0
     private var localMemCapacity = 0.0
@@ -61,16 +61,16 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
                                     localId = value.toStringUsingUTF8()
                                 }
                             }
-                        "start_time", "submissionTime" ->
+                        "submission_time", "submissionTime" ->
                             object : PrimitiveConverter() {
                                 override fun addLong(value: Long) {
-                                    localStartTime = Instant.ofEpochMilli(value)
+                                    localSubmissionTime = Instant.ofEpochMilli(value)
                                 }
                             }
-                        "stop_time", "endTime" ->
+                        "duration" ->
                             object : PrimitiveConverter() {
                                 override fun addLong(value: Long) {
-                                    localStopTime = Instant.ofEpochMilli(value)
+                                    localDuration = value
                                 }
                             }
                         "cpu_count", "maxCores" ->
@@ -101,8 +101,8 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
 
             override fun start() {
                 localId = ""
-                localStartTime = Instant.MIN
-                localStopTime = Instant.MIN
+                localSubmissionTime = Instant.MIN
+                localDuration = 0L
                 localCpuCount = 0
                 localCpuCapacity = 0.0
                 localMemCapacity = 0.0
@@ -116,8 +116,8 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
     override fun getCurrentRecord(): Resource =
         Resource(
             localId,
-            localStartTime,
-            localStopTime,
+            localSubmissionTime,
+            localDuration,
             localCpuCount,
             localCpuCapacity,
             localMemCapacity,

@@ -39,13 +39,13 @@ import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
-import org.opendc.trace.conv.resourceStartTime
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
 import org.opendc.trace.conv.resourceStateTimestamp
-import org.opendc.trace.conv.resourceStopTime
+import org.opendc.trace.conv.resourceSubmissionTime
 import org.opendc.trace.formats.opendc.parquet.ResourceReadSupport
 import org.opendc.trace.formats.opendc.parquet.ResourceStateReadSupport
 import org.opendc.trace.formats.opendc.parquet.ResourceStateWriteSupport
@@ -95,8 +95,8 @@ public class OdcVmTraceFormat : TraceFormat {
                 TableDetails(
                     listOf(
                         TableColumn(resourceID, TableColumnType.String),
-                        TableColumn(resourceStartTime, TableColumnType.Instant),
-                        TableColumn(resourceStopTime, TableColumnType.Instant),
+                        TableColumn(resourceSubmissionTime, TableColumnType.Instant),
+                        TableColumn(resourceDuration, TableColumnType.Long),
                         TableColumn(resourceCpuCount, TableColumnType.Int),
                         TableColumn(resourceCpuCapacity, TableColumnType.Double),
                         TableColumn(resourceMemCapacity, TableColumnType.Double),
@@ -131,11 +131,11 @@ public class OdcVmTraceFormat : TraceFormat {
     ): TableReader {
         return when (table) {
             TABLE_RESOURCES -> {
-                val reader = LocalParquetReader(path.resolve("meta.parquet"), ResourceReadSupport(projection))
+                val reader = LocalParquetReader(path.resolve("tasks.parquet"), ResourceReadSupport(projection))
                 OdcVmResourceTableReader(reader)
             }
             TABLE_RESOURCE_STATES -> {
-                val reader = LocalParquetReader(path.resolve("trace.parquet"), ResourceStateReadSupport(projection))
+                val reader = LocalParquetReader(path.resolve("fragments.parquet"), ResourceStateReadSupport(projection))
                 OdcVmResourceStateTableReader(reader)
             }
             TABLE_INTERFERENCE_GROUPS -> {
@@ -160,7 +160,7 @@ public class OdcVmTraceFormat : TraceFormat {
         return when (table) {
             TABLE_RESOURCES -> {
                 val writer =
-                    LocalParquetWriter.builder(path.resolve("meta.parquet"), ResourceWriteSupport())
+                    LocalParquetWriter.builder(path.resolve("tasks.parquet"), ResourceWriteSupport())
                         .withCompressionCodec(CompressionCodecName.ZSTD)
                         .withPageWriteChecksumEnabled(true)
                         .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
@@ -170,7 +170,7 @@ public class OdcVmTraceFormat : TraceFormat {
             }
             TABLE_RESOURCE_STATES -> {
                 val writer =
-                    LocalParquetWriter.builder(path.resolve("trace.parquet"), ResourceStateWriteSupport())
+                    LocalParquetWriter.builder(path.resolve("fragments.parquet"), ResourceStateWriteSupport())
                         .withCompressionCodec(CompressionCodecName.ZSTD)
                         .withDictionaryEncoding("id", true)
                         .withBloomFilterEnabled("id", true)

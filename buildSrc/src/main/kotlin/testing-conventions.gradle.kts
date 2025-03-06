@@ -48,6 +48,10 @@ tasks.register<Test>("testsOn18") {
     })
 
     useJUnitPlatform()
+
+    minHeapSize = "512m"
+    maxHeapSize = "1024m"
+    jvmArgs = listOf("-XX:MaxMetaspaceSize=512m")
 }
 
 tasks.register<Test>("testsOn19") {
@@ -56,4 +60,8 @@ tasks.register<Test>("testsOn19") {
     })
 
     useJUnitPlatform()
+
+    minHeapSize = "512m"
+    maxHeapSize = "1024m"
+    jvmArgs = listOf("-XX:MaxMetaspaceSize=512m")
 }

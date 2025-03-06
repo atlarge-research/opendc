@@ -33,17 +33,14 @@ plugins {
 
 dependencies {
 
-    api(projects.opendcCompute.opendcComputeService)
     api(projects.opendcCompute.opendcComputeSimulator)
 
     implementation(libs.clikt)
-
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation(libs.progressbar)
     implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-core")))
 
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-workload")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-telemetry")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-failure")))
@@ -55,8 +52,8 @@ dependencies {
 val createScenarioApp by tasks.creating(CreateStartScripts::class) {
     dependsOn(tasks.jar)
 
-    applicationName = "OpenDCScenarioRunner"
-    mainClass.set("org.opendc.experiments.base.runner.ScenarioCli")
+    applicationName = "OpenDCExperimentRunner"
+    mainClass.set("org.opendc.experiments.base.runner.ExperimentCli")
     classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
     outputDir = project.buildDir.resolve("scripts")
 }
@@ -64,7 +61,7 @@ val createScenarioApp by tasks.creating(CreateStartScripts::class) {
 // Create custom Scenario distribution
 distributions {
     main {
-        distributionBaseName.set("OpenDCScenarioRunner")
+        distributionBaseName.set("OpenDCExperimentRunner")
 
         contents {
             from("README.md")

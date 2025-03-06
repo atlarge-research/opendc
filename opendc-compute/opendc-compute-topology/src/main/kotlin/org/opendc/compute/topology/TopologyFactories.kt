@@ -24,130 +24,164 @@
 
 package org.opendc.compute.topology
 
+import org.opendc.compute.topology.specs.BatterySpec
+import org.opendc.compute.topology.specs.ClusterJSONSpec
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostJSONSpec
 import org.opendc.compute.topology.specs.HostSpec
+import org.opendc.compute.topology.specs.PowerSourceSpec
 import org.opendc.compute.topology.specs.TopologySpec
-import org.opendc.simulator.compute.SimPsuFactories
-import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.power.getPowerModel
+import org.opendc.simulator.compute.cpu.getPowerModel
+import org.opendc.simulator.compute.models.CpuModel
+import org.opendc.simulator.compute.models.MachineModel
+import org.opendc.simulator.compute.models.MemoryUnit
 import java.io.File
 import java.io.InputStream
-import java.util.SplittableRandom
-import java.util.UUID
-import java.util.random.RandomGenerator
 
 /**
  * A [TopologyReader] that is used to read the cluster definition file.
  */
 private val reader = TopologyReader()
 
+// Lists used to make sure all cluster, host, power source and battery have unique names
+private val clusterNames: ArrayList<String> = ArrayList()
+private val hostNames: ArrayList<String> = ArrayList()
+private val powerSourceNames: ArrayList<String> = ArrayList()
+private val batteryNames: ArrayList<String> = ArrayList()
+
+/**
+ * Create a unique name for the specified [name] that is not already in the [names] list.
+ *
+ * If [name] is already in [names], "-$i" is appended to the name until a unique name is found.
+ * In which "$i" is an increasing integer starting from 0.
+ */
+private fun createUniqueName(
+    name: String,
+    names: ArrayList<String>,
+): String {
+    if (name !in names) {
+        names.add(name)
+        return name
+    }
+
+    var i = 0
+    var newName = "$name-$i"
+    while (newName in names) {
+        newName = "$name-${++i}"
+    }
+
+    names.add(newName)
+    return newName
+}
+
 /**
  * Construct a topology from the specified [pathToFile].
  */
-public fun clusterTopology(
-    pathToFile: String,
-    random: RandomGenerator = SplittableRandom(0),
-): List<HostSpec> {
-    return clusterTopology(File(pathToFile), random)
+public fun clusterTopology(pathToFile: String): List<ClusterSpec> {
+    return clusterTopology(File(pathToFile))
 }
 
 /**
  * Construct a topology from the specified [file].
  */
-public fun clusterTopology(
-    file: File,
-    random: RandomGenerator = SplittableRandom(0),
-): List<HostSpec> {
+public fun clusterTopology(file: File): List<ClusterSpec> {
     val topology = reader.read(file)
-    return topology.toHostSpecs(random)
+    return topology.toClusterSpec()
 }
 
 /**
  * Construct a topology from the specified [input].
  */
-public fun clusterTopology(
-    input: InputStream,
-    random: RandomGenerator = SplittableRandom(0),
-): List<HostSpec> {
+public fun clusterTopology(input: InputStream): List<ClusterSpec> {
     val topology = reader.read(input)
-    return topology.toHostSpecs(random)
+    return topology.toClusterSpec()
 }
 
 /**
  * Helper method to convert a [TopologySpec] into a list of [HostSpec]s.
  */
-private fun TopologySpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
-    return clusters.flatMap { cluster ->
-        List(cluster.count) {
-            cluster.toHostSpecs(random)
-        }.flatten()
+private fun TopologySpec.toClusterSpec(): List<ClusterSpec> {
+    clusterNames.clear()
+    hostNames.clear()
+    powerSourceNames.clear()
+    batteryNames.clear()
+
+    return clusters.map { cluster ->
+        cluster.toClusterSpec()
     }
 }
 
 /**
- * Helper method to convert a [ClusterSpec] into a list of [HostSpec]s.
+ * Helper method to convert a [ClusterJSONSpec] into a list of [HostSpec]s.
  */
-private var clusterId = 0
+private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
+    val clusterName = createUniqueName(this.name, clusterNames)
 
-private fun ClusterSpec.toHostSpecs(random: RandomGenerator): List<HostSpec> {
     val hostSpecs =
         hosts.flatMap { host ->
             (
                 List(host.count) {
-                    host.toHostSpecs(
-                        clusterId,
-                        random,
+                    host.toHostSpec(
+                        clusterName,
                     )
                 }
             )
         }
-    clusterId++
-    return hostSpecs
+    val powerSourceSpec =
+        PowerSourceSpec(
+            createUniqueName(this.powerSource.name, powerSourceNames),
+            totalPower = this.powerSource.totalPower,
+            carbonTracePath = this.powerSource.carbonTracePath,
+        )
+
+    var batterySpec: BatterySpec? = null
+    if (this.battery != null) {
+        batterySpec =
+            BatterySpec(
+                createUniqueName(this.battery.name, batteryNames),
+                this.battery.capacity,
+                this.battery.chargingSpeed,
+                this.battery.batteryPolicy,
+                this.battery.initialCharge,
+                this.battery.embodiedCarbon,
+                this.battery.expectedLifetime,
+            )
+    }
+
+    return ClusterSpec(clusterName, hostSpecs, powerSourceSpec, batterySpec)
 }
 
 /**
  * Helper method to convert a [HostJSONSpec] into a [HostSpec]s.
  */
-private var hostId = 0
 private var globalCoreId = 0
 
-private fun HostJSONSpec.toHostSpecs(
-    clusterId: Int,
-    random: RandomGenerator,
-): HostSpec {
-    val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", cpu.coreCount)
-    val units = List(cpu.count) { ProcessingUnit(unknownProcessingNode, globalCoreId++, cpu.coreSpeed.toMHz()) }
+private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
+    val units =
+        List(cpu.count) {
+            CpuModel(
+                globalCoreId++,
+                cpu.coreCount,
+                cpu.coreSpeed.toMHz(),
+            )
+        }
 
     val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed.toMHz(), memory.memorySize.toMiB().toLong())
     val machineModel =
         MachineModel(
             units,
-            listOf(unknownMemoryUnit),
+            unknownMemoryUnit,
         )
 
     val powerModel =
         getPowerModel(powerModel.modelType, powerModel.power.toWatts(), powerModel.maxPower.toWatts(), powerModel.idlePower.toWatts())
 
-    var hostName: String
-    if (name == null) {
-        hostName = "Host-$hostId"
-    } else {
-        hostName = name
-    }
-
     val hostSpec =
         HostSpec(
-            UUID(random.nextLong(), (hostId).toLong()),
-            hostName,
-            mapOf("cluster" to clusterId),
+            createUniqueName(this.name, hostNames),
+            clusterName,
             machineModel,
-            SimPsuFactories.simple(powerModel),
+            powerModel,
         )
-    hostId++
-
     return hostSpec
 }

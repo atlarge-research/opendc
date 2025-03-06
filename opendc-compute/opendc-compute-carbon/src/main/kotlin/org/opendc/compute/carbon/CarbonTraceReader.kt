@@ -20,33 +20,32 @@
  * SOFTWARE.
  */
 
-@file:JvmName("ComputeWorkloads")
+@file:JvmName("ComputeWorkloadsNew")
 
 package org.opendc.compute.carbon
 
+import org.opendc.simulator.compute.power.CarbonFragment
 import java.io.File
 import javax.management.InvalidAttributeValueException
 
 /**
  * Construct a workload from a trace.
  */
-public fun getCarbonTrace(pathToFile: String?): CarbonTrace {
+public fun getCarbonFragments(pathToFile: String?): List<CarbonFragment>? {
     if (pathToFile == null) {
-        return CarbonTrace(null)
+        return null
     }
 
-    return getCarbonTrace(File(pathToFile))
+    return getCarbonFragments(File(pathToFile))
 }
 
 /**
  * Construct a workload from a trace.
  */
-public fun getCarbonTrace(file: File): CarbonTrace {
+public fun getCarbonFragments(file: File): List<CarbonFragment> {
     if (!file.exists()) {
         throw InvalidAttributeValueException("The carbon trace cannot be found")
     }
 
-    val fragments = CarbonTraceLoader().get(file)
-
-    return CarbonTrace(fragments)
+    return CarbonTraceLoader().get(file)
 }

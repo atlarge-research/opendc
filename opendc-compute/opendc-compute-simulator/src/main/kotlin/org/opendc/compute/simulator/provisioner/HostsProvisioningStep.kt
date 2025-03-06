@@ -22,57 +22,126 @@
 
 package org.opendc.compute.simulator.provisioner
 
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.simulator.SimHost
+import org.opendc.compute.carbon.getCarbonFragments
+import org.opendc.compute.simulator.host.SimHost
+import org.opendc.compute.simulator.service.ComputeService
+import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
-import org.opendc.simulator.compute.SimBareMetalMachine
-import org.opendc.simulator.compute.kernel.SimHypervisor
-import org.opendc.simulator.flow2.FlowEngine
-import java.util.SplittableRandom
+import org.opendc.simulator.compute.power.CarbonModel
+import org.opendc.simulator.compute.power.SimPowerSource
+import org.opendc.simulator.compute.power.batteries.BatteryAggregator
+import org.opendc.simulator.compute.power.batteries.SimBattery
+import org.opendc.simulator.compute.power.batteries.policy.SingleThresholdBatteryPolicy
+import org.opendc.simulator.engine.engine.FlowEngine
+import org.opendc.simulator.engine.graph.FlowDistributor
 
 /**
  * A [ProvisioningStep] that provisions a list of hosts for a [ComputeService].
  *
  * @param serviceDomain The domain name under which the compute service is registered.
- * @param specs A list of [HostSpec] objects describing the simulated hosts to provision.
- * @param optimize A flag to indicate that the CPU resources of the host should be merged into a single CPU resource.
+ * @param clusterSpecs A list of [HostSpec] objects describing the simulated hosts to provision.
+ * @param startTime The absolute start time of the simulation. Used to determine the carbon trace offset.
  */
 public class HostsProvisioningStep internal constructor(
     private val serviceDomain: String,
-    private val specs: List<HostSpec>,
-    private val optimize: Boolean,
+    private val clusterSpecs: List<ClusterSpec>,
+    private val startTime: Long = 0L,
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service =
             requireNotNull(
                 ctx.registry.resolve(serviceDomain, ComputeService::class.java),
             ) { "Compute service $serviceDomain does not exist" }
+        val simHosts = mutableSetOf<SimHost>()
+        val simPowerSources = mutableListOf<SimPowerSource>()
+
         val engine = FlowEngine.create(ctx.dispatcher)
         val graph = engine.newGraph()
-        val hosts = mutableSetOf<SimHost>()
 
-        for (spec in specs) {
-            val machine = SimBareMetalMachine.create(graph, spec.model, spec.psuFactory)
-            val hypervisor = SimHypervisor.create(spec.multiplexerFactory, SplittableRandom(ctx.seeder.nextLong()))
+        for (cluster in clusterSpecs) {
+            // Create the Power Source to which hosts are connected
 
-            val host =
-                SimHost(
-                    spec.uid,
-                    spec.name,
-                    spec.meta,
-                    ctx.dispatcher.timeSource,
-                    machine,
-                    hypervisor,
-                    optimize = optimize,
-                )
+            // Create Power Source
+            val simPowerSource = SimPowerSource(graph, cluster.powerSource.totalPower.toDouble(), cluster.powerSource.name, cluster.name)
+            simPowerSources.add(simPowerSource)
+            service.addPowerSource(simPowerSource)
 
-            require(hosts.add(host)) { "Host with uid ${spec.uid} already exists" }
-            service.addHost(host)
+            val hostDistributor = FlowDistributor(graph)
+
+            val carbonFragments = getCarbonFragments(cluster.powerSource.carbonTracePath)
+
+            var carbonModel: CarbonModel? = null
+            // Create Carbon Model
+            if (carbonFragments != null) {
+                carbonModel = CarbonModel(graph, carbonFragments, startTime)
+                carbonModel.addReceiver(simPowerSource)
+            }
+
+            if (cluster.battery != null) {
+                // Create Battery Distributor
+                val batteryDistributor = FlowDistributor(graph)
+                graph.addEdge(batteryDistributor, simPowerSource)
+
+                // Create Battery
+                val battery =
+                    SimBattery(
+                        graph,
+                        cluster.battery!!.capacity,
+                        cluster.battery!!.chargingSpeed,
+                        cluster.battery!!.initialCharge,
+                        cluster.battery!!.name,
+                        cluster.name,
+                        cluster.battery!!.embodiedCarbon,
+                        cluster.battery!!.expectedLifetime,
+                    )
+                graph.addEdge(battery, batteryDistributor)
+
+                // Create Aggregator
+                val batteryAggregator = BatteryAggregator(graph, battery, batteryDistributor)
+
+                // Create BatteryPolicy
+                val batteryPolicy =
+                    SingleThresholdBatteryPolicy(
+                        graph,
+                        battery,
+                        batteryAggregator,
+                        cluster.battery!!.batteryPolicy.carbonThreshold,
+                    )
+
+                carbonModel?.addReceiver(batteryPolicy)
+
+                graph.addEdge(hostDistributor, batteryAggregator)
+
+                service.addBattery(battery)
+            } else {
+                graph.addEdge(hostDistributor, simPowerSource)
+            }
+
+            // Create hosts, they are connected to the powerMux when SimMachine is created
+            for (hostSpec in cluster.hostSpecs) {
+                val simHost =
+                    SimHost(
+                        hostSpec.name,
+                        cluster.name,
+                        ctx.dispatcher.timeSource,
+                        graph,
+                        hostSpec.model,
+                        hostSpec.cpuPowerModel,
+                        hostDistributor,
+                    )
+
+                require(simHosts.add(simHost)) { "Host with name ${hostSpec.name} already exists" }
+                service.addHost(simHost)
+            }
         }
 
         return AutoCloseable {
-            for (host in hosts) {
-                host.close()
+            for (simHost in simHosts) {
+                simHost.close()
+            }
+
+            for (simPowerSource in simPowerSources) {
+                simPowerSource.close()
             }
         }
     }

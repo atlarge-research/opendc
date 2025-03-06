@@ -22,27 +22,19 @@
 
 package org.opendc.compute.topology.specs
 
-import org.opendc.simulator.compute.SimPsuFactories
-import org.opendc.simulator.compute.SimPsuFactory
-import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.flow2.mux.FlowMultiplexerFactory
-import java.util.UUID
+import org.opendc.simulator.compute.cpu.CpuPowerModel
+import org.opendc.simulator.compute.models.MachineModel
 
 /**
  * Description of a physical host that will be simulated by OpenDC and host the virtual machines.
  *
- * @param uid Unique identifier of the host.
  * @param name The name of the host.
- * @param meta The metadata of the host.
  * @param model The physical model of the machine.
- * @param psuFactory The [SimPsuFactory] to construct the PSU that models the power consumption of the machine.
- * @param multiplexerFactory The [FlowMultiplexerFactory] that is used to multiplex the virtual machines over the host.
+ * @param cpuPowerModel The [cpuPowerModel] that determines the power draw based on cpu utilization
  */
 public data class HostSpec(
-    val uid: UUID,
     val name: String,
-    val meta: Map<String, Any>,
+    val clusterName: String,
     val model: MachineModel,
-    val psuFactory: SimPsuFactory = SimPsuFactories.noop(),
-    val multiplexerFactory: FlowMultiplexerFactory = FlowMultiplexerFactory.maxMinMultiplexer(),
+    val cpuPowerModel: CpuPowerModel,
 )

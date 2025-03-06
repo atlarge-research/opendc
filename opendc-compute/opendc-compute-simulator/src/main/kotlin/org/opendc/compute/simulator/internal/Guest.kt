@@ -23,16 +23,17 @@
 package org.opendc.compute.simulator.internal
 
 import mu.KotlinLogging
-import org.opendc.compute.api.Server
-import org.opendc.compute.api.ServerState
-import org.opendc.compute.service.driver.telemetry.GuestCpuStats
-import org.opendc.compute.service.driver.telemetry.GuestSystemStats
-import org.opendc.compute.simulator.SimHost
-import org.opendc.compute.simulator.SimWorkloadMapper
-import org.opendc.simulator.compute.SimMachineContext
-import org.opendc.simulator.compute.kernel.SimHypervisor
-import org.opendc.simulator.compute.kernel.SimVirtualMachine
-import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.compute.api.TaskState
+import org.opendc.compute.simulator.host.SimHost
+import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.telemetry.GuestCpuStats
+import org.opendc.compute.simulator.telemetry.GuestSystemStats
+import org.opendc.simulator.compute.machine.SimMachine
+import org.opendc.simulator.compute.machine.VirtualMachine
+import org.opendc.simulator.compute.workload.ChainWorkload
+import org.opendc.simulator.compute.workload.trace.TraceFragment
+import org.opendc.simulator.compute.workload.trace.TraceWorkload
+import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
 import java.time.Duration
 import java.time.Instant
 import java.time.InstantSource
@@ -40,52 +41,146 @@ import java.time.InstantSource
 /**
  * A virtual machine instance that is managed by a [SimHost].
  */
-internal class Guest(
+public class Guest(
     private val clock: InstantSource,
-    val host: SimHost,
-    private val hypervisor: SimHypervisor,
-    private val mapper: SimWorkloadMapper,
+    public val host: SimHost,
     private val listener: GuestListener,
-    val server: Server,
-    val machine: SimVirtualMachine,
+    public val task: ServiceTask,
+    public val simMachine: SimMachine,
 ) {
     /**
      * The state of the [Guest].
      *
-     * [ServerState.PROVISIONING] is an invalid value for a guest, since it applies before the host is selected for
-     * a server.
+     * [TaskState.PROVISIONING] is an invalid value for a guest, since it applies before the host is selected for
+     * a task.
      */
-    var state: ServerState = ServerState.TERMINATED
+    public var state: TaskState = TaskState.CREATED
         private set
+
+    /**
+     * The [VirtualMachine] on which the task is currently running
+     */
+    public var virtualMachine: VirtualMachine? = null
+
+    private var uptime = 0L
+    private var downtime = 0L
+    private var lastReport = clock.millis()
+    private var bootTime: Instant? = null
+    private val cpuLimit = simMachine.cpu.cpuModel.totalCapacity
 
     /**
      * Start the guest.
      */
-    fun start() {
+    public fun start() {
         when (state) {
-            ServerState.TERMINATED, ServerState.ERROR -> {
-                LOGGER.info { "User requested to start server ${server.uid}" }
+            TaskState.CREATED, TaskState.FAILED -> {
+                LOGGER.info { "User requested to start task ${task.uid}" }
                 doStart()
             }
-            ServerState.RUNNING -> return
-            ServerState.DELETED -> {
-                LOGGER.warn { "User tried to start deleted server" }
-                throw IllegalArgumentException("Server is deleted")
+            TaskState.RUNNING -> return
+            TaskState.COMPLETED, TaskState.TERMINATED -> {
+                LOGGER.warn { "User tried to start a finished task" }
+                throw IllegalArgumentException("Task is already finished")
             }
             else -> assert(false) { "Invalid state transition" }
         }
     }
 
     /**
+     * Launch the guest on the simulated Virtual machine
+     */
+    private fun doStart() {
+        assert(virtualMachine == null) { "Concurrent job is already running" }
+
+        onStart()
+
+        val scalingPolicy = NoDelayScaling()
+
+        // TODO: This is not being used at the moment
+        val bootworkload =
+            TraceWorkload(
+                ArrayList(
+                    listOf(
+                        TraceFragment(
+                            1000000L,
+                            100000.0,
+                            1,
+                        ),
+                    ),
+                ),
+                0,
+                0,
+                0.0,
+                scalingPolicy,
+            )
+
+        if (task.workload is TraceWorkload) {
+            val newChainWorkload =
+                ChainWorkload(
+                    ArrayList(listOf(task.workload)),
+                    task.workload.checkpointInterval,
+                    task.workload.checkpointDuration,
+                    task.workload.checkpointIntervalScaling,
+                )
+
+            virtualMachine =
+                simMachine.startWorkload(newChainWorkload) { cause ->
+                    onStop(if (cause != null) TaskState.FAILED else TaskState.COMPLETED)
+                }
+        } else {
+            virtualMachine =
+                simMachine.startWorkload(task.workload) { cause ->
+                    onStop(if (cause != null) TaskState.FAILED else TaskState.COMPLETED)
+                }
+        }
+    }
+
+    /**
+     * This method is invoked when the guest was started on the host and has booted into a running state.
+     */
+    private fun onStart() {
+        bootTime = clock.instant()
+        state = TaskState.RUNNING
+        listener.onStart(this)
+    }
+
+    /**
      * Stop the guest.
      */
-    fun stop() {
+    public fun stop() {
         when (state) {
-            ServerState.RUNNING -> doStop(ServerState.TERMINATED)
-            ServerState.ERROR -> doRecover()
-            ServerState.TERMINATED, ServerState.DELETED -> return
+            TaskState.RUNNING -> doStop(TaskState.COMPLETED)
+            TaskState.FAILED -> state = TaskState.TERMINATED
+            TaskState.COMPLETED, TaskState.TERMINATED -> return
             else -> assert(false) { "Invalid state transition" }
         }
+    }
+
+    /**
+     * Attempt to stop the task and put it into [target] state.
+     */
+    private fun doStop(target: TaskState) {
+        assert(virtualMachine != null) { "Invalid job state" }
+        val virtualMachine = this.virtualMachine ?: return
+        if (target == TaskState.FAILED) {
+            virtualMachine.shutdown(Exception("Task has failed"))
+        } else {
+            virtualMachine.shutdown()
+        }
+
+        this.virtualMachine = null
+
+        this.state = target
+    }
+
+    /**
+     * This method is invoked when the guest stopped.
+     */
+    private fun onStop(target: TaskState) {
+        updateUptime()
+
+        state = target
+        listener.onStop(this)
     }
 
     /**
@@ -94,31 +189,30 @@ internal class Guest(
      * This operation will stop the guest if it is running on the host and remove all resources associated with the
      * guest.
      */
-    fun delete() {
+    public fun delete() {
         stop()
 
-        state = ServerState.DELETED
-        hypervisor.removeMachine(machine)
+        state = TaskState.FAILED
     }
 
     /**
      * Fail the guest if it is active.
      *
-     * This operation forcibly stops the guest and puts the server into an error state.
+     * This operation forcibly stops the guest and puts the task into an error state.
      */
-    fun fail() {
-        if (state != ServerState.RUNNING) {
+    public fun fail() {
+        if (state != TaskState.RUNNING) {
             return
         }
 
-        doStop(ServerState.ERROR)
+        doStop(TaskState.FAILED)
     }
 
     /**
      * Recover the guest if it is in an error state.
      */
-    fun recover() {
-        if (state != ServerState.ERROR) {
+    public fun recover() {
+        if (state != TaskState.FAILED) {
             return
         }
 
@@ -128,117 +222,47 @@ internal class Guest(
     /**
      * Obtain the system statistics of this guest.
      */
-    fun getSystemStats(): GuestSystemStats {
+    public fun getSystemStats(): GuestSystemStats {
         updateUptime()
 
         return GuestSystemStats(
-            Duration.ofMillis(localUptime),
-            Duration.ofMillis(localDowntime),
-            localBootTime,
+            Duration.ofMillis(uptime),
+            Duration.ofMillis(downtime),
+            bootTime,
         )
     }
 
     /**
      * Obtain the CPU statistics of this guest.
      */
-    fun getCpuStats(): GuestCpuStats {
-        val counters = machine.counters
-        counters.sync()
+    public fun getCpuStats(): GuestCpuStats {
+        virtualMachine!!.updateCounters(this.clock.millis())
+        val counters = virtualMachine!!.performanceCounters
 
         return GuestCpuStats(
             counters.cpuActiveTime / 1000L,
             counters.cpuIdleTime / 1000L,
             counters.cpuStealTime / 1000L,
             counters.cpuLostTime / 1000L,
-            machine.cpuCapacity,
-            machine.cpuUsage,
-            machine.cpuUsage / localCpuLimit,
+            counters.cpuCapacity,
+            counters.cpuSupply,
+            counters.cpuDemand,
+            counters.cpuSupply / cpuLimit,
         )
     }
 
     /**
-     * The [SimMachineContext] representing the current active virtual machine instance or `null` if no virtual machine
-     * is active.
-     */
-    private var ctx: SimMachineContext? = null
-
-    /**
-     * Launch the guest on the simulated
-     */
-    private fun doStart() {
-        assert(ctx == null) { "Concurrent job running" }
-
-        onStart()
-
-        val workload: SimWorkload = mapper.createWorkload(server)
-        workload.setOffset(clock.millis())
-        val meta = mapOf("driver" to host, "server" to server) + server.meta
-        ctx =
-            machine.startWorkload(workload, meta) { cause ->
-                onStop(if (cause != null) ServerState.ERROR else ServerState.TERMINATED)
-                ctx = null
-            }
-    }
-
-    /**
-     * Attempt to stop the server and put it into [target] state.
-     */
-    private fun doStop(target: ServerState) {
-        assert(ctx != null) { "Invalid job state" }
-        val ctx = ctx ?: return
-        if (target == ServerState.ERROR) {
-            ctx.shutdown(Exception("Stopped because of ERROR"))
-        } else {
-            ctx.shutdown()
-        }
-
-        state = target
-    }
-
-    /**
-     * Attempt to recover from an error state.
-     */
-    private fun doRecover() {
-        state = ServerState.TERMINATED
-    }
-
-    /**
-     * This method is invoked when the guest was started on the host and has booted into a running state.
-     */
-    private fun onStart() {
-        localBootTime = clock.instant()
-        state = ServerState.RUNNING
-        listener.onStart(this)
-    }
-
-    /**
-     * This method is invoked when the guest stopped.
-     */
-    private fun onStop(target: ServerState) {
-        updateUptime()
-
-        state = target
-        listener.onStop(this)
-    }
-
-    private var localUptime = 0L
-    private var localDowntime = 0L
-    private var localLastReport = clock.millis()
-    private var localBootTime: Instant? = null
-    private val localCpuLimit = machine.model.cpus.sumOf { it.frequency }
-
-    /**
      * Helper function to track the uptime and downtime of the guest.
      */
-    fun updateUptime() {
+    public fun updateUptime() {
         val now = clock.millis()
-        val duration = now - localLastReport
-        localLastReport = now
+        val duration = now - lastReport
+        lastReport = now
 
-        if (state == ServerState.RUNNING) {
-            localUptime += duration
-        } else if (state == ServerState.ERROR) {
-            localDowntime += duration
+        if (state == TaskState.RUNNING) {
+            uptime += duration
+        } else if (state == TaskState.FAILED) {
+            downtime += duration
         }
     }
 

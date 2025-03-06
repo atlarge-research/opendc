@@ -34,7 +34,7 @@ import org.opendc.common.units.Power
  */
 @Serializable
 public data class TopologySpec(
-    val clusters: List<ClusterSpec>,
+    val clusters: List<ClusterJSONSpec>,
     val schemaVersion: Int = 1,
 )
 
@@ -46,10 +46,12 @@ public data class TopologySpec(
  * @param location Location of the cluster. This can impact the carbon intensity
  */
 @Serializable
-public data class ClusterSpec(
+public data class ClusterJSONSpec(
     val name: String = "Cluster",
     val count: Int = 1,
     val hosts: List<HostJSONSpec>,
+    val powerSource: PowerSourceJSONSpec = PowerSourceJSONSpec.DFLT,
+    val battery: BatteryJSONSpec? = null,
     val location: String = "NL",
 )
 
@@ -64,9 +66,9 @@ public data class ClusterSpec(
  */
 @Serializable
 public data class HostJSONSpec(
-    val name: String? = null,
-    val cpu: CPUSpec,
-    val memory: MemorySpec,
+    val name: String = "Host",
+    val cpu: CPUJSONSpec,
+    val memory: MemoryJSONSpec,
     val powerModel: PowerModelSpec = PowerModelSpec.DFLT,
     val count: Int = 1,
 )
@@ -81,7 +83,7 @@ public data class HostJSONSpec(
  * @param coreSpeed The speed of the cores
  */
 @Serializable
-public data class CPUSpec(
+public data class CPUJSONSpec(
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val arch: String = "unknown",
@@ -100,7 +102,7 @@ public data class CPUSpec(
  * @param memorySize The size of the memory Unit
  */
 @Serializable
-public data class MemorySpec(
+public data class MemoryJSONSpec(
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val arch: String = "unknown",
@@ -114,6 +116,7 @@ public data class PowerModelSpec(
     val power: Power = Power.ofWatts(400),
     val maxPower: Power,
     val idlePower: Power,
+    val carbonTracePaths: String? = null,
 ) {
     init {
         require(maxPower >= idlePower) { "The max power of a power model can not be less than the idle power" }
@@ -129,3 +132,56 @@ public data class PowerModelSpec(
             )
     }
 }
+
+/**
+ * Definition of a power source used for JSON input.
+ *
+ * @property vendor
+ * @property modelName
+ * @property arch
+ * @property totalPower
+ */
+@Serializable
+public data class PowerSourceJSONSpec(
+    val name: String = "PowerSource",
+    val vendor: String = "unknown",
+    val modelName: String = "unknown",
+    val arch: String = "unknown",
+    val totalPower: Long = Long.MAX_VALUE,
+    val carbonTracePath: String? = null,
+) {
+    public companion object {
+        public val DFLT: PowerSourceJSONSpec =
+            PowerSourceJSONSpec(
+                totalPower = Long.MAX_VALUE,
+            )
+    }
+}
+
+/**
+ * Definition of a battery used for JSON input.
+ *
+ * @property name The name of the battery
+ * @property capacity The capacity of the battery in kWh
+ * @property chargingSpeed The charging speed of the battery in J
+ * @property batteryPolicy The policy used to decide when the battery charges and discharges
+ * @property initialCharge The initial charge in the battery
+ * @property embodiedCarbon The embodied carbon needed to create the battery in gram
+ * @property expectedLifetime The expected lifetime of the battery in years
+ *
+ */
+@Serializable
+public data class BatteryJSONSpec(
+    val name: String = "Battery",
+    var capacity: Double,
+    val chargingSpeed: Double,
+    val batteryPolicy: BatteryPolicyJSONSpec,
+    var initialCharge: Double = 0.0,
+    var embodiedCarbon: Double = 0.0,
+    var expectedLifetime: Double = 0.0,
+)
+
+@Serializable
+public data class BatteryPolicyJSONSpec(
+    val carbonThreshold: Double,
+)

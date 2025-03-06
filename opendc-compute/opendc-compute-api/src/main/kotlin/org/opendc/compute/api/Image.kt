@@ -23,6 +23,6 @@
 package org.opendc.compute.api
 
 /**
- * An image containing a bootable operating system that can directly be executed by physical or virtual server.
+ * An image containing a bootable operating system that can directly be executed by physical or virtual task.
  */
 public interface Image : Resource

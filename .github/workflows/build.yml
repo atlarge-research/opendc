@@ -22,14 +22,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1
+        uses: gradle/actions/wrapper-validation@v3
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
       - name: Build with Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
         with:
           arguments: build assembleDist codeCoverageReport
           # Only write to the cache for builds on the 'master' branch.
@@ -37,7 +37,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/master' }}
       - name: Publish report
         if: always()
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v5
         with:
           check_name: test (Java ${{ matrix.java }})
           report_paths: '**/build/test-results/test/TEST-*.xml'
@@ -45,7 +45,7 @@ jobs:
       - name: Upload reports
         if: always()
         continue-on-error: true # See https://github.com/actions/upload-artifact/issues/270
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: reports-${{ matrix.os }}-jdk${{ matrix.java }}
           path: |
@@ -54,14 +54,14 @@ jobs:
           retention-days: 5
       - name: Upload build
         continue-on-error: true
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.os }}-jdk${{ matrix.java }}
           path: |
             ./**/build/distributions/**/*.zip
           retention-days: 5
       - name: Upload code coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
@@ -72,16 +72,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Build UI
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: opendc-web/opendc-web-ui
           file: opendc-web/opendc-web-ui/Dockerfile
       - name: Build Web Server
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           file: opendc-web/opendc-web-server/Dockerfile
       - name: Build Runner
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           file: opendc-web/opendc-web-runner/Dockerfile
   build-docs:
@@ -101,7 +101,7 @@ jobs:
           cache-dependency-path: site/package-lock.json
       - name: Setup Pages
         id: pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v5
       - name: Install dependencies
         run: npm ci
       - name: Build with Docusaurus
@@ -110,6 +110,6 @@ jobs:
           DOCUSAURUS_URL: ${{ steps.pages.outputs.origin }}
           DOCUSAURUS_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./site/build

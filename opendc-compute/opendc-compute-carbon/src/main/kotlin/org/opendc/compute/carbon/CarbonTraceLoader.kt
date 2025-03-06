@@ -22,6 +22,7 @@
 
 package org.opendc.compute.carbon
 
+import org.opendc.simulator.compute.power.CarbonFragment
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.CARBON_INTENSITY_TIMESTAMP
 import org.opendc.trace.conv.CARBON_INTENSITY_VALUE
@@ -42,7 +43,7 @@ public class CarbonTraceLoader {
      */
     private val cache = ConcurrentHashMap<String, SoftReference<List<CarbonFragment>>>()
 
-    private val builder = CarbonFragmentBuilder()
+    private val builder = CarbonFragmentNewBuilder()
 
     /**
      * Read the metadata into a workload.
@@ -92,11 +93,11 @@ public class CarbonTraceLoader {
     /**
      * A builder for a VM trace.
      */
-    private class CarbonFragmentBuilder {
+    private class CarbonFragmentNewBuilder {
         /**
          * The total load of the trace.
          */
-        public val fragments: MutableList<CarbonFragment> = mutableListOf<CarbonFragment>()
+        public val fragments: MutableList<CarbonFragment> = mutableListOf()
 
         /**
          * Add a fragment to the trace.
@@ -109,7 +110,11 @@ public class CarbonTraceLoader {
             carbonIntensity: Double,
         ) {
             fragments.add(
-                CarbonFragment(startTime.toEpochMilli(), Long.MAX_VALUE, carbonIntensity),
+                CarbonFragment(
+                    startTime.toEpochMilli(),
+                    Long.MAX_VALUE,
+                    carbonIntensity,
+                ),
             )
         }
 
