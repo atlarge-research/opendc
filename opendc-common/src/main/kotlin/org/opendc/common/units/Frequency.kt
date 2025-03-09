@@ -20,13 +20,19 @@
  * SOFTWARE.
  */
 
-@file:OptIn(InternalUse::class)
+@file:OptIn(InternalUse::class, NonInlinableUnit::class)
 
 package org.opendc.common.units
 
 import kotlinx.serialization.Serializable
 import org.opendc.common.annotations.InternalUse
 import org.opendc.common.units.TimeDelta.Companion.toTimeDelta
+import org.opendc.common.utils.DFLT_MIN_EPS
+import org.opendc.common.utils.approx
+import org.opendc.common.utils.approxLarger
+import org.opendc.common.utils.approxLargerOrEq
+import org.opendc.common.utils.approxSmaller
+import org.opendc.common.utils.approxSmallerOrEq
 import org.opendc.common.utils.fmt
 import org.opendc.common.utils.ifNeg0thenPos0
 import java.time.Duration
@@ -42,7 +48,19 @@ public value class Frequency private constructor(
     // As MHz.
     override val value: Double,
 ) : Unit<Frequency> {
-    override fun new(value: Double): Frequency = Frequency(value.ifNeg0thenPos0().also { check(it >= .0) })
+    override fun toString(): String = fmtValue()
+
+    override fun fmtValue(fmt: String): String =
+        when (abs()) {
+            in zero..ofHz(500) -> "${toHz().fmt(fmt)} Hz"
+            in ofHz(500)..ofKHz(500) -> "${toKHz().fmt(fmt)} KHz"
+            in ofKHz(500)..ofMHz(500) -> "${toMHz().fmt(fmt)} MHz"
+            else -> "${toGHz().fmt(fmt)} GHz"
+        }
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Conversions to Double
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public fun toHz(): Double = value * 1e6
 
@@ -52,22 +70,118 @@ public value class Frequency private constructor(
 
     public fun toGHz(): Double = value / 1e3
 
-    override fun toString(): String = fmtValue()
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Operation Override (to avoid boxing of value classes in byte code)
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    override fun fmtValue(fmt: String): String =
-        when (abs()) {
-            in ZERO..ofHz(500) -> "${toHz().fmt(fmt)} Hz"
-            in ofHz(500)..ofKHz(500) -> "${toKHz().fmt(fmt)} KHz"
-            in ofKHz(500)..ofMHz(500) -> "${toMHz().fmt(fmt)} MHz"
-            else -> "${toGHz().fmt(fmt)} GHz"
+    public override fun ifNeg0ThenPos0(): Frequency = Frequency(value.ifNeg0thenPos0())
+
+    public override operator fun plus(other: Frequency): Frequency = Frequency(value + other.value)
+
+    public override operator fun minus(other: Frequency): Frequency = Frequency(value - other.value)
+
+    public override operator fun div(scalar: Number): Frequency = Frequency(value / scalar.toDouble())
+
+    public override operator fun div(other: Frequency): Percentage = Percentage.ofRatio(value / other.value)
+
+    public override operator fun times(scalar: Number): Frequency = Frequency(value * scalar.toDouble())
+
+    public override operator fun times(percentage: Percentage): Frequency = Frequency(value * percentage.value)
+
+    public override operator fun unaryMinus(): Frequency = Frequency(-value)
+
+    public override operator fun compareTo(other: Frequency): Int = this.value.compareTo(other.value)
+
+    public override fun isZero(): Boolean = value == .0
+
+    public override fun approxZero(epsilon: Double): Boolean = value.approx(.0, epsilon = epsilon)
+
+    public override fun approx(
+        other: Frequency,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this == other || this.value.approx(other.value, minEpsilon, epsilon)
+
+    public override infix fun approx(other: Frequency): Boolean = approx(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxLarger(
+        other: Frequency,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxLarger(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxLarger(other: Frequency): Boolean = approxLarger(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxLargerOrEq(
+        other: Frequency,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxLargerOrEq(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxLargerOrEq(other: Frequency): Boolean = approxLargerOrEq(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxSmaller(
+        other: Frequency,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxSmaller(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxSmaller(other: Frequency): Boolean = approxSmaller(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxSmallerOrEq(
+        other: Frequency,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxSmallerOrEq(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxSmallerOrEq(other: Frequency): Boolean = approxSmallerOrEq(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override infix fun max(other: Frequency): Frequency = if (this.value > other.value) this else other
+
+    public override infix fun min(other: Frequency): Frequency = if (this.value < other.value) this else other
+
+    public override fun abs(): Frequency = Frequency(kotlin.math.abs(value))
+
+    public override fun roundToIfWithinEpsilon(
+        to: Frequency,
+        epsilon: Double,
+    ): Frequency =
+        if (this.value in (to.value - epsilon)..(to.value + epsilon)) {
+            to
+        } else {
+            this
         }
+
+    public fun max(
+        a: Frequency,
+        b: Frequency,
+    ): Frequency = if (a.value > b.value) a else b
+
+    public fun min(
+        a: Frequency,
+        b: Frequency,
+    ): Frequency = if (a.value < b.value) a else b
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Unit Specific Operations
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public operator fun times(timeDelta: TimeDelta): Double = toHz() * timeDelta.toSec()
 
     public operator fun times(duration: Duration): Double = toHz() * duration.toTimeDelta().toSec()
 
-    public companion object {
-        @JvmStatic public val ZERO: Frequency = Frequency(.0)
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Companion
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public companion object : UnitId<Frequency> {
+        @JvmStatic override val zero: Frequency = Frequency(.0)
+
+        @JvmStatic override val max: Frequency = Frequency(Double.MAX_VALUE)
+
+        @JvmStatic override val min: Frequency = Frequency(Double.MIN_VALUE)
+
+        public operator fun Number.times(unit: Frequency): Frequency = unit * this
 
         @JvmStatic
         @JvmName("ofHz")
@@ -87,9 +201,13 @@ public value class Frequency private constructor(
 
         private val HERTZ = Regex("\\s*(?:Hz|Hertz|hz|hertz)\\s*?")
 
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Serializer
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         /**
          * Serializer for [Frequency] value class. It needs to be a compile
-         * time constant in order to be used as serializer automatically,
+         * time constant to be used as serializer automatically,
          * hence `object :` instead of class instantiation.
          *
          * ```json

@@ -20,12 +20,18 @@
  * SOFTWARE.
  */
 
-@file:OptIn(InternalUse::class)
+@file:OptIn(InternalUse::class, NonInlinableUnit::class)
 
 package org.opendc.common.units
 
 import kotlinx.serialization.Serializable
 import org.opendc.common.annotations.InternalUse
+import org.opendc.common.utils.DFLT_MIN_EPS
+import org.opendc.common.utils.approx
+import org.opendc.common.utils.approxLarger
+import org.opendc.common.utils.approxLargerOrEq
+import org.opendc.common.utils.approxSmaller
+import org.opendc.common.utils.approxSmallerOrEq
 import org.opendc.common.utils.ifNeg0thenPos0
 import java.time.Duration
 import java.time.Instant
@@ -41,8 +47,13 @@ public value class TimeDelta private constructor(
     // In milliseconds.
     public override val value: Double,
 ) : Unit<TimeDelta> {
-    @InternalUse
-    override fun new(value: Double): TimeDelta = TimeDelta(value.ifNeg0thenPos0())
+    override fun toString(): String = fmtValue()
+
+    override fun fmtValue(fmt: String): String = Duration.ofMillis(value.toLong()).toString()
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Conversions to Double
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public fun toNs(): Double = value * 1e6
 
@@ -58,21 +69,116 @@ public value class TimeDelta private constructor(
 
     public fun toHours(): Double = toMin() / 60
 
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Operation Override (to avoid boxing of value classes in byte code)
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public override fun ifNeg0ThenPos0(): TimeDelta = TimeDelta(value.ifNeg0thenPos0())
+
+    public override operator fun plus(other: TimeDelta): TimeDelta = TimeDelta(value + other.value)
+
+    public override operator fun minus(other: TimeDelta): TimeDelta = TimeDelta(value - other.value)
+
+    public override operator fun div(scalar: Number): TimeDelta = TimeDelta(value / scalar.toDouble())
+
+    public override operator fun div(other: TimeDelta): Percentage = Percentage.ofRatio(value / other.value)
+
+    public override operator fun times(scalar: Number): TimeDelta = TimeDelta(value * scalar.toDouble())
+
+    public override operator fun times(percentage: Percentage): TimeDelta = TimeDelta(value * percentage.value)
+
+    public override operator fun unaryMinus(): TimeDelta = TimeDelta(-value)
+
+    public override operator fun compareTo(other: TimeDelta): Int = this.value.compareTo(other.value)
+
+    public override fun isZero(): Boolean = value == .0
+
+    public override fun approxZero(epsilon: Double): Boolean = value.approx(.0, epsilon = epsilon)
+
+    public override fun approx(
+        other: TimeDelta,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this == other || this.value.approx(other.value, minEpsilon, epsilon)
+
+    public override infix fun approx(other: TimeDelta): Boolean = approx(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxLarger(
+        other: TimeDelta,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxLarger(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxLarger(other: TimeDelta): Boolean = approxLarger(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxLargerOrEq(
+        other: TimeDelta,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxLargerOrEq(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxLargerOrEq(other: TimeDelta): Boolean = approxLargerOrEq(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxSmaller(
+        other: TimeDelta,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxSmaller(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxSmaller(other: TimeDelta): Boolean = approxSmaller(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxSmallerOrEq(
+        other: TimeDelta,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxSmallerOrEq(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxSmallerOrEq(other: TimeDelta): Boolean = approxSmallerOrEq(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override infix fun max(other: TimeDelta): TimeDelta = if (this.value > other.value) this else other
+
+    public override infix fun min(other: TimeDelta): TimeDelta = if (this.value < other.value) this else other
+
+    public override fun abs(): TimeDelta = TimeDelta(kotlin.math.abs(value))
+
+    public override fun roundToIfWithinEpsilon(
+        to: TimeDelta,
+        epsilon: Double,
+    ): TimeDelta =
+        if (this.value in (to.value - epsilon)..(to.value + epsilon)) {
+            to
+        } else {
+            this
+        }
+
+    public fun max(
+        a: TimeDelta,
+        b: TimeDelta,
+    ): TimeDelta = if (a.value > b.value) a else b
+
+    public fun min(
+        a: TimeDelta,
+        b: TimeDelta,
+    ): TimeDelta = if (a.value < b.value) a else b
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Unit Specific Operations
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     public fun toInstantFromEpoch(): Instant = Instant.ofEpochMilli(value.toLong())
-
-    override fun toString(): String = fmtValue()
-
-    /**
-     * @return the [Duration] [toString] result of this time value.
-     */
-    override fun fmtValue(fmt: String): String = Duration.ofMillis(value.toLong()).toString()
 
     public operator fun times(power: Power): Energy = Energy.ofWh(toHours() * power.toWatts())
 
     public operator fun times(dataRate: DataRate): DataSize = DataSize.ofKB(toSec() * dataRate.toKBps())
 
-    public companion object {
-        @JvmStatic public val ZERO: TimeDelta = TimeDelta(.0)
+    public companion object : UnitId<TimeDelta> {
+        @JvmStatic override val zero: TimeDelta = TimeDelta(.0)
+
+        @JvmStatic override val max: TimeDelta = TimeDelta(Double.MAX_VALUE)
+
+        @JvmStatic override val min: TimeDelta = TimeDelta(Double.MIN_VALUE)
+
+        public operator fun Number.times(unit: TimeDelta): TimeDelta = unit * this
 
         @JvmStatic
         @JvmName("ofNanos")
@@ -102,9 +208,13 @@ public value class TimeDelta private constructor(
         @JvmName("ofDuration")
         public fun ofDuration(duration: Duration): TimeDelta = duration.toTimeDelta()
 
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Serializer
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         /**
          * Serializer for [TimeDelta] value class. It needs to be a compile
-         * time constant in order to be used as serializer automatically,
+         * time constant to be used as serializer automatically,
          * hence `object :` instead of class instantiation.
          *
          * ```json

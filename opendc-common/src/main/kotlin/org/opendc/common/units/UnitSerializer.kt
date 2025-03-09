@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+@file:OptIn(NonInlinableUnit::class)
+
 package org.opendc.common.units
 
 import kotlinx.serialization.KSerializer

@@ -20,14 +20,21 @@
  * SOFTWARE.
  */
 
-@file:OptIn(InternalUse::class)
+@file:OptIn(InternalUse::class, NonInlinableUnit::class)
 
 package org.opendc.common.units
 
 import kotlinx.serialization.Serializable
 import org.opendc.common.annotations.InternalUse
 import org.opendc.common.units.TimeDelta.Companion.toTimeDelta
+import org.opendc.common.utils.DFLT_MIN_EPS
+import org.opendc.common.utils.approx
+import org.opendc.common.utils.approxLarger
+import org.opendc.common.utils.approxLargerOrEq
+import org.opendc.common.utils.approxSmaller
+import org.opendc.common.utils.approxSmallerOrEq
 import org.opendc.common.utils.fmt
+import org.opendc.common.utils.ifNeg0thenPos0
 import java.time.Duration
 
 /**
@@ -40,8 +47,19 @@ public value class DataSize private constructor(
     // In MiB.
     override val value: Double,
 ) : Unit<DataSize> {
-    @InternalUse
-    override fun new(value: Double): DataSize = DataSize(value)
+    override fun toString(): String = fmtValue()
+
+    override fun fmtValue(fmt: String): String =
+        when (abs()) {
+            in zero..ofBytes(100) -> "${toBytes().fmt(fmt)} Bytes"
+            in ofBytes(100)..ofKiB(100) -> "${toKiB().fmt(fmt)} KiB"
+            in ofKiB(100)..ofMiB(100) -> "${toMiB().fmt(fmt)} MiB"
+            else -> "${toGiB().fmt(fmt)} GiB"
+        }
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Conversions to Double
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public fun toBits(): Double = toKib() * 1024
 
@@ -83,22 +101,120 @@ public value class DataSize private constructor(
 
     public fun toTiB(): Double = toGiB() / 1024
 
-    override fun toString(): String = fmtValue()
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Operation Override (to avoid boxing of value classes in byte code)
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    override fun fmtValue(fmt: String): String =
-        when (abs()) {
-            in ZERO..ofBytes(100) -> "${toBytes().fmt(fmt)} Bytes"
-            in ofBytes(100)..ofKiB(100) -> "${toKiB().fmt(fmt)} KiB"
-            in ofKiB(100)..ofMiB(100) -> "${toMiB().fmt(fmt)} MiB"
-            else -> "${toGiB().fmt(fmt)} GiB"
+    public override fun ifNeg0ThenPos0(): DataSize = DataSize(value.ifNeg0thenPos0())
+
+    public override operator fun plus(other: DataSize): DataSize = DataSize(value + other.value)
+
+    public override operator fun minus(other: DataSize): DataSize = DataSize(value - other.value)
+
+    public override operator fun div(scalar: Number): DataSize = DataSize(value / scalar.toDouble())
+
+    public override operator fun div(other: DataSize): Percentage = Percentage.ofRatio(value / other.value)
+
+    public override operator fun times(scalar: Number): DataSize = DataSize(value * scalar.toDouble())
+
+    public override operator fun times(percentage: Percentage): DataSize = DataSize(value * percentage.value)
+
+    public override operator fun unaryMinus(): DataSize = DataSize(-value)
+
+    public override operator fun compareTo(other: DataSize): Int = this.value.compareTo(other.value)
+
+    public override fun isZero(): Boolean = value == .0
+
+    public override fun approxZero(epsilon: Double): Boolean = value.approx(.0, epsilon = epsilon)
+
+    public override fun approx(
+        other: DataSize,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this == other || this.value.approx(other.value, minEpsilon, epsilon)
+
+    public override infix fun approx(other: DataSize): Boolean = approx(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxLarger(
+        other: DataSize,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxLarger(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxLarger(other: DataSize): Boolean = approxLarger(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxLargerOrEq(
+        other: DataSize,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxLargerOrEq(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxLargerOrEq(other: DataSize): Boolean = approxLargerOrEq(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxSmaller(
+        other: DataSize,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxSmaller(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxSmaller(other: DataSize): Boolean = approxSmaller(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxSmallerOrEq(
+        other: DataSize,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxSmallerOrEq(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxSmallerOrEq(other: DataSize): Boolean = approxSmallerOrEq(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override infix fun max(other: DataSize): DataSize = if (this.value > other.value) this else other
+
+    public override infix fun min(other: DataSize): DataSize = if (this.value < other.value) this else other
+
+    public override fun abs(): DataSize = DataSize(kotlin.math.abs(value))
+
+    public override fun roundToIfWithinEpsilon(
+        to: DataSize,
+        epsilon: Double,
+    ): DataSize =
+        if (this.value in (to.value - epsilon)..(to.value + epsilon)) {
+            to
+        } else {
+            this
         }
+
+    public fun max(
+        a: DataSize,
+        b: DataSize,
+    ): DataSize = if (a.value > b.value) a else b
+
+    public fun min(
+        a: DataSize,
+        b: DataSize,
+    ): DataSize = if (a.value < b.value) a else b
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Unit Specific Operations
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public operator fun div(timeDelta: TimeDelta): DataRate = DataRate.ofKBps(this.toKiB() / timeDelta.toSec())
 
     public operator fun div(duration: Duration): DataRate = this / duration.toTimeDelta()
 
-    public companion object {
-        @JvmStatic public val ZERO: DataSize = DataSize(.0)
+    public operator fun div(dataRate: DataRate): TimeDelta = TimeDelta.ofSec(this.toKb() / dataRate.toKbps())
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Companion
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public companion object : UnitId<DataSize> {
+        @JvmStatic override val zero: DataSize = DataSize(.0)
+
+        @JvmStatic override val max: DataSize = DataSize(Double.MAX_VALUE)
+
+        @JvmStatic override val min: DataSize = DataSize(Double.MIN_VALUE)
+
+        public operator fun Number.times(unit: DataSize): DataSize = unit * this
 
         @JvmStatic
         @JvmName("ofBits")
@@ -176,9 +292,13 @@ public value class DataSize private constructor(
         @JvmName("ofTiB")
         public fun ofTiB(tiB: Number): DataSize = ofGiB(tiB.toDouble() * 1024)
 
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Serializer
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         /**
          * Serializer for [DataSize] value class. It needs to be a compile
-         * time constant in order to be used as serializer automatically,
+         * time constant to be used as serializer automatically,
          * hence `object :` instead of class instantiation.
          *
          * ```json
