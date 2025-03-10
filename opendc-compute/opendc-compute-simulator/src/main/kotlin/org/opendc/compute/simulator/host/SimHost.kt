@@ -42,15 +42,18 @@ import java.time.Instant
 import java.time.InstantSource
 
 /**
- * A [SimHost] implementation that simulates virtual machines on a physical machine.
+ * The `SimHost` class represents a simulated host that operates as a hypervisor for running virtualized tasks.
+ * It manages its state, running tasks, associated virtual machines, and system metrics, while providing host
+ * lifecycle management and resource usage computation.
  *
- * @param name The name of the host.
- * @param clock The (virtual) clock used to track time.
- * @param graph The Flow Graph that the Host is part of
- * @param machineModel The static model of the host
- * @param cpuPowerModel The power model of the host
- * @param powerDistributor The power distributor to which the host is connected
- * @constructor Create empty Sim host
+ * @constructor Initializes the SimHost with required parameters.
+ * @param name The unique name of the simulated host.
+ * @param clusterName The cluster name to which this host belongs.
+ * @param clock The clock source to simulate time within the system.
+ * @param graph The data-flow graph used by the simulation for task operations.
+ * @param machineModel The hardware model attributes of the host.
+ * @param cpuPowerModel The CPU power characteristics of the host.
+ * @param powerDistributor The power distributor managing system energy allocations.
  */
 public class SimHost(
     private val name: String,
@@ -191,8 +194,32 @@ public class SimHost(
         return this.guests
     }
 
+    /**
+     * Calculates the total memory used by the currently running tasks on the host.
+     *
+     * Iterates through the tasks mapped to guests in `taskToGuestMap`. For tasks that are in the
+     * `TaskState.RUNNING` state, their memory consumption is summed up.
+     *
+     * @return Total memory used by tasks currently in the RUNNING state, in bytes.
+     */
+    private fun usedMemoryByRunningTasks(): Long {
+        var usedMemory: Long = 0
+        for (vm in this.taskToGuestMap) {
+            if (vm.value.state == TaskState.RUNNING) {
+                usedMemory += vm.key.flavor.memorySize
+            }
+        }
+        return usedMemory
+    }
+
+    /**
+     * Determines if the given task can fit on this host based on its resource requirements.
+     *
+     * @param task The task to be checked. It includes the resource requirements such as memory size and core count.
+     * @return True if the task can fit on this host considering available memory, CPU cores, and machine model compatibility; false otherwise.
+     */
     public fun canFit(task: ServiceTask): Boolean {
-        val sufficientMemory = model.memoryCapacity >= task.flavor.memorySize
+        val sufficientMemory = (model.memoryCapacity - this.usedMemoryByRunningTasks()) >= task.flavor.memorySize
         val enoughCpus = model.coreCount >= task.flavor.coreCount
         val canFit = simMachine!!.canFit(task.flavor.toMachineModel())
 
