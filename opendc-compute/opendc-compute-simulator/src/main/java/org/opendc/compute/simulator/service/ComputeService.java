@@ -148,8 +148,6 @@ public final class ComputeService implements AutoCloseable {
      */
     private final Map<UUID, ServiceTask> taskById = new HashMap<>();
 
-    private final List<ServiceTask> tasks = new ArrayList<>();
-
     private final List<ServiceTask> tasksToRemove = new ArrayList<>();
 
     private ComputeMetricReader metricReader;
@@ -265,9 +263,10 @@ public final class ComputeService implements AutoCloseable {
     /**
      * Return the {@link ServiceTask}s hosted by this service.
      */
-    public List<ServiceTask> getTasks() {
-        return Collections.unmodifiableList(tasks);
+    public Map<UUID, ServiceTask> getTasks() {
+        return taskById;
     }
+
 
     /**
      * Return the {@link ServiceTask}s hosted by this service.
@@ -433,7 +432,6 @@ public final class ComputeService implements AutoCloseable {
     void delete(ServiceTask task) {
         completedTasks.remove(task);
         taskById.remove(task.getUid());
-        tasks.remove(task);
     }
 
     /**
@@ -452,7 +450,6 @@ public final class ComputeService implements AutoCloseable {
      * Run a single scheduling iteration.
      */
     private void doSchedule() {
-        // reorder tasks
 
         for (Iterator<SchedulingRequest> iterator = taskQueue.iterator();
                 iterator.hasNext();
@@ -660,7 +657,6 @@ public final class ComputeService implements AutoCloseable {
             ServiceTask task = new ServiceTask(service, uid, name, internalFlavor, workload, meta);
 
             service.taskById.put(uid, task);
-            service.tasks.add(task);
 
             service.tasksTotal++;
 
@@ -673,13 +669,6 @@ public final class ComputeService implements AutoCloseable {
         public ServiceTask findTask(@NotNull UUID id) {
             checkOpen();
             return service.taskById.get(id);
-        }
-
-        @NotNull
-        public List<ServiceTask> queryTasks() {
-            checkOpen();
-
-            return new ArrayList<>(service.tasks);
         }
 
         public void close() {

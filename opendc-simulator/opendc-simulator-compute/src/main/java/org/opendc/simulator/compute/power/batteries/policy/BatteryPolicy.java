@@ -31,12 +31,16 @@ import org.opendc.simulator.compute.power.batteries.SimBattery;
 import org.opendc.simulator.engine.graph.FlowGraph;
 import org.opendc.simulator.engine.graph.FlowNode;
 
+/**
+ * An abstract class representing a battery policy.
+ * A battery policy is used by a {@link SimBattery} to determine when to charge or discharge the battery.
+ */
 public abstract class BatteryPolicy extends FlowNode implements CarbonReceiver {
 
     protected final SimBattery battery;
     protected final BatteryAggregator aggregator;
 
-    protected double carbonIntensity;
+    protected double carbonIntensity; // The current carbon Intensity of the grid
 
     protected BatteryState batteryState = BatteryState.IDLE;
 
@@ -61,6 +65,12 @@ public abstract class BatteryPolicy extends FlowNode implements CarbonReceiver {
     @Override
     public abstract long onUpdate(long now);
 
+    /**
+     * Set the battery state.
+     * Both the battery and the aggregator are updated based on the new state.
+     *
+     * @param newBatteryState The new battery state.
+     */
     public void setBatteryState(BatteryState newBatteryState) {
         if (newBatteryState == this.batteryState) {
             return;

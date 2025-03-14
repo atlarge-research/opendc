@@ -29,12 +29,21 @@ import org.opendc.simulator.engine.graph.FlowGraph;
 
 import java.util.LinkedList;
 
+/**
+ * A battery policy that uses a running mean to determine if a battery should be charging or discharging.
+ * This policy is similar to {@link SingleThresholdBatteryPolicy}, but instead of using a predifined threshold,
+ * the threshold is updated dynamically based on the running mean of the carbon intensity.
+ * - If the Carbon Intensity is below the running mean,
+ *   the battery will start charging until full.
+ * - If the Carbon Intensity is above the running mean,
+ *   the battery will start discharging until empty.
+ */
 public class RunningMeanBatteryPolicy extends BatteryPolicy {
-    private final LinkedList<Double> pastCarbonIntensities = new LinkedList<>();
     private final int windowSize;
 
-    private double sumCarbonIntensity = 0.0;
-    private double meanCarbonIntensity = 0.0;
+    private final LinkedList<Double> pastCarbonIntensities = new LinkedList<>();
+    private double pastCarbonIntensitiesSum = 0.0;
+    private double pastCarbonIntensitiesMean = 0.0;
 
     /**
      *
@@ -48,33 +57,39 @@ public class RunningMeanBatteryPolicy extends BatteryPolicy {
 
         this.windowSize = windowSize;
 
-        this.updateCarbonIntensities(startingThreshold);
+        this.updatePastCarbonIntensities(startingThreshold);
     }
 
-    private void updateCarbonIntensities(double newCarbonIntensity) {
+    /**
+     * Update the past carbon intensities with the new carbon intensity.
+     *
+     * Update the current sum and mean.
+     * @param newCarbonIntensity
+     */
+    private void updatePastCarbonIntensities(double newCarbonIntensity) {
         if (this.pastCarbonIntensities.size() == this.windowSize) {
-            this.sumCarbonIntensity -= this.pastCarbonIntensities.removeFirst();
+            this.pastCarbonIntensitiesSum -= this.pastCarbonIntensities.removeFirst();
         }
         this.pastCarbonIntensities.addLast(newCarbonIntensity);
-        this.sumCarbonIntensity += newCarbonIntensity;
-        this.meanCarbonIntensity = this.sumCarbonIntensity / this.pastCarbonIntensities.size();
+        this.pastCarbonIntensitiesSum += newCarbonIntensity;
+        this.pastCarbonIntensitiesMean = this.pastCarbonIntensitiesSum / this.pastCarbonIntensities.size();
     }
 
     @Override
     public void updateCarbonIntensity(double newCarbonIntensity) {
-        this.updateCarbonIntensities(newCarbonIntensity);
+        this.updatePastCarbonIntensities(newCarbonIntensity);
 
         super.updateCarbonIntensity(newCarbonIntensity);
     }
 
     @Override
     public long onUpdate(long now) {
-        if (this.carbonIntensity >= this.meanCarbonIntensity & !this.battery.isEmpty()) {
+        if (this.carbonIntensity >= this.pastCarbonIntensitiesMean & !this.battery.isEmpty()) {
             this.setBatteryState(BatteryState.DISCHARGING);
             return Long.MAX_VALUE;
         }
 
-        if (this.carbonIntensity < this.meanCarbonIntensity & !this.battery.isFull()) {
+        if (this.carbonIntensity < this.pastCarbonIntensitiesMean & !this.battery.isFull()) {
             this.setBatteryState(BatteryState.CHARGING);
             return Long.MAX_VALUE;
         }

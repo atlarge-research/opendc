@@ -27,11 +27,17 @@ import org.opendc.simulator.compute.power.batteries.BatteryState;
 import org.opendc.simulator.compute.power.batteries.SimBattery;
 import org.opendc.simulator.engine.graph.FlowGraph;
 
+/**
+ * A battery policy that uses a single threshold to determine if a better should be charging or discharging.
+ * - If the Carbon Intensity is below the give thresholds,
+ *   the battery will start charging until full.
+ * - If the Carbon Intensity is above the give thresholds,
+ *   the battery will start discharging until empty.
+ */
 public class SingleThresholdBatteryPolicy extends BatteryPolicy {
     private final double carbonThreshold;
 
     /**
-     *
      * @param parentGraph     The {@link FlowGraph} this stage belongs to.
      * @param battery        The {@link SimBattery} to control.
      * @param aggregator    The {@link BatteryAggregator} to use.

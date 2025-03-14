@@ -34,7 +34,6 @@ import org.opendc.simulator.compute.power.batteries.policy.DoubleThresholdBatter
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanPlusBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.RunningMedianBatteryPolicy
-import org.opendc.simulator.compute.power.batteries.policy.RunningQuartilesBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.SingleThresholdBatteryPolicy
 import org.opendc.simulator.engine.graph.FlowGraph
 
