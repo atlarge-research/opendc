@@ -20,12 +20,12 @@
  * SOFTWARE.
  */
 
-@file:OptIn(InternalUse::class)
+@file:OptIn(InternalUse::class, NonInlinableUnit::class)
 
 package org.opendc.common.units
 
 import org.opendc.common.annotations.InternalUse
-import org.opendc.common.units.Time.Companion.toTime
+import org.opendc.common.units.TimeDelta.Companion.toTimeDelta
 import org.opendc.common.utils.DFLT_MIN_EPS
 import org.opendc.common.utils.adaptiveEps
 import org.opendc.common.utils.approx
@@ -47,7 +47,7 @@ import kotlin.experimental.ExperimentalTypeInference
  * This interface provides most of the utility functions and
  * mathematical operations that are available to [Double] (including threshold comparison methods),
  * but applicable to [T] (also with scalar multiplication and division),
- * and operations between different unit of measures.
+ * and operations between different unit of measures (e.g., DataRate * TimeDelta = DataSize, and many others).
  *
  * ```
  * // e.g. sum of data-rates
@@ -65,32 +65,32 @@ import kotlin.experimental.ExperimentalTypeInference
  *
  * // e.g. operations between different unit of measures
  * val a: DataRate = DataRate.ofMBps(1)
- * val b: Time = Time.ofSec(3)
+ * val b: TimeDelta = TimeDelta.ofSec(3)
  * val c: DataSize = a * b
  * c.fmt() // "3MB"
  * ```
  * &nbsp;
  * ###### Java interoperability
  * Functions that concern inline classes are not callable from java by default (at least for now).
- * Hence, the JvmName annotation is needed for java interoperability. **Only methods that allow java
+ * Hence, the JvmName annotation is necessary for java interoperability.Only methods that allow java
  * to interact with kotlin code concerning inline classes should be made accessible to java.**
  * Java will never be able to invoke instance methods, only static ones.
  *
- * Java sees value classes as the standard data type they represent (in this case double).
- * Meaning there is no type safety from java, nevertheless functions can be invoked
- * to provide methods the correct unit value (and for improved understandability).
+ * Java sees value classes as the standard data type they represent (in this case, double).
+ * Meaning there is no type safety from java, nevertheless, functions can be invoked
+ * to provide methods with the correct unit value (and for improved understandability).
  *
  * ```kotlin
  * // kotlin
  * @JvmStatic @JvmName("function")
- * fun function(time: Time) {  }
+ * fun function(time: TimeDelta) {  }
  * ```
  * ```java
  * // java
- * double time = Time.ofHours(2);
+ * double time = TimeDelta.ofHours(2);
  * function(time)
  * // or
- * function(Time.ofHours(2))
+ * function(TimeDelta.ofHours(2))
  * ```
  *
  * @param[T] the unit of measure that is represented (e.g. [DataRate])
@@ -99,162 +99,180 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
     /**
      * The actual value of this unit of measure used for computation and comparisons.
      *
-     * What magnitude this value represents (e.g. Kbps, Mbps etc.) is up to the interface implementation,
-     * and it does not interfere with the operations, hence this property should be reserved for internal use.
+     * What magnitude this value represents (e.g., Kbps, Mbps etc.) is up to the interface implementation,
+     * and it does not interfere with the operations; hence this property should be reserved for internal use.
      */
     @InternalUse
+    @NonInlinableUnit
     public val value: Double
+
+    /**
+     * If `this` is -0.0 it is converted to +0.0.
+     */
+    @NonInlinableUnit
+    public fun ifNeg0ThenPos0(): T
 
     /**
      * @return the sum with [other] as [T].
      */
-    public operator fun plus(other: T): T = new(value + other.value)
+    @NonInlinableUnit
+    public operator fun plus(other: T): T
 
     /**
      * @return the subtraction of [other] from *this* as [T].
      */
-    public operator fun minus(other: T): T = new(value - other.value)
+    @NonInlinableUnit
+    public operator fun minus(other: T): T
 
     /**
      * @return *this* divided by scalar [scalar] as [T].
      */
-    public operator fun div(scalar: Number): T = new(value / scalar.toDouble())
+    @NonInlinableUnit
+    public operator fun div(scalar: Number): T
 
     /**
      * @return *this* divided by [other] as [Double].
      */
-    public operator fun div(other: T): Double = value / other.value
+    @NonInlinableUnit
+    public operator fun div(other: T): Percentage
 
     /**
      * @return *this* multiplied by scalar [scalar] as [T].
      */
-    public operator fun times(scalar: Number): T = new(value * scalar.toDouble())
+    @NonInlinableUnit
+    public operator fun times(scalar: Number): T
+
+    /**
+     * @return *this* multiplied by percentage [Percentage] as [T].
+     */
+    @NonInlinableUnit
+    public operator fun times(percentage: Percentage): T
 
     /**
      * @return *this* negated.
      */
-    public operator fun unaryMinus(): T = new(-value)
-
-    public override operator fun compareTo(other: T): Int = this.value.compareTo(other.value)
+    @NonInlinableUnit
+    public operator fun unaryMinus(): T
 
     /**
      * @return `true` if *this* is equal to 0 (using `==` operator).
      */
-    public fun isZero(): Boolean = value == .0 || value == -.0
+    @NonInlinableUnit
+    public fun isZero(): Boolean
 
     /**
      * @return `true` if *this* is approximately equal to 0.
      * @see[Double.approx]
      */
-    public fun approxZero(epsilon: Double = DFLT_MIN_EPS): Boolean = value.approx(.0, epsilon = epsilon)
+    @NonInlinableUnit
+    public fun approxZero(epsilon: Double = DFLT_MIN_EPS): Boolean
 
     /**
      * @see[Double.approx]
      */
+    @NonInlinableUnit
     public fun approx(
         other: T,
         minEpsilon: Double = DFLT_MIN_EPS,
         epsilon: Double = adaptiveEps(this.value, other.value, minEpsilon),
-    ): Boolean = this == other || this.value.approx(other.value, minEpsilon, epsilon)
+    ): Boolean
 
     /**
      * @see[Double.approx]
      */
-    public infix fun approx(other: T): Boolean = approx(other, minEpsilon = DFLT_MIN_EPS)
+    @NonInlinableUnit
+    public infix fun approx(other: T): Boolean
 
     /**
      * @see[Double.approxLarger]
      */
+    @NonInlinableUnit
     public fun approxLarger(
         other: T,
         minEpsilon: Double = DFLT_MIN_EPS,
         epsilon: Double = adaptiveEps(this.value, other.value, minEpsilon),
-    ): Boolean = this.value.approxLarger(other.value, minEpsilon, epsilon)
+    ): Boolean
 
     /**
      * @see[Double.approxLarger]
      */
-    public infix fun approxLarger(other: T): Boolean = approxLarger(other, minEpsilon = DFLT_MIN_EPS)
+    @NonInlinableUnit
+    public infix fun approxLarger(other: T): Boolean
 
     /**
      * @see[Double.approxLargerOrEq]
      */
+    @NonInlinableUnit
     public fun approxLargerOrEq(
         other: T,
         minEpsilon: Double = DFLT_MIN_EPS,
         epsilon: Double = adaptiveEps(this.value, other.value, minEpsilon),
-    ): Boolean = this.value.approxLargerOrEq(other.value, minEpsilon, epsilon)
+    ): Boolean
 
     /**
      * @see[Double.approxLargerOrEq]
      */
-    public infix fun approxLargerOrEq(other: T): Boolean = approxLargerOrEq(other, minEpsilon = DFLT_MIN_EPS)
+    @NonInlinableUnit
+    public infix fun approxLargerOrEq(other: T): Boolean
 
     /**
      * @see[Double.approxSmaller]
      */
+    @NonInlinableUnit
     public fun approxSmaller(
         other: T,
         minEpsilon: Double = DFLT_MIN_EPS,
         epsilon: Double = adaptiveEps(this.value, other.value, minEpsilon),
-    ): Boolean = this.value.approxSmaller(other.value, minEpsilon, epsilon)
+    ): Boolean
 
     /**
      * @see[Double.approxSmaller]
      */
-    public infix fun approxSmaller(other: T): Boolean = approxSmaller(other, minEpsilon = DFLT_MIN_EPS)
+    @NonInlinableUnit
+    public infix fun approxSmaller(other: T): Boolean
 
     /**
      * @see[Double.approxSmallerOrEq]
      */
+    @NonInlinableUnit
     public fun approxSmallerOrEq(
         other: T,
         minEpsilon: Double = DFLT_MIN_EPS,
         epsilon: Double = adaptiveEps(this.value, other.value, minEpsilon),
-    ): Boolean = this.value.approxSmallerOrEq(other.value, minEpsilon, epsilon)
+    ): Boolean
 
     /**
      * @see[Double.approxSmallerOrEq]
      */
-    public infix fun approxSmallerOrEq(other: T): Boolean = approxSmallerOrEq(other, minEpsilon = DFLT_MIN_EPS)
+    @NonInlinableUnit
+    public infix fun approxSmallerOrEq(other: T): Boolean
 
     /**
      * @return the max value between *this* and [other].
      */
-    @Suppress("UNCHECKED_CAST")
-    public infix fun max(other: T): T = if (this.value > other.value) this as T else other
+    @NonInlinableUnit
+    public infix fun max(other: T): T
 
     /**
      * @return the minimum value between *this* and [other].
      */
-    @Suppress("UNCHECKED_CAST")
-    public infix fun min(other: T): T = if (this.value < other.value) this as T else other
+    @NonInlinableUnit
+    public infix fun min(other: T): T
 
     /**
      * @return the absolute value of *this*.
      */
-    public fun abs(): T = new(kotlin.math.abs(value))
+    @NonInlinableUnit
+    public fun abs(): T
 
     /**
      * @return *this* approximated to [to] if within `0 - epsilon` and `0 + epsilon`.
      */
-    @Suppress("UNCHECKED_CAST")
+    @NonInlinableUnit
     public fun roundToIfWithinEpsilon(
         to: T,
         epsilon: Double = DFLT_MIN_EPS,
-    ): T =
-        if (this.value in (to.value - epsilon)..(to.value + epsilon)) {
-            to
-        } else {
-            this as T
-        }
-
-    /**
-     * The "constructor" of [T] that this interface uses to
-     * instantiate new [T] when performing operations.
-     */
-    @InternalUse
-    public fun new(value: Double): T
+    ): T
 
     /**
      * Returns the formatted string representation of the unit of measure (e.g. "1.2 Gbps")
@@ -272,59 +290,42 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
         /**
          * @return [unit] multiplied by scalar [this].
          */
+        @NonInlinableUnit
         public operator fun <T : Unit<T>> Number.times(unit: T): T = unit * this
-
-        /**
-         * @return minimum value between [a] and [b].
-         */
-        public fun <T : Unit<T>> min(
-            a: T,
-            b: T,
-        ): T = if (a.value < b.value) a else b
 
         /**
          * @return minimum value between [units].
          */
-        public fun <T : Unit<T>> minOf(vararg units: T): T = units.minBy { it.value }
-
-        /**
-         * @return maximum value between [a] and [b].
-         */
-        public fun <T : Unit<T>> max(
-            a: T,
-            b: T,
-        ): T = if (a.value > b.value) a else b
+        @NonInlinableUnit
+        public inline fun <reified T : Unit<T>> minOf(vararg units: T): T = units.minBy { it.value }
 
         /**
          * @return maximum value between [units].
          */
-        public fun <T : Unit<T>> maxOf(vararg units: T): T = units.maxBy { it.value }
+        @NonInlinableUnit
+        public inline fun <reified T : Unit<T>> maxOf(vararg units: T): T = units.maxBy { it.value }
 
-        // maxBy and minBy need to be defined in implementations.
+        public operator fun Duration.times(dataRate: DataRate): DataSize = toTimeDelta() * dataRate
 
-        // Operations whose 'this' is a `Unit` are defined here.
-        // Operations whose 'this' is not a `Unit` are defined in their classes
-        // and not as extension function so that they do not need to be imported
+        public operator fun Duration.times(power: Power): Energy = toTimeDelta() * power
 
-        public operator fun Duration.times(dataRate: DataRate): DataSize = toTime() * dataRate
+        public operator fun Number.div(timeDelta: TimeDelta): Frequency = Frequency.ofHz(this.toDouble() / timeDelta.toSec())
 
-        public operator fun Duration.times(power: Power): Energy = toTime() * power
-
-        public operator fun Number.div(time: Time): Frequency = Frequency.ofHz(this.toDouble() / time.toSec())
-
-        public operator fun Number.div(duration: Duration): Frequency = this / duration.toTime()
+        public operator fun Number.div(duration: Duration): Frequency = this / duration.toTimeDelta()
 
         // Defined here so that they can overload the same method name, instead of having a different name forEach unit.
-        // You can not overload `sumOf` and using that name results in not being able to use the overloads for unit and for number in the same file.
+        // You cannot overload `sumOf` and using that name results in not
+        // being able to use the overloads for unit and for number in the same file.
 
-        // A reified version that does not need overloads can be also be defined, with a switch statement on the reified unit type for the base value.
+        // A reified version that does not need overloads can also be defined,
+        // with a switch statement on the reified unit type for the base value.
         // Then, if a unit is not included in the switch, a runtime error occurs, not compile time.
 
         @OptIn(ExperimentalTypeInference::class)
         @OverloadResolutionByLambdaReturnType
         @JvmName("sumOfDataRate")
         public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> DataRate): DataRate {
-            var sum: DataRate = DataRate.ZERO
+            var sum: DataRate = DataRate.zero
             forEach { sum += selector(it) }
             return sum
         }
@@ -333,7 +334,7 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
         @OverloadResolutionByLambdaReturnType
         @JvmName("sumOfDataSize")
         public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> DataSize): DataSize {
-            var sum: DataSize = DataSize.ZERO
+            var sum: DataSize = DataSize.zero
             forEach { sum += selector(it) }
             return sum
         }
@@ -342,7 +343,7 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
         @OverloadResolutionByLambdaReturnType
         @JvmName("sumOfEnergy")
         public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> Energy): Energy {
-            var sum: Energy = Energy.ZERO
+            var sum: Energy = Energy.zero
             forEach { sum += selector(it) }
             return sum
         }
@@ -351,7 +352,7 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
         @OverloadResolutionByLambdaReturnType
         @JvmName("sumOfPower")
         public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> Power): Power {
-            var sum: Power = Power.ZERO
+            var sum: Power = Power.zero
             forEach { sum += selector(it) }
             return sum
         }
@@ -359,8 +360,8 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
         @OptIn(ExperimentalTypeInference::class)
         @OverloadResolutionByLambdaReturnType
         @JvmName("sumOfTime")
-        public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> Time): Time {
-            var sum: Time = Time.ZERO
+        public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> TimeDelta): TimeDelta {
+            var sum: TimeDelta = TimeDelta.zero
             forEach { sum += selector(it) }
             return sum
         }
@@ -369,7 +370,7 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
         @OverloadResolutionByLambdaReturnType
         @JvmName("sumOfFrequency")
         public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> Frequency): Frequency {
-            var sum: Frequency = Frequency.ZERO
+            var sum: Frequency = Frequency.zero
             forEach { sum += selector(it) }
             return sum
         }
@@ -378,9 +379,135 @@ public sealed interface Unit<T : Unit<T>> : Comparable<T> {
         @OverloadResolutionByLambdaReturnType
         @JvmName("sumOfPercentage")
         public inline fun <T> Iterable<T>.sumOfUnit(selector: (T) -> Percentage): Percentage {
-            var sum: Percentage = Percentage.ZERO
+            var sum: Percentage = Percentage.zero
             forEach { sum += selector(it) }
             return sum
         }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("averageOfDataRateOrNull")
+        public inline fun <T> Iterable<T>.averageOfUnitOrNull(selector: (T) -> DataRate): DataRate? {
+            if (!iterator().hasNext()) return null
+            var sum: DataRate = DataRate.zero
+            var count = 0
+            forEach {
+                sum += selector(it)
+                count++
+            }
+            return sum / count
+        }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("averageOfDataSizeOrNull")
+        public inline fun <T> Iterable<T>.averageOfUnitOrNull(selector: (T) -> DataSize): DataSize? {
+            if (!iterator().hasNext()) return null
+            var sum: DataSize = DataSize.zero
+            var count = 0
+            forEach {
+                sum += selector(it)
+                count++
+            }
+            return sum / count
+        }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("averageOfEnergyOrNull")
+        public inline fun <T> Iterable<T>.averageOfUnitOrNull(selector: (T) -> Energy): Energy? {
+            if (!iterator().hasNext()) return null
+            var sum: Energy = Energy.zero
+            var count = 0
+            forEach {
+                sum += selector(it)
+                count++
+            }
+            return sum / count
+        }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("averageOfPowerOrNull")
+        public inline fun <T> Iterable<T>.averageOfUnitOrNull(selector: (T) -> Power): Power? {
+            if (!iterator().hasNext()) return null
+            var sum: Power = Power.zero
+            var count = 0
+            forEach {
+                sum += selector(it)
+                count++
+            }
+            return sum / count
+        }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("averageOfTimeOrNull")
+        public inline fun <T> Iterable<T>.averageOfUnitOrNull(selector: (T) -> TimeDelta): TimeDelta? {
+            if (!iterator().hasNext()) return null
+            var sum: TimeDelta = TimeDelta.zero
+            var count = 0
+            forEach {
+                sum += selector(it)
+                count++
+            }
+            return sum / count
+        }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("averageOfFrequencyOrNull")
+        public inline fun <T> Iterable<T>.averageOfUnitOrNull(selector: (T) -> Frequency): Frequency? {
+            if (!iterator().hasNext()) return null
+            var sum: Frequency = Frequency.zero
+            var count = 0
+            forEach {
+                sum += selector(it)
+                count++
+            }
+            return sum / count
+        }
+
+        @OptIn(ExperimentalTypeInference::class)
+        @OverloadResolutionByLambdaReturnType
+        @JvmName("averageOfPercentageOrNull")
+        public inline fun <T> Iterable<T>.averageOfUnitOrNull(selector: (T) -> Percentage): Percentage? {
+            if (!iterator().hasNext()) return null
+            var sum: Percentage = Percentage.zero
+            var count = 0
+            forEach {
+                sum += selector(it)
+                count++
+            }
+            return sum / count
+        }
     }
+}
+
+@RequiresOptIn(
+    message =
+        "Unit value class cannot be JVM inlined if this symbol is used " +
+            "(and if value class is used as generic type, but that holds for `double` as well)",
+    level = RequiresOptIn.Level.WARNING,
+)
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.CONSTRUCTOR)
+public annotation class NonInlinableUnit
+
+@RequiresOptIn(
+    message =
+        "This operation is not intended for this unit, but it needs to be define. " +
+            "Invoking this method will result in an exception. ",
+    level = RequiresOptIn.Level.WARNING,
+)
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.CONSTRUCTOR)
+public annotation class UnintendedOperation
+
+public class UnitOperationException(override val message: String? = null) : Exception()
+
+public interface UnitId<T : Unit<T>> {
+    public val zero: T
+    public val max: T
+    public val min: T
 }
