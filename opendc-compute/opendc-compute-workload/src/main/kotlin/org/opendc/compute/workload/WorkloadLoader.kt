@@ -54,9 +54,9 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
 
         reScheduleTasks(workload)
 
-        if (fraction >= 1.0) {
-            return workload
-        }
+//        if (fraction >= 1.0) {
+//            return workload
+//        }
 
         if (fraction <= 0.0) {
             throw Error("The fraction of tasks to load cannot be 0.0 or lower")
@@ -65,20 +65,28 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
         val res = mutableListOf<Task>()
 
         val totalLoad = workload.sumOf { it.totalLoad }
+        val desiredLoad = totalLoad * fraction
         var currentLoad = 0.0
 
-        val shuffledWorkload = workload.shuffled()
-        for (entry in shuffledWorkload) {
-            val entryLoad = entry.totalLoad
-
-            // TODO: ask Sacheen
-            if ((currentLoad + entryLoad) / totalLoad > fraction) {
-                break
-            }
-
-            currentLoad += entryLoad
+        while (currentLoad < desiredLoad) {
+            val entry = workload.random()
             res += entry
+
+            currentLoad += entry.totalLoad
         }
+
+//        val shuffledWorkload = workload.shuffled()
+//        for (entry in shuffledWorkload) {
+//            val entryLoad = entry.totalLoad
+//
+//            // TODO: ask Sacheen
+//            if ((currentLoad + entryLoad) / totalLoad > fraction) {
+//                break
+//            }
+//
+//            currentLoad += entryLoad
+//            res += entry
+//        }
 
         logger.info { "Sampled ${workload.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
 

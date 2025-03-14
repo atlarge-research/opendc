@@ -28,37 +28,47 @@ import org.opendc.simulator.compute.power.batteries.SimBattery;
 import org.opendc.simulator.engine.graph.FlowGraph;
 
 /**
- * A battery policy that uses a single threshold to determine if a better should be charging or discharging.
- * - If the Carbon Intensity is below the give thresholds,
- *   the battery will start charging until full.
- * - If the Carbon Intensity is above the give thresholds,
- *   the battery will start discharging until empty.
+ * A battery policy that uses two thresholds to determine if a better should be charging or discharging.
+ * - If the Carbon Intensity is below the lower threshold,
+ *    the battery will start charging until full.
+ * - If the Carbon Intensity is above the upper threshold,
+ *    the battery will start discharging until empty.
+ * - If the Carbon Intensity is between the two thresholds,
+ *    The battery is idle.
  */
-public class SingleThresholdBatteryPolicy extends BatteryPolicy {
-    private final double carbonThreshold;
+public class DoubleThresholdBatteryPolicy extends BatteryPolicy {
+    private final double lowerThreshold;
+    private final double upperThreshold;
 
     /**
+     *
      * @param parentGraph     The {@link FlowGraph} this stage belongs to.
      * @param battery        The {@link SimBattery} to control.
      * @param aggregator    The {@link BatteryAggregator} to use.
-     * @param carbonThreshold The carbon intensity threshold to trigger charging or discharging.
+     * @param lowerThreshold The lower carbon intensity threshold to trigger charging or discharging.
+     * @param upperThreshold The upper carbon intensity threshold to trigger charging or discharging.
      */
-    public SingleThresholdBatteryPolicy(
-            FlowGraph parentGraph, SimBattery battery, BatteryAggregator aggregator, double carbonThreshold) {
+    public DoubleThresholdBatteryPolicy(
+            FlowGraph parentGraph,
+            SimBattery battery,
+            BatteryAggregator aggregator,
+            double lowerThreshold,
+            double upperThreshold) {
         super(parentGraph, battery, aggregator);
 
-        this.carbonThreshold = carbonThreshold;
+        this.lowerThreshold = lowerThreshold;
+        this.upperThreshold = upperThreshold;
     }
 
     @Override
     public long onUpdate(long now) {
 
-        if (this.carbonIntensity >= this.carbonThreshold & !this.battery.isEmpty()) {
+        if (this.carbonIntensity > this.upperThreshold & !this.battery.isEmpty()) {
             this.setBatteryState(BatteryState.DISCHARGING);
             return Long.MAX_VALUE;
         }
 
-        if (this.carbonIntensity < this.carbonThreshold & !this.battery.isFull()) {
+        if (this.carbonIntensity < this.lowerThreshold & !this.battery.isFull()) {
             this.setBatteryState(BatteryState.CHARGING);
             return Long.MAX_VALUE;
         }

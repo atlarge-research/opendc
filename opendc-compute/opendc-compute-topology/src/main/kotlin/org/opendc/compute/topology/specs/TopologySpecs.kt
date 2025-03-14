@@ -22,10 +22,19 @@
 
 package org.opendc.compute.topology.specs
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
+import org.opendc.simulator.compute.power.batteries.BatteryAggregator
+import org.opendc.simulator.compute.power.batteries.SimBattery
+import org.opendc.simulator.compute.power.batteries.policy.BatteryPolicy
+import org.opendc.simulator.compute.power.batteries.policy.DoubleThresholdBatteryPolicy
+import org.opendc.simulator.compute.power.batteries.policy.RunningMeanBatteryPolicy
+import org.opendc.simulator.compute.power.batteries.policy.RunningMeanPlusBatteryPolicy
+import org.opendc.simulator.compute.power.batteries.policy.SingleThresholdBatteryPolicy
+import org.opendc.simulator.engine.graph.FlowGraph
 
 /**
  * Definition of a Topology modeled in the simulation.
@@ -182,6 +191,87 @@ public data class BatteryJSONSpec(
 )
 
 @Serializable
-public data class BatteryPolicyJSONSpec(
+public sealed interface BatteryPolicyJSONSpec
+
+@Serializable
+@SerialName("single")
+public data class SingleBatteryPolicyJSONSpec(
     val carbonThreshold: Double,
-)
+) : BatteryPolicyJSONSpec
+
+@Serializable
+@SerialName("double")
+public data class DoubleBatteryPolicyJSONSpec(
+    val lowerThreshold: Double,
+    val upperThreshold: Double,
+) : BatteryPolicyJSONSpec
+
+@Serializable
+@SerialName("runningMean")
+public data class RunningMeanPolicyJSONSpec(
+    val startingThreshold: Double,
+    val windowSize: Int,
+) : BatteryPolicyJSONSpec
+
+@Serializable
+@SerialName("runningMeanPlus")
+public data class RunningMeanPlusPolicyJSONSpec(
+    val startingThreshold: Double,
+    val windowSize: Int,
+) : BatteryPolicyJSONSpec
+
+@Serializable
+@SerialName("runningMedian")
+public data class RunningMedianPolicyJSONSpec(
+    val startingThreshold: Double,
+    val windowSize: Int,
+) : BatteryPolicyJSONSpec
+
+@Serializable
+@SerialName("runningQuartiles")
+public data class RunningQuartilesPolicyJSONSpec(
+    val startingThreshold: Double,
+    val windowSize: Int,
+) : BatteryPolicyJSONSpec
+
+public fun createSimBatteryPolicy(
+    batterySpec: BatteryPolicyJSONSpec,
+    graph: FlowGraph,
+    battery: SimBattery,
+    batteryAggregator: BatteryAggregator,
+): BatteryPolicy {
+    return when (batterySpec) {
+        is SingleBatteryPolicyJSONSpec ->
+            SingleThresholdBatteryPolicy(
+                graph,
+                battery,
+                batteryAggregator,
+                batterySpec.carbonThreshold,
+            )
+        is DoubleBatteryPolicyJSONSpec ->
+            DoubleThresholdBatteryPolicy(
+                graph,
+                battery,
+                batteryAggregator,
+                batterySpec.lowerThreshold,
+                batterySpec.upperThreshold,
+            )
+        is RunningMeanPolicyJSONSpec ->
+            RunningMeanBatteryPolicy(
+                graph,
+                battery,
+                batteryAggregator,
+                batterySpec.startingThreshold,
+                batterySpec.windowSize,
+            )
+        is RunningMeanPlusPolicyJSONSpec ->
+            RunningMeanPlusBatteryPolicy(
+                graph,
+                battery,
+                batteryAggregator,
+                batterySpec.startingThreshold,
+                batterySpec.windowSize,
+            )
+        else -> throw IllegalArgumentException("Unknown battery policy")
+    }
+}

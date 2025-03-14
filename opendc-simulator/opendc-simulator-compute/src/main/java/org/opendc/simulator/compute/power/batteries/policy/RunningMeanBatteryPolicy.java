@@ -22,43 +22,77 @@
 
 package org.opendc.simulator.compute.power.batteries.policy;
 
+import java.util.LinkedList;
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator;
 import org.opendc.simulator.compute.power.batteries.BatteryState;
 import org.opendc.simulator.compute.power.batteries.SimBattery;
 import org.opendc.simulator.engine.graph.FlowGraph;
 
 /**
- * A battery policy that uses a single threshold to determine if a better should be charging or discharging.
- * - If the Carbon Intensity is below the give thresholds,
+ * A battery policy that uses a running mean to determine if a battery should be charging or discharging.
+ * This policy is similar to {@link SingleThresholdBatteryPolicy}, but instead of using a predifined threshold,
+ * the threshold is updated dynamically based on the running mean of the carbon intensity.
+ * - If the Carbon Intensity is below the running mean,
  *   the battery will start charging until full.
- * - If the Carbon Intensity is above the give thresholds,
+ * - If the Carbon Intensity is above the running mean,
  *   the battery will start discharging until empty.
  */
-public class SingleThresholdBatteryPolicy extends BatteryPolicy {
-    private final double carbonThreshold;
+public class RunningMeanBatteryPolicy extends BatteryPolicy {
+    private final int windowSize;
+
+    private final LinkedList<Double> pastCarbonIntensities = new LinkedList<>();
+    private double pastCarbonIntensitiesSum = 0.0;
+    private double pastCarbonIntensitiesMean = 0.0;
 
     /**
+     *
      * @param parentGraph     The {@link FlowGraph} this stage belongs to.
      * @param battery        The {@link SimBattery} to control.
      * @param aggregator    The {@link BatteryAggregator} to use.
-     * @param carbonThreshold The carbon intensity threshold to trigger charging or discharging.
      */
-    public SingleThresholdBatteryPolicy(
-            FlowGraph parentGraph, SimBattery battery, BatteryAggregator aggregator, double carbonThreshold) {
+    public RunningMeanBatteryPolicy(
+            FlowGraph parentGraph,
+            SimBattery battery,
+            BatteryAggregator aggregator,
+            double startingThreshold,
+            int windowSize) {
         super(parentGraph, battery, aggregator);
 
-        this.carbonThreshold = carbonThreshold;
+        this.windowSize = windowSize;
+
+        this.updatePastCarbonIntensities(startingThreshold);
+    }
+
+    /**
+     * Update the past carbon intensities with the new carbon intensity.
+     *
+     * Update the current sum and mean.
+     * @param newCarbonIntensity
+     */
+    private void updatePastCarbonIntensities(double newCarbonIntensity) {
+        if (this.pastCarbonIntensities.size() == this.windowSize) {
+            this.pastCarbonIntensitiesSum -= this.pastCarbonIntensities.removeFirst();
+        }
+        this.pastCarbonIntensities.addLast(newCarbonIntensity);
+        this.pastCarbonIntensitiesSum += newCarbonIntensity;
+        this.pastCarbonIntensitiesMean = this.pastCarbonIntensitiesSum / this.pastCarbonIntensities.size();
+    }
+
+    @Override
+    public void updateCarbonIntensity(double newCarbonIntensity) {
+        this.updatePastCarbonIntensities(newCarbonIntensity);
+
+        super.updateCarbonIntensity(newCarbonIntensity);
     }
 
     @Override
     public long onUpdate(long now) {
-
-        if (this.carbonIntensity >= this.carbonThreshold & !this.battery.isEmpty()) {
+        if (this.carbonIntensity >= this.pastCarbonIntensitiesMean & !this.battery.isEmpty()) {
             this.setBatteryState(BatteryState.DISCHARGING);
             return Long.MAX_VALUE;
         }
 
-        if (this.carbonIntensity < this.carbonThreshold & !this.battery.isFull()) {
+        if (this.carbonIntensity < this.pastCarbonIntensitiesMean & !this.battery.isFull()) {
             this.setBatteryState(BatteryState.CHARGING);
             return Long.MAX_VALUE;
         }
