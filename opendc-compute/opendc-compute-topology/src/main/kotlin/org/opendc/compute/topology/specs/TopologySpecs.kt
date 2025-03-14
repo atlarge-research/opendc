@@ -33,7 +33,6 @@ import org.opendc.simulator.compute.power.batteries.policy.BatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.DoubleThresholdBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanPlusBatteryPolicy
-import org.opendc.simulator.compute.power.batteries.policy.RunningMedianBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.SingleThresholdBatteryPolicy
 import org.opendc.simulator.engine.graph.FlowGraph
 
@@ -235,53 +234,44 @@ public data class RunningQuartilesPolicyJSONSpec(
     val windowSize: Int,
 ) : BatteryPolicyJSONSpec
 
-public fun createSimBatteryPolicy(batterySpec: BatteryPolicyJSONSpec,
-                                  graph: FlowGraph,
-                                  battery: SimBattery,
-                                  batteryAggregator: BatteryAggregator) : BatteryPolicy {
-    return when(batterySpec) {
-        is SingleBatteryPolicyJSONSpec -> SingleThresholdBatteryPolicy(
-            graph,
-            battery,
-            batteryAggregator,
-            batterySpec.carbonThreshold,
-        )
-        is DoubleBatteryPolicyJSONSpec -> DoubleThresholdBatteryPolicy(
-            graph,
-            battery,
-            batteryAggregator,
-            batterySpec.lowerThreshold,
-            batterySpec.upperThreshold,
-        )
-        is RunningMeanPolicyJSONSpec -> RunningMeanBatteryPolicy(
-            graph,
-            battery,
-            batteryAggregator,
-            batterySpec.startingThreshold,
-            batterySpec.windowSize,
-        )
-        is RunningMeanPlusPolicyJSONSpec -> RunningMeanPlusBatteryPolicy(
-            graph,
-            battery,
-            batteryAggregator,
-            batterySpec.startingThreshold,
-            batterySpec.windowSize,
-        )
-        is RunningMedianPolicyJSONSpec -> RunningMedianBatteryPolicy(
-            graph,
-            battery,
-            batteryAggregator,
-            batterySpec.startingThreshold,
-            batterySpec.windowSize,
-        )
-        is RunningQuartilesPolicyJSONSpec -> RunningQuartilesBatteryPolicy(
-            graph,
-            battery,
-            batteryAggregator,
-            batterySpec.startingThreshold,
-            batterySpec.windowSize,
-        )
+public fun createSimBatteryPolicy(
+    batterySpec: BatteryPolicyJSONSpec,
+    graph: FlowGraph,
+    battery: SimBattery,
+    batteryAggregator: BatteryAggregator,
+): BatteryPolicy {
+    return when (batterySpec) {
+        is SingleBatteryPolicyJSONSpec ->
+            SingleThresholdBatteryPolicy(
+                graph,
+                battery,
+                batteryAggregator,
+                batterySpec.carbonThreshold,
+            )
+        is DoubleBatteryPolicyJSONSpec ->
+            DoubleThresholdBatteryPolicy(
+                graph,
+                battery,
+                batteryAggregator,
+                batterySpec.lowerThreshold,
+                batterySpec.upperThreshold,
+            )
+        is RunningMeanPolicyJSONSpec ->
+            RunningMeanBatteryPolicy(
+                graph,
+                battery,
+                batteryAggregator,
+                batterySpec.startingThreshold,
+                batterySpec.windowSize,
+            )
+        is RunningMeanPlusPolicyJSONSpec ->
+            RunningMeanPlusBatteryPolicy(
+                graph,
+                battery,
+                batteryAggregator,
+                batterySpec.startingThreshold,
+                batterySpec.windowSize,
+            )
         else -> throw IllegalArgumentException("Unknown battery policy")
     }
-
 }

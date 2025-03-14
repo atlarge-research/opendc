@@ -25,7 +25,6 @@
 package org.opendc.compute.topology
 
 import org.opendc.compute.topology.specs.BatteryJSONSpec
-import org.opendc.compute.topology.specs.BatterySpec
 import org.opendc.compute.topology.specs.ClusterJSONSpec
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostJSONSpec

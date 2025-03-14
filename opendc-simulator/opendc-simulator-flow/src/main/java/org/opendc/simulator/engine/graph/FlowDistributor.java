@@ -25,7 +25,6 @@ package org.opendc.simulator.engine.graph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 

@@ -267,7 +267,6 @@ public final class ComputeService implements AutoCloseable {
         return taskById;
     }
 
-
     /**
      * Return the {@link ServiceTask}s hosted by this service.
      */

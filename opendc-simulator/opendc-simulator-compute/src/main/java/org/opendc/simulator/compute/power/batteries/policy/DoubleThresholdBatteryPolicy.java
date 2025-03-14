@@ -49,7 +49,11 @@ public class DoubleThresholdBatteryPolicy extends BatteryPolicy {
      * @param upperThreshold The upper carbon intensity threshold to trigger charging or discharging.
      */
     public DoubleThresholdBatteryPolicy(
-            FlowGraph parentGraph, SimBattery battery, BatteryAggregator aggregator, double lowerThreshold, double upperThreshold) {
+            FlowGraph parentGraph,
+            SimBattery battery,
+            BatteryAggregator aggregator,
+            double lowerThreshold,
+            double upperThreshold) {
         super(parentGraph, battery, aggregator);
 
         this.lowerThreshold = lowerThreshold;

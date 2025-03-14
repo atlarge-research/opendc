@@ -22,12 +22,11 @@
 
 package org.opendc.simulator.compute.power.batteries.policy;
 
+import java.util.LinkedList;
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator;
 import org.opendc.simulator.compute.power.batteries.BatteryState;
 import org.opendc.simulator.compute.power.batteries.SimBattery;
 import org.opendc.simulator.engine.graph.FlowGraph;
-
-import java.util.LinkedList;
 
 /**
  * An improved version of {@link RunningMeanBatteryPolicy}.
@@ -49,7 +48,11 @@ public class RunningMeanPlusBatteryPolicy extends BatteryPolicy {
      * @param aggregator    The {@link BatteryAggregator} to use.
      */
     public RunningMeanPlusBatteryPolicy(
-            FlowGraph parentGraph, SimBattery battery, BatteryAggregator aggregator, double startingThreshold, int windowSize) {
+            FlowGraph parentGraph,
+            SimBattery battery,
+            BatteryAggregator aggregator,
+            double startingThreshold,
+            int windowSize) {
         super(parentGraph, battery, aggregator);
 
         this.windowSize = windowSize;

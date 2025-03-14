@@ -32,7 +32,6 @@ import org.opendc.simulator.compute.power.CarbonModel
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
 import org.opendc.simulator.compute.power.batteries.SimBattery
-import org.opendc.simulator.compute.power.batteries.policy.SingleThresholdBatteryPolicy
 import org.opendc.simulator.engine.engine.FlowEngine
 import org.opendc.simulator.engine.graph.FlowDistributor
 
@@ -100,12 +99,13 @@ public class HostsProvisioningStep internal constructor(
                 // Create Aggregator
                 val batteryAggregator = BatteryAggregator(graph, battery, batteryDistributor)
 
-                val batteryPolicy = createSimBatteryPolicy(
-                    cluster.battery!!.batteryPolicy,
-                    graph,
-                    battery,
-                    batteryAggregator,
-                )
+                val batteryPolicy =
+                    createSimBatteryPolicy(
+                        cluster.battery!!.batteryPolicy,
+                        graph,
+                        battery,
+                        batteryAggregator,
+                    )
 
                 carbonModel?.addReceiver(batteryPolicy)
 
