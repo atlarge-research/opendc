@@ -34,9 +34,12 @@ import org.opendc.compute.failure.models.FailureModel
 import org.opendc.compute.simulator.TaskWatcher
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.TaskNature
 import org.opendc.compute.workload.Task
 import org.opendc.experiments.base.experiment.specs.FailureModelSpec
 import org.opendc.experiments.base.experiment.specs.createFailureModel
+import java.time.Duration
+import java.time.Instant
 import java.time.InstantSource
 import java.util.Random
 import kotlin.coroutines.coroutineContext
@@ -123,6 +126,9 @@ public suspend fun ComputeService.replay(
                     val task =
                         client.newTask(
                             entry.name,
+                            TaskNature(false),
+                            Duration.ofMillis(entry.duration),
+                            Instant.ofEpochSecond(0),
                             client.newFlavor(
                                 entry.name,
                                 entry.cpuCount,

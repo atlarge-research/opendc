@@ -642,6 +642,9 @@ public final class ComputeService implements AutoCloseable {
         @NotNull
         public ServiceTask newTask(
                 @NotNull String name,
+                @NotNull TaskNature nature,
+                @NotNull Duration duration,
+                @NotNull Instant deadline,
                 @NotNull ServiceFlavor flavor,
                 @NotNull Workload workload,
                 @NotNull Map<String, ?> meta) {
@@ -652,9 +655,9 @@ public final class ComputeService implements AutoCloseable {
 
             //            final ServiceFlavor internalFlavor =
             //                    Objects.requireNonNull(service.flavorById.get(flavor.getUid()), "Unknown flavor");
-
             //            ServiceTask task = new ServiceTask(service, uid, name, internalFlavor, workload, meta);
-            ServiceTask task = new ServiceTask(service, uid, name, flavor, workload, meta);
+
+            ServiceTask task = new ServiceTask(service, uid, name, nature, duration, deadline, flavor, workload, meta);
 
             service.taskById.put(uid, task);
 

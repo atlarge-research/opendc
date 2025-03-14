@@ -88,6 +88,7 @@ public class MemorizingScheduler(
         taskloop@ for (req in iter) {
             if (req.isCancelled) {
                 iter.remove()
+                continue
             }
 
             for (chosenListIndex in minAvailableHost until hostsQueue.size) {
