@@ -43,7 +43,7 @@ public val resourceClusterID: String = "cluster_id"
 public val resourceSubmissionTime: String = "submission_time"
 
 /**
- * Start time for the resource.
+ * Carbon intensity of the resource.
  */
 @JvmField
 public val resourceCarbonIntensity: String = "carbon_intensity"
@@ -71,3 +71,15 @@ public val resourceCpuCapacity: String = "cpu_capacity"
  */
 @JvmField
 public val resourceMemCapacity: String = "mem_capacity"
+
+/**
+ * Nature of the task. Delayable, interruptible, etc.
+ */
+@JvmField
+public val resourceNature: String = "nature"
+
+/**
+ * Deadline of the task.
+ */
+@JvmField
+public val resourceDeadline: String = "deadline"

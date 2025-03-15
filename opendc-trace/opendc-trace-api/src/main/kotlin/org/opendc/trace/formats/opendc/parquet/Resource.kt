@@ -22,6 +22,7 @@
 
 package org.opendc.trace.formats.opendc.parquet
 
+import java.time.Duration
 import java.time.Instant
 
 /**
@@ -34,4 +35,6 @@ internal data class Resource(
     val cpuCount: Int,
     val cpuCapacity: Double,
     val memCapacity: Double,
+    val nature: String? = null,
+    val deadline: Instant? = null,
 )

@@ -43,6 +43,8 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
     private var localCpuCount = 0
     private var localCpuCapacity = 0.0
     private var localMemCapacity = 0.0
+    private var localNature: String? = null
+    private var localDeadline: Instant? = null
 
     /**
      * Root converter for the record.
@@ -95,6 +97,18 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
                                     localMemCapacity = value.toDouble()
                                 }
                             }
+                        "nature" ->
+                            object : PrimitiveConverter() {
+                                override fun addBinary(value: Binary) {
+                                    localNature = value.toStringUsingUTF8()
+                                }
+                            }
+                        "deadline" ->
+                            object : PrimitiveConverter() {
+                                override fun addLong(value: Long) {
+                                    localDeadline = Instant.ofEpochMilli(value)
+                                }
+                            }
                         else -> error("Unknown column $type")
                     }
                 }
@@ -106,6 +120,8 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
                 localCpuCount = 0
                 localCpuCapacity = 0.0
                 localMemCapacity = 0.0
+                localNature = null
+                localDeadline = null
             }
 
             override fun end() {}
@@ -121,6 +137,8 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
             localCpuCount,
             localCpuCapacity,
             localMemCapacity,
+            localNature,
+            localDeadline,
         )
 
     override fun getRootConverter(): GroupConverter = root

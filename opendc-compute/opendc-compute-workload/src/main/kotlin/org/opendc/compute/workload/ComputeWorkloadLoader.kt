@@ -31,9 +31,11 @@ import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDeadline
 import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceNature
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
 import org.opendc.trace.conv.resourceSubmissionTime
@@ -115,6 +117,8 @@ public class ComputeWorkloadLoader(
         val cpuCountCol = reader.resolve(resourceCpuCount)
         val cpuCapacityCol = reader.resolve(resourceCpuCapacity)
         val memCol = reader.resolve(resourceMemCapacity)
+        val natureCol = reader.resolve(resourceNature)
+        val deadlineCol = reader.resolve(resourceDeadline)
 
         var counter = 0
         val entries = mutableListOf<Task>()
@@ -132,6 +136,8 @@ public class ComputeWorkloadLoader(
                 val cpuCapacity = reader.getDouble(cpuCapacityCol)
                 val memCapacity = reader.getDouble(memCol) / 1000.0 // Convert from KB to MB
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
+                val nature = reader.getString(natureCol)
+                val deadline = reader.getInstant(deadlineCol)
 
                 val builder = fragments.getValue(id) // Get all fragments related to this VM
                 val totalLoad = builder.totalLoad
@@ -146,6 +152,8 @@ public class ComputeWorkloadLoader(
                         totalLoad,
                         submissionTime,
                         duration,
+                        nature,
+                        deadline,
                         builder.build(),
                     ),
                 )

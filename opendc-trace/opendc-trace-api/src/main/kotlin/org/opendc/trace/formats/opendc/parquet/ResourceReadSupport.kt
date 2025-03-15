@@ -33,9 +33,11 @@ import org.apache.parquet.schema.Types
 import org.opendc.trace.TableColumn
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDeadline
 import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceNature
 import org.opendc.trace.conv.resourceSubmissionTime
 
 /**
@@ -56,6 +58,8 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
             "cpu_capacity" to resourceCpuCapacity,
             "requiredMemory" to resourceMemCapacity,
             "mem_capacity" to resourceMemCapacity,
+            "nature" to resourceNature,
+            "deadline" to resourceDeadline,
         )
 
     override fun init(context: InitContext): ReadContext {
@@ -112,6 +116,14 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
                         .named("requiredMemory"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.BINARY)
+                        .`as`(LogicalTypeAnnotation.stringType())
+                        .named("nature"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                        .named("deadline"),
                 )
                 .named("resource")
 
@@ -142,6 +154,14 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
                         .named("mem_capacity"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.BINARY)
+                        .`as`(LogicalTypeAnnotation.stringType())
+                        .named("nature"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                        .named("deadline"),
                 )
                 .named("resource")
 

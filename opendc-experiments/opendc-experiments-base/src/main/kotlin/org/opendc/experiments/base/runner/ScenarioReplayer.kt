@@ -128,7 +128,7 @@ public suspend fun ComputeService.replay(
                             entry.name,
                             TaskNature(false),
                             Duration.ofMillis(entry.duration),
-                            Instant.ofEpochSecond(0),
+                            Instant.ofEpochMilli(0),
                             client.newFlavor(
                                 entry.name,
                                 entry.cpuCount,
