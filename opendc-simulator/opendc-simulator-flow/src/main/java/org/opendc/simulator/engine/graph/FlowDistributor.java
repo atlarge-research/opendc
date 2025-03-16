@@ -25,8 +25,11 @@ package org.opendc.simulator.engine.graph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import org.opendc.simulator.engine.engine.FlowEngine;
 
 public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
     private final ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
@@ -45,8 +48,8 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
 
     private double capacity; // What is the max capacity. Can probably be removed
 
-    public FlowDistributor(FlowGraph graph) {
-        super(graph);
+    public FlowDistributor(FlowEngine engine) {
+        super(engine);
     }
 
     public double getTotalIncomingDemand() {
@@ -282,5 +285,12 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
 
         outgoingSupplies.set(idx, newSupply);
         consumerEdge.pushSupply(newSupply);
+    }
+
+    @Override
+    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
+        List<FlowEdge> supplyingEdges = (this.supplierEdge != null) ? List.of(this.supplierEdge) : List.of();
+
+        return Map.of(FlowEdge.NodeType.CONSUMING, supplyingEdges, FlowEdge.NodeType.SUPPLYING, this.consumerEdges);
     }
 }

@@ -22,13 +22,16 @@
 
 package org.opendc.simulator.compute.power.batteries.policy;
 
+import java.util.List;
+import java.util.Map;
 import org.opendc.simulator.compute.power.CarbonModel;
 import org.opendc.simulator.compute.power.CarbonReceiver;
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator;
 import org.opendc.simulator.compute.power.batteries.BatteryState;
 import org.opendc.simulator.compute.power.batteries.PowerSourceType;
 import org.opendc.simulator.compute.power.batteries.SimBattery;
-import org.opendc.simulator.engine.graph.FlowGraph;
+import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
@@ -47,10 +50,10 @@ public abstract class BatteryPolicy extends FlowNode implements CarbonReceiver {
     /**
      * Construct a new {@link FlowNode} instance.
      *
-     * @param parentGraph The {@link FlowGraph} this stage belongs to.
+     * @param engine The {@link FlowEngine} this node belongs to.
      */
-    public BatteryPolicy(FlowGraph parentGraph, SimBattery battery, BatteryAggregator aggregator) {
-        super(parentGraph);
+    public BatteryPolicy(FlowEngine engine, SimBattery battery, BatteryAggregator aggregator) {
+        super(engine);
 
         this.battery = battery;
         this.battery.setBatteryPolicy(this);
@@ -113,5 +116,10 @@ public abstract class BatteryPolicy extends FlowNode implements CarbonReceiver {
     @Override
     public void removeCarbonModel(CarbonModel carbonModel) {
         this.close();
+    }
+
+    @Override
+    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
+        return Map.of(FlowEdge.NodeType.SUPPLYING, List.of());
     }
 }

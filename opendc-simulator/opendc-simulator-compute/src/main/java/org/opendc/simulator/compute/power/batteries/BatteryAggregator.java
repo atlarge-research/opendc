@@ -24,10 +24,12 @@ package org.opendc.simulator.compute.power.batteries;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowDistributor;
 import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.FlowGraph;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
@@ -52,14 +54,15 @@ public class BatteryAggregator extends FlowNode implements FlowConsumer, FlowSup
     /**
      * Construct a new {@link FlowNode} instance.
      *
-     * @param parentGraph The {@link FlowGraph} this stage belongs to.
+     * @param engine The {@link FlowEngine} this node belongs to.
      */
-    public BatteryAggregator(FlowGraph parentGraph, SimBattery battery, FlowDistributor powerSourceDistributor) {
-        super(parentGraph);
+    public BatteryAggregator(FlowEngine engine, SimBattery battery, FlowDistributor powerSourceDistributor) {
+        super(engine);
 
-        this.powerSourceEdge = parentGraph.addEdge(this, powerSourceDistributor);
+        this.powerSourceEdge = new FlowEdge(this, powerSourceDistributor);
         this.powerSourceEdge.setSupplierIndex(0);
-        this.batteryEdge = parentGraph.addEdge(this, battery);
+
+        this.batteryEdge = new FlowEdge(this, battery);
         this.batteryEdge.setSupplierIndex(1);
     }
 
@@ -169,5 +172,22 @@ public class BatteryAggregator extends FlowNode implements FlowConsumer, FlowSup
     @Override
     public double getCapacity() {
         return 0;
+    }
+
+    @Override
+    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
+        List<FlowEdge> consumingEdges = new ArrayList<>();
+        if (this.powerSourceEdge != null) {
+            consumingEdges.add(this.batteryEdge);
+        }
+        if (this.batteryEdge != null) {
+            consumingEdges.add(this.powerSourceEdge);
+        }
+
+        List<FlowEdge> supplyingEdges = this.hostEdge != null ? List.of(this.hostEdge) : List.of();
+
+        return Map.of(
+                FlowEdge.NodeType.CONSUMING, consumingEdges,
+                FlowEdge.NodeType.SUPPLYING, supplyingEdges);
     }
 }

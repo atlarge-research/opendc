@@ -29,17 +29,19 @@ import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.compute.memory.Memory;
 import org.opendc.simulator.compute.models.MachineModel;
 import org.opendc.simulator.compute.power.SimPsu;
+import org.opendc.simulator.compute.workload.ChainWorkload;
+import org.opendc.simulator.compute.workload.SimChainWorkload;
 import org.opendc.simulator.compute.workload.SimWorkload;
-import org.opendc.simulator.compute.workload.Workload;
+import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
-import org.opendc.simulator.engine.graph.FlowGraph;
+import org.opendc.simulator.engine.graph.FlowEdge;
 
 /**
  * A machine that is able to execute {@link SimWorkload} objects.
  */
 public class SimMachine {
     private final MachineModel machineModel;
-    private final FlowGraph graph;
+    private final FlowEngine engine;
 
     private final InstantSource clock;
 
@@ -62,8 +64,8 @@ public class SimMachine {
         return machineModel;
     }
 
-    public FlowGraph getGraph() {
-        return graph;
+    public FlowEngine getEngine() {
+        return engine;
     }
 
     public InstantSource getClock() {
@@ -112,29 +114,30 @@ public class SimMachine {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public SimMachine(
-            FlowGraph graph,
+            FlowEngine engine,
             MachineModel machineModel,
             FlowDistributor powerDistributor,
             CpuPowerModel cpuPowerModel,
             Consumer<Exception> completion) {
-        this.graph = graph;
+        this.engine = engine;
         this.machineModel = machineModel;
-        this.clock = graph.getEngine().getClock();
+        this.clock = engine.getClock();
 
         // Create the psu and cpu and connect them
-        this.psu = new SimPsu(graph);
+        this.psu = new SimPsu(engine);
 
-        graph.addEdge(this.psu, powerDistributor);
+        new FlowEdge(this.psu, powerDistributor);
 
-        this.cpu = new SimCpu(graph, this.machineModel.getCpuModel(), cpuPowerModel, 0);
+        this.cpu = new SimCpu(engine, this.machineModel.getCpuModel(), cpuPowerModel, 0);
 
-        graph.addEdge(this.cpu, this.psu);
+        new FlowEdge(this.cpu, this.psu);
 
-        this.memory = new Memory(graph, this.machineModel.getMemory());
+        this.memory = new Memory(engine, this.machineModel.getMemory());
 
         // Create a FlowDistributor and add the cpu as supplier
-        this.cpuDistributor = new FlowDistributor(this.graph);
-        graph.addEdge(this.cpuDistributor, this.cpu);
+        this.cpuDistributor = new FlowDistributor(engine);
+
+        new FlowEdge(this.cpuDistributor, this.cpu);
 
         this.completion = completion;
     }
@@ -147,13 +150,13 @@ public class SimMachine {
      * Close all related hardware
      */
     public void shutdown(Exception cause) {
-        this.graph.removeNode(this.psu);
+        this.psu.closeNode();
         this.psu = null;
 
-        this.graph.removeNode(this.cpu);
+        this.cpu.closeNode();
         this.cpu = null;
 
-        this.graph.removeNode(this.cpuDistributor);
+        this.cpuDistributor.closeNode();
         this.cpuDistributor = null;
 
         this.memory = null;
@@ -181,11 +184,7 @@ public class SimMachine {
      * @param completion
      * @return
      */
-    public VirtualMachine startWorkload(Workload workload, Consumer<Exception> completion) {
-        final VirtualMachine vm = new VirtualMachine(this);
-
-        vm.startWorkload(workload, completion);
-
-        return vm;
+    public SimChainWorkload startWorkload(ChainWorkload workload, Consumer<Exception> completion) {
+        return (SimChainWorkload) workload.startWorkload(this.cpuDistributor, this, completion);
     }
 }

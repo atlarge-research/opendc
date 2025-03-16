@@ -23,6 +23,11 @@
 package org.opendc.simulator.compute.workload;
 
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import org.opendc.simulator.compute.machine.PerformanceCounters;
+import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
@@ -30,13 +35,15 @@ import org.opendc.simulator.engine.graph.FlowSupplier;
 /**
  * A {@link SimChainWorkload} that composes multiple {@link SimWorkload}s.
  */
-final class SimChainWorkload extends SimWorkload implements FlowSupplier {
+public final class SimChainWorkload extends SimWorkload implements FlowSupplier {
     private final LinkedList<Workload> workloads;
     private int workloadIndex;
 
     private SimWorkload activeWorkload;
-    private double demand = 0.0f;
-    private double supply = 0.0f;
+    private double cpuDemand = 0.0f;
+    private double cpuSupply = 0.0f;
+    private double cpuCapacity = 0.0f;
+    private double d = 0.0f;
 
     private FlowEdge workloadEdge;
     private FlowEdge machineEdge;
@@ -49,6 +56,10 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
     private CheckpointModel checkpointModel;
 
     private ChainWorkload snapshot;
+
+    private long lastUpdate;
+    private PerformanceCounters performanceCounters = new PerformanceCounters();
+    private Consumer<Exception> completion;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
@@ -79,23 +90,27 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
         return checkpointIntervalScaling;
     }
 
+    public PerformanceCounters getPerformanceCounters() {
+        return performanceCounters;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    SimChainWorkload(FlowSupplier supplier, ChainWorkload workload, long now) {
-        super(((FlowNode) supplier).getGraph());
+    SimChainWorkload(FlowSupplier supplier, ChainWorkload workload) {
+        super(((FlowNode) supplier).getEngine());
 
         this.snapshot = workload;
 
-        this.parentGraph = ((FlowNode) supplier).getGraph();
-        this.parentGraph.addEdge(this, supplier);
+        new FlowEdge(this, supplier);
 
-        this.clock = this.parentGraph.getEngine().getClock();
         this.workloads = new LinkedList<>(workload.getWorkloads());
         this.checkpointInterval = workload.getCheckpointInterval();
         this.checkpointDuration = workload.getCheckpointDuration();
         this.checkpointIntervalScaling = workload.getCheckpointIntervalScaling();
+
+        this.lastUpdate = clock.millis();
 
         if (checkpointInterval > 0) {
             this.createCheckpointModel();
@@ -104,6 +119,15 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
         this.workloadIndex = -1;
 
         this.onStart();
+    }
+
+    SimChainWorkload(
+            FlowSupplier supplier, ChainWorkload workload, SimMachine machine, Consumer<Exception> completion) {
+        this(supplier, workload);
+
+        this.capacity = machine.getCpu().getFrequency();
+        this.d = 1 / machine.getCpu().getFrequency();
+        this.completion = completion;
     }
 
     public Workload getNextWorkload() {
@@ -122,7 +146,25 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
             this.checkpointModel.start();
         }
 
-        this.activeWorkload = this.getNextWorkload().startWorkload(this, this.clock.millis());
+        this.activeWorkload = this.getNextWorkload().startWorkload(this);
+    }
+
+    public void updateCounters(long now) {
+        long lastUpdate = this.lastUpdate;
+        this.lastUpdate = now;
+        long delta = now - lastUpdate;
+
+        if (delta > 0) {
+            final double factor = this.d * delta;
+
+            this.performanceCounters.addCpuActiveTime(Math.round(this.cpuSupply * factor));
+            this.performanceCounters.setCpuIdleTime(Math.round((this.cpuCapacity - this.cpuSupply) * factor));
+            this.performanceCounters.addCpuStealTime(Math.round((this.cpuDemand - this.cpuSupply) * factor));
+        }
+
+        this.performanceCounters.setCpuDemand(this.cpuDemand);
+        this.performanceCounters.setCpuSupply(this.cpuSupply);
+        this.performanceCounters.setCpuCapacity(this.cpuCapacity);
     }
 
     @Override
@@ -132,6 +174,16 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
 
     @Override
     public void stopWorkload() {
+        this.stopWorkload(null);
+    }
+
+    private Exception stopWorkloadCause = null;
+
+    public void stopWorkload(Exception cause) {
+        if (cause != null) {
+            this.stopWorkloadCause = cause;
+        }
+
         if (this.checkpointModel != null) {
             this.checkpointModel.close();
             this.checkpointModel = null;
@@ -143,6 +195,11 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
         }
 
         this.closeNode();
+
+        if (this.completion != null) {
+            this.completion.accept(stopWorkloadCause);
+            this.completion = null;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -197,7 +254,7 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
     @Override
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
 
-        this.demand = newDemand;
+        this.cpuDemand = newDemand;
         this.machineEdge.pushDemand(newDemand);
     }
 
@@ -210,7 +267,7 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
 
-        this.supply = newSupply;
+        this.cpuSupply = newSupply;
         this.workloadEdge.pushSupply(newSupply);
     }
 
@@ -222,6 +279,8 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand) {
+        updateCounters(this.clock.millis());
+
         this.pushOutgoingDemand(this.machineEdge, newDemand);
     }
 
@@ -233,6 +292,8 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply) {
+        updateCounters(this.clock.millis());
+
         this.pushOutgoingSupply(this.machineEdge, newSupply);
     }
 
@@ -255,7 +316,7 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
 
         // Start next workload
         if (!this.workloads.isEmpty()) {
-            this.activeWorkload = getNextWorkload().startWorkload(this, this.clock.millis());
+            this.activeWorkload = getNextWorkload().startWorkload(this);
             return;
         }
 
@@ -275,5 +336,15 @@ final class SimChainWorkload extends SimWorkload implements FlowSupplier {
         }
 
         this.stopWorkload();
+    }
+
+    @Override
+    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
+        List<FlowEdge> consumerEdges = (this.machineEdge != null) ? List.of(this.machineEdge) : List.of();
+        List<FlowEdge> supplierEdges = (this.workloadEdge != null) ? List.of(this.workloadEdge) : List.of();
+
+        return Map.of(
+                FlowEdge.NodeType.CONSUMING, consumerEdges,
+                FlowEdge.NodeType.SUPPLYING, supplierEdges);
     }
 }

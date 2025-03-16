@@ -26,7 +26,6 @@ import java.time.Clock;
 import java.time.InstantSource;
 import kotlin.coroutines.CoroutineContext;
 import org.opendc.common.Dispatcher;
-import org.opendc.simulator.engine.graph.FlowGraph;
 import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
@@ -76,13 +75,6 @@ public final class FlowEngine implements Runnable {
      */
     public InstantSource getClock() {
         return clock;
-    }
-
-    /**
-     * Return a new {@link FlowGraph} that can be used to build a flow network.
-     */
-    public FlowGraph newGraph() {
-        return new FlowGraph(this);
     }
 
     /**

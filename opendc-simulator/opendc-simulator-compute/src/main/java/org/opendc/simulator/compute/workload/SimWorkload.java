@@ -22,8 +22,8 @@
 
 package org.opendc.simulator.compute.workload;
 
+import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
-import org.opendc.simulator.engine.graph.FlowGraph;
 import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
@@ -37,10 +37,10 @@ public abstract class SimWorkload extends FlowNode implements FlowConsumer {
     /**
      * Construct a new {@link FlowNode} instance.
      *
-     * @param parentGraph The {@link FlowGraph} this stage belongs to.
+     * @param engine The {@link FlowEngine} this stage belongs to.
      */
-    public SimWorkload(FlowGraph parentGraph) {
-        super(parentGraph);
+    public SimWorkload(FlowEngine engine) {
+        super(engine);
     }
 
     /**

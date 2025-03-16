@@ -40,6 +40,11 @@ public class FlowEdge {
 
     private double capacity;
 
+    public enum NodeType {
+        CONSUMING,
+        SUPPLYING
+    }
+
     public FlowEdge(FlowConsumer consumer, FlowSupplier supplier) {
         if (!(consumer instanceof FlowNode)) {
             throw new IllegalArgumentException("Flow consumer is not a FlowNode");
@@ -66,6 +71,24 @@ public class FlowEdge {
         if (this.supplier != null) {
             this.supplier.removeConsumerEdge(this);
             this.supplier = null;
+        }
+    }
+
+    /**
+     * Close the edge of the specified node type.
+     *
+     * @param nodeType The type of connected node that is being closed.
+     */
+    public void close(NodeType nodeType) {
+        if (nodeType == NodeType.CONSUMING) {
+            this.consumer = null;
+            this.supplier.removeConsumerEdge(this);
+            this.supplier = null;
+        }
+        if (nodeType == NodeType.SUPPLYING) {
+            this.supplier = null;
+            this.consumer.removeSupplierEdge(this);
+            this.consumer = null;
         }
     }
 

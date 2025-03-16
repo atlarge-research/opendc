@@ -25,6 +25,8 @@ package org.opendc.simulator.compute.workload.trace;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
+import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling;
@@ -111,8 +113,13 @@ public class TraceWorkload implements Workload {
     }
 
     @Override
-    public SimWorkload startWorkload(FlowSupplier supplier, long now) {
-        return new SimTraceWorkload(supplier, this, now);
+    public SimWorkload startWorkload(FlowSupplier supplier) {
+        return new SimTraceWorkload(supplier, this);
+    }
+
+    @Override
+    public SimWorkload startWorkload(FlowSupplier supplier, SimMachine machine, Consumer<Exception> completion) {
+        return this.startWorkload(supplier);
     }
 
     public static Builder builder() {

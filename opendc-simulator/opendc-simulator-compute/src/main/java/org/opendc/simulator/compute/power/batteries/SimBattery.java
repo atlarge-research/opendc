@@ -22,10 +22,12 @@
 
 package org.opendc.simulator.compute.power.batteries;
 
+import java.util.List;
+import java.util.Map;
 import org.opendc.simulator.compute.power.batteries.policy.BatteryPolicy;
+import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.FlowGraph;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
@@ -120,7 +122,7 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
     /**
      * Construct a new {@link SimBattery} instance.
      *
-     * @param parentGraph The {@link FlowGraph} instance this battery is part of.
+     * @param engine The {@link FlowEngine} instance this battery is part of.
      * @param capacity The capacity of the battery in kWh.
      * @param chargingSpeed The charging speed of the battery in J.
      * @param initialCharge The initial charge of the battery in kWh.
@@ -130,7 +132,7 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
      * @param expectedLifeTime The expected lifetime of the battery in years.
      */
     public SimBattery(
-            FlowGraph parentGraph,
+            FlowEngine engine,
             double capacity,
             double chargingSpeed,
             double initialCharge,
@@ -139,7 +141,7 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
             Double totalEmbodiedCarbon,
             Double expectedLifeTime) {
 
-        super(parentGraph);
+        super(engine);
         this.capacity = capacity * 3600000;
         this.chargingSpeed = chargingSpeed;
 
@@ -318,5 +320,15 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
     @Override
     public void removeConsumerEdge(FlowEdge consumerEdge) {
         this.close();
+    }
+
+    @Override
+    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
+        List<FlowEdge> consumingEdges = (this.distributorEdge != null) ? List.of(this.distributorEdge) : List.of();
+        List<FlowEdge> supplyingEdges = (this.aggregatorEdge != null) ? List.of(this.aggregatorEdge) : List.of();
+
+        return Map.of(
+                FlowEdge.NodeType.CONSUMING, consumingEdges,
+                FlowEdge.NodeType.SUPPLYING, supplyingEdges);
     }
 }

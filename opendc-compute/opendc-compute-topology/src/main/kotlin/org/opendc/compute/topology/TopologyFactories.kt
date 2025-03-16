@@ -44,10 +44,10 @@ import java.io.InputStream
 private val reader = TopologyReader()
 
 // Lists used to make sure all cluster, host, power source and battery have unique names
-private val clusterNames: ArrayList<String> = ArrayList()
-private val hostNames: ArrayList<String> = ArrayList()
-private val powerSourceNames: ArrayList<String> = ArrayList()
-private val batteryNames: ArrayList<String> = ArrayList()
+private val clusterNames: HashMap<String, Int> = HashMap()
+private val hostNames: HashMap<String, Int> = HashMap()
+private val powerSourceNames: HashMap<String, Int> = HashMap()
+private val batteryNames: HashMap<String, Int> = HashMap()
 
 /**
  * Create a unique name for the specified [name] that is not already in the [names] list.
@@ -57,20 +57,19 @@ private val batteryNames: ArrayList<String> = ArrayList()
  */
 private fun createUniqueName(
     name: String,
-    names: ArrayList<String>,
+    names: MutableMap<String, Int>,
 ): String {
     if (name !in names) {
-        names.add(name)
+        names[name] = 0
         return name
     }
 
-    var i = 0
-    var newName = "$name-$i"
-    while (newName in names) {
-        newName = "$name-${++i}"
-    }
+    val latestValue = names[name]
 
-    names.add(newName)
+    val newName = "$name-$latestValue"
+
+    names[name] = latestValue!! + 1
+
     return newName
 }
 

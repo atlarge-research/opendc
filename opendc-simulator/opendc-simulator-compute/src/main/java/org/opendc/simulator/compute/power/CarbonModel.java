@@ -24,7 +24,9 @@ package org.opendc.simulator.compute.power;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.opendc.simulator.engine.graph.FlowGraph;
+import java.util.Map;
+import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
@@ -45,13 +47,13 @@ public class CarbonModel extends FlowNode {
     /**
      * Construct a CarbonModel
      *
-     * @param parentGraph The active FlowGraph which should be used to make the new FlowNode
+     * @param engine The {@link FlowEngine} the node belongs to
      * @param carbonFragments A list of Carbon Fragments defining the carbon intensity at different time frames
      * @param startTime The start time of the simulation. This is used to go from relative time (used by the clock)
      *                  to absolute time (used by carbon fragments).
      */
-    public CarbonModel(FlowGraph parentGraph, List<CarbonFragment> carbonFragments, long startTime) {
-        super(parentGraph);
+    public CarbonModel(FlowEngine engine, List<CarbonFragment> carbonFragments, long startTime) {
+        super(engine);
 
         this.startTime = startTime;
         this.fragments = carbonFragments;
@@ -65,6 +67,8 @@ public class CarbonModel extends FlowNode {
         for (CarbonReceiver receiver : receivers) {
             receiver.removeCarbonModel(this);
         }
+
+        receivers.clear();
 
         this.closeNode();
     }
@@ -127,5 +131,18 @@ public class CarbonModel extends FlowNode {
         receiver.setCarbonModel(this);
 
         receiver.updateCarbonIntensity(this.current_fragment.getCarbonIntensity());
+    }
+
+    public static <T, U> List<U> castList(List<T> list, Class<U> clazz) {
+        List<U> result = new ArrayList<>();
+        for (T element : list) {
+            result.add(clazz.cast(element));
+        }
+        return result;
+    }
+
+    @Override
+    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
+        return Map.of();
     }
 }

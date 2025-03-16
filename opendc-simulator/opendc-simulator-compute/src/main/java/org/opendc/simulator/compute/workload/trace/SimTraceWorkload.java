@@ -23,12 +23,13 @@
 package org.opendc.simulator.compute.workload.trace;
 
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling;
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.FlowGraph;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
@@ -46,9 +47,9 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     private double newCpuFreqSupplied = 0.0; // The Cpu speed supplied
     private double remainingWork = 0.0; // The duration of the fragment at the demanded speed
 
-    private long checkpointDuration;
+    private final long checkpointDuration;
 
-    private TraceWorkload snapshot;
+    private final TraceWorkload snapshot;
 
     private ScalingPolicy scalingPolicy = new NoDelayScaling();
 
@@ -83,8 +84,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimTraceWorkload(FlowSupplier supplier, TraceWorkload workload, long now) {
-        super(((FlowNode) supplier).getGraph());
+    public SimTraceWorkload(FlowSupplier supplier, TraceWorkload workload) {
+        super(((FlowNode) supplier).getEngine());
 
         this.snapshot = workload;
         this.checkpointDuration = workload.getCheckpointDuration();
@@ -92,8 +93,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.remainingFragments = new LinkedList<>(workload.getFragments());
         this.fragmentIndex = 0;
 
-        final FlowGraph graph = ((FlowNode) supplier).getGraph();
-        graph.addEdge(this, supplier);
+        new FlowEdge(this, supplier);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -288,5 +288,10 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
         this.stopWorkload();
+    }
+
+    @Override
+    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
+        return Map.of(FlowEdge.NodeType.CONSUMING, (this.machineEdge != null) ? List.of(this.machineEdge) : List.of());
     }
 }
