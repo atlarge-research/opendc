@@ -44,6 +44,7 @@ public enum class ComputeSchedulerEnum {
     ProvisionedCores,
     ProvisionedCoresInv,
     Random,
+    TaskNumMemorizing
 }
 
 public fun createComputeScheduler(
@@ -108,6 +109,11 @@ public fun createComputeScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
                 weighers = emptyList(),
                 subsetSize = Int.MAX_VALUE,
+                random = SplittableRandom(seeder.nextLong()),
+            )
+        ComputeSchedulerEnum.TaskNumMemorizing ->
+            MemorizingScheduler(
+                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
                 random = SplittableRandom(seeder.nextLong()),
             )
     }

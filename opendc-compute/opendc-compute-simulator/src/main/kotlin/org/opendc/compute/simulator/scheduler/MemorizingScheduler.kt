@@ -58,7 +58,7 @@ public class MemorizingScheduler(
         val listIdx = host.listIndex
         val chosenList = hostsQueue[priorityIdx]
 
-        if (listIdx == chosenList.size - 1) {
+        if (chosenList.size == 1) {
             chosenList.removeLast()
             if (listIdx == minAvailableHost) {
                 for (i in minAvailableHost + 1..hostsQueue.lastIndex) {
@@ -111,18 +111,19 @@ public class MemorizingScheduler(
         if (result == null) return SchedulingResult(SchedulingResultType.EMPTY) // No tasks to schedule that fit
 
         // Bookkeeping to maintain the calendar priority queue
-        val listIdx = chosenHost!!.listIndex
-
-        if (listIdx == chosenList!!.size - 1) {
+        if (chosenList!!.size == 1) {
             chosenList.removeLast()
-            if (chosenList.isEmpty()) minAvailableHost++
+            minAvailableHost++
         } else {
-            val lastItem = chosenList.removeLast()
+            val listIdx = chosenHost!!.listIndex
+            val lastItem = chosenList.last() // Not using removeLast here as it would cause problems during swapping
+                                             // if chosenHost is lastItem
             chosenList[listIdx] = lastItem
             lastItem.listIndex = listIdx
+            chosenList.removeLast()
         }
 
-        val nextList = hostsQueue[chosenHost.priorityIndex + 1]
+        val nextList = hostsQueue[chosenHost!!.priorityIndex + 1]
         nextList.add(chosenHost)
         chosenHost.priorityIndex++
         chosenHost.listIndex = nextList.size - 1
@@ -141,18 +142,20 @@ public class MemorizingScheduler(
         val chosenList = hostsQueue[priorityIdx]
         val nextList = hostsQueue[priorityIdx - 1]
 
-        if (listIdx == chosenList.size - 1) {
+        if (chosenList.size == 1) {
             chosenList.removeLast()
-            if (priorityIdx == minAvailableHost) {
-                minAvailableHost--
-            }
         } else {
-            val lastItem = chosenList.removeLast()
+            val lastItem = chosenList.last()
             chosenList[listIdx] = lastItem
             lastItem.listIndex = listIdx
+            chosenList.removeLast()
         }
+
         nextList.add(host)
         host.priorityIndex--
         host.listIndex = nextList.size - 1
+        if (priorityIdx == minAvailableHost) {
+            minAvailableHost--
+        }
     }
 }
