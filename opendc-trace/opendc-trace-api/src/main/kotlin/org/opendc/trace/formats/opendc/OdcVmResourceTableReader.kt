@@ -103,6 +103,7 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         val record = checkNotNull(record) { "Reader in invalid state" }
         return when (index) {
             colDurationTime -> record.durationTime
+            colDeadline -> record.deadline
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -135,12 +136,11 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun getInstant(index: Int): Instant? {
+    override fun getInstant(index: Int): Instant {
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
             colSubmissionTime -> record.submissionTime
-            colDeadline -> record.deadline
             else -> throw IllegalArgumentException("Invalid column")
         }
     }

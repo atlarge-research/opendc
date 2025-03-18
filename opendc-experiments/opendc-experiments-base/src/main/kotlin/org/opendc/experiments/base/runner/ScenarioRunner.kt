@@ -102,7 +102,7 @@ public fun runScenario(
             provisioner.runSteps(
                 setupComputeService(
                     serviceDomain,
-                    { createComputeScheduler(scenario.allocationPolicySpec.policyType, Random(it.seeder.nextLong())) },
+                    { createComputeScheduler(scenario.allocationPolicySpec.policyType, Random(it.seeder.nextLong()), timeSource) },
                     maxNumFailures = scenario.maxNumFailures,
                 ),
                 setupHosts(serviceDomain, topology, startTimeLong),

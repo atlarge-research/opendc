@@ -645,7 +645,7 @@ public final class ComputeService implements AutoCloseable {
                 @NotNull String name,
                 @NotNull TaskNature nature,
                 @NotNull TemporalAmount duration,
-                @NotNull Instant deadline,
+                @NotNull Long deadline,
                 @NotNull ServiceFlavor flavor,
                 @NotNull Workload workload,
                 @NotNull Map<String, ?> meta) {

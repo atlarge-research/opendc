@@ -54,7 +54,7 @@ public class ServiceTask {
     private final String name;
     private final TaskNature nature;
     private final TemporalAmount duration;
-    private final Instant deadline;
+    private final Long deadline;
     private ServiceFlavor flavor;
     public Workload workload;
 
@@ -76,7 +76,7 @@ public class ServiceTask {
             String name,
             TaskNature nature,
             TemporalAmount duration,
-            Instant deadline,
+            Long deadline,
             ServiceFlavor flavor,
             Workload workload,
             Map<String, ?> meta) {
@@ -109,7 +109,7 @@ public class ServiceTask {
     }
 
     @NotNull
-    public Instant getDeadline() {
+    public Long getDeadline() {
         return deadline;
     }
 

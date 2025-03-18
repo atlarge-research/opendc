@@ -6,6 +6,7 @@ import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.simulator.compute.power.CarbonModel
 import org.opendc.simulator.compute.power.CarbonReceiver
+import java.time.Instant
 import java.time.InstantSource
 import java.util.Collections
 import java.util.LinkedList
@@ -57,7 +58,7 @@ public class TimeShiftScheduler(
 
             if (carbonIntensity > upperCarbonIntensity) {
                 if (task.nature.deferrable) {
-                    if (clock.instant().plus(task.duration).isBefore(task.deadline)) {
+                    if (clock.instant().plus(task.duration).isBefore(Instant.ofEpochMilli(task.deadline))) {
                         // No need to schedule this task in a high carbon intensity period
                         continue;
                     }

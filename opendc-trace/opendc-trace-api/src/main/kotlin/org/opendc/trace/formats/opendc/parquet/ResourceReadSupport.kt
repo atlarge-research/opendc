@@ -122,7 +122,6 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
                         .named("nature"),
                     Types
                         .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                         .named("deadline"),
                 )
                 .named("resource")
@@ -160,7 +159,6 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
                         .named("nature"),
                     Types
                         .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                         .named("deadline"),
                 )
                 .named("resource")

@@ -89,12 +89,9 @@ internal class ResourceWriteSupport : WriteSupport<Resource>() {
             consumer.endField("nature", 6)
         }
 
-
-        record.deadline?.let {
-            consumer.startField("deadline", 7)
-            consumer.addLong(it.toEpochMilli())
-            consumer.endField("deadline", 7)
-        }
+        consumer.startField("deadline", 7)
+        consumer.addLong(record.deadline)
+        consumer.endField("deadline", 7)
 
         consumer.endMessage()
     }

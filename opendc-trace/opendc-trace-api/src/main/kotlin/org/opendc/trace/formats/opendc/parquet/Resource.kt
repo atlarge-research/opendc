@@ -36,5 +36,5 @@ internal data class Resource(
     val cpuCapacity: Double,
     val memCapacity: Double,
     val nature: String? = null,
-    val deadline: Instant? = null,
+    val deadline: Long = -1,
 )

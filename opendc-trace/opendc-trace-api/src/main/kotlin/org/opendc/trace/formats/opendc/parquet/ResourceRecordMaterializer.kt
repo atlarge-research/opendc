@@ -44,7 +44,7 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
     private var localCpuCapacity = 0.0
     private var localMemCapacity = 0.0
     private var localNature: String? = null
-    private var localDeadline: Instant? = null
+    private var localDeadline = -1L
 
     /**
      * Root converter for the record.
@@ -106,7 +106,7 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
                         "deadline" ->
                             object : PrimitiveConverter() {
                                 override fun addLong(value: Long) {
-                                    localDeadline = Instant.ofEpochMilli(value)
+                                    localDeadline = value
                                 }
                             }
                         else -> error("Unknown column $type")
@@ -121,7 +121,7 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
                 localCpuCapacity = 0.0
                 localMemCapacity = 0.0
                 localNature = null
-                localDeadline = null
+                localDeadline = -1
             }
 
             override fun end() {}
