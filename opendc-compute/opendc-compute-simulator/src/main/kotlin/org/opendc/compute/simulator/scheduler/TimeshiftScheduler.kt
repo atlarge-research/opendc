@@ -73,22 +73,22 @@ public class TimeshiftScheduler(
 
             val subset =
                 if (weighers.isNotEmpty()) {
-                    val results = weighers.map { it.getWeights(filteredHosts, task) }
+                    val filterResults = weighers.map { it.getWeights(filteredHosts, task) }
                     val weights = DoubleArray(filteredHosts.size)
 
-                    for (result in results) {
-                        val min = result.min
-                        val range = (result.max - min)
+                    for (fr in filterResults) {
+                        val min = fr.min
+                        val range = (fr.max - min)
 
                         // Skip result if all weights are the same
                         if (range == 0.0) {
                             continue
                         }
 
-                        val multiplier = result.multiplier
+                        val multiplier = fr.multiplier
                         val factor = multiplier / range
 
-                        for ((i, weight) in result.weights.withIndex()) {
+                        for ((i, weight) in fr.weights.withIndex()) {
                             weights[i] += factor * (weight - min)
                         }
                     }
@@ -132,22 +132,6 @@ public class TimeshiftScheduler(
             this.carbonRunningSum -= this.pastCarbonIntensities.removeFirst()
         }
         this.thresholdCarbonIntensity = this.carbonRunningSum / this.pastCarbonIntensities.size
-    }
-
-    private fun getPositionalValue(list: ArrayList<Double>, position: Double): Double {
-        if (list.size == 1) {
-            return list[0]
-        }
-
-        Collections.sort(list)
-        val size = list.size
-
-        val middle_index = size * position
-        return if (middle_index % 1 == 0.0) {
-            list[middle_index.toInt()]
-        } else {
-            (list[middle_index.toInt()] + list[middle_index.toInt() + 1]) / 2.0
-        }
     }
 
     override fun setCarbonModel(carbonModel: CarbonModel?) {}
