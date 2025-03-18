@@ -23,7 +23,6 @@
 package org.opendc.compute.workload
 
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
-import java.time.Instant
 import java.util.UUID
 
 /**
@@ -45,7 +44,7 @@ public data class Task(
     val cpuCapacity: Double,
     val memCapacity: Long,
     val totalLoad: Double,
-    var submissionTime: Instant,
+    var submissionTime: Long,
     val duration: Long,
-    val trace: TraceWorkload,
+    var trace: TraceWorkload,
 )

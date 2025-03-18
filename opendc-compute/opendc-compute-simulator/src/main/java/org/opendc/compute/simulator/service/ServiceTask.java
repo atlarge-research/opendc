@@ -49,7 +49,7 @@ public class ServiceTask {
     private final UUID uid;
 
     private final String name;
-    private final ServiceFlavor flavor;
+    private ServiceFlavor flavor;
     public Workload workload;
 
     private Map<String, ?> meta; // TODO: remove this
@@ -180,6 +180,9 @@ public class ServiceTask {
             host.delete(this);
         }
         service.delete(this);
+
+        this.workload = null;
+        this.flavor = null;
 
         this.setState(TaskState.DELETED);
     }

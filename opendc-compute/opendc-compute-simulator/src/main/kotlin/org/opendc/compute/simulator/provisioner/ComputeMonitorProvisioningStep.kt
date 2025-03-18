@@ -45,6 +45,7 @@ public class ComputeMonitorProvisioningStep(
             OutputFiles.POWER_SOURCE to true,
             OutputFiles.BATTERY to true,
         ),
+    private val printFrequency: Int? = null,
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service =
@@ -59,6 +60,7 @@ public class ComputeMonitorProvisioningStep(
                 exportInterval,
                 startTime,
                 filesToExport,
+                printFrequency,
             )
         return metricReader
     }

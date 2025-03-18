@@ -64,6 +64,7 @@ public class ComputeMetricReader(
             OutputFiles.BATTERY to true,
             OutputFiles.SERVICE to true,
         ),
+    private val printFrequency: Int? = null,
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(dispatcher.asCoroutineDispatcher())
@@ -156,6 +157,7 @@ public class ComputeMetricReader(
             }
 
             for (task in this.service.tasksToRemove) {
+                this.taskTableReaders.remove(task)
                 task.delete()
             }
             this.service.clearTasksToRemove()
@@ -197,7 +199,7 @@ public class ComputeMetricReader(
                 monitor.record(this.serviceTableReader.copy())
             }
 
-            if (loggCounter >= 24) {
+            if (printFrequency != null && loggCounter % printFrequency == 0) {
                 var loggString = "\n\t\t\t\t\tMetrics after ${now.toEpochMilli() / 1000 / 60 / 60} hours:\n"
                 loggString += "\t\t\t\t\t\tTasks Total: ${this.serviceTableReader.tasksTotal}\n"
                 loggString += "\t\t\t\t\t\tTasks Active: ${this.serviceTableReader.tasksActive}\n"
@@ -206,7 +208,6 @@ public class ComputeMetricReader(
                 loggString += "\t\t\t\t\t\tTasks Terminated: ${this.serviceTableReader.tasksTerminated}\n"
 
                 this.logger.warn { loggString }
-                loggCounter = 0
             }
         } catch (cause: Throwable) {
             this.logger.warn(cause) { "Exporter threw an Exception" }

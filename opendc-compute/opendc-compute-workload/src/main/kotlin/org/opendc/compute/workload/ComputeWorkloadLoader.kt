@@ -126,7 +126,7 @@ public class ComputeWorkloadLoader(
                     continue
                 }
 
-                val submissionTime = reader.getInstant(submissionTimeCol)!!
+                val submissionTime = reader.getInstant(submissionTimeCol)!!.toEpochMilli()
                 val duration = reader.getLong(durationCol)
                 val cpuCount = reader.getInt(cpuCountCol)
                 val cpuCapacity = reader.getDouble(cpuCapacityCol)

@@ -22,7 +22,6 @@
 
 package org.opendc.compute.workload
 import mu.KotlinLogging
-import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -34,13 +33,13 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
             return
         }
 
-        val workloadSubmissionTime = workload.minOf({ it.submissionTime }).toEpochMilli()
+        val workloadSubmissionTime = workload.minOf({ it.submissionTime })
         val submissionTimeLong = LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli()
 
         val timeShift = submissionTimeLong - workloadSubmissionTime
 
         for (task in workload) {
-            task.submissionTime = Instant.ofEpochMilli(task.submissionTime.toEpochMilli() + timeShift)
+            task.submissionTime += timeShift
         }
     }
 
@@ -53,10 +52,6 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
         val workload = this.load()
 
         reScheduleTasks(workload)
-
-//        if (fraction >= 1.0) {
-//            return workload
-//        }
 
         if (fraction <= 0.0) {
             throw Error("The fraction of tasks to load cannot be 0.0 or lower")
@@ -74,19 +69,6 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
 
             currentLoad += entry.totalLoad
         }
-
-//        val shuffledWorkload = workload.shuffled()
-//        for (entry in shuffledWorkload) {
-//            val entryLoad = entry.totalLoad
-//
-//            // TODO: ask Sacheen
-//            if ((currentLoad + entryLoad) / totalLoad > fraction) {
-//                break
-//            }
-//
-//            currentLoad += entryLoad
-//            res += entry
-//        }
 
         logger.info { "Sampled ${workload.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
 

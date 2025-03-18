@@ -104,7 +104,7 @@ public suspend fun ComputeService.replay(
 
             for (entry in trace.sortedBy { it.submissionTime }) {
                 val now = clock.millis()
-                val start = entry.submissionTime.toEpochMilli()
+                val start = entry.submissionTime
 
                 // Set the simulationOffset based on the starting time of the first task
                 if (simulationOffset == Long.MIN_VALUE) {

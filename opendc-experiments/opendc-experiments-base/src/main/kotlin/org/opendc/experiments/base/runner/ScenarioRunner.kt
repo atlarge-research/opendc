@@ -93,9 +93,9 @@ public fun runScenario(
                     checkpointIntervalScaling,
                     scalingPolicy,
                 )
-            val workload = workloadLoader.sampleByLoad(scenario.workloadSpec.sampleFraction)
+            var workload = workloadLoader.sampleByLoad(scenario.workloadSpec.sampleFraction)
 
-            val startTimeLong = workload.minOf { it.submissionTime }.toEpochMilli()
+            val startTimeLong = workload.minOf { it.submissionTime }
             val startTime = Duration.ofMillis(startTimeLong)
 
             val topology = clusterTopology(scenario.topologySpec.pathToFile)
@@ -153,6 +153,7 @@ public fun addExportModel(
             Duration.ofSeconds(scenario.exportModelSpec.exportInterval),
             startTime,
             scenario.exportModelSpec.filesToExportDict,
+            scenario.exportModelSpec.printFrequency,
         ),
     )
 }

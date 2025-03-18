@@ -68,8 +68,9 @@ public fun registerComputeMonitor(
             OutputFiles.POWER_SOURCE to true,
             OutputFiles.BATTERY to true,
         ),
+    printFrequency: Int? = null,
 ): ProvisioningStep {
-    return ComputeMonitorProvisioningStep(serviceDomain, monitor, exportInterval, startTime, filesToExport)
+    return ComputeMonitorProvisioningStep(serviceDomain, monitor, exportInterval, startTime, filesToExport, printFrequency)
 }
 
 /**

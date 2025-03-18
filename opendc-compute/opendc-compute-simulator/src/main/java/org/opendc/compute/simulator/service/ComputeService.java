@@ -34,7 +34,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SplittableRandom;
 import java.util.UUID;
@@ -594,15 +593,16 @@ public final class ComputeService implements AutoCloseable {
         }
 
         @NotNull
-        public Flavor newFlavor(@NotNull String name, int cpuCount, long memorySize, @NotNull Map<String, ?> meta) {
+        public ServiceFlavor newFlavor(
+                @NotNull String name, int cpuCount, long memorySize, @NotNull Map<String, ?> meta) {
             checkOpen();
 
             final ComputeService service = this.service;
             UUID uid = new UUID(service.clock.millis(), service.random.nextLong());
             ServiceFlavor flavor = new ServiceFlavor(service, uid, name, cpuCount, memorySize, meta);
 
-            service.flavorById.put(uid, flavor);
-            service.flavors.add(flavor);
+            //            service.flavorById.put(uid, flavor);
+            //            service.flavors.add(flavor);
 
             return flavor;
         }
@@ -642,7 +642,7 @@ public final class ComputeService implements AutoCloseable {
         @NotNull
         public ServiceTask newTask(
                 @NotNull String name,
-                @NotNull Flavor flavor,
+                @NotNull ServiceFlavor flavor,
                 @NotNull Workload workload,
                 @NotNull Map<String, ?> meta) {
             checkOpen();
@@ -650,10 +650,11 @@ public final class ComputeService implements AutoCloseable {
             final ComputeService service = this.service;
             UUID uid = new UUID(service.clock.millis(), service.random.nextLong());
 
-            final ServiceFlavor internalFlavor =
-                    Objects.requireNonNull(service.flavorById.get(flavor.getUid()), "Unknown flavor");
+            //            final ServiceFlavor internalFlavor =
+            //                    Objects.requireNonNull(service.flavorById.get(flavor.getUid()), "Unknown flavor");
 
-            ServiceTask task = new ServiceTask(service, uid, name, internalFlavor, workload, meta);
+            //            ServiceTask task = new ServiceTask(service, uid, name, internalFlavor, workload, meta);
+            ServiceTask task = new ServiceTask(service, uid, name, flavor, workload, meta);
 
             service.taskById.put(uid, task);
 

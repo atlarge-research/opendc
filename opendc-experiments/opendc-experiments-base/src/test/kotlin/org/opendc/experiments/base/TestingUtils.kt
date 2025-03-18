@@ -80,7 +80,7 @@ fun createTestTask(
         fragments.maxOf { it.cpuUsage },
         memCapacity,
         1800000.0,
-        LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC),
+        LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli(),
         duration,
         TraceWorkload(
             fragments,
@@ -108,7 +108,7 @@ fun runTest(
         val seed = 0L
         Provisioner(dispatcher, seed).use { provisioner ->
 
-            val startTimeLong = workload.minOf { it.submissionTime }.toEpochMilli()
+            val startTimeLong = workload.minOf { it.submissionTime }
             val startTime = Duration.ofMillis(startTimeLong)
 
             provisioner.runSteps(
@@ -121,7 +121,7 @@ fun runTest(
             service.setTasksExpected(workload.size)
             service.setMetricReader(provisioner.getMonitor())
 
-            service.replay(timeSource, workload, failureModelSpec = failureModelSpec)
+            service.replay(timeSource, ArrayDeque(workload), failureModelSpec = failureModelSpec)
         }
     }
 

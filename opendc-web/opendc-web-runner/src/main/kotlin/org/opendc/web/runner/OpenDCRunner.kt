@@ -274,7 +274,7 @@ public class OpenDCRunner(
 //                    val vms = workload.resolve(workloadLoader, Random(seed))
 
                     val vms = workloadLoader.sampleByLoad(scenario.workload.samplingFraction)
-                    val startTime = vms.minOf { it.submissionTime }.toEpochMilli()
+                    val startTime = vms.minOf { it.submissionTime }
 
                     provisioner.runSteps(
                         setupComputeService(
