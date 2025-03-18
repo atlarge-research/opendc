@@ -24,7 +24,6 @@ package org.opendc.compute.simulator.provisioner
 
 import org.opendc.compute.carbon.getCarbonFragments
 import org.opendc.compute.simulator.host.SimHost
-import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
