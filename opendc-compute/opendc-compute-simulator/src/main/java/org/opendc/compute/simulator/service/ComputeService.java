@@ -500,7 +500,6 @@ public final class ComputeService implements AutoCloseable {
             SimHost host = hv.getHost();
 
             // Remove request from queue
-            taskQueue.remove(req);
             tasksPending--;
 
             LOGGER.info("Assigned task {} to host {}", task, host);

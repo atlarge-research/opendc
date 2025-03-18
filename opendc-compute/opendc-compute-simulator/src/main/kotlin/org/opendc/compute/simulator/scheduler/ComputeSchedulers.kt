@@ -121,10 +121,10 @@ public fun createComputeScheduler(
                 random = SplittableRandom(seeder.nextLong()),
             )
         ComputeSchedulerEnum.Timeshift ->
-            TimeShiftScheduler(
+            TimeshiftScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
                 weighers = listOf(RamWeigher(multiplier = 1.0)),
-                windowSize = 24,
+                windowSize = 168,
                 clock = clock,
                 random = SplittableRandom(seeder.nextLong()),
             )

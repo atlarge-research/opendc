@@ -15,7 +15,7 @@ import java.util.random.RandomGenerator
 import kotlin.math.min
 
 
-public class TimeShiftScheduler(
+public class TimeshiftScheduler(
     private val filters: List<HostFilter>,
     private val weighers: List<HostWeigher>,
     private val windowSize: Int,
@@ -33,10 +33,11 @@ public class TimeShiftScheduler(
     }
 
     private val pastCarbonIntensities = LinkedList<Double>()
+    private var carbonRunningSum = 0.0
 
     private var carbonIntensity = 0.0
 //    private var lowerCarbonIntensity = 0.0
-    private var upperCarbonIntensity = 0.0
+    private var thresholdCarbonIntensity = 0.0
 
     override fun addHost(host: HostView) {
         hosts.add(host)
@@ -56,9 +57,12 @@ public class TimeShiftScheduler(
 
             val task = req.task
 
-            if (carbonIntensity > upperCarbonIntensity) {
+            if (carbonIntensity > thresholdCarbonIntensity) {
                 if (task.nature.deferrable) {
-                    if (clock.instant().plus(task.duration).isBefore(Instant.ofEpochMilli(task.deadline))) {
+                    val currentTime = clock.instant()
+                    val estimatedCompletion = currentTime.plus(task.duration)
+                    val deadline = Instant.ofEpochMilli(task.deadline)
+                    if (estimatedCompletion.isBefore(deadline)) {
                         // No need to schedule this task in a high carbon intensity period
                         continue;
                     }
@@ -102,9 +106,11 @@ public class TimeShiftScheduler(
             val maxSize = min(subsetSize, subset.size)
             if (maxSize == 0) {
                 result = SchedulingResult(SchedulingResultType.FAILURE, null, req)
+                break
             } else {
                 iter.remove()
                 result = SchedulingResult(SchedulingResultType.SUCCESS, subset[random.nextInt(maxSize)], req)
+                break
             }
         }
 
@@ -119,20 +125,13 @@ public class TimeShiftScheduler(
     ) {}
 
     override fun updateCarbonIntensity(newCarbonIntensity: Double) {
-        this.carbonIntensity = newCarbonIntensity;
-        if (this.pastCarbonIntensities.size == this.windowSize) {
-            this.pastCarbonIntensities.removeFirst()
-        }
+        this.carbonIntensity = newCarbonIntensity
         this.pastCarbonIntensities.addLast(newCarbonIntensity)
-        val carbonIntensityList: ArrayList<Double> = ArrayList<Double>(this.pastCarbonIntensities)
-        if (carbonIntensityList.size < windowSize) {
-            val median: Double = getPositionalValue(carbonIntensityList, 0.5)
-//            this.lowerCarbonIntensity = median
-            this.upperCarbonIntensity = median
-            return
+        this.carbonRunningSum += newCarbonIntensity
+        if (this.pastCarbonIntensities.size > this.windowSize) {
+            this.carbonRunningSum -= this.pastCarbonIntensities.removeFirst()
         }
-//        this.lowerCarbonIntensity = getPositionalValue(carbonIntensityList, 0.25)
-        this.upperCarbonIntensity = getPositionalValue(carbonIntensityList, 0.5)
+        this.thresholdCarbonIntensity = this.carbonRunningSum / this.pastCarbonIntensities.size
     }
 
     private fun getPositionalValue(list: ArrayList<Double>, position: Double): Double {

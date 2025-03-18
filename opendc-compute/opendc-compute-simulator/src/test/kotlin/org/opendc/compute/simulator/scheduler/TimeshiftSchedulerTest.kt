@@ -5,11 +5,11 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class TimeShiftSchedulerTest {
+class TimeshiftSchedulerTest {
     @Test
     fun testNoHosts() {
         val scheduler =
-            TimeShiftScheduler(
+            TimeshiftScheduler(
                 filters = emptyList(),
                 weighers = emptyList(),
                 windowSize = 3,

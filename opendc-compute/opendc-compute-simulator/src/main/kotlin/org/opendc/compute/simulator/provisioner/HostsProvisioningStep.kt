@@ -24,11 +24,13 @@ package org.opendc.compute.simulator.provisioner
 
 import org.opendc.compute.carbon.getCarbonFragments
 import org.opendc.compute.simulator.host.SimHost
+import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.createSimBatteryPolicy
 import org.opendc.simulator.compute.power.CarbonModel
+import org.opendc.simulator.compute.power.CarbonReceiver
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
 import org.opendc.simulator.compute.power.batteries.SimBattery
@@ -46,6 +48,7 @@ import org.opendc.simulator.engine.graph.FlowEdge
 public class HostsProvisioningStep internal constructor(
     private val serviceDomain: String,
     private val clusterSpecs: List<ClusterSpec>,
+    private val carbonReceivers: List<CarbonReceiver>,
     private val startTime: Long = 0L,
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
@@ -75,6 +78,9 @@ public class HostsProvisioningStep internal constructor(
             if (carbonFragments != null) {
                 carbonModel = CarbonModel(engine, carbonFragments, startTime)
                 carbonModel.addReceiver(simPowerSource)
+                for (receiver in carbonReceivers) {
+                    carbonModel.addReceiver(receiver)
+                }
             }
 
             if (cluster.battery != null) {

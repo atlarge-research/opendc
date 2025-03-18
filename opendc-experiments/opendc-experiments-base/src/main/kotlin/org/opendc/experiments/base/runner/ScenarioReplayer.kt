@@ -117,6 +117,7 @@ public suspend fun ComputeService.replay(
                 // Delay the task based on the startTime given by the trace.
                 if (!submitImmediately) {
                     delay(max(0, (start - now - simulationOffset)))
+                    entry.deadline -= simulationOffset
                 }
 
                 val workload = entry.trace
