@@ -29,8 +29,8 @@ import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.GuestCpuStats
 import org.opendc.compute.simulator.telemetry.GuestSystemStats
 import org.opendc.simulator.compute.machine.SimMachine
-import org.opendc.simulator.compute.machine.VirtualMachine
 import org.opendc.simulator.compute.workload.ChainWorkload
+import org.opendc.simulator.compute.workload.SimChainWorkload
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
@@ -58,9 +58,9 @@ public class Guest(
         private set
 
     /**
-     * The [VirtualMachine] on which the task is currently running
+     * The [SimChainWorkload] on which the task is currently running
      */
-    public var virtualMachine: VirtualMachine? = null
+    public var simChainWorkload: SimChainWorkload? = null
 
     private var uptime = 0L
     private var downtime = 0L
@@ -90,7 +90,7 @@ public class Guest(
      * Launch the guest on the simulated Virtual machine
      */
     private fun doStart() {
-        assert(virtualMachine == null) { "Concurrent job is already running" }
+        assert(simChainWorkload == null) { "Concurrent job is already running" }
 
         onStart()
 
@@ -114,7 +114,12 @@ public class Guest(
                 scalingPolicy,
             )
 
-        if (task.workload is TraceWorkload) {
+        if (task.workload is ChainWorkload) {
+            simChainWorkload =
+                simMachine.startWorkload(task.workload as ChainWorkload) { cause ->
+                    onStop(if (cause != null) TaskState.FAILED else TaskState.COMPLETED)
+                }
+        } else {
             val newChainWorkload =
                 ChainWorkload(
                     ArrayList(listOf(task.workload)),
@@ -123,13 +128,8 @@ public class Guest(
                     task.workload.checkpointIntervalScaling,
                 )
 
-            virtualMachine =
+            simChainWorkload =
                 simMachine.startWorkload(newChainWorkload) { cause ->
-                    onStop(if (cause != null) TaskState.FAILED else TaskState.COMPLETED)
-                }
-        } else {
-            virtualMachine =
-                simMachine.startWorkload(task.workload) { cause ->
                     onStop(if (cause != null) TaskState.FAILED else TaskState.COMPLETED)
                 }
         }
@@ -160,15 +160,15 @@ public class Guest(
      * Attempt to stop the task and put it into [target] state.
      */
     private fun doStop(target: TaskState) {
-        assert(virtualMachine != null) { "Invalid job state" }
-        val virtualMachine = this.virtualMachine ?: return
+        assert(simChainWorkload != null) { "Invalid job state" }
+        val virtualMachine = this.simChainWorkload ?: return
         if (target == TaskState.FAILED) {
-            virtualMachine.shutdown(Exception("Task has failed"))
+            virtualMachine.stopWorkload(Exception("Task has failed"))
         } else {
-            virtualMachine.shutdown()
+            virtualMachine.stopWorkload()
         }
 
-        this.virtualMachine = null
+        this.simChainWorkload = null
 
         this.state = target
     }
@@ -236,8 +236,8 @@ public class Guest(
      * Obtain the CPU statistics of this guest.
      */
     public fun getCpuStats(): GuestCpuStats {
-        virtualMachine!!.updateCounters(this.clock.millis())
-        val counters = virtualMachine!!.performanceCounters
+        simChainWorkload!!.updateCounters(this.clock.millis())
+        val counters = simChainWorkload!!.performanceCounters
 
         return GuestCpuStats(
             counters.cpuActiveTime / 1000L,

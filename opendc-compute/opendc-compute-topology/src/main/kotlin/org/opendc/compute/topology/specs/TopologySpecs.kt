@@ -34,7 +34,7 @@ import org.opendc.simulator.compute.power.batteries.policy.DoubleThresholdBatter
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanPlusBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.SingleThresholdBatteryPolicy
-import org.opendc.simulator.engine.graph.FlowGraph
+import org.opendc.simulator.engine.engine.FlowEngine
 
 /**
  * Definition of a Topology modeled in the simulation.
@@ -236,21 +236,21 @@ public data class RunningQuartilesPolicyJSONSpec(
 
 public fun createSimBatteryPolicy(
     batterySpec: BatteryPolicyJSONSpec,
-    graph: FlowGraph,
+    engine: FlowEngine,
     battery: SimBattery,
     batteryAggregator: BatteryAggregator,
 ): BatteryPolicy {
     return when (batterySpec) {
         is SingleBatteryPolicyJSONSpec ->
             SingleThresholdBatteryPolicy(
-                graph,
+                engine,
                 battery,
                 batteryAggregator,
                 batterySpec.carbonThreshold,
             )
         is DoubleBatteryPolicyJSONSpec ->
             DoubleThresholdBatteryPolicy(
-                graph,
+                engine,
                 battery,
                 batteryAggregator,
                 batterySpec.lowerThreshold,
@@ -258,7 +258,7 @@ public fun createSimBatteryPolicy(
             )
         is RunningMeanPolicyJSONSpec ->
             RunningMeanBatteryPolicy(
-                graph,
+                engine,
                 battery,
                 batteryAggregator,
                 batterySpec.startingThreshold,
@@ -266,7 +266,7 @@ public fun createSimBatteryPolicy(
             )
         is RunningMeanPlusPolicyJSONSpec ->
             RunningMeanPlusBatteryPolicy(
-                graph,
+                engine,
                 battery,
                 batteryAggregator,
                 batterySpec.startingThreshold,

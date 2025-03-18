@@ -27,9 +27,10 @@ package org.opendc.simulator.compute.workload;
 // TODO: Move this to a separate file
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-import java.time.InstantSource;
+import java.util.List;
+import java.util.Map;
 import org.jetbrains.annotations.NotNull;
-import org.opendc.simulator.engine.graph.FlowGraph;
+import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 
 public class CheckpointModel extends FlowNode {
@@ -37,23 +38,18 @@ public class CheckpointModel extends FlowNode {
     private long checkpointInterval;
     private final long checkpointDuration;
     private double checkpointIntervalScaling;
-    private FlowGraph graph;
 
     private long startOfInterval;
 
     public CheckpointModel(@NotNull SimWorkload simWorkload) {
-        super(simWorkload.getGraph());
+        super(simWorkload.getEngine());
 
         this.checkpointInterval = simWorkload.getCheckpointInterval();
         this.checkpointDuration = simWorkload.getCheckpointDuration();
         this.checkpointIntervalScaling = simWorkload.getCheckpointIntervalScaling();
         this.simWorkload = simWorkload;
 
-        this.graph = simWorkload.getGraph();
-
-        InstantSource clock = graph.getEngine().getClock();
-
-        this.startOfInterval = clock.millis();
+        this.startOfInterval = this.clock.millis();
     }
 
     @Override
@@ -89,6 +85,10 @@ public class CheckpointModel extends FlowNode {
         this.closeNode();
 
         this.simWorkload = null;
-        this.graph = null;
+    }
+
+    @Override
+    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
+        return Map.of();
     }
 }

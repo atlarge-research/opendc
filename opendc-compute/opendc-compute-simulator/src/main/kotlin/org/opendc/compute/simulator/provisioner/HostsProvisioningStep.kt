@@ -34,6 +34,7 @@ import org.opendc.simulator.compute.power.batteries.BatteryAggregator
 import org.opendc.simulator.compute.power.batteries.SimBattery
 import org.opendc.simulator.engine.engine.FlowEngine
 import org.opendc.simulator.engine.graph.FlowDistributor
+import org.opendc.simulator.engine.graph.FlowEdge
 
 /**
  * A [ProvisioningStep] that provisions a list of hosts for a [ComputeService].
@@ -56,36 +57,35 @@ public class HostsProvisioningStep internal constructor(
         val simPowerSources = mutableListOf<SimPowerSource>()
 
         val engine = FlowEngine.create(ctx.dispatcher)
-        val graph = engine.newGraph()
 
         for (cluster in clusterSpecs) {
             // Create the Power Source to which hosts are connected
 
             // Create Power Source
-            val simPowerSource = SimPowerSource(graph, cluster.powerSource.totalPower.toDouble(), cluster.powerSource.name, cluster.name)
+            val simPowerSource = SimPowerSource(engine, cluster.powerSource.totalPower.toDouble(), cluster.powerSource.name, cluster.name)
             simPowerSources.add(simPowerSource)
             service.addPowerSource(simPowerSource)
 
-            val hostDistributor = FlowDistributor(graph)
+            val hostDistributor = FlowDistributor(engine)
 
             val carbonFragments = getCarbonFragments(cluster.powerSource.carbonTracePath)
 
             var carbonModel: CarbonModel? = null
             // Create Carbon Model
             if (carbonFragments != null) {
-                carbonModel = CarbonModel(graph, carbonFragments, startTime)
+                carbonModel = CarbonModel(engine, carbonFragments, startTime)
                 carbonModel.addReceiver(simPowerSource)
             }
 
             if (cluster.battery != null) {
                 // Create Battery Distributor
-                val batteryDistributor = FlowDistributor(graph)
-                graph.addEdge(batteryDistributor, simPowerSource)
+                val batteryDistributor = FlowDistributor(engine)
+                FlowEdge(batteryDistributor, simPowerSource)
 
                 // Create Battery
                 val battery =
                     SimBattery(
-                        graph,
+                        engine,
                         cluster.battery!!.capacity,
                         cluster.battery!!.chargingSpeed,
                         cluster.battery!!.initialCharge,
@@ -94,26 +94,26 @@ public class HostsProvisioningStep internal constructor(
                         cluster.battery!!.embodiedCarbon,
                         cluster.battery!!.expectedLifetime,
                     )
-                graph.addEdge(battery, batteryDistributor)
+                FlowEdge(battery, batteryDistributor)
 
                 // Create Aggregator
-                val batteryAggregator = BatteryAggregator(graph, battery, batteryDistributor)
+                val batteryAggregator = BatteryAggregator(engine, battery, batteryDistributor)
 
                 val batteryPolicy =
                     createSimBatteryPolicy(
                         cluster.battery!!.batteryPolicy,
-                        graph,
+                        engine,
                         battery,
                         batteryAggregator,
                     )
 
                 carbonModel?.addReceiver(batteryPolicy)
 
-                graph.addEdge(hostDistributor, batteryAggregator)
+                FlowEdge(hostDistributor, batteryAggregator)
 
                 service.addBattery(battery)
             } else {
-                graph.addEdge(hostDistributor, simPowerSource)
+                FlowEdge(hostDistributor, simPowerSource)
             }
 
             // Create hosts, they are connected to the powerMux when SimMachine is created
@@ -123,7 +123,7 @@ public class HostsProvisioningStep internal constructor(
                         hostSpec.name,
                         cluster.name,
                         ctx.dispatcher.timeSource,
-                        graph,
+                        engine,
                         hostSpec.model,
                         hostSpec.cpuPowerModel,
                         hostDistributor,

@@ -26,7 +26,7 @@ import java.util.LinkedList;
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator;
 import org.opendc.simulator.compute.power.batteries.BatteryState;
 import org.opendc.simulator.compute.power.batteries.SimBattery;
-import org.opendc.simulator.engine.graph.FlowGraph;
+import org.opendc.simulator.engine.engine.FlowEngine;
 
 /**
  * A battery policy that uses a running mean to determine if a battery should be charging or discharging.
@@ -46,17 +46,17 @@ public class RunningMeanBatteryPolicy extends BatteryPolicy {
 
     /**
      *
-     * @param parentGraph     The {@link FlowGraph} this stage belongs to.
+     * @param engine     The {@link FlowEngine} this node belongs to.
      * @param battery        The {@link SimBattery} to control.
      * @param aggregator    The {@link BatteryAggregator} to use.
      */
     public RunningMeanBatteryPolicy(
-            FlowGraph parentGraph,
+            FlowEngine engine,
             SimBattery battery,
             BatteryAggregator aggregator,
             double startingThreshold,
             int windowSize) {
-        super(parentGraph, battery, aggregator);
+        super(engine, battery, aggregator);
 
         this.windowSize = windowSize;
 

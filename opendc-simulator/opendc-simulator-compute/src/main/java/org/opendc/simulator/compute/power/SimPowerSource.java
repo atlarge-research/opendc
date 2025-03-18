@@ -22,9 +22,11 @@
 
 package org.opendc.simulator.compute.power;
 
+import java.util.List;
+import java.util.Map;
 import org.opendc.simulator.compute.cpu.SimCpu;
+import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.FlowGraph;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
@@ -111,8 +113,8 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimPowerSource(FlowGraph graph, double max_capacity, String name, String clusterName) {
-        super(graph);
+    public SimPowerSource(FlowEngine engine, double max_capacity, String name, String clusterName) {
+        super(engine);
 
         this.capacity = max_capacity;
 
@@ -207,5 +209,12 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
     @Override
     public void removeCarbonModel(CarbonModel carbonModel) {
         this.carbonModel = null;
+    }
+
+    @Override
+    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
+        List<FlowEdge> supplierEdges = this.distributorEdge != null ? List.of(this.distributorEdge) : List.of();
+
+        return Map.of(FlowEdge.NodeType.SUPPLYING, supplierEdges);
     }
 }

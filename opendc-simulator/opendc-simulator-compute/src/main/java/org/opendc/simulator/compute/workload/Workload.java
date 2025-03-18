@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.compute.workload;
 
+import java.util.function.Consumer;
+import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
 public interface Workload {
@@ -32,5 +34,7 @@ public interface Workload {
 
     double getCheckpointIntervalScaling();
 
-    SimWorkload startWorkload(FlowSupplier supplier, long now);
+    SimWorkload startWorkload(FlowSupplier supplier);
+
+    SimWorkload startWorkload(FlowSupplier supplier, SimMachine machine, Consumer<Exception> completion);
 }

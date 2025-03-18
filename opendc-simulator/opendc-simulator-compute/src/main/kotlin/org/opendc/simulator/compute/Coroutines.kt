@@ -25,8 +25,6 @@ package org.opendc.simulator.compute
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 /**
  * Run the specified [SimWorkloadNew] on this machine and suspend execution util [workload] has finished.
@@ -43,8 +41,8 @@ public suspend fun SimMachine.runWorkload(
     return suspendCancellableCoroutine { cont ->
         cont.invokeOnCancellation { this@runWorkload.shutdown() }
 
-        startWorkload(workload) { cause ->
-            if (cause != null) cont.resumeWithException(cause) else cont.resume(Unit)
-        }
+//        startWorkload(workload) { cause ->
+//            if (cause != null) cont.resumeWithException(cause) else cont.resume(Unit)
+//        }
     }
 }

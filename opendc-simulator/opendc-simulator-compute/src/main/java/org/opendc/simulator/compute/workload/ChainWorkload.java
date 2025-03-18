@@ -23,6 +23,8 @@
 package org.opendc.simulator.compute.workload;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
+import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
 public class ChainWorkload implements Workload {
@@ -66,7 +68,12 @@ public class ChainWorkload implements Workload {
     }
 
     @Override
-    public SimWorkload startWorkload(FlowSupplier supplier, long now) {
-        return new SimChainWorkload(supplier, this, now);
+    public SimWorkload startWorkload(FlowSupplier supplier) {
+        return new SimChainWorkload(supplier, this);
+    }
+
+    @Override
+    public SimWorkload startWorkload(FlowSupplier supplier, SimMachine machine, Consumer<Exception> completion) {
+        return new SimChainWorkload(supplier, this, machine, completion);
     }
 }

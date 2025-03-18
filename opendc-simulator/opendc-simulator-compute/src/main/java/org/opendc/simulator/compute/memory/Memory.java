@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.memory;
 
 import org.opendc.simulator.compute.models.MemoryUnit;
-import org.opendc.simulator.engine.graph.FlowGraph;
+import org.opendc.simulator.engine.engine.FlowEngine;
 
 /**
  * The [SimMemory] implementation for a machine.
@@ -32,7 +32,7 @@ public final class Memory {
     //    private final SimpleFlowSink sink;
     private final MemoryUnit memoryUnit;
 
-    public Memory(FlowGraph graph, MemoryUnit memoryUnit) {
+    public Memory(FlowEngine engine, MemoryUnit memoryUnit) {
 
         this.memoryUnit = memoryUnit;
         // TODO: Fix this

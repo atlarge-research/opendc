@@ -22,10 +22,12 @@
 
 package org.opendc.simulator.compute.power;
 
+import java.util.List;
+import java.util.Map;
 import org.opendc.simulator.compute.cpu.SimCpu;
+import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.FlowGraph;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
@@ -90,8 +92,8 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimPsu(FlowGraph graph) {
-        super(graph);
+    public SimPsu(FlowEngine engine) {
+        super(engine);
 
         lastUpdate = this.clock.millis();
     }
@@ -182,5 +184,15 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
     @Override
     public void removeSupplierEdge(FlowEdge supplierEdge) {
         this.powerSupplyEdge = null;
+    }
+
+    @Override
+    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
+        List<FlowEdge> supplyingEdges = cpuEdge != null ? List.of(cpuEdge) : List.of();
+        List<FlowEdge> consumingEdges = powerSupplyEdge != null ? List.of(powerSupplyEdge) : List.of();
+
+        return Map.of(
+                FlowEdge.NodeType.SUPPLYING, supplyingEdges,
+                FlowEdge.NodeType.CONSUMING, consumingEdges);
     }
 }

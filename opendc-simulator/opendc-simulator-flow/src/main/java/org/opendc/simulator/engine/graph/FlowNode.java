@@ -23,13 +23,15 @@
 package org.opendc.simulator.engine.graph;
 
 import java.time.InstantSource;
+import java.util.List;
+import java.util.Map;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.engine.FlowEventQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A {@link FlowNode} represents a node in a {@link FlowGraph}.
+ * A {@link FlowNode} represents a node in the {@link FlowEngine}.
  */
 public abstract class FlowNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(FlowNode.class);
@@ -76,14 +78,6 @@ public abstract class FlowNode {
         this.clock = clock;
     }
 
-    public FlowGraph getParentGraph() {
-        return parentGraph;
-    }
-
-    public void setParentGraph(FlowGraph parentGraph) {
-        this.parentGraph = parentGraph;
-    }
-
     public FlowEngine getEngine() {
         return engine;
     }
@@ -116,28 +110,21 @@ public abstract class FlowNode {
     private Boolean inCycleQueue = false;
 
     protected InstantSource clock;
-    protected FlowGraph parentGraph;
     protected FlowEngine engine;
-
-    /**
-     * Return the {@link FlowGraph} to which this stage belongs.
-     */
-    public FlowGraph getGraph() {
-        return parentGraph;
-    }
 
     /**
      * Construct a new {@link FlowNode} instance.
      *
-     * @param parentGraph The {@link FlowGraph} this stage belongs to.
+     * @param engine The {@link FlowEngine} driving the simulation.
      */
-    public FlowNode(FlowGraph parentGraph) {
-        this.parentGraph = parentGraph;
-        this.engine = parentGraph.getEngine();
+    public FlowNode(FlowEngine engine) {
+        this.engine = engine;
         this.clock = engine.getClock();
 
-        this.parentGraph.addNode(this);
+        this.invalidate();
     }
+
+    public abstract Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges();
 
     /**
      * Invalidate the {@link FlowNode} forcing the stage to update.
@@ -228,8 +215,25 @@ public abstract class FlowNode {
         // Mark the stage as closed
         this.nodeState = NodeState.CLOSED;
 
-        // Remove stage from parent graph
-        this.parentGraph.removeNode(this);
+        // Get Connected Edges
+        Map<FlowEdge.NodeType, List<FlowEdge>> connectedEdges = getConnectedEdges();
+
+        // Remove connected edges
+        List<FlowEdge> consumerEdges = connectedEdges.get(FlowEdge.NodeType.CONSUMING);
+        if (consumerEdges != null) {
+            for (FlowEdge edge : consumerEdges) {
+                edge.close(FlowEdge.NodeType.CONSUMING);
+            }
+        }
+
+        // Remove connected edges
+        List<FlowEdge> supplierEdges = connectedEdges.get(FlowEdge.NodeType.SUPPLYING);
+
+        if (supplierEdges != null) {
+            for (FlowEdge edge : supplierEdges) {
+                edge.close(FlowEdge.NodeType.SUPPLYING);
+            }
+        }
 
         // Remove stage from the timer queue
         this.deadline = Long.MAX_VALUE;
