@@ -37,6 +37,7 @@ public data class ExportModelSpec(
     val computeExportConfig: ComputeExportConfig = ComputeExportConfig.ALL_COLUMNS,
     val filesToExport: List<OutputFiles> = OutputFiles.entries.toList(),
     var filesToExportDict: MutableMap<OutputFiles, Boolean> = OutputFiles.entries.associateWith { false }.toMutableMap(),
+    var printFrequency: Int? = 24,
 ) {
     init {
         require(exportInterval > 0) { "The Export interval has to be higher than 0" }
