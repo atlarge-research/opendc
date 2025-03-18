@@ -116,8 +116,9 @@ public class MemorizingScheduler(
             minAvailableHost++
         } else {
             val listIdx = chosenHost!!.listIndex
-            val lastItem = chosenList.last() // Not using removeLast here as it would cause problems during swapping
-                                             // if chosenHost is lastItem
+            // Not using removeLast here as it would cause problems during swapping
+            // if chosenHost is lastItem
+            val lastItem = chosenList.last()
             chosenList[listIdx] = lastItem
             lastItem.listIndex = listIdx
             chosenList.removeLast()

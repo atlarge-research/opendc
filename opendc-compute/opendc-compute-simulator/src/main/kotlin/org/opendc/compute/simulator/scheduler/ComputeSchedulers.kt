@@ -44,7 +44,7 @@ public enum class ComputeSchedulerEnum {
     ProvisionedCores,
     ProvisionedCoresInv,
     Random,
-    TaskNumMemorizing
+    TaskNumMemorizing,
 }
 
 public fun createComputeScheduler(
