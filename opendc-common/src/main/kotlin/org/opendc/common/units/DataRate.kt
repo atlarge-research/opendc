@@ -20,13 +20,19 @@
  * SOFTWARE.
  */
 
-@file:OptIn(InternalUse::class)
+@file:OptIn(InternalUse::class, NonInlinableUnit::class)
 
 package org.opendc.common.units
 
 import kotlinx.serialization.Serializable
 import org.opendc.common.annotations.InternalUse
-import org.opendc.common.units.Time.Companion.toTime
+import org.opendc.common.units.TimeDelta.Companion.toTimeDelta
+import org.opendc.common.utils.DFLT_MIN_EPS
+import org.opendc.common.utils.approx
+import org.opendc.common.utils.approxLarger
+import org.opendc.common.utils.approxLargerOrEq
+import org.opendc.common.utils.approxSmaller
+import org.opendc.common.utils.approxSmallerOrEq
 import org.opendc.common.utils.ifNeg0thenPos0
 import java.time.Duration
 
@@ -40,8 +46,19 @@ public value class DataRate private constructor(
     // In bits/s.
     override val value: Double,
 ) : Unit<DataRate> {
-    @InternalUse
-    override fun new(value: Double): DataRate = DataRate(value.ifNeg0thenPos0())
+    override fun toString(): String = fmtValue()
+
+    public override fun fmtValue(fmt: String): String =
+        when (abs()) {
+            in zero..ofBps(100) -> "${String.format(fmt, tobps())} bps"
+            in ofbps(100)..ofKbps(100) -> "${String.format(fmt, toKbps())} Kbps"
+            in ofKbps(100)..ofMbps(100) -> "${String.format(fmt, toMbps())} Mbps"
+            else -> "${String.format(fmt, toGbps())} Gbps"
+        }
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Conversions to Double
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public fun tobps(): Double = value
 
@@ -69,22 +86,118 @@ public value class DataRate private constructor(
 
     public fun toGBps(): Double = toGbps() / 8
 
-    override fun toString(): String = fmtValue()
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Operation Override (to avoid boxing of value classes in byte code)
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public override fun fmtValue(fmt: String): String =
-        when (abs()) {
-            in ZERO..ofBps(100) -> "${String.format(fmt, tobps())} bps"
-            in ofbps(100)..ofKbps(100) -> "${String.format(fmt, toKbps())} Kbps"
-            in ofKbps(100)..ofMbps(100) -> "${String.format(fmt, toMbps())} Mbps"
-            else -> "${String.format(fmt, toGbps())} Gbps"
+    public override fun ifNeg0ThenPos0(): DataRate = DataRate(value.ifNeg0thenPos0())
+
+    public override operator fun plus(other: DataRate): DataRate = DataRate(value + other.value)
+
+    public override operator fun minus(other: DataRate): DataRate = DataRate(value - other.value)
+
+    public override operator fun div(scalar: Number): DataRate = DataRate(value / scalar.toDouble())
+
+    public override operator fun div(other: DataRate): Percentage = Percentage.ofRatio(value / other.value)
+
+    public override operator fun times(scalar: Number): DataRate = DataRate(value * scalar.toDouble())
+
+    public override operator fun times(percentage: Percentage): DataRate = DataRate(value * percentage.value)
+
+    public override operator fun unaryMinus(): DataRate = DataRate(-value)
+
+    public override operator fun compareTo(other: DataRate): Int = this.value.compareTo(other.value)
+
+    public override fun isZero(): Boolean = value == .0
+
+    public override fun approxZero(epsilon: Double): Boolean = value.approx(.0, epsilon = epsilon)
+
+    public override fun approx(
+        other: DataRate,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this == other || this.value.approx(other.value, minEpsilon, epsilon)
+
+    public override infix fun approx(other: DataRate): Boolean = approx(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxLarger(
+        other: DataRate,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxLarger(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxLarger(other: DataRate): Boolean = approxLarger(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxLargerOrEq(
+        other: DataRate,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxLargerOrEq(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxLargerOrEq(other: DataRate): Boolean = approxLargerOrEq(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxSmaller(
+        other: DataRate,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxSmaller(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxSmaller(other: DataRate): Boolean = approxSmaller(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxSmallerOrEq(
+        other: DataRate,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxSmallerOrEq(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxSmallerOrEq(other: DataRate): Boolean = approxSmallerOrEq(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override infix fun max(other: DataRate): DataRate = if (this.value > other.value) this else other
+
+    public override infix fun min(other: DataRate): DataRate = if (this.value < other.value) this else other
+
+    public override fun abs(): DataRate = DataRate(kotlin.math.abs(value))
+
+    public override fun roundToIfWithinEpsilon(
+        to: DataRate,
+        epsilon: Double,
+    ): DataRate =
+        if (this.value in (to.value - epsilon)..(to.value + epsilon)) {
+            to
+        } else {
+            this
         }
 
-    public operator fun times(time: Time): DataSize = DataSize.ofKiB(toKiBps() * time.toSec())
+    public fun max(
+        a: DataRate,
+        b: DataRate,
+    ): DataRate = if (a.value > b.value) a else b
 
-    public operator fun times(duration: Duration): DataSize = this * duration.toTime()
+    public fun min(
+        a: DataRate,
+        b: DataRate,
+    ): DataRate = if (a.value < b.value) a else b
 
-    public companion object {
-        @JvmStatic public val ZERO: DataRate = DataRate(.0)
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Unit Specific Operations
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public operator fun times(timeDelta: TimeDelta): DataSize = DataSize.ofKiB(toKiBps() * timeDelta.toSec())
+
+    public operator fun times(duration: Duration): DataSize = this * duration.toTimeDelta()
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Companion
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public companion object : UnitId<DataRate> {
+        @JvmStatic override val zero: DataRate = DataRate(.0)
+
+        @JvmStatic override val max: DataRate = DataRate(Double.MAX_VALUE)
+
+        @JvmStatic override val min: DataRate = DataRate(Double.MIN_VALUE)
+
+        public operator fun Number.times(unit: DataRate): DataRate = unit * this
 
         @JvmStatic
         @JvmName("ofbps")
@@ -142,9 +255,13 @@ public value class DataRate private constructor(
         @JvmName("ofGBps")
         public fun ofGBps(gBps: Number): DataRate = ofGbps(gBps.toDouble() * 8)
 
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Serializer
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         /**
          * Serializer for [DataRate] value class. It needs to be a compile
-         * time constant in order to be used as serializer automatically,
+         * time constant to be used as serializer automatically,
          * hence `object :` instead of class instantiation.
          *
          * ```json

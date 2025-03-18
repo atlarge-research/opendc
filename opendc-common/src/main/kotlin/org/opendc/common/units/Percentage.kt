@@ -20,55 +20,35 @@
  * SOFTWARE.
  */
 
-@file:OptIn(InternalUse::class)
+@file:OptIn(InternalUse::class, NonInlinableUnit::class)
 
 package org.opendc.common.units
 
 import kotlinx.serialization.Serializable
-import mu.KotlinLogging
 import org.opendc.common.annotations.InternalUse
+import org.opendc.common.utils.DFLT_MIN_EPS
+import org.opendc.common.utils.approx
+import org.opendc.common.utils.approxLarger
+import org.opendc.common.utils.approxLargerOrEq
+import org.opendc.common.utils.approxSmaller
+import org.opendc.common.utils.approxSmallerOrEq
 import org.opendc.common.utils.fmt
 import org.opendc.common.utils.ifNeg0thenPos0
 import kotlin.text.RegexOption.IGNORE_CASE
 
 /**
- * Represents a percentage. This interface has 2 value classes implementations.
- *
- * Using the interface instead of its implementation will likely result in worse
- * performances compared to using the value-classes themselves,
- * since the jvm will allocate an object for the interface. Therefore, it is suggested
- * to use the interface as little as possible. Operations between the same implementation
- * ([BoundedPercentage] + [BoundedPercentage]) will result in the same return type.
- *
- * [BoundedPercentage]s are adjusted to remain in range 0-100%,
- * logging warning whenever an adjustment has been made.
+ * Represents a percentage.
  *
  * As all [Unit]s, offers the vast majority
  * of mathematical operations that one would perform on a simple [Double].
  */
+
+@JvmInline
 @Serializable(with = Percentage.Companion.PercentageSerializer::class)
-public sealed interface Percentage : Unit<Percentage> {
-    override val value: Double
-
-    /**
-     * @return the value as a ratio (e.g. 50% -> 0.5)
-     */
-    public fun toRatio(): Double = value
-
-    /**
-     * @return the value as percentage (50.6% -> 50.6)
-     */
-    public fun toPercentageValue(): Double = value * 1e2
-
-    /**
-     * @return *this* percentage converted to [BoundedPercentage].
-     */
-    public fun toBoundedPercentage(): BoundedPercentage
-
-    /**
-     * @return *this* percentage converted to [UnboundedPercentage].
-     */
-    public fun toUnboundedPercentage(): UnboundedPercentage
+public value class Percentage(
+    override val value: Double,
+) : Unit<Percentage> {
+    override fun toString(): String = fmtValue()
 
     /**
      * ```kotlin
@@ -81,54 +61,159 @@ public sealed interface Percentage : Unit<Percentage> {
      */
     override fun fmtValue(fmt: String): String = "${toPercentageValue().fmt(fmt)}%"
 
-    public companion object {
-        @JvmStatic public val ZERO: Percentage = UnboundedPercentage(.0)
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Conversions to Double
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * @return the value as a ratio (e.g., 50% -> 0.5)
+     */
+    public fun toRatio(): Double = value
+
+    /**
+     * @return the value as percentage (50.6% -> 50.6)
+     */
+    public fun toPercentageValue(): Double = value * 1e2
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Operation Override (to avoid boxing of value classes in byte code)
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public override fun ifNeg0ThenPos0(): Percentage = Percentage(value.ifNeg0thenPos0())
+
+    public override operator fun plus(other: Percentage): Percentage = Percentage(value + other.value)
+
+    public override operator fun minus(other: Percentage): Percentage = Percentage(value - other.value)
+
+    public override operator fun div(scalar: Number): Percentage = Percentage(value / scalar.toDouble())
+
+    public override operator fun div(other: Percentage): Percentage = Percentage.ofRatio(value / other.value)
+
+    public override operator fun times(scalar: Number): Percentage = Percentage(value * scalar.toDouble())
+
+    public override operator fun times(percentage: Percentage): Percentage = Percentage(value * percentage.value)
+
+    public override operator fun unaryMinus(): Percentage = Percentage(-value)
+
+    public override operator fun compareTo(other: Percentage): Int = this.value.compareTo(other.value)
+
+    public override fun isZero(): Boolean = value == .0
+
+    public override fun approxZero(epsilon: Double): Boolean = value.approx(.0, epsilon = epsilon)
+
+    public override fun approx(
+        other: Percentage,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this == other || this.value.approx(other.value, minEpsilon, epsilon)
+
+    public override infix fun approx(other: Percentage): Boolean = approx(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxLarger(
+        other: Percentage,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxLarger(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxLarger(other: Percentage): Boolean = approxLarger(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxLargerOrEq(
+        other: Percentage,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxLargerOrEq(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxLargerOrEq(other: Percentage): Boolean = approxLargerOrEq(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxSmaller(
+        other: Percentage,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxSmaller(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxSmaller(other: Percentage): Boolean = approxSmaller(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override fun approxSmallerOrEq(
+        other: Percentage,
+        minEpsilon: Double,
+        epsilon: Double,
+    ): Boolean = this.value.approxSmallerOrEq(other.value, minEpsilon, epsilon)
+
+    public override infix fun approxSmallerOrEq(other: Percentage): Boolean = approxSmallerOrEq(other, minEpsilon = DFLT_MIN_EPS)
+
+    public override infix fun max(other: Percentage): Percentage = if (this.value > other.value) this else other
+
+    public override infix fun min(other: Percentage): Percentage = if (this.value < other.value) this else other
+
+    public override fun abs(): Percentage = Percentage(kotlin.math.abs(value))
+
+    public override fun roundToIfWithinEpsilon(
+        to: Percentage,
+        epsilon: Double,
+    ): Percentage =
+        if (this.value in (to.value - epsilon)..(to.value + epsilon)) {
+            to
+        } else {
+            this
+        }
+
+    public fun max(
+        a: Percentage,
+        b: Percentage,
+    ): Percentage = if (a.value > b.value) a else b
+
+    public fun min(
+        a: Percentage,
+        b: Percentage,
+    ): Percentage = if (a.value < b.value) a else b
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Unit Specific Operations
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Companion
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public companion object : UnitId<Percentage> {
+        @JvmStatic override val zero: Percentage = Percentage(.0)
+
+        @JvmStatic override val max: Percentage = Percentage(Double.MAX_VALUE)
+
+        @JvmStatic override val min: Percentage = Percentage(Double.MIN_VALUE)
+
+        public operator fun Number.times(unit: Percentage): Percentage = unit * this
 
         @JvmStatic
         @JvmName("ofRatio")
-        public fun ofRatio(ratio: Double): UnboundedPercentage = UnboundedPercentage(ratio)
-
-        @JvmStatic
-        @JvmName("ofRatioBounded")
-        public fun ofRatioBounded(ratio: Double): BoundedPercentage = BoundedPercentage(ratio)
+        public fun ofRatio(ratio: Double): Percentage = Percentage(ratio)
 
         @JvmStatic
         @JvmName("ofPercentage")
-        public fun ofPercentage(percentage: Number): UnboundedPercentage = UnboundedPercentage(percentage.toDouble() / 100)
-
-        @JvmStatic
-        @JvmName("ofPercentageBounded")
-        public fun ofPercentageBounded(percentage: Double): BoundedPercentage = BoundedPercentage(percentage / 100)
+        public fun ofPercentage(percentage: Number): Percentage = Percentage(percentage.toDouble() / 100)
 
         /**
          * @return the percentage resulting from [this] / [other].
          */
-        public infix fun Number.percentageOf(other: Number): UnboundedPercentage = UnboundedPercentage(this.toDouble() / other.toDouble())
+        public infix fun Number.percentageOf(other: Number): Percentage = Percentage(this.toDouble() / other.toDouble())
 
         /**
-         * @return the *bounded* percentage resulting from [this] / [other].
+         * @return the percentage resulting from [this] / [other], applicable on all [Unit]s of the same type.
          */
-        public infix fun Number.boundedPercentageOf(other: Number): BoundedPercentage =
-            BoundedPercentage(this.toDouble() / other.toDouble())
+        public infix fun <T : Unit<T>> T.percentageOf(other: T): Percentage = Percentage(this.value / other.value)
 
-        /**
-         * @return the percentage resulting from [this] / [other], applicable on all [Unit]s of same type.
-         */
-        public infix fun <T : Unit<T>> T.percentageOf(other: T): UnboundedPercentage = UnboundedPercentage(this.value / other.value)
-
-        /**
-         * @return the *bounded* percentage resulting from [this] / [other], applicable on all [Unit]s of same type.
-         */
-        public infix fun <T : Unit<T>> T.boundedPercentageOf(other: T): BoundedPercentage = BoundedPercentage(this.value / other.value)
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Serializer
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         private val PERCENTAGE = Regex("\\s*(?:percentage|Percentage|%)\\s*?")
 
         /**
          * Serializer for [Percentage] value class. It needs to be a compile
-         * time constant in order to be used as serializer automatically,
+         * time constant to be used as serializer automatically,
          * hence `object :` instead of class instantiation.
          *
-         * For implementation purposes it always deserialize an [UnboundedPercentage] as [Percentage].
+         * For implementation purposes it always deserializes an [Percentage] as [Percentage].
          *
          * ```json
          * // e.g.
@@ -151,110 +236,3 @@ public sealed interface Percentage : Unit<Percentage> {
         )
     }
 }
-
-/**
- * Bounded implementation of [Percentage], meaning the
- * percentage value is adjusted to always be in the range 0-100%,
- * logging a warning whenever an adjustment has been made.
- */
-@JvmInline
-public value class BoundedPercentage
-    @InternalUse
-    internal constructor(
-        override val value: Double,
-    ) : Percentage {
-        override fun toBoundedPercentage(): BoundedPercentage = this
-
-        override fun toUnboundedPercentage(): UnboundedPercentage = UnboundedPercentage(value)
-
-        override fun new(value: Double): BoundedPercentage = BoundedPercentage(value.forceInRange().ifNeg0thenPos0())
-
-        override fun toString(): String = fmtValue()
-
-        /**
-         * "Override" to return [BoundedPercentage] insteadof [Percentage].
-         * @see[Unit.plus]
-         */
-        public infix operator fun plus(other: BoundedPercentage): BoundedPercentage = BoundedPercentage(this.value + other.value)
-
-        /**
-         * "Override" to return [BoundedPercentage] insteadof [Percentage].
-         * @see[Unit.minus]
-         */
-        public infix operator fun minus(other: BoundedPercentage): BoundedPercentage = BoundedPercentage(this.value - other.value)
-
-        /**
-         * Override to return [BoundedPercentage] insteadof [Percentage].
-         * @see[Unit.times]
-         */
-        override operator fun times(scalar: Number): BoundedPercentage = BoundedPercentage(this.value * scalar.toDouble())
-
-        /**
-         * Override to return [BoundedPercentage] insteadof [Percentage].
-         * @see[Unit.div]
-         */
-        override operator fun div(scalar: Number): BoundedPercentage = BoundedPercentage(this.value / scalar.toDouble())
-
-        private fun Double.forceInRange(
-            from: Double = .0,
-            to: Double = 1.0,
-        ): Double =
-            if (this < from) {
-                LOG.warn("bounded percentage has been rounded up (from ${this * 1e2}% to ${from * 1e2}%")
-                from
-            } else if (this > to) {
-                LOG.warn("bounded percentage has been rounded down (from ${this * 1e2}% to ${to * 1e2}%")
-                to
-            } else {
-                this
-            }
-
-        public companion object {
-            // TODO: replace with `by logger()` if pr #241 is approved
-            private val LOG = KotlinLogging.logger(name = this::class.java.enclosingClass.simpleName)
-        }
-    }
-
-/**
- * Unbounded implementation of [Percentage], meaning the
- * percentage value is allowed to be outside the range 0-100%.
- */
-@JvmInline
-public value class UnboundedPercentage
-    @InternalUse
-    internal constructor(
-        override val value: Double,
-    ) : Percentage {
-        override fun toBoundedPercentage(): BoundedPercentage = BoundedPercentage(value.ifNeg0thenPos0())
-
-        override fun toUnboundedPercentage(): UnboundedPercentage = this
-
-        @InternalUse
-        override fun new(value: Double): UnboundedPercentage = UnboundedPercentage(value)
-
-        override fun toString(): String = fmtValue()
-
-        /**
-         * "Override" to return [UnboundedPercentage] insteadof [Percentage].
-         * @see[Unit.plus]
-         */
-        public infix operator fun plus(other: UnboundedPercentage): UnboundedPercentage = UnboundedPercentage(this.value + other.value)
-
-        /**
-         * "Override" to return [UnboundedPercentage] insteadof [Percentage].
-         * @see[Unit.minus]
-         */
-        public infix operator fun minus(other: UnboundedPercentage): UnboundedPercentage = UnboundedPercentage(this.value - other.value)
-
-        /**
-         * Override to return [UnboundedPercentage] insteadof [Percentage].
-         * @see[Unit.times]
-         */
-        override operator fun times(scalar: Number): UnboundedPercentage = UnboundedPercentage(this.value * scalar.toDouble())
-
-        /**
-         * Override to return [UnboundedPercentage] insteadof [Percentage].
-         * @see[Unit.div]
-         */
-        override operator fun div(scalar: Number): UnboundedPercentage = UnboundedPercentage(this.value / scalar.toDouble())
-    }
