@@ -51,7 +51,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
     private final TraceWorkload snapshot;
 
-    private ScalingPolicy scalingPolicy = new NoDelayScaling();
+    private final ScalingPolicy scalingPolicy;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters

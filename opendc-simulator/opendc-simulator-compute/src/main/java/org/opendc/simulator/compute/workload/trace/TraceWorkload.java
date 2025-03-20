@@ -34,7 +34,7 @@ import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
 public class TraceWorkload implements Workload {
-    private ArrayList<TraceFragment> fragments;
+    private final ArrayList<TraceFragment> fragments;
     private final long checkpointInterval;
     private final long checkpointDuration;
     private final double checkpointIntervalScaling;
@@ -68,10 +68,6 @@ public class TraceWorkload implements Workload {
                 .max(Comparator.comparing(TraceFragment::coreCount))
                 .get()
                 .coreCount();
-    }
-
-    public TraceWorkload(ArrayList<TraceFragment> fragments) {
-        this(fragments, 0L, 0L, 1.0, new NoDelayScaling());
     }
 
     public ArrayList<TraceFragment> getFragments() {
@@ -109,7 +105,7 @@ public class TraceWorkload implements Workload {
     }
 
     public void addFirst(TraceFragment fragment) {
-        this.fragments.add(0, fragment);
+        this.fragments.addFirst(fragment);
     }
 
     @Override
@@ -132,36 +128,6 @@ public class TraceWorkload implements Workload {
             double checkpointIntervalScaling,
             ScalingPolicy scalingPolicy) {
         return new Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy);
-    }
-
-    /**
-     * Construct a {@link TraceWorkload} from the specified fragments.
-     *
-     * @param fragments The array of fragments to construct the trace from.
-     */
-    public static TraceWorkload ofFragments(TraceFragment... fragments) {
-        final Builder builder = builder();
-
-        for (TraceFragment fragment : fragments) {
-            builder.add(fragment.duration(), fragment.cpuUsage(), fragment.coreCount());
-        }
-
-        return builder.build();
-    }
-
-    /**
-     * Construct a {@link TraceWorkload} from the specified fragments.
-     *
-     * @param fragments The fragments to construct the trace from.
-     */
-    public static TraceWorkload ofFragments(List<TraceFragment> fragments) {
-        final Builder builder = builder();
-
-        for (TraceFragment fragment : fragments) {
-            builder.add(fragment.duration(), fragment.cpuUsage(), fragment.coreCount());
-        }
-
-        return builder.build();
     }
 
     public static final class Builder {

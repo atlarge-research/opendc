@@ -92,8 +92,6 @@ public class Guest(
 
         onStart()
 
-        val scalingPolicy = NoDelayScaling()
-
         // TODO: This is not being used at the moment
 //        val bootworkload =
 //            TraceWorkload(s
@@ -109,7 +107,7 @@ public class Guest(
 //                0,
 //                0,
 //                0.0,
-//                scalingPolicy,
+//                NoDelayScaling(),
 //            )
 
         if (task.workload is ChainWorkload) {
