@@ -10,7 +10,7 @@ First of all you can download IntelliJ here: https://lp.jetbrains.com/intellij-i
 git clone git@github.com:atlarge-research/opendc
 ```
 
-Check if you have a compatible java version available. Make sure to have one of these versions available: [19, 20, 21]
+Check if you have a compatible java version available. Make sure to have one of these versions available: [21]
 
 If not install a supported version!
 
