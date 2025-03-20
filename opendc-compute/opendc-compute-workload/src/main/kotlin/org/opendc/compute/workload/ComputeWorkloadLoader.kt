@@ -58,6 +58,7 @@ public class ComputeWorkloadLoader(
     private val checkpointDuration: Long = 0L,
     private val checkpointIntervalScaling: Double = 1.0,
     private val scalingPolicy: ScalingPolicy = NoDelayScaling(),
+    private val deferAll: Boolean = false,
 ) : WorkloadLoader(subMissionTime) {
     /**
      * The logger for this instance.
@@ -136,8 +137,12 @@ public class ComputeWorkloadLoader(
                 val cpuCapacity = reader.getDouble(cpuCapacityCol)
                 val memCapacity = reader.getDouble(memCol) / 1000.0 // Convert from KB to MB
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
-                val nature = reader.getString(natureCol)
-                val deadline = reader.getLong(deadlineCol)
+                var nature = reader.getString(natureCol)
+                var deadline = reader.getLong(deadlineCol)
+                if (deferAll) {
+                    nature = "deferrable"
+                    deadline = submissionTime + (3*duration)
+                }
 
                 val builder = fragments.getValue(id) // Get all fragments related to this VM
                 val totalLoad = builder.totalLoad

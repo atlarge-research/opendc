@@ -94,6 +94,7 @@ public fun runScenario(
                     checkpointDuration,
                     checkpointIntervalScaling,
                     scalingPolicy,
+                    scenario.workloadSpec.deferAll
                 )
             var workload = workloadLoader.sampleByLoad(scenario.workloadSpec.sampleFraction)
 

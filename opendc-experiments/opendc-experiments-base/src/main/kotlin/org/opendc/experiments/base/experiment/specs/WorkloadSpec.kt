@@ -44,6 +44,7 @@ public data class WorkloadSpec(
     val type: WorkloadTypes,
     val sampleFraction: Double = 1.0,
     val submissionTime: String? = null,
+    val deferAll: Boolean = false,
     val scalingPolicy: ScalingPolicyEnum = ScalingPolicyEnum.NoDelay,
 ) {
     public val name: String = File(pathToFile).nameWithoutExtension
@@ -74,6 +75,7 @@ public fun getWorkloadLoader(
     checkpointDuration: Long,
     checkpointIntervalScaling: Double,
     scalingPolicy: ScalingPolicy,
+    deferAll: Boolean
 ): WorkloadLoader {
     return when (type) {
         WorkloadTypes.ComputeWorkload ->
@@ -84,6 +86,7 @@ public fun getWorkloadLoader(
                 checkpointDuration,
                 checkpointIntervalScaling,
                 scalingPolicy,
+                deferAll
             )
     }
 }
