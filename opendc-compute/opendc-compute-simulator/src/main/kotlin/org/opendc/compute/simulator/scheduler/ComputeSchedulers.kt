@@ -31,6 +31,7 @@ import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.simulator.scheduler.weights.InstanceCountWeigher
 import org.opendc.compute.simulator.scheduler.weights.RamWeigher
 import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher
+import java.time.InstantSource
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
 
@@ -45,13 +46,15 @@ public enum class ComputeSchedulerEnum {
     ProvisionedCoresInv,
     Random,
     TaskNumMemorizing,
+    Timeshift,
 }
 
 public fun createComputeScheduler(
     name: String,
     seeder: RandomGenerator,
+    clock: InstantSource,
 ): ComputeScheduler {
-    return createComputeScheduler(ComputeSchedulerEnum.valueOf(name.uppercase()), seeder)
+    return createComputeScheduler(ComputeSchedulerEnum.valueOf(name.uppercase()), seeder, clock)
 }
 
 /**
@@ -60,6 +63,7 @@ public fun createComputeScheduler(
 public fun createComputeScheduler(
     name: ComputeSchedulerEnum,
     seeder: RandomGenerator,
+    clock: InstantSource,
 ): ComputeScheduler {
     val cpuAllocationRatio = 1.0
     val ramAllocationRatio = 1.5
@@ -114,6 +118,14 @@ public fun createComputeScheduler(
         ComputeSchedulerEnum.TaskNumMemorizing ->
             MemorizingScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+                random = SplittableRandom(seeder.nextLong()),
+            )
+        ComputeSchedulerEnum.Timeshift ->
+            TimeshiftScheduler(
+                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+                weighers = listOf(RamWeigher(multiplier = 1.0)),
+                windowSize = 168,
+                clock = clock,
                 random = SplittableRandom(seeder.nextLong()),
             )
     }

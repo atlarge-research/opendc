@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,20 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.opendc.parquet
+package org.opendc.compute.simulator.service;
 
-import java.time.Instant
+public class TaskNature {
 
-/**
- * A description of a resource in a trace.
- */
-internal data class Resource(
-    val id: String,
-    val submissionTime: Instant,
-    val durationTime: Long,
-    val cpuCount: Int,
-    val cpuCapacity: Double,
-    val memCapacity: Double,
-    val nature: String? = null,
-    val deadline: Long = -1,
-)
+    public final boolean deferrable;
+
+    public TaskNature(boolean deferrable) {
+        this.deferrable = deferrable;
+    }
+}

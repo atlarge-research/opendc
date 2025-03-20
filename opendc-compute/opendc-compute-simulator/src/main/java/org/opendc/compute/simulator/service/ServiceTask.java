@@ -23,6 +23,7 @@
 package org.opendc.compute.simulator.service;
 
 import java.time.Instant;
+import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +50,9 @@ public class ServiceTask {
     private final UUID uid;
 
     private final String name;
+    private final TaskNature nature;
+    private final TemporalAmount duration;
+    private final Long deadline;
     private ServiceFlavor flavor;
     public Workload workload;
 
@@ -68,12 +72,18 @@ public class ServiceTask {
             ComputeService service,
             UUID uid,
             String name,
+            TaskNature nature,
+            TemporalAmount duration,
+            Long deadline,
             ServiceFlavor flavor,
             Workload workload,
             Map<String, ?> meta) {
         this.service = service;
         this.uid = uid;
         this.name = name;
+        this.nature = nature;
+        this.duration = duration;
+        this.deadline = deadline;
         this.flavor = flavor;
         this.workload = workload;
         this.meta = meta;
@@ -84,6 +94,21 @@ public class ServiceTask {
     @NotNull
     public UUID getUid() {
         return uid;
+    }
+
+    @NotNull
+    public TaskNature getNature() {
+        return nature;
+    }
+
+    @NotNull
+    public TemporalAmount getDuration() {
+        return duration;
+    }
+
+    @NotNull
+    public Long getDeadline() {
+        return deadline;
     }
 
     @NotNull

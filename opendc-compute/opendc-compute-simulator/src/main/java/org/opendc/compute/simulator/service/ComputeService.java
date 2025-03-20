@@ -25,6 +25,7 @@ package org.opendc.compute.simulator.service;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
+import java.time.temporal.TemporalAmount;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -499,7 +500,6 @@ public final class ComputeService implements AutoCloseable {
             SimHost host = hv.getHost();
 
             // Remove request from queue
-            taskQueue.remove(req);
             tasksPending--;
 
             LOGGER.info("Assigned task {} to host {}", task, host);
@@ -642,6 +642,9 @@ public final class ComputeService implements AutoCloseable {
         @NotNull
         public ServiceTask newTask(
                 @NotNull String name,
+                @NotNull TaskNature nature,
+                @NotNull TemporalAmount duration,
+                @NotNull Long deadline,
                 @NotNull ServiceFlavor flavor,
                 @NotNull Workload workload,
                 @NotNull Map<String, ?> meta) {
@@ -652,9 +655,9 @@ public final class ComputeService implements AutoCloseable {
 
             //            final ServiceFlavor internalFlavor =
             //                    Objects.requireNonNull(service.flavorById.get(flavor.getUid()), "Unknown flavor");
-
             //            ServiceTask task = new ServiceTask(service, uid, name, internalFlavor, workload, meta);
-            ServiceTask task = new ServiceTask(service, uid, name, flavor, workload, meta);
+
+            ServiceTask task = new ServiceTask(service, uid, name, nature, duration, deadline, flavor, workload, meta);
 
             service.taskById.put(uid, task);
 

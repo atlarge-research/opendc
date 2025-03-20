@@ -82,6 +82,8 @@ fun createTestTask(
         1800000.0,
         LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli(),
         duration,
+        "",
+        -1,
         TraceWorkload(
             fragments,
             checkpointInterval,
@@ -114,7 +116,7 @@ fun runTest(
             provisioner.runSteps(
                 setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
                 registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1), startTime),
-                setupHosts(serviceDomain = "compute.opendc.org", topology, startTimeLong),
+                setupHosts(serviceDomain = "compute.opendc.org", topology, listOf(), startTimeLong),
             )
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!

@@ -79,7 +79,6 @@ public class FilterScheduler(
         }
 
         val task = req.task
-        val hosts = hosts
         val filteredHosts = hosts.filter { host -> filters.all { filter -> filter.test(host, task) } }
 
         val subset =

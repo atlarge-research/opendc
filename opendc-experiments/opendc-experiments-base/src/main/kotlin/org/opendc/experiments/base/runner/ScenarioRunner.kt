@@ -35,6 +35,7 @@ import org.opendc.compute.topology.clusterTopology
 import org.opendc.experiments.base.experiment.Scenario
 import org.opendc.experiments.base.experiment.specs.getScalingPolicy
 import org.opendc.experiments.base.experiment.specs.getWorkloadLoader
+import org.opendc.simulator.compute.power.CarbonReceiver
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
 import java.time.Duration
@@ -92,20 +93,35 @@ public fun runScenario(
                     checkpointDuration,
                     checkpointIntervalScaling,
                     scalingPolicy,
+                    scenario.workloadSpec.deferAll,
                 )
             var workload = workloadLoader.sampleByLoad(scenario.workloadSpec.sampleFraction)
 
             val startTimeLong = workload.minOf { it.submissionTime }
             val startTime = Duration.ofMillis(startTimeLong)
 
+            val carbonReceivers = mutableListOf<CarbonReceiver>()
             val topology = clusterTopology(scenario.topologySpec.pathToFile)
             provisioner.runSteps(
                 setupComputeService(
                     serviceDomain,
-                    { createComputeScheduler(scenario.allocationPolicySpec.policyType, Random(it.seeder.nextLong())) },
+                    {
+                        val computeScheduler =
+                            createComputeScheduler(
+                                scenario.allocationPolicySpec.policyType,
+                                Random(it.seeder.nextLong()),
+                                timeSource,
+                            )
+
+                        if (computeScheduler is CarbonReceiver) {
+                            carbonReceivers.add(computeScheduler)
+                        }
+
+                        return@setupComputeService computeScheduler
+                    },
                     maxNumFailures = scenario.maxNumFailures,
                 ),
-                setupHosts(serviceDomain, topology, startTimeLong),
+                setupHosts(serviceDomain, topology, carbonReceivers, startTimeLong),
             )
 
             addExportModel(provisioner, serviceDomain, scenario, seed, startTime, scenario.id)

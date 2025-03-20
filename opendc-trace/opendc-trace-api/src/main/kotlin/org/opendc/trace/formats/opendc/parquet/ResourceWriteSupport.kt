@@ -83,6 +83,18 @@ internal class ResourceWriteSupport : WriteSupport<Resource>() {
         consumer.addLong(record.memCapacity.roundToLong())
         consumer.endField("mem_capacity", 5)
 
+        record.nature?.let {
+            consumer.startField("nature", 6)
+            consumer.addBinary(Binary.fromCharSequence(it))
+            consumer.endField("nature", 6)
+        }
+
+        if (record.deadline != -1L) {
+            consumer.startField("deadline", 7)
+            consumer.addLong(record.deadline)
+            consumer.endField("deadline", 7)
+        }
+
         consumer.endMessage()
     }
 
@@ -114,6 +126,13 @@ internal class ResourceWriteSupport : WriteSupport<Resource>() {
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
                         .named("mem_capacity"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.BINARY)
+                        .`as`(LogicalTypeAnnotation.stringType())
+                        .named("nature"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                        .named("deadline"),
                 )
                 .named("resource")
     }

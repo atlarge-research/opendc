@@ -40,6 +40,7 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
 
         for (task in workload) {
             task.submissionTime += timeShift
+            task.deadline = if (task.deadline == -1L) -1L else task.deadline + timeShift
         }
     }
 

@@ -34,9 +34,11 @@ import org.opendc.compute.failure.models.FailureModel
 import org.opendc.compute.simulator.TaskWatcher
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.TaskNature
 import org.opendc.compute.workload.Task
 import org.opendc.experiments.base.experiment.specs.FailureModelSpec
 import org.opendc.experiments.base.experiment.specs.createFailureModel
+import java.time.Duration
 import java.time.InstantSource
 import java.util.Random
 import kotlin.coroutines.coroutineContext
@@ -114,15 +116,26 @@ public suspend fun ComputeService.replay(
                 // Delay the task based on the startTime given by the trace.
                 if (!submitImmediately) {
                     delay(max(0, (start - now - simulationOffset)))
+                    entry.deadline -= simulationOffset
                 }
 
                 val workload = entry.trace
                 val meta = mutableMapOf<String, Any>("workload" to workload)
 
+                val nature =
+                    if (entry.nature == "deferrable") {
+                        TaskNature(true)
+                    } else {
+                        TaskNature(false)
+                    }
+
                 launch {
                     val task =
                         client.newTask(
                             entry.name,
+                            nature,
+                            Duration.ofMillis(entry.duration),
+                            entry.deadline,
                             client.newFlavor(
                                 entry.name,
                                 entry.cpuCount,

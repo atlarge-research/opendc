@@ -39,9 +39,11 @@ import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDeadline
 import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceNature
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
 import org.opendc.trace.conv.resourceStateTimestamp
@@ -100,6 +102,8 @@ public class OdcVmTraceFormat : TraceFormat {
                         TableColumn(resourceCpuCount, TableColumnType.Int),
                         TableColumn(resourceCpuCapacity, TableColumnType.Double),
                         TableColumn(resourceMemCapacity, TableColumnType.Double),
+                        TableColumn(resourceNature, TableColumnType.String),
+                        TableColumn(resourceDeadline, TableColumnType.Long),
                     ),
                 )
             TABLE_RESOURCE_STATES ->

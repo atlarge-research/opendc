@@ -25,9 +25,11 @@ package org.opendc.trace.formats.opendc
 import org.opendc.trace.TableReader
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceDeadline
 import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
+import org.opendc.trace.conv.resourceNature
 import org.opendc.trace.conv.resourceSubmissionTime
 import org.opendc.trace.formats.opendc.parquet.Resource
 import org.opendc.trace.util.parquet.LocalParquetReader
@@ -62,6 +64,8 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
     private val colCpuCount = 3
     private val colCpuCapacity = 4
     private val colMemCapacity = 5
+    private val colNature = 6
+    private val colDeadline = 7
 
     override fun resolve(name: String): Int {
         return when (name) {
@@ -71,13 +75,21 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
             resourceCpuCount -> colCpuCount
             resourceCpuCapacity -> colCpuCapacity
             resourceMemCapacity -> colMemCapacity
+            resourceNature -> colNature
+            resourceDeadline -> colDeadline
             else -> -1
         }
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in 0..colMemCapacity) { "Invalid column index" }
-        return false
+        require(index in 0..colDeadline) { "Invalid column index" }
+        val record = checkNotNull(record) { "Reader in invalid state" }
+
+        return when (index) {
+            colNature -> record.nature == null
+            colDeadline -> record.deadline == -1L
+            else -> false
+        }
     }
 
     override fun getBoolean(index: Int): Boolean {
@@ -97,6 +109,7 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         val record = checkNotNull(record) { "Reader in invalid state" }
         return when (index) {
             colDurationTime -> record.durationTime
+            colDeadline -> record.deadline
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -115,11 +128,12 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         }
     }
 
-    override fun getString(index: Int): String {
+    override fun getString(index: Int): String? {
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
             colID -> record.id
+            colNature -> record.nature
             else -> throw IllegalArgumentException("Invalid column")
         }
     }

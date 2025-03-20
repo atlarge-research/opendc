@@ -279,10 +279,10 @@ public class OpenDCRunner(
                     provisioner.runSteps(
                         setupComputeService(
                             serviceDomain,
-                            { createComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong())) },
+                            { createComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong()), timeSource) },
                         ),
                         registerComputeMonitor(serviceDomain, monitor),
-                        setupHosts(serviceDomain, topology, startTime),
+                        setupHosts(serviceDomain, topology, listOf(), startTime),
                     )
 
                     val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
