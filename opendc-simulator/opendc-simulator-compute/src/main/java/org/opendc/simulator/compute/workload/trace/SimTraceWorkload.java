@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.opendc.simulator.compute.workload.SimWorkload;
-import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling;
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -51,7 +50,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
     private final TraceWorkload snapshot;
 
-    private ScalingPolicy scalingPolicy = new NoDelayScaling();
+    private final ScalingPolicy scalingPolicy;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
@@ -88,7 +87,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         super(((FlowNode) supplier).getEngine());
 
         this.snapshot = workload;
-        this.checkpointDuration = workload.getCheckpointDuration();
+        this.checkpointDuration = workload.checkpointDuration();
         this.scalingPolicy = workload.getScalingPolicy();
         this.remainingFragments = new LinkedList<>(workload.getFragments());
         this.fragmentIndex = 0;

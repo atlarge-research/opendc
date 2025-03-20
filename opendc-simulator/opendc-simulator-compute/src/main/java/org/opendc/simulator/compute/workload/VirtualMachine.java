@@ -33,16 +33,15 @@ import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
 /**
- * A {@link SimChainWorkload} that composes multiple {@link SimWorkload}s.
+ * A {@link VirtualMachine} that composes multiple {@link SimWorkload}s.
  */
-public final class SimChainWorkload extends SimWorkload implements FlowSupplier {
+public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     private final LinkedList<Workload> workloads;
     private int workloadIndex;
 
     private SimWorkload activeWorkload;
     private double cpuDemand = 0.0f;
     private double cpuSupply = 0.0f;
-    private double cpuCapacity = 0.0f;
     private double d = 0.0f;
 
     private FlowEdge workloadEdge;
@@ -50,15 +49,15 @@ public final class SimChainWorkload extends SimWorkload implements FlowSupplier 
 
     private double capacity = 0;
 
-    private long checkpointInterval = 0;
-    private long checkpointDuration = 0;
-    private double checkpointIntervalScaling = 1.0;
+    private final long checkpointInterval;
+    private final long checkpointDuration;
+    private final double checkpointIntervalScaling;
     private CheckpointModel checkpointModel;
 
-    private ChainWorkload snapshot;
+    private final ChainWorkload snapshot;
 
     private long lastUpdate;
-    private PerformanceCounters performanceCounters = new PerformanceCounters();
+    private final PerformanceCounters performanceCounters = new PerformanceCounters();
     private Consumer<Exception> completion;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,17 +97,17 @@ public final class SimChainWorkload extends SimWorkload implements FlowSupplier 
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    SimChainWorkload(FlowSupplier supplier, ChainWorkload workload) {
+    VirtualMachine(FlowSupplier supplier, ChainWorkload workload) {
         super(((FlowNode) supplier).getEngine());
 
         this.snapshot = workload;
 
         new FlowEdge(this, supplier);
 
-        this.workloads = new LinkedList<>(workload.getWorkloads());
-        this.checkpointInterval = workload.getCheckpointInterval();
-        this.checkpointDuration = workload.getCheckpointDuration();
-        this.checkpointIntervalScaling = workload.getCheckpointIntervalScaling();
+        this.workloads = new LinkedList<>(workload.workloads());
+        this.checkpointInterval = workload.checkpointInterval();
+        this.checkpointDuration = workload.checkpointDuration();
+        this.checkpointIntervalScaling = workload.checkpointIntervalScaling();
 
         this.lastUpdate = clock.millis();
 
@@ -121,8 +120,7 @@ public final class SimChainWorkload extends SimWorkload implements FlowSupplier 
         this.onStart();
     }
 
-    SimChainWorkload(
-            FlowSupplier supplier, ChainWorkload workload, SimMachine machine, Consumer<Exception> completion) {
+    VirtualMachine(FlowSupplier supplier, ChainWorkload workload, SimMachine machine, Consumer<Exception> completion) {
         this(supplier, workload);
 
         this.capacity = machine.getCpu().getFrequency();
@@ -154,17 +152,18 @@ public final class SimChainWorkload extends SimWorkload implements FlowSupplier 
         this.lastUpdate = now;
         long delta = now - lastUpdate;
 
+        double cpuCapacity = 0.0f;
         if (delta > 0) {
             final double factor = this.d * delta;
 
             this.performanceCounters.addCpuActiveTime(Math.round(this.cpuSupply * factor));
-            this.performanceCounters.setCpuIdleTime(Math.round((this.cpuCapacity - this.cpuSupply) * factor));
+            this.performanceCounters.setCpuIdleTime(Math.round((cpuCapacity - this.cpuSupply) * factor));
             this.performanceCounters.addCpuStealTime(Math.round((this.cpuDemand - this.cpuSupply) * factor));
         }
 
         this.performanceCounters.setCpuDemand(this.cpuDemand);
         this.performanceCounters.setCpuSupply(this.cpuSupply);
-        this.performanceCounters.setCpuCapacity(this.cpuCapacity);
+        this.performanceCounters.setCpuCapacity(cpuCapacity);
     }
 
     @Override

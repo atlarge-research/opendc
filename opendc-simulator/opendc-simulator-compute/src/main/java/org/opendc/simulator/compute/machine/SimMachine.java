@@ -30,8 +30,8 @@ import org.opendc.simulator.compute.memory.Memory;
 import org.opendc.simulator.compute.models.MachineModel;
 import org.opendc.simulator.compute.power.SimPsu;
 import org.opendc.simulator.compute.workload.ChainWorkload;
-import org.opendc.simulator.compute.workload.SimChainWorkload;
 import org.opendc.simulator.compute.workload.SimWorkload;
+import org.opendc.simulator.compute.workload.VirtualMachine;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -74,10 +74,6 @@ public class SimMachine {
 
     public SimCpu getCpu() {
         return cpu;
-    }
-
-    public FlowDistributor getCpuDistributor() {
-        return cpuDistributor;
     }
 
     public Memory getMemory() {
@@ -180,11 +176,10 @@ public class SimMachine {
     /**
      * Create a Virtual Machine, and start the given workload on it.
      *
-     * @param workload
-     * @param completion
-     * @return
+     * @param workload The workload that needs to be executed
+     * @param completion The completion callback that needs to be called when the workload is done
      */
-    public SimChainWorkload startWorkload(ChainWorkload workload, Consumer<Exception> completion) {
-        return (SimChainWorkload) workload.startWorkload(this.cpuDistributor, this, completion);
+    public VirtualMachine startWorkload(ChainWorkload workload, Consumer<Exception> completion) {
+        return (VirtualMachine) workload.startWorkload(this.cpuDistributor, this, completion);
     }
 }

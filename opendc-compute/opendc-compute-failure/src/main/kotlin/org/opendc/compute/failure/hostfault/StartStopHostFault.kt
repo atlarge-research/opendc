@@ -41,7 +41,7 @@ public class StartStopHostFault(
         for (host in victims) {
             val guests = host.getGuests()
 
-            val snapshots = guests.map { it.simChainWorkload!!.getSnapshot() }
+            val snapshots = guests.map { it.virtualMachine!!.getSnapshot() }
             val tasks = guests.map { it.task }
             host.fail()
 
