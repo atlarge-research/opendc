@@ -31,7 +31,6 @@ import org.opendc.compute.simulator.telemetry.GuestSystemStats
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.workload.ChainWorkload
 import org.opendc.simulator.compute.workload.VirtualMachine
-import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
 import java.time.Duration
 import java.time.Instant
 import java.time.InstantSource
