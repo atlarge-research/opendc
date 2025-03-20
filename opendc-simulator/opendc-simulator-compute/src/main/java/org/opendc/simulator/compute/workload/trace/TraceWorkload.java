@@ -28,7 +28,6 @@ import java.util.function.Consumer;
 import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
-import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling;
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
@@ -115,10 +114,6 @@ public class TraceWorkload implements Workload {
     @Override
     public SimWorkload startWorkload(FlowSupplier supplier, SimMachine machine, Consumer<Exception> completion) {
         return this.startWorkload(supplier);
-    }
-
-    public static Builder builder() {
-        return builder(0L, 0L, 0.0, new NoDelayScaling());
     }
 
     public static Builder builder(
