@@ -75,7 +75,7 @@ public fun getWorkloadLoader(
     checkpointDuration: Long,
     checkpointIntervalScaling: Double,
     scalingPolicy: ScalingPolicy,
-    deferAll: Boolean
+    deferAll: Boolean,
 ): WorkloadLoader {
     return when (type) {
         WorkloadTypes.ComputeWorkload ->
@@ -86,7 +86,7 @@ public fun getWorkloadLoader(
                 checkpointDuration,
                 checkpointIntervalScaling,
                 scalingPolicy,
-                deferAll
+                deferAll,
             )
     }
 }

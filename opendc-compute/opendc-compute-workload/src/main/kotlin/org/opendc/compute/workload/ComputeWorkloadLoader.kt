@@ -141,7 +141,7 @@ public class ComputeWorkloadLoader(
                 var deadline = reader.getLong(deadlineCol)
                 if (deferAll) {
                     nature = "deferrable"
-                    deadline = submissionTime + (3*duration)
+                    deadline = submissionTime + (3 * duration)
                 }
 
                 val builder = fragments.getValue(id) // Get all fragments related to this VM

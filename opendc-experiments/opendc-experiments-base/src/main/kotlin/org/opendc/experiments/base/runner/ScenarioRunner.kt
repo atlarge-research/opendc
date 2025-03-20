@@ -28,7 +28,6 @@ import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
-import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.scheduler.createComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.telemetry.parquet.ParquetComputeMonitor
@@ -94,7 +93,7 @@ public fun runScenario(
                     checkpointDuration,
                     checkpointIntervalScaling,
                     scalingPolicy,
-                    scenario.workloadSpec.deferAll
+                    scenario.workloadSpec.deferAll,
                 )
             var workload = workloadLoader.sampleByLoad(scenario.workloadSpec.sampleFraction)
 
@@ -107,10 +106,12 @@ public fun runScenario(
                 setupComputeService(
                     serviceDomain,
                     {
-                        val computeScheduler = createComputeScheduler(
-                        scenario.allocationPolicySpec.policyType,
-                        Random(it.seeder.nextLong()),
-                        timeSource)
+                        val computeScheduler =
+                            createComputeScheduler(
+                                scenario.allocationPolicySpec.policyType,
+                                Random(it.seeder.nextLong()),
+                                timeSource,
+                            )
 
                         if (computeScheduler is CarbonReceiver) {
                             carbonReceivers.add(computeScheduler)

@@ -69,8 +69,18 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
     override fun endRow() {
         check(localIsActive) { "No active row" }
         localIsActive = false
-        writer.write(Resource(localId, localSubmissionTime, localDuration, localCpuCount, localCpuCapacity,
-            localMemCapacity, localNature, localDeadline))
+        writer.write(
+            Resource(
+                localId,
+                localSubmissionTime,
+                localDuration,
+                localCpuCount,
+                localCpuCapacity,
+                localMemCapacity,
+                localNature,
+                localDeadline,
+            ),
+        )
     }
 
     override fun resolve(name: String): Int {

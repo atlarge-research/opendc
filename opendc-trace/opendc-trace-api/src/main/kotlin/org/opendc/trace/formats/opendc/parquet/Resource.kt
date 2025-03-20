@@ -22,7 +22,6 @@
 
 package org.opendc.trace.formats.opendc.parquet
 
-import java.time.Duration
 import java.time.Instant
 
 /**

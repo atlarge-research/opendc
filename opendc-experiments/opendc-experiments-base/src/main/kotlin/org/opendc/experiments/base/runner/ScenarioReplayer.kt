@@ -39,7 +39,6 @@ import org.opendc.compute.workload.Task
 import org.opendc.experiments.base.experiment.specs.FailureModelSpec
 import org.opendc.experiments.base.experiment.specs.createFailureModel
 import java.time.Duration
-import java.time.Instant
 import java.time.InstantSource
 import java.util.Random
 import kotlin.coroutines.coroutineContext
@@ -123,11 +122,12 @@ public suspend fun ComputeService.replay(
                 val workload = entry.trace
                 val meta = mutableMapOf<String, Any>("workload" to workload)
 
-                val nature = if (entry.nature == "deferrable") {
-                    TaskNature(true)
-                } else {
-                    TaskNature(false)
-                }
+                val nature =
+                    if (entry.nature == "deferrable") {
+                        TaskNature(true)
+                    } else {
+                        TaskNature(false)
+                    }
 
                 launch {
                     val task =
