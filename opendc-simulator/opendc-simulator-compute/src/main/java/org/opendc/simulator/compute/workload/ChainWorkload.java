@@ -27,8 +27,12 @@ import java.util.function.Consumer;
 import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
-public record ChainWorkload(ArrayList<Workload> workloads, long checkpointInterval, long checkpointDuration,
-                            double checkpointIntervalScaling) implements Workload {
+public record ChainWorkload(
+        ArrayList<Workload> workloads,
+        long checkpointInterval,
+        long checkpointDuration,
+        double checkpointIntervalScaling)
+        implements Workload {
 
     public void removeWorkloads(int numberOfWorkloads) {
         if (numberOfWorkloads <= 0) {
