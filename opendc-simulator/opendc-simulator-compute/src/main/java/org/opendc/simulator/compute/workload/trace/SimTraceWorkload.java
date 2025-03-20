@@ -88,7 +88,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         super(((FlowNode) supplier).getEngine());
 
         this.snapshot = workload;
-        this.checkpointDuration = workload.getCheckpointDuration();
+        this.checkpointDuration = workload.checkpointDuration();
         this.scalingPolicy = workload.getScalingPolicy();
         this.remainingFragments = new LinkedList<>(workload.getFragments());
         this.fragmentIndex = 0;

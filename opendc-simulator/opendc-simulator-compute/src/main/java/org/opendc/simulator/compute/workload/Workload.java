@@ -28,11 +28,11 @@ import org.opendc.simulator.engine.graph.FlowSupplier;
 
 public interface Workload {
 
-    long getCheckpointInterval();
+    long checkpointInterval();
 
-    long getCheckpointDuration();
+    long checkpointDuration();
 
-    double getCheckpointIntervalScaling();
+    double checkpointIntervalScaling();
 
     SimWorkload startWorkload(FlowSupplier supplier);
 

@@ -79,17 +79,17 @@ public class TraceWorkload implements Workload {
     }
 
     @Override
-    public long getCheckpointInterval() {
+    public long checkpointInterval() {
         return checkpointInterval;
     }
 
     @Override
-    public long getCheckpointDuration() {
+    public long checkpointDuration() {
         return checkpointDuration;
     }
 
     @Override
-    public double getCheckpointIntervalScaling() {
+    public double checkpointIntervalScaling() {
         return checkpointIntervalScaling;
     }
 
