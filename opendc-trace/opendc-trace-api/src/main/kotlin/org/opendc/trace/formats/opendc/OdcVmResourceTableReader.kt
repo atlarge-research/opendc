@@ -82,8 +82,14 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in 0..colMemCapacity) { "Invalid column index" }
-        return false
+        require(index in 0..colDeadline) { "Invalid column index" }
+        val record = checkNotNull(record) { "Reader in invalid state" }
+
+        return when (index) {
+            colNature -> record.nature == null
+            colDeadline -> record.deadline == -1L
+            else -> false
+        }
     }
 
     override fun getBoolean(index: Int): Boolean {

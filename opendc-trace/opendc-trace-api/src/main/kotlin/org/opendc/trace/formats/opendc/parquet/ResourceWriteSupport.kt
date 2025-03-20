@@ -89,9 +89,11 @@ internal class ResourceWriteSupport : WriteSupport<Resource>() {
             consumer.endField("nature", 6)
         }
 
-        consumer.startField("deadline", 7)
-        consumer.addLong(record.deadline)
-        consumer.endField("deadline", 7)
+        if (record.deadline != -1L) {
+            consumer.startField("deadline", 7)
+            consumer.addLong(record.deadline)
+            consumer.endField("deadline", 7)
+        }
 
         consumer.endMessage()
     }
@@ -130,7 +132,6 @@ internal class ResourceWriteSupport : WriteSupport<Resource>() {
                         .named("nature"),
                     Types
                         .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                        .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                         .named("deadline"),
                 )
                 .named("resource")

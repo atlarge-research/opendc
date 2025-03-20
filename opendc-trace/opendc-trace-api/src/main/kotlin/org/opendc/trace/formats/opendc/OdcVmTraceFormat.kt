@@ -102,8 +102,8 @@ public class OdcVmTraceFormat : TraceFormat {
                         TableColumn(resourceCpuCount, TableColumnType.Int),
                         TableColumn(resourceCpuCapacity, TableColumnType.Double),
                         TableColumn(resourceMemCapacity, TableColumnType.Double),
-                        TableColumn(resourceNature, TableColumnType.Duration),
-                        TableColumn(resourceDeadline, TableColumnType.Instant),
+                        TableColumn(resourceNature, TableColumnType.String),
+                        TableColumn(resourceDeadline, TableColumnType.Long),
                     ),
                 )
             TABLE_RESOURCE_STATES ->
@@ -111,7 +111,7 @@ public class OdcVmTraceFormat : TraceFormat {
                     listOf(
                         TableColumn(resourceID, TableColumnType.String),
                         TableColumn(resourceStateTimestamp, TableColumnType.Instant),
-                        TableColumn(resourceStateDuration, TableColumnType.Long),
+                        TableColumn(resourceStateDuration, TableColumnType.Duration),
                         TableColumn(resourceCpuCount, TableColumnType.Int),
                         TableColumn(resourceStateCpuUsage, TableColumnType.Double),
                     ),
