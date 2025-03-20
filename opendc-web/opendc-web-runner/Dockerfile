@@ -13,7 +13,8 @@ RUN ./gradlew --no-daemon :opendc-web:opendc-web-runner:installDist
 
 FROM openjdk:21-slim
 COPY --from=0 /app/opendc-web/opendc-web-runner/build/install /opt/
-COPY --from=0 /app/traces /opt/opendc/traces
+COPY --from=0 /app/opendc-experiments/opendc-experiments-base/src/test/resources/workloadTraces \
+    /opt/opendc/traces
 WORKDIR /opt/opendc
 CMD bin/opendc-web-runner
 
