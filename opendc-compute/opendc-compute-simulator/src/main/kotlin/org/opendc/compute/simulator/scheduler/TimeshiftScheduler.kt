@@ -143,11 +143,12 @@ public class TimeshiftScheduler(
     ) {}
 
     override fun updateCarbonIntensity(newCarbonIntensity: Double) {
-        val previousCarbonIntensity = if (this.pastCarbonIntensities.isEmpty()) {
-            0.0
-        } else {
-            this.pastCarbonIntensities.last()
-        }
+        val previousCarbonIntensity =
+            if (this.pastCarbonIntensities.isEmpty()) {
+                0.0
+            } else {
+                this.pastCarbonIntensities.last()
+            }
         this.pastCarbonIntensities.addLast(newCarbonIntensity)
         this.carbonRunningSum += newCarbonIntensity
         if (this.pastCarbonIntensities.size > this.windowSize) {
@@ -161,10 +162,14 @@ public class TimeshiftScheduler(
             return
         }
 
-        isLowCarbon = ((newCarbonIntensity < thresholdCarbonIntensity)
-            && (newCarbonIntensity > previousCarbonIntensity))
-            || ((newCarbonIntensity < 1.2*thresholdCarbonIntensity)
-            && isLowCarbon)
+        isLowCarbon = (
+            (newCarbonIntensity < thresholdCarbonIntensity) &&
+                (newCarbonIntensity > previousCarbonIntensity)
+        ) ||
+            (
+                (newCarbonIntensity < 1.2 * thresholdCarbonIntensity) &&
+                    isLowCarbon
+            )
     }
 
     override fun setCarbonModel(carbonModel: CarbonModel?) {}

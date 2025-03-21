@@ -47,7 +47,7 @@ public enum class ComputeSchedulerEnum {
     Random,
     TaskNumMemorizing,
     Timeshift,
-    TimeshiftNoPeak
+    TimeshiftNoPeak,
 }
 
 public fun createComputeScheduler(
