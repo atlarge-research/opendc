@@ -44,7 +44,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     private double currentCpuUtilization = 0.0f;
     private double currentCpuSupplied = 0.0f; // cpu capacity supplied to the mux
 
-    private double currentPowerDemand = 0.0f; // power demanded of the psu
+    private double currentPowerDemand; // power demanded of the psu
     private double currentPowerSupplied = 0.0f; // cpu capacity supplied by the psu
 
     private double maxCapacity;
@@ -109,12 +109,13 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         this.cpuModel = cpuModel;
         this.maxCapacity = this.cpuModel.getTotalCapacity();
 
-        // TODO: connect this to the front-end
         this.cpuPowerModel = powerModel;
 
         this.lastCounterUpdate = clock.millis();
 
         this.cpuFrequencyInv = 1 / this.maxCapacity;
+
+        this.currentPowerDemand = this.cpuPowerModel.computePower(this.currentCpuUtilization);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
