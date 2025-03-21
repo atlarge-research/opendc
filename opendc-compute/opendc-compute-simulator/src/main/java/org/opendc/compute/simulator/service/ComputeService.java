@@ -449,7 +449,6 @@ public final class ComputeService implements AutoCloseable {
      * Run a single scheduling iteration.
      */
     private void doSchedule() {
-
         for (Iterator<SchedulingRequest> iterator = taskQueue.iterator();
                 iterator.hasNext();
                 iterator = taskQueue.iterator()) {
@@ -467,6 +466,7 @@ public final class ComputeService implements AutoCloseable {
                 LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
 
                 taskQueue.remove(req);
+                tasksPending--;
                 tasksPending--;
                 tasksTerminated++;
                 task.setState(TaskState.TERMINATED);
