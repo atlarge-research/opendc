@@ -54,6 +54,10 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
 
         reScheduleTasks(workload)
 
+        if (fraction >= 1.0) {
+            return workload
+        }
+
         if (fraction <= 0.0) {
             throw Error("The fraction of tasks to load cannot be 0.0 or lower")
         }
@@ -73,6 +77,6 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
 
         logger.info { "Sampled ${workload.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
 
-        return res
+        return res.sortedBy { it.submissionTime }
     }
 }
