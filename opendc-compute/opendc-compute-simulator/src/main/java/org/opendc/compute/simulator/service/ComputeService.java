@@ -467,7 +467,6 @@ public final class ComputeService implements AutoCloseable {
 
                 taskQueue.remove(req);
                 tasksPending--;
-                tasksPending--;
                 tasksTerminated++;
                 task.setState(TaskState.TERMINATED);
 
