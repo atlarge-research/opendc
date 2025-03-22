@@ -80,6 +80,8 @@ public class HostsProvisioningStep internal constructor(
                 for (receiver in carbonReceivers) {
                     carbonModel.addReceiver(receiver)
                 }
+                val computeService = ctx.registry.resolve(serviceDomain, ComputeService::class.java)!!
+                carbonModel.addReceiver(computeService)
             }
 
             if (cluster.battery != null) {

@@ -55,6 +55,8 @@ import org.opendc.compute.simulator.scheduler.SchedulingResult;
 import org.opendc.compute.simulator.scheduler.SchedulingResultType;
 import org.opendc.compute.simulator.telemetry.ComputeMetricReader;
 import org.opendc.compute.simulator.telemetry.SchedulerStats;
+import org.opendc.simulator.compute.power.CarbonModel;
+import org.opendc.simulator.compute.power.CarbonReceiver;
 import org.opendc.simulator.compute.power.SimPowerSource;
 import org.opendc.simulator.compute.power.batteries.SimBattery;
 import org.opendc.simulator.compute.workload.Workload;
@@ -64,7 +66,7 @@ import org.slf4j.LoggerFactory;
 /**
  * The {@link ComputeService} hosts the API implementation of the OpenDC Compute Engine.
  */
-public final class ComputeService implements AutoCloseable {
+public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(ComputeService.class);
 
     /**
@@ -433,6 +435,14 @@ public final class ComputeService implements AutoCloseable {
         taskById.remove(task.getUid());
     }
 
+    public void updateCarbonIntensity(double newCarbonIntensity) {
+        requestSchedulingCycle();
+    }
+
+    public void setCarbonModel(CarbonModel carbonModel) {}
+
+    public void removeCarbonModel(CarbonModel carbonModel) {}
+
     /**
      * Indicate that a new scheduling cycle is needed due to a change to the service's state.
      */
@@ -449,12 +459,12 @@ public final class ComputeService implements AutoCloseable {
      * Run a single scheduling iteration.
      */
     private void doSchedule() {
-
         for (Iterator<SchedulingRequest> iterator = taskQueue.iterator();
                 iterator.hasNext();
                 iterator = taskQueue.iterator()) {
             final SchedulingResult result = scheduler.select(iterator);
             if (result.getResultType() == SchedulingResultType.EMPTY) {
+
                 break;
             }
             final HostView hv = result.getHost();
