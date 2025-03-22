@@ -65,10 +65,9 @@ public class TaskTableReaderImpl(
         _uptime = table.uptime
         _downtime = table.downtime
         _provisionTime = table.provisionTime
-        _bootTime = table.bootTime
-        _bootTimeAbsolute = table.bootTimeAbsolute
+        _scheduleTime = table.scheduleTime
 
-        _creationTime = table.creationTime
+        _submissionTime = table.submissionTime
         _finishTime = table.finishTime
 
         _taskState = table.taskState
@@ -115,13 +114,13 @@ public class TaskTableReaderImpl(
         get() = _provisionTime
     private var _provisionTime: Instant? = null
 
-    override val bootTime: Instant?
-        get() = _bootTime
-    private var _bootTime: Instant? = null
+    override val scheduleTime: Instant?
+        get() = _scheduleTime
+    private var _scheduleTime: Instant? = null
 
-    override val creationTime: Instant?
-        get() = _creationTime
-    private var _creationTime: Instant? = null
+    override val submissionTime: Instant?
+        get() = _submissionTime
+    private var _submissionTime: Instant? = null
 
     override val finishTime: Instant?
         get() = _finishTime
@@ -158,10 +157,6 @@ public class TaskTableReaderImpl(
         get() = _cpuLostTime - previousCpuLostTime
     private var _cpuLostTime = 0L
     private var previousCpuLostTime = 0L
-
-    override val bootTimeAbsolute: Instant?
-        get() = _bootTimeAbsolute
-    private var _bootTimeAbsolute: Instant? = null
 
     override val taskState: TaskState?
         get() = _taskState
@@ -200,18 +195,12 @@ public class TaskTableReaderImpl(
         _cpuLostTime = cpuStats?.lostTime ?: _cpuLostTime
         _uptime = sysStats?.uptime?.toMillis() ?: _uptime
         _downtime = sysStats?.downtime?.toMillis() ?: _downtime
-        _provisionTime = task.launchedAt
-        _bootTime = sysStats?.bootTime ?: _bootTime
-        _creationTime = task.createdAt
+        _provisionTime = task.scheduledAt
+        _scheduleTime = sysStats?.bootTime ?: _scheduleTime
+        _submissionTime = task.submittedAt
         _finishTime = task.finishedAt
 
         _taskState = task.state
-
-        if (sysStats != null) {
-            _bootTimeAbsolute = sysStats.bootTime + startTime
-        } else {
-            _bootTimeAbsolute = null
-        }
     }
 
     /**

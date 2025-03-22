@@ -87,12 +87,12 @@ public object DfltHostExportColumns {
     public val GUESTS_TERMINATED: ExportColumn<HostTableReader> =
         ExportColumn(
             field = Types.required(INT32).named("guests_terminated"),
-        ) { it.guestsTerminated }
+        ) { it.tasksTerminated }
 
     public val GUESTS_RUNNING: ExportColumn<HostTableReader> =
         ExportColumn(
             field = Types.required(INT32).named("guests_running"),
-        ) { it.guestsRunning }
+        ) { it.tasksActive }
 
     public val GUESTS_ERROR: ExportColumn<HostTableReader> =
         ExportColumn(
@@ -168,11 +168,6 @@ public object DfltHostExportColumns {
         ExportColumn(
             field = Types.optional(INT64).named("boot_time"),
         ) { it.bootTime?.toEpochMilli() }
-
-    public val BOOT_TIME_ABS: ExportColumn<HostTableReader> =
-        ExportColumn(
-            field = Types.optional(INT64).named("boot_time_absolute"),
-        ) { it.bootTimeAbsolute?.toEpochMilli() }
 
     /**
      * The columns that are always included in the output file.

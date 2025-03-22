@@ -55,12 +55,12 @@ public interface HostTableReader : Exportable {
     /**
      * The number of guests that are in a terminated state.
      */
-    public val guestsTerminated: Int
+    public val tasksTerminated: Int
 
     /**
-     * The number of guests that are in a running state.
+     * The number of guests that are active on the Host state.
      */
-    public val guestsRunning: Int
+    public val tasksActive: Int
 
     /**
      * The number of guests that are in an error state.
@@ -136,9 +136,4 @@ public interface HostTableReader : Exportable {
      * The [Instant] at which the host booted relative to the start of the workload.
      */
     public val bootTime: Instant?
-
-    /**
-     * The [Instant] at which the host booted.
-     */
-    public val bootTimeAbsolute: Instant?
 }

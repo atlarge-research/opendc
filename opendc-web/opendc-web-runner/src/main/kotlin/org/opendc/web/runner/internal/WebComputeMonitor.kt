@@ -44,14 +44,14 @@ internal class WebComputeMonitor : ComputeMonitor {
                 hostAggregateMetrics.totalLostTime + reader.cpuLostTime,
                 hostAggregateMetrics.totalPowerDraw + reader.energyUsage,
                 hostAggregateMetrics.totalFailureSlices + slices,
-                hostAggregateMetrics.totalFailureVmSlices + reader.guestsRunning * slices,
+                hostAggregateMetrics.totalFailureVmSlices + reader.tasksActive * slices,
             )
 
         hostMetrics.compute(reader.hostInfo.name) { _, prev ->
             HostMetrics(
                 reader.cpuUsage + (prev?.cpuUsage ?: 0.0),
                 reader.cpuDemand + (prev?.cpuDemand ?: 0.0),
-                reader.guestsRunning + (prev?.instanceCount ?: 0),
+                reader.tasksActive + (prev?.instanceCount ?: 0),
                 1 + (prev?.count ?: 0),
             )
         }

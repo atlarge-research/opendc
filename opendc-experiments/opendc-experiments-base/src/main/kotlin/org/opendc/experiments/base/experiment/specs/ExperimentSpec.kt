@@ -25,7 +25,10 @@ package org.opendc.experiments.base.experiment.specs
 import kotlinx.serialization.Serializable
 import org.opendc.common.logger.infoNewLine
 import org.opendc.common.logger.logger
+import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
+import org.opendc.experiments.base.experiment.specs.allocation.AllocationPolicySpec
+import org.opendc.experiments.base.experiment.specs.allocation.PrefabAllocationPolicySpec
 import java.util.UUID
 
 /**
@@ -55,7 +58,7 @@ public data class ExperimentSpec(
     val maxNumFailures: Set<Int> = setOf(10),
     val topologies: Set<ScenarioTopologySpec>,
     val workloads: Set<WorkloadSpec>,
-    val allocationPolicies: Set<AllocationPolicySpec> = setOf(AllocationPolicySpec()),
+    val allocationPolicies: Set<AllocationPolicySpec> = setOf(PrefabAllocationPolicySpec(ComputeSchedulerEnum.Mem)),
     val failureModels: Set<FailureModelSpec?> = setOf(null),
     val checkpointModels: Set<CheckpointModelSpec?> = setOf(null),
 ) {

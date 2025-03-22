@@ -45,8 +45,8 @@ public class HostTableReaderImpl(
         _timestamp = table.timestamp
         _timestampAbsolute = table.timestampAbsolute
 
-        _guestsTerminated = table.guestsTerminated
-        _guestsRunning = table.guestsRunning
+        _tasksTerminated = table.tasksTerminated
+        _tasksActive = table.tasksActive
         _guestsError = table.guestsError
         _guestsInvalid = table.guestsInvalid
         _cpuLimit = table.cpuLimit
@@ -62,7 +62,6 @@ public class HostTableReaderImpl(
         _uptime = table.uptime
         _downtime = table.downtime
         _bootTime = table.bootTime
-        _bootTimeAbsolute = table.bootTimeAbsolute
     }
 
     override val hostInfo: HostInfo =
@@ -83,13 +82,13 @@ public class HostTableReaderImpl(
         get() = _timestampAbsolute
     private var _timestampAbsolute = Instant.MIN
 
-    override val guestsTerminated: Int
-        get() = _guestsTerminated
-    private var _guestsTerminated = 0
+    override val tasksTerminated: Int
+        get() = _tasksTerminated
+    private var _tasksTerminated = 0
 
-    override val guestsRunning: Int
-        get() = _guestsRunning
-    private var _guestsRunning = 0
+    override val tasksActive: Int
+        get() = _tasksActive
+    private var _tasksActive = 0
 
     override val guestsError: Int
         get() = _guestsError
@@ -158,10 +157,6 @@ public class HostTableReaderImpl(
         get() = _bootTime
     private var _bootTime: Instant? = null
 
-    override val bootTimeAbsolute: Instant?
-        get() = _bootTimeAbsolute
-    private var _bootTimeAbsolute: Instant? = null
-
     /**
      * Record the next cycle.
      */
@@ -172,8 +167,8 @@ public class HostTableReaderImpl(
         _timestamp = now
         _timestampAbsolute = now + startTime
 
-        _guestsTerminated = hostSysStats.guestsTerminated
-        _guestsRunning = hostSysStats.guestsRunning
+        _tasksTerminated = hostSysStats.guestsTerminated
+        _tasksActive = hostSysStats.guestsRunning
         _guestsError = hostSysStats.guestsError
         _guestsInvalid = hostSysStats.guestsInvalid
         _cpuLimit = hostCpuStats.capacity
@@ -205,8 +200,8 @@ public class HostTableReaderImpl(
         previousUptime = _uptime
         previousDowntime = _downtime
 
-        _guestsTerminated = 0
-        _guestsRunning = 0
+        _tasksTerminated = 0
+        _tasksActive = 0
         _guestsError = 0
         _guestsInvalid = 0
 

@@ -23,6 +23,9 @@
 package org.opendc.experiments.base.experiment.specs
 
 import kotlinx.serialization.Serializable
+import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
+import org.opendc.experiments.base.experiment.specs.allocation.AllocationPolicySpec
+import org.opendc.experiments.base.experiment.specs.allocation.PrefabAllocationPolicySpec
 
 @Serializable
 public data class ScenarioSpec(
@@ -31,7 +34,7 @@ public data class ScenarioSpec(
     val outputFolder: String = "output",
     val topology: ScenarioTopologySpec,
     val workload: WorkloadSpec,
-    val allocationPolicy: AllocationPolicySpec = AllocationPolicySpec(),
+    val allocationPolicy: AllocationPolicySpec = PrefabAllocationPolicySpec(ComputeSchedulerEnum.Mem),
     val exportModel: ExportModelSpec = ExportModelSpec(),
     val failureModel: FailureModelSpec? = null,
     val checkpointModel: CheckpointModelSpec? = null,
