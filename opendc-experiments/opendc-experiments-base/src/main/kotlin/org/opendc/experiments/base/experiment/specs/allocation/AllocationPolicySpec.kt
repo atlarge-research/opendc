@@ -29,27 +29,11 @@ import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.simulator.scheduler.FilterScheduler
 import org.opendc.compute.simulator.scheduler.TimeshiftScheduler
 import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
-import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
-import org.opendc.compute.simulator.scheduler.filters.DifferentHostFilter
-import org.opendc.compute.simulator.scheduler.filters.HostFilter
-import org.opendc.compute.simulator.scheduler.filters.InstanceCountFilter
-import org.opendc.compute.simulator.scheduler.filters.RamFilter
-import org.opendc.compute.simulator.scheduler.filters.SameHostFilter
-import org.opendc.compute.simulator.scheduler.filters.VCpuCapacityFilter
-import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
-import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
-import org.opendc.compute.simulator.scheduler.weights.InstanceCountWeigher
-import org.opendc.compute.simulator.scheduler.weights.RamWeigher
-import org.opendc.compute.simulator.scheduler.weights.VCpuCapacityWeigher
-import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 
 /**
  * specification describing how tasks are allocated
- *
- * @property policyType
- *
  */
 @Serializable
 public sealed interface AllocationPolicySpec
@@ -77,27 +61,25 @@ public data class TimeShiftAllocationPolicySpec(
     val weighers: List<HostWeigherSpec>,
     val windowSize: Int,
     val subsetSize: Int = 1,
+    val peakShift: Boolean = true,
 ) : AllocationPolicySpec
-
-
-
 
 public fun createComputeScheduler(
     spec: AllocationPolicySpec,
     seeder: RandomGenerator,
     clock: InstantSource,
 ): ComputeScheduler {
-   return when (spec) {
-       is PrefabAllocationPolicySpec -> createPrefabComputeScheduler(spec.policyName, seeder, clock)
-       is FilterAllocationPolicySpec -> {
-           val filters = spec.filters.map { createHostFilter(it) }
-           val weighers = spec.weighers.map { createHostWeigher(it) }
-           FilterScheduler(filters, weighers, spec.subsetSize, seeder)
-       }
-       is TimeShiftAllocationPolicySpec -> {
-           val filters = spec.filters.map { createHostFilter(it) }
-           val weighers = spec.weighers.map { createHostWeigher(it) }
-           TimeshiftScheduler(filters, weighers, spec.windowSize, clock, spec.subsetSize, seeder)
-       }
-   }
+    return when (spec) {
+        is PrefabAllocationPolicySpec -> createPrefabComputeScheduler(spec.policyName, seeder, clock)
+        is FilterAllocationPolicySpec -> {
+            val filters = spec.filters.map { createHostFilter(it) }
+            val weighers = spec.weighers.map { createHostWeigher(it) }
+            FilterScheduler(filters, weighers, spec.subsetSize, seeder)
+        }
+        is TimeShiftAllocationPolicySpec -> {
+            val filters = spec.filters.map { createHostFilter(it) }
+            val weighers = spec.weighers.map { createHostWeigher(it) }
+            TimeshiftScheduler(filters, weighers, spec.windowSize, clock, spec.subsetSize, spec.peakShift, seeder)
+        }
+    }
 }

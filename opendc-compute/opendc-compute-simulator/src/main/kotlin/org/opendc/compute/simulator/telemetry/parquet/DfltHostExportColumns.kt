@@ -169,7 +169,6 @@ public object DfltHostExportColumns {
             field = Types.optional(INT64).named("boot_time"),
         ) { it.bootTime?.toEpochMilli() }
 
-
     /**
      * The columns that are always included in the output file.
      */
