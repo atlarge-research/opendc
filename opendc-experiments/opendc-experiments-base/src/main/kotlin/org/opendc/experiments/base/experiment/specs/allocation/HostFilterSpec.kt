@@ -76,7 +76,7 @@ public data class InstanceCountHostFilterSpec(
 @SerialName("Ram")
 public data class RamHostFilterSpec(
     val filterName: HostFilterEnum = HostFilterEnum.Ram,
-    val allocationRatio: Double,
+    val allocationRatio: Double = 1.0,
 ) : HostFilterSpec()
 
 @Serializable
@@ -95,7 +95,7 @@ public data class VCpuCapacityHostFilterSpec(
 @SerialName("VCpu")
 public data class VCpuHostFilterSpec(
     val filterName: HostFilterEnum = HostFilterEnum.VCpu,
-    val allocationRatio: Double,
+    val allocationRatio: Double = 1.0,
 ) : HostFilterSpec()
 
 public fun createHostFilter(filterSpec: HostFilterSpec): HostFilter {

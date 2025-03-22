@@ -59,7 +59,7 @@ public data class FilterAllocationPolicySpec(
 public data class TimeShiftAllocationPolicySpec(
     val filters: List<HostFilterSpec>,
     val weighers: List<HostWeigherSpec>,
-    val windowSize: Int,
+    val windowSize: Int = 168,
     val subsetSize: Int = 1,
     val peakShift: Boolean = true,
 ) : AllocationPolicySpec
