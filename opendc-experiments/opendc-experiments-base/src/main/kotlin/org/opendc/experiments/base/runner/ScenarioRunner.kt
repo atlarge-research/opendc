@@ -28,11 +28,11 @@ import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
-import org.opendc.compute.simulator.scheduler.createComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.telemetry.parquet.ParquetComputeMonitor
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.experiments.base.experiment.Scenario
+import org.opendc.experiments.base.experiment.specs.allocation.createComputeScheduler
 import org.opendc.experiments.base.experiment.specs.getScalingPolicy
 import org.opendc.experiments.base.experiment.specs.getWorkloadLoader
 import org.opendc.simulator.compute.power.CarbonReceiver
@@ -108,7 +108,7 @@ public fun runScenario(
                     {
                         val computeScheduler =
                             createComputeScheduler(
-                                scenario.allocationPolicySpec.policyType,
+                                scenario.allocationPolicySpec,
                                 Random(it.seeder.nextLong()),
                                 timeSource,
                             )

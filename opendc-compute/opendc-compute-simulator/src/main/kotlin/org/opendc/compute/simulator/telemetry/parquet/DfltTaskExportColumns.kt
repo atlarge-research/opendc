@@ -145,22 +145,17 @@ public object DfltTaskExportColumns {
     public val BOOT_TIME: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("boot_time"),
-        ) { it.bootTime?.toEpochMilli() }
+        ) { it.scheduleTime?.toEpochMilli() }
 
     public val CREATION_TIME: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("creation_time"),
-        ) { it.creationTime?.toEpochMilli() }
+        ) { it.submissionTime?.toEpochMilli() }
 
     public val FINISH_TIME: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("finish_time"),
         ) { it.finishTime?.toEpochMilli() }
-
-    public val BOOT_TIME_ABS: ExportColumn<TaskTableReader> =
-        ExportColumn(
-            field = Types.optional(INT64).named("boot_time_absolute"),
-        ) { it.bootTimeAbsolute?.toEpochMilli() }
 
     public val TASK_STATE: ExportColumn<TaskTableReader> =
         ExportColumn(

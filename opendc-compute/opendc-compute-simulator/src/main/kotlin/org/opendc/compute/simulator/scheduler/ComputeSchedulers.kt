@@ -50,18 +50,18 @@ public enum class ComputeSchedulerEnum {
     TimeshiftNoPeak,
 }
 
-public fun createComputeScheduler(
+public fun createPrefabComputeScheduler(
     name: String,
     seeder: RandomGenerator,
     clock: InstantSource,
 ): ComputeScheduler {
-    return createComputeScheduler(ComputeSchedulerEnum.valueOf(name.uppercase()), seeder, clock)
+    return createPrefabComputeScheduler(ComputeSchedulerEnum.valueOf(name.uppercase()), seeder, clock)
 }
 
 /**
  * Create a [ComputeScheduler] for the experiment.
  */
-public fun createComputeScheduler(
+public fun createPrefabComputeScheduler(
     name: ComputeSchedulerEnum,
     seeder: RandomGenerator,
     clock: InstantSource,

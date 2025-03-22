@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.base.experiment
 
-import org.opendc.experiments.base.experiment.specs.AllocationPolicySpec
+import org.opendc.experiments.base.experiment.specs.allocation.AllocationPolicySpec
 import org.opendc.experiments.base.experiment.specs.CheckpointModelSpec
 import org.opendc.experiments.base.experiment.specs.ExportModelSpec
 import org.opendc.experiments.base.experiment.specs.FailureModelSpec

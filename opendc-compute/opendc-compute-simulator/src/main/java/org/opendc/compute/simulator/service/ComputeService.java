@@ -413,7 +413,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         long now = clock.millis();
         SchedulingRequest request = new SchedulingRequest(task, now);
 
-        task.launchedAt = Instant.ofEpochMilli(now);
+        task.scheduledAt = Instant.ofEpochMilli(now);
         taskQueue.add(request);
         tasksPending++;
         requestSchedulingCycle();

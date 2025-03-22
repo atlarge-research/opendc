@@ -76,19 +76,14 @@ public interface TaskTableReader : Exportable {
     public val provisionTime: Instant?
 
     /**
-     * The [Instant] at which the task booted relative to the start of the workload.
+     * The [Instant] at which the task was scheduled relative to the start of the workload.
      */
-    public val bootTime: Instant?
+    public val scheduleTime: Instant?
 
     /**
-     * The [Instant] at which the task booted.
+     * The [Instant] at which the task was submitted relative to the start of the workload.
      */
-    public val bootTimeAbsolute: Instant?
-
-    /**
-     * The [Instant] at which the task booted relative to the start of the workload.
-     */
-    public val creationTime: Instant?
+    public val submissionTime: Instant?
 
     /**
      * The [Instant] at which the task booted relative to the start of the workload.
