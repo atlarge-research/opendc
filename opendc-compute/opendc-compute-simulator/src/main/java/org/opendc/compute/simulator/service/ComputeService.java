@@ -407,14 +407,32 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     /**
      * Enqueue the specified [task] to be scheduled onto a host.
      */
+
     SchedulingRequest schedule(ServiceTask task) {
+        return schedule(task, false);
+    }
+
+    SchedulingRequest schedule(ServiceTask task, boolean atFront) {
         LOGGER.debug("Enqueueing task {} to be assigned to host", task.getUid());
+
+        if (task.getNumFailures() >= maxNumFailures) {
+            LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
+
+            tasksTerminated++;
+            task.setState(TaskState.TERMINATED);
+
+            this.setTaskToBeRemoved(task);
+            return null;
+        }
 
         long now = clock.millis();
         SchedulingRequest request = new SchedulingRequest(task, now);
 
-        task.scheduledAt = Instant.ofEpochMilli(now);
-        taskQueue.add(request);
+        if (atFront) {
+            taskQueue.addFirst(request);
+        } else {
+            taskQueue.add(request);
+        }
         tasksPending++;
         requestSchedulingCycle();
         return request;
@@ -473,18 +491,18 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
             final ServiceFlavor flavor = task.getFlavor();
 
-            if (task.getNumFailures() >= maxNumFailures) {
-                LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
-
-                taskQueue.remove(req);
-                tasksPending--;
-                tasksTerminated++;
-                task.setState(TaskState.TERMINATED);
-
-                scheduler.removeTask(task, hv);
-                this.setTaskToBeRemoved(task);
-                continue;
-            }
+//            if (task.getNumFailures() >= maxNumFailures) {
+//                LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
+//
+//                taskQueue.remove(req);
+//                tasksPending--;
+//                tasksTerminated++;
+//                task.setState(TaskState.TERMINATED);
+//
+//                scheduler.removeTask(task, hv);
+//                this.setTaskToBeRemoved(task);
+//                continue;
+//            }
 
             if (result.getResultType() == SchedulingResultType.FAILURE) {
                 LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);
@@ -516,6 +534,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
             try {
                 task.host = host;
+                task.scheduledAt = clock.instant();
 
                 host.spawn(task);
 

@@ -28,6 +28,6 @@ public data class BatterySpec(
     val chargingSpeed: Double,
     val batteryPolicy: BatteryPolicyJSONSpec,
     val initialCharge: Double,
-    val embodiedCarbon: Double,
-    val expectedLifetime: Double,
+    val embodiedCarbon: Double = 1000.0,
+    val expectedLifetime: Double = 10.0,
 )

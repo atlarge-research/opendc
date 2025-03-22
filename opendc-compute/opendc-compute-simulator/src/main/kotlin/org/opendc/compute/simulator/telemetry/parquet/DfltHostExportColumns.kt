@@ -154,6 +154,11 @@ public object DfltHostExportColumns {
             field = Types.required(FLOAT).named("energy_usage"),
         ) { it.energyUsage }
 
+    public val EMBODIED_CARBON: ExportColumn<HostTableReader> =
+        ExportColumn(
+            field = Types.required(FLOAT).named("embodied_carbon"),
+        ) { it.embodiedCarbon }
+
     public val UP_TIME: ExportColumn<HostTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("uptime"),

@@ -59,6 +59,8 @@ public class SimHost(
     private val engine: FlowEngine,
     private val machineModel: MachineModel,
     private val cpuPowerModel: CpuPowerModel,
+    private val embodiedCarbon: Double,
+    private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
 ) : AutoCloseable {
     /**
@@ -109,6 +111,8 @@ public class SimHost(
     private var bootTime: Instant? = null
     private val cpuLimit = machineModel.cpuModel.totalCapacity
 
+    private var embodiedCarbonRate: Double = 0.0;
+
     init {
         launch()
     }
@@ -117,6 +121,10 @@ public class SimHost(
      * Launch the hypervisor.
      */
     private fun launch() {
+        this.embodiedCarbonRate =
+            (this.embodiedCarbon * 1000) / (this.expectedLifetime * 365.0 * 24.0 * 60.0 * 60.0 * 1000.0)
+
+
         bootTime = this.clock.instant()
         hostState = HostState.UP
 
@@ -264,6 +272,8 @@ public class SimHost(
     }
 
     public fun getSystemStats(): HostSystemStats {
+        val now = clock.millis()
+        val duration = now - lastReport
         updateUptime()
         this.simMachine!!.psu.updateCounters()
 
@@ -293,6 +303,7 @@ public class SimHost(
             bootTime,
             simMachine!!.psu.powerDraw,
             simMachine!!.psu.energyUsage,
+            embodiedCarbonRate* duration,
             terminated,
             running,
             failed,

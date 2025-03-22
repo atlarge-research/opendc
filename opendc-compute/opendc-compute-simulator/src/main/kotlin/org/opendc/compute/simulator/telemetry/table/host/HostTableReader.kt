@@ -123,6 +123,11 @@ public interface HostTableReader : Exportable {
     public val energyUsage: Double
 
     /**
+     * The embodied carbon emitted since the last sample in gram.
+     */
+    public val embodiedCarbon: Double
+
+    /**
      * The uptime of the host since last time in ms.
      */
     public val uptime: Long

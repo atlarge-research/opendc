@@ -90,6 +90,7 @@ fun createTestTask(
             checkpointDuration,
             checkpointIntervalScaling,
             scalingPolicy,
+            name
         ),
     )
 }

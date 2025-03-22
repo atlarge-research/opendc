@@ -93,7 +93,7 @@ public class ComputeWorkloadLoader(
                 val builder =
                     fragments.computeIfAbsent(
                         id,
-                    ) { Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy) }
+                    ) { Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, id) }
                 builder.add(durationMs, cpuUsage, cores)
             }
 
@@ -202,6 +202,7 @@ public class ComputeWorkloadLoader(
         checkpointDuration: Long,
         checkpointIntervalScaling: Double,
         scalingPolicy: ScalingPolicy,
+        taskName: String,
     ) {
         /**
          * The total load of the trace.
@@ -211,7 +212,7 @@ public class ComputeWorkloadLoader(
         /**
          * The internal builder for the trace.
          */
-        private val builder = TraceWorkload.builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy)
+        private val builder = TraceWorkload.builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, taskName)
 
         /**
          * Add a fragment to the trace.

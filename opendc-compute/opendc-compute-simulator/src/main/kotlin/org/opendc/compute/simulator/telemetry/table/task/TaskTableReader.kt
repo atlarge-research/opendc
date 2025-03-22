@@ -71,9 +71,9 @@ public interface TaskTableReader : Exportable {
     public val downtime: Long
 
     /**
-     * The [Instant] at which the task was enqueued for the scheduler.
+     * The number of times the task has been kicked from a host due to failures
      */
-    public val provisionTime: Instant?
+    public val numFailures: Int
 
     /**
      * The [Instant] at which the task was scheduled relative to the start of the workload.
@@ -86,7 +86,7 @@ public interface TaskTableReader : Exportable {
     public val submissionTime: Instant?
 
     /**
-     * The [Instant] at which the task booted relative to the start of the workload.
+     * The [Instant] at which the task finished relative to the start of the workload.
      */
     public val finishTime: Instant?
 
