@@ -62,6 +62,9 @@ public data class TimeShiftAllocationPolicySpec(
     val windowSize: Int = 168,
     val subsetSize: Int = 1,
     val peakShift: Boolean = true,
+    val forecast: Boolean = true,
+    val forecastThreshold: Double = 0.35,
+    val forecastSize: Int = 24,
 ) : AllocationPolicySpec
 
 public fun createComputeScheduler(
@@ -79,7 +82,10 @@ public fun createComputeScheduler(
         is TimeShiftAllocationPolicySpec -> {
             val filters = spec.filters.map { createHostFilter(it) }
             val weighers = spec.weighers.map { createHostWeigher(it) }
-            TimeshiftScheduler(filters, weighers, spec.windowSize, clock, spec.subsetSize, spec.peakShift, seeder)
+            TimeshiftScheduler(
+                filters, weighers, spec.windowSize, clock, spec.subsetSize, spec.peakShift,
+                spec.forecast, spec.forecastThreshold, spec.forecastSize, seeder,
+            )
         }
     }
 }

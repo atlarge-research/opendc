@@ -34,6 +34,7 @@ import java.util.LinkedList
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 public class TimeshiftScheduler(
     private val filters: List<HostFilter>,
@@ -42,6 +43,9 @@ public class TimeshiftScheduler(
     private val clock: InstantSource,
     private val subsetSize: Int = 1,
     private val peakShift: Boolean = true,
+    private val forecast: Boolean = true,
+    private val forecastThreshold: Double = 0.35,
+    private val forecastSize: Int = 24,
     private val random: RandomGenerator = SplittableRandom(0),
 ) : ComputeScheduler, CarbonReceiver {
     /**
@@ -56,6 +60,7 @@ public class TimeshiftScheduler(
     private val pastCarbonIntensities = LinkedList<Double>()
     private var carbonRunningSum = 0.0
     private var isLowCarbon = false
+    private var carbonModel: CarbonModel? = null
 
     override fun addHost(host: HostView) {
         hosts.add(host)
@@ -143,6 +148,20 @@ public class TimeshiftScheduler(
     ) {}
 
     override fun updateCarbonIntensity(newCarbonIntensity: Double) {
+        if (!forecast) {
+            noForecastUpdateCarbonIntensity(newCarbonIntensity)
+            return
+        }
+
+        val forecast = carbonModel!!.getForecast(forecastSize)
+        val forecastSize = forecast.size
+        val quantileIndex = (forecastSize * forecastThreshold).roundToInt()
+        val thresholdCarbonIntensity = forecast.sorted()[quantileIndex]
+
+        isLowCarbon = newCarbonIntensity < thresholdCarbonIntensity
+    }
+
+    private fun noForecastUpdateCarbonIntensity(newCarbonIntensity: Double) {
         val previousCarbonIntensity =
             if (this.pastCarbonIntensities.isEmpty()) {
                 0.0
@@ -162,17 +181,13 @@ public class TimeshiftScheduler(
             return
         }
 
-        isLowCarbon = (
-            (newCarbonIntensity < thresholdCarbonIntensity) &&
-                (newCarbonIntensity > previousCarbonIntensity)
-        ) ||
-            (
-                (newCarbonIntensity < 1.2 * thresholdCarbonIntensity) &&
-                    isLowCarbon
-            )
+        isLowCarbon = (newCarbonIntensity < thresholdCarbonIntensity) &&
+            (newCarbonIntensity > previousCarbonIntensity)
     }
 
-    override fun setCarbonModel(carbonModel: CarbonModel?) {}
+    override fun setCarbonModel(carbonModel: CarbonModel?) {
+        this.carbonModel = carbonModel
+    }
 
     override fun removeCarbonModel(carbonModel: CarbonModel?) {}
 }

@@ -133,6 +133,12 @@ public class CarbonModel extends FlowNode {
         receiver.updateCarbonIntensity(this.current_fragment.getCarbonIntensity());
     }
 
+    public double[] getForecast(int forecastSize) {
+        return this.fragments.subList(this.fragment_index + 1, this.fragment_index + forecastSize).stream()
+                .mapToDouble(CarbonFragment::getCarbonIntensity)
+                .toArray();
+    }
+
     public static <T, U> List<U> castList(List<T> list, Class<U> clazz) {
         List<U> result = new ArrayList<>();
         for (T element : list) {
