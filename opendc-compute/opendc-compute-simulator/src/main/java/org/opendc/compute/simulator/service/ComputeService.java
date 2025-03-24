@@ -23,7 +23,6 @@
 package org.opendc.compute.simulator.service;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.InstantSource;
 import java.time.temporal.TemporalAmount;
 import java.util.ArrayDeque;
@@ -128,6 +127,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     /**
      * The active tasks in the system.
+     * TODO: this is not doing anything, maybe delete it?
      */
     private final Map<ServiceTask, SimHost> completedTasks = new HashMap<>();
 
@@ -407,7 +407,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     /**
      * Enqueue the specified [task] to be scheduled onto a host.
      */
-
     SchedulingRequest schedule(ServiceTask task) {
         return schedule(task, false);
     }
@@ -491,18 +490,19 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
             final ServiceFlavor flavor = task.getFlavor();
 
-//            if (task.getNumFailures() >= maxNumFailures) {
-//                LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
-//
-//                taskQueue.remove(req);
-//                tasksPending--;
-//                tasksTerminated++;
-//                task.setState(TaskState.TERMINATED);
-//
-//                scheduler.removeTask(task, hv);
-//                this.setTaskToBeRemoved(task);
-//                continue;
-//            }
+            //            if (task.getNumFailures() >= maxNumFailures) {
+            //                LOGGER.warn("task {} has been terminated because it failed {} times", task,
+            // task.getNumFailures());
+            //
+            //                taskQueue.remove(req);
+            //                tasksPending--;
+            //                tasksTerminated++;
+            //                task.setState(TaskState.TERMINATED);
+            //
+            //                scheduler.removeTask(task, hv);
+            //                this.setTaskToBeRemoved(task);
+            //                continue;
+            //            }
 
             if (result.getResultType() == SchedulingResultType.FAILURE) {
                 LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);

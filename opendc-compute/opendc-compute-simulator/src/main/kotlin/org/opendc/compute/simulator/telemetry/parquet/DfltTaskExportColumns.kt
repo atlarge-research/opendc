@@ -165,6 +165,6 @@ public object DfltTaskExportColumns {
             TIMESTAMP_ABS,
             TIMESTAMP,
             TASK_ID,
-            TASK_NAME
+            TASK_NAME,
         )
 }

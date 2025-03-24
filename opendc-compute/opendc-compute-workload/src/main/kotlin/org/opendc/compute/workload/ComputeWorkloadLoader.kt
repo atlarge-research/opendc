@@ -49,7 +49,6 @@ import kotlin.math.roundToLong
 /**
  * A helper class for loading compute workload traces into memory.
  *
- * @param baseDir The directory containing the traces.
  */
 public class ComputeWorkloadLoader(
     private val pathToFile: File,
@@ -212,7 +211,14 @@ public class ComputeWorkloadLoader(
         /**
          * The internal builder for the trace.
          */
-        private val builder = TraceWorkload.builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, taskName)
+        private val builder =
+            TraceWorkload.builder(
+                checkpointInterval,
+                checkpointDuration,
+                checkpointIntervalScaling,
+                scalingPolicy,
+                taskName,
+            )
 
         /**
          * Add a fragment to the trace.

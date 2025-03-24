@@ -46,7 +46,6 @@ import java.time.InstantSource
  *
  * @param name The name of the host.
  * @param clock The (virtual) clock used to track time.
- * @param graph The Flow Graph that the Host is part of
  * @param machineModel The static model of the host
  * @param cpuPowerModel The power model of the host
  * @param powerDistributor The power distributor to which the host is connected
@@ -111,7 +110,7 @@ public class SimHost(
     private var bootTime: Instant? = null
     private val cpuLimit = machineModel.cpuModel.totalCapacity
 
-    private var embodiedCarbonRate: Double = 0.0;
+    private var embodiedCarbonRate: Double = 0.0
 
     init {
         launch()
@@ -123,7 +122,6 @@ public class SimHost(
     private fun launch() {
         this.embodiedCarbonRate =
             (this.embodiedCarbon * 1000) / (this.expectedLifetime * 365.0 * 24.0 * 60.0 * 60.0 * 1000.0)
-
 
         bootTime = this.clock.instant()
         hostState = HostState.UP
@@ -277,7 +275,7 @@ public class SimHost(
         updateUptime()
         this.simMachine!!.psu.updateCounters()
 
-        var terminated = 0
+        val terminated = 0
         var running = 0
         var failed = 0
         var invalid = 0
@@ -303,7 +301,7 @@ public class SimHost(
             bootTime,
             simMachine!!.psu.powerDraw,
             simMachine!!.psu.energyUsage,
-            embodiedCarbonRate* duration,
+            embodiedCarbonRate * duration,
             terminated,
             running,
             failed,
