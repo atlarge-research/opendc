@@ -52,6 +52,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
     private final ScalingPolicy scalingPolicy;
 
+    private final String taskName;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,6 +93,9 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.scalingPolicy = workload.getScalingPolicy();
         this.remainingFragments = new LinkedList<>(workload.getFragments());
         this.fragmentIndex = 0;
+        this.taskName = workload.getTaskName();
+
+        this.startOfFragment = this.clock.millis();
 
         new FlowEdge(this, supplier);
     }

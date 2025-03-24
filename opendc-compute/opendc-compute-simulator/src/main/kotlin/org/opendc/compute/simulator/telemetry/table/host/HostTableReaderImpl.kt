@@ -59,6 +59,7 @@ public class HostTableReaderImpl(
         _cpuLostTime = table.cpuLostTime
         _powerDraw = table.powerDraw
         _energyUsage = table.energyUsage
+        _embodiedCarbon = table.embodiedCarbon
         _uptime = table.uptime
         _downtime = table.downtime
         _bootTime = table.bootTime
@@ -143,6 +144,10 @@ public class HostTableReaderImpl(
     private var _energyUsage = 0.0
     private var previousEnergyUsage = 0.0
 
+    override val embodiedCarbon: Double
+        get() = _embodiedCarbon
+    private var _embodiedCarbon = 0.0
+
     override val uptime: Long
         get() = _uptime - previousUptime
     private var _uptime = 0L
@@ -181,6 +186,7 @@ public class HostTableReaderImpl(
         _cpuLostTime = hostCpuStats.lostTime
         _powerDraw = hostSysStats.powerDraw
         _energyUsage = hostSysStats.energyUsage
+        _embodiedCarbon = hostSysStats.embodiedCarbon
         _uptime = hostSysStats.uptime.toMillis()
         _downtime = hostSysStats.downtime.toMillis()
         _bootTime = hostSysStats.bootTime
@@ -212,5 +218,6 @@ public class HostTableReaderImpl(
 
         _powerDraw = 0.0
         _energyUsage = 0.0
+        _embodiedCarbon = 0.0
     }
 }

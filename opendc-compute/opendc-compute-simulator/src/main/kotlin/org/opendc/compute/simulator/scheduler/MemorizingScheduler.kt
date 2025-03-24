@@ -40,7 +40,7 @@ public class MemorizingScheduler(
 ) : ComputeScheduler {
     // We assume that there will be max 200 tasks per host.
     // The index of a host list is the number of tasks on that host.
-    private val hostsQueue = List(200, { mutableListOf<HostView>() })
+    private val hostsQueue = List(20000, { mutableListOf<HostView>() })
     private var minAvailableHost = 0
     private var numHosts = 0
 

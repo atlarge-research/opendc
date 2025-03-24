@@ -133,6 +133,8 @@ public class HostsProvisioningStep internal constructor(
                         engine,
                         hostSpec.model,
                         hostSpec.cpuPowerModel,
+                        hostSpec.embodiedCarbon,
+                        hostSpec.expectedLifetime,
                         hostDistributor,
                     )
 

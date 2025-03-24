@@ -39,6 +39,12 @@ public class TraceWorkload implements Workload {
     private final double maxCpuDemand;
     private final int maxCoreCount;
 
+    public String getTaskName() {
+        return taskName;
+    }
+
+    private final String taskName;
+
     public ScalingPolicy getScalingPolicy() {
         return scalingPolicy;
     }
@@ -50,12 +56,14 @@ public class TraceWorkload implements Workload {
             long checkpointInterval,
             long checkpointDuration,
             double checkpointIntervalScaling,
-            ScalingPolicy scalingPolicy) {
+            ScalingPolicy scalingPolicy,
+            String taskName) {
         this.fragments = fragments;
         this.checkpointInterval = checkpointInterval;
         this.checkpointDuration = checkpointDuration;
         this.checkpointIntervalScaling = checkpointIntervalScaling;
         this.scalingPolicy = scalingPolicy;
+        this.taskName = taskName;
 
         // TODO: remove if we decide not to use it.
         this.maxCpuDemand = fragments.stream()
@@ -120,8 +128,9 @@ public class TraceWorkload implements Workload {
             long checkpointInterval,
             long checkpointDuration,
             double checkpointIntervalScaling,
-            ScalingPolicy scalingPolicy) {
-        return new Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy);
+            ScalingPolicy scalingPolicy,
+            String taskName) {
+        return new Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, taskName);
     }
 
     public static final class Builder {
@@ -130,6 +139,7 @@ public class TraceWorkload implements Workload {
         private final long checkpointDuration;
         private final double checkpointIntervalScaling;
         private final ScalingPolicy scalingPolicy;
+        private final String taskName;
 
         /**
          * Construct a new {@link Builder} instance.
@@ -138,12 +148,14 @@ public class TraceWorkload implements Workload {
                 long checkpointInterval,
                 long checkpointDuration,
                 double checkpointIntervalScaling,
-                ScalingPolicy scalingPolicy) {
+                ScalingPolicy scalingPolicy,
+                String taskName) {
             this.fragments = new ArrayList<>();
             this.checkpointInterval = checkpointInterval;
             this.checkpointDuration = checkpointDuration;
             this.checkpointIntervalScaling = checkpointIntervalScaling;
             this.scalingPolicy = scalingPolicy;
+            this.taskName = taskName;
         }
 
         /**
@@ -166,7 +178,8 @@ public class TraceWorkload implements Workload {
                     this.checkpointInterval,
                     this.checkpointDuration,
                     this.checkpointIntervalScaling,
-                    this.scalingPolicy);
+                    this.scalingPolicy,
+                    this.taskName);
         }
     }
 }

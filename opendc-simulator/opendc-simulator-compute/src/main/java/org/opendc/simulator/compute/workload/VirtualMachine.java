@@ -194,7 +194,6 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         }
 
         this.closeNode();
-
         if (this.completion != null) {
             this.completion.accept(stopWorkloadCause);
             this.completion = null;

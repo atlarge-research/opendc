@@ -185,7 +185,7 @@ public class ServiceTask {
             case FAILED:
                 LOGGER.info("User requested to start task after failure {}", uid);
                 setState(TaskState.PROVISIONING);
-                request = service.schedule(this);
+                request = service.schedule(this, true);
                 break;
         }
     }

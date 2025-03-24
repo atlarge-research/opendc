@@ -64,7 +64,7 @@ public class TaskTableReaderImpl(
         _cpuLostTime = table.cpuLostTime
         _uptime = table.uptime
         _downtime = table.downtime
-        _provisionTime = table.provisionTime
+        _numFailures = table.numFailures
         _scheduleTime = table.scheduleTime
 
         _submissionTime = table.submissionTime
@@ -110,17 +110,17 @@ public class TaskTableReaderImpl(
     private var _downtime: Long = 0
     private var previousDowntime = 0L
 
-    override val provisionTime: Instant?
-        get() = _provisionTime
-    private var _provisionTime: Instant? = null
-
-    override val scheduleTime: Instant?
-        get() = _scheduleTime
-    private var _scheduleTime: Instant? = null
+    override val numFailures: Int
+        get() = _numFailures
+    private var _numFailures = 0
 
     override val submissionTime: Instant?
         get() = _submissionTime
     private var _submissionTime: Instant? = null
+
+    override val scheduleTime: Instant?
+        get() = _scheduleTime
+    private var _scheduleTime: Instant? = null
 
     override val finishTime: Instant?
         get() = _finishTime
@@ -195,9 +195,10 @@ public class TaskTableReaderImpl(
         _cpuLostTime = cpuStats?.lostTime ?: _cpuLostTime
         _uptime = sysStats?.uptime?.toMillis() ?: _uptime
         _downtime = sysStats?.downtime?.toMillis() ?: _downtime
-        _provisionTime = task.scheduledAt
-        _scheduleTime = sysStats?.bootTime ?: _scheduleTime
+
+        _numFailures = task.numFailures
         _submissionTime = task.submittedAt
+        _scheduleTime = task.scheduledAt
         _finishTime = task.finishedAt
 
         _taskState = task.state
