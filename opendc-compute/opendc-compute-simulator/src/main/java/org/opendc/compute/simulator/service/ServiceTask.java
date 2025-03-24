@@ -56,12 +56,12 @@ public class ServiceTask {
     private ServiceFlavor flavor;
     public Workload workload;
 
-    private Map<String, ?> meta; // TODO: remove this
+    private final Map<String, ?> meta; // TODO: remove this
 
     private final List<TaskWatcher> watchers = new ArrayList<>();
     private TaskState state = TaskState.CREATED;
-    Instant launchedAt = null;
-    Instant createdAt;
+    Instant scheduledAt = null;
+    Instant submittedAt;
     Instant finishedAt;
     SimHost host = null;
     private SchedulingRequest request = null;
@@ -88,7 +88,7 @@ public class ServiceTask {
         this.workload = workload;
         this.meta = meta;
 
-        this.createdAt = this.service.getClock().instant();
+        this.submittedAt = this.service.getClock().instant();
     }
 
     @NotNull
@@ -136,13 +136,13 @@ public class ServiceTask {
     }
 
     @Nullable
-    public Instant getLaunchedAt() {
-        return launchedAt;
+    public Instant getScheduledAt() {
+        return scheduledAt;
     }
 
     @Nullable
-    public Instant getCreatedAt() {
-        return createdAt;
+    public Instant getSubmittedAt() {
+        return submittedAt;
     }
 
     @Nullable

@@ -29,7 +29,7 @@ import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
-import org.opendc.compute.simulator.scheduler.createComputeScheduler
+import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
@@ -279,7 +279,7 @@ public class OpenDCRunner(
                     provisioner.runSteps(
                         setupComputeService(
                             serviceDomain,
-                            { createComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong()), timeSource) },
+                            { createPrefabComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong()), timeSource) },
                         ),
                         registerComputeMonitor(serviceDomain, monitor),
                         setupHosts(serviceDomain, topology, listOf(), startTime),
