@@ -214,9 +214,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 }
 
                 if (task.getState() == TaskState.COMPLETED || task.getState() == TaskState.TERMINATED) {
-                    scheduler.removeTask(task, hv);
                     setTaskToBeRemoved(task);
                 }
+
+                scheduler.removeTask(task, hv);
 
                 // Try to reschedule if needed
                 requestSchedulingCycle();
