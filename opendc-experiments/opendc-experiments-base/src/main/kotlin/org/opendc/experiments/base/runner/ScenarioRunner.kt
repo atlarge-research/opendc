@@ -28,6 +28,7 @@ import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
+import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.telemetry.parquet.ParquetComputeMonitor
 import org.opendc.compute.topology.clusterTopology
@@ -35,6 +36,7 @@ import org.opendc.experiments.base.experiment.Scenario
 import org.opendc.experiments.base.experiment.specs.allocation.createComputeScheduler
 import org.opendc.experiments.base.experiment.specs.getScalingPolicy
 import org.opendc.experiments.base.experiment.specs.getWorkloadLoader
+import org.opendc.simulator.compute.power.CarbonModel
 import org.opendc.simulator.compute.power.CarbonReceiver
 import org.opendc.simulator.kotlin.runSimulation
 import java.io.File
@@ -100,7 +102,6 @@ public fun runScenario(
             val startTimeLong = workload.minOf { it.submissionTime }
             val startTime = Duration.ofMillis(startTimeLong)
 
-            val carbonReceivers = mutableListOf<CarbonReceiver>()
             val topology = clusterTopology(scenario.topologySpec.pathToFile)
             provisioner.runSteps(
                 setupComputeService(
@@ -113,15 +114,13 @@ public fun runScenario(
                                 timeSource,
                             )
 
-                        if (computeScheduler is CarbonReceiver) {
-                            carbonReceivers.add(computeScheduler)
-                        }
+                        provisioner.registry.register(serviceDomain, ComputeScheduler::class.java, computeScheduler)
 
                         return@setupComputeService computeScheduler
                     },
                     maxNumFailures = scenario.maxNumFailures,
                 ),
-                setupHosts(serviceDomain, topology, carbonReceivers, startTimeLong),
+                setupHosts(serviceDomain, topology, startTimeLong),
             )
 
             addExportModel(provisioner, serviceDomain, scenario, seed, startTime, scenario.id)
@@ -129,6 +128,13 @@ public fun runScenario(
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
             service.setTasksExpected(workload.size)
             service.setMetricReader(provisioner.getMonitor())
+
+            val carbonModel = provisioner.registry.resolve(serviceDomain, CarbonModel::class.java)!!
+            val computeScheduler = provisioner.registry.resolve(serviceDomain, ComputeScheduler::class.java)!!
+            if (computeScheduler is CarbonReceiver) {
+                carbonModel.addReceiver(computeScheduler)
+            }
+            carbonModel.addReceiver(service)
 
             service.replay(
                 timeSource,

@@ -85,8 +85,7 @@ public fun registerComputeMonitor(
 public fun setupHosts(
     serviceDomain: String,
     specs: List<ClusterSpec>,
-    carbonReceivers: List<CarbonReceiver>,
     startTime: Long = 0L,
 ): ProvisioningStep {
-    return HostsProvisioningStep(serviceDomain, specs, carbonReceivers, startTime)
+    return HostsProvisioningStep(serviceDomain, specs, startTime)
 }
