@@ -46,9 +46,9 @@ public class TimeshiftScheduler(
     private val windowSize: Int,
     private val clock: InstantSource,
     private val subsetSize: Int = 1,
-    private val peakShift: Boolean = true,
     private val forecast: Boolean = true,
-    private val forecastThreshold: Double = 0.35,
+    private val shortForecastThreshold: Double = 0.2,
+    private val longForecastThreshold: Double = 0.35,
     private val forecastSize: Int = 24,
     private val random: RandomGenerator = SplittableRandom(0),
 ) : ComputeScheduler, CarbonReceiver {
@@ -63,7 +63,8 @@ public class TimeshiftScheduler(
 
     private val pastCarbonIntensities = LinkedList<Double>()
     private var carbonRunningSum = 0.0
-    private var isLowCarbon = false
+    private var shortLowCarbon = false // Low carbon regime for short tasks (< 2 hours)
+    private var longLowCarbon = false // Low carbon regime for long tasks (>= hours)
     private var carbonModel: CarbonModel? = null
 
     override fun addHost(host: HostView) {
@@ -84,8 +85,16 @@ public class TimeshiftScheduler(
 
             val task = req.task
 
-            if (!isLowCarbon) {
-                if (task.nature.deferrable) {
+            /**
+             If we are not in a low carbon regime, delay tasks.
+             Only delay tasks if they are deferrable and it doesn't violate the deadline.
+             Separate delay thresholds for short and long tasks.
+             */
+            if (task.nature.deferrable) {
+                val durInHours = task.duration.toHours()
+                if ((durInHours < 2 && !shortLowCarbon) ||
+                    (durInHours >= 2 && !longLowCarbon)
+                ) {
                     val currentTime = clock.instant()
                     val estimatedCompletion = currentTime.plus(task.duration)
                     val deadline = Instant.ofEpochMilli(task.deadline)
@@ -151,6 +160,10 @@ public class TimeshiftScheduler(
         host: HostView?,
     ) {}
 
+    /**
+     Compare current carbon intensity to the chosen quantile from the [forecastSize]
+     number of intensity forecasts
+     */
     override fun updateCarbonIntensity(newCarbonIntensity: Double) {
         if (!forecast) {
             noForecastUpdateCarbonIntensity(newCarbonIntensity)
@@ -159,12 +172,19 @@ public class TimeshiftScheduler(
 
         val forecast = carbonModel!!.getForecast(forecastSize)
         val forecastSize = forecast.size
-        val quantileIndex = (forecastSize * forecastThreshold).roundToInt()
-        val thresholdCarbonIntensity = forecast.sorted()[quantileIndex]
+        val shortQuantileIndex = (forecastSize * shortForecastThreshold).roundToInt()
+        val shortCarbonIntensity = forecast.sorted()[shortQuantileIndex]
+        val longQuantileIndex = (forecastSize * longForecastThreshold).roundToInt()
+        val longCarbonIntensity = forecast.sorted()[longQuantileIndex]
 
-        isLowCarbon = newCarbonIntensity < thresholdCarbonIntensity
+        shortLowCarbon = newCarbonIntensity < shortCarbonIntensity
+        longLowCarbon = newCarbonIntensity < longCarbonIntensity
     }
 
+    /**
+     Compare current carbon intensity to the moving average of the past [windowSize]
+     number of intensity updates
+     */
     private fun noForecastUpdateCarbonIntensity(newCarbonIntensity: Double) {
         val previousCarbonIntensity =
             if (this.pastCarbonIntensities.isEmpty()) {
@@ -180,13 +200,9 @@ public class TimeshiftScheduler(
 
         val thresholdCarbonIntensity = this.carbonRunningSum / this.pastCarbonIntensities.size
 
-        if (!peakShift) {
-            isLowCarbon = newCarbonIntensity < thresholdCarbonIntensity
-            return
-        }
-
-        isLowCarbon = (newCarbonIntensity < thresholdCarbonIntensity) &&
+        shortLowCarbon = (newCarbonIntensity < thresholdCarbonIntensity) &&
             (newCarbonIntensity > previousCarbonIntensity)
+        longLowCarbon = (newCarbonIntensity < thresholdCarbonIntensity)
     }
 
     override fun setCarbonModel(carbonModel: CarbonModel?) {

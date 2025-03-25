@@ -136,7 +136,6 @@ public fun createPrefabComputeScheduler(
                 weighers = listOf(RamWeigher(multiplier = 1.0)),
                 windowSize = 168,
                 clock = clock,
-                peakShift = false,
                 random = SplittableRandom(seeder.nextLong()),
             )
     }

@@ -44,7 +44,7 @@ class TimeshiftSchedulerTest {
                 weighers = emptyList(),
                 windowSize = 2,
                 clock = clock,
-                forecast = false
+                forecast = false,
             )
 
         val req = mockk<SchedulingRequest>()
@@ -72,7 +72,7 @@ class TimeshiftSchedulerTest {
                 weighers = emptyList(),
                 windowSize = 2,
                 clock = clock,
-                forecast = false
+                forecast = false,
             )
 
         val req = mockk<SchedulingRequest>()

@@ -24,7 +24,6 @@ package org.opendc.compute.simulator.service;
 
 import java.time.Duration;
 import java.time.InstantSource;
-import java.time.temporal.TemporalAmount;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -673,7 +672,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         public ServiceTask newTask(
                 @NotNull String name,
                 @NotNull TaskNature nature,
-                @NotNull TemporalAmount duration,
+                @NotNull Duration duration,
                 @NotNull Long deadline,
                 @NotNull ServiceFlavor flavor,
                 @NotNull Workload workload,

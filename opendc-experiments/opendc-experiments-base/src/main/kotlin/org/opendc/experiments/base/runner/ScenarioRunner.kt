@@ -137,7 +137,7 @@ public fun runScenario(
             }
             carbonModel.addReceiver(service)
 
-            val taskStopper = createTaskStopper(scenario.taskStopperSpec, timeSource)
+            val taskStopper = createTaskStopper(scenario.taskStopperSpec, coroutineContext, timeSource)
             if (taskStopper != null) {
                 taskStopper.setService(service)
                 carbonModel.addReceiver(taskStopper)

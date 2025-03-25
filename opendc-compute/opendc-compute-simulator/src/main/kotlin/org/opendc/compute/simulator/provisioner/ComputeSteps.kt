@@ -29,7 +29,6 @@ import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.OutputFiles
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
-import org.opendc.simulator.compute.power.CarbonReceiver
 import java.time.Duration
 
 /**

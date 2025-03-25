@@ -22,8 +22,8 @@
 
 package org.opendc.compute.simulator.service;
 
+import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +51,7 @@ public class ServiceTask {
 
     private final String name;
     private final TaskNature nature;
-    private final TemporalAmount duration;
+    private final Duration duration;
     private final Long deadline;
     private ServiceFlavor flavor;
     public Workload workload;
@@ -73,7 +73,7 @@ public class ServiceTask {
             UUID uid,
             String name,
             TaskNature nature,
-            TemporalAmount duration,
+            Duration duration,
             Long deadline,
             ServiceFlavor flavor,
             Workload workload,
@@ -102,7 +102,7 @@ public class ServiceTask {
     }
 
     @NotNull
-    public TemporalAmount getDuration() {
+    public Duration getDuration() {
         return duration;
     }
 

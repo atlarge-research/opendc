@@ -26,7 +26,6 @@ import kotlinx.serialization.Serializable
 import org.opendc.common.logger.infoNewLine
 import org.opendc.common.logger.logger
 import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
-import org.opendc.compute.simulator.scheduler.timeshift.TaskStopper
 import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 import org.opendc.experiments.base.experiment.specs.allocation.AllocationPolicySpec
 import org.opendc.experiments.base.experiment.specs.allocation.PrefabAllocationPolicySpec
