@@ -34,6 +34,7 @@ import org.opendc.compute.simulator.telemetry.parquet.ParquetComputeMonitor
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.experiments.base.experiment.Scenario
 import org.opendc.experiments.base.experiment.specs.allocation.createComputeScheduler
+import org.opendc.experiments.base.experiment.specs.allocation.createTaskStopper
 import org.opendc.experiments.base.experiment.specs.getScalingPolicy
 import org.opendc.experiments.base.experiment.specs.getWorkloadLoader
 import org.opendc.simulator.compute.power.CarbonModel
@@ -135,6 +136,12 @@ public fun runScenario(
                 carbonModel.addReceiver(computeScheduler)
             }
             carbonModel.addReceiver(service)
+
+            val taskStopper = createTaskStopper(scenario.taskStopperSpec, timeSource)
+            if (taskStopper != null) {
+                taskStopper.setService(service)
+                carbonModel.addReceiver(taskStopper)
+            }
 
             service.replay(
                 timeSource,

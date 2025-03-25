@@ -20,8 +20,12 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.scheduler
+package org.opendc.compute.simulator.scheduler.timeshift
 
+import org.opendc.compute.simulator.scheduler.ComputeScheduler
+import org.opendc.compute.simulator.scheduler.SchedulingRequest
+import org.opendc.compute.simulator.scheduler.SchedulingResult
+import org.opendc.compute.simulator.scheduler.SchedulingResultType
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
 import org.opendc.compute.simulator.scheduler.weights.HostWeigher
 import org.opendc.compute.simulator.service.HostView

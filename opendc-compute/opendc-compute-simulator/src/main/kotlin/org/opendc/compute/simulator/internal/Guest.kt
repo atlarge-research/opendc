@@ -203,6 +203,14 @@ public class Guest(
         doStop(TaskState.FAILED)
     }
 
+    public fun pause() {
+        if (state != TaskState.RUNNING) {
+            return
+        }
+
+        doStop(TaskState.PROVISIONING)
+    }
+
     /**
      * Recover the guest if it is in an error state.
      */

@@ -27,8 +27,10 @@ import kotlinx.serialization.Serializable
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.simulator.scheduler.FilterScheduler
-import org.opendc.compute.simulator.scheduler.TimeshiftScheduler
+import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
 import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
+import org.opendc.compute.simulator.scheduler.timeshift.TaskStopper
+import org.opendc.compute.simulator.service.ComputeService
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 
@@ -65,6 +67,7 @@ public data class TimeShiftAllocationPolicySpec(
     val forecast: Boolean = true,
     val forecastThreshold: Double = 0.35,
     val forecastSize: Int = 24,
+    val taskStopper: TaskStopperSpec? = null,
 ) : AllocationPolicySpec
 
 public fun createComputeScheduler(
@@ -84,8 +87,31 @@ public fun createComputeScheduler(
             val weighers = spec.weighers.map { createHostWeigher(it) }
             TimeshiftScheduler(
                 filters, weighers, spec.windowSize, clock, spec.subsetSize, spec.peakShift,
-                spec.forecast, spec.forecastThreshold, spec.forecastSize, seeder,
+                spec.forecast, spec.forecastThreshold, spec.forecastSize, seeder
             )
         }
     }
+}
+
+@Serializable
+@SerialName("taskstopper")
+public data class TaskStopperSpec(
+    val forecast: Boolean = true,
+    val forecastThreshold: Double = 0.6,
+    val forecastSize: Int = 24,
+    val windowSize: Int = 168,
+)
+
+public fun createTaskStopper(
+    spec: TaskStopperSpec?,
+    clock: InstantSource,
+): TaskStopper? {
+    val taskStopper = if (spec != null) {
+        TaskStopper(clock, spec.forecast,
+            spec.forecastThreshold, spec.forecastSize, spec.windowSize)
+    } else {
+        null
+    }
+
+    return taskStopper
 }

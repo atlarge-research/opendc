@@ -26,9 +26,11 @@ import kotlinx.serialization.Serializable
 import org.opendc.common.logger.infoNewLine
 import org.opendc.common.logger.logger
 import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
+import org.opendc.compute.simulator.scheduler.timeshift.TaskStopper
 import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 import org.opendc.experiments.base.experiment.specs.allocation.AllocationPolicySpec
 import org.opendc.experiments.base.experiment.specs.allocation.PrefabAllocationPolicySpec
+import org.opendc.experiments.base.experiment.specs.allocation.TaskStopperSpec
 import java.util.UUID
 
 /**
@@ -61,6 +63,7 @@ public data class ExperimentSpec(
     val allocationPolicies: Set<AllocationPolicySpec> = setOf(PrefabAllocationPolicySpec(ComputeSchedulerEnum.Mem)),
     val failureModels: Set<FailureModelSpec?> = setOf(null),
     val checkpointModels: Set<CheckpointModelSpec?> = setOf(null),
+    val taskStoppers: Set<TaskStopperSpec?> = setOf(null),
 ) {
     init {
         require(runs > 0) { "The number of runs should always be positive" }
@@ -83,7 +86,8 @@ public data class ExperimentSpec(
             val allocationDiv = exportDiv * exportModels.size
             val workloadDiv = allocationDiv * allocationPolicies.size
             val topologyDiv = workloadDiv * workloads.size
-            val numScenarios = topologyDiv * topologies.size
+            val taskStopperDiv = topologyDiv * topologies.size
+            val numScenarios = taskStopperDiv * taskStoppers.size
 
             val topologyList = topologies.toList()
             val workloadList = workloads.toList()
@@ -92,6 +96,7 @@ public data class ExperimentSpec(
             val failureModelList = failureModels.toList()
             val checkpointModelList = checkpointModels.toList()
             val maxNumFailuresList = maxNumFailures.toList()
+            val taskStoppersList = taskStoppers.toList()
 
             for (i in 0 until numScenarios) {
                 yield(
@@ -106,6 +111,7 @@ public data class ExperimentSpec(
                         failureModelList[(i / failureDiv) % failureModelList.size],
                         checkpointModelList[(i / checkpointDiv) % checkpointModelList.size],
                         maxNumFailuresList[i % maxNumFailuresList.size],
+                        taskStoppersList[(i / taskStopperDiv) % taskStoppersList.size],
                     ),
                 )
             }

@@ -26,6 +26,7 @@ import kotlinx.serialization.Serializable
 import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
 import org.opendc.experiments.base.experiment.specs.allocation.AllocationPolicySpec
 import org.opendc.experiments.base.experiment.specs.allocation.PrefabAllocationPolicySpec
+import org.opendc.experiments.base.experiment.specs.allocation.TaskStopperSpec
 
 @Serializable
 public data class ScenarioSpec(
@@ -39,4 +40,5 @@ public data class ScenarioSpec(
     val failureModel: FailureModelSpec? = null,
     val checkpointModel: CheckpointModelSpec? = null,
     val maxNumFailures: Int = 10,
+    val taskStopper: TaskStopperSpec? = null,
 )
