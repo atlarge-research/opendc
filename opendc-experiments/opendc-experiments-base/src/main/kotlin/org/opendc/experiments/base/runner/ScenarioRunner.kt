@@ -33,6 +33,7 @@ import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.telemetry.parquet.ParquetComputeMonitor
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.experiments.base.experiment.Scenario
+import org.opendc.experiments.base.experiment.specs.allocation.TimeShiftAllocationPolicySpec
 import org.opendc.experiments.base.experiment.specs.allocation.createComputeScheduler
 import org.opendc.experiments.base.experiment.specs.allocation.createTaskStopper
 import org.opendc.experiments.base.experiment.specs.getScalingPolicy
@@ -137,10 +138,17 @@ public fun runScenario(
             }
             carbonModel.addReceiver(service)
 
-            val taskStopper = createTaskStopper(scenario.taskStopperSpec, coroutineContext, timeSource)
-            if (taskStopper != null) {
-                taskStopper.setService(service)
-                carbonModel.addReceiver(taskStopper)
+            if (scenario.allocationPolicySpec is TimeShiftAllocationPolicySpec) {
+                val taskStopper =
+                    createTaskStopper(
+                        scenario.allocationPolicySpec.taskStopper,
+                        coroutineContext,
+                        timeSource,
+                    )
+                if (taskStopper != null) {
+                    taskStopper.setService(service)
+                    carbonModel.addReceiver(taskStopper)
+                }
             }
 
             service.replay(

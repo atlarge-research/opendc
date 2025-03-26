@@ -28,7 +28,6 @@ import org.opendc.experiments.base.experiment.specs.FailureModelSpec
 import org.opendc.experiments.base.experiment.specs.ScenarioTopologySpec
 import org.opendc.experiments.base.experiment.specs.WorkloadSpec
 import org.opendc.experiments.base.experiment.specs.allocation.AllocationPolicySpec
-import org.opendc.experiments.base.experiment.specs.allocation.TaskStopperSpec
 
 /**
  * A data class representing a scenario for a set of experiments.
@@ -57,5 +56,4 @@ public data class Scenario(
     val failureModelSpec: FailureModelSpec?,
     val checkpointModelSpec: CheckpointModelSpec?,
     val maxNumFailures: Int = 10,
-    val taskStopperSpec: TaskStopperSpec?,
 )

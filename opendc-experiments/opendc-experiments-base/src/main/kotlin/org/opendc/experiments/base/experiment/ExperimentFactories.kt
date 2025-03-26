@@ -82,7 +82,6 @@ public fun getExperiment(experimentSpec: ExperimentSpec): List<Scenario> {
                 failureModelSpec = scenarioSpec.failureModel,
                 checkpointModelSpec = scenarioSpec.checkpointModel,
                 maxNumFailures = scenarioSpec.maxNumFailures,
-                taskStopperSpec = scenarioSpec.taskStopper,
             )
         trackScenario(scenarioSpec, outputFolder)
         scenarios.add(scenario)
