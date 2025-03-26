@@ -182,6 +182,11 @@ public class ServiceTask {
                 assert request == null : "Scheduling request already active";
                 request = service.schedule(this);
                 break;
+            case PAUSED:
+                LOGGER.info("User requested to start task after pause {}", uid);
+                setState(TaskState.PROVISIONING);
+                request = service.schedule(this, true);
+                break;
             case FAILED:
                 LOGGER.info("User requested to start task after failure {}", uid);
                 setState(TaskState.PROVISIONING);

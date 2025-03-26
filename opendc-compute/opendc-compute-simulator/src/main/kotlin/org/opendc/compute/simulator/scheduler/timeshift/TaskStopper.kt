@@ -25,6 +25,7 @@ package org.opendc.compute.simulator.scheduler.timeshift
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.opendc.compute.api.TaskState
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.simulator.compute.power.CarbonModel
 import org.opendc.simulator.compute.power.CarbonReceiver
@@ -61,10 +62,12 @@ public class TaskStopper(
             val guests = host.getGuests()
 
             val snapshots =
-                guests.map {
-                    it.virtualMachine!!.makeSnapshot(clock.millis())
-                    it.virtualMachine!!.snapshot
-                }
+                guests
+                    .filter { it.state != TaskState.COMPLETED }
+                    .map {
+                        it.virtualMachine!!.makeSnapshot(clock.millis())
+                        it.virtualMachine!!.snapshot
+                    }
             val tasks = guests.map { it.task }
             host.pauseAllTasks()
 

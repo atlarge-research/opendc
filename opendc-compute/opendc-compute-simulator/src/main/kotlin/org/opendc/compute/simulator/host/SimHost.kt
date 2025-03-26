@@ -247,26 +247,17 @@ public class SimHost(
         guest.start()
     }
 
-    public fun stop(task: ServiceTask) {
-        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
-        guest.stop()
-    }
+//    public fun stop(task: ServiceTask) {
+//        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
+//        guest.stop()
+//    }
 
     public fun delete(task: ServiceTask) {
         val guest = taskToGuestMap[task] ?: return
-        guest.delete()
 
         taskToGuestMap.remove(task)
         guests.remove(guest)
         task.host = null
-    }
-
-    public fun removeTask(task: ServiceTask) {
-        val guest = taskToGuestMap[task] ?: return
-        guest.delete()
-
-        taskToGuestMap.remove(task)
-        guests.remove(guest)
     }
 
     public fun addListener(listener: HostListener) {
@@ -292,12 +283,18 @@ public class SimHost(
         for (guest in guests) {
             when (guest.state) {
                 TaskState.RUNNING -> running++
-                TaskState.COMPLETED, TaskState.FAILED, TaskState.TERMINATED -> {
+                TaskState.FAILED, TaskState.TERMINATED -> {
                     failed++
                     // Remove guests that have been deleted
                     this.taskToGuestMap.remove(guest.task)
                     guests.remove(guest)
                 }
+                TaskState.COMPLETED -> {
+                    completed++
+                    this.taskToGuestMap.remove(guest.task)
+                    guests.remove(guest)
+                }
+                TaskState.PAUSED -> {}
                 else -> invalid++
             }
         }

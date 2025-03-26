@@ -185,7 +185,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
             task.setState(newState);
 
-            if (newState == TaskState.COMPLETED || newState == TaskState.TERMINATED || newState == TaskState.FAILED) {
+            if (newState == TaskState.COMPLETED
+                    || newState == TaskState.PAUSED
+                    || newState == TaskState.TERMINATED
+                    || newState == TaskState.FAILED) {
                 LOGGER.info("task {} {} {} finished", task.getUid(), task.getName(), task.getFlavor());
 
                 if (activeTasks.remove(task) != null) {
@@ -203,7 +206,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 }
 
                 task.setHost(null);
-                host.removeTask(task);
+                host.delete(task);
 
                 if (newState == TaskState.COMPLETED) {
                     tasksCompleted++;
