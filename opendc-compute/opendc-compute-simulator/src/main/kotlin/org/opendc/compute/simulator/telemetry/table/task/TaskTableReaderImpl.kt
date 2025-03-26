@@ -65,6 +65,7 @@ public class TaskTableReaderImpl(
         _uptime = table.uptime
         _downtime = table.downtime
         _numFailures = table.numFailures
+        _numPauses = table.numPauses
         _scheduleTime = table.scheduleTime
 
         _submissionTime = table.submissionTime
@@ -113,6 +114,10 @@ public class TaskTableReaderImpl(
     override val numFailures: Int
         get() = _numFailures
     private var _numFailures = 0
+
+    override val numPauses: Int
+        get() = _numPauses
+    private var _numPauses = 0
 
     override val submissionTime: Instant?
         get() = _submissionTime
@@ -197,6 +202,7 @@ public class TaskTableReaderImpl(
         _downtime = sysStats?.downtime?.toMillis() ?: _downtime
 
         _numFailures = task.numFailures
+        _numPauses = task.numPauses
         _submissionTime = task.submittedAt
         _scheduleTime = task.scheduledAt
         _finishTime = task.finishedAt

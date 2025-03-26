@@ -67,6 +67,7 @@ public class ServiceTask {
     private SchedulingRequest request = null;
 
     private int numFailures = 0;
+    private int numPauses = 0;
 
     ServiceTask(
             ComputeService service,
@@ -165,6 +166,10 @@ public class ServiceTask {
         return this.numFailures;
     }
 
+    public int getNumPauses() {
+        return this.numPauses;
+    }
+
     public void start() {
         switch (state) {
             case PROVISIONING:
@@ -242,6 +247,8 @@ public class ServiceTask {
         }
         if (newState == TaskState.FAILED) {
             this.numFailures++;
+        } else if (newState == TaskState.PAUSED) {
+            this.numPauses++;
         }
 
         if ((newState == TaskState.COMPLETED) || newState == TaskState.FAILED) {
