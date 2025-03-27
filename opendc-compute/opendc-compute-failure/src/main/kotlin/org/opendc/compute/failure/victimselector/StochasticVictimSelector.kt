@@ -27,6 +27,7 @@ import java.util.SplittableRandom
 import java.util.random.RandomGenerator
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * A [VictimSelector] that stochastically selects a set of hosts to be failed.
@@ -73,7 +74,7 @@ public class StochasticVictimSelector(
     ): List<SimHost> {
         // clamp value between 0.0 and 1.0
         val intensity = min(1.0, max(0.0, failureIntensity))
-        val numberOfHosts = (hosts.size * intensity).toInt()
+        val numberOfHosts = (hosts.size * intensity).roundToInt()
 
         return hosts.asSequence().shuffled().take(numberOfHosts).toList()
     }

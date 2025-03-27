@@ -29,6 +29,8 @@ import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 
+import static java.util.Collections.max;
+
 /**
  * CarbonModel used to provide the Carbon Intensity of a {@link SimPowerSource}
  * A CarbonModel is based on a list of {@link CarbonFragment} that define the carbon intensity at specific time frames.
@@ -134,7 +136,8 @@ public class CarbonModel extends FlowNode {
     }
 
     public double[] getForecast(int forecastSize) {
-        return this.fragments.subList(this.fragment_index + 1, this.fragment_index + forecastSize).stream()
+        return this.fragments.subList(Math.max(this.fragment_index + 1, this.fragments.size() - 1),
+                                      Math.max(this.fragment_index + forecastSize, this.fragments.size())).stream()
                 .mapToDouble(CarbonFragment::getCarbonIntensity)
                 .toArray();
     }
