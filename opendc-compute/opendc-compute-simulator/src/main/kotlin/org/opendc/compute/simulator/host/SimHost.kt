@@ -71,7 +71,7 @@ public class SimHost(
      * The virtual machines running on the hypervisor.
      */
     private val taskToGuestMap = HashMap<ServiceTask, Guest>()
-    private val guests = mutableListOf<Guest>()
+    private val guests = mutableSetOf<Guest>()
 
     private var hostState: HostState = HostState.DOWN
         set(value) {
@@ -151,8 +151,16 @@ public class SimHost(
         // Fail the guest and delete them
         // This weird loop is the only way I have been able to make it work.
         while (guests.size > 0) {
-            val guest = guests[0]
+            val guest = guests.first()
             guest.fail()
+            this.delete(guest.task)
+        }
+    }
+
+    public fun pauseAllTasks() {
+        while (guests.size > 0) {
+            val guest = guests.first()
+            guest.pause()
             this.delete(guest.task)
         }
     }
@@ -194,7 +202,7 @@ public class SimHost(
     }
 
     public fun getGuests(): List<Guest> {
-        return this.guests
+        return this.guests.toList()
     }
 
     public fun canFit(task: ServiceTask): Boolean {
@@ -239,26 +247,17 @@ public class SimHost(
         guest.start()
     }
 
-    public fun stop(task: ServiceTask) {
-        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
-        guest.stop()
-    }
+//    public fun stop(task: ServiceTask) {
+//        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
+//        guest.stop()
+//    }
 
     public fun delete(task: ServiceTask) {
         val guest = taskToGuestMap[task] ?: return
-        guest.delete()
 
         taskToGuestMap.remove(task)
         guests.remove(guest)
         task.host = null
-    }
-
-    public fun removeTask(task: ServiceTask) {
-        val guest = taskToGuestMap[task] ?: return
-        guest.delete()
-
-        taskToGuestMap.remove(task)
-        guests.remove(guest)
     }
 
     public fun addListener(listener: HostListener) {
@@ -281,16 +280,21 @@ public class SimHost(
         var invalid = 0
         var completed = 0
 
-        val guests = guests.listIterator()
         for (guest in guests) {
             when (guest.state) {
                 TaskState.RUNNING -> running++
-                TaskState.COMPLETED, TaskState.FAILED, TaskState.TERMINATED -> {
+                TaskState.FAILED, TaskState.TERMINATED -> {
                     failed++
                     // Remove guests that have been deleted
                     this.taskToGuestMap.remove(guest.task)
-                    guests.remove()
+                    guests.remove(guest)
                 }
+                TaskState.COMPLETED -> {
+                    completed++
+                    this.taskToGuestMap.remove(guest.task)
+                    guests.remove(guest)
+                }
+                TaskState.PAUSED -> {}
                 else -> invalid++
             }
         }
@@ -366,9 +370,8 @@ public class SimHost(
             totalDowntime += duration
         }
 
-        val guests = guests
-        for (i in guests.indices) {
-            guests[i].updateUptime()
+        for (guest in guests) {
+            guest.updateUptime()
         }
     }
 }

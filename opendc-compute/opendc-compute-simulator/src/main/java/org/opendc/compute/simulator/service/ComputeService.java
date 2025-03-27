@@ -24,7 +24,6 @@ package org.opendc.compute.simulator.service;
 
 import java.time.Duration;
 import java.time.InstantSource;
-import java.time.temporal.TemporalAmount;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -186,7 +185,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
             task.setState(newState);
 
-            if (newState == TaskState.COMPLETED || newState == TaskState.TERMINATED || newState == TaskState.FAILED) {
+            if (newState == TaskState.COMPLETED
+                    || newState == TaskState.PAUSED
+                    || newState == TaskState.TERMINATED
+                    || newState == TaskState.FAILED) {
                 LOGGER.info("task {} {} {} finished", task.getUid(), task.getName(), task.getFlavor());
 
                 if (activeTasks.remove(task) != null) {
@@ -204,7 +206,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 }
 
                 task.setHost(null);
-                host.removeTask(task);
+                host.delete(task);
 
                 if (newState == TaskState.COMPLETED) {
                     tasksCompleted++;
@@ -214,9 +216,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 }
 
                 if (task.getState() == TaskState.COMPLETED || task.getState() == TaskState.TERMINATED) {
-                    scheduler.removeTask(task, hv);
                     setTaskToBeRemoved(task);
                 }
+
+                scheduler.removeTask(task, hv);
 
                 // Try to reschedule if needed
                 requestSchedulingCycle();
@@ -672,7 +675,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         public ServiceTask newTask(
                 @NotNull String name,
                 @NotNull TaskNature nature,
-                @NotNull TemporalAmount duration,
+                @NotNull Duration duration,
                 @NotNull Long deadline,
                 @NotNull ServiceFlavor flavor,
                 @NotNull Workload workload,

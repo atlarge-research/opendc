@@ -75,6 +75,8 @@ public interface TaskTableReader : Exportable {
      */
     public val numFailures: Int
 
+    public val numPauses: Int
+
     /**
      * The [Instant] at which the task was scheduled relative to the start of the workload.
      */

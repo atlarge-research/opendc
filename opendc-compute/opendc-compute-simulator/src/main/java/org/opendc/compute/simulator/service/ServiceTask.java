@@ -22,8 +22,8 @@
 
 package org.opendc.compute.simulator.service;
 
+import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +51,7 @@ public class ServiceTask {
 
     private final String name;
     private final TaskNature nature;
-    private final TemporalAmount duration;
+    private final Duration duration;
     private final Long deadline;
     private ServiceFlavor flavor;
     public Workload workload;
@@ -67,13 +67,14 @@ public class ServiceTask {
     private SchedulingRequest request = null;
 
     private int numFailures = 0;
+    private int numPauses = 0;
 
     ServiceTask(
             ComputeService service,
             UUID uid,
             String name,
             TaskNature nature,
-            TemporalAmount duration,
+            Duration duration,
             Long deadline,
             ServiceFlavor flavor,
             Workload workload,
@@ -102,7 +103,7 @@ public class ServiceTask {
     }
 
     @NotNull
-    public TemporalAmount getDuration() {
+    public Duration getDuration() {
         return duration;
     }
 
@@ -165,6 +166,10 @@ public class ServiceTask {
         return this.numFailures;
     }
 
+    public int getNumPauses() {
+        return this.numPauses;
+    }
+
     public void start() {
         switch (state) {
             case PROVISIONING:
@@ -181,6 +186,11 @@ public class ServiceTask {
                 setState(TaskState.PROVISIONING);
                 assert request == null : "Scheduling request already active";
                 request = service.schedule(this);
+                break;
+            case PAUSED:
+                LOGGER.info("User requested to start task after pause {}", uid);
+                setState(TaskState.PROVISIONING);
+                request = service.schedule(this, true);
                 break;
             case FAILED:
                 LOGGER.info("User requested to start task after failure {}", uid);
@@ -237,6 +247,8 @@ public class ServiceTask {
         }
         if (newState == TaskState.FAILED) {
             this.numFailures++;
+        } else if (newState == TaskState.PAUSED) {
+            this.numPauses++;
         }
 
         if ((newState == TaskState.COMPLETED) || newState == TaskState.FAILED) {

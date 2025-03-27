@@ -70,7 +70,7 @@ public class Guest(
      */
     public fun start() {
         when (state) {
-            TaskState.CREATED, TaskState.FAILED -> {
+            TaskState.CREATED, TaskState.FAILED, TaskState.PAUSED -> {
                 LOGGER.info { "User requested to start task ${task.uid}" }
                 doStart()
             }
@@ -139,17 +139,17 @@ public class Guest(
         listener.onStart(this)
     }
 
-    /**
-     * Stop the guest.
-     */
-    public fun stop() {
-        when (state) {
-            TaskState.RUNNING -> doStop(TaskState.COMPLETED)
-            TaskState.FAILED -> state = TaskState.TERMINATED
-            TaskState.COMPLETED, TaskState.TERMINATED -> return
-            else -> assert(false) { "Invalid state transition" }
-        }
-    }
+//    /**
+//     * Stop the guest.
+//     */
+//    public fun stop() {
+//        when (state) {
+//            TaskState.RUNNING -> doStop(TaskState.COMPLETED)
+//            TaskState.FAILED -> state = TaskState.TERMINATED
+//            TaskState.COMPLETED, TaskState.PAUSED, TaskState.TERMINATED -> return
+//            else -> assert(false) { "Invalid state transition" }
+//        }
+//    }
 
     /**
      * Attempt to stop the task and put it into [target] state.
@@ -157,6 +157,7 @@ public class Guest(
     private fun doStop(target: TaskState) {
         assert(virtualMachine != null) { "Invalid job state" }
         val virtualMachine = this.virtualMachine ?: return
+        this.state = target
         if (target == TaskState.FAILED) {
             virtualMachine.stopWorkload(Exception("Task has failed"))
         } else {
@@ -164,8 +165,6 @@ public class Guest(
         }
 
         this.virtualMachine = null
-
-        this.state = target
     }
 
     /**
@@ -174,21 +173,24 @@ public class Guest(
     private fun onStop(target: TaskState) {
         updateUptime()
 
-        state = target
+        if (state == TaskState.RUNNING) {
+            // If state is not running, that means state has been changed already and the callback should be ignored
+            state = target
+        }
         listener.onStop(this)
     }
 
-    /**
-     * Delete the guest.
-     *
-     * This operation will stop the guest if it is running on the host and remove all resources associated with the
-     * guest.
-     */
-    public fun delete() {
-        stop()
-
-        state = TaskState.FAILED
-    }
+//    /**
+//     * Delete the guest.
+//     *
+//     * This operation will stop the guest if it is running on the host and remove all resources associated with the
+//     * guest.
+//     */
+//    public fun delete() {
+//        stop()
+//
+//        state = TaskState.FAILED
+//    }
 
     /**
      * Fail the guest if it is active.
@@ -201,6 +203,14 @@ public class Guest(
         }
 
         doStop(TaskState.FAILED)
+    }
+
+    public fun pause() {
+        if (state != TaskState.RUNNING) {
+            return
+        }
+
+        doStop(TaskState.PAUSED)
     }
 
     /**

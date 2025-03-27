@@ -27,10 +27,12 @@ import kotlinx.serialization.Serializable
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.simulator.scheduler.FilterScheduler
-import org.opendc.compute.simulator.scheduler.TimeshiftScheduler
 import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
+import org.opendc.compute.simulator.scheduler.timeshift.TaskStopper
+import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
 import java.time.InstantSource
 import java.util.random.RandomGenerator
+import kotlin.coroutines.CoroutineContext
 
 /**
  * specification describing how tasks are allocated
@@ -61,7 +63,11 @@ public data class TimeShiftAllocationPolicySpec(
     val weighers: List<HostWeigherSpec>,
     val windowSize: Int = 168,
     val subsetSize: Int = 1,
-    val peakShift: Boolean = true,
+    val forecast: Boolean = true,
+    val shortForecastThreshold: Double = 0.2,
+    val longForecastThreshold: Double = 0.35,
+    val forecastSize: Int = 24,
+    val taskStopper: TaskStopperSpec? = null,
 ) : AllocationPolicySpec
 
 public fun createComputeScheduler(
@@ -79,7 +85,41 @@ public fun createComputeScheduler(
         is TimeShiftAllocationPolicySpec -> {
             val filters = spec.filters.map { createHostFilter(it) }
             val weighers = spec.weighers.map { createHostWeigher(it) }
-            TimeshiftScheduler(filters, weighers, spec.windowSize, clock, spec.subsetSize, spec.peakShift, seeder)
+            TimeshiftScheduler(
+                filters, weighers, spec.windowSize, clock, spec.subsetSize, spec.forecast,
+                spec.shortForecastThreshold, spec.longForecastThreshold, spec.forecastSize, seeder,
+            )
         }
     }
+}
+
+@Serializable
+@SerialName("taskstopper")
+public data class TaskStopperSpec(
+    val forecast: Boolean = true,
+    val forecastThreshold: Double = 0.6,
+    val forecastSize: Int = 24,
+    val windowSize: Int = 168,
+)
+
+public fun createTaskStopper(
+    spec: TaskStopperSpec?,
+    context: CoroutineContext,
+    clock: InstantSource,
+): TaskStopper? {
+    val taskStopper =
+        if (spec != null) {
+            TaskStopper(
+                clock,
+                context,
+                spec.forecast,
+                spec.forecastThreshold,
+                spec.forecastSize,
+                spec.windowSize,
+            )
+        } else {
+            null
+        }
+
+    return taskStopper
 }

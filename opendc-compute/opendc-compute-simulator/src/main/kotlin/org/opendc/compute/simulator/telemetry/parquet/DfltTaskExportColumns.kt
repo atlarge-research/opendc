@@ -134,6 +134,11 @@ public object DfltTaskExportColumns {
             field = Types.required(INT64).named("num_failures"),
         ) { it.numFailures }
 
+    public val NUM_PAUSES: ExportColumn<TaskTableReader> =
+        ExportColumn(
+            field = Types.required(INT64).named("num_pauses"),
+        ) { it.numPauses }
+
     public val SCHEDULE_TIME: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("schedule_time"),

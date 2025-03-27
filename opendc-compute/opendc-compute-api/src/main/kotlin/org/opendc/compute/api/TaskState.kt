@@ -43,6 +43,11 @@ public enum class TaskState {
     RUNNING,
 
     /**
+     * The task was running but was stopped, maybe by the taskSTopper
+     */
+    PAUSED,
+
+    /**
      * The task is in a failed state.
      */
     FAILED,

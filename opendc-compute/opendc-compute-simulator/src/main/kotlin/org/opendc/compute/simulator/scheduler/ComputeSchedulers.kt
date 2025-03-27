@@ -27,6 +27,7 @@ package org.opendc.compute.simulator.scheduler
 import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
 import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
+import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
 import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.simulator.scheduler.weights.InstanceCountWeigher
 import org.opendc.compute.simulator.scheduler.weights.RamWeigher
@@ -135,7 +136,6 @@ public fun createPrefabComputeScheduler(
                 weighers = listOf(RamWeigher(multiplier = 1.0)),
                 windowSize = 168,
                 clock = clock,
-                peakShift = false,
                 random = SplittableRandom(seeder.nextLong()),
             )
     }
