@@ -171,10 +171,11 @@ public class TimeshiftScheduler(
         }
 
         val forecast = carbonModel!!.getForecast(forecastSize)
-        val forecastSize = forecast.size
-        val shortQuantileIndex = (forecastSize * shortForecastThreshold).roundToInt()
+        val localForecastSize = forecast.size
+
+        val shortQuantileIndex = (localForecastSize * shortForecastThreshold).roundToInt()
         val shortCarbonIntensity = forecast.sorted()[shortQuantileIndex]
-        val longQuantileIndex = (forecastSize * longForecastThreshold).roundToInt()
+        val longQuantileIndex = (localForecastSize * longForecastThreshold).roundToInt()
         val longCarbonIntensity = forecast.sorted()[longQuantileIndex]
 
         shortLowCarbon = newCarbonIntensity < shortCarbonIntensity
