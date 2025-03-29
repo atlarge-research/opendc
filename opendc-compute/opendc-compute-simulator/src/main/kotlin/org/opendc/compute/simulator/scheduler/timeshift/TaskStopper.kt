@@ -79,7 +79,9 @@ public class TaskStopper(
             isHighCarbon = noForecastUpdateCarbonIntensity(newCarbonIntensity)
         } else {
             val forecast = carbonModel!!.getForecast(forecastSize)
-            val quantileIndex = (forecastSize * forecastThreshold).roundToInt()
+
+            val localForecastSize = forecast.size
+            val quantileIndex = (localForecastSize * forecastThreshold).roundToInt()
             val thresholdCarbonIntensity = forecast.sorted()[quantileIndex]
 
             isHighCarbon = newCarbonIntensity > thresholdCarbonIntensity
