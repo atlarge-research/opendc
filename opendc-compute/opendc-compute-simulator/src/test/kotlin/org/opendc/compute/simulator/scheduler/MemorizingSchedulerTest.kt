@@ -33,8 +33,6 @@ import org.opendc.compute.simulator.host.HostModel
 import org.opendc.compute.simulator.host.HostState
 import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.service.HostView
-import java.util.Random
-import java.util.random.RandomGenerator
 
 internal class MemorizingSchedulerTest {
     @Test
@@ -57,7 +55,6 @@ internal class MemorizingSchedulerTest {
         val scheduler =
             MemorizingScheduler(
                 filters = emptyList(),
-                random = Random(1),
             )
 
         val hostA = mockk<HostView>()
@@ -84,15 +81,11 @@ internal class MemorizingSchedulerTest {
     @Test
     fun testRamFilter() {
         // Make Random with predictable order of numbers to test max skipped logic
-        val r = mockk<RandomGenerator>()
         val scheduler =
             MemorizingScheduler(
                 filters = listOf(RamFilter(1.0)),
-                random = r,
                 maxTimesSkipped = 3,
             )
-
-        every { r.nextInt(any()) } returns 0
 
         val hostA = mockk<HostView>()
         every { hostA.host.getState() } returns HostState.UP
