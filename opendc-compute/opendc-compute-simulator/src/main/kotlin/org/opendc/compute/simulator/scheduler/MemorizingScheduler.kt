@@ -25,8 +25,6 @@ package org.opendc.compute.simulator.scheduler
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
 import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
-import java.util.SplittableRandom
-import java.util.random.RandomGenerator
 
 /*
 This scheduler records the number of tasks scheduled on each host.

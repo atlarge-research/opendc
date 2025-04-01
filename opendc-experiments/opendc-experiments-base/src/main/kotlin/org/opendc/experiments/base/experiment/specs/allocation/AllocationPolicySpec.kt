@@ -88,8 +88,15 @@ public fun createComputeScheduler(
             val filters = spec.filters.map { createHostFilter(it) }
             val weighers = spec.weighers.map { createHostWeigher(it) }
             if (spec.memorize) {
-                MemorizingTimeshift(filters, spec.windowSize, clock, spec.forecast,
-                    spec.shortForecastThreshold, spec.longForecastThreshold, spec.forecastSize,)
+                MemorizingTimeshift(
+                    filters,
+                    spec.windowSize,
+                    clock,
+                    spec.forecast,
+                    spec.shortForecastThreshold,
+                    spec.longForecastThreshold,
+                    spec.forecastSize,
+                )
             } else {
                 TimeshiftScheduler(
                     filters, weighers, spec.windowSize, clock, spec.subsetSize, spec.forecast,
