@@ -31,27 +31,25 @@ import org.opendc.compute.simulator.scheduler.weights.HostWeigher
 import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.simulator.compute.power.CarbonModel
-import org.opendc.simulator.compute.power.CarbonReceiver
 import java.time.Instant
 import java.time.InstantSource
 import java.util.LinkedList
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 public class TimeshiftScheduler(
     private val filters: List<HostFilter>,
     private val weighers: List<HostWeigher>,
-    private val windowSize: Int,
-    private val clock: InstantSource,
+    override val windowSize: Int,
+    override val clock: InstantSource,
     private val subsetSize: Int = 1,
-    private val forecast: Boolean = true,
-    private val shortForecastThreshold: Double = 0.2,
-    private val longForecastThreshold: Double = 0.35,
-    private val forecastSize: Int = 24,
+    override val forecast: Boolean = true,
+    override val shortForecastThreshold: Double = 0.2,
+    override val longForecastThreshold: Double = 0.35,
+    override val forecastSize: Int = 24,
     private val random: RandomGenerator = SplittableRandom(0),
-) : ComputeScheduler, CarbonReceiver {
+) : ComputeScheduler, Timeshifter {
     /**
      * The pool of hosts available to the scheduler.
      */
@@ -61,11 +59,11 @@ public class TimeshiftScheduler(
         require(subsetSize >= 1) { "Subset size must be one or greater" }
     }
 
-    private val pastCarbonIntensities = LinkedList<Double>()
-    private var carbonRunningSum = 0.0
-    private var shortLowCarbon = false // Low carbon regime for short tasks (< 2 hours)
-    private var longLowCarbon = false // Low carbon regime for long tasks (>= hours)
-    private var carbonModel: CarbonModel? = null
+    override val pastCarbonIntensities: LinkedList<Double> = LinkedList<Double>()
+    override var carbonRunningSum: Double = 0.0
+    override var shortLowCarbon: Boolean = false // Low carbon regime for short tasks (< 2 hours)
+    override var longLowCarbon: Boolean = false // Low carbon regime for long tasks (>= hours)
+    override var carbonMod: CarbonModel? = null
 
     override fun addHost(host: HostView) {
         hosts.add(host)
@@ -159,56 +157,4 @@ public class TimeshiftScheduler(
         task: ServiceTask,
         host: HostView?,
     ) {}
-
-    /**
-     Compare current carbon intensity to the chosen quantile from the [forecastSize]
-     number of intensity forecasts
-     */
-    override fun updateCarbonIntensity(newCarbonIntensity: Double) {
-        if (!forecast) {
-            noForecastUpdateCarbonIntensity(newCarbonIntensity)
-            return
-        }
-
-        val forecast = carbonModel!!.getForecast(forecastSize)
-        val localForecastSize = forecast.size
-
-        val shortQuantileIndex = (localForecastSize * shortForecastThreshold).roundToInt()
-        val shortCarbonIntensity = forecast.sorted()[shortQuantileIndex]
-        val longQuantileIndex = (localForecastSize * longForecastThreshold).roundToInt()
-        val longCarbonIntensity = forecast.sorted()[longQuantileIndex]
-
-        shortLowCarbon = newCarbonIntensity < shortCarbonIntensity
-        longLowCarbon = newCarbonIntensity < longCarbonIntensity
-    }
-
-    /**
-     Compare current carbon intensity to the moving average of the past [windowSize]
-     number of intensity updates
-     */
-    private fun noForecastUpdateCarbonIntensity(newCarbonIntensity: Double) {
-        val previousCarbonIntensity =
-            if (this.pastCarbonIntensities.isEmpty()) {
-                0.0
-            } else {
-                this.pastCarbonIntensities.last()
-            }
-        this.pastCarbonIntensities.addLast(newCarbonIntensity)
-        this.carbonRunningSum += newCarbonIntensity
-        if (this.pastCarbonIntensities.size > this.windowSize) {
-            this.carbonRunningSum -= this.pastCarbonIntensities.removeFirst()
-        }
-
-        val thresholdCarbonIntensity = this.carbonRunningSum / this.pastCarbonIntensities.size
-
-        shortLowCarbon = (newCarbonIntensity < thresholdCarbonIntensity) &&
-            (newCarbonIntensity > previousCarbonIntensity)
-        longLowCarbon = (newCarbonIntensity < thresholdCarbonIntensity)
-    }
-
-    override fun setCarbonModel(carbonModel: CarbonModel?) {
-        this.carbonModel = carbonModel
-    }
-
-    override fun removeCarbonModel(carbonModel: CarbonModel?) {}
 }

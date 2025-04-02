@@ -120,7 +120,6 @@ public fun createPrefabComputeScheduler(
         ComputeSchedulerEnum.TaskNumMemorizing ->
             MemorizingScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-                random = SplittableRandom(seeder.nextLong()),
             )
         ComputeSchedulerEnum.Timeshift ->
             TimeshiftScheduler(

@@ -251,7 +251,7 @@ public class ServiceTask {
             this.numPauses++;
         }
 
-        if ((newState == TaskState.COMPLETED) || newState == TaskState.FAILED) {
+        if ((newState == TaskState.COMPLETED) || (newState == TaskState.FAILED) || (newState == TaskState.TERMINATED)) {
             this.finishedAt = this.service.getClock().instant();
         }
 

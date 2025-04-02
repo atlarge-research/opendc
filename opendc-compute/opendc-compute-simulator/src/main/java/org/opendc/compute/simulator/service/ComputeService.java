@@ -436,6 +436,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             taskQueue.add(request);
         }
         tasksPending++;
+
         requestSchedulingCycle();
         return request;
     }
@@ -484,7 +485,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 iterator = taskQueue.iterator()) {
             final SchedulingResult result = scheduler.select(iterator);
             if (result.getResultType() == SchedulingResultType.EMPTY) {
-
                 break;
             }
             final HostView hv = result.getHost();

@@ -28,6 +28,7 @@ import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.simulator.scheduler.FilterScheduler
 import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
+import org.opendc.compute.simulator.scheduler.timeshift.MemorizingTimeshift
 import org.opendc.compute.simulator.scheduler.timeshift.TaskStopper
 import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
 import java.time.InstantSource
@@ -68,6 +69,7 @@ public data class TimeShiftAllocationPolicySpec(
     val longForecastThreshold: Double = 0.35,
     val forecastSize: Int = 24,
     val taskStopper: TaskStopperSpec? = null,
+    val memorize: Boolean = true,
 ) : AllocationPolicySpec
 
 public fun createComputeScheduler(
@@ -85,10 +87,22 @@ public fun createComputeScheduler(
         is TimeShiftAllocationPolicySpec -> {
             val filters = spec.filters.map { createHostFilter(it) }
             val weighers = spec.weighers.map { createHostWeigher(it) }
-            TimeshiftScheduler(
-                filters, weighers, spec.windowSize, clock, spec.subsetSize, spec.forecast,
-                spec.shortForecastThreshold, spec.longForecastThreshold, spec.forecastSize, seeder,
-            )
+            if (spec.memorize) {
+                MemorizingTimeshift(
+                    filters,
+                    spec.windowSize,
+                    clock,
+                    spec.forecast,
+                    spec.shortForecastThreshold,
+                    spec.longForecastThreshold,
+                    spec.forecastSize,
+                )
+            } else {
+                TimeshiftScheduler(
+                    filters, weighers, spec.windowSize, clock, spec.subsetSize, spec.forecast,
+                    spec.shortForecastThreshold, spec.longForecastThreshold, spec.forecastSize, seeder,
+                )
+            }
         }
     }
 }
