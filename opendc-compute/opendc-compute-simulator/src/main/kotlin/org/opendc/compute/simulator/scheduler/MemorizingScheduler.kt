@@ -78,6 +78,9 @@ public class MemorizingScheduler(
             return SchedulingResult(SchedulingResultType.FAILURE)
         }
 
+        val maxIters = 10000
+        var numIters = 0
+
         var chosenList: MutableList<HostView>? = null
         var chosenHost: HostView? = null
 
@@ -86,6 +89,11 @@ public class MemorizingScheduler(
             if (req.isCancelled) {
                 iter.remove()
                 continue
+            }
+
+            numIters++
+            if (numIters > maxIters) {
+                return SchedulingResult(SchedulingResultType.EMPTY)
             }
 
             for (chosenListIndex in minAvailableHost until hostsQueue.size) {
