@@ -48,8 +48,8 @@ class FragmentScalingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1, 0.0, false),
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                     scalingPolicy = NoDelayScaling(),
                 ),
@@ -61,8 +61,8 @@ class FragmentScalingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1, 0.0, false),
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                     scalingPolicy = PerfectScaling(),
                 ),
@@ -102,7 +102,7 @@ class FragmentScalingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
                         ),
                     scalingPolicy = NoDelayScaling(),
                 ),
@@ -114,7 +114,7 @@ class FragmentScalingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
                         ),
                     scalingPolicy = PerfectScaling(),
                 ),
@@ -151,9 +151,9 @@ class FragmentScalingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1, 0.0, false),
-                            TraceFragment(10 * 60 * 1000, 1500.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1500.0, 1),
                         ),
                     scalingPolicy = NoDelayScaling(),
                 ),
@@ -165,9 +165,9 @@ class FragmentScalingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1, 0.0, false),
-                            TraceFragment(10 * 60 * 1000, 1500.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1500.0, 1),
                         ),
                     scalingPolicy = PerfectScaling(),
                 ),
@@ -211,7 +211,7 @@ class FragmentScalingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                     scalingPolicy = NoDelayScaling(),
                 ),
@@ -219,7 +219,7 @@ class FragmentScalingTest {
                     name = "1",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 3000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 3000.0, 1),
                         ),
                     scalingPolicy = NoDelayScaling(),
                 ),
@@ -231,7 +231,7 @@ class FragmentScalingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                     scalingPolicy = PerfectScaling(),
                 ),
@@ -239,7 +239,7 @@ class FragmentScalingTest {
                     name = "1",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 3000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 3000.0, 1),
                         ),
                     scalingPolicy = PerfectScaling(),
                 ),
@@ -281,7 +281,7 @@ class FragmentScalingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
                         ),
                     scalingPolicy = NoDelayScaling(),
                 ),
@@ -289,7 +289,7 @@ class FragmentScalingTest {
                     name = "1",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
                         ),
                     scalingPolicy = NoDelayScaling(),
                 ),
@@ -301,7 +301,7 @@ class FragmentScalingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
                         ),
                     scalingPolicy = PerfectScaling(),
                 ),
@@ -309,7 +309,7 @@ class FragmentScalingTest {
                     name = "1",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
                         ),
                     scalingPolicy = PerfectScaling(),
                 ),

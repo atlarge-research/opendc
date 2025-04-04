@@ -53,7 +53,7 @@ class FailuresAndCheckpointingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                 ),
             )
@@ -93,7 +93,7 @@ class FailuresAndCheckpointingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                 ),
             )
@@ -136,7 +136,7 @@ class FailuresAndCheckpointingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                 ),
             )
@@ -181,7 +181,7 @@ class FailuresAndCheckpointingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                 ),
             )
@@ -240,7 +240,7 @@ class FailuresAndCheckpointingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
@@ -276,8 +276,8 @@ class FailuresAndCheckpointingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1, 0.0, false),
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
@@ -318,8 +318,8 @@ class FailuresAndCheckpointingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
                         ),
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
@@ -356,7 +356,7 @@ class FailuresAndCheckpointingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
@@ -388,7 +388,7 @@ class FailuresAndCheckpointingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
@@ -430,7 +430,7 @@ class FailuresAndCheckpointingTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
                         ),
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,

@@ -170,16 +170,26 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
         double cpuCapacity = 0.0f;
         if (delta > 0) {
-            final double factor = this.d * delta;
+            final double cpuFactor = this.d * delta;
 
-            this.performanceCounters.addCpuActiveTime(Math.round(this.cpuSupply * factor));
-            this.performanceCounters.setCpuIdleTime(Math.round((cpuCapacity - this.cpuSupply) * factor));
-            this.performanceCounters.addCpuStealTime(Math.round((this.cpuDemand - this.cpuSupply) * factor));
+            this.performanceCounters.addCpuActiveTime(Math.round(this.cpuSupply * cpuFactor));
+            this.performanceCounters.setCpuIdleTime(Math.round((cpuCapacity - this.cpuSupply) * cpuFactor));
+            this.performanceCounters.addCpuStealTime(Math.round((this.cpuDemand - this.cpuSupply) * cpuFactor));
+
+            final double accelFactor = this.accelD * delta;
+
+            this.performanceCounters.addAccelActiveTime(Math.round(this.cpuSupply * accelFactor));
+            this.performanceCounters.setAccelIdleTime(Math.round((cpuCapacity - this.cpuSupply) * accelFactor));
+            this.performanceCounters.addAccelStealTime(Math.round((this.cpuDemand - this.cpuSupply) * accelFactor));
         }
 
         this.performanceCounters.setCpuDemand(this.cpuDemand);
         this.performanceCounters.setCpuSupply(this.cpuSupply);
         this.performanceCounters.setCpuCapacity(cpuCapacity);
+
+        this.performanceCounters.setAccelDemand(this.accelDemand);
+        this.performanceCounters.setAccelSupply(this.accelSupply);
+        this.performanceCounters.setAccelCapacity(accelCapacity);
     }
 
     @Override
@@ -330,9 +340,9 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         updateCounters(this.clock.millis());
 
         if (supplierEdge.getResourceType() == FlowEdge.ResourceType.CPU) {
-            this.pushOutgoingDemand(this.machineEdge, newSupply);
+            this.pushOutgoingSupply(this.machineEdge, newSupply);
         } else if (supplierEdge.getResourceType() == FlowEdge.ResourceType.ACCEL) {
-            this.pushOutgoingDemand(this.accelMachineEdge, newSupply);
+            this.pushOutgoingSupply(this.accelMachineEdge, newSupply);
         }
     }
 

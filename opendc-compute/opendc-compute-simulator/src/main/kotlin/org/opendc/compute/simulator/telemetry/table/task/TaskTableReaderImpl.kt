@@ -143,6 +143,14 @@ public class TaskTableReaderImpl(
         get() = _cpuDemand
     private var _cpuDemand = 0.0
 
+    override val accelUsage: Double
+        get() = _accelUsage
+    private var _accelUsage = 0.0
+
+    override val accelDemand: Double
+        get() = _accelDemand
+    private var _accelDemand = 0.0
+
     override val cpuActiveTime: Long
         get() = _cpuActiveTime - previousCpuActiveTime
     private var _cpuActiveTime = 0L
@@ -186,6 +194,7 @@ public class TaskTableReaderImpl(
         }
 
         val cpuStats = _host?.getCpuStats(task)
+        val accelStats = _host?.getAccelStats(task)
         val sysStats = _host?.getSystemStats(task)
 
         _timestamp = now
@@ -194,6 +203,8 @@ public class TaskTableReaderImpl(
         _cpuLimit = cpuStats?.capacity ?: 0.0
         _cpuDemand = cpuStats?.demand ?: 0.0
         _cpuUsage = cpuStats?.usage ?: 0.0
+        _accelDemand = accelStats?.demand ?: 0.0
+        _accelUsage = accelStats?.usage ?: 0.0
         _cpuActiveTime = cpuStats?.activeTime ?: _cpuActiveTime
         _cpuIdleTime = cpuStats?.idleTime ?: _cpuIdleTime
         _cpuStealTime = cpuStats?.stealTime ?: _cpuStealTime

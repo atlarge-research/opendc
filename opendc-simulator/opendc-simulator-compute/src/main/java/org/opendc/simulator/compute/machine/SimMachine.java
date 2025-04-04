@@ -51,6 +51,7 @@ public class SimMachine {
     private FlowDistributor cpuDistributor;
     private FlowDistributor accelDistributor;
     private SimPsu psu;
+    private FlowDistributor psuDistributor;
     private Memory memory;
 
     private final Consumer<Exception> completion;
@@ -129,13 +130,16 @@ public class SimMachine {
 
         // Create the psu and cpu and connect them
         this.psu = new SimPsu(engine);
+        this.psuDistributor = new FlowDistributor(engine);
+        new FlowEdge(this.psuDistributor, this.psu);
 
         new FlowEdge(this.psu, powerDistributor);
 
         this.cpu = new SimCpu(engine, this.machineModel.getCpuModel(), cpuPowerModel, 0);
         this.accel = new SimGpu(engine, this.machineModel.getAccelModel(), accelPowerModel, 0);
 
-        new FlowEdge(this.cpu, this.psu);
+        new FlowEdge(this.cpu, this.psuDistributor);
+        new FlowEdge(this.accel, this.psuDistributor);
 
         this.memory = new Memory(engine, this.machineModel.getMemory());
 

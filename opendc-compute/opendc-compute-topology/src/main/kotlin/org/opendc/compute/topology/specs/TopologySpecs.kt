@@ -77,6 +77,7 @@ public data class ClusterJSONSpec(
 public data class HostJSONSpec(
     val name: String = "Host",
     val cpu: CPUJSONSpec,
+    val accel: CPUJSONSpec? = null,
     val memory: MemoryJSONSpec,
     val powerModel: PowerModelSpec = PowerModelSpec.DFLT,
     val accelPowerModel: PowerModelSpec = PowerModelSpec.NONE,

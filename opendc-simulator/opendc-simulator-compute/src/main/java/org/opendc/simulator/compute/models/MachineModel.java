@@ -53,7 +53,7 @@ public final class MachineModel {
      * @param cpus The list of processing units available to the image.
      * @param memory The list of memory units available to the image.
      */
-    public MachineModel(List<CpuModel> cpus, MemoryUnit memory) {
+    public MachineModel(List<CpuModel> cpus, List<CpuModel> accelerators, MemoryUnit memory) {
 
         this(
                 new CpuModel(
@@ -64,12 +64,12 @@ public final class MachineModel {
                         cpus.get(0).getModelName(),
                         cpus.get(0).getArchitecture()),
                 new CpuModel(
-                        cpus.get(1).getId(),
-                        cpus.get(1).getCoreCount() * cpus.size(),
-                        cpus.get(1).getCoreSpeed(),
-                        cpus.get(1).getVendor(),
-                        cpus.get(1).getModelName(),
-                        cpus.get(1).getArchitecture()),
+                        accelerators.get(0).getId(),
+                    accelerators.get(0).getCoreCount() * cpus.size(),
+                    accelerators.get(0).getCoreSpeed(),
+                    accelerators.get(0).getVendor(),
+                    accelerators.get(0).getModelName(),
+                    accelerators.get(0).getArchitecture()),
                 memory);
     }
 

@@ -79,7 +79,7 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
     }
 
     override fun isNull(index: Int): Boolean {
-        require(index in 0..colCpuUsage) { "Invalid column index" }
+        require(index in 0..colIsGpu) { "Invalid column index" }
         return false
     }
 

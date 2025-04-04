@@ -342,6 +342,11 @@ public class SimHost(
         return guest.getCpuStats()
     }
 
+    public fun getAccelStats(task: ServiceTask): GuestCpuStats {
+        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
+        return guest.getAccelStats()
+    }
+
     override fun hashCode(): Int = name.hashCode()
 
     override fun equals(other: Any?): Boolean {
