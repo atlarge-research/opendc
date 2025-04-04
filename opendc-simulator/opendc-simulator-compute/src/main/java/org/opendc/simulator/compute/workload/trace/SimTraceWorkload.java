@@ -204,7 +204,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
                 this.scalingPolicy.getRemainingDuration(this.cpuFreqDemand, this.cpuFreqDemand, this.remainingWork);
 
         // If this is the end of the Task, don't make a snapshot
-        if (remainingTime <= 0 && remainingFragments.isEmpty()) {
+        if (this.currentFragment == null || (remainingTime <= 0 && remainingFragments.isEmpty())) {
             return;
         }
 
