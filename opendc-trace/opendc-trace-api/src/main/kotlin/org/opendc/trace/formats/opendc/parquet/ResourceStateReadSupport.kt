@@ -33,7 +33,6 @@ import org.apache.parquet.schema.Types
 import org.opendc.trace.TableColumn
 import org.opendc.trace.conv.resourceCpuCount
 import org.opendc.trace.conv.resourceID
-import org.opendc.trace.conv.resourceStateAccelUsage
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
 import org.opendc.trace.conv.resourceStateIsGpu
@@ -56,7 +55,6 @@ internal class ResourceStateReadSupport(private val projection: List<String>?) :
             "cpu_count" to resourceCpuCount,
             "cpuUsage" to resourceStateCpuUsage,
             "cpu_usage" to resourceStateCpuUsage,
-            "accel_usage" to resourceStateAccelUsage,
             "is_gpu" to resourceStateIsGpu,
         )
 
@@ -141,8 +139,6 @@ internal class ResourceStateReadSupport(private val projection: List<String>?) :
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                         .named("cpu_usage"),
-                    Types.optional(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                        .named("accel_usage"),
                     Types.optional(PrimitiveType.PrimitiveTypeName.BOOLEAN)
                         .named("is_gpu"),
                 )

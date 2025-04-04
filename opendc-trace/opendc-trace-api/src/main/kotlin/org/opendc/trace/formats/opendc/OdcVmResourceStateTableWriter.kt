@@ -26,7 +26,6 @@ import org.apache.parquet.hadoop.ParquetWriter
 import org.opendc.trace.TableWriter
 import org.opendc.trace.conv.resourceCpuCount
 import org.opendc.trace.conv.resourceID
-import org.opendc.trace.conv.resourceStateAccelUsage
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
 import org.opendc.trace.conv.resourceStateIsGpu
@@ -49,7 +48,6 @@ internal class OdcVmResourceStateTableWriter(private val writer: ParquetWriter<R
     private var localDuration: Duration = Duration.ZERO
     private var localCpuCount: Int = 0
     private var localCpuUsage: Double = Double.NaN
-    private var localAccelUsage: Double = Double.NaN
     private var localIsGpu: Boolean = false
 
     override fun startRow() {
@@ -59,7 +57,6 @@ internal class OdcVmResourceStateTableWriter(private val writer: ParquetWriter<R
         localDuration = Duration.ZERO
         localCpuCount = 0
         localCpuUsage = Double.NaN
-        localAccelUsage = Double.NaN
         localIsGpu = false
     }
 
@@ -69,7 +66,7 @@ internal class OdcVmResourceStateTableWriter(private val writer: ParquetWriter<R
 
         check(lastId != localID || localTimestamp >= lastTimestamp) { "Records need to be ordered by (id, timestamp)" }
 
-        writer.write(ResourceState(localID, localTimestamp, localDuration, localCpuCount, localCpuUsage, localAccelUsage, localIsGpu))
+        writer.write(ResourceState(localID, localTimestamp, localDuration, localCpuCount, localCpuUsage, localIsGpu))
 
         lastId = localID
         lastTimestamp = localTimestamp
@@ -82,7 +79,6 @@ internal class OdcVmResourceStateTableWriter(private val writer: ParquetWriter<R
             resourceStateDuration -> colDuration
             resourceCpuCount -> colCpuCount
             resourceStateCpuUsage -> colCpuUsage
-            resourceStateAccelUsage -> colAccelUsage
             resourceStateIsGpu -> colIsGpu
             else -> -1
         }
@@ -131,7 +127,6 @@ internal class OdcVmResourceStateTableWriter(private val writer: ParquetWriter<R
         check(localIsActive) { "No active row" }
         when (index) {
             colCpuUsage -> localCpuUsage = value
-            colAccelUsage -> localAccelUsage = value
             else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
     }
@@ -219,6 +214,5 @@ internal class OdcVmResourceStateTableWriter(private val writer: ParquetWriter<R
     private val colDuration = 2
     private val colCpuCount = 3
     private val colCpuUsage = 4
-    private val colAccelUsage = 5
-    private val colIsGpu = 6
+    private val colIsGpu = 5
 }

@@ -43,7 +43,6 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
     private var localDuration = Duration.ZERO
     private var localCpuCount = 0
     private var localCpuUsage = 0.0
-    private var localAccelUsage = 0.0
     private var localIsGpu = false
 
     /**
@@ -87,12 +86,6 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
                                     localCpuUsage = value
                                 }
                             }
-                        "accel_usage", "accelUsage" ->
-                            object : PrimitiveConverter() {
-                                override fun addDouble(value: Double) {
-                                    localAccelUsage = value
-                                }
-                            }
                         "is_gpu", "isGpu" ->
                             object : PrimitiveConverter() {
                                 override fun addBoolean(value: Boolean) {
@@ -115,7 +108,6 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
                 localDuration = Duration.ZERO
                 localCpuCount = 0
                 localCpuUsage = 0.0
-                localAccelUsage = 0.0
                 localIsGpu = false
             }
 
@@ -131,7 +123,6 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
             localDuration,
             localCpuCount,
             localCpuUsage,
-            localAccelUsage,
             localIsGpu,
         )
 

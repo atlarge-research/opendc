@@ -49,12 +49,6 @@ public val resourceStatePoweredOn: String = "powered_on"
 public val resourceStateCpuUsage: String = "cpu_usage"
 
 /**
- * Total GPU usage of the resource in MHz.
- */
-@JvmField
-public val resourceStateAccelUsage: String = "accel_usage"
-
-/**
  * Is the fragment a GPU fragment
  */
 @JvmField

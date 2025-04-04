@@ -175,7 +175,7 @@ public class TraceWorkload implements Workload {
          * @param usage The CPU usage at this fragment.
          * @param cores The number of cores used during this fragment.
          */
-        public void add(long duration, double usage, int cores, double accelUsage, boolean isGpu) {
+        public void add(long duration, double usage, int cores, boolean isGpu) {
             if (isGpu) {
                 accelFragments.add(new TraceFragment(duration, usage, cores));
             } else {
