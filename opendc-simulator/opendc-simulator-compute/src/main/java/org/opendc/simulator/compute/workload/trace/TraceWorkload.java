@@ -115,13 +115,14 @@ public class TraceWorkload implements Workload {
     }
 
     @Override
-    public SimWorkload startWorkload(FlowSupplier supplier) {
-        return new SimTraceWorkload(supplier, this);
+    public SimWorkload startWorkload(FlowSupplier supplier, FlowSupplier accelSupplier) {
+        return new SimTraceWorkload(supplier, accelSupplier, this);
     }
 
     @Override
-    public SimWorkload startWorkload(FlowSupplier supplier, SimMachine machine, Consumer<Exception> completion) {
-        return this.startWorkload(supplier);
+    public SimWorkload startWorkload(
+            FlowSupplier supplier, FlowSupplier accelSupplier, SimMachine machine, Consumer<Exception> completion) {
+        return this.startWorkload(supplier, accelSupplier);
     }
 
     public static Builder builder(
@@ -165,8 +166,8 @@ public class TraceWorkload implements Workload {
          * @param usage The CPU usage at this fragment.
          * @param cores The number of cores used during this fragment.
          */
-        public void add(long duration, double usage, int cores) {
-            fragments.add(fragments.size(), new TraceFragment(duration, usage, cores));
+        public void add(long duration, double usage, int cores, double accelUsage, boolean isGpu) {
+            fragments.add(fragments.size(), new TraceFragment(duration, usage, cores, accelUsage, isGpu));
         }
 
         /**

@@ -46,8 +46,8 @@ class FlowDistributorTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -81,8 +81,8 @@ class FlowDistributorTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 3000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 3000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -116,8 +116,8 @@ class FlowDistributorTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -151,8 +151,8 @@ class FlowDistributorTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -186,8 +186,8 @@ class FlowDistributorTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 4000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -221,16 +221,16 @@ class FlowDistributorTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 3000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 3000.0, 1, 0.0, false),
                         ),
                 ),
                 createTestTask(
                     name = "1",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 3000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 3000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -268,16 +268,16 @@ class FlowDistributorTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 6000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 5000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 6000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 5000.0, 1, 0.0, false),
                         ),
                 ),
                 createTestTask(
                     name = "1",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 5000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 6000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 5000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 6000.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -315,8 +315,8 @@ class FlowDistributorTest {
                     submissionTime = "2024-02-01T10:00",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1, 0.0, false),
                         ),
                 ),
                 createTestTask(
@@ -324,7 +324,7 @@ class FlowDistributorTest {
                     submissionTime = "2024-02-01T10:05",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 2000.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -373,7 +373,7 @@ class FlowDistributorTest {
                     submissionTime = "2024-02-01T10:00",
                     fragments =
                         arrayListOf(
-                            TraceFragment(20 * 60 * 1000, 3000.0, 1),
+                            TraceFragment(20 * 60 * 1000, 3000.0, 1, 0.0, false),
                         ),
                 ),
                 createTestTask(
@@ -381,7 +381,7 @@ class FlowDistributorTest {
                     submissionTime = "2024-02-01T10:05",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1500.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1500.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -426,17 +426,17 @@ class FlowDistributorTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(5 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(5 * 60 * 1000, 1500.0, 1),
-                            TraceFragment(5 * 60 * 1000, 2500.0, 1),
-                            TraceFragment(5 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(5 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(5 * 60 * 1000, 1500.0, 1, 0.0, false),
+                            TraceFragment(5 * 60 * 1000, 2500.0, 1, 0.0, false),
+                            TraceFragment(5 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                 ),
                 createTestTask(
                     name = "1",
                     fragments =
                         arrayListOf(
-                            TraceFragment(20 * 60 * 1000, 3000.0, 1),
+                            TraceFragment(20 * 60 * 1000, 3000.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -487,7 +487,7 @@ class FlowDistributorTest {
                     name = "0",
                     fragments =
                         arrayListOf<TraceFragment>().apply {
-                            repeat(1) { this.add(TraceFragment(10 * 60 * 1000, 3000.0, 1)) }
+                            repeat(1) { this.add(TraceFragment(10 * 60 * 1000, 3000.0, 1, 0.0, false)) }
                         },
                 ),
             )
@@ -515,7 +515,7 @@ class FlowDistributorTest {
                     name = "0",
                     fragments =
                         arrayListOf<TraceFragment>().apply {
-                            repeat(1000) { this.add(TraceFragment(10 * 60 * 1000, 2000.0, 1)) }
+                            repeat(1000) { this.add(TraceFragment(10 * 60 * 1000, 2000.0, 1, 0.0, false)) }
                         },
                 ),
             )
@@ -544,7 +544,7 @@ class FlowDistributorTest {
                         createTestTask(
                             name = "0",
                             fragments =
-                                arrayListOf(TraceFragment(10 * 60 * 1000, 2000.0, 1)),
+                                arrayListOf(TraceFragment(10 * 60 * 1000, 2000.0, 1, 0.0, false)),
                         ),
                     )
                 }

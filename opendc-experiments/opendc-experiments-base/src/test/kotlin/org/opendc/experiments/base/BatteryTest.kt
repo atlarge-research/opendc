@@ -45,7 +45,7 @@ class BatteryTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -71,7 +71,7 @@ class BatteryTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -98,7 +98,7 @@ class BatteryTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(20 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(20 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -126,7 +126,7 @@ class BatteryTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(30 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(30 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -153,7 +153,7 @@ class BatteryTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(30 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(30 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -195,7 +195,7 @@ class BatteryTest {
                         createTestTask(
                             name = "0",
                             fragments =
-                                arrayListOf(TraceFragment(10 * 60 * 1000, 1000.0, 1)),
+                                arrayListOf(TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false)),
                             submissionTime = "2022-01-01T00:00",
                         ),
                     )
@@ -221,7 +221,7 @@ class BatteryTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -254,7 +254,7 @@ class BatteryTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,

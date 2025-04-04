@@ -25,8 +25,10 @@ package org.opendc.trace.formats.opendc
 import org.opendc.trace.TableReader
 import org.opendc.trace.conv.resourceCpuCount
 import org.opendc.trace.conv.resourceID
+import org.opendc.trace.conv.resourceStateAccelUsage
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
+import org.opendc.trace.conv.resourceStateIsGpu
 import org.opendc.trace.conv.resourceStateTimestamp
 import org.opendc.trace.formats.opendc.parquet.ResourceState
 import org.opendc.trace.util.parquet.LocalParquetReader
@@ -60,6 +62,8 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
     private val colDuration = 2
     private val colCpuCount = 3
     private val colCpuUsage = 4
+    private val colAccelUsage = 5
+    private val colIsGpu = 6
 
     override fun resolve(name: String): Int {
         return when (name) {
@@ -68,6 +72,8 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
             resourceStateDuration -> colDuration
             resourceCpuCount -> colCpuCount
             resourceStateCpuUsage -> colCpuUsage
+            resourceStateAccelUsage -> colAccelUsage
+            resourceStateIsGpu -> colIsGpu
             else -> -1
         }
     }
@@ -78,7 +84,11 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
     }
 
     override fun getBoolean(index: Int): Boolean {
-        throw IllegalArgumentException("Invalid column or type [index $index]")
+        val record = checkNotNull(record) { "Reader in invalid state" }
+        return when (index) {
+            colIsGpu -> record.isGpu
+            else -> throw IllegalArgumentException("Invalid column or type [index $index]")
+        }
     }
 
     override fun getInt(index: Int): Int {
@@ -101,6 +111,7 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
         val record = checkNotNull(record) { "Reader in invalid state" }
         return when (index) {
             colCpuUsage -> record.cpuUsage
+            colAccelUsage -> record.accelUsage
             else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
     }

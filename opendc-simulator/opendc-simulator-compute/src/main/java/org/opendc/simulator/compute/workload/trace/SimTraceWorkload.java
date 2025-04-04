@@ -85,7 +85,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimTraceWorkload(FlowSupplier supplier, TraceWorkload workload) {
+    public SimTraceWorkload(FlowSupplier supplier, FlowSupplier accelSupplier, TraceWorkload workload) {
         super(((FlowNode) supplier).getEngine());
 
         this.snapshot = workload;
@@ -97,7 +97,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         this.startOfFragment = this.clock.millis();
 
-        new FlowEdge(this, supplier);
+        new FlowEdge(this, supplier, FlowEdge.ResourceType.CPU);
+        new FlowEdge(this, accelSupplier, FlowEdge.ResourceType.ACCEL);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -209,8 +210,12 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
         // Create a new fragment based on the current fragment and remaining duration
-        TraceFragment newFragment =
-                new TraceFragment(remainingTime, currentFragment.cpuUsage(), currentFragment.coreCount());
+        TraceFragment newFragment = new TraceFragment(
+                remainingTime,
+                currentFragment.cpuUsage(),
+                currentFragment.coreCount(),
+                currentFragment.accelUsage(),
+                currentFragment.isGpu());
 
         // Alter the snapshot by removing finished fragments
         this.snapshot.removeFragments(this.fragmentIndex);
@@ -220,7 +225,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         // Create and add a fragment for processing the snapshot process
         TraceFragment snapshotFragment = new TraceFragment(
-                this.checkpointDuration, this.snapshot.getMaxCpuDemand(), this.snapshot.getMaxCoreCount());
+                this.checkpointDuration, this.snapshot.getMaxCpuDemand(), this.snapshot.getMaxCoreCount(), 0.0, false);
         this.remainingFragments.addFirst(snapshotFragment);
 
         this.fragmentIndex = -1;

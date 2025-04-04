@@ -175,12 +175,21 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
     val powerModel =
         getPowerModel(powerModel.modelType, powerModel.power.toWatts(), powerModel.maxPower.toWatts(), powerModel.idlePower.toWatts())
 
+    val accelPowerModel =
+        getPowerModel(
+            accelPowerModel.modelType,
+            accelPowerModel.power.toWatts(),
+            accelPowerModel.maxPower.toWatts(),
+            accelPowerModel.idlePower.toWatts(),
+        )
+
     val hostSpec =
         HostSpec(
             createUniqueName(this.name, hostNames),
             clusterName,
             machineModel,
             powerModel,
+            accelPowerModel,
         )
     return hostSpec
 }

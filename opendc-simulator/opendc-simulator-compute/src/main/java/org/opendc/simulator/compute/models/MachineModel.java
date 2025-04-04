@@ -30,6 +30,7 @@ import java.util.Objects;
  */
 public final class MachineModel {
     private final CpuModel cpuModel;
+    private final CpuModel accelModel;
     private final MemoryUnit memory;
 
     /**
@@ -38,8 +39,9 @@ public final class MachineModel {
      * @param cpuModel The cpu available to the image.
      * @param memory The list of memory units available to the image.
      */
-    public MachineModel(CpuModel cpuModel, MemoryUnit memory) {
+    public MachineModel(CpuModel cpuModel, CpuModel accelModel, MemoryUnit memory) {
         this.cpuModel = cpuModel;
+        this.accelModel = accelModel;
         this.memory = memory;
     }
 
@@ -61,6 +63,13 @@ public final class MachineModel {
                         cpus.get(0).getVendor(),
                         cpus.get(0).getModelName(),
                         cpus.get(0).getArchitecture()),
+                new CpuModel(
+                        cpus.get(1).getId(),
+                        cpus.get(1).getCoreCount() * cpus.size(),
+                        cpus.get(1).getCoreSpeed(),
+                        cpus.get(1).getVendor(),
+                        cpus.get(1).getModelName(),
+                        cpus.get(1).getArchitecture()),
                 memory);
     }
 
@@ -69,6 +78,10 @@ public final class MachineModel {
      */
     public CpuModel getCpuModel() {
         return this.cpuModel;
+    }
+
+    public CpuModel getAccelModel() {
+        return this.accelModel;
     }
 
     /**
@@ -83,7 +96,7 @@ public final class MachineModel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MachineModel that = (MachineModel) o;
-        return cpuModel.equals(that.cpuModel) && memory.equals(that.memory);
+        return cpuModel.equals(that.cpuModel) && accelModel.equals(that.accelModel) && memory.equals(that.memory);
     }
 
     @Override

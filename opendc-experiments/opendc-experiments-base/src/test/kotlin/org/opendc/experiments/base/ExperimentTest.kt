@@ -51,7 +51,7 @@ class ExperimentTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -87,14 +87,14 @@ class ExperimentTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                 ),
                 createTestTask(
                     name = "1",
                     fragments =
                         arrayListOf(
-                            TraceFragment(5 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(5 * 60 * 1000, 2000.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -130,14 +130,14 @@ class ExperimentTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                 ),
                 createTestTask(
                     name = "1",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                 ),
             )
@@ -173,14 +173,14 @@ class ExperimentTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                 ),
                 createTestTask(
                     name = "1",
                     fragments =
                         arrayListOf(
-                            TraceFragment(5 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(5 * 60 * 1000, 2000.0, 1, 0.0, false),
                         ),
                     submissionTime = "1970-01-01T00:20",
                 ),

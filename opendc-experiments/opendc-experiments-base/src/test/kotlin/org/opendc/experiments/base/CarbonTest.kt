@@ -49,7 +49,7 @@ class CarbonTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(120 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(120 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -96,14 +96,14 @@ class CarbonTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(40 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 2000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 2000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 2000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(40 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(40 * 60 * 1000, 2000.0, 1, 0.0, false),
+                            TraceFragment(40 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(40 * 60 * 1000, 2000.0, 1, 0.0, false),
+                            TraceFragment(40 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(40 * 60 * 1000, 2000.0, 1, 0.0, false),
+                            TraceFragment(40 * 60 * 1000, 1000.0, 1, 0.0, false),
+                            TraceFragment(40 * 60 * 1000, 2000.0, 1, 0.0, false),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -165,7 +165,7 @@ class CarbonTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(60 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(60 * 60 * 1000, 1000.0, 1, 0.0, false),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),

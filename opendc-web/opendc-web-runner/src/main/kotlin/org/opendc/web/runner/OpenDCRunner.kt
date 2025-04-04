@@ -354,6 +354,7 @@ public class OpenDCRunner(
 
             val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
             val powerModel = CpuPowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
+            val accelPowerModel = CpuPowerModels.constant(0.0)
 
             val spec =
                 HostSpec(
@@ -361,6 +362,7 @@ public class OpenDCRunner(
                     clusterId,
                     MachineModel(processors, memoryUnits[0]),
                     powerModel,
+                    accelPowerModel,
                 )
 
             res += spec
