@@ -65,11 +65,11 @@ public final class MachineModel {
                         cpus.get(0).getArchitecture()),
                 new CpuModel(
                         accelerators.get(0).getId(),
-                    accelerators.get(0).getCoreCount() * cpus.size(),
-                    accelerators.get(0).getCoreSpeed(),
-                    accelerators.get(0).getVendor(),
-                    accelerators.get(0).getModelName(),
-                    accelerators.get(0).getArchitecture()),
+                        accelerators.get(0).getCoreCount() * cpus.size(),
+                        accelerators.get(0).getCoreSpeed(),
+                        accelerators.get(0).getVendor(),
+                        accelerators.get(0).getModelName(),
+                        accelerators.get(0).getArchitecture()),
                 memory);
     }
 

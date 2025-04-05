@@ -157,7 +157,6 @@ class TestComputeMonitor : ComputeMonitor {
             taskAccelDemands[taskName] = arrayListOf(reader.cpuDemand)
             taskAccelSupplied[taskName] = arrayListOf(reader.cpuUsage)
         }
-
     }
 
     var attemptsSuccess = 0

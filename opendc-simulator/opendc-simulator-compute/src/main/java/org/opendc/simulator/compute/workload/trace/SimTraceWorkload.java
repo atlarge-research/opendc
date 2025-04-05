@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.compute.workload.trace;
 
+import static java.lang.Math.min;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,9 +34,6 @@ import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
-
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 
 public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     private LinkedList<TraceFragment> remainingFragments;
@@ -130,7 +129,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         // The amount of work done since last update
         double finishedWork = this.scalingPolicy.getFinishedWork(this.cpuFreqDemand, this.cpuFreqSupplied, passedTime);
-        double finishedAccelWork = this.scalingPolicy.getFinishedWork(this.accelFreqDemand, this.accelFreqSupplied, passedTime);
+        double finishedAccelWork =
+                this.scalingPolicy.getFinishedWork(this.accelFreqDemand, this.accelFreqSupplied, passedTime);
 
         this.remainingWork -= finishedWork;
         this.remainingAccelWork -= finishedAccelWork;
@@ -166,7 +166,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         long remainingDuration = this.scalingPolicy.getRemainingDuration(
                 this.cpuFreqDemand, this.newCpuFreqSupplied, this.remainingWork);
         long remainingAccelDuration = this.scalingPolicy.getRemainingDuration(
-            this.accelFreqDemand, this.newAccelFreqSupplied, this.remainingAccelWork);
+                this.accelFreqDemand, this.newAccelFreqSupplied, this.remainingAccelWork);
 
         long nextUpdate;
         if (remainingDuration > 0.0 && remainingAccelDuration > 0.0) {
@@ -277,10 +277,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
         // Create a new fragment based on the current fragment and remaining duration
-        TraceFragment newFragment = new TraceFragment(
-                remainingTime,
-                currentFragment.cpuUsage(),
-                currentFragment.coreCount());
+        TraceFragment newFragment =
+                new TraceFragment(remainingTime, currentFragment.cpuUsage(), currentFragment.coreCount());
 
         // Alter the snapshot by removing finished fragments
         this.snapshot.removeFragments(this.fragmentIndex);
