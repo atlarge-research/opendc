@@ -45,6 +45,14 @@ class SimMachineTest {
                     "Xeon",
                     "amd64",
                 ),
+                CpuModel(
+                    0,
+                    2,
+                    1000.0,
+                    "Intel",
+                    "Xeon",
+                    "amd64",
+                ),
                 MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000 * 4),
             )
     }

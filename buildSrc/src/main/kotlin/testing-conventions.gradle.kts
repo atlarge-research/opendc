@@ -27,6 +27,10 @@ plugins {
 tasks.test {
     useJUnitPlatform()
 
+    minHeapSize = "512m"
+    maxHeapSize = "3072m"
+    jvmArgs = listOf("-XX:MaxMetaspaceSize=512m")
+
     reports {
         html.required.set(true)
         junitXml.required.set(true)
@@ -42,26 +46,26 @@ dependencies {
     testRuntimeOnly(versionCatalog["junit.jupiter.engine"])
 }
 
-tasks.register<Test>("testsOn18") {
-    javaLauncher.set(javaToolchains.launcherFor {
-        languageVersion.set(JavaLanguageVersion.of(18))
-    })
-
-    useJUnitPlatform()
-
-    minHeapSize = "512m"
-    maxHeapSize = "1024m"
-    jvmArgs = listOf("-XX:MaxMetaspaceSize=512m")
-}
-
-tasks.register<Test>("testsOn19") {
-    javaLauncher.set(javaToolchains.launcherFor {
-        languageVersion.set(JavaLanguageVersion.of(19))
-    })
-
-    useJUnitPlatform()
-
-    minHeapSize = "512m"
-    maxHeapSize = "1024m"
-    jvmArgs = listOf("-XX:MaxMetaspaceSize=512m")
-}
+//tasks.register<Test>("testsOn18") {
+//    javaLauncher.set(javaToolchains.launcherFor {
+//        languageVersion.set(JavaLanguageVersion.of(18))
+//    })
+//
+//    useJUnitPlatform()
+//
+//    minHeapSize = "512m"
+//    maxHeapSize = "1024m"
+//    jvmArgs = listOf("-XX:MaxMetaspaceSize=512m")
+//}
+//
+//tasks.register<Test>("testsOn19") {
+//    javaLauncher.set(javaToolchains.launcherFor {
+//        languageVersion.set(JavaLanguageVersion.of(19))
+//    })
+//
+//    useJUnitPlatform()
+//
+//    minHeapSize = "512m"
+//    maxHeapSize = "1024m"
+//    jvmArgs = listOf("-XX:MaxMetaspaceSize=512m")
+//}

@@ -342,6 +342,18 @@ public class OpenDCRunner(
                     )
                 }
 
+            val accelerators =
+                machine.cpus.map { cpu ->
+                    CpuModel(
+                        0,
+                        cpu.numberOfCores,
+                        cpu.clockRateMhz,
+                        "Intel",
+                        "amd64",
+                        cpu.name,
+                    )
+                }
+
             val memoryUnits =
                 machine.memory.map { memory ->
                     MemoryUnit(
@@ -354,13 +366,15 @@ public class OpenDCRunner(
 
             val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
             val powerModel = CpuPowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
+            val accelPowerModel = CpuPowerModels.constant(0.0)
 
             val spec =
                 HostSpec(
                     "node-$clusterId-$position",
                     clusterId,
-                    MachineModel(processors, memoryUnits[0]),
+                    MachineModel(processors, accelerators, memoryUnits[0]),
                     powerModel,
+                    accelPowerModel,
                 )
 
             res += spec

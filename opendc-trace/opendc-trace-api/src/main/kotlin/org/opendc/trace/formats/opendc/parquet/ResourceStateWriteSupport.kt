@@ -78,6 +78,10 @@ internal class ResourceStateWriteSupport : WriteSupport<ResourceState>() {
         consumer.addDouble(record.cpuUsage)
         consumer.endField("cpu_usage", 4)
 
+        consumer.startField("is_gpu", 5)
+        consumer.addBoolean(record.isGpu)
+        consumer.endField("is_gpu", 5)
+
         consumer.endMessage()
     }
 
@@ -106,6 +110,9 @@ internal class ResourceStateWriteSupport : WriteSupport<ResourceState>() {
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                         .named("cpu_usage"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.BOOLEAN)
+                        .named("is_gpu"),
                 )
                 .named("resource_state")
     }

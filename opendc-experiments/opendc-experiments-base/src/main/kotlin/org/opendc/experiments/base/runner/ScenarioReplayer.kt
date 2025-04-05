@@ -120,7 +120,8 @@ public suspend fun ComputeService.replay(
                 }
 
                 val workload = entry.trace
-                val meta = mutableMapOf<String, Any>("workload" to workload)
+//                val meta = mutableMapOf<String, Any>("workload" to workload)
+                val meta = mutableMapOf<String, Any>()
 
                 val nature =
                     if (entry.nature == "deferrable") {

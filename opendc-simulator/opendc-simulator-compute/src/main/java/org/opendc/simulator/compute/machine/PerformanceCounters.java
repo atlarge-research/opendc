@@ -32,6 +32,15 @@ public class PerformanceCounters {
     private double cpuDemand = 0.0f;
     private double cpuSupply = 0.0f;
 
+    private long accelActiveTime = 0;
+    private long accelIdleTime = 0;
+    private long accelStealTime = 0;
+    private long accelLostTime = 0;
+
+    private double accelCapacity = 0.0f;
+    private double accelDemand = 0.0f;
+    private double accelSupply = 0.0f;
+
     public long getCpuActiveTime() {
         return cpuActiveTime;
     }
@@ -98,5 +107,73 @@ public class PerformanceCounters {
 
     public void setCpuSupply(double cpuSupply) {
         this.cpuSupply = cpuSupply;
+    }
+
+    public long getAccelActiveTime() {
+        return accelActiveTime;
+    }
+
+    public void setAccelActiveTime(long accelActiveTime) {
+        this.accelActiveTime = accelActiveTime;
+    }
+
+    public void addAccelActiveTime(long accelActiveTime) {
+        this.accelActiveTime += accelActiveTime;
+    }
+
+    public long getAccelIdleTime() {
+        return accelIdleTime;
+    }
+
+    public void setAccelIdleTime(long accelIdleTime) {
+        this.accelIdleTime = accelIdleTime;
+    }
+
+    public void addAccelIdleTime(long accelIdleTime) {
+        this.accelIdleTime += accelIdleTime;
+    }
+
+    public long getAccelStealTime() {
+        return accelStealTime;
+    }
+
+    public void setAccelStealTime(long accelStealTime) {
+        this.accelStealTime = accelStealTime;
+    }
+
+    public void addAccelStealTime(long accelStealTime) {
+        this.accelStealTime += accelStealTime;
+    }
+
+    public long getAccelLostTime() {
+        return accelLostTime;
+    }
+
+    public void setAccelLostTime(long accelLostTime) {
+        this.accelLostTime = accelLostTime;
+    }
+
+    public double getAccelCapacity() {
+        return accelCapacity;
+    }
+
+    public void setAccelCapacity(double accelCapacity) {
+        this.accelCapacity = accelCapacity;
+    }
+
+    public double getAccelDemand() {
+        return accelDemand;
+    }
+
+    public void setAccelDemand(double accelDemand) {
+        this.accelDemand = accelDemand;
+    }
+
+    public double getAccelSupply() {
+        return accelSupply;
+    }
+
+    public void setAccelSupply(double accelSupply) {
+        this.accelSupply = accelSupply;
     }
 }

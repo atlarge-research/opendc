@@ -30,6 +30,7 @@ import java.util.Objects;
  */
 public final class MachineModel {
     private final CpuModel cpuModel;
+    private final CpuModel accelModel;
     private final MemoryUnit memory;
 
     /**
@@ -38,8 +39,9 @@ public final class MachineModel {
      * @param cpuModel The cpu available to the image.
      * @param memory The list of memory units available to the image.
      */
-    public MachineModel(CpuModel cpuModel, MemoryUnit memory) {
+    public MachineModel(CpuModel cpuModel, CpuModel accelModel, MemoryUnit memory) {
         this.cpuModel = cpuModel;
+        this.accelModel = accelModel;
         this.memory = memory;
     }
 
@@ -51,7 +53,7 @@ public final class MachineModel {
      * @param cpus The list of processing units available to the image.
      * @param memory The list of memory units available to the image.
      */
-    public MachineModel(List<CpuModel> cpus, MemoryUnit memory) {
+    public MachineModel(List<CpuModel> cpus, List<CpuModel> accelerators, MemoryUnit memory) {
 
         this(
                 new CpuModel(
@@ -61,6 +63,13 @@ public final class MachineModel {
                         cpus.get(0).getVendor(),
                         cpus.get(0).getModelName(),
                         cpus.get(0).getArchitecture()),
+                new CpuModel(
+                        accelerators.get(0).getId(),
+                        accelerators.get(0).getCoreCount() * cpus.size(),
+                        accelerators.get(0).getCoreSpeed(),
+                        accelerators.get(0).getVendor(),
+                        accelerators.get(0).getModelName(),
+                        accelerators.get(0).getArchitecture()),
                 memory);
     }
 
@@ -69,6 +78,10 @@ public final class MachineModel {
      */
     public CpuModel getCpuModel() {
         return this.cpuModel;
+    }
+
+    public CpuModel getAccelModel() {
+        return this.accelModel;
     }
 
     /**
@@ -83,7 +96,7 @@ public final class MachineModel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MachineModel that = (MachineModel) o;
-        return cpuModel.equals(that.cpuModel) && memory.equals(that.memory);
+        return cpuModel.equals(that.cpuModel) && accelModel.equals(that.accelModel) && memory.equals(that.memory);
     }
 
     @Override

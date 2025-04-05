@@ -35,6 +35,7 @@ import org.opendc.trace.conv.resourceCpuCount
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
+import org.opendc.trace.conv.resourceStateIsGpu
 import org.opendc.trace.conv.resourceStateTimestamp
 
 /**
@@ -54,6 +55,7 @@ internal class ResourceStateReadSupport(private val projection: List<String>?) :
             "cpu_count" to resourceCpuCount,
             "cpuUsage" to resourceStateCpuUsage,
             "cpu_usage" to resourceStateCpuUsage,
+            "is_gpu" to resourceStateIsGpu,
         )
 
     override fun init(context: InitContext): ReadContext {
@@ -137,6 +139,8 @@ internal class ResourceStateReadSupport(private val projection: List<String>?) :
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                         .named("cpu_usage"),
+                    Types.optional(PrimitiveType.PrimitiveTypeName.BOOLEAN)
+                        .named("is_gpu"),
                 )
                 .named("resource_state")
 

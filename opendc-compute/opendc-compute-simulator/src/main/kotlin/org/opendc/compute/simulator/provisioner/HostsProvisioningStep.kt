@@ -127,6 +127,7 @@ public class HostsProvisioningStep internal constructor(
                         engine,
                         hostSpec.model,
                         hostSpec.cpuPowerModel,
+                        hostSpec.accelPowerModel,
                         hostSpec.embodiedCarbon,
                         hostSpec.expectedLifetime,
                         hostDistributor,

@@ -67,7 +67,8 @@ fun createTestTask(
     memCapacity: Long = 0L,
     submissionTime: String = "1970-01-01T00:00",
     duration: Long = 0L,
-    fragments: ArrayList<TraceFragment>,
+    fragments: ArrayList<TraceFragment> = arrayListOf(),
+    accelFragments: ArrayList<TraceFragment> = arrayListOf(),
     checkpointInterval: Long = 0L,
     checkpointDuration: Long = 0L,
     checkpointIntervalScaling: Double = 1.0,
@@ -76,8 +77,8 @@ fun createTestTask(
     return Task(
         UUID.nameUUIDFromBytes(name.toByteArray()),
         name,
-        fragments.maxOf { it.coreCount },
-        fragments.maxOf { it.cpuUsage },
+        if (fragments.isNotEmpty()) fragments.maxOf { it.coreCount } else 0,
+        if (fragments.isNotEmpty()) fragments.maxOf { it.cpuUsage } else 0.0,
         memCapacity,
         1800000.0,
         LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli(),
@@ -86,6 +87,7 @@ fun createTestTask(
         -1,
         TraceWorkload(
             fragments,
+            accelFragments,
             checkpointInterval,
             checkpointDuration,
             checkpointIntervalScaling,
@@ -134,6 +136,8 @@ fun runTest(
 class TestComputeMonitor : ComputeMonitor {
     var taskCpuDemands = mutableMapOf<String, ArrayList<Double>>()
     var taskCpuSupplied = mutableMapOf<String, ArrayList<Double>>()
+    var taskAccelDemands = mutableMapOf<String, ArrayList<Double>>()
+    var taskAccelSupplied = mutableMapOf<String, ArrayList<Double>>()
 
     override fun record(reader: TaskTableReader) {
         val taskName: String = reader.taskInfo.name
@@ -144,6 +148,14 @@ class TestComputeMonitor : ComputeMonitor {
         } else {
             taskCpuDemands[taskName] = arrayListOf(reader.cpuDemand)
             taskCpuSupplied[taskName] = arrayListOf(reader.cpuUsage)
+        }
+
+        if (taskName in taskAccelDemands) {
+            taskAccelDemands[taskName]?.add(reader.cpuDemand)
+            taskAccelSupplied[taskName]?.add(reader.cpuUsage)
+        } else {
+            taskAccelDemands[taskName] = arrayListOf(reader.cpuDemand)
+            taskAccelSupplied[taskName] = arrayListOf(reader.cpuUsage)
         }
     }
 

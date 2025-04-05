@@ -257,6 +257,25 @@ public class Guest(
     }
 
     /**
+     * Obtain the GPU statistics of this guest.
+     */
+    public fun getAccelStats(): GuestCpuStats {
+        virtualMachine!!.updateCounters(this.clock.millis())
+        val counters = virtualMachine!!.performanceCounters
+
+        return GuestCpuStats(
+            counters.cpuActiveTime / 1000L,
+            counters.cpuIdleTime / 1000L,
+            counters.cpuStealTime / 1000L,
+            counters.cpuLostTime / 1000L,
+            counters.cpuCapacity,
+            counters.cpuSupply,
+            counters.cpuDemand,
+            counters.cpuSupply / cpuLimit,
+        )
+    }
+
+    /**
      * Helper function to track the uptime and downtime of the guest.
      */
     public fun updateUptime() {
