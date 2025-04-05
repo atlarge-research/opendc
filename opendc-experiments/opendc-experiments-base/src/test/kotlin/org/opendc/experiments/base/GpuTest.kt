@@ -149,7 +149,7 @@ class GpuTest {
             { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect energy usage at time 0" } },
             { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(8)) { "Incorrect energy usage at time 8" } },
             { assertEquals(250.0, monitor.hostPowerDraws["H01"]?.get(13)) { "Incorrect energy usage at time 13" } },
-            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(25)) { "Incorrect energy usage at time 18" } },
+            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(25)) { "Incorrect energy usage at time 25" } },
         )
     }
 }
