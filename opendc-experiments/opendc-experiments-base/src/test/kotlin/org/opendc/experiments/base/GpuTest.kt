@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.workload.Task
-import org.opendc.experiments.base.experiment.specs.TraceBasedFailureModelSpec
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
 
@@ -27,10 +26,11 @@ class GpuTest {
 
         val monitor = runTest(topology, workload)
 
+        // Power usage is 150 from gpu + 100 from idle cpu in the topology
         assertAll(
             { assertEquals(10 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect energy usage" } },
-            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(9)) { "Incorrect energy usage" } },
+            { assertEquals(250.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect energy usage" } },
+            { assertEquals(250.0, monitor.hostPowerDraws["H01"]?.get(9)) { "Incorrect energy usage" } },
         )
     }
 
@@ -85,9 +85,9 @@ class GpuTest {
 
         assertAll(
             { assertEquals(20 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect energy usage" } },
-            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(8)) { "Incorrect energy usage" } },
-            { assertEquals(250.0, monitor.hostPowerDraws["H01"]?.get(13)) { "Incorrect energy usage" } },
+            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect energy usage at time 0" } },
+            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(8)) { "Incorrect energy usage at time 8" } },
+            { assertEquals(250.0, monitor.hostPowerDraws["H01"]?.get(13)) { "Incorrect energy usage at time 13" } },
         )
     }
 
@@ -125,10 +125,10 @@ class GpuTest {
 
         assertAll(
             { assertEquals(30 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect energy usage" } },
-            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(8)) { "Incorrect energy usage" } },
-            { assertEquals(250.0, monitor.hostPowerDraws["H01"]?.get(13)) { "Incorrect energy usage" } },
-            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(18)) { "Incorrect energy usage" } },
+            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect energy usage at time 0" } },
+            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(8)) { "Incorrect energy usage at time 8" } },
+            { assertEquals(250.0, monitor.hostPowerDraws["H01"]?.get(13)) { "Incorrect energy usage at time 13" } },
+            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(25)) { "Incorrect energy usage at time 18" } },
         )
     }
 }

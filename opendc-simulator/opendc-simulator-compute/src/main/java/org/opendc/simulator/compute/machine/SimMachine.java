@@ -164,6 +164,9 @@ public class SimMachine {
         this.psu.closeNode();
         this.psu = null;
 
+        this.psuDistributor.closeNode();
+        this.psuDistributor = null;
+
         this.cpu.closeNode();
         this.cpu = null;
 

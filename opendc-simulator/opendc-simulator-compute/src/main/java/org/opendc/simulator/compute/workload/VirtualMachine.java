@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute.workload;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -381,7 +382,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void removeSupplierEdge(FlowEdge supplierEdge) {
-        if (this.machineEdge == null) {
+        if (this.machineEdge == null && this.accelWorkloadEdge == null) {
             return;
         }
 
@@ -390,8 +391,13 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
     @Override
     public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
-        List<FlowEdge> consumerEdges = (this.machineEdge != null) ? List.of(this.machineEdge) : List.of();
-        List<FlowEdge> supplierEdges = (this.workloadEdge != null) ? List.of(this.workloadEdge) : List.of();
+        ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
+        if (this.machineEdge != null) consumerEdges.add(this.machineEdge);
+        if (this.accelMachineEdge != null) consumerEdges.add(this.accelMachineEdge);
+
+        ArrayList<FlowEdge> supplierEdges = new ArrayList<>();
+        if (this.workloadEdge != null) supplierEdges.add(this.workloadEdge);
+        if (this.accelWorkloadEdge != null) supplierEdges.add(this.accelWorkloadEdge);
 
         return Map.of(
                 FlowEdge.NodeType.CONSUMING, consumerEdges,

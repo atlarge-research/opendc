@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute.workload.trace;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -387,6 +388,9 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
     @Override
     public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
-        return Map.of(FlowEdge.NodeType.CONSUMING, (this.machineEdge != null) ? List.of(this.machineEdge) : List.of());
+        ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
+        if (this.machineEdge != null) consumerEdges.add(this.machineEdge);
+        if (this.accelMachineEdge != null) consumerEdges.add(this.accelMachineEdge);
+        return Map.of(FlowEdge.NodeType.CONSUMING, consumerEdges);
     }
 }
