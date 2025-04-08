@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute.workload;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -44,10 +45,18 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     private double cpuSupply = 0.0f;
     private double d = 0.0f;
 
+    private double accelDemand = 0.0f;
+    private double accelSupply = 0.0f;
+    private double accelD = 0.0f;
+
     private FlowEdge workloadEdge;
     private FlowEdge machineEdge;
 
+    private FlowEdge accelWorkloadEdge;
+    private FlowEdge accelMachineEdge;
+
     private double capacity = 0;
+    private double accelCapacity = 0;
 
     private final long checkpointInterval;
     private final long checkpointDuration;
@@ -97,12 +106,13 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    VirtualMachine(FlowSupplier supplier, ChainWorkload workload) {
+    VirtualMachine(FlowSupplier supplier, FlowSupplier accelSupplier, ChainWorkload workload) {
         super(((FlowNode) supplier).getEngine());
 
         this.snapshot = workload;
 
-        new FlowEdge(this, supplier);
+        new FlowEdge(this, supplier, FlowEdge.ResourceType.CPU);
+        new FlowEdge(this, accelSupplier, FlowEdge.ResourceType.ACCEL);
 
         this.workloads = new LinkedList<>(workload.workloads());
         this.checkpointInterval = workload.checkpointInterval();
@@ -120,11 +130,18 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         this.onStart();
     }
 
-    VirtualMachine(FlowSupplier supplier, ChainWorkload workload, SimMachine machine, Consumer<Exception> completion) {
-        this(supplier, workload);
+    VirtualMachine(
+            FlowSupplier supplier,
+            FlowSupplier accelSupplier,
+            ChainWorkload workload,
+            SimMachine machine,
+            Consumer<Exception> completion) {
+        this(supplier, accelSupplier, workload);
 
         this.capacity = machine.getCpu().getFrequency();
-        this.d = 1 / machine.getCpu().getFrequency();
+        this.accelCapacity = machine.getAccel().getFrequency();
+        this.d = 1 / capacity;
+        this.accelD = 1 / accelCapacity;
         this.completion = completion;
     }
 
@@ -144,7 +161,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
             this.checkpointModel.start();
         }
 
-        this.activeWorkload = this.getNextWorkload().startWorkload(this);
+        this.activeWorkload = this.getNextWorkload().startWorkload(this, this);
     }
 
     public void updateCounters(long now) {
@@ -154,16 +171,26 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
         double cpuCapacity = 0.0f;
         if (delta > 0) {
-            final double factor = this.d * delta;
+            final double cpuFactor = this.d * delta;
 
-            this.performanceCounters.addCpuActiveTime(Math.round(this.cpuSupply * factor));
-            this.performanceCounters.setCpuIdleTime(Math.round((cpuCapacity - this.cpuSupply) * factor));
-            this.performanceCounters.addCpuStealTime(Math.round((this.cpuDemand - this.cpuSupply) * factor));
+            this.performanceCounters.addCpuActiveTime(Math.round(this.cpuSupply * cpuFactor));
+            this.performanceCounters.setCpuIdleTime(Math.round((cpuCapacity - this.cpuSupply) * cpuFactor));
+            this.performanceCounters.addCpuStealTime(Math.round((this.cpuDemand - this.cpuSupply) * cpuFactor));
+
+            final double accelFactor = this.accelD * delta;
+
+            this.performanceCounters.addAccelActiveTime(Math.round(this.cpuSupply * accelFactor));
+            this.performanceCounters.setAccelIdleTime(Math.round((cpuCapacity - this.cpuSupply) * accelFactor));
+            this.performanceCounters.addAccelStealTime(Math.round((this.cpuDemand - this.cpuSupply) * accelFactor));
         }
 
         this.performanceCounters.setCpuDemand(this.cpuDemand);
         this.performanceCounters.setCpuSupply(this.cpuSupply);
         this.performanceCounters.setCpuCapacity(cpuCapacity);
+
+        this.performanceCounters.setAccelDemand(this.accelDemand);
+        this.performanceCounters.setAccelSupply(this.accelSupply);
+        this.performanceCounters.setAccelCapacity(accelCapacity);
     }
 
     @Override
@@ -229,7 +256,11 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void addConsumerEdge(FlowEdge consumerEdge) {
-        this.workloadEdge = consumerEdge;
+        if (consumerEdge.getResourceType() == FlowEdge.ResourceType.CPU) {
+            this.workloadEdge = consumerEdge;
+        } else if (consumerEdge.getResourceType() == FlowEdge.ResourceType.ACCEL) {
+            this.accelWorkloadEdge = consumerEdge;
+        }
     }
 
     /**
@@ -239,8 +270,13 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void addSupplierEdge(FlowEdge supplierEdge) {
-        this.machineEdge = supplierEdge;
-        this.capacity = supplierEdge.getCapacity();
+        if (supplierEdge.getResourceType() == FlowEdge.ResourceType.CPU) {
+            this.machineEdge = supplierEdge;
+            this.capacity = supplierEdge.getCapacity();
+        } else if (supplierEdge.getResourceType() == FlowEdge.ResourceType.ACCEL) {
+            this.accelMachineEdge = supplierEdge;
+            this.accelCapacity = supplierEdge.getCapacity();
+        }
     }
 
     /**
@@ -251,9 +287,13 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
-
-        this.cpuDemand = newDemand;
-        this.machineEdge.pushDemand(newDemand);
+        if (supplierEdge.getResourceType() == FlowEdge.ResourceType.CPU) {
+            this.cpuDemand = newDemand;
+            this.machineEdge.pushDemand(newDemand);
+        } else if (supplierEdge.getResourceType() == FlowEdge.ResourceType.ACCEL) {
+            this.accelDemand = newDemand;
+            this.accelMachineEdge.pushDemand(newDemand);
+        }
     }
 
     /**
@@ -264,9 +304,13 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
-
-        this.cpuSupply = newSupply;
-        this.workloadEdge.pushSupply(newSupply);
+        if (consumerEdge.getResourceType() == FlowEdge.ResourceType.CPU) {
+            this.cpuSupply = newSupply;
+            this.workloadEdge.pushSupply(newSupply);
+        } else if (consumerEdge.getResourceType() == FlowEdge.ResourceType.ACCEL) {
+            this.accelSupply = newSupply;
+            this.accelWorkloadEdge.pushSupply(newSupply);
+        }
     }
 
     /**
@@ -279,7 +323,11 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand) {
         updateCounters(this.clock.millis());
 
-        this.pushOutgoingDemand(this.machineEdge, newDemand);
+        if (consumerEdge.getResourceType() == FlowEdge.ResourceType.CPU) {
+            this.pushOutgoingDemand(this.machineEdge, newDemand);
+        } else if (consumerEdge.getResourceType() == FlowEdge.ResourceType.ACCEL) {
+            this.pushOutgoingDemand(this.accelMachineEdge, newDemand);
+        }
     }
 
     /**
@@ -292,7 +340,11 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply) {
         updateCounters(this.clock.millis());
 
-        this.pushOutgoingSupply(this.machineEdge, newSupply);
+        if (supplierEdge.getResourceType() == FlowEdge.ResourceType.CPU) {
+            this.pushOutgoingSupply(this.machineEdge, newSupply);
+        } else if (supplierEdge.getResourceType() == FlowEdge.ResourceType.ACCEL) {
+            this.pushOutgoingSupply(this.accelMachineEdge, newSupply);
+        }
     }
 
     /**
@@ -304,17 +356,18 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void removeConsumerEdge(FlowEdge consumerEdge) {
-        if (this.workloadEdge == null) {
+        if (this.workloadEdge == null && this.accelWorkloadEdge == null) {
             return;
         }
 
         // Remove the connection to the active workload
         this.activeWorkload = null;
         this.workloadEdge = null;
+        this.accelWorkloadEdge = null;
 
         // Start next workload
         if (!this.workloads.isEmpty()) {
-            this.activeWorkload = getNextWorkload().startWorkload(this);
+            this.activeWorkload = getNextWorkload().startWorkload(this, this);
             return;
         }
 
@@ -329,7 +382,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void removeSupplierEdge(FlowEdge supplierEdge) {
-        if (this.machineEdge == null) {
+        if (this.machineEdge == null && this.accelWorkloadEdge == null) {
             return;
         }
 
@@ -338,8 +391,13 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
     @Override
     public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
-        List<FlowEdge> consumerEdges = (this.machineEdge != null) ? List.of(this.machineEdge) : List.of();
-        List<FlowEdge> supplierEdges = (this.workloadEdge != null) ? List.of(this.workloadEdge) : List.of();
+        ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
+        if (this.machineEdge != null) consumerEdges.add(this.machineEdge);
+        if (this.accelMachineEdge != null) consumerEdges.add(this.accelMachineEdge);
+
+        ArrayList<FlowEdge> supplierEdges = new ArrayList<>();
+        if (this.workloadEdge != null) supplierEdges.add(this.workloadEdge);
+        if (this.accelWorkloadEdge != null) supplierEdges.add(this.accelWorkloadEdge);
 
         return Map.of(
                 FlowEdge.NodeType.CONSUMING, consumerEdges,

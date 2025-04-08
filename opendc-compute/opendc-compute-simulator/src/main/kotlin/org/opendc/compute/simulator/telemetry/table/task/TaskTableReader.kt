@@ -108,6 +108,16 @@ public interface TaskTableReader : Exportable {
     public val cpuDemand: Double
 
     /**
+     * The GPU given to this task (in MHz).
+     */
+    public val accelUsage: Double
+
+    /**
+     * The GPU demanded by this task (in MHz).
+     */
+    public val accelDemand: Double
+
+    /**
      * The duration (in seconds) that a CPU was active in the task.
      */
     public val cpuActiveTime: Long

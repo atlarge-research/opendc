@@ -43,6 +43,7 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
     private var localDuration = Duration.ZERO
     private var localCpuCount = 0
     private var localCpuUsage = 0.0
+    private var localIsGpu = false
 
     /**
      * Root converter for the record.
@@ -85,6 +86,12 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
                                     localCpuUsage = value
                                 }
                             }
+                        "is_gpu", "isGpu" ->
+                            object : PrimitiveConverter() {
+                                override fun addBoolean(value: Boolean) {
+                                    localIsGpu = value
+                                }
+                            }
                         "flops" ->
                             object : PrimitiveConverter() {
                                 override fun addLong(value: Long) {
@@ -101,6 +108,7 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
                 localDuration = Duration.ZERO
                 localCpuCount = 0
                 localCpuUsage = 0.0
+                localIsGpu = false
             }
 
             override fun end() {}
@@ -108,7 +116,15 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
             override fun getConverter(fieldIndex: Int): Converter = converters[fieldIndex]
         }
 
-    override fun getCurrentRecord(): ResourceState = ResourceState(localId, localTimestamp, localDuration, localCpuCount, localCpuUsage)
+    override fun getCurrentRecord(): ResourceState =
+        ResourceState(
+            localId,
+            localTimestamp,
+            localDuration,
+            localCpuCount,
+            localCpuUsage,
+            localIsGpu,
+        )
 
     override fun getRootConverter(): GroupConverter = root
 }

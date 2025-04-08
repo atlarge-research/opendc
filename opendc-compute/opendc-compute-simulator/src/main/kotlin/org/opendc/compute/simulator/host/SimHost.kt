@@ -58,6 +58,7 @@ public class SimHost(
     private val engine: FlowEngine,
     private val machineModel: MachineModel,
     private val cpuPowerModel: CpuPowerModel,
+    private val accelPowerModel: CpuPowerModel,
     private val embodiedCarbon: Double,
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
@@ -136,6 +137,7 @@ public class SimHost(
                 this.machineModel,
                 this.powerDistributor,
                 this.cpuPowerModel,
+                this.accelPowerModel,
             ) { cause ->
                 hostState = if (cause != null) HostState.ERROR else HostState.DOWN
             }
@@ -340,6 +342,11 @@ public class SimHost(
         return guest.getCpuStats()
     }
 
+    public fun getAccelStats(task: ServiceTask): GuestCpuStats {
+        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
+        return guest.getAccelStats()
+    }
+
     override fun hashCode(): Int = name.hashCode()
 
     override fun equals(other: Any?): Boolean {
@@ -352,7 +359,11 @@ public class SimHost(
      * Convert flavor to machine model.
      */
     private fun Flavor.toMachineModel(): MachineModel {
-        return MachineModel(simMachine!!.machineModel.cpuModel, MemoryUnit("Generic", "Generic", 3200.0, memorySize))
+        return MachineModel(
+            simMachine!!.machineModel.cpuModel,
+            simMachine!!.machineModel.accelModel,
+            MemoryUnit("Generic", "Generic", 3200.0, memorySize),
+        )
     }
 
     /**

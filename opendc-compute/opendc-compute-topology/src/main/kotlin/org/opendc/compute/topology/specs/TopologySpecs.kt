@@ -77,8 +77,10 @@ public data class ClusterJSONSpec(
 public data class HostJSONSpec(
     val name: String = "Host",
     val cpu: CPUJSONSpec,
+    val accel: CPUJSONSpec? = null,
     val memory: MemoryJSONSpec,
     val powerModel: PowerModelSpec = PowerModelSpec.DFLT,
+    val accelPowerModel: PowerModelSpec = PowerModelSpec.NONE,
     val count: Int = 1,
 )
 
@@ -138,6 +140,14 @@ public data class PowerModelSpec(
                 power = Power.ofWatts(350),
                 maxPower = Power.ofWatts(400.0),
                 idlePower = Power.ofWatts(200.0),
+            )
+
+        public val NONE: PowerModelSpec =
+            PowerModelSpec(
+                modelType = "constant",
+                power = Power.ofWatts(0),
+                maxPower = Power.ofWatts(0),
+                idlePower = Power.ofWatts(0),
             )
     }
 }

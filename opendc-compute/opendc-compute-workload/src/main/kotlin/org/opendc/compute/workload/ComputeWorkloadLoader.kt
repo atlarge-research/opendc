@@ -38,6 +38,7 @@ import org.opendc.trace.conv.resourceMemCapacity
 import org.opendc.trace.conv.resourceNature
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
+import org.opendc.trace.conv.resourceStateIsGpu
 import org.opendc.trace.conv.resourceSubmissionTime
 import java.io.File
 import java.lang.ref.SoftReference
@@ -79,6 +80,7 @@ public class ComputeWorkloadLoader(
         val durationCol = reader.resolve(resourceStateDuration)
         val coresCol = reader.resolve(resourceCpuCount)
         val usageCol = reader.resolve(resourceStateCpuUsage)
+        val isGpuCol = reader.resolve(resourceStateIsGpu)
 
         val fragments = mutableMapOf<String, Builder>()
 
@@ -88,12 +90,13 @@ public class ComputeWorkloadLoader(
                 val durationMs = reader.getDuration(durationCol)!!
                 val cores = reader.getInt(coresCol)
                 val cpuUsage = reader.getDouble(usageCol)
+                val isGpu = reader.getBoolean(isGpuCol)
 
                 val builder =
                     fragments.computeIfAbsent(
                         id,
                     ) { Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, id) }
-                builder.add(durationMs, cpuUsage, cores)
+                builder.add(durationMs, cpuUsage, cores, isGpu)
             }
 
             fragments
@@ -231,10 +234,11 @@ public class ComputeWorkloadLoader(
             duration: Duration,
             usage: Double,
             cores: Int,
+            isGpu: Boolean,
         ) {
             totalLoad += (usage * duration.toMillis()) / 1000 // avg MHz * duration = MFLOPs
 
-            builder.add(duration.toMillis(), usage, cores)
+            builder.add(duration.toMillis(), usage, cores, isGpu)
         }
 
         /**

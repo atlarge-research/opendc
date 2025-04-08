@@ -33,6 +33,7 @@ import org.opendc.simulator.engine.graph.FlowSupplier;
 
 public class TraceWorkload implements Workload {
     private final ArrayList<TraceFragment> fragments;
+    private final ArrayList<TraceFragment> accelFragments;
     private final long checkpointInterval;
     private final long checkpointDuration;
     private final double checkpointIntervalScaling;
@@ -53,12 +54,14 @@ public class TraceWorkload implements Workload {
 
     public TraceWorkload(
             ArrayList<TraceFragment> fragments,
+            ArrayList<TraceFragment> accelFragments,
             long checkpointInterval,
             long checkpointDuration,
             double checkpointIntervalScaling,
             ScalingPolicy scalingPolicy,
             String taskName) {
         this.fragments = fragments;
+        this.accelFragments = accelFragments;
         this.checkpointInterval = checkpointInterval;
         this.checkpointDuration = checkpointDuration;
         this.checkpointIntervalScaling = checkpointIntervalScaling;
@@ -68,16 +71,20 @@ public class TraceWorkload implements Workload {
         // TODO: remove if we decide not to use it.
         this.maxCpuDemand = fragments.stream()
                 .max(Comparator.comparing(TraceFragment::cpuUsage))
-                .get()
-                .cpuUsage();
+                .map(TraceFragment::cpuUsage)
+                .orElse(0.0);
         this.maxCoreCount = fragments.stream()
                 .max(Comparator.comparing(TraceFragment::coreCount))
-                .get()
-                .coreCount();
+                .map(TraceFragment::coreCount)
+                .orElse(0);
     }
 
     public ArrayList<TraceFragment> getFragments() {
         return fragments;
+    }
+
+    public ArrayList<TraceFragment> getAccelFragments() {
+        return accelFragments;
     }
 
     @Override
@@ -114,14 +121,26 @@ public class TraceWorkload implements Workload {
         this.fragments.addFirst(fragment);
     }
 
-    @Override
-    public SimWorkload startWorkload(FlowSupplier supplier) {
-        return new SimTraceWorkload(supplier, this);
+    public void removeAccelFragments(int numberOfFragments) {
+        if (numberOfFragments <= 0) {
+            return;
+        }
+        this.accelFragments.subList(0, numberOfFragments).clear();
+    }
+
+    public void addFirstAccel(TraceFragment fragment) {
+        this.accelFragments.addFirst(fragment);
     }
 
     @Override
-    public SimWorkload startWorkload(FlowSupplier supplier, SimMachine machine, Consumer<Exception> completion) {
-        return this.startWorkload(supplier);
+    public SimWorkload startWorkload(FlowSupplier supplier, FlowSupplier accelSupplier) {
+        return new SimTraceWorkload(supplier, accelSupplier, this);
+    }
+
+    @Override
+    public SimWorkload startWorkload(
+            FlowSupplier supplier, FlowSupplier accelSupplier, SimMachine machine, Consumer<Exception> completion) {
+        return this.startWorkload(supplier, accelSupplier);
     }
 
     public static Builder builder(
@@ -135,6 +154,7 @@ public class TraceWorkload implements Workload {
 
     public static final class Builder {
         private final ArrayList<TraceFragment> fragments;
+        private final ArrayList<TraceFragment> accelFragments;
         private final long checkpointInterval;
         private final long checkpointDuration;
         private final double checkpointIntervalScaling;
@@ -151,6 +171,7 @@ public class TraceWorkload implements Workload {
                 ScalingPolicy scalingPolicy,
                 String taskName) {
             this.fragments = new ArrayList<>();
+            this.accelFragments = new ArrayList<>();
             this.checkpointInterval = checkpointInterval;
             this.checkpointDuration = checkpointDuration;
             this.checkpointIntervalScaling = checkpointIntervalScaling;
@@ -165,8 +186,12 @@ public class TraceWorkload implements Workload {
          * @param usage The CPU usage at this fragment.
          * @param cores The number of cores used during this fragment.
          */
-        public void add(long duration, double usage, int cores) {
-            fragments.add(fragments.size(), new TraceFragment(duration, usage, cores));
+        public void add(long duration, double usage, int cores, boolean isGpu) {
+            if (isGpu) {
+                accelFragments.add(new TraceFragment(duration, usage, cores));
+            } else {
+                fragments.add(new TraceFragment(duration, usage, cores));
+            }
         }
 
         /**
@@ -175,6 +200,7 @@ public class TraceWorkload implements Workload {
         public TraceWorkload build() {
             return new TraceWorkload(
                     this.fragments,
+                    this.accelFragments,
                     this.checkpointInterval,
                     this.checkpointDuration,
                     this.checkpointIntervalScaling,

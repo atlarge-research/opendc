@@ -39,19 +39,31 @@ public class FlowEdge {
     private double supply = 0.0;
 
     private double capacity;
+    private ResourceType resourceType;
 
     public enum NodeType {
         CONSUMING,
         SUPPLYING
     }
 
+    public enum ResourceType {
+        CPU,
+        ACCEL
+    }
+
     public FlowEdge(FlowConsumer consumer, FlowSupplier supplier) {
+        this(consumer, supplier, null);
+    }
+
+    public FlowEdge(FlowConsumer consumer, FlowSupplier supplier, ResourceType resourceType) {
         if (!(consumer instanceof FlowNode)) {
             throw new IllegalArgumentException("Flow consumer is not a FlowNode");
         }
         if (!(supplier instanceof FlowNode)) {
             throw new IllegalArgumentException("Flow consumer is not a FlowNode");
         }
+
+        this.resourceType = resourceType;
 
         this.consumer = consumer;
         this.supplier = supplier;
@@ -126,6 +138,10 @@ public class FlowEdge {
 
     public void setSupplierIndex(int supplierIndex) {
         this.supplierIndex = supplierIndex;
+    }
+
+    public ResourceType getResourceType() {
+        return resourceType;
     }
 
     /**

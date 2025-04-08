@@ -26,6 +26,7 @@ import java.time.InstantSource;
 import java.util.function.Consumer;
 import org.opendc.simulator.compute.cpu.CpuPowerModel;
 import org.opendc.simulator.compute.cpu.SimCpu;
+import org.opendc.simulator.compute.gpu.SimGpu;
 import org.opendc.simulator.compute.memory.Memory;
 import org.opendc.simulator.compute.models.MachineModel;
 import org.opendc.simulator.compute.power.SimPsu;
@@ -46,8 +47,11 @@ public class SimMachine {
     private final InstantSource clock;
 
     private SimCpu cpu;
+    private SimGpu accel;
     private FlowDistributor cpuDistributor;
+    private FlowDistributor accelDistributor;
     private SimPsu psu;
+    private FlowDistributor psuDistributor;
     private Memory memory;
 
     private final Consumer<Exception> completion;
@@ -74,6 +78,10 @@ public class SimMachine {
 
     public SimCpu getCpu() {
         return cpu;
+    }
+
+    public SimGpu getAccel() {
+        return accel;
     }
 
     public Memory getMemory() {
@@ -114,6 +122,7 @@ public class SimMachine {
             MachineModel machineModel,
             FlowDistributor powerDistributor,
             CpuPowerModel cpuPowerModel,
+            CpuPowerModel accelPowerModel,
             Consumer<Exception> completion) {
         this.engine = engine;
         this.machineModel = machineModel;
@@ -121,19 +130,25 @@ public class SimMachine {
 
         // Create the psu and cpu and connect them
         this.psu = new SimPsu(engine);
+        this.psuDistributor = new FlowDistributor(engine);
+        new FlowEdge(this.psuDistributor, this.psu);
 
         new FlowEdge(this.psu, powerDistributor);
 
         this.cpu = new SimCpu(engine, this.machineModel.getCpuModel(), cpuPowerModel, 0);
+        this.accel = new SimGpu(engine, this.machineModel.getAccelModel(), accelPowerModel, 0);
 
-        new FlowEdge(this.cpu, this.psu);
+        new FlowEdge(this.cpu, this.psuDistributor);
+        new FlowEdge(this.accel, this.psuDistributor);
 
         this.memory = new Memory(engine, this.machineModel.getMemory());
 
         // Create a FlowDistributor and add the cpu as supplier
         this.cpuDistributor = new FlowDistributor(engine);
+        this.accelDistributor = new FlowDistributor(engine);
 
         new FlowEdge(this.cpuDistributor, this.cpu);
+        new FlowEdge(this.accelDistributor, this.accel);
 
         this.completion = completion;
     }
@@ -149,11 +164,20 @@ public class SimMachine {
         this.psu.closeNode();
         this.psu = null;
 
+        this.psuDistributor.closeNode();
+        this.psuDistributor = null;
+
         this.cpu.closeNode();
         this.cpu = null;
 
         this.cpuDistributor.closeNode();
         this.cpuDistributor = null;
+
+        this.accel.closeNode();
+        this.accel = null;
+
+        this.accelDistributor.closeNode();
+        this.accelDistributor = null;
 
         this.memory = null;
 
@@ -180,6 +204,6 @@ public class SimMachine {
      * @param completion The completion callback that needs to be called when the workload is done
      */
     public VirtualMachine startWorkload(ChainWorkload workload, Consumer<Exception> completion) {
-        return (VirtualMachine) workload.startWorkload(this.cpuDistributor, this, completion);
+        return (VirtualMachine) workload.startWorkload(this.cpuDistributor, this.accelDistributor, this, completion);
     }
 }

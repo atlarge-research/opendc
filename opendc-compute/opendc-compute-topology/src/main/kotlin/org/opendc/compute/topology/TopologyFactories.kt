@@ -165,15 +165,43 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
             )
         }
 
+    val accelUnits =
+        if (accel == null) {
+            List(1) {
+                CpuModel(
+                    globalCoreId++,
+                    0,
+                    0.0,
+                )
+            }
+        } else {
+            List(accel.count) {
+                CpuModel(
+                    globalCoreId++,
+                    accel.coreCount,
+                    accel.coreSpeed.toMHz(),
+                )
+            }
+        }
+
     val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed.toMHz(), memory.memorySize.toMiB().toLong())
     val machineModel =
         MachineModel(
             units,
+            accelUnits,
             unknownMemoryUnit,
         )
 
     val powerModel =
         getPowerModel(powerModel.modelType, powerModel.power.toWatts(), powerModel.maxPower.toWatts(), powerModel.idlePower.toWatts())
+
+    val accelPowerModel =
+        getPowerModel(
+            accelPowerModel.modelType,
+            accelPowerModel.power.toWatts(),
+            accelPowerModel.maxPower.toWatts(),
+            accelPowerModel.idlePower.toWatts(),
+        )
 
     val hostSpec =
         HostSpec(
@@ -181,6 +209,7 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
             clusterName,
             machineModel,
             powerModel,
+            accelPowerModel,
         )
     return hostSpec
 }
