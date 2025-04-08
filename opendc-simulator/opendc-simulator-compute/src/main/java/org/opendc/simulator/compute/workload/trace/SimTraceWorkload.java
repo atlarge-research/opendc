@@ -264,35 +264,66 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         // The amount of work done since last update
         double finishedWork = this.scalingPolicy.getFinishedWork(this.cpuFreqDemand, this.cpuFreqSupplied, passedTime);
+        double finishedAccelWork = this.scalingPolicy.getFinishedWork(this.accelFreqDemand, this.accelFreqSupplied, passedTime);
 
         this.remainingWork -= finishedWork;
+        this.remainingAccelWork -= finishedAccelWork;
 
         // The amount of time required to finish the fragment at this speed
         long remainingTime =
                 this.scalingPolicy.getRemainingDuration(this.cpuFreqDemand, this.cpuFreqDemand, this.remainingWork);
+        long remainingAccelTime =
+            this.scalingPolicy.getRemainingDuration(this.accelFreqDemand, this.accelFreqDemand, this.remainingAccelWork);
 
         // If this is the end of the Task, don't make a snapshot
         if (remainingTime <= 0 && remainingFragments.isEmpty()) {
             return;
-        }
-
-        // Create a new fragment based on the current fragment and remaining duration
-        TraceFragment newFragment =
+        } else {
+            // Create a new fragment based on the current fragment and remaining duration
+            TraceFragment newFragment =
                 new TraceFragment(remainingTime, currentFragment.cpuUsage(), currentFragment.coreCount());
 
-        // Alter the snapshot by removing finished fragments
-        this.snapshot.removeFragments(this.fragmentIndex);
-        this.snapshot.addFirst(newFragment);
+            // Alter the snapshot by removing finished fragments
+            this.snapshot.removeFragments(this.fragmentIndex);
+            this.snapshot.addFirst(newFragment);
 
-        this.remainingFragments.addFirst(newFragment);
+            this.remainingFragments.addFirst(newFragment);
 
-        // Create and add a fragment for processing the snapshot process
-        TraceFragment snapshotFragment = new TraceFragment(
+            // Create and add a fragment for processing the snapshot process
+            TraceFragment snapshotFragment = new TraceFragment(
                 this.checkpointDuration, this.snapshot.getMaxCpuDemand(), this.snapshot.getMaxCoreCount());
-        this.remainingFragments.addFirst(snapshotFragment);
+            this.remainingFragments.addFirst(snapshotFragment);
 
-        this.fragmentIndex = -1;
-        startNextFragment();
+            this.fragmentIndex = -1;
+            startNextFragment();
+        }
+
+        if (remainingAccelTime <= 0 && remainingAccelFragments.isEmpty()) {
+            return;
+        } else {
+            // Create a new fragment based on the current fragment and remaining duration
+            TraceFragment newAccelFragment =
+                new TraceFragment(remainingAccelTime, currentAccelFragment.cpuUsage(), currentAccelFragment.coreCount());
+
+            // Alter the snapshot by removing finished fragments
+            this.snapshot.removeAccelFragments(this.accelFragmentIndex);
+            this.snapshot.addFirstAccel(newAccelFragment);
+
+            this.remainingAccelFragments.addFirst(newAccelFragment);
+
+            // Create and add a fragment for processing the snapshot process
+            // Not adding a snapshot cost to accel fragments for now
+//            TraceFragment snapshotAccelFragment = new TraceFragment(
+//                this.checkpointDuration, this.snapshot.getMaxCpuDemand(), this.snapshot.getMaxCoreCount());
+//            this.remainingAccelFragments.addFirst(snapshotAccelFragment);
+
+            this.accelFragmentIndex = -1;
+            startNextAccelFragment();
+        }
+
+        if (remainingFragments.isEmpty() && remainingAccelFragments.isEmpty()) {
+            return;
+        }
 
         this.startOfFragment = now;
 

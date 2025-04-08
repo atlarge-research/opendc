@@ -121,6 +121,17 @@ public class TraceWorkload implements Workload {
         this.fragments.addFirst(fragment);
     }
 
+    public void removeAccelFragments(int numberOfFragments) {
+        if (numberOfFragments <= 0) {
+            return;
+        }
+        this.accelFragments.subList(0, numberOfFragments).clear();
+    }
+
+    public void addFirstAccel(TraceFragment fragment) {
+        this.accelFragments.addFirst(fragment);
+    }
+
     @Override
     public SimWorkload startWorkload(FlowSupplier supplier, FlowSupplier accelSupplier) {
         return new SimTraceWorkload(supplier, accelSupplier, this);
