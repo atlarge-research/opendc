@@ -39,6 +39,8 @@ public class TraceWorkload implements Workload {
     private final double checkpointIntervalScaling;
     private final double maxCpuDemand;
     private final int maxCoreCount;
+    private final double maxAccelDemand;
+    private final int maxAccelCoreCount;
 
     public String getTaskName() {
         return taskName;
@@ -77,6 +79,15 @@ public class TraceWorkload implements Workload {
                 .max(Comparator.comparing(TraceFragment::coreCount))
                 .map(TraceFragment::coreCount)
                 .orElse(0);
+
+        this.maxAccelDemand = accelFragments.stream()
+                .max(Comparator.comparing(TraceFragment::cpuUsage))
+                .map(TraceFragment::cpuUsage)
+                .orElse(0.0);
+        this.maxAccelCoreCount = accelFragments.stream()
+                .max(Comparator.comparing(TraceFragment::coreCount))
+                .map(TraceFragment::coreCount)
+                .orElse(0);
     }
 
     public ArrayList<TraceFragment> getFragments() {
@@ -108,6 +119,14 @@ public class TraceWorkload implements Workload {
 
     public double getMaxCpuDemand() {
         return maxCpuDemand;
+    }
+
+    public int getMaxAccelCoreCount() {
+        return maxAccelCoreCount;
+    }
+
+    public double getMaxAccelDemand() {
+        return maxAccelDemand;
     }
 
     public void removeFragments(int numberOfFragments) {

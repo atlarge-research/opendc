@@ -154,8 +154,11 @@ class GpuTest {
         )
     }
 
+    /**
+     * Injecting a failure after 5 minutes. Failure lasts 5 minutes. No checkpointing
+     */
     @Test
-    fun testGpuSnapshot() {
+    fun testGpuFailure() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -182,9 +185,51 @@ class GpuTest {
         val monitor = runTest(topology, workload, failureModelSpec)
 
         assertAll(
-            { assertEquals(10 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect energy usage" } },
-            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(9)) { "Incorrect energy usage" } },
+            { assertEquals(20 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
+            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect energy usage at 0" } },
+            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(12)) { "Incorrect energy usage at 9" } },
+        )
+    }
+
+    @Test
+    fun testGpuCheckpoint() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                        ),
+                    accelFragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                        ),
+                    checkpointInterval = 60 * 1000L,
+                    checkpointDuration = 1000L,
+                ),
+            )
+
+        val failureModelSpec =
+            TraceBasedFailureModelSpec(
+                "src/test/resources/failureTraces/single_failure.parquet",
+                repeat = false,
+            )
+
+        val topology = createTopology("gpu/single_1_2000.json")
+
+        val monitor = runTest(topology, workload, failureModelSpec)
+
+        assertAll(
+            // Task run time + Time node is in failed state + checkpoint time + time waiting to be scheduled
+            {
+                assertEquals(
+                    (10 * 60 * 1000) + (5 * 60 * 1000) + (9 * 1000) + (56 * 1000),
+                    monitor.maxTimestamp,
+                ) { "Total runtime incorrect" }
+            },
+            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect power draw at 0" } },
+            { assertEquals(300.0, monitor.hostPowerDraws["H01"]?.get(12)) { "Incorrect power draw at 9" } },
         )
     }
 }
