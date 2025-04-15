@@ -1,0 +1,263 @@
+/*
+ * Copyright (c) 2024 AtLarge Research
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package org.opendc.simulator.compute.gpu;
+
+import java.util.List;
+import java.util.Map;
+
+import org.opendc.simulator.compute.machine.GpuPerformanceCounters;
+import org.opendc.simulator.compute.models.GpuModel;
+import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.engine.graph.FlowConsumer;
+import org.opendc.simulator.engine.graph.FlowEdge;
+import org.opendc.simulator.engine.graph.FlowNode;
+import org.opendc.simulator.engine.graph.FlowSupplier;
+
+/**
+ * A {@link SimGpu} of a machine.
+ */
+public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer {
+    private final GpuModel gpuModel;
+
+    private final GpuPowerModel gpuPowerModel;
+
+    private double currentGpuDemand = 0.0f; // cpu capacity demanded by the mux
+    private double currentGpuUtilization = 0.0f;
+    private double currentGpuSupplied = 0.0f; // cpu capacity supplied to the mux
+
+    private double currentPowerDemand; // power demanded of the psu
+    private double currentPowerSupplied = 0.0f; // cpu capacity supplied by the psu
+
+    private double maxCapacity;
+
+    private final GpuPerformanceCounters gpuPerformanceCounters = new GpuPerformanceCounters();
+    private long lastCounterUpdate;
+    private final double gpuFrequencyInv;
+
+    private FlowEdge distributorEdge;
+    private FlowEdge psuEdge;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Basic Getters and Setters
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public double getFrequency() {
+        return gpuModel.getTotalCoreCapacity();
+    }
+
+    @Override
+    public double getCapacity() {
+        return maxCapacity;
+    }
+
+    public GpuPerformanceCounters getPerformanceCounters() {
+        return gpuPerformanceCounters;
+    }
+
+    public double getPowerDraw() {
+        return this.currentPowerSupplied;
+    }
+
+    public double getDemand() {
+        return this.currentGpuDemand;
+    }
+
+    public double getSpeed() {
+        return this.currentGpuSupplied;
+    }
+
+    public GpuModel getGpuModel() {
+        return gpuModel;
+    }
+
+    @Override
+    public String toString() {
+        return "SimBareMetalMachine.Gpu[model=" + gpuModel + "]";
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Constructors
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public SimGpu(FlowEngine engine, GpuModel gpuModel, GpuPowerModel powerModel, int id) {
+        super(engine);
+        this.gpuModel = gpuModel;
+        this.maxCapacity = this.gpuModel.getTotalCoreCapacity();
+
+        this.gpuPowerModel = powerModel;
+
+        this.lastCounterUpdate = clock.millis();
+
+        this.gpuFrequencyInv = 1 / this.maxCapacity;
+
+        this.currentPowerDemand = this.gpuPowerModel.computePower(this.currentGpuUtilization);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // FlowNode related functionality
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public long onUpdate(long now) {
+        updateCounters(now);
+
+        // Check if supply == demand
+        if (this.currentPowerDemand != this.currentPowerSupplied) {
+            this.pushOutgoingDemand(this.psuEdge, this.currentPowerDemand);
+
+            return Long.MAX_VALUE;
+        }
+
+        this.currentGpuSupplied = Math.min(this.currentGpuDemand, this.maxCapacity);
+
+        this.pushOutgoingSupply(this.distributorEdge, this.currentGpuSupplied);
+
+        return Long.MAX_VALUE;
+    }
+
+    public void updateCounters() {
+        this.updateCounters(this.clock.millis());
+    }
+
+    /**
+     * Update the performance counters of the CPU.
+     *
+     * @param now The timestamp at which to update the counter.
+     */
+    public void updateCounters(long now) {
+        long lastUpdate = this.lastCounterUpdate;
+        this.lastCounterUpdate = now;
+        long delta = now - lastUpdate;
+
+        if (delta > 0) {
+            double demand = this.currentGpuDemand;
+            double rate = this.currentGpuSupplied;
+            double capacity = this.maxCapacity;
+
+            final double factor = this.gpuFrequencyInv * delta;
+
+            this.gpuPerformanceCounters.addGpuActiveTime(Math.round(rate * factor));
+            this.gpuPerformanceCounters.addGpuIdleTime(Math.round((capacity - rate) * factor));
+            this.gpuPerformanceCounters.addGpuStealTime(Math.round((demand - rate) * factor));
+        }
+
+        this.gpuPerformanceCounters.setGpuDemand(this.currentGpuDemand);
+        this.gpuPerformanceCounters.setGpuSupply(this.currentGpuSupplied);
+        this.gpuPerformanceCounters.setGpuCapacity(this.maxCapacity);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // FlowGraph Related functionality
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Push new demand to the psu
+     */
+    @Override
+    public void pushOutgoingDemand(FlowEdge supplierEdge, double newPowerDemand) {
+        updateCounters();
+        this.currentPowerDemand = newPowerDemand;
+        this.psuEdge.pushDemand(newPowerDemand);
+    }
+
+    /**
+     * Push updated supply to the mux
+     */
+    @Override
+    public void pushOutgoingSupply(FlowEdge consumerEdge, double newGpuSupply) {
+        updateCounters();
+        this.currentGpuSupplied = newGpuSupply;
+
+        this.distributorEdge.pushSupply(newGpuSupply, true);
+    }
+
+    /**
+     * Handle new demand coming in from the mux
+     */
+    @Override
+    public void handleIncomingDemand(FlowEdge consumerEdge, double newGpuDemand) {
+        updateCounters();
+        this.currentGpuDemand = newGpuDemand;
+
+        this.currentGpuUtilization = Math.min(this.currentGpuDemand / this.maxCapacity, 1.0);
+
+        // Calculate Power Demand and send to PSU
+        this.currentPowerDemand = this.gpuPowerModel.computePower(this.currentGpuUtilization);
+
+        this.invalidate();
+    }
+
+    /**
+     * Handle updated supply from the psu
+     */
+    @Override
+    public void handleIncomingSupply(FlowEdge supplierEdge, double newPowerSupply) {
+        updateCounters();
+        this.currentPowerSupplied = newPowerSupply;
+
+        this.invalidate();
+    }
+
+    /**
+     * Add a connection to the mux
+     */
+    @Override
+    public void addConsumerEdge(FlowEdge consumerEdge) {
+        this.distributorEdge = consumerEdge;
+    }
+
+    /**
+     * Add a connection to the psu
+     */
+    @Override
+    public void addSupplierEdge(FlowEdge supplierEdge) {
+        this.psuEdge = supplierEdge;
+
+        this.invalidate();
+    }
+
+    /**
+     * Remove the connection to the mux
+     */
+    @Override
+    public void removeConsumerEdge(FlowEdge consumerEdge) {
+        this.distributorEdge = null;
+        this.invalidate();
+    }
+
+    /**
+     * Remove the connection to the psu
+     */
+    @Override
+    public void removeSupplierEdge(FlowEdge supplierEdge) {
+        this.psuEdge = null;
+        this.invalidate();
+    }
+
+    @Override
+    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
+        return Map.of(
+                FlowEdge.NodeType.CONSUMING, List.of(this.psuEdge),
+                FlowEdge.NodeType.SUPPLYING, List.of(this.distributorEdge));
+    }
+}
