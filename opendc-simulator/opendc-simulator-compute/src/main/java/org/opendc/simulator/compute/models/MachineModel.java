@@ -22,6 +22,9 @@
 
 package org.opendc.simulator.compute.models;
 
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,6 +34,7 @@ import java.util.Objects;
 public final class MachineModel {
     private final CpuModel cpuModel;
     private final MemoryUnit memory;
+    private final List<GpuModel> gpuModels = new ArrayList<>();
 
     /**
      * Construct a {@link MachineModel} instance.
@@ -38,9 +42,12 @@ public final class MachineModel {
      * @param cpuModel The cpu available to the image.
      * @param memory The list of memory units available to the image.
      */
-    public MachineModel(CpuModel cpuModel, MemoryUnit memory) {
+    public MachineModel(CpuModel cpuModel, MemoryUnit memory, List<GpuModel> gpuModels) {
         this.cpuModel = cpuModel;
         this.memory = memory;
+        if (gpuModels != null && !gpuModels.isEmpty()) {
+            this.gpuModels.addAll(gpuModels);
+        }
     }
 
     /**
@@ -61,7 +68,31 @@ public final class MachineModel {
                         cpus.get(0).getVendor(),
                         cpus.get(0).getModelName(),
                         cpus.get(0).getArchitecture()),
-                memory);
+                memory,
+            null);
+    }
+
+    /**
+     * Construct a {@link MachineModel} instance.
+     * A list of the same cpus, are automatically converted to a single CPU with the number of cores of
+     * all cpus in the list combined.
+     *
+     * @param cpus The list of processing units available to the image.
+     * @param memory The list of memory units available to the image.
+     * @param gpus The list of GPUs available to the image.
+     */
+    public MachineModel(List<CpuModel> cpus, MemoryUnit memory, List<GpuModel> gpus) {
+
+        this(
+            new CpuModel(
+                cpus.get(0).getId(),
+                cpus.get(0).getCoreCount() * cpus.size(),
+                cpus.get(0).getCoreSpeed(),
+                cpus.get(0).getVendor(),
+                cpus.get(0).getModelName(),
+                cpus.get(0).getArchitecture()),
+            memory,
+            gpus);
     }
 
     /**
@@ -78,21 +109,23 @@ public final class MachineModel {
         return memory;
     }
 
+    public List<GpuModel> getGpuModel() {return gpuModels;}
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MachineModel that = (MachineModel) o;
-        return cpuModel.equals(that.cpuModel) && memory.equals(that.memory);
+        return cpuModel.equals(that.cpuModel) && memory.equals(that.memory) && gpuModels.equals(that.gpuModels);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cpuModel, memory);
+        return Objects.hash(cpuModel, memory, gpuModels);
     }
 
     @Override
     public String toString() {
-        return "MachineModel[cpus=" + cpuModel + ",memory=" + memory + "]";
+        return "MachineModel[cpus=" + cpuModel + ",memory=" + memory + ",gpus=" + gpuModels + "]";
     }
 }
