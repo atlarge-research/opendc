@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute.machine;
 
-public class PerformanceCounters {
+public class CpuPerformanceCounters {
     private long cpuActiveTime = 0;
     private long cpuIdleTime = 0;
     private long cpuStealTime = 0;

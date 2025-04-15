@@ -56,7 +56,7 @@ public class SimMachine {
     // Basic Getters and Setters
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public PerformanceCounters getPerformanceCounters() {
+    public CpuPerformanceCounters getPerformanceCounters() {
         return this.cpu.getPerformanceCounters();
     }
 
