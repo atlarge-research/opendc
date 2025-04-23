@@ -22,26 +22,13 @@
 
 package org.opendc.compute.simulator.host;
 
-import java.util.List;
-
 /**
- * Record describing the static machine properties of the host.
+ * A model for a GPU in a host.
  *
- * @param cpuCapacity    The total CPU capacity of the host in MHz.
- * @param coreCount      The number of logical processing cores available for this host.
- * @param memoryCapacity The amount of memory available for this host in MB.
+ * @param gpuCoreCapacity The capacity of the GPU cores hz.
+ * @param gpuCoreCount    The number of GPU cores.
+ * @param GpuMemoryCapacity The capacity of the GPU memory in GB.
+ * @param GpuMemorySpeed   The speed of the GPU memory in GB/s.
  */
-public record HostModel(double cpuCapacity, int coreCount, long memoryCapacity, List<GpuHostModel> gpuHostModels) {
-    /**
-     * Create a new host model.
-     *
-     * @param cpuCapacity    The total CPU capacity of the host in MHz.
-     * @param coreCount      The number of logical processing cores available for this host.
-     * @param memoryCapacity The amount of memory available for this host in MB.
-     */
-    public HostModel(double cpuCapacity, int coreCount, long memoryCapacity) {
-        this(cpuCapacity, coreCount, memoryCapacity, null);
-    }
-}
-
+public record GpuHostModel(double gpuCoreCapacity, int gpuCoreCount, long GpuMemoryCapacity, double GpuMemorySpeed) {}
 

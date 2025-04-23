@@ -81,12 +81,23 @@ public class SimHost(
             field = value
         }
 
+    private val gpuHostModels : List<GpuHostModel>? = machineModel.gpuModels?.map { gpumodel ->
+        return@map GpuHostModel(
+            gpumodel.totalCoreCapacity,
+            gpumodel.coreCount,
+            gpumodel.memorySize,
+            gpumodel.memoryBandwidth,
+        )
+    }
+
     private val model: HostModel =
         HostModel(
             machineModel.cpuModel.totalCapacity,
             machineModel.cpuModel.coreCount,
             machineModel.memory.size,
+            gpuHostModels
         )
+
 
     private var simMachine: SimMachine? = null
 
@@ -352,7 +363,10 @@ public class SimHost(
      * Convert flavor to machine model.
      */
     private fun Flavor.toMachineModel(): MachineModel {
-        return MachineModel(simMachine!!.machineModel.cpuModel, MemoryUnit("Generic", "Generic", 3200.0, memorySize))
+        return MachineModel(
+                simMachine!!.machineModel.cpuModel,
+                MemoryUnit("Generic", "Generic", 3200.0, memorySize),
+            simMachine!!.machineModel.gpuModels,
     }
 
     /**

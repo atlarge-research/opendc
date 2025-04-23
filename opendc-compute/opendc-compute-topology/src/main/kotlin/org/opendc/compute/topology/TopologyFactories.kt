@@ -166,11 +166,24 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
         }
 
     val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed.toMHz(), memory.memorySize.toMiB().toLong())
+    val gpuUnits = List(gpu?.count?: 0) {
+            GpuModel(
+            globalCoreId++,
+                gpu!!.coreCount,
+            gpu.coreSpeed.toMHz(),
+            gpu.memoryBandwidth.toKibps(),
+            gpu.memorySize.toMiB().toLong(),
+            gpu.vendor,
+            gpu.modelName ,
+            gpu.architecture,
+        )
+    }
+
     val machineModel =
         MachineModel(
             units,
             unknownMemoryUnit,
-        )
+            gpuUnits,
 
     val powerModel =
         getPowerModel(

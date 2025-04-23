@@ -77,6 +77,7 @@ public data class HostJSONSpec(
     val count: Int = 1,
     val memory: MemoryJSONSpec,
     val powerModel: PowerModelSpec = PowerModelSpec.DFLT,
+    val gpu: GPUJSONSpec? = null,
 )
 
 /**
@@ -115,6 +116,18 @@ public data class MemoryJSONSpec(
     val arch: String = "unknown",
     val memorySize: DataSize,
     val memorySpeed: Frequency = Frequency.ofMHz(-1),
+)
+
+@Serializable
+public data class GPUJSONSpec(
+    val count: Int = 1,
+    val coreCount: Int,
+    val coreSpeed: Frequency, // TODO: Check if instructions per second are more useful, and possible
+    val memorySize: DataSize = DataSize.ofMiB(-1),
+    val memoryBandwidth: DataRate = DataRate.ofKibps(-1),
+    val vendor: String = "unknown",
+    val modelName: String = "unknown",
+    val architecture: String = "unknown",
 )
 
 @Serializable
