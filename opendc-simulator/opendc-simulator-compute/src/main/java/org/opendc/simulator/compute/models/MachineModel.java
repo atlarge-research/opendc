@@ -35,6 +35,7 @@ public final class MachineModel {
     private final CpuModel cpuModel;
     private final MemoryUnit memory;
     private final List<GpuModel> gpuModels = new ArrayList<>();
+    private final List<GpuModel> gpuModels;
 
     /**
      * Construct a {@link MachineModel} instance.
@@ -42,10 +43,10 @@ public final class MachineModel {
      * @param cpuModel The cpu available to the image.
      * @param memory The list of memory units available to the image.
      */
-    public MachineModel(CpuModel cpuModel, MemoryUnit memory, List<GpuModel> gpuModels) {
+    public MachineModel(CpuModel cpuModel, MemoryUnit memory,  @Nullable List<GpuModel> gpuModels,
         this.cpuModel = cpuModel;
         this.memory = memory;
-        if (gpuModels != null && !gpuModels.isEmpty()) {
+        this.gpuModels = gpuModels != null ? gpuModels : new ArrayList<>();
             this.gpuModels.addAll(gpuModels);
         }
     }
@@ -92,7 +93,7 @@ public final class MachineModel {
                 cpus.get(0).getModelName(),
                 cpus.get(0).getArchitecture()),
             memory,
-            gpus);
+            gpus != null ? gpus : new ArrayList<>(),
     }
 
     /**
@@ -110,6 +111,21 @@ public final class MachineModel {
     }
 
     public List<GpuModel> getGpuModel() {return gpuModels;}
+    public List<GpuModel> getGpuModels() {return gpuModels;}
+
+    /**
+     * Return specific GPU model by id.
+     * @param modelId The id of the GPU model to return.
+     * @return The GPU model with the given id, or null if not found.
+     */
+    public GpuModel getGpuModel(int modelId) {
+        for (GpuModel gpuModel : gpuModels) {
+            if (gpuModel.getId() == modelId) {
+                return gpuModel;
+            }
+        }
+        return null;
+    }
 
     @Override
     public boolean equals(Object o) {

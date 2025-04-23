@@ -23,9 +23,11 @@
 package org.opendc.simulator.compute.machine;
 
 import java.time.InstantSource;
+import java.util.List;
 import java.util.function.Consumer;
 import org.opendc.simulator.compute.cpu.CpuPowerModel;
 import org.opendc.simulator.compute.cpu.SimCpu;
+import org.opendc.simulator.compute.gpu.SimGpu;
 import org.opendc.simulator.compute.memory.Memory;
 import org.opendc.simulator.compute.models.MachineModel;
 import org.opendc.simulator.compute.power.SimPsu;
@@ -49,6 +51,7 @@ public class SimMachine {
     private FlowDistributor cpuDistributor;
     private SimPsu psu;
     private Memory memory;
+    private List<SimGpu> gpus;
 
     private final Consumer<Exception> completion;
 
@@ -181,5 +184,6 @@ public class SimMachine {
      */
     public VirtualMachine startWorkload(ChainWorkload workload, Consumer<Exception> completion) {
         return (VirtualMachine) workload.startWorkload(this.cpuDistributor, this, completion);
+        // TODO: Include GPU
     }
 }
