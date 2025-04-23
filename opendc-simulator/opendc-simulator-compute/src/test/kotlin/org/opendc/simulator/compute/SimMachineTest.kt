@@ -46,6 +46,7 @@ class SimMachineTest {
                     "amd64",
                 ),
                 MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000 * 4),
+                null
             )
     }
 

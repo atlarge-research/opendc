@@ -29,7 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategy;
 import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.engine.graph.distributionStrategies.MaxMinFairnessStrategy;
 
 public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
     private final ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
@@ -47,10 +50,18 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     private boolean overloaded = false;
 
     private double capacity; // What is the max capacity. Can probably be removed
+    private DistributionStrategy distributionStrategy;
 
     public FlowDistributor(FlowEngine engine) {
         super(engine);
+        this.distributionStrategy = new MaxMinFairnessStrategy();
     }
+
+    public FlowDistributor(FlowEngine engine, DistributionStrategy distributionStrategy) {
+        super(engine);
+        this.distributionStrategy = distributionStrategy;
+    }
+
 
     public double getTotalIncomingDemand() {
         return totalIncomingDemand;
@@ -88,6 +99,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         this.invalidate();
     }
 
+    // TODO: This should probably be moved to the distribution strategy
     private void updateOutgoingSupplies() {
 
         // If the demand is higher than the current supply, the system is overloaded.
@@ -95,7 +107,8 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         if (this.totalIncomingDemand > this.currentIncomingSupply) {
             this.overloaded = true;
 
-            double[] supplies = distributeSupply(this.incomingDemands, this.currentIncomingSupply);
+//            double[] supplies = distributeSupply(this.incomingDemands, this.currentIncomingSupply);
+            double[] supplies = this.distributionStrategy.distributeSupply(this.incomingDemands, this.currentIncomingSupply);
 
             for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
                 this.pushOutgoingSupply(this.consumerEdges.get(idx), supplies[idx]);
@@ -125,47 +138,49 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         this.updatedDemands.clear();
     }
 
-    private record Demand(int idx, double value) {}
+//    private record Demand(int idx, double value) {}
+//    public record Demand(int idx, double value) {}
 
     /**
      * Distributed the available supply over the different demands.
      * The supply is distributed using MaxMin Fairness.
      */
-    private static double[] distributeSupply(ArrayList<Double> demands, double currentSupply) {
-        int inputSize = demands.size();
-
-        final double[] supplies = new double[inputSize];
-        final Demand[] tempDemands = new Demand[inputSize];
-
-        for (int i = 0; i < inputSize; i++) {
-            tempDemands[i] = new Demand(i, demands.get(i));
-        }
-
-        Arrays.sort(tempDemands, (o1, o2) -> {
-            Double i1 = o1.value;
-            Double i2 = o2.value;
-            return i1.compareTo(i2);
-        });
-
-        double availableCapacity = currentSupply; // totalSupply
-
-        for (int i = 0; i < inputSize; i++) {
-            double d = tempDemands[i].value;
-
-            if (d == 0.0) {
-                continue;
-            }
-
-            double availableShare = availableCapacity / (inputSize - i);
-            double r = Math.min(d, availableShare);
-
-            int idx = tempDemands[i].idx;
-            supplies[idx] = r; // Update the rates
-            availableCapacity -= r;
-        }
-
-        return supplies;
-    }
+    // TODO: Make this more generic
+//    private static double[] distributeSupply(ArrayList<Double> demands, double currentSupply) {
+//        int inputSize = demands.size();
+//
+//        final double[] supplies = new double[inputSize];
+//        final Demand[] tempDemands = new Demand[inputSize];
+//
+//        for (int i = 0; i < inputSize; i++) {
+//            tempDemands[i] = new Demand(i, demands.get(i));
+//        }
+//
+//        Arrays.sort(tempDemands, (o1, o2) -> {
+//            Double i1 = o1.value;
+//            Double i2 = o2.value;
+//            return i1.compareTo(i2);
+//        });
+//
+//        double availableCapacity = currentSupply; // totalSupply
+//
+//        for (int i = 0; i < inputSize; i++) {
+//            double d = tempDemands[i].value;
+//
+//            if (d == 0.0) {
+//                continue;
+//            }
+//
+//            double availableShare = availableCapacity / (inputSize - i);
+//            double r = Math.min(d, availableShare);
+//
+//            int idx = tempDemands[i].idx;
+//            supplies[idx] = r; // Update the rates
+//            availableCapacity -= r;
+//        }
+//
+//        return supplies;
+//    }
 
     /**
      * Add a new consumer.

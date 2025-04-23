@@ -369,6 +369,8 @@ public class SimHost(
                 simMachine!!.machineModel.cpuModel,
                 MemoryUnit("Generic", "Generic", 3200.0, memorySize),
             simMachine!!.machineModel.gpuModels,
+            simMachine!!.machineModel.cpuDistributionStrategy,
+            simMachine!!.machineModel.gpuDistributionStrategy,)
     }
 
     /**
