@@ -30,7 +30,7 @@ import org.opendc.compute.topology.specs.ClusterSpec
  */
 class GpuTest {
     /**
-     * Test the creation of a GPU host with a single GPU, in minimal cofiguration
+     * Test the creation of a GPU host with a single GPU, in minimal configuration
      */
     @Test
     fun testGpuHostCreationSingleMinimal() {
@@ -49,7 +49,7 @@ class GpuTest {
     }
 
     /**
-     * Test the creation of a GPU host with a single GPU, in full configuration
+     * Test the creation of a GPU host with a single GPU with memory but no vendor
      */
     @Test
     fun testGpuHostCreationSingleWithMemoryNoVendor() {
@@ -68,7 +68,7 @@ class GpuTest {
     }
 
     /**
-     * Test the creation of a GPU host with a single GPU, in full configuration
+     * Test the creation of a GPU host with a single GPU with no memory but with vendor
      */
     @Test
     fun testGpuHostCreationSingleNoMemoryWithVendor() {
@@ -106,7 +106,82 @@ class GpuTest {
         )
     }
 
+    /**
+     * Test the creation of a GPU host with multiple GPU, in minimal configuration
+     */
+    @Test
+    fun testGpuHostCreationMultiMinimal() {
+        val topology = createTopology("Gpus/multi_gpu_no_vendor_no_memory.json")
+        assertGpuConfiguration(
+            topology,
+            coreCount = 1,
+            coreSpeed = 2000.0,
+            memorySize = -1L,
+            memoryBandwidth = -1.0,
+            vendor = "unknown",
+            modelName = "unknown",
+            architecture = "unknown",
+            gpuCount = 3
+        )
+    }
 
+    /**
+     * Test the creation of a GPU host with multiple GPU with memory but no vendor
+     */
+    @Test
+    fun testGpuHostCreationMultiWithMemoryNoVendor() {
+        val topology = createTopology("Gpus/multi_gpu_no_vendor.json")
+        assertGpuConfiguration(
+            topology,
+            coreCount = 1,
+            coreSpeed = 2000.0,
+            memorySize = 4096L,
+            memoryBandwidth = 500.0,
+            vendor = "unknown",
+            modelName = "unknown",
+            architecture = "unknown",
+            gpuCount = 100
+        )
+    }
+
+    /**
+     * Test the creation of a GPU host with multiple GPU with no memory but with vendor
+     */
+    @Test
+    fun testGpuHostCreationMultiNoMemoryWithVendor() {
+        val topology = createTopology("Gpus/multi_gpu_no_memory.json")
+        assertGpuConfiguration(
+            topology,
+            coreCount = 1,
+            coreSpeed = 2000.0,
+            memorySize = -1L,
+            memoryBandwidth = -1.0,
+            vendor = "NVIDIA",
+            modelName = "Tesla V100",
+            architecture = "Volta",
+            gpuCount = 2
+        )
+    }
+
+    /**
+     * Test the creation of a GPU host with multiple GPU, in full configuration
+     */
+    @Test
+    fun testGpuHostCreationMultiWithMemoryWithVendor() {
+        val topology = createTopology("Gpus/multi_gpu_full.json")
+        assertGpuConfiguration(
+            topology,
+            coreCount = 5120, // cuda cores
+//            coreCount = 640, // tensor cores
+            coreSpeed = 5000.0, // fictional value
+            memorySize = 30517578125,
+            memoryBandwidth = 7031250000.0,
+            vendor = "NVIDIA",
+            modelName = "Tesla V100",
+            architecture = "Volta",
+            gpuCount = 5
+        )
+    }
 
     private fun assertGpuConfiguration(
         topology: List<ClusterSpec>,

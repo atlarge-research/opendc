@@ -15,7 +15,7 @@
                     "memory": {
                         "memorySize": 140457600000
                     },
-                    "powerModel": {
+                    "cpuPowerModel": {
                         "modelType": "linear",
                         "power": 400.0,
                         "idlePower": 100.0,
@@ -23,6 +23,7 @@
                     },
                     "gpu":
                     {
+                        "count": 3,
                         "coreCount": 1,
                         "coreSpeed": 2000
                     }

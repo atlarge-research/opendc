@@ -21,8 +21,8 @@
                         "idlePower": 100.0,
                         "maxPower": 200.0
                     },
-                    "gpu":
-                    {
+                    "gpu": {
+                        "count": 2,
                         "coreCount": 1,
                         "coreSpeed": 2000,
                         "vendor": "NVIDIA",
