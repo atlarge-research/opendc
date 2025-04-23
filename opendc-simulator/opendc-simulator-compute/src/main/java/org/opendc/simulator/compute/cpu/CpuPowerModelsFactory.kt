@@ -33,7 +33,7 @@ public enum class CPUPowerModelEnum {
     Asymptotic,
 }
 
-public fun getPowerModel(
+public fun getCpuPowerModel(
     modelType: String,
     power: Double,
     maxPower: Double,
@@ -55,7 +55,7 @@ public fun getPowerModel(
     }
 }
 
-public fun getPowerModel(modelType: String): CpuPowerModel {
+public fun getCpuPowerModel(modelType: String): CpuPowerModel {
     return when (modelType) {
         "constant" -> CpuPowerModels.constant(200.0)
         "sqrt" -> CpuPowerModels.sqrt(350.0, 200.0)

@@ -31,7 +31,7 @@ public enum class GPUPowerModel {
     Cubic,
 }
 
-public fun getPowerModel(
+public fun getGpuPowerModel(
     modelType: String,
     power: Double,
     maxPower: Double,
@@ -48,13 +48,13 @@ public fun getPowerModel(
     }
 }
 
-public fun getPowerModel(modelType: String): GpuPowerModel {
+public fun getGpuPowerModel(modelType: GPUPowerModel): GpuPowerModel {
     return when (modelType) {
-        "constant" -> GpuPowerModels.constant(200.0)
-        "sqrt" -> GpuPowerModels.sqrt(350.0, 200.0)
-        "linear" -> GpuPowerModels.linear(350.0, 200.0)
-        "square" -> GpuPowerModels.square(350.0, 200.0)
-        "cubic" -> GpuPowerModels.cubic(350.0, 200.0)
+        GPUPowerModel.Constant -> GpuPowerModels.constant(200.0)
+        GPUPowerModel.Sqrt -> GpuPowerModels.sqrt(350.0, 200.0)
+        GPUPowerModel.Linear -> GpuPowerModels.linear(350.0, 200.0)
+        GPUPowerModel.Square -> GpuPowerModels.square(350.0, 200.0)
+        GPUPowerModel.Cubic -> GpuPowerModels.cubic(350.0, 200.0)
 
         else -> throw IllegalArgumentException("Unknown power modelType $modelType")
     }

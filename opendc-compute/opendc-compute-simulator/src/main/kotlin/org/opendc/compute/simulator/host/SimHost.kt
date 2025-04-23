@@ -32,6 +32,7 @@ import org.opendc.compute.simulator.telemetry.GuestSystemStats
 import org.opendc.compute.simulator.telemetry.HostCpuStats
 import org.opendc.compute.simulator.telemetry.HostSystemStats
 import org.opendc.simulator.compute.cpu.CpuPowerModel
+import org.opendc.simulator.compute.gpu.GpuPowerModel
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
@@ -58,6 +59,7 @@ public class SimHost(
     private val engine: FlowEngine,
     private val machineModel: MachineModel,
     private val cpuPowerModel: CpuPowerModel,
+    private val gpuPowerModel: GpuPowerModel,
     private val embodiedCarbon: Double,
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
