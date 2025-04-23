@@ -32,7 +32,7 @@ public final class GpuModel {
     private final int coreCount;
     private final double coreSpeed;
     private final double totalCoreCapacity;
-    private final double memorySpeed;
+    private final double memoryBandwidth;
     private final long memorySize;
     private final String vendor;
     private final String modelName;
@@ -44,17 +44,17 @@ public final class GpuModel {
      * @param id The identifier of the GPU core within the processing node.
      * @param coreCount The number of cores present in the GPU
      * @param coreSpeed The speed of a single core
-     * @param memorySpeed The speed of the memory in  MHz
+     * @param memoryBandwidth The speed of the memory in  MHz
      * @param memorySize The memory size of the GPU
      * @param vendor The vendor of the GPU
      * @param modelName The name of the GPU
      * @param arch The architecture of the GPU
      */
-    public GpuModel(int id, int coreCount, double coreSpeed, double memorySpeed, long memorySize, String vendor, String modelName, String arch) {
+    public GpuModel(int id, int coreCount, double coreSpeed, double memoryBandwidth, long memorySize, String vendor, String modelName, String arch) {
         this.id = id;
         this.coreCount = coreCount;
         this.coreSpeed = coreSpeed;
-        this.memorySpeed = memorySpeed;
+        this.memoryBandwidth = memoryBandwidth;
         this.memorySize = memorySize;
         this.totalCoreCapacity = coreSpeed * coreCount;
         this.vendor = vendor;
@@ -72,8 +72,8 @@ public final class GpuModel {
     public GpuModel(int id, int coreCount, double coreSpeed) {
         this(id, coreCount, coreSpeed, 0, 0, "unkown", "unkown", "unkown");
     }
-    public GpuModel(int id, int coreCount, double coreSpeed, double memorySpeed, long memorySize) {
-        this(id, coreCount, coreSpeed, memorySpeed, memorySize, "unkown", "unkown", "unkown");
+    public GpuModel(int id, int coreCount, double coreSpeed, double memoryBandwidth, long memorySize) {
+        this(id, coreCount, coreSpeed, memoryBandwidth, memorySize, "unkown", "unkown", "unkown");
     }
 
     /**
@@ -107,7 +107,7 @@ public final class GpuModel {
     /**
      * Return the speed of the memory in Mhz.
      */
-    public double getMemorySpeed() { return memorySpeed; }
+    public double getMemoryBandwidth() { return memoryBandwidth; }
 
     /**
      * Return the size of the memory in MB.
@@ -143,7 +143,7 @@ public final class GpuModel {
         return id == that.id
                 && Double.compare(that.totalCoreCapacity, totalCoreCapacity) == 0
                 && Double.compare(that.coreSpeed, coreSpeed) == 0
-                && Double.compare(that.memorySpeed, memorySpeed) == 0
+                && Double.compare(that.memoryBandwidth, memoryBandwidth) == 0
                 && Double.compare(that.memorySize, memorySize) == 0
                 && Objects.equals(vendor, that.vendor)
                 && Objects.equals(modelName, that.modelName)
@@ -152,13 +152,13 @@ public final class GpuModel {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, coreCount, coreSpeed, totalCoreCapacity, memorySpeed, memorySize, vendor, modelName, arch);
+        return Objects.hash(id, coreCount, coreSpeed, totalCoreCapacity, memoryBandwidth, memorySize, vendor, modelName, arch);
     }
 
     @Override
     public String toString() {
         return "ProcessingUnit[" + "id= " + id + ", coreCount= " + coreCount + ", coreSpeed= " + coreSpeed
-                + ", frequency= " + totalCoreCapacity + ", memorySpeed" + memorySpeed + ", memorySize" + memorySize + ", vendor= " + vendor + ", modelName= " + modelName + ", arch= "
+                + ", frequency= " + totalCoreCapacity + ", memoryBandwidth" + memoryBandwidth + ", memorySize" + memorySize + ", vendor= " + vendor + ", modelName= " + modelName + ", arch= "
                 + arch + "]";
     }
 }
