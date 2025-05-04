@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import jdk.jshell.spi.ExecutionControl;
 import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategy;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.distributionStrategies.MaxMinFairnessStrategy;
@@ -307,5 +308,12 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         List<FlowEdge> supplyingEdges = (this.supplierEdge != null) ? List.of(this.supplierEdge) : List.of();
 
         return Map.of(FlowEdge.NodeType.CONSUMING, supplyingEdges, FlowEdge.NodeType.SUPPLYING, this.consumerEdges);
+    }
+
+    @Override
+    public FlowEdge.ResourceType getResourceType() throws ExecutionControl.NotImplementedException {
+        // TODO: Check if correct
+//        return this.consumerEdges.get(0).getResourceType();
+        throw new ExecutionControl.NotImplementedException("Not implemented yet");
     }
 }
