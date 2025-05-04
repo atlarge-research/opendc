@@ -22,9 +22,46 @@
 
 package org.opendc.simulator.compute.workload.trace;
 
-public record TraceFragment(long duration, double cpuUsage, int coreCount) {
+import org.opendc.simulator.engine.graph.FlowEdge;
 
-    public TraceFragment(long start, long duration, double cpuUsage, int coreCount) {
-        this(duration, cpuUsage, coreCount);
+public record TraceFragment(long duration, double cpuUsage, int cpuCoreCount, double gpuUsage, int gpuCoreCount, double gpuMemoryUsage ) {
+
+    public TraceFragment(long start, long duration, double cpuUsage, int cpuCoreCount) {
+        this(duration, cpuUsage, cpuCoreCount, 0.0, 0, 0.0);
+    }
+    public TraceFragment(long duration, double cpuUsage, int cpuCoreCount) {
+        this(duration, cpuUsage, cpuCoreCount, 0.0, 0, 0.0);
+    }
+    public TraceFragment(long start, long duration, double cpuUsage, int cpuCoreCount, double gpuUsage, int gpuCoreCount) {
+        this(duration, cpuUsage, cpuCoreCount, gpuUsage, gpuCoreCount, 0.0);
+    }
+
+    /**
+     * Returns the resource usage for the specified resource type.
+     *
+     * @param resourceType the type of resource
+     * @return the usage value for the specified resource type
+     */
+    public double getResourceUsage(FlowEdge.ResourceType resourceType) throws IllegalArgumentException {
+        return switch (resourceType) {
+            case CPU -> cpuUsage;
+            case GPU -> gpuUsage;
+//            case GPU_MEMORY -> gpuMemoryUsage;
+            default -> throw new IllegalArgumentException("Invalid resource type: " + resourceType);
+        };
+    }
+
+    /**
+     * Returns the core count for the specified resource type.
+     *
+     * @param resourceType the type of resource
+     * @return the core count for the specified resource type
+     */
+    public int getCoreCount(FlowEdge.ResourceType resourceType) throws IllegalArgumentException {
+        return switch (resourceType) {
+            case CPU -> cpuCoreCount;
+            case GPU -> gpuCoreCount;
+            default -> throw new IllegalArgumentException("Invalid resource type: " + resourceType);
+        };
     }
 }
