@@ -76,7 +76,7 @@ fun createTestTask(
     return Task(
         UUID.nameUUIDFromBytes(name.toByteArray()),
         name,
-        fragments.maxOf { it.coreCount },
+        fragments.maxOf { it.cpuCoreCount() },
         fragments.maxOf { it.cpuUsage },
         memCapacity,
         1800000.0,

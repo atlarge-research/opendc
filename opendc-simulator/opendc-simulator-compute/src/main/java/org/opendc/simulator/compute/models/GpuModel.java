@@ -157,8 +157,8 @@ public final class GpuModel {
 
     @Override
     public String toString() {
-        return "ProcessingUnit[" + "id= " + id + ", coreCount= " + coreCount + ", coreSpeed= " + coreSpeed
-                + ", frequency= " + totalCoreCapacity + ", memoryBandwidth" + memoryBandwidth + ", memorySize" + memorySize + ", vendor= " + vendor + ", modelName= " + modelName + ", arch= "
+        return "ProcessingUnit[" + "id= " + id + ", gpuCoreCount= " + coreCount + ", gpuCoreSpeed= " + coreSpeed
+                + ", frequency= " + totalCoreCapacity + ", gpuMemoryBandwidth" + memoryBandwidth + ", gpuMemorySize" + memorySize + ", vendor= " + vendor + ", modelName= " + modelName + ", arch= "
                 + arch + "]";
     }
 }

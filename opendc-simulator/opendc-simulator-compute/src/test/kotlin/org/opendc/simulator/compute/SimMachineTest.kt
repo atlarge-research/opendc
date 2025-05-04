@@ -105,10 +105,10 @@ class SimMachineTest {
 //            val cpuNode = machineModel.cpu
 //            val machineModel =
 //                MachineModel(
-//                    List(cpuNode.coreCount * 2) {
+//                    List(cpuNode.cpuCoreCount * 2) {
 //                        CpuModel(
 //                            it,
-//                            cpuNode.coreCount,
+//                            cpuNode.cpuCoreCount,
 //                            1000.0,
 //                        )
 //                    },
