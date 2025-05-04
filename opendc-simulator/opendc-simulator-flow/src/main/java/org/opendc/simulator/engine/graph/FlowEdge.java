@@ -22,6 +22,9 @@
 
 package org.opendc.simulator.engine.graph;
 
+import java.lang.reflect.Type;
+import java.util.Objects;
+
 /**
  * An edge that connects two FlowStages.
  * A connection between FlowStages always consist of a FlowStage that demands
@@ -39,13 +42,23 @@ public class FlowEdge {
     private double supply = 0.0;
 
     private double capacity;
+    private final ResourceType resourceType;
 
     public enum NodeType {
         CONSUMING,
         SUPPLYING
     }
 
+    public enum ResourceType {
+        CPU,
+        GPU
+    }
+
     public FlowEdge(FlowConsumer consumer, FlowSupplier supplier) {
+        this(consumer, supplier, ResourceType.CPU);
+    }
+
+    public FlowEdge(FlowConsumer consumer, FlowSupplier supplier, ResourceType resourceType) {
         if (!(consumer instanceof FlowNode)) {
             throw new IllegalArgumentException("Flow consumer is not a FlowNode");
         }
@@ -57,6 +70,7 @@ public class FlowEdge {
         this.supplier = supplier;
 
         this.capacity = supplier.getCapacity();
+        this.resourceType = resourceType;
 
         this.consumer.addSupplierEdge(this);
         this.supplier.addConsumerEdge(this);
@@ -115,6 +129,8 @@ public class FlowEdge {
     public int getConsumerIndex() {
         return consumerIndex;
     }
+
+    public ResourceType getResourceType() {return resourceType;}
 
     public void setConsumerIndex(int consumerIndex) {
         this.consumerIndex = consumerIndex;

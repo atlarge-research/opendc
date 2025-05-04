@@ -260,4 +260,9 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
                 FlowEdge.NodeType.CONSUMING, List.of(this.psuEdge),
                 FlowEdge.NodeType.SUPPLYING, List.of(this.distributorEdge));
     }
+
+    @Override
+    public FlowEdge.ResourceType getResourceType() {
+        return FlowEdge.ResourceType.GPU;
+    }
 }

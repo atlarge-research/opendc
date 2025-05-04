@@ -22,6 +22,18 @@
 
 package org.opendc.simulator.engine.graph;
 
+import jdk.jshell.spi.ExecutionControl;
+import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategy;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
 public interface FlowSupplier {
 
     void handleIncomingDemand(FlowEdge consumerEdge, double newDemand);
@@ -33,4 +45,6 @@ public interface FlowSupplier {
     void removeConsumerEdge(FlowEdge consumerEdge);
 
     double getCapacity();
+
+    FlowEdge.ResourceType getResourceType() throws ExecutionControl.NotImplementedException;
 }

@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import jdk.jshell.spi.ExecutionControl;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowDistributor;
@@ -189,5 +191,12 @@ public class BatteryAggregator extends FlowNode implements FlowConsumer, FlowSup
         return Map.of(
                 FlowEdge.NodeType.CONSUMING, consumingEdges,
                 FlowEdge.NodeType.SUPPLYING, supplyingEdges);
+    }
+
+    @Override
+    public FlowEdge.ResourceType getResourceType() throws ExecutionControl.NotImplementedException {
+        // TODO: Check if correct
+//        return this.consumerEdges.get(0).getResourceType();
+        throw new ExecutionControl.NotImplementedException("Not implemented yet");
     }
 }

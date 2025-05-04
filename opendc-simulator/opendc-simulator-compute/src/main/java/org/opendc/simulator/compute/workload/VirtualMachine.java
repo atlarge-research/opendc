@@ -26,6 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import jdk.jshell.spi.ExecutionControl;
 import org.opendc.simulator.compute.machine.CpuPerformanceCounters;
 import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -344,5 +346,12 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         return Map.of(
                 FlowEdge.NodeType.CONSUMING, consumerEdges,
                 FlowEdge.NodeType.SUPPLYING, supplierEdges);
+    }
+
+    @Override
+    public FlowEdge.ResourceType getResourceType() throws ExecutionControl.NotImplementedException {
+        // TODO: Check if correct
+//        return this.consumerEdges.get(0).getResourceType();
+        throw new ExecutionControl.NotImplementedException(" Not implemented yet");
     }
 }
