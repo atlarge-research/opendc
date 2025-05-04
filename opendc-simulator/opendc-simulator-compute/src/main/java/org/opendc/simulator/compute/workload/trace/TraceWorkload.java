@@ -29,6 +29,7 @@ import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
+import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
 public class TraceWorkload implements Workload {
@@ -37,7 +38,10 @@ public class TraceWorkload implements Workload {
     private final long checkpointDuration;
     private final double checkpointIntervalScaling;
     private final double maxCpuDemand;
-    private final int maxCoreCount;
+    private final int maxCpuCoreCount;
+    private final double maxGpuDemand;
+    private final int maxGpuCoreCount;
+    private final double maxGpuMemoryDemand;
 
     public String getTaskName() {
         return taskName;
@@ -69,11 +73,24 @@ public class TraceWorkload implements Workload {
         this.maxCpuDemand = fragments.stream()
                 .max(Comparator.comparing(TraceFragment::cpuUsage))
                 .get()
-                .cpuUsage();
-        this.maxCoreCount = fragments.stream()
-                .max(Comparator.comparing(TraceFragment::coreCount))
+//                .cpuUsage();
+                .getResourceUsage(FlowEdge.ResourceType.CPU);
+        this.maxCpuCoreCount = fragments.stream()
+                .max(Comparator.comparing(TraceFragment::cpuCoreCount))
                 .get()
-                .coreCount();
+//                .cpuCoreCount();
+                .getCoreCount(FlowEdge.ResourceType.CPU);
+
+        this.maxGpuDemand = fragments.stream()
+                .max(Comparator.comparing(TraceFragment::gpuUsage))
+                .get()
+                .getResourceUsage(FlowEdge.ResourceType.GPU);
+        this.maxGpuCoreCount = fragments.stream()
+                .max(Comparator.comparing(TraceFragment::gpuCoreCount))
+                .get()
+                .getCoreCount(FlowEdge.ResourceType.GPU);
+        this.maxGpuMemoryDemand = 0.0; // TODO: add GPU memory demand to the trace fragments
+
     }
 
     public ArrayList<TraceFragment> getFragments() {
@@ -96,12 +113,16 @@ public class TraceWorkload implements Workload {
     }
 
     public int getMaxCoreCount() {
-        return maxCoreCount;
+        return maxCpuCoreCount;
     }
 
     public double getMaxCpuDemand() {
         return maxCpuDemand;
     }
+
+    public double getMaxGpuDemand() { return maxGpuDemand; }
+    public int getMaxGpuCoreCount() { return maxGpuCoreCount; }
+    public double getMaxGpuMemoryDemand() { return maxGpuMemoryDemand; }
 
     public void removeFragments(int numberOfFragments) {
         if (numberOfFragments <= 0) {
