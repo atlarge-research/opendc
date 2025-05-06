@@ -62,8 +62,6 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     private final ScalingPolicy scalingPolicy;
     private final String taskName;
 
-    private final String taskName;
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -283,7 +281,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
         // If this is the end of the Task, don't make a snapshot
-        if (this.currentFragment == null || (remainingTime <= 0 && remainingFragments.isEmpty())) {
+        if (this.currentFragment == null || (remainingDuration <= 0 && remainingFragments.isEmpty())) {
             return;
         }
 

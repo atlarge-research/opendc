@@ -44,12 +44,6 @@ public class TraceWorkload implements Workload {
     private final double maxGpuMemoryDemand;
     private final String taskName;
 
-    public String getTaskName() {
-        return taskName;
-    }
-
-    private final String taskName;
-
     public ScalingPolicy getScalingPolicy() {
         return scalingPolicy;
     }
