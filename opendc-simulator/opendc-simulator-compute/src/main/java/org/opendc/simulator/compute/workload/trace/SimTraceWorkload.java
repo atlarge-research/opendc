@@ -216,9 +216,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         // TODO: FIX this, only acceleration is considered, not memory
         for (int resourceTypeIdx = 0; resourceTypeIdx < resourceEnmumCount; resourceTypeIdx++) {
             double demand = nextFragment.getResourceUsage(FlowEdge.ResourceType.values()[resourceTypeIdx]);
-            // TODO: not correct for multiple resources, because it is the same for all resources
+            // TODO: not correct for multiple resources, because it is the same for all resources, if only duration is used
             this.remainingWork[resourceTypeIdx] = this.scalingPolicy.getRemainingWork(demand, nextFragment.duration());
-            // TODO: not sure if correct for multiple resource
             this.totalRemainingWork += this.remainingWork[resourceTypeIdx];
             if (this.machineResourceEdges[resourceTypeIdx] != null){
                 this.pushOutgoingDemand(this.machineResourceEdges[resourceTypeIdx], demand);
