@@ -42,6 +42,7 @@ public class TraceWorkload implements Workload {
     private final double maxGpuDemand;
     private final int maxGpuCoreCount;
     private final double maxGpuMemoryDemand;
+    private final String taskName;
 
     public String getTaskName() {
         return taskName;
@@ -123,6 +124,8 @@ public class TraceWorkload implements Workload {
     public double getMaxGpuDemand() { return maxGpuDemand; }
     public int getMaxGpuCoreCount() { return maxGpuCoreCount; }
     public double getMaxGpuMemoryDemand() { return maxGpuMemoryDemand; }
+
+    public String getTaskName() { return taskName; }
 
     public void removeFragments(int numberOfFragments) {
         if (numberOfFragments <= 0) {

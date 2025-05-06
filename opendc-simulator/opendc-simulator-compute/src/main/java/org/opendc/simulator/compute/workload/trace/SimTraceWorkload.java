@@ -60,6 +60,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     private final TraceWorkload snapshot;
 
     private final ScalingPolicy scalingPolicy;
+    private final String taskName;
 
     private final String taskName;
 
@@ -118,7 +119,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.scalingPolicy = workload.getScalingPolicy();
         this.remainingFragments = new LinkedList<>(workload.getFragments());
         this.fragmentIndex = 0;
-//        this.taskName = workload.getTaskName(); // Not sure if needed
+        this.taskName = workload.getTaskName(); // Not sure if needed
 
         this.startOfFragment = this.clock.millis();
 
