@@ -242,7 +242,7 @@ public class Guest(
      */
     public fun getCpuStats(): GuestCpuStats {
         virtualMachine!!.updateCounters(this.clock.millis())
-        val counters = virtualMachine!!.performanceCounters
+        val counters = virtualMachine!!.cpuPerformanceCounters
 
         return GuestCpuStats(
             counters.cpuActiveTime / 1000L,

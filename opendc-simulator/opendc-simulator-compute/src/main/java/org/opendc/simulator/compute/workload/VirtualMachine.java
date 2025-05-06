@@ -42,7 +42,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     private int workloadIndex;
 
     private SimWorkload activeWorkload;
-    private double cpuDemand = 0.0f;
+    private double cpuDemand = 0.0f; // TODO: Transform into list of resoureDemands
     private double cpuSupply = 0.0f;
     private double d = 0.0f;
 
@@ -91,7 +91,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         return checkpointIntervalScaling;
     }
 
-    public CpuPerformanceCounters getPerformanceCounters() {
+    public CpuPerformanceCounters getCpuPerformanceCounters() {
         return cpuPerformanceCounters;
     }
 
