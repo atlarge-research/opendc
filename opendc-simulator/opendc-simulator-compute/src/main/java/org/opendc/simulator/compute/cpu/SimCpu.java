@@ -24,6 +24,8 @@ package org.opendc.simulator.compute.cpu;
 
 import java.util.List;
 import java.util.Map;
+
+import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.machine.CpuPerformanceCounters;
 import org.opendc.simulator.compute.models.CpuModel;
 import org.opendc.simulator.engine.engine.FlowEngine;
@@ -267,7 +269,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     }
 
     @Override
-    public FlowEdge.ResourceType getResourceType() {
-        return FlowEdge.ResourceType.CPU;
+    public ResourceType getResourceType() {
+        return ResourceType.CPU;
     }
 }

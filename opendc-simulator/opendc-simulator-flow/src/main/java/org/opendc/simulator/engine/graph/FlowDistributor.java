@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import jdk.jshell.spi.ExecutionControl;
+import org.opendc.common.ResourceType;
 import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategy;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.distributionStrategies.MaxMinFairnessStrategy;
@@ -311,7 +312,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     }
 
     @Override
-    public FlowEdge.ResourceType getResourceType() throws ExecutionControl.NotImplementedException {
+    public ResourceType getResourceType() throws ExecutionControl.NotImplementedException {
         // TODO: Check if correct
 //        return this.consumerEdges.get(0).getResourceType();
         throw new ExecutionControl.NotImplementedException("Not implemented yet");

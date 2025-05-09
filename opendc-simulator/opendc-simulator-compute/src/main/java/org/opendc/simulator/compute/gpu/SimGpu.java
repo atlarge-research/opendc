@@ -25,6 +25,7 @@ package org.opendc.simulator.compute.gpu;
 import java.util.List;
 import java.util.Map;
 
+import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.machine.GpuPerformanceCounters;
 import org.opendc.simulator.compute.models.GpuModel;
 import org.opendc.simulator.engine.engine.FlowEngine;
@@ -262,7 +263,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
     }
 
     @Override
-    public FlowEdge.ResourceType getResourceType() {
-        return FlowEdge.ResourceType.GPU;
+    public ResourceType getResourceType() {
+        return ResourceType.GPU;
     }
 }

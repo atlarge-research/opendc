@@ -25,6 +25,8 @@ package org.opendc.simulator.compute.workload.trace;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.function.Consumer;
+
+import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
@@ -69,21 +71,21 @@ public class TraceWorkload implements Workload {
                 .max(Comparator.comparing(TraceFragment::cpuUsage))
                 .get()
 //                .cpuUsage();
-                .getResourceUsage(FlowEdge.ResourceType.CPU);
+                .getResourceUsage(ResourceType.CPU);
         this.maxCpuCoreCount = fragments.stream()
                 .max(Comparator.comparing(TraceFragment::cpuCoreCount))
                 .get()
 //                .cpuCoreCount();
-                .getCoreCount(FlowEdge.ResourceType.CPU);
+                .getCoreCount(ResourceType.CPU);
 
         this.maxGpuDemand = fragments.stream()
                 .max(Comparator.comparing(TraceFragment::gpuUsage))
                 .get()
-                .getResourceUsage(FlowEdge.ResourceType.GPU);
+                .getResourceUsage(ResourceType.GPU);
         this.maxGpuCoreCount = fragments.stream()
                 .max(Comparator.comparing(TraceFragment::gpuCoreCount))
                 .get()
-                .getCoreCount(FlowEdge.ResourceType.GPU);
+                .getCoreCount(ResourceType.GPU);
         this.maxGpuMemoryDemand = 0.0; // TODO: add GPU memory demand to the trace fragments
 
     }

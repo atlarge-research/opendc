@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.engine.graph;
 
+import org.opendc.common.ResourceType;
+
 import java.lang.reflect.Type;
 import java.util.Objects;
 
@@ -47,11 +49,6 @@ public class FlowEdge {
     public enum NodeType {
         CONSUMING,
         SUPPLYING
-    }
-
-    public enum ResourceType {
-        CPU,
-        GPU
     }
 
     public FlowEdge(FlowConsumer consumer, FlowSupplier supplier) {

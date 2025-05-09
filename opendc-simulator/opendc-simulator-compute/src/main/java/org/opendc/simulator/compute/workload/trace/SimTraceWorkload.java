@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import jdk.jshell.spi.ExecutionControl;
+import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
 import org.opendc.simulator.engine.graph.FlowConsumer;
@@ -44,17 +45,17 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     private long startOfFragment;
 
     private FlowEdge machineEdge;
-    private final FlowEdge[] machineResourceEdges = new FlowEdge[FlowEdge.ResourceType.values().length];
+    private final FlowEdge[] machineResourceEdges = new FlowEdge[ResourceType.values().length];
 
 
     // TODO: limit to the number of actually involved resources
     // TODO: Currently GPU memory is not considered and can not be used
-    private final int resourceEnmumCount = FlowEdge.ResourceType.values().length;
+    private final int resourceEnmumCount = ResourceType.values().length;
     private final long checkpointDuration;
-    private final double[] resourcesSupplied = new double[FlowEdge.ResourceType.values().length]; // the currently supplied resources
-    private final double[] newResourcesSupply = new double[FlowEdge.ResourceType.values().length]; // The supplied resources with next update
-    private final double[] resourcesDemand = new double[FlowEdge.ResourceType.values().length]; // The demands per resource type
-    private final double[] remainingWork = new double[FlowEdge.ResourceType.values().length]; // The duration of the fragment at the demanded speeds
+    private final double[] resourcesSupplied = new double[ResourceType.values().length]; // the currently supplied resources
+    private final double[] newResourcesSupply = new double[ResourceType.values().length]; // The supplied resources with next update
+    private final double[] resourcesDemand = new double[ResourceType.values().length]; // The demands per resource type
+    private final double[] remainingWork = new double[ResourceType.values().length]; // The duration of the fragment at the demanded speeds
     private double totalRemainingWork = 0.0; // The total remaining work of the fragment across all resources, used to determine the end of the fragment
 
     private final TraceWorkload snapshot;
@@ -162,7 +163,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
         // Update the supplied resources
-        System.arraycopy(this.newResourcesSupply, 0, this.resourcesSupplied, 0, FlowEdge.ResourceType.values().length);
+        System.arraycopy(this.newResourcesSupply, 0, this.resourcesSupplied, 0, ResourceType.values().length);
 
 
         long timeUntilNextUpdate = Long.MAX_VALUE;
@@ -213,7 +214,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         // TODO: FIX this, only acceleration is considered, not memory
         for (int resourceTypeIdx = 0; resourceTypeIdx < resourceEnmumCount; resourceTypeIdx++) {
-            double demand = nextFragment.getResourceUsage(FlowEdge.ResourceType.values()[resourceTypeIdx]);
+            double demand = nextFragment.getResourceUsage(ResourceType.values()[resourceTypeIdx]);
             // TODO: not correct for multiple resources, because it is the same for all resources, if only duration is used
             this.remainingWork[resourceTypeIdx] = this.scalingPolicy.getRemainingWork(demand, nextFragment.duration());
             this.totalRemainingWork += this.remainingWork[resourceTypeIdx];
@@ -376,7 +377,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     @Override
     public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
         Map<FlowEdge.NodeType, List<FlowEdge>> connectedEdges = new HashMap<>();
-        for (FlowEdge.ResourceType resourceType : FlowEdge.ResourceType.values()) {
+        for (ResourceType resourceType : ResourceType.values()) {
             if (this.machineResourceEdges[resourceType.ordinal()] != null) {
                 connectedEdges.put(FlowEdge.NodeType.CONSUMING, List.of(this.machineResourceEdges[resourceType.ordinal()]));
             }

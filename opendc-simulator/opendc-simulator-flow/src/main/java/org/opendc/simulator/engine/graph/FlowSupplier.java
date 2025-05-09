@@ -23,6 +23,7 @@
 package org.opendc.simulator.engine.graph;
 
 import jdk.jshell.spi.ExecutionControl;
+import org.opendc.common.ResourceType;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategy;
 
@@ -46,5 +47,5 @@ public interface FlowSupplier {
 
     double getCapacity();
 
-    FlowEdge.ResourceType getResourceType() throws ExecutionControl.NotImplementedException;
+    ResourceType getResourceType() throws ExecutionControl.NotImplementedException;
 }

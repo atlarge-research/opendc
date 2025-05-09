@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute.workload.trace;
 
+import org.opendc.common.ResourceType;
 import org.opendc.simulator.engine.graph.FlowEdge;
 
 public record TraceFragment(long duration, double cpuUsage, int cpuCoreCount, double gpuUsage, int gpuCoreCount, double gpuMemoryUsage ) {
@@ -42,7 +43,7 @@ public record TraceFragment(long duration, double cpuUsage, int cpuCoreCount, do
      * @param resourceType the type of resource
      * @return the usage value for the specified resource type
      */
-    public double getResourceUsage(FlowEdge.ResourceType resourceType) throws IllegalArgumentException {
+    public double getResourceUsage(ResourceType resourceType) throws IllegalArgumentException {
         return switch (resourceType) {
             case CPU -> cpuUsage;
             case GPU -> gpuUsage;
@@ -57,7 +58,7 @@ public record TraceFragment(long duration, double cpuUsage, int cpuCoreCount, do
      * @param resourceType the type of resource
      * @return the core count for the specified resource type
      */
-    public int getCoreCount(FlowEdge.ResourceType resourceType) throws IllegalArgumentException {
+    public int getCoreCount(ResourceType resourceType) throws IllegalArgumentException {
         return switch (resourceType) {
             case CPU -> cpuCoreCount;
             case GPU -> gpuCoreCount;
