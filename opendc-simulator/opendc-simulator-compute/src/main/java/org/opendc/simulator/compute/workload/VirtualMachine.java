@@ -63,6 +63,8 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     private final CpuPerformanceCounters cpuPerformanceCounters = new CpuPerformanceCounters();
     private Consumer<Exception> completion;
 
+    private List<ResourceType> availableResources;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,6 +131,8 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         this.capacity = machine.getCpu().getFrequency();
         this.d = 1 / machine.getCpu().getFrequency();
         this.completion = completion;
+
+        this.availableResources = machine.getAvailableResources();
     }
 
     public Workload getNextWorkload() {
@@ -354,5 +358,9 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         // TODO: Check if correct
 //        return this.consumerEdges.get(0).getResourceType();
         throw new ExecutionControl.NotImplementedException(" Not implemented yet");
+    }
+
+    public List<ResourceType> getAvailableResources() {
+        return this.availableResources;
     }
 }

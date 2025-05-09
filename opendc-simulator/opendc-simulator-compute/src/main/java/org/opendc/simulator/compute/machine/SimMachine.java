@@ -25,6 +25,8 @@ package org.opendc.simulator.compute.machine;
 import java.time.InstantSource;
 import java.util.List;
 import java.util.function.Consumer;
+
+import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.cpu.CpuPowerModel;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.compute.gpu.SimGpu;
@@ -52,6 +54,8 @@ public class SimMachine {
     private SimPsu psu;
     private Memory memory;
     private List<SimGpu> gpus;
+
+    private final List<ResourceType> availableResources;
 
     private final Consumer<Exception> completion;
 
@@ -108,6 +112,10 @@ public class SimMachine {
         return 0.0;
     }
 
+    public List<ResourceType> getAvailableResources() {
+        return availableResources;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -139,6 +147,8 @@ public class SimMachine {
         new FlowEdge(this.cpuDistributor, this.cpu);
 
         this.completion = completion;
+
+        this.availableResources = this.machineModel.getUsedResources();
     }
 
     public void shutdown() {
@@ -186,4 +196,5 @@ public class SimMachine {
         return (VirtualMachine) workload.startWorkload(this.cpuDistributor, this, completion);
         // TODO: Include GPU
     }
+
 }

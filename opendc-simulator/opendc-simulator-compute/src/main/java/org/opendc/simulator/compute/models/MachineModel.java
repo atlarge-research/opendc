@@ -23,6 +23,7 @@
 package org.opendc.simulator.compute.models;
 
 import org.jetbrains.annotations.Nullable;
+import org.opendc.common.ResourceType;
 import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategy;
 import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategyFactory;
 import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategyType;
@@ -41,7 +42,7 @@ public final class MachineModel {
     private final List<GpuModel> gpuModels;
     private final DistributionStrategy cpuDistribbutionStrategy;
     private final DistributionStrategy gpuDistributionStrategy;
-
+    private final List<ResourceType> availableResources = new ArrayList<>();
     /**
      * Construct a {@link MachineModel} instance.
      *
@@ -52,9 +53,20 @@ public final class MachineModel {
                         DistributionStrategy cpuDistributionStrategy, DistributionStrategy gpuDistributionStrategy) {
         this.cpuModel = cpuModel;
         this.memory = memory;
-        this.gpuModels = gpuModels != null ? gpuModels : new ArrayList<>();
         this.cpuDistribbutionStrategy = cpuDistributionStrategy;
         this.gpuDistributionStrategy = gpuDistributionStrategy;
+        this.availableResources.add(ResourceType.CPU);
+        // TODO: Add Memory
+//        this.usedResources.add(ResourceType.Memory);
+        if (this.cpuModel != null) {
+            this.gpuModels = gpuModels;
+            this.availableResources.add(ResourceType.GPU);
+        }
+        else {
+            this.gpuModels = new ArrayList<>();
+        }
+//        this.gpuModels = gpuModels != null ? gpuModels : new ArrayList<>(); // TODO: Maybe null is better
+
     }
 
     /**
@@ -151,6 +163,14 @@ public final class MachineModel {
     public DistributionStrategy getGpuDistributionStrategy() {
         return gpuDistributionStrategy;
     }
+
+    /**
+     * Return the resources of this machine.
+     */
+    public List<ResourceType> getUsedResources() {
+        return availableResources;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
