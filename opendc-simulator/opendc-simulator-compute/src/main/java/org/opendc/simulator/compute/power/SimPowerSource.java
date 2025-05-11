@@ -222,9 +222,7 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
     }
 
     @Override
-    public ResourceType getResourceType() throws ExecutionControl.NotImplementedException {
-        // TODO: Check if correct
-//        return this.consumerEdges.get(0).getResourceType();
-        throw new ExecutionControl.NotImplementedException("Not implemented yet");
+    public ResourceType getResourceType() {
+        return ResourceType.AUXILIARY;
     }
 }

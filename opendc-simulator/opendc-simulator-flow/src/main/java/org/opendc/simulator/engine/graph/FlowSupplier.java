@@ -47,5 +47,5 @@ public interface FlowSupplier {
 
     double getCapacity();
 
-    ResourceType getResourceType() throws ExecutionControl.NotImplementedException;
+    ResourceType getResourceType();
 }

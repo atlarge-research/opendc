@@ -312,9 +312,8 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     }
 
     @Override
-    public ResourceType getResourceType() throws ExecutionControl.NotImplementedException {
+    public ResourceType getResourceType(){
         // TODO: Check if correct
-//        return this.consumerEdges.get(0).getResourceType();
-        throw new ExecutionControl.NotImplementedException("Not implemented yet");
+        return this.supplierEdge.getSupplier().getResourceType();
     }
 }

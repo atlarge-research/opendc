@@ -200,9 +200,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
     }
 
     @Override
-    public ResourceType getResourceType() throws ExecutionControl.NotImplementedException {
-        // TODO: Check if correct
-//        return this.consumerEdges.get(0).getResourceType();
-        throw new ExecutionControl.NotImplementedException("Not implemented yet");
+    public ResourceType getResourceType() {
+        return ResourceType.AUXILIARY;
     }
 }

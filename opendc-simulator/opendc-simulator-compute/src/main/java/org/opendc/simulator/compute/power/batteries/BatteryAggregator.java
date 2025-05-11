@@ -195,9 +195,7 @@ public class BatteryAggregator extends FlowNode implements FlowConsumer, FlowSup
     }
 
     @Override
-    public ResourceType getResourceType() throws ExecutionControl.NotImplementedException {
-        // TODO: Check if correct
-//        return this.consumerEdges.get(0).getResourceType();
-        throw new ExecutionControl.NotImplementedException("Not implemented yet");
+    public ResourceType getResourceType(){
+        return ResourceType.AUXILIARY;
     }
 }

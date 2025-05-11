@@ -23,6 +23,7 @@
 package org.opendc.simulator.compute.workload.trace;
 
 import java.io.Console;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.Map;
 import jdk.jshell.spi.ExecutionControl;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.workload.SimWorkload;
+import org.opendc.simulator.compute.workload.VirtualMachine;
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -51,6 +53,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     // TODO: limit to the number of actually involved resources
     // TODO: Currently GPU memory is not considered and can not be used
     private final int resourceEnmumCount = ResourceType.values().length;
+    private final ArrayList<ResourceType> usedResourceTypes = new ArrayList<>();
     private final long checkpointDuration;
     private final double[] resourcesSupplied = new double[ResourceType.values().length]; // the currently supplied resources
     private final double[] newResourcesSupply = new double[ResourceType.values().length]; // The supplied resources with next update
@@ -107,6 +110,9 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.startOfFragment = this.clock.millis();
 
         new FlowEdge(this, supplier);
+        if (supplier instanceof VirtualMachine) {
+            usedResourceTypes.addAll(((VirtualMachine) supplier).getAvailableResources());
+        }
     }
 
     // Needed if workload not started by VM
@@ -124,10 +130,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.startOfFragment = this.clock.millis();
 
         for (FlowSupplier supplier : resourceSuppliers) {
-            try {
+            if (supplier.getResourceType() != ResourceType.AUXILIARY){
                 new FlowEdge(this, supplier, supplier.getResourceType());
-            }catch (ExecutionControl.NotImplementedException notImplementedException){
-                System.out.println(supplier.getClass().getName() + notImplementedException.getMessage());
             }
         }
     }
@@ -142,6 +146,9 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.startOfFragment = now;
 
         for (int resourceTypeIdx = 0; resourceTypeIdx < resourceEnmumCount; resourceTypeIdx++) {
+            if (ResourceType.values()[resourceTypeIdx] == ResourceType.AUXILIARY) {
+                continue;
+            }
             // The amount of work done since last update
             // TODO: it is the same for every resource.
             double finishedWork = this.scalingPolicy.getFinishedWork(this.resourcesDemand[resourceTypeIdx], this.resourcesSupplied[resourceTypeIdx], passedTime);
@@ -169,6 +176,9 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         long timeUntilNextUpdate = Long.MAX_VALUE;
         for (int resourceTypeIdx = 0; resourceTypeIdx < resourceEnmumCount; resourceTypeIdx++) {
+            if (ResourceType.values()[resourceTypeIdx] == ResourceType.AUXILIARY) {
+                continue;
+            }
 
             // The amount of time required to finish the fragment at this speed
             long remainingDuration = this.scalingPolicy.getRemainingDuration(
@@ -215,6 +225,9 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         // TODO: FIX this, only acceleration is considered, not memory
         for (int resourceTypeIdx = 0; resourceTypeIdx < resourceEnmumCount; resourceTypeIdx++) {
+            if (ResourceType.values()[resourceTypeIdx] == ResourceType.AUXILIARY) {
+                continue;
+            }
             double demand = nextFragment.getResourceUsage(ResourceType.values()[resourceTypeIdx]);
             // TODO: not correct for multiple resources, because it is the same for all resources, if only duration is used
             this.remainingWork[resourceTypeIdx] = this.scalingPolicy.getRemainingWork(demand, nextFragment.duration());
@@ -268,6 +281,9 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         // The amount of work done since last update
         for (int resourceTypeIdx = 0; resourceTypeIdx < resourceEnmumCount; resourceTypeIdx++) {
+            if (ResourceType.values()[resourceTypeIdx] == ResourceType.AUXILIARY) {
+                continue;
+            }
             double finishedWork = this.scalingPolicy.getFinishedWork(this.resourcesDemand[resourceTypeIdx], this.resourcesSupplied[resourceTypeIdx], passedTime);
             this.remainingWork[resourceTypeIdx] -= finishedWork;
             this.totalRemainingWork -= finishedWork;
@@ -275,6 +291,9 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         long remainingDuration = 0;
         for (int resourceTypeIdx = 0; resourceTypeIdx < resourcesSupplied.length; resourceTypeIdx++) {
+            if (ResourceType.values()[resourceTypeIdx] == ResourceType.AUXILIARY) {
+                continue;
+            }
 
             // The amount of time required to finish the fragment at this speed
             // probably wrong
