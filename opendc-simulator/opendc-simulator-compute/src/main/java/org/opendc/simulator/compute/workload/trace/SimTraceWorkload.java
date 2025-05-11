@@ -52,7 +52,6 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
     // TODO: limit to the number of actually involved resources
     // TODO: Currently GPU memory is not considered and can not be used
-    private final int resourceEnmumCount = ResourceType.values().length;
     private final ArrayList<ResourceType> usedResourceTypes = new ArrayList<>();
     private final long checkpointDuration;
     private final double[] resourcesSupplied = new double[ResourceType.values().length]; // the currently supplied resources
@@ -132,6 +131,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         for (FlowSupplier supplier : resourceSuppliers) {
             if (supplier.getResourceType() != ResourceType.AUXILIARY){
                 new FlowEdge(this, supplier, supplier.getResourceType());
+                this.usedResourceTypes.add(supplier.getResourceType());
             }
         }
     }
@@ -145,14 +145,11 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         long passedTime = getPassedTime(now);
         this.startOfFragment = now;
 
-        for (int resourceTypeIdx = 0; resourceTypeIdx < resourceEnmumCount; resourceTypeIdx++) {
-            if (ResourceType.values()[resourceTypeIdx] == ResourceType.AUXILIARY) {
-                continue;
-            }
+        for (ResourceType resourceType : this.usedResourceTypes) {
             // The amount of work done since last update
             // TODO: it is the same for every resource.
-            double finishedWork = this.scalingPolicy.getFinishedWork(this.resourcesDemand[resourceTypeIdx], this.resourcesSupplied[resourceTypeIdx], passedTime);
-            this.remainingWork[resourceTypeIdx] -= finishedWork;
+            double finishedWork = this.scalingPolicy.getFinishedWork(this.resourcesDemand[resourceType.ordinal()], this.resourcesSupplied[resourceType.ordinal()], passedTime);
+            this.remainingWork[resourceType.ordinal()] -= finishedWork;
             this.totalRemainingWork -= finishedWork;
         }
 
@@ -164,31 +161,29 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             return Long.MAX_VALUE;
         }
 
-        for (int resourceTypeIdx = 0; resourceTypeIdx < resourceEnmumCount; resourceTypeIdx++) {
-            if (this.machineResourceEdges[resourceTypeIdx] != null) {
-                this.pushOutgoingDemand(this.machineResourceEdges[resourceTypeIdx], this.resourcesDemand[resourceTypeIdx]);
+        for (ResourceType resourceType : this.usedResourceTypes) {
+            if (this.machineResourceEdges[resourceType.ordinal()] != null) {
+                this.pushOutgoingDemand(this.machineResourceEdges[resourceType.ordinal()], this.resourcesDemand[resourceType.ordinal()]);
             }
         }
 
         // Update the supplied resources
-        System.arraycopy(this.newResourcesSupply, 0, this.resourcesSupplied, 0, ResourceType.values().length);
+        System.arraycopy(this.newResourcesSupply, 0, this.resourcesSupplied, 0, this.usedResourceTypes.size());
 
 
         long timeUntilNextUpdate = Long.MAX_VALUE;
-        for (int resourceTypeIdx = 0; resourceTypeIdx < resourceEnmumCount; resourceTypeIdx++) {
-            if (ResourceType.values()[resourceTypeIdx] == ResourceType.AUXILIARY) {
-                continue;
-            }
+
+        for (ResourceType resourceType : this.usedResourceTypes) {
 
             // The amount of time required to finish the fragment at this speed
             long remainingDuration = this.scalingPolicy.getRemainingDuration(
-                this.resourcesDemand[resourceTypeIdx], this.resourcesSupplied[resourceTypeIdx], this.remainingWork[resourceTypeIdx]); // for multi resource this needs to be the lowest, to get new update
+                this.resourcesDemand[resourceType.ordinal()], this.resourcesSupplied[resourceType.ordinal()], this.remainingWork[resourceType.ordinal()]); // for multi resource this needs to be the lowest, to get new update
 
             if (remainingDuration == 0.0) {
                 // if resource not initialized, then nothing happens
-                this.totalRemainingWork -= this.remainingWork[resourceTypeIdx];
+                this.totalRemainingWork -= this.remainingWork[resourceType.ordinal()];
 
-                this.remainingWork[resourceTypeIdx] = 0.0;
+                this.remainingWork[resourceType.ordinal()] = 0.0;
             }
 
             // The next update should happen when the fastest resource is done, so that it is no longer tracked when unused
@@ -224,16 +219,13 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.totalRemainingWork = 0.0;
 
         // TODO: FIX this, only acceleration is considered, not memory
-        for (int resourceTypeIdx = 0; resourceTypeIdx < resourceEnmumCount; resourceTypeIdx++) {
-            if (ResourceType.values()[resourceTypeIdx] == ResourceType.AUXILIARY) {
-                continue;
-            }
-            double demand = nextFragment.getResourceUsage(ResourceType.values()[resourceTypeIdx]);
+        for (ResourceType resourceType : usedResourceTypes) {
+            double demand = nextFragment.getResourceUsage(ResourceType.values()[resourceType.ordinal()]);
             // TODO: not correct for multiple resources, because it is the same for all resources, if only duration is used
-            this.remainingWork[resourceTypeIdx] = this.scalingPolicy.getRemainingWork(demand, nextFragment.duration());
-            this.totalRemainingWork += this.remainingWork[resourceTypeIdx];
-            if (this.machineResourceEdges[resourceTypeIdx] != null){
-                this.pushOutgoingDemand(this.machineResourceEdges[resourceTypeIdx], demand);
+            this.remainingWork[resourceType.ordinal()] = this.scalingPolicy.getRemainingWork(demand, nextFragment.duration());
+            this.totalRemainingWork += this.remainingWork[resourceType.ordinal()];
+            if (this.machineResourceEdges[resourceType.ordinal()] != null){
+                this.pushOutgoingDemand(this.machineResourceEdges[resourceType.ordinal()], demand);
             }
         }
 
@@ -249,8 +241,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         // Currently stopWorkload is called twice
         this.closeNode();
 
-        for (int resourceTypeIdx = 0; resourceTypeIdx < resourceEnmumCount; resourceTypeIdx++) {
-            this.machineResourceEdges[resourceTypeIdx] = null;
+        for (ResourceType resourceType : this.usedResourceTypes) {
+            this.machineResourceEdges[resourceType.ordinal()] = null;
         }
         this.remainingFragments = null;
         this.currentFragment = null;
@@ -280,25 +272,18 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         long passedTime = getPassedTime(now);
 
         // The amount of work done since last update
-        for (int resourceTypeIdx = 0; resourceTypeIdx < resourceEnmumCount; resourceTypeIdx++) {
-            if (ResourceType.values()[resourceTypeIdx] == ResourceType.AUXILIARY) {
-                continue;
-            }
-            double finishedWork = this.scalingPolicy.getFinishedWork(this.resourcesDemand[resourceTypeIdx], this.resourcesSupplied[resourceTypeIdx], passedTime);
-            this.remainingWork[resourceTypeIdx] -= finishedWork;
+        for (ResourceType resourceType : this.usedResourceTypes) {
+            double finishedWork = this.scalingPolicy.getFinishedWork(this.resourcesDemand[resourceType.ordinal()], this.resourcesSupplied[resourceType.ordinal()], passedTime);
+            this.remainingWork[resourceType.ordinal()] -= finishedWork;
             this.totalRemainingWork -= finishedWork;
         }
 
         long remainingDuration = 0;
-        for (int resourceTypeIdx = 0; resourceTypeIdx < resourcesSupplied.length; resourceTypeIdx++) {
-            if (ResourceType.values()[resourceTypeIdx] == ResourceType.AUXILIARY) {
-                continue;
-            }
+        for (ResourceType resourceType : this.usedResourceTypes) {
 
             // The amount of time required to finish the fragment at this speed
-            // probably wrong
             remainingDuration = Math.max(remainingDuration, this.scalingPolicy.getRemainingDuration(
-                this.resourcesDemand[resourceTypeIdx], this.resourcesSupplied[resourceTypeIdx], this.remainingWork[resourceTypeIdx]));
+                this.resourcesDemand[resourceType.ordinal()], this.resourcesSupplied[resourceType.ordinal()], this.remainingWork[resourceType.ordinal()]));
         }
 
         // If this is the end of the Task, don't make a snapshot
