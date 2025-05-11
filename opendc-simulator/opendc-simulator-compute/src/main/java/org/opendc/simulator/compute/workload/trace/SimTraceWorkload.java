@@ -46,20 +46,17 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     private TraceFragment currentFragment;
     private long startOfFragment;
 
-    private FlowEdge machineEdge;
-    private final FlowEdge[] machineResourceEdges = new FlowEdge[ResourceType.values().length];
+    private final Map<ResourceType,FlowEdge> machineResourceEdges = new HashMap<>();
 
-
-    // TODO: limit to the number of actually involved resources
     // TODO: Currently GPU memory is not considered and can not be used
     private final ArrayList<ResourceType> usedResourceTypes = new ArrayList<>();
-    private final long checkpointDuration;
-    private final double[] resourcesSupplied = new double[ResourceType.values().length]; // the currently supplied resources
-    private final double[] newResourcesSupply = new double[ResourceType.values().length]; // The supplied resources with next update
-    private final double[] resourcesDemand = new double[ResourceType.values().length]; // The demands per resource type
-    private final double[] remainingWork = new double[ResourceType.values().length]; // The duration of the fragment at the demanded speeds
+    private final Map<ResourceType, Double> resourcesSupplied = new HashMap<>(); // the currently supplied resources
+    private final Map<ResourceType, Double> newResourcesSupply = new HashMap<>(); // The supplied resources with next update
+    private final Map<ResourceType, Double> resourcesDemand = new HashMap<>(); // The demands per resource type
+    private final Map<ResourceType, Double> remainingWork = new HashMap<>(); // The duration of the fragment at the demanded speeds
     private double totalRemainingWork = 0.0; // The total remaining work of the fragment across all resources, used to determine the end of the fragment
 
+    private final long checkpointDuration;
     private final TraceWorkload snapshot;
 
     private final ScalingPolicy scalingPolicy;
@@ -110,7 +107,13 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         new FlowEdge(this, supplier);
         if (supplier instanceof VirtualMachine) {
-            usedResourceTypes.addAll(((VirtualMachine) supplier).getAvailableResources());
+            for (ResourceType resourceType : ((VirtualMachine) supplier).getAvailableResources()) {
+                this.usedResourceTypes.add(resourceType);
+                this.resourcesSupplied.put(resourceType, 0.0);
+                this.newResourcesSupply.put(resourceType, 0.0);
+                this.resourcesDemand.put(resourceType, 0.0);
+                this.remainingWork.put(resourceType, 0.0);
+            }
         }
     }
 
@@ -132,6 +135,10 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             if (supplier.getResourceType() != ResourceType.AUXILIARY){
                 new FlowEdge(this, supplier, supplier.getResourceType());
                 this.usedResourceTypes.add(supplier.getResourceType());
+                this.resourcesSupplied.put(supplier.getResourceType(), 0.0);
+                this.newResourcesSupply.put(supplier.getResourceType(), 0.0);
+                this.resourcesDemand.put(supplier.getResourceType(), 0.0);
+                this.remainingWork.put(supplier.getResourceType(), 0.0);
             }
         }
     }
@@ -148,8 +155,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         for (ResourceType resourceType : this.usedResourceTypes) {
             // The amount of work done since last update
             // TODO: it is the same for every resource.
-            double finishedWork = this.scalingPolicy.getFinishedWork(this.resourcesDemand[resourceType.ordinal()], this.resourcesSupplied[resourceType.ordinal()], passedTime);
-            this.remainingWork[resourceType.ordinal()] -= finishedWork;
+            double finishedWork = this.scalingPolicy.getFinishedWork(this.resourcesDemand.get(resourceType), this.resourcesSupplied.get(resourceType), passedTime);
+            this.remainingWork.put(resourceType, this.remainingWork.get(resourceType) - finishedWork);
             this.totalRemainingWork -= finishedWork;
         }
 
@@ -162,13 +169,15 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
         for (ResourceType resourceType : this.usedResourceTypes) {
-            if (this.machineResourceEdges[resourceType.ordinal()] != null) {
-                this.pushOutgoingDemand(this.machineResourceEdges[resourceType.ordinal()], this.resourcesDemand[resourceType.ordinal()]);
+            if (this.machineResourceEdges.get(resourceType) != null) {
+                this.pushOutgoingDemand(this.machineResourceEdges.get(resourceType), this.resourcesDemand.get(resourceType));
             }
         }
 
         // Update the supplied resources
-        System.arraycopy(this.newResourcesSupply, 0, this.resourcesSupplied, 0, this.usedResourceTypes.size());
+        for (ResourceType resourceType : this.usedResourceTypes) {
+            this.resourcesSupplied.put(resourceType, this.newResourcesSupply.get(resourceType));
+        }
 
 
         long timeUntilNextUpdate = Long.MAX_VALUE;
@@ -177,13 +186,13 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
             // The amount of time required to finish the fragment at this speed
             long remainingDuration = this.scalingPolicy.getRemainingDuration(
-                this.resourcesDemand[resourceType.ordinal()], this.resourcesSupplied[resourceType.ordinal()], this.remainingWork[resourceType.ordinal()]); // for multi resource this needs to be the lowest, to get new update
+                this.resourcesDemand.get(resourceType), this.resourcesSupplied.get(resourceType), this.remainingWork.get(resourceType)); // for multi resource this needs to be the lowest, to get new update
 
             if (remainingDuration == 0.0) {
                 // if resource not initialized, then nothing happens
-                this.totalRemainingWork -= this.remainingWork[resourceType.ordinal()];
+                this.totalRemainingWork -= this.remainingWork.get(resourceType);
 
-                this.remainingWork[resourceType.ordinal()] = 0.0;
+                this.remainingWork.put(resourceType, 0.0);
             }
 
             // The next update should happen when the fastest resource is done, so that it is no longer tracked when unused
@@ -222,10 +231,12 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         for (ResourceType resourceType : usedResourceTypes) {
             double demand = nextFragment.getResourceUsage(ResourceType.values()[resourceType.ordinal()]);
             // TODO: not correct for multiple resources, because it is the same for all resources, if only duration is used
-            this.remainingWork[resourceType.ordinal()] = this.scalingPolicy.getRemainingWork(demand, nextFragment.duration());
-            this.totalRemainingWork += this.remainingWork[resourceType.ordinal()];
-            if (this.machineResourceEdges[resourceType.ordinal()] != null){
-                this.pushOutgoingDemand(this.machineResourceEdges[resourceType.ordinal()], demand);
+
+            this.remainingWork.put(resourceType, this.scalingPolicy.getRemainingWork(demand, nextFragment.duration()));
+            this.totalRemainingWork += this.remainingWork.get(resourceType);
+
+            if (this.machineResourceEdges.get(resourceType) != null){
+                this.pushOutgoingDemand(this.machineResourceEdges.get(resourceType), demand);
             }
         }
 
@@ -242,7 +253,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.closeNode();
 
         for (ResourceType resourceType : this.usedResourceTypes) {
-            this.machineResourceEdges[resourceType.ordinal()] = null;
+            this.machineResourceEdges.put(resourceType, null);
         }
         this.remainingFragments = null;
         this.currentFragment = null;
@@ -273,8 +284,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         // The amount of work done since last update
         for (ResourceType resourceType : this.usedResourceTypes) {
-            double finishedWork = this.scalingPolicy.getFinishedWork(this.resourcesDemand[resourceType.ordinal()], this.resourcesSupplied[resourceType.ordinal()], passedTime);
-            this.remainingWork[resourceType.ordinal()] -= finishedWork;
+            double finishedWork = this.scalingPolicy.getFinishedWork(this.resourcesDemand.get(resourceType), this.resourcesSupplied.get(resourceType), passedTime);
+            this.remainingWork.put(resourceType, this.remainingWork.get(resourceType) - finishedWork);
             this.totalRemainingWork -= finishedWork;
         }
 
@@ -283,7 +294,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
             // The amount of time required to finish the fragment at this speed
             remainingDuration = Math.max(remainingDuration, this.scalingPolicy.getRemainingDuration(
-                this.resourcesDemand[resourceType.ordinal()], this.resourcesSupplied[resourceType.ordinal()], this.remainingWork[resourceType.ordinal()]));
+                this.resourcesDemand.get(resourceType), this.resourcesSupplied.get(resourceType), this.remainingWork.get(resourceType)));
         }
 
         // If this is the end of the Task, don't make a snapshot
@@ -328,12 +339,11 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      */
     @Override
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply) {
-        // TODO: Check if correct
-        if (resourcesSupplied[supplierEdge.getResourceType().ordinal()] == newSupply){
+        if (this.resourcesSupplied.get(supplierEdge.getResourceType()) == newSupply){
             return;
         }
-        this.resourcesSupplied[supplierEdge.getResourceType().ordinal()] =  this.newResourcesSupply[supplierEdge.getResourceType().ordinal()];
-        this.newResourcesSupply[supplierEdge.getResourceType().ordinal()] = newSupply;
+        this.resourcesSupplied.put(supplierEdge.getResourceType(), this.newResourcesSupply.get(supplierEdge.getResourceType()));
+        this.newResourcesSupply.put(supplierEdge.getResourceType(), newSupply);
 
         this.invalidate();
     }
@@ -346,12 +356,12 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      */
     @Override
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
-        if (this.resourcesDemand[supplierEdge.getResourceType().ordinal()] == newDemand){
+        if (this.resourcesDemand.get(supplierEdge.getResourceType()) == newDemand){
             return;
         }
 
-        this.resourcesDemand[supplierEdge.getResourceType().ordinal()] = newDemand;
-        this.machineResourceEdges[supplierEdge.getResourceType().ordinal()].pushDemand(newDemand);
+        this.resourcesDemand.put(supplierEdge.getResourceType(), newDemand);
+        this.machineResourceEdges.get(supplierEdge.getResourceType()).pushDemand(newDemand);
     }
 
     /**
@@ -361,7 +371,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      */
     @Override
     public void addSupplierEdge(FlowEdge supplierEdge) {
-        this.machineResourceEdges[supplierEdge.getResourceType().ordinal()] = supplierEdge;
+        this.machineResourceEdges.putIfAbsent(supplierEdge.getResourceType(), supplierEdge);
     }
 
     /**
@@ -383,8 +393,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
         Map<FlowEdge.NodeType, List<FlowEdge>> connectedEdges = new HashMap<>();
         for (ResourceType resourceType : ResourceType.values()) {
-            if (this.machineResourceEdges[resourceType.ordinal()] != null) {
-                connectedEdges.put(FlowEdge.NodeType.CONSUMING, List.of(this.machineResourceEdges[resourceType.ordinal()]));
+            if (this.machineResourceEdges.get(resourceType) != null) {
+                connectedEdges.put(FlowEdge.NodeType.CONSUMING, List.of(this.machineResourceEdges.get(resourceType)));
             }
         }
         return connectedEdges;
@@ -394,7 +404,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     // Util Methods
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private boolean areAllEdgesNull() {
-        for (FlowEdge edge : this.machineResourceEdges) {
+        for (FlowEdge edge : this.machineResourceEdges.values()) {
             if (edge != null) {
                 return false;
             }
