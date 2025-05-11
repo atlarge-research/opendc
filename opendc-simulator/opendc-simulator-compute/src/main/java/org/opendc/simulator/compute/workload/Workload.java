@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute.workload;
 
+import java.util.List;
 import java.util.function.Consumer;
 import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.engine.graph.FlowSupplier;
@@ -36,5 +37,6 @@ public interface Workload {
 
     SimWorkload startWorkload(FlowSupplier supplier);
 
-    SimWorkload startWorkload(FlowSupplier supplier, SimMachine machine, Consumer<Exception> completion);
+//    SimWorkload startWorkload(FlowSupplier supplier, SimMachine machine, Consumer<Exception> completion);
+    SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion);
 }

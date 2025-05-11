@@ -109,16 +109,17 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         new FlowEdge(this, supplier);
     }
 
-    public SimTraceWorkload(FlowSupplier[] resourceSuppliers, TraceWorkload workload) {
+    // Needed if workload not started by VM
+    public SimTraceWorkload(List<FlowSupplier> resourceSuppliers, TraceWorkload workload) {
         // same engine for all suppliers
-        super(((FlowNode) resourceSuppliers[0]).getEngine());
+        super(((FlowNode) resourceSuppliers.getFirst()).getEngine());
 
         this.snapshot = workload;
         this.checkpointDuration = workload.checkpointDuration();
         this.scalingPolicy = workload.getScalingPolicy();
         this.remainingFragments = new LinkedList<>(workload.getFragments());
         this.fragmentIndex = 0;
-        this.taskName = workload.getTaskName(); // Not sure if needed
+        this.taskName = workload.getTaskName();
 
         this.startOfFragment = this.clock.millis();
 

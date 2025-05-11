@@ -24,6 +24,7 @@ package org.opendc.simulator.compute.workload.trace;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.opendc.common.ResourceType;
@@ -137,11 +138,15 @@ public class TraceWorkload implements Workload {
     @Override
     public SimWorkload startWorkload(FlowSupplier supplier) {
         return new SimTraceWorkload(supplier, this);
+//        ArrayList<FlowSupplier> flowSuppliers = new ArrayList<>();
+//        flowSuppliers.add(supplier);
+//        return new SimTraceWorkload(flowSuppliers, this);
     }
 
     @Override
-    public SimWorkload startWorkload(FlowSupplier supplier, SimMachine machine, Consumer<Exception> completion) {
-        return this.startWorkload(supplier);
+    public SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion) {
+//        return this.startWorkload(supplier);
+        return new SimTraceWorkload(supplier, this);
     }
 
     public static Builder builder(

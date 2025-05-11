@@ -135,6 +135,37 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         this.availableResources = machine.getAvailableResources();
     }
 
+    VirtualMachine(List<FlowSupplier> suppliers, ChainWorkload workload, SimMachine machine, Consumer<Exception> completion) {
+        super(((FlowNode) suppliers.get(0)).getEngine());
+
+        this.snapshot = workload;
+
+        for (FlowSupplier supplier : suppliers) {
+            new FlowEdge(this, supplier);
+        }
+
+        this.workloads = new LinkedList<>(workload.workloads());
+        this.checkpointInterval = workload.checkpointInterval();
+        this.checkpointDuration = workload.checkpointDuration();
+        this.checkpointIntervalScaling = workload.checkpointIntervalScaling();
+
+        this.lastUpdate = clock.millis();
+
+        if (checkpointInterval > 0) {
+            this.createCheckpointModel();
+        }
+
+        this.workloadIndex = -1;
+
+        this.capacity = machine.getCpu().getFrequency();
+        this.d = 1 / machine.getCpu().getFrequency();
+        this.completion = completion;
+
+        this.availableResources = machine.getAvailableResources();
+
+        this.onStart();
+    }
+
     public Workload getNextWorkload() {
         this.workloadIndex++;
         return workloads.pop();

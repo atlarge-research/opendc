@@ -23,6 +23,7 @@
 package org.opendc.simulator.compute.machine;
 
 import java.time.InstantSource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -39,6 +40,7 @@ import org.opendc.simulator.compute.workload.VirtualMachine;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
 import org.opendc.simulator.engine.graph.FlowEdge;
+import org.opendc.simulator.engine.graph.FlowSupplier;
 
 /**
  * A machine that is able to execute {@link SimWorkload} objects.
@@ -193,7 +195,10 @@ public class SimMachine {
      * @param completion The completion callback that needs to be called when the workload is done
      */
     public VirtualMachine startWorkload(ChainWorkload workload, Consumer<Exception> completion) {
-        return (VirtualMachine) workload.startWorkload(this.cpuDistributor, this, completion);
+//        return (VirtualMachine) workload.startWorkload(this.cpuDistributor, this, completion);
+        ArrayList<FlowSupplier> distributors = new ArrayList<>();
+        distributors.add(this.cpuDistributor);
+        return (VirtualMachine) workload.startWorkload(distributors, this, completion);
         // TODO: Include GPU
     }
 
