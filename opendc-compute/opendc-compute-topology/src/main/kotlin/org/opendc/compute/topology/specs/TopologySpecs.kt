@@ -82,38 +82,39 @@ public data class HostJSONSpec(
 /**
  * Definition of a compute CPU modeled in the simulation.
  *
- * @param vendor The vendor of the storage device.
  * @param modelName The model name of the device.
+ * @param vendor The vendor of the storage device.
  * @param arch The micro-architecture of the processor node.
- * @param coreCount The number of cores in the CPU
- * @param coreSpeed The speed of the cores
+ * @param count The number of CPUs of this type in the host.
+ * @param coreCount The number of cores in the CPU.
+ * @param coreSpeed The speed of the cores.
  */
 @Serializable
 public data class CPUJSONSpec(
-    val vendor: String = "unknown",
     val modelName: String = "unknown",
+    val vendor: String = "unknown",
     val arch: String = "unknown",
+    val count: Int = 1,
     val coreCount: Int,
     val coreSpeed: Frequency,
-    val count: Int = 1,
 )
 
 /**
  * Definition of a compute Memory modeled in the simulation.
  *
- * @param vendor The vendor of the storage device.
  * @param modelName The model name of the device.
+ * @param vendor The vendor of the storage device.
  * @param arch The micro-architecture of the processor node.
- * @param memorySpeed The speed of the cores
  * @param memorySize The size of the memory Unit
+ * @param memorySpeed The speed of the cores
  */
 @Serializable
 public data class MemoryJSONSpec(
-    val vendor: String = "unknown",
     val modelName: String = "unknown",
+    val vendor: String = "unknown",
     val arch: String = "unknown",
-    val memorySpeed: Frequency = Frequency.ofMHz(-1),
     val memorySize: DataSize,
+    val memorySpeed: Frequency = Frequency.ofMHz(-1),
 )
 
 @Serializable
@@ -142,12 +143,12 @@ public data class PowerModelSpec(
 /**
  * Definition of a power source used for JSON input.
  *
- * @property totalPower in Watt
+ * @property maxPower in Watt
  */
 @Serializable
 public data class PowerSourceJSONSpec(
     val name: String = "PowerSource",
-    val totalPower: Long = Long.MAX_VALUE,
+    val maxPower: Long = Long.MAX_VALUE,
     val carbonTracePath: String? = null,
 ) {
     public companion object {
@@ -161,9 +162,9 @@ public data class PowerSourceJSONSpec(
  *
  * @property name The name of the battery
  * @property capacity The capacity of the battery in kWh
- * @property chargingSpeed The charging speed of the battery in J
- * @property batteryPolicy The policy used to decide when the battery charges and discharges
+ * @property chargingSpeed The charging speed of the battery in W
  * @property initialCharge The initial charge in the battery
+ * @property batteryPolicy The policy used to decide when the battery charges and discharges
  * @property embodiedCarbon The embodied carbon needed to create the battery in gram
  * @property expectedLifetime The expected lifetime of the battery in years
  *
@@ -173,8 +174,8 @@ public data class BatteryJSONSpec(
     val name: String = "Battery",
     var capacity: Double,
     val chargingSpeed: Double,
-    val batteryPolicy: BatteryPolicyJSONSpec,
     var initialCharge: Double = 0.0,
+    val batteryPolicy: BatteryPolicyJSONSpec,
     var embodiedCarbon: Double = 0.0,
     var expectedLifetime: Double = 0.0,
 )

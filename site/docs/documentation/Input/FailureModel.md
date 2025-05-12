@@ -1,6 +1,6 @@
 ### FailureModel
 The failure model that should be used during the simulation
-See [FailureModels](FailureModel) for detailed instructions.
+See [FailureModels](FailureModel.md) for detailed instructions.
 
 
 

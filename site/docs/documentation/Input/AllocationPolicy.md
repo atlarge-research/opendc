@@ -246,8 +246,8 @@ Example:
 
 The following prefabs are available:
 
-| Name                | Filters                                 | Weighters                  | Timeshifting |
-|---------------------|-----------------------------------------|----------------------------|--------------|
+| Name                | Filters                                      | Weighters                  | Timeshifting |
+|---------------------|----------------------------------------------|----------------------------|--------------|
 | Mem                 | ComputeFilter <br/>VCpuFilter<br/> RamFilter | RamWeigher(1.0)            | No           |
 | MemInv              | ComputeFilter <br/>VCpuFilter<br/> RamFilter | RamWeigher(-1.0)           | No           |
 | CoreMem             | ComputeFilter <br/>VCpuFilter<br/> RamFilter | CoreRamWeigher(1.0)        | No           |
@@ -257,7 +257,7 @@ The following prefabs are available:
 | ProvisionedCores    | ComputeFilter <br/>VCpuFilter<br/> RamFilter | VCpuWeigher(1.0)           | No           |
 | ProvisionedCoresInv | ComputeFilter <br/>VCpuFilter<br/> RamFilter | VCpuWeigher(-1.0)          | No           |
 | Random              | ComputeFilter <br/>VCpuFilter<br/> RamFilter | []                         | No           |
-| TimeShift           | ComputeFilter <br/>VCpuFilter<br/> RamFilter | RamWeigher(1.0)                         | Yes          |
+| TimeShift           | ComputeFilter <br/>VCpuFilter<br/> RamFilter | RamWeigher(1.0)            | Yes          |
 
 :::info Code
 All code related to prefab schedulers can be found [here](https://github.com/atlarge-research/opendc/blob/master/opendc-compute/opendc-compute-simulator/src/main/kotlin/org/opendc/compute/simulator/scheduler/ComputeSchedulers.kt)

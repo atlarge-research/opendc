@@ -148,7 +148,7 @@ For this experiment, we will use the bitbrains-small workload. This is a small w
 spanning over a bit more than a month time. You can download the workload [here](documents/workloads/bitbrains-small.zip "download")
 
 :::info
-For more in depth information about Workloads, see [Workload](../documentation/Input/Workload)
+For more in depth information about Workloads, see [Workload](../documentation/Input/Workload.md)
 :::
 
 ## Executing an experiment

@@ -4,11 +4,11 @@ If a task fails, it can be restarted from the last snapshot instead of starting 
 
 A user can define a checkpoint model using the following parameters:
 
-| Variable                  | Type   | Required? | Default | Description                                                                                                         |
-|---------------------------|--------|-----------|---------|---------------------------------------------------------------------------------------------------------------------|
-| checkpointInterval        | Int64  | no         | 3600000 | The time between checkpoints in ms                                                                                  |
-| checkpointDuration        | Int64  | no         | 300000  | The time to create a snapshot in ms                                                                                 |
-| checkpointIntervalScaling | Double | no         | 1.0     | The scaling of the checkpointInterval after each succesful checkpoint. The default of 1.0 means no scaling happens. |
+| Variable                  | Type   | Required? | Default | Description                                                                                                          |
+|---------------------------|--------|-----------|---------|----------------------------------------------------------------------------------------------------------------------|
+| checkpointInterval        | Int64  | no        | 3600000 | The time between checkpoints in ms                                                                                   |
+| checkpointDuration        | Int64  | no        | 300000  | The time to create a snapshot in ms                                                                                  |
+| checkpointIntervalScaling | Double | no        | 1.0     | The scaling of the checkpointInterval after each successful checkpoint. The default of 1.0 means no scaling happens. |
 
 ### Example
 

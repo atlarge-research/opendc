@@ -13,74 +13,15 @@ In the following section, we describe the different components of the schema.
 
 ### Cluster
 
-| variable    | type                         | required? | default | description                                                                       |
-|-------------|------------------------------|-----------|---------|-----------------------------------------------------------------------------------|
-| name        | string                       | no        | Cluster | The name of the cluster. This is only important for debugging and post-processing |
-| count       | integer                      | no        | 1       | The amount of clusters of this type are in the data center                        |
-| hosts       | List[[Host](#host)]          | yes       | N/A     | A list of the hosts in a cluster.                                                 |
-| powerSource | [PowerSource](#power-source) | no        | N/A     | The power source used by all hosts connected to this cluster.                     |
-| battery     | [Battery](#battery)          | no        | null    | The battery used by a cluster to store energy.                                    |
+| variable    | type                                                          | required? | default | description                                                                       |
+|-------------|---------------------------------------------------------------|-----------|---------|-----------------------------------------------------------------------------------|
+| name        | string                                                        | no        | Cluster | The name of the cluster. This is only important for debugging and post-processing |
+| count       | integer                                                       | no        | 1       | The amount of clusters of this type are in the data center                        |
+| hosts       | List[[Host](/docs/documentation/Input/Topology/Host)]         | yes       | N/A     | A list of the hosts in a cluster.                                                 |
+| powerSource | [PowerSource](/docs/documentation/Input/Topology/PowerSource) | no        | N/A     | The power source used by all hosts connected to this cluster.                     |
+| battery     | [Battery](/docs/documentation/Input/Topology/Battery)         | no        | null    | The battery used by a cluster to store energy. When null, no batteries are used.  |
 
-### Power Source
-Each cluster has a power source that provides power to the hosts in the cluster.
-A user can connect a power source to a carbon trace to determine the carbon emissions during a workload. 
-
-The power source consist of the following components:
-
-| variable        | type                         | required? | default        | description                                                                       |
-|-----------------|------------------------------|-----------|----------------|-----------------------------------------------------------------------------------|
-| name            | string                       | no        | PowerSource    | The name of the cluster. This is only important for debugging and post-processing |
-| totalPower      | integer                      | no        | Long.Max_Value | The total power that the power source can provide in Watt.                        |
-| carbonTracePath | path/to/file                 | no        | null           | A list of the hosts in a cluster.                                                 |
-
-### Battery
-A battery can be connected to a cluster to store energy based on a policy. In previous research we have used this to 
-store energy from the grid when the carbon intensity is low, and use this energy when the carbon intensity is high.
-The specific input needed for Batteries are defined in [Battery](Battery.md).
-
-### Host
-A host is a machine that can execute tasks. A host consist of the following components:
-
-| variable    | type                        | required? | default | description                                                                    |
-|-------------|-----------------------------|-----------|---------|--------------------------------------------------------------------------------|
-| name        | string                      | no        | Host    | The name of the host. This is only important for debugging and post-processing |
-| count       | integer                     | no        | 1       | The amount of hosts of this type are in the cluster                            |
-| cpuModel    | [CPU](#cpu)                 | yes       | N/A     | The CPUs in the host                                                           |
-| memory      | [Memory](#memory)           | yes       | N/A     | The memory used by the host                                                    |
-| power model | [Power Model](#power-model) | yes       | N/A     | The power model used to determine the power draw of the host                   |
-
-### CPU
-
-| variable  | type    | Unit  | required? | default | description                                      |
-|-----------|---------|-------|-----------|---------|--------------------------------------------------|
-| name      | string  | N/A   | no        | unknown | The name of the CPU.                             |
-| vendor    | string  | N/A   | no        | unknown | The vendor of the CPU                            |
-| arch      | string  | N/A   | no        | unknown | the micro-architecture of the CPU                |
-| count     | integer | N/A   | no        | 1       | The amount of cpus of this type used by the host |
-| coreCount | integer | count | yes       | N/A     | The number of cores in the CPU                   |
-| coreSpeed | Double  | Mhz   | yes       | N/A     | The speed of each core in Mhz                    |
-
-### Memory
-
-| variable    | type    | Unit | required? | default | description                                                              |
-|-------------|---------|------|-----------|---------|--------------------------------------------------------------------------|
-| name        | string  | N/A  | no        | unknown | The name of the CPU.                                                     |
-| vendor      | string  | N/A  | no        | unknown | The vendor of the CPU                                                    |
-| arch        | string  | N/A  | no        | unknown | the micro-architecture of the CPU                                        |
-| count       | integer | N/A  | no        | 1       | The amount of cpus of this type used by the host                         |
-| memorySize  | integer | Byte | yes       | N/A     | The number of cores in the CPU                                           |
-| memorySpeed | Double  | ?    | no        | -1      | The speed of each core in Mhz. PLACEHOLDER: this currently does nothing. |
-
-### Power Model
-To calculate the power draw of a host, a power model is used. The power model can be defined using the following parameters:
-
-| variable        | type   | Unit | required? | default  | description                                                                   |
-|-----------------|--------|------|-----------|----------|-------------------------------------------------------------------------------|
-| vendor          | string | N/A  | yes       | N/A      | The type of model used to determine power draw                                |
-| modelName       | string | N/A  | yes       | N/A      | The type of model used to determine power draw                                |
-| arch            | string | N/A  | yes       | N/A      | The type of model used to determine power draw                                |
-| totalPower      | Int64  | Watt | no        | max long | The power draw of a host when using max capacity in Watt                      |
-| carbonTracePath | string | N/A  | no        | null     | Path to a carbon intensity trace. If not given, carbon intensity is always 0. |
+Hosts, power sources and batteries all require objects to use. See their respective pages for more information.
 
 ## Examples
 
@@ -106,7 +47,10 @@ The simplest data center that can be provided to OpenDC is shown below:
                         "memorySize": 100000
                     }
                 }
-            ]
+            ],
+            "powerSource": {
+                "carbonTracePath": "carbon_traces/AT_2021-2024.parquet"
+            }
         }
     ]
 }
@@ -138,7 +82,10 @@ Duplicating clusters, hosts, or CPUs is easy using the "count" keyword:
                         "memorySize": 100000
                     }
                 }
-            ]
+            ],
+            "powerSource": {
+                "carbonTracePath": "carbon_traces/AT_2021-2024.parquet"
+            }
         }
     ]
 }

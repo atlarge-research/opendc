@@ -129,7 +129,7 @@ private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
     val powerSourceSpec =
         PowerSourceSpec(
             createUniqueName(this.powerSource.name, powerSourceNames),
-            totalPower = this.powerSource.totalPower,
+            totalPower = this.powerSource.maxPower,
             carbonTracePath = this.powerSource.carbonTracePath,
         )
 
