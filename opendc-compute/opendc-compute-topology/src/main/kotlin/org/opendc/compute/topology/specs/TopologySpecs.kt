@@ -44,7 +44,6 @@ import org.opendc.simulator.engine.engine.FlowEngine
 @Serializable
 public data class TopologySpec(
     val clusters: List<ClusterJSONSpec>,
-    val schemaVersion: Int = 1,
 )
 
 /**
@@ -52,7 +51,6 @@ public data class TopologySpec(
  *
  * @param name The name of the cluster.
  * @param hosts List of the different hosts (nodes) available in this cluster
- * @param location Location of the cluster. This can impact the carbon intensity
  */
 @Serializable
 public data class ClusterJSONSpec(
@@ -61,7 +59,6 @@ public data class ClusterJSONSpec(
     val hosts: List<HostJSONSpec>,
     val powerSource: PowerSourceJSONSpec = PowerSourceJSONSpec.DFLT,
     val battery: BatteryJSONSpec? = null,
-    val location: String = "NL",
 )
 
 /**
@@ -77,9 +74,9 @@ public data class ClusterJSONSpec(
 public data class HostJSONSpec(
     val name: String = "Host",
     val cpu: CPUJSONSpec,
+    val count: Int = 1,
     val memory: MemoryJSONSpec,
     val powerModel: PowerModelSpec = PowerModelSpec.DFLT,
-    val count: Int = 1,
 )
 
 /**
@@ -145,25 +142,17 @@ public data class PowerModelSpec(
 /**
  * Definition of a power source used for JSON input.
  *
- * @property vendor
- * @property modelName
- * @property arch
- * @property totalPower
+ * @property totalPower in Watt
  */
 @Serializable
 public data class PowerSourceJSONSpec(
     val name: String = "PowerSource",
-    val vendor: String = "unknown",
-    val modelName: String = "unknown",
-    val arch: String = "unknown",
     val totalPower: Long = Long.MAX_VALUE,
     val carbonTracePath: String? = null,
 ) {
     public companion object {
         public val DFLT: PowerSourceJSONSpec =
-            PowerSourceJSONSpec(
-                totalPower = Long.MAX_VALUE,
-            )
+            PowerSourceJSONSpec()
     }
 }
 

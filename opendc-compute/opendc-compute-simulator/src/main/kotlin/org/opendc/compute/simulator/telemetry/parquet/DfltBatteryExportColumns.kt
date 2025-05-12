@@ -57,12 +57,12 @@ public object DfltBatteryExportColumns {
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
-    public val NAME: ExportColumn<BatteryTableReader> =
+    public val BATTERY_NAME: ExportColumn<BatteryTableReader> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
-                    .named("name"),
+                    .named("battery_name"),
         ) { Binary.fromString(it.batteryInfo.name) }
 
     public val CLUSTER_NAME: ExportColumn<BatteryTableReader> =
@@ -111,9 +111,9 @@ public object DfltBatteryExportColumns {
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
-            TIMESTAMP_ABS,
-            TIMESTAMP,
-            NAME,
+            BATTERY_NAME,
             CLUSTER_NAME,
+            TIMESTAMP,
+            TIMESTAMP_ABS,
         )
 }

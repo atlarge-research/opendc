@@ -1,26 +1,45 @@
-The topology of a datacenter is defined using a JSON file. A topology consist of one or more clusters.
-Each cluster consist of at least one host on which jobs can be executed. Each host consist of one or more CPUs,
-a memory unit and a power model.
+The topology of a datacenter defines all available hardware. Topologies are defined using a JSON file. 
+A topology consist of one or more clusters. Each cluster consist of at least one host on which jobs can be executed. 
+Each host consist of one or more CPUs, a memory unit and a power model.
 
 :::info Code
 The code related to reading and processing topology files can be found [here](https://github.com/atlarge-research/opendc/tree/master/opendc-compute/opendc-compute-topology/src/main/kotlin/org/opendc/compute/topology)
 :::
 
-
 ## Schema
 
-The schema for the topology file is provided in [schema](TopologySchema).
+The schema for the topology file is provided in [schema](TopologySchema.md).
 In the following section, we describe the different components of the schema.
 
 ### Cluster
 
-| variable | type                | required? | default | description                                                                       |
-|----------|---------------------|-----------|---------|-----------------------------------------------------------------------------------|
-| name     | string              | no        | Cluster | The name of the cluster. This is only important for debugging and post-processing |
-| count    | integer             | no        | 1       | The amount of clusters of this type are in the data center                        |
-| hosts    | List[[Host](#host)] | yes       | N/A     | A list of the hosts in a cluster.                                                 |
+| variable    | type                         | required? | default | description                                                                       |
+|-------------|------------------------------|-----------|---------|-----------------------------------------------------------------------------------|
+| name        | string                       | no        | Cluster | The name of the cluster. This is only important for debugging and post-processing |
+| count       | integer                      | no        | 1       | The amount of clusters of this type are in the data center                        |
+| hosts       | List[[Host](#host)]          | yes       | N/A     | A list of the hosts in a cluster.                                                 |
+| powerSource | [PowerSource](#power-source) | no        | N/A     | The power source used by all hosts connected to this cluster.                     |
+| battery     | [Battery](#battery)          | no        | null    | The battery used by a cluster to store energy.                                    |
+
+### Power Source
+Each cluster has a power source that provides power to the hosts in the cluster.
+A user can connect a power source to a carbon trace to determine the carbon emissions during a workload. 
+
+The power source consist of the following components:
+
+| variable        | type                         | required? | default        | description                                                                       |
+|-----------------|------------------------------|-----------|----------------|-----------------------------------------------------------------------------------|
+| name            | string                       | no        | PowerSource    | The name of the cluster. This is only important for debugging and post-processing |
+| totalPower      | integer                      | no        | Long.Max_Value | The total power that the power source can provide in Watt.                        |
+| carbonTracePath | path/to/file                 | no        | null           | A list of the hosts in a cluster.                                                 |
+
+### Battery
+A battery can be connected to a cluster to store energy based on a policy. In previous research we have used this to 
+store energy from the grid when the carbon intensity is low, and use this energy when the carbon intensity is high.
+The specific input needed for Batteries are defined in [Battery](Battery.md).
 
 ### Host
+A host is a machine that can execute tasks. A host consist of the following components:
 
 | variable    | type                        | required? | default | description                                                                    |
 |-------------|-----------------------------|-----------|---------|--------------------------------------------------------------------------------|
@@ -53,6 +72,7 @@ In the following section, we describe the different components of the schema.
 | memorySpeed | Double  | ?    | no        | -1      | The speed of each core in Mhz. PLACEHOLDER: this currently does nothing. |
 
 ### Power Model
+To calculate the power draw of a host, a power model is used. The power model can be defined using the following parameters:
 
 | variable        | type   | Unit | required? | default  | description                                                                   |
 |-----------------|--------|------|-----------|----------|-------------------------------------------------------------------------------|
@@ -65,7 +85,7 @@ In the following section, we describe the different components of the schema.
 ## Examples
 
 In the following section, we discuss several examples of topology files. Any topology file can be verified using the
-JSON schema defined in [schema](TopologySchema).
+JSON schema defined in [schema](TopologySchema.md).
 
 ### Simple
 

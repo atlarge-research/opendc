@@ -57,12 +57,12 @@ public object DfltPowerSourceExportColumns {
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
-    public val NAME: ExportColumn<PowerSourceTableReader> =
+    public val SOURCE_NAME: ExportColumn<PowerSourceTableReader> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
-                    .named("name"),
+                    .named("source_name"),
         ) { Binary.fromString(it.powerSourceInfo.name) }
 
     public val CLUSTER_NAME: ExportColumn<PowerSourceTableReader> =
@@ -98,9 +98,9 @@ public object DfltPowerSourceExportColumns {
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
-            TIMESTAMP_ABS,
-            TIMESTAMP,
-            NAME,
+            SOURCE_NAME,
             CLUSTER_NAME,
+            TIMESTAMP,
+            TIMESTAMP_ABS,
         )
 }

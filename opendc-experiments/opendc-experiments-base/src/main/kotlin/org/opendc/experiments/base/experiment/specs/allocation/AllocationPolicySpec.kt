@@ -52,16 +52,16 @@ public data class PrefabAllocationPolicySpec(
 @Serializable
 @SerialName("filter")
 public data class FilterAllocationPolicySpec(
-    val filters: List<HostFilterSpec>,
-    val weighers: List<HostWeigherSpec>,
+    val filters: List<HostFilterSpec> = listOf(ComputeFilterSpec()),
+    val weighers: List<HostWeigherSpec> = emptyList(),
     val subsetSize: Int = 1,
 ) : AllocationPolicySpec
 
 @Serializable
 @SerialName("timeshift")
 public data class TimeShiftAllocationPolicySpec(
-    val filters: List<HostFilterSpec>,
-    val weighers: List<HostWeigherSpec>,
+    val filters: List<HostFilterSpec> = listOf(ComputeFilterSpec()),
+    val weighers: List<HostWeigherSpec> = emptyList(),
     val windowSize: Int = 168,
     val subsetSize: Int = 1,
     val forecast: Boolean = true,
@@ -110,10 +110,10 @@ public fun createComputeScheduler(
 @Serializable
 @SerialName("taskstopper")
 public data class TaskStopperSpec(
+    val windowSize: Int = 168,
     val forecast: Boolean = true,
     val forecastThreshold: Double = 0.6,
     val forecastSize: Int = 24,
-    val windowSize: Int = 168,
 )
 
 public fun createTaskStopper(

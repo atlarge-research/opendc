@@ -58,12 +58,12 @@ public object DfltHostExportColumns {
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
-    public val NAME: ExportColumn<HostTableReader> =
+    public val HOST_NAME: ExportColumn<HostTableReader> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
-                    .named("name"),
+                    .named("host_name"),
         ) { Binary.fromString(it.hostInfo.name) }
 
     public val CLUSTER_NAME: ExportColumn<HostTableReader> =
@@ -84,30 +84,30 @@ public object DfltHostExportColumns {
             field = Types.required(INT64).named("mem_capacity"),
         ) { it.hostInfo.memCapacity }
 
-    public val GUESTS_TERMINATED: ExportColumn<HostTableReader> =
+    public val TASKS_TERMINATED: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(INT32).named("guests_terminated"),
+            field = Types.required(INT32).named("tasks_terminated"),
         ) { it.tasksTerminated }
 
-    public val GUESTS_RUNNING: ExportColumn<HostTableReader> =
+    public val TASKS_RUNNING: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(INT32).named("guests_running"),
+            field = Types.required(INT32).named("tasks_running"),
         ) { it.tasksActive }
 
-    public val GUESTS_ERROR: ExportColumn<HostTableReader> =
+    public val TASKS_ERROR: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(INT32).named("guests_error"),
+            field = Types.required(INT32).named("tasks_error"),
         ) { it.guestsError }
 
-    public val GUESTS_INVALID: ExportColumn<HostTableReader> =
+    public val TASKS_INVALID: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(INT32).named("guests_invalid"),
+            field = Types.required(INT32).named("tasks_invalid"),
         ) { it.guestsInvalid }
 
-    public val CPU_LIMIT: ExportColumn<HostTableReader> =
+    public val CPU_CAPACITY: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("cpu_limit"),
-        ) { it.cpuLimit }
+            field = Types.required(FLOAT).named("cpu_capacity"),
+        ) { it.cpuCapacity }
 
     public val CPU_USAGE: ExportColumn<HostTableReader> =
         ExportColumn(
@@ -179,9 +179,9 @@ public object DfltHostExportColumns {
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
-            TIMESTAMP_ABS,
-            TIMESTAMP,
-            NAME,
+            HOST_NAME,
             CLUSTER_NAME,
+            TIMESTAMP,
+            TIMESTAMP_ABS,
         )
 }

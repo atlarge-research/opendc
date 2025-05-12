@@ -60,6 +60,12 @@ public data class ComputeFilterSpec(
 ) : HostFilterSpec()
 
 @Serializable
+@SerialName("SameHost")
+public data class SameHostHostFilterSpec(
+    val filterName: HostFilterEnum = HostFilterEnum.SameHost,
+) : HostFilterSpec()
+
+@Serializable
 @SerialName("DifferentHost")
 public data class DifferentHostFilterSpec(
     val filterName: HostFilterEnum = HostFilterEnum.DifferentHost,
@@ -80,12 +86,6 @@ public data class RamHostFilterSpec(
 ) : HostFilterSpec()
 
 @Serializable
-@SerialName("SameHost")
-public data class SameHostHostFilterSpec(
-    val filterName: HostFilterEnum = HostFilterEnum.SameHost,
-) : HostFilterSpec()
-
-@Serializable
 @SerialName("VCpuCapacity")
 public data class VCpuCapacityHostFilterSpec(
     val filterName: HostFilterEnum = HostFilterEnum.VCpuCapacity,
@@ -101,10 +101,10 @@ public data class VCpuHostFilterSpec(
 public fun createHostFilter(filterSpec: HostFilterSpec): HostFilter {
     return when (filterSpec) {
         is ComputeFilterSpec -> ComputeFilter()
+        is SameHostHostFilterSpec -> SameHostFilter()
         is DifferentHostFilterSpec -> DifferentHostFilter()
         is InstanceCountHostFilterSpec -> InstanceCountFilter(filterSpec.limit)
         is RamHostFilterSpec -> RamFilter(filterSpec.allocationRatio)
-        is SameHostHostFilterSpec -> SameHostFilter()
         is VCpuCapacityHostFilterSpec -> VCpuCapacityFilter()
         is VCpuHostFilterSpec -> VCpuFilter(filterSpec.allocationRatio)
     }

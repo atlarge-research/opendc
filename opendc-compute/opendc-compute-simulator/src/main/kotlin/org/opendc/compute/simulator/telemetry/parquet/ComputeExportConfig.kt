@@ -106,7 +106,7 @@ public data class ComputeExportConfig(
 
         /**
          * Config that includes all columns defined in [DfltHostExportColumns], [DfltTaskExportColumns],
-         * [DfltPowerSourceExportColumns], [batteryExportColumns], [DfltServiceExportColumns] among all other loaded
+         * [DfltPowerSourceExportColumns], [DfltBatteryExportColumns], [DfltServiceExportColumns] among all other loaded
          * columns for [HostTableReader], [TaskTableReader] and [ServiceTableReader].
          */
         public val ALL_COLUMNS: ComputeExportConfig by lazy {

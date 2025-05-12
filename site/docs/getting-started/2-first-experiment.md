@@ -6,17 +6,16 @@ description: Designing a simple experiment
 Now that you have downloaded OpenDC, we will start creating a simple experiment. 
 In this experiment we will compare the performance of a small, and a big data center on the same workload.
 
-<details>
-<summary>Expand this</summary>
 
-This is content
-</details>
+[//]: # (:::tip Answer)
 
-:::tip Answer
-<details>
-<summary>Expand for the Answer</summary>
-</details>
-:::
+[//]: # (<details>)
+
+[//]: # (<summary>Expand for the Answer</summary>)
+
+[//]: # (</details>)
+
+[//]: # (:::)
 
 :::info Learning goal
 During this tutorial, we will learn how to create and execute a simple experiment in OpenDC.

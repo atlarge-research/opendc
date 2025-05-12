@@ -1,3 +1,9 @@
+### FailureModel
+The failure model that should be used during the simulation
+See [FailureModels](FailureModel) for detailed instructions.
+
+
+
 OpenDC provides three types of failure models: [Trace-based](#trace-based-failure-models), [Sample-based](#sample-based-failure-models),
 and [Prefab](#prefab-failure-models).
 
@@ -159,7 +165,7 @@ Example:
 The final type of failure models is the prefab models. These are models that are predefined in OpenDC and are based on
 research. Currently, OpenDC has 9 prefab models based on [The Failure Trace Archive: Enabling the comparison of failure measurements and models of distributed systems](https://www-sciencedirect-com.vu-nl.idm.oclc.org/science/article/pii/S0743731513000634)
 The figure below shows the values used to define the failure models.
-![img.png](img.png)
+![failureModels.png](../../../static/img/failureModels.png)
 
 Each failure model is defined four times, on for each of the four distribution.
 The final list of available prefabs is thus:

@@ -48,7 +48,6 @@ public enum class ComputeSchedulerEnum {
     Random,
     TaskNumMemorizing,
     Timeshift,
-    TimeshiftNoPeak,
 }
 
 public fun createPrefabComputeScheduler(
@@ -122,14 +121,6 @@ public fun createPrefabComputeScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
             )
         ComputeSchedulerEnum.Timeshift ->
-            TimeshiftScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-                weighers = listOf(RamWeigher(multiplier = 1.0)),
-                windowSize = 168,
-                clock = clock,
-                random = SplittableRandom(seeder.nextLong()),
-            )
-        ComputeSchedulerEnum.TimeshiftNoPeak ->
             TimeshiftScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
                 weighers = listOf(RamWeigher(multiplier = 1.0)),

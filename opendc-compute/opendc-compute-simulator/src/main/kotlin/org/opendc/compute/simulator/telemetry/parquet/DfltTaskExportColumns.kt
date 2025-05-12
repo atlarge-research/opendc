@@ -74,15 +74,23 @@ public object DfltTaskExportColumns {
                     .named("task_name"),
         ) { Binary.fromString(it.taskInfo.name) }
 
-    public val CPU_COUNT: ExportColumn<TaskTableReader> =
+    public val HOST_NAME: ExportColumn<TaskTableReader> =
         ExportColumn(
-            field = Types.required(INT32).named("cpu_count"),
-        ) { it.taskInfo.cpuCount }
+            field =
+                Types.required(BINARY)
+                    .`as`(LogicalTypeAnnotation.stringType())
+                    .named("host_name"),
+        ) { Binary.fromString(it.host?.name) }
 
     public val MEM_CAPACITY: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.required(INT64).named("mem_capacity"),
         ) { it.taskInfo.memCapacity }
+
+    public val CPU_COUNT: ExportColumn<TaskTableReader> =
+        ExportColumn(
+            field = Types.required(INT32).named("cpu_count"),
+        ) { it.taskInfo.cpuCount }
 
     public val CPU_LIMIT: ExportColumn<TaskTableReader> =
         ExportColumn(
@@ -167,9 +175,9 @@ public object DfltTaskExportColumns {
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
-            TIMESTAMP_ABS,
-            TIMESTAMP,
             TASK_ID,
             TASK_NAME,
+            TIMESTAMP,
+            TIMESTAMP_ABS,
         )
 }

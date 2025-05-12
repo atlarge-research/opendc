@@ -25,6 +25,10 @@ package org.opendc.experiments.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.compute.simulator.scheduler.MemorizingScheduler
+import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
+import org.opendc.compute.simulator.scheduler.filters.RamFilter
+import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
 import org.opendc.compute.workload.Task
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
@@ -101,7 +105,15 @@ class ExperimentTest {
 
         val topology = createTopology("single_1_2000.json")
 
-        val monitor = runTest(topology, workload)
+        val monitor =
+            runTest(
+                topology,
+                workload,
+                computeScheduler =
+                    MemorizingScheduler(
+                        filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
+                    ),
+            )
 
         assertAll(
             { assertEquals(15 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },

@@ -30,7 +30,6 @@ import org.opendc.experiments.base.experiment.specs.allocation.TaskStopperSpec
 
 @Serializable
 public data class ScenarioSpec(
-    var id: Int = -1,
     var name: String = "",
     val outputFolder: String = "output",
     val topology: ScenarioTopologySpec,
