@@ -12,19 +12,19 @@ The code used to run experiments can be found [here](https://github.com/atlarge-
 
 In the following section, we describe the different components of an experiment. Following is a table with all experiment components:
 
-| Variable           | Type                                                                    | Required? | Default       | Description                                                                                           |
-|--------------------|-------------------------------------------------------------------------|-----------|---------------|-------------------------------------------------------------------------------------------------------|
-| name               | string                                                                  | no        | ""            | Name of the scenario, used for identification and referencing.                                        |
-| outputFolder       | string                                                                  | no        | "output"      | Directory where the simulation outputs will be stored.                                                |
-| runs               | integer                                                                 | no        | 1             | Number of times the same scenario should be run. Each scenario is run with a different seed.          |
-| initialSeed        | integer                                                                 | no        | 0             | The seed used for random number generation during a scenario. Setting a seed ensures reproducability. |
-| topologies         | List[path/to/file]                                                      | yes       | N/A           | Paths to the JSON files defining the topologies.                                                      |
-| workloads          | List[[Workload](/docs/documentation/Input/Workload.md)]                 | yes       | N/A           | Paths to the files defining the workloads executed.                                                   |
-| allocationPolicies | List[[AllocationPolicy](/docs/documentation/Input/AllocationPolicy.md)] | yes       | N/A           | Allocation policies used for resource management in the scenario.                                     |
-| failureModels      | List[[FailureModel](/docs/documentation/Input/FailureModel.md)]         | no        | List[null]    | List of failure models to simulate various types of failures.                                         |
-| maxNumFailures     | List[integer]                                                           | no        | [10]          | The max number of times a task can fail before being terminated.                                      |
-| checkpointModels   | List[[CheckpointModel](/docs/documentation/Input/CheckpointModel.md)]   | no        | List[null]    | Paths to carbon footprint trace files.                                                                |
-| exportModels       | List[[ExportModel](/docs/documentation/Input/ExportModel.md)]           | no        | List[default] | Specifications for exporting data from the simulation.                                                |
+| Variable           | Type                                                                 | Required? | Default       | Description                                                                                           |
+|--------------------|----------------------------------------------------------------------|-----------|---------------|-------------------------------------------------------------------------------------------------------|
+| name               | string                                                               | no        | ""            | Name of the scenario, used for identification and referencing.                                        |
+| outputFolder       | string                                                               | no        | "output"      | Directory where the simulation outputs will be stored.                                                |
+| runs               | integer                                                              | no        | 1             | Number of times the same scenario should be run. Each scenario is run with a different seed.          |
+| initialSeed        | integer                                                              | no        | 0             | The seed used for random number generation during a scenario. Setting a seed ensures reproducability. |
+| topologies         | List[path/to/file]                                                   | yes       | N/A           | Paths to the JSON files defining the topologies.                                                      |
+| workloads          | List[[Workload](/docs/documentation/Input/Workload)]                 | yes       | N/A           | Paths to the files defining the workloads executed.                                                   |
+| allocationPolicies | List[[AllocationPolicy](/docs/documentation/Input/AllocationPolicy)] | yes       | N/A           | Allocation policies used for resource management in the scenario.                                     |
+| failureModels      | List[[FailureModel](/docs/documentation/Input/FailureModel)]         | no        | List[null]    | List of failure models to simulate various types of failures.                                         |
+| maxNumFailures     | List[integer]                                                        | no        | [10]          | The max number of times a task can fail before being terminated.                                      |
+| checkpointModels   | List[[CheckpointModel](/docs/documentation/Input/CheckpointModel)]   | no        | List[null]    | Paths to carbon footprint trace files.                                                                |
+| exportModels       | List[[ExportModel](/docs/documentation/Input/ExportModel)]           | no        | List[default] | Specifications for exporting data from the simulation.                                                |
 
 Most components of an experiment are not single values, but lists of values.
 This allows users to run multiple scenarios using a single experiment file.
@@ -34,8 +34,7 @@ Some of the components in an experiment file are paths to files, or complicated 
 are defined in their respective pages.
 
 ## Examples
-In the following section, we discuss several examples of experiment files. Experiments files can be verified using the
-JSON schema defined in the [schema](TopologySchema).
+In the following section, we discuss several examples of experiment files.
 
 ### Simple
 
@@ -55,7 +54,8 @@ The simplest experiment that can be provided to OpenDC is shown below:
     ],
     "allocationPolicies": [
         {
-            "policyType": "Mem"
+            "type": "prefab",
+            "policyName": "Mem"
         }
     ]
 }
@@ -92,10 +92,12 @@ Following is an example of a more complex experiment:
     ],
     "allocationPolicies": [
         {
-            "policyType": "Mem"
+            "type": "prefab",
+            "policyName": "Mem"
         },
         {
-            "policyType": "Mem-Inv"
+            "type": "prefab",
+            "policyName": "Mem-Inv"
         }
     ]
 }

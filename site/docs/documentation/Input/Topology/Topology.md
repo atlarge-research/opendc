@@ -6,10 +6,7 @@ Each host consist of one or more CPUs, a memory unit and a power model.
 The code related to reading and processing topology files can be found [here](https://github.com/atlarge-research/opendc/tree/master/opendc-compute/opendc-compute-topology/src/main/kotlin/org/opendc/compute/topology)
 :::
 
-## Schema
-
-The schema for the topology file is provided in [schema](TopologySchema.md).
-In the following section, we describe the different components of the schema.
+In the following section, we describe the different components of a topology file.
 
 ### Cluster
 
@@ -25,8 +22,7 @@ Hosts, power sources and batteries all require objects to use. See their respect
 
 ## Examples
 
-In the following section, we discuss several examples of topology files. Any topology file can be verified using the
-JSON schema defined in [schema](TopologySchema.md).
+In the following section, we discuss several examples of topology files.
 
 ### Simple
 
