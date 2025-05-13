@@ -22,14 +22,12 @@
 
 package org.opendc.simulator.compute.workload.trace;
 
-import java.io.Console;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import jdk.jshell.spi.ExecutionControl;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.VirtualMachine;
@@ -135,7 +133,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         for (FlowSupplier supplier : resourceSuppliers) {
             if (supplier.getResourceType() != ResourceType.AUXILIARY){
-                new FlowEdge(this, supplier, supplier.getResourceType());
+                new FlowEdge(this, supplier);
                 this.usedResourceTypes.add(supplier.getResourceType());
                 this.resourcesSupplied.put(supplier.getResourceType(), 0.0);
                 this.newResourcesSupply.put(supplier.getResourceType(), 0.0);
