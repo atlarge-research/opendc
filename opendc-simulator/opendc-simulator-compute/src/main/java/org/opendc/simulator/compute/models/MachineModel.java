@@ -58,7 +58,7 @@ public final class MachineModel {
         this.availableResources.add(ResourceType.CPU);
         // TODO: Add Memory
 //        this.usedResources.add(ResourceType.Memory);
-        if (this.cpuModel != null) {
+        if (gpuModels != null && !gpuModels.isEmpty()) {
             this.gpuModels = gpuModels;
             this.availableResources.add(ResourceType.GPU);
         }
