@@ -113,7 +113,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             double[] supplies = this.distributionStrategy.distributeSupply(this.incomingDemands, this.currentIncomingSupply);
 
             for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
-                this.pushOutgoingSupply(this.consumerEdges.get(idx), supplies[idx]);
+                this.pushOutgoingSupply(this.consumerEdges.get(idx), supplies[idx], this.getResourceType());
             }
 
         } else {
@@ -123,7 +123,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             if (this.overloaded) {
                 for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
                     if (!Objects.equals(this.outgoingSupplies.get(idx), this.incomingDemands.get(idx))) {
-                        this.pushOutgoingSupply(this.consumerEdges.get(idx), this.incomingDemands.get(idx));
+                        this.pushOutgoingSupply(this.consumerEdges.get(idx), this.incomingDemands.get(idx), this.getResourceType());
                     }
                 }
                 this.overloaded = false;
@@ -132,7 +132,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             // Update the supplies of the consumers that changed their demand in the current cycle
             else {
                 for (int idx : this.updatedDemands) {
-                    this.pushOutgoingSupply(this.consumerEdges.get(idx), this.incomingDemands.get(idx));
+                    this.pushOutgoingSupply(this.consumerEdges.get(idx), this.incomingDemands.get(idx), this.getResourceType());
                 }
             }
         }

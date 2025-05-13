@@ -155,19 +155,20 @@ public class FlowEdge {
     /**
      * Push new supply from the Supplier to the Consumer
      */
-    public void pushSupply(double newSupply, boolean forceThrough) {
+    public void pushSupply(double newSupply, boolean forceThrough, ResourceType resourceType) {
         if ((newSupply == this.supply) && !forceThrough) {
             return;
         }
 
         this.supply = newSupply;
-        this.consumer.handleIncomingSupply(this, newSupply);
+        this.consumer.handleIncomingSupply(this, newSupply, resourceType);
     }
 
     /**
      * Push new supply from the Supplier to the Consumer
      */
     public void pushSupply(double newSupply) {
-        this.pushSupply(newSupply, false);
+        this.pushSupply(newSupply, false, this.supplier.getResourceType());
     }
+
 }

@@ -189,7 +189,18 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         updateCounters();
         this.currentGpuSupplied = newGpuSupply;
 
-        this.distributorEdge.pushSupply(newGpuSupply, true);
+        this.distributorEdge.pushSupply(newGpuSupply, true, ResourceType.GPU);
+    }
+
+    /**
+     * Push updated supply to the mux
+     */
+    @Override
+    public void pushOutgoingSupply(FlowEdge consumerEdge, double newGpuSupply, ResourceType resourceType) {
+        updateCounters();
+        this.currentGpuSupplied = newGpuSupply;
+
+        this.distributorEdge.pushSupply(newGpuSupply, true, resourceType);
     }
 
     /**

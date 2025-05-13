@@ -136,7 +136,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     }
 
     VirtualMachine(List<FlowSupplier> suppliers, ChainWorkload workload, SimMachine machine, Consumer<Exception> completion) {
-        super(((FlowNode) suppliers.get(0)).getEngine());
+        super(((FlowNode) suppliers.getFirst()).getEngine());
 
         this.snapshot = workload;
 
@@ -302,9 +302,21 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
-
         this.cpuSupply = newSupply;
-        this.workloadEdge.pushSupply(newSupply);
+        this.machineEdge. pushDemand(newSupply, false);
+    }
+
+    /**
+     * Push supply to the workload
+     *
+     * @param consumerEdge The edge to the cpuMux
+     * @param newSupply new supply to sent to the workload
+     */
+    @Override
+    public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply, ResourceType resourceType) {
+        //TODO: Make it being used
+        this.cpuSupply = newSupply;
+        this.workloadEdge.pushSupply(newSupply, false, resourceType);
     }
 
     /**
@@ -330,7 +342,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply) {
         updateCounters(this.clock.millis());
 
-        this.pushOutgoingSupply(this.machineEdge, newSupply);
+        this.pushOutgoingSupply(this.machineEdge, newSupply, supplierEdge.getSupplier().getResourceType());
     }
 
     /**

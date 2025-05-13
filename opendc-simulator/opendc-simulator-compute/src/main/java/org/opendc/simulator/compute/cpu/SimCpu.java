@@ -137,7 +137,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
         this.currentCpuSupplied = Math.min(this.currentCpuDemand, this.maxCapacity);
 
-        this.pushOutgoingSupply(this.distributorEdge, this.currentCpuSupplied);
+        this.pushOutgoingSupply(this.distributorEdge, this.currentCpuSupplied, ResourceType.CPU);
 
         return Long.MAX_VALUE;
     }
@@ -195,7 +195,15 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         updateCounters();
         this.currentCpuSupplied = newCpuSupply;
 
-        this.distributorEdge.pushSupply(newCpuSupply, true);
+        this.distributorEdge.pushSupply(newCpuSupply, true, ResourceType.CPU);
+    }
+
+    @Override
+    public void pushOutgoingSupply(FlowEdge consumerEdge, double newCpuSupply, ResourceType resourceType) {
+        updateCounters();
+        this.currentCpuSupplied = newCpuSupply;
+
+        this.distributorEdge.pushSupply(newCpuSupply, true, resourceType);
     }
 
     /**
