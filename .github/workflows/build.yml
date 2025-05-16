@@ -134,12 +134,17 @@ jobs:
         run: |
           echo "Looking for JMH result files..."
           find . -name results.txt
+      - name: Combine JMH benchmark results
+        run: |
+          mkdir -p combined-results
+          echo "" > combined-results/results.txt
+          find . -name "results-*.txt" -exec cat {} + >> combined-results/results.txt
       - name: Store benchmark results
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: OpenDC benchmarks
           tool: 'jmh'
-          output-file-path: ./**/build/results/jmh/results.txt
+          output-file-path: combined-results/results.txt
           # Access token to deploy GitHub Pages branch
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Push and deploy GitHub pages branch automatically
