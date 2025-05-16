@@ -130,17 +130,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           arguments: jmh
-      - name: Debug JMH Output Path
-        run: |
-          echo "Looking for JMH result files..."
-          find . -name results.txt
       - name: Combine JMH benchmark results
         run: |
           mkdir -p combined-results
           echo "[]" > combined-results/results.json
           find . -name "results.json" -exec cat {} + > all-results.tmp.json
           jq -s 'add' all-results.tmp.json > combined-results/results.json
-
+          rm all-results.tmp.json
       - name: Store benchmark results
         uses: benchmark-action/github-action-benchmark@v1
         with:
@@ -151,3 +147,5 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Push and deploy GitHub pages branch automatically
           auto-push: true
+          gh-pages-branch: master
+          summary-always: true
