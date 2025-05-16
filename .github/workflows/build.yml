@@ -145,6 +145,8 @@ jobs:
           output-file-path: combined-results/results.json
           # Access token to deploy GitHub Pages branch
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-pages-branch: master
+
           # Push and deploy GitHub pages branch automatically
           auto-push: false
           summary-always: true
