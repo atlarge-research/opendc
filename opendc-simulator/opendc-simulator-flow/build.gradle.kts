@@ -24,6 +24,7 @@ description = "High-performance flow simulator"
 
 plugins {
     `kotlin-library-conventions`
+    `benchmark-conventions`
 }
 
 dependencies {
