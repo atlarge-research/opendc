@@ -148,7 +148,7 @@ jobs:
           gh-pages-branch: master
 
           # Push and deploy GitHub pages branch automatically
-          auto-push: false
+          auto-push: true
           summary-always: true
           comment-on-alert: true
           alert-comment-cc-users: '@DanteNiewenhuis'
