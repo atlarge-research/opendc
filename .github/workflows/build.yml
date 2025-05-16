@@ -130,6 +130,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           arguments: jmh
+      - name: Debug JMH Output Path
+        run: |
+          echo "Looking for JMH result files..."
+          find . -name results.txt
       - name: Store benchmark results
         uses: benchmark-action/github-action-benchmark@v1
         with:
