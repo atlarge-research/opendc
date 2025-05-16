@@ -24,7 +24,6 @@ description = "High-performance flow simulator"
 
 plugins {
     `kotlin-library-conventions`
-    `benchmark-conventions`
 }
 
 dependencies {
@@ -33,6 +32,4 @@ dependencies {
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(libs.slf4j.simple)
-
-    jmhImplementation(projects.opendcSimulator.opendcSimulatorCore)
 }

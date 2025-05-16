@@ -27,6 +27,7 @@ plugins {
     `kotlin-library-conventions`
     `testing-conventions`
     `jacoco-conventions`
+    `benchmark-conventions`
     distribution
     kotlin("plugin.serialization") version "1.9.22"
 }

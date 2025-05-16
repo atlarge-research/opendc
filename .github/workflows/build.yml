@@ -113,3 +113,30 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./site/build
+  benchmark:
+    name: Benchmark
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 21
+      - name: Run benchmark
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: jmh
+      - name: Store benchmark results
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: OpenDC benchmarks
+          tool: 'jmh'
+          output-file-path: output.txt
+          # Access token to deploy GitHub Pages branch
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Push and deploy GitHub pages branch automatically
+          auto-push: true

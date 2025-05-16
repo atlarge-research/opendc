@@ -34,7 +34,7 @@ configure<AllOpenExtension> {
 }
 
 jmh {
-    jmhVersion.set("1.35")
+    jmhVersion.set("1.37")
 
     profilers.add("stack")
     profilers.add("gc")
