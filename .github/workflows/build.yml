@@ -135,7 +135,7 @@ jobs:
         with:
           name: OpenDC benchmarks
           tool: 'jmh'
-          output-file-path: ./build/results/jmh/results.txt
+          output-file-path: ./**/build/results/jmh/results.txt
           # Access token to deploy GitHub Pages branch
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Push and deploy GitHub pages branch automatically
