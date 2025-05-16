@@ -40,11 +40,13 @@ jmh {
     profilers.add("gc")
 
     includeTests.set(false) // Do not include tests by default
+
+    resultFormat = "JSON"
 }
 
 tasks.named("jmh", JMHTask::class) {
     outputs.upToDateWhen { false } // XXX Do not cache the output of this task
-    jvmArgs = listOf("-Djmh.output=build/reports/jmh/results.txt")
+
     testRuntimeClasspath.setFrom() // XXX Clear test runtime classpath to eliminate duplicate dependencies on classpath
 }
 
