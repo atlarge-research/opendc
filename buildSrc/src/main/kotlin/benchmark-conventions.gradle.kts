@@ -34,12 +34,14 @@ configure<AllOpenExtension> {
 }
 
 jmh {
-    jmhVersion.set("1.35")
+    jmhVersion.set("1.37")
 
     profilers.add("stack")
     profilers.add("gc")
 
     includeTests.set(false) // Do not include tests by default
+
+    resultFormat = "JSON"
 }
 
 tasks.named("jmh", JMHTask::class) {
