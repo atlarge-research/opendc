@@ -23,10 +23,7 @@
 package org.opendc.experiments.base.experiment.specs
 
 import kotlinx.serialization.Serializable
-import org.opendc.common.logger.infoNewLine
-import org.opendc.common.logger.logger
 import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
-import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 import org.opendc.experiments.base.experiment.specs.allocation.AllocationPolicySpec
 import org.opendc.experiments.base.experiment.specs.allocation.PrefabAllocationPolicySpec
 import java.util.UUID
@@ -42,25 +39,22 @@ import java.util.UUID
  * @property outputFolder
  * @property initialSeed
  * @property runs
- * @property computeExportConfig configures which parquet columns are to
  * be included in the output files.
  */
 
 @Serializable
 public data class ExperimentSpec(
-    var id: Int = -1,
     var name: String = "",
     val outputFolder: String = "output",
     val initialSeed: Int = 0,
     val runs: Int = 1,
-    val exportModels: Set<ExportModelSpec> = setOf(ExportModelSpec()),
-    val computeExportConfig: ComputeExportConfig = ComputeExportConfig.ALL_COLUMNS,
-    val maxNumFailures: Set<Int> = setOf(10),
     val topologies: Set<ScenarioTopologySpec>,
     val workloads: Set<WorkloadSpec>,
     val allocationPolicies: Set<AllocationPolicySpec> = setOf(PrefabAllocationPolicySpec(ComputeSchedulerEnum.Mem)),
     val failureModels: Set<FailureModelSpec?> = setOf(null),
+    val maxNumFailures: Set<Int> = setOf(10),
     val checkpointModels: Set<CheckpointModelSpec?> = setOf(null),
+    val exportModels: Set<ExportModelSpec> = setOf(ExportModelSpec()),
 ) {
     init {
         require(runs > 0) { "The number of runs should always be positive" }
@@ -71,8 +65,6 @@ public data class ExperimentSpec(
             name = "unnamed-simulation-${UUID.randomUUID().toString().substring(0, 4)}"
 //                "workload=${workloads[0].name}_topology=${topologies[0].name}_allocationPolicy=${allocationPolicies[0].name}"
         }
-
-        LOG.infoNewLine(computeExportConfig.fmt())
     }
 
     public fun getCartesian(): Sequence<ScenarioSpec> {
@@ -96,7 +88,6 @@ public data class ExperimentSpec(
             for (i in 0 until numScenarios) {
                 yield(
                     ScenarioSpec(
-                        id,
                         name,
                         outputFolder,
                         topologyList[(i / topologyDiv) % topologyList.size],
@@ -110,9 +101,5 @@ public data class ExperimentSpec(
                 )
             }
         }
-    }
-
-    internal companion object {
-        private val LOG by logger()
     }
 }

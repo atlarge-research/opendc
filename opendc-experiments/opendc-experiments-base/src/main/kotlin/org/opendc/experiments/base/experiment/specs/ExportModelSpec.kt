@@ -23,8 +23,11 @@
 package org.opendc.experiments.base.experiment.specs
 
 import kotlinx.serialization.Serializable
+import org.opendc.common.logger.infoNewLine
+import org.opendc.common.logger.logger
 import org.opendc.compute.simulator.telemetry.OutputFiles
 import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
+import kotlin.getValue
 
 /**
  * specification describing how the results should be exported
@@ -34,10 +37,10 @@ import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 @Serializable
 public data class ExportModelSpec(
     val exportInterval: Long = 5 * 60,
+    var printFrequency: Int? = 24,
     val computeExportConfig: ComputeExportConfig = ComputeExportConfig.ALL_COLUMNS,
     val filesToExport: List<OutputFiles> = OutputFiles.entries.toList(),
     var filesToExportDict: MutableMap<OutputFiles, Boolean> = OutputFiles.entries.associateWith { false }.toMutableMap(),
-    var printFrequency: Int? = 24,
 ) {
     init {
         require(exportInterval > 0) { "The Export interval has to be higher than 0" }
@@ -47,5 +50,11 @@ public data class ExportModelSpec(
         for (file in filesToExport) {
             filesToExportDict[file] = true
         }
+
+        LOG.infoNewLine(computeExportConfig.fmt())
+    }
+
+    internal companion object {
+        private val LOG by logger()
     }
 }

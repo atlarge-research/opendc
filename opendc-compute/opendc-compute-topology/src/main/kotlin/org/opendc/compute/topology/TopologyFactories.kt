@@ -129,7 +129,7 @@ private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
     val powerSourceSpec =
         PowerSourceSpec(
             createUniqueName(this.powerSource.name, powerSourceNames),
-            totalPower = this.powerSource.totalPower,
+            totalPower = this.powerSource.maxPower,
             carbonTracePath = this.powerSource.carbonTracePath,
         )
 
@@ -140,8 +140,8 @@ private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
                 createUniqueName(this.battery.name, batteryNames),
                 this.battery.capacity,
                 this.battery.chargingSpeed,
-                this.battery.batteryPolicy,
                 this.battery.initialCharge,
+                this.battery.batteryPolicy,
                 this.battery.embodiedCarbon,
                 this.battery.expectedLifetime,
             )

@@ -418,7 +418,8 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         LOGGER.debug("Enqueueing task {} to be assigned to host", task.getUid());
 
         if (task.getNumFailures() >= maxNumFailures) {
-            LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
+            LOGGER.warn("task {} has been terminated because it failed {} times", (Object) task, (Object)
+                    task.getNumFailures());
 
             tasksTerminated++;
             task.setState(TaskState.TERMINATED);
@@ -492,20 +493,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             final ServiceTask task = req.getTask();
 
             final ServiceFlavor flavor = task.getFlavor();
-
-            //            if (task.getNumFailures() >= maxNumFailures) {
-            //                LOGGER.warn("task {} has been terminated because it failed {} times", task,
-            // task.getNumFailures());
-            //
-            //                taskQueue.remove(req);
-            //                tasksPending--;
-            //                tasksTerminated++;
-            //                task.setState(TaskState.TERMINATED);
-            //
-            //                scheduler.removeTask(task, hv);
-            //                this.setTaskToBeRemoved(task);
-            //                continue;
-            //            }
 
             if (result.getResultType() == SchedulingResultType.FAILURE) {
                 LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);

@@ -35,7 +35,7 @@ public class MemorizingScheduler(
     private val filters: List<HostFilter>,
     private val maxTimesSkipped: Int = 7,
 ) : ComputeScheduler {
-    // We assume that there will be max 200 tasks per host.
+    // We assume that there will be max 100 tasks per host.
     // The index of a host list is the number of tasks on that host.
     private val hostsQueue = List(100, { mutableListOf<HostView>() })
     private var minAvailableHost = 0
@@ -77,6 +77,10 @@ public class MemorizingScheduler(
         if (numHosts == 0) {
             return SchedulingResult(SchedulingResultType.FAILURE)
         }
+
+//        if (minAvailableHost == 1) {
+//            return SchedulingResult(SchedulingResultType.EMPTY);
+//        }
 
         val maxIters = 10000
         var numIters = 0

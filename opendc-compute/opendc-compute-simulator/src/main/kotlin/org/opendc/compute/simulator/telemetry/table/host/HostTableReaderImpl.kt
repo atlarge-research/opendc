@@ -49,7 +49,7 @@ public class HostTableReaderImpl(
         _tasksActive = table.tasksActive
         _guestsError = table.guestsError
         _guestsInvalid = table.guestsInvalid
-        _cpuLimit = table.cpuLimit
+        _cpuCapacity = table.cpuCapacity
         _cpuDemand = table.cpuDemand
         _cpuUsage = table.cpuUsage
         _cpuUtilization = table.cpuUtilization
@@ -99,9 +99,9 @@ public class HostTableReaderImpl(
         get() = _guestsInvalid
     private var _guestsInvalid = 0
 
-    override val cpuLimit: Double
-        get() = _cpuLimit
-    private var _cpuLimit = 0.0
+    override val cpuCapacity: Double
+        get() = _cpuCapacity
+    private var _cpuCapacity = 0.0
 
     override val cpuUsage: Double
         get() = _cpuUsage
@@ -176,7 +176,7 @@ public class HostTableReaderImpl(
         _tasksActive = hostSysStats.guestsRunning
         _guestsError = hostSysStats.guestsError
         _guestsInvalid = hostSysStats.guestsInvalid
-        _cpuLimit = hostCpuStats.capacity
+        _cpuCapacity = hostCpuStats.capacity
         _cpuDemand = hostCpuStats.demand
         _cpuUsage = hostCpuStats.usage
         _cpuUtilization = hostCpuStats.utilization
@@ -211,7 +211,7 @@ public class HostTableReaderImpl(
         _guestsError = 0
         _guestsInvalid = 0
 
-        _cpuLimit = 0.0
+        _cpuCapacity = 0.0
         _cpuUsage = 0.0
         _cpuDemand = 0.0
         _cpuUtilization = 0.0

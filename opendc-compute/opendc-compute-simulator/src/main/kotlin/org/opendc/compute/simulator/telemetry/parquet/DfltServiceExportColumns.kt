@@ -59,15 +59,20 @@ public object DfltServiceExportColumns {
             field = Types.required(INT32).named("hosts_up"),
         ) { it.hostsUp }
 
-    public val TASKS_PENDING: ExportColumn<ServiceTableReader> =
+    public val HOSTS_DOWN: ExportColumn<ServiceTableReader> =
         ExportColumn(
-            field = Types.required(INT32).named("tasks_pending"),
-        ) { it.tasksPending }
+            field = Types.required(INT32).named("hosts_down"),
+        ) { it.hostsDown }
 
     public val TASKS_TOTAL: ExportColumn<ServiceTableReader> =
         ExportColumn(
             field = Types.required(INT32).named("tasks_total"),
         ) { it.tasksTotal }
+
+    public val TASKS_PENDING: ExportColumn<ServiceTableReader> =
+        ExportColumn(
+            field = Types.required(INT32).named("tasks_pending"),
+        ) { it.tasksPending }
 
     public val TASKS_ACTIVE: ExportColumn<ServiceTableReader> =
         ExportColumn(
@@ -79,27 +84,17 @@ public object DfltServiceExportColumns {
             field = Types.required(INT32).named("tasks_completed"),
         ) { it.tasksCompleted }
 
-    public val TASKS_FAILED: ExportColumn<ServiceTableReader> =
+    public val TASKS_TERMINATED: ExportColumn<ServiceTableReader> =
         ExportColumn(
             field = Types.required(INT32).named("tasks_terminated"),
         ) { it.tasksTerminated }
-
-    public val ATTEMPTS_SUCCESS: ExportColumn<ServiceTableReader> =
-        ExportColumn(
-            field = Types.required(INT32).named("attempts_success"),
-        ) { it.attemptsSuccess }
-
-    public val ATTEMPTS_FAILURE: ExportColumn<ServiceTableReader> =
-        ExportColumn(
-            field = Types.required(INT32).named("attempts_failure"),
-        ) { it.attemptsFailure }
 
     /**
      * The columns that are always included in the output file.
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
-            TIMESTAMP_ABS,
             TIMESTAMP,
+            TIMESTAMP_ABS,
         )
 }

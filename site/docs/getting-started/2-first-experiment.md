@@ -6,17 +6,16 @@ description: Designing a simple experiment
 Now that you have downloaded OpenDC, we will start creating a simple experiment. 
 In this experiment we will compare the performance of a small, and a big data center on the same workload.
 
-<details>
-<summary>Expand this</summary>
 
-This is content
-</details>
+[//]: # (:::tip Answer)
 
-:::tip Answer
-<details>
-<summary>Expand for the Answer</summary>
-</details>
-:::
+[//]: # (<details>)
+
+[//]: # (<summary>Expand for the Answer</summary>)
+
+[//]: # (</details>)
+
+[//]: # (:::)
 
 :::info Learning goal
 During this tutorial, we will learn how to create and execute a simple experiment in OpenDC.
@@ -149,7 +148,7 @@ For this experiment, we will use the bitbrains-small workload. This is a small w
 spanning over a bit more than a month time. You can download the workload [here](documents/workloads/bitbrains-small.zip "download")
 
 :::info
-For more in depth information about Workloads, see [Workload](../documentation/Input/Workload)
+For more in depth information about Workloads, see [Workload](../documentation/Input/Workload.md)
 :::
 
 ## Executing an experiment

@@ -75,7 +75,7 @@ public interface HostTableReader : Exportable {
     /**
      * The capacity of the CPUs in the host (in MHz).
      */
-    public val cpuLimit: Double
+    public val cpuCapacity: Double
 
     /**
      * The usage of all CPUs in the host (in MHz).
