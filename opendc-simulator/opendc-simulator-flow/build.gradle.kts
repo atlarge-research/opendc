@@ -33,6 +33,4 @@ dependencies {
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(libs.slf4j.simple)
-
-    jmhImplementation(projects.opendcSimulator.opendcSimulatorCore)
 }

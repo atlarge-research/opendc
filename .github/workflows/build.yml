@@ -7,6 +7,10 @@ on:
     branches: [ master ]
   merge_group:
 
+permissions:
+  contents: write  # Required to push to the repository
+  pages: write
+
 jobs:
   build:
     name: Build (Java ${{ matrix.java }} - ${{ matrix.os }})
@@ -84,3 +88,43 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           file: opendc-web/opendc-web-runner/Dockerfile
+  benchmark:
+    name: Benchmark
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 21
+      - name: Run benchmark
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: jmh
+      - name: Combine JMH benchmark results
+        run: |
+          mkdir -p combined-results
+          echo "[]" > combined-results/results.json
+          find . -name "results.json" -exec cat {} + > all-results.tmp.json
+          jq -s 'add' all-results.tmp.json > combined-results/results.json
+          rm all-results.tmp.json
+      - name: Store benchmark results
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: OpenDC benchmarks
+          tool: 'jmh'
+          output-file-path: combined-results/results.json
+          # Access token to deploy GitHub Pages branch
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          comment-on-alert: true
+          alert-comment-cc-users: '@DanteNiewenhuis'
+
+          # Push and deploy GitHub pages branch automatically
+          auto-push: true
+          summary-always: true
+          benchmark-data-dir-path: site/dev/benchmarks
