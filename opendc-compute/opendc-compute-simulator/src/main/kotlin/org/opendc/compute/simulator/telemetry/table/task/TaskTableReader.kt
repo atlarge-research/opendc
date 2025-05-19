@@ -58,7 +58,7 @@ public interface TaskTableReader : Exportable {
     /**
      * The [HostInfo] of the host on which the task is hosted or `null` if it has no host.
      */
-    public val host: HostInfo?
+    public val hostInfo: HostInfo?
 
     /**
      * The uptime of the host since last time in ms.

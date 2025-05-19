@@ -50,7 +50,7 @@ public class TaskTableReaderImpl(
     }
 
     override fun setValues(table: TaskTableReader) {
-        host = table.host
+        hostInfo = table.hostInfo
 
         _timestamp = table.timestamp
         _timestampAbsolute = table.timestampAbsolute
@@ -90,8 +90,8 @@ public class TaskTableReaderImpl(
     /**
      * The [HostInfo] of the host on which the task is hosted.
      */
-    override var host: HostInfo? = null
-    private var _host: SimHost? = null
+    override var hostInfo: HostInfo? = null
+    private var simHost: SimHost? = null
 
     private var _timestamp = Instant.MIN
     override val timestamp: Instant
@@ -172,9 +172,9 @@ public class TaskTableReaderImpl(
      */
     override fun record(now: Instant) {
         val newHost = service.lookupHost(task)
-        if (newHost != null && newHost.getName() != _host?.getName()) {
-            _host = newHost
-            host =
+        if (newHost != null && newHost.getName() != simHost?.getName()) {
+            simHost = newHost
+            hostInfo =
                 HostInfo(
                     newHost.getName(),
                     newHost.getClusterName(),
@@ -185,8 +185,8 @@ public class TaskTableReaderImpl(
                 )
         }
 
-        val cpuStats = _host?.getCpuStats(task)
-        val sysStats = _host?.getSystemStats(task)
+        val cpuStats = simHost?.getCpuStats(task)
+        val sysStats = simHost?.getSystemStats(task)
 
         _timestamp = now
         _timestampAbsolute = now + startTime
@@ -221,7 +221,7 @@ public class TaskTableReaderImpl(
         previousCpuStealTime = _cpuStealTime
         previousCpuLostTime = _cpuLostTime
 
-        _host = null
+        simHost = null
         _cpuLimit = 0.0
     }
 }
