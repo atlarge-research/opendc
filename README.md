@@ -31,7 +31,8 @@ The documentation is divided into several sections:
 * [Where to Get Support](https://atlarge-research.github.io/opendc/community/support/)
 * [Contributing Guide](https://atlarge-research.github.io/opendc/community/contributing/)
 
-The source code for the documentation is located in [site](site).
+The source code for the documentation is located in the [gh-pages branch](https://github.com/atlarge-research/opendc/tree/gh-pages).
+Push to that branch to update the documentation.
 
 ## Contributing
 
