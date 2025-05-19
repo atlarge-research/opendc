@@ -1,43 +1,33 @@
-<a href="https://opendc.org/">
-    <img src="https://opendc.org/img/logo.png" alt="OpenDC logo" title="OpenDC" align="right" height="100" />
-</a>
+# OpenDC docs site
 
-# OpenDC
+This branch contains the sources for the [OpenDC website](https://opendc.org). The website is built
+using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
 
-Collaborative Datacenter Simulation and Exploration for Everybody
+To run the website locally, you need to have [Node.js](https://nodejs.org/en/) installed.
+To start the website, run the following commands:
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](/LICENSE.txt)
-[![Documentation](https://img.shields.io/badge/docs-master-green.svg)](https://atlarge-research.github.io/opendc)
-[![GitHub release](https://img.shields.io/github/v/release/atlarge-research/opendc?include_prereleases)](https://github.com/atlarge-research/opendc/releases)
-[![Build](https://github.com/atlarge-research/opendc/actions/workflows/build.yml/badge.svg)](https://github.com/atlarge-research/opendc/actions/workflows/build.yml)
+### Installation
 
------
+```
+$ npm i
+```
 
-This repository is the home of the OpenDC project, a free and open-source platform for cloud datacenter simulation.
+### Local Development
 
-## Latest Release
+```
+$ npm run start
+```
 
-All releases of OpenDC can be found [here](https://github.com/atlarge-research/opendc/releases).
-The latest release will be marked _latest_.
+This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
 
-## Documentation
+### Build
 
-You can find the OpenDC documentation [on the website](https://atlarge-research.github.io/opendc/).
-The documentation is divided into several sections:
+```
+$ npm run build
+```
 
-* [Getting Started](https://atlarge-research.github.io/opendc/docs/category/getting-started/)
-* [Tutorials](https://atlarge-research.github.io/opendc/docs/category/tutorials/)
-* [Advanced Guides](https://atlarge-research.github.io/opendc/docs/category/advanced-guides/)
-* [Where to Get Support](https://atlarge-research.github.io/opendc/community/support/)
-* [Contributing Guide](https://atlarge-research.github.io/opendc/community/contributing/)
+This command generates static content into the `build` directory and can be served using any static contents hosting service.
 
-The source code for the documentation is located in [site](site).
+### Deployment
 
-## Contributing
-
-Questions, suggestions and contributions are welcome and appreciated!
-Please refer to the [contributing guidelines](CONTRIBUTING.md) for more details.
-
-## License
-
-OpenDC is distributed under the MIT license. See [LICENSE.txt](/LICENSE.txt).
+The site is automatically deployed using GitHub Actions.

@@ -20,10 +20,4 @@
  * SOFTWARE.
  */
 
-plugins {
-    `dokka-conventions`
-    `jacoco-aggregation`
-}
-
 group = "org.opendc"
-version = "3.0-SNAPSHOT"
