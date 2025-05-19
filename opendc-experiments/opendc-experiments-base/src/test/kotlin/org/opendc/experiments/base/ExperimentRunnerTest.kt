@@ -24,23 +24,24 @@ package org.opendc.experiments.base
 
 import org.junit.jupiter.api.Test
 import org.opendc.experiments.base.runner.ExperimentCommand
+import java.io.File
 
 /**
- * An integration test suite for the Scenario experiments.
+ * An integration test suite for the Experiment Runner.
  */
 class ExperimentRunnerTest {
     /**
-     * Simulator test 1: Single Task
-     * In this test, a single task is scheduled that takes 10 minutes to run.
+     * ExperimentRunner test 1
+     * This test runs the experiment defined in the experiment_1.json file.
      *
-     * There should be no problems running the task, so the total runtime should be 10 min.
-     *
-     * The task is using 50% of the available CPU capacity.
-     * This means that half of the time is active, and half is idle.
-     * When the task is failed, all time is idle.
+     * In this test, the bitbrains-small workload is executed with and without a carbon trace.
      */
     @Test
     fun testExperimentRunner1() {
         ExperimentCommand().main(arrayOf("--experiment-path", "src/test/resources/experiments/experiment_1.json"))
+
+
+        val someDir = File("output")
+        someDir.deleteRecursively()
     }
 }
