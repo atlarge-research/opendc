@@ -2,88 +2,12 @@ name: Build
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [ gh-pages ]
   push:
-    branches: [ master ]
+    branches: [ gh-pages ]
   merge_group:
 
 jobs:
-  build:
-    name: Build (Java ${{ matrix.java }} - ${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ ubuntu-22.04 ]
-        java: [ 21 ]
-        include:
-          - os: windows-2022
-            java: 21
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v3
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: ${{ matrix.java }}
-      - name: Build with Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: build assembleDist codeCoverageReport
-          # Only write to the cache for builds on the 'master' branch.
-          # Builds on other branches will only read existing entries from the cache.
-          cache-read-only: ${{ github.ref != 'refs/heads/master' }}
-      - name: Publish report
-        if: always()
-        uses: mikepenz/action-junit-report@v5
-        with:
-          check_name: test (Java ${{ matrix.java }})
-          report_paths: '**/build/test-results/test/TEST-*.xml'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload reports
-        if: always()
-        continue-on-error: true # See https://github.com/actions/upload-artifact/issues/270
-        uses: actions/upload-artifact@v4
-        with:
-          name: reports-${{ matrix.os }}-jdk${{ matrix.java }}
-          path: |
-            ./**/build/reports/**/*
-            ./**/build/test-results/**/*
-          retention-days: 5
-      - name: Upload build
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-${{ matrix.os }}-jdk${{ matrix.java }}
-          path: |
-            ./**/build/distributions/**/*.zip
-          retention-days: 5
-      - name: Upload code coverage
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
-  build-docker:
-    name: Build Docker Images
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Build UI
-        uses: docker/build-push-action@v6
-        with:
-          context: opendc-web/opendc-web-ui
-          file: opendc-web/opendc-web-ui/Dockerfile
-      - name: Build Web Server
-        uses: docker/build-push-action@v6
-        with:
-          file: opendc-web/opendc-web-server/Dockerfile
-      - name: Build Runner
-        uses: docker/build-push-action@v6
-        with:
-          file: opendc-web/opendc-web-runner/Dockerfile
   build-docs:
     defaults:
       run:

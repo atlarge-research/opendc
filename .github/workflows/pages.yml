@@ -2,7 +2,7 @@ name: Deploy opendc.org
 
 on:
   push:
-    branches: ["master"]
+    branches: ["gh-pages"]
   workflow_dispatch:
 
 concurrency:

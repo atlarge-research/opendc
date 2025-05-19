@@ -19,44 +19,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc"
-
-
-include(":opendc-common")
-include(":opendc-compute:opendc-compute-api")
-include(":opendc-compute:opendc-compute-carbon")
-include(":opendc-compute:opendc-compute-failure")
-include(":opendc-compute:opendc-compute-simulator")
-include(":opendc-compute:opendc-compute-topology")
-include(":opendc-compute:opendc-compute-workload")
-include(":opendc-workflow:opendc-workflow-api")
-include(":opendc-workflow:opendc-workflow-service")
-include(":opendc-faas:opendc-faas-api")
-include(":opendc-faas:opendc-faas-service")
-include(":opendc-faas:opendc-faas-simulator")
-include(":opendc-experiments:opendc-experiments-base")
-include(":opendc-experiments:opendc-experiments-workflow")
-include(":opendc-experiments:opendc-experiments-faas")
-include(":opendc-experiments:opendc-experiments-scenario")
-include(":opendc-experiments:opendc-experiments-tf20")
-include(":opendc-experiments:opendc-experiments-m3sa")
-include(":opendc-web:opendc-web-proto")
-include(":opendc-web:opendc-web-server")
-include(":opendc-web:opendc-web-client")
-include(":opendc-web:opendc-web-ui")
-include(":opendc-web:opendc-web-ui-quarkus")
-include(":opendc-web:opendc-web-ui-quarkus-deployment")
-include(":opendc-web:opendc-web-runner")
-include(":opendc-web:opendc-web-runner-quarkus")
-include(":opendc-web:opendc-web-runner-quarkus-deployment")
-include(":opendc-simulator:opendc-simulator-core")
-include(":opendc-simulator:opendc-simulator-flow")
-include(":opendc-simulator:opendc-simulator-compute")
-include(":opendc-trace:opendc-trace-api")
-include(":opendc-trace:opendc-trace-calcite")
-include(":opendc-trace:opendc-trace-parquet")
-include(":opendc-trace:opendc-trace-testkit")
-include(":opendc-trace:opendc-trace-failure")
-include(":opendc-trace:opendc-trace-tools")
+rootProject.name = "opendc-site"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
