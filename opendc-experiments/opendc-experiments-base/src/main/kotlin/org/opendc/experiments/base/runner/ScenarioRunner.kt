@@ -131,23 +131,27 @@ public fun runScenario(
             service.setTasksExpected(workload.size)
             service.setMetricReader(provisioner.getMonitor())
 
-            val carbonModel = provisioner.registry.resolve(serviceDomain, CarbonModel::class.java)!!
-            val computeScheduler = provisioner.registry.resolve(serviceDomain, ComputeScheduler::class.java)!!
-            if (computeScheduler is CarbonReceiver) {
-                carbonModel.addReceiver(computeScheduler)
-            }
-            carbonModel.addReceiver(service)
+            var carbonModel: CarbonModel? = null
+            if (provisioner.registry.hasService(serviceDomain, CarbonModel::class.java)) {
+                carbonModel = provisioner.registry.resolve(serviceDomain, CarbonModel::class.java)!!
 
-            if (scenario.allocationPolicySpec is TimeShiftAllocationPolicySpec) {
-                val taskStopper =
-                    createTaskStopper(
-                        scenario.allocationPolicySpec.taskStopper,
-                        coroutineContext,
-                        timeSource,
-                    )
-                if (taskStopper != null) {
-                    taskStopper.setService(service)
-                    carbonModel.addReceiver(taskStopper)
+                val computeScheduler = provisioner.registry.resolve(serviceDomain, ComputeScheduler::class.java)!!
+                if (computeScheduler is CarbonReceiver) {
+                    carbonModel.addReceiver(computeScheduler)
+                    carbonModel.addReceiver(service)
+                }
+
+                if (scenario.allocationPolicySpec is TimeShiftAllocationPolicySpec) {
+                    val taskStopper =
+                        createTaskStopper(
+                            scenario.allocationPolicySpec.taskStopper,
+                            coroutineContext,
+                            timeSource,
+                        )
+                    if (taskStopper != null) {
+                        taskStopper.setService(service)
+                        carbonModel.addReceiver(taskStopper)
+                    }
                 }
             }
 

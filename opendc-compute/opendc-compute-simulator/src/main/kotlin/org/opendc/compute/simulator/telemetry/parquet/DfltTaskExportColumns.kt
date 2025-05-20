@@ -80,7 +80,12 @@ public object DfltTaskExportColumns {
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("host_name"),
-        ) { Binary.fromString(it.host?.name) }
+        ) {
+            if (it.hostInfo == null) {
+                return@ExportColumn Binary.fromString("")
+            }
+            return@ExportColumn Binary.fromString(it.hostInfo!!.name)
+        }
 
     public val MEM_CAPACITY: ExportColumn<TaskTableReader> =
         ExportColumn(
@@ -168,7 +173,12 @@ public object DfltTaskExportColumns {
                 Types.optional(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("task_state"),
-        ) { Binary.fromString(it.taskState?.name) }
+        ) {
+            if (it.taskState == null) {
+                return@ExportColumn Binary.fromString("")
+            }
+            return@ExportColumn Binary.fromString(it.taskState!!.name)
+        }
 
     /**
      * The columns that are always included in the output file.

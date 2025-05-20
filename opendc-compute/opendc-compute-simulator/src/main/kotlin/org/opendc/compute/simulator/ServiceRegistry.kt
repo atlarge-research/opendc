@@ -32,8 +32,29 @@ public class ServiceRegistry(private val registry: MutableMap<String, MutableMap
     ): T? {
         val servicesForName = registry[name] ?: return null
 
-        @Suppress("UNCHECKED_CAST")
-        return servicesForName[type] as T?
+        val service = servicesForName[type]
+
+        if (service == null) {
+            throw IllegalStateException("Service $type not registered for name $name")
+        }
+
+        try {
+            @Suppress("UNCHECKED_CAST")
+            return service as T?
+        } catch (e: ClassCastException) {
+            throw IllegalStateException("Service $type registered for name $name is not of the given type")
+        }
+    }
+
+    public fun <T : Any> hasService(
+        name: String,
+        type: Class<T>,
+    ): Boolean {
+        val servicesForName = registry[name] ?: return false
+
+        servicesForName[type] ?: return false
+
+        return true
     }
 
     public fun <T : Any> register(
