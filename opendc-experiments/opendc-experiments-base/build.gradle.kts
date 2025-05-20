@@ -1,3 +1,7 @@
+import me.champeau.jmh.JMHTask
+import org.gradle.kotlin.dsl.assign
+import org.gradle.kotlin.dsl.named
+
 /*
  * Copyright (c) 2022 AtLarge Research
  *
@@ -27,6 +31,7 @@ plugins {
     `kotlin-library-conventions`
     `testing-conventions`
     `jacoco-conventions`
+    `benchmark-conventions`
     distribution
     kotlin("plugin.serialization") version "1.9.22"
 }
@@ -57,6 +62,17 @@ val createScenarioApp by tasks.creating(CreateStartScripts::class) {
     classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
     outputDir = layout.buildDirectory.dir("scripts").get().asFile
 }
+
+//tasks.named("jmh", JMHTask::class) {
+//    outputs.upToDateWhen { false } // XXX Do not cache the output of this task
+//    jvmArgs = listOf("-Djmh.outputFormat=json", "-Djmh.output=/reports/jmh/results-${project.name}.json")
+//    testRuntimeClasspath.setFrom() // XXX Clear test runtime classpath to eliminate duplicate dependencies on classpath
+//}
+
+//jmh {
+//    resultFormat = "JSON" // <--- Key: This sets the output format
+//    resultsFile = file("$buildDir/reports/jmh/results-${project.name}.json") // <--- Sets the output file
+//}
 
 // Create custom Scenario distribution
 distributions {
