@@ -44,3 +44,18 @@
     content: 'Figure ' counter(figure-counter) ': ';
     font-weight: bold;
 }
+
+.stream-output {
+    background: #fafafa;
+    max-height: 300px;
+    overflow: scroll;
+}
+
+.code-cell {
+    background: #fafafa;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 1em;
+    font-family: monospace;
+}
