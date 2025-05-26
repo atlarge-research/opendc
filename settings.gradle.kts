@@ -58,5 +58,6 @@ include(":opendc-trace:opendc-trace-parquet")
 include(":opendc-trace:opendc-trace-testkit")
 include(":opendc-trace:opendc-trace-failure")
 include(":opendc-trace:opendc-trace-tools")
+include(":opendc-demos")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
