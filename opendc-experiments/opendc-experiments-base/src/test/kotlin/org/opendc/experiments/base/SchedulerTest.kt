@@ -65,8 +65,8 @@ class SchedulerTest {
 
         assertAll(
             { assertEquals(25 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals(((10 * 30000) + (10 * 60000)).toLong(), monitor.hostIdleTimes["H01"]?.sum()) { "Idle time incorrect" } },
-            { assertEquals(((10 * 30000) + (5 * 60000)).toLong(), monitor.hostActiveTimes["H01"]?.sum()) { "Active time incorrect" } },
+            { assertEquals(((10 * 30000) + (10 * 60000)).toLong(), monitor.hostCpuIdleTimes["H01"]?.sum()) { "Idle time incorrect" } },
+            { assertEquals(((10 * 30000) + (5 * 60000)).toLong(), monitor.hostCpuActiveTimes["H01"]?.sum()) { "Active time incorrect" } },
             { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect energy usage" } },
             {
                 assertEquals(
