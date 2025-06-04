@@ -30,8 +30,10 @@ import java.util.function.Consumer;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.cpu.CpuPowerModel;
 import org.opendc.simulator.compute.cpu.SimCpu;
+import org.opendc.simulator.compute.gpu.GpuPowerModel;
 import org.opendc.simulator.compute.gpu.SimGpu;
 import org.opendc.simulator.compute.memory.Memory;
+import org.opendc.simulator.compute.models.GpuModel;
 import org.opendc.simulator.compute.models.MachineModel;
 import org.opendc.simulator.compute.power.SimPsu;
 import org.opendc.simulator.compute.workload.ChainWorkload;
@@ -55,7 +57,8 @@ public class SimMachine {
     private FlowDistributor cpuDistributor;
     private SimPsu psu;
     private Memory memory;
-    private List<SimGpu> gpus;
+    private final List<SimGpu> gpus = new ArrayList<>();
+    private FlowDistributor gpuDistributor;
 
     private final List<ResourceType> availableResources;
 
@@ -67,6 +70,23 @@ public class SimMachine {
 
     public CpuPerformanceCounters getPerformanceCounters() {
         return this.cpu.getPerformanceCounters();
+    }
+
+    public List<GpuPerformanceCounters> getGpuPerformanceCounters() {
+        List<GpuPerformanceCounters> counters = new ArrayList<>();
+        for (SimGpu gpu : gpus) {
+            counters.add(gpu.getPerformanceCounters());
+        }
+        return counters;
+    }
+
+    public GpuPerformanceCounters getSpecificGpuPerformanceCounters(int GpuId) {
+        for (SimGpu gpu : gpus) {
+            if (gpu.getId() == GpuId) {
+                return gpu.getPerformanceCounters();
+            }
+        }
+        throw new RuntimeException("No such gpu id: " + GpuId);
     }
 
     public MachineModel getMachineModel() {
@@ -91,6 +111,16 @@ public class SimMachine {
 
     public SimPsu getPsu() {
         return psu;
+    }
+
+    public List<SimGpu> getGpus() { return gpus; }
+    public SimGpu getGpu(int gpuId) {
+        for (SimGpu gpu : gpus) {
+            if (gpu.getId() == gpuId) {
+                return gpu;
+            }
+        }
+        throw new RuntimeException("No such gpu id: " + gpuId);
     }
 
     /**
@@ -122,15 +152,19 @@ public class SimMachine {
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // TODO: Place distributors into list
     public SimMachine(
             FlowEngine engine,
             MachineModel machineModel,
             FlowDistributor powerDistributor,
             CpuPowerModel cpuPowerModel,
+            GpuPowerModel gpuPowerModel,
             Consumer<Exception> completion) {
         this.engine = engine;
         this.machineModel = machineModel;
         this.clock = engine.getClock();
+
+        this.availableResources = this.machineModel.getUsedResources();
 
         // Create the psu and cpu and connect them
         this.psu = new SimPsu(engine);
@@ -148,9 +182,21 @@ public class SimMachine {
 
         new FlowEdge(this.cpuDistributor, this.cpu);
 
+        if  (this.availableResources.contains(ResourceType.GPU)) {
+            this.gpuDistributor = new FlowDistributor(engine);
+            short i = 0;
+            for (GpuModel gpuModel : machineModel.getGpuModels()) {
+                SimGpu gpu = new SimGpu(engine, gpuModel, gpuPowerModel, i);
+                this.gpus.add(gpu);
+                // suspends here without the distributor
+                new FlowEdge(this.gpuDistributor, gpu);
+                new FlowEdge(gpu, this.psu);
+            }
+        }
+
         this.completion = completion;
 
-        this.availableResources = this.machineModel.getUsedResources();
+
     }
 
     public void shutdown() {
@@ -171,6 +217,13 @@ public class SimMachine {
         this.cpuDistributor = null;
 
         this.memory = null;
+
+        for (SimGpu gpu : this.gpus) {
+            gpu.closeNode();
+        }
+        this.gpus.clear();
+        this.gpuDistributor.closeNode();
+        this.gpuDistributor = null;
 
         this.completion.accept(cause);
     }
@@ -197,7 +250,13 @@ public class SimMachine {
     public VirtualMachine startWorkload(ChainWorkload workload, Consumer<Exception> completion) {
 //        return (VirtualMachine) workload.startWorkload(this.cpuDistributor, this, completion);
         ArrayList<FlowSupplier> distributors = new ArrayList<>();
-        distributors.add(this.cpuDistributor);
+//        distributors.add(this.cpuDistributor);
+        if (this.availableResources.contains(ResourceType.CPU)) {
+            distributors.add(this.cpuDistributor);
+        }
+        if (this.availableResources.contains(ResourceType.GPU)) {
+            distributors.add(this.gpuDistributor);
+        }
         return (VirtualMachine) workload.startWorkload(distributors, this, completion);
         // TODO: Include GPU
     }
