@@ -144,6 +144,8 @@ public object DfltHostExportColumns {
             field = Types.required(INT64).named("cpu_time_lost"),
         ) { it.cpuLostTime }
 
+    // TODO: Add GPU columns when available
+
     public val POWER_DRAW: ExportColumn<HostTableReader> =
         ExportColumn(
             field = Types.required(FLOAT).named("power_draw"),
