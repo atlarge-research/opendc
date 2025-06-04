@@ -215,4 +215,97 @@ class ExperimentTest {
             },
         )
     }
+
+    /**
+     * Simulator test 5: One Task purely running on GPU
+     *
+     * In this test, a single task is scheduled that takes 10 minutes to run. It solely uses the GPU.
+     */
+    @Test
+    fun testSimulator5(){
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
+                        ),
+                )
+            )
+
+        val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
+
+        val monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals(10 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
+            { assertEquals(((10 * 60 * 1000)).toLong(), monitor.hostCpuIdleTimes["H01"]?.sum()) { "CPU Idle time incorrect" } },
+            { assertEquals(0L, monitor.hostCpuActiveTimes["H01"]?.sum()) { "CPU Active time incorrect" } },
+            {
+                assertEquals(
+                    ((10 * 30000)).toLong(),
+                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                ) { "GPU Idle time incorrect" }
+            },
+            {
+                assertEquals(
+                    ((10 * 30000)).toLong(),
+                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                ) { "GPU Active time incorrect" }
+            }
+
+            // double, as CPU and GPU both use power
+            ,
+            { assertEquals(2 * 9000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect host energy usage at timestamp 0" } },
+            { assertEquals(2 * 600 * 150.0, monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect host energy usage" } },
+            { assertEquals(2 * 600 * 150.0, monitor.energyUsages.sum()) { "Incorrect total energy usage" } }
+        )
+    }
+
+    /**
+     * Simulator test 6: One Task running on CPU & GPU
+     *
+     * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used and have the same runtime.
+     */
+    fun testSimulator6(){
+
+    }
+
+    /**
+     * Simulator test 7: One Task running on CPU & GPU
+     *
+     * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used. CPU will finish way ahead of the GPU.
+     */
+    fun testSimulator7(){
+
+    }
+
+    /**
+     * Simulator test 8: One Task running on CPU & GPU
+     *
+     * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used. GPU will finish way ahead of the CPU.
+     */
+    fun testSimulator8(){
+
+    }
+
+    /**
+     * Simulator test 9: Two tasks running on CPU & GPU
+     *
+     * In this test, two tasks are scheduled at the same time that takes 10 minutes to run. CPU & GPU are used. Both resources will finish at the same time.
+     */
+    fun testSimulator9(){
+
+    }
+
+    /**
+     * Simulator test 10: Two tasks running on CPU & GPU
+     *
+     * In this test, two tasks are scheduled at the same time that takes 10 minutes to run. One task purely uses CPU, one purely GPU.
+     */
+    fun testSimulator10(){
+
+    }
+
 }

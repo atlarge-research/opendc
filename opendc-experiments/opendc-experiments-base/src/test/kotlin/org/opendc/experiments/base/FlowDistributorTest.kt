@@ -557,4 +557,53 @@ class FlowDistributorTest {
             { assertEquals(1000 * 10 * 60 * 1000, monitor.maxTimestamp) { "The expected runtime is exceeded" } },
         )
     }
+
+    /**
+     * FlowDistributor test 14: A single fitting GPU task
+     * In this test, a single task is scheduled that should fit the FlowDistributor
+     * We check if both the host and the Task show the correct cpu and gpu usage and demand during the two fragments.
+     */
+    @Test
+    fun testFlowDistributor14() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0,0,1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 0.0,0,2000.0, 1),
+                        ),
+                ),
+            )
+
+        val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
+
+        val monitor = runTest(topology, workload)
+
+        assertAll(
+            // CPU
+            // task
+            { assertEquals(0.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(0.0, monitor.taskCpuDemands["0"]?.get(10)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(0.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(0.0, monitor.taskCpuSupplied["0"]?.get(10)) { "The cpu used by task 0 is incorrect" } },
+            // host
+            { assertEquals(0.0, monitor.hostCpuDemands["H01"]?.get(1)) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuDemands["H01"]?.get(10)) { "The cpu demanded by the host is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuSupplied["H01"]?.get(1)) { "The cpu used by the host is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuSupplied["H01"]?.get(10)) { "The cpu used by the host is incorrect" } },
+            //GPU
+            // task
+            { assertEquals(1000.0, monitor.taskGpuDemands["0"]?.get(1)?.get(0)) { "The gpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuDemands["0"]?.get(10)?.get(0)) { "The gpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskGpuSupplied["0"]?.get(1)?.get(0)) { "The gpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["0"]?.get(10)?.get(0)) { "The gpu used by task 0 is incorrect" } },
+            // host
+            { assertEquals(1000.0, monitor.hostGpuDemands["H01"]?.get(1)?.get(0)) { "The gpu demanded by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostGpuDemands["H01"]?.get(10)?.get(0)) { "The gpu demanded by the host is incorrect" } },
+            { assertEquals(1000.0, monitor.hostGpuSupplied["H01"]?.get(1)?.get(0)) { "The gpu used by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["H01"]?.get(10)?.get(0)) { "The gpu used by the host is incorrect" } },
+        )
+    }
 }
