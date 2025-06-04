@@ -38,6 +38,7 @@ import org.opendc.simulator.engine.graph.FlowSupplier;
  * A {@link SimGpu} of a machine.
  */
 public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer {
+    private final int id;
     private final GpuModel gpuModel;
 
     private final GpuPowerModel gpuPowerModel;
@@ -65,6 +66,8 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
     public double getFrequency() {
         return gpuModel.getTotalCoreCapacity();
     }
+
+    public int getId() { return id; }
 
     @Override
     public double getCapacity() {
@@ -102,6 +105,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
 
     public SimGpu(FlowEngine engine, GpuModel gpuModel, GpuPowerModel powerModel, int id) {
         super(engine);
+        this.id = id;
         this.gpuModel = gpuModel;
         this.maxCapacity = this.gpuModel.getTotalCoreCapacity();
 
@@ -130,7 +134,6 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         }
 
         this.currentGpuSupplied = Math.min(this.currentGpuDemand, this.maxCapacity);
-
         this.pushOutgoingSupply(this.distributorEdge, this.currentGpuSupplied);
 
         return Long.MAX_VALUE;
@@ -141,7 +144,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
     }
 
     /**
-     * Update the performance counters of the CPU.
+     * Update the performance counters of the GPU.
      *
      * @param now The timestamp at which to update the counter.
      */
