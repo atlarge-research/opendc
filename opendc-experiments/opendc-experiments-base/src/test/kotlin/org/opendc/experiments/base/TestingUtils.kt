@@ -134,6 +134,8 @@ fun runTest(
 class TestComputeMonitor : ComputeMonitor {
     var taskCpuDemands = mutableMapOf<String, ArrayList<Double>>()
     var taskCpuSupplied = mutableMapOf<String, ArrayList<Double>>()
+    var taskGpuDemands = mutableMapOf<String, ArrayList<ArrayList<Double>>>()
+    var taskGpuSupplied = mutableMapOf<String, ArrayList<ArrayList<Double>>>()
 
     override fun record(reader: TaskTableReader) {
         val taskName: String = reader.taskInfo.name
@@ -144,6 +146,13 @@ class TestComputeMonitor : ComputeMonitor {
         } else {
             taskCpuDemands[taskName] = arrayListOf(reader.cpuDemand)
             taskCpuSupplied[taskName] = arrayListOf(reader.cpuUsage)
+        }
+        if (taskName in taskGpuDemands) {
+            taskGpuDemands[taskName]?.add(reader.gpuDemands)
+            taskGpuSupplied[taskName]?.add(reader.gpuUsages)
+        } else {
+            taskGpuDemands[taskName] = arrayListOf(reader.gpuDemands)
+            taskGpuSupplied[taskName] = arrayListOf(reader.gpuUsages)
         }
     }
 
@@ -174,13 +183,20 @@ class TestComputeMonitor : ComputeMonitor {
         maxTimestamp = reader.timestamp.toEpochMilli()
     }
 
-    var hostIdleTimes = mutableMapOf<String, ArrayList<Long>>()
-    var hostActiveTimes = mutableMapOf<String, ArrayList<Long>>()
-    var hostStealTimes = mutableMapOf<String, ArrayList<Long>>()
-    var hostLostTimes = mutableMapOf<String, ArrayList<Long>>()
-
     var hostCpuDemands = mutableMapOf<String, ArrayList<Double>>()
     var hostCpuSupplied = mutableMapOf<String, ArrayList<Double>>()
+    var hostCpuIdleTimes = mutableMapOf<String, ArrayList<Long>>()
+    var hostCpuActiveTimes = mutableMapOf<String, ArrayList<Long>>()
+    var hostCpuStealTimes = mutableMapOf<String, ArrayList<Long>>()
+    var hostCpuLostTimes = mutableMapOf<String, ArrayList<Long>>()
+
+    var hostGpuDemands = mutableMapOf<String, ArrayList<ArrayList<Double>>>()
+    var hostGpuSupplied = mutableMapOf<String, ArrayList<ArrayList<Double>>>()
+    var hostGpuIdleTimes = mutableMapOf<String, ArrayList<ArrayList<Long>>>()
+    var hostGpuActiveTimes = mutableMapOf<String, ArrayList<ArrayList<Long>>>()
+    var hostGpuStealTimes = mutableMapOf<String, ArrayList<ArrayList<Long>>>()
+    var hostGpuLostTimes = mutableMapOf<String, ArrayList<ArrayList<Long>>>()
+
     var hostPowerDraws = mutableMapOf<String, ArrayList<Double>>()
     var hostEnergyUsages = mutableMapOf<String, ArrayList<Double>>()
 
@@ -188,24 +204,39 @@ class TestComputeMonitor : ComputeMonitor {
         val hostName: String = reader.hostInfo.name
 
         if (!(hostName in hostCpuDemands)) {
-            hostIdleTimes[hostName] = ArrayList()
-            hostActiveTimes[hostName] = ArrayList()
-            hostStealTimes[hostName] = ArrayList()
-            hostLostTimes[hostName] = ArrayList()
+            hostCpuIdleTimes[hostName] = ArrayList()
+            hostCpuActiveTimes[hostName] = ArrayList()
+            hostCpuStealTimes[hostName] = ArrayList()
+            hostCpuLostTimes[hostName] = ArrayList()
 
             hostCpuDemands[hostName] = ArrayList()
             hostCpuSupplied[hostName] = ArrayList()
             hostPowerDraws[hostName] = ArrayList()
             hostEnergyUsages[hostName] = ArrayList()
         }
-
-        hostIdleTimes[hostName]?.add(reader.cpuIdleTime)
-        hostActiveTimes[hostName]?.add(reader.cpuActiveTime)
-        hostStealTimes[hostName]?.add(reader.cpuStealTime)
-        hostLostTimes[hostName]?.add(reader.cpuLostTime)
+        if (hostName !in hostGpuDemands) {
+            hostGpuDemands[hostName] = ArrayList()
+            hostGpuSupplied[hostName] = ArrayList()
+            hostGpuIdleTimes[hostName] = ArrayList()
+            hostGpuActiveTimes[hostName] = ArrayList()
+            hostGpuStealTimes[hostName] = ArrayList()
+            hostGpuLostTimes[hostName] = ArrayList()
+        }
 
         hostCpuDemands[hostName]?.add(reader.cpuDemand)
         hostCpuSupplied[hostName]?.add(reader.cpuUsage)
+        hostCpuIdleTimes[hostName]?.add(reader.cpuIdleTime)
+        hostCpuActiveTimes[hostName]?.add(reader.cpuActiveTime)
+        hostCpuStealTimes[hostName]?.add(reader.cpuStealTime)
+        hostCpuLostTimes[hostName]?.add(reader.cpuLostTime)
+
+        hostGpuDemands[hostName]?.add(reader.gpuDemands)
+        hostGpuSupplied[hostName]?.add(reader.gpuUsages)
+        hostGpuIdleTimes[hostName]?.add(reader.gpuIdleTimes)
+        hostGpuActiveTimes[hostName]?.add(reader.gpuActiveTimes)
+        hostGpuStealTimes[hostName]?.add(reader.gpuStealTimes)
+        hostGpuLostTimes[hostName]?.add(reader.gpuLostTimes)
+
         hostPowerDraws[hostName]?.add(reader.powerDraw)
         hostEnergyUsages[hostName]?.add(reader.energyUsage)
     }
