@@ -37,6 +37,7 @@ import org.opendc.compute.topology.specs.PowerSourceSpec
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.experiments.base.runner.replay
 import org.opendc.simulator.compute.cpu.CpuPowerModels
+import org.opendc.simulator.compute.gpu.GpuPowerModels
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
@@ -353,14 +354,16 @@ public class OpenDCRunner(
                 }
 
             val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
-            val powerModel = CpuPowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
+            val cpuPowerModel = CpuPowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
+            val gpuPowerModel = GpuPowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
 
             val spec =
                 HostSpec(
                     "node-$clusterId-$position",
                     clusterId,
                     MachineModel(processors, memoryUnits[0]),
-                    powerModel,
+                    cpuPowerModel,
+                    gpuPowerModel
                 )
 
             res += spec
