@@ -33,7 +33,7 @@ public record TraceFragment(long duration, double cpuUsage, int cpuCoreCount, do
     public TraceFragment(long duration, double cpuUsage, int cpuCoreCount) {
         this(duration, cpuUsage, cpuCoreCount, 0.0, 0, 0.0);
     }
-    public TraceFragment(long start, long duration, double cpuUsage, int cpuCoreCount, double gpuUsage, int gpuCoreCount) {
+    public TraceFragment(long duration, double cpuUsage, int cpuCoreCount, double gpuUsage, int gpuCoreCount) {
         this(duration, cpuUsage, cpuCoreCount, gpuUsage, gpuCoreCount, 0.0);
     }
 
