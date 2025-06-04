@@ -62,6 +62,15 @@ public class TaskTableReaderImpl(
         _cpuIdleTime = table.cpuIdleTime
         _cpuStealTime = table.cpuStealTime
         _cpuLostTime = table.cpuLostTime
+        // GPU stats
+        _gpuLimits = table.gpuLimits
+        _gpuDemands = table.gpuDemands
+        _gpuUsages = table.gpuUsages
+        _gpuActiveTimes = table.gpuActiveTimes
+        _gpuIdleTimes = table.gpuIdleTimes
+        _gpuStealTimes = table.gpuStealTimes
+        _gpuLostTimes = table.gpuLostTimes
+
         _uptime = table.uptime
         _downtime = table.downtime
         _numFailures = table.numFailures
@@ -163,6 +172,39 @@ public class TaskTableReaderImpl(
     private var _cpuLostTime = 0L
     private var previousCpuLostTime = 0L
 
+    override val gpuLimits: ArrayList<Double>
+        get() = _gpuLimits
+    private var _gpuLimits: ArrayList<Double> = ArrayList()
+
+    override val gpuUsages: ArrayList<Double>
+        get() = _gpuUsages
+    private var _gpuUsages: ArrayList<Double> = ArrayList()
+
+    override val gpuDemands: ArrayList<Double>
+        get() = _gpuDemands
+    private var _gpuDemands: ArrayList<Double> = ArrayList()
+
+    override val gpuActiveTimes: ArrayList<Long>
+//        get() = _gpuActiveTime - previousGpuActiveTime
+get() = (0 until _gpuActiveTimes.size).map { i -> (_gpuActiveTimes.getOrNull(i) ?: 0L) - (previousGpuActiveTimes.getOrNull(i) ?: 0L) } as ArrayList<Long>
+    private var _gpuActiveTimes: ArrayList<Long> = ArrayList()
+    private var previousGpuActiveTimes: ArrayList<Long> = ArrayList()
+
+    override val gpuIdleTimes: ArrayList<Long>
+        get() = (0 until _gpuIdleTimes.size).map { i -> (_gpuIdleTimes.getOrNull(i) ?: 0L) - (previousGpuIdleTimes.getOrNull(i) ?: 0L) } as ArrayList<Long>
+    private var _gpuIdleTimes: ArrayList<Long> = ArrayList()
+    private var previousGpuIdleTimes: ArrayList<Long> = ArrayList()
+
+    override val gpuStealTimes: ArrayList<Long>
+        get() = (0 until _gpuStealTimes.size).map { i -> (_gpuStealTimes.getOrNull(i) ?: 0L) - (previousGpuStealTimes.getOrNull(i) ?: 0L) } as ArrayList<Long>
+    private var _gpuStealTimes : ArrayList<Long> = ArrayList()
+    private var previousGpuStealTimes : ArrayList<Long> = ArrayList()
+
+    override val gpuLostTimes: ArrayList<Long>
+        get() = (0 until _gpuLostTimes.size).map { i -> (_gpuLostTimes.getOrNull(i) ?: 0L) - (previousGpuLostTimes.getOrNull(i) ?: 0L) } as ArrayList<Long>
+    private var _gpuLostTimes : ArrayList<Long> = ArrayList()
+    private var previousGpuLostTimes : ArrayList<Long> = ArrayList()
+
     override val taskState: TaskState?
         get() = _taskState
     private var _taskState: TaskState? = null
@@ -182,11 +224,13 @@ public class TaskTableReaderImpl(
                     newHost.getModel().coreCount,
                     newHost.getModel().cpuCapacity,
                     newHost.getModel().memoryCapacity,
+
                 )
         }
 
         val cpuStats = simHost?.getCpuStats(task)
         val sysStats = simHost?.getSystemStats(task)
+        val gpuStats = _host?.getGpuStats(task)
 
         _timestamp = now
         _timestampAbsolute = now + startTime
@@ -207,6 +251,26 @@ public class TaskTableReaderImpl(
         _scheduleTime = task.scheduledAt
         _finishTime = task.finishedAt
 
+
+        if (gpuStats != null && gpuStats.isNotEmpty()) {
+            _gpuLimits = gpuStats.map { it.capacity } as ArrayList<Double>
+            _gpuDemands = gpuStats.map { it.demand } as ArrayList<Double>
+            _gpuUsages = gpuStats.map { it.usage } as ArrayList<Double>
+            _gpuActiveTimes = gpuStats.map { it.activeTime } as ArrayList<Long>
+            _gpuIdleTimes = gpuStats.map { it.idleTime } as ArrayList<Long>
+            _gpuStealTimes = gpuStats.map { it.stealTime } as ArrayList<Long>
+            _gpuLostTimes = gpuStats.map { it.lostTime } as ArrayList<Long>
+        } else {
+            _gpuIdleTimes = ArrayList()
+            _gpuStealTimes = ArrayList()
+            _gpuLostTimes = ArrayList()
+            _gpuIdleTimes = ArrayList()
+            _gpuLimits = ArrayList()
+            _gpuUsages = ArrayList()
+            _gpuDemands = ArrayList()
+            _gpuActiveTimes = ArrayList()
+        }
+
         _taskState = task.state
     }
 
@@ -220,6 +284,10 @@ public class TaskTableReaderImpl(
         previousCpuIdleTime = _cpuIdleTime
         previousCpuStealTime = _cpuStealTime
         previousCpuLostTime = _cpuLostTime
+        previousGpuActiveTimes = _gpuActiveTimes
+        previousGpuIdleTimes = _gpuIdleTimes
+        previousGpuStealTimes = _gpuStealTimes
+        previousGpuLostTimes = _gpuLostTimes
 
         simHost = null
         _cpuLimit = 0.0

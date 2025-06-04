@@ -28,8 +28,10 @@ import org.opendc.compute.simulator.internal.Guest
 import org.opendc.compute.simulator.internal.GuestListener
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.GuestCpuStats
+import org.opendc.compute.simulator.telemetry.GuestGpuStats
 import org.opendc.compute.simulator.telemetry.GuestSystemStats
 import org.opendc.compute.simulator.telemetry.HostCpuStats
+import org.opendc.compute.simulator.telemetry.HostGpuStats
 import org.opendc.compute.simulator.telemetry.HostSystemStats
 import org.opendc.simulator.compute.cpu.CpuPowerModel
 import org.opendc.simulator.compute.gpu.GpuPowerModel
@@ -149,6 +151,7 @@ public class SimHost(
                 this.machineModel,
                 this.powerDistributor,
                 this.cpuPowerModel,
+                this.gpuPowerModel,
             ) { cause ->
                 hostState = if (cause != null) HostState.ERROR else HostState.DOWN
             }
@@ -351,6 +354,31 @@ public class SimHost(
     public fun getCpuStats(task: ServiceTask): GuestCpuStats {
         val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
         return guest.getCpuStats()
+    }
+
+    public fun getGpuStats() : List<HostGpuStats> {
+        val gpuStats = mutableListOf<HostGpuStats>()
+        for (gpu in simMachine!!.gpus) {
+            gpu.updateCounters(this.clock.millis())
+            val counters = simMachine!!.getSpecificGpuPerformanceCounters(gpu.id)
+
+            gpuStats.add(HostGpuStats(
+                counters.gpuActiveTime,
+                counters.gpuIdleTime,
+                counters.gpuStealTime,
+                counters.gpuLostTime,
+                counters.gpuCapacity,
+                counters.gpuDemand,
+                counters.gpuSupply,
+                counters.gpuSupply / gpu.capacity
+            ))
+        }
+        return gpuStats
+    }
+
+    public fun getGpuStats(task: ServiceTask): List<GuestGpuStats> {
+        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
+        return guest.getGpuStats()
     }
 
     override fun hashCode(): Int = name.hashCode()

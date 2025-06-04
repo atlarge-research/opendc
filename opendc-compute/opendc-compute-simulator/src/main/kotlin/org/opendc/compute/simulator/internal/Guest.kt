@@ -27,6 +27,7 @@ import org.opendc.compute.api.TaskState
 import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.GuestCpuStats
+import org.opendc.compute.simulator.telemetry.GuestGpuStats
 import org.opendc.compute.simulator.telemetry.GuestSystemStats
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.workload.ChainWorkload
@@ -254,6 +255,28 @@ public class Guest(
             counters.cpuDemand,
             counters.cpuSupply / cpuLimit,
         )
+    }
+
+    public fun getGpuStats(): List<GuestGpuStats> {
+         virtualMachine!!.updateCounters(this.clock.millis())
+        val counters = virtualMachine!!.gpuPerformanceCounters
+
+        val gpuStats = mutableListOf<GuestGpuStats>()
+        for (gpuCounter in counters) {
+            gpuStats.add(
+                GuestGpuStats(
+                    gpuCounter.gpuActiveTime / 1000L,
+                    gpuCounter.gpuIdleTime / 1000L,
+                    gpuCounter.gpuStealTime / 1000L,
+                    gpuCounter.gpuLostTime / 1000L,
+                    gpuCounter.gpuCapacity,
+                    gpuCounter.gpuSupply,
+                    gpuCounter.gpuDemand,
+                    gpuCounter.gpuSupply / cpuLimit, // Assuming similar scaling as CPU
+                )
+            )
+        }
+        return gpuStats
     }
 
     /**
