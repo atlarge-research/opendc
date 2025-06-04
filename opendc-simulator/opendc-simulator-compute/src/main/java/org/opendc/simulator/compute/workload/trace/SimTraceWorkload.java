@@ -155,7 +155,6 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         for (ResourceType resourceType : this.usedResourceTypes) {
             // The amount of work done since last update
-            // TODO: it is the same for every resource.
             double finishedWork = this.scalingPolicy.getFinishedWork(this.resourcesDemand.get(resourceType), this.resourcesSupplied.get(resourceType), passedTime);
             this.remainingWork.put(resourceType, this.remainingWork.get(resourceType) - finishedWork);
             this.totalRemainingWork -= finishedWork;
@@ -228,10 +227,9 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         // Reset the remaining work for all resources
         this.totalRemainingWork = 0.0;
 
-        // TODO: FIX this, only acceleration is considered, not memory
+        // FIXME: only acceleration is considered, not memory
         for (ResourceType resourceType : usedResourceTypes) {
             double demand = nextFragment.getResourceUsage(resourceType);
-            // TODO: not correct for multiple resources, because it is the same for all resources, if only duration is used
 
             this.remainingWork.put(resourceType, this.scalingPolicy.getRemainingWork(demand, nextFragment.duration()));
             this.totalRemainingWork += this.remainingWork.get(resourceType);
