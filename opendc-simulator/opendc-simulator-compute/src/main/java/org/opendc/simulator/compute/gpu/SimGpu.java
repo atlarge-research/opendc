@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.opendc.common.ResourceType;
+import org.opendc.simulator.compute.ComputeResource;
 import org.opendc.simulator.compute.machine.GpuPerformanceCounters;
 import org.opendc.simulator.compute.models.GpuModel;
 import org.opendc.simulator.engine.engine.FlowEngine;
@@ -37,7 +38,7 @@ import org.opendc.simulator.engine.graph.FlowSupplier;
 /**
  * A {@link SimGpu} of a machine.
  */
-public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer {
+public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer, ComputeResource {
     private final int id;
     private final GpuModel gpuModel;
 

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.opendc.common.ResourceType;
+import org.opendc.simulator.compute.ComputeResource;
 import org.opendc.simulator.compute.machine.CpuPerformanceCounters;
 import org.opendc.simulator.compute.models.CpuModel;
 import org.opendc.simulator.engine.engine.FlowEngine;
@@ -37,7 +38,9 @@ import org.opendc.simulator.engine.graph.FlowSupplier;
 /**
  * A {@link SimCpu} of a machine.
  */
-public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer {
+public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer, ComputeResource  {
+
+    private int id;
     private final CpuModel cpuModel;
 
     private final CpuPowerModel cpuPowerModel;
@@ -61,6 +64,8 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public int getId() { return id; }
 
     public double getFrequency() {
         return cpuModel.getTotalCapacity();
@@ -108,6 +113,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
     public SimCpu(FlowEngine engine, CpuModel cpuModel, CpuPowerModel powerModel, int id) {
         super(engine);
+        this.id = id;
         this.cpuModel = cpuModel;
         this.maxCapacity = this.cpuModel.getTotalCapacity();
 
