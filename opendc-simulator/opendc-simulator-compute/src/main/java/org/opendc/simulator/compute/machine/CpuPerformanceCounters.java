@@ -22,7 +22,8 @@
 
 package org.opendc.simulator.compute.machine;
 
-public class CpuPerformanceCounters {
+public class CpuPerformanceCounters implements ResourcePerformanceCounters {
+//public class CpuPerformanceCounters {
     private long cpuActiveTime = 0;
     private long cpuIdleTime = 0;
     private long cpuStealTime = 0;
@@ -32,71 +33,109 @@ public class CpuPerformanceCounters {
     private double cpuDemand = 0.0f;
     private double cpuSupply = 0.0f;
 
-    public long getCpuActiveTime() {
-        return cpuActiveTime;
+    @Override
+    public long getActiveTime() {
+        return this.cpuActiveTime;
     }
 
-    public void setCpuActiveTime(long cpuActiveTime) {
-        this.cpuActiveTime = cpuActiveTime;
+    @Override
+    public long getIdleTime() {
+        return this.cpuIdleTime;
     }
 
-    public void addCpuActiveTime(long cpuActiveTime) {
-        this.cpuActiveTime += cpuActiveTime;
+    @Override
+    public long getStealTime() {
+        return this.cpuStealTime;
     }
 
-    public long getCpuIdleTime() {
-        return cpuIdleTime;
+    @Override
+    public long getLostTime() {
+        return this.cpuLostTime;
     }
 
-    public void setCpuIdleTime(long cpuIdleTime) {
-        this.cpuIdleTime = cpuIdleTime;
+    @Override
+    public double getCapacity() {
+        return this.cpuCapacity;
     }
 
-    public void addCpuIdleTime(long cpuIdleTime) {
-        this.cpuIdleTime += cpuIdleTime;
+    @Override
+    public double getDemand() {
+        return this.cpuDemand;
     }
 
-    public long getCpuStealTime() {
-        return cpuStealTime;
+    @Override
+    public double getSupply() {
+        return this.cpuSupply;
     }
 
-    public void setCpuStealTime(long cpuStealTime) {
-        this.cpuStealTime = cpuStealTime;
+    @Override
+    public void setActiveTime(long activeTime) {
+        this.cpuActiveTime = activeTime;
     }
 
-    public void addCpuStealTime(long cpuStealTime) {
-        this.cpuStealTime += cpuStealTime;
+    @Override
+    public void setIdleTime(long idleTime) {
+        this.cpuIdleTime = idleTime;
     }
 
-    public long getCpuLostTime() {
-        return cpuLostTime;
+    @Override
+    public void setStealTime(long stealTime) {
+        this.cpuStealTime = stealTime;
     }
 
-    public void setCpuLostTime(long cpuLostTime) {
-        this.cpuLostTime = cpuLostTime;
+    @Override
+    public void setLostTime(long lostTime) {
+        this.cpuLostTime = lostTime;
     }
 
-    public double getCpuCapacity() {
-        return cpuCapacity;
+    @Override
+    public void setCapacity(double capacity) {
+        this.cpuCapacity = capacity;
     }
 
-    public void setCpuCapacity(double cpuCapacity) {
-        this.cpuCapacity = cpuCapacity;
+    @Override
+    public void setDemand(double demand) {
+        this.cpuDemand = demand;
     }
 
-    public double getCpuDemand() {
-        return cpuDemand;
+    @Override
+    public void setSupply(double supply) {
+        this.cpuSupply = supply;
     }
 
-    public void setCpuDemand(double cpuDemand) {
-        this.cpuDemand = cpuDemand;
+    @Override
+    public void addActiveTime(long activeTime) {
+        this.cpuActiveTime += activeTime;
     }
 
-    public double getCpuSupply() {
-        return cpuSupply;
+    @Override
+    public void addIdleTime(long idleTime) {
+        this.cpuIdleTime += idleTime;
     }
 
-    public void setCpuSupply(double cpuSupply) {
-        this.cpuSupply = cpuSupply;
+    @Override
+    public void addStealTime(long stealTime) {
+        this.cpuStealTime += stealTime;
     }
+
+    @Override
+    public void addLostTime(long lostTime) {
+        this.cpuLostTime += lostTime;
+    }
+
+    @Override
+    public void addCapacity(double capacity) {
+        this.cpuCapacity += capacity;
+    }
+
+    @Override
+    public void addDemand(double demand) {
+        this.cpuDemand += demand;
+    }
+
+    @Override
+    public void addSupply(double supply) {
+        this.cpuSupply += supply;
+    }
+
 }

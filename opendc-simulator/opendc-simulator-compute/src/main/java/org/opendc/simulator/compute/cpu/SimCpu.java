@@ -163,14 +163,15 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
             final double factor = this.cpuFrequencyInv * delta;
 
-            this.cpuPerformanceCounters.addCpuActiveTime(Math.round(rate * factor));
-            this.cpuPerformanceCounters.addCpuIdleTime(Math.round((capacity - rate) * factor));
-            this.cpuPerformanceCounters.addCpuStealTime(Math.round((demand - rate) * factor));
+            this.cpuPerformanceCounters.addActiveTime(Math.round(rate * factor));
+            this.cpuPerformanceCounters.addIdleTime(Math.round((capacity - rate) * factor));
+            this.cpuPerformanceCounters.addStealTime(Math.round((demand - rate) * factor));
         }
 
-        this.cpuPerformanceCounters.setCpuDemand(this.currentCpuDemand);
-        this.cpuPerformanceCounters.setCpuSupply(this.currentCpuSupplied);
-        this.cpuPerformanceCounters.setCpuCapacity(this.maxCapacity);
+        this.cpuPerformanceCounters.setDemand(this.currentCpuDemand);
+        this.cpuPerformanceCounters.setSupply(this.currentCpuSupplied);
+        this.cpuPerformanceCounters.setCapacity(this.maxCapacity);
+
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

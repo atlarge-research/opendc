@@ -340,14 +340,14 @@ public class SimHost(
         val counters = simMachine!!.performanceCounters
 
         return HostCpuStats(
-            counters.cpuActiveTime,
-            counters.cpuIdleTime,
-            counters.cpuStealTime,
-            counters.cpuLostTime,
-            counters.cpuCapacity,
-            counters.cpuDemand,
-            counters.cpuSupply,
-            counters.cpuSupply / cpuLimit,
+            counters.activeTime,
+            counters.idleTime,
+            counters.stealTime,
+            counters.lostTime,
+            counters.capacity,
+            counters.demand,
+            counters.supply,
+            counters.supply / cpuLimit,
         )
     }
 
@@ -363,14 +363,14 @@ public class SimHost(
             val counters = simMachine!!.getSpecificGpuPerformanceCounters(gpu.id)
 
             gpuStats.add(HostGpuStats(
-                counters.gpuActiveTime,
-                counters.gpuIdleTime,
-                counters.gpuStealTime,
-                counters.gpuLostTime,
-                counters.gpuCapacity,
-                counters.gpuDemand,
-                counters.gpuSupply,
-                counters.gpuSupply / gpu.capacity
+                counters.activeTime,
+                counters.idleTime,
+                counters.stealTime,
+                counters.lostTime,
+                counters.capacity,
+                counters.demand,
+                counters.supply,
+                counters.supply / gpu.capacity
             ))
         }
         return gpuStats

@@ -65,6 +65,7 @@ public class Guest(
     private var lastReport = clock.millis()
     private var bootTime: Instant? = null
     private val cpuLimit = simMachine.cpu.cpuModel.totalCapacity
+    private val gpuLimit = simMachine.gpus?.firstOrNull()?.gpuModel?.totalCoreCapacity ?: 0.0
 
     /**
      * Start the guest.
@@ -246,14 +247,14 @@ public class Guest(
         val counters = virtualMachine!!.cpuPerformanceCounters
 
         return GuestCpuStats(
-            counters.cpuActiveTime / 1000L,
-            counters.cpuIdleTime / 1000L,
-            counters.cpuStealTime / 1000L,
-            counters.cpuLostTime / 1000L,
-            counters.cpuCapacity,
-            counters.cpuSupply,
-            counters.cpuDemand,
-            counters.cpuSupply / cpuLimit,
+            counters.activeTime / 1000L,
+            counters.idleTime / 1000L,
+            counters.stealTime / 1000L,
+            counters.lostTime / 1000L,
+            counters.capacity,
+            counters.supply,
+            counters.demand,
+            counters.supply / cpuLimit,
         )
     }
 
@@ -265,14 +266,14 @@ public class Guest(
         for (gpuCounter in counters) {
             gpuStats.add(
                 GuestGpuStats(
-                    gpuCounter.gpuActiveTime / 1000L,
-                    gpuCounter.gpuIdleTime / 1000L,
-                    gpuCounter.gpuStealTime / 1000L,
-                    gpuCounter.gpuLostTime / 1000L,
-                    gpuCounter.gpuCapacity,
-                    gpuCounter.gpuSupply,
-                    gpuCounter.gpuDemand,
-                    gpuCounter.gpuSupply / cpuLimit, // Assuming similar scaling as CPU
+                    gpuCounter.activeTime / 1000L,
+                    gpuCounter.idleTime / 1000L,
+                    gpuCounter.stealTime / 1000L,
+                    gpuCounter.lostTime / 1000L,
+                    gpuCounter.capacity,
+                    gpuCounter.supply,
+                    gpuCounter.demand,
+                    gpuCounter.supply / gpuLimit, // Assuming similar scaling as CPU
                 )
             )
         }

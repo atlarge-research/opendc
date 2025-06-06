@@ -60,6 +60,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     private FlowEdge machineEdge; // TODO: Transform into list of resource edges, is not machine but distributors
 
     private double cpuCapacity = 0; // TODO: Transform into list of resource capacities
+    private final Hashtable<ResourceType, List<ResourcePerformanceCounters>> resourcePerformanceCounters = new Hashtable<>();
 
     private final long checkpointInterval;
     private final long checkpointDuration;
@@ -71,7 +72,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     private long lastUpdate;
     // TODO: Make it being used
     // TODO: is list a smart choice? or should list be handled in the counter itself?
-    private final Hashtable<ResourceType, List<ResourcePerformanceCounters>> resourcePerformanceCounters = new Hashtable<>();
+
     private final CpuPerformanceCounters cpuPerformanceCounters = new CpuPerformanceCounters();
     private final List<GpuPerformanceCounters> gpuPerformanceCounters = new ArrayList<>();
     private Consumer<Exception> completion;
@@ -218,32 +219,32 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         if (delta > 0) {
             final double factor = this.d * delta;
 
-            this.cpuPerformanceCounters.addCpuActiveTime(Math.round(this.cpuSupply * factor));
-            this.cpuPerformanceCounters.setCpuIdleTime(Math.round((cpuCapacity - this.cpuSupply) * factor)); // Capacity is always 0.0f
-            this.cpuPerformanceCounters.addCpuStealTime(Math.round((this.cpuDemand - this.cpuSupply) * factor));
+            this.cpuPerformanceCounters.addActiveTime(Math.round(this.cpuSupply * factor));
+            this.cpuPerformanceCounters.setIdleTime(Math.round((cpuCapacity - this.cpuSupply) * factor)); // Capacity is always 0.0f
+            this.cpuPerformanceCounters.addStealTime(Math.round((this.cpuDemand - this.cpuSupply) * factor));
 
             // TODO: Make loop
             if (this.availableResources.contains(ResourceType.GPU)) {
                 final double gpuFactor = this.gpuD * delta;
                 for (GpuPerformanceCounters gpuCounter : this.gpuPerformanceCounters) {
-                    gpuCounter.addGpuActiveTime(Math.round(this.gpuSupply * gpuFactor));
-                    gpuCounter.setGpuIdleTime(Math.round((this.gpuCapacity - this.gpuSupply) * gpuFactor));
-                    gpuCounter.addGpuStealTime(Math.round((this.gpuDemand - this.gpuSupply) * gpuFactor));
+                    gpuCounter.addActiveTime(Math.round(this.gpuSupply * gpuFactor));
+                    gpuCounter.setIdleTime(Math.round((this.gpuCapacity - this.gpuSupply) * gpuFactor));
+                    gpuCounter.addStealTime(Math.round((this.gpuDemand - this.gpuSupply) * gpuFactor));
                 }
             }
         }
 
-        this.cpuPerformanceCounters.setCpuDemand(this.cpuDemand);
-        this.cpuPerformanceCounters.setCpuSupply(this.cpuSupply);
-        this.cpuPerformanceCounters.setCpuCapacity(cpuCapacity);
+        this.cpuPerformanceCounters.setDemand(this.cpuDemand);
+        this.cpuPerformanceCounters.setSupply(this.cpuSupply);
+        this.cpuPerformanceCounters.setCapacity(cpuCapacity);
 
         if (!this.availableResources.contains(ResourceType.GPU)) {
             return;
         }
         for (GpuPerformanceCounters gpuCounter : this.gpuPerformanceCounters) {
-            gpuCounter.setGpuDemand(this.gpuDemand);
-            gpuCounter.setGpuSupply(this.gpuSupply);
-            gpuCounter.setGpuCapacity(this.gpuCapacity);
+            gpuCounter.setDemand(this.gpuDemand);
+            gpuCounter.setSupply(this.gpuSupply);
+            gpuCounter.setCapacity(this.gpuCapacity);
         }
     }
 

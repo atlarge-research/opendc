@@ -1,6 +1,6 @@
 package org.opendc.simulator.compute.machine;
 
-public class GpuPerformanceCounters {
+public class GpuPerformanceCounters implements ResourcePerformanceCounters {
     private long gpuActiveTime = 0;
     private long gpuIdleTime = 0;
     private long gpuStealTime = 0;
@@ -10,71 +10,109 @@ public class GpuPerformanceCounters {
     private double gpuDemand = 0.0f;
     private double gpuSupply = 0.0f;
 
-    public long getGpuActiveTime() {
+    @Override
+    public long getActiveTime() {
         return gpuActiveTime;
     }
 
-    public void setGpuActiveTime(long gpuActiveTime) {
-        this.gpuActiveTime = gpuActiveTime;
-    }
-
-    public void addGpuActiveTime(long gpuActiveTime) {
-        this.gpuActiveTime += gpuActiveTime;
-    }
-
-    public long getGpuIdleTime() {
+    @Override
+    public long getIdleTime() {
         return gpuIdleTime;
     }
 
-    public void setGpuIdleTime(long gpuIdleTime) {
-        this.gpuIdleTime = gpuIdleTime;
-    }
-
-    public void addGpuIdleTime(long gpuIdleTime) {
-        this.gpuIdleTime += gpuIdleTime;
-    }
-
-    public long getGpuStealTime() {
+    @Override
+    public long getStealTime() {
         return gpuStealTime;
     }
 
-    public void setGpuStealTime(long gpuStealTime) {
-        this.gpuStealTime = gpuStealTime;
-    }
-
-    public void addGpuStealTime(long gpuStealTime) {
-        this.gpuStealTime += gpuStealTime;
-    }
-
-    public long getGpuLostTime() {
+    @Override
+    public long getLostTime() {
         return gpuLostTime;
     }
 
-    public void setGpuLostTime(long gpuLostTime) {
-        this.gpuLostTime = gpuLostTime;
-    }
-
-    public double getGpuCapacity() {
+    @Override
+    public double getCapacity() {
         return gpuCapacity;
     }
 
-    public void setGpuCapacity(double gpuCapacity) {
-        this.gpuCapacity = gpuCapacity;
-    }
-
-    public double getGpuDemand() {
+    @Override
+    public double getDemand() {
         return gpuDemand;
     }
 
-    public void setGpuDemand(double gpuDemand) {
-        this.gpuDemand = gpuDemand;
-    }
-
-    public double getGpuSupply() {
+    @Override
+    public double getSupply() {
         return gpuSupply;
     }
 
-    public void setGpuSupply(double gpuSupply) {
-        this.gpuSupply = gpuSupply;
+    @Override
+    public void setActiveTime(long activeTime) {
+        this.gpuActiveTime = activeTime;
     }
+
+    @Override
+    public void setIdleTime(long idleTime) {
+        this.gpuIdleTime = idleTime;
+    }
+
+    @Override
+    public void setStealTime(long stealTime) {
+        this.gpuStealTime = stealTime;
+    }
+
+    @Override
+    public void setLostTime(long lostTime) {
+        this.gpuLostTime = lostTime;
+    }
+
+    @Override
+    public void setCapacity(double capacity) {
+        this.gpuCapacity = capacity;
+    }
+
+    @Override
+    public void setDemand(double demand) {
+        this.gpuDemand = demand;
+    }
+
+    @Override
+    public void setSupply(double supply) {
+        this.gpuSupply = supply;
+    }
+
+    @Override
+    public void addActiveTime(long activeTime) {
+        this.gpuActiveTime += activeTime;
+    }
+
+    @Override
+    public void addIdleTime(long idleTime) {
+        this.gpuIdleTime += idleTime;
+    }
+
+    @Override
+    public void addStealTime(long stealTime) {
+        this.gpuStealTime += stealTime;
+    }
+
+    @Override
+    public void addLostTime(long lostTime) {
+        this.gpuLostTime += lostTime;
+    }
+
+    @Override
+    public void addCapacity(double capacity) {
+        this.gpuCapacity += capacity;
+    }
+
+    @Override
+    public void addDemand(double demand) {
+        this.gpuDemand += demand;
+    }
+
+    @Override
+    public void addSupply(double supply) {
+        this.gpuSupply += supply;
+    }
+
 }

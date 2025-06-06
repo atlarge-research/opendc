@@ -72,7 +72,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
     @Override
     public double getCapacity() {
         return maxCapacity;
-    }
+    } // TODO: take memory into account
 
     public GpuPerformanceCounters getPerformanceCounters() {
         return gpuPerformanceCounters;
@@ -88,7 +88,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
 
     public double getSpeed() {
         return this.currentGpuSupplied;
-    }
+    } // TODO: take memory into account
 
     public GpuModel getGpuModel() {
         return gpuModel;
@@ -160,14 +160,14 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
 
             final double factor = this.gpuFrequencyInv * delta;
 
-            this.gpuPerformanceCounters.addGpuActiveTime(Math.round(rate * factor));
-            this.gpuPerformanceCounters.addGpuIdleTime(Math.round((capacity - rate) * factor));
-            this.gpuPerformanceCounters.addGpuStealTime(Math.round((demand - rate) * factor));
+            this.gpuPerformanceCounters.addActiveTime(Math.round(rate * factor));
+            this.gpuPerformanceCounters.addIdleTime(Math.round((capacity - rate) * factor));
+            this.gpuPerformanceCounters.addStealTime(Math.round((demand - rate) * factor));
         }
 
-        this.gpuPerformanceCounters.setGpuDemand(this.currentGpuDemand);
-        this.gpuPerformanceCounters.setGpuSupply(this.currentGpuSupplied);
-        this.gpuPerformanceCounters.setGpuCapacity(this.maxCapacity);
+        this.gpuPerformanceCounters.setDemand(this.currentGpuDemand);
+        this.gpuPerformanceCounters.setSupply(this.currentGpuSupplied);
+        this.gpuPerformanceCounters.setCapacity(this.maxCapacity);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
