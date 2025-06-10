@@ -56,7 +56,7 @@ public class SimMachine {
     private final FlowEngine engine;
 
     private final InstantSource clock;
-    
+
     private SimPsu psu;
     private Memory memory;
 
@@ -70,6 +70,25 @@ public class SimMachine {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public ComputeResource getResource(ResourceType resourceType, int id) {
+        if (!this.computeResources.containsKey(resourceType)) {
+            throw new RuntimeException("No such resource type: " + resourceType);
+        }
+        for (ComputeResource resource : this.computeResources.get(resourceType)) {
+            if (resource.getId() == id) {
+                return resource;
+            }
+        }
+        throw new RuntimeException("No such resource with id: " + id + " of type: " + resourceType);
+    }
+
+    public ArrayList<ComputeResource> getResources(ResourceType resourceType) {
+        if (!this.computeResources.containsKey(resourceType)) {
+            throw new RuntimeException("No such resource type: " + resourceType);
+        }
+        return this.computeResources.get(resourceType);
+    }
 
     public ResourcePerformanceCounters getPerformanceCounters() {
 
