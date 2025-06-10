@@ -190,7 +190,6 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply, ResourceType resourceType) {
-        LOGGER.warn("Pushing new supply in PSU: {} to resourceType: {}, lastUpdate: {}", newSupply, resourceType, this.lastUpdate);
         this.powerSuppliedPerResource.put(resourceType, new ArrayList<>(List.of(newSupply)));
         consumerEdge.pushSupply(newSupply, false, resourceType);
     }
@@ -202,7 +201,6 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void handleIncomingDemand(FlowEdge consumerEdge, double newPowerDemand, ResourceType resourceType) {
-        LOGGER.warn("Handling incoming demand in PSU: {} for resourceType: {}, lastUpdate: {}", newPowerDemand,resourceType, this.lastUpdate);
         updateCounters();
         this.powerDemandsPerResource.put(resourceType, new ArrayList<>(List.of(newPowerDemand)));
 
@@ -211,10 +209,8 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply) {
-        LOGGER.warn("Handling incoming supply in PSU: {}, lastUpdate: {}", newSupply, this.lastUpdate);
         updateCounters();
         for (ResourceType resourceType : this.resourceEdges.keySet()) {
-//            this.powerSuppliedPerResource.put(resourceType, new ArrayList<>(List.of(newSupply)));
             for (FlowEdge edge : this.resourceEdges.get(resourceType)) {
                 double outgoingSupply = Math.min(this.powerDemandsPerResource.get(resourceType).getFirst(), newSupply);
                 pushOutgoingSupply(edge, outgoingSupply, resourceType);
