@@ -34,11 +34,14 @@ import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A {@link SimGpu} of a machine.
  */
 public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer, ComputeResource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimGpu.class);
     private final int id;
     private final GpuModel gpuModel;
 
@@ -87,9 +90,10 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         return this.currentGpuDemand;
     }
 
-    public double getSpeed() {
-        return this.currentGpuSupplied;
-    } // TODO: take memory into account
+//    public double getSpeed() {
+//        return this.currentGpuSupplied;
+//    } // TODO: take memory into account
+    public double getSupply() { return this.currentGpuSupplied; } // TODO: take memory into account
 
     public GpuModel getGpuModel() {
         return gpuModel;
@@ -182,7 +186,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newPowerDemand) {
         updateCounters();
         this.currentPowerDemand = newPowerDemand;
-        this.psuEdge.pushDemand(newPowerDemand);
+        this.psuEdge.pushDemand(newPowerDemand, false, ResourceType.GPU);
     }
 
     /**
