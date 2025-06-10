@@ -22,6 +22,7 @@
 
 package org.opendc.experiments.base
 
+import org.opendc.common.ResourceType
 import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.registerComputeMonitor
 import org.opendc.compute.simulator.provisioner.setupComputeService
@@ -53,6 +54,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.collections.ArrayList
+import kotlin.compareTo
 
 /**
  * Obtain the topology factory for the test.
@@ -73,12 +75,24 @@ fun createTestTask(
     checkpointIntervalScaling: Double = 1.0,
     scalingPolicy: ScalingPolicy = NoDelayScaling(),
 ): Task {
+
+    var usedResources = arrayOf<ResourceType>()
+    if (fragments.any { it.cpuUsage > 0.0 }) {
+        usedResources += ResourceType.CPU
+    }
+    if (fragments.any { it.gpuUsage > 0.0 }) {
+        usedResources += ResourceType.GPU
+    }
+
     return Task(
         UUID.nameUUIDFromBytes(name.toByteArray()),
         name,
         fragments.maxOf { it.cpuCoreCount() },
         fragments.maxOf { it.cpuUsage },
         memCapacity,
+        gpuCount = fragments.maxOfOrNull { it.gpuCoreCount() } ?: 0,
+        gpuCapacity = fragments.maxOfOrNull { it.gpuUsage } ?: 0.0,
+        gpuMemCapacity = fragments.maxOfOrNull { it.gpuMemoryUsage } ?: 0L,
         1800000.0,
         LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli(),
         duration,
@@ -91,6 +105,7 @@ fun createTestTask(
             checkpointIntervalScaling,
             scalingPolicy,
             name,
+            usedResources
         ),
     )
 }

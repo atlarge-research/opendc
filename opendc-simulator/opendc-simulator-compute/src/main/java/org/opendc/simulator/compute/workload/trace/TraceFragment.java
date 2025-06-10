@@ -25,16 +25,16 @@ package org.opendc.simulator.compute.workload.trace;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.engine.graph.FlowEdge;
 
-public record TraceFragment(long duration, double cpuUsage, int cpuCoreCount, double gpuUsage, int gpuCoreCount, double gpuMemoryUsage ) {
+public record TraceFragment(long duration, double cpuUsage, int cpuCoreCount, double gpuUsage, int gpuCoreCount, Long gpuMemoryUsage ) {
 
     public TraceFragment(long start, long duration, double cpuUsage, int cpuCoreCount) {
-        this(duration, cpuUsage, cpuCoreCount, 0.0, 0, 0.0);
+        this(duration, cpuUsage, cpuCoreCount, 0.0, 0, 0L);
     }
     public TraceFragment(long duration, double cpuUsage, int cpuCoreCount) {
-        this(duration, cpuUsage, cpuCoreCount, 0.0, 0, 0.0);
+        this(duration, cpuUsage, cpuCoreCount, 0.0, 0, 0L);
     }
     public TraceFragment(long duration, double cpuUsage, int cpuCoreCount, double gpuUsage, int gpuCoreCount) {
-        this(duration, cpuUsage, cpuCoreCount, gpuUsage, gpuCoreCount, 0.0);
+        this(duration, cpuUsage, cpuCoreCount, gpuUsage, gpuCoreCount, 0L);
     }
 
     /**
