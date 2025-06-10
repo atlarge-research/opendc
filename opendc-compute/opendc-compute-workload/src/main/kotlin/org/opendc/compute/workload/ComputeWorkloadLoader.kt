@@ -33,11 +33,15 @@ import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
 import org.opendc.trace.conv.resourceDeadline
 import org.opendc.trace.conv.resourceDuration
+import org.opendc.trace.conv.resourceGpuCapacity
+import org.opendc.trace.conv.resourceGpuCount
+import org.opendc.trace.conv.resourceGpuMemCapacity
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
 import org.opendc.trace.conv.resourceNature
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
+import org.opendc.trace.conv.resourceStateGpuUsage
 import org.opendc.trace.conv.resourceSubmissionTime
 import java.io.File
 import java.lang.ref.SoftReference
@@ -79,6 +83,8 @@ public class ComputeWorkloadLoader(
         val durationCol = reader.resolve(resourceStateDuration)
         val coresCol = reader.resolve(resourceCpuCount)
         val usageCol = reader.resolve(resourceStateCpuUsage)
+        val gpuCoresCol = reader.resolve(resourceGpuCount)
+        val resourceGpuCapacityCol = reader.resolve(resourceStateGpuUsage)
 
         val fragments = mutableMapOf<String, Builder>()
 
@@ -88,12 +94,15 @@ public class ComputeWorkloadLoader(
                 val durationMs = reader.getDuration(durationCol)!!
                 val cores = reader.getInt(coresCol)
                 val cpuUsage = reader.getDouble(usageCol)
+                val gpuUsage = if (reader.getDouble(resourceGpuCapacityCol).isNaN()) 0.0 else reader.getDouble(resourceGpuCapacityCol) // Default to 0 if not present
+                val gpuCores = reader.getInt(gpuCoresCol) // Default to 0 if not present
+                val gpuMemory = 0L // Default to 0 if not present
 
                 val builder =
                     fragments.computeIfAbsent(
                         id,
                     ) { Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, id) }
-                builder.add(durationMs, cpuUsage, cores)
+                builder.add(durationMs, cpuUsage, cores, gpuUsage, gpuCores, gpuMemory)
             }
 
             fragments
@@ -117,6 +126,9 @@ public class ComputeWorkloadLoader(
         val cpuCountCol = reader.resolve(resourceCpuCount)
         val cpuCapacityCol = reader.resolve(resourceCpuCapacity)
         val memCol = reader.resolve(resourceMemCapacity)
+        val gpuCapacityCol = reader.resolve(resourceGpuCapacity) // Assuming GPU capacity is also present
+        val gpuCoreCountCol = reader.resolve(resourceGpuCount) // Assuming GPU cores are also present
+        val gpuMemoryCol = reader.resolve(resourceGpuMemCapacity) // Assuming GPU memory is also present
         val natureCol = reader.resolve(resourceNature)
         val deadlineCol = reader.resolve(resourceDeadline)
 
@@ -135,6 +147,9 @@ public class ComputeWorkloadLoader(
                 val cpuCount = reader.getInt(cpuCountCol)
                 val cpuCapacity = reader.getDouble(cpuCapacityCol)
                 val memCapacity = reader.getDouble(memCol) / 1000.0 // Convert from KB to MB
+                val gpuUsage = if (reader.getDouble(gpuCapacityCol).isNaN()) 0.0 else reader.getDouble(gpuCapacityCol) // Default to 0 if not present// Default to 0 if not present
+                val gpuCoreCount = reader.getInt(gpuCoreCountCol) // Default to 0 if not present
+                val gpuMemory = 0L // currently not implemented
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
                 var nature = reader.getString(natureCol)
                 var deadline = reader.getLong(deadlineCol)
@@ -153,6 +168,9 @@ public class ComputeWorkloadLoader(
                         cpuCount,
                         cpuCapacity,
                         memCapacity.roundToLong(),
+                        gpuCoreCount,
+                        gpuUsage,
+                        gpuMemory,
                         totalLoad,
                         submissionTime,
                         duration,
@@ -224,17 +242,23 @@ public class ComputeWorkloadLoader(
          * Add a fragment to the trace.
          *
          * @param duration The duration of the fragment (in epoch millis).
-         * @param usage CPU usage of this fragment.
-         * @param cores Number of cores used.
+         * @param cpuUsage CPU usage of this fragment.
+         * @param cpuCores Number of cores used.
+         * @param gpuUsage GPU usage of this fragment.
+         * @param gpuCores Number of GPU cores used.
+         * @param gpuMemoryUsage GPU memory usage of this fragment.
          */
         fun add(
             duration: Duration,
-            usage: Double,
-            cores: Int,
+            cpuUsage: Double,
+            cpuCores: Int,
+            gpuUsage: Double = 0.0,
+            gpuCores: Int = 0,
+            gpuMemoryUsage: Long = 0,
         ) {
-            totalLoad += (usage * duration.toMillis()) / 1000 // avg MHz * duration = MFLOPs
+            totalLoad += ((cpuUsage * duration.toMillis()) + (gpuUsage * duration.toMillis())) / 1000 // avg MHz * duration = MFLOPs
 
-            builder.add(duration.toMillis(), usage, cores)
+            builder.add(duration.toMillis(), cpuUsage, cpuCores, gpuUsage, gpuCores, gpuMemoryUsage)
         }
 
         /**

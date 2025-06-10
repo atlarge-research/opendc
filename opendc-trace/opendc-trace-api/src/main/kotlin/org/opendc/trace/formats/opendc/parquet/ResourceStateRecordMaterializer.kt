@@ -43,6 +43,8 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
     private var localDuration = Duration.ZERO
     private var localCpuCount = 0
     private var localCpuUsage = 0.0
+    private var localGpuCount = 0
+    private var localGpuUsage = 0.0
 
     /**
      * Root converter for the record.
@@ -73,7 +75,7 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
                                     localDuration = Duration.ofMillis(value)
                                 }
                             }
-                        "cpu_count", "cores" ->
+                        "cpu_count", "cores", ->
                             object : PrimitiveConverter() {
                                 override fun addInt(value: Int) {
                                     localCpuCount = value
@@ -83,6 +85,18 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
                             object : PrimitiveConverter() {
                                 override fun addDouble(value: Double) {
                                     localCpuUsage = value
+                                }
+                            }
+                        "gpu_count", "gpu_cores", ->
+                            object : PrimitiveConverter() {
+                                override fun addInt(value: Int) {
+                                    localGpuCount = value
+                                }
+                            }
+                        "gpu_usage", "gpuUsage" ->
+                            object : PrimitiveConverter() {
+                                override fun addDouble(value: Double) {
+                                    localGpuUsage = value
                                 }
                             }
                         "flops" ->
@@ -101,6 +115,8 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
                 localDuration = Duration.ZERO
                 localCpuCount = 0
                 localCpuUsage = 0.0
+                localGpuCount = 0
+                localGpuUsage = 0.0
             }
 
             override fun end() {}
@@ -108,7 +124,7 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
             override fun getConverter(fieldIndex: Int): Converter = converters[fieldIndex]
         }
 
-    override fun getCurrentRecord(): ResourceState = ResourceState(localId, localTimestamp, localDuration, localCpuCount, localCpuUsage)
+    override fun getCurrentRecord(): ResourceState = ResourceState(localId, localTimestamp, localDuration, localCpuCount, localCpuUsage, localGpuCount, localGpuUsage)
 
     override fun getRootConverter(): GroupConverter = root
 }

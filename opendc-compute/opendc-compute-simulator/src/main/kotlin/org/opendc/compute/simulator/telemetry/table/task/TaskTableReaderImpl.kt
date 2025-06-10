@@ -230,7 +230,7 @@ get() = (0 until _gpuActiveTimes.size).map { i -> (_gpuActiveTimes.getOrNull(i) 
 
         val cpuStats = simHost?.getCpuStats(task)
         val sysStats = simHost?.getSystemStats(task)
-        val gpuStats = _host?.getGpuStats(task)
+        val gpuStats = simHost?.getGpuStats(task)
 
         _timestamp = now
         _timestampAbsolute = now + startTime

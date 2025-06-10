@@ -51,7 +51,6 @@ public class HostTableReaderImpl(
         _guestsError = table.guestsError
         _guestsInvalid = table.guestsInvalid
         // CPU stats
-        _cpuLimit = table.cpuLimit
         _cpuCapacity = table.cpuCapacity
         _cpuDemand = table.cpuDemand
         _cpuUsage = table.cpuUsage
