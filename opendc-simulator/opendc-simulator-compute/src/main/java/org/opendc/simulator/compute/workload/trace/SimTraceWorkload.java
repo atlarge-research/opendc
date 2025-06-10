@@ -106,7 +106,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         new FlowEdge(this, supplier);
         if (supplier instanceof VirtualMachine) {
-            for (ResourceType resourceType : ((VirtualMachine) supplier).getAvailableResources()) {
+            // instead iterate over the resources in the fragment as required resources not provided by the VM
+            for (ResourceType resourceType : workload.getResourceTypes()) {
                 this.usedResourceTypes.add(resourceType);
                 this.resourcesSupplied.put(resourceType, 0.0);
                 this.newResourcesSupply.put(resourceType, 0.0);
@@ -228,7 +229,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         // Reset the remaining work for all resources
         this.totalRemainingWork = 0.0;
 
-        // FIXME: only acceleration is considered, not memory
+        // TODO: only acceleration is considered, not memory
         for (ResourceType resourceType : usedResourceTypes) {
             double demand = nextFragment.getResourceUsage(resourceType);
 
