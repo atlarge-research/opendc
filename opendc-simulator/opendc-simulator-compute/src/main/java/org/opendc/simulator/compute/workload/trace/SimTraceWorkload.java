@@ -164,7 +164,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
         // If this.totalRemainingWork <= 0, the fragment has been completed across all resources
-        if (this.totalRemainingWork <= 0) {
+
+        if (this.totalRemainingWork <= 0 && !this.workloadFinished.containsValue(false)) {
             this.startNextFragment();
 
             this.invalidate();
@@ -396,7 +397,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
         this.resourcesDemand.put(resourceType, newDemand);
-        this.machineResourceEdges.get(resourceType).pushDemand(newDemand);
+        this.machineResourceEdges.get(resourceType).pushDemand(newDemand, false, resourceType);
     }
 
     /**
@@ -406,10 +407,22 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      */
     @Override
     public void addSupplierEdge(FlowEdge supplierEdge) {
-        this.machineResourceEdges.put(supplierEdge.getSupplier().getResourceType(), supplierEdge);
-        if (supplierEdge.getSupplier() instanceof VirtualMachine) {
-            for (ResourceType resourceType : ((VirtualMachine) supplierEdge.getSupplier()).getAvailableResources()) {
-                this.machineResourceEdges.put(resourceType, supplierEdge);
+        ResourceType incommingResourceType = supplierEdge.getResourceType();
+
+        if (machineResourceEdges.containsValue(supplierEdge)) {
+            return; // Skip if this exact edge is already registered
+        }
+
+        this.machineResourceEdges.put(incommingResourceType, supplierEdge);
+        if (supplierEdge.getSupplier() instanceof VirtualMachine vm ) {
+            for (ResourceType resourceType : vm.getAvailableResources()) {
+                if (resourceType == incommingResourceType || resourceType == ResourceType.AUXILIARY) {
+                    continue;
+                }
+
+                if (!this.machineResourceEdges.containsKey(resourceType)) {
+                    new FlowEdge(this, vm, resourceType);
+                }
             }
         }
     }
@@ -439,6 +452,9 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
         return connectedEdges;
     }
+
+    @Override
+    public ResourceType getResourceType() { return ResourceType.AUXILIARY; }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Util Methods
