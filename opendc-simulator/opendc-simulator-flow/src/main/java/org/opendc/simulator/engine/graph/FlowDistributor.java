@@ -277,6 +277,14 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     }
 
     @Override
+    public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand, ResourceType resourceType) {
+        if (resourceType != this.getResourceType()) {
+            throw new IllegalArgumentException("Resource type " + resourceType + " does not match distributor resource type " + this.getResourceType());
+        }
+        this.handleIncomingDemand(consumerEdge, newDemand);
+    }
+
+    @Override
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply) {
         this.currentIncomingSupply = newSupply;
 
@@ -285,7 +293,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
 
     @Override
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
-        this.supplierEdge.pushDemand(newDemand);
+        this.supplierEdge.pushDemand(newDemand, false, this.getResourceType());
     }
 
     @Override
@@ -301,7 +309,8 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         }
 
         outgoingSupplies.set(idx, newSupply);
-        consumerEdge.pushSupply(newSupply);
+//        consumerEdge.pushSupply(newSupply);
+        consumerEdge.pushSupply(newSupply, false, this.getResourceType());
     }
 
     @Override

@@ -40,4 +40,6 @@ public interface FlowConsumer {
     void addSupplierEdge(FlowEdge supplierEdge);
 
     void removeSupplierEdge(FlowEdge supplierEdge);
+
+    ResourceType getResourceType();
 }

@@ -22,6 +22,7 @@
 
 package org.opendc.compute.simulator.host
 
+import org.opendc.common.ResourceType
 import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.TaskState
 import org.opendc.compute.simulator.internal.Guest
@@ -370,7 +371,7 @@ public class SimHost(
                 counters.capacity,
                 counters.demand,
                 counters.supply,
-                counters.supply / gpu.capacity
+                counters.supply / gpu.getCapacity(ResourceType.GPU),
             ))
         }
         return gpuStats

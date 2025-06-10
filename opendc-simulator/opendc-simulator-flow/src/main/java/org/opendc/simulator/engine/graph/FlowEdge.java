@@ -43,7 +43,9 @@ public class FlowEdge {
     private double demand = 0.0;
     private double supply = 0.0;
 
-    private double capacity;
+    private final double capacity;
+
+    private final ResourceType resourceType;
 
     public enum NodeType {
         CONSUMING,
@@ -51,6 +53,10 @@ public class FlowEdge {
     }
 
     public FlowEdge(FlowConsumer consumer, FlowSupplier supplier) {
+        this(consumer, supplier, ResourceType.AUXILIARY);
+    }
+
+    public FlowEdge(FlowConsumer consumer, FlowSupplier supplier, ResourceType resourceType) {
         if (!(consumer instanceof FlowNode)) {
             throw new IllegalArgumentException("Flow consumer is not a FlowNode");
         }
@@ -60,8 +66,9 @@ public class FlowEdge {
 
         this.consumer = consumer;
         this.supplier = supplier;
+        this.resourceType = resourceType;
 
-        this.capacity = supplier.getCapacity();
+        this.capacity = supplier.getCapacity(resourceType);
 
         this.consumer.addSupplierEdge(this);
         this.supplier.addConsumerEdge(this);
@@ -117,6 +124,8 @@ public class FlowEdge {
         return this.supply;
     }
 
+    public ResourceType getResourceType() { return this.resourceType; }
+
     public int getConsumerIndex() {
         return consumerIndex;
     }
@@ -132,6 +141,17 @@ public class FlowEdge {
     public void setSupplierIndex(int supplierIndex) {
         this.supplierIndex = supplierIndex;
     }
+
+    public void pushDemand(double newDemand, boolean forceThrough, ResourceType resourceType) {
+        // or store last resource type in the edge
+        if ((newDemand == this.demand) && !forceThrough) {
+            return;
+        }
+
+        this.demand = newDemand;
+        this.supplier.handleIncomingDemand(this, newDemand, resourceType);
+    }
+
 
     /**
      * Push new demand from the Consumer to the Supplier
