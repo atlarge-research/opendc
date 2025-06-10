@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.compute.power;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,21 +35,24 @@ import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A {@link SimPsu} implementation that estimates the power consumption based on CPU usage.
  */
 public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimPsu.class);
     private long lastUpdate;
 
-    private double powerDemand = 0.0;
-    private double powerSupplied = 0.0;
+    private final HashMap<ResourceType, ArrayList<Double>> powerDemandsPerResource = new HashMap<>();
+    private final HashMap<ResourceType, ArrayList<Double>> powerSuppliedPerResource = new HashMap<>();
     private double totalEnergyUsage = 0.0;
 
-    private FlowEdge cpuEdge;
+    private final HashMap<ResourceType, ArrayList<FlowEdge>> resourceEdges = new HashMap<>();
     private FlowEdge powerSupplyEdge;
 
-    private double capacity = Long.MAX_VALUE;
+    private final double capacity = Long.MAX_VALUE;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
@@ -59,7 +64,8 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
      * @return <code>true</code> if the InPort is connected to an OutPort, <code>false</code> otherwise.
      */
     public boolean isConnected() {
-        return cpuEdge != null;
+            return !this.resourceEdges.isEmpty() &&
+                   this.resourceEdges.values().stream().anyMatch(list -> !list.isEmpty());
     }
 
     /**
@@ -68,14 +74,27 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
      * This method provides access to the power consumption of the machine before PSU losses are applied.
      */
     public double getPowerDemand() {
-        return this.powerDemand;
+        return this.powerDemandsPerResource.values().stream()
+                .flatMap(List::stream)
+                .findFirst()
+                .orElse(0.0);
+    }
+
+    public double getPowerDemand(ResourceType resourceType) {
+        return this.powerDemandsPerResource.get(resourceType).getFirst();
     }
 
     /**
      * Return the instantaneous power usage of the machine (in W) measured at the InPort of the power supply.
      */
     public double getPowerDraw() {
-        return this.powerSupplied;
+        return this.powerSuppliedPerResource.values().stream()
+                .flatMap(List::stream)
+                .findFirst()
+                .orElse(0.0);
+    }
+    public double getPowerDraw(ResourceType resourceType) {
+        return this.powerSuppliedPerResource.get(resourceType).getFirst();
     }
 
     /**
@@ -108,10 +127,18 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
     @Override
     public long onUpdate(long now) {
         updateCounters();
-        double powerSupply = this.powerDemand;
+        for (ResourceType resourceType : this.resourceEdges.keySet()) {
+            ArrayList<FlowEdge> edges = this.resourceEdges.get(resourceType);
+            if (edges != null && !edges.isEmpty()) {
+                double powerSupply = this.powerDemandsPerResource.get(resourceType).getFirst();
+                double powerSupplied = this.powerSuppliedPerResource.get(resourceType).getFirst();
 
-        if (powerSupply != this.powerSupplied) {
-            this.pushOutgoingSupply(this.cpuEdge, powerSupply);
+                if (powerSupply != powerSupplied) {
+                    for (FlowEdge edge : edges) {
+                        edge.pushSupply(powerSupply);
+                    }
+                }
+            }
         }
 
         return Long.MAX_VALUE;
@@ -130,8 +157,11 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
         long duration = now - lastUpdate;
         if (duration > 0) {
-            // Compute the energy usage of the psu
-            this.totalEnergyUsage += (this.powerSupplied * duration * 0.001);
+            for (ResourceType resourceType : this.powerSuppliedPerResource.keySet()) {
+                for (double powerSupplied : this.powerSuppliedPerResource.get(resourceType)) {
+                    this.totalEnergyUsage += (powerSupplied * duration * 0.001);
+                }
+            }
         }
     }
 
@@ -140,38 +170,64 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
-        this.powerDemand = newDemand;
+    public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand, ResourceType resourceType) {
+        this.powerDemandsPerResource.put(resourceType, new ArrayList<>(List.of(newDemand)));
         powerSupplyEdge.pushDemand(newDemand);
     }
 
     @Override
-    public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
-        this.powerSupplied = newSupply;
-        cpuEdge.pushSupply(newSupply);
+    public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
+        double totalDemand = this.powerDemandsPerResource.values().stream()
+                .flatMap(List::stream)
+                .reduce(0.0, Double::sum);
+        this.powerSupplyEdge.pushDemand(totalDemand);
     }
 
     @Override
-    public void handleIncomingDemand(FlowEdge consumerEdge, double newPowerDemand) {
+    public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
+        this.pushOutgoingSupply(consumerEdge, newSupply, consumerEdge.getConsumer().getResourceType());
+    }
 
+    @Override
+    public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply, ResourceType resourceType) {
+        LOGGER.warn("Pushing new supply in PSU: {} to resourceType: {}, lastUpdate: {}", newSupply, resourceType, this.lastUpdate);
+        this.powerSuppliedPerResource.put(resourceType, new ArrayList<>(List.of(newSupply)));
+        consumerEdge.pushSupply(newSupply, false, resourceType);
+    }
+
+    @Override
+    public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand) {
+        handleIncomingDemand(consumerEdge, newDemand, consumerEdge.getConsumer().getResourceType());
+    }
+
+    @Override
+    public void handleIncomingDemand(FlowEdge consumerEdge, double newPowerDemand, ResourceType resourceType) {
+        LOGGER.warn("Handling incoming demand in PSU: {} for resourceType: {}, lastUpdate: {}", newPowerDemand,resourceType, this.lastUpdate);
         updateCounters();
-        this.powerDemand = newPowerDemand;
+        this.powerDemandsPerResource.put(resourceType, new ArrayList<>(List.of(newPowerDemand)));
 
         pushOutgoingDemand(this.powerSupplyEdge, newPowerDemand);
     }
 
     @Override
-    public void handleIncomingSupply(FlowEdge supplierEdge, double newPowerSupply) {
-
+    public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply) {
+        LOGGER.warn("Handling incoming supply in PSU: {}, lastUpdate: {}", newSupply, this.lastUpdate);
         updateCounters();
-        this.powerSupplied = newPowerSupply;
-
-        pushOutgoingSupply(this.cpuEdge, newPowerSupply);
+        for (ResourceType resourceType : this.resourceEdges.keySet()) {
+//            this.powerSuppliedPerResource.put(resourceType, new ArrayList<>(List.of(newSupply)));
+            for (FlowEdge edge : this.resourceEdges.get(resourceType)) {
+                double outgoingSupply = Math.min(this.powerDemandsPerResource.get(resourceType).getFirst(), newSupply);
+                pushOutgoingSupply(edge, outgoingSupply, resourceType);
+            }
+        }
     }
 
     @Override
     public void addConsumerEdge(FlowEdge consumerEdge) {
-        this.cpuEdge = consumerEdge;
+        ResourceType consumerResourceType = consumerEdge.getConsumer().getResourceType();
+        this.resourceEdges.put(consumerResourceType, new ArrayList<>(List.of(consumerEdge)));
+        this.powerDemandsPerResource.put(consumerResourceType, new ArrayList<>(List.of(0.0)));
+        this.powerSuppliedPerResource.put(consumerResourceType, new ArrayList<>(List.of(0.0)));
     }
 
     @Override
@@ -181,7 +237,12 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void removeConsumerEdge(FlowEdge consumerEdge) {
-        this.cpuEdge = null;
+        ResourceType resourceType = consumerEdge.getConsumer().getResourceType();
+        if (this.resourceEdges.containsKey(resourceType)) {
+            this.resourceEdges.remove(resourceType);
+            this.powerDemandsPerResource.remove(resourceType);
+            this.powerSuppliedPerResource.remove(resourceType);
+        }
     }
 
     @Override
@@ -191,7 +252,13 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
-        List<FlowEdge> supplyingEdges = cpuEdge != null ? List.of(cpuEdge) : List.of();
+        List<FlowEdge> supplyingEdges = new ArrayList<>();
+        for (ResourceType resourceType : this.resourceEdges.keySet()) {
+            List<FlowEdge> edges = this.resourceEdges.get(resourceType);
+            if (edges != null && !edges.isEmpty()) {
+                supplyingEdges.addAll(edges);
+            }
+        }
         List<FlowEdge> consumingEdges = powerSupplyEdge != null ? List.of(powerSupplyEdge) : List.of();
 
         return Map.of(
