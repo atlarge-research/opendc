@@ -27,9 +27,11 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.opendc.common.ResourceType;
+import org.opendc.simulator.compute.ComputeResource;
 import org.opendc.simulator.compute.gpu.SimGpu;
 import org.opendc.simulator.compute.machine.CpuPerformanceCounters;
 import org.opendc.simulator.compute.machine.GpuPerformanceCounters;
@@ -38,28 +40,26 @@ import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A {@link VirtualMachine} that composes multiple {@link SimWorkload}s.
  */
 public final class VirtualMachine extends SimWorkload implements FlowSupplier {
+    private static final Logger LOGGER = LoggerFactory.getLogger(VirtualMachine.class);
     private final LinkedList<Workload> workloads;
     private int workloadIndex;
 
     private SimWorkload activeWorkload;
-    private double cpuDemand = 0.0f; // TODO: Transform into list of resoureDemands
-    private double cpuSupply = 0.0f;
-    private double d = 0.0f;
-
-    private double gpuDemand = 0.0f;
-    private double gpuSupply = 0.0f;
-    private double gpuD = 0.0f;
-    private double gpuCapacity = 0.0f; // TODO: Transform into list of resource capacities
 
     private FlowEdge workloadEdge;
-    private FlowEdge machineEdge; // TODO: Transform into list of resource edges, is not machine but distributors
 
-    private double cpuCapacity = 0; // TODO: Transform into list of resource capacities
+    private final Hashtable<ResourceType, ArrayList<Double>> resourceDemands = new Hashtable<>();
+    private final Hashtable<ResourceType, ArrayList<Double>> resourceSupplies = new Hashtable<>();
+    private final Hashtable<ResourceType, Double> resourceCapacities = new Hashtable<>();
+    private final Hashtable<ResourceType, Double> resourceTimeScalingFactor = new Hashtable<>(); // formerly known as d
+    private final Hashtable<ResourceType, FlowEdge> distributorEdges = new Hashtable<>();
     private final Hashtable<ResourceType, List<ResourcePerformanceCounters>> resourcePerformanceCounters = new Hashtable<>();
 
     private final long checkpointInterval;
@@ -70,11 +70,6 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     private final ChainWorkload snapshot;
 
     private long lastUpdate;
-    // TODO: Make it being used
-    // TODO: is list a smart choice? or should list be handled in the counter itself?
-
-    private final CpuPerformanceCounters cpuPerformanceCounters = new CpuPerformanceCounters();
-    private final List<GpuPerformanceCounters> gpuPerformanceCounters = new ArrayList<>();
     private Consumer<Exception> completion;
 
     private final List<ResourceType> availableResources = new ArrayList<>();
@@ -86,7 +81,15 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     // TODO: How to handle GPU capacity?
     @Override
     public double getCapacity() {
-        return this.cpuCapacity;
+        throw new UnsupportedOperationException("getCapacity() is not supported for VirtualMachine");
+    }
+
+    @Override
+    public double getCapacity(ResourceType resourceType) {
+        if (resourceType == ResourceType.AUXILIARY) {
+            return 0.0;
+        }
+        return this.resourceCapacities.get(resourceType);
     }
 
     @Override
@@ -110,18 +113,24 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     }
 
     public CpuPerformanceCounters getCpuPerformanceCounters() {
-        return cpuPerformanceCounters;
+        return (CpuPerformanceCounters) this.resourcePerformanceCounters.get(ResourceType.CPU).getFirst();
     }
 
     public List<GpuPerformanceCounters> getGpuPerformanceCounters() {
-        return gpuPerformanceCounters;
+        List<ResourcePerformanceCounters> gpuPerformanceCounters = this.resourcePerformanceCounters.get(ResourceType.GPU);
+        return (gpuPerformanceCounters != null) ?
+                gpuPerformanceCounters.stream()
+                .filter(c -> c instanceof GpuPerformanceCounters)
+                .map(c -> (GpuPerformanceCounters) c)
+                .toList() : new ArrayList<>();
     }
 
     public GpuPerformanceCounters getSpecificGpuPerformanceCounters(int gpuId) {
+        List<ResourcePerformanceCounters> gpuPerformanceCounters = this.resourcePerformanceCounters.get(ResourceType.GPU);
         if (gpuId < 0 || gpuId >= gpuPerformanceCounters.size()) {
             throw new IndexOutOfBoundsException("No such GPU id: " + gpuId);
         }
-        return gpuPerformanceCounters.get(gpuId);
+        return (GpuPerformanceCounters) gpuPerformanceCounters.get(gpuId);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,7 +167,34 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
         for (FlowSupplier supplier : suppliers) {
             new FlowEdge(this, supplier);
-            this.availableResources.add(supplier.getResourceType());
+            ResourceType resourceType = supplier.getResourceType();
+
+            this.availableResources.add(resourceType);
+
+            ArrayList<ComputeResource> resources = machine.getResources(resourceType);
+            if (resources.isEmpty()) {
+                throw new IllegalArgumentException("No resources of type " + resourceType + " found in machine ");
+            }
+
+            this.resourceCapacities.put(resourceType, resources.getFirst().getCapacity());
+
+            ArrayList<ResourcePerformanceCounters> performanceCounters = new ArrayList<>();
+            ArrayList<Double> resourceDemands = new ArrayList<>();
+            ArrayList<Double> resourceSupplies = new ArrayList<>();
+            for (ComputeResource resource : resources) {
+                // TODO: not so cool, but works for now
+                switch (resourceType) {
+                    case CPU -> performanceCounters.add(new CpuPerformanceCounters());
+                    case GPU -> performanceCounters.add(new GpuPerformanceCounters());
+                    default -> throw new IllegalArgumentException("Unsupported resource type: " + resourceType);
+                }
+                this.resourceTimeScalingFactor.put(resourceType, 1.0 / resource.getCapacity());
+                resourceDemands.add(0.0);
+                resourceSupplies.add(0.0);
+            }
+            this.resourcePerformanceCounters.put(resourceType, performanceCounters);
+            this.resourceDemands.put(resourceType, resourceDemands);
+            this.resourceSupplies.put(resourceType, resourceSupplies);
         }
 
         this.workloads = new LinkedList<>(workload.workloads());
@@ -173,20 +209,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         }
 
         this.workloadIndex = -1;
-
-        this.cpuCapacity = machine.getCpu().getFrequency();
-        this.d = 1 / machine.getCpu().getFrequency();
-        if (this.availableResources.contains(ResourceType.GPU)) {
-            this.gpuD = 1 / machine.getGpu(0).getFrequency();
-            this.gpuCapacity = machine.getGpu(0).getCapacity();
-            for (SimGpu gpu : machine.getGpus()) {
-                // if performance counter of GPUs are used, then values are twice as high as expected
-                this.gpuPerformanceCounters.add(new GpuPerformanceCounters());
-            }
-        }
         this.completion = completion;
-
-
         this.onStart();
     }
 
@@ -215,36 +238,20 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         this.lastUpdate = now;
         long delta = now - lastUpdate;
 
-        double cpuCapacity = 0.0f;
-        if (delta > 0) {
-            final double factor = this.d * delta;
-
-            this.cpuPerformanceCounters.addActiveTime(Math.round(this.cpuSupply * factor));
-            this.cpuPerformanceCounters.setIdleTime(Math.round((cpuCapacity - this.cpuSupply) * factor)); // Capacity is always 0.0f
-            this.cpuPerformanceCounters.addStealTime(Math.round((this.cpuDemand - this.cpuSupply) * factor));
-
-            // TODO: Make loop
-            if (this.availableResources.contains(ResourceType.GPU)) {
-                final double gpuFactor = this.gpuD * delta;
-                for (GpuPerformanceCounters gpuCounter : this.gpuPerformanceCounters) {
-                    gpuCounter.addActiveTime(Math.round(this.gpuSupply * gpuFactor));
-                    gpuCounter.setIdleTime(Math.round((this.gpuCapacity - this.gpuSupply) * gpuFactor));
-                    gpuCounter.addStealTime(Math.round((this.gpuDemand - this.gpuSupply) * gpuFactor));
+        for (ResourceType resourceType : this.availableResources) {
+            int i = 0;
+            final double factor = this.resourceTimeScalingFactor.get(resourceType) * delta;
+            for (ResourcePerformanceCounters performanceCounter : this.resourcePerformanceCounters.get(resourceType)) {
+                if (delta > 0) {
+                    performanceCounter.addActiveTime(Math.round(this.resourceSupplies.get(resourceType).get(i) * factor));
+                    performanceCounter.setIdleTime(Math.round((this.resourceCapacities.get(resourceType) - this.resourceSupplies.get(resourceType).get(i)) * factor));
+                    performanceCounter.addStealTime(Math.round((this.resourceDemands.get(resourceType).get(i) - this.resourceSupplies.get(resourceType).get(i)) * factor));
                 }
+                performanceCounter.setDemand(this.resourceDemands.get(resourceType).get(i));
+                performanceCounter.setSupply(this.resourceSupplies.get(resourceType).get(i));
+                performanceCounter.setCapacity(this.resourceCapacities.get(resourceType));
+                i++;
             }
-        }
-
-        this.cpuPerformanceCounters.setDemand(this.cpuDemand);
-        this.cpuPerformanceCounters.setSupply(this.cpuSupply);
-        this.cpuPerformanceCounters.setCapacity(cpuCapacity);
-
-        if (!this.availableResources.contains(ResourceType.GPU)) {
-            return;
-        }
-        for (GpuPerformanceCounters gpuCounter : this.gpuPerformanceCounters) {
-            gpuCounter.setDemand(this.gpuDemand);
-            gpuCounter.setSupply(this.gpuSupply);
-            gpuCounter.setCapacity(this.gpuCapacity);
         }
     }
 
@@ -321,12 +328,8 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void addSupplierEdge(FlowEdge supplierEdge) {
-        this.machineEdge = supplierEdge;
-        if (supplierEdge.getSupplier().getResourceType() == ResourceType.CPU) {
-            this.cpuCapacity = supplierEdge.getCapacity();
-        } else if (supplierEdge.getSupplier().getResourceType() == ResourceType.GPU) {
-            this.gpuCapacity = supplierEdge.getCapacity();
-        }
+        this.resourceCapacities.put(supplierEdge.getSupplier().getResourceType(), supplierEdge.getCapacity());
+        this.distributorEdges.put(supplierEdge.getSupplier().getResourceType(), supplierEdge);
     }
 
     /**
@@ -337,14 +340,8 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
-
-        if (supplierEdge.getSupplier().getResourceType() == ResourceType.CPU) {
-            this.cpuDemand = newDemand;
-        }
-        if (supplierEdge.getSupplier().getResourceType() == ResourceType.GPU) {
-            this.gpuDemand = newDemand;
-        }
-        this.machineEdge.pushDemand(newDemand);
+        // FIXME: Needs to be assigned to specific resource if multiple exist -> add resource Id as parameter
+        this.pushOutgoingDemand(supplierEdge, newDemand, supplierEdge.getSupplier().getResourceType());
     }
 
     /**
@@ -355,14 +352,9 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand, ResourceType resourceType) {
-
-        if (resourceType == ResourceType.CPU) {
-            this.cpuDemand = newDemand;
-        } else if (resourceType == ResourceType.GPU) {
-            this.gpuDemand = newDemand;
-        }
-//        this.cpuDemand = newDemand;
-        this.machineEdge.pushDemand(newDemand);
+        // FIXME: Needs to be assigned to specific resource if multiple exist -> add resource Id as parameter
+        this.resourceDemands.put(resourceType, new ArrayList<>(List.of(newDemand)));
+        this.distributorEdges.get(resourceType).pushDemand(newDemand, false, resourceType);
     }
 
     /**
@@ -373,8 +365,8 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
-        this.cpuSupply = newSupply;
-        this.machineEdge. pushDemand(newSupply, false);
+        this.resourceSupplies.put(consumerEdge.getConsumer().getResourceType(), new ArrayList<>(List.of(newSupply)));
+        this.distributorEdges.get(consumerEdge.getConsumer().getResourceType()).pushSupply(newSupply, false, consumerEdge.getConsumer().getResourceType());
     }
 
     /**
@@ -385,13 +377,8 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply, ResourceType resourceType) {
-        //TODO: Make it being used
-        if (resourceType == ResourceType.CPU) {
-            this.cpuSupply = newSupply;
-        }else if (resourceType == ResourceType.GPU) {
-            this.gpuSupply = newSupply;
-        }
-        this.workloadEdge.pushSupply(newSupply, false, resourceType);
+        this.resourceSupplies.put(resourceType, new ArrayList<>(List.of(newSupply)));
+        this.distributorEdges.get(resourceType).pushSupply(newSupply, false, resourceType);
     }
 
     /**
@@ -403,8 +390,13 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     @Override
     public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand) {
         updateCounters(this.clock.millis());
+        this.pushOutgoingDemand(this.distributorEdges.get(consumerEdge.getConsumer().getResourceType()), newDemand);
+    }
 
-        this.pushOutgoingDemand(this.machineEdge, newDemand);
+    @Override
+    public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand, ResourceType resourceType) {
+        updateCounters(this.clock.millis());
+        this.pushOutgoingDemand(this.distributorEdges.get(resourceType), newDemand, resourceType);
     }
 
     /**
@@ -417,7 +409,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply) {
         updateCounters(this.clock.millis());
 
-        this.pushOutgoingSupply(this.machineEdge, newSupply, supplierEdge.getSupplier().getResourceType());
+        this.pushOutgoingSupply(this.distributorEdges.get(supplierEdge.getSupplier().getResourceType()), newSupply, supplierEdge.getSupplier().getResourceType());
     }
 
     /**
@@ -430,7 +422,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply, ResourceType resourceType) {
         updateCounters(this.clock.millis());
 
-        this.pushOutgoingSupply(this.machineEdge, newSupply, resourceType);
+        this.pushOutgoingSupply(this.distributorEdges.get(resourceType), newSupply, resourceType);
     }
 
     /**
@@ -467,7 +459,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void removeSupplierEdge(FlowEdge supplierEdge) {
-        if (this.machineEdge == null) {
+        if (!this.distributorEdges.contains(supplierEdge.getSupplier().getResourceType())) {
             return;
         }
 
@@ -476,7 +468,9 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
     @Override
     public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
-        List<FlowEdge> consumerEdges = (this.machineEdge != null) ? List.of(this.machineEdge) : List.of();
+        List<FlowEdge> consumerEdges = this.distributorEdges.values().stream()
+                .filter(Objects::nonNull)
+                .toList();
         List<FlowEdge> supplierEdges = (this.workloadEdge != null) ? List.of(this.workloadEdge) : List.of();
 
         return Map.of(
