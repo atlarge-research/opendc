@@ -32,16 +32,16 @@ package org.opendc.simulator.compute.workload.trace.scaling;
 public class NoDelayScaling implements ScalingPolicy {
     @Override
     public double getFinishedWork(double cpuFreqDemand, double cpuFreqSupplied, long passedTime) {
-        return cpuFreqDemand * passedTime;
+        return passedTime;
     }
 
     @Override
     public long getRemainingDuration(double cpuFreqDemand, double cpuFreqSupplied, double remainingWork) {
-        return (long) (remainingWork / cpuFreqDemand);
+        return (long) remainingWork;
     }
 
     @Override
     public double getRemainingWork(double cpuFreqDemand, long duration) {
-        return cpuFreqDemand * duration;
+        return duration;
     }
 }
