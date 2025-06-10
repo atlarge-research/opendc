@@ -1,8 +1,8 @@
-package org.opendc.simulator.engine.graph.distributionStrategies;
+package org.opendc.simulator.engine.graph.distributionPolicies;
 
-public class DistributionStrategyFactory {
+public class DistributionPolicyFactory {
 
-    public static DistributionStrategy getDistributionStrategy(DistributionStrategyType distributionStrategyType) {
+    public static DistributionPolicy getDistributionStrategy(DistributionStrategyType distributionStrategyType) {
 
         return switch (distributionStrategyType) {
             case MaxMinFairness -> new MaxMinFairnessStrategy();

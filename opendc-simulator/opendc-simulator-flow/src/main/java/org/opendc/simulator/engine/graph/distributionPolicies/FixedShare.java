@@ -1,8 +1,8 @@
-package org.opendc.simulator.engine.graph.distributionStrategies;
+package org.opendc.simulator.engine.graph.distributionPolicies;
 
 import java.util.ArrayList;
 
-public class FixedShare implements DistributionStrategy {
+public class FixedShare implements DistributionPolicy {
 
     private int share;
     public FixedShare() {

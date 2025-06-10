@@ -37,8 +37,8 @@ import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
-import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategyFactory
-import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategyType
+import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicyFactory
+import org.opendc.simulator.engine.graph.distributionPolicies.DistributionStrategyType
 import java.io.File
 import java.io.InputStream
 
@@ -190,8 +190,8 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
             unknownMemoryUnit,
             gpuUnits,
             //TODO: Pass through
-            DistributionStrategyFactory.getDistributionStrategy(DistributionStrategyType.MaxMinFairness),
-            DistributionStrategyFactory.getDistributionStrategy(DistributionStrategyType.MaxMinFairness)
+            DistributionPolicyFactory.getDistributionStrategy(DistributionStrategyType.MaxMinFairness),
+            DistributionPolicyFactory.getDistributionStrategy(DistributionStrategyType.MaxMinFairness)
         )
 
     val cpuPowerModel =

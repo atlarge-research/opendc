@@ -23,18 +23,16 @@
 package org.opendc.simulator.engine.graph;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import jdk.jshell.spi.ExecutionControl;
 import org.opendc.common.ResourceType;
-import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategy;
+import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicy;
 import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.distributionStrategies.MaxMinFairnessStrategy;
+import org.opendc.simulator.engine.graph.distributionPolicies.MaxMinFairnessStrategy;
 
 public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
     private final ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
@@ -52,16 +50,16 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     private boolean overloaded = false;
 
     private double capacity; // What is the max capacity. Can probably be removed
-    private DistributionStrategy distributionStrategy;
+    private DistributionPolicy distributionPolicy;
 
     public FlowDistributor(FlowEngine engine) {
         super(engine);
-        this.distributionStrategy = new MaxMinFairnessStrategy();
+        this.distributionPolicy = new MaxMinFairnessStrategy();
     }
 
-    public FlowDistributor(FlowEngine engine, DistributionStrategy distributionStrategy) {
+    public FlowDistributor(FlowEngine engine, DistributionPolicy distributionPolicy) {
         super(engine);
-        this.distributionStrategy = distributionStrategy;
+        this.distributionPolicy = distributionPolicy;
     }
 
 
@@ -110,7 +108,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             this.overloaded = true;
 
 //            double[] supplies = distributeSupply(this.incomingDemands, this.currentIncomingSupply);
-            double[] supplies = this.distributionStrategy.distributeSupply(this.incomingDemands, this.currentIncomingSupply);
+            double[] supplies = this.distributionPolicy.distributeSupply(this.incomingDemands, this.currentIncomingSupply);
 
             for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
                 this.pushOutgoingSupply(this.consumerEdges.get(idx), supplies[idx], this.getResourceType());

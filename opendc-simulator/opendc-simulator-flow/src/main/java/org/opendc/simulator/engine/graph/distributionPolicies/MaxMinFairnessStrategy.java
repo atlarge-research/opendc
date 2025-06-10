@@ -1,11 +1,10 @@
-package org.opendc.simulator.engine.graph.distributionStrategies;
+package org.opendc.simulator.engine.graph.distributionPolicies;
 
-import org.opendc.simulator.engine.graph.FlowDistributor;
 //import org.opendc.simulator.engine.graph.FlowDistributor.Demand;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class MaxMinFairnessStrategy implements DistributionStrategy{
+public class MaxMinFairnessStrategy implements DistributionPolicy {
     private record Demand(int idx, double value) {}
 
     @Override

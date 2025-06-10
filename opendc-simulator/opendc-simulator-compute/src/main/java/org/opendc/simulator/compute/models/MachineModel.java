@@ -24,9 +24,7 @@ package org.opendc.simulator.compute.models;
 
 import org.jetbrains.annotations.Nullable;
 import org.opendc.common.ResourceType;
-import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategy;
-import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategyFactory;
-import org.opendc.simulator.engine.graph.distributionStrategies.DistributionStrategyType;
+import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +38,8 @@ public final class MachineModel {
     private final MemoryUnit memory;
 //    private final List<GpuModel> gpuModels = new ArrayList<>(); // TODO: Implement multi GPU support
     private final List<GpuModel> gpuModels;
-    private final DistributionStrategy cpuDistribbutionStrategy;
-    private final DistributionStrategy gpuDistributionStrategy;
+    private final DistributionPolicy cpuDistribbutionStrategy;
+    private final DistributionPolicy gpuDistributionPolicy;
     private final List<ResourceType> availableResources = new ArrayList<>();
     /**
      * Construct a {@link MachineModel} instance.
@@ -49,12 +47,12 @@ public final class MachineModel {
      * @param cpuModel The cpu available to the image.
      * @param memory The list of memory units available to the image.
      */
-    public MachineModel(CpuModel cpuModel, MemoryUnit memory,  @Nullable List<GpuModel> gpuModels,
-                        DistributionStrategy cpuDistributionStrategy, DistributionStrategy gpuDistributionStrategy) {
+    public MachineModel(CpuModel cpuModel, MemoryUnit memory, @Nullable List<GpuModel> gpuModels,
+                        DistributionPolicy cpuDistributionPolicy, DistributionPolicy gpuDistributionPolicy) {
         this.cpuModel = cpuModel;
         this.memory = memory;
-        this.cpuDistribbutionStrategy = cpuDistributionStrategy;
-        this.gpuDistributionStrategy = gpuDistributionStrategy;
+        this.cpuDistribbutionStrategy = cpuDistributionPolicy;
+        this.gpuDistributionPolicy = gpuDistributionPolicy;
         this.availableResources.add(ResourceType.CPU);
         // TODO: Add Memory
 //        this.usedResources.add(ResourceType.Memory);
@@ -104,7 +102,7 @@ public final class MachineModel {
      * @param gpus The list of GPUs available to the image.
      */
     public MachineModel(List<CpuModel> cpus, MemoryUnit memory, List<GpuModel> gpus,
-                        DistributionStrategy cpuDistributionStrategy, DistributionStrategy gpuDistributionStrategy)  {
+                        DistributionPolicy cpuDistributionPolicy, DistributionPolicy gpuDistributionPolicy)  {
 
         this(
             new CpuModel(
@@ -116,8 +114,8 @@ public final class MachineModel {
                 cpus.get(0).getArchitecture()),
             memory,
             gpus != null ? gpus : new ArrayList<>(),
-            cpuDistributionStrategy,
-            gpuDistributionStrategy);
+            cpuDistributionPolicy,
+            gpuDistributionPolicy);
     }
 
     /**
@@ -153,15 +151,15 @@ public final class MachineModel {
     /**
      * Return the distribution strategy for the CPU.
      */
-    public DistributionStrategy getCpuDistributionStrategy() {
+    public DistributionPolicy getCpuDistributionStrategy() {
         return cpuDistribbutionStrategy;
     }
 
     /**
      * Return the distribution strategy for the GPU.
      */
-    public DistributionStrategy getGpuDistributionStrategy() {
-        return gpuDistributionStrategy;
+    public DistributionPolicy getGpuDistributionStrategy() {
+        return gpuDistributionPolicy;
     }
 
     /**
