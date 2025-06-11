@@ -24,6 +24,8 @@ package org.opendc.compute.simulator.service;
 
 import org.opendc.compute.simulator.host.SimHost;
 
+import java.time.Instant;
+
 /**
  * A view of a {@link SimHost} as seen from the {@link ComputeService}.
  */
@@ -32,6 +34,7 @@ public class HostView {
     int instanceCount;
     long availableMemory;
     int provisionedCores;
+    Instant becomesAvailable;
 
     /**
      * Scheduler bookkeeping
@@ -85,6 +88,15 @@ public class HostView {
      */
     public int getProvisionedCores() {
         return provisionedCores;
+    }
+
+    public Instant getBecomesAvailable() {
+        return becomesAvailable;
+    }
+
+    public Instant setBecomesAvailable(Instant newTimeBecomesAvailable) {
+        becomesAvailable = newTimeBecomesAvailable;
+        return becomesAvailable;
     }
 
     @Override

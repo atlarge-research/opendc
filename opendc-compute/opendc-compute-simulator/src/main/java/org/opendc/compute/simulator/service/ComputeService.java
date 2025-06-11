@@ -525,6 +525,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             try {
                 task.host = host;
                 task.scheduledAt = clock.instant();
+                hv.setBecomesAvailable(task.scheduledAt.plus(task.getDuration()));
 
                 host.spawn(task);
 
