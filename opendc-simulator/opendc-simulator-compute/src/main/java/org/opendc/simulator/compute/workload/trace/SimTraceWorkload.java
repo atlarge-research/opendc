@@ -36,8 +36,11 @@ import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimTraceWorkload.class);
     private LinkedList<TraceFragment> remainingFragments;
     private int fragmentIndex;
 
@@ -165,7 +168,6 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
         // If this.totalRemainingWork <= 0, the fragment has been completed across all resources
-
         if (this.totalRemainingWork <= 0 && !this.workloadFinished.containsValue(false)) {
             this.startNextFragment();
 
@@ -185,11 +187,12 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
 
-        long timeUntilNextUpdate = Long.MAX_VALUE;
+        long timeUntilNextUpdate = Long.MIN_VALUE;
 
         for (ResourceType resourceType : this.usedResourceTypes) {
             // The amount of time required to finish the fragment at this speed
-            long remainingDuration = this.scalingPolicy.getRemainingDuration(this.resourcesDemand.get(resourceType), this.resourcesSupplied.get(resourceType), this.remainingWork.get(resourceType)); // for multi resource this needs to be the lowest, to get new update
+            long remainingDuration = this.scalingPolicy.getRemainingDuration(
+                this.resourcesDemand.get(resourceType), this.resourcesSupplied.get(resourceType), this.remainingWork.get(resourceType));
 
             if (remainingDuration == 0.0) {
                 // if resource not initialized, then nothing happens
@@ -199,12 +202,12 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             }
 
             // The next update should happen when the fastest resource is done, so that it is no longer tracked when unused
-            if (remainingDuration < timeUntilNextUpdate && remainingDuration > 0) {
+            if (remainingDuration > 0 && (timeUntilNextUpdate == Long.MIN_VALUE || remainingDuration < timeUntilNextUpdate)) {
                 timeUntilNextUpdate = remainingDuration;
             }
         }
 
-        return timeUntilNextUpdate == Long.MAX_VALUE ? now : now + timeUntilNextUpdate;
+        return timeUntilNextUpdate == Long.MIN_VALUE ? now : now + timeUntilNextUpdate;
     }
 
     public TraceFragment getNextFragment() {
