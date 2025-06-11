@@ -30,6 +30,7 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
+import kotlin.system.exitProcess
 import m3saAnalyze
 import org.opendc.experiments.base.experiment.getExperiment
 import org.opendc.experiments.m3sa.scenario.getOutputFolder
@@ -108,5 +109,6 @@ internal class M3SACommand : CliktCommand(name = "experiment") {
 
         file.appendText("===================================================\n")
         println("Finished $scenarioPath")
+
     }
 }

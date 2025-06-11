@@ -31,6 +31,6 @@
             "exportInterval": 30000
         }
     ],
-    "outputFolder": "src/test/resources/outputs/experiment1",
+    "outputFolder": "src/test/resources/",
     "runs": 1
 }

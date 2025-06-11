@@ -30,24 +30,23 @@ import java.io.File
 
 class M3SARunnerTest {
     @Test
-    fun `Run Kotlin main and expect no errors`() {
-        // clean up any previous outputs
-        // print the working directory
-//        println("Current working directory: ${File(".").absolutePath}")
-
-        val scenarioJson = "src/test/resources/scenarios/experiment1/scenario-metamodel.json"
-
-        // 2) Clean up any old outputs.
-        //    The 'outputFolder' property in scenario-metamodel.json points to this path:
-        val outDir = "src/test/resources/outputs/experiment1"
+    fun `Run M3SA-OpenDC full integration 1`() {
+        val scenarioJson = "src/test/resources/scenarios/experiment1/scenario_metamodel.json"
+        val outDir = "src/test/resources/outputs/"
+        val m3saPath = "src/test/resources/m3saSetups/experiment1/m3saSetup.json"
+        val m3saExecPath = "src/main/python"
         File(outDir).deleteRecursively()
 
-        // 3) Call your Kotlin CLI WITHOUT -m or -e
         assertDoesNotThrow {
-            main(arrayOf("--experiment-path", scenarioJson))
+            main(
+                arrayOf("--experiment-path", scenarioJson, "--m3sa-setup-path", m3saPath, "--m3sa-exec-path", m3saExecPath)
+            )
         }
 
-        // 4) Verify the simulation created the folder your JSON configured
         assertTrue(File(outDir).exists(), "Expected simulation to create $outDir")
+        assertTrue(File("$outDir/trackr.json").exists(), "Expected trackr.json to be created in $outDir")
+        assertTrue(File("$outDir/trackr.json").readText().isNotEmpty(), "Expected trackr.json to contain data")
     }
+
+
 }
