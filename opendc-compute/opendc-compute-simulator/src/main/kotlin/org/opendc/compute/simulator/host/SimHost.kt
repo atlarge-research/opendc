@@ -62,7 +62,7 @@ public class SimHost(
     private val engine: FlowEngine,
     private val machineModel: MachineModel,
     private val cpuPowerModel: CpuPowerModel,
-    private val gpuPowerModel: GpuPowerModel,
+    private val gpuPowerModel: GpuPowerModel?,
     private val embodiedCarbon: Double,
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,

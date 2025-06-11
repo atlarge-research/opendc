@@ -38,7 +38,7 @@ public data class HostSpec(
     val clusterName: String,
     val model: MachineModel,
     val cpuPowerModel: CpuPowerModel,
-    val gpuPowerModel: GpuPowerModel,
+    val gpuPowerModel: GpuPowerModel?,
     val embodiedCarbon: Double = 1000.0,
     val expectedLifetime: Double = 5.0,
 )
