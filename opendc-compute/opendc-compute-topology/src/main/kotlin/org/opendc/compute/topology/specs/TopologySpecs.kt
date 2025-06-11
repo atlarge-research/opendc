@@ -79,8 +79,8 @@ public data class HostJSONSpec(
     val memory: MemoryJSONSpec,
     val powerModel: PowerModelSpec = PowerModelSpec.DFLT,
     val gpu: GPUJSONSpec? = null,
-    val cpuPowerModel: PowerModelSpec = PowerModelSpec.DFLT, // TODO: integrate
-    val gpuPowerModel: PowerModelSpec = PowerModelSpec.DFLT, // TODO: integrate
+    val cpuPowerModel: PowerModelSpec = PowerModelSpec.DFLT,
+    val gpuPowerModel: PowerModelSpec = PowerModelSpec.DFLT,
 )
 
 /**
@@ -125,7 +125,7 @@ public data class MemoryJSONSpec(
 public data class GPUJSONSpec(
     val count: Int = 1,
     val coreCount: Int,
-    val coreSpeed: Frequency, // TODO: Check if instructions per second are more useful, and possible
+    val coreSpeed: Frequency,
     val memorySize: DataSize = DataSize.ofMiB(-1),
     val memoryBandwidth: DataRate = DataRate.ofKibps(-1),
     val vendor: String = "unknown",

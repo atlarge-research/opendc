@@ -196,8 +196,12 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
 
     val cpuPowerModel =
         getCpuPowerModel(cpuPowerModel.modelType, cpuPowerModel.power.toWatts(), cpuPowerModel.maxPower.toWatts(), cpuPowerModel.idlePower.toWatts())
-    val gpuPowerModel =
+
+    val gpuPowerModel = if (gpuUnits.isEmpty()){
+        null
+    }else{
         getGpuPowerModel(gpuPowerModel.modelType, gpuPowerModel.power.toWatts(), gpuPowerModel.maxPower.toWatts(), gpuPowerModel.idlePower.toWatts())
+    }
     val powerModel =
         getPowerModel(
             powerModel.modelType,
@@ -215,7 +219,7 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
             clusterName,
             machineModel,
             cpuPowerModel,
-            gpuPowerModel, //TODO: Give GPU it's own powermodel
+            gpuPowerModel,
         )
     return hostSpec
 }
