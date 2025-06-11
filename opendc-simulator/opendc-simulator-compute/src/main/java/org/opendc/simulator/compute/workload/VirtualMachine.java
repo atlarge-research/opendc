@@ -378,7 +378,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply, ResourceType resourceType) {
         this.resourceSupplies.put(resourceType, new ArrayList<>(List.of(newSupply)));
-        this.distributorEdges.get(resourceType).pushSupply(newSupply, false, resourceType);
+        this.workloadEdge.pushSupply(newSupply, false, resourceType);
     }
 
     /**
@@ -421,7 +421,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     @Override
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply, ResourceType resourceType) {
         updateCounters(this.clock.millis());
-
+        
         this.pushOutgoingSupply(this.distributorEdges.get(resourceType), newSupply, resourceType);
     }
 
