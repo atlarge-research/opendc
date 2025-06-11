@@ -1,6 +1,6 @@
 import numpy as np
 
-from models.MetaModel import MetaModel
+from models.meta_model import MetaModel
 
 
 def accuracy_evaluator(
@@ -26,7 +26,7 @@ def accuracy_evaluator(
     :return: None, but prints the accuracy metrics
     """
 
-    meta_model = MetaModel(multimodel=multi_model)
+    meta_model = MetaModel(multi_model=multi_model)
     multi_model.models.append(meta_model.meta_model)  # metamodel
     # multi_model.models.append(Model(raw_host_data=real_data, id=-1, path=None))  # real-world data
 
@@ -35,12 +35,12 @@ def accuracy_evaluator(
         f.write("Accuracy Report, against ground truth\n")
 
         for model in multi_model.models:
-            if only_metamodel and model.id != 101:
+            if only_metamodel and model.id != -101:
                 continue
 
             if model.id == -1:
                 f.write("Real-World data")
-            elif model.id == 101:
+            elif model.id == -101:
                 f.write(
                     f"Meta-Model, meta-function: {multi_model.user_input['meta_function']}, window_size: {meta_model.multi_model.window_size}")
             else:
@@ -55,7 +55,7 @@ def accuracy_evaluator(
                     real_data=real_data,
                     simulation_data=simulation_data
                 )
-                f.write(f"\nMean Absolute Percentage Error (MAPE): {accuracy_mape}%")
+                f.write(f"| Mean Absolute Percentage Error (MAPE): {accuracy_mape}%\n")
 
             if compute_nad:
                 accuracy_nad = nad(

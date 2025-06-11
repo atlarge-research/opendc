@@ -1,0 +1,84 @@
+[{
+    "name": "outputs/",
+    "outputFolder": "src/test/resources/outputs/experiment1",
+    "topology": {
+        "pathToFile": "src/test/resources/topologies/experiment1/topology_mse.json"
+    },
+    "workload": {
+        "pathToFile": "src/test/resources/workloadTraces/experiment1",
+        "type": "ComputeWorkload"
+    },
+    "exportModel": {
+        "exportInterval": 30000,
+        "filesToExportDict": {
+            "host": true,
+            "task": true,
+            "powerSource": true,
+            "battery": true,
+            "service": true
+        }
+    }
+},
+{
+    "name": "outputs/",
+    "outputFolder": "src/test/resources/outputs/experiment1",
+    "topology": {
+        "pathToFile": "src/test/resources/topologies/experiment1/topology_sqrt.json"
+    },
+    "workload": {
+        "pathToFile": "src/test/resources/workloadTraces/experiment1",
+        "type": "ComputeWorkload"
+    },
+    "exportModel": {
+        "exportInterval": 30000,
+        "filesToExportDict": {
+            "host": true,
+            "task": true,
+            "powerSource": true,
+            "battery": true,
+            "service": true
+        }
+    }
+},
+{
+    "name": "outputs/",
+    "outputFolder": "src/test/resources/outputs/experiment1",
+    "topology": {
+        "pathToFile": "src/test/resources/topologies/experiment1/topology_asymptotic1.json"
+    },
+    "workload": {
+        "pathToFile": "src/test/resources/workloadTraces/experiment1",
+        "type": "ComputeWorkload"
+    },
+    "exportModel": {
+        "exportInterval": 30000,
+        "filesToExportDict": {
+            "host": true,
+            "task": true,
+            "powerSource": true,
+            "battery": true,
+            "service": true
+        }
+    }
+},
+{
+    "name": "outputs/",
+    "outputFolder": "src/test/resources/outputs/experiment1",
+    "topology": {
+        "pathToFile": "src/test/resources/topologies/experiment1/topology_asymptotic2.json"
+    },
+    "workload": {
+        "pathToFile": "src/test/resources/workloadTraces/experiment1",
+        "type": "ComputeWorkload"
+    },
+    "exportModel": {
+        "exportInterval": 30000,
+        "filesToExportDict": {
+            "host": true,
+            "task": true,
+            "powerSource": true,
+            "battery": true,
+            "service": true
+        }
+    }
+}]
