@@ -131,37 +131,37 @@ public interface TaskTableReader : Exportable {
     /**
      * The capacity of the GPUs of Host on which the task is running (in MHz).
      */
-    public val gpuLimits: ArrayList<Double>
+    public val gpuLimits: DoubleArray?
 
     /**
      * The amount of GPus allocated to the task (in MHz).
      */
-    public val gpuUsages: ArrayList<Double>
+    public val gpuUsages: DoubleArray?
 
     /**
      * The GPU demanded by this task (in MHz).
      */
-    public val gpuDemands: ArrayList<Double>
+    public val gpuDemands: DoubleArray?
 
     /**
      * The duration (in seconds) that a GPU was active in the task.
      */
-    public val gpuActiveTimes: ArrayList<Long>
+    public val gpuActiveTimes: LongArray?
 
     /**
      * The duration (in seconds) that a GPU was idle in the task.
      */
-    public val gpuIdleTimes: ArrayList<Long>
+    public val gpuIdleTimes: LongArray?
 
     /**
      * The duration (in seconds) that a vGPU wanted to run, but no capacity was available.
      */
-    public val gpuStealTimes: ArrayList<Long>
+    public val gpuStealTimes: LongArray?
 
     /**
      * The duration (in seconds) of GPU time that was lost due to interference.
      */
-    public val gpuLostTimes: ArrayList<Long>
+    public val gpuLostTimes: LongArray?
 
 
     /**

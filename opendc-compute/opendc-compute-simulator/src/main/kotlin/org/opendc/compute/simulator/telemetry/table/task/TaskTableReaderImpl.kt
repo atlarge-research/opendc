@@ -172,38 +172,75 @@ public class TaskTableReaderImpl(
     private var _cpuLostTime = 0L
     private var previousCpuLostTime = 0L
 
-    override val gpuLimits: ArrayList<Double>
-        get() = _gpuLimits
-    private var _gpuLimits: ArrayList<Double> = ArrayList()
+    override val gpuLimits: DoubleArray?
+        get() = _gpuLimits ?: DoubleArray(0)
+    private var _gpuLimits: DoubleArray? = null
 
-    override val gpuUsages: ArrayList<Double>
-        get() = _gpuUsages
-    private var _gpuUsages: ArrayList<Double> = ArrayList()
+    override val gpuUsages: DoubleArray?
+        get() = _gpuUsages ?: DoubleArray(0)
+    private var _gpuUsages: DoubleArray? = null
 
-    override val gpuDemands: ArrayList<Double>
-        get() = _gpuDemands
-    private var _gpuDemands: ArrayList<Double> = ArrayList()
+    override val gpuDemands: DoubleArray?
+        get() = _gpuDemands ?: DoubleArray(0)
+    private var _gpuDemands: DoubleArray? = null
 
-    override val gpuActiveTimes: ArrayList<Long>
-//        get() = _gpuActiveTime - previousGpuActiveTime
-get() = (0 until _gpuActiveTimes.size).map { i -> (_gpuActiveTimes.getOrNull(i) ?: 0L) - (previousGpuActiveTimes.getOrNull(i) ?: 0L) } as ArrayList<Long>
-    private var _gpuActiveTimes: ArrayList<Long> = ArrayList()
-    private var previousGpuActiveTimes: ArrayList<Long> = ArrayList()
+    override val gpuActiveTimes: LongArray?
+        get() {
+            val current = _gpuActiveTimes ?: return LongArray(0)
+            val previous = previousGpuActiveTimes
 
-    override val gpuIdleTimes: ArrayList<Long>
-        get() = (0 until _gpuIdleTimes.size).map { i -> (_gpuIdleTimes.getOrNull(i) ?: 0L) - (previousGpuIdleTimes.getOrNull(i) ?: 0L) } as ArrayList<Long>
-    private var _gpuIdleTimes: ArrayList<Long> = ArrayList()
-    private var previousGpuIdleTimes: ArrayList<Long> = ArrayList()
+            return if (previous == null || current.size != previous.size) { // not sure if I like the second clause
+                current
+            } else {
+                LongArray(current.size) { i -> current[i] - previous[i] }
+            }
+        }
+    private var _gpuActiveTimes: LongArray? = null
+    private var previousGpuActiveTimes: LongArray? = null
 
-    override val gpuStealTimes: ArrayList<Long>
-        get() = (0 until _gpuStealTimes.size).map { i -> (_gpuStealTimes.getOrNull(i) ?: 0L) - (previousGpuStealTimes.getOrNull(i) ?: 0L) } as ArrayList<Long>
-    private var _gpuStealTimes : ArrayList<Long> = ArrayList()
-    private var previousGpuStealTimes : ArrayList<Long> = ArrayList()
+    override val gpuIdleTimes: LongArray?
+        get() {
+            val current = _gpuIdleTimes ?: return LongArray(0)
+            val previous = previousGpuIdleTimes
 
-    override val gpuLostTimes: ArrayList<Long>
-        get() = (0 until _gpuLostTimes.size).map { i -> (_gpuLostTimes.getOrNull(i) ?: 0L) - (previousGpuLostTimes.getOrNull(i) ?: 0L) } as ArrayList<Long>
-    private var _gpuLostTimes : ArrayList<Long> = ArrayList()
-    private var previousGpuLostTimes : ArrayList<Long> = ArrayList()
+            return if (previous == null || current.size != previous.size) { // not sure if I like the second clause
+                current
+            } else {
+                LongArray(current.size) { i -> current[i] - previous[i] }
+            }
+        }
+    private var _gpuIdleTimes: LongArray? = null
+    private var previousGpuIdleTimes: LongArray? = null
+
+    override val gpuStealTimes: LongArray?
+        get() {
+            val current = _gpuStealTimes ?: return LongArray(0)
+            val previous = previousGpuStealTimes
+
+            return if (previous == null || current.size != previous.size) {
+                current
+            } else {
+                LongArray(current.size) { i -> current[i] - previous[i] }
+            }
+        }
+    private var _gpuStealTimes : LongArray? = null
+    private var previousGpuStealTimes : LongArray? = null
+
+    override val gpuLostTimes: LongArray?
+        get() {
+            val current = _gpuLostTimes ?: return LongArray(0)
+            val previous = previousGpuLostTimes
+
+            return if (previous == null || current.size != previous.size) {
+                current
+            } else {
+                LongArray(current.size) { i -> current[i] - previous[i] }
+            }
+        }
+    private var _gpuLostTimes : LongArray? = null
+    private var previousGpuLostTimes : LongArray? = null
+
+
 
     override val taskState: TaskState?
         get() = _taskState
@@ -253,22 +290,23 @@ get() = (0 until _gpuActiveTimes.size).map { i -> (_gpuActiveTimes.getOrNull(i) 
 
 
         if (gpuStats != null && gpuStats.isNotEmpty()) {
-            _gpuLimits = gpuStats.map { it.capacity } as ArrayList<Double>
-            _gpuDemands = gpuStats.map { it.demand } as ArrayList<Double>
-            _gpuUsages = gpuStats.map { it.usage } as ArrayList<Double>
-            _gpuActiveTimes = gpuStats.map { it.activeTime } as ArrayList<Long>
-            _gpuIdleTimes = gpuStats.map { it.idleTime } as ArrayList<Long>
-            _gpuStealTimes = gpuStats.map { it.stealTime } as ArrayList<Long>
-            _gpuLostTimes = gpuStats.map { it.lostTime } as ArrayList<Long>
+            val size = gpuStats.size
+            _gpuLimits = DoubleArray(size) { i -> gpuStats[i].capacity }
+            _gpuDemands = DoubleArray(size) { i -> gpuStats[i].demand }
+            _gpuUsages = DoubleArray(size) { i -> gpuStats[i].usage }
+            _gpuActiveTimes = LongArray(size) { i -> gpuStats[i].activeTime }
+            _gpuIdleTimes = LongArray(size) { i -> gpuStats[i].idleTime }
+            _gpuStealTimes = LongArray(size) { i -> gpuStats[i].stealTime }
+            _gpuLostTimes = LongArray(size) { i -> gpuStats[i].lostTime }
         } else {
-            _gpuIdleTimes = ArrayList()
-            _gpuStealTimes = ArrayList()
-            _gpuLostTimes = ArrayList()
-            _gpuIdleTimes = ArrayList()
-            _gpuLimits = ArrayList()
-            _gpuUsages = ArrayList()
-            _gpuDemands = ArrayList()
-            _gpuActiveTimes = ArrayList()
+            _gpuIdleTimes = null
+            _gpuStealTimes = null
+            _gpuLostTimes = null
+            _gpuIdleTimes = null
+            _gpuLimits = null
+            _gpuUsages = null
+            _gpuDemands = null
+            _gpuActiveTimes = null
         }
 
         _taskState = task.state
