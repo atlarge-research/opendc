@@ -30,7 +30,6 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
-import kotlin.system.exitProcess
 import m3saAnalyze
 import org.opendc.experiments.base.experiment.getExperiment
 import org.opendc.experiments.m3sa.scenario.getOutputFolder
@@ -99,9 +98,9 @@ internal class M3SACommand : CliktCommand(name = "experiment") {
             println("M3SA time: ${(endTime - simulationEnd) / 1000.0} s")
             println("Total operation time: ${(endTime - startTime) / 1000.0} s")
 
-            file.appendText("${currentIteration}. OpenDC time: ${(simulationEnd - startTime) / 1000.0} s\n")
-            file.appendText("${currentIteration}. M3SA time: ${(endTime - simulationEnd) / 1000.0} s\n")
-            file.appendText("${currentIteration}. Total operation time: ${(endTime - startTime) / 1000.0} s\n\n")
+            file.appendText("$currentIteration. OpenDC time: ${(simulationEnd - startTime) / 1000.0} s\n")
+            file.appendText("$currentIteration. M3SA time: ${(endTime - simulationEnd) / 1000.0} s\n")
+            file.appendText("$currentIteration. Total operation time: ${(endTime - startTime) / 1000.0} s\n\n")
 
             iterations -= 1
             currentIteration += 1
@@ -109,6 +108,5 @@ internal class M3SACommand : CliktCommand(name = "experiment") {
 
         file.appendText("===================================================\n")
         println("Finished $scenarioPath")
-
     }
 }

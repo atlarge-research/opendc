@@ -22,9 +22,9 @@
 
 package org.opendc.experiments.m3sa
 
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.opendc.experiments.m3sa.runner.main
 import java.io.File
 
@@ -39,7 +39,7 @@ class M3SARunnerTest {
 
         assertDoesNotThrow {
             main(
-                arrayOf("--experiment-path", scenarioJson, "--m3sa-setup-path", m3saPath, "--m3sa-exec-path", m3saExecPath)
+                arrayOf("--experiment-path", scenarioJson, "--m3sa-setup-path", m3saPath, "--m3sa-exec-path", m3saExecPath),
             )
         }
 
@@ -47,6 +47,4 @@ class M3SARunnerTest {
         assertTrue(File("$outDir/trackr.json").exists(), "Expected trackr.json to be created in $outDir")
         assertTrue(File("$outDir/trackr.json").readText().isNotEmpty(), "Expected trackr.json to contain data")
     }
-
-
 }

@@ -58,7 +58,8 @@ public fun m3saAnalyze(
             scriptPath,
             m3saSetupPath,
             "$outputFolderPath/raw-output",
-            "-o", outputFolderPath
+            "-o",
+            outputFolderPath,
         )
             .redirectErrorStream(true)
             .start()
@@ -67,7 +68,6 @@ public fun m3saAnalyze(
     val output = process.inputStream.bufferedReader().readText()
     if (exitCode == 0) {
         println("[M3SA says] Success:\n$output")
-
     } else {
         println("[M3SA says] Exit code $exitCode; Output:\n$output")
         throw RuntimeException("M3SA analysis failed with exit code $exitCode")

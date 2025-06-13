@@ -23,14 +23,14 @@
 package org.opendc.simulator.compute.cpu
 
 // TODO: couple this correctly
-public enum class CpuPowerModel {
-    Constant, constant,
-    Sqrt, sqrt,
-    Linear, linear,
-    Square, square,
-    Cubic, cubic,
-    MSE, mse,
-    Asymptotic, asymptotic
+public enum class CPUPowerModelEnum {
+    Constant,
+    Sqrt,
+    Linear,
+    Square,
+    Cubic,
+    MSE,
+    Asymptotic,
 }
 
 public fun getPowerModel(
