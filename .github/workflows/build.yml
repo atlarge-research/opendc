@@ -34,7 +34,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install M3SA Python requirements
-        run: pip install -r opendc-experiments/opendc-experiments-m3sa/requirements.txt
+        run: pip install -r opendc-experiments/opendc-experiments-m3sa/src/main/python/requirements.txt
       - name: Build with Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
