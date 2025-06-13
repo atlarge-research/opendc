@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.cpu
 
 // TODO: couple this correctly
-public enum class CPUPowerModel {
+public enum class CpuPowerModel {
     Constant, constant,
     Sqrt, sqrt,
     Linear, linear,

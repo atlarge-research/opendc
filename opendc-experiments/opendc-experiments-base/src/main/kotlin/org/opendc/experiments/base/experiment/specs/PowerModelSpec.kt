@@ -32,5 +32,5 @@ public data class PowerModelSpec(
     val minPower: Double = 200.0,
     val calibrationFactor: Double = 1.0,
     val asymUtil: Double = 0.0,
-    val dvfs: Boolean = false
+    val dvfs: Boolean = false,
 )

@@ -180,7 +180,7 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
             powerModel.idlePower.toWatts(),
             powerModel.calibrationFactor,
             powerModel.asymUtil,
-            powerModel.dvfs
+            powerModel.dvfs,
         )
 
     val hostSpec =
