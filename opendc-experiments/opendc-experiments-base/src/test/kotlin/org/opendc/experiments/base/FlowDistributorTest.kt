@@ -613,7 +613,7 @@ class FlowDistributorTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used and have the same runtime.
      */
     @Test
-    fun testFlowDistributor15()  {
+    fun testFlowDistributor15() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -661,7 +661,7 @@ class FlowDistributorTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used. CPU will finish way ahead of the GPU.
      */
     @Test
-    fun testFlowDistributor16()  {
+    fun testFlowDistributor16() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -709,7 +709,7 @@ class FlowDistributorTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used. GPU will finish way ahead of the CPU.
      */
     @Test
-    fun testFlowDistributor17()  {
+    fun testFlowDistributor17() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -757,7 +757,7 @@ class FlowDistributorTest {
      * CPU & GPU are used. Both resources will finish at the same time.
      */
     @Test
-    fun testFlowDistributor18()  {
+    fun testFlowDistributor18() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -824,7 +824,7 @@ class FlowDistributorTest {
      * In this test, two tasks are scheduled at the same time that takes 10 minutes to run. One task purely uses CPU, one purely GPU.
      */
     @Test
-    fun testFlowDistributor19()  {
+    fun testFlowDistributor19() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(

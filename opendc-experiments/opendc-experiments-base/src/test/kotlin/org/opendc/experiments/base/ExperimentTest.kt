@@ -222,7 +222,7 @@ class ExperimentTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. It solely uses the GPU.
      */
     @Test
-    fun testSimulator5()  {
+    fun testSimulator5() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -268,7 +268,7 @@ class ExperimentTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used and have the same runtime.
      */
     @Test
-    fun testSimulator6()  {
+    fun testSimulator6() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -313,7 +313,7 @@ class ExperimentTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used. CPU will finish way ahead of the GPU.
      */
     @Test
-    fun testSimulator7()  {
+    fun testSimulator7() {
         // TODO: Not sure if this is correct
         val workload: ArrayList<Task> =
             arrayListOf(
@@ -358,7 +358,7 @@ class ExperimentTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used. GPU will finish way ahead of the CPU.
      */
     @Test
-    fun testSimulator8()  {
+    fun testSimulator8() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -401,7 +401,7 @@ class ExperimentTest {
      * In this test, two tasks are scheduled at the same time that takes 10 minutes to run. CPU & GPU are used. Both resources will finish at the same time.
      */
     @Test
-    fun testSimulator9()  {
+    fun testSimulator9() {
         // TODO: Not sure if this is correct
 
         val workload: ArrayList<Task> =
@@ -454,7 +454,7 @@ class ExperimentTest {
      * In this test, two tasks are scheduled at the same time that takes 10 minutes to run. One task purely uses CPU, one purely GPU.
      */
     @Test
-    fun testSimulator10()  {
+    fun testSimulator10() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
