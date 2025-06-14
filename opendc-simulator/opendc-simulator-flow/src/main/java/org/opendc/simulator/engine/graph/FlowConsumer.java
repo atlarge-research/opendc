@@ -27,9 +27,11 @@ import org.opendc.common.ResourceType;
 public interface FlowConsumer {
 
     void handleIncomingSupply(FlowEdge supplierEdge, double newSupply);
-    default void handleIncomingSupply(FlowEdge supplierEdge, double newSupply, ResourceType resourceType){
+
+    default void handleIncomingSupply(FlowEdge supplierEdge, double newSupply, ResourceType resourceType) {
         handleIncomingSupply(supplierEdge, newSupply);
-    };
+    }
+    ;
 
     void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand);
 

@@ -170,32 +170,37 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
         }
 
     val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed.toMHz(), memory.memorySize.toMiB().toLong())
-    val gpuUnits = List(gpu?.count?: 0) {
+    val gpuUnits =
+        List(gpu?.count ?: 0) {
             GpuModel(
-            globalCoreId++,
+                globalCoreId++,
                 gpu!!.coreCount,
-            gpu.coreSpeed.toMHz(),
-            gpu.memoryBandwidth.toKibps(),
-            gpu.memorySize.toMiB().toLong(),
-            gpu.vendor,
-            gpu.modelName ,
-            gpu.architecture,
-        )
-    }
-
+                gpu.coreSpeed.toMHz(),
+                gpu.memoryBandwidth.toKibps(),
+                gpu.memorySize.toMiB().toLong(),
+                gpu.vendor,
+                gpu.modelName,
+                gpu.architecture,
+            )
+        }
 
     val machineModel =
         MachineModel(
             units,
             unknownMemoryUnit,
             gpuUnits,
-            //TODO: Pass through
+            // TODO: Pass through
             DistributionPolicyFactory.getDistributionStrategy(DistributionStrategyType.MaxMinFairness),
-            DistributionPolicyFactory.getDistributionStrategy(DistributionStrategyType.MaxMinFairness)
+            DistributionPolicyFactory.getDistributionStrategy(DistributionStrategyType.MaxMinFairness),
         )
 
     val cpuPowerModel =
-        getCpuPowerModel(cpuPowerModel.modelType, cpuPowerModel.power.toWatts(), cpuPowerModel.maxPower.toWatts(), cpuPowerModel.idlePower.toWatts())
+        getCpuPowerModel(
+            cpuPowerModel.modelType,
+            cpuPowerModel.power.toWatts(),
+            cpuPowerModel.maxPower.toWatts(),
+            cpuPowerModel.idlePower.toWatts(),
+        )
 
     val gpuPowerModel = if (gpuUnits.isEmpty()){
         null

@@ -43,5 +43,3 @@ public record HostModel(double cpuCapacity, int coreCount, long memoryCapacity, 
         this(cpuCapacity, coreCount, memoryCapacity, null);
     }
 }
-
-

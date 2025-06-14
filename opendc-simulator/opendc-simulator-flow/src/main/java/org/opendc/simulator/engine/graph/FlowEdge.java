@@ -24,9 +24,6 @@ package org.opendc.simulator.engine.graph;
 
 import org.opendc.common.ResourceType;
 
-import java.lang.reflect.Type;
-import java.util.Objects;
-
 /**
  * An edge that connects two FlowStages.
  * A connection between FlowStages always consist of a FlowStage that demands
@@ -124,7 +121,9 @@ public class FlowEdge {
         return this.supply;
     }
 
-    public ResourceType getResourceType() { return this.resourceType; }
+    public ResourceType getResourceType() {
+        return this.resourceType;
+    }
 
     public int getConsumerIndex() {
         return consumerIndex;
@@ -151,7 +150,6 @@ public class FlowEdge {
         this.demand = newDemand;
         this.supplier.handleIncomingDemand(this, newDemand, resourceType);
     }
-
 
     /**
      * Push new demand from the Consumer to the Supplier
@@ -190,5 +188,4 @@ public class FlowEdge {
     public void pushSupply(double newSupply) {
         this.pushSupply(newSupply, false, this.supplier.getResourceType());
     }
-
 }

@@ -31,4 +31,3 @@ package org.opendc.compute.simulator.host;
  * @param GpuMemorySpeed   The speed of the GPU memory in GB/s.
  */
 public record GpuHostModel(double gpuCoreCapacity, int gpuCoreCount, long GpuMemoryCapacity, double GpuMemorySpeed) {}
-

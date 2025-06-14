@@ -28,16 +28,17 @@ public interface FlowSupplier {
 
     void handleIncomingDemand(FlowEdge consumerEdge, double newDemand);
 
-    default void handleIncomingDemand(FlowEdge consumerEdge, double newDemand, ResourceType resourceType){
+    default void handleIncomingDemand(FlowEdge consumerEdge, double newDemand, ResourceType resourceType) {
         handleIncomingDemand(consumerEdge, newDemand);
     }
 
     // TODO: make this default
     void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply);
 
-    default void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply, ResourceType resourceType){
+    default void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply, ResourceType resourceType) {
         pushOutgoingSupply(consumerEdge, newSupply);
-    };
+    }
+    ;
 
     void addConsumerEdge(FlowEdge consumerEdge);
 
@@ -45,7 +46,7 @@ public interface FlowSupplier {
 
     double getCapacity();
 
-    default double getCapacity(ResourceType resourceType){
+    default double getCapacity(ResourceType resourceType) {
         return getCapacity();
     }
 

@@ -28,10 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
 import org.opendc.common.ResourceType;
-import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicy;
 import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicy;
 import org.opendc.simulator.engine.graph.distributionPolicies.MaxMinFairnessStrategy;
 
 public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
@@ -61,7 +60,6 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         super(engine);
         this.distributionPolicy = distributionPolicy;
     }
-
 
     public double getTotalIncomingDemand() {
         return totalIncomingDemand;
@@ -107,8 +105,9 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         if (this.totalIncomingDemand > this.currentIncomingSupply) {
             this.overloaded = true;
 
-//            double[] supplies = distributeSupply(this.incomingDemands, this.currentIncomingSupply);
-            double[] supplies = this.distributionPolicy.distributeSupply(this.incomingDemands, this.currentIncomingSupply);
+            //            double[] supplies = distributeSupply(this.incomingDemands, this.currentIncomingSupply);
+            double[] supplies =
+                    this.distributionPolicy.distributeSupply(this.incomingDemands, this.currentIncomingSupply);
 
             for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
                 this.pushOutgoingSupply(this.consumerEdges.get(idx), supplies[idx], this.getResourceType());
@@ -121,7 +120,8 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             if (this.overloaded) {
                 for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
                     if (!Objects.equals(this.outgoingSupplies.get(idx), this.incomingDemands.get(idx))) {
-                        this.pushOutgoingSupply(this.consumerEdges.get(idx), this.incomingDemands.get(idx), this.getResourceType());
+                        this.pushOutgoingSupply(
+                                this.consumerEdges.get(idx), this.incomingDemands.get(idx), this.getResourceType());
                     }
                 }
                 this.overloaded = false;
@@ -130,7 +130,8 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
             // Update the supplies of the consumers that changed their demand in the current cycle
             else {
                 for (int idx : this.updatedDemands) {
-                    this.pushOutgoingSupply(this.consumerEdges.get(idx), this.incomingDemands.get(idx), this.getResourceType());
+                    this.pushOutgoingSupply(
+                            this.consumerEdges.get(idx), this.incomingDemands.get(idx), this.getResourceType());
                 }
             }
         }
@@ -138,49 +139,49 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         this.updatedDemands.clear();
     }
 
-//    private record Demand(int idx, double value) {}
-//    public record Demand(int idx, double value) {}
+    //    private record Demand(int idx, double value) {}
+    //    public record Demand(int idx, double value) {}
 
     /**
      * Distributed the available supply over the different demands.
      * The supply is distributed using MaxMin Fairness.
      */
     // TODO: Make this more generic
-//    private static double[] distributeSupply(ArrayList<Double> demands, double currentSupply) {
-//        int inputSize = demands.size();
-//
-//        final double[] supplies = new double[inputSize];
-//        final Demand[] tempDemands = new Demand[inputSize];
-//
-//        for (int i = 0; i < inputSize; i++) {
-//            tempDemands[i] = new Demand(i, demands.get(i));
-//        }
-//
-//        Arrays.sort(tempDemands, (o1, o2) -> {
-//            Double i1 = o1.value;
-//            Double i2 = o2.value;
-//            return i1.compareTo(i2);
-//        });
-//
-//        double availableCapacity = currentSupply; // totalSupply
-//
-//        for (int i = 0; i < inputSize; i++) {
-//            double d = tempDemands[i].value;
-//
-//            if (d == 0.0) {
-//                continue;
-//            }
-//
-//            double availableShare = availableCapacity / (inputSize - i);
-//            double r = Math.min(d, availableShare);
-//
-//            int idx = tempDemands[i].idx;
-//            supplies[idx] = r; // Update the rates
-//            availableCapacity -= r;
-//        }
-//
-//        return supplies;
-//    }
+    //    private static double[] distributeSupply(ArrayList<Double> demands, double currentSupply) {
+    //        int inputSize = demands.size();
+    //
+    //        final double[] supplies = new double[inputSize];
+    //        final Demand[] tempDemands = new Demand[inputSize];
+    //
+    //        for (int i = 0; i < inputSize; i++) {
+    //            tempDemands[i] = new Demand(i, demands.get(i));
+    //        }
+    //
+    //        Arrays.sort(tempDemands, (o1, o2) -> {
+    //            Double i1 = o1.value;
+    //            Double i2 = o2.value;
+    //            return i1.compareTo(i2);
+    //        });
+    //
+    //        double availableCapacity = currentSupply; // totalSupply
+    //
+    //        for (int i = 0; i < inputSize; i++) {
+    //            double d = tempDemands[i].value;
+    //
+    //            if (d == 0.0) {
+    //                continue;
+    //            }
+    //
+    //            double availableShare = availableCapacity / (inputSize - i);
+    //            double r = Math.min(d, availableShare);
+    //
+    //            int idx = tempDemands[i].idx;
+    //            supplies[idx] = r; // Update the rates
+    //            availableCapacity -= r;
+    //        }
+    //
+    //        return supplies;
+    //    }
 
     /**
      * Add a new consumer.
@@ -277,7 +278,8 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     @Override
     public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand, ResourceType resourceType) {
         if (resourceType != this.getResourceType()) {
-            throw new IllegalArgumentException("Resource type " + resourceType + " does not match distributor resource type " + this.getResourceType());
+            throw new IllegalArgumentException("Resource type " + resourceType
+                    + " does not match distributor resource type " + this.getResourceType());
         }
         this.handleIncomingDemand(consumerEdge, newDemand);
     }
@@ -307,7 +309,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         }
 
         outgoingSupplies.set(idx, newSupply);
-//        consumerEdge.pushSupply(newSupply);
+        //        consumerEdge.pushSupply(newSupply);
         consumerEdge.pushSupply(newSupply, false, this.getResourceType());
     }
 
@@ -319,7 +321,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     }
 
     @Override
-    public ResourceType getResourceType(){
+    public ResourceType getResourceType() {
         // TODO: Check if correct
         return this.supplierEdge.getSupplier().getResourceType();
     }
