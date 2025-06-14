@@ -198,7 +198,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 HostView hv = hostToView.get(host);
                 final ServiceFlavor flavor = task.getFlavor();
                 if (hv != null) {
-                    hv.provisionedCores -= flavor.getCoreCount();
+                    hv.provisionedCpuCores -= flavor.getCpuCoreCount();
                     hv.instanceCount--;
                     hv.availableMemory += flavor.getMemorySize();
                 } else {
@@ -497,7 +497,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             if (result.getResultType() == SchedulingResultType.FAILURE) {
                 LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);
 
-                if (flavor.getMemorySize() > maxMemory || flavor.getCoreCount() > maxCores) {
+                if (flavor.getMemorySize() > maxMemory || flavor.getCpuCoreCount() > maxCores) {
                     // Remove the incoming image
                     taskQueue.remove(req);
                     tasksPending--;
@@ -532,7 +532,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 attemptsSuccess++;
 
                 hv.instanceCount++;
-                hv.provisionedCores += flavor.getCoreCount();
+                hv.provisionedCpuCores += flavor.getCpuCoreCount();
                 hv.availableMemory -= flavor.getMemorySize();
 
                 activeTasks.put(task, host);
@@ -613,12 +613,12 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
         @NotNull
         public ServiceFlavor newFlavor(
-                @NotNull String name, int cpuCount, long memorySize, @NotNull Map<String, ?> meta) {
+                @NotNull String name, int cpuCount, long memorySize, int gpuCoreCount, @NotNull Map<String, ?> meta) {
             checkOpen();
 
             final ComputeService service = this.service;
             UUID uid = new UUID(service.clock.millis(), service.random.nextLong());
-            ServiceFlavor flavor = new ServiceFlavor(service, uid, name, cpuCount, memorySize, meta);
+            ServiceFlavor flavor = new ServiceFlavor(service, uid, name, cpuCount, memorySize, gpuCoreCount, meta);
 
             //            service.flavorById.put(uid, flavor);
             //            service.flavors.add(flavor);

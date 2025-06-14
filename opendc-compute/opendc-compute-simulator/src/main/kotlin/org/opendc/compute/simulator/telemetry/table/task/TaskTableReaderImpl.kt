@@ -92,7 +92,7 @@ public class TaskTableReaderImpl(
             task.name,
             "vm",
             "x86",
-            task.flavor.coreCount,
+            task.flavor.cpuCoreCount,
             task.flavor.memorySize,
         )
 

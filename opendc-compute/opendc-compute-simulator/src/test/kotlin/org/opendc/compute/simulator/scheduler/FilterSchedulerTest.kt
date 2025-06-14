@@ -78,7 +78,7 @@ internal class FilterSchedulerTest {
             )
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
@@ -103,7 +103,7 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
@@ -134,7 +134,7 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
@@ -159,7 +159,7 @@ internal class FilterSchedulerTest {
         scheduler.addHost(host)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
@@ -180,7 +180,7 @@ internal class FilterSchedulerTest {
         scheduler.addHost(host)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
@@ -209,7 +209,7 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
@@ -232,7 +232,7 @@ internal class FilterSchedulerTest {
         scheduler.addHost(host)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 2300
         every { req.isCancelled } returns false
 
@@ -250,18 +250,18 @@ internal class FilterSchedulerTest {
         val hostA = mockk<HostView>()
         every { hostA.host.getState() } returns HostState.UP
         every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostA.provisionedCores } returns 3
+        every { hostA.provisionedCpuCores } returns 3
 
         val hostB = mockk<HostView>()
         every { hostB.host.getState() } returns HostState.UP
         every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostB.provisionedCores } returns 0
+        every { hostB.provisionedCpuCores } returns 0
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
@@ -279,12 +279,12 @@ internal class FilterSchedulerTest {
         val host = mockk<HostView>()
         every { host.host.getState() } returns HostState.UP
         every { host.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
-        every { host.provisionedCores } returns 0
+        every { host.provisionedCpuCores } returns 0
 
         scheduler.addHost(host)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 8
+        every { req.task.flavor.cpuCoreCount } returns 8
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
@@ -312,7 +312,7 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.task.flavor.meta } returns mapOf("cpu-capacity" to 2 * 3200.0)
         every { req.isCancelled } returns false
@@ -342,7 +342,7 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
@@ -358,7 +358,7 @@ internal class FilterSchedulerTest {
             )
 
         val reqA = mockk<SchedulingRequest>()
-        every { reqA.task.flavor.coreCount } returns 2
+        every { reqA.task.flavor.cpuCoreCount } returns 2
         every { reqA.task.flavor.memorySize } returns 1024
         every { reqA.isCancelled } returns false
         val taskA = mockk<ServiceTask>()
@@ -369,19 +369,19 @@ internal class FilterSchedulerTest {
         every { hostA.host.getState() } returns HostState.UP
         every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostA.host.getInstances() } returns emptySet()
-        every { hostA.provisionedCores } returns 3
+        every { hostA.provisionedCpuCores } returns 3
 
         val hostB = mockk<HostView>()
         every { hostB.host.getState() } returns HostState.UP
         every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostB.host.getInstances() } returns setOf(reqA.task)
-        every { hostB.provisionedCores } returns 0
+        every { hostB.provisionedCpuCores } returns 0
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
         val reqB = mockk<SchedulingRequest>()
-        every { reqB.task.flavor.coreCount } returns 2
+        every { reqB.task.flavor.cpuCoreCount } returns 2
         every { reqB.task.flavor.memorySize } returns 1024
         every { reqB.task.meta } returns emptyMap()
         every { reqB.isCancelled } returns false
@@ -402,7 +402,7 @@ internal class FilterSchedulerTest {
             )
 
         val reqA = mockk<SchedulingRequest>()
-        every { reqA.task.flavor.coreCount } returns 2
+        every { reqA.task.flavor.cpuCoreCount } returns 2
         every { reqA.task.flavor.memorySize } returns 1024
         every { reqA.isCancelled } returns false
         val taskA = mockk<ServiceTask>()
@@ -413,19 +413,19 @@ internal class FilterSchedulerTest {
         every { hostA.host.getState() } returns HostState.UP
         every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostA.host.getInstances() } returns setOf(reqA.task)
-        every { hostA.provisionedCores } returns 3
+        every { hostA.provisionedCpuCores } returns 3
 
         val hostB = mockk<HostView>()
         every { hostB.host.getState() } returns HostState.UP
         every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostB.host.getInstances() } returns emptySet()
-        every { hostB.provisionedCores } returns 0
+        every { hostB.provisionedCpuCores } returns 0
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
         val reqB = mockk<SchedulingRequest>()
-        every { reqB.task.flavor.coreCount } returns 2
+        every { reqB.task.flavor.cpuCoreCount } returns 2
         every { reqB.task.flavor.memorySize } returns 1024
         every { reqB.task.meta } returns emptyMap()
         every { reqB.isCancelled } returns false
@@ -459,7 +459,7 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
@@ -488,7 +488,7 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
@@ -506,18 +506,18 @@ internal class FilterSchedulerTest {
         val hostA = mockk<HostView>()
         every { hostA.host.getState() } returns HostState.UP
         every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostA.provisionedCores } returns 2
+        every { hostA.provisionedCpuCores } returns 2
 
         val hostB = mockk<HostView>()
         every { hostB.host.getState() } returns HostState.UP
         every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostB.provisionedCores } returns 0
+        every { hostB.provisionedCpuCores } returns 0
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 
@@ -546,7 +546,7 @@ internal class FilterSchedulerTest {
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
 

@@ -224,7 +224,7 @@ public class SimHost(
 
     public fun canFit(task: ServiceTask): Boolean {
         val sufficientMemory = model.memoryCapacity >= task.flavor.memorySize
-        val enoughCpus = model.coreCount >= task.flavor.coreCount
+        val enoughCpus = model.coreCount >= task.flavor.cpuCoreCount
         val canFit = simMachine!!.canFit(task.flavor.toMachineModel())
 
         return sufficientMemory && enoughCpus && canFit
