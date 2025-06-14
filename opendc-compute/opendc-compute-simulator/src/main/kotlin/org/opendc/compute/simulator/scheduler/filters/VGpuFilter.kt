@@ -26,21 +26,25 @@ import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
- * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [ServiceTask] and the available
- * capacity on the host.
+ * A [HostFilter] that filters hosts based on the vCPU requirements of a [ServiceTask] and the available vCPUs on the host.
+ *
+ * @param allocationRatio Virtual CPU to physical CPU allocation ratio.
  */
-public class VCpuCapacityFilter : HostFilter {
+public class VGpuFilter(private val allocationRatio: Double) : HostFilter {
     override fun test(
         host: HostView,
         task: ServiceTask,
     ): Boolean {
-        val requiredCapacity = task.flavor.meta["cpu-capacity"] as? Double
-        val availableCapacity = host.host.getModel().cpuCapacity
+        val requested = task.flavor.gpuCoreCount
+        val totalCores = host.host.getModel().gpuHostModels().maxOfOrNull { it.gpuCoreCount() } ?: 0
+        val limit = totalCores * allocationRatio
 
-        return (
-            requiredCapacity == null ||
-                (availableCapacity / host.host.getModel().coreCount)
-                >= (requiredCapacity / task.flavor.cpuCoreCount)
-        )
+        // Do not allow an instance to overcommit against itself, only against other instances
+        if (requested > totalCores) {
+            return false
+        }
+
+        val availableCores = limit - host.provisionedGpuCores
+        return availableCores >= requested
     }
 }

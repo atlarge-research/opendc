@@ -24,23 +24,23 @@ package org.opendc.compute.simulator.scheduler.filters
 
 import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
+import kotlin.collections.maxOfOrNull
 
 /**
  * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [ServiceTask] and the available
  * capacity on the host.
  */
-public class VCpuCapacityFilter : HostFilter {
+public class VGpuCapacityFilter : HostFilter {
     override fun test(
         host: HostView,
         task: ServiceTask,
     ): Boolean {
-        val requiredCapacity = task.flavor.meta["cpu-capacity"] as? Double
-        val availableCapacity = host.host.getModel().cpuCapacity
+        val requiredCapacity = task.flavor.meta["gpu-capacity"] as? Double
+        val availableCapacity = (host.host.getModel().gpuHostModels().maxOfOrNull { it.gpuCoreCapacity() } ?: 0).toDouble()
+        val availableCores = (host.host.getModel().gpuHostModels().maxOfOrNull { it -> it.gpuCoreCount }?: -1).toDouble()
+        val availableRatio = availableCapacity / availableCores
 
-        return (
-            requiredCapacity == null ||
-                (availableCapacity / host.host.getModel().coreCount)
-                >= (requiredCapacity / task.flavor.cpuCoreCount)
-        )
+        return ( requiredCapacity == null
+            || ((availableCapacity / availableCores) >= (requiredCapacity / task.flavor.gpuCoreCount)))
     }
 }

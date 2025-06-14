@@ -20,27 +20,27 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.scheduler.filters
+package org.opendc.compute.simulator.scheduler.weights
 
 import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
- * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [ServiceTask] and the available
- * capacity on the host.
+ * A [HostWeigher] that weighs the hosts based on the remaining number of vCPUs available.
+ *
+ * @param allocationRatio Virtual CPU to physical CPU allocation ratio.
  */
-public class VCpuCapacityFilter : HostFilter {
-    override fun test(
+public class VGpuWeigher(private val allocationRatio: Double, override val multiplier: Double = 1.0) : HostWeigher {
+    init {
+        require(allocationRatio > 0.0) { "Allocation ratio must be greater than zero" }
+    }
+
+    override fun getWeight(
         host: HostView,
         task: ServiceTask,
-    ): Boolean {
-        val requiredCapacity = task.flavor.meta["cpu-capacity"] as? Double
-        val availableCapacity = host.host.getModel().cpuCapacity
-
-        return (
-            requiredCapacity == null ||
-                (availableCapacity / host.host.getModel().coreCount)
-                >= (requiredCapacity / task.flavor.cpuCoreCount)
-        )
+    ): Double {
+        return allocationRatio - host.provisionedGpuCores
     }
+
+    override fun toString(): String = "VGpuWeigher"
 }

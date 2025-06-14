@@ -20,27 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.scheduler.filters
+package org.opendc.compute.simulator.scheduler.weights
 
 import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
- * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [ServiceTask] and the available
- * capacity on the host.
+ * A [HostWeigher] that weighs the hosts based on the difference required vCPU capacity and the available CPU capacity.
  */
-public class VCpuCapacityFilter : HostFilter {
-    override fun test(
+public class VGpuCapacityWeigher(override val multiplier: Double = 1.0) : HostWeigher {
+    override fun getWeight(
         host: HostView,
         task: ServiceTask,
-    ): Boolean {
-        val requiredCapacity = task.flavor.meta["cpu-capacity"] as? Double
-        val availableCapacity = host.host.getModel().cpuCapacity
-
-        return (
-            requiredCapacity == null ||
-                (availableCapacity / host.host.getModel().coreCount)
-                >= (requiredCapacity / task.flavor.cpuCoreCount)
-        )
+    ): Double {
+        val model = host.host.getModel()
+        val requiredCapacity = task.flavor.meta["gpu-capacity"] as? Double ?: 0.0
+        val availableCapacity = model.gpuHostModels.maxOfOrNull { it.gpuCoreCapacity } ?: 0.0
+        return availableCapacity - requiredCapacity / task.flavor.gpuCoreCount
     }
+
+    override fun toString(): String = "VGpuWeigher"
 }
