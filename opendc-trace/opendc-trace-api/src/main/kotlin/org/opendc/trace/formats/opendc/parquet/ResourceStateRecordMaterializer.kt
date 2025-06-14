@@ -75,7 +75,7 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
                                     localDuration = Duration.ofMillis(value)
                                 }
                             }
-                        "cpu_count", "cores", ->
+                        "cpu_count", "cores" ->
                             object : PrimitiveConverter() {
                                 override fun addInt(value: Int) {
                                     localCpuCount = value
@@ -87,7 +87,7 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
                                     localCpuUsage = value
                                 }
                             }
-                        "gpu_count", "gpu_cores", ->
+                        "gpu_count", "gpu_cores" ->
                             object : PrimitiveConverter() {
                                 override fun addInt(value: Int) {
                                     localGpuCount = value
@@ -124,7 +124,16 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
             override fun getConverter(fieldIndex: Int): Converter = converters[fieldIndex]
         }
 
-    override fun getCurrentRecord(): ResourceState = ResourceState(localId, localTimestamp, localDuration, localCpuCount, localCpuUsage, localGpuCount, localGpuUsage)
+    override fun getCurrentRecord(): ResourceState =
+        ResourceState(
+            localId,
+            localTimestamp,
+            localDuration,
+            localCpuCount,
+            localCpuUsage,
+            localGpuCount,
+            localGpuUsage,
+        )
 
     override fun getRootConverter(): GroupConverter = root
 }

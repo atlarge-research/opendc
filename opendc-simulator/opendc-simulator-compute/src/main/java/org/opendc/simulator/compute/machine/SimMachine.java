@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.function.Consumer;
-
 import org.jetbrains.annotations.Nullable;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
@@ -98,8 +97,9 @@ public class SimMachine {
 
     public List<GpuPerformanceCounters> getGpuPerformanceCounters() {
         List<GpuPerformanceCounters> counters = new ArrayList<>();
-        List<ComputeResource> gpus = this.computeResources.get(ResourceType.GPU) == null ?
-            new ArrayList<>() : this.computeResources.get(ResourceType.GPU);
+        List<ComputeResource> gpus = this.computeResources.get(ResourceType.GPU) == null
+                ? new ArrayList<>()
+                : this.computeResources.get(ResourceType.GPU);
 
         for (ComputeResource gpu : gpus) {
             counters.add((GpuPerformanceCounters) gpu.getPerformanceCounters());
@@ -209,19 +209,21 @@ public class SimMachine {
         this.psu = new SimPsu(engine);
         new FlowEdge(this.psu, powerDistributor);
 
-        this.computeResources.put(ResourceType.CPU,
-            new ArrayList<>(List.of(new SimCpu(engine, this.machineModel.getCpuModel(), cpuPowerModel, 0))));
+        this.computeResources.put(
+                ResourceType.CPU,
+                new ArrayList<>(List.of(new SimCpu(engine, this.machineModel.getCpuModel(), cpuPowerModel, 0))));
 
-        new FlowEdge((FlowConsumer) this.computeResources.get(ResourceType.CPU).getFirst(), this.psu );
+        new FlowEdge((FlowConsumer) this.computeResources.get(ResourceType.CPU).getFirst(), this.psu);
 
         // Create a FlowDistributor and add the cpu as supplier
         this.distributors.put(ResourceType.CPU, new FlowDistributor(engine));
-        new FlowEdge(this.distributors.get(ResourceType.CPU), (FlowSupplier) this.computeResources.get(ResourceType.CPU).getFirst());
+        new FlowEdge(this.distributors.get(ResourceType.CPU), (FlowSupplier)
+                this.computeResources.get(ResourceType.CPU).getFirst());
 
         // TODO: include memory as flow node
         this.memory = new Memory(engine, this.machineModel.getMemory());
 
-        if  (this.availableResources.contains(ResourceType.GPU)) {
+        if (this.availableResources.contains(ResourceType.GPU)) {
             this.distributors.put(ResourceType.GPU, new FlowDistributor(engine));
             short i = 0;
             ArrayList<ComputeResource> gpus = new ArrayList<>();
@@ -295,5 +297,4 @@ public class SimMachine {
 
         return (VirtualMachine) workload.startWorkload(distributors, this, completion);
     }
-
 }

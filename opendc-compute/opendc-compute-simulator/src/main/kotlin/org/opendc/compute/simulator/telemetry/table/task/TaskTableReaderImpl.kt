@@ -223,8 +223,8 @@ public class TaskTableReaderImpl(
                 LongArray(current.size) { i -> current[i] - previous[i] }
             }
         }
-    private var _gpuStealTimes : LongArray? = null
-    private var previousGpuStealTimes : LongArray? = null
+    private var _gpuStealTimes: LongArray? = null
+    private var previousGpuStealTimes: LongArray? = null
 
     override val gpuLostTimes: LongArray?
         get() {
@@ -237,10 +237,8 @@ public class TaskTableReaderImpl(
                 LongArray(current.size) { i -> current[i] - previous[i] }
             }
         }
-    private var _gpuLostTimes : LongArray? = null
-    private var previousGpuLostTimes : LongArray? = null
-
-
+    private var _gpuLostTimes: LongArray? = null
+    private var previousGpuLostTimes: LongArray? = null
 
     override val taskState: TaskState?
         get() = _taskState
@@ -261,7 +259,6 @@ public class TaskTableReaderImpl(
                     newHost.getModel().coreCount,
                     newHost.getModel().cpuCapacity,
                     newHost.getModel().memoryCapacity,
-
                 )
         }
 
@@ -287,7 +284,6 @@ public class TaskTableReaderImpl(
         _submissionTime = task.submittedAt
         _scheduleTime = task.scheduledAt
         _finishTime = task.finishedAt
-
 
         if (gpuStats != null && gpuStats.isNotEmpty()) {
             val size = gpuStats.size

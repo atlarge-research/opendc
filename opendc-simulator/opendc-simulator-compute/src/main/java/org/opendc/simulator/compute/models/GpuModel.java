@@ -50,7 +50,15 @@ public final class GpuModel {
      * @param modelName The name of the GPU
      * @param arch The architecture of the GPU
      */
-    public GpuModel(int id, int coreCount, double coreSpeed, double memoryBandwidth, long memorySize, String vendor, String modelName, String arch) {
+    public GpuModel(
+            int id,
+            int coreCount,
+            double coreSpeed,
+            double memoryBandwidth,
+            long memorySize,
+            String vendor,
+            String modelName,
+            String arch) {
         this.id = id;
         this.coreCount = coreCount;
         this.coreSpeed = coreSpeed;
@@ -72,6 +80,7 @@ public final class GpuModel {
     public GpuModel(int id, int coreCount, double coreSpeed) {
         this(id, coreCount, coreSpeed, 0, 0, "unkown", "unkown", "unkown");
     }
+
     public GpuModel(int id, int coreCount, double coreSpeed, double memoryBandwidth, long memorySize) {
         this(id, coreCount, coreSpeed, memoryBandwidth, memorySize, "unkown", "unkown", "unkown");
     }
@@ -107,12 +116,16 @@ public final class GpuModel {
     /**
      * Return the speed of the memory in Mhz.
      */
-    public double getMemoryBandwidth() { return memoryBandwidth; }
+    public double getMemoryBandwidth() {
+        return memoryBandwidth;
+    }
 
     /**
      * Return the size of the memory in MB.
      */
-    public long getMemorySize() { return memorySize; }
+    public long getMemorySize() {
+        return memorySize;
+    }
 
     /**
      * Return the vendor of the storage device.
@@ -152,13 +165,15 @@ public final class GpuModel {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, coreCount, coreSpeed, totalCoreCapacity, memoryBandwidth, memorySize, vendor, modelName, arch);
+        return Objects.hash(
+                id, coreCount, coreSpeed, totalCoreCapacity, memoryBandwidth, memorySize, vendor, modelName, arch);
     }
 
     @Override
     public String toString() {
         return "ProcessingUnit[" + "id= " + id + ", gpuCoreCount= " + coreCount + ", gpuCoreSpeed= " + coreSpeed
-                + ", frequency= " + totalCoreCapacity + ", gpuMemoryBandwidth" + memoryBandwidth + ", gpuMemorySize" + memorySize + ", vendor= " + vendor + ", modelName= " + modelName + ", arch= "
+                + ", frequency= " + totalCoreCapacity + ", gpuMemoryBandwidth" + memoryBandwidth + ", gpuMemorySize"
+                + memorySize + ", vendor= " + vendor + ", modelName= " + modelName + ", arch= "
                 + arch + "]";
     }
 }

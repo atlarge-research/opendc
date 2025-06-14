@@ -86,23 +86,23 @@ public class SimHost(
             field = value
         }
 
-    private val gpuHostModels : List<GpuHostModel>? = machineModel.gpuModels?.map { gpumodel ->
-        return@map GpuHostModel(
-            gpumodel.totalCoreCapacity,
-            gpumodel.coreCount,
-            gpumodel.memorySize,
-            gpumodel.memoryBandwidth,
-        )
-    }
+    private val gpuHostModels: List<GpuHostModel>? =
+        machineModel.gpuModels?.map { gpumodel ->
+            return@map GpuHostModel(
+                gpumodel.totalCoreCapacity,
+                gpumodel.coreCount,
+                gpumodel.memorySize,
+                gpumodel.memoryBandwidth,
+            )
+        }
 
     private val model: HostModel =
         HostModel(
             machineModel.cpuModel.totalCapacity,
             machineModel.cpuModel.coreCount,
             machineModel.memory.size,
-            gpuHostModels
+            gpuHostModels,
         )
-
 
     private var simMachine: SimMachine? = null
 
@@ -357,22 +357,24 @@ public class SimHost(
         return guest.getCpuStats()
     }
 
-    public fun getGpuStats() : List<HostGpuStats> {
+    public fun getGpuStats(): List<HostGpuStats> {
         val gpuStats = mutableListOf<HostGpuStats>()
         for (gpu in simMachine!!.gpus) {
             gpu.updateCounters(this.clock.millis())
             val counters = simMachine!!.getSpecificGpuPerformanceCounters(gpu.id)
 
-            gpuStats.add(HostGpuStats(
-                counters.activeTime,
-                counters.idleTime,
-                counters.stealTime,
-                counters.lostTime,
-                counters.capacity,
-                counters.demand,
-                counters.supply,
-                counters.supply / gpu.getCapacity(ResourceType.GPU),
-            ))
+            gpuStats.add(
+                HostGpuStats(
+                    counters.activeTime,
+                    counters.idleTime,
+                    counters.stealTime,
+                    counters.lostTime,
+                    counters.capacity,
+                    counters.demand,
+                    counters.supply,
+                    counters.supply / gpu.getCapacity(ResourceType.GPU),
+                ),
+            )
         }
         return gpuStats
     }
@@ -395,11 +397,12 @@ public class SimHost(
      */
     private fun Flavor.toMachineModel(): MachineModel {
         return MachineModel(
-                simMachine!!.machineModel.cpuModel,
-                MemoryUnit("Generic", "Generic", 3200.0, memorySize),
+            simMachine!!.machineModel.cpuModel,
+            MemoryUnit("Generic", "Generic", 3200.0, memorySize),
             simMachine!!.machineModel.gpuModels,
             simMachine!!.machineModel.cpuDistributionStrategy,
-            simMachine!!.machineModel.gpuDistributionStrategy,)
+            simMachine!!.machineModel.gpuDistributionStrategy,
+        )
     }
 
     /**

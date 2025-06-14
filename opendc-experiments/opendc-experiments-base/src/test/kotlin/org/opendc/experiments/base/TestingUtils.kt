@@ -75,7 +75,6 @@ fun createTestTask(
     checkpointIntervalScaling: Double = 1.0,
     scalingPolicy: ScalingPolicy = NoDelayScaling(),
 ): Task {
-
     var usedResources = arrayOf<ResourceType>()
     if (fragments.any { it.cpuUsage > 0.0 }) {
         usedResources += ResourceType.CPU
@@ -105,7 +104,7 @@ fun createTestTask(
             checkpointIntervalScaling,
             scalingPolicy,
             name,
-            usedResources
+            usedResources,
         ),
     )
 }

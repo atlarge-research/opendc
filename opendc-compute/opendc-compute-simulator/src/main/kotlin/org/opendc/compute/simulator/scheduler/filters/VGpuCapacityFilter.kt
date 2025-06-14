@@ -37,10 +37,12 @@ public class VGpuCapacityFilter : HostFilter {
     ): Boolean {
         val requiredCapacity = task.flavor.meta["gpu-capacity"] as? Double
         val availableCapacity = (host.host.getModel().gpuHostModels().maxOfOrNull { it.gpuCoreCapacity() } ?: 0).toDouble()
-        val availableCores = (host.host.getModel().gpuHostModels().maxOfOrNull { it -> it.gpuCoreCount }?: -1).toDouble()
+        val availableCores = (host.host.getModel().gpuHostModels().maxOfOrNull { it -> it.gpuCoreCount } ?: -1).toDouble()
         val availableRatio = availableCapacity / availableCores
 
-        return ( requiredCapacity == null
-            || ((availableCapacity / availableCores) >= (requiredCapacity / task.flavor.gpuCoreCount)))
+        return (
+            requiredCapacity == null ||
+                ((availableCapacity / availableCores) >= (requiredCapacity / task.flavor.gpuCoreCount))
+        )
     }
 }

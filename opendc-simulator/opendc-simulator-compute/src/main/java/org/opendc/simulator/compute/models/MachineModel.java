@@ -22,13 +22,12 @@
 
 package org.opendc.simulator.compute.models;
 
-import org.jetbrains.annotations.Nullable;
-import org.opendc.common.ResourceType;
-import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicy;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.jetbrains.annotations.Nullable;
+import org.opendc.common.ResourceType;
+import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicy;
 
 /**
  * A description of the physical or virtual machine on which a bootable image runs.
@@ -36,7 +35,7 @@ import java.util.Objects;
 public final class MachineModel {
     private final CpuModel cpuModel;
     private final MemoryUnit memory;
-//    private final List<GpuModel> gpuModels = new ArrayList<>(); // TODO: Implement multi GPU support
+    //    private final List<GpuModel> gpuModels = new ArrayList<>(); // TODO: Implement multi GPU support
     private final List<GpuModel> gpuModels;
     private final DistributionPolicy cpuDistribbutionStrategy;
     private final DistributionPolicy gpuDistributionPolicy;
@@ -47,23 +46,26 @@ public final class MachineModel {
      * @param cpuModel The cpu available to the image.
      * @param memory The list of memory units available to the image.
      */
-    public MachineModel(CpuModel cpuModel, MemoryUnit memory, @Nullable List<GpuModel> gpuModels,
-                        DistributionPolicy cpuDistributionPolicy, DistributionPolicy gpuDistributionPolicy) {
+    public MachineModel(
+            CpuModel cpuModel,
+            MemoryUnit memory,
+            @Nullable List<GpuModel> gpuModels,
+            DistributionPolicy cpuDistributionPolicy,
+            DistributionPolicy gpuDistributionPolicy) {
         this.cpuModel = cpuModel;
         this.memory = memory;
         this.cpuDistribbutionStrategy = cpuDistributionPolicy;
         this.gpuDistributionPolicy = gpuDistributionPolicy;
         this.availableResources.add(ResourceType.CPU);
         // TODO: Add Memory
-//        this.usedResources.add(ResourceType.Memory);
+        //        this.usedResources.add(ResourceType.Memory);
         if (gpuModels != null && !gpuModels.isEmpty()) {
             this.gpuModels = gpuModels;
             this.availableResources.add(ResourceType.GPU);
-        }
-        else {
+        } else {
             this.gpuModels = new ArrayList<>();
         }
-//        this.gpuModels = gpuModels != null ? gpuModels : new ArrayList<>(); // TODO: Maybe null is better
+        //        this.gpuModels = gpuModels != null ? gpuModels : new ArrayList<>(); // TODO: Maybe null is better
 
     }
 
@@ -86,10 +88,9 @@ public final class MachineModel {
                         cpus.get(0).getModelName(),
                         cpus.get(0).getArchitecture()),
                 memory,
-            null,
-            null,
-            null
-            );
+                null,
+                null,
+                null);
     }
 
     /**
@@ -101,21 +102,25 @@ public final class MachineModel {
      * @param memory The list of memory units available to the image.
      * @param gpus The list of GPUs available to the image.
      */
-    public MachineModel(List<CpuModel> cpus, MemoryUnit memory, List<GpuModel> gpus,
-                        DistributionPolicy cpuDistributionPolicy, DistributionPolicy gpuDistributionPolicy)  {
+    public MachineModel(
+            List<CpuModel> cpus,
+            MemoryUnit memory,
+            List<GpuModel> gpus,
+            DistributionPolicy cpuDistributionPolicy,
+            DistributionPolicy gpuDistributionPolicy) {
 
         this(
-            new CpuModel(
-                cpus.get(0).getId(),
-                cpus.get(0).getCoreCount() * cpus.size(), // merges multiple CPUs into one
-                cpus.get(0).getCoreSpeed(),
-                cpus.get(0).getVendor(),
-                cpus.get(0).getModelName(),
-                cpus.get(0).getArchitecture()),
-            memory,
-            gpus != null ? gpus : new ArrayList<>(),
-            cpuDistributionPolicy,
-            gpuDistributionPolicy);
+                new CpuModel(
+                        cpus.get(0).getId(),
+                        cpus.get(0).getCoreCount() * cpus.size(), // merges multiple CPUs into one
+                        cpus.get(0).getCoreSpeed(),
+                        cpus.get(0).getVendor(),
+                        cpus.get(0).getModelName(),
+                        cpus.get(0).getArchitecture()),
+                memory,
+                gpus != null ? gpus : new ArrayList<>(),
+                cpuDistributionPolicy,
+                gpuDistributionPolicy);
     }
 
     /**
@@ -132,7 +137,9 @@ public final class MachineModel {
         return memory;
     }
 
-    public List<GpuModel> getGpuModels() {return gpuModels;}
+    public List<GpuModel> getGpuModels() {
+        return gpuModels;
+    }
 
     /**
      * Return specific GPU model by id.

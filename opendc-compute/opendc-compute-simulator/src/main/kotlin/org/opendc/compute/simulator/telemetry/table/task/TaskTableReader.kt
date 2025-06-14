@@ -163,7 +163,6 @@ public interface TaskTableReader : Exportable {
      */
     public val gpuLostTimes: LongArray?
 
-
     /**
      * The state of the task
      */

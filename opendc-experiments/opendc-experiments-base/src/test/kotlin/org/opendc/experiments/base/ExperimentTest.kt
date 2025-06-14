@@ -222,7 +222,7 @@ class ExperimentTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. It solely uses the GPU.
      */
     @Test
-    fun testSimulator5(){
+    fun testSimulator5()  {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -231,7 +231,7 @@ class ExperimentTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
                         ),
-                )
+                ),
             )
 
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
@@ -245,20 +245,20 @@ class ExperimentTest {
             {
                 assertEquals(
                     ((10 * 30000)).toLong(),
-                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
-               ) { "GPU Idle time incorrect" }
+                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] }),
+                ) { "GPU Idle time incorrect" }
             },
             {
                 assertEquals(
                     ((10 * 30000)).toLong(),
-                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] }),
                 ) { "GPU Active time incorrect" }
             },
             // double, as CPU and GPU both use power
             // higher power usage, as default GPU power model is used range [200, 400]
             { assertEquals(2 * 12000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect host energy usage at timestamp 0" } },
             { assertEquals((600 * 100.0) + (600 * 300.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect host energy usage" } },
-            { assertEquals((600 * 100.0) + (600 * 300.0), monitor.energyUsages.sum()) { "Incorrect total energy usage" } }
+            { assertEquals((600 * 100.0) + (600 * 300.0), monitor.energyUsages.sum()) { "Incorrect total energy usage" } },
         )
     }
 
@@ -268,8 +268,7 @@ class ExperimentTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used and have the same runtime.
      */
     @Test
-    fun testSimulator6(){
-
+    fun testSimulator6()  {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -278,7 +277,7 @@ class ExperimentTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1, 1000.0, 1),
                         ),
-                )
+                ),
             )
 
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
@@ -292,21 +291,20 @@ class ExperimentTest {
             {
                 assertEquals(
                     ((10 * 30000)).toLong(),
-                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] }),
                 ) { "GPU Idle time incorrect" }
             },
             {
                 assertEquals(
                     ((10 * 30000)).toLong(),
-                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] }),
                 ) { "GPU Active time incorrect" }
             },
             // double, as CPU and GPU both use power
             { assertEquals(27000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect host energy usage at timestamp 0" } },
             { assertEquals((600 * 150.0) + (600 * 300.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect host energy usage" } },
-            { assertEquals((600 * 150.0) + (600 * 300.0), monitor.energyUsages.sum()) { "Incorrect total energy usage" } }
+            { assertEquals((600 * 150.0) + (600 * 300.0), monitor.energyUsages.sum()) { "Incorrect total energy usage" } },
         )
-
     }
 
     /**
@@ -315,7 +313,7 @@ class ExperimentTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used. CPU will finish way ahead of the GPU.
      */
     @Test
-    fun testSimulator7(){
+    fun testSimulator7()  {
         // TODO: Not sure if this is correct
         val workload: ArrayList<Task> =
             arrayListOf(
@@ -325,7 +323,7 @@ class ExperimentTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1, 2000.0, 1),
                         ),
-                )
+                ),
             )
 
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
@@ -338,22 +336,20 @@ class ExperimentTest {
             {
                 assertEquals(
                     0L,
-                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] }),
                 ) { "GPU Idle time incorrect" }
             },
             {
                 assertEquals(
                     ((10 * 60000)).toLong(),
-                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] }),
                 ) { "GPU Active time incorrect" }
             },
             // double, as CPU and GPU both use power
             { assertEquals(33000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect host energy usage at timestamp 0" } },
             { assertEquals((600 * 150.0) + (600 * 400.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect host energy usage" } },
-            { assertEquals( (600 * 150.0) + (600 * 400.0), monitor.energyUsages.sum()) { "Incorrect total energy usage" } }
+            { assertEquals((600 * 150.0) + (600 * 400.0), monitor.energyUsages.sum()) { "Incorrect total energy usage" } },
         )
-
-
     }
 
     /**
@@ -362,8 +358,7 @@ class ExperimentTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used. GPU will finish way ahead of the CPU.
      */
     @Test
-    fun testSimulator8(){
-
+    fun testSimulator8()  {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -372,7 +367,7 @@ class ExperimentTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 2000.0, 1, 1000.0, 1),
                         ),
-                )
+                ),
             )
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
         val monitor = runTest(topology, workload)
@@ -384,21 +379,20 @@ class ExperimentTest {
             {
                 assertEquals(
                     ((10 * 30000)).toLong(),
-                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] }),
                 ) { "GPU Idle time incorrect" }
             },
             {
                 assertEquals(
                     ((10 * 30000)).toLong(),
-                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] }),
                 ) { "GPU Active time incorrect" }
             },
             // double, as CPU and GPU both use power
             { assertEquals(30000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect host energy usage at timestamp 0" } },
-            { assertEquals( (600 * 200.0) + (600 * 300.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect host energy usage" } },
-            { assertEquals((600 * 200.0) + (600 * 300.0), monitor.energyUsages.sum()) { "Incorrect total energy usage" } }
+            { assertEquals((600 * 200.0) + (600 * 300.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect host energy usage" } },
+            { assertEquals((600 * 200.0) + (600 * 300.0), monitor.energyUsages.sum()) { "Incorrect total energy usage" } },
         )
-
     }
 
     /**
@@ -407,7 +401,7 @@ class ExperimentTest {
      * In this test, two tasks are scheduled at the same time that takes 10 minutes to run. CPU & GPU are used. Both resources will finish at the same time.
      */
     @Test
-    fun testSimulator9(){
+    fun testSimulator9()  {
         // TODO: Not sure if this is correct
 
         val workload: ArrayList<Task> =
@@ -425,35 +419,33 @@ class ExperimentTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1, 1000.0, 1),
                         ),
-                )
+                ),
             )
 
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
         val monitor = runTest(topology, workload)
 
         assertAll(
-            { assertEquals(2* (10 * 60 * 1000), monitor.maxTimestamp) { "Total runtime incorrect" } },
+            { assertEquals(2 * (10 * 60 * 1000), monitor.maxTimestamp) { "Total runtime incorrect" } },
             { assertEquals(((10 * 60000)).toLong(), monitor.hostCpuIdleTimes["H01"]?.sum()) { "CPU Idle time incorrect" } },
             { assertEquals(((10 * 60000)).toLong(), monitor.hostCpuActiveTimes["H01"]?.sum()) { "CPU Active time incorrect" } },
             {
                 assertEquals(
                     ((10 * 60000)).toLong(),
-                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] }),
                 ) { "GPU Idle time incorrect" }
             },
             {
                 assertEquals(
                     ((10 * 60000)).toLong(),
-                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] }),
                 ) { "GPU Active time incorrect" }
             },
             // double, as CPU and GPU both use power
             { assertEquals(27000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect host energy usage at timestamp 0" } },
-            { assertEquals(2* ((600 * 150.0) + (600 * 300.0)), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect host energy usage" } },
-            { assertEquals(2*((600 * 150.0) + (600 * 300.0)), monitor.energyUsages.sum()) { "Incorrect total energy usage" } }
+            { assertEquals(2 * ((600 * 150.0) + (600 * 300.0)), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect host energy usage" } },
+            { assertEquals(2 * ((600 * 150.0) + (600 * 300.0)), monitor.energyUsages.sum()) { "Incorrect total energy usage" } },
         )
-
-
     }
 
     /**
@@ -462,8 +454,7 @@ class ExperimentTest {
      * In this test, two tasks are scheduled at the same time that takes 10 minutes to run. One task purely uses CPU, one purely GPU.
      */
     @Test
-    fun testSimulator10(){
-
+    fun testSimulator10()  {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -479,7 +470,7 @@ class ExperimentTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
                         ),
-                )
+                ),
             )
 
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
@@ -492,20 +483,19 @@ class ExperimentTest {
             {
                 assertEquals(
                     ((10 * 30000)).toLong(),
-                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                    monitor.hostGpuIdleTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] }),
                 ) { "GPU Idle time incorrect" }
             },
             {
                 assertEquals(
                     ((10 * 30000)).toLong(),
-                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] })
+                    monitor.hostGpuActiveTimes["H01"]?.fold(0, { acc, iterator -> acc + iterator[0] }),
                 ) { "GPU Active time incorrect" }
             },
             // double, as CPU and GPU both use power
             { assertEquals(27000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect host energy usage at timestamp 0" } },
             { assertEquals((600 * 150.0) + (600 * 300.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect host energy usage" } },
-            { assertEquals((600 * 150.0) + (600 * 300.0), monitor.energyUsages.sum()) { "Incorrect total energy usage" } }
+            { assertEquals((600 * 150.0) + (600 * 300.0), monitor.energyUsages.sum()) { "Incorrect total energy usage" } },
         )
     }
-
 }

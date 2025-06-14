@@ -48,9 +48,9 @@ public record ChainWorkload(
     }
 
     @Override
-//    public SimWorkload startWorkload(FlowSupplier supplier, SimMachine machine, Consumer<Exception> completion) {
-//        return new VirtualMachine(supplier, this, machine, completion);
-//    }
+    //    public SimWorkload startWorkload(FlowSupplier supplier, SimMachine machine, Consumer<Exception> completion) {
+    //        return new VirtualMachine(supplier, this, machine, completion);
+    //    }
     public SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion) {
         return new VirtualMachine(supplier, this, machine, completion);
     }

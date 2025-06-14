@@ -95,14 +95,14 @@ class SchedulerTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 2000.0, 1), // Using 1 GPU
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 2000.0, 1),
                         ),
                 ),
                 createTestTask(
                     name = "1",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 2000.0, 1), // Using 1 GPU
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 2000.0, 1),
                         ),
                     submissionTime = "1970-01-01T00:20",
                 ),
@@ -119,26 +119,30 @@ class SchedulerTest {
         val gpuAllocationRatio = 1.0
 
         // Normal scheduler prioritizes hosts with more available resources
-        val normalScheduler = FilterScheduler(
-            filters = listOf(
-                ComputeFilter(),
-                VCpuFilter(cpuAllocationRatio),
-                VGpuFilter(gpuAllocationRatio),
-                RamFilter(ramAllocationRatio),
-            ),
-            weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = 1.0), VGpuWeigher(gpuAllocationRatio, multiplier = 1.0)),
-        )
+        val normalScheduler =
+            FilterScheduler(
+                filters =
+                    listOf(
+                        ComputeFilter(),
+                        VCpuFilter(cpuAllocationRatio),
+                        VGpuFilter(gpuAllocationRatio),
+                        RamFilter(ramAllocationRatio),
+                    ),
+                weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = 1.0), VGpuWeigher(gpuAllocationRatio, multiplier = 1.0)),
+            )
 
         // Inverted scheduler prioritizes hosts with fewer available resources
-        val invertedScheduler = FilterScheduler(
-            filters = listOf(
-                ComputeFilter(),
-                VCpuFilter(cpuAllocationRatio),
-                VGpuFilter(gpuAllocationRatio),
-                RamFilter(ramAllocationRatio),
-            ),
-            weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = -1.0), VGpuWeigher(gpuAllocationRatio, multiplier = -1.0)),
-        )
+        val invertedScheduler =
+            FilterScheduler(
+                filters =
+                    listOf(
+                        ComputeFilter(),
+                        VCpuFilter(cpuAllocationRatio),
+                        VGpuFilter(gpuAllocationRatio),
+                        RamFilter(ramAllocationRatio),
+                    ),
+                weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = -1.0), VGpuWeigher(gpuAllocationRatio, multiplier = -1.0)),
+            )
 
         // Run the tests with both schedulers and both topologies
         val normalFittingMonitor = runTest(fittingTopology, workload, computeScheduler = normalScheduler)
@@ -148,22 +152,37 @@ class SchedulerTest {
 
         assertAll(
             // Normal scheduler with fitting topology should use just one host
-            { assertEquals(1, normalFittingMonitor.hostCpuSupplied.size) { "Normal scheduler should place both tasks on a single host when possible" } },
-
+            {
+                assertEquals(
+                    1,
+                    normalFittingMonitor.hostCpuSupplied.size,
+                ) { "Normal scheduler should place both tasks on a single host when possible" }
+            },
             // Normal scheduler with non-fitting topology must use two hosts
-            { assertEquals(2, normalNonFittingMonitor.hostCpuSupplied.size) { "Normal scheduler should distribute tasks across hosts when needed" } },
-
+            {
+                assertEquals(
+                    2,
+                    normalNonFittingMonitor.hostCpuSupplied.size,
+                ) { "Normal scheduler should distribute tasks across hosts when needed" }
+            },
             // Inverted scheduler with fitting topology might still use one host or distribute depending on implementation
-            { assert(invertedFittingMonitor.hostCpuSupplied.isNotEmpty()) { "Inverted scheduler should place tasks based on resource availability" } },
-
+            {
+                assert(
+                    invertedFittingMonitor.hostCpuSupplied.isNotEmpty(),
+                ) { "Inverted scheduler should place tasks based on resource availability" }
+            },
             // Inverted scheduler with non-fitting topology must use two hosts
-            { assertEquals(2, invertedNonFittingMonitor.hostCpuSupplied.size) { "Inverted scheduler should distribute tasks across hosts when needed" } },
-
+            {
+                assertEquals(
+                    2,
+                    invertedNonFittingMonitor.hostCpuSupplied.size,
+                ) { "Inverted scheduler should distribute tasks across hosts when needed" }
+            },
             // Verify GPU allocations - check that both tasks had their GPUs allocated
             { assertEquals(2, normalFittingMonitor.taskGpuSupplied.size) { "Both tasks should have GPU allocations" } },
             { assertEquals(2, normalNonFittingMonitor.taskGpuSupplied.size) { "Both tasks should have GPU allocations" } },
             { assertEquals(2, invertedFittingMonitor.taskGpuSupplied.size) { "Both tasks should have GPU allocations" } },
-            { assertEquals(2, invertedNonFittingMonitor.taskGpuSupplied.size) { "Both tasks should have GPU allocations" } }
+            { assertEquals(2, invertedNonFittingMonitor.taskGpuSupplied.size) { "Both tasks should have GPU allocations" } },
         )
     }
 }

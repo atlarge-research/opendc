@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.gpu;
 
 import java.util.List;
 import java.util.Map;
-
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
 import org.opendc.simulator.compute.machine.GpuPerformanceCounters;
@@ -71,7 +70,9 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         return gpuModel.getTotalCoreCapacity();
     }
 
-    public int getId() { return id; }
+    public int getId() {
+        return id;
+    }
 
     @Override
     public double getCapacity() {
@@ -90,10 +91,12 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         return this.currentGpuDemand;
     }
 
-//    public double getSpeed() {
-//        return this.currentGpuSupplied;
-//    } // TODO: take memory into account
-    public double getSupply() { return this.currentGpuSupplied; } // TODO: take memory into account
+    //    public double getSpeed() {
+    //        return this.currentGpuSupplied;
+    //    } // TODO: take memory into account
+    public double getSupply() {
+        return this.currentGpuSupplied;
+    } // TODO: take memory into account
 
     public GpuModel getGpuModel() {
         return gpuModel;

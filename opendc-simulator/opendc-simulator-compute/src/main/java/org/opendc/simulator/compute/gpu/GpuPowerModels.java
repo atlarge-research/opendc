@@ -22,8 +22,6 @@
 
 package org.opendc.simulator.compute.gpu;
 
-import org.opendc.simulator.compute.cpu.CpuPowerModel;
-
 import java.util.Arrays;
 
 /**

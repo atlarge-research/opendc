@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.cpu;
 
 import java.util.List;
 import java.util.Map;
-
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
 import org.opendc.simulator.compute.machine.CpuPerformanceCounters;
@@ -40,7 +39,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A {@link SimCpu} of a machine.
  */
-public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer, ComputeResource  {
+public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer, ComputeResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimCpu.class);
     private int id;
@@ -68,7 +67,9 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     // Basic Getters and Setters
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public int getId() { return id; }
+    public int getId() {
+        return id;
+    }
 
     public double getFrequency() {
         return cpuModel.getTotalCapacity();
@@ -97,7 +98,9 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         return this.currentCpuDemand;
     }
 
-    public double getSupply() { return this.currentCpuSupplied; }
+    public double getSupply() {
+        return this.currentCpuSupplied;
+    }
 
     public CpuModel getCpuModel() {
         return cpuModel;
@@ -178,7 +181,6 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         this.cpuPerformanceCounters.setDemand(this.currentCpuDemand);
         this.cpuPerformanceCounters.setSupply(this.currentCpuSupplied);
         this.cpuPerformanceCounters.setCapacity(this.maxCapacity);
-
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

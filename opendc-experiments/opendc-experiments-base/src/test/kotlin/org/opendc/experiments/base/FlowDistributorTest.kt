@@ -571,8 +571,8 @@ class FlowDistributorTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 0.0,0,1000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 0.0,0,2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 2000.0, 1),
                         ),
                 ),
             )
@@ -593,7 +593,7 @@ class FlowDistributorTest {
             { assertEquals(0.0, monitor.hostCpuDemands["H01"]?.get(10)) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(0.0, monitor.hostCpuSupplied["H01"]?.get(1)) { "The cpu used by the host is incorrect" } },
             { assertEquals(0.0, monitor.hostCpuSupplied["H01"]?.get(10)) { "The cpu used by the host is incorrect" } },
-            //GPU
+            // GPU
             // task
             { assertEquals(1000.0, monitor.taskGpuDemands["0"]?.get(1)?.get(0)) { "The gpu demanded by task 0 is incorrect" } },
             { assertEquals(2000.0, monitor.taskGpuDemands["0"]?.get(10)?.get(0)) { "The gpu demanded by task 0 is incorrect" } },
@@ -613,8 +613,7 @@ class FlowDistributorTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used and have the same runtime.
      */
     @Test
-    fun testFlowDistributor15(){
-
+    fun testFlowDistributor15()  {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -623,7 +622,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1, 1000.0, 1),
                         ),
-                )
+                ),
             )
 
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
@@ -642,7 +641,7 @@ class FlowDistributorTest {
             { assertEquals(0.0, monitor.hostCpuDemands["H01"]?.get(10)) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(1000.0, monitor.hostCpuSupplied["H01"]?.get(1)) { "The cpu used by the host is incorrect" } },
             { assertEquals(0.0, monitor.hostCpuSupplied["H01"]?.get(10)) { "The cpu used by the host is incorrect" } },
-            //GPU
+            // GPU
             // task
             { assertEquals(1000.0, monitor.taskGpuDemands["0"]?.get(0)?.get(0)) { "The gpu demanded by task 0 is incorrect" } },
             { assert(monitor.taskGpuDemands["0"]?.get(9)?.isEmpty() ?: false) { "The gpu demanded by task 0 is incorrect" } },
@@ -654,7 +653,6 @@ class FlowDistributorTest {
             { assertEquals(0.0, monitor.hostGpuDemands["H01"]?.get(10)?.get(0)) { "The gpu demanded by the host is incorrect" } },
             { assertEquals(0.0, monitor.hostGpuSupplied["H01"]?.get(10)?.get(0)) { "The gpu used by the host is incorrect" } },
         )
-
     }
 
     /**
@@ -663,7 +661,7 @@ class FlowDistributorTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used. CPU will finish way ahead of the GPU.
      */
     @Test
-    fun testFlowDistributor16(){
+    fun testFlowDistributor16()  {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -672,7 +670,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1, 2000.0, 1),
                         ),
-                )
+                ),
             )
 
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
@@ -691,7 +689,7 @@ class FlowDistributorTest {
             { assertEquals(0.0, monitor.hostCpuDemands["H01"]?.get(10)) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(1000.0, monitor.hostCpuSupplied["H01"]?.get(1)) { "The cpu used by the host is incorrect" } },
             { assertEquals(0.0, monitor.hostCpuSupplied["H01"]?.get(10)) { "The cpu used by the host is incorrect" } },
-            //GPU
+            // GPU
             // task
             { assertEquals(2000.0, monitor.taskGpuDemands["0"]?.get(0)?.get(0)) { "The gpu demanded by task 0 is incorrect" } },
             { assert(monitor.taskGpuDemands["0"]?.get(9)?.isEmpty() ?: false) { "The gpu demanded by task 0 is incorrect" } },
@@ -703,8 +701,6 @@ class FlowDistributorTest {
             { assertEquals(2000.0, monitor.hostGpuSupplied["H01"]?.get(1)?.get(0)) { "The gpu used by the host is incorrect" } },
             { assertEquals(0.0, monitor.hostGpuSupplied["H01"]?.get(10)?.get(0)) { "The gpu used by the host is incorrect" } },
         )
-
-
     }
 
     /**
@@ -713,8 +709,7 @@ class FlowDistributorTest {
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used. GPU will finish way ahead of the CPU.
      */
     @Test
-    fun testFlowDistributor17(){
-
+    fun testFlowDistributor17()  {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -723,7 +718,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 2000.0, 1, 1000.0, 1),
                         ),
-                )
+                ),
             )
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
         val monitor = runTest(topology, workload)
@@ -740,7 +735,7 @@ class FlowDistributorTest {
             { assertEquals(0.0, monitor.hostCpuDemands["H01"]?.get(10)) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(2000.0, monitor.hostCpuSupplied["H01"]?.get(1)) { "The cpu used by the host is incorrect" } },
             { assertEquals(0.0, monitor.hostCpuSupplied["H01"]?.get(10)) { "The cpu used by the host is incorrect" } },
-            //GPU
+            // GPU
             // task
             { assertEquals(1000.0, monitor.taskGpuDemands["0"]?.get(1)?.get(0)) { "The gpu demanded by task 0 is incorrect" } },
             { assert(monitor.taskGpuDemands["0"]?.get(9)?.isEmpty() ?: false) { "The gpu demanded by task 0 is incorrect" } },
@@ -752,7 +747,6 @@ class FlowDistributorTest {
             { assertEquals(1000.0, monitor.hostGpuSupplied["H01"]?.get(1)?.get(0)) { "The gpu used by the host is incorrect" } },
             { assertEquals(0.0, monitor.hostGpuSupplied["H01"]?.get(10)?.get(0)) { "The gpu used by the host is incorrect" } },
         )
-
     }
 
     /**
@@ -763,7 +757,7 @@ class FlowDistributorTest {
      * CPU & GPU are used. Both resources will finish at the same time.
      */
     @Test
-    fun testFlowDistributor18(){
+    fun testFlowDistributor18()  {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -779,7 +773,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1, 1000.0, 1),
                         ),
-                )
+                ),
             )
 
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
@@ -803,17 +797,17 @@ class FlowDistributorTest {
             { assertEquals(1000.0, monitor.hostCpuDemands["H01"]?.get(10)) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(1000.0, monitor.hostCpuSupplied["H01"]?.get(1)) { "The cpu used by the host is incorrect" } },
             { assertEquals(1000.0, monitor.hostCpuSupplied["H01"]?.get(10)) { "The cpu used by the host is incorrect" } },
-            //GPU
+            // GPU
             // task 0
             { assertEquals(1000.0, monitor.taskGpuDemands["0"]?.get(0)?.get(0)) { "The gpu demanded by task 0 is incorrect" } },
-            { assert( monitor.taskGpuDemands["0"]?.get(9)?.isEmpty() ?: false) { "The gpu demanded by task 0 is incorrect" } },
+            { assert(monitor.taskGpuDemands["0"]?.get(9)?.isEmpty() ?: false) { "The gpu demanded by task 0 is incorrect" } },
             { assertEquals(1000.0, monitor.taskGpuSupplied["0"]?.get(0)?.get(0)) { "The gpu used by task 0 is incorrect" } },
             { assert(monitor.taskGpuSupplied["0"]?.get(9)?.isEmpty() ?: false) { "The gpu used by task 0 is incorrect" } },
             // task 1
             { assert(monitor.taskGpuDemands["1"]?.get(0)?.isEmpty() ?: false) { "The gpu demanded by task 1 is incorrect" } },
             { assertEquals(1000.0, monitor.taskGpuDemands["1"]?.get(10)?.get(0)) { "The gpu demanded by task 1 is incorrect" } },
             { assert(monitor.taskGpuDemands["1"]?.get(19)?.isEmpty() ?: false) { "The gpu demanded by task 1 is incorrect" } },
-            { assert( monitor.taskGpuSupplied["1"]?.get(0)?.isEmpty() ?: false) { "The gpu used by task 1 is incorrect" } },
+            { assert(monitor.taskGpuSupplied["1"]?.get(0)?.isEmpty() ?: false) { "The gpu used by task 1 is incorrect" } },
             { assertEquals(1000.0, monitor.taskGpuSupplied["1"]?.get(10)?.get(0)) { "The gpu used by task 1 is incorrect" } },
             { assert(monitor.taskGpuSupplied["1"]?.get(19)?.isEmpty() ?: false) { "The gpu used by task 1 is incorrect" } },
             // host
@@ -822,7 +816,6 @@ class FlowDistributorTest {
             { assertEquals(1000.0, monitor.hostGpuSupplied["H01"]?.get(1)?.get(0)) { "The gpu used by the host is incorrect" } },
             { assertEquals(1000.0, monitor.hostGpuSupplied["H01"]?.get(10)?.get(0)) { "The gpu used by the host is incorrect" } },
         )
-
     }
 
     /**
@@ -831,8 +824,7 @@ class FlowDistributorTest {
      * In this test, two tasks are scheduled at the same time that takes 10 minutes to run. One task purely uses CPU, one purely GPU.
      */
     @Test
-    fun testFlowDistributor19(){
-
+    fun testFlowDistributor19()  {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -848,7 +840,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
                         ),
-                )
+                ),
             )
 
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
@@ -871,12 +863,12 @@ class FlowDistributorTest {
             { assertEquals(0.0, monitor.hostCpuDemands["H01"]?.get(10)) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(1000.0, monitor.hostCpuSupplied["H01"]?.get(1)) { "The cpu used by the host is incorrect" } },
             { assertEquals(0.0, monitor.hostCpuSupplied["H01"]?.get(10)) { "The cpu used by the host is incorrect" } },
-            //GPU
+            // GPU
             // task 0
             { assertEquals(0.0, monitor.taskGpuDemands["0"]?.get(0)?.get(0)) { "The gpu demanded by task 0 is incorrect" } },
-            { assert( monitor.taskGpuDemands["0"]?.get(9)?.isEmpty() ?: false) { "The gpu demanded by task 0 is incorrect" } },
+            { assert(monitor.taskGpuDemands["0"]?.get(9)?.isEmpty() ?: false) { "The gpu demanded by task 0 is incorrect" } },
             { assertEquals(0.0, monitor.taskGpuSupplied["0"]?.get(0)?.get(0)) { "The gpu used by task 0 is incorrect" } },
-            { assert( monitor.taskGpuSupplied["0"]?.get(9)?.isEmpty() ?: false) { "The gpu used by task 0 is incorrect" } },
+            { assert(monitor.taskGpuSupplied["0"]?.get(9)?.isEmpty() ?: false) { "The gpu used by task 0 is incorrect" } },
             // task 1
             { assertEquals(1000.0, monitor.taskGpuDemands["1"]?.get(0)?.get(0)) { "The gpu demanded by task 1 is incorrect" } },
             { assert(monitor.taskGpuDemands["1"]?.get(9)?.isEmpty() ?: false) { "The gpu demanded by task 1 is incorrect" } },
@@ -888,7 +880,5 @@ class FlowDistributorTest {
             { assertEquals(1000.0, monitor.hostGpuSupplied["H01"]?.get(1)?.get(0)) { "The gpu used by the host is incorrect" } },
             { assertEquals(0.0, monitor.hostGpuSupplied["H01"]?.get(10)?.get(0)) { "The gpu used by the host is incorrect" } },
         )
-
     }
 }
-

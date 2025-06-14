@@ -356,22 +356,23 @@ public class OpenDCRunner(
                 }
 
             val gpuUnits =
-                machine.gpus.map { gpu, ->
+                machine.gpus.map { gpu ->
                     GpuModel(
                         0,
                         gpu.numberOfCores,
-                        gpu.clockRateMhz
+                        gpu.clockRateMhz,
                     )
                 }
 
             val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
             val cpuPowerModel = CpuPowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
 
-            val gpuPowerModel: GpuPowerModel? = if (gpuUnits.isEmpty()) {
-                null
-            } else{
-                GpuPowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
-            }
+            val gpuPowerModel: GpuPowerModel? =
+                if (gpuUnits.isEmpty()) {
+                    null
+                } else {
+                    GpuPowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
+                }
 
             val spec =
                 HostSpec(

@@ -135,23 +135,29 @@ public fun createPrefabComputeScheduler(
             )
         ComputeSchedulerEnum.ProvisionedCpuGpuCores ->
             FilterScheduler(
-                filters = listOf(
-                    ComputeFilter(),
-                    VCpuFilter(cpuAllocationRatio),
-                    VGpuFilter(gpuAllocationRatio),
-                    RamFilter(ramAllocationRatio),
-                ),
+                filters =
+                    listOf(
+                        ComputeFilter(),
+                        VCpuFilter(cpuAllocationRatio),
+                        VGpuFilter(gpuAllocationRatio),
+                        RamFilter(ramAllocationRatio),
+                    ),
                 weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = 1.0), VGpuWeigher(gpuAllocationRatio, multiplier = 1.0)),
             )
         ComputeSchedulerEnum.ProvisionedCpuGpuCoresInv ->
             FilterScheduler(
-                filters = listOf(
-                    ComputeFilter(),
-                    VCpuFilter(cpuAllocationRatio),
-                    VGpuFilter(gpuAllocationRatio),
-                    RamFilter(ramAllocationRatio),
-                ),
-                weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = -1.0), VGpuWeigher(gpuAllocationRatio, multiplier = -1.0)),
+                filters =
+                    listOf(
+                        ComputeFilter(),
+                        VCpuFilter(cpuAllocationRatio),
+                        VGpuFilter(gpuAllocationRatio),
+                        RamFilter(ramAllocationRatio),
+                    ),
+                weighers =
+                    listOf(
+                        VCpuWeigher(cpuAllocationRatio, multiplier = -1.0),
+                        VGpuWeigher(gpuAllocationRatio, multiplier = -1.0),
+                    ),
             )
     }
 }

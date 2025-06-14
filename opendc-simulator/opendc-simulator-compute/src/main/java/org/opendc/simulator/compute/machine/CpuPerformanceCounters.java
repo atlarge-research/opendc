@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.machine;
 
 public class CpuPerformanceCounters implements ResourcePerformanceCounters {
-//public class CpuPerformanceCounters {
+    // public class CpuPerformanceCounters {
     private long cpuActiveTime = 0;
     private long cpuIdleTime = 0;
     private long cpuStealTime = 0;
@@ -137,5 +137,4 @@ public class CpuPerformanceCounters implements ResourcePerformanceCounters {
     public void addSupply(double supply) {
         this.cpuSupply += supply;
     }
-
 }

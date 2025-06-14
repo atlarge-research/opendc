@@ -44,7 +44,7 @@ class GpuTest {
             vendor = "unknown",
             modelName = "unknown",
             architecture = "unknown",
-            gpuCount = 1
+            gpuCount = 1,
         )
     }
 
@@ -63,7 +63,7 @@ class GpuTest {
             vendor = "unknown",
             modelName = "unknown",
             architecture = "unknown",
-            gpuCount = 1
+            gpuCount = 1,
         )
     }
 
@@ -82,7 +82,7 @@ class GpuTest {
             vendor = "NVIDIA",
             modelName = "Tesla V100",
             architecture = "Volta",
-            gpuCount = 1
+            gpuCount = 1,
         )
     }
 
@@ -94,15 +94,17 @@ class GpuTest {
         val topology = createTopology("Gpus/single_gpu_full.json")
         assertGpuConfiguration(
             topology,
-            coreCount = 5120, // cuda cores
+            // cuda cores
+            coreCount = 5120,
 //            coreCount = 640, // tensor cores
-            coreSpeed = 5000.0, // fictional value
+            // fictional value
+            coreSpeed = 5000.0,
             memorySize = 30517578125,
             memoryBandwidth = 7031250000.0,
             vendor = "NVIDIA",
             modelName = "Tesla V100",
             architecture = "Volta",
-            gpuCount = 1
+            gpuCount = 1,
         )
     }
 
@@ -121,7 +123,7 @@ class GpuTest {
             vendor = "unknown",
             modelName = "unknown",
             architecture = "unknown",
-            gpuCount = 3
+            gpuCount = 3,
         )
     }
 
@@ -140,7 +142,7 @@ class GpuTest {
             vendor = "unknown",
             modelName = "unknown",
             architecture = "unknown",
-            gpuCount = 100
+            gpuCount = 100,
         )
     }
 
@@ -159,7 +161,7 @@ class GpuTest {
             vendor = "NVIDIA",
             modelName = "Tesla V100",
             architecture = "Volta",
-            gpuCount = 2
+            gpuCount = 2,
         )
     }
 
@@ -171,15 +173,17 @@ class GpuTest {
         val topology = createTopology("Gpus/multi_gpu_full.json")
         assertGpuConfiguration(
             topology,
-            coreCount = 5120, // cuda cores
+            // cuda cores
+            coreCount = 5120,
 //            coreCount = 640, // tensor cores
-            coreSpeed = 5000.0, // fictional value
+            // fictional value
+            coreSpeed = 5000.0,
             memorySize = 30517578125,
             memoryBandwidth = 7031250000.0,
             vendor = "NVIDIA",
             modelName = "Tesla V100",
             architecture = "Volta",
-            gpuCount = 5
+            gpuCount = 5,
         )
     }
 
@@ -192,28 +196,28 @@ class GpuTest {
         vendor: String,
         modelName: String,
         architecture: String,
-        gpuCount: Int
-
+        gpuCount: Int,
     ) {
         for (cluster in topology) {
-            for(host in cluster.hostSpecs){
-
+            for (host in cluster.hostSpecs) {
                 assert(host.model.gpuModels.size == gpuCount) { "GPU count should be $gpuCount, but is ${host.model.gpuModels.size}" }
 
-                for (gpuModel in host.model.gpuModels){
+                for (gpuModel in host.model.gpuModels) {
                     assert(gpuModel.coreCount == coreCount) { "GPU Core count should be $coreCount, but is ${gpuModel.coreCount}" }
                     assert(gpuModel.coreSpeed == coreSpeed) { "GPU core speed should be $coreSpeed, but is ${gpuModel.coreSpeed}" }
                     assert(gpuModel.memorySize == memorySize) { "GPU memory size should be $memorySize, but is ${gpuModel.memorySize}" }
-                    assert(gpuModel.memoryBandwidth == memoryBandwidth) { "GPU memory bandwidth should be $memoryBandwidth, but is ${gpuModel.memoryBandwidth}" }
+                    assert(gpuModel.memoryBandwidth == memoryBandwidth) {
+                        "GPU memory bandwidth should be $memoryBandwidth, but is ${gpuModel.memoryBandwidth}"
+                    }
                     assert(gpuModel.vendor.contentEquals(vendor)) { "GPU vendor should be $vendor, but is ${gpuModel.vendor}" }
-                    assert(gpuModel.modelName.contentEquals(modelName)) { "GPU model name should be $modelName, but is ${gpuModel.modelName}" }
-                    assert(gpuModel.architecture.contentEquals(architecture)) { "GPU architecture should be $architecture, but is ${gpuModel.architecture}" }
+                    assert(
+                        gpuModel.modelName.contentEquals(modelName),
+                    ) { "GPU model name should be $modelName, but is ${gpuModel.modelName}" }
+                    assert(
+                        gpuModel.architecture.contentEquals(architecture),
+                    ) { "GPU architecture should be $architecture, but is ${gpuModel.architecture}" }
                 }
             }
         }
-
     }
-
 }
-
-

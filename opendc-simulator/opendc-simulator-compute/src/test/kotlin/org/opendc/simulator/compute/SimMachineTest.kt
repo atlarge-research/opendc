@@ -22,10 +22,7 @@
 
 package org.opendc.simulator.compute
 
-import org.junit.jupiter.api.BeforeEach
-import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.MachineModel
-import org.opendc.simulator.compute.models.MemoryUnit
 
 /**
  * Test suite for the [SimBareMetalMachine] class.

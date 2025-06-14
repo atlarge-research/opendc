@@ -33,7 +33,6 @@ public class HostTableReaderImpl(
     private val host: SimHost,
     private val startTime: Duration = Duration.ofMillis(0),
 ) : HostTableReader {
-
     override fun copy(): HostTableReader {
         val newHostTable =
             HostTableReaderImpl(host)
@@ -167,25 +166,41 @@ public class HostTableReaderImpl(
     // half of the CPU stats
     override val gpuActiveTimes: ArrayList<Long>
 //        get() = _gpuActiveTimes.zip(previousGpuActiveTimes) { current, previous -> current - previous} as ArrayList<Long>
-        get() = (0 until _gpuActiveTimes.size).map { i -> (_gpuActiveTimes.getOrNull(i) ?: 0L) - (previousGpuActiveTimes.getOrNull(i) ?: 0L) } as ArrayList<Long>
+        get() =
+            (0 until _gpuActiveTimes.size).map {
+                    i ->
+                (_gpuActiveTimes.getOrNull(i) ?: 0L) - (previousGpuActiveTimes.getOrNull(i) ?: 0L)
+            } as ArrayList<Long>
     private var _gpuActiveTimes: ArrayList<Long> = ArrayList()
     private var previousGpuActiveTimes: ArrayList<Long> = ArrayList()
 
     override val gpuIdleTimes: ArrayList<Long>
 //        get() = _gpuIdleTimes.zip(previousGpuIdleTimes) { current, previous -> current - previous} as ArrayList<Long>
-        get() = (0 until _gpuIdleTimes.size).map { i -> (_gpuIdleTimes.getOrNull(i) ?: 0L) - (previousGpuIdleTimes.getOrNull(i) ?: 0L) } as ArrayList<Long>
-    private var _gpuIdleTimes : ArrayList<Long> = ArrayList()
-    private var previousGpuIdleTimes : ArrayList<Long> = ArrayList()
+        get() =
+            (0 until _gpuIdleTimes.size).map {
+                    i ->
+                (_gpuIdleTimes.getOrNull(i) ?: 0L) - (previousGpuIdleTimes.getOrNull(i) ?: 0L)
+            } as ArrayList<Long>
+    private var _gpuIdleTimes: ArrayList<Long> = ArrayList()
+    private var previousGpuIdleTimes: ArrayList<Long> = ArrayList()
 
     override val gpuStealTimes: ArrayList<Long>
-        get() = (0 until _gpuStealTimes.size).map { i -> (_gpuStealTimes.getOrNull(i) ?: 0L) - (previousGpuStealTimes.getOrNull(i) ?: 0L) } as ArrayList<Long>
-    private var _gpuStealTimes : ArrayList<Long> = ArrayList()
-    private var previousGpuStealTimes : ArrayList<Long> = ArrayList()
+        get() =
+            (0 until _gpuStealTimes.size).map {
+                    i ->
+                (_gpuStealTimes.getOrNull(i) ?: 0L) - (previousGpuStealTimes.getOrNull(i) ?: 0L)
+            } as ArrayList<Long>
+    private var _gpuStealTimes: ArrayList<Long> = ArrayList()
+    private var previousGpuStealTimes: ArrayList<Long> = ArrayList()
 
     override val gpuLostTimes: ArrayList<Long>
-        get() = (0 until _gpuLostTimes.size).map { i -> (_gpuLostTimes.getOrNull(i) ?: 0L) - (previousGpuLostTimes.getOrNull(i) ?: 0L) } as ArrayList<Long>
-    private var _gpuLostTimes : ArrayList<Long> = ArrayList()
-    private var previousGpuLostTimes : ArrayList<Long> = ArrayList()
+        get() =
+            (0 until _gpuLostTimes.size).map {
+                    i ->
+                (_gpuLostTimes.getOrNull(i) ?: 0L) - (previousGpuLostTimes.getOrNull(i) ?: 0L)
+            } as ArrayList<Long>
+    private var _gpuLostTimes: ArrayList<Long> = ArrayList()
+    private var previousGpuLostTimes: ArrayList<Long> = ArrayList()
 
     override val powerDraw: Double
         get() = _powerDraw

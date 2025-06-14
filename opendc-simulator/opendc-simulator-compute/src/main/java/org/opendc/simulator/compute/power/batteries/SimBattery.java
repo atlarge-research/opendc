@@ -24,8 +24,6 @@ package org.opendc.simulator.compute.power.batteries;
 
 import java.util.List;
 import java.util.Map;
-
-import jdk.jshell.spi.ExecutionControl;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.power.batteries.policy.BatteryPolicy;
 import org.opendc.simulator.engine.engine.FlowEngine;

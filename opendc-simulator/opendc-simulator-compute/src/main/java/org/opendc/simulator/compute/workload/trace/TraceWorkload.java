@@ -28,13 +28,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
-import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
 public class TraceWorkload implements Workload {
@@ -75,12 +73,12 @@ public class TraceWorkload implements Workload {
         this.maxCpuDemand = fragments.stream()
                 .max(Comparator.comparing(TraceFragment::cpuUsage))
                 .get()
-//                .cpuUsage();
+                //                .cpuUsage();
                 .getResourceUsage(ResourceType.CPU);
         this.maxCpuCoreCount = fragments.stream()
                 .max(Comparator.comparing(TraceFragment::cpuCoreCount))
                 .get()
-//                .cpuCoreCount();
+                //                .cpuCoreCount();
                 .getCoreCount(ResourceType.CPU);
 
         this.maxGpuDemand = fragments.stream()
@@ -94,7 +92,6 @@ public class TraceWorkload implements Workload {
         this.maxGpuMemoryDemand = 0L; // TODO: add GPU memory demand to the trace fragments
 
         this.resourceTypes = resourceTypes;
-
     }
 
     public ArrayList<TraceFragment> getFragments() {
@@ -124,11 +121,21 @@ public class TraceWorkload implements Workload {
         return maxCpuDemand;
     }
 
-    public double getMaxGpuDemand() { return maxGpuDemand; }
-    public int getMaxGpuCoreCount() { return maxGpuCoreCount; }
-    public long getMaxGpuMemoryDemand() { return maxGpuMemoryDemand; }
+    public double getMaxGpuDemand() {
+        return maxGpuDemand;
+    }
 
-    public String getTaskName() { return taskName; }
+    public int getMaxGpuCoreCount() {
+        return maxGpuCoreCount;
+    }
+
+    public long getMaxGpuMemoryDemand() {
+        return maxGpuMemoryDemand;
+    }
+
+    public String getTaskName() {
+        return taskName;
+    }
 
     public void removeFragments(int numberOfFragments) {
         if (numberOfFragments <= 0) {
@@ -148,14 +155,14 @@ public class TraceWorkload implements Workload {
     @Override
     public SimWorkload startWorkload(FlowSupplier supplier) {
         return new SimTraceWorkload(supplier, this);
-//        ArrayList<FlowSupplier> flowSuppliers = new ArrayList<>();
-//        flowSuppliers.add(supplier);
-//        return new SimTraceWorkload(flowSuppliers, this);
+        //        ArrayList<FlowSupplier> flowSuppliers = new ArrayList<>();
+        //        flowSuppliers.add(supplier);
+        //        return new SimTraceWorkload(flowSuppliers, this);
     }
 
     @Override
     public SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion) {
-//        return this.startWorkload(supplier);
+        //        return this.startWorkload(supplier);
         return new SimTraceWorkload(supplier, this);
     }
 
@@ -204,15 +211,17 @@ public class TraceWorkload implements Workload {
          * @param gpuCores The number of GPU cores used during this fragment.
          * @param gpuMemoryUsage The GPU memory usage at this fragment.
          */
-        public void add(long duration, double cpuUsage, int cpuCores,
-                       double gpuUsage, int gpuCores, long gpuMemoryUsage) {
-            if (cpuUsage > 0.0){
+        public void add(
+                long duration, double cpuUsage, int cpuCores, double gpuUsage, int gpuCores, long gpuMemoryUsage) {
+            if (cpuUsage > 0.0) {
                 this.resourceTypes[ResourceType.CPU.ordinal()] = ResourceType.CPU;
             }
-            if (gpuUsage > 0.0){
+            if (gpuUsage > 0.0) {
                 this.resourceTypes[ResourceType.GPU.ordinal()] = ResourceType.GPU;
             }
-            fragments.add(fragments.size(), new TraceFragment(duration, cpuUsage, cpuCores, gpuUsage, gpuCores, gpuMemoryUsage));
+            fragments.add(
+                    fragments.size(),
+                    new TraceFragment(duration, cpuUsage, cpuCores, gpuUsage, gpuCores, gpuMemoryUsage));
         }
 
         /**

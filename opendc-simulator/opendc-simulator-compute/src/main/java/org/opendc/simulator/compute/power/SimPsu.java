@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import jdk.jshell.spi.ExecutionControl;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.engine.engine.FlowEngine;
@@ -64,8 +62,8 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
      * @return <code>true</code> if the InPort is connected to an OutPort, <code>false</code> otherwise.
      */
     public boolean isConnected() {
-            return !this.resourceEdges.isEmpty() &&
-                   this.resourceEdges.values().stream().anyMatch(list -> !list.isEmpty());
+        return !this.resourceEdges.isEmpty()
+                && this.resourceEdges.values().stream().anyMatch(list -> !list.isEmpty());
     }
 
     /**
@@ -93,6 +91,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
                 .findFirst()
                 .orElse(0.0);
     }
+
     public double getPowerDraw(ResourceType resourceType) {
         return this.powerSuppliedPerResource.get(resourceType).getFirst();
     }
@@ -130,8 +129,10 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
         for (ResourceType resourceType : this.resourceEdges.keySet()) {
             ArrayList<FlowEdge> edges = this.resourceEdges.get(resourceType);
             if (edges != null && !edges.isEmpty()) {
-                double powerSupply = this.powerDemandsPerResource.get(resourceType).getFirst();
-                double powerSupplied = this.powerSuppliedPerResource.get(resourceType).getFirst();
+                double powerSupply =
+                        this.powerDemandsPerResource.get(resourceType).getFirst();
+                double powerSupplied =
+                        this.powerSuppliedPerResource.get(resourceType).getFirst();
 
                 if (powerSupply != powerSupplied) {
                     for (FlowEdge edge : edges) {
@@ -185,7 +186,8 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
-        this.pushOutgoingSupply(consumerEdge, newSupply, consumerEdge.getConsumer().getResourceType());
+        this.pushOutgoingSupply(
+                consumerEdge, newSupply, consumerEdge.getConsumer().getResourceType());
     }
 
     @Override
@@ -212,7 +214,8 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
         updateCounters();
         for (ResourceType resourceType : this.resourceEdges.keySet()) {
             for (FlowEdge edge : this.resourceEdges.get(resourceType)) {
-                double outgoingSupply = Math.min(this.powerDemandsPerResource.get(resourceType).getFirst(), newSupply);
+                double outgoingSupply =
+                        Math.min(this.powerDemandsPerResource.get(resourceType).getFirst(), newSupply);
                 pushOutgoingSupply(edge, outgoingSupply, resourceType);
             }
         }

@@ -94,7 +94,15 @@ public class ComputeWorkloadLoader(
                 val durationMs = reader.getDuration(durationCol)!!
                 val cores = reader.getInt(coresCol)
                 val cpuUsage = reader.getDouble(usageCol)
-                val gpuUsage = if (reader.getDouble(resourceGpuCapacityCol).isNaN()) 0.0 else reader.getDouble(resourceGpuCapacityCol) // Default to 0 if not present
+                val gpuUsage =
+                    if (reader.getDouble(
+                            resourceGpuCapacityCol,
+                        ).isNaN()
+                    ) {
+                        0.0
+                    } else {
+                        reader.getDouble(resourceGpuCapacityCol) // Default to 0 if not present
+                    }
                 val gpuCores = reader.getInt(gpuCoresCol) // Default to 0 if not present
                 val gpuMemory = 0L // Default to 0 if not present
 
@@ -147,7 +155,15 @@ public class ComputeWorkloadLoader(
                 val cpuCount = reader.getInt(cpuCountCol)
                 val cpuCapacity = reader.getDouble(cpuCapacityCol)
                 val memCapacity = reader.getDouble(memCol) / 1000.0 // Convert from KB to MB
-                val gpuUsage = if (reader.getDouble(gpuCapacityCol).isNaN()) 0.0 else reader.getDouble(gpuCapacityCol) // Default to 0 if not present// Default to 0 if not present
+                val gpuUsage =
+                    if (reader.getDouble(
+                            gpuCapacityCol,
+                        ).isNaN()
+                    ) {
+                        0.0
+                    } else {
+                        reader.getDouble(gpuCapacityCol) // Default to 0 if not present// Default to 0 if not present
+                    }
                 val gpuCoreCount = reader.getInt(gpuCoreCountCol) // Default to 0 if not present
                 val gpuMemory = 0L // currently not implemented
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
