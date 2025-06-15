@@ -314,7 +314,6 @@ class ExperimentTest {
      */
     @Test
     fun testSimulator7() {
-        // TODO: Not sure if this is correct
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -402,8 +401,6 @@ class ExperimentTest {
      */
     @Test
     fun testSimulator9() {
-        // TODO: Not sure if this is correct
-
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(

@@ -191,7 +191,6 @@ public class SimMachine {
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // TODO: Place distributors into list
     public SimMachine(
             FlowEngine engine,
             MachineModel machineModel,

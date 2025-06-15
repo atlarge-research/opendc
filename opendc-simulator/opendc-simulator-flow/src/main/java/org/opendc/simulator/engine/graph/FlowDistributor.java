@@ -146,7 +146,6 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
      * Distributed the available supply over the different demands.
      * The supply is distributed using MaxMin Fairness.
      */
-    // TODO: Make this more generic
     //    private static double[] distributeSupply(ArrayList<Double> demands, double currentSupply) {
     //        int inputSize = demands.size();
     //

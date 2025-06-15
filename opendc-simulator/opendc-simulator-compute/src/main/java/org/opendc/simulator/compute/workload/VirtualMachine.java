@@ -77,7 +77,6 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     // Basic Getters and Setters
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // TODO: How to handle GPU capacity?
     @Override
     public double getCapacity() {
         throw new UnsupportedOperationException("getCapacity() is not supported for VirtualMachine");
@@ -237,7 +236,6 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     }
 
     public void updateCounters(long now) {
-        // TODO: add other resources
         long lastUpdate = this.lastUpdate;
         this.lastUpdate = now;
         long delta = now - lastUpdate;

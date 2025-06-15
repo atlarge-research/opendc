@@ -65,8 +65,6 @@ public final class MachineModel {
         } else {
             this.gpuModels = new ArrayList<>();
         }
-        //        this.gpuModels = gpuModels != null ? gpuModels : new ArrayList<>(); // TODO: Maybe null is better
-
     }
 
     /**
