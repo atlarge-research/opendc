@@ -113,6 +113,11 @@ public interface HostTableReader : Exportable {
     public val cpuLostTime: Long
 
     /**
+     * The capacity of the CPUs in the host (in MHz).
+     */
+    public val gpuCapacities: ArrayList<Double>
+
+    /**
      * The capacity of the GPUs in the host (in MHz). They inserted by GPU ID.
      */
     public val gpuLimits: ArrayList<Double>

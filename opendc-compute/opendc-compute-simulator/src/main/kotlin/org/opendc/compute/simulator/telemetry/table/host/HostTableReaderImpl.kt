@@ -59,6 +59,7 @@ public class HostTableReaderImpl(
         _cpuStealTime = table.cpuStealTime
         _cpuLostTime = table.cpuLostTime
         // GPU stats
+        _gpuCapacities = table.gpuCapacities
         _gpuLimits = table.gpuLimits
         _gpuDemands = table.gpuDemands
         _gpuUsages = table.gpuUsages
@@ -146,6 +147,10 @@ public class HostTableReaderImpl(
         get() = _cpuLostTime - previousCpuLostTime
     private var _cpuLostTime = 0L
     private var previousCpuLostTime = 0L
+
+    override val gpuCapacities: ArrayList<Double>
+        get() = _gpuCapacities
+    private var _gpuCapacities: ArrayList<Double> = ArrayList()
 
     override val gpuLimits: ArrayList<Double>
         get() = _gpuLimits
