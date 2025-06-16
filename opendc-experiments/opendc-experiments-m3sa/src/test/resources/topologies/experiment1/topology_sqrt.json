@@ -1,0 +1,29 @@
+{
+    "clusters": [
+        {
+            "name": "A01",
+            "hosts": [
+                {
+                    "name": "A01",
+                    "count": 277,
+                    "cpu": {
+                        "coreCount": 16,
+                        "coreSpeed": 2100
+                    },
+                    "memory": {
+                         "memorySize": 128000000
+                    },
+                    "powerModel": {
+                        "modelType": "sqrt",
+                        "power": 400.0,
+                        "idlePower": 32.0,
+                        "maxPower": 180.0
+                    }
+                }
+            ],
+            "powerSource": {
+                "carbonTracePath": "src/test/resources/carbonTraces/experiment1/co2.parquet"
+            }
+        }
+    ]
+}

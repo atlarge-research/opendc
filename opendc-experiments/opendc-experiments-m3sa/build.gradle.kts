@@ -25,12 +25,17 @@ description = "Multi-Meta-Model Simulation Analysis (M3SA) used across OpenDC mo
 // Build configuration
 plugins {
     `kotlin-library-conventions`
+    `testing-conventions`
+    `jacoco-conventions`
+    distribution
+    kotlin("plugin.serialization") version "1.9.22"
 }
 
 dependencies {
     api(libs.kotlinx.coroutines)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
+    testImplementation("org.junit.jupiter:junit-jupiter")
     api(projects.opendcCompute.opendcComputeSimulator)
 
     implementation(libs.clikt)
@@ -47,6 +52,10 @@ dependencies {
 
     runtimeOnly(libs.log4j.core)
     runtimeOnly(libs.log4j.slf4j)
+
+    tasks.test {
+        useJUnitPlatform()
+    }
 }
 
 sourceSets {

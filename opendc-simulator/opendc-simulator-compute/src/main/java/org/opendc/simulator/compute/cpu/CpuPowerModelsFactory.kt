@@ -23,12 +23,14 @@
 package org.opendc.simulator.compute.cpu
 
 // TODO: couple this correctly
-public enum class CPUPowerModel {
+public enum class CPUPowerModelEnum {
     Constant,
     Sqrt,
     Linear,
     Square,
     Cubic,
+    MSE,
+    Asymptotic,
 }
 
 public fun getPowerModel(
@@ -36,6 +38,9 @@ public fun getPowerModel(
     power: Double,
     maxPower: Double,
     idlePower: Double,
+    calibrationFactor: Double = 1.0,
+    asymUtil: Double = 0.0,
+    dvfs: Boolean = true,
 ): CpuPowerModel {
     return when (modelType) {
         "constant" -> CpuPowerModels.constant(power)
@@ -43,6 +48,8 @@ public fun getPowerModel(
         "linear" -> CpuPowerModels.linear(maxPower, idlePower)
         "square" -> CpuPowerModels.square(maxPower, idlePower)
         "cubic" -> CpuPowerModels.cubic(maxPower, idlePower)
+        "mse" -> CpuPowerModels.mse(maxPower, idlePower, calibrationFactor)
+        "asymptotic" -> CpuPowerModels.asymptotic(maxPower, idlePower, asymUtil, dvfs)
 
         else -> throw IllegalArgumentException("Unknown power modelType $modelType")
     }
@@ -55,6 +62,8 @@ public fun getPowerModel(modelType: String): CpuPowerModel {
         "linear" -> CpuPowerModels.linear(350.0, 200.0)
         "square" -> CpuPowerModels.square(350.0, 200.0)
         "cubic" -> CpuPowerModels.cubic(350.0, 200.0)
+        "mse" -> CpuPowerModels.mse(350.0, 200.0, 1.0)
+        "asymptotic" -> CpuPowerModels.asymptotic(350.0, 200.0, 0.0, true)
 
         else -> throw IllegalArgumentException("Unknown power modelType $modelType")
     }

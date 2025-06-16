@@ -1,8 +1,8 @@
-import numpy as np
 import os
 import pandas as pd
-
-from .Model import Model
+from models import Model, MultiModel
+from typing import Callable
+from util import PlotType
 
 
 class MetaModel:
@@ -20,43 +20,32 @@ class MetaModel:
         function_map (dict): Mapping of aggregation function names to function implementations.
     """
 
-    META_MODEL_ID = -101
+    META_MODEL_ID = 'M'
 
-    def __init__(self, multimodel, meta_function=None):
+    def __init__(self, multi_model: MultiModel, meta_function: Callable[[any], float] = None):
         """
         Initializes the Metamodel with a MultiModel instance and prepares aggregation functions based on configuration.
 
-        :param multimodel: MultiModel instance containing the models to aggregate.
+        :param multi_model: MultiModel instance containing the models to aggregate.
         :raise ValueError: If metamodel functionality is not enabled in the configuration.
         """
-        if not multimodel.user_input.get('metamodel', False):
+        if not multi_model.config.is_metamodel:
             raise ValueError("Metamodel is not enabled in the config file")
 
-        self.function_map = {
-            'mean': self.mean,
-            'median': self.median,
-            'meta_equation1': self.meta_equation1,
-        }
-
-        self.multi_model = multimodel
-        self.meta_model = Model(
+        self.multi_model = multi_model
+        self.meta_model: Model = Model(
             raw_sim_data=[],
-            id=self.META_MODEL_ID,
-            path=self.multi_model.output_folder_path
+            identifier=self.META_MODEL_ID,
         )
 
-        if meta_function is not None:
-            self.meta_function = meta_function
-        else:
-            self.meta_function = self.function_map.get(multimodel.user_input['meta_function'], self.mean)
+        self.meta_function: Callable[
+            [any], float] = self.multi_model.config.meta_function if meta_function is None else meta_function
 
         self.min_raw_model_len = min([len(model.raw_sim_data) for model in self.multi_model.models])
         self.min_processed_model_len = min([len(model.processed_sim_data) for model in self.multi_model.models])
         self.number_of_models = len(self.multi_model.models)
-        self.compute()
-        self.output()
 
-    def output(self):
+    def output(self) -> None:
         """
         Generates outputs by plotting the aggregated results and exporting the metamodel data to a file.
         :return: None
@@ -65,34 +54,32 @@ class MetaModel:
         self.plot()
         self.output_metamodel()
 
-    def compute(self):
+    def compute(self) -> None:
         """
         Computes aggregated data based on the specified plot type from the configuration.
         :raise ValueError: If an unsupported plot type is specified in the configuration.
         """
-        if self.multi_model.plot_type == 'time_series':
-            self.compute_time_series()
-        elif self.multi_model.plot_type == 'cumulative':
-            self.compute_cumulative()
-        elif self.multi_model.plot_type == 'cumulative_time_series':
-            self.compute_cumulative_time_series()
-        else:
-            raise ValueError("Invalid plot type in config file")
+        match self.multi_model.config.plot_type:
+            case PlotType.TIME_SERIES:
+                self.compute_time_series()
+            case PlotType.CUMULATIVE:
+                self.compute_cumulative()
+            case PlotType.CUMULATIVE_TIME_SERIES:
+                self.compute_cumulative_time_series()
 
-    def plot(self):
+    def plot(self) -> None:
         """
         Plots the aggregated data according to the specified plot type from the configuration.
         :raise ValueError: If an unsupported plot type is specified.
         """
-        if self.multi_model.plot_type == 'time_series':
-            self.plot_time_series()
-        elif self.multi_model.plot_type == 'cumulative':
-            self.plot_cumulative()
-        elif self.multi_model.plot_type == 'cumulative_time_series':
-            self.plot_cumulative_time_series()
 
-        else:
-            raise ValueError("Invalid plot type in config file")
+        match self.multi_model.config.plot_type:
+            case PlotType.TIME_SERIES:
+                self.plot_time_series()
+            case PlotType.CUMULATIVE:
+                self.plot_cumulative()
+            case PlotType.CUMULATIVE_TIME_SERIES:
+                self.plot_cumulative_time_series()
 
     def compute_time_series(self):
         """
@@ -102,8 +89,8 @@ class MetaModel:
         """
         for i in range(0, self.min_processed_model_len):
             data_entries = []
-            for j in range(self.number_of_models):
-                data_entries.append(self.multi_model.models[j].processed_sim_data[i])
+            for model in self.multi_model.models:
+                data_entries.append(model.processed_sim_data[i])
             self.meta_model.processed_sim_data.append(self.meta_function(data_entries))
         self.meta_model.raw_sim_data = self.meta_model.processed_sim_data
 
@@ -122,14 +109,14 @@ class MetaModel:
         :return: None
         :side effect: Updates the meta_model's cumulative data with aggregated results.
         """
-
         for i in range(0, self.min_raw_model_len):
             data_entries = []
-            for j in range(self.number_of_models):
-                sim_data = self.multi_model.models[j].raw_sim_data
+            for model in self.multi_model.models:
+                sim_data = model.raw_sim_data
                 ith_element = sim_data[i]
                 data_entries.append(ith_element)
-            self.meta_model.cumulated += self.mean(data_entries)
+            self.meta_model.cumulated += self.meta_function(data_entries)
+
         self.meta_model.cumulated = round(self.meta_model.cumulated, 2)
 
     def plot_cumulative(self):
@@ -149,8 +136,8 @@ class MetaModel:
         """
         for i in range(0, self.min_processed_model_len):
             data_entries = []
-            for j in range(self.number_of_models):
-                data_entries.append(self.multi_model.models[j].processed_sim_data[i])
+            for model in self.multi_model.models:
+                data_entries.append(model.processed_sim_data[i])
             self.meta_model.processed_sim_data.append(self.meta_function(data_entries))
 
     def plot_cumulative_time_series(self):
@@ -168,47 +155,18 @@ class MetaModel:
         :return: None
         :side effect: Writes data to a parquet file at the specified directory path.
         """
-        directory_path = os.path.join(self.multi_model.output_folder_path, "raw-output/metamodel/seed=0")
-        os.makedirs(directory_path, exist_ok=True)
-        current_path = os.path.join(directory_path, f"{self.multi_model.metric}.parquet")
-        df = pd.DataFrame({'processed_sim_data': self.meta_model.processed_sim_data})
+        directory_path = os.path.join(self.multi_model.config.output_path, "raw-output/metamodel/seed=0")
+        try:
+            os.makedirs(directory_path, exist_ok=True)
+        except OSError as e:
+            print(f"Error creating directory: {e}")
+            exit(1)
+
+        current_path = os.path.join(directory_path, f"{self.multi_model.config.metric}.parquet")
+        minimum = min(len(self.multi_model.timestamps), len(self.meta_model.processed_sim_data))
+
+        df = pd.DataFrame({
+            "timestamp": self.multi_model.timestamps[:minimum],
+            self.multi_model.config.metric: self.meta_model.processed_sim_data[:minimum]
+        })
         df.to_parquet(current_path, index=False)
-
-    def mean(self, chunks):
-        """
-        Calculates the mean of a list of numerical data.
-
-        :param chunks (list): The data over which to calculate the mean.
-        :return: float: The mean of the provided data.
-        """
-        return np.mean(chunks)
-
-    def median(self, chunks):
-        """
-        Calculates the median of a list of numerical data.
-
-        :param chunks (list): The data over which to calculate the median.
-        :return: float: The median of the provided data.
-        """
-        return np.median(chunks)
-
-    def meta_equation1(self, chunks):
-        """
-        Calculates a weighted mean where the weights are inversely proportional to the absolute difference from the median value.
-        :param chunks (list): Data chunks from which to calculate the weighted mean.
-        :return: float: The calculated weighted mean.
-        """
-
-        """Attempt 1"""
-        # median_val = np.median(chunks)
-        # proximity_weights = 1 / (1 + np.abs(chunks - median_val))  # Avoid division by zero
-        # weighted_mean = np.sum(proximity_weights * chunks) / np.sum(proximity_weights)
-        # return weighted_mean
-
-        """Attempt 2 Inter-Quartile Mean (same accuracy as mean)"""
-        # sorted_preds = np.sort(chunks, axis=0)
-        # Q1 = int(np.floor(0.25 * len(sorted_preds)))
-        # Q3 = int(np.floor(0.75 * len(sorted_preds)))
-        #
-        # iqm = np.mean(sorted_preds[Q1:Q3], axis=0)
-        # return iqm

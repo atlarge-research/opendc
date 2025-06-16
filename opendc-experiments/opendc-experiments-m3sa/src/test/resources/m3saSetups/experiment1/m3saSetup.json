@@ -1,0 +1,28 @@
+{
+  "multimodel": true,
+  "metamodel": true,
+  "metric": "power_draw",
+  "window_size": 10,
+  "window_function": "mean",
+  "meta_function": "mean",
+  "samples_per_minute": 2,
+  "plot_type": "time_series",
+  "y_ticks_count": 4,
+  "x_ticks_count": 5,
+  "y_min": 0,
+  "y_max": 33,
+  "y_label": "Power Draw [kw]",
+  "x_label": "Time [day/month]",
+  "current_unit": "",
+  "unit_scaling_magnitude": 3,
+  "figsize": [15, 5],
+  "plot_colors": [
+    "#B1B1B100",
+    "#B1B1B100",
+    "#B1B1B100",
+    "#B1B1B100",
+    "#0277BB",
+    "#EE7833"
+  ],
+  "figure_export_name": "figure-9C"
+}

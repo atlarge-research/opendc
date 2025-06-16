@@ -28,6 +28,13 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install M3SA Python requirements
+        run: pip install -r opendc-experiments/opendc-experiments-m3sa/src/main/python/requirements.txt
       - name: Build with Gradle
         uses: gradle/actions/setup-gradle@v3
         with:

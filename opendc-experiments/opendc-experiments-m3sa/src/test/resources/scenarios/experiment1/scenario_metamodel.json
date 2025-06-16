@@ -1,0 +1,36 @@
+{
+    "name": "outputs/",
+    "topologies": [
+        {
+            "pathToFile": "src/test/resources/topologies/experiment1/topology_mse.json"
+        },
+        {
+            "pathToFile": "src/test/resources/topologies/experiment1/topology_sqrt.json"
+        },
+        {
+            "pathToFile": "src/test/resources/topologies/experiment1/topology_asymptotic1.json"
+        },
+        {
+            "pathToFile": "src/test/resources/topologies/experiment1/topology_asymptotic2.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "src/test/resources/workloadTraces/experiment1",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "policyName": "Mem",
+            "type": "prefab"
+        }
+    ],
+    "exportModels": [
+        {
+            "exportInterval": 30000
+        }
+    ],
+    "outputFolder": "src/test/resources/",
+    "runs": 1
+}

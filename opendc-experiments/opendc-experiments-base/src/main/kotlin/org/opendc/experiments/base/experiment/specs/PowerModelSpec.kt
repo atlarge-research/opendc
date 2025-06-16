@@ -29,4 +29,8 @@ public data class PowerModelSpec(
     val type: String = "constant",
     val idlePower: Double = 200.0,
     val maxPower: Double = 350.0,
+    val minPower: Double = 200.0,
+    val calibrationFactor: Double = 1.0,
+    val asymUtil: Double = 0.0,
+    val dvfs: Boolean = false,
 )

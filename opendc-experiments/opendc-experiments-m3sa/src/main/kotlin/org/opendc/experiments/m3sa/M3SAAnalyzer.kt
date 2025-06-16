@@ -20,38 +20,56 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.m3sa
-
-import kotlin.io.path.Path
+import java.nio.file.Files
+import java.nio.file.Paths
 
 /**
  * This constant variable should be changed depending on the root folder that is being run.
  * PATH_TO_PYTHON_MAIN should point to the main python file, ran when the analysis starts.
  */
 
-public val ANALYSIS_SCRIPTS_DIRECTORY: String = "./opendc-experiments/opendc-experiments-m3sa/src/main/python"
-public val ABSOLUTE_SCRIPT_PATH: String =
-    Path("$ANALYSIS_SCRIPTS_DIRECTORY/main.py").toAbsolutePath().normalize().toString()
-public val SCRIPT_LANGUAGE: String = Path("$ANALYSIS_SCRIPTS_DIRECTORY/venv/bin/python3").toAbsolutePath().normalize().toString()
-
 public fun m3saAnalyze(
     outputFolderPath: String,
     m3saSetupPath: String,
+    m3saExecPath: String,
 ) {
+    // script to run
+    val scriptPath =
+        Paths.get(m3saExecPath, "main.py")
+            .toAbsolutePath()
+            .normalize()
+            .toString()
+
+    // look for venv python; if missing, use system python3
+    val venvPython =
+        Paths.get(m3saExecPath, "venv", "bin", "python3")
+            .toAbsolutePath()
+            .normalize()
+    val pythonBin =
+        if (Files.isRegularFile(venvPython) && Files.isExecutable(venvPython)) {
+            venvPython.toString()
+        } else {
+            "python3" // fallback
+        }
+
     val process =
         ProcessBuilder(
-            SCRIPT_LANGUAGE,
-            ABSOLUTE_SCRIPT_PATH,
-            outputFolderPath,
+            pythonBin,
+            scriptPath,
             m3saSetupPath,
-        ).directory(Path(ANALYSIS_SCRIPTS_DIRECTORY).toFile())
+            "$outputFolderPath/raw-output",
+            "-o",
+            outputFolderPath,
+        )
+            .redirectErrorStream(true)
             .start()
 
     val exitCode = process.waitFor()
+    val output = process.inputStream.bufferedReader().readText()
     if (exitCode == 0) {
-        println("[M3SA says] M3SA operation(s) completed successfully.")
+        println("[M3SA says] Success:\n$output")
     } else {
-        val errors = process.errorStream.bufferedReader().readText()
-        println("[M3SA says] Exit code $exitCode; Error(s): $errors")
+        println("[M3SA says] Exit code $exitCode; Output:\n$output")
+        throw RuntimeException("M3SA analysis failed with exit code $exitCode")
     }
 }

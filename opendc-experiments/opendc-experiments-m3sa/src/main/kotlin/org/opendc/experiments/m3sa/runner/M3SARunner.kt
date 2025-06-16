@@ -25,7 +25,10 @@
 package org.opendc.experiments.m3sa.runner
 
 import org.opendc.experiments.base.experiment.Scenario
+import org.opendc.experiments.base.runner.runScenario
 import org.opendc.experiments.base.runner.setupOutputFolderStructure
+import java.io.File
+import java.util.Optional
 
 /**
  * Run scenario when no pool is available for parallel execution
@@ -35,9 +38,35 @@ import org.opendc.experiments.base.runner.setupOutputFolderStructure
  */
 public fun runExperiment(
     experiment: List<Scenario>,
-    parallelism: Int,
+    extraSimDataPath: Optional<String>,
 ) {
+    val ansiReset = "\u001B[0m"
+    val ansiGreen = "\u001B[32m"
+    val ansiBlue = "\u001B[34m"
+
     setupOutputFolderStructure(experiment[0].outputFolder)
 
-    runExperiment(experiment, parallelism)
+    var latestScenarioId = experiment.map { it.id }.maxOrNull() ?: 0
+
+    for (scenario in experiment) {
+        println(
+            "\n\n$ansiGreen================================================================================$ansiReset",
+        )
+        println("$ansiBlue Running scenario: ${scenario.name} $ansiReset")
+        println("$ansiGreen================================================================================$ansiReset")
+        runScenario(
+            scenario,
+        )
+    }
+
+    if (extraSimDataPath.isEmpty) return
+
+    for (directory in File(extraSimDataPath.get()).listFiles()!!) {
+        if (!directory.isDirectory) continue
+        latestScenarioId += 1
+
+        val copyPath = "${experiment[0].outputFolder}/raw-output/$latestScenarioId"
+        File(copyPath).mkdirs()
+        directory.copyRecursively(File(copyPath), true)
+    }
 }

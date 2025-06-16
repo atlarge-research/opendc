@@ -1,19 +1,29 @@
-from os import sys
+from models import MultiModel, MetaModel
+from util import SimulationConfig, parse_configuration
+from argparse import ArgumentParser, Namespace
 
-from input_parser import read_input
-from models.MetaModel import MetaModel
-from models.MultiModel import MultiModel
+
+def arg_parser() -> Namespace:
+    parser = ArgumentParser(prog="m3sa", description="Multi-Model Simulation and Analysis")
+    parser.add_argument("config", help="Path to the JSON configuration file", type=str)
+    parser.add_argument("simulation", help="Path to the simulation directory", type=str)
+    parser.add_argument("-o", "--output", help="Path to the output directory", type=str, nargs="?")
+    return parser.parse_args()
 
 
 def main():
-    multimodel = MultiModel(
-        user_input=read_input(sys.argv[2]),
-        path=sys.argv[1],
-    )
+    arg_input: Namespace = arg_parser()
+    output_path: str = arg_input.output if arg_input.output else "output"
+    simulation_path: str = arg_input.simulation
+    simulation_config: SimulationConfig = parse_configuration(arg_input.config, output_path, simulation_path)
 
-    multimodel.generate_plot()
+    multi_model: MultiModel = MultiModel(config=simulation_config)
+    multi_model.generate_plot()
 
-    MetaModel(multimodel)
+    if simulation_config.is_metamodel:
+        meta_model: MetaModel = MetaModel(multi_model)
+        meta_model.compute()
+        meta_model.output()
 
 
 if __name__ == "__main__":
