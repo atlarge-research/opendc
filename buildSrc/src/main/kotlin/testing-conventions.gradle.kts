@@ -42,21 +42,9 @@ dependencies {
     testRuntimeOnly(versionCatalog["junit.jupiter.engine"])
 }
 
-tasks.register<Test>("testsOn18") {
+tasks.register<Test>("testsOn21") {
     javaLauncher.set(javaToolchains.launcherFor {
-        languageVersion.set(JavaLanguageVersion.of(18))
-    })
-
-    useJUnitPlatform()
-
-    minHeapSize = "512m"
-    maxHeapSize = "1024m"
-    jvmArgs = listOf("-XX:MaxMetaspaceSize=512m")
-}
-
-tasks.register<Test>("testsOn19") {
-    javaLauncher.set(javaToolchains.launcherFor {
-        languageVersion.set(JavaLanguageVersion.of(19))
+        languageVersion.set(JavaLanguageVersion.of(21))
     })
 
     useJUnitPlatform()

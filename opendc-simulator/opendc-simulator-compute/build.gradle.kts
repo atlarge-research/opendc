@@ -24,7 +24,6 @@ description = "Library for simulating computing workloads"
 
 plugins {
     `kotlin-library-conventions`
-    `benchmark-conventions`
 }
 
 dependencies {
