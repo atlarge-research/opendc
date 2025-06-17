@@ -37,7 +37,7 @@ public final class MachineModel {
     private final MemoryUnit memory;
     //    private final List<GpuModel> gpuModels = new ArrayList<>(); // TODO: Implement multi GPU support
     private final List<GpuModel> gpuModels;
-    private final DistributionPolicy cpuDistribbutionStrategy;
+    private final DistributionPolicy cpuDistributionStrategy;
     private final DistributionPolicy gpuDistributionPolicy;
     private final List<ResourceType> availableResources = new ArrayList<>();
     /**
@@ -54,7 +54,7 @@ public final class MachineModel {
             DistributionPolicy gpuDistributionPolicy) {
         this.cpuModel = cpuModel;
         this.memory = memory;
-        this.cpuDistribbutionStrategy = cpuDistributionPolicy;
+        this.cpuDistributionStrategy = cpuDistributionPolicy;
         this.gpuDistributionPolicy = gpuDistributionPolicy;
         this.availableResources.add(ResourceType.CPU);
         // TODO: Add Memory
@@ -157,7 +157,7 @@ public final class MachineModel {
      * Return the distribution strategy for the CPU.
      */
     public DistributionPolicy getCpuDistributionStrategy() {
-        return cpuDistribbutionStrategy;
+        return cpuDistributionStrategy;
     }
 
     /**

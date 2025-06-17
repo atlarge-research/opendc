@@ -27,6 +27,4 @@ public enum ResourceType {
     GPU,
     // Combined category for non-compute physical and virtual resources
     AUXILIARY
-    // alternative
-    //    INFRASTRUCTURE
 }
