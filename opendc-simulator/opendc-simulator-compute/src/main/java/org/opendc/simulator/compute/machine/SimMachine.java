@@ -90,27 +90,27 @@ public class SimMachine {
         return this.computeResources.get(resourceType);
     }
 
-    public ResourcePerformanceCounters getPerformanceCounters() {
+    public PerformanceCounters getPerformanceCounters() {
 
         return this.computeResources.get(ResourceType.CPU).getFirst().getPerformanceCounters();
     }
 
-    public List<GpuPerformanceCounters> getGpuPerformanceCounters() {
-        List<GpuPerformanceCounters> counters = new ArrayList<>();
+    public List<PerformanceCounters> getGpuPerformanceCounters() {
+        List<PerformanceCounters> counters = new ArrayList<>();
         List<ComputeResource> gpus = this.computeResources.get(ResourceType.GPU) == null
                 ? new ArrayList<>()
                 : this.computeResources.get(ResourceType.GPU);
 
         for (ComputeResource gpu : gpus) {
-            counters.add((GpuPerformanceCounters) gpu.getPerformanceCounters());
+            counters.add(gpu.getPerformanceCounters());
         }
         return counters;
     }
 
-    public GpuPerformanceCounters getSpecificGpuPerformanceCounters(int GpuId) {
+    public PerformanceCounters getGpuPerformanceCounters(int GpuId) {
         for (ComputeResource gpu : this.computeResources.get(ResourceType.GPU)) {
             if (gpu.getId() == GpuId) {
-                return (GpuPerformanceCounters) gpu.getPerformanceCounters();
+                return gpu.getPerformanceCounters();
             }
         }
         throw new RuntimeException("No such gpu id: " + GpuId);

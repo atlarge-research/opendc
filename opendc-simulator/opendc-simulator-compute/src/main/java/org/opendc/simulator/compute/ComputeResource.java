@@ -22,13 +22,13 @@
 
 package org.opendc.simulator.compute;
 
-import org.opendc.simulator.compute.machine.ResourcePerformanceCounters;
+import org.opendc.simulator.compute.machine.PerformanceCounters;
 
 public interface ComputeResource {
 
     public int getId();
 
-    public ResourcePerformanceCounters getPerformanceCounters();
+    public PerformanceCounters getPerformanceCounters();
 
     public double getCapacity();
 

@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
-import org.opendc.simulator.compute.machine.CpuPerformanceCounters;
+import org.opendc.simulator.compute.machine.PerformanceCounters;
 import org.opendc.simulator.compute.models.CpuModel;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
@@ -56,7 +56,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
     private double maxCapacity;
 
-    private final CpuPerformanceCounters cpuPerformanceCounters = new CpuPerformanceCounters();
+    private final PerformanceCounters performanceCounters = new PerformanceCounters();
     private long lastCounterUpdate;
     private final double cpuFrequencyInv;
 
@@ -86,8 +86,8 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         return maxCapacity;
     }
 
-    public CpuPerformanceCounters getPerformanceCounters() {
-        return cpuPerformanceCounters;
+    public PerformanceCounters getPerformanceCounters() {
+        return performanceCounters;
     }
 
     public double getPowerDraw() {
@@ -173,14 +173,14 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
             final double factor = this.cpuFrequencyInv * delta;
 
-            this.cpuPerformanceCounters.addActiveTime(Math.round(rate * factor));
-            this.cpuPerformanceCounters.addIdleTime(Math.round((capacity - rate) * factor));
-            this.cpuPerformanceCounters.addStealTime(Math.round((demand - rate) * factor));
+            this.performanceCounters.addActiveTime(Math.round(rate * factor));
+            this.performanceCounters.addIdleTime(Math.round((capacity - rate) * factor));
+            this.performanceCounters.addStealTime(Math.round((demand - rate) * factor));
         }
 
-        this.cpuPerformanceCounters.setDemand(this.currentCpuDemand);
-        this.cpuPerformanceCounters.setSupply(this.currentCpuSupplied);
-        this.cpuPerformanceCounters.setCapacity(this.maxCapacity);
+        this.performanceCounters.setDemand(this.currentCpuDemand);
+        this.performanceCounters.setSupply(this.currentCpuSupplied);
+        this.performanceCounters.setCapacity(this.maxCapacity);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

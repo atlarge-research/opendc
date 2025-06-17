@@ -148,43 +148,43 @@ public object DfltHostExportColumns {
 
     public val GPU_CAPACITY: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("gpu_capacity"),
-        ) { it.gpuCapacities[0] }
+            field = Types.optional(FLOAT).named("gpu_capacity"),
+        ) { it.gpuCapacities.getOrNull(0) }
 
     public val GPU_USAGE: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("gpu_usage"),
-        ) { it.gpuUsages[0] }
+            field = Types.optional(FLOAT).named("gpu_usage"),
+        ) { it.gpuUsages.getOrNull(0) }
 
     public val GPU_DEMAND: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("gpu_demand"),
-        ) { it.gpuDemands[0] }
+            field = Types.optional(FLOAT).named("gpu_demand"),
+        ) { it.gpuDemands.getOrNull(0) }
 
     public val GPU_UTILIZATION: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("gpu_utilization"),
-        ) { it.gpuUtilizations[0] }
+            field = Types.optional(FLOAT).named("gpu_utilization"),
+        ) { it.gpuUtilizations.getOrNull(0) }
 
     public val GPU_TIME_ACTIVE: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(INT64).named("gpu_time_active"),
-        ) { it.gpuActiveTimes[0] }
+            field = Types.optional(INT64).named("gpu_time_active"),
+        ) { it.gpuActiveTimes.getOrNull(0) }
 
     public val GPU_TIME_IDLE: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(INT64).named("gpu_time_idle"),
-        ) { it.gpuIdleTimes[0] }
+            field = Types.optional(INT64).named("gpu_time_idle"),
+        ) { it.gpuIdleTimes.getOrNull(0) }
 
     public val GPU_TIME_STEAL: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(INT64).named("gpu_time_steal"),
-        ) { it.gpuStealTimes[0] }
+            field = Types.optional(INT64).named("gpu_time_steal"),
+        ) { it.gpuStealTimes.getOrNull(0) }
 
     public val GPU_TIME_LOST: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(INT64).named("gpu_time_lost"),
-        ) { it.gpuLostTimes[0] }
+            field = Types.optional(INT64).named("gpu_time_lost"),
+        ) { it.gpuLostTimes.getOrNull(0) }
 
     public val POWER_DRAW: ExportColumn<HostTableReader> =
         ExportColumn(

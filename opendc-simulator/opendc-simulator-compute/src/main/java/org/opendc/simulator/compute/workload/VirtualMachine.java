@@ -31,9 +31,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
-import org.opendc.simulator.compute.machine.CpuPerformanceCounters;
-import org.opendc.simulator.compute.machine.GpuPerformanceCounters;
-import org.opendc.simulator.compute.machine.ResourcePerformanceCounters;
+import org.opendc.simulator.compute.machine.PerformanceCounters;
 import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
@@ -58,8 +56,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     private final Hashtable<ResourceType, Double> resourceCapacities = new Hashtable<>();
     private final Hashtable<ResourceType, Double> resourceTimeScalingFactor = new Hashtable<>(); // formerly known as d
     private final Hashtable<ResourceType, FlowEdge> distributorEdges = new Hashtable<>();
-    private final Hashtable<ResourceType, List<ResourcePerformanceCounters>> resourcePerformanceCounters =
-            new Hashtable<>();
+    private final Hashtable<ResourceType, List<PerformanceCounters>> resourcePerformanceCounters = new Hashtable<>();
 
     private final long checkpointInterval;
     private final long checkpointDuration;
@@ -110,29 +107,22 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         return checkpointIntervalScaling;
     }
 
-    public CpuPerformanceCounters getCpuPerformanceCounters() {
-        return (CpuPerformanceCounters)
-                this.resourcePerformanceCounters.get(ResourceType.CPU).getFirst();
+    public PerformanceCounters getCpuPerformanceCounters() {
+        return this.resourcePerformanceCounters.get(ResourceType.CPU).getFirst();
     }
 
-    public List<GpuPerformanceCounters> getGpuPerformanceCounters() {
-        List<ResourcePerformanceCounters> gpuPerformanceCounters =
-                this.resourcePerformanceCounters.get(ResourceType.GPU);
-        return (gpuPerformanceCounters != null)
-                ? gpuPerformanceCounters.stream()
-                        .filter(c -> c instanceof GpuPerformanceCounters)
-                        .map(c -> (GpuPerformanceCounters) c)
-                        .toList()
+    public List<PerformanceCounters> getGpuPerformanceCounters() {
+        return this.resourcePerformanceCounters.get(ResourceType.GPU) != null
+                ? this.resourcePerformanceCounters.get(ResourceType.GPU)
                 : new ArrayList<>();
     }
 
-    public GpuPerformanceCounters getSpecificGpuPerformanceCounters(int gpuId) {
-        List<ResourcePerformanceCounters> gpuPerformanceCounters =
-                this.resourcePerformanceCounters.get(ResourceType.GPU);
+    public PerformanceCounters getGpuPerformanceCounters(int gpuId) {
+        List<PerformanceCounters> gpuPerformanceCounters = this.resourcePerformanceCounters.get(ResourceType.GPU);
         if (gpuId < 0 || gpuId >= gpuPerformanceCounters.size()) {
             throw new IndexOutOfBoundsException("No such GPU id: " + gpuId);
         }
-        return (GpuPerformanceCounters) gpuPerformanceCounters.get(gpuId);
+        return gpuPerformanceCounters.get(gpuId);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,16 +171,12 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
             this.resourceCapacities.put(resourceType, resources.getFirst().getCapacity());
 
-            ArrayList<ResourcePerformanceCounters> performanceCounters = new ArrayList<>();
+            ArrayList<PerformanceCounters> performanceCounters = new ArrayList<>();
             ArrayList<Double> resourceDemands = new ArrayList<>();
             ArrayList<Double> resourceSupplies = new ArrayList<>();
+
             for (ComputeResource resource : resources) {
-                // TODO: not so cool, but works for now
-                switch (resourceType) {
-                    case CPU -> performanceCounters.add(new CpuPerformanceCounters());
-                    case GPU -> performanceCounters.add(new GpuPerformanceCounters());
-                    default -> throw new IllegalArgumentException("Unsupported resource type: " + resourceType);
-                }
+                performanceCounters.add(new PerformanceCounters());
                 this.resourceTimeScalingFactor.put(resourceType, 1.0 / resource.getCapacity());
                 resourceDemands.add(0.0);
                 resourceSupplies.add(0.0);
@@ -243,7 +229,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         for (ResourceType resourceType : this.availableResources) {
             int i = 0;
             final double factor = this.resourceTimeScalingFactor.get(resourceType) * delta;
-            for (ResourcePerformanceCounters performanceCounter : this.resourcePerformanceCounters.get(resourceType)) {
+            for (PerformanceCounters performanceCounter : this.resourcePerformanceCounters.get(resourceType)) {
                 if (delta > 0) {
                     performanceCounter.addActiveTime(
                             Math.round(this.resourceSupplies.get(resourceType).get(i) * factor));

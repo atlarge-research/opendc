@@ -361,7 +361,7 @@ public class SimHost(
         val gpuStats = mutableListOf<HostGpuStats>()
         for (gpu in simMachine!!.gpus) {
             gpu.updateCounters(this.clock.millis())
-            val counters = simMachine!!.getSpecificGpuPerformanceCounters(gpu.id)
+            val counters = simMachine!!.getGpuPerformanceCounters(gpu.id)
 
             gpuStats.add(
                 HostGpuStats(

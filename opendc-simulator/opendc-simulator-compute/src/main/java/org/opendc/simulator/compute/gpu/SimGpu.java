@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
-import org.opendc.simulator.compute.machine.GpuPerformanceCounters;
+import org.opendc.simulator.compute.machine.PerformanceCounters;
 import org.opendc.simulator.compute.models.GpuModel;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
@@ -55,7 +55,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
 
     private double maxCapacity;
 
-    private final GpuPerformanceCounters gpuPerformanceCounters = new GpuPerformanceCounters();
+    private final PerformanceCounters performanceCounters = new PerformanceCounters();
     private long lastCounterUpdate;
     private final double gpuFrequencyInv;
 
@@ -79,8 +79,8 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         return maxCapacity;
     } // TODO: take memory into account
 
-    public GpuPerformanceCounters getPerformanceCounters() {
-        return gpuPerformanceCounters;
+    public PerformanceCounters getPerformanceCounters() {
+        return performanceCounters;
     }
 
     public double getPowerDraw() {
@@ -168,14 +168,14 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
 
             final double factor = this.gpuFrequencyInv * delta;
 
-            this.gpuPerformanceCounters.addActiveTime(Math.round(rate * factor));
-            this.gpuPerformanceCounters.addIdleTime(Math.round((capacity - rate) * factor));
-            this.gpuPerformanceCounters.addStealTime(Math.round((demand - rate) * factor));
+            this.performanceCounters.addActiveTime(Math.round(rate * factor));
+            this.performanceCounters.addIdleTime(Math.round((capacity - rate) * factor));
+            this.performanceCounters.addStealTime(Math.round((demand - rate) * factor));
         }
 
-        this.gpuPerformanceCounters.setDemand(this.currentGpuDemand);
-        this.gpuPerformanceCounters.setSupply(this.currentGpuSupplied);
-        this.gpuPerformanceCounters.setCapacity(this.maxCapacity);
+        this.performanceCounters.setDemand(this.currentGpuDemand);
+        this.performanceCounters.setSupply(this.currentGpuSupplied);
+        this.performanceCounters.setCapacity(this.maxCapacity);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
