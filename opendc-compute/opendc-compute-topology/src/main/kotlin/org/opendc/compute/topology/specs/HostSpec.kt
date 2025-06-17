@@ -23,7 +23,6 @@
 package org.opendc.compute.topology.specs
 
 import org.opendc.simulator.compute.cpu.CpuPowerModel
-import org.opendc.simulator.compute.gpu.GpuPowerModel
 import org.opendc.simulator.compute.models.MachineModel
 
 /**
@@ -38,7 +37,7 @@ public data class HostSpec(
     val clusterName: String,
     val model: MachineModel,
     val cpuPowerModel: CpuPowerModel,
-    val gpuPowerModel: GpuPowerModel?,
+    val gpuPowerModel: CpuPowerModel?,
     val embodiedCarbon: Double = 1000.0,
     val expectedLifetime: Double = 5.0,
 )

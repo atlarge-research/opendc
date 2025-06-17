@@ -32,7 +32,6 @@ import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
 import org.opendc.simulator.compute.cpu.CpuPowerModel;
 import org.opendc.simulator.compute.cpu.SimCpu;
-import org.opendc.simulator.compute.gpu.GpuPowerModel;
 import org.opendc.simulator.compute.gpu.SimGpu;
 import org.opendc.simulator.compute.memory.Memory;
 import org.opendc.simulator.compute.models.GpuModel;
@@ -196,7 +195,7 @@ public class SimMachine {
             MachineModel machineModel,
             FlowDistributor powerDistributor,
             CpuPowerModel cpuPowerModel,
-            @Nullable GpuPowerModel gpuPowerModel,
+            @Nullable CpuPowerModel gpuPowerModel,
             Consumer<Exception> completion) {
         this.engine = engine;
         this.machineModel = machineModel;
