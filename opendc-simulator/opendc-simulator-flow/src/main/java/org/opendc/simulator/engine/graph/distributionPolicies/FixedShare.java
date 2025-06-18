@@ -24,6 +24,11 @@ package org.opendc.simulator.engine.graph.distributionPolicies;
 
 import java.util.ArrayList;
 
+/**
+ * A distribution policy that distributes supply equally among all nodes.
+ * The share can be set to a fixed value, defaulting to 1.
+ * This policy not implemented yet and is used as a placeholder.
+ */
 public class FixedShare implements DistributionPolicy {
 
     private int share;
