@@ -37,7 +37,7 @@ import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.getPowerModel
 import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicyFactory
-import org.opendc.simulator.engine.graph.distributionPolicies.DistributionStrategyType
+import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicyFactory.DistributionStrategyType
 import java.io.File
 import java.io.InputStream
 
