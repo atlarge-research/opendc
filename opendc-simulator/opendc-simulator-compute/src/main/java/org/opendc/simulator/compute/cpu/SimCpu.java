@@ -28,6 +28,7 @@ import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
 import org.opendc.simulator.compute.machine.PerformanceCounters;
 import org.opendc.simulator.compute.models.CpuModel;
+import org.opendc.simulator.compute.power.PowerModel;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -45,7 +46,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     private int id;
     private final CpuModel cpuModel;
 
-    private final CpuPowerModel cpuPowerModel;
+    private final PowerModel cpuPowerModel;
 
     private double currentCpuDemand = 0.0f; // cpu capacity demanded by the mux
     private double currentCpuUtilization = 0.0f;
@@ -115,7 +116,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimCpu(FlowEngine engine, CpuModel cpuModel, CpuPowerModel powerModel, int id) {
+    public SimCpu(FlowEngine engine, CpuModel cpuModel, PowerModel powerModel, int id) {
         super(engine);
         this.id = id;
         this.cpuModel = cpuModel;

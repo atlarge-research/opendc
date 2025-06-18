@@ -22,8 +22,8 @@
 
 package org.opendc.compute.topology.specs
 
-import org.opendc.simulator.compute.cpu.CpuPowerModel
 import org.opendc.simulator.compute.models.MachineModel
+import org.opendc.simulator.compute.power.PowerModel
 
 /**
  * Description of a physical host that will be simulated by OpenDC and host the virtual machines.
@@ -36,8 +36,8 @@ public data class HostSpec(
     val name: String,
     val clusterName: String,
     val model: MachineModel,
-    val cpuPowerModel: CpuPowerModel,
-    val gpuPowerModel: CpuPowerModel?,
+    val cpuPowerModel: PowerModel,
+    val gpuPowerModel: PowerModel?,
     val embodiedCarbon: Double = 1000.0,
     val expectedLifetime: Double = 5.0,
 )

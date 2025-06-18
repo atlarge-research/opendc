@@ -31,11 +31,11 @@ import org.opendc.compute.topology.specs.HostJSONSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.PowerSourceSpec
 import org.opendc.compute.topology.specs.TopologySpec
-import org.opendc.simulator.compute.cpu.getCpuPowerModel
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
+import org.opendc.simulator.compute.power.getPowerModel
 import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicyFactory
 import org.opendc.simulator.engine.graph.distributionPolicies.DistributionStrategyType
 import java.io.File
@@ -194,7 +194,7 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
         )
 
     val cpuPowerModel =
-        getCpuPowerModel(
+        getPowerModel(
             cpuPowerModel.modelType,
             cpuPowerModel.power.toWatts(),
             cpuPowerModel.maxPower.toWatts(),

@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.Map;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
-import org.opendc.simulator.compute.cpu.CpuPowerModel;
 import org.opendc.simulator.compute.machine.PerformanceCounters;
 import org.opendc.simulator.compute.models.GpuModel;
+import org.opendc.simulator.compute.power.PowerModel;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -45,7 +45,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
     private final int id;
     private final GpuModel gpuModel;
 
-    private final CpuPowerModel gpuPowerModel;
+    private final PowerModel gpuPowerModel;
 
     private double currentGpuDemand = 0.0f; // cpu capacity demanded by the mux
     private double currentGpuUtilization = 0.0f;
@@ -112,7 +112,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimGpu(FlowEngine engine, GpuModel gpuModel, CpuPowerModel powerModel, int id) {
+    public SimGpu(FlowEngine engine, GpuModel gpuModel, PowerModel powerModel, int id) {
         super(engine);
         this.id = id;
         this.gpuModel = gpuModel;

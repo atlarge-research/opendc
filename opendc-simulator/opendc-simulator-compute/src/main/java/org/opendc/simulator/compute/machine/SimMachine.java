@@ -30,12 +30,12 @@ import java.util.function.Consumer;
 import org.jetbrains.annotations.Nullable;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
-import org.opendc.simulator.compute.cpu.CpuPowerModel;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.compute.gpu.SimGpu;
 import org.opendc.simulator.compute.memory.Memory;
 import org.opendc.simulator.compute.models.GpuModel;
 import org.opendc.simulator.compute.models.MachineModel;
+import org.opendc.simulator.compute.power.PowerModel;
 import org.opendc.simulator.compute.power.SimPsu;
 import org.opendc.simulator.compute.workload.ChainWorkload;
 import org.opendc.simulator.compute.workload.SimWorkload;
@@ -194,8 +194,8 @@ public class SimMachine {
             FlowEngine engine,
             MachineModel machineModel,
             FlowDistributor powerDistributor,
-            CpuPowerModel cpuPowerModel,
-            @Nullable CpuPowerModel gpuPowerModel,
+            PowerModel cpuPowerModel,
+            @Nullable PowerModel gpuPowerModel,
             Consumer<Exception> completion) {
         this.engine = engine;
         this.machineModel = machineModel;

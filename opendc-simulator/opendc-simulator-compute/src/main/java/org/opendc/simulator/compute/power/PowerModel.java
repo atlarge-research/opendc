@@ -20,16 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpu;
+package org.opendc.simulator.compute.power;
 
 import org.opendc.simulator.compute.machine.SimMachine;
 
 /**
- * A model for estimating the power usage of a {@link SimMachine} based on the CPU usage.
+ * A model for estimating the power usage of a {@link SimMachine} based on the resource usage.
  */
-public interface CpuPowerModel {
+public interface PowerModel {
     /**
-     * Computes CPU power consumption for each host.
+     * Computes resource power consumption for each host.
      *
      * @param utilization The CPU utilization percentage.
      * @return A double value of CPU power consumption (in W).

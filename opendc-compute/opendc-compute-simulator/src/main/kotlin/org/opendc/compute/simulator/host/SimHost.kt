@@ -34,10 +34,10 @@ import org.opendc.compute.simulator.telemetry.GuestSystemStats
 import org.opendc.compute.simulator.telemetry.HostCpuStats
 import org.opendc.compute.simulator.telemetry.HostGpuStats
 import org.opendc.compute.simulator.telemetry.HostSystemStats
-import org.opendc.simulator.compute.cpu.CpuPowerModel
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
+import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.engine.engine.FlowEngine
 import org.opendc.simulator.engine.graph.FlowDistributor
 import java.time.Duration
@@ -60,8 +60,8 @@ public class SimHost(
     private val clock: InstantSource,
     private val engine: FlowEngine,
     private val machineModel: MachineModel,
-    private val cpuPowerModel: CpuPowerModel,
-    private val gpuPowerModel: CpuPowerModel?,
+    private val cpuPowerModel: PowerModel,
+    private val gpuPowerModel: PowerModel?,
     private val embodiedCarbon: Double,
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
