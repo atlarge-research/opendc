@@ -60,7 +60,17 @@ public final class MachineModel {
         // TODO: Add Memory
         //        this.usedResources.add(ResourceType.Memory);
         if (gpuModels != null && !gpuModels.isEmpty()) {
-            this.gpuModels = gpuModels;
+            //            this.gpuModels = gpuModels;
+            this.gpuModels = new ArrayList<>();
+            this.gpuModels.add(new GpuModel(
+                    0,
+                    gpuModels.getFirst().getCoreCount() * gpuModels.size(), // merges multiple GPUs into one
+                    gpuModels.getFirst().getCoreSpeed(),
+                    gpuModels.getFirst().getMemoryBandwidth(),
+                    gpuModels.getFirst().getMemorySize() * gpuModels.size(), // merges multiple GPUs into one
+                    gpuModels.getFirst().getVendor(),
+                    gpuModels.getFirst().getModelName(),
+                    gpuModels.getFirst().getArchitecture()));
             this.availableResources.add(ResourceType.GPU);
         } else {
             this.gpuModels = new ArrayList<>();
