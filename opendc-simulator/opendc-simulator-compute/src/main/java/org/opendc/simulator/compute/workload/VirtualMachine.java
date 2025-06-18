@@ -148,7 +148,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         }
 
         this.workloadIndex = -1;
-        this.availableResources.add(supplier.getResourceType());
+        this.availableResources.add(supplier.getSupplierResourceType());
         this.onStart();
     }
 
@@ -160,7 +160,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
         for (FlowSupplier supplier : suppliers) {
             new FlowEdge(this, supplier);
-            ResourceType resourceType = supplier.getResourceType();
+            ResourceType resourceType = supplier.getSupplierResourceType();
 
             this.availableResources.add(resourceType);
 
@@ -325,8 +325,9 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void addSupplierEdge(FlowEdge supplierEdge) {
-        this.resourceCapacities.put(supplierEdge.getSupplier().getResourceType(), supplierEdge.getCapacity());
-        this.distributorEdges.put(supplierEdge.getSupplier().getResourceType(), supplierEdge);
+        ResourceType resourceType = supplierEdge.getSupplierResourceType();
+        this.resourceCapacities.put(resourceType, supplierEdge.getCapacity());
+        this.distributorEdges.put(resourceType, supplierEdge);
     }
 
     /**
@@ -338,8 +339,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     @Override
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
         // FIXME: Needs to be assigned to specific resource if multiple exist -> add resource Id as parameter
-        this.pushOutgoingDemand(
-                supplierEdge, newDemand, supplierEdge.getSupplier().getResourceType());
+        this.pushOutgoingDemand(supplierEdge, newDemand, supplierEdge.getSupplierResourceType());
     }
 
     /**
@@ -363,10 +363,10 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
-        this.resourceSupplies.put(consumerEdge.getConsumer().getResourceType(), new ArrayList<>(List.of(newSupply)));
+        this.resourceSupplies.put(consumerEdge.getConsumerResourceType(), new ArrayList<>(List.of(newSupply)));
         this.distributorEdges
-                .get(consumerEdge.getConsumer().getResourceType())
-                .pushSupply(newSupply, false, consumerEdge.getConsumer().getResourceType());
+                .get(consumerEdge.getConsumerResourceType())
+                .pushSupply(newSupply, false, consumerEdge.getConsumerResourceType());
     }
 
     /**
@@ -390,8 +390,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     @Override
     public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand) {
         updateCounters(this.clock.millis());
-        this.pushOutgoingDemand(
-                this.distributorEdges.get(consumerEdge.getConsumer().getResourceType()), newDemand);
+        this.pushOutgoingDemand(this.distributorEdges.get(consumerEdge.getConsumerResourceType()), newDemand);
     }
 
     @Override
@@ -411,9 +410,9 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         updateCounters(this.clock.millis());
 
         this.pushOutgoingSupply(
-                this.distributorEdges.get(supplierEdge.getSupplier().getResourceType()),
+                this.distributorEdges.get(supplierEdge.getSupplierResourceType()),
                 newSupply,
-                supplierEdge.getSupplier().getResourceType());
+                supplierEdge.getSupplierResourceType());
     }
 
     /**
@@ -463,7 +462,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void removeSupplierEdge(FlowEdge supplierEdge) {
-        if (!this.distributorEdges.contains(supplierEdge.getSupplier().getResourceType())) {
+        if (!this.distributorEdges.contains(supplierEdge.getSupplierResourceType())) {
             return;
         }
 
@@ -483,11 +482,5 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
     public List<ResourceType> getAvailableResources() {
         return this.availableResources;
-    }
-
-    // needs to be implemented, due to overlapping FlowConsumer and FlowSupplier interfaces
-    @Override
-    public ResourceType getResourceType() {
-        return ResourceType.AUXILIARY;
     }
 }

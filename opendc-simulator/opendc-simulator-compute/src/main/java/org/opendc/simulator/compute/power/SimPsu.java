@@ -186,8 +186,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
-        this.pushOutgoingSupply(
-                consumerEdge, newSupply, consumerEdge.getConsumer().getResourceType());
+        this.pushOutgoingSupply(consumerEdge, newSupply, consumerEdge.getConsumerResourceType());
     }
 
     @Override
@@ -198,7 +197,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand) {
-        handleIncomingDemand(consumerEdge, newDemand, consumerEdge.getConsumer().getResourceType());
+        handleIncomingDemand(consumerEdge, newDemand, consumerEdge.getConsumerResourceType());
     }
 
     @Override
@@ -223,7 +222,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void addConsumerEdge(FlowEdge consumerEdge) {
-        ResourceType consumerResourceType = consumerEdge.getConsumer().getResourceType();
+        ResourceType consumerResourceType = consumerEdge.getConsumerResourceType();
         this.resourceEdges.put(consumerResourceType, new ArrayList<>(List.of(consumerEdge)));
         this.powerDemandsPerResource.put(consumerResourceType, new ArrayList<>(List.of(0.0)));
         this.powerSuppliedPerResource.put(consumerResourceType, new ArrayList<>(List.of(0.0)));
@@ -236,7 +235,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void removeConsumerEdge(FlowEdge consumerEdge) {
-        ResourceType resourceType = consumerEdge.getConsumer().getResourceType();
+        ResourceType resourceType = consumerEdge.getConsumerResourceType();
         if (this.resourceEdges.containsKey(resourceType)) {
             this.resourceEdges.remove(resourceType);
             this.powerDemandsPerResource.remove(resourceType);
@@ -263,11 +262,5 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
         return Map.of(
                 FlowEdge.NodeType.SUPPLYING, supplyingEdges,
                 FlowEdge.NodeType.CONSUMING, consumingEdges);
-    }
-
-    // needs to be implemented, due to overlapping FlowConsumer and FlowSupplier interfaces
-    @Override
-    public ResourceType getResourceType() {
-        return ResourceType.AUXILIARY;
     }
 }

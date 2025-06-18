@@ -121,8 +121,31 @@ public class FlowEdge {
         return this.supply;
     }
 
+    /**
+     * Get the resource type of this edge.
+     *
+     * @return The resource type of this edge.
+     */
     public ResourceType getResourceType() {
         return this.resourceType;
+    }
+
+    /**
+     * Get the resource type of the supplier of this edge.
+     *
+     * @return The resource type of the supplier.
+     */
+    public ResourceType getSupplierResourceType() {
+        return this.supplier.getSupplierResourceType();
+    }
+
+    /**
+     * Get the resource type of the consumer of this edge.
+     *
+     * @return The resource type of the consumer.
+     */
+    public ResourceType getConsumerResourceType() {
+        return this.consumer.getConsumerResourceType();
     }
 
     public int getConsumerIndex() {
@@ -186,6 +209,6 @@ public class FlowEdge {
      * Push new supply from the Supplier to the Consumer
      */
     public void pushSupply(double newSupply) {
-        this.pushSupply(newSupply, false, this.supplier.getResourceType());
+        this.pushSupply(newSupply, false, this.supplier.getSupplierResourceType());
     }
 }

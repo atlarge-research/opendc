@@ -140,14 +140,14 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.startOfFragment = this.clock.millis();
 
         for (FlowSupplier supplier : resourceSuppliers) {
-            if (supplier.getResourceType() != ResourceType.AUXILIARY) {
+            if (supplier.getSupplierResourceType() != ResourceType.AUXILIARY) {
                 new FlowEdge(this, supplier);
-                this.usedResourceTypes.add(supplier.getResourceType());
-                this.resourcesSupplied.put(supplier.getResourceType(), 0.0);
-                this.newResourcesSupply.put(supplier.getResourceType(), 0.0);
-                this.resourcesDemand.put(supplier.getResourceType(), 0.0);
-                this.remainingWork.put(supplier.getResourceType(), 0.0);
-                this.workloadFinished.put(supplier.getResourceType(), false);
+                this.usedResourceTypes.add(supplier.getSupplierResourceType());
+                this.resourcesSupplied.put(supplier.getSupplierResourceType(), 0.0);
+                this.newResourcesSupply.put(supplier.getSupplierResourceType(), 0.0);
+                this.resourcesDemand.put(supplier.getSupplierResourceType(), 0.0);
+                this.remainingWork.put(supplier.getSupplierResourceType(), 0.0);
+                this.workloadFinished.put(supplier.getSupplierResourceType(), false);
             }
         }
     }

@@ -288,7 +288,12 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     }
 
     @Override
-    public ResourceType getResourceType() {
+    public ResourceType getSupplierResourceType() {
+        return ResourceType.CPU;
+    }
+
+    @Override
+    public ResourceType getConsumerResourceType() {
         return ResourceType.CPU;
     }
 }

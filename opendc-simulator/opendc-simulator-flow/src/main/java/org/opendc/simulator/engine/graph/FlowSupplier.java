@@ -32,7 +32,6 @@ public interface FlowSupplier {
         handleIncomingDemand(consumerEdge, newDemand);
     }
 
-    // TODO: make this default
     void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply);
 
     default void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply, ResourceType resourceType) {
@@ -50,7 +49,7 @@ public interface FlowSupplier {
         return getCapacity();
     }
 
-    default ResourceType getResourceType() {
+    default ResourceType getSupplierResourceType() {
         return ResourceType.AUXILIARY;
     }
     ;

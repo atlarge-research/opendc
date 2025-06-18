@@ -43,7 +43,7 @@ public interface FlowConsumer {
     void removeSupplierEdge(FlowEdge supplierEdge);
 
     // needed for flow nodes with multiple edges to same other flow node (PSU, VM)
-    default ResourceType getResourceType() {
+    default ResourceType getConsumerResourceType() {
         return ResourceType.AUXILIARY;
     }
 }

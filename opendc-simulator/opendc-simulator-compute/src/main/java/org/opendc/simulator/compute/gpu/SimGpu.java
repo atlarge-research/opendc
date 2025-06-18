@@ -92,9 +92,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         return this.currentGpuDemand;
     }
 
-    //    public double getSpeed() {
-    //        return this.currentGpuSupplied;
-    //    } // TODO: take memory into account
+    // TODO: take memory into account
     public double getSupply() {
         return this.currentGpuSupplied;
     } // TODO: take memory into account
@@ -286,7 +284,12 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
     }
 
     @Override
-    public ResourceType getResourceType() {
+    public ResourceType getSupplierResourceType() {
+        return ResourceType.GPU;
+    }
+
+    @Override
+    public ResourceType getConsumerResourceType() {
         return ResourceType.GPU;
     }
 }
