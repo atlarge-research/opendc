@@ -263,4 +263,14 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
                 FlowEdge.NodeType.SUPPLYING, supplyingEdges,
                 FlowEdge.NodeType.CONSUMING, consumingEdges);
     }
+
+    @Override
+    public ResourceType getSupplierResourceType() {
+        return ResourceType.Power;
+    }
+
+    @Override
+    public ResourceType getConsumerResourceType() {
+        return ResourceType.Power;
+    }
 }
