@@ -481,12 +481,13 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
                 FlowEdge.NodeType.SUPPLYING, supplierEdges);
     }
 
+    public List<ResourceType> getAvailableResources() {
+        return this.availableResources;
+    }
+
+    // needs to be implemented, due to overlapping FlowConsumer and FlowSupplier interfaces
     @Override
     public ResourceType getResourceType() {
         return ResourceType.AUXILIARY;
-    }
-
-    public List<ResourceType> getAvailableResources() {
-        return this.availableResources;
     }
 }

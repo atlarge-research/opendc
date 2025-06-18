@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.power;
 
 import java.util.List;
 import java.util.Map;
-import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -217,10 +216,5 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
         List<FlowEdge> supplierEdges = this.distributorEdge != null ? List.of(this.distributorEdge) : List.of();
 
         return Map.of(FlowEdge.NodeType.SUPPLYING, supplierEdges);
-    }
-
-    @Override
-    public ResourceType getResourceType() {
-        return ResourceType.AUXILIARY;
     }
 }

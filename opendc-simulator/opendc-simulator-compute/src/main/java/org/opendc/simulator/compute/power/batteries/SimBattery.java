@@ -333,6 +333,7 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
                 FlowEdge.NodeType.SUPPLYING, supplyingEdges);
     }
 
+    // needs to be implemented, due to overlapping FlowConsumer and FlowSupplier interfaces
     @Override
     public ResourceType getResourceType() {
         return ResourceType.AUXILIARY;

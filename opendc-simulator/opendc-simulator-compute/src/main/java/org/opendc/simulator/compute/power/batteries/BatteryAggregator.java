@@ -192,6 +192,7 @@ public class BatteryAggregator extends FlowNode implements FlowConsumer, FlowSup
                 FlowEdge.NodeType.SUPPLYING, supplyingEdges);
     }
 
+    // needs to be implemented, due to overlapping FlowConsumer and FlowSupplier interfaces
     @Override
     public ResourceType getResourceType() {
         return ResourceType.AUXILIARY;

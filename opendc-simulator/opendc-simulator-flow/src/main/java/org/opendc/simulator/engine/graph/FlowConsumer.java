@@ -31,7 +31,6 @@ public interface FlowConsumer {
     default void handleIncomingSupply(FlowEdge supplierEdge, double newSupply, ResourceType resourceType) {
         handleIncomingSupply(supplierEdge, newSupply);
     }
-    ;
 
     void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand);
 
@@ -43,5 +42,8 @@ public interface FlowConsumer {
 
     void removeSupplierEdge(FlowEdge supplierEdge);
 
-    ResourceType getResourceType();
+    // needed for flow nodes with multiple edges to same other flow node (PSU, VM)
+    default ResourceType getResourceType() {
+        return ResourceType.AUXILIARY;
+    }
 }

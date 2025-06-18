@@ -50,5 +50,8 @@ public interface FlowSupplier {
         return getCapacity();
     }
 
-    ResourceType getResourceType();
+    default ResourceType getResourceType() {
+        return ResourceType.AUXILIARY;
+    }
+    ;
 }
