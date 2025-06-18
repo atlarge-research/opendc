@@ -23,11 +23,7 @@
 package org.opendc.simulator.compute.power
 
 // TODO: couple this correctly
-<<<<<<<< HEAD:opendc-simulator/opendc-simulator-compute/src/main/java/org/opendc/simulator/compute/cpu/CpuPowerModelsFactory.kt
-public enum class CPUPowerModelEnum {
-========
 public enum class PowerModelEnum {
->>>>>>>> 0fc10d47 (renamed CpuPowermodel to resource independent Powermodel):opendc-simulator/opendc-simulator-compute/src/main/java/org/opendc/simulator/compute/power/PowerModelsFactory.kt
     Constant,
     Sqrt,
     Linear,
@@ -42,20 +38,9 @@ public fun getPowerModel(
     power: Double,
     maxPower: Double,
     idlePower: Double,
-<<<<<<<< HEAD:opendc-simulator/opendc-simulator-compute/src/main/java/org/opendc/simulator/compute/cpu/CpuPowerModelsFactory.kt
     calibrationFactor: Double = 1.0,
     asymUtil: Double = 0.0,
     dvfs: Boolean = true,
-): CpuPowerModel {
-    return when (modelType) {
-        "constant" -> CpuPowerModels.constant(power)
-        "sqrt" -> CpuPowerModels.sqrt(maxPower, idlePower)
-        "linear" -> CpuPowerModels.linear(maxPower, idlePower)
-        "square" -> CpuPowerModels.square(maxPower, idlePower)
-        "cubic" -> CpuPowerModels.cubic(maxPower, idlePower)
-        "mse" -> CpuPowerModels.mse(maxPower, idlePower, calibrationFactor)
-        "asymptotic" -> CpuPowerModels.asymptotic(maxPower, idlePower, asymUtil, dvfs)
-========
 ): PowerModel {
     return when (modelType) {
         "constant" -> PowerModels.constant(power)
@@ -63,30 +48,21 @@ public fun getPowerModel(
         "linear" -> PowerModels.linear(maxPower, idlePower)
         "square" -> PowerModels.square(maxPower, idlePower)
         "cubic" -> PowerModels.cubic(maxPower, idlePower)
->>>>>>>> 0fc10d47 (renamed CpuPowermodel to resource independent Powermodel):opendc-simulator/opendc-simulator-compute/src/main/java/org/opendc/simulator/compute/power/PowerModelsFactory.kt
-
+        "mse" -> PowerModels.mse(maxPower, idlePower, calibrationFactor)
+        "asymptotic" -> PowerModels.asymptotic(maxPower, idlePower, asymUtil, dvfs)
         else -> throw IllegalArgumentException("Unknown power modelType $modelType")
     }
 }
 
 public fun getPowerModel(modelType: String): PowerModel {
     return when (modelType) {
-<<<<<<<< HEAD:opendc-simulator/opendc-simulator-compute/src/main/java/org/opendc/simulator/compute/cpu/CpuPowerModelsFactory.kt
-        "constant" -> CpuPowerModels.constant(200.0)
-        "sqrt" -> CpuPowerModels.sqrt(350.0, 200.0)
-        "linear" -> CpuPowerModels.linear(350.0, 200.0)
-        "square" -> CpuPowerModels.square(350.0, 200.0)
-        "cubic" -> CpuPowerModels.cubic(350.0, 200.0)
-        "mse" -> CpuPowerModels.mse(350.0, 200.0, 1.0)
-        "asymptotic" -> CpuPowerModels.asymptotic(350.0, 200.0, 0.0, true)
-========
         "constant" -> PowerModels.constant(200.0)
         "sqrt" -> PowerModels.sqrt(350.0, 200.0)
         "linear" -> PowerModels.linear(350.0, 200.0)
         "square" -> PowerModels.square(350.0, 200.0)
         "cubic" -> PowerModels.cubic(350.0, 200.0)
->>>>>>>> 0fc10d47 (renamed CpuPowermodel to resource independent Powermodel):opendc-simulator/opendc-simulator-compute/src/main/java/org/opendc/simulator/compute/power/PowerModelsFactory.kt
-
+        "mse" -> PowerModels.mse(350.0, 200.0, 1.0)
+        "asymptotic" -> PowerModels.asymptotic(350.0, 200.0, 0.0, true)
         else -> throw IllegalArgumentException("Unknown power modelType $modelType")
     }
 }

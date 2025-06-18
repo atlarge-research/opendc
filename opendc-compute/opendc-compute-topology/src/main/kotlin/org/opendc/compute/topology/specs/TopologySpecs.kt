@@ -77,7 +77,6 @@ public data class HostJSONSpec(
     val cpu: CPUJSONSpec,
     val count: Int = 1,
     val memory: MemoryJSONSpec,
-    val powerModel: PowerModelSpec = PowerModelSpec.DFLT,
     val gpu: GPUJSONSpec? = null,
     val cpuPowerModel: PowerModelSpec = PowerModelSpec.DFLT,
     val gpuPowerModel: PowerModelSpec = PowerModelSpec.DFLT,

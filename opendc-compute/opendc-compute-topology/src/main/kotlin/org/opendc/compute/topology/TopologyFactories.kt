@@ -199,23 +199,25 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
             cpuPowerModel.power.toWatts(),
             cpuPowerModel.maxPower.toWatts(),
             cpuPowerModel.idlePower.toWatts(),
+            cpuPowerModel.calibrationFactor,
+            cpuPowerModel.asymUtil,
+            cpuPowerModel.dvfs,
         )
 
-    val gpuPowerModel = if (gpuUnits.isEmpty()){
-        null
-    }else{
-        getGpuPowerModel(gpuPowerModel.modelType, gpuPowerModel.power.toWatts(), gpuPowerModel.maxPower.toWatts(), gpuPowerModel.idlePower.toWatts())
-    }
-    val powerModel =
-        getPowerModel(
-            powerModel.modelType,
-            powerModel.power.toWatts(),
-            powerModel.maxPower.toWatts(),
-            powerModel.idlePower.toWatts(),
-            powerModel.calibrationFactor,
-            powerModel.asymUtil,
-            powerModel.dvfs,
-        )
+    val gpuPowerModel =
+        if (gpuUnits.isEmpty()) {
+            null
+        } else {
+            getPowerModel(
+                gpuPowerModel.modelType,
+                gpuPowerModel.power.toWatts(),
+                gpuPowerModel.maxPower.toWatts(),
+                gpuPowerModel.idlePower.toWatts(),
+                gpuPowerModel.calibrationFactor,
+                gpuPowerModel.asymUtil,
+                gpuPowerModel.dvfs,
+            )
+        }
 
     val hostSpec =
         HostSpec(

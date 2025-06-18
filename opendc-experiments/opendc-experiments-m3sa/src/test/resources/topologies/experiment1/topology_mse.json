@@ -13,7 +13,7 @@
                     "memory": {
                          "memorySize": 128000000
                     },
-                    "powerModel": {
+                    "cpuPowerModel": {
                         "modelType": "mse",
                         "power": 400.0,
                         "idlePower": 32.0,
