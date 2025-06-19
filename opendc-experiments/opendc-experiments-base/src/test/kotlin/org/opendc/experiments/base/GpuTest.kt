@@ -119,17 +119,16 @@ class GpuTest {
     @Test
     fun testGpuHostCreationMultiMinimal() {
         val topology = createTopology("Gpus/multi_gpu_no_vendor_no_memory.json")
-        val count = 3
         assertGpuConfiguration(
             topology,
-            coreCount = 1 * count,
+            coreCount = 1,
             coreSpeed = 2000.0,
-            memorySize = -1L * count,
+            memorySize = -1L,
             memoryBandwidth = -1.0,
             vendor = "unknown",
             modelName = "unknown",
             architecture = "unknown",
-            gpuCount = 1,
+            gpuCount = 3,
         )
     }
 
@@ -139,18 +138,17 @@ class GpuTest {
     @Test
     fun testGpuHostCreationMultiWithMemoryNoVendor() {
         val topology = createTopology("Gpus/multi_gpu_no_vendor.json")
-        val count = 100
 
         assertGpuConfiguration(
             topology,
-            coreCount = 1 * count,
+            coreCount = 1,
             coreSpeed = 2000.0,
-            memorySize = 4096L * count,
+            memorySize = 4096L,
             memoryBandwidth = 500.0,
             vendor = "unknown",
             modelName = "unknown",
             architecture = "unknown",
-            gpuCount = 1,
+            gpuCount = 100,
         )
     }
 
@@ -160,17 +158,16 @@ class GpuTest {
     @Test
     fun testGpuHostCreationMultiNoMemoryWithVendor() {
         val topology = createTopology("Gpus/multi_gpu_no_memory.json")
-        val count = 2
         assertGpuConfiguration(
             topology,
-            coreCount = 1 * count,
+            coreCount = 1,
             coreSpeed = 2000.0,
-            memorySize = -1L * count,
+            memorySize = -1L,
             memoryBandwidth = -1.0,
             vendor = "NVIDIA",
             modelName = "Tesla V100",
             architecture = "Volta",
-            gpuCount = 1,
+            gpuCount = 2,
         )
     }
 
@@ -180,19 +177,20 @@ class GpuTest {
     @Test
     fun testGpuHostCreationMultiWithMemoryWithVendor() {
         val topology = createTopology("Gpus/multi_gpu_full.json")
+        // temporary implementation, to account for GPU concatenation
         val count = 5
         assertGpuConfiguration(
             topology,
             // cuda cores
-            coreCount = 5120 * count,
+            coreCount = 5120,
             // fictional value
             coreSpeed = 5000.0,
-            memorySize = 30517578125 * count,
+            memorySize = 30517578125,
             memoryBandwidth = 7031250000.0,
             vendor = "NVIDIA",
             modelName = "Tesla V100",
             architecture = "Volta",
-            gpuCount = 1,
+            gpuCount = 5,
         )
     }
 
@@ -248,15 +246,21 @@ class GpuTest {
             { assertEquals(2000.0, monitor.taskGpuSupplied["0"]?.get(1)?.get(0)) { "The gpu used by task 0 is incorrect" } },
             { assertEquals(2000.0, monitor.taskGpuSupplied["0"]?.get(8)?.get(0)) { "The gpu used by task 0 is incorrect" } },
             // task 1
-            { assertEquals(2000.0, monitor.taskGpuDemands["1"]?.get(1)?.get(0)) { "The gpu demanded by task 1 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuDemands["1"]?.get(8)?.get(0)) { "The gpu demanded by task 1 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuSupplied["1"]?.get(1)?.get(0)) { "The gpu used by task 1 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuSupplied["1"]?.get(8)?.get(0)) { "The gpu used by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuDemands["1"]?.get(1)?.get(1)) { "The gpu demanded by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuDemands["1"]?.get(8)?.get(1)) { "The gpu demanded by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["1"]?.get(1)?.get(1)) { "The gpu used by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["1"]?.get(8)?.get(1)) { "The gpu used by task 1 is incorrect" } },
             // host
-            { assertEquals(4000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0)) { "The gpu demanded by the host is incorrect" } },
-            { assertEquals(4000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(9)?.get(0)) { "The gpu demanded by the host is incorrect" } },
-            { assertEquals(4000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0)) { "The gpu used by the host is incorrect" } },
-            { assertEquals(4000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(9)?.get(0)) { "The gpu used by the host is incorrect" } },
+            // GPU 0
+            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0)) { "The gpu demanded by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(9)?.get(0)) { "The gpu demanded by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0)) { "The gpu used by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(9)?.get(0)) { "The gpu used by the host is incorrect" } },
+            // GPU 1
+            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1)) { "The gpu demanded by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(9)?.get(1)) { "The gpu demanded by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1)) { "The gpu used by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(9)?.get(1)) { "The gpu used by the host is incorrect" } },
         )
     }
 
