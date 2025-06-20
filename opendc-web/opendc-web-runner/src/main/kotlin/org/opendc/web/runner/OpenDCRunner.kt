@@ -355,9 +355,9 @@ public class OpenDCRunner(
                 }
 
             val gpuUnits =
-                machine.gpus.map { gpu ->
+                machine.gpus.mapIndexed { index, gpu ->
                     GpuModel(
-                        0,
+                        index,
                         gpu.numberOfCores,
                         gpu.clockRateMhz,
                     )
