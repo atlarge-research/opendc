@@ -32,7 +32,7 @@ public class DistributionPolicyFactory {
     public static DistributionPolicy getDistributionStrategy(DistributionStrategyType distributionStrategyType) {
 
         return switch (distributionStrategyType) {
-            case MaxMinFairness -> new MaxMinFairnessStrategy();
+            case MaxMinFairness -> new MaxMinFairnessPolicy();
             case FixedShare -> new FixedShare(1);
                 // actively misspelling
             default -> throw new IllegalArgumentException(

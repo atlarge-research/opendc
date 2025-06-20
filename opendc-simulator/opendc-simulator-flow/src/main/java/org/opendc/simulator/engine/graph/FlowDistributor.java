@@ -32,21 +32,23 @@ import java.util.Set;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicy;
-import org.opendc.simulator.engine.graph.distributionPolicies.MaxMinFairnessStrategy;
+import org.opendc.simulator.engine.graph.distributionPolicies.MaxMinFairnessPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(FlowDistributor.class);
     private final ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
-    private HashMap<Integer, FlowEdge> supplierEdges = new HashMap<>(); // The suppliers that provide supply to this distributor
+    private HashMap<Integer, FlowEdge> supplierEdges =
+            new HashMap<>(); // The suppliers that provide supply to this distributor
 
     private final ArrayList<Double> incomingDemands = new ArrayList<>(); // What is demanded by the consumers
     private final ArrayList<Double> outgoingSupplies = new ArrayList<>(); // What is supplied to the consumers
 
     private double totalIncomingDemand; // The total demand of all the consumers
     // AS index is based on the supplierIndex of the FlowEdge, ids of entries need to be stable
-    private HashMap<Integer, Double> currentIncomingSupplies = new HashMap<>(); // The current supply provided by the suppliers
+    private HashMap<Integer, Double> currentIncomingSupplies =
+            new HashMap<>(); // The current supply provided by the suppliers
     private Double totalIncomingSupply = 0.0; // The total supply provided by the suppliers
 
     private boolean outgoingDemandUpdateNeeded = false;
@@ -62,7 +64,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
 
     public FlowDistributor(FlowEngine engine) {
         super(engine);
-        this.distributionPolicy = new MaxMinFairnessStrategy();
+        this.distributionPolicy = new MaxMinFairnessPolicy();
     }
 
     public FlowDistributor(FlowEngine engine, DistributionPolicy distributionPolicy) {
@@ -101,9 +103,10 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     private void updateOutgoingDemand() {
         // equally distribute the demand to all suppliers
         for (FlowEdge supplierEdge : this.supplierEdges.values()) {
-            this.pushOutgoingDemand(supplierEdge, this.totalIncomingDemand/ this.supplierEdges.size());
+            this.pushOutgoingDemand(supplierEdge, this.totalIncomingDemand / this.supplierEdges.size());
             // alternatively a relative share could be used, based on capacity minus current incoming supply
-//            this.pushOutgoingDemand(supplierEdge, this.totalIncomingDemand * (supplierEdge.getCapacity() - currentIncomingSupplies.get(idx) / supplierEdges.size()));
+            //            this.pushOutgoingDemand(supplierEdge, this.totalIncomingDemand * (supplierEdge.getCapacity() -
+            // currentIncomingSupplies.get(idx) / supplierEdges.size()));
         }
 
         this.outgoingDemandUpdateNeeded = false;
@@ -119,8 +122,10 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         if (this.totalIncomingDemand > this.totalIncomingSupply) {
             this.overloaded = true;
 
-            double[] supplies =
-                    this.distributionPolicy.distributeSupply(this.incomingDemands, new ArrayList<>(this.currentIncomingSupplies.values()), this.totalIncomingSupply);
+            double[] supplies = this.distributionPolicy.distributeSupply(
+                    this.incomingDemands,
+                    new ArrayList<>(this.currentIncomingSupplies.values()),
+                    this.totalIncomingSupply);
 
             for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
                 this.pushOutgoingSupply(this.consumerEdges.get(idx), supplies[idx], this.getConsumerResourceType());
@@ -228,11 +233,9 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         this.capacity -= supplierEdge.getCapacity();
         this.currentIncomingSupplies.put(idx, 0.0);
 
-
         if (this.supplierEdges.isEmpty()) {
             this.updatedDemands.clear();
         }
-
     }
 
     @Override
@@ -303,13 +306,15 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     @Override
     public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
         return Map.of(
-                FlowEdge.NodeType.CONSUMING, this.consumerEdges,
-                FlowEdge.NodeType.SUPPLYING, new ArrayList<>(this.supplierEdges.values()));
+                FlowEdge.NodeType.CONSUMING,
+                this.consumerEdges,
+                FlowEdge.NodeType.SUPPLYING,
+                new ArrayList<>(this.supplierEdges.values()));
     }
 
     @Override
     public ResourceType getSupplierResourceType() {
-//        return this.supplierEdge.getSupplierResourceType();
+        //        return this.supplierEdge.getSupplierResourceType();
         return this.supplierResourceType;
     }
 
