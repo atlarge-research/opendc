@@ -52,6 +52,7 @@ public class TaskTableReaderImpl(
     override fun setValues(table: TaskTableReader) {
         hostInfo = table.hostInfo
 
+        _hostName = table.hostName
         _timestamp = table.timestamp
         _timestampAbsolute = table.timestampAbsolute
 
@@ -92,6 +93,10 @@ public class TaskTableReaderImpl(
      */
     override var hostInfo: HostInfo? = null
     private var simHost: SimHost? = null
+
+    private var _hostName: String? = null
+    override val hostName: String?
+        get() = _hostName
 
     private var _timestamp = Instant.MIN
     override val timestamp: Instant
@@ -187,6 +192,8 @@ public class TaskTableReaderImpl(
 
         val cpuStats = simHost?.getCpuStats(task)
         val sysStats = simHost?.getSystemStats(task)
+
+        _hostName = task.hostName
 
         _timestamp = now
         _timestampAbsolute = now + startTime

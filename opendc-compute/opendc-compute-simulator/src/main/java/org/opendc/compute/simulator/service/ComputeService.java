@@ -205,7 +205,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                     LOGGER.error("Unknown host {}", host);
                 }
 
-                task.setHost(null);
                 host.delete(task);
 
                 if (newState == TaskState.COMPLETED) {
@@ -523,7 +522,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             LOGGER.info("Assigned task {} to host {}", task, host);
 
             try {
-                task.host = host;
+                task.setHost(host);
                 task.scheduledAt = clock.instant();
 
                 host.spawn(task);
@@ -709,7 +708,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
             //            from.delete(internalTask);
 
-            internalTask.host = null;
+            internalTask.setHost(null);
 
             internalTask.setWorkload(workload);
             internalTask.start();

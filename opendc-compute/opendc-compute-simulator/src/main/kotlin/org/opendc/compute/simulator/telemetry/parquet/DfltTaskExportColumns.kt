@@ -81,10 +81,10 @@ public object DfltTaskExportColumns {
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("host_name"),
         ) {
-            if (it.hostInfo == null) {
+            if (it.hostName == null) {
                 return@ExportColumn Binary.fromString("")
             }
-            return@ExportColumn Binary.fromString(it.hostInfo!!.name)
+            return@ExportColumn Binary.fromString(it.hostName)
         }
 
     public val MEM_CAPACITY: ExportColumn<TaskTableReader> =

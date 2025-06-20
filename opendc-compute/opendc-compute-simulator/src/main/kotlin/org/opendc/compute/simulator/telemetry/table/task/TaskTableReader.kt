@@ -60,6 +60,8 @@ public interface TaskTableReader : Exportable {
      */
     public val hostInfo: HostInfo?
 
+    public val hostName: String?
+
     /**
      * The uptime of the host since last time in ms.
      */

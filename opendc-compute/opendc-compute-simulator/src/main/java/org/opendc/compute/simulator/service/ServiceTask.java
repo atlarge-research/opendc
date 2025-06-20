@@ -63,7 +63,9 @@ public class ServiceTask {
     Instant scheduledAt = null;
     Instant submittedAt;
     Instant finishedAt;
-    SimHost host = null;
+    private SimHost host = null;
+    private String hostName = null;
+
     private SchedulingRequest request = null;
 
     private int numFailures = 0;
@@ -158,8 +160,15 @@ public class ServiceTask {
         return host;
     }
 
-    public void setHost(SimHost host) {
-        this.host = host;
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHost(SimHost newHost) {
+        this.host = newHost;
+        if (newHost != null) {
+            this.hostName = newHost.getName();
+        }
     }
 
     public int getNumFailures() {
