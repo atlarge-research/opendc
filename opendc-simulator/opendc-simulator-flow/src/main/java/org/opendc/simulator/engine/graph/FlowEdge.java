@@ -57,7 +57,12 @@ public class FlowEdge {
         this(consumer, supplier, resourceType, -1, -1);
     }
 
-    public FlowEdge(FlowConsumer consumer, FlowSupplier supplier, ResourceType resourceType, int consumerIndex, int supplierIndex) {
+    public FlowEdge(
+            FlowConsumer consumer,
+            FlowSupplier supplier,
+            ResourceType resourceType,
+            int consumerIndex,
+            int supplierIndex) {
         if (!(consumer instanceof FlowNode)) {
             throw new IllegalArgumentException("Flow consumer is not a FlowNode");
         }

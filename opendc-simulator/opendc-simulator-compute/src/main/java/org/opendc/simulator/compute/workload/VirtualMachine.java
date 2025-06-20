@@ -320,7 +320,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         if (this.resourceCapacities.containsKey(resourceType) && this.resourceCapacities.get(resourceType) > 0) {
             this.resourceCapacities.put(
                     resourceType, this.resourceCapacities.get(resourceType) + supplierEdge.getCapacity());
-        }else {
+        } else {
             this.resourceCapacities.put(resourceType, supplierEdge.getCapacity());
         }
         this.distributorEdges.put(resourceType, supplierEdge);

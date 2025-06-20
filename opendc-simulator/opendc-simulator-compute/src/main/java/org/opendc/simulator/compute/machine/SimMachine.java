@@ -26,7 +26,6 @@ import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.concurrent.Flow;
 import java.util.function.Consumer;
 import org.jetbrains.annotations.Nullable;
 import org.opendc.common.ResourceType;
@@ -213,12 +212,21 @@ public class SimMachine {
                 new ArrayList<>(List.of(new SimCpu(engine, this.machineModel.getCpuModel(), cpuPowerModel, 0))));
 
         // Connect the CPU to the PSU
-        new FlowEdge((FlowConsumer) this.computeResources.get(ResourceType.CPU).getFirst(), this.psu, ResourceType.Power, 0, -1);
+        new FlowEdge(
+                (FlowConsumer) this.computeResources.get(ResourceType.CPU).getFirst(),
+                this.psu,
+                ResourceType.Power,
+                0,
+                -1);
 
         // Create a FlowDistributor and add the cpu as supplier
         this.distributors.put(ResourceType.CPU, new FlowDistributor(engine));
-        new FlowEdge(this.distributors.get(ResourceType.CPU), (FlowSupplier)
-                this.computeResources.get(ResourceType.CPU).getFirst(), ResourceType.CPU, -1, 0);
+        new FlowEdge(
+                this.distributors.get(ResourceType.CPU),
+                (FlowSupplier) this.computeResources.get(ResourceType.CPU).getFirst(),
+                ResourceType.CPU,
+                -1,
+                0);
 
         // TODO: include memory as flow node
         this.memory = new Memory(engine, this.machineModel.getMemory());
@@ -232,7 +240,12 @@ public class SimMachine {
                 SimGpu gpu = new SimGpu(engine, gpuModel, gpuPowerModel, gpuModel.getId());
                 gpus.add(gpu);
                 // Connect the GPU to the distributor
-                new FlowEdge(this.distributors.get(ResourceType.GPU), gpu, ResourceType.GPU, gpuModel.getId(), gpuModel.getId());
+                new FlowEdge(
+                        this.distributors.get(ResourceType.GPU),
+                        gpu,
+                        ResourceType.GPU,
+                        gpuModel.getId(),
+                        gpuModel.getId());
                 // Connect the GPU to the PSU
                 new FlowEdge(gpu, this.psu, ResourceType.Power, gpuModel.getId(), gpuModel.getId());
             }
