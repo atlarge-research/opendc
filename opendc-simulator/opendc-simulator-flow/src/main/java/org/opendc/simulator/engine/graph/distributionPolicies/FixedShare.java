@@ -42,7 +42,7 @@ public class FixedShare implements DistributionPolicy {
     }
 
     @Override
-    public double[] distributeSupply(ArrayList<Double> supply, double currentSupply) {
+    public double[] distributeSupply(ArrayList<Double> supply, ArrayList<Double> currentSupply, double totalSupply) {
         return new double[0];
     }
 }
