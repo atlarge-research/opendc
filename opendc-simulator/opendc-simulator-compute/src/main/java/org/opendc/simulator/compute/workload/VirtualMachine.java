@@ -317,7 +317,12 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     @Override
     public void addSupplierEdge(FlowEdge supplierEdge) {
         ResourceType resourceType = supplierEdge.getSupplierResourceType();
-        this.resourceCapacities.put(resourceType, supplierEdge.getCapacity());
+        if (this.resourceCapacities.containsKey(resourceType) && this.resourceCapacities.get(resourceType) > 0) {
+            this.resourceCapacities.put(
+                    resourceType, this.resourceCapacities.get(resourceType) + supplierEdge.getCapacity());
+        }else {
+            this.resourceCapacities.put(resourceType, supplierEdge.getCapacity());
+        }
         this.distributorEdges.put(resourceType, supplierEdge);
     }
 
