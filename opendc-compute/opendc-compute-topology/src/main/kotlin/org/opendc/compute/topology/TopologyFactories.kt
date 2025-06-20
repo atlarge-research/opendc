@@ -157,6 +157,7 @@ private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
  * Helper method to convert a [HostJSONSpec] into a [HostSpec]s.
  */
 private var globalCoreId = 0
+private var globalGpuId  = 0
 
 private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
     val units =
@@ -172,7 +173,7 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
     val gpuUnits =
         List(gpu?.count ?: 0) {
             GpuModel(
-                globalCoreId++,
+                globalGpuId++,
                 gpu!!.coreCount,
                 gpu.coreSpeed.toMHz(),
                 gpu.memoryBandwidth.toKibps(),
