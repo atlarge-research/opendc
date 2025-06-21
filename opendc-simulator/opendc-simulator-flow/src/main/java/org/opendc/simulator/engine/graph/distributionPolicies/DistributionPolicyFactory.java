@@ -24,19 +24,19 @@ package org.opendc.simulator.engine.graph.distributionPolicies;
 
 public class DistributionPolicyFactory {
 
-    public enum DistributionStrategyType {
+    public enum DistributionPolicyType {
         MaxMinFairness,
         FixedShare;
     }
 
-    public static DistributionPolicy getDistributionStrategy(DistributionStrategyType distributionStrategyType) {
+    public static DistributionPolicy getDistributionStrategy(DistributionPolicyType distributionPolicyType) {
 
-        return switch (distributionStrategyType) {
+        return switch (distributionPolicyType) {
             case MaxMinFairness -> new MaxMinFairnessStrategy();
             case FixedShare -> new FixedShare(1);
                 // actively misspelling
             default -> throw new IllegalArgumentException(
-                    "Unknown distribution strategy type: " + distributionStrategyType);
+                    "Unknown distribution strategy type: " + distributionPolicyType);
         };
     }
 }
