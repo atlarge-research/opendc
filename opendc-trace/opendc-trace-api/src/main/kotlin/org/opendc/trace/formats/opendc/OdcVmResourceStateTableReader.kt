@@ -24,9 +24,11 @@ package org.opendc.trace.formats.opendc
 
 import org.opendc.trace.TableReader
 import org.opendc.trace.conv.resourceCpuCount
+import org.opendc.trace.conv.resourceGpuCount
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
+import org.opendc.trace.conv.resourceStateGpuUsage
 import org.opendc.trace.conv.resourceStateTimestamp
 import org.opendc.trace.formats.opendc.parquet.ResourceState
 import org.opendc.trace.util.parquet.LocalParquetReader
@@ -60,6 +62,9 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
     private val colDuration = 2
     private val colCpuCount = 3
     private val colCpuUsage = 4
+    private val colGpuCount = 5
+    private val colGpuUsage = 6
+    private val colMemoryCapacity = 7
 
     override fun resolve(name: String): Int {
         return when (name) {
@@ -68,6 +73,8 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
             resourceStateDuration -> colDuration
             resourceCpuCount -> colCpuCount
             resourceStateCpuUsage -> colCpuUsage
+            resourceGpuCount -> colGpuCount
+            resourceStateGpuUsage -> colGpuUsage
             else -> -1
         }
     }
@@ -85,6 +92,7 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
         val record = checkNotNull(record) { "Reader in invalid state" }
         return when (index) {
             colCpuCount -> record.cpuCount
+            colGpuCount -> record.gpuCount
             else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
     }
@@ -101,6 +109,7 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
         val record = checkNotNull(record) { "Reader in invalid state" }
         return when (index) {
             colCpuUsage -> record.cpuUsage
+            colGpuUsage -> record.gpuUsage
             else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
     }

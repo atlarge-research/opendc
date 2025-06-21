@@ -15,7 +15,7 @@
                     "memory": {
                         "memorySize": 140457600000
                     },
-                    "powerModel": {
+                    "cpuPowerModel": {
                         "modelType": "linear",
                         "power": 400.0,
                         "idlePower": 100.0,

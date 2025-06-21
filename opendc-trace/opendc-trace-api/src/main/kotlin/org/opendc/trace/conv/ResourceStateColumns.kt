@@ -95,3 +95,9 @@ public val resourceStateNetRx: String = "net_rx"
  */
 @JvmField
 public val resourceStateNetTx: String = "net_tx"
+
+/**
+ * Total GPU capacity of the resource in MHz.
+ */
+@JvmField
+public val resourceStateGpuUsage: String = "gpu_usage"

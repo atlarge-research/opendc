@@ -73,6 +73,24 @@ public val resourceCpuCapacity: String = "cpu_capacity"
 public val resourceMemCapacity: String = "mem_capacity"
 
 /**
+ * Number of GPU cores for the resource.
+ */
+@JvmField
+public val resourceGpuCount: String = "gpu_count"
+
+/**
+ * Total GPU capacity of the resource in MHz.
+ */
+@JvmField
+public val resourceGpuCapacity: String = "gpu_capacity"
+
+/**
+ * Total GPU memory capacity of the resource in MB.
+ */
+@JvmField
+public val resourceGpuMemCapacity: String = "gpu_mem_capacity"
+
+/**
  * Nature of the task. Delayable, interruptible, etc.
  */
 @JvmField

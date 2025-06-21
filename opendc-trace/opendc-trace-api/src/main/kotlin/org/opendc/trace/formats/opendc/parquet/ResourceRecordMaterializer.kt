@@ -43,6 +43,8 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
     private var localCpuCount = 0
     private var localCpuCapacity = 0.0
     private var localMemCapacity = 0.0
+    private var localGpuCount = 0
+    private var localGpuCapacity = 0.0
     private var localNature: String? = null
     private var localDeadline = -1L
 
@@ -97,6 +99,18 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
                                     localMemCapacity = value.toDouble()
                                 }
                             }
+                        "gpu_count", "gpuMaxCores" ->
+                            object : PrimitiveConverter() {
+                                override fun addInt(value: Int) {
+                                    localGpuCount = value
+                                }
+                            }
+                        "gpu_capacity" ->
+                            object : PrimitiveConverter() {
+                                override fun addDouble(value: Double) {
+                                    localGpuCapacity = value
+                                }
+                            }
                         "nature" ->
                             object : PrimitiveConverter() {
                                 override fun addBinary(value: Binary) {
@@ -120,6 +134,8 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
                 localCpuCount = 0
                 localCpuCapacity = 0.0
                 localMemCapacity = 0.0
+                localGpuCount = 0
+                localGpuCapacity = 0.0
                 localNature = null
                 localDeadline = -1
             }
@@ -137,6 +153,8 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
             localCpuCount,
             localCpuCapacity,
             localMemCapacity,
+            localGpuCount,
+            localGpuCapacity,
             localNature,
             localDeadline,
         )

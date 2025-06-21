@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.engine.graph;
 
+import org.opendc.common.ResourceType;
+
 /**
  * An edge that connects two FlowStages.
  * A connection between FlowStages always consist of a FlowStage that demands
@@ -38,7 +40,9 @@ public class FlowEdge {
     private double demand = 0.0;
     private double supply = 0.0;
 
-    private double capacity;
+    private final double capacity;
+
+    private final ResourceType resourceType;
 
     public enum NodeType {
         CONSUMING,
@@ -46,6 +50,10 @@ public class FlowEdge {
     }
 
     public FlowEdge(FlowConsumer consumer, FlowSupplier supplier) {
+        this(consumer, supplier, ResourceType.AUXILIARY);
+    }
+
+    public FlowEdge(FlowConsumer consumer, FlowSupplier supplier, ResourceType resourceType) {
         if (!(consumer instanceof FlowNode)) {
             throw new IllegalArgumentException("Flow consumer is not a FlowNode");
         }
@@ -55,8 +63,9 @@ public class FlowEdge {
 
         this.consumer = consumer;
         this.supplier = supplier;
+        this.resourceType = resourceType;
 
-        this.capacity = supplier.getCapacity();
+        this.capacity = supplier.getCapacity(resourceType);
 
         this.consumer.addSupplierEdge(this);
         this.supplier.addConsumerEdge(this);
@@ -112,6 +121,33 @@ public class FlowEdge {
         return this.supply;
     }
 
+    /**
+     * Get the resource type of this edge.
+     *
+     * @return The resource type of this edge.
+     */
+    public ResourceType getResourceType() {
+        return this.resourceType;
+    }
+
+    /**
+     * Get the resource type of the supplier of this edge.
+     *
+     * @return The resource type of the supplier.
+     */
+    public ResourceType getSupplierResourceType() {
+        return this.supplier.getSupplierResourceType();
+    }
+
+    /**
+     * Get the resource type of the consumer of this edge.
+     *
+     * @return The resource type of the consumer.
+     */
+    public ResourceType getConsumerResourceType() {
+        return this.consumer.getConsumerResourceType();
+    }
+
     public int getConsumerIndex() {
         return consumerIndex;
     }
@@ -126,6 +162,16 @@ public class FlowEdge {
 
     public void setSupplierIndex(int supplierIndex) {
         this.supplierIndex = supplierIndex;
+    }
+
+    public void pushDemand(double newDemand, boolean forceThrough, ResourceType resourceType) {
+        // or store last resource type in the edge
+        if ((newDemand == this.demand) && !forceThrough) {
+            return;
+        }
+
+        this.demand = newDemand;
+        this.supplier.handleIncomingDemand(this, newDemand, resourceType);
     }
 
     /**
@@ -150,19 +196,19 @@ public class FlowEdge {
     /**
      * Push new supply from the Supplier to the Consumer
      */
-    public void pushSupply(double newSupply, boolean forceThrough) {
+    public void pushSupply(double newSupply, boolean forceThrough, ResourceType resourceType) {
         if ((newSupply == this.supply) && !forceThrough) {
             return;
         }
 
         this.supply = newSupply;
-        this.consumer.handleIncomingSupply(this, newSupply);
+        this.consumer.handleIncomingSupply(this, newSupply, resourceType);
     }
 
     /**
      * Push new supply from the Supplier to the Consumer
      */
     public void pushSupply(double newSupply) {
-        this.pushSupply(newSupply, false);
+        this.pushSupply(newSupply, false, this.supplier.getSupplierResourceType());
     }
 }

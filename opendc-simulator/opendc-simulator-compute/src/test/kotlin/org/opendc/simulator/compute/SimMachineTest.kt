@@ -22,32 +22,31 @@
 
 package org.opendc.simulator.compute
 
-import org.junit.jupiter.api.BeforeEach
-import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.MachineModel
-import org.opendc.simulator.compute.models.MemoryUnit
 
 /**
  * Test suite for the [SimBareMetalMachine] class.
  */
+
 class SimMachineTest {
     private lateinit var machineModel: MachineModel
-
-    @BeforeEach
-    fun setUp() {
-        machineModel =
-            MachineModel(
-                CpuModel(
-                    0,
-                    2,
-                    1000.0,
-                    "Intel",
-                    "Xeon",
-                    "amd64",
-                ),
-                MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000 * 4),
-            )
-    }
+//
+//    @BeforeEach
+//    fun setUp() {
+//        machineModel =
+//            MachineModel(
+//                CpuModel(
+//                    0,
+//                    2,
+//                    1000.0,
+//                    "Intel",
+//                    "Xeon",
+//                    "amd64",
+//                ),
+//                MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000 * 4),
+//                null
+//            )
+//    }
 
 //    @Test
 //    fun testFlopsWorkload() =
@@ -104,10 +103,10 @@ class SimMachineTest {
 //            val cpuNode = machineModel.cpu
 //            val machineModel =
 //                MachineModel(
-//                    List(cpuNode.coreCount * 2) {
+//                    List(cpuNode.cpuCoreCount * 2) {
 //                        CpuModel(
 //                            it,
-//                            cpuNode.coreCount,
+//                            cpuNode.cpuCoreCount,
 //                            1000.0,
 //                        )
 //                    },

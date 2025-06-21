@@ -40,7 +40,7 @@ public class VCpuCapacityFilter : HostFilter {
         return (
             requiredCapacity == null ||
                 (availableCapacity / host.host.getModel().coreCount)
-                >= (requiredCapacity / task.flavor.coreCount)
+                >= (requiredCapacity / task.flavor.cpuCoreCount)
         )
     }
 }

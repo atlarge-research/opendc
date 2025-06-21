@@ -144,6 +144,48 @@ public object DfltHostExportColumns {
             field = Types.required(INT64).named("cpu_time_lost"),
         ) { it.cpuLostTime }
 
+    // TODO: support multiple GPUs
+
+    public val GPU_CAPACITY: ExportColumn<HostTableReader> =
+        ExportColumn(
+            field = Types.optional(FLOAT).named("gpu_capacity"),
+        ) { it.gpuCapacities.getOrNull(0) }
+
+    public val GPU_USAGE: ExportColumn<HostTableReader> =
+        ExportColumn(
+            field = Types.optional(FLOAT).named("gpu_usage"),
+        ) { it.gpuUsages.getOrNull(0) }
+
+    public val GPU_DEMAND: ExportColumn<HostTableReader> =
+        ExportColumn(
+            field = Types.optional(FLOAT).named("gpu_demand"),
+        ) { it.gpuDemands.getOrNull(0) }
+
+    public val GPU_UTILIZATION: ExportColumn<HostTableReader> =
+        ExportColumn(
+            field = Types.optional(FLOAT).named("gpu_utilization"),
+        ) { it.gpuUtilizations.getOrNull(0) }
+
+    public val GPU_TIME_ACTIVE: ExportColumn<HostTableReader> =
+        ExportColumn(
+            field = Types.optional(INT64).named("gpu_time_active"),
+        ) { it.gpuActiveTimes.getOrNull(0) }
+
+    public val GPU_TIME_IDLE: ExportColumn<HostTableReader> =
+        ExportColumn(
+            field = Types.optional(INT64).named("gpu_time_idle"),
+        ) { it.gpuIdleTimes.getOrNull(0) }
+
+    public val GPU_TIME_STEAL: ExportColumn<HostTableReader> =
+        ExportColumn(
+            field = Types.optional(INT64).named("gpu_time_steal"),
+        ) { it.gpuStealTimes.getOrNull(0) }
+
+    public val GPU_TIME_LOST: ExportColumn<HostTableReader> =
+        ExportColumn(
+            field = Types.optional(INT64).named("gpu_time_lost"),
+        ) { it.gpuLostTimes.getOrNull(0) }
+
     public val POWER_DRAW: ExportColumn<HostTableReader> =
         ExportColumn(
             field = Types.required(FLOAT).named("power_draw"),

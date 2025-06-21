@@ -63,6 +63,15 @@ public class TaskTableReaderImpl(
         _cpuIdleTime = table.cpuIdleTime
         _cpuStealTime = table.cpuStealTime
         _cpuLostTime = table.cpuLostTime
+        // GPU stats
+        _gpuLimits = table.gpuLimits
+        _gpuDemands = table.gpuDemands
+        _gpuUsages = table.gpuUsages
+        _gpuActiveTimes = table.gpuActiveTimes
+        _gpuIdleTimes = table.gpuIdleTimes
+        _gpuStealTimes = table.gpuStealTimes
+        _gpuLostTimes = table.gpuLostTimes
+
         _uptime = table.uptime
         _downtime = table.downtime
         _numFailures = table.numFailures
@@ -84,7 +93,7 @@ public class TaskTableReaderImpl(
             task.name,
             "vm",
             "x86",
-            task.flavor.coreCount,
+            task.flavor.cpuCoreCount,
             task.flavor.memorySize,
         )
 
@@ -168,6 +177,74 @@ public class TaskTableReaderImpl(
     private var _cpuLostTime = 0L
     private var previousCpuLostTime = 0L
 
+    override val gpuLimits: DoubleArray?
+        get() = _gpuLimits ?: DoubleArray(0)
+    private var _gpuLimits: DoubleArray? = null
+
+    override val gpuUsages: DoubleArray?
+        get() = _gpuUsages ?: DoubleArray(0)
+    private var _gpuUsages: DoubleArray? = null
+
+    override val gpuDemands: DoubleArray?
+        get() = _gpuDemands ?: DoubleArray(0)
+    private var _gpuDemands: DoubleArray? = null
+
+    override val gpuActiveTimes: LongArray?
+        get() {
+            val current = _gpuActiveTimes ?: return LongArray(0)
+            val previous = previousGpuActiveTimes
+
+            return if (previous == null || current.size != previous.size) { // not sure if I like the second clause
+                current
+            } else {
+                LongArray(current.size) { i -> current[i] - previous[i] }
+            }
+        }
+    private var _gpuActiveTimes: LongArray? = null
+    private var previousGpuActiveTimes: LongArray? = null
+
+    override val gpuIdleTimes: LongArray?
+        get() {
+            val current = _gpuIdleTimes ?: return LongArray(0)
+            val previous = previousGpuIdleTimes
+
+            return if (previous == null || current.size != previous.size) { // not sure if I like the second clause
+                current
+            } else {
+                LongArray(current.size) { i -> current[i] - previous[i] }
+            }
+        }
+    private var _gpuIdleTimes: LongArray? = null
+    private var previousGpuIdleTimes: LongArray? = null
+
+    override val gpuStealTimes: LongArray?
+        get() {
+            val current = _gpuStealTimes ?: return LongArray(0)
+            val previous = previousGpuStealTimes
+
+            return if (previous == null || current.size != previous.size) {
+                current
+            } else {
+                LongArray(current.size) { i -> current[i] - previous[i] }
+            }
+        }
+    private var _gpuStealTimes: LongArray? = null
+    private var previousGpuStealTimes: LongArray? = null
+
+    override val gpuLostTimes: LongArray?
+        get() {
+            val current = _gpuLostTimes ?: return LongArray(0)
+            val previous = previousGpuLostTimes
+
+            return if (previous == null || current.size != previous.size) {
+                current
+            } else {
+                LongArray(current.size) { i -> current[i] - previous[i] }
+            }
+        }
+    private var _gpuLostTimes: LongArray? = null
+    private var previousGpuLostTimes: LongArray? = null
+
     override val taskState: TaskState?
         get() = _taskState
     private var _taskState: TaskState? = null
@@ -192,6 +269,7 @@ public class TaskTableReaderImpl(
 
         val cpuStats = simHost?.getCpuStats(task)
         val sysStats = simHost?.getSystemStats(task)
+        val gpuStats = simHost?.getGpuStats(task)
 
         _hostName = task.hostName
 
@@ -214,6 +292,26 @@ public class TaskTableReaderImpl(
         _scheduleTime = task.scheduledAt
         _finishTime = task.finishedAt
 
+        if (gpuStats != null && gpuStats.isNotEmpty()) {
+            val size = gpuStats.size
+            _gpuLimits = DoubleArray(size) { i -> gpuStats[i].capacity }
+            _gpuDemands = DoubleArray(size) { i -> gpuStats[i].demand }
+            _gpuUsages = DoubleArray(size) { i -> gpuStats[i].usage }
+            _gpuActiveTimes = LongArray(size) { i -> gpuStats[i].activeTime }
+            _gpuIdleTimes = LongArray(size) { i -> gpuStats[i].idleTime }
+            _gpuStealTimes = LongArray(size) { i -> gpuStats[i].stealTime }
+            _gpuLostTimes = LongArray(size) { i -> gpuStats[i].lostTime }
+        } else {
+            _gpuIdleTimes = null
+            _gpuStealTimes = null
+            _gpuLostTimes = null
+            _gpuIdleTimes = null
+            _gpuLimits = null
+            _gpuUsages = null
+            _gpuDemands = null
+            _gpuActiveTimes = null
+        }
+
         _taskState = task.state
     }
 
@@ -227,6 +325,10 @@ public class TaskTableReaderImpl(
         previousCpuIdleTime = _cpuIdleTime
         previousCpuStealTime = _cpuStealTime
         previousCpuLostTime = _cpuLostTime
+        previousGpuActiveTimes = _gpuActiveTimes
+        previousGpuIdleTimes = _gpuIdleTimes
+        previousGpuStealTimes = _gpuStealTimes
+        previousGpuLostTimes = _gpuLostTimes
 
         simHost = null
         _cpuLimit = 0.0

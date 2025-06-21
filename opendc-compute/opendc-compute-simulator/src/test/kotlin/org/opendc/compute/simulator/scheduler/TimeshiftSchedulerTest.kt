@@ -48,7 +48,7 @@ class TimeshiftSchedulerTest {
             )
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
         every { req.task.nature } returns TaskNature(true)
@@ -76,7 +76,7 @@ class TimeshiftSchedulerTest {
             )
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.coreCount } returns 2
+        every { req.task.flavor.cpuCoreCount } returns 2
         every { req.task.flavor.memorySize } returns 1024
         every { req.isCancelled } returns false
         every { req.task.nature } returns TaskNature(true)

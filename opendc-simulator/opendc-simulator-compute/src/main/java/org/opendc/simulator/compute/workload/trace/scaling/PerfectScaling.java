@@ -31,17 +31,17 @@ package org.opendc.simulator.compute.workload.trace.scaling;
  */
 public class PerfectScaling implements ScalingPolicy {
     @Override
-    public double getFinishedWork(double cpuFreqDemand, double cpuFreqSupplied, long passedTime) {
-        return cpuFreqSupplied * passedTime;
+    public double getFinishedWork(double demand, double supplied, long passedTime) {
+        return supplied * passedTime;
     }
 
     @Override
-    public long getRemainingDuration(double cpuFreqDemand, double cpuFreqSupplied, double remainingWork) {
-        return (long) (remainingWork / cpuFreqSupplied);
+    public long getRemainingDuration(double demand, double supplied, double remainingWork) {
+        return (long) (remainingWork / supplied);
     }
 
     @Override
-    public double getRemainingWork(double cpuFreqDemand, long duration) {
-        return cpuFreqDemand * duration;
+    public double getRemainingWork(double demand, long duration) {
+        return demand * duration;
     }
 }

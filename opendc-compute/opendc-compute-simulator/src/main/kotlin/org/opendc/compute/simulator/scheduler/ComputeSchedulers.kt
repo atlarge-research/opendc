@@ -27,11 +27,13 @@ package org.opendc.compute.simulator.scheduler
 import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
 import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
+import org.opendc.compute.simulator.scheduler.filters.VGpuFilter
 import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
 import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.simulator.scheduler.weights.InstanceCountWeigher
 import org.opendc.compute.simulator.scheduler.weights.RamWeigher
 import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher
+import org.opendc.compute.simulator.scheduler.weights.VGpuWeigher
 import java.time.InstantSource
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
@@ -48,6 +50,8 @@ public enum class ComputeSchedulerEnum {
     Random,
     TaskNumMemorizing,
     Timeshift,
+    ProvisionedCpuGpuCores,
+    ProvisionedCpuGpuCoresInv,
 }
 
 public fun createPrefabComputeScheduler(
@@ -68,6 +72,7 @@ public fun createPrefabComputeScheduler(
 ): ComputeScheduler {
     val cpuAllocationRatio = 1.0
     val ramAllocationRatio = 1.5
+    val gpuAllocationRatio = 1.0
     return when (name) {
         ComputeSchedulerEnum.Mem ->
             FilterScheduler(
@@ -127,6 +132,32 @@ public fun createPrefabComputeScheduler(
                 windowSize = 168,
                 clock = clock,
                 random = SplittableRandom(seeder.nextLong()),
+            )
+        ComputeSchedulerEnum.ProvisionedCpuGpuCores ->
+            FilterScheduler(
+                filters =
+                    listOf(
+                        ComputeFilter(),
+                        VCpuFilter(cpuAllocationRatio),
+                        VGpuFilter(gpuAllocationRatio),
+                        RamFilter(ramAllocationRatio),
+                    ),
+                weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = 1.0), VGpuWeigher(gpuAllocationRatio, multiplier = 1.0)),
+            )
+        ComputeSchedulerEnum.ProvisionedCpuGpuCoresInv ->
+            FilterScheduler(
+                filters =
+                    listOf(
+                        ComputeFilter(),
+                        VCpuFilter(cpuAllocationRatio),
+                        VGpuFilter(gpuAllocationRatio),
+                        RamFilter(ramAllocationRatio),
+                    ),
+                weighers =
+                    listOf(
+                        VCpuWeigher(cpuAllocationRatio, multiplier = -1.0),
+                        VGpuWeigher(gpuAllocationRatio, multiplier = -1.0),
+                    ),
             )
     }
 }

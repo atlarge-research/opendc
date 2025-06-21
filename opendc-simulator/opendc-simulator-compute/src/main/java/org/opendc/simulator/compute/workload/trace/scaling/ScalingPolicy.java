@@ -31,29 +31,29 @@ public interface ScalingPolicy {
     /**
      * Calculate how much work was finished based on the demanded and supplied cpu
      *
-     * @param cpuFreqDemand
-     * @param cpuFreqSupplied
-     * @param passedTime
-     * @return
+     * @param demand demand of the resource by the workload
+     * @param supplied resource supplied for the workload
+     * @param passedTime time that has passed since the start
+     * @return the amount of work that was finished
      */
-    double getFinishedWork(double cpuFreqDemand, double cpuFreqSupplied, long passedTime);
+    double getFinishedWork(double demand, double supplied, long passedTime);
 
     /**
      * Calculate the remaining duration of this fragment based on the demanded and supplied cpu
      *
-     * @param cpuFreqDemand
-     * @param cpuFreqSupplied
-     * @param remainingWork
-     * @return
+     * @param demand of the resource by the workload
+     * @param supplied resource supplied for the workload
+     * @param remainingWork the remaining work that needs to be done
+     * @return the remaining duration of the fragment
      */
-    long getRemainingDuration(double cpuFreqDemand, double cpuFreqSupplied, double remainingWork);
+    long getRemainingDuration(double demand, double supplied, double remainingWork);
 
     /**
      * Calculate how much work is remaining based on the demanded and supplied cpu
      *
-     * @param cpuFreqDemand
-     * @param duration
-     * @return
+     * @param demand of the resource by the workload
+     * @param duration the duration of the fragment
+     * @return the amount of work that is remaining
      */
-    double getRemainingWork(double cpuFreqDemand, long duration);
+    double getRemainingWork(double demand, long duration);
 }

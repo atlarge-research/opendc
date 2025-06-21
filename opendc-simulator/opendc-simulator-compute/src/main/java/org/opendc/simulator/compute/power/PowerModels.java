@@ -20,118 +20,118 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpu;
+package org.opendc.simulator.compute.power;
 
 import java.util.Arrays;
 
 /**
  * A collection {@link CpuPowerModel} implementations.
  */
-public class CpuPowerModels {
-    private CpuPowerModels() {}
+public class PowerModels {
+    private PowerModels() {}
 
     /**
-     * Construct a constant {@link CpuPowerModel}.
+     * Construct a constant {@link PowerModel}.
      *
      * @param power The power consumption of the host at all times (in W).
      */
-    public static CpuPowerModel constant(double power) {
+    public static PowerModel constant(double power) {
         return new ConstantPowerModel(power);
     }
 
     /**
-     * Construct a square root {@link CpuPowerModel} that is adapted from CloudSim.
+     * Construct a square root {@link PowerModel} that is adapted from CloudSim.
      *
      * @param maxPower  The maximum power draw of the host in W.
-     * @param idlePower The power draw of the host at its lowest utilization level in W.
+     * @param idlePower The power draw of the host at its lowest resource utilization level in W.
      */
-    public static CpuPowerModel sqrt(double maxPower, double idlePower) {
+    public static PowerModel sqrt(double maxPower, double idlePower) {
         return new SqrtPowerModel(maxPower, idlePower);
     }
 
     /**
-     * Construct a linear {@link CpuPowerModel} that is adapted from CloudSim.
+     * Construct a linear {@link PowerModel} that is adapted from CloudSim.
      *
      * @param maxPower  The maximum power draw of the host in W.
-     * @param idlePower The power draw of the host at its lowest utilization level in W.
+     * @param idlePower The power draw of the host at its lowest resource utilization level in W.
      */
-    public static CpuPowerModel linear(double maxPower, double idlePower) {
+    public static PowerModel linear(double maxPower, double idlePower) {
         return new LinearPowerModel(maxPower, idlePower);
     }
 
     /**
-     * Construct a square {@link CpuPowerModel} that is adapted from CloudSim.
+     * Construct a square {@link PowerModel} that is adapted from CloudSim.
      *
      * @param maxPower  The maximum power draw of the host in W.
-     * @param idlePower The power draw of the host at its lowest utilization level in W.
+     * @param idlePower The power draw of the host at its lowest resource utilization level in W.
      */
-    public static CpuPowerModel square(double maxPower, double idlePower) {
+    public static PowerModel square(double maxPower, double idlePower) {
         return new SquarePowerModel(maxPower, idlePower);
     }
 
     /**
-     * Construct a cubic {@link CpuPowerModel} that is adapted from CloudSim.
+     * Construct a cubic {@link PowerModel} that is adapted from CloudSim.
      *
      * @param maxPower  The maximum power draw of the host in W.
-     * @param idlePower The power draw of the host at its lowest utilization level in W.
+     * @param idlePower The power draw of the host at its lowest resource utilization level in W.
      */
-    public static CpuPowerModel cubic(double maxPower, double idlePower) {
+    public static PowerModel cubic(double maxPower, double idlePower) {
         return new CubicPowerModel(maxPower, idlePower);
     }
 
     /**
-     * Construct a {@link CpuPowerModel} that minimizes the mean squared error (MSE)
+     * Construct a {@link PowerModel} that minimizes the mean squared error (MSE)
      * to the actual power measurement by tuning the calibration parameter.
      *
      * @param maxPower          The maximum power draw of the host in W.
-     * @param idlePower         The power draw of the host at its lowest utilization level in W.
+     * @param idlePower         The power draw of the host at its lowest resource utilization level in W.
      * @param calibrationFactor The parameter set to minimize the MSE.
      * @see <a href="https://dl.acm.org/doi/abs/10.1145/1273440.1250665">
      * Fan et al., Power provisioning for a warehouse-sized computer, ACM SIGARCH'07</a>
      */
-    public static CpuPowerModel mse(double maxPower, double idlePower, double calibrationFactor) {
+    public static PowerModel mse(double maxPower, double idlePower, double calibrationFactor) {
         return new MsePowerModel(maxPower, idlePower, calibrationFactor);
     }
 
     /**
-     * Construct an asymptotic {@link CpuPowerModel} adapted from GreenCloud.
+     * Construct an asymptotic {@link PowerModel} adapted from GreenCloud.
      *
      * @param maxPower  The maximum power draw of the host in W.
-     * @param idlePower The power draw of the host at its lowest utilization level in W.
+     * @param idlePower The power draw of the host at its lowest resource utilization level in W.
      * @param asymUtil  A utilization level at which the host attains asymptotic,
      *                  i.e., close to linear power consumption versus the offered load.
-     *                  For most of the CPUs,a is in [0.2, 0.5].
+     *                  For most of the s,a is in [0.2, 0.5].
      * @param dvfs      A flag indicates whether DVFS is enabled.
      */
-    public static CpuPowerModel asymptotic(double maxPower, double idlePower, double asymUtil, boolean dvfs) {
+    public static PowerModel asymptotic(double maxPower, double idlePower, double asymUtil, boolean dvfs) {
         return new AsymptoticPowerModel(maxPower, idlePower, asymUtil, dvfs);
     }
 
     /**
-     * Construct a linear interpolation model {@link CpuPowerModel} that is adapted from CloudSim.
+     * Construct a linear interpolation model {@link PowerModel} that is adapted from CloudSim.
      *
      * <p>
      * The power consumption is linearly interpolated over the given power levels. In case of two values, the first
      * represents 0% utilization, while the last value represent 100% utilization.
      *
-     * @param powerLevels An array of power consumption steps (in W) for a specific CPU utilization.
+     * @param powerLevels An array of power consumption steps (in W) for a specific  utilization.
      * @see <a href="http://www.spec.org/power_ssj2008/results/res2011q1/">Machines used in the SPEC benchmark</a>
      */
-    public static CpuPowerModel interpolate(double... powerLevels) {
+    public static PowerModel interpolate(double... powerLevels) {
         return new InterpolationPowerModel(powerLevels.clone());
     }
 
     /**
-     * Decorate an existing {@link CpuPowerModel} to ensure that zero power consumption is reported when there is no
+     * Decorate an existing {@link PowerModel} to ensure that zero power consumption is reported when there is no
      * utilization.
      *
-     * @param delegate The existing {@link CpuPowerModel} to decorate.
+     * @param delegate The existing {@link PowerModel} to decorate.
      */
-    public static CpuPowerModel zeroIdle(CpuPowerModel delegate) {
+    public static PowerModel zeroIdle(PowerModel delegate) {
         return new ZeroIdlePowerDecorator(delegate);
     }
 
-    private static final class ConstantPowerModel implements CpuPowerModel {
+    private static final class ConstantPowerModel implements PowerModel {
         private final double power;
 
         ConstantPowerModel(double power) {
@@ -154,7 +154,7 @@ public class CpuPowerModels {
         }
     }
 
-    private abstract static class MaxIdlePowerModel implements CpuPowerModel {
+    private abstract static class MaxIdlePowerModel implements PowerModel {
         protected final double maxPower;
         protected final double idlePower;
 
@@ -344,7 +344,7 @@ public class CpuPowerModels {
         }
     }
 
-    private static final class InterpolationPowerModel implements CpuPowerModel {
+    private static final class InterpolationPowerModel implements PowerModel {
         private final double[] powerLevels;
 
         InterpolationPowerModel(double[] powerLevels) {
@@ -380,10 +380,10 @@ public class CpuPowerModels {
         }
     }
 
-    private static final class ZeroIdlePowerDecorator implements CpuPowerModel {
-        private final CpuPowerModel delegate;
+    private static final class ZeroIdlePowerDecorator implements PowerModel {
+        private final PowerModel delegate;
 
-        ZeroIdlePowerDecorator(CpuPowerModel delegate) {
+        ZeroIdlePowerDecorator(PowerModel delegate) {
             this.delegate = delegate;
         }
 

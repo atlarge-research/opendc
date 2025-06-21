@@ -53,6 +53,8 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
     private var localMemCapacity: Double = Double.NaN
     private var localNature: String? = null
     private var localDeadline: Long = -1
+    private var localGpuCount: Int = 0
+    private var localGpuCapacity: Double = Double.NaN
 
     override fun startRow() {
         localIsActive = true
@@ -62,6 +64,8 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
         localCpuCount = 0
         localCpuCapacity = Double.NaN
         localMemCapacity = Double.NaN
+        localGpuCount = 0
+        localGpuCapacity = Double.NaN
         localNature = null
         localDeadline = -1L
     }
@@ -77,6 +81,8 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
                 localCpuCount,
                 localCpuCapacity,
                 localMemCapacity,
+                localGpuCount,
+                localGpuCapacity,
                 localNature,
                 localDeadline,
             ),
@@ -111,6 +117,7 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
         check(localIsActive) { "No active row" }
         when (index) {
             colCpuCount -> localCpuCount = value
+            colGpuCount -> localGpuCount = value
             else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
     }
@@ -142,6 +149,7 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
         when (index) {
             colCpuCapacity -> localCpuCapacity = value
             colMemCapacity -> localMemCapacity = value
+            colGpuCapacity -> localGpuCapacity = value
             else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
     }
@@ -220,4 +228,6 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
     private val colMemCapacity = 5
     private val colNature = 6
     private val colDeadline = 7
+    private val colGpuCount = 8
+    private val colGpuCapacity = 9
 }

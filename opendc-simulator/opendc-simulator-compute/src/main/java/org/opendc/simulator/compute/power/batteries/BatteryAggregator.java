@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import org.opendc.common.ResourceType;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowDistributor;
@@ -189,5 +190,15 @@ public class BatteryAggregator extends FlowNode implements FlowConsumer, FlowSup
         return Map.of(
                 FlowEdge.NodeType.CONSUMING, consumingEdges,
                 FlowEdge.NodeType.SUPPLYING, supplyingEdges);
+    }
+
+    @Override
+    public ResourceType getSupplierResourceType() {
+        return ResourceType.Power;
+    }
+
+    @Override
+    public ResourceType getConsumerResourceType() {
+        return ResourceType.Power;
     }
 }

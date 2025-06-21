@@ -31,4 +31,6 @@ internal class ResourceState(
     val duration: Duration,
     val cpuCount: Int,
     val cpuUsage: Double,
+    val gpuCount: Int,
+    val gpuUsage: Double,
 )

@@ -22,19 +22,22 @@
 
 package org.opendc.compute.simulator.host
 
+import org.opendc.common.ResourceType
 import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.TaskState
 import org.opendc.compute.simulator.internal.Guest
 import org.opendc.compute.simulator.internal.GuestListener
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.GuestCpuStats
+import org.opendc.compute.simulator.telemetry.GuestGpuStats
 import org.opendc.compute.simulator.telemetry.GuestSystemStats
 import org.opendc.compute.simulator.telemetry.HostCpuStats
+import org.opendc.compute.simulator.telemetry.HostGpuStats
 import org.opendc.compute.simulator.telemetry.HostSystemStats
-import org.opendc.simulator.compute.cpu.CpuPowerModel
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
+import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.engine.engine.FlowEngine
 import org.opendc.simulator.engine.graph.FlowDistributor
 import java.time.Duration
@@ -57,7 +60,8 @@ public class SimHost(
     private val clock: InstantSource,
     private val engine: FlowEngine,
     private val machineModel: MachineModel,
-    private val cpuPowerModel: CpuPowerModel,
+    private val cpuPowerModel: PowerModel,
+    private val gpuPowerModel: PowerModel?,
     private val embodiedCarbon: Double,
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
@@ -81,11 +85,22 @@ public class SimHost(
             field = value
         }
 
+    private val gpuHostModels: List<GpuHostModel>? =
+        machineModel.gpuModels?.map { gpumodel ->
+            return@map GpuHostModel(
+                gpumodel.totalCoreCapacity,
+                gpumodel.coreCount,
+                gpumodel.memorySize,
+                gpumodel.memoryBandwidth,
+            )
+        }
+
     private val model: HostModel =
         HostModel(
             machineModel.cpuModel.totalCapacity,
             machineModel.cpuModel.coreCount,
             machineModel.memory.size,
+            gpuHostModels,
         )
 
     private var simMachine: SimMachine? = null
@@ -136,6 +151,7 @@ public class SimHost(
                 this.machineModel,
                 this.powerDistributor,
                 this.cpuPowerModel,
+                this.gpuPowerModel,
             ) { cause ->
                 hostState = if (cause != null) HostState.ERROR else HostState.DOWN
             }
@@ -207,7 +223,7 @@ public class SimHost(
 
     public fun canFit(task: ServiceTask): Boolean {
         val sufficientMemory = model.memoryCapacity >= task.flavor.memorySize
-        val enoughCpus = model.coreCount >= task.flavor.coreCount
+        val enoughCpus = model.coreCount >= task.flavor.cpuCoreCount
         val canFit = simMachine!!.canFit(task.flavor.toMachineModel())
 
         return sufficientMemory && enoughCpus && canFit
@@ -324,20 +340,47 @@ public class SimHost(
         val counters = simMachine!!.performanceCounters
 
         return HostCpuStats(
-            counters.cpuActiveTime,
-            counters.cpuIdleTime,
-            counters.cpuStealTime,
-            counters.cpuLostTime,
-            counters.cpuCapacity,
-            counters.cpuDemand,
-            counters.cpuSupply,
-            counters.cpuSupply / cpuLimit,
+            counters.activeTime,
+            counters.idleTime,
+            counters.stealTime,
+            counters.lostTime,
+            counters.capacity,
+            counters.demand,
+            counters.supply,
+            counters.supply / cpuLimit,
         )
     }
 
     public fun getCpuStats(task: ServiceTask): GuestCpuStats {
         val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
         return guest.getCpuStats()
+    }
+
+    public fun getGpuStats(): List<HostGpuStats> {
+        val gpuStats = mutableListOf<HostGpuStats>()
+        for (gpu in simMachine!!.gpus) {
+            gpu.updateCounters(this.clock.millis())
+            val counters = simMachine!!.getGpuPerformanceCounters(gpu.id)
+
+            gpuStats.add(
+                HostGpuStats(
+                    counters.activeTime,
+                    counters.idleTime,
+                    counters.stealTime,
+                    counters.lostTime,
+                    counters.capacity,
+                    counters.demand,
+                    counters.supply,
+                    counters.supply / gpu.getCapacity(ResourceType.GPU),
+                ),
+            )
+        }
+        return gpuStats
+    }
+
+    public fun getGpuStats(task: ServiceTask): List<GuestGpuStats> {
+        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
+        return guest.getGpuStats()
     }
 
     override fun hashCode(): Int = name.hashCode()
@@ -352,7 +395,13 @@ public class SimHost(
      * Convert flavor to machine model.
      */
     private fun Flavor.toMachineModel(): MachineModel {
-        return MachineModel(simMachine!!.machineModel.cpuModel, MemoryUnit("Generic", "Generic", 3200.0, memorySize))
+        return MachineModel(
+            simMachine!!.machineModel.cpuModel,
+            MemoryUnit("Generic", "Generic", 3200.0, memorySize),
+            simMachine!!.machineModel.gpuModels,
+            simMachine!!.machineModel.cpuDistributionStrategy,
+            simMachine!!.machineModel.gpuDistributionStrategy,
+        )
     }
 
     /**

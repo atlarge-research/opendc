@@ -27,6 +27,7 @@ import org.opendc.compute.api.TaskState
 import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.GuestCpuStats
+import org.opendc.compute.simulator.telemetry.GuestGpuStats
 import org.opendc.compute.simulator.telemetry.GuestSystemStats
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.workload.ChainWorkload
@@ -64,6 +65,7 @@ public class Guest(
     private var lastReport = clock.millis()
     private var bootTime: Instant? = null
     private val cpuLimit = simMachine.cpu.cpuModel.totalCapacity
+    private val gpuLimit = simMachine.gpus?.firstOrNull()?.gpuModel?.totalCoreCapacity ?: 0.0
 
     /**
      * Start the guest.
@@ -242,18 +244,41 @@ public class Guest(
      */
     public fun getCpuStats(): GuestCpuStats {
         virtualMachine!!.updateCounters(this.clock.millis())
-        val counters = virtualMachine!!.performanceCounters
+        val counters = virtualMachine!!.cpuPerformanceCounters
 
         return GuestCpuStats(
-            counters.cpuActiveTime / 1000L,
-            counters.cpuIdleTime / 1000L,
-            counters.cpuStealTime / 1000L,
-            counters.cpuLostTime / 1000L,
-            counters.cpuCapacity,
-            counters.cpuSupply,
-            counters.cpuDemand,
-            counters.cpuSupply / cpuLimit,
+            counters.activeTime / 1000L,
+            counters.idleTime / 1000L,
+            counters.stealTime / 1000L,
+            counters.lostTime / 1000L,
+            counters.capacity,
+            counters.supply,
+            counters.demand,
+            counters.supply / cpuLimit,
         )
+    }
+
+    public fun getGpuStats(): List<GuestGpuStats> {
+        virtualMachine!!.updateCounters(this.clock.millis())
+        val counters = virtualMachine!!.gpuPerformanceCounters
+
+        val gpuStats = mutableListOf<GuestGpuStats>()
+        for (gpuCounter in counters) {
+            gpuStats.add(
+                GuestGpuStats(
+                    gpuCounter.activeTime / 1000L,
+                    gpuCounter.idleTime / 1000L,
+                    gpuCounter.stealTime / 1000L,
+                    gpuCounter.lostTime / 1000L,
+                    gpuCounter.capacity,
+                    gpuCounter.supply,
+                    gpuCounter.demand,
+                    // Assuming similar scaling as CPU
+                    gpuCounter.supply / gpuLimit,
+                ),
+            )
+        }
+        return gpuStats
     }
 
     /**

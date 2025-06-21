@@ -23,8 +23,12 @@
 package org.opendc.simulator.compute.workload.trace;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
+import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
@@ -37,13 +41,12 @@ public class TraceWorkload implements Workload {
     private final long checkpointDuration;
     private final double checkpointIntervalScaling;
     private final double maxCpuDemand;
-    private final int maxCoreCount;
-
-    public String getTaskName() {
-        return taskName;
-    }
-
+    private final int maxCpuCoreCount;
+    private final double maxGpuDemand;
+    private final int maxGpuCoreCount;
+    private final long maxGpuMemoryDemand;
     private final String taskName;
+    private ResourceType[] resourceTypes = new ResourceType[ResourceType.values().length];
 
     public ScalingPolicy getScalingPolicy() {
         return scalingPolicy;
@@ -57,7 +60,8 @@ public class TraceWorkload implements Workload {
             long checkpointDuration,
             double checkpointIntervalScaling,
             ScalingPolicy scalingPolicy,
-            String taskName) {
+            String taskName,
+            ResourceType[] resourceTypes) {
         this.fragments = fragments;
         this.checkpointInterval = checkpointInterval;
         this.checkpointDuration = checkpointDuration;
@@ -69,11 +73,25 @@ public class TraceWorkload implements Workload {
         this.maxCpuDemand = fragments.stream()
                 .max(Comparator.comparing(TraceFragment::cpuUsage))
                 .get()
-                .cpuUsage();
-        this.maxCoreCount = fragments.stream()
-                .max(Comparator.comparing(TraceFragment::coreCount))
+                //                .cpuUsage();
+                .getResourceUsage(ResourceType.CPU);
+        this.maxCpuCoreCount = fragments.stream()
+                .max(Comparator.comparing(TraceFragment::cpuCoreCount))
                 .get()
-                .coreCount();
+                //                .cpuCoreCount();
+                .getCoreCount(ResourceType.CPU);
+
+        this.maxGpuDemand = fragments.stream()
+                .max(Comparator.comparing(TraceFragment::gpuUsage))
+                .get()
+                .getResourceUsage(ResourceType.GPU);
+        this.maxGpuCoreCount = fragments.stream()
+                .max(Comparator.comparing(TraceFragment::gpuCoreCount))
+                .get()
+                .getCoreCount(ResourceType.GPU);
+        this.maxGpuMemoryDemand = 0L; // TODO: add GPU memory demand to the trace fragments
+
+        this.resourceTypes = resourceTypes;
     }
 
     public ArrayList<TraceFragment> getFragments() {
@@ -96,11 +114,27 @@ public class TraceWorkload implements Workload {
     }
 
     public int getMaxCoreCount() {
-        return maxCoreCount;
+        return maxCpuCoreCount;
     }
 
     public double getMaxCpuDemand() {
         return maxCpuDemand;
+    }
+
+    public double getMaxGpuDemand() {
+        return maxGpuDemand;
+    }
+
+    public int getMaxGpuCoreCount() {
+        return maxGpuCoreCount;
+    }
+
+    public long getMaxGpuMemoryDemand() {
+        return maxGpuMemoryDemand;
+    }
+
+    public String getTaskName() {
+        return taskName;
     }
 
     public void removeFragments(int numberOfFragments) {
@@ -114,14 +148,22 @@ public class TraceWorkload implements Workload {
         this.fragments.addFirst(fragment);
     }
 
-    @Override
-    public SimWorkload startWorkload(FlowSupplier supplier) {
-        return new SimTraceWorkload(supplier, this);
+    public ResourceType[] getResourceTypes() {
+        return Arrays.stream(resourceTypes).filter(Objects::nonNull).toArray(ResourceType[]::new);
     }
 
     @Override
-    public SimWorkload startWorkload(FlowSupplier supplier, SimMachine machine, Consumer<Exception> completion) {
-        return this.startWorkload(supplier);
+    public SimWorkload startWorkload(FlowSupplier supplier) {
+        return new SimTraceWorkload(supplier, this);
+        //        ArrayList<FlowSupplier> flowSuppliers = new ArrayList<>();
+        //        flowSuppliers.add(supplier);
+        //        return new SimTraceWorkload(flowSuppliers, this);
+    }
+
+    @Override
+    public SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion) {
+        //        return this.startWorkload(supplier);
+        return new SimTraceWorkload(supplier, this);
     }
 
     public static Builder builder(
@@ -140,6 +182,7 @@ public class TraceWorkload implements Workload {
         private final double checkpointIntervalScaling;
         private final ScalingPolicy scalingPolicy;
         private final String taskName;
+        private final ResourceType[] resourceTypes = new ResourceType[ResourceType.values().length];
 
         /**
          * Construct a new {@link Builder} instance.
@@ -162,11 +205,23 @@ public class TraceWorkload implements Workload {
          * Add a fragment to the trace.
          *
          * @param duration The timestamp at which the fragment ends (in epoch millis).
-         * @param usage The CPU usage at this fragment.
-         * @param cores The number of cores used during this fragment.
+         * @param cpuUsage The CPU usage at this fragment.
+         * @param cpuCores The number of cores used during this fragment.
+         * @param gpuUsage The GPU usage at this fragment.
+         * @param gpuCores The number of GPU cores used during this fragment.
+         * @param gpuMemoryUsage The GPU memory usage at this fragment.
          */
-        public void add(long duration, double usage, int cores) {
-            fragments.add(fragments.size(), new TraceFragment(duration, usage, cores));
+        public void add(
+                long duration, double cpuUsage, int cpuCores, double gpuUsage, int gpuCores, long gpuMemoryUsage) {
+            if (cpuUsage > 0.0) {
+                this.resourceTypes[ResourceType.CPU.ordinal()] = ResourceType.CPU;
+            }
+            if (gpuUsage > 0.0) {
+                this.resourceTypes[ResourceType.GPU.ordinal()] = ResourceType.GPU;
+            }
+            fragments.add(
+                    fragments.size(),
+                    new TraceFragment(duration, cpuUsage, cpuCores, gpuUsage, gpuCores, gpuMemoryUsage));
         }
 
         /**
@@ -179,7 +234,8 @@ public class TraceWorkload implements Workload {
                     this.checkpointDuration,
                     this.checkpointIntervalScaling,
                     this.scalingPolicy,
-                    this.taskName);
+                    this.taskName,
+                    this.resourceTypes);
         }
     }
 }
