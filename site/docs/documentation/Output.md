@@ -27,6 +27,13 @@ The task output file, contains all metrics of related to the tasks that are bein
 | cpu_time_idle      | int64    | ms        | The duration that a CPU was idle in the task.                               |
 | cpu_time_steal     | int64    | ms        | The duration that a vCPU wanted to run, but no capacity was available.      |
 | cpu_time_lost      | int64    | ms        | The duration of CPU time that was lost due to interference.                 |
+| gpu_limit          | double   | MHz       | The capacity of the GPUs of Host on which the task is running.              |
+| gpu_usage          | double   | MHz       | The gpu capacity provided by the GPU to the task.                           |
+| gpu_demand         | double   | MHz       | The gpu capacity demanded of the GPU by the task.                           |
+| gpu_time_active    | int64    | ms        | The duration that a GPU was active in the task.                             |
+| gpu_time_idle      | int64    | ms        | The duration that a GPU was idle in the task.                               |
+| gpu_time_steal     | int64    | ms        | The duration that a vGPU wanted to run, but no capacity was available.      |
+| gpu_time_lost      | int64    | ms        | The duration of GPU time that was lost due to interference.                 |
 | uptime             | int64    | ms        | The uptime of the host since last sample.                                   |
 | downtime           | int64    | ms        | The downtime of the host since last sample.                                 |
 | num_failures       | int64    | count     | How many times was a task interrupted due to machine failure.               |
@@ -59,6 +66,14 @@ The host output file, contains all metrics of related to the hosts that are runn
 | cpu_time_idle      | int64    | ms         | The duration that a CPU was idle in the host.                                                       |
 | cpu_time_steal     | int64    | ms         | The duration that a vCPU wanted to run, but no capacity was available.                              |
 | cpu_time_lost      | int64    | ms         | The duration of CPU time that was lost due to interference.                                         |
+| gpu_capacity       | double   | MHz        | The total capacity of the GPUs in the host.                                                         |
+| gpu_usage          | double   | MHz        | The total GPU capacity provided to all tasks on this host.                                          |
+| gpu_demand         | double   | MHz        | The total GPU capacity demanded by all tasks on this host.                                          |
+| gpu_utilization    | double   | ratio      | The GPU utilization of the host. This is calculated by dividing the gpu_usage, by the gpu_capacity. |
+| gpu_time_active    | int64    | ms         | The duration that a GPU was active in the host.                                                     |
+| gpu_time_idle      | int64    | ms         | The duration that a GPU was idle in the host.                                                       |
+| gpu_time_steal     | int64    | ms         | The duration that a vGPU wanted to run, but no capacity was available.                              |
+| gpu_time_lost      | int64    | ms         | The duration of GPU time that was lost due to interference.                                         |
 | power_draw         | double   | Watt       | The current power draw of the host.                                                                 |
 | energy_usage       | double   | Joule (Ws) | The total energy consumption of the host since last sample.                                         |
 | embodied_carbon    | double   | gram       | The total embodied carbon emitted since the last sample.                                            |
