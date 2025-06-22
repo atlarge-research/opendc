@@ -142,7 +142,7 @@ public object DfltTaskExportColumns {
     public val GPU_USAGE: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(FLOAT).named("gpu_usage"),
-        ) { it.gpuUsages?.getOrNull (0) }
+        ) { it.gpuUsages?.getOrNull(0) }
 
     public val GPU_DEMAND: ExportColumn<TaskTableReader> =
         ExportColumn(
