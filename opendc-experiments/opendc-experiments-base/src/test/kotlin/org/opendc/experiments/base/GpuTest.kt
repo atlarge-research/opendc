@@ -119,17 +119,6 @@ class GpuTest {
     @Test
     fun testGpuHostCreationMultiMinimal() {
         val topology = createTopology("Gpus/multi_gpu_no_vendor_no_memory.json")
-//        assertGpuConfiguration(
-//            topology,
-//            coreCount = 1,
-//            coreSpeed = 2000.0,
-//            memorySize = -1L,
-//            memoryBandwidth = -1.0,
-//            vendor = "unknown",
-//            modelName = "unknown",
-//            architecture = "unknown",
-//            gpuCount = 3,
-//        )
         val count = 3
         assertGpuConfiguration(
             topology,
@@ -152,17 +141,6 @@ class GpuTest {
         val topology = createTopology("Gpus/multi_gpu_no_vendor.json")
         val count = 100
 
-//        assertGpuConfiguration(
-//            topology,
-//            coreCount = 1,
-//            coreSpeed = 2000.0,
-//            memorySize = 4096L,
-//            memoryBandwidth = 500.0,
-//            vendor = "unknown",
-//            modelName = "unknown",
-//            architecture = "unknown",
-//            gpuCount = 100,
-//        )
         assertGpuConfiguration(
             topology,
             coreCount = 1 * count,
@@ -182,17 +160,6 @@ class GpuTest {
     @Test
     fun testGpuHostCreationMultiNoMemoryWithVendor() {
         val topology = createTopology("Gpus/multi_gpu_no_memory.json")
-//        assertGpuConfiguration(
-//            topology,
-//            coreCount = 1,
-//            coreSpeed = 2000.0,
-//            memorySize = -1L,
-//            memoryBandwidth = -1.0,
-//            vendor = "NVIDIA",
-//            modelName = "Tesla V100",
-//            architecture = "Volta",
-//            gpuCount = 2,
-//        )
         val count = 2
         assertGpuConfiguration(
             topology,
@@ -213,7 +180,6 @@ class GpuTest {
     @Test
     fun testGpuHostCreationMultiWithMemoryWithVendor() {
         val topology = createTopology("Gpus/multi_gpu_full.json")
-        // temporary implementation, to account for GPU concatenation
         val count = 5
         assertGpuConfiguration(
             topology,
