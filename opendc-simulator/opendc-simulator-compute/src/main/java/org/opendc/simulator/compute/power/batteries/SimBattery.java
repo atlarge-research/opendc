@@ -335,11 +335,11 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
 
     @Override
     public ResourceType getSupplierResourceType() {
-        return ResourceType.Power;
+        return ResourceType.POWER;
     }
 
     @Override
     public ResourceType getConsumerResourceType() {
-        return ResourceType.Power;
+        return ResourceType.POWER;
     }
 }

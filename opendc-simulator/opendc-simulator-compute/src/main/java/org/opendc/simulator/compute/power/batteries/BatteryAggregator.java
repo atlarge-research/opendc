@@ -194,11 +194,11 @@ public class BatteryAggregator extends FlowNode implements FlowConsumer, FlowSup
 
     @Override
     public ResourceType getSupplierResourceType() {
-        return ResourceType.Power;
+        return ResourceType.POWER;
     }
 
     @Override
     public ResourceType getConsumerResourceType() {
-        return ResourceType.Power;
+        return ResourceType.POWER;
     }
 }

@@ -221,6 +221,6 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
 
     @Override
     public ResourceType getSupplierResourceType() {
-        return ResourceType.Power;
+        return ResourceType.POWER;
     }
 }

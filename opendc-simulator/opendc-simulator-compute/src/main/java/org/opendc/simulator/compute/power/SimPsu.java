@@ -266,11 +266,11 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public ResourceType getSupplierResourceType() {
-        return ResourceType.Power;
+        return ResourceType.POWER;
     }
 
     @Override
     public ResourceType getConsumerResourceType() {
-        return ResourceType.Power;
+        return ResourceType.POWER;
     }
 }
