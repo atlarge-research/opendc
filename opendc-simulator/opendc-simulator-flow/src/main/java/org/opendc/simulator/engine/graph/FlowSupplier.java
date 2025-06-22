@@ -22,15 +22,35 @@
 
 package org.opendc.simulator.engine.graph;
 
+import org.opendc.common.ResourceType;
+
 public interface FlowSupplier {
 
     void handleIncomingDemand(FlowEdge consumerEdge, double newDemand);
 
+    default void handleIncomingDemand(FlowEdge consumerEdge, double newDemand, ResourceType resourceType) {
+        handleIncomingDemand(consumerEdge, newDemand);
+    }
+
     void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply);
+
+    default void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply, ResourceType resourceType) {
+        pushOutgoingSupply(consumerEdge, newSupply);
+    }
+    ;
 
     void addConsumerEdge(FlowEdge consumerEdge);
 
     void removeConsumerEdge(FlowEdge consumerEdge);
 
     double getCapacity();
+
+    default double getCapacity(ResourceType resourceType) {
+        return getCapacity();
+    }
+
+    default ResourceType getSupplierResourceType() {
+        return ResourceType.AUXILIARY;
+    }
+    ;
 }

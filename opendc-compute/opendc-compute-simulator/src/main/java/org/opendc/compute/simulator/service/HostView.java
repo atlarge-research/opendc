@@ -31,7 +31,8 @@ public class HostView {
     private final SimHost host;
     int instanceCount;
     long availableMemory;
-    int provisionedCores;
+    int provisionedCpuCores;
+    int provisionedGpuCores;
 
     /**
      * Scheduler bookkeeping
@@ -83,8 +84,12 @@ public class HostView {
     /**
      * Return the provisioned cores on the host.
      */
-    public int getProvisionedCores() {
-        return provisionedCores;
+    public int getProvisionedCpuCores() {
+        return provisionedCpuCores;
+    }
+
+    public int getProvisionedGpuCores() {
+        return provisionedGpuCores;
     }
 
     @Override

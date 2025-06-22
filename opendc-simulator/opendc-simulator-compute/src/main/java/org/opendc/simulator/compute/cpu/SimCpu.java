@@ -24,21 +24,29 @@ package org.opendc.simulator.compute.cpu;
 
 import java.util.List;
 import java.util.Map;
+import org.opendc.common.ResourceType;
+import org.opendc.simulator.compute.ComputeResource;
 import org.opendc.simulator.compute.machine.PerformanceCounters;
 import org.opendc.simulator.compute.models.CpuModel;
+import org.opendc.simulator.compute.power.PowerModel;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A {@link SimCpu} of a machine.
  */
-public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer {
+public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer, ComputeResource {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimCpu.class);
+    private int id;
     private final CpuModel cpuModel;
 
-    private final CpuPowerModel cpuPowerModel;
+    private final PowerModel cpuPowerModel;
 
     private double currentCpuDemand = 0.0f; // cpu capacity demanded by the mux
     private double currentCpuUtilization = 0.0f;
@@ -59,6 +67,10 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public int getId() {
+        return id;
+    }
 
     public double getFrequency() {
         return cpuModel.getTotalCapacity();
@@ -87,7 +99,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         return this.currentCpuDemand;
     }
 
-    public double getSpeed() {
+    public double getSupply() {
         return this.currentCpuSupplied;
     }
 
@@ -104,8 +116,9 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimCpu(FlowEngine engine, CpuModel cpuModel, CpuPowerModel powerModel, int id) {
+    public SimCpu(FlowEngine engine, CpuModel cpuModel, PowerModel powerModel, int id) {
         super(engine);
+        this.id = id;
         this.cpuModel = cpuModel;
         this.maxCapacity = this.cpuModel.getTotalCapacity();
 
@@ -135,7 +148,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
         this.currentCpuSupplied = Math.min(this.currentCpuDemand, this.maxCapacity);
 
-        this.pushOutgoingSupply(this.distributorEdge, this.currentCpuSupplied);
+        this.pushOutgoingSupply(this.distributorEdge, this.currentCpuSupplied, ResourceType.CPU);
 
         return Long.MAX_VALUE;
     }
@@ -161,14 +174,14 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
             final double factor = this.cpuFrequencyInv * delta;
 
-            this.performanceCounters.addCpuActiveTime(Math.round(rate * factor));
-            this.performanceCounters.addCpuIdleTime(Math.round((capacity - rate) * factor));
-            this.performanceCounters.addCpuStealTime(Math.round((demand - rate) * factor));
+            this.performanceCounters.addActiveTime(Math.round(rate * factor));
+            this.performanceCounters.addIdleTime(Math.round((capacity - rate) * factor));
+            this.performanceCounters.addStealTime(Math.round((demand - rate) * factor));
         }
 
-        this.performanceCounters.setCpuDemand(this.currentCpuDemand);
-        this.performanceCounters.setCpuSupply(this.currentCpuSupplied);
-        this.performanceCounters.setCpuCapacity(this.maxCapacity);
+        this.performanceCounters.setDemand(this.currentCpuDemand);
+        this.performanceCounters.setSupply(this.currentCpuSupplied);
+        this.performanceCounters.setCapacity(this.maxCapacity);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -182,7 +195,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newPowerDemand) {
         updateCounters();
         this.currentPowerDemand = newPowerDemand;
-        this.psuEdge.pushDemand(newPowerDemand);
+        this.psuEdge.pushDemand(newPowerDemand, false, ResourceType.CPU);
     }
 
     /**
@@ -193,7 +206,15 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         updateCounters();
         this.currentCpuSupplied = newCpuSupply;
 
-        this.distributorEdge.pushSupply(newCpuSupply, true);
+        this.distributorEdge.pushSupply(newCpuSupply, true, ResourceType.CPU);
+    }
+
+    @Override
+    public void pushOutgoingSupply(FlowEdge consumerEdge, double newCpuSupply, ResourceType resourceType) {
+        updateCounters();
+        this.currentCpuSupplied = newCpuSupply;
+
+        this.distributorEdge.pushSupply(newCpuSupply, true, resourceType);
     }
 
     /**
@@ -264,5 +285,15 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         return Map.of(
                 FlowEdge.NodeType.CONSUMING, List.of(this.psuEdge),
                 FlowEdge.NodeType.SUPPLYING, List.of(this.distributorEdge));
+    }
+
+    @Override
+    public ResourceType getSupplierResourceType() {
+        return ResourceType.CPU;
+    }
+
+    @Override
+    public ResourceType getConsumerResourceType() {
+        return ResourceType.CPU;
     }
 }

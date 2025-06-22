@@ -130,7 +130,7 @@ public final class CpuModel {
 
     @Override
     public String toString() {
-        return "ProcessingUnit[" + "id= " + id + ", coreCount= " + coreCount + ", coreSpeed= " + coreSpeed
+        return "ProcessingUnit[" + "id= " + id + ", cpuCoreCount= " + coreCount + ", coreSpeed= " + coreSpeed
                 + ", frequency= " + totalCapacity + ", vendor= " + vendor + ", modelName= " + modelName + ", arch= "
                 + arch + "]";
     }

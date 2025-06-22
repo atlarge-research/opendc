@@ -22,32 +22,41 @@
 
 package org.opendc.simulator.compute.workload;
 
+import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
+import org.opendc.common.ResourceType;
+import org.opendc.simulator.compute.ComputeResource;
 import org.opendc.simulator.compute.machine.PerformanceCounters;
 import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A {@link VirtualMachine} that composes multiple {@link SimWorkload}s.
  */
 public final class VirtualMachine extends SimWorkload implements FlowSupplier {
+    private static final Logger LOGGER = LoggerFactory.getLogger(VirtualMachine.class);
     private final LinkedList<Workload> workloads;
     private int workloadIndex;
 
     private SimWorkload activeWorkload;
-    private double cpuDemand = 0.0f;
-    private double cpuSupply = 0.0f;
-    private double d = 0.0f;
 
     private FlowEdge workloadEdge;
-    private FlowEdge machineEdge;
 
-    private double capacity = 0;
+    private final Hashtable<ResourceType, Double> resourceDemands = new Hashtable<>();
+    private final Hashtable<ResourceType, Double> resourceSupplies = new Hashtable<>();
+    private final Hashtable<ResourceType, Double> resourceCapacities = new Hashtable<>();
+    private final Hashtable<ResourceType, Double> resourceTimeScalingFactor = new Hashtable<>(); // formerly known as d
+    private final Hashtable<ResourceType, FlowEdge> distributorEdges = new Hashtable<>();
+    private final Hashtable<ResourceType, List<PerformanceCounters>> resourcePerformanceCounters = new Hashtable<>();
 
     private final long checkpointInterval;
     private final long checkpointDuration;
@@ -57,8 +66,9 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     private final ChainWorkload snapshot;
 
     private long lastUpdate;
-    private final PerformanceCounters performanceCounters = new PerformanceCounters();
     private Consumer<Exception> completion;
+
+    private final List<ResourceType> availableResources = new ArrayList<>();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
@@ -66,7 +76,15 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
     @Override
     public double getCapacity() {
-        return this.capacity;
+        throw new UnsupportedOperationException("getCapacity() is not supported for VirtualMachine");
+    }
+
+    @Override
+    public double getCapacity(ResourceType resourceType) {
+        if (resourceType == ResourceType.AUXILIARY) {
+            return 0.0;
+        }
+        return this.resourceCapacities.get(resourceType);
     }
 
     @Override
@@ -89,8 +107,22 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         return checkpointIntervalScaling;
     }
 
-    public PerformanceCounters getPerformanceCounters() {
-        return performanceCounters;
+    public PerformanceCounters getCpuPerformanceCounters() {
+        return this.resourcePerformanceCounters.get(ResourceType.CPU).getFirst();
+    }
+
+    public List<PerformanceCounters> getGpuPerformanceCounters() {
+        return this.resourcePerformanceCounters.get(ResourceType.GPU) != null
+                ? this.resourcePerformanceCounters.get(ResourceType.GPU)
+                : new ArrayList<>();
+    }
+
+    public PerformanceCounters getGpuPerformanceCounters(int gpuId) {
+        List<PerformanceCounters> gpuPerformanceCounters = this.resourcePerformanceCounters.get(ResourceType.GPU);
+        if (gpuId < 0 || gpuId >= gpuPerformanceCounters.size()) {
+            throw new IndexOutOfBoundsException("No such GPU id: " + gpuId);
+        }
+        return gpuPerformanceCounters.get(gpuId);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -116,16 +148,54 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         }
 
         this.workloadIndex = -1;
-
+        this.availableResources.add(supplier.getSupplierResourceType());
         this.onStart();
     }
 
-    VirtualMachine(FlowSupplier supplier, ChainWorkload workload, SimMachine machine, Consumer<Exception> completion) {
-        this(supplier, workload);
+    VirtualMachine(
+            List<FlowSupplier> suppliers, ChainWorkload workload, SimMachine machine, Consumer<Exception> completion) {
+        super(((FlowNode) suppliers.getFirst()).getEngine());
 
-        this.capacity = machine.getCpu().getFrequency();
-        this.d = 1 / machine.getCpu().getFrequency();
+        this.snapshot = workload;
+
+        for (FlowSupplier supplier : suppliers) {
+            new FlowEdge(this, supplier);
+            ResourceType resourceType = supplier.getSupplierResourceType();
+
+            this.availableResources.add(resourceType);
+
+            ArrayList<ComputeResource> resources = machine.getResources(resourceType);
+            if (resources.isEmpty()) {
+                throw new IllegalArgumentException("No resources of type " + resourceType + " found in machine ");
+            }
+
+            this.resourceCapacities.put(resourceType, resources.getFirst().getCapacity());
+
+            ArrayList<PerformanceCounters> performanceCounters = new ArrayList<>();
+
+            for (ComputeResource resource : resources) {
+                performanceCounters.add(new PerformanceCounters());
+                this.resourceTimeScalingFactor.put(resourceType, 1.0 / resource.getCapacity());
+            }
+            this.resourcePerformanceCounters.put(resourceType, performanceCounters);
+            this.resourceDemands.put(resourceType, 0.0);
+            this.resourceSupplies.put(resourceType, 0.0);
+        }
+
+        this.workloads = new LinkedList<>(workload.workloads());
+        this.checkpointInterval = workload.checkpointInterval();
+        this.checkpointDuration = workload.checkpointDuration();
+        this.checkpointIntervalScaling = workload.checkpointIntervalScaling();
+
+        this.lastUpdate = clock.millis();
+
+        if (checkpointInterval > 0) {
+            this.createCheckpointModel();
+        }
+
+        this.workloadIndex = -1;
         this.completion = completion;
+        this.onStart();
     }
 
     public Workload getNextWorkload() {
@@ -152,18 +222,25 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         this.lastUpdate = now;
         long delta = now - lastUpdate;
 
-        double cpuCapacity = 0.0f;
-        if (delta > 0) {
-            final double factor = this.d * delta;
-
-            this.performanceCounters.addCpuActiveTime(Math.round(this.cpuSupply * factor));
-            this.performanceCounters.setCpuIdleTime(Math.round((cpuCapacity - this.cpuSupply) * factor));
-            this.performanceCounters.addCpuStealTime(Math.round((this.cpuDemand - this.cpuSupply) * factor));
+        for (ResourceType resourceType : this.availableResources) {
+            int i = 0;
+            final double factor = this.resourceTimeScalingFactor.get(resourceType) * delta;
+            for (PerformanceCounters performanceCounter : this.resourcePerformanceCounters.get(resourceType)) {
+                if (delta > 0) {
+                    performanceCounter.addActiveTime(Math.round(this.resourceSupplies.get(resourceType) * factor));
+                    performanceCounter.setIdleTime(Math.round(
+                            (this.resourceCapacities.get(resourceType) - this.resourceSupplies.get(resourceType))
+                                    * factor));
+                    performanceCounter.addStealTime(Math.round(
+                            (this.resourceDemands.get(resourceType) - this.resourceSupplies.get(resourceType))
+                                    * factor));
+                }
+                performanceCounter.setDemand(this.resourceDemands.get(resourceType));
+                performanceCounter.setSupply(this.resourceSupplies.get(resourceType));
+                performanceCounter.setCapacity(this.resourceCapacities.get(resourceType));
+                i++;
+            }
         }
-
-        this.performanceCounters.setCpuDemand(this.cpuDemand);
-        this.performanceCounters.setCpuSupply(this.cpuSupply);
-        this.performanceCounters.setCpuCapacity(cpuCapacity);
     }
 
     @Override
@@ -233,40 +310,66 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     }
 
     /**
-     * Add Connection to the cpuMux
+     * Add Connection to the resource flow distributor
      *
-     * @param supplierEdge The edge to the cpuMux
+     * @param supplierEdge The edge to the resource flow distributor
      */
     @Override
     public void addSupplierEdge(FlowEdge supplierEdge) {
-        this.machineEdge = supplierEdge;
-        this.capacity = supplierEdge.getCapacity();
+        ResourceType resourceType = supplierEdge.getSupplierResourceType();
+        this.resourceCapacities.put(resourceType, supplierEdge.getCapacity());
+        this.distributorEdges.put(resourceType, supplierEdge);
     }
 
     /**
-     * Push demand to the cpuMux
+     * Push demand to the resource flow distributor
      *
-     * @param supplierEdge The edge to the cpuMux
-     * @param newDemand new demand to sent to the cpu
+     * @param supplierEdge The edge to the resource flow distributor
+     * @param newDemand new demand to sent to the resource flow distributor
      */
     @Override
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
+        // FIXME: Needs to be assigned to specific resource if multiple exist -> add resource Id as parameter
+        this.pushOutgoingDemand(supplierEdge, newDemand, supplierEdge.getSupplierResourceType());
+    }
 
-        this.cpuDemand = newDemand;
-        this.machineEdge.pushDemand(newDemand);
+    /**
+     * Push demand to the resource flow distributor
+     *
+     * @param supplierEdge The edge to the resource flow distributor
+     * @param newDemand new demand to sent to the resource flow distributor
+     */
+    @Override
+    public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand, ResourceType resourceType) {
+        // FIXME: Needs to be assigned to specific resource if multiple exist -> add resource Id as parameter
+        this.resourceDemands.put(resourceType, newDemand);
+        this.distributorEdges.get(resourceType).pushDemand(newDemand, false, resourceType);
     }
 
     /**
      * Push supply to the workload
      *
-     * @param consumerEdge The edge to the cpuMux
+     * @param consumerEdge The edge to the resource flow distributor
      * @param newSupply new supply to sent to the workload
      */
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
+        this.resourceSupplies.put(consumerEdge.getConsumerResourceType(), newSupply);
+        this.distributorEdges
+                .get(consumerEdge.getConsumerResourceType())
+                .pushSupply(newSupply, false, consumerEdge.getConsumerResourceType());
+    }
 
-        this.cpuSupply = newSupply;
-        this.workloadEdge.pushSupply(newSupply);
+    /**
+     * Push supply to the workload
+     *
+     * @param consumerEdge The edge to the resource flow distributor
+     * @param newSupply new supply to sent to the workload
+     */
+    @Override
+    public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply, ResourceType resourceType) {
+        this.resourceSupplies.put(resourceType, newSupply);
+        this.workloadEdge.pushSupply(newSupply, false, resourceType);
     }
 
     /**
@@ -278,21 +381,42 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     @Override
     public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand) {
         updateCounters(this.clock.millis());
+        this.pushOutgoingDemand(this.distributorEdges.get(consumerEdge.getConsumerResourceType()), newDemand);
+    }
 
-        this.pushOutgoingDemand(this.machineEdge, newDemand);
+    @Override
+    public void handleIncomingDemand(FlowEdge consumerEdge, double newDemand, ResourceType resourceType) {
+        updateCounters(this.clock.millis());
+        this.pushOutgoingDemand(this.distributorEdges.get(resourceType), newDemand, resourceType);
     }
 
     /**
-     * Handle new supply coming from the cpuMux
+     * Handle new supply coming from the resource flow distributor
      *
-     * @param supplierEdge The edge to the cpuMux
+     * @param supplierEdge The edge to the resource flow distributor
      * @param newSupply The new supply that is sent to the workload
      */
     @Override
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply) {
         updateCounters(this.clock.millis());
 
-        this.pushOutgoingSupply(this.machineEdge, newSupply);
+        this.pushOutgoingSupply(
+                this.distributorEdges.get(supplierEdge.getSupplierResourceType()),
+                newSupply,
+                supplierEdge.getSupplierResourceType());
+    }
+
+    /**
+     * Handle new supply coming from the resource flow distributor
+     *
+     * @param supplierEdge The edge to the resource flow distributor
+     * @param newSupply The new supply that is sent to the workload
+     */
+    @Override
+    public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply, ResourceType resourceType) {
+        updateCounters(this.clock.millis());
+
+        this.pushOutgoingSupply(this.distributorEdges.get(resourceType), newSupply, resourceType);
     }
 
     /**
@@ -322,14 +446,14 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     }
 
     /**
-     * Handle the removal of the connection to the cpuMux
+     * Handle the removal of the connection to the resource flow distributor
      * When this happens, close the SimChainWorkload
      *
-     * @param supplierEdge The edge to the cpuMux
+     * @param supplierEdge The edge to the resource flow distributor
      */
     @Override
     public void removeSupplierEdge(FlowEdge supplierEdge) {
-        if (this.machineEdge == null) {
+        if (!this.distributorEdges.contains(supplierEdge.getSupplierResourceType())) {
             return;
         }
 
@@ -338,11 +462,16 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
     @Override
     public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
-        List<FlowEdge> consumerEdges = (this.machineEdge != null) ? List.of(this.machineEdge) : List.of();
+        List<FlowEdge> consumerEdges =
+                this.distributorEdges.values().stream().filter(Objects::nonNull).toList();
         List<FlowEdge> supplierEdges = (this.workloadEdge != null) ? List.of(this.workloadEdge) : List.of();
 
         return Map.of(
                 FlowEdge.NodeType.CONSUMING, consumerEdges,
                 FlowEdge.NodeType.SUPPLYING, supplierEdges);
+    }
+
+    public List<ResourceType> getAvailableResources() {
+        return this.availableResources;
     }
 }

@@ -30,10 +30,15 @@ public interface Flavor : Resource {
     /**
      * The number of (virtual) processing cores to use.
      */
-    public val coreCount: Int
+    public val cpuCoreCount: Int
 
     /**
      * The amount of RAM available to the task (in MB).
      */
     public val memorySize: Long
+
+    /**
+     * The amount of gpu cores available to the task.
+     */
+    public val gpuCoreCount: Int
 }

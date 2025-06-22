@@ -24,6 +24,7 @@ package org.opendc.compute.topology.specs
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.opendc.common.units.DataRate
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
@@ -76,7 +77,9 @@ public data class HostJSONSpec(
     val cpu: CPUJSONSpec,
     val count: Int = 1,
     val memory: MemoryJSONSpec,
-    val powerModel: PowerModelSpec = PowerModelSpec.DFLT,
+    val gpu: GPUJSONSpec? = null,
+    val cpuPowerModel: PowerModelSpec = PowerModelSpec.DFLT,
+    val gpuPowerModel: PowerModelSpec = PowerModelSpec.DFLT,
 )
 
 /**
@@ -115,6 +118,18 @@ public data class MemoryJSONSpec(
     val arch: String = "unknown",
     val memorySize: DataSize,
     val memorySpeed: Frequency = Frequency.ofMHz(-1),
+)
+
+@Serializable
+public data class GPUJSONSpec(
+    val count: Int = 1,
+    val coreCount: Int,
+    val coreSpeed: Frequency,
+    val memorySize: DataSize = DataSize.ofMiB(-1),
+    val memoryBandwidth: DataRate = DataRate.ofKibps(-1),
+    val vendor: String = "unknown",
+    val modelName: String = "unknown",
+    val architecture: String = "unknown",
 )
 
 @Serializable

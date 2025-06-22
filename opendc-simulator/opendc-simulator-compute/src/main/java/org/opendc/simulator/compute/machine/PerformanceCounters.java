@@ -23,80 +23,97 @@
 package org.opendc.simulator.compute.machine;
 
 public class PerformanceCounters {
-    private long cpuActiveTime = 0;
-    private long cpuIdleTime = 0;
-    private long cpuStealTime = 0;
-    private long cpuLostTime = 0;
 
-    private double cpuCapacity = 0.0f;
-    private double cpuDemand = 0.0f;
-    private double cpuSupply = 0.0f;
+    private long activeTime = 0;
+    private long idleTime = 0;
+    private long stealTime = 0;
+    private long lostTime = 0;
 
-    public long getCpuActiveTime() {
-        return cpuActiveTime;
+    private double capacity = 0.0f;
+    private double demand = 0.0f;
+    private double supply = 0.0f;
+
+    public long getActiveTime() {
+        return this.activeTime;
     }
 
-    public void setCpuActiveTime(long cpuActiveTime) {
-        this.cpuActiveTime = cpuActiveTime;
+    public long getIdleTime() {
+        return this.idleTime;
     }
 
-    public void addCpuActiveTime(long cpuActiveTime) {
-        this.cpuActiveTime += cpuActiveTime;
+    public long getStealTime() {
+        return this.stealTime;
     }
 
-    public long getCpuIdleTime() {
-        return cpuIdleTime;
+    public long getLostTime() {
+        return this.lostTime;
     }
 
-    public void setCpuIdleTime(long cpuIdleTime) {
-        this.cpuIdleTime = cpuIdleTime;
+    public double getCapacity() {
+        return this.capacity;
     }
 
-    public void addCpuIdleTime(long cpuIdleTime) {
-        this.cpuIdleTime += cpuIdleTime;
+    public double getDemand() {
+        return this.demand;
     }
 
-    public long getCpuStealTime() {
-        return cpuStealTime;
+    public double getSupply() {
+        return this.supply;
     }
 
-    public void setCpuStealTime(long cpuStealTime) {
-        this.cpuStealTime = cpuStealTime;
+    public void setActiveTime(long activeTime) {
+        this.activeTime = activeTime;
     }
 
-    public void addCpuStealTime(long cpuStealTime) {
-        this.cpuStealTime += cpuStealTime;
+    public void setIdleTime(long idleTime) {
+        this.idleTime = idleTime;
     }
 
-    public long getCpuLostTime() {
-        return cpuLostTime;
+    public void setStealTime(long stealTime) {
+        this.stealTime = stealTime;
     }
 
-    public void setCpuLostTime(long cpuLostTime) {
-        this.cpuLostTime = cpuLostTime;
+    public void setLostTime(long lostTime) {
+        this.lostTime = lostTime;
     }
 
-    public double getCpuCapacity() {
-        return cpuCapacity;
+    public void setCapacity(double capacity) {
+        this.capacity = capacity;
     }
 
-    public void setCpuCapacity(double cpuCapacity) {
-        this.cpuCapacity = cpuCapacity;
+    public void setDemand(double demand) {
+        this.demand = demand;
     }
 
-    public double getCpuDemand() {
-        return cpuDemand;
+    public void setSupply(double supply) {
+        this.supply = supply;
     }
 
-    public void setCpuDemand(double cpuDemand) {
-        this.cpuDemand = cpuDemand;
+    public void addActiveTime(long activeTime) {
+        this.activeTime += activeTime;
     }
 
-    public double getCpuSupply() {
-        return cpuSupply;
+    public void addIdleTime(long idleTime) {
+        this.idleTime += idleTime;
     }
 
-    public void setCpuSupply(double cpuSupply) {
-        this.cpuSupply = cpuSupply;
+    public void addStealTime(long stealTime) {
+        this.stealTime += stealTime;
+    }
+
+    public void addLostTime(long lostTime) {
+        this.lostTime += lostTime;
+    }
+
+    public void addCapacity(double capacity) {
+        this.capacity += capacity;
+    }
+
+    public void addDemand(double demand) {
+        this.demand += demand;
+    }
+
+    public void addSupply(double supply) {
+        this.supply += supply;
     }
 }

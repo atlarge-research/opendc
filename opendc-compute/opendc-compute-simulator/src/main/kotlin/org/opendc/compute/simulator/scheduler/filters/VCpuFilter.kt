@@ -35,7 +35,7 @@ public class VCpuFilter(private val allocationRatio: Double) : HostFilter {
         host: HostView,
         task: ServiceTask,
     ): Boolean {
-        val requested = task.flavor.coreCount
+        val requested = task.flavor.cpuCoreCount
         val totalCores = host.host.getModel().coreCount
         val limit = totalCores * allocationRatio
 
@@ -44,7 +44,7 @@ public class VCpuFilter(private val allocationRatio: Double) : HostFilter {
             return false
         }
 
-        val availableCores = limit - host.provisionedCores
+        val availableCores = limit - host.provisionedCpuCores
         return availableCores >= requested
     }
 }

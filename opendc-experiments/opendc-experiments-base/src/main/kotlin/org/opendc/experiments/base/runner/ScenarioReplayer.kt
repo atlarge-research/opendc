@@ -129,6 +129,15 @@ public suspend fun ComputeService.replay(
                         TaskNature(false)
                     }
 
+                val flavorMeta = mutableMapOf<String, Any>()
+
+                if (entry.cpuCapacity > 0.0) {
+                    flavorMeta["cpu-capacity"] = entry.cpuCapacity
+                }
+                if (entry.gpuCapacity > 0.0) {
+                    flavorMeta["gpu-capacity"] = entry.gpuCapacity
+                }
+
                 launch {
                     val task =
                         client.newTask(
@@ -140,7 +149,8 @@ public suspend fun ComputeService.replay(
                                 entry.name,
                                 entry.cpuCount,
                                 entry.memCapacity,
-                                if (entry.cpuCapacity > 0.0) mapOf("cpu-capacity" to entry.cpuCapacity) else emptyMap(),
+                                entry.gpuCount,
+                                flavorMeta,
                             ),
                             workload,
                             meta,

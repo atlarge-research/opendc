@@ -22,13 +22,28 @@
 
 package org.opendc.simulator.engine.graph;
 
+import org.opendc.common.ResourceType;
+
 public interface FlowConsumer {
 
     void handleIncomingSupply(FlowEdge supplierEdge, double newSupply);
 
+    default void handleIncomingSupply(FlowEdge supplierEdge, double newSupply, ResourceType resourceType) {
+        handleIncomingSupply(supplierEdge, newSupply);
+    }
+
     void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand);
+
+    default void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand, ResourceType resourceType) {
+        pushOutgoingDemand(supplierEdge, newDemand);
+    }
 
     void addSupplierEdge(FlowEdge supplierEdge);
 
     void removeSupplierEdge(FlowEdge supplierEdge);
+
+    // needed for flow nodes with multiple edges to same other flow node (PSU, VM)
+    default ResourceType getConsumerResourceType() {
+        return ResourceType.AUXILIARY;
+    }
 }
