@@ -31,7 +31,7 @@ import java.util.Set;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicy;
-import org.opendc.simulator.engine.graph.distributionPolicies.MaxMinFairnessStrategy;
+import org.opendc.simulator.engine.graph.distributionPolicies.MaxMinFairnessPolicy;
 
 public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
     private final ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
@@ -53,7 +53,7 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
 
     public FlowDistributor(FlowEngine engine) {
         super(engine);
-        this.distributionPolicy = new MaxMinFairnessStrategy();
+        this.distributionPolicy = new MaxMinFairnessPolicy();
     }
 
     public FlowDistributor(FlowEngine engine, DistributionPolicy distributionPolicy) {

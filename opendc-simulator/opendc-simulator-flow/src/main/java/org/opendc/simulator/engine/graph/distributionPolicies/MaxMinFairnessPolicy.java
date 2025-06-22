@@ -25,7 +25,12 @@ package org.opendc.simulator.engine.graph.distributionPolicies;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class MaxMinFairnessStrategy implements DistributionPolicy {
+/**
+ * A distribution policy that implements the Max-Min Fairness algorithm.
+ * This policy distributes supply to demands in a way that maximizes the minimum
+ * allocation across all demands, ensuring fairness.
+ */
+public class MaxMinFairnessPolicy implements DistributionPolicy {
     private record Demand(int idx, double value) {}
 
     @Override
