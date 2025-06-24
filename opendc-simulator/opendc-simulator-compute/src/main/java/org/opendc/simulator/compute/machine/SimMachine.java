@@ -215,7 +215,7 @@ public class SimMachine {
         new FlowEdge(
                 (FlowConsumer) this.computeResources.get(ResourceType.CPU).getFirst(),
                 this.psu,
-                ResourceType.Power,
+                ResourceType.POWER,
                 0,
                 -1);
 
@@ -247,7 +247,7 @@ public class SimMachine {
                         gpuModel.getId(),
                         gpuModel.getId());
                 // Connect the GPU to the PSU
-                new FlowEdge(gpu, this.psu, ResourceType.Power, gpuModel.getId(), gpuModel.getId());
+                new FlowEdge(gpu, this.psu, ResourceType.POWER, gpuModel.getId(), gpuModel.getId());
             }
             this.computeResources.put(ResourceType.GPU, gpus);
         }
