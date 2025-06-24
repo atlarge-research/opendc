@@ -1,12 +1,13 @@
 A host is a machine that can execute tasks. A host consist of the following components:
 
-| variable    | type                                                         | required? | default | description                                                                    |
-|-------------|:-------------------------------------------------------------|:----------|---------|--------------------------------------------------------------------------------|
-| name        | string                                                       | no        | Host    | The name of the host. This is only important for debugging and post-processing |
-| count       | integer                                                      | no        | 1       | The amount of hosts of this type are in the cluster                            |
-| cpuModel    | [CPU](#cpu)                                                  | yes       | N/A     | The CPUs in the host                                                           |
-| memory      | [Memory](#memory)                                            | yes       | N/A     | The memory used by the host                                                    |
-| power model | [Power Model](/docs/documentation/Input/Topology/PowerModel) | no        | Default | The power model used to determine the power draw of the host                   |
+| variable      | type                                                         | required? | default | description                                                                    |
+|---------------|:-------------------------------------------------------------|:----------|---------|--------------------------------------------------------------------------------|
+| name          | string                                                       | no        | Host    | The name of the host. This is only important for debugging and post-processing |
+| count         | integer                                                      | no        | 1       | The amount of hosts of this type are in the cluster                            |
+| cpuModel      | [CPU](#cpu)                                                  | yes       | N/A     | The CPUs in the host                                                           |
+| memory        | [Memory](#memory)                                            | yes       | N/A     | The memory used by the host                                                    |
+| cpuPowerModel | [Power Model](/docs/documentation/Input/Topology/PowerModel) | no        | Default | The power model used to determine the power draw of the cpu                    |
+| gpuPowerModel | [Power Model](/docs/documentation/Input/Topology/PowerModel) | no        | Default | The power model used to determine the power draw of the gpu                    |
 
 ## CPU
 

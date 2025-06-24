@@ -44,43 +44,45 @@ The task output file, contains all metrics of related to the tasks that are bein
 | task_state         | String   | TaskState | The current state of the Task.                                              |
 
 ### Host
-The host output file, contains all metrics of related to the hosts that are running.
+The host output file, contains all metrics of related to the hosts that are running. 
+For each GPU attached to the host, there is a separate metric for each GPU. 
+The metrics are named `gpu_capacity_n`, `gpu_usage_n`, `gpu_demand_n`, etc., where `n` is the index of the GPU starting from 0.
 
-| Metric             | DataType | Unit       | Summary                                                                                             |
-|--------------------|----------|------------|-----------------------------------------------------------------------------------------------------|
-| timestamp          | int64    | ms         | Timestamp of the sample.                                                                            |
-| timestamp_absolute | int64    | ms         | The absolute timestamp based on the given workload.                                                 |
-| host_name          | binary   | string     | The name of the host.                                                                               |
-| cluster_name       | binary   | string     | The name of the cluster that this host is part of.                                                  |
-| cpu_count          | int32    | count      | The number of cores in this host.                                                                   |
-| mem_capacity       | int64    | Mb         | The amount of available memory.                                                                     |
-| tasks_terminated   | int32    | count      | The number of tasks that are in a terminated state.                                                 |
-| tasks_running      | int32    | count      | The number of tasks that are in a running state.                                                    |
-| tasks_error        | int32    | count      | The number of tasks that are in an error state.                                                     |
-| tasks_invalid      | int32    | count      | The number of tasks that are in an unknown state.                                                   |
-| cpu_capacity       | double   | MHz        | The total capacity of the CPUs in the host.                                                         |
-| cpu_usage          | double   | MHz        | The total CPU capacity provided to all tasks on this host.                                          |
-| cpu_demand         | double   | MHz        | The total CPU capacity demanded by all tasks on this host.                                          |
-| cpu_utilization    | double   | ratio      | The CPU utilization of the host. This is calculated by dividing the cpu_usage, by the cpu_capacity. |
-| cpu_time_active    | int64    | ms         | The duration that a CPU was active in the host.                                                     |
-| cpu_time_idle      | int64    | ms         | The duration that a CPU was idle in the host.                                                       |
-| cpu_time_steal     | int64    | ms         | The duration that a vCPU wanted to run, but no capacity was available.                              |
-| cpu_time_lost      | int64    | ms         | The duration of CPU time that was lost due to interference.                                         |
-| gpu_capacity       | double   | MHz        | The total capacity of the GPUs in the host.                                                         |
-| gpu_usage          | double   | MHz        | The total GPU capacity provided to all tasks on this host.                                          |
-| gpu_demand         | double   | MHz        | The total GPU capacity demanded by all tasks on this host.                                          |
-| gpu_utilization    | double   | ratio      | The GPU utilization of the host. This is calculated by dividing the gpu_usage, by the gpu_capacity. |
-| gpu_time_active    | int64    | ms         | The duration that a GPU was active in the host.                                                     |
-| gpu_time_idle      | int64    | ms         | The duration that a GPU was idle in the host.                                                       |
-| gpu_time_steal     | int64    | ms         | The duration that a vGPU wanted to run, but no capacity was available.                              |
-| gpu_time_lost      | int64    | ms         | The duration of GPU time that was lost due to interference.                                         |
-| power_draw         | double   | Watt       | The current power draw of the host.                                                                 |
-| energy_usage       | double   | Joule (Ws) | The total energy consumption of the host since last sample.                                         |
-| embodied_carbon    | double   | gram       | The total embodied carbon emitted since the last sample.                                            |
-| uptime             | int64    | ms         | The uptime of the host since last sample.                                                           |
-| downtime           | int64    | ms         | The downtime of the host since last sample.                                                         |
-| boot_time          | int64    | ms         | The time a host got booted.                                                                         |
-| boot_time_absolute | int64    | ms         | The absolute time a host got booted.                                                                |
+| Metric             | DataType | Unit       | Summary                                                                                                      |
+|--------------------|----------|------------|--------------------------------------------------------------------------------------------------------------|
+| timestamp          | int64    | ms         | Timestamp of the sample.                                                                                     |
+| timestamp_absolute | int64    | ms         | The absolute timestamp based on the given workload.                                                          |
+| host_name          | binary   | string     | The name of the host.                                                                                        |
+| cluster_name       | binary   | string     | The name of the cluster that this host is part of.                                                           |
+| cpu_count          | int32    | count      | The number of cores in this host.                                                                            |
+| mem_capacity       | int64    | Mb         | The amount of available memory.                                                                              |
+| tasks_terminated   | int32    | count      | The number of tasks that are in a terminated state.                                                          |
+| tasks_running      | int32    | count      | The number of tasks that are in a running state.                                                             |
+| tasks_error        | int32    | count      | The number of tasks that are in an error state.                                                              |
+| tasks_invalid      | int32    | count      | The number of tasks that are in an unknown state.                                                            |
+| cpu_capacity       | double   | MHz        | The total capacity of the CPUs in the host.                                                                  |
+| cpu_usage          | double   | MHz        | The total CPU capacity provided to all tasks on this host.                                                   |
+| cpu_demand         | double   | MHz        | The total CPU capacity demanded by all tasks on this host.                                                   |
+| cpu_utilization    | double   | ratio      | The CPU utilization of the host. This is calculated by dividing the cpu_usage, by the cpu_capacity.          |
+| cpu_time_active    | int64    | ms         | The duration that a CPU was active in the host.                                                              |
+| cpu_time_idle      | int64    | ms         | The duration that a CPU was idle in the host.                                                                |
+| cpu_time_steal     | int64    | ms         | The duration that a vCPU wanted to run, but no capacity was available.                                       |
+| cpu_time_lost      | int64    | ms         | The duration of CPU time that was lost due to interference.                                                  |
+| gpu_capacity_n     | double   | MHz        | The total capacity of the the n-th GPU in the host.                                                          |
+| gpu_usage_n        | double   | MHz        | The total of the n-th GPU capacity provided to all tasks on this host.                                       |
+| gpu_demand_n       | double   | MHz        | The total of the n-th GPU capacity demanded by all tasks on this host.                                       |
+| gpu_utilization_n  | double   | ratio      | The the n-th GPU utilization of the host. This is calculated by dividing the gpu_usage, by the gpu_capacity. |
+| gpu_time_active_n  | int64    | ms         | The duration that the n-th GPU was active in the host.                                                       |
+| gpu_time_idle_n    | int64    | ms         | The duration that the n-th GPU was idle in the host.                                                         |
+| gpu_time_steal_n   | int64    | ms         | The duration that the n-th vGPU wanted to run, but no capacity was available.                                |
+| gpu_time_lost_n    | int64    | ms         | The duration of the n-th GPU time that was lost due to interference.                                         |
+| power_draw         | double   | Watt       | The current power draw of the host.                                                                          |
+| energy_usage       | double   | Joule (Ws) | The total energy consumption of the host since last sample.                                                  |
+| embodied_carbon    | double   | gram       | The total embodied carbon emitted since the last sample.                                                     |
+| uptime             | int64    | ms         | The uptime of the host since last sample.                                                                    |
+| downtime           | int64    | ms         | The downtime of the host since last sample.                                                                  |
+| boot_time          | int64    | ms         | The time a host got booted.                                                                                  |
+| boot_time_absolute | int64    | ms         | The absolute time a host got booted.                                                                         |
 
 ### Power Source
 The power source output file, contains all metrics of related to the power sources.
