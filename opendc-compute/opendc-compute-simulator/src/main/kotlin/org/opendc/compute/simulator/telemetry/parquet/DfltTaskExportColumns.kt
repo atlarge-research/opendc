@@ -31,7 +31,6 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
 import org.opendc.trace.util.parquet.exporter.ExportColumn
-import kotlin.collections.listOf
 
 /**
  * This object wraps the [ExportColumn]s to solves ambiguity for field
@@ -231,31 +230,4 @@ public object DfltTaskExportColumns {
             TIMESTAMP,
             TIMESTAMP_ABS,
         )
-
-    public fun gpuColumns(count: Int): Set<ExportColumn<TaskTableReader>> =
-        (0 until count).flatMap { i ->
-            listOf<ExportColumn<TaskTableReader>>(
-                ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_capacity_$i"),
-                ) { it.gpuLimits?.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_usage_$i"),
-                ) { it.gpuUsages?.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_demand_$i"),
-                ) { it.gpuDemands?.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(INT64).named("gpu_time_active_$i"),
-                ) { it.gpuActiveTimes?.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(INT64).named("gpu_time_idle_$i"),
-                ) { it.gpuIdleTimes?.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(INT64).named("gpu_time_steal_$i"),
-                ) { it.gpuStealTimes?.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(INT64).named("gpu_time_lost_$i"),
-                ) { it.gpuLostTimes?.getOrNull(i) },
-            )
-        }.toSet()
 }
