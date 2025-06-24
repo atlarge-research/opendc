@@ -55,6 +55,6 @@ class ExperimentRunnerTest {
         ExperimentCommand().main(arrayOf("--experiment-path", "src/test/resources/experiments/experiment_2.json"))
 
         val someDir = File("output")
-//        someDir.deleteRecursively()
+        someDir.deleteRecursively()
     }
 }
