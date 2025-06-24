@@ -219,8 +219,7 @@ public data class ComputeExportConfig(
 
 public fun ComputeExportConfig.withGpuColumns(count: Int): ComputeExportConfig {
     val hostCols = hostExportColumns + DfltHostExportColumns.gpuColumns(count)
-    val taskCols = taskExportColumns + DfltTaskExportColumns.gpuColumns(count)
-    return copy(hostExportColumns = hostCols, taskExportColumns = taskCols)
+    return copy(hostExportColumns = hostCols)
 }
 
 private val json = Json { ignoreUnknownKeys = true }

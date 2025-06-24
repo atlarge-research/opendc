@@ -378,7 +378,7 @@ public class SimHost(
         return gpuStats
     }
 
-    public fun getGpuStats(task: ServiceTask): List<GuestGpuStats> {
+    public fun getGpuStats(task: ServiceTask): GuestGpuStats? {
         val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
         return guest.getGpuStats()
     }

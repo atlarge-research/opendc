@@ -258,27 +258,24 @@ public class Guest(
         )
     }
 
-    public fun getGpuStats(): List<GuestGpuStats> {
+    public fun getGpuStats(): GuestGpuStats? {
         virtualMachine!!.updateCounters(this.clock.millis())
         val counters = virtualMachine!!.gpuPerformanceCounters
 
-        val gpuStats = mutableListOf<GuestGpuStats>()
-        for (gpuCounter in counters) {
-            gpuStats.add(
-                GuestGpuStats(
-                    gpuCounter.activeTime / 1000L,
-                    gpuCounter.idleTime / 1000L,
-                    gpuCounter.stealTime / 1000L,
-                    gpuCounter.lostTime / 1000L,
-                    gpuCounter.capacity,
-                    gpuCounter.supply,
-                    gpuCounter.demand,
-                    // Assuming similar scaling as CPU
-                    gpuCounter.supply / gpuLimit,
-                ),
+        return if (counters == null) {
+            null
+        } else {
+            GuestGpuStats(
+                counters.activeTime / 1000L,
+                counters.idleTime / 1000L,
+                counters.stealTime / 1000L,
+                counters.lostTime / 1000L,
+                counters.capacity,
+                counters.supply,
+                counters.demand,
+                counters.supply / gpuLimit,
             )
         }
-        return gpuStats
     }
 
     /**

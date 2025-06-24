@@ -148,8 +148,8 @@ fun runTest(
 class TestComputeMonitor : ComputeMonitor {
     var taskCpuDemands = mutableMapOf<String, ArrayList<Double>>()
     var taskCpuSupplied = mutableMapOf<String, ArrayList<Double>>()
-    var taskGpuDemands = mutableMapOf<String, ArrayList<DoubleArray?>>()
-    var taskGpuSupplied = mutableMapOf<String, ArrayList<DoubleArray?>>()
+    var taskGpuDemands = mutableMapOf<String, ArrayList<Double?>?>()
+    var taskGpuSupplied = mutableMapOf<String, ArrayList<Double?>?>()
 
     override fun record(reader: TaskTableReader) {
         val taskName: String = reader.taskInfo.name
@@ -162,11 +162,11 @@ class TestComputeMonitor : ComputeMonitor {
             taskCpuSupplied[taskName] = arrayListOf(reader.cpuUsage)
         }
         if (taskName in taskGpuDemands) {
-            taskGpuDemands[taskName]?.add(reader.gpuDemands)
-            taskGpuSupplied[taskName]?.add(reader.gpuUsages)
+            taskGpuDemands[taskName]?.add(reader.gpuDemand)
+            taskGpuSupplied[taskName]?.add(reader.gpuUsage)
         } else {
-            taskGpuDemands[taskName] = arrayListOf(reader.gpuDemands)
-            taskGpuSupplied[taskName] = arrayListOf(reader.gpuUsages)
+            taskGpuDemands[taskName] = arrayListOf(reader.gpuDemand)
+            taskGpuSupplied[taskName] = arrayListOf(reader.gpuUsage)
         }
     }
 
