@@ -33,8 +33,9 @@ import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
 import org.opendc.simulator.compute.power.batteries.SimBattery
 import org.opendc.simulator.engine.engine.FlowEngine
-import org.opendc.simulator.engine.graph.FlowDistributor
 import org.opendc.simulator.engine.graph.FlowEdge
+import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory
+import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
 
 /**
  * A [ProvisioningStep] that provisions a list of hosts for a [ComputeService].
@@ -66,7 +67,7 @@ public class HostsProvisioningStep internal constructor(
             simPowerSources.add(simPowerSource)
             service.addPowerSource(simPowerSource)
 
-            val hostDistributor = FlowDistributor(engine)
+            val hostDistributor = FlowDistributorFactory.getDistributionStrategy(DistributionPolicy.MaxMinFairness,engine)
 
             val carbonFragments = getCarbonFragments(cluster.powerSource.carbonTracePath)
 
@@ -80,7 +81,7 @@ public class HostsProvisioningStep internal constructor(
 
             if (cluster.battery != null) {
                 // Create Battery Distributor
-                val batteryDistributor = FlowDistributor(engine)
+                val batteryDistributor = FlowDistributorFactory.getDistributionStrategy(DistributionPolicy.MaxMinFairness, engine)
                 FlowEdge(batteryDistributor, simPowerSource)
 
                 // Create Battery

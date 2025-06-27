@@ -22,8 +22,24 @@
 
 package org.opendc.simulator.engine.graph.distributionPolicies;
 
-import java.util.ArrayList;
+import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.engine.graph.FlowDistributor;
 
-public interface DistributionPolicy {
-    double[] distributeSupply(ArrayList<Double> supply, ArrayList<Double> currentSupply, double totalSupply);
+public class FlowDistributorFactory {
+
+    public enum DistributionPolicy {
+        MaxMinFairness,
+        FixedShare;
+    }
+
+    public static FlowDistributor getDistributionStrategy(DistributionPolicy distributionPolicyType, FlowEngine flowEngine) {
+
+        return switch (distributionPolicyType) {
+            case MaxMinFairness -> new MaxMinFairnessFlowDistributor(flowEngine);
+            case FixedShare -> new FixedShareFlowDistributor(flowEngine);
+                // actively misspelling
+            default -> throw new IllegalArgumentException(
+                    "Unknown distribution strategy type: " + distributionPolicyType);
+        };
+    }
 }
