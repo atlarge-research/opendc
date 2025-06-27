@@ -84,11 +84,9 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         return capacity;
     }
 
-    public long onUpdate(long now) {
+    public abstract long onUpdate(long now);
 
-        // Check if current supply is different from total demand
-        if (this.outgoingDemandUpdateNeeded) {
-            this.updateOutgoingDemand();
+    protected abstract void updateOutgoingDemand() ;
 
             return Long.MAX_VALUE;
         }
