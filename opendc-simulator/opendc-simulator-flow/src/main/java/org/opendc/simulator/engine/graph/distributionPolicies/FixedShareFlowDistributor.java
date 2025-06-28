@@ -38,22 +38,6 @@ public class FixedShareFlowDistributor extends FlowDistributor {
         super(engine);
     }
 
-    public long onUpdate(long now) {
-
-        // Check if current supply is different from total demand
-        if (this.outgoingDemandUpdateNeeded) {
-            this.updateOutgoingDemand();
-
-            return Long.MAX_VALUE;
-        }
-
-        if (!this.outgoingSupplies.isEmpty()) {
-            this.updateOutgoingSupplies();
-        }
-
-        return Long.MAX_VALUE;
-    }
-
     protected void updateOutgoingDemand() {
         // equally distribute the demand to all suppliers
         for (FlowEdge supplierEdge : this.supplierEdges.values()) {
