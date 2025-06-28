@@ -36,6 +36,7 @@ import org.opendc.simulator.compute.power.batteries.policy.RunningMeanBatteryPol
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanPlusBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.SingleThresholdBatteryPolicy
 import org.opendc.simulator.engine.engine.FlowEngine
+import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
 
 /**
  * Definition of a Topology modeled in the simulation.
@@ -80,6 +81,8 @@ public data class HostJSONSpec(
     val gpu: GPUJSONSpec? = null,
     val cpuPowerModel: PowerModelSpec = PowerModelSpec.DFLT,
     val gpuPowerModel: PowerModelSpec = PowerModelSpec.DFLT,
+    val cpuDistributionPolicy: DistributionPolicySpec = MaxMinFairnessDistributionPolicySpec(),
+    val gpuDistributionPolicy: DistributionPolicySpec = MaxMinFairnessDistributionPolicySpec(),
 )
 
 /**
@@ -157,6 +160,42 @@ public data class PowerModelSpec(
                 asymUtil = 0.0,
                 dvfs = true,
             )
+    }
+}
+
+@Serializable
+public sealed interface DistributionPolicySpec{
+    public abstract val type: DistributionPolicy
+}
+
+@Serializable
+//@SerialName("maxMinFairness")
+@SerialName("MAX_MIN_FAIRNESS")
+public data class MaxMinFairnessDistributionPolicySpec(
+//    override val policy : DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
+    override val type : DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
+) : DistributionPolicySpec
+
+@Serializable
+@SerialName("EQUAL_SHARE")
+public data class EqualShareDistributionPolicySpec(
+    override val type: DistributionPolicy = DistributionPolicy.EQUAL_SHARE,
+) : DistributionPolicySpec
+
+@Serializable
+@SerialName("FIXED_SHARE")
+public data class FixedShareDistributionPolicySpec(
+    override val type : DistributionPolicy = DistributionPolicy.FIXED_SHARE,
+    val shareRatio: Double =  1.0,
+) : DistributionPolicySpec
+
+public fun DistributionPolicySpec.toDistributionPolicy(): DistributionPolicy {
+    return when (this) {
+        is MaxMinFairnessDistributionPolicySpec -> DistributionPolicy.MAX_MIN_FAIRNESS
+        is EqualShareDistributionPolicySpec -> DistributionPolicy.EQUAL_SHARE
+        is FixedShareDistributionPolicySpec -> DistributionPolicy.FIXED_SHARE.apply {
+            setProperty("shareRatio", shareRatio)
+        }
     }
 }
 

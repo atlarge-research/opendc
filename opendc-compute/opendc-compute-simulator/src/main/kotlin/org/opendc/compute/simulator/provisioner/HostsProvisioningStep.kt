@@ -67,7 +67,7 @@ public class HostsProvisioningStep internal constructor(
             simPowerSources.add(simPowerSource)
             service.addPowerSource(simPowerSource)
 
-            val hostDistributor = FlowDistributorFactory.getDistributionStrategy(DistributionPolicy.MaxMinFairness,engine)
+            val hostDistributor = FlowDistributorFactory.getDistributionStrategy(DistributionPolicy.MAX_MIN_FAIRNESS,engine)
 
             val carbonFragments = getCarbonFragments(cluster.powerSource.carbonTracePath)
 
@@ -81,7 +81,7 @@ public class HostsProvisioningStep internal constructor(
 
             if (cluster.battery != null) {
                 // Create Battery Distributor
-                val batteryDistributor = FlowDistributorFactory.getDistributionStrategy(DistributionPolicy.MaxMinFairness, engine)
+                val batteryDistributor = FlowDistributorFactory.getDistributionStrategy(DistributionPolicy.MAX_MIN_FAIRNESS, engine)
                 FlowEdge(batteryDistributor, simPowerSource)
 
                 // Create Battery

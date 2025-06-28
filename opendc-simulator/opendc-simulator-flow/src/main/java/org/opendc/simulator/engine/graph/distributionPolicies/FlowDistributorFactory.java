@@ -25,18 +25,49 @@ package org.opendc.simulator.engine.graph.distributionPolicies;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 public class FlowDistributorFactory {
 
     public enum DistributionPolicy {
-        MaxMinFairness,
-        FixedShare;
+        MAX_MIN_FAIRNESS,
+        FIXED_SHARE,
+        EQUAL_SHARE;
+
+        private final Map<String, Object> properties = new HashMap<>();
+
+        public void setProperty(String key, Object value) {
+            properties.put(key, value);
+        }
+
+        public Object getProperty(String key) {
+            return properties.get(key);
+        }
+
+        public <T> T getProperty(String key, Class<T> type) {
+            return type.cast(properties.get(key));
+        }
+
+        public Set<String> getPropertyNames() {
+            return properties.keySet();
+        }
     }
 
     public static FlowDistributor getDistributionStrategy(DistributionPolicy distributionPolicyType, FlowEngine flowEngine) {
 
         return switch (distributionPolicyType) {
-            case MaxMinFairness -> new MaxMinFairnessFlowDistributor(flowEngine);
-            case FixedShare -> new FixedShareFlowDistributor(flowEngine);
+            case MAX_MIN_FAIRNESS -> new MaxMinFairnessFlowDistributor(flowEngine);
+            case EQUAL_SHARE -> new EqualShareFlowDistributor(flowEngine);
+            case FIXED_SHARE -> {
+                if (!distributionPolicyType.getPropertyNames().contains("shareRatio")) {
+                    throw new IllegalArgumentException(
+                            "FixedShare distribution policy requires a 'shareRatio' property to be set.");
+                }
+                yield new FixedShareFlowDistributor(flowEngine,
+                    distributionPolicyType.getProperty("shareRatio", Double.class));
+            }
                 // actively misspelling
             default -> throw new IllegalArgumentException(
                     "Unknown distribution strategy type: " + distributionPolicyType);

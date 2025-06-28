@@ -85,8 +85,8 @@ public final class MachineModel {
                         cpus.get(0).getArchitecture()),
                 memory,
                 null,
-                null,
-                null);
+                DistributionPolicy.MAX_MIN_FAIRNESS,
+                DistributionPolicy.MAX_MIN_FAIRNESS);
     }
 
     /**

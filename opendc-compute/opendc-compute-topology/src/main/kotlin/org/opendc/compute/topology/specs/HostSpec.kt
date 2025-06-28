@@ -24,6 +24,7 @@ package org.opendc.compute.topology.specs
 
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.power.PowerModel
+import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
 
 /**
  * Description of a physical host that will be simulated by OpenDC and host the virtual machines.
@@ -40,4 +41,6 @@ public data class HostSpec(
     val gpuPowerModel: PowerModel?,
     val embodiedCarbon: Double = 1000.0,
     val expectedLifetime: Double = 5.0,
+    val cpuDistributionPolicy: DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
+    val gpuDistributionPolicy: DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
 )
