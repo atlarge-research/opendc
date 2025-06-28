@@ -28,6 +28,10 @@ import java.util.Set;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 public class FlowDistributorFactory {
 
     public enum DistributionPolicy {
