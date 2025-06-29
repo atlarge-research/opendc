@@ -100,7 +100,7 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         return Long.MAX_VALUE;
     }
 
-    protected abstract void updateOutgoingDemand() ;
+    protected abstract void updateOutgoingDemand();
 
             return Long.MAX_VALUE;
         }
