@@ -179,10 +179,13 @@ class DistributionPoliciesTest {
 
         assertAll(
             // single gpu
+            // task 0
             { assertEquals(4000.0, singleMonitor.taskGpuDemands["0"]?.get(1), "Single GPU demand in task \"0\" should be 4000.0") },
             { assertEquals(2000.0, singleMonitor.taskGpuSupplied["0"]?.get(1), "Single GPU supplied in task \"0\" should be 2000.0") },
+            // task 1
             { assertEquals(4000.0, singleMonitor.taskGpuDemands["1"]?.get(1), "Single GPU demand in task \"0\" should be 4000.0") },
             { assertEquals(2000.0, singleMonitor.taskGpuSupplied["1"]?.get(1), "Single GPU supplied in task \"0\" should be 2000.0") },
+            // host
             {
                 assertEquals(
                     4000.0,
@@ -198,10 +201,13 @@ class DistributionPoliciesTest {
                 )
             },
             // double gpu
+            // task 0
             { assertEquals(4000.0, doubleMonitor.taskGpuDemands["0"]?.get(1), "Double GPU demand in task \"0\" should be 4000.0") },
             { assertEquals(2000.0, doubleMonitor.taskGpuSupplied["0"]?.get(1), "Double GPU supply in task \"0\" should be 2000.0") },
+            // task 1
             { assertEquals(4000.0, doubleMonitor.taskGpuDemands["1"]?.get(1), "Double GPU demand in task \"0\" should be 4000.0") },
             { assertEquals(2000.0, doubleMonitor.taskGpuSupplied["1"]?.get(1), "Double GPU supply in task \"0\" should be 2000.0") },
+            // host
             {
                 assertEquals(
                     2000.0,
@@ -245,8 +251,7 @@ class DistributionPoliciesTest {
                     name = "0",
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 0.0, 0, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 4000.0, 2),
                         ),
                 ),
             )
@@ -254,5 +259,144 @@ class DistributionPoliciesTest {
         val topology = createTopology("DistributionPolicies/fixedShare/multi_gpu_host.json")
 
         val monitor = runTest(topology, workload)
+
+        assertAll(
+            { assertEquals(4000.0, monitor.taskGpuDemands["0"]?.get(1), "Task GPU demand should be 4000.0") },
+            { assertEquals(1000.0, monitor.taskGpuSupplied["0"]?.get(1), "Task GPU supplied should be 1000.0") },
+            // Host
+            {
+                assertEquals(
+                    1000.0,
+                    monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0),
+                    "GPU 0 demand at host should be 1000.0 (50% of the capacity)",
+                )
+            },
+            { assertEquals(1000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0), "GPU 0 supplied at host should be 1000.0") },
+            {
+                assertEquals(
+                    1000.0,
+                    monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1),
+                    "GPU 1 demand at host should be 1000.0 (50% of the capacity)",
+                )
+            },
+            { assertEquals(1000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1), "GPU 1 supplied at host should be 1000.0") },
+        )
+    }
+
+    /**
+     * This test verifies that the [FixedShareDistributionPolicy] correctly handles resource contention.
+     * When total demand exceeds available supply, resources should be distributed according to the fixed share ratio.
+     */
+    @Test
+    fun fixedShareDistributionPolicyContentionTest() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 6000.0, 2),
+                        ),
+                ),
+            )
+
+        val topology = createTopology("DistributionPolicies/fixedShare/multi_gpu_host.json")
+
+        val monitor = runTest(topology, workload)
+
+        // With demand of 6000.0 but total GPU capacity of 4000.0 (2 GPUs * 2000.0 each)
+        // Fixed share ratio of 0.5 means each GPU gets 50% of available capacity = 2000.0 each
+        // Total supplied should be 4000.0 (limited by total capacity)
+        assertAll(
+            { assertEquals(6000.0, monitor.taskGpuDemands["0"]?.get(1), "Task GPU demand should be 6000.0") },
+            { assertEquals(1000.0, monitor.taskGpuSupplied["0"]?.get(1), "Task GPU supplied should be 1000.0 (limited by the capacity)") },
+            // Host
+            {
+                assertEquals(
+                    1000.0,
+                    monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0),
+                    "GPU 0 demand at host should be 1000.0 (50% of the gpu capacity)",
+                )
+            },
+            {
+                assertEquals(
+                    1000.0,
+                    monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0),
+                    "GPU 0 supplied at host should be 1000.0 (limited by GPU capacity)",
+                )
+            },
+            {
+                assertEquals(
+                    1000.0,
+                    monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1),
+                    "GPU 1 demand at host should be 1000.0 (50% of the gpu capacity)",
+                )
+            },
+            {
+                assertEquals(
+                    1000.0,
+                    monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1),
+                    "GPU 1 supplied at host should be 1000.0 (limited by GPU capacity)",
+                )
+            },
+        )
+    }
+
+    /**
+     * This test verifies that the [FixedShareDistributionPolicy] correctly handles multiple tasks competing for resources.
+     * Resources should be distributed proportionally according to the fixed share ratio among all tasks.
+     */
+    @Test
+    fun fixedShareDistributionPolicyMultipleTasksTest() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 3000.0, 2),
+                        ),
+                ),
+                createTestTask(
+                    name = "1",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 3000.0, 2),
+                        ),
+                ),
+            )
+
+        val topology = createTopology("DistributionPolicies/fixedShare/multi_gpu_host.json")
+
+        val monitor = runTest(topology, workload)
+
+        // Total demand: 6000.0 (3000.0 from each task)
+        // Total capacity: 4000.0 (2 GPUs * 2000.0 each)
+        // So each task gets 1000.0, distributed as 1000.0 per GPU (50% share ratio)
+        assertAll(
+            // Task 0
+            { assertEquals(3000.0, monitor.taskGpuDemands["0"]?.get(1), "Task 0 GPU demand should be 3000.0") },
+            { assertEquals(1000.0, monitor.taskGpuSupplied["0"]?.get(1), "Task 0 GPU supplied should be 1000.0") },
+            // Task 1
+            { assertEquals(3000.0, monitor.taskGpuDemands["1"]?.get(1), "Task 1 GPU demand should be 3000.0") },
+            { assertEquals(1000.0, monitor.taskGpuSupplied["1"]?.get(1), "Task 1 GPU supplied should be 1000.0") },
+            // Host
+            { assertEquals(1000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0), "GPU 0 total demand at host should be 1000.0") },
+            {
+                assertEquals(
+                    1000.0,
+                    monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0),
+                    "GPU 0 total supplied at host should be 1000.0",
+                )
+            },
+            { assertEquals(1000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1), "GPU 1 total demand at host should be 1000.0") },
+            {
+                assertEquals(
+                    1000.0,
+                    monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1),
+                    "GPU 1 total supplied at host should be 1000.0",
+                )
+            },
+        )
     }
 }
