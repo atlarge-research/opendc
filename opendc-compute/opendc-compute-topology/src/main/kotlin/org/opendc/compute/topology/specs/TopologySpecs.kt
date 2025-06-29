@@ -164,16 +164,16 @@ public data class PowerModelSpec(
 }
 
 @Serializable
-public sealed interface DistributionPolicySpec{
+public sealed interface DistributionPolicySpec {
     public abstract val type: DistributionPolicy
 }
 
 @Serializable
-//@SerialName("maxMinFairness")
+// @SerialName("maxMinFairness")
 @SerialName("MAX_MIN_FAIRNESS")
 public data class MaxMinFairnessDistributionPolicySpec(
 //    override val policy : DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
-    override val type : DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
+    override val type: DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
 ) : DistributionPolicySpec
 
 @Serializable
@@ -185,17 +185,18 @@ public data class EqualShareDistributionPolicySpec(
 @Serializable
 @SerialName("FIXED_SHARE")
 public data class FixedShareDistributionPolicySpec(
-    override val type : DistributionPolicy = DistributionPolicy.FIXED_SHARE,
-    val shareRatio: Double =  1.0,
+    override val type: DistributionPolicy = DistributionPolicy.FIXED_SHARE,
+    val shareRatio: Double = 1.0,
 ) : DistributionPolicySpec
 
 public fun DistributionPolicySpec.toDistributionPolicy(): DistributionPolicy {
     return when (this) {
         is MaxMinFairnessDistributionPolicySpec -> DistributionPolicy.MAX_MIN_FAIRNESS
         is EqualShareDistributionPolicySpec -> DistributionPolicy.EQUAL_SHARE
-        is FixedShareDistributionPolicySpec -> DistributionPolicy.FIXED_SHARE.apply {
-            setProperty("shareRatio", shareRatio)
-        }
+        is FixedShareDistributionPolicySpec ->
+            DistributionPolicy.FIXED_SHARE.apply {
+                setProperty("shareRatio", shareRatio)
+            }
     }
 }
 

@@ -22,18 +22,24 @@
 
 package org.opendc.simulator.engine.graph.distributionPolicies;
 
+import java.util.ArrayList;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
 import org.opendc.simulator.engine.graph.FlowEdge;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
-
+/**
+ * A {@link FlowDistributor} that distributes the supply to the consumers based on a fixed share ratio.
+ * The share ratio is defined as a percentage of the capacity of the suppliers.
+ * <p>
+ * This distributor is useful when you want to ensure that each consumer receives a fixed share of the total supply,
+ * regardless of their individual demand.
+ */
 public class FixedShareFlowDistributor extends FlowDistributor {
 
     private boolean overloaded = false;
     private final double shareRatio;
+    private final double totalCapacity;
+    private double[] previouslySuppliedConsumers = null;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
@@ -48,19 +54,26 @@ public class FixedShareFlowDistributor extends FlowDistributor {
     public FixedShareFlowDistributor(FlowEngine engine, double shareRatio) {
         super(engine);
         this.shareRatio = shareRatio;
+        this.totalCapacity = this.supplierEdges.values().stream()
+                .mapToDouble(FlowEdge::getCapacity)
+                .sum();
+        this.previouslySuppliedConsumers = new double[this.consumerEdges.size()];
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Distribution Logic
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Updates the outgoing demand for each supplier edge based on the total capacity, the number of suppliers, and the share ratio.
+     * The demand is fixed.
+     * This method is called when the outgoing demand needs to be updated.
+     */
     protected void updateOutgoingDemand() {
         // equally distribute the demand to all suppliers
+        double demandShare = (this.totalCapacity / this.supplierEdges.size()) * this.shareRatio;
         for (FlowEdge supplierEdge : this.supplierEdges.values()) {
-            this.pushOutgoingDemand(supplierEdge, this.totalIncomingDemand / this.supplierEdges.size());
-            // alternatively a relative share could be used, based on capacity minus current incoming supply
-            //            this.pushOutgoingDemand(supplierEdge, this.totalIncomingDemand * (supplierEdge.getCapacity() -
-            // currentIncomingSupplies.get(idx) / supplierEdges.size()));
+            this.pushOutgoingDemand(supplierEdge, demandShare);
         }
 
         this.outgoingDemandUpdateNeeded = false;
@@ -68,47 +81,7 @@ public class FixedShareFlowDistributor extends FlowDistributor {
         this.invalidate();
     }
 
-    // TODO: This should probably be moved to the distribution strategy
     protected void updateOutgoingSupplies() {
-
-        // If the demand is higher than the current supply, the system is overloaded.
-        // The available supply is distributed based on the current distribution function.
-        if (this.totalIncomingDemand > this.totalIncomingSupply) {
-            this.overloaded = true;
-
-            double[] supplies = this.distributeSupply(
-                    this.incomingDemands,
-                    new ArrayList<>(this.currentIncomingSupplies.values()),
-                    this.totalIncomingSupply);
-
-            for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
-                this.pushOutgoingSupply(this.consumerEdges.get(idx), supplies[idx], this.getConsumerResourceType());
-            }
-
-        } else {
-
-            // If the distributor was overloaded before, but is not anymore:
-            //      provide all consumers with their demand
-            if (this.overloaded) {
-                for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
-                    if (!Objects.equals(this.outgoingSupplies.get(idx), this.incomingDemands.get(idx))) {
-                        this.pushOutgoingSupply(
-                                this.consumerEdges.get(idx),
-                                this.incomingDemands.get(idx),
-                                this.getConsumerResourceType());
-                    }
-                }
-                this.overloaded = false;
-            }
-
-            // Update the supplies of the consumers that changed their demand in the current cycle
-            else {
-                for (int idx : this.updatedDemands) {
-                    this.pushOutgoingSupply(
-                            this.consumerEdges.get(idx), this.incomingDemands.get(idx), this.getConsumerResourceType());
-                }
-            }
-        }
 
         this.updatedDemands.clear();
     }
@@ -116,38 +89,7 @@ public class FixedShareFlowDistributor extends FlowDistributor {
     private record Demand(int idx, double value) {}
 
     public double[] distributeSupply(ArrayList<Double> demands, ArrayList<Double> currentSupply, double totalSupply) {
-        int inputSize = demands.size();
 
-        final double[] supplies = new double[inputSize];
-        final Demand[] tempDemands = new Demand[inputSize];
-
-        for (int i = 0; i < inputSize; i++) {
-            tempDemands[i] = new Demand(i, demands.get(i));
-        }
-
-        Arrays.sort(tempDemands, (o1, o2) -> {
-            Double i1 = o1.value;
-            Double i2 = o2.value;
-            return i1.compareTo(i2);
-        });
-
-        double availableCapacity = totalSupply;
-
-        for (int i = 0; i < inputSize; i++) {
-            double d = tempDemands[i].value;
-
-            if (d == 0.0) {
-                continue;
-            }
-
-            double availableShare = availableCapacity / (inputSize - i);
-            double r = Math.min(d, availableShare);
-
-            int idx = tempDemands[i].idx;
-            supplies[idx] = r; // Update the rates
-            availableCapacity -= r;
-        }
-
-        return supplies;
+        return new double[0];
     }
 }

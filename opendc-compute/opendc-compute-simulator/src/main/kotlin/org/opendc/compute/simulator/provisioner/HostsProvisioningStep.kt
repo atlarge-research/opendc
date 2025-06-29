@@ -67,7 +67,7 @@ public class HostsProvisioningStep internal constructor(
             simPowerSources.add(simPowerSource)
             service.addPowerSource(simPowerSource)
 
-            val hostDistributor = FlowDistributorFactory.getDistributionStrategy(DistributionPolicy.MAX_MIN_FAIRNESS,engine)
+            val hostDistributor = FlowDistributorFactory.getDistributionStrategy(DistributionPolicy.MAX_MIN_FAIRNESS, engine)
 
             val carbonFragments = getCarbonFragments(cluster.powerSource.carbonTracePath)
 

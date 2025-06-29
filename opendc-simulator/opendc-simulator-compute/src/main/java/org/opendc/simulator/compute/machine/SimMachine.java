@@ -221,7 +221,9 @@ public class SimMachine {
                 -1);
 
         // Create a FlowDistributor and add the cpu as supplier
-        this.distributors.put(ResourceType.CPU, FlowDistributorFactory.getDistributionStrategy(this.machineModel.getCpuDistributionStrategy(), engine));
+        this.distributors.put(
+                ResourceType.CPU,
+                FlowDistributorFactory.getDistributionStrategy(this.machineModel.getCpuDistributionStrategy(), engine));
         new FlowEdge(
                 this.distributors.get(ResourceType.CPU),
                 (FlowSupplier) this.computeResources.get(ResourceType.CPU).getFirst(),
@@ -233,7 +235,10 @@ public class SimMachine {
         this.memory = new Memory(engine, this.machineModel.getMemory());
 
         if (this.availableResources.contains(ResourceType.GPU)) {
-            this.distributors.put(ResourceType.GPU, FlowDistributorFactory.getDistributionStrategy(this.machineModel.getGpuDistributionStrategy(), engine));
+            this.distributors.put(
+                    ResourceType.GPU,
+                    FlowDistributorFactory.getDistributionStrategy(
+                            this.machineModel.getGpuDistributionStrategy(), engine));
             ArrayList<ComputeResource> gpus = new ArrayList<>();
 
             for (GpuModel gpuModel : machineModel.getGpuModels()) {

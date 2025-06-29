@@ -22,12 +22,11 @@
 
 package org.opendc.simulator.engine.graph.distributionPolicies;
 
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.FlowDistributor;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.engine.graph.FlowDistributor;
 
 public class FlowDistributorFactory {
 
@@ -55,7 +54,8 @@ public class FlowDistributorFactory {
         }
     }
 
-    public static FlowDistributor getDistributionStrategy(DistributionPolicy distributionPolicyType, FlowEngine flowEngine) {
+    public static FlowDistributor getDistributionStrategy(
+            DistributionPolicy distributionPolicyType, FlowEngine flowEngine) {
 
         return switch (distributionPolicyType) {
             case MAX_MIN_FAIRNESS -> new MaxMinFairnessFlowDistributor(flowEngine);
@@ -65,8 +65,8 @@ public class FlowDistributorFactory {
                     throw new IllegalArgumentException(
                             "FixedShare distribution policy requires a 'shareRatio' property to be set.");
                 }
-                yield new FixedShareFlowDistributor(flowEngine,
-                    distributionPolicyType.getProperty("shareRatio", Double.class));
+                yield new FixedShareFlowDistributor(
+                        flowEngine, distributionPolicyType.getProperty("shareRatio", Double.class));
             }
                 // actively misspelling
             default -> throw new IllegalArgumentException(

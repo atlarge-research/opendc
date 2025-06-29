@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * It maintains a list of consumer edges and supplier edges, and it can handle incoming demands and supplies.
  * It also provides methods to update outgoing demands and supplies based on the incoming demands and supplies.
  * This class is abstract and should be extended by specific implementations that define the distribution strategy.
- * It uses a {@link DistributionPolicy} to determine how to distribute the supply among the consumers.
+ * It uses a {@link FlowDistributorFactory.DistributionPolicy} to determine how to distribute the supply among the consumers.
  * The default distribution policy is {@link MaxMinFairnessPolicy}, which distributes the supply fairly among the consumers.
  */
 public abstract class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
@@ -59,7 +60,8 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
     protected Double totalIncomingSupply = 0.0; // The total supply provided by the suppliers
 
     protected boolean outgoingDemandUpdateNeeded = false;
-    protected Set<Integer> updatedDemands = new HashSet<>(); // Array of consumers that updated their demand in this cycle
+    protected Set<Integer> updatedDemands =
+            new HashSet<>(); // Array of consumers that updated their demand in this cycle
 
     protected ResourceType supplierResourceType;
     protected ResourceType consumerResourceType;
@@ -98,12 +100,13 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         return Long.MAX_VALUE;
     }
 
-    protected abstract void updateOutgoingDemand() ;
+    protected abstract void updateOutgoingDemand();
 
     // TODO: This should probably be moved to the distribution strategy
     protected abstract void updateOutgoingSupplies();
 
-    public abstract double[] distributeSupply(ArrayList<Double> demands, ArrayList<Double> currentSupply, double totalSupply);
+    public abstract double[] distributeSupply(
+            ArrayList<Double> demands, ArrayList<Double> currentSupply, double totalSupply);
 
     /**
      * Add a new consumer.

@@ -189,7 +189,7 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
             unknownMemoryUnit,
             gpuUnits,
             cpuDistributionPolicy.toDistributionPolicy(),
-            gpuDistributionPolicy.toDistributionPolicy()
+            gpuDistributionPolicy.toDistributionPolicy(),
         )
 
     val cpuPowerModel =

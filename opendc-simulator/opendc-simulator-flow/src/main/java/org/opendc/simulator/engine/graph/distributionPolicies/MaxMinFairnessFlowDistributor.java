@@ -22,12 +22,12 @@
 
 package org.opendc.simulator.engine.graph.distributionPolicies;
 
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.FlowDistributor;
-import org.opendc.simulator.engine.graph.FlowEdge;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.engine.graph.FlowDistributor;
+import org.opendc.simulator.engine.graph.FlowEdge;
 
 /**
  * A flow distributor that implements the max-min fairness distribution policy.
