@@ -165,15 +165,14 @@ public data class PowerModelSpec(
 
 @Serializable
 public sealed interface DistributionPolicySpec {
-    public abstract val type: DistributionPolicy
+    public val type: DistributionPolicy
 }
 
 @Serializable
-// @SerialName("maxMinFairness")
-@SerialName("MAX_MIN_FAIRNESS")
-public data class MaxMinFairnessDistributionPolicySpec(
-//    override val policy : DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
-    override val type: DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
+@SerialName("BEST_EFFORT")
+public data class BestEffortDistributionPolicySpec(
+    override val type: DistributionPolicy = DistributionPolicy.BEST_EFFORT,
+    val updateIntervalLength: Long = 1000L,
 ) : DistributionPolicySpec
 
 @Serializable
@@ -191,14 +190,24 @@ public data class FixedShareDistributionPolicySpec(
 
 public fun DistributionPolicySpec.toDistributionPolicy(): DistributionPolicy {
     return when (this) {
-        is MaxMinFairnessDistributionPolicySpec -> DistributionPolicy.MAX_MIN_FAIRNESS
+        is BestEffortDistributionPolicySpec ->
+            DistributionPolicy.BEST_EFFORT.apply {
+                setProperty("updateIntervalLength", updateIntervalLength)
+            }
         is EqualShareDistributionPolicySpec -> DistributionPolicy.EQUAL_SHARE
         is FixedShareDistributionPolicySpec ->
             DistributionPolicy.FIXED_SHARE.apply {
                 setProperty("shareRatio", shareRatio)
             }
+        is MaxMinFairnessDistributionPolicySpec -> DistributionPolicy.MAX_MIN_FAIRNESS
     }
 }
+
+@Serializable
+@SerialName("MAX_MIN_FAIRNESS")
+public data class MaxMinFairnessDistributionPolicySpec(
+    override val type: DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
+) : DistributionPolicySpec
 
 /**
  * Definition of a power source used for JSON input.

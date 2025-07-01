@@ -271,4 +271,13 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
     public ResourceType getConsumerResourceType() {
         return this.consumerResourceType;
     }
+
+    public Boolean hasSupplierEdges() {
+        for (FlowEdge edge : this.supplierEdges.values()) {
+            if (edge != null) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

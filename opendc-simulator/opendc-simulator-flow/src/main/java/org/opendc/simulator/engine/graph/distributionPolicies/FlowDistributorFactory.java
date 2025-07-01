@@ -31,9 +31,10 @@ import org.opendc.simulator.engine.graph.FlowDistributor;
 public class FlowDistributorFactory {
 
     public enum DistributionPolicy {
-        MAX_MIN_FAIRNESS,
+        BEST_EFFORT,
+        EQUAL_SHARE,
         FIXED_SHARE,
-        EQUAL_SHARE;
+        MAX_MIN_FAIRNESS;
 
         private final Map<String, Object> properties = new HashMap<>();
 
@@ -68,6 +69,8 @@ public class FlowDistributorFactory {
                 yield new FixedShareFlowDistributor(
                         flowEngine, distributionPolicyType.getProperty("shareRatio", Double.class));
             }
+            case BEST_EFFORT -> new BestEffortFlowDistributor(
+                    flowEngine, distributionPolicyType.getProperty("updateIntervalLength", Long.class));
                 // actively misspelling
             default -> throw new IllegalArgumentException(
                     "Unknown distribution strategy type: " + distributionPolicyType);

@@ -39,6 +39,7 @@ class DistributionPoliciesTest {
         val maxMinFairnessGpuTopology = createTopology("DistributionPolicies/maxMinFairness/multi_gpu_host.json")
         val equalShareGpuTopology = createTopology("DistributionPolicies/equalShare/dual_core_gpu_host.json")
         val fixedShareGpuTopology = createTopology("DistributionPolicies/fixedShare/multi_gpu_host.json")
+        val bestEffortGpuTopology = createTopology("DistributionPolicies/bestEffort/multi_gpu_host.json")
 
         assertAll(
             {
@@ -67,6 +68,13 @@ class DistributionPoliciesTest {
                     0.5,
                     fixedShareGpuTopology[0].hostSpecs[0].model.gpuDistributionStrategy.getProperty("shareRatio"),
                     "FixedShareDistributionPolicy should have a share ratio of 0.5",
+                )
+            },
+            {
+                assertEquals(
+                    DistributionPolicy.BEST_EFFORT,
+                    bestEffortGpuTopology[0].hostSpecs[0].model.gpuDistributionStrategy,
+                    "BestEffortDistributionPolicy should be used",
                 )
             },
         )
@@ -397,6 +405,277 @@ class DistributionPoliciesTest {
                     "GPU 1 total supplied at host should be 1000.0",
                 )
             },
+        )
+    }
+
+    /**
+     * This test verifies that the [BestEffortDistributionPolicy] correctly distributes supply based on demand
+     * when resources are abundant. It should satisfy all demands and distribute remaining capacity optimally.
+     */
+    @Test
+    fun bestEffortDistributionPolicyBasicTest() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1500.0, 1),
+                        ),
+                ),
+            )
+
+        val singleGpuTopology = createTopology("DistributionPolicies/bestEffort/dual_core_gpu_host.json")
+        val doubleGpuTopology = createTopology("DistributionPolicies/bestEffort/multi_gpu_host.json")
+
+        val singleMonitor = runTest(singleGpuTopology, workload)
+        val doubleMonitor = runTest(doubleGpuTopology, workload)
+
+        assertAll(
+            // single gpu - should satisfy demand and utilize remaining capacity
+            { assertEquals(1500.0, singleMonitor.taskGpuDemands["0"]?.get(1), "Single GPU demand in task \"0\" should be 1500.0") },
+            { assertEquals(1500.0, singleMonitor.taskGpuSupplied["0"]?.get(1)) { "Single GPU should supply the demanded 1500.0" } },
+            // Host
+            {
+                assertEquals(
+                    1500.0,
+                    singleMonitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0),
+                    "Single GPU demand at host \"DualGpuHost\" should be 1500.0",
+                )
+            },
+            {
+                assertEquals(
+                    1500.0,
+                    singleMonitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0),
+                    "Single GPU supply at host \"DualGpuHost\" should be 1500.0",
+                )
+            },
+            // double gpu - should distribute across both GPUs and utilize remaining capacity
+            { assertEquals(1500.0, doubleMonitor.taskGpuDemands["0"]?.get(1), "Double GPU demand in task \"0\" should be 1500.0") },
+            { assertEquals(1500.0, doubleMonitor.taskGpuSupplied["0"]?.get(1), "Double GPU should supply the demanded 1500.0") },
+            // Host
+            {
+                assertEquals(
+                    1500.0,
+                    doubleMonitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0),
+                    "GPU 0 demand at host \"DualGpuHost\" should be 750.0",
+                )
+            },
+            {
+                assertEquals(
+                    1500.0,
+                    doubleMonitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0),
+                    "GPU 0 supply at host \"DualGpuHost\" should be 750.0",
+                )
+            },
+            {
+                assertEquals(
+                    0.0,
+                    doubleMonitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1),
+                    "GPU 1 demand at host \"DualGpuHost\" should be 750.0",
+                )
+            },
+            {
+                assertEquals(
+                    0.0,
+                    doubleMonitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1),
+                    "GPU 1 supply at host \"DualGpuHost\" should be 750.0",
+                )
+            },
+        )
+    }
+
+    /**
+     * This test verifies that the [BestEffortDistributionPolicy] correctly handles resource contention
+     * by using round-robin distribution when demand exceeds supply.
+     */
+    @Test
+    fun bestEffortDistributionPolicyContentionTest() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 3000.0, 2),
+                        ),
+                ),
+                createTestTask(
+                    name = "1",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 2500.0, 2),
+                        ),
+                ),
+            )
+
+        val topology = createTopology("DistributionPolicies/bestEffort/multi_gpu_host.json")
+        val monitor = runTest(topology, workload)
+
+        // Total demand: 5500.0 (3000.0 + 2500.0)
+        // Total capacity: 4000.0 (2 GPUs * 2000.0 each)
+        // Best effort should distribute proportionally based on demand while using round-robin
+        assertAll(
+            // Task 0
+            { assertEquals(3000.0, monitor.taskGpuDemands["0"]?.get(1), "Task 0 GPU demand should be 3000.0") },
+            { assertEquals(3000.0, monitor.taskGpuSupplied["0"]?.get(1), "Task 0 GPU supply should be 1000.0") },
+            // Task 1
+            { assertEquals(2500.0, monitor.taskGpuDemands["1"]?.get(1), "Task 1 GPU demand should be 2500.0") },
+            { assertEquals(1000.0, monitor.taskGpuSupplied["1"]?.get(1), "Task 0 GPU supply should be 1000.0") },
+            // Host
+            { assertEquals(2750.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0), "GPU 0 demand at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0), "GPU 0 supplied at host should be 2000.0") },
+            { assertEquals(2750.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1), "GPU 1 demand at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1), "GPU 1 supplied at host should be 2000.0") },
+        )
+    }
+
+    /**
+     * This test verifies that the [BestEffortDistributionPolicy] prioritizes already utilized resources
+     * when supply exceeds demand, demonstrating the efficiency optimization principle.
+     */
+    @Test
+    fun bestEffortDistributionPolicyUtilizationOptimizationTest() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
+                        ),
+                ),
+            )
+
+        val doubleGpuTopology = createTopology("DistributionPolicies/bestEffort/multi_gpu_host.json")
+        val monitor = runTest(doubleGpuTopology, workload)
+
+        // With low demand (1000.0) and high capacity (4000.0), best effort should:
+        // 1. Satisfy the demand
+        // 2. Utilize remaining capacity efficiently
+        assertAll(
+            { assertEquals(1000.0, monitor.taskGpuDemands["0"]?.get(1), "Task GPU demand should be 1000.0") },
+            { assertEquals(1000.0, monitor.taskGpuSupplied["0"]?.get(1), "Task GPU supplied should be 1000.0") },
+            // host
+            { assertEquals(1000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0), "GPU 0 demand at host should be 1000.0") },
+            { assertEquals(1000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0), "GPU 0 supplied at host should be 1000.0") },
+            { assertEquals(0.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1), "GPU 1 demand at host should be 0.0") },
+            { assertEquals(0.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1), "GPU 1 supplied at host should be 0.0") },
+        )
+    }
+
+    /**
+     * This test verifies that the [BestEffortDistributionPolicy] handles varying demands correctly
+     * and does not distribute the resources equally.
+     */
+    @Test
+    fun bestEffortDistributionPolicyVaryingDemandsTest() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 3500.0, 2),
+                        ),
+                ),
+                createTestTask(
+                    name = "1",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 500.0, 2),
+                        ),
+                ),
+            )
+
+        val topology = createTopology("DistributionPolicies/bestEffort/multi_gpu_host.json")
+
+        val monitor = runTest(topology, workload)
+
+        // Best effort should prioritize the high-demand task differently than equal share
+        assertAll(
+            // Best effort should allocate more to high-demand task compared to equal share
+            { assertEquals(3500.0, monitor.taskGpuDemands["0"]?.get(1), "Task 0 demand should be 3500.0") },
+            { assertEquals(3500.0, monitor.taskGpuDemands["0"]?.get(1), "Task 0 supply should be 3500.0") },
+            { assertEquals(500.0, monitor.taskGpuDemands["1"]?.get(1), "Task 1 demand should be 500.0") },
+            { assertEquals(500.0, monitor.taskGpuSupplied["1"]?.get(1), "Task 1 supply should be 500.0") },
+            // Host
+            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0), "GPU 0 demand at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0), "GPU 0 supplied at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1), "GPU 1 demand at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1), "GPU 1 supplied at host should be 2000.0") },
+        )
+    }
+
+    /**
+     * This test verifies that the [BestEffortDistributionPolicy] maintains fairness over time
+     * through its round-robin mechanism when resources are constrained.
+     */
+    @Test
+    fun bestEffortDistributionPolicyFairnessTest() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 2000.0, 2),
+                        ),
+                ),
+                createTestTask(
+                    name = "1",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 2000.0, 2),
+                        ),
+                ),
+                createTestTask(
+                    name = "2",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 2000.0, 2),
+                        ),
+                ),
+            )
+
+        val topology = createTopology("DistributionPolicies/bestEffort/multi_gpu_host.json")
+        val monitor = runTest(topology, workload)
+
+        // With equal demands (2000.0 each) and limited capacity (4000.0 total)
+        // Best effort should distribute fairly among all tasks in a round-robin manner
+        assertAll(
+            // Task Demands at start
+            { assertEquals(2000.0, monitor.taskGpuDemands["0"]?.get(1), "Task 0 demand should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuDemands["1"]?.get(1), "Task 1 demand should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuDemands["2"]?.get(1), "Task 2 demand should be 2000.0") },
+            // Task supplies at start
+            { assertEquals(2000.0, monitor.taskGpuSupplied["0"]?.get(1), "Task 0 supply at the start should be 2000.0") },
+            { assertEquals(0.0, monitor.taskGpuSupplied["1"]?.get(1), "Task 1 supply at the start  should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["2"]?.get(1), "Task 2 supply at the start  should be 0.0") },
+            // Task supplies second step
+            { assertEquals(0.0, monitor.taskGpuSupplied["0"]?.get(2), "Task 0 supply at the second step should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["1"]?.get(2), "Task 1 supply at the second step should be 0.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["2"]?.get(2), "Task 2 supply at the second step should be 2000.0") },
+            // Task supplies third step
+            { assertEquals(2000.0, monitor.taskGpuSupplied["0"]?.get(3), "Task 0 supply at the third step should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["1"]?.get(3), "Task 1 supply at the third step should be 2000.0") },
+            { assertEquals(0.0, monitor.taskGpuSupplied["2"]?.get(3), "Task 2 supply at the third step should be 0.0") },
+            // Host
+            // At start
+            { assertEquals(3000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0), "GPU 0 demand at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0), "GPU 0 supplied at host should be 2000.0") },
+            { assertEquals(3000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1), "GPU 1 demand at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1), "GPU 1 supplied at host should be 2000.0") },
+            // Next Round
+            { assertEquals(3000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(2)?.get(0), "GPU 0 demand at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(2)?.get(0), "GPU 0 supplied at host should be 2000.0") },
+            { assertEquals(3000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(2)?.get(1), "GPU 1 demand at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(2)?.get(1), "GPU 1 supplied at host should be 2000.0") },
+            // Next Round
+            { assertEquals(3000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(3)?.get(0), "GPU 0 demand at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(3)?.get(0), "GPU 0 supplied at host should be 2000.0") },
+            { assertEquals(3000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(3)?.get(1), "GPU 1 demand at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(3)?.get(1), "GPU 1 supplied at host should be 2000.0") },
         )
     }
 }
