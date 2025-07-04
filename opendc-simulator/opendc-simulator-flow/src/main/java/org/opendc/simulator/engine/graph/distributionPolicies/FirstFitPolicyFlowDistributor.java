@@ -33,7 +33,7 @@ import org.opendc.simulator.engine.graph.FlowEdge;
  * This distributor allocates resources to consumers based on the first available supply that meets their demand.
  * It does not attempt to balance loads or optimize resource usage beyond the first fit principle.
  * It tries to place demands on already existing supplies without creating new ones.
- * It assumes that GPUs can be partitioned, if one GPU cannot satisfy the demand, it will try to combine multiple suppliers.
+ * It assumes that resources can be partitioned, if one supplier cannot satisfy the demand, it will try to combine multiple suppliers.
  */
 public class FirstFitPolicyFlowDistributor extends FlowDistributor {
 

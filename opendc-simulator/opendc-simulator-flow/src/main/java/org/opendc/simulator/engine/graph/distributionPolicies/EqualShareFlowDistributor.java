@@ -27,6 +27,12 @@ import java.util.Arrays;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
 
+/**
+ * A {@link FlowDistributor} that implements the Equal Share distribution policy.
+ * <p>
+ * This distributor allocates resources equally among all suppliers and consumers, ensuring that each supplier and
+ * consumer receives an equal share of the total capacity.
+ */
 public class EqualShareFlowDistributor extends FlowDistributor {
 
     public EqualShareFlowDistributor(FlowEngine engine) {
