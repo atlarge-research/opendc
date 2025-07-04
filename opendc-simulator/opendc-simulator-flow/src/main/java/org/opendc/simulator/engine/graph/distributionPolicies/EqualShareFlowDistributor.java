@@ -40,11 +40,6 @@ public class EqualShareFlowDistributor extends FlowDistributor {
      */
     @Override
     protected void updateOutgoingDemand() {
-        //        for (var supplierEdge : this.supplierEdges.values()) {
-        //            this.pushOutgoingDemand(supplierEdge, totalIncomingDemand / this.supplierEdges.size());
-        //        }
-        //        this.outgoingDemandUpdateNeeded = false;
-
         double equalShare = this.capacity / this.supplierEdges.size();
 
         for (var supplierEdge : this.supplierEdges.values()) {
@@ -61,11 +56,6 @@ public class EqualShareFlowDistributor extends FlowDistributor {
      */
     @Override
     protected void updateOutgoingSupplies() {
-        //        for (var consumerEdge : this.consumerEdges) {
-        //            this.pushOutgoingSupply(consumerEdge, totalIncomingSupply / this.consumerEdges.size());
-        //        }
-        // Equal distribution regardless of what each consumer actually needs
-        //        double equalShare = totalIncomingSupply / this.consumerEdges.size();
         double[] equalShare = distributeSupply(incomingDemands, outgoingSupplies, this.capacity);
 
         for (var consumerEdge : this.consumerEdges) {

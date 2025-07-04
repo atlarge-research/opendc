@@ -182,6 +182,12 @@ public data class EqualShareDistributionPolicySpec(
 ) : DistributionPolicySpec
 
 @Serializable
+@SerialName("FIRST_FIT")
+public data class FirstFitDistributionPolicySpec(
+    override val type: DistributionPolicy = DistributionPolicy.FIRST_FIT,
+) : DistributionPolicySpec
+
+@Serializable
 @SerialName("FIXED_SHARE")
 public data class FixedShareDistributionPolicySpec(
     override val type: DistributionPolicy = DistributionPolicy.FIXED_SHARE,
@@ -199,6 +205,7 @@ public fun DistributionPolicySpec.toDistributionPolicy(): DistributionPolicy {
             DistributionPolicy.FIXED_SHARE.apply {
                 setProperty("shareRatio", shareRatio)
             }
+        is FirstFitDistributionPolicySpec -> DistributionPolicy.FIRST_FIT
         is MaxMinFairnessDistributionPolicySpec -> DistributionPolicy.MAX_MIN_FAIRNESS
     }
 }

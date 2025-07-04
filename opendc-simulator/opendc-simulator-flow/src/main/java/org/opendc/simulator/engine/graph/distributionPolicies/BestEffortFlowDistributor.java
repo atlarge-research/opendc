@@ -177,8 +177,6 @@ public class BestEffortFlowDistributor extends FlowDistributor {
             if (demand > allocation[idx]) {
                 // Calculate how much we can allocate in this round
                 double unmetDemand = demand - allocation[idx];
-                //                double toAllocate = Math.min(unmetDemand, remainingSupply / Math.max(1, numConsumers -
-                // round));
                 double toAllocate = Math.min(unmetDemand, remainingSupply);
 
                 allocation[idx] += toAllocate;

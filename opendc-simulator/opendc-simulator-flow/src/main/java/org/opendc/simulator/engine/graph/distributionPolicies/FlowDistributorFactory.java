@@ -33,6 +33,7 @@ public class FlowDistributorFactory {
     public enum DistributionPolicy {
         BEST_EFFORT,
         EQUAL_SHARE,
+        FIRST_FIT,
         FIXED_SHARE,
         MAX_MIN_FAIRNESS;
 
@@ -59,8 +60,10 @@ public class FlowDistributorFactory {
             DistributionPolicy distributionPolicyType, FlowEngine flowEngine) {
 
         return switch (distributionPolicyType) {
-            case MAX_MIN_FAIRNESS -> new MaxMinFairnessFlowDistributor(flowEngine);
+            case BEST_EFFORT -> new BestEffortFlowDistributor(
+                    flowEngine, distributionPolicyType.getProperty("updateIntervalLength", Long.class));
             case EQUAL_SHARE -> new EqualShareFlowDistributor(flowEngine);
+            case FIRST_FIT -> new FirstFitPolicyFlowDistributor(flowEngine);
             case FIXED_SHARE -> {
                 if (!distributionPolicyType.getPropertyNames().contains("shareRatio")) {
                     throw new IllegalArgumentException(
@@ -69,8 +72,7 @@ public class FlowDistributorFactory {
                 yield new FixedShareFlowDistributor(
                         flowEngine, distributionPolicyType.getProperty("shareRatio", Double.class));
             }
-            case BEST_EFFORT -> new BestEffortFlowDistributor(
-                    flowEngine, distributionPolicyType.getProperty("updateIntervalLength", Long.class));
+            case MAX_MIN_FAIRNESS -> new MaxMinFairnessFlowDistributor(flowEngine);
                 // actively misspelling
             default -> throw new IllegalArgumentException(
                     "Unknown distribution strategy type: " + distributionPolicyType);

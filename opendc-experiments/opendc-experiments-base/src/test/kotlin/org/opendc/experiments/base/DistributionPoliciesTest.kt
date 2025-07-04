@@ -678,4 +678,105 @@ class DistributionPoliciesTest {
             { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(3)?.get(1), "GPU 1 supplied at host should be 2000.0") },
         )
     }
+
+    /**
+     * This test verifies that the [FirstFitDistributionPolicy] places workloads on the first GPU
+     * before utilizing the second GPU, demonstrating the First Fit allocation strategy.
+     * All tasks should be satisfied as total demand is within available capacity.
+     */
+    @Test
+    fun firstFitDistributionPolicyGpuPlacementTest() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1500.0, 1),
+                        ),
+                ),
+                createTestTask(
+                    name = "1",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
+                        ),
+                ),
+            )
+
+        val topology = createTopology("DistributionPolicies/firstFit/multi_gpu_host.json")
+        val monitor = runTest(topology, workload)
+
+        // With First Fit policy, tasks should be placed on first GPU before second GPU
+        // Total demand (2500.0) is less than total capacity (4000.0), so all should be satisfied
+        assertAll(
+            // Task demands should remain as requested
+            { assertEquals(1500.0, monitor.taskGpuDemands["0"]?.get(1), "Task 0 GPU demand should be 1500.0") },
+            { assertEquals(1000.0, monitor.taskGpuDemands["1"]?.get(1), "Task 1 GPU demand should be 1000.0") },
+            // All tasks should be fully satisfied
+            { assertEquals(1500.0, monitor.taskGpuSupplied["0"]?.get(1), "Task 0 GPU supply should be 1500.0") },
+            { assertEquals(1000.0, monitor.taskGpuSupplied["1"]?.get(1), "Task 1 GPU supply should be 1000.0") },
+            // First GPU should handle both tasks (total 2500.0, within its 2000.0 capacity limit per task)
+            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0), "GPU 0 demand should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0), "GPU 0 supply should be 2000.0") },
+            // Second GPU should have remaining demand
+            { assertEquals(500.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1), "GPU 1 demand should be 500.0") },
+            { assertEquals(500.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1), "GPU 1 supply should be 500.0") },
+        )
+    }
+
+    /**
+     * This test verifies that the [FirstFitDistributionPolicy] correctly handles scenarios
+     * where overall demand exceeds total available supply. Some tasks should receive no supply
+     * if they cannot be satisfied by a single GPU.
+     */
+    @Test
+    fun firstFitDistributionPolicyOverdemandTest() {
+        val workload: ArrayList<Task> =
+            arrayListOf(
+                createTestTask(
+                    name = "0",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 2000.0, 1),
+                        ),
+                ),
+                createTestTask(
+                    name = "1",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 2000.0, 1),
+                        ),
+                ),
+                createTestTask(
+                    name = "2",
+                    fragments =
+                        arrayListOf(
+                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1500.0, 1),
+                        ),
+                ),
+            )
+
+        val topology = createTopology("DistributionPolicies/firstFit/multi_gpu_host.json")
+        val monitor = runTest(topology, workload)
+
+        // With First Fit policy and total demand (5500.0) > total capacity (4000.0),
+        // only tasks that can fit on individual GPUs should be satisfied
+        assertAll(
+            // Task demands should remain as requested
+            { assertEquals(2000.0, monitor.taskGpuDemands["0"]?.get(1), "Task 0 GPU demand should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuDemands["1"]?.get(1), "Task 1 GPU demand should be 2000.0") },
+            { assertEquals(1500.0, monitor.taskGpuDemands["2"]?.get(1), "Task 2 GPU demand should be 1500.0") },
+            // First two tasks should be satisfied (each fits on one GPU)
+            { assertEquals(2000.0, monitor.taskGpuSupplied["0"]?.get(1), "Task 0 should be fully satisfied") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["1"]?.get(1), "Task 1 should be fully satisfied") },
+            // Third task should receive no supply as no single GPU can satisfy it after first two are allocated
+            { assertEquals(0.0, monitor.taskGpuSupplied["2"]?.get(1), "Task 2 should receive no supply") },
+            // Both GPUs should be fully utilized by the first two tasks
+            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0), "GPU 0 should have 2000.0 demand") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0), "GPU 0 should supply 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1), "GPU 1 should have 2000.0 demand") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1), "GPU 1 should supply 2000.0") },
+        )
+    }
 }
