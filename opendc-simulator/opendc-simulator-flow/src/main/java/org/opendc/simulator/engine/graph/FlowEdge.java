@@ -177,6 +177,16 @@ public class FlowEdge {
         this.supplierIndex = supplierIndex;
     }
 
+    public void pushDemand(double newDemand, boolean forceThrough, ResourceType resourceType, int consumerCount) {
+        // or store last resource type in the edge
+        if ((newDemand == this.demand) && !forceThrough) {
+            return;
+        }
+
+        this.demand = newDemand;
+        this.supplier.handleIncomingDemand(this, newDemand, resourceType, consumerCount);
+    }
+
     public void pushDemand(double newDemand, boolean forceThrough, ResourceType resourceType) {
         // or store last resource type in the edge
         if ((newDemand == this.demand) && !forceThrough) {

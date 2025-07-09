@@ -23,13 +23,8 @@
                     },
                     "gpu":
                     {
-                        "coreCount": 5120,
-                        "coreSpeed": 5000,
-                        "memorySize": 30517578125,
-                        "memoryBandwidth": "900 GBps",
-                        "vendor": "NVIDIA",
-                        "modelName": "Tesla V100",
-                        "architecture": "Volta",
+                        "coreCount": 3,
+                        "coreSpeed": 2000,
                         "virtualizationOverHeadModel": {
                             "type": "CONSTANT"
                         }

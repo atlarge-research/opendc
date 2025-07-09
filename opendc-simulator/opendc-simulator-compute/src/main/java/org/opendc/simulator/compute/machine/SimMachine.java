@@ -242,7 +242,8 @@ public class SimMachine {
 
             for (GpuModel gpuModel : machineModel.getGpuModels()) {
                 // create a new GPU
-                SimGpu gpu = new SimGpu(engine, gpuModel, gpuPowerModel, gpuModel.getId());
+                SimGpu gpu = new SimGpu(
+                        engine, gpuModel, gpuPowerModel, gpuModel.getId(), gpuModel.getVirtualizationOverheadModel());
                 gpus.add(gpu);
                 // Connect the GPU to the distributor
                 new FlowEdge(

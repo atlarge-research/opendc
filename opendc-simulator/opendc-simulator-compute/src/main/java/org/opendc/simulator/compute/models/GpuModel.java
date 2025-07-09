@@ -23,6 +23,9 @@
 package org.opendc.simulator.compute.models;
 
 import java.util.Objects;
+import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModel;
+import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModelFactory;
+import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModelFactory.VirtualizationOverheadModelEnum;
 
 /**
  * A single logical compute unit of processor node, either virtual or physical.
@@ -37,6 +40,7 @@ public final class GpuModel {
     private final String vendor;
     private final String modelName;
     private final String arch;
+    private VirtualizationOverheadModel virtualizationOverheadModel;
 
     /**
      * Construct a {@link GpuModel} instance.
@@ -58,7 +62,8 @@ public final class GpuModel {
             long memorySize,
             String vendor,
             String modelName,
-            String arch) {
+            String arch,
+            VirtualizationOverheadModelEnum virtualizationOverheadModel) {
         this.id = id;
         this.coreCount = coreCount;
         this.coreSpeed = coreSpeed;
@@ -68,6 +73,8 @@ public final class GpuModel {
         this.vendor = vendor;
         this.modelName = modelName;
         this.arch = arch;
+        this.virtualizationOverheadModel =
+                VirtualizationOverheadModelFactory.getVirtualizationOverheadModel(virtualizationOverheadModel);
     }
 
     /**
@@ -78,11 +85,20 @@ public final class GpuModel {
      * @param coreSpeed The speed of a single core
      */
     public GpuModel(int id, int coreCount, double coreSpeed) {
-        this(id, coreCount, coreSpeed, 0, 0, "unkown", "unkown", "unkown");
+        this(id, coreCount, coreSpeed, 0, 0, "unkown", "unkown", "unkown", VirtualizationOverheadModelEnum.NONE);
     }
 
     public GpuModel(int id, int coreCount, double coreSpeed, double memoryBandwidth, long memorySize) {
-        this(id, coreCount, coreSpeed, memoryBandwidth, memorySize, "unkown", "unkown", "unkown");
+        this(
+                id,
+                coreCount,
+                coreSpeed,
+                memoryBandwidth,
+                memorySize,
+                "unkown",
+                "unkown",
+                "unkown",
+                VirtualizationOverheadModelEnum.NONE);
     }
 
     /**
@@ -146,6 +162,14 @@ public final class GpuModel {
      */
     public String getArchitecture() {
         return arch;
+    }
+
+    /**
+     * Return the virtualization overhead model of this GPU.
+     * @return The virtualization overhead model of this GPU.
+     */
+    public VirtualizationOverheadModel getVirtualizationOverheadModel() {
+        return this.virtualizationOverheadModel;
     }
 
     @Override
