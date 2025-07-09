@@ -53,6 +53,7 @@ public final class GpuModel {
      * @param vendor The vendor of the GPU
      * @param modelName The name of the GPU
      * @param arch The architecture of the GPU
+     * @param virtualizationOverheadModel The virtualization overhead model of this GPU.
      */
     public GpuModel(
             int id,

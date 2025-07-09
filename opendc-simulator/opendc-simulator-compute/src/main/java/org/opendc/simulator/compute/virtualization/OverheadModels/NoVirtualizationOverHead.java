@@ -24,6 +24,10 @@ package org.opendc.simulator.compute.virtualization.OverheadModels;
 
 import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModel;
 
+/**
+ * A VirtualizationOverheadModel that does not introduce any overhead.
+ * It simply returns the current GPU demand as the supply.
+ */
 public class NoVirtualizationOverHead implements VirtualizationOverheadModel {
     @Override
     public double getSupply(double currentGpuDemand, int consumerCount) {

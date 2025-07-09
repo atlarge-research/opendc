@@ -29,7 +29,13 @@ import org.opendc.simulator.compute.virtualization.OverheadModels.ConstantVirtua
 import org.opendc.simulator.compute.virtualization.OverheadModels.NoVirtualizationOverHead;
 import org.opendc.simulator.compute.virtualization.OverheadModels.ShareBasedVirtualizationOverhead;
 
+/**
+ * A factory class for creating instances of VirtualizationOverheadModel based on the specified type.
+ * This factory supports different virtualization overhead models, including no overhead, constant overhead,
+ * and share-based overhead.
+ */
 public class VirtualizationOverheadModelFactory {
+
     public enum VirtualizationOverheadModelEnum {
         NONE,
         // General virtualization models -> Passthrough vs Full/Para virtualization
@@ -56,6 +62,12 @@ public class VirtualizationOverheadModelFactory {
         }
     }
 
+    /**
+     * Factory method to create a VirtualizationOverheadModel based on the specified type.
+     *
+     * @param virtualizationOverheadModelType The type of virtualization overhead model to create.
+     * @return An instance of the specified VirtualizationOverheadModel.
+     */
     public static VirtualizationOverheadModel getVirtualizationOverheadModel(
             VirtualizationOverheadModelEnum virtualizationOverheadModelType) {
         return switch (virtualizationOverheadModelType) {

@@ -70,8 +70,12 @@ public data class ClusterJSONSpec(
  * @param name The name of the host.
  * @param cpu The CPU available in this cluster
  * @param memory The amount of RAM memory available in Byte
- * @param powerModel The power model used to determine the power draw of a host
  * @param count The power model used to determine the power draw of a host
+ * @param gpu The GPU available in this cluster (optional)
+ * @param cpuPowerModel The power model used to determine the power draw of the CPU
+ * @param gpuPowerModel The power model used to determine the power draw of the GPU
+ * @param cpuDistributionPolicy The distribution policy used to distribute CPU resources
+ * @param gpuDistributionPolicy The distribution policy used to distribute GPU resources
  */
 @Serializable
 public data class HostJSONSpec(

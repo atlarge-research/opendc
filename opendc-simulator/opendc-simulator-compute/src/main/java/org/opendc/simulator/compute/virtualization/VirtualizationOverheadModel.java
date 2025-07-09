@@ -22,6 +22,11 @@
 
 package org.opendc.simulator.compute.virtualization;
 
+/**
+ * An interface for modeling the overhead introduced by virtualization in a compute environment.
+ * This model is used to determine the effective supply of resources available to consumers based
+ * on the current demand and the number of consumers.
+ */
 public interface VirtualizationOverheadModel {
 
     public double getSupply(double currentGpuDemand, int consumerCount);

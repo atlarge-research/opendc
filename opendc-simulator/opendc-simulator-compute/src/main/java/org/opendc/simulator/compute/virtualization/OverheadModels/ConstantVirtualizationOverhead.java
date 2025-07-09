@@ -24,6 +24,10 @@ package org.opendc.simulator.compute.virtualization.OverheadModels;
 
 import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModel;
 
+/**
+ * A VirtualizationOverheadModel that applies a constant percentage overhead to the current GPU demand.
+ * This model is useful for scenarios where a fixed overhead is expected regardless of the number of consumers.
+ */
 public class ConstantVirtualizationOverhead implements VirtualizationOverheadModel {
 
     private double percentageOverhead = 0.0;
@@ -32,6 +36,12 @@ public class ConstantVirtualizationOverhead implements VirtualizationOverheadMod
         return percentageOverhead;
     }
 
+    /**
+     * Creates a new instance of ConstantVirtualizationOverhead with the specified percentage overhead.
+     *
+     * @param percentageOverhead The percentage overhead to apply to the current GPU demand.
+     *                           If set to -1.0, a default value of 0.05 (5%) is used.
+     */
     public ConstantVirtualizationOverhead(double percentageOverhead) {
 
         this.percentageOverhead = (percentageOverhead == -1.0) ? 0.05 : percentageOverhead;

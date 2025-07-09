@@ -61,7 +61,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
     private long lastCounterUpdate;
     private final double gpuFrequencyInv;
 
-    private VirtualizationOverheadModel virtualizationOverheadModel;
+    private final VirtualizationOverheadModel virtualizationOverheadModel;
     private int consumerCount = 0; // Number of consumers connected to this GPU
 
     private FlowEdge distributorEdge;

@@ -24,6 +24,11 @@ package org.opendc.simulator.compute.virtualization.OverheadModels;
 
 import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModel;
 
+/**
+ * A VirtualizationOverheadModel that divides the current GPU demand by the number of consumers.
+ * This model assumes that the supply is shared among all consumers, effectively reducing the
+ * supply available to each consumer based on the number of consumers.
+ */
 public class ShareBasedVirtualizationOverhead implements VirtualizationOverheadModel {
     @Override
     public double getSupply(double currentGpuDemand, int consumerCount) {
