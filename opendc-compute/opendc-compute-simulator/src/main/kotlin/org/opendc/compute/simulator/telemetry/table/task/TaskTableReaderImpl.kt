@@ -180,15 +180,15 @@ public class TaskTableReaderImpl(
 
     override val gpuLimit: Double?
         get() = _gpuLimit
-    private var _gpuLimit: Double? = null
+    private var _gpuLimit: Double? = 0.0
 
     override val gpuUsage: Double?
         get() = _gpuUsage
-    private var _gpuUsage: Double? = null
+    private var _gpuUsage: Double? = 0.0
 
     override val gpuDemand: Double?
         get() = _gpuDemand
-    private var _gpuDemand: Double? = null
+    private var _gpuDemand: Double? = 0.0
 
     override val gpuActiveTime: Long?
         get() = (_gpuActiveTime ?: 0L) - (previousGpuActiveTime ?: 0L)
@@ -265,15 +265,6 @@ public class TaskTableReaderImpl(
             _gpuIdleTime = gpuStats.idleTime
             _gpuStealTime = gpuStats.stealTime
             _gpuLostTime = gpuStats.lostTime
-        } else {
-            _gpuIdleTime = null
-            _gpuStealTime = null
-            _gpuLostTime = null
-            _gpuIdleTime = null
-            _gpuLimit = null
-            _gpuUsage = null
-            _gpuDemand = null
-            _gpuActiveTime = null
         }
 
         _taskState = task.state
