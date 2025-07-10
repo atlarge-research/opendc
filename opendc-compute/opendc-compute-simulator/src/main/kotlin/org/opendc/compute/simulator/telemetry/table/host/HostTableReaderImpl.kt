@@ -67,6 +67,7 @@ public class HostTableReaderImpl(
         _gpuIdleTimes = table.gpuIdleTimes
         _gpuStealTimes = table.gpuStealTimes
         _gpuLostTimes = table.gpuLostTimes
+        _gpuPowerDraws = table.gpuPowerDraws
 
         // energy & carbon stats
         _powerDraw = table.powerDraw
@@ -200,6 +201,10 @@ public class HostTableReaderImpl(
     private var _gpuLostTimes: ArrayList<Long> = ArrayList()
     private var previousGpuLostTimes: ArrayList<Long> = ArrayList()
 
+    override val gpuPowerDraws: ArrayList<Double>
+        get() = _gpuPowerDraws
+    private var _gpuPowerDraws: ArrayList<Double> = ArrayList()
+
     override val powerDraw: Double
         get() = _powerDraw
     private var _powerDraw = 0.0
@@ -259,6 +264,7 @@ public class HostTableReaderImpl(
         _gpuIdleTimes = hostGpuStats.map { it.idleTime } as ArrayList<Long>
         _gpuStealTimes = hostGpuStats.map { it.stealTime } as ArrayList<Long>
         _gpuLostTimes = hostGpuStats.map { it.lostTime } as ArrayList<Long>
+        _gpuPowerDraws = hostGpuStats.map { it.powerDraw } as ArrayList<Double>
         // energy & carbon stats
         _powerDraw = hostSysStats.powerDraw
         _energyUsage = hostSysStats.energyUsage

@@ -43,4 +43,5 @@ public record HostGpuStats(
         double capacity,
         double demand,
         double usage,
-        double utilization) {}
+        double utilization,
+        double powerDraw) {}

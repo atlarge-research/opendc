@@ -153,6 +153,11 @@ public interface HostTableReader : Exportable {
     public val gpuLostTimes: ArrayList<Long>
 
     /**
+     * The power draw of the respective GPU in the host (in W). They inserted by GPU ID.
+     */
+    public val gpuPowerDraws: ArrayList<Double>
+
+    /**
      * The current power draw of the host in W.
      */
     public val powerDraw: Double

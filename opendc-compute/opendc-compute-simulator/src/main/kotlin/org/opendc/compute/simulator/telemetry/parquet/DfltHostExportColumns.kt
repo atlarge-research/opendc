@@ -204,6 +204,9 @@ public object DfltHostExportColumns {
                 ExportColumn(
                     field = Types.optional(INT64).named("gpu_time_lost_$i"),
                 ) { it.gpuLostTimes.getOrNull(i) },
+                ExportColumn(
+                    field = Types.optional(FLOAT).named("gpu_power_draw_$i"),
+                ) { it.gpuPowerDraws.getOrNull(i) },
             )
         }.toSet()
 
