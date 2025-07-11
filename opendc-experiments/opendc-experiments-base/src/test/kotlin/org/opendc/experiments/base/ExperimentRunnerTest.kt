@@ -48,7 +48,7 @@ class ExperimentRunnerTest {
      * ExperimentRunner test 2
      * This test runs the experiment defined in the experiment_2.json file.
      *
-     * In this test, parts of the Marconi 100 workload is executed. This trace contains GPU tasks.
+     * In this test, parts of the Marconi 100 workload is executed  . This trace contains GPU tasks.
      */
     @Test
     fun testExperimentRunner2() {
