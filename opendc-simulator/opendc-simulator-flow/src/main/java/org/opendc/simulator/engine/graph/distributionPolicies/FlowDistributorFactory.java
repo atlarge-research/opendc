@@ -56,8 +56,7 @@ public class FlowDistributorFactory {
         }
     }
 
-    public static FlowDistributor getDistributionStrategy(
-            DistributionPolicy distributionPolicyType, FlowEngine flowEngine) {
+    public static FlowDistributor getFlowDistributor(FlowEngine flowEngine, DistributionPolicy distributionPolicyType) {
 
         return switch (distributionPolicyType) {
             case BEST_EFFORT -> new BestEffortFlowDistributor(
@@ -72,10 +71,7 @@ public class FlowDistributorFactory {
                 yield new FixedShareFlowDistributor(
                         flowEngine, distributionPolicyType.getProperty("shareRatio", Double.class));
             }
-            case MAX_MIN_FAIRNESS -> new MaxMinFairnessFlowDistributor(flowEngine);
-                // actively misspelling
-            default -> throw new IllegalArgumentException(
-                    "Unknown distribution strategy type: " + distributionPolicyType);
+            default -> new MaxMinFairnessFlowDistributor(flowEngine);
         };
     }
 }
