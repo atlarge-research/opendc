@@ -102,7 +102,6 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
 
     protected abstract void updateOutgoingDemand();
 
-    // TODO: This should probably be moved to the distribution strategy
     protected abstract void updateOutgoingSupplies();
 
     public abstract double[] distributeSupply(
@@ -120,6 +119,7 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         this.incomingDemands.add(0.0);
         this.outgoingSupplies.add(0.0);
         this.consumerResourceType = consumerEdge.getConsumerResourceType();
+        this.outgoingDemandUpdateNeeded = true;
     }
 
     @Override
@@ -233,7 +233,7 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
 
     @Override
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
-        supplierEdge.pushDemand(newDemand, false, this.getSupplierResourceType());
+        supplierEdge.pushDemand(newDemand, false, this.getSupplierResourceType(), this.consumerEdges.size());
     }
 
     @Override

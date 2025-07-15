@@ -32,6 +32,7 @@ import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.PowerSourceSpec
 import org.opendc.compute.topology.specs.TopologySpec
 import org.opendc.compute.topology.specs.toDistributionPolicy
+import org.opendc.compute.topology.specs.toVirtualizationOverheadModel
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuModel
 import org.opendc.simulator.compute.models.MachineModel
@@ -171,6 +172,7 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
     val unknownMemoryUnit = MemoryUnit(memory.vendor, memory.modelName, memory.memorySpeed.toMHz(), memory.memorySize.toMiB().toLong())
     val gpuUnits =
         List(gpu?.count ?: 0) {
+            val virtualizationOverheadModel = gpu?.virtualizationOverHeadModel?.toVirtualizationOverheadModel()
             GpuModel(
                 globalGpuId++,
                 gpu!!.coreCount,
@@ -180,6 +182,7 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
                 gpu.vendor,
                 gpu.modelName,
                 gpu.architecture,
+                virtualizationOverheadModel,
             )
         }
 

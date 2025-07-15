@@ -29,6 +29,7 @@ import org.opendc.simulator.compute.ComputeResource;
 import org.opendc.simulator.compute.machine.PerformanceCounters;
 import org.opendc.simulator.compute.models.GpuModel;
 import org.opendc.simulator.compute.power.PowerModel;
+import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModel;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -47,18 +48,21 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
 
     private final PowerModel gpuPowerModel;
 
-    private double currentGpuDemand = 0.0f; // cpu capacity demanded by the mux
+    private double currentGpuDemand = 0.0f; // gpu capacity demanded by the mux
     private double currentGpuUtilization = 0.0f;
-    private double currentGpuSupplied = 0.0f; // cpu capacity supplied to the mux
+    private double currentGpuSupplied = 0.0f; // gpu capacity supplied to the mux
 
     private double currentPowerDemand; // power demanded of the psu
-    private double currentPowerSupplied = 0.0f; // cpu capacity supplied by the psu
+    private double currentPowerSupplied = 0.0f; // gpu capacity supplied by the psu
 
     private double maxCapacity;
 
     private final PerformanceCounters performanceCounters = new PerformanceCounters();
     private long lastCounterUpdate;
     private final double gpuFrequencyInv;
+
+    private final VirtualizationOverheadModel virtualizationOverheadModel;
+    private int consumerCount = 0; // Number of consumers connected to this GPU
 
     private FlowEdge distributorEdge;
     private FlowEdge psuEdge;
@@ -110,7 +114,12 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimGpu(FlowEngine engine, GpuModel gpuModel, PowerModel powerModel, int id) {
+    public SimGpu(
+            FlowEngine engine,
+            GpuModel gpuModel,
+            PowerModel powerModel,
+            int id,
+            VirtualizationOverheadModel overheadModel) {
         super(engine);
         this.id = id;
         this.gpuModel = gpuModel;
@@ -123,6 +132,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         this.gpuFrequencyInv = 1 / this.maxCapacity;
 
         this.currentPowerDemand = this.gpuPowerModel.computePower(this.currentGpuUtilization);
+        this.virtualizationOverheadModel = overheadModel;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -139,8 +149,8 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
 
             return Long.MAX_VALUE;
         }
-
-        this.currentGpuSupplied = Math.min(this.currentGpuDemand, this.maxCapacity);
+        this.currentGpuSupplied = virtualizationOverheadModel.getSupply(
+                Math.min(this.currentGpuDemand, this.maxCapacity), this.consumerCount);
         this.pushOutgoingSupply(this.distributorEdge, this.currentGpuSupplied);
 
         return Long.MAX_VALUE;
@@ -213,13 +223,31 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         this.distributorEdge.pushSupply(newGpuSupply, true, resourceType);
     }
 
-    /**
-     * Handle new demand coming in from the mux
-     */
     @Override
     public void handleIncomingDemand(FlowEdge consumerEdge, double newGpuDemand) {
         updateCounters();
         this.currentGpuDemand = newGpuDemand;
+
+        this.currentGpuUtilization = Math.min(this.currentGpuDemand / this.maxCapacity, 1.0);
+
+        // Calculate Power Demand and send to PSU
+        this.currentPowerDemand = this.gpuPowerModel.computePower(this.currentGpuUtilization);
+
+        this.invalidate();
+    }
+
+    /**
+     * Handle new demand coming in from the mux
+     */
+    @Override
+    public void handleIncomingDemand(
+            FlowEdge consumerEdge, double newGpuDemand, ResourceType resourceType, int consumerCount) {
+        if (resourceType != ResourceType.GPU) {
+            throw new IllegalArgumentException("Resource type must be GPU");
+        }
+        updateCounters();
+        this.currentGpuDemand = newGpuDemand;
+        this.consumerCount = consumerCount;
 
         this.currentGpuUtilization = Math.min(this.currentGpuDemand / this.maxCapacity, 1.0);
 

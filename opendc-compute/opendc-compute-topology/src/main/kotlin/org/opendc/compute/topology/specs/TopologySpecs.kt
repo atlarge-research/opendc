@@ -35,6 +35,7 @@ import org.opendc.simulator.compute.power.batteries.policy.DoubleThresholdBatter
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanPlusBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.SingleThresholdBatteryPolicy
+import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModelFactory.VirtualizationOverheadModelEnum
 import org.opendc.simulator.engine.engine.FlowEngine
 import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
 
@@ -69,8 +70,12 @@ public data class ClusterJSONSpec(
  * @param name The name of the host.
  * @param cpu The CPU available in this cluster
  * @param memory The amount of RAM memory available in Byte
- * @param powerModel The power model used to determine the power draw of a host
  * @param count The power model used to determine the power draw of a host
+ * @param gpu The GPU available in this cluster (optional)
+ * @param cpuPowerModel The power model used to determine the power draw of the CPU
+ * @param gpuPowerModel The power model used to determine the power draw of the GPU
+ * @param cpuDistributionPolicy The distribution policy used to distribute CPU resources
+ * @param gpuDistributionPolicy The distribution policy used to distribute GPU resources
  */
 @Serializable
 public data class HostJSONSpec(
@@ -133,6 +138,7 @@ public data class GPUJSONSpec(
     val vendor: String = "unknown",
     val modelName: String = "unknown",
     val architecture: String = "unknown",
+    val virtualizationOverHeadModel: VirtualizationOverheadModelSpec = NoVirtualizationOverheadModelSpec(),
 )
 
 @Serializable
@@ -215,6 +221,48 @@ public fun DistributionPolicySpec.toDistributionPolicy(): DistributionPolicy {
 public data class MaxMinFairnessDistributionPolicySpec(
     override val type: DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
 ) : DistributionPolicySpec
+
+@Serializable
+public sealed interface VirtualizationOverheadModelSpec {
+    public val type: VirtualizationOverheadModelEnum
+}
+
+@Serializable
+@SerialName("NONE")
+public data class NoVirtualizationOverheadModelSpec(
+    override val type: VirtualizationOverheadModelEnum =
+        VirtualizationOverheadModelEnum.NONE,
+) : VirtualizationOverheadModelSpec
+
+@Serializable
+@SerialName("CONSTANT")
+public data class ConstantVirtualizationOverheadModelSpec(
+    override val type: VirtualizationOverheadModelEnum = VirtualizationOverheadModelEnum.CONSTANT,
+    val percentageOverhead: Double? = -1.0,
+) : VirtualizationOverheadModelSpec
+
+@Serializable
+@SerialName("SHARE_BASED")
+public data class ShareBasedVirtualizationOverheadModelSpec(
+    override val type: VirtualizationOverheadModelEnum = VirtualizationOverheadModelEnum.SHARE_BASED,
+) : VirtualizationOverheadModelSpec
+
+public fun VirtualizationOverheadModelSpec.toVirtualizationOverheadModel(): VirtualizationOverheadModelEnum {
+    return when (this) {
+        is NoVirtualizationOverheadModelSpec -> VirtualizationOverheadModelEnum.NONE
+        is ConstantVirtualizationOverheadModelSpec ->
+            VirtualizationOverheadModelEnum.CONSTANT.apply {
+                if (percentageOverhead != null) {
+                    // -1.0 is used to indicate that no percentage overhead is specified
+                    if (percentageOverhead != -1.0 && (percentageOverhead < 0.0 || percentageOverhead > 1.0)) {
+                        throw IllegalArgumentException("Percentage overhead must be between 0.0 and 1.0")
+                    }
+                    setProperty("percentageOverhead", percentageOverhead)
+                }
+            }
+        is ShareBasedVirtualizationOverheadModelSpec -> VirtualizationOverheadModelEnum.SHARE_BASED
+    }
+}
 
 /**
  * Definition of a power source used for JSON input.
