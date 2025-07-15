@@ -32,6 +32,7 @@ import org.opendc.simulator.engine.graph.FlowDistributor;
  * <p>
  * This distributor allocates resources equally among all suppliers and consumers, ensuring that each supplier and
  * consumer receives an equal share of the total capacity.
+ * <a href="https://docs.nvidia.com/vgpu/knowledge-base/latest/vgpu-features.html#vgpu-schedulers">original description</a>
  */
 public class EqualShareFlowDistributor extends FlowDistributor {
 

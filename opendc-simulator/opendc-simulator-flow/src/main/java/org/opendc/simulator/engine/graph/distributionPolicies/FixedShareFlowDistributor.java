@@ -35,6 +35,7 @@ import org.opendc.simulator.engine.graph.FlowEdge;
  * ensuring predictable availability and stable performance. Each active consumer receives a fixed
  * share of the total GPU capacity, regardless of their individual demand or the demand of other consumers.
  * This policy is heavily inspired by the fixed share GPU scheduling policy used in NVIDIA's MIG (Multi-Instance GPU) technology.
+ * <a href="https://docs.nvidia.com/vgpu/knowledge-base/latest/vgpu-features.html#vgpu-schedulers">original description</a>
  * Key characteristics:
  * - Each consumer gets a fixed percentage of total GPU capacity when active
  * - Unused shares (from inactive consumers) remain unallocated, not redistributed

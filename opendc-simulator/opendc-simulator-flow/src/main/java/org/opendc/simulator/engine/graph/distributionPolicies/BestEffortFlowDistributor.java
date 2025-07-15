@@ -38,6 +38,7 @@ import org.opendc.simulator.engine.graph.FlowEdge;
  *
  * This scheduler is suitable for environments with fluctuating workloads where fairness
  * is less important than maximizing overall resource utilization.
+ * <a href="https://docs.nvidia.com/vgpu/knowledge-base/latest/vgpu-features.html#vgpu-schedulers">original description</a>
  */
 public class BestEffortFlowDistributor extends FlowDistributor {
 
