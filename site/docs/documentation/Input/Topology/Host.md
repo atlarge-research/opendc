@@ -1,13 +1,15 @@
 A host is a machine that can execute tasks. A host consist of the following components:
 
-| variable      | type                                                         | required? | default | description                                                                    |
-|---------------|:-------------------------------------------------------------|:----------|---------|--------------------------------------------------------------------------------|
-| name          | string                                                       | no        | Host    | The name of the host. This is only important for debugging and post-processing |
-| count         | integer                                                      | no        | 1       | The amount of hosts of this type are in the cluster                            |
-| cpuModel      | [CPU](#cpu)                                                  | yes       | N/A     | The CPUs in the host                                                           |
-| memory        | [Memory](#memory)                                            | yes       | N/A     | The memory used by the host                                                    |
-| cpuPowerModel | [Power Model](/docs/documentation/Input/Topology/PowerModel) | no        | Default | The power model used to determine the power draw of the cpu                    |
-| gpuPowerModel | [Power Model](/docs/documentation/Input/Topology/PowerModel) | no        | Default | The power model used to determine the power draw of the gpu                    |
+| variable              | type                                                                         | required? | default | description                                                                    |
+|-----------------------|:-----------------------------------------------------------------------------|:----------|---------|--------------------------------------------------------------------------------|
+| name                  | string                                                                       | no        | Host    | The name of the host. This is only important for debugging and post-processing |
+| count                 | integer                                                                      | no        | 1       | The amount of hosts of this type are in the cluster                            |
+| cpuModel              | [CPU](#cpu)                                                                  | yes       | N/A     | The CPUs in the host                                                           |
+| memory                | [Memory](#memory)                                                            | yes       | N/A     | The memory used by the host                                                    |
+| cpuPowerModel         | [Power Model](/docs/documentation/Input/Topology/PowerModel)                 | no        | Default | The power model used to determine the power draw of the cpu                    |
+| gpuPowerModel         | [Power Model](/docs/documentation/Input/Topology/PowerModel)                 | no        | Default | The power model used to determine the power draw of the gpu                    |
+| cpuDistributionPolicy | [Distribution Policy](/docs/documentation/Input/Topology/DistributionPolicy) | no        | Default | The distribution policy used for the CPU                                       |
+| gpuDistributionPolicy | [Distribution Policy](/docs/documentation/Input/Topology/DistributionPolicy) | no        | Default | The distribution policy used for the GPU                                       |
 
 ## CPU
 
@@ -94,6 +96,9 @@ For more information on the power model, see [Power Model](/docs/documentation/I
                         "idlePower": 100.0,
                         "maxPower": 200.0
                     },
+                    "cpuDistributionPolicy": {
+                        "type": "MAX_MIN_FAIRNESS"
+                    },
                     "gpu": {
                         "coreCount": 2,
                         "coreSpeed": 2000
@@ -103,6 +108,10 @@ For more information on the power model, see [Power Model](/docs/documentation/I
                         "power": 400.0,
                         "idlePower": 100.0,
                         "maxPower": 200.0
+                    },
+                    "gpuDistributionPolicy": {
+                        "type": "FIXED_SHARE",
+                        "shareRatio": 0.5
                     }
                 }
             ]
