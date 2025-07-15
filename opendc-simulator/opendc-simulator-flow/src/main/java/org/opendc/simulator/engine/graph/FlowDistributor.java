@@ -102,19 +102,6 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
 
     protected abstract void updateOutgoingDemand();
 
-            return Long.MAX_VALUE;
-        }
-
-        if (!this.outgoingSupplies.isEmpty()) {
-            this.updateOutgoingSupplies();
-        }
-
-        return Long.MAX_VALUE;
-    }
-
-    protected abstract void updateOutgoingDemand();
-
-    // TODO: This should probably be moved to the distribution strategy
     protected abstract void updateOutgoingSupplies();
 
     public abstract double[] distributeSupply(
