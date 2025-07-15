@@ -36,17 +36,17 @@ A host is a machine that can execute tasks. A host consist of the following comp
 
 GPUS are an optional component of a host. The required fields are only required if the host has GPUs.
 
-| variable        | type    | Unit             | required? | default | description                                      |
-|-----------------|---------|------------------|-----------|---------|--------------------------------------------------|
-| modelName       | string  | N/A              | no        | unknown | The name of the GPU.                             |
-| vendor          | string  | N/A              | no        | unknown | The vendor of the GPU                            |
-| arch            | string  | N/A              | no        | unknown | the micro-architecture of the GPU                |
-| count           | integer | N/A              | no        | 1       | The number of GPUs of this type used by the host |
-| coreCount       | integer | count            | yes       | N/A     | The number of cores in the GPU                   |
-| coreSpeed       | Double  | Mhz              | yes       | N/A     | The speed of each core in Mhz                    |
-| memorySize      | integer | Byte             | no        | N/A     | The speed of each core in Mhz                    |
-| memoryBandwidth | Double  | Bytes per Second | no        | N/A     | The speed of each core in Mhz                    |
-
+| variable                     | type                                                                                          | Unit             | required? | default | description                                                            |
+|------------------------------|-----------------------------------------------------------------------------------------------|------------------|-----------|---------|------------------------------------------------------------------------|
+| modelName                    | string                                                                                        | N/A              | no        | unknown | The name of the GPU.                                                   |
+| vendor                       | string                                                                                        | N/A              | no        | unknown | The vendor of the GPU                                                  |
+| arch                         | string                                                                                        | N/A              | no        | unknown | the micro-architecture of the GPU                                      |
+| count                        | integer                                                                                       | N/A              | no        | 1       | The number of GPUs of this type used by the host                       |
+| coreCount                    | integer                                                                                       | count            | yes       | N/A     | The number of cores in the GPU                                         |
+| coreSpeed                    | Double                                                                                        | Mhz              | yes       | N/A     | The speed of each core in Mhz                                          |
+| memorySize                   | integer                                                                                       | Byte             | no        | N/A     | The speed of each core in Mhz                                          |
+| memoryBandwidth              | Double                                                                                        | Bytes per Second | no        | N/A     | The speed of each core in Mhz                                          |
+| virtualizationOverHeadModel  | [VirtualizationOverHeadModel](/docs/documentation/Input/Topology/VirtualizationOverHeadModel) | N/A              | no        | N/A     | The virtualization model of the GPU, used to determine the performance |
 
 ## Example - No GPU
 
@@ -101,7 +101,11 @@ For more information on the power model, see [Power Model](/docs/documentation/I
                     },
                     "gpu": {
                         "coreCount": 2,
-                        "coreSpeed": 2000
+                        "coreSpeed": 2000,
+                        "virtualizationOverHeadModel": {
+                            "type": "CONSTANT",
+                            "percentageOverhead": 0.25
+                        }
                     },
                     "gpuPowerModel": {
                         "modelType": "linear",
