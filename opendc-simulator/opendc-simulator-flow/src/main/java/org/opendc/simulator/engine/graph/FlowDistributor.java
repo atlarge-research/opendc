@@ -27,49 +27,49 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicy;
-import org.opendc.simulator.engine.graph.distributionPolicies.MaxMinFairnessPolicy;
+import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FlowDistributor.class);
-    private final ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
-    private HashMap<Integer, FlowEdge> supplierEdges =
+/**
+ * A {@link FlowDistributor} is a node that distributes supply from multiple suppliers to multiple consumers.
+ * It can be used to model host-level resource distribution, such as CPU, memory, and GPU distribution.
+ * It is a subclass of {@link FlowNode} and implements both {@link FlowSupplier} and {@link FlowConsumer}.
+ * It maintains a list of consumer edges and supplier edges, and it can handle incoming demands and supplies.
+ * It also provides methods to update outgoing demands and supplies based on the incoming demands and supplies.
+ * This class is abstract and should be extended by specific implementations that define the distribution strategy.
+ * It uses a {@link FlowDistributorFactory.DistributionPolicy} to determine how to distribute the supply among the consumers.
+ * The default distribution policy is {@link MaxMinFairnessPolicy}, which distributes the supply fairly among the consumers.
+ */
+public abstract class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
+    protected static final Logger LOGGER = LoggerFactory.getLogger(FlowDistributor.class);
+    protected final ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
+    protected HashMap<Integer, FlowEdge> supplierEdges =
             new HashMap<>(); // The suppliers that provide supply to this distributor
 
-    private final ArrayList<Double> incomingDemands = new ArrayList<>(); // What is demanded by the consumers
-    private final ArrayList<Double> outgoingSupplies = new ArrayList<>(); // What is supplied to the consumers
+    protected final ArrayList<Double> incomingDemands = new ArrayList<>(); // What is demanded by the consumers
+    protected final ArrayList<Double> outgoingSupplies = new ArrayList<>(); // What is supplied to the consumers
 
-    private double totalIncomingDemand; // The total demand of all the consumers
+    protected double totalIncomingDemand; // The total demand of all the consumers
     // AS index is based on the supplierIndex of the FlowEdge, ids of entries need to be stable
-    private HashMap<Integer, Double> currentIncomingSupplies =
+    protected HashMap<Integer, Double> currentIncomingSupplies =
             new HashMap<>(); // The current supply provided by the suppliers
-    private Double totalIncomingSupply = 0.0; // The total supply provided by the suppliers
+    protected Double totalIncomingSupply = 0.0; // The total supply provided by the suppliers
 
-    private boolean outgoingDemandUpdateNeeded = false;
-    private Set<Integer> updatedDemands = new HashSet<>(); // Array of consumers that updated their demand in this cycle
+    protected boolean outgoingDemandUpdateNeeded = false;
+    protected Set<Integer> updatedDemands =
+            new HashSet<>(); // Array of consumers that updated their demand in this cycle
 
-    private ResourceType supplierResourceType;
-    private ResourceType consumerResourceType;
+    protected ResourceType supplierResourceType;
+    protected ResourceType consumerResourceType;
 
-    private boolean overloaded = false;
-
-    private double capacity; // What is the max capacity. Can probably be removed
-    private DistributionPolicy distributionPolicy;
+    protected double capacity; // What is the max capacity. Can probably be removed
 
     public FlowDistributor(FlowEngine engine) {
         super(engine);
-        this.distributionPolicy = new MaxMinFairnessPolicy();
-    }
-
-    public FlowDistributor(FlowEngine engine, DistributionPolicy distributionPolicy) {
-        super(engine);
-        this.distributionPolicy = distributionPolicy;
     }
 
     public double getTotalIncomingDemand() {
@@ -100,64 +100,13 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
         return Long.MAX_VALUE;
     }
 
-    private void updateOutgoingDemand() {
-        // equally distribute the demand to all suppliers
-        for (FlowEdge supplierEdge : this.supplierEdges.values()) {
-            this.pushOutgoingDemand(supplierEdge, this.totalIncomingDemand / this.supplierEdges.size());
-            // alternatively a relative share could be used, based on capacity minus current incoming supply
-            //            this.pushOutgoingDemand(supplierEdge, this.totalIncomingDemand * (supplierEdge.getCapacity() -
-            // currentIncomingSupplies.get(idx) / supplierEdges.size()));
-        }
-
-        this.outgoingDemandUpdateNeeded = false;
-
-        this.invalidate();
-    }
+    protected abstract void updateOutgoingDemand();
 
     // TODO: This should probably be moved to the distribution strategy
-    private void updateOutgoingSupplies() {
+    protected abstract void updateOutgoingSupplies();
 
-        // If the demand is higher than the current supply, the system is overloaded.
-        // The available supply is distributed based on the current distribution function.
-        if (this.totalIncomingDemand > this.totalIncomingSupply) {
-            this.overloaded = true;
-
-            double[] supplies = this.distributionPolicy.distributeSupply(
-                    this.incomingDemands,
-                    new ArrayList<>(this.currentIncomingSupplies.values()),
-                    this.totalIncomingSupply);
-
-            for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
-                this.pushOutgoingSupply(this.consumerEdges.get(idx), supplies[idx], this.getConsumerResourceType());
-            }
-
-        } else {
-
-            // If the distributor was overloaded before, but is not anymore:
-            //      provide all consumers with their demand
-            if (this.overloaded) {
-                for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
-                    if (!Objects.equals(this.outgoingSupplies.get(idx), this.incomingDemands.get(idx))) {
-                        this.pushOutgoingSupply(
-                                this.consumerEdges.get(idx),
-                                this.incomingDemands.get(idx),
-                                this.getConsumerResourceType());
-                    }
-                }
-                this.overloaded = false;
-            }
-
-            // Update the supplies of the consumers that changed their demand in the current cycle
-            else {
-                for (int idx : this.updatedDemands) {
-                    this.pushOutgoingSupply(
-                            this.consumerEdges.get(idx), this.incomingDemands.get(idx), this.getConsumerResourceType());
-                }
-            }
-        }
-
-        this.updatedDemands.clear();
-    }
+    public abstract double[] distributeSupply(
+            ArrayList<Double> demands, ArrayList<Double> currentSupply, double totalSupply);
 
     /**
      * Add a new consumer.
@@ -321,5 +270,14 @@ public class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsu
     @Override
     public ResourceType getConsumerResourceType() {
         return this.consumerResourceType;
+    }
+
+    public Boolean hasSupplierEdges() {
+        for (FlowEdge edge : this.supplierEdges.values()) {
+            if (edge != null) {
+                return true;
+            }
+        }
+        return false;
     }
 }

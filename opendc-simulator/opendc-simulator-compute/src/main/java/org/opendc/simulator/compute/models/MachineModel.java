@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import org.jetbrains.annotations.Nullable;
 import org.opendc.common.ResourceType;
-import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicy;
+import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy;
 
 /**
  * A description of the physical or virtual machine on which a bootable image runs.
@@ -85,8 +85,8 @@ public final class MachineModel {
                         cpus.get(0).getArchitecture()),
                 memory,
                 null,
-                null,
-                null);
+                DistributionPolicy.MAX_MIN_FAIRNESS,
+                DistributionPolicy.MAX_MIN_FAIRNESS);
     }
 
     /**

@@ -209,7 +209,6 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         long delta = now - lastUpdate;
 
         for (ResourceType resourceType : this.availableResources) {
-            int i = 0;
             final double factor = this.resourceTimeScalingFactor.get(resourceType) * delta;
             if (delta > 0) {
                 this.resourcePerformanceCounters

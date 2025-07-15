@@ -36,6 +36,7 @@ import org.opendc.simulator.compute.power.batteries.policy.RunningMeanBatteryPol
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanPlusBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.SingleThresholdBatteryPolicy
 import org.opendc.simulator.engine.engine.FlowEngine
+import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
 
 /**
  * Definition of a Topology modeled in the simulation.
@@ -80,6 +81,8 @@ public data class HostJSONSpec(
     val gpu: GPUJSONSpec? = null,
     val cpuPowerModel: PowerModelSpec = PowerModelSpec.DFLT,
     val gpuPowerModel: PowerModelSpec = PowerModelSpec.DFLT,
+    val cpuDistributionPolicy: DistributionPolicySpec = MaxMinFairnessDistributionPolicySpec(),
+    val gpuDistributionPolicy: DistributionPolicySpec = MaxMinFairnessDistributionPolicySpec(),
 )
 
 /**
@@ -159,6 +162,59 @@ public data class PowerModelSpec(
             )
     }
 }
+
+@Serializable
+public sealed interface DistributionPolicySpec {
+    public val type: DistributionPolicy
+}
+
+@Serializable
+@SerialName("BEST_EFFORT")
+public data class BestEffortDistributionPolicySpec(
+    override val type: DistributionPolicy = DistributionPolicy.BEST_EFFORT,
+    val updateIntervalLength: Long = 1000L,
+) : DistributionPolicySpec
+
+@Serializable
+@SerialName("EQUAL_SHARE")
+public data class EqualShareDistributionPolicySpec(
+    override val type: DistributionPolicy = DistributionPolicy.EQUAL_SHARE,
+) : DistributionPolicySpec
+
+@Serializable
+@SerialName("FIRST_FIT")
+public data class FirstFitDistributionPolicySpec(
+    override val type: DistributionPolicy = DistributionPolicy.FIRST_FIT,
+) : DistributionPolicySpec
+
+@Serializable
+@SerialName("FIXED_SHARE")
+public data class FixedShareDistributionPolicySpec(
+    override val type: DistributionPolicy = DistributionPolicy.FIXED_SHARE,
+    val shareRatio: Double = 1.0,
+) : DistributionPolicySpec
+
+public fun DistributionPolicySpec.toDistributionPolicy(): DistributionPolicy {
+    return when (this) {
+        is BestEffortDistributionPolicySpec ->
+            DistributionPolicy.BEST_EFFORT.apply {
+                setProperty("updateIntervalLength", updateIntervalLength)
+            }
+        is EqualShareDistributionPolicySpec -> DistributionPolicy.EQUAL_SHARE
+        is FixedShareDistributionPolicySpec ->
+            DistributionPolicy.FIXED_SHARE.apply {
+                setProperty("shareRatio", shareRatio)
+            }
+        is FirstFitDistributionPolicySpec -> DistributionPolicy.FIRST_FIT
+        is MaxMinFairnessDistributionPolicySpec -> DistributionPolicy.MAX_MIN_FAIRNESS
+    }
+}
+
+@Serializable
+@SerialName("MAX_MIN_FAIRNESS")
+public data class MaxMinFairnessDistributionPolicySpec(
+    override val type: DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
+) : DistributionPolicySpec
 
 /**
  * Definition of a power source used for JSON input.

@@ -46,6 +46,7 @@ import org.opendc.simulator.engine.graph.FlowDistributor;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory;
 
 /**
  * A machine that is able to execute {@link SimWorkload} objects.
@@ -220,7 +221,9 @@ public class SimMachine {
                 -1);
 
         // Create a FlowDistributor and add the cpu as supplier
-        this.distributors.put(ResourceType.CPU, new FlowDistributor(engine));
+        this.distributors.put(
+                ResourceType.CPU,
+                FlowDistributorFactory.getFlowDistributor(engine, this.machineModel.getCpuDistributionStrategy()));
         new FlowEdge(
                 this.distributors.get(ResourceType.CPU),
                 (FlowSupplier) this.computeResources.get(ResourceType.CPU).getFirst(),
@@ -232,7 +235,9 @@ public class SimMachine {
         this.memory = new Memory(engine, this.machineModel.getMemory());
 
         if (this.availableResources.contains(ResourceType.GPU)) {
-            this.distributors.put(ResourceType.GPU, new FlowDistributor(engine));
+            this.distributors.put(
+                    ResourceType.GPU,
+                    FlowDistributorFactory.getFlowDistributor(engine, this.machineModel.getGpuDistributionStrategy()));
             ArrayList<ComputeResource> gpus = new ArrayList<>();
 
             for (GpuModel gpuModel : machineModel.getGpuModels()) {

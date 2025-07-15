@@ -31,13 +31,12 @@ import org.opendc.compute.topology.specs.HostJSONSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.PowerSourceSpec
 import org.opendc.compute.topology.specs.TopologySpec
+import org.opendc.compute.topology.specs.toDistributionPolicy
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.getPowerModel
-import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicyFactory
-import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicyFactory.DistributionPolicyType
 import java.io.File
 import java.io.InputStream
 
@@ -189,9 +188,8 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
             units,
             unknownMemoryUnit,
             gpuUnits,
-            // TODO: Pass through
-            DistributionPolicyFactory.getDistributionStrategy(DistributionPolicyType.MaxMinFairness),
-            DistributionPolicyFactory.getDistributionStrategy(DistributionPolicyType.MaxMinFairness),
+            cpuDistributionPolicy.toDistributionPolicy(),
+            gpuDistributionPolicy.toDistributionPolicy(),
         )
 
     val cpuPowerModel =
@@ -227,6 +225,8 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
             machineModel,
             cpuPowerModel,
             gpuPowerModel,
+            cpuDistributionPolicy = cpuDistributionPolicy.toDistributionPolicy(),
+            gpuDistributionPolicy = gpuDistributionPolicy.toDistributionPolicy(),
         )
     return hostSpec
 }

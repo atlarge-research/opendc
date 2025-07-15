@@ -109,7 +109,7 @@ class SchedulerTest {
             )
 
         // Topology with 1 host having 2 GPUs (both tasks can fit on one host)
-        val fittingTopology = createTopology("Gpus/dual_gpu_host.json")
+        val fittingTopology = createTopology("Gpus/dual_core_gpu_host.json")
 
         // Topology with 2 hosts each having 1 GPU (tasks must be distributed)
         val nonFittingTopology = createTopology("Gpus/single_gpu_hosts.json")
