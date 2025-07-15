@@ -34,7 +34,7 @@ public class MaxMinFairnessPolicy implements DistributionPolicy {
     private record Demand(int idx, double value) {}
 
     @Override
-    public double[] distributeSupply(ArrayList<Double> demands, double currentSupply) {
+    public double[] distributeSupply(ArrayList<Double> demands, ArrayList<Double> currentSupply, double totalSupply) {
         int inputSize = demands.size();
 
         final double[] supplies = new double[inputSize];
@@ -50,7 +50,7 @@ public class MaxMinFairnessPolicy implements DistributionPolicy {
             return i1.compareTo(i2);
         });
 
-        double availableCapacity = currentSupply; // totalSupply
+        double availableCapacity = totalSupply;
 
         for (int i = 0; i < inputSize; i++) {
             double d = tempDemands[i].value;

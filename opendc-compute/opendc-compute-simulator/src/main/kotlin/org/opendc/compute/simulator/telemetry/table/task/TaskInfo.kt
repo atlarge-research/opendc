@@ -32,4 +32,5 @@ public data class TaskInfo(
     val arch: String,
     val cpuCount: Int,
     val memCapacity: Long,
+    val gpuCount: Int,
 )

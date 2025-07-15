@@ -113,14 +113,9 @@ public interface HostTableReader : Exportable {
     public val cpuLostTime: Long
 
     /**
-     * The capacity of the CPUs in the host (in MHz).
+     * The capacity of the GPUs in the host (in MHz).They inserted by GPU ID.
      */
     public val gpuCapacities: ArrayList<Double>
-
-    /**
-     * The capacity of the GPUs in the host (in MHz). They inserted by GPU ID.
-     */
-    public val gpuLimits: ArrayList<Double>
 
     /**
      * The usage per GPU in the host (in MHz). They inserted by GPU ID
@@ -156,6 +151,11 @@ public interface HostTableReader : Exportable {
      * The duration (in ms) of GPU time that was lost due to interference. They inserted by GPU ID
      */
     public val gpuLostTimes: ArrayList<Long>
+
+    /**
+     * The power draw of the respective GPU in the host (in W). They inserted by GPU ID.
+     */
+    public val gpuPowerDraws: ArrayList<Double>
 
     /**
      * The current power draw of the host in W.

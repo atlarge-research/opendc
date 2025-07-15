@@ -60,7 +60,6 @@ public class HostTableReaderImpl(
         _cpuLostTime = table.cpuLostTime
         // GPU stats
         _gpuCapacities = table.gpuCapacities
-        _gpuLimits = table.gpuLimits
         _gpuDemands = table.gpuDemands
         _gpuUsages = table.gpuUsages
         _gpuUtilizations = table.gpuUtilizations
@@ -68,6 +67,7 @@ public class HostTableReaderImpl(
         _gpuIdleTimes = table.gpuIdleTimes
         _gpuStealTimes = table.gpuStealTimes
         _gpuLostTimes = table.gpuLostTimes
+        _gpuPowerDraws = table.gpuPowerDraws
 
         // energy & carbon stats
         _powerDraw = table.powerDraw
@@ -152,10 +152,6 @@ public class HostTableReaderImpl(
         get() = _gpuCapacities
     private var _gpuCapacities: ArrayList<Double> = ArrayList()
 
-    override val gpuLimits: ArrayList<Double>
-        get() = _gpuLimits
-    private var _gpuLimits: ArrayList<Double> = ArrayList()
-
     override val gpuUsages: ArrayList<Double>
         get() = _gpuUsages
     private var _gpuUsages: ArrayList<Double> = ArrayList()
@@ -170,7 +166,6 @@ public class HostTableReaderImpl(
 
     // half of the CPU stats
     override val gpuActiveTimes: ArrayList<Long>
-//        get() = _gpuActiveTimes.zip(previousGpuActiveTimes) { current, previous -> current - previous} as ArrayList<Long>
         get() =
             (0 until _gpuActiveTimes.size).map {
                     i ->
@@ -180,7 +175,6 @@ public class HostTableReaderImpl(
     private var previousGpuActiveTimes: ArrayList<Long> = ArrayList()
 
     override val gpuIdleTimes: ArrayList<Long>
-//        get() = _gpuIdleTimes.zip(previousGpuIdleTimes) { current, previous -> current - previous} as ArrayList<Long>
         get() =
             (0 until _gpuIdleTimes.size).map {
                     i ->
@@ -206,6 +200,10 @@ public class HostTableReaderImpl(
             } as ArrayList<Long>
     private var _gpuLostTimes: ArrayList<Long> = ArrayList()
     private var previousGpuLostTimes: ArrayList<Long> = ArrayList()
+
+    override val gpuPowerDraws: ArrayList<Double>
+        get() = _gpuPowerDraws
+    private var _gpuPowerDraws: ArrayList<Double> = ArrayList()
 
     override val powerDraw: Double
         get() = _powerDraw
@@ -258,7 +256,7 @@ public class HostTableReaderImpl(
         _cpuStealTime = hostCpuStats.stealTime
         _cpuLostTime = hostCpuStats.lostTime
         // GPU stats
-        _gpuLimits = hostGpuStats.map { it.capacity } as ArrayList<Double>
+        _gpuCapacities = hostGpuStats.map { it.capacity } as ArrayList<Double>
         _gpuDemands = hostGpuStats.map { it.demand } as ArrayList<Double>
         _gpuUsages = hostGpuStats.map { it.usage } as ArrayList<Double>
         _gpuUtilizations = hostGpuStats.map { it.utilization } as ArrayList<Double>
@@ -266,6 +264,7 @@ public class HostTableReaderImpl(
         _gpuIdleTimes = hostGpuStats.map { it.idleTime } as ArrayList<Long>
         _gpuStealTimes = hostGpuStats.map { it.stealTime } as ArrayList<Long>
         _gpuLostTimes = hostGpuStats.map { it.lostTime } as ArrayList<Long>
+        _gpuPowerDraws = hostGpuStats.map { it.powerDraw } as ArrayList<Double>
         // energy & carbon stats
         _powerDraw = hostSysStats.powerDraw
         _energyUsage = hostSysStats.energyUsage

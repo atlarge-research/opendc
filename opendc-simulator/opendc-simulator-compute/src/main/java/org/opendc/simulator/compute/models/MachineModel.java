@@ -35,7 +35,6 @@ import org.opendc.simulator.engine.graph.distributionPolicies.DistributionPolicy
 public final class MachineModel {
     private final CpuModel cpuModel;
     private final MemoryUnit memory;
-    //    private final List<GpuModel> gpuModels = new ArrayList<>(); // TODO: Implement multi GPU support
     private final List<GpuModel> gpuModels;
     private final DistributionPolicy cpuDistributionStrategy;
     private final DistributionPolicy gpuDistributionPolicy;
@@ -58,19 +57,8 @@ public final class MachineModel {
         this.gpuDistributionPolicy = gpuDistributionPolicy;
         this.availableResources.add(ResourceType.CPU);
         // TODO: Add Memory
-        //        this.usedResources.add(ResourceType.Memory);
         if (gpuModels != null && !gpuModels.isEmpty()) {
-            //            this.gpuModels = gpuModels;
-            this.gpuModels = new ArrayList<>();
-            this.gpuModels.add(new GpuModel(
-                    0,
-                    gpuModels.getFirst().getCoreCount() * gpuModels.size(), // merges multiple GPUs into one
-                    gpuModels.getFirst().getCoreSpeed(),
-                    gpuModels.getFirst().getMemoryBandwidth(),
-                    gpuModels.getFirst().getMemorySize() * gpuModels.size(), // merges multiple GPUs into one
-                    gpuModels.getFirst().getVendor(),
-                    gpuModels.getFirst().getModelName(),
-                    gpuModels.getFirst().getArchitecture()));
+            this.gpuModels = gpuModels;
             this.availableResources.add(ResourceType.GPU);
         } else {
             this.gpuModels = new ArrayList<>();

@@ -56,7 +56,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     private final Hashtable<ResourceType, Double> resourceCapacities = new Hashtable<>();
     private final Hashtable<ResourceType, Double> resourceTimeScalingFactor = new Hashtable<>(); // formerly known as d
     private final Hashtable<ResourceType, FlowEdge> distributorEdges = new Hashtable<>();
-    private final Hashtable<ResourceType, List<PerformanceCounters>> resourcePerformanceCounters = new Hashtable<>();
+    private final Hashtable<ResourceType, PerformanceCounters> resourcePerformanceCounters = new Hashtable<>();
 
     private final long checkpointInterval;
     private final long checkpointDuration;
@@ -108,21 +108,11 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     }
 
     public PerformanceCounters getCpuPerformanceCounters() {
-        return this.resourcePerformanceCounters.get(ResourceType.CPU).getFirst();
+        return this.resourcePerformanceCounters.get(ResourceType.CPU);
     }
 
-    public List<PerformanceCounters> getGpuPerformanceCounters() {
-        return this.resourcePerformanceCounters.get(ResourceType.GPU) != null
-                ? this.resourcePerformanceCounters.get(ResourceType.GPU)
-                : new ArrayList<>();
-    }
-
-    public PerformanceCounters getGpuPerformanceCounters(int gpuId) {
-        List<PerformanceCounters> gpuPerformanceCounters = this.resourcePerformanceCounters.get(ResourceType.GPU);
-        if (gpuId < 0 || gpuId >= gpuPerformanceCounters.size()) {
-            throw new IndexOutOfBoundsException("No such GPU id: " + gpuId);
-        }
-        return gpuPerformanceCounters.get(gpuId);
+    public PerformanceCounters getGpuPerformanceCounters() {
+        return this.resourcePerformanceCounters.get(ResourceType.GPU);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -171,13 +161,9 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
             this.resourceCapacities.put(resourceType, resources.getFirst().getCapacity());
 
-            ArrayList<PerformanceCounters> performanceCounters = new ArrayList<>();
-
-            for (ComputeResource resource : resources) {
-                performanceCounters.add(new PerformanceCounters());
-                this.resourceTimeScalingFactor.put(resourceType, 1.0 / resource.getCapacity());
-            }
-            this.resourcePerformanceCounters.put(resourceType, performanceCounters);
+            this.resourceTimeScalingFactor.put(
+                    resourceType, 1.0 / resources.getFirst().getCapacity());
+            this.resourcePerformanceCounters.put(resourceType, new PerformanceCounters());
             this.resourceDemands.put(resourceType, 0.0);
             this.resourceSupplies.put(resourceType, 0.0);
         }
@@ -225,21 +211,24 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         for (ResourceType resourceType : this.availableResources) {
             int i = 0;
             final double factor = this.resourceTimeScalingFactor.get(resourceType) * delta;
-            for (PerformanceCounters performanceCounter : this.resourcePerformanceCounters.get(resourceType)) {
-                if (delta > 0) {
-                    performanceCounter.addActiveTime(Math.round(this.resourceSupplies.get(resourceType) * factor));
-                    performanceCounter.setIdleTime(Math.round(
-                            (this.resourceCapacities.get(resourceType) - this.resourceSupplies.get(resourceType))
-                                    * factor));
-                    performanceCounter.addStealTime(Math.round(
-                            (this.resourceDemands.get(resourceType) - this.resourceSupplies.get(resourceType))
-                                    * factor));
-                }
-                performanceCounter.setDemand(this.resourceDemands.get(resourceType));
-                performanceCounter.setSupply(this.resourceSupplies.get(resourceType));
-                performanceCounter.setCapacity(this.resourceCapacities.get(resourceType));
-                i++;
+            if (delta > 0) {
+                this.resourcePerformanceCounters
+                        .get(resourceType)
+                        .addActiveTime(Math.round(this.resourceSupplies.get(resourceType) * factor));
+                this.resourcePerformanceCounters
+                        .get(resourceType)
+                        .setIdleTime(Math.round(
+                                (this.resourceCapacities.get(resourceType) - this.resourceSupplies.get(resourceType))
+                                        * factor));
+                this.resourcePerformanceCounters
+                        .get(resourceType)
+                        .addStealTime(Math.round(
+                                (this.resourceDemands.get(resourceType) - this.resourceSupplies.get(resourceType))
+                                        * factor));
             }
+            this.resourcePerformanceCounters.get(resourceType).setDemand(this.resourceDemands.get(resourceType));
+            this.resourcePerformanceCounters.get(resourceType).setSupply(this.resourceSupplies.get(resourceType));
+            this.resourcePerformanceCounters.get(resourceType).setCapacity(this.resourceCapacities.get(resourceType));
         }
     }
 
@@ -317,7 +306,12 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     @Override
     public void addSupplierEdge(FlowEdge supplierEdge) {
         ResourceType resourceType = supplierEdge.getSupplierResourceType();
-        this.resourceCapacities.put(resourceType, supplierEdge.getCapacity());
+        if (this.resourceCapacities.containsKey(resourceType) && this.resourceCapacities.get(resourceType) > 0) {
+            this.resourceCapacities.put(
+                    resourceType, this.resourceCapacities.get(resourceType) + supplierEdge.getCapacity());
+        } else {
+            this.resourceCapacities.put(resourceType, supplierEdge.getCapacity());
+        }
         this.distributorEdges.put(resourceType, supplierEdge);
     }
 

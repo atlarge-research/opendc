@@ -132,42 +132,45 @@ public object DfltTaskExportColumns {
             field = Types.required(INT64).named("cpu_time_lost"),
         ) { it.cpuLostTime }
 
-    // TODO: support multiple GPUs
-
-    public val GPU_CAPACITY: ExportColumn<TaskTableReader> =
+    public val GPU_COUNT: ExportColumn<TaskTableReader> =
         ExportColumn(
-            field = Types.optional(FLOAT).named("gpu_capacity"),
-        ) { it.gpuLimits?.getOrNull(0) }
+            field = Types.optional(INT32).named("gpu_count"),
+        ) { it.taskInfo.gpuCount }
+
+    public val GPU_LIMIT: ExportColumn<TaskTableReader> =
+        ExportColumn(
+            field = Types.optional(FLOAT).named("gpu_limit"),
+        ) { it.gpuLimit }
 
     public val GPU_USAGE: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(FLOAT).named("gpu_usage"),
-        ) { it.gpuUsages?.getOrNull(0) }
+        ) { it.gpuUsage }
 
     public val GPU_DEMAND: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(FLOAT).named("gpu_demand"),
-        ) { it.gpuDemands?.getOrNull(0) }
+        ) { it.gpuDemand }
 
     public val GPU_TIME_ACTIVE: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("gpu_time_active"),
-        ) { it.gpuActiveTimes?.getOrNull(0) }
+        ) { it.gpuActiveTime }
 
     public val GPU_TIME_IDLE: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("gpu_time_idle"),
-        ) { it.gpuIdleTimes?.getOrNull(0) }
+        ) { it.gpuIdleTime }
 
     public val GPU_TIME_STEAL: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("gpu_time_steal"),
-        ) { it.gpuStealTimes?.getOrNull(0) }
+        ) { it.gpuStealTime }
 
     public val GPU_TIME_LOST: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("gpu_time_lost"),
-        ) { it.gpuLostTimes?.getOrNull(0) }
+        ) { it.gpuLostTime }
 
     public val UP_TIME: ExportColumn<TaskTableReader> =
         ExportColumn(

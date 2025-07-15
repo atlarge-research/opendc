@@ -87,7 +87,7 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
                                     localCpuUsage = value
                                 }
                             }
-                        "gpu_count", "gpu_cores" ->
+                        "gpu_count", "gpuCount", "gpu_cores", "gpuCores" ->
                             object : PrimitiveConverter() {
                                 override fun addInt(value: Int) {
                                     localGpuCount = value

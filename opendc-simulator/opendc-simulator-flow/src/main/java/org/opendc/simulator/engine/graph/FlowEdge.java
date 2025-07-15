@@ -54,6 +54,15 @@ public class FlowEdge {
     }
 
     public FlowEdge(FlowConsumer consumer, FlowSupplier supplier, ResourceType resourceType) {
+        this(consumer, supplier, resourceType, -1, -1);
+    }
+
+    public FlowEdge(
+            FlowConsumer consumer,
+            FlowSupplier supplier,
+            ResourceType resourceType,
+            int consumerIndex,
+            int supplierIndex) {
         if (!(consumer instanceof FlowNode)) {
             throw new IllegalArgumentException("Flow consumer is not a FlowNode");
         }
@@ -66,6 +75,10 @@ public class FlowEdge {
         this.resourceType = resourceType;
 
         this.capacity = supplier.getCapacity(resourceType);
+
+        // to avoid race condition of setting indices and requiring them in the PSU
+        this.supplierIndex = supplierIndex;
+        this.consumerIndex = consumerIndex;
 
         this.consumer.addSupplierEdge(this);
         this.supplier.addConsumerEdge(this);

@@ -110,6 +110,12 @@ internal class ResourceStateReadSupport(private val projection: List<String>?) :
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                         .named("cpuUsage"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("gpuCount"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("gpuUsage"),
                 )
                 .named("resource_state")
 
@@ -137,6 +143,12 @@ internal class ResourceStateReadSupport(private val projection: List<String>?) :
                     Types
                         .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
                         .named("cpu_usage"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("gpu_count"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("gpu_usage"),
                 )
                 .named("resource_state")
 

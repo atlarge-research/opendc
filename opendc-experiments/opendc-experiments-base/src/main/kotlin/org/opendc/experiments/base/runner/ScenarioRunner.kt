@@ -30,7 +30,9 @@ import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
+import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 import org.opendc.compute.simulator.telemetry.parquet.ParquetComputeMonitor
+import org.opendc.compute.simulator.telemetry.parquet.withGpuColumns
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.experiments.base.experiment.Scenario
 import org.opendc.experiments.base.experiment.specs.allocation.TimeShiftAllocationPolicySpec
@@ -125,7 +127,17 @@ public fun runScenario(
                 setupHosts(serviceDomain, topology, startTimeLong),
             )
 
-            addExportModel(provisioner, serviceDomain, scenario, seed, startTime, scenario.id)
+            val gpuCount = topology.flatMap { it.hostSpecs }.maxOfOrNull { it.model.gpuModels.size } ?: 0
+            addExportModel(
+                provisioner,
+                serviceDomain,
+                scenario,
+                seed,
+                startTime,
+                scenario.id,
+                computeExportConfig =
+                    scenario.exportModelSpec.computeExportConfig.withGpuColumns(gpuCount),
+            )
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
             service.setTasksExpected(workload.size)
@@ -180,6 +192,7 @@ public fun addExportModel(
     seed: Long,
     startTime: Duration,
     index: Int,
+    computeExportConfig: ComputeExportConfig = scenario.exportModelSpec.computeExportConfig,
 ) {
     provisioner.runStep(
         registerComputeMonitor(
@@ -189,7 +202,7 @@ public fun addExportModel(
                 "seed=$seed",
                 bufferSize = 4096,
                 scenario.exportModelSpec.filesToExportDict,
-                computeExportConfig = scenario.exportModelSpec.computeExportConfig,
+                computeExportConfig = computeExportConfig,
             ),
             Duration.ofSeconds(scenario.exportModelSpec.exportInterval),
             startTime,
