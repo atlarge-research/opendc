@@ -95,7 +95,6 @@ public abstract class TableWriterTestKit {
     /**
      * Test that writing columns without a row fails.
      */
-//    @Test
     public fun testWriteWithoutRow() {
         assertAll(
             columns.map { column ->
