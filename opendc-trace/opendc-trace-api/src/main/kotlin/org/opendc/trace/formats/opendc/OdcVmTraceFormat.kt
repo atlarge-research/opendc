@@ -37,13 +37,17 @@ import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
 import org.opendc.trace.conv.TABLE_INTERFERENCE_GROUPS
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.conv.resourceChildren
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
 import org.opendc.trace.conv.resourceDeadline
 import org.opendc.trace.conv.resourceDuration
+import org.opendc.trace.conv.resourceGpuCapacity
+import org.opendc.trace.conv.resourceGpuCount
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
 import org.opendc.trace.conv.resourceNature
+import org.opendc.trace.conv.resourceParents
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
 import org.opendc.trace.conv.resourceStateTimestamp
@@ -102,6 +106,10 @@ public class OdcVmTraceFormat : TraceFormat {
                         TableColumn(resourceCpuCount, TableColumnType.Int),
                         TableColumn(resourceCpuCapacity, TableColumnType.Double),
                         TableColumn(resourceMemCapacity, TableColumnType.Double),
+                        TableColumn(resourceGpuCount, TableColumnType.Int),
+                        TableColumn(resourceGpuCapacity, TableColumnType.Double),
+                        TableColumn(resourceParents, TableColumnType.Set(TableColumnType.String)),
+                        TableColumn(resourceChildren, TableColumnType.Set(TableColumnType.String)),
                         TableColumn(resourceNature, TableColumnType.String),
                         TableColumn(resourceDeadline, TableColumnType.Long),
                     ),

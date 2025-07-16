@@ -22,18 +22,23 @@
 
 package org.opendc.trace.formats.opendc
 
+import org.opendc.trace.TableColumnType
 import org.opendc.trace.TableReader
+import org.opendc.trace.conv.resourceChildren
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
 import org.opendc.trace.conv.resourceDeadline
 import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceGpuCapacity
 import org.opendc.trace.conv.resourceGpuCount
+import org.opendc.trace.conv.resourceGpuMemCapacity
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
 import org.opendc.trace.conv.resourceNature
+import org.opendc.trace.conv.resourceParents
 import org.opendc.trace.conv.resourceSubmissionTime
 import org.opendc.trace.formats.opendc.parquet.Resource
+import org.opendc.trace.util.convertTo
 import org.opendc.trace.util.parquet.LocalParquetReader
 import java.time.Duration
 import java.time.Instant
@@ -66,10 +71,15 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
     private val colCpuCount = 3
     private val colCpuCapacity = 4
     private val colMemCapacity = 5
-    private val colNature = 6
-    private val colDeadline = 7
-    private val colGpuCapacity = 8
-    private val colGpuCount = 9
+    private val colGpuCapacity = 6
+    private val colGpuCount = 7
+    private val colParents = 8
+    private val colChildren = 9
+    private val colNature = 10
+    private val colDeadline = 11
+
+    private val typeParents = TableColumnType.Set(TableColumnType.String)
+    private val typeChildren = TableColumnType.Set(TableColumnType.String)
 
     override fun resolve(name: String): Int {
         return when (name) {
@@ -79,10 +89,12 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
             resourceCpuCount -> colCpuCount
             resourceCpuCapacity -> colCpuCapacity
             resourceMemCapacity -> colMemCapacity
-            resourceNature -> colNature
-            resourceDeadline -> colDeadline
             resourceGpuCount -> colGpuCount
             resourceGpuCapacity -> colGpuCapacity
+            resourceParents -> colParents
+            resourceChildren -> colChildren
+            resourceNature -> colNature
+            resourceDeadline -> colDeadline
             else -> -1
         }
     }
@@ -174,7 +186,13 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
         index: Int,
         elementType: Class<T>,
     ): Set<T>? {
-        throw IllegalArgumentException("Invalid column")
+        val record = checkNotNull(record) { "Reader in invalid state" }
+        return when (index) {
+            colParents -> typeParents.convertTo(record.parents, elementType)
+            colChildren -> typeChildren.convertTo(record.children, elementType)
+            else -> throw IllegalArgumentException("Invalid column")
+
+        }
     }
 
     override fun <K, V> getMap(

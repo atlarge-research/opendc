@@ -23,8 +23,11 @@
 package org.opendc.compute.simulator.service;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 import org.opendc.compute.api.Flavor;
@@ -39,6 +42,9 @@ public final class ServiceFlavor implements Flavor {
     private final int cpuCoreCount;
     private final long memorySize;
     private final int gpuCoreCount;
+    private final Set<String> parents;
+    private final Set<String> children;
+    private final Set<String> dependencies;
     private final Map<String, ?> meta;
 
     ServiceFlavor(
@@ -48,6 +54,8 @@ public final class ServiceFlavor implements Flavor {
             int cpuCoreCount,
             long memorySize,
             int gpuCoreCount,
+            Set<String> parents,
+            Set<String> children,
             Map<String, ?> meta) {
         this.service = service;
         this.uid = uid;
@@ -55,6 +63,9 @@ public final class ServiceFlavor implements Flavor {
         this.cpuCoreCount = cpuCoreCount;
         this.memorySize = memorySize;
         this.gpuCoreCount = gpuCoreCount;
+        this.parents = parents;
+        this.dependencies = new HashSet<>(parents);
+        this.children = children;
         this.meta = meta;
     }
 
@@ -117,5 +128,34 @@ public final class ServiceFlavor implements Flavor {
     @Override
     public String toString() {
         return "Flavor[uid=" + uid + ",name=" + name + "]";
+    }
+
+    @Override
+    public @NotNull Set<String> getDependencies() {
+        return dependencies;
+    }
+
+    public void updatePendingDependencies(List<String> completedTasks) {
+        for (String task : completedTasks) {
+            this.updatePendingDependencies(task);
+        }
+    }
+
+    public void updatePendingDependencies(String completedTask) {
+        this.dependencies.remove(completedTask);
+    }
+
+    public boolean isInDependencies(String task) {
+        return this.dependencies.contains(task);
+    }
+
+    @Override
+    public @NotNull Set<@NotNull String> getParents() {
+        return parents;
+    }
+
+    @Override
+    public @NotNull Set<@NotNull String> getChildren() {
+        return children;
     }
 }

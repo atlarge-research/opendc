@@ -24,13 +24,17 @@ package org.opendc.trace.formats.opendc
 
 import org.apache.parquet.hadoop.ParquetWriter
 import org.opendc.trace.TableWriter
+import org.opendc.trace.conv.resourceChildren
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
 import org.opendc.trace.conv.resourceDeadline
 import org.opendc.trace.conv.resourceDuration
+import org.opendc.trace.conv.resourceGpuCapacity
+import org.opendc.trace.conv.resourceGpuCount
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
 import org.opendc.trace.conv.resourceNature
+import org.opendc.trace.conv.resourceParents
 import org.opendc.trace.conv.resourceSubmissionTime
 import org.opendc.trace.formats.opendc.parquet.Resource
 import java.time.Duration
@@ -51,10 +55,12 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
     private var localCpuCount: Int = 0
     private var localCpuCapacity: Double = Double.NaN
     private var localMemCapacity: Double = Double.NaN
-    private var localNature: String? = null
-    private var localDeadline: Long = -1
     private var localGpuCount: Int = 0
     private var localGpuCapacity: Double = Double.NaN
+    private var localParents = mutableSetOf<String>()
+    private var localChildren = mutableSetOf<String>()
+    private var localNature: String? = null
+    private var localDeadline: Long = -1
 
     override fun startRow() {
         localIsActive = true
@@ -66,6 +72,8 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
         localMemCapacity = Double.NaN
         localGpuCount = 0
         localGpuCapacity = Double.NaN
+        localParents.clear()
+        localChildren.clear()
         localNature = null
         localDeadline = -1L
     }
@@ -83,6 +91,8 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
                 localMemCapacity,
                 localGpuCount,
                 localGpuCapacity,
+                localParents,
+                localChildren,
                 localNature,
                 localDeadline,
             ),
@@ -97,6 +107,10 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
             resourceCpuCount -> colCpuCount
             resourceCpuCapacity -> colCpuCapacity
             resourceMemCapacity -> colMemCapacity
+            resourceGpuCount -> colGpuCount
+            resourceGpuCapacity -> colGpuCapacity
+            resourceParents -> colParents
+            resourceChildren -> colChildren
             resourceNature -> colNature
             resourceDeadline -> colDeadline
             else -> -1
@@ -226,8 +240,10 @@ internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resour
     private val colCpuCount = 3
     private val colCpuCapacity = 4
     private val colMemCapacity = 5
-    private val colNature = 6
-    private val colDeadline = 7
-    private val colGpuCount = 8
-    private val colGpuCapacity = 9
+    private val colGpuCount = 6
+    private val colGpuCapacity = 7
+    private val colParents = 8
+    private val colChildren = 9
+    private val colNature = 10
+    private val colDeadline = 11
 }

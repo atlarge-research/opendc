@@ -29,15 +29,20 @@ import org.apache.parquet.io.api.RecordMaterializer
 import org.apache.parquet.schema.LogicalTypeAnnotation
 import org.apache.parquet.schema.MessageType
 import org.apache.parquet.schema.PrimitiveType
+import org.apache.parquet.schema.Type
 import org.apache.parquet.schema.Types
 import org.opendc.trace.TableColumn
+import org.opendc.trace.conv.resourceChildren
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
 import org.opendc.trace.conv.resourceDeadline
 import org.opendc.trace.conv.resourceDuration
+import org.opendc.trace.conv.resourceGpuCapacity
+import org.opendc.trace.conv.resourceGpuCount
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
 import org.opendc.trace.conv.resourceNature
+import org.opendc.trace.conv.resourceParents
 import org.opendc.trace.conv.resourceSubmissionTime
 
 /**
@@ -58,6 +63,10 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
             "cpu_capacity" to resourceCpuCapacity,
             "requiredMemory" to resourceMemCapacity,
             "mem_capacity" to resourceMemCapacity,
+            "gpu_count" to resourceGpuCount,
+            "gpu_capacity" to resourceGpuCapacity,
+            "parents" to resourceParents,
+            "children" to resourceChildren,
             "nature" to resourceNature,
             "deadline" to resourceDeadline,
         )
@@ -130,7 +139,7 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
          * Parquet read schema (version 2.1) for the "resources" table in the trace.
          */
         @JvmStatic
-        val READ_SCHEMA_V2_1: MessageType =
+        val READ_SCHEMA_V2_2: MessageType =
             Types.buildMessage()
                 .addFields(
                     Types
@@ -154,6 +163,34 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
                         .required(PrimitiveType.PrimitiveTypeName.INT64)
                         .named("mem_capacity"),
                     Types
+                        .optional(PrimitiveType.PrimitiveTypeName.INT32)
+                        .named("gpu_count"),
+                    Types
+                        .optional(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                        .named("gpu_capacity"),
+                    Types
+                        .buildGroup(Type.Repetition.OPTIONAL)
+                        .addField(
+                            Types.repeatedGroup()
+                                .addField(Types.optional(PrimitiveType.PrimitiveTypeName.BINARY)
+                                    .`as`(LogicalTypeAnnotation.stringType())
+                                    .named("element"))
+                                .named("list"),
+                            )
+                        .`as`(LogicalTypeAnnotation.listType())
+                        .named("parents"),
+                    Types
+                        .buildGroup(Type.Repetition.OPTIONAL)
+                        .addField(
+                            Types.repeatedGroup()
+                                .addField(Types.optional(PrimitiveType.PrimitiveTypeName.BINARY)
+                                    .`as`(LogicalTypeAnnotation.stringType())
+                                    .named("element"))
+                                .named("list"),
+                            )
+                        .`as`(LogicalTypeAnnotation.listType())
+                        .named("children"),
+                    Types
                         .optional(PrimitiveType.PrimitiveTypeName.BINARY)
                         .`as`(LogicalTypeAnnotation.stringType())
                         .named("nature"),
@@ -168,7 +205,6 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
          */
         @JvmStatic
         val READ_SCHEMA: MessageType =
-            READ_SCHEMA_V2_0
-                .union(READ_SCHEMA_V2_1)
+            READ_SCHEMA_V2_2
     }
 }

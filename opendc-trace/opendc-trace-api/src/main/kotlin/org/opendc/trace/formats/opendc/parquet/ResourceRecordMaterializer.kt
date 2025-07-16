@@ -45,6 +45,8 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
     private var localMemCapacity = 0.0
     private var localGpuCount = 0
     private var localGpuCapacity = 0.0
+    private var localParents = mutableSetOf<String>()
+    private var localChildren = mutableSetOf<String>()
     private var localNature: String? = null
     private var localDeadline = -1L
 
@@ -111,6 +113,8 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
                                     localGpuCapacity = value
                                 }
                             }
+                        "parents" -> RelationConverter(localParents)
+                        "children" -> RelationConverter(localChildren)
                         "nature" ->
                             object : PrimitiveConverter() {
                                 override fun addBinary(value: Binary) {
@@ -136,6 +140,8 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
                 localMemCapacity = 0.0
                 localGpuCount = 0
                 localGpuCapacity = 0.0
+                localParents.clear()
+                localChildren.clear()
                 localNature = null
                 localDeadline = -1
             }
@@ -155,9 +161,44 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
             localMemCapacity,
             localGpuCount,
             localGpuCapacity,
+            localParents.toSet(),
+            localChildren.toSet(),
             localNature,
             localDeadline,
         )
 
     override fun getRootConverter(): GroupConverter = root
+
+    /**
+     * Helper class to convert parent and child relations and add them to [relations].
+     */
+    private class RelationConverter(private val relations: MutableSet<String>) : GroupConverter() {
+        private val entryConverter = object : PrimitiveConverter() {
+            override fun addBinary(value: Binary) {
+                val str = value.toStringUsingUTF8()
+                relations.add(str)
+            }
+        }
+
+        private val listGroupConverter = object : GroupConverter() {
+            override fun getConverter(fieldIndex: Int): Converter {
+                // fieldIndex = 0 corresponds to "element"
+                require(fieldIndex == 0)
+                return entryConverter
+            }
+
+            override fun start() {}
+            override fun end() {}
+        }
+
+        override fun getConverter(fieldIndex: Int): Converter {
+            // fieldIndex = 0 corresponds to "list"
+            require(fieldIndex == 0)
+            return listGroupConverter
+        }
+
+        override fun start() {}
+
+        override fun end() {}
+    }
 }

@@ -99,12 +99,6 @@ internal class ResourceStateRecordMaterializer(schema: MessageType) : RecordMate
                                     localGpuUsage = value
                                 }
                             }
-                        "flops" ->
-                            object : PrimitiveConverter() {
-                                override fun addLong(value: Long) {
-                                    // Ignore to support v1 format
-                                }
-                            }
                         else -> error("Unknown column $type")
                     }
                 }

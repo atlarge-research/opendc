@@ -64,7 +64,7 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
 
         val res = mutableListOf<Task>()
 
-        val totalLoad = workload.sumOf { it.totalLoad }
+        val totalLoad = workload.sumOf { it.totalCpuLoad }
         val desiredLoad = totalLoad * fraction
         var currentLoad = 0.0
 
@@ -72,7 +72,7 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
             val entry = workload.random()
             res += entry
 
-            currentLoad += entry.totalLoad
+            currentLoad += entry.totalCpuLoad
         }
 
         logger.info { "Sampled ${workload.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
