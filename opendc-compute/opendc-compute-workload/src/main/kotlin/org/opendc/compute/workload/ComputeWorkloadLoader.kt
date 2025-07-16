@@ -29,16 +29,17 @@ import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.TABLE_RESOURCES
 import org.opendc.trace.conv.TABLE_RESOURCE_STATES
+import org.opendc.trace.conv.resourceChildren
 import org.opendc.trace.conv.resourceCpuCapacity
 import org.opendc.trace.conv.resourceCpuCount
 import org.opendc.trace.conv.resourceDeadline
 import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceGpuCapacity
 import org.opendc.trace.conv.resourceGpuCount
-import org.opendc.trace.conv.resourceGpuMemCapacity
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
 import org.opendc.trace.conv.resourceNature
+import org.opendc.trace.conv.resourceParents
 import org.opendc.trace.conv.resourceStateCpuUsage
 import org.opendc.trace.conv.resourceStateDuration
 import org.opendc.trace.conv.resourceStateGpuUsage
@@ -136,7 +137,8 @@ public class ComputeWorkloadLoader(
         val memCol = reader.resolve(resourceMemCapacity)
         val gpuCapacityCol = reader.resolve(resourceGpuCapacity) // Assuming GPU capacity is also present
         val gpuCoreCountCol = reader.resolve(resourceGpuCount) // Assuming GPU cores are also present
-        val gpuMemoryCol = reader.resolve(resourceGpuMemCapacity) // Assuming GPU memory is also present
+        val parentsCol = reader.resolve(resourceParents)
+        val childrenCol = reader.resolve(resourceChildren)
         val natureCol = reader.resolve(resourceNature)
         val deadlineCol = reader.resolve(resourceDeadline)
 
@@ -166,6 +168,10 @@ public class ComputeWorkloadLoader(
                     }
                 val gpuCoreCount = reader.getInt(gpuCoreCountCol) // Default to 0 if not present
                 val gpuMemory = 0L // currently not implemented
+
+                val parents = reader.getSet(parentsCol, String::class.java) // No dependencies in the trace
+                val children = reader.getSet(childrenCol, String::class.java) // No dependencies in the trace
+
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
                 var nature = reader.getString(natureCol)
                 var deadline = reader.getLong(deadlineCol)
@@ -181,15 +187,17 @@ public class ComputeWorkloadLoader(
                     Task(
                         uid,
                         id,
+                        submissionTime,
+                        duration,
+                        parents!!,
+                        children!!,
                         cpuCount,
                         cpuCapacity,
+                        totalLoad,
                         memCapacity.roundToLong(),
                         gpuCoreCount,
                         gpuUsage,
                         gpuMemory,
-                        totalLoad,
-                        submissionTime,
-                        duration,
                         nature,
                         deadline,
                         builder.build(),

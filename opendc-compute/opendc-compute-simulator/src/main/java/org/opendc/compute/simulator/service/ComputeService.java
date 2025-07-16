@@ -119,6 +119,8 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      */
     private final Deque<SchedulingRequest> taskQueue = new ArrayDeque<>();
 
+    private final List<SchedulingRequest> blockedTasks = new ArrayList<>();
+
     /**
      * The active tasks in the system.
      */
@@ -126,9 +128,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     /**
      * The active tasks in the system.
-     * TODO: this is not doing anything, maybe delete it?
      */
-    private final Map<ServiceTask, SimHost> completedTasks = new HashMap<>();
+    private final List<String> completedTasks = new ArrayList<>();
+
+    private final List<String> terminatedTasks = new ArrayList<>();
 
     /**
      * The registered flavors for this compute service.
@@ -209,9 +212,11 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
                 if (newState == TaskState.COMPLETED) {
                     tasksCompleted++;
+                    addCompletedTask(task);
                 }
                 if (newState == TaskState.TERMINATED) {
                     tasksTerminated++;
+                    addTerminatedTask(task);
                 }
 
                 if (task.getState() == TaskState.COMPLETED || task.getState() == TaskState.TERMINATED) {
@@ -430,15 +435,81 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         long now = clock.millis();
         SchedulingRequest request = new SchedulingRequest(task, now);
 
-        if (atFront) {
-            taskQueue.addFirst(request);
-        } else {
-            taskQueue.add(request);
+        ServiceFlavor flavor = task.getFlavor();
+        for (String taskName : this.terminatedTasks) {
+            if (flavor.isInDependencies(taskName)) {
+                // Terminate task
+                task.setState(TaskState.TERMINATED);
+            }
         }
+
+        // Remove all completed tasks from the pending dependencies
+        flavor.updatePendingDependencies(this.completedTasks);
+
+        // If there are still pending dependencies, we cannot schedule the task yet
+        Set<String> pendingDependencies = flavor.getDependencies();
+        if (!pendingDependencies.isEmpty()) {
+            // If the task has pending dependencies, we cannot schedule it yet
+            LOGGER.debug("Task {} has pending dependencies: {}", task.getUid(), pendingDependencies);
+            blockedTasks.add(request);
+            return null;
+        }
+
+        // Add the request at the front or the back of the queue
+        if (atFront) taskQueue.addFirst(request);
+        else taskQueue.add(request);
+
         tasksPending++;
 
         requestSchedulingCycle();
         return request;
+    }
+
+    void addCompletedTask(ServiceTask task) {
+        String taskName = task.getName();
+
+        if (!this.completedTasks.contains(taskName)) {
+            this.completedTasks.add(taskName);
+        }
+
+        List<SchedulingRequest> requestsToRemove = new ArrayList<>();
+
+        for (SchedulingRequest request : blockedTasks) {
+            request.getTask().getFlavor().updatePendingDependencies(taskName);
+
+            Set<String> pendingDependencies = request.getTask().getFlavor().getDependencies();
+
+            if (pendingDependencies.isEmpty()) {
+                requestsToRemove.add(request);
+                taskQueue.add(request);
+                tasksPending++;
+            }
+        }
+
+        for (SchedulingRequest request : requestsToRemove) {
+            blockedTasks.remove(request);
+        }
+    }
+
+    void addTerminatedTask(ServiceTask task) {
+        String taskName = task.getName();
+
+        List<SchedulingRequest> requestsToRemove = new ArrayList<>();
+
+        if (!this.terminatedTasks.contains(taskName)) {
+            this.terminatedTasks.add(taskName);
+        }
+
+        for (SchedulingRequest request : blockedTasks) {
+            if (request.getTask().getFlavor().isInDependencies(taskName)) {
+                requestsToRemove.add(request);
+                request.getTask().setState(TaskState.TERMINATED);
+            }
+        }
+
+        for (SchedulingRequest request : requestsToRemove) {
+            blockedTasks.remove(request);
+        }
     }
 
     void delete(ServiceFlavor flavor) {
@@ -612,12 +683,19 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
         @NotNull
         public ServiceFlavor newFlavor(
-                @NotNull String name, int cpuCount, long memorySize, int gpuCoreCount, @NotNull Map<String, ?> meta) {
+                @NotNull String name,
+                int cpuCount,
+                long memorySize,
+                int gpuCoreCount,
+                @NotNull Set<String> parents,
+                @NotNull Set<String> children,
+                @NotNull Map<String, ?> meta) {
             checkOpen();
 
             final ComputeService service = this.service;
             UUID uid = new UUID(service.clock.millis(), service.random.nextLong());
-            ServiceFlavor flavor = new ServiceFlavor(service, uid, name, cpuCount, memorySize, gpuCoreCount, meta);
+            ServiceFlavor flavor =
+                    new ServiceFlavor(service, uid, name, cpuCount, memorySize, gpuCoreCount, parents, children, meta);
 
             //            service.flavorById.put(uid, flavor);
             //            service.flavors.add(flavor);

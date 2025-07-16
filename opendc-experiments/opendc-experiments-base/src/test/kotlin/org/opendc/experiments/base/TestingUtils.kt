@@ -54,7 +54,6 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.collections.ArrayList
-import kotlin.compareTo
 
 /**
  * Obtain the topology factory for the test.
@@ -86,15 +85,17 @@ fun createTestTask(
     return Task(
         UUID.nameUUIDFromBytes(name.toByteArray()),
         name,
+        LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli(),
+        duration,
+        emptySet(),
+        emptySet(),
         fragments.maxOf { it.cpuCoreCount() },
         fragments.maxOf { it.cpuUsage },
+        1800000.0,
         memCapacity,
         gpuCount = fragments.maxOfOrNull { it.gpuCoreCount() } ?: 0,
         gpuCapacity = fragments.maxOfOrNull { it.gpuUsage } ?: 0.0,
         gpuMemCapacity = fragments.maxOfOrNull { it.gpuMemoryUsage } ?: 0L,
-        1800000.0,
-        LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli(),
-        duration,
         "",
         -1,
         TraceWorkload(

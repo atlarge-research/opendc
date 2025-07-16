@@ -34,8 +34,10 @@ internal data class Resource(
     val cpuCount: Int,
     val cpuCapacity: Double,
     val memCapacity: Double,
-    val gpuCount: Int,
-    val gpuCapacity: Double,
+    val gpuCount: Int = 0,
+    val gpuCapacity: Double = 0.0,
+    val parents: Set<String> = emptySet(),
+    val children: Set<String> = emptySet(),
     val nature: String? = null,
     val deadline: Long = -1,
 )

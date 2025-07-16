@@ -91,6 +91,18 @@ public val resourceGpuCapacity: String = "gpu_capacity"
 public val resourceGpuMemCapacity: String = "gpu_mem_capacity"
 
 /**
+ * The parents of the resource that need to be completed before this resource can be used.
+ */
+@JvmField
+public val resourceParents: String = "parents"
+
+/**
+ * The children of the resource that cannot be started before this is completed.
+ */
+@JvmField
+public val resourceChildren: String = "children"
+
+/**
  * Nature of the task. Delayable, interruptible, etc.
  */
 @JvmField

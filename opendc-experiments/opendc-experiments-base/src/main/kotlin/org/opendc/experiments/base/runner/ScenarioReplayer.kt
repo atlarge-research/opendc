@@ -150,6 +150,8 @@ public suspend fun ComputeService.replay(
                                 entry.cpuCount,
                                 entry.memCapacity,
                                 entry.gpuCount,
+                                entry.parents,
+                                entry.children,
                                 flavorMeta,
                             ),
                             workload,

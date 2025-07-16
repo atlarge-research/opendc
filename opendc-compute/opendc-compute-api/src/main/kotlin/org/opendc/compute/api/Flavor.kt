@@ -41,4 +41,19 @@ public interface Flavor : Resource {
      * The amount of gpu cores available to the task.
      */
     public val gpuCoreCount: Int
+
+    /**
+     * Set of Tasks that need to be finished before this can startAdd commentMore actions
+     */
+    public val dependencies: Set<String>
+
+    /**
+     * Set of Tasks that need to be finished before this can startAdd commentMore actions
+     */
+    public val parents: Set<String>
+
+    /**
+     * Set of Tasks that need to be finished before this can startAdd commentMore actions
+     */
+    public val children: Set<String>
 }
