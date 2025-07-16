@@ -172,22 +172,26 @@ internal class ResourceReadSupport(private val projection: List<String>?) : Read
                         .buildGroup(Type.Repetition.OPTIONAL)
                         .addField(
                             Types.repeatedGroup()
-                                .addField(Types.optional(PrimitiveType.PrimitiveTypeName.BINARY)
-                                    .`as`(LogicalTypeAnnotation.stringType())
-                                    .named("element"))
+                                .addField(
+                                    Types.optional(PrimitiveType.PrimitiveTypeName.BINARY)
+                                        .`as`(LogicalTypeAnnotation.stringType())
+                                        .named("element"),
+                                )
                                 .named("list"),
-                            )
+                        )
                         .`as`(LogicalTypeAnnotation.listType())
                         .named("parents"),
                     Types
                         .buildGroup(Type.Repetition.OPTIONAL)
                         .addField(
                             Types.repeatedGroup()
-                                .addField(Types.optional(PrimitiveType.PrimitiveTypeName.BINARY)
-                                    .`as`(LogicalTypeAnnotation.stringType())
-                                    .named("element"))
+                                .addField(
+                                    Types.optional(PrimitiveType.PrimitiveTypeName.BINARY)
+                                        .`as`(LogicalTypeAnnotation.stringType())
+                                        .named("element"),
+                                )
                                 .named("list"),
-                            )
+                        )
                         .`as`(LogicalTypeAnnotation.listType())
                         .named("children"),
                     Types

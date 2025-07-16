@@ -173,23 +173,26 @@ internal class ResourceRecordMaterializer(schema: MessageType) : RecordMateriali
      * Helper class to convert parent and child relations and add them to [relations].
      */
     private class RelationConverter(private val relations: MutableSet<String>) : GroupConverter() {
-        private val entryConverter = object : PrimitiveConverter() {
-            override fun addBinary(value: Binary) {
-                val str = value.toStringUsingUTF8()
-                relations.add(str)
-            }
-        }
-
-        private val listGroupConverter = object : GroupConverter() {
-            override fun getConverter(fieldIndex: Int): Converter {
-                // fieldIndex = 0 corresponds to "element"
-                require(fieldIndex == 0)
-                return entryConverter
+        private val entryConverter =
+            object : PrimitiveConverter() {
+                override fun addBinary(value: Binary) {
+                    val str = value.toStringUsingUTF8()
+                    relations.add(str)
+                }
             }
 
-            override fun start() {}
-            override fun end() {}
-        }
+        private val listGroupConverter =
+            object : GroupConverter() {
+                override fun getConverter(fieldIndex: Int): Converter {
+                    // fieldIndex = 0 corresponds to "element"
+                    require(fieldIndex == 0)
+                    return entryConverter
+                }
+
+                override fun start() {}
+
+                override fun end() {}
+            }
 
         override fun getConverter(fieldIndex: Int): Converter {
             // fieldIndex = 0 corresponds to "list"

@@ -31,7 +31,6 @@ import org.opendc.trace.conv.resourceDeadline
 import org.opendc.trace.conv.resourceDuration
 import org.opendc.trace.conv.resourceGpuCapacity
 import org.opendc.trace.conv.resourceGpuCount
-import org.opendc.trace.conv.resourceGpuMemCapacity
 import org.opendc.trace.conv.resourceID
 import org.opendc.trace.conv.resourceMemCapacity
 import org.opendc.trace.conv.resourceNature
@@ -191,7 +190,6 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<R
             colParents -> typeParents.convertTo(record.parents, elementType)
             colChildren -> typeChildren.convertTo(record.children, elementType)
             else -> throw IllegalArgumentException("Invalid column")
-
         }
     }
 

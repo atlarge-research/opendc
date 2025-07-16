@@ -133,7 +133,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     private final List<String> terminatedTasks = new ArrayList<>();
 
-
     /**
      * The registered flavors for this compute service.
      */
@@ -424,7 +423,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
         if (task.getNumFailures() >= maxNumFailures) {
             LOGGER.warn("task {} has been terminated because it failed {} times", (Object) task, (Object)
-                task.getNumFailures());
+                    task.getNumFailures());
 
             tasksTerminated++;
             task.setState(TaskState.TERMINATED);
@@ -437,7 +436,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         SchedulingRequest request = new SchedulingRequest(task, now);
 
         ServiceFlavor flavor = task.getFlavor();
-        for (String taskName: this.terminatedTasks){
+        for (String taskName : this.terminatedTasks) {
             if (flavor.isInDependencies(taskName)) {
                 // Terminate task
                 task.setState(TaskState.TERMINATED);
@@ -512,7 +511,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             blockedTasks.remove(request);
         }
     }
-
 
     void delete(ServiceFlavor flavor) {
         flavorById.remove(flavor.getUid());
@@ -685,13 +683,19 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
         @NotNull
         public ServiceFlavor newFlavor(
-            @NotNull String name, int cpuCount, long memorySize, int gpuCoreCount, @NotNull Set<String> parents,
-            @NotNull Set<String> children, @NotNull Map<String, ?> meta) {
+                @NotNull String name,
+                int cpuCount,
+                long memorySize,
+                int gpuCoreCount,
+                @NotNull Set<String> parents,
+                @NotNull Set<String> children,
+                @NotNull Map<String, ?> meta) {
             checkOpen();
 
             final ComputeService service = this.service;
             UUID uid = new UUID(service.clock.millis(), service.random.nextLong());
-            ServiceFlavor flavor = new ServiceFlavor(service, uid, name, cpuCount, memorySize, gpuCoreCount, parents, children, meta);
+            ServiceFlavor flavor =
+                    new ServiceFlavor(service, uid, name, cpuCount, memorySize, gpuCoreCount, parents, children, meta);
 
             //            service.flavorById.put(uid, flavor);
             //            service.flavors.add(flavor);
