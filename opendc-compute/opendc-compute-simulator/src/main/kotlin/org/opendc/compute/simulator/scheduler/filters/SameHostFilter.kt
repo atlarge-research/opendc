@@ -24,7 +24,6 @@ package org.opendc.compute.simulator.scheduler.filters
 
 import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
-import java.util.UUID
 
 /**
  * A [HostFilter] that ensures an instance is scheduled on the same host as all other instances in a set of instances.
@@ -35,7 +34,7 @@ public class SameHostFilter : HostFilter {
         task: ServiceTask,
     ): Boolean {
         @Suppress("UNCHECKED_CAST")
-        val affinityUUIDs = task.meta["scheduler_hint:same_host"] as? Set<UUID> ?: return true
-        return host.host.getInstances().any { it.uid in affinityUUIDs }
+        val affinityIDs = task.meta["scheduler_hint:same_host"] as? Set<Int> ?: return true
+        return host.host.getInstances().any { it.id in affinityIDs }
     }
 }

@@ -29,7 +29,7 @@ import org.apache.parquet.io.api.RecordMaterializer
 import org.apache.parquet.schema.MessageType
 
 /**
- * A [RecordMaterializer] for [Task] records.
+ * A [RecordMaterializer] for [FailureFragment] records.
  */
 internal class FailureRecordMaterializer(schema: MessageType) : RecordMaterializer<FailureFragment>() {
     /**

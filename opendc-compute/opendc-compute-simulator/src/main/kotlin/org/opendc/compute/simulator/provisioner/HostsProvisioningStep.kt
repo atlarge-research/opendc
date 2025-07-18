@@ -22,6 +22,7 @@
 
 package org.opendc.compute.simulator.provisioner
 
+import org.opendc.common.ResourceType
 import org.opendc.compute.carbon.getCarbonFragments
 import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
@@ -119,11 +120,11 @@ public class HostsProvisioningStep internal constructor(
 
                 carbonModel?.addReceiver(batteryPolicy)
 
-                FlowEdge(hostDistributor, batteryAggregator)
+                FlowEdge(hostDistributor, batteryAggregator, ResourceType.POWER)
 
                 service.addBattery(battery)
             } else {
-                FlowEdge(hostDistributor, simPowerSource)
+                FlowEdge(hostDistributor, simPowerSource, ResourceType.POWER)
             }
 
             // Create hosts, they are connected to the powerMux when SimMachine is created

@@ -24,19 +24,18 @@ package org.opendc.simulator.compute.workload.trace;
 
 import org.opendc.common.ResourceType;
 
-public record TraceFragment(
-        long duration, double cpuUsage, int cpuCoreCount, double gpuUsage, int gpuCoreCount, Long gpuMemoryUsage) {
+public record TraceFragment(long duration, double cpuUsage, double gpuUsage, int gpuMemoryUsage) {
 
-    public TraceFragment(long start, long duration, double cpuUsage, int cpuCoreCount) {
-        this(duration, cpuUsage, cpuCoreCount, 0.0, 0, 0L);
+    public TraceFragment(long start, long duration, double cpuUsage) {
+        this(duration, cpuUsage, 0.0, 0);
     }
 
-    public TraceFragment(long duration, double cpuUsage, int cpuCoreCount) {
-        this(duration, cpuUsage, cpuCoreCount, 0.0, 0, 0L);
+    public TraceFragment(long duration, double cpuUsage) {
+        this(duration, cpuUsage, 0.0, 0);
     }
 
-    public TraceFragment(long duration, double cpuUsage, int cpuCoreCount, double gpuUsage, int gpuCoreCount) {
-        this(duration, cpuUsage, cpuCoreCount, gpuUsage, gpuCoreCount, 0L);
+    public TraceFragment(long duration, double cpuUsage, double gpuUsage) {
+        this(duration, cpuUsage, gpuUsage, 0);
     }
 
     /**
@@ -50,20 +49,6 @@ public record TraceFragment(
             case CPU -> cpuUsage;
             case GPU -> gpuUsage;
                 //            case GPU_MEMORY -> gpuMemoryUsage;
-            default -> throw new IllegalArgumentException("Invalid resource type: " + resourceType);
-        };
-    }
-
-    /**
-     * Returns the core count for the specified resource type.
-     *
-     * @param resourceType the type of resource
-     * @return the core count for the specified resource type
-     */
-    public int getCoreCount(ResourceType resourceType) throws IllegalArgumentException {
-        return switch (resourceType) {
-            case CPU -> cpuCoreCount;
-            case GPU -> gpuCoreCount;
             default -> throw new IllegalArgumentException("Invalid resource type: " + resourceType);
         };
     }

@@ -101,7 +101,7 @@ public fun runScenario(
                     scalingPolicy,
                     scenario.workloadSpec.deferAll,
                 )
-            var workload = workloadLoader.sampleByLoad(scenario.workloadSpec.sampleFraction)
+            val workload = workloadLoader.sampleByLoad(scenario.workloadSpec.sampleFraction)
 
             val startTimeLong = workload.minOf { it.submissionTime }
             val startTime = Duration.ofMillis(startTimeLong)
@@ -143,7 +143,7 @@ public fun runScenario(
             service.setTasksExpected(workload.size)
             service.setMetricReader(provisioner.getMonitor())
 
-            var carbonModel: CarbonModel? = null
+            var carbonModel: CarbonModel?
             if (provisioner.registry.hasService(serviceDomain, CarbonModel::class.java)) {
                 carbonModel = provisioner.registry.resolve(serviceDomain, CarbonModel::class.java)!!
 
@@ -167,12 +167,12 @@ public fun runScenario(
                 }
             }
 
-            service.replay(
-                timeSource,
-                workload,
-                failureModelSpec = scenario.failureModelSpec,
-                seed = seed,
-            )
+//            service.replay(
+//                timeSource,
+//                workload,
+//                failureModelSpec = scenario.failureModelSpec,
+//                seed = seed,
+//            )
         }
     }
 

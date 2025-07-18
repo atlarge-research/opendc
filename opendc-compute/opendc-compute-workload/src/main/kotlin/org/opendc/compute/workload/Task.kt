@@ -23,27 +23,25 @@
 package org.opendc.compute.workload
 
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
-import java.util.UUID
 
 /**
  * A virtual machine workload.
  *
- * @param uid The unique identifier of the virtual machine.
+ * @param id The unique identifier of the virtual machine.
  * @param name The name of the virtual machine.
  * @param cpuCapacity The required CPU capacity for the VM in MHz.
  * @param cpuCount The number of vCPUs in the VM.
  * @param memCapacity The provisioned memory for the VM in MB.
  * @param submissionTime The start time of the VM.
  * @param trace The trace that belong to this VM.
- * @param interferenceProfile The interference profile of this virtual machine.
  */
 public data class Task(
-    val uid: UUID,
+    val id: Int,
     val name: String,
     var submissionTime: Long,
     val duration: Long,
-    val parents: Set<String> = emptySet(),
-    val children: Set<String> = emptySet(),
+    val parents: Set<Int> = emptySet(),
+    val children: Set<Int> = emptySet(),
     val cpuCount: Int,
     val cpuCapacity: Double,
     val totalCpuLoad: Double,

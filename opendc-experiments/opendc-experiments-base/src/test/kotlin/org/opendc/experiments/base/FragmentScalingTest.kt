@@ -45,12 +45,13 @@ class FragmentScalingTest {
         val workloadNoDelay: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 2000.0),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
             )
@@ -58,12 +59,13 @@ class FragmentScalingTest {
         val workloadPerfect: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 2000.0),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
             )
@@ -75,14 +77,14 @@ class FragmentScalingTest {
         assertAll(
             { assertEquals(1200000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
             { assertEquals(1200000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
-            { assertEquals(2000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(2000.0, monitorPerfect.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(2000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
-            { assertEquals(2000.0, monitorPerfect.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
-            { assertEquals(1000.0, monitorNoDelay.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(1000.0, monitorPerfect.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(1000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(9)) { "The cpu supplied to task 0 is incorrect" } },
-            { assertEquals(1000.0, monitorPerfect.taskCpuSupplied["0"]?.get(9)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(2000.0, monitorNoDelay.taskCpuDemands[0]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitorPerfect.taskCpuDemands[0]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitorNoDelay.taskCpuSupplied[0]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(2000.0, monitorPerfect.taskCpuSupplied[0]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(1000.0, monitorNoDelay.taskCpuDemands[0]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitorPerfect.taskCpuDemands[0]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitorNoDelay.taskCpuSupplied[0]?.get(9)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(1000.0, monitorPerfect.taskCpuSupplied[0]?.get(9)) { "The cpu supplied to task 0 is incorrect" } },
         )
     }
 
@@ -99,11 +101,12 @@ class FragmentScalingTest {
         val workloadNoDelay: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 4000.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
             )
@@ -111,11 +114,12 @@ class FragmentScalingTest {
         val workloadPerfect: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 4000.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
             )
@@ -127,10 +131,10 @@ class FragmentScalingTest {
         assertAll(
             { assertEquals(600000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
             { assertEquals(1200000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
-            { assertEquals(4000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(4000.0, monitorPerfect.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(2000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
-            { assertEquals(2000.0, monitorPerfect.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(4000.0, monitorNoDelay.taskCpuDemands[0]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(4000.0, monitorPerfect.taskCpuDemands[0]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitorNoDelay.taskCpuSupplied[0]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(2000.0, monitorPerfect.taskCpuSupplied[0]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
         )
     }
 
@@ -148,13 +152,14 @@ class FragmentScalingTest {
         val workloadNoDelay: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 1500.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
+                            TraceFragment(10 * 60 * 1000, 4000.0),
+                            TraceFragment(10 * 60 * 1000, 1500.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
             )
@@ -162,13 +167,14 @@ class FragmentScalingTest {
         val workloadPerfect: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 1500.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
+                            TraceFragment(10 * 60 * 1000, 4000.0),
+                            TraceFragment(10 * 60 * 1000, 1500.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
             )
@@ -180,20 +186,20 @@ class FragmentScalingTest {
         assertAll(
             { assertEquals(1800000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
             { assertEquals(2400000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
-            { assertEquals(1000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(1000.0, monitorPerfect.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(1000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
-            { assertEquals(1000.0, monitorPerfect.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
-            { assertEquals(4000.0, monitorNoDelay.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(4000.0, monitorPerfect.taskCpuDemands["0"]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(2000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(9)) { "The cpu supplied to task 0 is incorrect" } },
-            { assertEquals(2000.0, monitorPerfect.taskCpuSupplied["0"]?.get(9)) { "The cpu supplied to task 0 is incorrect" } },
-            { assertEquals(1500.0, monitorNoDelay.taskCpuDemands["0"]?.get(19)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(4000.0, monitorPerfect.taskCpuDemands["0"]?.get(19)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(1500.0, monitorNoDelay.taskCpuSupplied["0"]?.get(19)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(2000.0, monitorPerfect.taskCpuSupplied["0"]?.get(19)) { "The cpu supplied to task 0 is incorrect" } },
-            { assertEquals(1500.0, monitorPerfect.taskCpuDemands["0"]?.get(29)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(1500.0, monitorPerfect.taskCpuSupplied["0"]?.get(29)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(1000.0, monitorNoDelay.taskCpuDemands[0]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitorPerfect.taskCpuDemands[0]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitorNoDelay.taskCpuSupplied[0]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(1000.0, monitorPerfect.taskCpuSupplied[0]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(4000.0, monitorNoDelay.taskCpuDemands[0]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(4000.0, monitorPerfect.taskCpuDemands[0]?.get(9)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitorNoDelay.taskCpuSupplied[0]?.get(9)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(2000.0, monitorPerfect.taskCpuSupplied[0]?.get(9)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(1500.0, monitorNoDelay.taskCpuDemands[0]?.get(19)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(4000.0, monitorPerfect.taskCpuDemands[0]?.get(19)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1500.0, monitorNoDelay.taskCpuSupplied[0]?.get(19)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitorPerfect.taskCpuSupplied[0]?.get(19)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(1500.0, monitorPerfect.taskCpuDemands[0]?.get(29)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1500.0, monitorPerfect.taskCpuSupplied[0]?.get(29)) { "The cpu supplied to task 0 is incorrect" } },
         )
     }
 
@@ -208,19 +214,21 @@ class FragmentScalingTest {
         val workloadNoDelay: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
                 createTestTask(
-                    name = "1",
+                    id = 1,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 3000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 3000.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
             )
@@ -228,19 +236,21 @@ class FragmentScalingTest {
         val workloadPerfect: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
                 createTestTask(
-                    name = "1",
+                    id = 1,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 3000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 3000.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
             )
@@ -252,14 +262,14 @@ class FragmentScalingTest {
         assertAll(
             { assertEquals(600000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
             { assertEquals(600000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
-            { assertEquals(1000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(3000.0, monitorNoDelay.taskCpuDemands["1"]?.get(0)) { "The cpu demanded by task 1 is incorrect" } },
-            { assertEquals(1000.0, monitorPerfect.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(3000.0, monitorPerfect.taskCpuDemands["1"]?.get(0)) { "The cpu demanded by task 1 is incorrect" } },
-            { assertEquals(1000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
-            { assertEquals(3000.0, monitorNoDelay.taskCpuSupplied["1"]?.get(0)) { "The cpu supplied to task 1 is incorrect" } },
-            { assertEquals(1000.0, monitorPerfect.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
-            { assertEquals(3000.0, monitorPerfect.taskCpuSupplied["1"]?.get(0)) { "The cpu supplied to task 1 is incorrect" } },
+            { assertEquals(1000.0, monitorNoDelay.taskCpuDemands[0]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitorNoDelay.taskCpuDemands[1]?.get(0)) { "The cpu demanded by task 1 is incorrect" } },
+            { assertEquals(1000.0, monitorPerfect.taskCpuDemands[0]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(3000.0, monitorPerfect.taskCpuDemands[1]?.get(0)) { "The cpu demanded by task 1 is incorrect" } },
+            { assertEquals(1000.0, monitorNoDelay.taskCpuSupplied[0]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(3000.0, monitorNoDelay.taskCpuSupplied[1]?.get(0)) { "The cpu supplied to task 1 is incorrect" } },
+            { assertEquals(1000.0, monitorPerfect.taskCpuSupplied[0]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
+            { assertEquals(3000.0, monitorPerfect.taskCpuSupplied[1]?.get(0)) { "The cpu supplied to task 1 is incorrect" } },
         )
     }
 
@@ -278,19 +288,21 @@ class FragmentScalingTest {
         val workloadNoDelay: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 2000.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
                 createTestTask(
-                    name = "1",
+                    id = 1,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 4000.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
             )
@@ -298,19 +310,21 @@ class FragmentScalingTest {
         val workloadPerfect: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 2000.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
                 createTestTask(
-                    name = "1",
+                    id = 1,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 4000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 4000.0),
                         ),
+                    cpuCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
             )
@@ -323,15 +337,15 @@ class FragmentScalingTest {
 //            { assertEquals(600000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
 //            { assertEquals(900000, monitorPerfect.maxTimestamp) { "The workload took longer to finish than expected." } },
 //
-//            { assertEquals(1000.0, monitorNoDelay.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-//            { assertEquals(3000.0, monitorNoDelay.taskCpuDemands["1"]?.get(0)) { "The cpu demanded by task 1 is incorrect" } },
-//            { assertEquals(1000.0, monitorPerfect.taskCpuDemands["0"]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
-//            { assertEquals(3000.0, monitorPerfect.taskCpuDemands["1"]?.get(0)) { "The cpu demanded by task 1 is incorrect" } },
+//            { assertEquals(1000.0, monitorNoDelay.taskCpuDemands[0]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
+//            { assertEquals(3000.0, monitorNoDelay.taskCpuDemands[1]?.get(0)) { "The cpu demanded by task 1 is incorrect" } },
+//            { assertEquals(1000.0, monitorPerfect.taskCpuDemands[0]?.get(0)) { "The cpu demanded by task 0 is incorrect" } },
+//            { assertEquals(3000.0, monitorPerfect.taskCpuDemands[1]?.get(0)) { "The cpu demanded by task 1 is incorrect" } },
 //
-//            { assertEquals(1000.0, monitorNoDelay.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
-//            { assertEquals(3000.0, monitorNoDelay.taskCpuSupplied["1"]?.get(0)) { "The cpu supplied to task 1 is incorrect" } },
-//            { assertEquals(1000.0, monitorPerfect.taskCpuSupplied["0"]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
-//            { assertEquals(3000.0, monitorPerfect.taskCpuSupplied["1"]?.get(0)) { "The cpu supplied to task 1 is incorrect" } },
+//            { assertEquals(1000.0, monitorNoDelay.taskCpuSupplied[0]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
+//            { assertEquals(3000.0, monitorNoDelay.taskCpuSupplied[1]?.get(0)) { "The cpu supplied to task 1 is incorrect" } },
+//            { assertEquals(1000.0, monitorPerfect.taskCpuSupplied[0]?.get(0)) { "The cpu supplied to task 0 is incorrect" } },
+//            { assertEquals(3000.0, monitorPerfect.taskCpuSupplied[1]?.get(0)) { "The cpu supplied to task 1 is incorrect" } },
 //        )
     }
 }

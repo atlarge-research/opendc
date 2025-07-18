@@ -66,7 +66,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     private final TraceWorkload snapshot;
 
     private final ScalingPolicy scalingPolicy;
-    private final String taskName;
+    private final int taskId;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
@@ -107,7 +107,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.scalingPolicy = workload.getScalingPolicy();
         this.remainingFragments = new LinkedList<>(workload.getFragments());
         this.fragmentIndex = 0;
-        this.taskName = workload.getTaskName();
+        this.taskId = workload.getTaskId();
 
         this.startOfFragment = this.clock.millis();
 
@@ -135,7 +135,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.scalingPolicy = workload.getScalingPolicy();
         this.remainingFragments = new LinkedList<>(workload.getFragments());
         this.fragmentIndex = 0;
-        this.taskName = workload.getTaskName();
+        this.taskId = workload.getTaskId();
 
         this.startOfFragment = this.clock.millis();
 
@@ -325,9 +325,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         TraceFragment newFragment = new TraceFragment(
                 remainingDuration,
                 currentFragment.cpuUsage(),
-                currentFragment.cpuCoreCount(),
                 currentFragment.gpuUsage(),
-                currentFragment.gpuCoreCount(),
                 currentFragment.gpuMemoryUsage());
 
         // Alter the snapshot by removing finished fragments
@@ -340,9 +338,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         TraceFragment snapshotFragment = new TraceFragment(
                 this.checkpointDuration,
                 this.snapshot.getMaxCpuDemand(),
-                this.snapshot.getMaxCoreCount(),
                 this.snapshot.getMaxGpuDemand(),
-                this.snapshot.getMaxGpuCoreCount(),
                 this.snapshot.getMaxGpuMemoryDemand());
         this.remainingFragments.addFirst(snapshotFragment);
 

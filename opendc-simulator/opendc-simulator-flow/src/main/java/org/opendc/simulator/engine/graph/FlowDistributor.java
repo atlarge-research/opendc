@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * It also provides methods to update outgoing demands and supplies based on the incoming demands and supplies.
  * This class is abstract and should be extended by specific implementations that define the distribution strategy.
  * It uses a {@link FlowDistributorFactory.DistributionPolicy} to determine how to distribute the supply among the consumers.
- * The default distribution policy is {@link MaxMinFairnessPolicy}, which distributes the supply fairly among the consumers.
+ * The default distribution policy is MaxMinFairnessPolicy, which distributes the supply fairly among the consumers.
  */
 public abstract class FlowDistributor extends FlowNode implements FlowSupplier, FlowConsumer {
     protected static final Logger LOGGER = LoggerFactory.getLogger(FlowDistributor.class);
@@ -178,7 +178,9 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         // supplierIndex not always set, so we use 0 as default to avoid index out of bounds
         int idx = supplierEdge.getSupplierIndex() == -1 ? 0 : supplierEdge.getSupplierIndex();
         // to keep index consistent, entries are neutralized instead of removed
-        this.supplierEdges.put(idx, null);
+        //        this.supplierEdges.put(idx, null);
+
+        this.supplierEdges.remove(idx);
         this.capacity -= supplierEdge.getCapacity();
         this.currentIncomingSupplies.put(idx, 0.0);
 

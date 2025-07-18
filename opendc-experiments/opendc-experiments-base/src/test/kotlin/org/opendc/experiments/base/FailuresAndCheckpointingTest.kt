@@ -50,11 +50,12 @@ class FailuresAndCheckpointingTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                 ),
             )
 
@@ -90,11 +91,12 @@ class FailuresAndCheckpointingTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                 ),
             )
 
@@ -133,11 +135,12 @@ class FailuresAndCheckpointingTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                 ),
             )
 
@@ -178,11 +181,12 @@ class FailuresAndCheckpointingTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                 ),
             )
 
@@ -237,11 +241,12 @@ class FailuresAndCheckpointingTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
                 ),
@@ -291,12 +296,13 @@ class FailuresAndCheckpointingTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 2000.0),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
                 ),
@@ -344,12 +350,13 @@ class FailuresAndCheckpointingTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(10 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
+                            TraceFragment(10 * 60 * 1000, 2000.0),
                         ),
+                    cpuCount = 1,
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
                 ),
@@ -393,11 +400,12 @@ class FailuresAndCheckpointingTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
                     checkpointIntervalScaling = 1.5,
@@ -435,11 +443,12 @@ class FailuresAndCheckpointingTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
                 ),
@@ -477,11 +486,12 @@ class FailuresAndCheckpointingTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
                 ),

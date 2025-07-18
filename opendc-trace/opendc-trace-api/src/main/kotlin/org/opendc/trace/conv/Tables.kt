@@ -25,30 +25,21 @@
 package org.opendc.trace.conv
 
 /**
- * A table containing all workflows in a workload.
- */
-public const val TABLE_WORKFLOWS: String = "workflows"
-
-/**
  * A table containing all tasks in a workload.
  */
 public const val TABLE_TASKS: String = "tasks"
 
 /**
- * A table containing all resources in a workload.
- */
-public const val TABLE_RESOURCES: String = "resources"
-
-/**
  * A table containing all resource states in a workload.
  */
-public const val TABLE_RESOURCE_STATES: String = "resource_states"
+public const val TABLE_FRAGMENTS: String = "fragments"
 
 /**
- * A table containing the groups of resources that interfere when run on the same execution platform.
+ * A table containing the carbon intensities of the region
  */
-public const val TABLE_INTERFERENCE_GROUPS: String = "interference_groups"
+public const val TABLE_CARBON: String = "carbon"
 
-public const val TABLE_CARBON_INTENSITIES: String = "carbon_intensities"
-
+/**
+ * A table containing failures that can be injected during simulation.
+ */
 public const val TABLE_FAILURES: String = "failures"

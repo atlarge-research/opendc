@@ -61,10 +61,9 @@ public object DfltTaskExportColumns {
     public val TASK_ID: ExportColumn<TaskTableReader> =
         ExportColumn(
             field =
-                Types.required(BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
+                Types.required(INT32)
                     .named("task_id"),
-        ) { Binary.fromString(it.taskInfo.id) }
+        ) { it.taskInfo.id }
 
     public val TASK_NAME: ExportColumn<TaskTableReader> =
         ExportColumn(

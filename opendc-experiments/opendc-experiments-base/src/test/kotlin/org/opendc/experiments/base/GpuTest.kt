@@ -178,7 +178,6 @@ class GpuTest {
     fun testGpuHostCreationMultiWithMemoryWithVendor() {
         val topology = createTopology("Gpus/multi_gpu_full.json")
         // temporary implementation, to account for GPU concatenation
-        val count = 5
         assertGpuConfiguration(
             topology,
             // cuda cores
@@ -203,18 +202,22 @@ class GpuTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 2000.0),
                         ),
+                    cpuCount = 1,
+                    gpuCount = 1,
                 ),
                 createTestTask(
-                    name = "1",
+                    id = 1,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 2000.0),
                         ),
+                    cpuCount = 1,
+                    gpuCount = 1,
                 ),
             )
         val topology = createTopology("Gpus/multi_gpu_host.json")
@@ -225,15 +228,15 @@ class GpuTest {
             { assertEquals(10 * 60 * 1000, monitor.maxTimestamp) { "The expected runtime is exceeded" } },
             // CPU
             // task 0
-            { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuDemands["0"]?.get(8)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuSupplied["0"]?.get(8)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuDemands[0]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuDemands[0]?.get(8)) { "The cpu demanded by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied[0]?.get(1)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied[0]?.get(8)) { "The cpu used by task 0 is incorrect" } },
             // task 1
-            { assertEquals(1000.0, monitor.taskCpuDemands["1"]?.get(1)) { "The cpu demanded by task 1 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuDemands["1"]?.get(8)) { "The cpu demanded by task 1 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuSupplied["1"]?.get(1)) { "The cpu used by task 1 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuSupplied["1"]?.get(8)) { "The cpu used by task 1 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuDemands[1]?.get(1)) { "The cpu demanded by task 1 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuDemands[1]?.get(8)) { "The cpu demanded by task 1 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied[1]?.get(1)) { "The cpu used by task 1 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied[1]?.get(8)) { "The cpu used by task 1 is incorrect" } },
             // host
             { assertEquals(2000.0, monitor.hostCpuDemands["DualGpuHost"]?.get(1)) { "The cpu demanded by the host is incorrect" } },
             { assertEquals(2000.0, monitor.hostCpuDemands["DualGpuHost"]?.get(9)) { "The cpu demanded by the host is incorrect" } },
@@ -241,15 +244,15 @@ class GpuTest {
             { assertEquals(2000.0, monitor.hostCpuSupplied["DualGpuHost"]?.get(9)) { "The cpu used by the host is incorrect" } },
             // GPU
             // task 0
-            { assertEquals(2000.0, monitor.taskGpuDemands["0"]?.get(1)) { "The gpu demanded by task 0 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuDemands["0"]?.get(8)) { "The gpu demanded by task 0 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuSupplied["0"]?.get(1)) { "The gpu used by task 0 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuSupplied["0"]?.get(8)) { "The gpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuDemands[0]?.get(1)) { "The gpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuDemands[0]?.get(8)) { "The gpu demanded by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuSupplied[0]?.get(1)) { "The gpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuSupplied[0]?.get(8)) { "The gpu used by task 0 is incorrect" } },
             // task 1
-            { assertEquals(2000.0, monitor.taskGpuDemands["1"]?.get(1)) { "The gpu demanded by task 1 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuDemands["1"]?.get(8)) { "The gpu demanded by task 1 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuSupplied["1"]?.get(1)) { "The gpu used by task 1 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuSupplied["1"]?.get(8)) { "The gpu used by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuDemands[1]?.get(1)) { "The gpu demanded by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuDemands[1]?.get(8)) { "The gpu demanded by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuSupplied[1]?.get(1)) { "The gpu used by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuSupplied[1]?.get(8)) { "The gpu used by task 1 is incorrect" } },
             // host
             // GPU 0
             { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0)) { "The gpu demanded by the host is incorrect" } },

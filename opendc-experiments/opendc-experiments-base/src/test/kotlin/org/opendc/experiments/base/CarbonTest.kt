@@ -46,10 +46,10 @@ class CarbonTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(120 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(120 * 60 * 1000, 1000.0),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -93,17 +93,17 @@ class CarbonTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(40 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 2000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 2000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 2000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 1000.0, 1),
-                            TraceFragment(40 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(40 * 60 * 1000, 1000.0),
+                            TraceFragment(40 * 60 * 1000, 2000.0),
+                            TraceFragment(40 * 60 * 1000, 1000.0),
+                            TraceFragment(40 * 60 * 1000, 2000.0),
+                            TraceFragment(40 * 60 * 1000, 1000.0),
+                            TraceFragment(40 * 60 * 1000, 2000.0),
+                            TraceFragment(40 * 60 * 1000, 1000.0),
+                            TraceFragment(40 * 60 * 1000, 2000.0),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -162,10 +162,10 @@ class CarbonTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(60 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(60 * 60 * 1000, 1000.0),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),

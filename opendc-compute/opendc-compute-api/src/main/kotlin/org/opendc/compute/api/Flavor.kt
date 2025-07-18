@@ -45,15 +45,15 @@ public interface Flavor : Resource {
     /**
      * Set of Tasks that need to be finished before this can startAdd commentMore actions
      */
-    public val dependencies: Set<String>
+    public val dependencies: Set<Int>
 
     /**
      * Set of Tasks that need to be finished before this can startAdd commentMore actions
      */
-    public val parents: Set<String>
+    public val parents: Set<Int>
 
     /**
      * Set of Tasks that need to be finished before this can startAdd commentMore actions
      */
-    public val children: Set<String>
+    public val children: Set<Int>
 }

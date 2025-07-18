@@ -141,12 +141,13 @@ public suspend fun ComputeService.replay(
                 launch {
                     val task =
                         client.newTask(
+                            entry.id,
                             entry.name,
                             nature,
                             Duration.ofMillis(entry.duration),
                             entry.deadline,
                             client.newFlavor(
-                                entry.name,
+                                entry.id,
                                 entry.cpuCount,
                                 entry.memCapacity,
                                 entry.gpuCount,

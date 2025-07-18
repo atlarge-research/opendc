@@ -24,7 +24,6 @@ package org.opendc.compute.simulator.scheduler.filters
 
 import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
-import java.util.UUID
 
 /**
  * A [HostFilter] that ensures an instance is scheduled on a different host from a set of instances.
@@ -35,7 +34,7 @@ public class DifferentHostFilter : HostFilter {
         task: ServiceTask,
     ): Boolean {
         @Suppress("UNCHECKED_CAST")
-        val affinityUUIDs = task.meta["scheduler_hint:different_host"] as? Set<UUID> ?: return true
-        return host.host.getInstances().none { it.uid in affinityUUIDs }
+        val affinityIDs = task.meta["scheduler_hint:different_host"] as? Set<Int> ?: return true
+        return host.host.getInstances().none { it.id in affinityIDs }
     }
 }

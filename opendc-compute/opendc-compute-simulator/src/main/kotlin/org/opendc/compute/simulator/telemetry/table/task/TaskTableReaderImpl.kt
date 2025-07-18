@@ -89,7 +89,7 @@ public class TaskTableReaderImpl(
      */
     override val taskInfo: TaskInfo =
         TaskInfo(
-            task.uid.toString(),
+            task.id,
             task.name,
             "vm",
             "x86",

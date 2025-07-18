@@ -24,15 +24,9 @@ package org.opendc.trace.spi
 
 import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
-import org.opendc.trace.azure.AzureTraceFormat
-import org.opendc.trace.bitbrains.BitbrainsTraceFormat
 import org.opendc.trace.formats.carbon.CarbonTraceFormat
 import org.opendc.trace.formats.failure.FailureTraceFormat
-import org.opendc.trace.formats.opendc.OdcVmTraceFormat
-import org.opendc.trace.gwf.GwfTraceFormat
-import org.opendc.trace.swf.SwfTraceFormat
-import org.opendc.trace.wfformat.WfFormatTraceFormat
-import org.opendc.trace.wtf.WtfTraceFormat
+import org.opendc.trace.formats.workload.WorkloadTraceFormat
 import java.nio.file.Path
 import java.util.ServiceLoader
 
@@ -122,15 +116,9 @@ public interface TraceFormat {
         @JvmStatic
         public fun byName(name: String): TraceFormat? {
             return when (name) {
-                "azure" -> AzureTraceFormat()
-                "bitbrains" -> BitbrainsTraceFormat()
                 "carbon" -> CarbonTraceFormat()
                 "failure" -> FailureTraceFormat()
-                "gwf" -> GwfTraceFormat()
-                "opendc-vm" -> OdcVmTraceFormat()
-                "swf" -> SwfTraceFormat()
-                "wfformat" -> WfFormatTraceFormat()
-                "wtf" -> WtfTraceFormat()
+                "workload" -> WorkloadTraceFormat()
                 else -> null
             }
         }

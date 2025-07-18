@@ -23,9 +23,9 @@
 package org.opendc.trace.formats.carbon
 
 import org.opendc.trace.TableReader
-import org.opendc.trace.conv.CARBON_INTENSITY_TIMESTAMP
-import org.opendc.trace.conv.CARBON_INTENSITY_VALUE
-import org.opendc.trace.formats.carbon.parquet.CarbonIntensityFragment
+import org.opendc.trace.conv.CARBON_INTENSITY
+import org.opendc.trace.conv.CARBON_TIMESTAMP
+import org.opendc.trace.formats.carbon.parquet.CarbonFragment
 import org.opendc.trace.util.parquet.LocalParquetReader
 import java.time.Duration
 import java.time.Instant
@@ -34,11 +34,11 @@ import java.util.UUID
 /**
  * A [TableReader] implementation for the WTF format.
  */
-internal class CarbonTableReader(private val reader: LocalParquetReader<CarbonIntensityFragment>) : TableReader {
+internal class CarbonTableReader(private val reader: LocalParquetReader<CarbonFragment>) : TableReader {
     /**
      * The current record.
      */
-    private var record: CarbonIntensityFragment? = null
+    private var record: CarbonFragment? = null
 
     override fun nextRow(): Boolean {
         try {
@@ -57,8 +57,8 @@ internal class CarbonTableReader(private val reader: LocalParquetReader<CarbonIn
 
     override fun resolve(name: String): Int {
         return when (name) {
-            CARBON_INTENSITY_TIMESTAMP -> colTimestamp
-            CARBON_INTENSITY_VALUE -> colCarbonIntensity
+            CARBON_TIMESTAMP -> colTimestamp
+            CARBON_INTENSITY -> colCarbonIntensity
             else -> -1
         }
     }

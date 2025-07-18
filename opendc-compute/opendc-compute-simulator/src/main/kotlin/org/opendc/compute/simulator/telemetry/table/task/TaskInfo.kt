@@ -26,7 +26,7 @@ package org.opendc.compute.simulator.telemetry.table.task
  * Static information about a task exposed to the telemetry service.
  */
 public data class TaskInfo(
-    val id: String,
+    val id: Int,
     val name: String,
     val type: String,
     val arch: String,

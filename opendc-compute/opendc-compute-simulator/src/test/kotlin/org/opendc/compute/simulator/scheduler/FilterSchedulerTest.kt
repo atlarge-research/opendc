@@ -44,7 +44,6 @@ import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher
 import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 import java.util.Random
-import java.util.UUID
 
 /**
  * Test suite for the [FilterScheduler].
@@ -362,7 +361,7 @@ internal class FilterSchedulerTest {
         every { reqA.task.flavor.memorySize } returns 1024
         every { reqA.isCancelled } returns false
         val taskA = mockk<ServiceTask>()
-        every { taskA.uid } returns UUID.randomUUID()
+        every { taskA.id } returns Random().nextInt(1, Int.MAX_VALUE)
         every { reqA.task } returns taskA
 
         val hostA = mockk<HostView>()
@@ -388,7 +387,7 @@ internal class FilterSchedulerTest {
 
         assertEquals(hostA, scheduler.select(mutableListOf(reqB).iterator()).host)
 
-        every { reqB.task.meta } returns mapOf("scheduler_hint:same_host" to setOf(reqA.task.uid))
+        every { reqB.task.meta } returns mapOf("scheduler_hint:same_host" to setOf(reqA.task.id))
 
         assertEquals(hostB, scheduler.select(mutableListOf(reqB).iterator()).host)
     }
@@ -406,7 +405,7 @@ internal class FilterSchedulerTest {
         every { reqA.task.flavor.memorySize } returns 1024
         every { reqA.isCancelled } returns false
         val taskA = mockk<ServiceTask>()
-        every { taskA.uid } returns UUID.randomUUID()
+        every { taskA.id } returns Random().nextInt(1, Int.MAX_VALUE)
         every { reqA.task } returns taskA
 
         val hostA = mockk<HostView>()
@@ -432,7 +431,7 @@ internal class FilterSchedulerTest {
 
         assertEquals(hostA, scheduler.select(mutableListOf(reqB).iterator()).host)
 
-        every { reqB.task.meta } returns mapOf("scheduler_hint:different_host" to setOf(taskA.uid))
+        every { reqB.task.meta } returns mapOf("scheduler_hint:different_host" to setOf(taskA.id))
 
         assertEquals(hostB, scheduler.select(mutableListOf(reqB).iterator()).host)
     }

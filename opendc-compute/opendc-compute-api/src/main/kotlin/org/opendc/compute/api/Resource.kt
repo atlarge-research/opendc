@@ -22,21 +22,14 @@
 
 package org.opendc.compute.api
 
-import java.util.UUID
-
 /**
  * A generic resource provided by the OpenDC Compute service.
  */
 public interface Resource {
     /**
-     * The unique identifier of the resource.
-     */
-    public val uid: UUID
-
-    /**
      * The name of the resource.
      */
-    public val name: String
+    public val taskId: Int
 
     /**
      * The non-identifying metadata attached to the resource.

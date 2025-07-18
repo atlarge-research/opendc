@@ -27,14 +27,13 @@ import org.apache.parquet.hadoop.api.InitContext
 import org.apache.parquet.hadoop.api.ReadSupport
 import org.apache.parquet.io.api.RecordMaterializer
 import org.apache.parquet.schema.MessageType
-import org.apache.parquet.schema.PrimitiveType
 import org.apache.parquet.schema.Types
 import org.opendc.trace.conv.FAILURE_DURATION
 import org.opendc.trace.conv.FAILURE_INTENSITY
 import org.opendc.trace.conv.FAILURE_INTERVAL
 
 /**
- * A [ReadSupport] instance for [Task] objects.
+ * A [ReadSupport] instance for [FailureFragment] objects.
  *
  * @param projection The projection of the table to read.
  */
@@ -54,16 +53,16 @@ internal class FailureReadSupport(private val projection: List<String>?) : ReadS
             if (projection != null) {
                 Types.buildMessage()
                     .apply {
-                        val fieldByName = READ_SCHEMA.fields.associateBy { it.name }
+                        val fieldByName = FAILURE_SCHEMA.fields.associateBy { it.name }
 
                         for (col in projection) {
                             val fieldName = colMap[col] ?: continue
                             addField(fieldByName.getValue(fieldName))
                         }
                     }
-                    .named(READ_SCHEMA.name)
+                    .named(FAILURE_SCHEMA.name)
             } else {
-                READ_SCHEMA
+                FAILURE_SCHEMA
             }
         return ReadContext(projectedSchema)
     }
@@ -74,25 +73,4 @@ internal class FailureReadSupport(private val projection: List<String>?) : ReadS
         fileSchema: MessageType,
         readContext: ReadContext,
     ): RecordMaterializer<FailureFragment> = FailureRecordMaterializer(readContext.requestedSchema)
-
-    companion object {
-        /**
-         * Parquet read schema for the "tasks" table in the trace.
-         */
-        @JvmStatic
-        val READ_SCHEMA: MessageType =
-            Types.buildMessage()
-                .addFields(
-                    Types
-                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                        .named("failure_interval"),
-                    Types
-                        .optional(PrimitiveType.PrimitiveTypeName.INT64)
-                        .named("failure_duration"),
-                    Types
-                        .optional(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                        .named("failure_intensity"),
-                )
-                .named("failure_fragment")
-    }
 }

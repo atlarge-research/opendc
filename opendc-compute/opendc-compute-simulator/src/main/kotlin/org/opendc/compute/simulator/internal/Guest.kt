@@ -73,7 +73,7 @@ public class Guest(
     public fun start() {
         when (state) {
             TaskState.CREATED, TaskState.FAILED, TaskState.PAUSED -> {
-                LOGGER.info { "User requested to start task ${task.uid}" }
+                LOGGER.info { "User requested to start task ${task.id}" }
                 doStart()
             }
             TaskState.RUNNING -> return

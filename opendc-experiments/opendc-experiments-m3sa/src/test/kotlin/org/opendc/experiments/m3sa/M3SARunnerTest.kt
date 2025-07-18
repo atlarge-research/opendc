@@ -31,7 +31,7 @@ import java.io.File
 class M3SARunnerTest {
     @Test
     fun `Run M3SA-OpenDC full integration 1`() {
-        val scenarioJson = "src/test/resources/scenarios/experiment1/scenario_metamodel.json"
+        val experimentJson = "src/test/resources/scenarios/experiment1/scenario_metamodel.json"
         val outDir = "src/test/resources/outputs/"
         val m3saPath = "src/test/resources/m3saSetups/experiment1/m3saSetup.json"
         val m3saExecPath = "src/main/python"
@@ -39,7 +39,7 @@ class M3SARunnerTest {
 
         assertDoesNotThrow {
             main(
-                arrayOf("--experiment-path", scenarioJson, "--m3sa-setup-path", m3saPath, "--m3sa-exec-path", m3saExecPath),
+                arrayOf("--experiment-path", experimentJson, "--m3sa-setup-path", m3saPath, "--m3sa-exec-path", m3saExecPath),
             )
         }
 

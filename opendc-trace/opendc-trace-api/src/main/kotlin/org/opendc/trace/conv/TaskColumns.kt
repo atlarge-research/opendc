@@ -25,61 +25,71 @@
 package org.opendc.trace.conv
 
 /**
- * A column containing the task identifier.
+ * Identifier of the task.
  */
 public const val TASK_ID: String = "id"
 
 /**
- * A column containing the identifier of the workflow.
+ * Identifier of the task.
  */
-public const val TASK_WORKFLOW_ID: String = "workflow_id"
+public const val TASK_NAME: String = "name"
 
 /**
- * A column containing the submission time of the task.
+ * The time of submission of the task.
  */
-public const val TASK_SUBMIT_TIME: String = "submit_time"
+public const val TASK_SUBMISSION_TIME: String = "submission_time"
 
 /**
- * A column containing the wait time of the task.
+ * The duration of a task in ms
  */
-public const val TASK_WAIT_TIME: String = "wait_time"
+public const val TASK_DURATION: String = "duration"
 
 /**
- * A column containing the runtime time of the task.
+ * Number of CPUs for the task.
  */
-public const val TASK_RUNTIME: String = "runtime"
+public const val TASK_CPU_COUNT: String = "cpu_count"
 
 /**
- * A column containing the parents of a task.
+ * Total CPU capacity of the task in MHz.
+ */
+public const val TASK_CPU_CAPACITY: String = "cpu_capacity"
+
+/**
+ * Memory capacity for the task in KB.
+ */
+public const val TASK_MEM_CAPACITY: String = "mem_capacity"
+
+/**
+ * Number of GPU cores for the task.
+ */
+public const val TASK_GPU_COUNT: String = "gpu_count"
+
+/**
+ * Total GPU capacity of the task in MHz.
+ */
+public const val TASK_GPU_CAPACITY: String = "gpu_capacity"
+
+/**
+ * Total GPU memory capacity of the task in MB.
+ */
+public const val TASK_GPU_MEM_CAPACITY: String = "gpu_mem_capacity"
+
+/**
+ * The parents of the task that need to be completed before this task can be used.
  */
 public const val TASK_PARENTS: String = "parents"
 
 /**
- * A column containing the children of a task.
+ * The children of the task that cannot be started before this is completed.
  */
 public const val TASK_CHILDREN: String = "children"
 
 /**
- * A column containing the requested CPUs of a task.
+ * Nature of the task. Delayable, interruptible, etc.
  */
-public const val TASK_REQ_NCPUS: String = "req_ncpus"
+public const val TASK_NATURE: String = "nature"
 
 /**
- * A column containing the allocated CPUs of a task.
+ * Deadline of the task.
  */
-public const val TASK_ALLOC_NCPUS: String = "alloc_ncpus"
-
-/**
- * A column containing the status of a task.
- */
-public const val TASK_STATUS: String = "status"
-
-/**
- * A column containing the group id of a task.
- */
-public const val TASK_GROUP_ID: String = "group_id"
-
-/**
- * A column containing the user id of a task.
- */
-public const val TASK_USER_ID: String = "user_id"
+public const val TASK_DEADLINE: String = "deadline"

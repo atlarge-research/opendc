@@ -42,10 +42,10 @@ class BatteryTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -68,10 +68,10 @@ class BatteryTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -95,10 +95,10 @@ class BatteryTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(20 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(20 * 60 * 1000, 1000.0),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -123,10 +123,10 @@ class BatteryTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(30 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(30 * 60 * 1000, 1000.0),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -150,10 +150,10 @@ class BatteryTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(30 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(30 * 60 * 1000, 1000.0),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -193,9 +193,9 @@ class BatteryTest {
                 repeat(numTasks) {
                     this.add(
                         createTestTask(
-                            name = "0",
+                            id = 0,
                             fragments =
-                                arrayListOf(TraceFragment(10 * 60 * 1000, 1000.0, 1)),
+                                arrayListOf(TraceFragment(10 * 60 * 1000, 1000.0)),
                             submissionTime = "2022-01-01T00:00",
                         ),
                     )
@@ -218,10 +218,10 @@ class BatteryTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
                     submissionTime = "2022-01-01T00:00",
                 ),
@@ -251,10 +251,10 @@ class BatteryTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
