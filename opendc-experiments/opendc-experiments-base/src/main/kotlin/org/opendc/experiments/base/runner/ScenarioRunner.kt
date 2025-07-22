@@ -167,12 +167,12 @@ public fun runScenario(
                 }
             }
 
-//            service.replay(
-//                timeSource,
-//                workload,
-//                failureModelSpec = scenario.failureModelSpec,
-//                seed = seed,
-//            )
+            service.replay(
+                timeSource,
+                workload,
+                failureModelSpec = scenario.failureModelSpec,
+                seed = seed,
+            )
         }
     }
 
