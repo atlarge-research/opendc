@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.opendc.compute.api.TaskState;
@@ -47,7 +46,7 @@ public class ServiceTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceTask.class);
 
     private final ComputeService service;
-    private final UUID uid;
+    private final int id;
 
     private final String name;
     private final TaskNature nature;
@@ -73,7 +72,7 @@ public class ServiceTask {
 
     ServiceTask(
             ComputeService service,
-            UUID uid,
+            int id,
             String name,
             TaskNature nature,
             Duration duration,
@@ -82,7 +81,7 @@ public class ServiceTask {
             Workload workload,
             Map<String, ?> meta) {
         this.service = service;
-        this.uid = uid;
+        this.id = id;
         this.name = name;
         this.nature = nature;
         this.duration = duration;
@@ -94,9 +93,8 @@ public class ServiceTask {
         this.submittedAt = this.service.getClock().instant();
     }
 
-    @NotNull
-    public UUID getUid() {
-        return uid;
+    public int getId() {
+        return id;
     }
 
     @NotNull
@@ -191,18 +189,18 @@ public class ServiceTask {
                 LOGGER.warn("User tried to start deleted task");
                 throw new IllegalStateException("Task is deleted");
             case CREATED:
-                LOGGER.info("User requested to start task {}", uid);
+                LOGGER.info("User requested to start task {}", id);
                 setState(TaskState.PROVISIONING);
                 assert request == null : "Scheduling request already active";
                 request = service.schedule(this);
                 break;
             case PAUSED:
-                LOGGER.info("User requested to start task after pause {}", uid);
+                LOGGER.info("User requested to start task after pause {}", id);
                 setState(TaskState.PROVISIONING);
                 request = service.schedule(this, true);
                 break;
             case FAILED:
-                LOGGER.info("User requested to start task after failure {}", uid);
+                LOGGER.info("User requested to start task after failure {}", id);
                 setState(TaskState.PROVISIONING);
                 request = service.schedule(this, true);
                 break;
@@ -235,15 +233,15 @@ public class ServiceTask {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ServiceTask task = (ServiceTask) o;
-        return service.equals(task.service) && uid.equals(task.uid);
+        return service.equals(task.service) && id == task.id;
     }
 
     public int hashCode() {
-        return Objects.hash(service, uid);
+        return Objects.hash(service, id);
     }
 
     public String toString() {
-        return "Task[uid=" + uid + ",name=" + name + ",state=" + state + "]";
+        return "Task[uid=" + id + ",name=" + name + ",state=" + state + "]";
     }
 
     void setState(TaskState newState) {

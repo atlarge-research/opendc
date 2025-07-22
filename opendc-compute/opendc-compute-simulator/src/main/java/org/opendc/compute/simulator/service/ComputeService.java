@@ -34,14 +34,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SplittableRandom;
-import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.opendc.common.Dispatcher;
 import org.opendc.common.util.Pacer;
 import org.opendc.compute.api.Flavor;
-import org.opendc.compute.api.Image;
 import org.opendc.compute.api.TaskState;
 import org.opendc.compute.simulator.host.HostListener;
 import org.opendc.compute.simulator.host.HostModel;
@@ -82,11 +79,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      */
     private final Pacer pacer;
 
-    /**
-     * The {@link SplittableRandom} used to generate the unique identifiers for the service resources.
-     */
-    private final SplittableRandom random = new SplittableRandom(0);
-
     private final int maxNumFailures;
 
     /**
@@ -126,31 +118,21 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      */
     private final Map<ServiceTask, SimHost> activeTasks = new HashMap<>();
 
-    /**
-     * The active tasks in the system.
-     */
-    private final List<String> completedTasks = new ArrayList<>();
+    private final List<Integer> completedTasks = new ArrayList<>();
 
-    private final List<String> terminatedTasks = new ArrayList<>();
+    private final List<Integer> terminatedTasks = new ArrayList<>();
 
     /**
      * The registered flavors for this compute service.
      */
-    private final Map<UUID, ServiceFlavor> flavorById = new HashMap<>();
+    private final Map<Integer, ServiceFlavor> flavorById = new HashMap<>();
 
     private final List<ServiceFlavor> flavors = new ArrayList<>();
 
     /**
-     * The registered images for this compute service.
-     */
-    private final Map<UUID, ServiceImage> imageById = new HashMap<>();
-
-    private final List<ServiceImage> images = new ArrayList<>();
-
-    /**
      * The registered tasks for this compute service.
      */
-    private final Map<UUID, ServiceTask> taskById = new HashMap<>();
+    private final Map<Integer, ServiceTask> taskById = new HashMap<>();
 
     private final List<ServiceTask> tasksToRemove = new ArrayList<>();
 
@@ -192,7 +174,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                     || newState == TaskState.PAUSED
                     || newState == TaskState.TERMINATED
                     || newState == TaskState.FAILED) {
-                LOGGER.info("task {} {} {} finished", task.getUid(), task.getName(), task.getFlavor());
+                LOGGER.info("task {} {} {} finished", task.getId(), task.getName(), task.getFlavor());
 
                 if (activeTasks.remove(task) != null) {
                     tasksActive--;
@@ -272,7 +254,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     /**
      * Return the {@link ServiceTask}s hosted by this service.
      */
-    public Map<UUID, ServiceTask> getTasks() {
+    public Map<Integer, ServiceTask> getTasks() {
         return taskById;
     }
 
@@ -419,11 +401,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     SchedulingRequest schedule(ServiceTask task, boolean atFront) {
-        LOGGER.debug("Enqueueing task {} to be assigned to host", task.getUid());
+        LOGGER.debug("Enqueueing task {} to be assigned to host", task.getId());
 
         if (task.getNumFailures() >= maxNumFailures) {
-            LOGGER.warn("task {} has been terminated because it failed {} times", (Object) task, (Object)
-                    task.getNumFailures());
+            LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
 
             tasksTerminated++;
             task.setState(TaskState.TERMINATED);
@@ -436,8 +417,8 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         SchedulingRequest request = new SchedulingRequest(task, now);
 
         ServiceFlavor flavor = task.getFlavor();
-        for (String taskName : this.terminatedTasks) {
-            if (flavor.isInDependencies(taskName)) {
+        for (int taskId : this.terminatedTasks) {
+            if (flavor.isInDependencies(taskId)) {
                 // Terminate task
                 task.setState(TaskState.TERMINATED);
             }
@@ -447,10 +428,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         flavor.updatePendingDependencies(this.completedTasks);
 
         // If there are still pending dependencies, we cannot schedule the task yet
-        Set<String> pendingDependencies = flavor.getDependencies();
+        Set<Integer> pendingDependencies = flavor.getDependencies();
         if (!pendingDependencies.isEmpty()) {
             // If the task has pending dependencies, we cannot schedule it yet
-            LOGGER.debug("Task {} has pending dependencies: {}", task.getUid(), pendingDependencies);
+            LOGGER.debug("Task {} has pending dependencies: {}", task.getId(), pendingDependencies);
             blockedTasks.add(request);
             return null;
         }
@@ -466,18 +447,18 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     void addCompletedTask(ServiceTask task) {
-        String taskName = task.getName();
+        int taskId = task.getId();
 
-        if (!this.completedTasks.contains(taskName)) {
-            this.completedTasks.add(taskName);
+        if (!this.completedTasks.contains(taskId)) {
+            this.completedTasks.add(taskId);
         }
 
         List<SchedulingRequest> requestsToRemove = new ArrayList<>();
 
         for (SchedulingRequest request : blockedTasks) {
-            request.getTask().getFlavor().updatePendingDependencies(taskName);
+            request.getTask().getFlavor().updatePendingDependencies(taskId);
 
-            Set<String> pendingDependencies = request.getTask().getFlavor().getDependencies();
+            Set<Integer> pendingDependencies = request.getTask().getFlavor().getDependencies();
 
             if (pendingDependencies.isEmpty()) {
                 requestsToRemove.add(request);
@@ -492,16 +473,16 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     void addTerminatedTask(ServiceTask task) {
-        String taskName = task.getName();
+        int taskId = task.getId();
 
         List<SchedulingRequest> requestsToRemove = new ArrayList<>();
 
-        if (!this.terminatedTasks.contains(taskName)) {
-            this.terminatedTasks.add(taskName);
+        if (!this.terminatedTasks.contains(taskId)) {
+            this.terminatedTasks.add(taskId);
         }
 
         for (SchedulingRequest request : blockedTasks) {
-            if (request.getTask().getFlavor().isInDependencies(taskName)) {
+            if (request.getTask().getFlavor().isInDependencies(taskId)) {
                 requestsToRemove.add(request);
                 request.getTask().setState(TaskState.TERMINATED);
             }
@@ -513,18 +494,13 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     void delete(ServiceFlavor flavor) {
-        flavorById.remove(flavor.getUid());
+        flavorById.remove(flavor.getTaskId());
         flavors.remove(flavor);
-    }
-
-    void delete(ServiceImage image) {
-        imageById.remove(image.getUid());
-        images.remove(image);
     }
 
     void delete(ServiceTask task) {
         completedTasks.remove(task);
-        taskById.remove(task.getUid());
+        taskById.remove(task.getId());
     }
 
     public void updateCarbonIntensity(double newCarbonIntensity) {
@@ -675,68 +651,25 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             return new ArrayList<>(service.flavors);
         }
 
-        public Flavor findFlavor(@NotNull UUID id) {
-            checkOpen();
-
-            return service.flavorById.get(id);
-        }
-
         @NotNull
         public ServiceFlavor newFlavor(
-                @NotNull String name,
+                int taskId,
                 int cpuCount,
                 long memorySize,
                 int gpuCoreCount,
-                @NotNull Set<String> parents,
-                @NotNull Set<String> children,
+                @NotNull Set<Integer> parents,
+                @NotNull Set<Integer> children,
                 @NotNull Map<String, ?> meta) {
             checkOpen();
 
             final ComputeService service = this.service;
-            UUID uid = new UUID(service.clock.millis(), service.random.nextLong());
-            ServiceFlavor flavor =
-                    new ServiceFlavor(service, uid, name, cpuCount, memorySize, gpuCoreCount, parents, children, meta);
 
-            //            service.flavorById.put(uid, flavor);
-            //            service.flavors.add(flavor);
-
-            return flavor;
-        }
-
-        @NotNull
-        public List<Image> queryImages() {
-            checkOpen();
-
-            return new ArrayList<>(service.images);
-        }
-
-        public Image findImage(@NotNull UUID id) {
-            checkOpen();
-
-            return service.imageById.get(id);
-        }
-
-        public Image newImage(@NotNull String name) {
-            return newImage(name, Collections.emptyMap(), Collections.emptyMap());
-        }
-
-        @NotNull
-        public Image newImage(@NotNull String name, @NotNull Map<String, String> labels, @NotNull Map<String, ?> meta) {
-            checkOpen();
-
-            final ComputeService service = this.service;
-            UUID uid = new UUID(service.clock.millis(), service.random.nextLong());
-
-            ServiceImage image = new ServiceImage(service, uid, name, labels, meta);
-
-            service.imageById.put(uid, image);
-            service.images.add(image);
-
-            return image;
+            return new ServiceFlavor(service, taskId, cpuCount, memorySize, gpuCoreCount, parents, children, meta);
         }
 
         @NotNull
         public ServiceTask newTask(
+                int id,
                 @NotNull String name,
                 @NotNull TaskNature nature,
                 @NotNull Duration duration,
@@ -747,15 +680,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             checkOpen();
 
             final ComputeService service = this.service;
-            UUID uid = new UUID(service.clock.millis(), service.random.nextLong());
 
-            //            final ServiceFlavor internalFlavor =
-            //                    Objects.requireNonNull(service.flavorById.get(flavor.getUid()), "Unknown flavor");
-            //            ServiceTask task = new ServiceTask(service, uid, name, internalFlavor, workload, meta);
+            ServiceTask task = new ServiceTask(service, id, name, nature, duration, deadline, flavor, workload, meta);
 
-            ServiceTask task = new ServiceTask(service, uid, name, nature, duration, deadline, flavor, workload, meta);
-
-            service.taskById.put(uid, task);
+            service.taskById.put(id, task);
 
             service.tasksTotal++;
 
@@ -765,7 +693,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         }
 
         @Nullable
-        public ServiceTask findTask(@NotNull UUID id) {
+        public ServiceTask findTask(int id) {
             checkOpen();
             return service.taskById.get(id);
         }
@@ -781,7 +709,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
         @Nullable
         public void rescheduleTask(@NotNull ServiceTask task, @NotNull Workload workload) {
-            ServiceTask internalTask = findTask(task.getUid());
+            ServiceTask internalTask = findTask(task.getId());
             //            SimHost from = service.lookupHost(internalTask);
 
             //            from.delete(internalTask);

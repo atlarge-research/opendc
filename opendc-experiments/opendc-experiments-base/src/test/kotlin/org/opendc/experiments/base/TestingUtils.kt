@@ -52,7 +52,6 @@ import org.opendc.simulator.kotlin.runSimulation
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.util.UUID
 import kotlin.collections.ArrayList
 
 /**
@@ -64,10 +63,13 @@ fun createTopology(name: String): List<ClusterSpec> {
 }
 
 fun createTestTask(
-    name: String,
+    id: Int,
+    name: String = "",
     memCapacity: Long = 0L,
     submissionTime: String = "1970-01-01T00:00",
     duration: Long = 0L,
+    cpuCount: Int = 1,
+    gpuCount: Int = 0,
     fragments: ArrayList<TraceFragment>,
     checkpointInterval: Long = 0L,
     checkpointDuration: Long = 0L,
@@ -83,19 +85,19 @@ fun createTestTask(
     }
 
     return Task(
-        UUID.nameUUIDFromBytes(name.toByteArray()),
+        id,
         name,
         LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli(),
         duration,
         emptySet(),
         emptySet(),
-        fragments.maxOf { it.cpuCoreCount() },
+        cpuCount,
         fragments.maxOf { it.cpuUsage },
         1800000.0,
         memCapacity,
-        gpuCount = fragments.maxOfOrNull { it.gpuCoreCount() } ?: 0,
+        gpuCount = gpuCount,
         gpuCapacity = fragments.maxOfOrNull { it.gpuUsage } ?: 0.0,
-        gpuMemCapacity = fragments.maxOfOrNull { it.gpuMemoryUsage } ?: 0L,
+        gpuMemCapacity = 0L,
         "",
         -1,
         TraceWorkload(
@@ -104,7 +106,7 @@ fun createTestTask(
             checkpointDuration,
             checkpointIntervalScaling,
             scalingPolicy,
-            name,
+            id,
             usedResources,
         ),
     )
@@ -147,13 +149,13 @@ fun runTest(
 }
 
 class TestComputeMonitor : ComputeMonitor {
-    var taskCpuDemands = mutableMapOf<String, ArrayList<Double>>()
-    var taskCpuSupplied = mutableMapOf<String, ArrayList<Double>>()
-    var taskGpuDemands = mutableMapOf<String, ArrayList<Double?>?>()
-    var taskGpuSupplied = mutableMapOf<String, ArrayList<Double?>?>()
+    var taskCpuDemands = mutableMapOf<Int, ArrayList<Double>>()
+    var taskCpuSupplied = mutableMapOf<Int, ArrayList<Double>>()
+    var taskGpuDemands = mutableMapOf<Int, ArrayList<Double?>?>()
+    var taskGpuSupplied = mutableMapOf<Int, ArrayList<Double?>?>()
 
     override fun record(reader: TaskTableReader) {
-        val taskName: String = reader.taskInfo.name
+        val taskName: Int = reader.taskInfo.id
 
         if (taskName in taskCpuDemands) {
             taskCpuDemands[taskName]?.add(reader.cpuDemand)

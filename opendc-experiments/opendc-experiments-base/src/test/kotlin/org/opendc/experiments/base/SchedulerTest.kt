@@ -43,18 +43,20 @@ class SchedulerTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
+                    cpuCount = 1,
                 ),
                 createTestTask(
-                    name = "1",
+                    id = 1,
                     fragments =
                         arrayListOf(
-                            TraceFragment(5 * 60 * 1000, 2000.0, 1),
+                            TraceFragment(5 * 60 * 1000, 2000.0),
                         ),
+                    cpuCount = 1,
                     submissionTime = "1970-01-01T00:20",
                 ),
             )
@@ -92,18 +94,22 @@ class SchedulerTest {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 2000.0),
                         ),
+                    cpuCount = 1,
+                    gpuCount = 1,
                 ),
                 createTestTask(
-                    name = "1",
+                    id = 1,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 2000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 2000.0),
                         ),
+                    cpuCount = 1,
+                    gpuCount = 1,
                     submissionTime = "1970-01-01T00:20",
                 ),
             )

@@ -44,12 +44,8 @@ public class MaxMinFairnessFlowDistributor extends FlowDistributor {
     }
 
     protected void updateOutgoingDemand() {
-        // equally distribute the demand to all suppliers
         for (FlowEdge supplierEdge : this.supplierEdges.values()) {
             this.pushOutgoingDemand(supplierEdge, this.totalIncomingDemand / this.supplierEdges.size());
-            // alternatively a relative share could be used, based on capacity minus current incoming supply
-            //            this.pushOutgoingDemand(supplierEdge, this.totalIncomingDemand * (supplierEdge.getCapacity() -
-            // currentIncomingSupplies.get(idx) / supplierEdges.size()));
         }
 
         this.outgoingDemandUpdateNeeded = false;

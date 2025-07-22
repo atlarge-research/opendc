@@ -117,17 +117,19 @@ class VirtualizationOverheadTests {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
+                    cpuCount = 1,
+                    gpuCount = 1,
                 ),
             )
 
         val monitor = runTest(topology, workload)
-        assertEquals(1000.0, monitor.taskGpuDemands["0"]?.get(1), "Task 0 should have gpu demand 1000.0")
-        assertEquals(1000.0, monitor.taskGpuSupplied["0"]?.get(1), "Task 0 should have gpu supplied 1000.0 ")
+        assertEquals(1000.0, monitor.taskGpuDemands[0]?.get(1), "Task 0 should have gpu demand 1000.0")
+        assertEquals(1000.0, monitor.taskGpuSupplied[0]?.get(1), "Task 0 should have gpu supplied 1000.0 ")
         assertEquals(1000.0, monitor.hostGpuDemands["H01"]?.get(1)?.get(0), "Host H01 should have gpu demand 1000.0")
         assertEquals(1000.0, monitor.hostGpuSupplied["H01"]?.get(1)?.get(0), "Host H01 should have gpu supply 1000.0")
     }
@@ -141,18 +143,20 @@ class VirtualizationOverheadTests {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
+                    cpuCount = 1,
+                    gpuCount = 1,
                 ),
             )
 
         val monitor = runTest(topology, workload)
         assertAll(
-            { assertEquals(1000.0, monitor.taskGpuDemands["0"]?.get(1), "Task 0 should have gpu demand 1000.0") },
-            { assertEquals(0.95 * 1000.0, monitor.taskGpuSupplied["0"]?.get(1), "Task 0 should have gpu supplied 950.0 ") },
+            { assertEquals(1000.0, monitor.taskGpuDemands[0]?.get(1), "Task 0 should have gpu demand 1000.0") },
+            { assertEquals(0.95 * 1000.0, monitor.taskGpuSupplied[0]?.get(1), "Task 0 should have gpu supplied 950.0 ") },
             { assertEquals(1000.0, monitor.hostGpuDemands["H01"]?.get(1)?.get(0), "Host H01 should have gpu demand 1000.0") },
             { assertEquals(0.95 * 1000.0, monitor.hostGpuSupplied["H01"]?.get(1)?.get(0), "Host H01 should have gpu supply 950.0") },
         )
@@ -167,18 +171,20 @@ class VirtualizationOverheadTests {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
+                    cpuCount = 1,
+                    gpuCount = 1,
                 ),
             )
 
         val monitor = runTest(topology, workload)
         assertAll(
-            { assertEquals(1000.0, monitor.taskGpuDemands["0"]?.get(1), "Task 0 should have gpu demand 1000.0") },
-            { assertEquals(0.75 * 1000.0, monitor.taskGpuSupplied["0"]?.get(1), "Task 0 should have gpu supplied 750.0 ") },
+            { assertEquals(1000.0, monitor.taskGpuDemands[0]?.get(1), "Task 0 should have gpu demand 1000.0") },
+            { assertEquals(0.75 * 1000.0, monitor.taskGpuSupplied[0]?.get(1), "Task 0 should have gpu supplied 750.0 ") },
             { assertEquals(1000.0, monitor.hostGpuDemands["H01"]?.get(1)?.get(0), "Host H01 should have gpu demand 1000.0") },
             { assertEquals(0.75 * 1000.0, monitor.hostGpuSupplied["H01"]?.get(1)?.get(0), "Host H01 should have gpu supply 750.0") },
         )
@@ -193,54 +199,66 @@ class VirtualizationOverheadTests {
         val workload1: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 1000.0, 1, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
+                    cpuCount = 1,
+                    gpuCount = 1,
                 ),
             )
 
         val workload2: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
+                    cpuCount = 0,
+                    gpuCount = 1,
                 ),
                 createTestTask(
-                    name = "1",
+                    id = 1,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
+                    cpuCount = 0,
+                    gpuCount = 1,
                 ),
             )
 
         val workload3: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
-                    name = "0",
+                    id = 0,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
+                    cpuCount = 0,
+                    gpuCount = 1,
                 ),
                 createTestTask(
-                    name = "1",
+                    id = 1,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
+                    cpuCount = 0,
+                    gpuCount = 1,
                 ),
                 createTestTask(
-                    name = "2",
+                    id = 2,
                     fragments =
                         arrayListOf(
-                            TraceFragment(10 * 60 * 1000, 0.0, 0, 1000.0, 1),
+                            TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
+                    cpuCount = 0,
+                    gpuCount = 1,
                 ),
             )
 
@@ -250,24 +268,24 @@ class VirtualizationOverheadTests {
 
         assertAll(
             // Test with one VM
-            { assertEquals(1000.0, monitor1.taskGpuDemands["0"]?.get(1), "Task 0 should have gpu demand 1000.0") },
-            { assertEquals(1000.0, monitor1.taskGpuSupplied["0"]?.get(1), "Task 0 should have gpu supplied 1000.0 ") },
+            { assertEquals(1000.0, monitor1.taskGpuDemands[0]?.get(1), "Task 0 should have gpu demand 1000.0") },
+            { assertEquals(1000.0, monitor1.taskGpuSupplied[0]?.get(1), "Task 0 should have gpu supplied 1000.0 ") },
             { assertEquals(1000.0, monitor1.hostGpuDemands["H01"]?.get(1)?.get(0), "Host H01 should have gpu demand 1000.0") },
             { assertEquals(1000.0, monitor1.hostGpuSupplied["H01"]?.get(1)?.get(0), "Host H01 should have gpu supply 1000.0") },
             // Test with two VMs
-            { assertEquals(1000.0, monitor2.taskGpuDemands["0"]?.get(1), "Task 0 should have gpu demand 1000.0") },
-            { assertEquals(500.0, monitor2.taskGpuSupplied["0"]?.get(1), "Task 0 should have gpu supplied 500.0") },
-            { assertEquals(1000.0, monitor2.taskGpuDemands["1"]?.get(1), "Task 0 should have gpu demand 1000.0") },
-            { assertEquals(500.0, monitor2.taskGpuSupplied["1"]?.get(1), "Task 0 should have gpu supplied 500.0") },
+            { assertEquals(1000.0, monitor2.taskGpuDemands[0]?.get(1), "Task 0 should have gpu demand 1000.0") },
+            { assertEquals(500.0, monitor2.taskGpuSupplied[0]?.get(1), "Task 0 should have gpu supplied 500.0") },
+            { assertEquals(1000.0, monitor2.taskGpuDemands[1]?.get(1), "Task 0 should have gpu demand 1000.0") },
+            { assertEquals(500.0, monitor2.taskGpuSupplied[1]?.get(1), "Task 0 should have gpu supplied 500.0") },
             { assertEquals(2000.0, monitor2.hostGpuDemands["H01"]?.get(1)?.get(0), "Host H01 should have gpu demand 2000.0") },
             { assertEquals(1000.0, monitor2.hostGpuSupplied["H01"]?.get(1)?.get(0), "Host H01 should have gpu supply 1000.0") },
             // Test with three VMs
-            { assertEquals(1000.0, monitor3.taskGpuDemands["0"]?.get(1), "Task 0 should have gpu demand 1000.0") },
-            { assertEquals(333.3, monitor3.taskGpuSupplied["0"]?.get(1) ?: 0.0, 0.05, "Task 0 should have gpu supplied 333.3 ") },
-            { assertEquals(1000.0, monitor3.taskGpuDemands["1"]?.get(1), "Task 0 should have gpu demand 1000.0") },
-            { assertEquals(333.3, monitor3.taskGpuSupplied["1"]?.get(1) ?: 0.0, 0.05, "Task 0 should have gpu supplied 333.3 ") },
-            { assertEquals(1000.0, monitor3.taskGpuDemands["2"]?.get(1), "Task 0 should have gpu demand 1000.0") },
-            { assertEquals(333.3, monitor3.taskGpuSupplied["2"]?.get(1) ?: 0.0, 0.05, "Task 0 should have gpu supplied 333.3 ") },
+            { assertEquals(1000.0, monitor3.taskGpuDemands[0]?.get(1), "Task 0 should have gpu demand 1000.0") },
+            { assertEquals(333.3, monitor3.taskGpuSupplied[0]?.get(1) ?: 0.0, 0.05, "Task 0 should have gpu supplied 333.3 ") },
+            { assertEquals(1000.0, monitor3.taskGpuDemands[1]?.get(1), "Task 0 should have gpu demand 1000.0") },
+            { assertEquals(333.3, monitor3.taskGpuSupplied[1]?.get(1) ?: 0.0, 0.05, "Task 0 should have gpu supplied 333.3 ") },
+            { assertEquals(1000.0, monitor3.taskGpuDemands[2]?.get(1), "Task 0 should have gpu demand 1000.0") },
+            { assertEquals(333.3, monitor3.taskGpuSupplied[2]?.get(1) ?: 0.0, 0.05, "Task 0 should have gpu supplied 333.3 ") },
             { assertEquals(3000.0, monitor3.hostGpuDemands["H01"]?.get(1)?.get(0), "Host H01 should have gpu demand 3000.0") },
             { assertEquals(1000.0, monitor3.hostGpuSupplied["H01"]?.get(1)?.get(0), "Host H01 should have gpu supply 700.0") },
         )

@@ -24,9 +24,9 @@ package org.opendc.compute.carbon
 
 import org.opendc.simulator.compute.power.CarbonFragment
 import org.opendc.trace.Trace
-import org.opendc.trace.conv.CARBON_INTENSITY_TIMESTAMP
-import org.opendc.trace.conv.CARBON_INTENSITY_VALUE
-import org.opendc.trace.conv.TABLE_CARBON_INTENSITIES
+import org.opendc.trace.conv.CARBON_INTENSITY
+import org.opendc.trace.conv.CARBON_TIMESTAMP
+import org.opendc.trace.conv.TABLE_CARBON
 import java.io.File
 import java.lang.ref.SoftReference
 import java.time.Instant
@@ -35,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * A helper class for loading compute workload traces into memory.
  *
- * @param baseDir The directory containing the traces.
  */
 public class CarbonTraceLoader {
     /**
@@ -49,10 +48,10 @@ public class CarbonTraceLoader {
      * Read the metadata into a workload.
      */
     private fun parseCarbon(trace: Trace): List<CarbonFragment> {
-        val reader = checkNotNull(trace.getTable(TABLE_CARBON_INTENSITIES)).newReader()
+        val reader = checkNotNull(trace.getTable(TABLE_CARBON)).newReader()
 
-        val startTimeCol = reader.resolve(CARBON_INTENSITY_TIMESTAMP)
-        val carbonIntensityCol = reader.resolve(CARBON_INTENSITY_VALUE)
+        val startTimeCol = reader.resolve(CARBON_TIMESTAMP)
+        val carbonIntensityCol = reader.resolve(CARBON_INTENSITY)
 
         try {
             while (reader.nextRow()) {
@@ -75,7 +74,7 @@ public class CarbonTraceLoader {
     }
 
     /**
-     * Load the trace with the specified [name] and [format].
+     * Load the Carbon Trace at the given path.
      */
     public fun get(pathToFile: File): List<CarbonFragment> {
         val trace = Trace.open(pathToFile, "carbon")
@@ -97,7 +96,7 @@ public class CarbonTraceLoader {
         /**
          * The total load of the trace.
          */
-        public val fragments: MutableList<CarbonFragment> = mutableListOf()
+        val fragments: MutableList<CarbonFragment> = mutableListOf()
 
         /**
          * Add a fragment to the trace.

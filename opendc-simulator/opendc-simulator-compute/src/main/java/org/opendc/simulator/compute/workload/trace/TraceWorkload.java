@@ -41,12 +41,10 @@ public class TraceWorkload implements Workload {
     private final long checkpointDuration;
     private final double checkpointIntervalScaling;
     private final double maxCpuDemand;
-    private final int maxCpuCoreCount;
     private final double maxGpuDemand;
-    private final int maxGpuCoreCount;
-    private final long maxGpuMemoryDemand;
-    private final String taskName;
-    private ResourceType[] resourceTypes = new ResourceType[ResourceType.values().length];
+    private final int maxGpuMemoryDemand;
+    private final int taskId;
+    private final ResourceType[] resourceTypes;
 
     public ScalingPolicy getScalingPolicy() {
         return scalingPolicy;
@@ -60,36 +58,25 @@ public class TraceWorkload implements Workload {
             long checkpointDuration,
             double checkpointIntervalScaling,
             ScalingPolicy scalingPolicy,
-            String taskName,
+            int taskId,
             ResourceType[] resourceTypes) {
         this.fragments = fragments;
         this.checkpointInterval = checkpointInterval;
         this.checkpointDuration = checkpointDuration;
         this.checkpointIntervalScaling = checkpointIntervalScaling;
         this.scalingPolicy = scalingPolicy;
-        this.taskName = taskName;
+        this.taskId = taskId;
 
         // TODO: remove if we decide not to use it.
         this.maxCpuDemand = fragments.stream()
                 .max(Comparator.comparing(TraceFragment::cpuUsage))
                 .get()
-                //                .cpuUsage();
                 .getResourceUsage(ResourceType.CPU);
-        this.maxCpuCoreCount = fragments.stream()
-                .max(Comparator.comparing(TraceFragment::cpuCoreCount))
-                .get()
-                //                .cpuCoreCount();
-                .getCoreCount(ResourceType.CPU);
-
         this.maxGpuDemand = fragments.stream()
                 .max(Comparator.comparing(TraceFragment::gpuUsage))
                 .get()
                 .getResourceUsage(ResourceType.GPU);
-        this.maxGpuCoreCount = fragments.stream()
-                .max(Comparator.comparing(TraceFragment::gpuCoreCount))
-                .get()
-                .getCoreCount(ResourceType.GPU);
-        this.maxGpuMemoryDemand = 0L; // TODO: add GPU memory demand to the trace fragments
+        this.maxGpuMemoryDemand = 0; // TODO: add GPU memory demand to the trace fragments
 
         this.resourceTypes = resourceTypes;
     }
@@ -113,10 +100,6 @@ public class TraceWorkload implements Workload {
         return checkpointIntervalScaling;
     }
 
-    public int getMaxCoreCount() {
-        return maxCpuCoreCount;
-    }
-
     public double getMaxCpuDemand() {
         return maxCpuDemand;
     }
@@ -125,16 +108,12 @@ public class TraceWorkload implements Workload {
         return maxGpuDemand;
     }
 
-    public int getMaxGpuCoreCount() {
-        return maxGpuCoreCount;
-    }
-
-    public long getMaxGpuMemoryDemand() {
+    public int getMaxGpuMemoryDemand() {
         return maxGpuMemoryDemand;
     }
 
-    public String getTaskName() {
-        return taskName;
+    public int getTaskId() {
+        return taskId;
     }
 
     public void removeFragments(int numberOfFragments) {
@@ -171,8 +150,8 @@ public class TraceWorkload implements Workload {
             long checkpointDuration,
             double checkpointIntervalScaling,
             ScalingPolicy scalingPolicy,
-            String taskName) {
-        return new Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, taskName);
+            int taskId) {
+        return new Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, taskId);
     }
 
     public static final class Builder {
@@ -181,7 +160,7 @@ public class TraceWorkload implements Workload {
         private final long checkpointDuration;
         private final double checkpointIntervalScaling;
         private final ScalingPolicy scalingPolicy;
-        private final String taskName;
+        private final int taskId;
         private final ResourceType[] resourceTypes = new ResourceType[ResourceType.values().length];
 
         /**
@@ -192,13 +171,13 @@ public class TraceWorkload implements Workload {
                 long checkpointDuration,
                 double checkpointIntervalScaling,
                 ScalingPolicy scalingPolicy,
-                String taskName) {
+                int taskId) {
             this.fragments = new ArrayList<>();
             this.checkpointInterval = checkpointInterval;
             this.checkpointDuration = checkpointDuration;
             this.checkpointIntervalScaling = checkpointIntervalScaling;
             this.scalingPolicy = scalingPolicy;
-            this.taskName = taskName;
+            this.taskId = taskId;
         }
 
         /**
@@ -206,22 +185,17 @@ public class TraceWorkload implements Workload {
          *
          * @param duration The timestamp at which the fragment ends (in epoch millis).
          * @param cpuUsage The CPU usage at this fragment.
-         * @param cpuCores The number of cores used during this fragment.
          * @param gpuUsage The GPU usage at this fragment.
-         * @param gpuCores The number of GPU cores used during this fragment.
          * @param gpuMemoryUsage The GPU memory usage at this fragment.
          */
-        public void add(
-                long duration, double cpuUsage, int cpuCores, double gpuUsage, int gpuCores, long gpuMemoryUsage) {
+        public void add(long duration, double cpuUsage, double gpuUsage, int gpuMemoryUsage) {
             if (cpuUsage > 0.0) {
                 this.resourceTypes[ResourceType.CPU.ordinal()] = ResourceType.CPU;
             }
             if (gpuUsage > 0.0) {
                 this.resourceTypes[ResourceType.GPU.ordinal()] = ResourceType.GPU;
             }
-            fragments.add(
-                    fragments.size(),
-                    new TraceFragment(duration, cpuUsage, cpuCores, gpuUsage, gpuCores, gpuMemoryUsage));
+            fragments.add(fragments.size(), new TraceFragment(duration, cpuUsage, gpuUsage, gpuMemoryUsage));
         }
 
         /**
@@ -234,7 +208,7 @@ public class TraceWorkload implements Workload {
                     this.checkpointDuration,
                     this.checkpointIntervalScaling,
                     this.scalingPolicy,
-                    this.taskName,
+                    this.taskId,
                     this.resourceTypes);
         }
     }

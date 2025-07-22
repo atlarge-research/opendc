@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 import org.opendc.compute.api.Flavor;
 
@@ -37,29 +36,26 @@ import org.opendc.compute.api.Flavor;
  */
 public final class ServiceFlavor implements Flavor {
     private final ComputeService service;
-    private final UUID uid;
-    private final String name;
+    private final int taskId;
     private final int cpuCoreCount;
     private final long memorySize;
     private final int gpuCoreCount;
-    private final Set<String> parents;
-    private final Set<String> children;
-    private final Set<String> dependencies;
+    private final Set<Integer> parents;
+    private final Set<Integer> children;
+    private final Set<Integer> dependencies;
     private final Map<String, ?> meta;
 
     ServiceFlavor(
             ComputeService service,
-            UUID uid,
-            String name,
+            int taskId,
             int cpuCoreCount,
             long memorySize,
             int gpuCoreCount,
-            Set<String> parents,
-            Set<String> children,
+            Set<Integer> parents,
+            Set<Integer> children,
             Map<String, ?> meta) {
         this.service = service;
-        this.uid = uid;
-        this.name = name;
+        this.taskId = taskId;
         this.cpuCoreCount = cpuCoreCount;
         this.memorySize = memorySize;
         this.gpuCoreCount = gpuCoreCount;
@@ -84,16 +80,9 @@ public final class ServiceFlavor implements Flavor {
         return gpuCoreCount;
     }
 
-    @NotNull
     @Override
-    public UUID getUid() {
-        return uid;
-    }
-
-    @NotNull
-    @Override
-    public String getName() {
-        return name;
+    public int getTaskId() {
+        return taskId;
     }
 
     @NotNull
@@ -117,45 +106,45 @@ public final class ServiceFlavor implements Flavor {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ServiceFlavor flavor = (ServiceFlavor) o;
-        return service.equals(flavor.service) && uid.equals(flavor.uid);
+        return service.equals(flavor.service) && taskId == flavor.taskId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(service, uid);
+        return Objects.hash(service, taskId);
     }
 
     @Override
     public String toString() {
-        return "Flavor[uid=" + uid + ",name=" + name + "]";
+        return "Flavor[name=" + taskId + "]";
     }
 
     @Override
-    public @NotNull Set<String> getDependencies() {
+    public @NotNull Set<Integer> getDependencies() {
         return dependencies;
     }
 
-    public void updatePendingDependencies(List<String> completedTasks) {
-        for (String task : completedTasks) {
+    public void updatePendingDependencies(List<Integer> completedTasks) {
+        for (int task : completedTasks) {
             this.updatePendingDependencies(task);
         }
     }
 
-    public void updatePendingDependencies(String completedTask) {
+    public void updatePendingDependencies(int completedTask) {
         this.dependencies.remove(completedTask);
     }
 
-    public boolean isInDependencies(String task) {
+    public boolean isInDependencies(int task) {
         return this.dependencies.contains(task);
     }
 
     @Override
-    public @NotNull Set<@NotNull String> getParents() {
+    public @NotNull Set<Integer> getParents() {
         return parents;
     }
 
     @Override
-    public @NotNull Set<@NotNull String> getChildren() {
+    public @NotNull Set<Integer> getChildren() {
         return children;
     }
 }
