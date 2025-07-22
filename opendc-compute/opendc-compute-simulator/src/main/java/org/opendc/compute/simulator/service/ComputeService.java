@@ -34,8 +34,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SplittableRandom;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.opendc.common.Dispatcher;
@@ -406,8 +404,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         LOGGER.debug("Enqueueing task {} to be assigned to host", task.getId());
 
         if (task.getNumFailures() >= maxNumFailures) {
-            LOGGER.warn("task {} has been terminated because it failed {} times", task,
-                    task.getNumFailures());
+            LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
 
             tasksTerminated++;
             task.setState(TaskState.TERMINATED);
