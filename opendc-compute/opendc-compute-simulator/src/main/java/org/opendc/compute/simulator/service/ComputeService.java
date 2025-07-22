@@ -499,7 +499,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     void delete(ServiceTask task) {
-        completedTasks.remove(task.getId());
+        completedTasks.remove(task);
         taskById.remove(task.getId());
     }
 
