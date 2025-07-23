@@ -186,6 +186,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                     hv.provisionedCpuCores -= flavor.getCpuCoreCount();
                     hv.instanceCount--;
                     hv.availableMemory += flavor.getMemorySize();
+                    hv.provisionedGpuCores -= flavor.getGpuCoreCount();
                 } else {
                     LOGGER.error("Unknown host {}", host);
                 }
@@ -580,6 +581,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 hv.instanceCount++;
                 hv.provisionedCpuCores += flavor.getCpuCoreCount();
                 hv.availableMemory -= flavor.getMemorySize();
+                hv.provisionedGpuCores += flavor.getGpuCoreCount();
 
                 activeTasks.put(task, host);
             } catch (Exception cause) {
