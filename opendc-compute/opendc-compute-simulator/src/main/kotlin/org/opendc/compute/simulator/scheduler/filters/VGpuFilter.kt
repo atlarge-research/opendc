@@ -36,7 +36,7 @@ public class VGpuFilter(private val allocationRatio: Double) : HostFilter {
         task: ServiceTask,
     ): Boolean {
         val requested = task.flavor.gpuCoreCount
-        val totalCores = host.host.getModel().gpuHostModels().maxOfOrNull { it.gpuCoreCount() } ?: 0
+        val totalCores = host.host.getModel().gpuHostModels()?.sumOf { it.gpuCoreCount() } ?: 0
         val limit = totalCores * allocationRatio
 
         // Do not allow an instance to overcommit against itself, only against other instances
