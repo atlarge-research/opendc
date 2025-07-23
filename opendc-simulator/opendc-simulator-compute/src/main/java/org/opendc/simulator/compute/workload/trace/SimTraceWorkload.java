@@ -173,7 +173,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
         // If this.totalRemainingWork <= 0, the fragment has been completed across all resources
-        if (this.totalRemainingWork <= 0 && !this.workloadFinished.containsValue(false)) {
+        if ((int) this.totalRemainingWork <= 0 && !this.workloadFinished.containsValue(false)) {
             this.startNextFragment();
 
             this.invalidate();
@@ -203,7 +203,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
                     this.resourcesSupplied.get(resourceType),
                     this.remainingWork.get(resourceType));
 
-            if (remainingDuration == 0.0) {
+            if ((int) remainingDuration == 0) {
                 // if resource not initialized, then nothing happens
                 this.totalRemainingWork -= this.remainingWork.get(resourceType);
                 this.remainingWork.put(resourceType, 0.0);
@@ -218,7 +218,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             }
         }
 
-        return timeUntilNextUpdate == Long.MIN_VALUE ? now : now + timeUntilNextUpdate;
+        return timeUntilNextUpdate == Long.MAX_VALUE ? Long.MAX_VALUE : now + timeUntilNextUpdate;
     }
 
     public TraceFragment getNextFragment() {
