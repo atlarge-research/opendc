@@ -120,7 +120,8 @@ public class FixedShareFlowDistributor extends FlowDistributor {
     public double[] distributeSupply(ArrayList<Double> demands, ArrayList<Double> currentSupply, double totalSupply) {
         double[] supplies = new double[this.consumerEdges.size()];
 
-        if (this.consumerEdges.size() < this.supplierEdges.size() && this.fixedShare * this.consumerEdges.size() <= totalSupply) {
+        if (this.consumerEdges.size() < this.supplierEdges.size()
+                && this.fixedShare * this.consumerEdges.size() <= totalSupply) {
             for (FlowEdge consumerEdge : this.consumerEdges) {
                 supplies[consumerEdge.getConsumerIndex()] = this.fixedShare;
             }
