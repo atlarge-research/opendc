@@ -218,7 +218,13 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             }
         }
 
-        return timeUntilNextUpdate == Long.MAX_VALUE ? Long.MAX_VALUE : now + timeUntilNextUpdate;
+        long nextUpdate = timeUntilNextUpdate == Long.MAX_VALUE? Long.MAX_VALUE : now + timeUntilNextUpdate;
+
+        // if for all resources the remaining work is 0, then invalidate the workload, to reschedule the next fragment
+        if (nextUpdate == now + Long.MIN_VALUE){
+            this.invalidate();
+        }
+        return nextUpdate;
     }
 
     public TraceFragment getNextFragment() {
