@@ -537,16 +537,16 @@ class DistributionPoliciesTest {
         // Best effort should distribute proportionally based on demand while using round-robin
         assertAll(
             // Task 0
-            { assertEquals(3000.0, monitor.taskGpuDemands[0]?.get(1), "Task 0 GPU demand should be 3000.0") },
-            { assertEquals(3000.0, monitor.taskGpuSupplied[0]?.get(1), "Task 0 GPU supply should be 1000.0") },
+            { assertEquals(3000.0, monitor.taskGpuDemands["0"]?.get(0), "Task 0 GPU demand should be 3000.0") },
+            { assertEquals(3000.0, monitor.taskGpuSupplied["0"]?.get(0), "Task 0 GPU supply should be 1000.0") },
             // Task 1
-            { assertEquals(2500.0, monitor.taskGpuDemands[1]?.get(1), "Task 1 GPU demand should be 2500.0") },
-            { assertEquals(1000.0, monitor.taskGpuSupplied[1]?.get(1), "Task 0 GPU supply should be 1000.0") },
+            { assertEquals(2500.0, monitor.taskGpuDemands["1"]?.get(0), "Task 1 GPU demand should be 2500.0") },
+            { assertEquals(1000.0, monitor.taskGpuSupplied["1"]?.get(0), "Task 1 GPU supply should be 1000.0") },
             // Host
-            { assertEquals(2750.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0), "GPU 0 demand at host should be 2000.0") },
-            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0), "GPU 0 supplied at host should be 2000.0") },
-            { assertEquals(2750.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1), "GPU 1 demand at host should be 2000.0") },
-            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1), "GPU 1 supplied at host should be 2000.0") },
+            { assertEquals(2750.0, monitor.hostGpuDemands["DualGpuHost"]?.get(0)?.get(0), "GPU 0 demand at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(0)?.get(0), "GPU 0 supplied at host should be 2000.0") },
+            { assertEquals(2750.0, monitor.hostGpuDemands["DualGpuHost"]?.get(0)?.get(1), "GPU 1 demand at host should be 2000.0") },
+            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(0)?.get(1), "GPU 1 supplied at host should be 2000.0") },
         )
     }
 
@@ -677,21 +677,21 @@ class DistributionPoliciesTest {
         // Best effort should distribute fairly among all tasks in a round-robin manner
         assertAll(
             // Task Demands at start
-            { assertEquals(2000.0, monitor.taskGpuDemands[0]?.get(1), "Task 0 demand should be 2000.0") },
-            { assertEquals(2000.0, monitor.taskGpuDemands[1]?.get(1), "Task 1 demand should be 2000.0") },
-            { assertEquals(2000.0, monitor.taskGpuDemands[2]?.get(1), "Task 2 demand should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuDemands["0"]?.get(0), "Task 0 demand should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuDemands["1"]?.get(0), "Task 1 demand should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuDemands["2"]?.get(0), "Task 2 demand should be 2000.0") },
             // Task supplies at start
-            { assertEquals(2000.0, monitor.taskGpuSupplied[0]?.get(1), "Task 0 supply at the start should be 2000.0") },
-            { assertEquals(0.0, monitor.taskGpuSupplied[1]?.get(1), "Task 1 supply at the start  should be 2000.0") },
-            { assertEquals(2000.0, monitor.taskGpuSupplied[2]?.get(1), "Task 2 supply at the start  should be 0.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["0"]?.get(0), "Task 0 supply at the start should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["1"]?.get(0), "Task 1 supply at the start  should be 0.0") },
+            { assertEquals(0.0, monitor.taskGpuSupplied["2"]?.get(0), "Task 2 supply at the start  should be 2000.0") },
             // Task supplies second step
-            { assertEquals(0.0, monitor.taskGpuSupplied[0]?.get(2), "Task 0 supply at the second step should be 2000.0") },
-            { assertEquals(2000.0, monitor.taskGpuSupplied[1]?.get(2), "Task 1 supply at the second step should be 0.0") },
-            { assertEquals(2000.0, monitor.taskGpuSupplied[2]?.get(2), "Task 2 supply at the second step should be 2000.0") },
+            { assertEquals(0.0, monitor.taskGpuSupplied["0"]?.get(1), "Task 0 supply at the second step should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["1"]?.get(1), "Task 1 supply at the second step should be 0.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["2"]?.get(1), "Task 2 supply at the second step should be 2000.0") },
             // Task supplies third step
-            { assertEquals(2000.0, monitor.taskGpuSupplied[0]?.get(3), "Task 0 supply at the third step should be 2000.0") },
-            { assertEquals(2000.0, monitor.taskGpuSupplied[1]?.get(3), "Task 1 supply at the third step should be 2000.0") },
-            { assertEquals(0.0, monitor.taskGpuSupplied[2]?.get(3), "Task 2 supply at the third step should be 0.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["0"]?.get(2), "Task 0 supply at the third step should be 2000.0") },
+            { assertEquals(0.0, monitor.taskGpuSupplied["1"]?.get(2), "Task 1 supply at the third step should be 0.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied["2"]?.get(2), "Task 2 supply at the third step should be 2000.0") },
             // Host
             // At start
             { assertEquals(3000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0), "GPU 0 demand at host should be 2000.0") },
