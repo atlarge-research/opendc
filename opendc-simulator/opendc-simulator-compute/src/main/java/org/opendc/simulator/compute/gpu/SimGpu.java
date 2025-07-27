@@ -185,6 +185,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         this.performanceCounters.setDemand(this.currentGpuDemand);
         this.performanceCounters.setSupply(this.currentGpuSupplied);
         this.performanceCounters.setCapacity(this.maxCapacity);
+        this.performanceCounters.setPowerDraw(this.currentPowerSupplied);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -32,6 +32,7 @@ public class PerformanceCounters {
     private double capacity = 0.0f;
     private double demand = 0.0f;
     private double supply = 0.0f;
+    private double powerDraw = 0.0f;
 
     public long getActiveTime() {
         return this.activeTime;
@@ -61,6 +62,8 @@ public class PerformanceCounters {
         return this.supply;
     }
 
+    public double getPowerDraw() { return powerDraw; }
+
     public void setActiveTime(long activeTime) {
         this.activeTime = activeTime;
     }
@@ -89,6 +92,8 @@ public class PerformanceCounters {
         this.supply = supply;
     }
 
+    public void setPowerDraw(double powerDraw) { this.powerDraw = powerDraw; }
+
     public void addActiveTime(long activeTime) {
         this.activeTime += activeTime;
     }
@@ -116,4 +121,7 @@ public class PerformanceCounters {
     public void addSupply(double supply) {
         this.supply += supply;
     }
+
+    public void addPowerDraw(double powerDraw) { this.powerDraw += powerDraw; }
+
 }

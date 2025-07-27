@@ -182,6 +182,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         this.performanceCounters.setDemand(this.currentCpuDemand);
         this.performanceCounters.setSupply(this.currentCpuSupplied);
         this.performanceCounters.setCapacity(this.maxCapacity);
+        this.performanceCounters.setPowerDraw(this.currentPowerDemand);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
