@@ -223,6 +223,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         // if for all resources the remaining work is 0, then invalidate the workload, to reschedule the next fragment
         if (nextUpdate == now + Long.MIN_VALUE) {
             this.invalidate();
+            return Long.MAX_VALUE;
         }
         return nextUpdate;
     }
@@ -386,6 +387,10 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      */
     @Override
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply, ResourceType resourceType) {
+        // for cases where equal share or fixed share is used and the resource is provided despite not being used
+        if (!this.usedResourceTypes.contains(resourceType)) {
+            return;
+        }
         if (this.resourcesSupplied.get(resourceType) == newSupply) {
             return;
         }
