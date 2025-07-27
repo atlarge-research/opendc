@@ -202,7 +202,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newPowerDemand) {
         updateCounters();
         this.currentPowerDemand = newPowerDemand;
-        this.psuEdge.pushDemand(newPowerDemand, false, ResourceType.GPU);
+        this.psuEdge.pushDemand(newPowerDemand, false, ResourceType.POWER);
     }
 
     /**
@@ -213,7 +213,7 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         updateCounters();
         this.currentGpuSupplied = newGpuSupply;
 
-        this.distributorEdge.pushSupply(newGpuSupply, true, ResourceType.GPU);
+        this.distributorEdge.pushSupply(newGpuSupply, true, ResourceType.POWER);
     }
 
     /**

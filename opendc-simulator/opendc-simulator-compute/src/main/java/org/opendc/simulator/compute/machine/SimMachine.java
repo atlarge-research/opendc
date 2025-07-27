@@ -47,6 +47,7 @@ import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory;
+import org.opendc.simulator.engine.graph.distributionPolicies.MaxMinFairnessFlowDistributor;
 
 /**
  * A machine that is able to execute {@link SimWorkload} objects.
@@ -207,6 +208,8 @@ public class SimMachine {
         // Create the psu and cpu and connect them
         this.psu = new SimPsu(engine);
         new FlowEdge(this.psu, powerDistributor);
+        this.distributors.put(ResourceType.POWER, new MaxMinFairnessFlowDistributor(engine)); // Maybe First fit
+        new FlowEdge( this.distributors.get(ResourceType.POWER), this.psu);
 
         this.computeResources.put(
                 ResourceType.CPU,
@@ -214,11 +217,11 @@ public class SimMachine {
 
         // Connect the CPU to the PSU
         new FlowEdge(
-                (FlowConsumer) this.computeResources.get(ResourceType.CPU).getFirst(),
-                this.psu,
-                ResourceType.POWER,
-                0,
-                -1);
+            (FlowConsumer) this.computeResources.get(ResourceType.CPU).getFirst(),
+            (FlowSupplier) this.distributors.get(ResourceType.POWER),
+            ResourceType.POWER,
+            0,
+            -1);
 
         // Create a FlowDistributor and add the cpu as supplier
         this.distributors.put(
@@ -230,6 +233,7 @@ public class SimMachine {
                 ResourceType.CPU,
                 -1,
                 0);
+
 
         // TODO: include memory as flow node
         this.memory = new Memory(engine, this.machineModel.getMemory());
@@ -253,7 +257,7 @@ public class SimMachine {
                         gpuModel.getId(),
                         gpuModel.getId());
                 // Connect the GPU to the PSU
-                new FlowEdge(gpu, this.psu, ResourceType.POWER, gpuModel.getId(), gpuModel.getId());
+                new FlowEdge(gpu, this.distributors.get(ResourceType.POWER), ResourceType.POWER, gpuModel.getId(), gpuModel.getId());
             }
             this.computeResources.put(ResourceType.GPU, gpus);
         }

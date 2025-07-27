@@ -199,7 +199,7 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newPowerDemand) {
         updateCounters();
         this.currentPowerDemand = newPowerDemand;
-        this.psuEdge.pushDemand(newPowerDemand, false, ResourceType.CPU);
+        this.psuEdge.pushDemand(newPowerDemand, false, ResourceType.POWER);
     }
 
     /**
