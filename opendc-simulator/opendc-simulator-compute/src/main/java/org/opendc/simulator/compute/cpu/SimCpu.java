@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.compute.cpu;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 import org.opendc.common.ResourceType;
@@ -140,7 +142,8 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         updateCounters(now);
 
         // Check if supply == demand
-        if (this.currentPowerDemand != this.currentPowerSupplied) {
+        // using big decimal to avoid floating point precision issues
+        if (!new BigDecimal(this.currentPowerDemand).setScale(5, RoundingMode.HALF_UP).equals(new BigDecimal(this.currentPowerSupplied).setScale(5, RoundingMode.HALF_UP))) {
             this.pushOutgoingDemand(this.psuEdge, this.currentPowerDemand);
 
             return Long.MAX_VALUE;
