@@ -111,8 +111,6 @@ public object DfltBatteryExportColumns {
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
-            BATTERY_NAME,
-            CLUSTER_NAME,
             TIMESTAMP,
             TIMESTAMP_ABS,
         )

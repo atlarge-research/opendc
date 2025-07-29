@@ -98,8 +98,6 @@ public object DfltPowerSourceExportColumns {
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
-            SOURCE_NAME,
-            CLUSTER_NAME,
             TIMESTAMP,
             TIMESTAMP_ABS,
         )
