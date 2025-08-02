@@ -52,6 +52,7 @@ public enum class ComputeSchedulerEnum {
     Timeshift,
     ProvisionedCpuGpuCores,
     ProvisionedCpuGpuCoresInv,
+    GpuTaskMemorizing,
 }
 
 public fun createPrefabComputeScheduler(
@@ -158,6 +159,16 @@ public fun createPrefabComputeScheduler(
                         VCpuWeigher(cpuAllocationRatio, multiplier = -1.0),
                         VGpuWeigher(gpuAllocationRatio, multiplier = -1.0),
                     ),
+            )
+        ComputeSchedulerEnum.GpuTaskMemorizing ->
+            MemorizingScheduler(
+                filters =
+                    listOf(
+                        ComputeFilter(),
+                        VCpuFilter(cpuAllocationRatio),
+                        VGpuFilter(gpuAllocationRatio),
+                        RamFilter(ramAllocationRatio),
+                    )
             )
     }
 }
