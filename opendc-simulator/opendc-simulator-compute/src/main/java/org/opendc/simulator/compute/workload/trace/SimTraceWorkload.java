@@ -165,7 +165,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             // The amount of work done since last update
             double finishedWork = this.scalingPolicy.getFinishedWork(
                     this.resourcesDemand.get(resourceType), this.resourcesSupplied.get(resourceType), passedTime);
-            this.remainingWork.put(resourceType, this.remainingWork.get(resourceType) - finishedWork);
+            this.remainingWork.put(resourceType, Math.max(0, this.remainingWork.get(resourceType) - finishedWork));
             this.totalRemainingWork -= finishedWork;
             if (this.remainingWork.get(resourceType) <= 0) {
                 this.workloadFinished.put(resourceType, true);
@@ -203,9 +203,11 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
                     this.resourcesSupplied.get(resourceType),
                     this.remainingWork.get(resourceType));
 
-            if ((int) remainingDuration == 0) {
+            if ((int) remainingDuration == 0 ) {
                 // if resource not initialized, then nothing happens
-                this.totalRemainingWork -= this.remainingWork.get(resourceType);
+                if (this.remainingWork.get(resourceType) >= 0.0) {
+                    this.totalRemainingWork -= this.remainingWork.get(resourceType);
+                }
                 this.remainingWork.put(resourceType, 0.0);
                 this.workloadFinished.put(resourceType, true);
             }
