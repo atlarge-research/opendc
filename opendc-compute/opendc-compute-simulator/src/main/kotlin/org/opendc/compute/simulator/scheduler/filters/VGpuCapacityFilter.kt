@@ -42,7 +42,7 @@ public class VGpuCapacityFilter : HostFilter {
 
         return (
             requiredCapacity == null ||
-                ((availableCapacity / availableCores) >= (requiredCapacity / task.flavor.gpuCoreCount))
+                (availableRatio >= (requiredCapacity / task.flavor.gpuCoreCount))
         )
     }
 }

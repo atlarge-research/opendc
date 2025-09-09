@@ -26,9 +26,9 @@ import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
- * A [HostFilter] that filters hosts based on the vCPU requirements of a [ServiceTask] and the available vCPUs on the host.
+ * A [HostFilter] that filters hosts based on the vGPU requirements of a [ServiceTask] and the available vGPUs on the host.
  *
- * @param allocationRatio Virtual CPU to physical CPU allocation ratio.
+ * @param allocationRatio Virtual GPU to physical GPU allocation ratio.
  */
 public class VGpuFilter(private val allocationRatio: Double) : HostFilter {
     override fun test(
