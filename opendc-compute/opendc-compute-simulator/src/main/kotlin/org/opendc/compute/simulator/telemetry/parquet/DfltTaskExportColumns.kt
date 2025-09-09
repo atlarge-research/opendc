@@ -224,8 +224,9 @@ public object DfltTaskExportColumns {
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
+            TASK_ID,
+            TASK_NAME,
             TIMESTAMP,
             TIMESTAMP_ABS,
-            TASK_ID,
         )
 }

@@ -78,6 +78,10 @@ public class MemorizingScheduler(
             return SchedulingResult(SchedulingResultType.FAILURE)
         }
 
+//        if (minAvailableHost == 1) {
+//            return SchedulingResult(SchedulingResultType.EMPTY);
+//        }
+
         val maxIters = 10000
         var numIters = 0
 
