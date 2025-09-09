@@ -449,20 +449,30 @@ internal class FilterSchedulerTest {
 
         val hostA = mockk<HostView>()
         every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(0.0, 0, 2048,
-            listOf(
-                GpuHostModel(8 * 2600.0, 8, 0L, 0.0)
-            ))
+        every { hostA.host.getModel() } returns
+            HostModel(
+                0.0,
+                0,
+                2048,
+                listOf(
+                    GpuHostModel(8 * 2600.0, 8, 0L, 0.0),
+                ),
+            )
         every { hostA.provisionedGpuCores } returns 0
         scheduler.addHost(hostA)
 
         val hostB = mockk<HostView>()
         every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns HostModel(0.0, 0, 2048,
-            listOf(
-                GpuHostModel(8 * 3200.0, 8, 0L, 0.0),
-                GpuHostModel(8 * 3200.0, 8, 0L, 0.0)
-            ))
+        every { hostB.host.getModel() } returns
+            HostModel(
+                0.0,
+                0,
+                2048,
+                listOf(
+                    GpuHostModel(8 * 3200.0, 8, 0L, 0.0),
+                    GpuHostModel(8 * 3200.0, 8, 0L, 0.0),
+                ),
+            )
         every { hostB.provisionedGpuCores } returns 0
         scheduler.addHost(hostB)
 
@@ -473,7 +483,6 @@ internal class FilterSchedulerTest {
 
         // filter selects hostB because hostA does not have enough GPU capacity
         assertEquals(hostB, scheduler.select(mutableListOf(req).iterator()).host)
-
     }
 
     @Test
@@ -486,20 +495,30 @@ internal class FilterSchedulerTest {
 
         val hostA = mockk<HostView>()
         every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(0.0, 0, 2048,
-            listOf(
-                GpuHostModel(8 * 2600.0, 8, 0L, 0.0)
-            ))
+        every { hostA.host.getModel() } returns
+            HostModel(
+                0.0,
+                0,
+                2048,
+                listOf(
+                    GpuHostModel(8 * 2600.0, 8, 0L, 0.0),
+                ),
+            )
         every { hostA.availableMemory } returns 512
         scheduler.addHost(hostA)
 
         val hostB = mockk<HostView>()
         every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns HostModel(0.0, 0, 2048,
-            listOf(
-                GpuHostModel(8 * 3200.0, 8, 0L, 0.0),
-                GpuHostModel(8 * 3200.0, 8, 0L, 0.0)
-            ))
+        every { hostB.host.getModel() } returns
+            HostModel(
+                0.0,
+                0,
+                2048,
+                listOf(
+                    GpuHostModel(8 * 3200.0, 8, 0L, 0.0),
+                    GpuHostModel(8 * 3200.0, 8, 0L, 0.0),
+                ),
+            )
         every { hostB.availableMemory } returns 512
         scheduler.addHost(hostB)
 

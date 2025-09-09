@@ -168,7 +168,7 @@ public fun createPrefabComputeScheduler(
                         VCpuFilter(cpuAllocationRatio),
                         VGpuFilter(gpuAllocationRatio),
                         RamFilter(ramAllocationRatio),
-                    )
+                    ),
             )
     }
 }

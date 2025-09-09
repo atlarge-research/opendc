@@ -62,7 +62,9 @@ public class PerformanceCounters {
         return this.supply;
     }
 
-    public double getPowerDraw() { return powerDraw; }
+    public double getPowerDraw() {
+        return powerDraw;
+    }
 
     public void setActiveTime(long activeTime) {
         this.activeTime = activeTime;
@@ -92,7 +94,9 @@ public class PerformanceCounters {
         this.supply = supply;
     }
 
-    public void setPowerDraw(double powerDraw) { this.powerDraw = powerDraw; }
+    public void setPowerDraw(double powerDraw) {
+        this.powerDraw = powerDraw;
+    }
 
     public void addActiveTime(long activeTime) {
         this.activeTime += activeTime;
@@ -122,6 +126,7 @@ public class PerformanceCounters {
         this.supply += supply;
     }
 
-    public void addPowerDraw(double powerDraw) { this.powerDraw += powerDraw; }
-
+    public void addPowerDraw(double powerDraw) {
+        this.powerDraw += powerDraw;
+    }
 }

@@ -203,7 +203,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
                     this.resourcesSupplied.get(resourceType),
                     this.remainingWork.get(resourceType));
 
-            if ((int) remainingDuration == 0 ) {
+            if ((int) remainingDuration == 0) {
                 // if resource not initialized, then nothing happens
                 if (this.remainingWork.get(resourceType) >= 0.0) {
                     this.totalRemainingWork -= this.remainingWork.get(resourceType);
