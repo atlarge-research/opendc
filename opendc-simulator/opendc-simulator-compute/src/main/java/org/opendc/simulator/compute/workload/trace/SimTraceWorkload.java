@@ -165,7 +165,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             // The amount of work done since last update
             double finishedWork = this.scalingPolicy.getFinishedWork(
                     this.resourcesDemand.get(resourceType), this.resourcesSupplied.get(resourceType), passedTime);
-            this.remainingWork.put(resourceType, this.remainingWork.get(resourceType) - finishedWork);
+            this.remainingWork.put(resourceType, Math.max(0, this.remainingWork.get(resourceType) - finishedWork));
             this.totalRemainingWork -= finishedWork;
             if (this.remainingWork.get(resourceType) <= 0) {
                 this.workloadFinished.put(resourceType, true);
@@ -173,7 +173,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
         // If this.totalRemainingWork <= 0, the fragment has been completed across all resources
-        if (this.totalRemainingWork <= 0 && !this.workloadFinished.containsValue(false)) {
+        if ((int) this.totalRemainingWork <= 0 && !this.workloadFinished.containsValue(false)) {
             this.startNextFragment();
 
             this.invalidate();
@@ -203,9 +203,11 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
                     this.resourcesSupplied.get(resourceType),
                     this.remainingWork.get(resourceType));
 
-            if (remainingDuration == 0.0) {
+            if ((int) remainingDuration == 0) {
                 // if resource not initialized, then nothing happens
-                this.totalRemainingWork -= this.remainingWork.get(resourceType);
+                if (this.remainingWork.get(resourceType) >= 0.0) {
+                    this.totalRemainingWork -= this.remainingWork.get(resourceType);
+                }
                 this.remainingWork.put(resourceType, 0.0);
                 this.workloadFinished.put(resourceType, true);
             }
@@ -218,7 +220,14 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             }
         }
 
-        return timeUntilNextUpdate == Long.MIN_VALUE ? now : now + timeUntilNextUpdate;
+        long nextUpdate = timeUntilNextUpdate == Long.MAX_VALUE ? Long.MAX_VALUE : now + timeUntilNextUpdate;
+
+        // if for all resources the remaining work is 0, then invalidate the workload, to reschedule the next fragment
+        if (nextUpdate == now + Long.MIN_VALUE) {
+            this.invalidate();
+            return Long.MAX_VALUE;
+        }
+        return nextUpdate;
     }
 
     public TraceFragment getNextFragment() {
@@ -380,6 +389,10 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      */
     @Override
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply, ResourceType resourceType) {
+        // for cases where equal share or fixed share is used and the resource is provided despite not being used
+        if (!this.usedResourceTypes.contains(resourceType)) {
+            return;
+        }
         if (this.resourcesSupplied.get(resourceType) == newSupply) {
             return;
         }

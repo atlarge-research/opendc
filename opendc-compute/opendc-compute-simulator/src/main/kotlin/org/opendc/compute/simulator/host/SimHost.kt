@@ -361,7 +361,6 @@ public class SimHost(
         for (gpu in simMachine!!.gpus) {
             gpu.updateCounters(this.clock.millis())
             val counters = simMachine!!.getGpuPerformanceCounters(gpu.id)
-            val powerDraw = simMachine!!.psu.getPowerDraw(ResourceType.GPU, gpu.id)
 
             gpuStats.add(
                 HostGpuStats(
@@ -373,7 +372,7 @@ public class SimHost(
                     counters.demand,
                     counters.supply,
                     counters.supply / gpu.getCapacity(ResourceType.GPU),
-                    powerDraw,
+                    counters.powerDraw,
                 ),
             )
         }

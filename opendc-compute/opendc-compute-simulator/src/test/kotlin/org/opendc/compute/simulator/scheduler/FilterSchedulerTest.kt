@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+import org.opendc.compute.simulator.host.GpuHostModel
 import org.opendc.compute.simulator.host.HostModel
 import org.opendc.compute.simulator.host.HostState
 import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
@@ -37,6 +38,8 @@ import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.scheduler.filters.SameHostFilter
 import org.opendc.compute.simulator.scheduler.filters.VCpuCapacityFilter
 import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
+import org.opendc.compute.simulator.scheduler.filters.VGpuCapacityFilter
+import org.opendc.compute.simulator.scheduler.filters.VGpuFilter
 import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.simulator.scheduler.weights.InstanceCountWeigher
 import org.opendc.compute.simulator.scheduler.weights.RamWeigher
@@ -434,6 +437,98 @@ internal class FilterSchedulerTest {
         every { reqB.task.meta } returns mapOf("scheduler_hint:different_host" to setOf(taskA.id))
 
         assertEquals(hostB, scheduler.select(mutableListOf(reqB).iterator()).host)
+    }
+
+    @Test
+    fun testVGPUFilter() {
+        val scheduler =
+            FilterScheduler(
+                filters = listOf(VGpuFilter(1.0)),
+                weighers = emptyList(),
+            )
+
+        val hostA = mockk<HostView>()
+        every { hostA.host.getState() } returns HostState.UP
+        every { hostA.host.getModel() } returns
+            HostModel(
+                0.0,
+                0,
+                2048,
+                listOf(
+                    GpuHostModel(8 * 2600.0, 8, 0L, 0.0),
+                ),
+            )
+        every { hostA.provisionedGpuCores } returns 0
+        scheduler.addHost(hostA)
+
+        val hostB = mockk<HostView>()
+        every { hostB.host.getState() } returns HostState.UP
+        every { hostB.host.getModel() } returns
+            HostModel(
+                0.0,
+                0,
+                2048,
+                listOf(
+                    GpuHostModel(8 * 3200.0, 8, 0L, 0.0),
+                    GpuHostModel(8 * 3200.0, 8, 0L, 0.0),
+                ),
+            )
+        every { hostB.provisionedGpuCores } returns 0
+        scheduler.addHost(hostB)
+
+        val req = mockk<SchedulingRequest>()
+        every { req.task.flavor.gpuCoreCount } returns 9
+        every { req.task.flavor.meta } returns mapOf("gpu-capacity" to 9 * 3200.0)
+        every { req.isCancelled } returns false
+
+        // filter selects hostB because hostA does not have enough GPU capacity
+        assertEquals(hostB, scheduler.select(mutableListOf(req).iterator()).host)
+    }
+
+    @Test
+    fun testVGPUCapacityFilter() {
+        val scheduler =
+            FilterScheduler(
+                filters = listOf(VGpuCapacityFilter()),
+                weighers = emptyList(),
+            )
+
+        val hostA = mockk<HostView>()
+        every { hostA.host.getState() } returns HostState.UP
+        every { hostA.host.getModel() } returns
+            HostModel(
+                0.0,
+                0,
+                2048,
+                listOf(
+                    GpuHostModel(8 * 2600.0, 8, 0L, 0.0),
+                ),
+            )
+        every { hostA.availableMemory } returns 512
+        scheduler.addHost(hostA)
+
+        val hostB = mockk<HostView>()
+        every { hostB.host.getState() } returns HostState.UP
+        every { hostB.host.getModel() } returns
+            HostModel(
+                0.0,
+                0,
+                2048,
+                listOf(
+                    GpuHostModel(8 * 3200.0, 8, 0L, 0.0),
+                    GpuHostModel(8 * 3200.0, 8, 0L, 0.0),
+                ),
+            )
+        every { hostB.availableMemory } returns 512
+        scheduler.addHost(hostB)
+
+        val req = mockk<SchedulingRequest>()
+        every { req.task.flavor.gpuCoreCount } returns 8
+        every { req.task.flavor.meta } returns mapOf("gpu-capacity" to 8 * 3200.0)
+        every { req.isCancelled } returns false
+
+        // filter selects hostB because hostA does not have enough GPU capacity
+        assertEquals(hostB, scheduler.select(mutableListOf(req).iterator()).host)
     }
 
     @Test

@@ -74,6 +74,7 @@ public class FirstFitPolicyFlowDistributor extends FlowDistributor {
         }
 
         this.outgoingDemandUpdateNeeded = false;
+        this.invalidate();
     }
 
     /**

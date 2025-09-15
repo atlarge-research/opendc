@@ -148,6 +148,7 @@ public class BestEffortFlowDistributor extends FlowDistributor {
             }
         }
 
+        this.outgoingSupplyUpdateNeeded = false;
         this.updatedDemands.clear();
     }
 
@@ -264,7 +265,7 @@ public class BestEffortFlowDistributor extends FlowDistributor {
         }
 
         // Update supplies if needed
-        if (!this.outgoingSupplies.isEmpty() || updateNeeded) {
+        if (this.outgoingSupplyUpdateNeeded || updateNeeded) {
             this.updateOutgoingSupplies();
         }
 

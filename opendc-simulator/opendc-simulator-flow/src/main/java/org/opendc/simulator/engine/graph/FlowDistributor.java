@@ -60,6 +60,7 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
     protected Double totalIncomingSupply = 0.0; // The total supply provided by the suppliers
 
     protected boolean outgoingDemandUpdateNeeded = false;
+    protected boolean outgoingSupplyUpdateNeeded = false;
     protected Set<Integer> updatedDemands =
             new HashSet<>(); // Array of consumers that updated their demand in this cycle
 
@@ -142,6 +143,9 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         }
 
         this.totalIncomingDemand -= consumerEdge.getDemand();
+        if (this.totalIncomingDemand < 0) {
+            this.totalIncomingDemand = 0.0;
+        }
 
         // Remove idx from consumers that updated their demands
         this.updatedDemands.remove(idx);
@@ -204,6 +208,9 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         incomingDemands.set(idx, newDemand);
         // only update the total supply if the new supply is different from the previous one
         this.totalIncomingDemand += (newDemand - prevDemand);
+        if (totalIncomingDemand < 0) {
+            this.totalIncomingDemand = 0.0;
+        }
 
         this.updatedDemands.add(idx);
 
@@ -230,6 +237,7 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         // only update the total supply if the new supply is different from the previous one
         this.totalIncomingSupply += (newSupply - prevSupply);
 
+        this.outgoingSupplyUpdateNeeded = true;
         this.invalidate();
     }
 
