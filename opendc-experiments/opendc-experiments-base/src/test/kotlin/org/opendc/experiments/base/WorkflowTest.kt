@@ -25,10 +25,6 @@ package org.opendc.experiments.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.simulator.scheduler.MemorizingScheduler
-import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
-import org.opendc.compute.simulator.scheduler.filters.RamFilter
-import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
 import org.opendc.compute.workload.Task
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
@@ -59,7 +55,7 @@ class WorkflowTest {
                         ),
                     cpuCount = 1,
                     parents = emptySet(),
-                    children = mutableSetOf(1,2),
+                    children = mutableSetOf(1, 2),
                 ),
                 createTestTask(
                     id = 1,
@@ -88,7 +84,7 @@ class WorkflowTest {
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
                     cpuCount = 1,
-                    parents = mutableSetOf(1,2),
+                    parents = mutableSetOf(1, 2),
                     children = emptySet(),
                 ),
             )
@@ -99,12 +95,27 @@ class WorkflowTest {
 
         assertAll(
             { assertEquals(3 * 10 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals(((10 * 45000) + (10 * 30000) + (10 * 45000)).toLong(), monitor.hostCpuIdleTimes["H01"]?.sum()) { "Idle time incorrect" } },
-            { assertEquals(((10 * 15000) + (10 * 30000) + (10 * 15000)).toLong(), monitor.hostCpuActiveTimes["H01"]?.sum()) { "Active time incorrect" } },
+            {
+                assertEquals(
+                    ((10 * 45000) + (10 * 30000) + (10 * 45000)).toLong(),
+                    monitor.hostCpuIdleTimes["H01"]?.sum(),
+                ) { "Idle time incorrect" }
+            },
+            {
+                assertEquals(
+                    ((10 * 15000) + (10 * 30000) + (10 * 15000)).toLong(),
+                    monitor.hostCpuActiveTimes["H01"]?.sum(),
+                ) { "Active time incorrect" }
+            },
             { assertEquals(7500.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect host energy usage at timestamp 0" } },
             { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(10)) { "Incorrect host energy usage at timestamp 0" } },
             { assertEquals(7500.0, monitor.hostEnergyUsages["H01"]?.get(20)) { "Incorrect host energy usage at timestamp 0" } },
-            { assertEquals(600 * 125.0 + 600 * 150.0 + 600 * 125.0, monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect host energy usage" } },
+            {
+                assertEquals(
+                    600 * 125.0 + 600 * 150.0 + 600 * 125.0,
+                    monitor.hostEnergyUsages["H01"]?.sum(),
+                ) { "Incorrect host energy usage" }
+            },
             { assertEquals(600 * 125.0 + 600 * 150.0 + 600 * 125.0, monitor.energyUsages.sum()) { "Incorrect total energy usage" } },
         )
     }
@@ -174,43 +185,43 @@ class WorkflowTest {
             {
                 assertEquals(
                     ((10 * 45000) + (5 * 30000) + (15 * 45000)).toLong(),
-                    monitor.hostCpuIdleTimes["H01"]?.sum()
+                    monitor.hostCpuIdleTimes["H01"]?.sum(),
                 ) { "Idle time incorrect" }
             },
             {
                 assertEquals(
                     ((10 * 15000) + (5 * 30000) + (15 * 15000)).toLong(),
-                    monitor.hostCpuActiveTimes["H01"]?.sum()
+                    monitor.hostCpuActiveTimes["H01"]?.sum(),
                 ) { "Active time incorrect" }
             },
             {
                 assertEquals(
                     7500.0,
-                    monitor.hostEnergyUsages["H01"]?.get(0)
+                    monitor.hostEnergyUsages["H01"]?.get(0),
                 ) { "Incorrect host energy usage at timestamp 0" }
             },
             {
                 assertEquals(
                     9000.0,
-                    monitor.hostEnergyUsages["H01"]?.get(10)
+                    monitor.hostEnergyUsages["H01"]?.get(10),
                 ) { "Incorrect host energy usage at timestamp 0" }
             },
             {
                 assertEquals(
                     7500.0,
-                    monitor.hostEnergyUsages["H01"]?.get(20)
+                    monitor.hostEnergyUsages["H01"]?.get(20),
                 ) { "Incorrect host energy usage at timestamp 0" }
             },
             {
                 assertEquals(
                     600 * 125.0 + 300 * 150.0 + 900 * 125.0,
-                    monitor.hostEnergyUsages["H01"]?.sum()
+                    monitor.hostEnergyUsages["H01"]?.sum(),
                 ) { "Incorrect host energy usage" }
             },
             {
                 assertEquals(
                     600 * 125.0 + 300 * 150.0 + 900 * 125.0,
-                    monitor.energyUsages.sum()
+                    monitor.energyUsages.sum(),
                 ) { "Incorrect total energy usage" }
             },
         )
@@ -288,43 +299,43 @@ class WorkflowTest {
             {
                 assertEquals(
                     ((40 * 30000)).toLong(),
-                    monitor.hostCpuIdleTimes["H01"]?.sum()
+                    monitor.hostCpuIdleTimes["H01"]?.sum(),
                 ) { "Idle time incorrect" }
             },
             {
                 assertEquals(
                     ((40 * 30000)).toLong(),
-                    monitor.hostCpuActiveTimes["H01"]?.sum()
+                    monitor.hostCpuActiveTimes["H01"]?.sum(),
                 ) { "Active time incorrect" }
             },
             {
                 assertEquals(
                     9000.0,
-                    monitor.hostEnergyUsages["H01"]?.get(0)
+                    monitor.hostEnergyUsages["H01"]?.get(0),
                 ) { "Incorrect host energy usage at timestamp 0" }
             },
             {
                 assertEquals(
                     9000.0,
-                    monitor.hostEnergyUsages["H01"]?.get(10)
+                    monitor.hostEnergyUsages["H01"]?.get(10),
                 ) { "Incorrect host energy usage at timestamp 0" }
             },
             {
                 assertEquals(
                     9000.0,
-                    monitor.hostEnergyUsages["H01"]?.get(20)
+                    monitor.hostEnergyUsages["H01"]?.get(20),
                 ) { "Incorrect host energy usage at timestamp 0" }
             },
             {
                 assertEquals(
                     2400 * 150.0,
-                    monitor.hostEnergyUsages["H01"]?.sum()
+                    monitor.hostEnergyUsages["H01"]?.sum(),
                 ) { "Incorrect host energy usage" }
             },
             {
                 assertEquals(
                     2400 * 150.0,
-                    monitor.energyUsages.sum()
+                    monitor.energyUsages.sum(),
                 ) { "Incorrect total energy usage" }
             },
         )
@@ -403,43 +414,43 @@ class WorkflowTest {
             {
                 assertEquals(
                     ((20 * 30000) + (15 * 45000)).toLong(),
-                    monitor.hostCpuIdleTimes["H01"]?.sum()
+                    monitor.hostCpuIdleTimes["H01"]?.sum(),
                 ) { "Idle time incorrect" }
             },
             {
                 assertEquals(
                     ((20 * 30000) + (15 * 15000)).toLong(),
-                    monitor.hostCpuActiveTimes["H01"]?.sum()
+                    monitor.hostCpuActiveTimes["H01"]?.sum(),
                 ) { "Active time incorrect" }
             },
             {
                 assertEquals(
                     9000.0,
-                    monitor.hostEnergyUsages["H01"]?.get(0)
+                    monitor.hostEnergyUsages["H01"]?.get(0),
                 ) { "Incorrect host energy usage at timestamp 0" }
             },
             {
                 assertEquals(
                     9000.0,
-                    monitor.hostEnergyUsages["H01"]?.get(10)
+                    monitor.hostEnergyUsages["H01"]?.get(10),
                 ) { "Incorrect host energy usage at timestamp 0" }
             },
             {
                 assertEquals(
                     7500.0,
-                    monitor.hostEnergyUsages["H01"]?.get(20)
+                    monitor.hostEnergyUsages["H01"]?.get(20),
                 ) { "Incorrect host energy usage at timestamp 0" }
             },
             {
                 assertEquals(
                     1200 * 150.0 + 900 * 125.0,
-                    monitor.hostEnergyUsages["H01"]?.sum()
+                    monitor.hostEnergyUsages["H01"]?.sum(),
                 ) { "Incorrect host energy usage" }
             },
             {
                 assertEquals(
                     1200 * 150.0 + 900 * 125.0,
-                    monitor.energyUsages.sum()
+                    monitor.energyUsages.sum(),
                 ) { "Incorrect total energy usage" }
             },
         )
@@ -518,31 +529,31 @@ class WorkflowTest {
             {
                 assertEquals(
                     ((10 * 45000)).toLong(),
-                    monitor.hostCpuIdleTimes["H01"]?.sum()
+                    monitor.hostCpuIdleTimes["H01"]?.sum(),
                 ) { "Idle time incorrect" }
             },
             {
                 assertEquals(
                     ((10 * 15000)).toLong(),
-                    monitor.hostCpuActiveTimes["H01"]?.sum()
+                    monitor.hostCpuActiveTimes["H01"]?.sum(),
                 ) { "Active time incorrect" }
             },
             {
                 assertEquals(
                     7500.0,
-                    monitor.hostEnergyUsages["H01"]?.get(0)
+                    monitor.hostEnergyUsages["H01"]?.get(0),
                 ) { "Incorrect host energy usage at timestamp 0" }
             },
             {
                 assertEquals(
                     600 * 125.0,
-                    monitor.hostEnergyUsages["H01"]?.sum()
+                    monitor.hostEnergyUsages["H01"]?.sum(),
                 ) { "Incorrect host energy usage" }
             },
             {
                 assertEquals(
                     600 * 125.0,
-                    monitor.energyUsages.sum()
+                    monitor.energyUsages.sum(),
                 ) { "Incorrect total energy usage" }
             },
         )

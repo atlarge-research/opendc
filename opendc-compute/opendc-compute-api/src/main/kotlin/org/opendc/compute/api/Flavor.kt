@@ -42,7 +42,6 @@ public interface Flavor : Resource {
      */
     public val gpuCoreCount: Int
 
-
     /**
      * Set of Tasks that need to be finished before this can startAdd commentMore actions
      */
