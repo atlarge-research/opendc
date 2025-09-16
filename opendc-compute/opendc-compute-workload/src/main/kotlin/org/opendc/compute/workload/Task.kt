@@ -40,7 +40,7 @@ public data class Task(
     val name: String,
     var submissionTime: Long,
     val duration: Long,
-    val parents: Set<Int> = emptySet(),
+    val parents: Set<Int> = mutableSetOf(),
     val children: Set<Int> = emptySet(),
     val cpuCount: Int,
     val cpuCapacity: Double,

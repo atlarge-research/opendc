@@ -23,7 +23,6 @@
 package org.opendc.compute.simulator.service;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,7 +41,6 @@ public final class ServiceFlavor implements Flavor {
     private final int gpuCoreCount;
     private final Set<Integer> parents;
     private final Set<Integer> children;
-    private final Set<Integer> dependencies;
     private final Map<String, ?> meta;
 
     ServiceFlavor(
@@ -60,7 +58,6 @@ public final class ServiceFlavor implements Flavor {
         this.memorySize = memorySize;
         this.gpuCoreCount = gpuCoreCount;
         this.parents = parents;
-        this.dependencies = new HashSet<>(parents);
         this.children = children;
         this.meta = meta;
     }
@@ -119,23 +116,18 @@ public final class ServiceFlavor implements Flavor {
         return "Flavor[name=" + taskId + "]";
     }
 
-    @Override
-    public @NotNull Set<Integer> getDependencies() {
-        return dependencies;
-    }
-
-    public void updatePendingDependencies(List<Integer> completedTasks) {
+    public void removeFromParents(List<Integer> completedTasks) {
         for (int task : completedTasks) {
-            this.updatePendingDependencies(task);
+            this.removeFromParents(task);
         }
     }
 
-    public void updatePendingDependencies(int completedTask) {
-        this.dependencies.remove(completedTask);
+    public void removeFromParents(int completedTask) {
+        this.parents.remove(completedTask);
     }
 
     public boolean isInDependencies(int task) {
-        return this.dependencies.contains(task);
+        return this.parents.contains(task);
     }
 
     @Override

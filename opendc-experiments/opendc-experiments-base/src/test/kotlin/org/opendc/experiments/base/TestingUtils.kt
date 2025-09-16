@@ -75,6 +75,8 @@ fun createTestTask(
     checkpointDuration: Long = 0L,
     checkpointIntervalScaling: Double = 1.0,
     scalingPolicy: ScalingPolicy = NoDelayScaling(),
+    parents: Set<Int> = emptySet(),
+    children: Set<Int> = emptySet(),
 ): Task {
     var usedResources = arrayOf<ResourceType>()
     if (fragments.any { it.cpuUsage > 0.0 }) {
@@ -89,8 +91,8 @@ fun createTestTask(
         name,
         LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli(),
         duration,
-        emptySet(),
-        emptySet(),
+        parents,
+        children,
         cpuCount,
         fragments.maxOf { it.cpuUsage },
         1800000.0,

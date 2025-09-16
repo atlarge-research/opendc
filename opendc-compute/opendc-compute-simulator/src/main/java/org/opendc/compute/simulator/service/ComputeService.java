@@ -111,7 +111,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      */
     private final Deque<SchedulingRequest> taskQueue = new ArrayDeque<>();
 
-    private final List<SchedulingRequest> blockedTasks = new ArrayList<>();
+    private final Map<Integer, SchedulingRequest> blockedTasks = new HashMap<>();
 
     /**
      * The active tasks in the system.
@@ -418,22 +418,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         SchedulingRequest request = new SchedulingRequest(task, now);
 
         ServiceFlavor flavor = task.getFlavor();
-        for (int taskId : this.terminatedTasks) {
-            if (flavor.isInDependencies(taskId)) {
-                // Terminate task
-                task.setState(TaskState.TERMINATED);
-            }
-        }
 
-        // Remove all completed tasks from the pending dependencies
-        flavor.updatePendingDependencies(this.completedTasks);
-
-        // If there are still pending dependencies, we cannot schedule the task yet
-        Set<Integer> pendingDependencies = flavor.getDependencies();
-        if (!pendingDependencies.isEmpty()) {
-            // If the task has pending dependencies, we cannot schedule it yet
-            LOGGER.debug("Task {} has pending dependencies: {}", task.getId(), pendingDependencies);
-            blockedTasks.add(request);
+        // If the task has parents, put in blocked tasks
+        if (!flavor.getParents().isEmpty()) {
+            blockedTasks.put(task.getId(), request);
             return null;
         }
 
@@ -447,51 +435,83 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         return request;
     }
 
-    void addCompletedTask(ServiceTask task) {
-        int taskId = task.getId();
+    void addCompletedTask(ServiceTask completedTask) {
+        int parentId = completedTask.getId();
+        //        int taskId = task.getId();
 
-        if (!this.completedTasks.contains(taskId)) {
-            this.completedTasks.add(taskId);
-        }
+        //        if (!this.completedTasks.contains(taskId)) {
+        //            this.completedTasks.add(taskId);
+        //        }
 
-        List<SchedulingRequest> requestsToRemove = new ArrayList<>();
+        for (int taskId : completedTask.getFlavor().getChildren()) {
+            SchedulingRequest request = blockedTasks.get(taskId);
+            if (request != null) {
+                request.getTask().getFlavor().removeFromParents(parentId);
 
-        for (SchedulingRequest request : blockedTasks) {
-            request.getTask().getFlavor().updatePendingDependencies(taskId);
+                Set<Integer> pendingDependencies = request.getTask().getFlavor().getParents();
 
-            Set<Integer> pendingDependencies = request.getTask().getFlavor().getDependencies();
-
-            if (pendingDependencies.isEmpty()) {
-                requestsToRemove.add(request);
-                taskQueue.add(request);
-                tasksPending++;
+                if (pendingDependencies.isEmpty()) {
+                    taskQueue.add(request);
+                    tasksPending++;
+                    blockedTasks.remove(taskId);
+                }
             }
         }
 
-        for (SchedulingRequest request : requestsToRemove) {
-            blockedTasks.remove(request);
-        }
+        //        List<SchedulingRequest> requestsToRemove = new ArrayList<>();
+        //
+        //        for (SchedulingRequest request : blockedTasks) {
+        //            request.getTask().getFlavor().updatePendingDependencies(taskId);
+        //
+        //            Set<Integer> pendingDependencies = request.getTask().getFlavor().getDependencies();
+        //
+        //            if (pendingDependencies.isEmpty()) {
+        //                requestsToRemove.add(request);
+        //                taskQueue.add(request);
+        //                tasksPending++;
+        //            }
+        //        }
+        //
+        //        for (SchedulingRequest request : requestsToRemove) {
+        //            blockedTasks.remove(request);
+        //        }
     }
 
     void addTerminatedTask(ServiceTask task) {
-        int taskId = task.getId();
 
-        List<SchedulingRequest> requestsToRemove = new ArrayList<>();
+        for (int taskId : task.getFlavor().getChildren()) {
+            SchedulingRequest request = blockedTasks.get(taskId);
+            if (request != null) {
+                ServiceTask childTask = request.getTask();
 
-        if (!this.terminatedTasks.contains(taskId)) {
-            this.terminatedTasks.add(taskId);
-        }
+                childTask.setState(TaskState.TERMINATED);
 
-        for (SchedulingRequest request : blockedTasks) {
-            if (request.getTask().getFlavor().isInDependencies(taskId)) {
-                requestsToRemove.add(request);
-                request.getTask().setState(TaskState.TERMINATED);
+                this.addTerminatedTask(childTask);
+
+                this.setTaskToBeRemoved(childTask);
+
+                blockedTasks.remove(childTask.getId());
             }
         }
 
-        for (SchedulingRequest request : requestsToRemove) {
-            blockedTasks.remove(request);
-        }
+        //        int taskId = task.getId();
+        //
+        //        List<SchedulingRequest> requestsToRemove = new ArrayList<>();
+        //
+        //        if (!this.terminatedTasks.contains(taskId)) {
+        //            this.terminatedTasks.add(taskId);
+        //        }
+        //
+        //        for (SchedulingRequest request : blockedTasks) {
+        //            if (request.getTask().getFlavor().isInDependencies(taskId)) {
+        //                requestsToRemove.add(request);
+        //                request.getTask().setState(TaskState.TERMINATED);
+        //            }
+        //        }
+        //
+        //        for (SchedulingRequest request : requestsToRemove) {
+        //            blockedTasks.remove(request);
+        //        }
     }
 
     void delete(ServiceFlavor flavor) {
@@ -553,6 +573,8 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                     LOGGER.warn("Failed to spawn {}: does not fit", task);
 
                     task.setState(TaskState.TERMINATED);
+
+                    this.addTerminatedTask(task);
 
                     this.setTaskToBeRemoved(task);
                     continue;

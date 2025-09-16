@@ -37,7 +37,7 @@ internal data class Task(
     val memCapacity: Double,
     val gpuCount: Int = 0,
     val gpuCapacity: Double = 0.0,
-    val parents: Set<Int> = emptySet(),
+    val parents: MutableSet<Int> = mutableSetOf(),
     val children: Set<Int> = emptySet(),
     val nature: String? = null,
     val deadline: Long = -1,
