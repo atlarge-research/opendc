@@ -36,9 +36,9 @@ import java.util.ArrayList
 /**
  * An integration test suite for the Scenario experiments.
  */
-class ExperimentTest {
+class ScenarioRunnerTest {
     /**
-     * Simulator test 1: Single Task
+     * Scenario test 1: Single Task
      * In this test, a single task is scheduled that takes 10 minutes to run.
      *
      * There should be no problems running the task, so the total runtime should be 10 min.
@@ -48,7 +48,7 @@ class ExperimentTest {
      * When the task is failed, all time is idle.
      */
     @Test
-    fun testSimulator1() {
+    fun testScenario1() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -76,7 +76,7 @@ class ExperimentTest {
     }
 
     /**
-     * Simulator test 1: Two Tasks
+     * Scenario test 1: Two Tasks
      * In this test, two tasks are scheduled.
      *
      * There should be no problems running the task, so the total runtime should be 15 min.
@@ -85,7 +85,7 @@ class ExperimentTest {
      * The second task is using 100% of the available CPU capacity.
      */
     @Test
-    fun testSimulator2() {
+    fun testScenario2() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -129,7 +129,7 @@ class ExperimentTest {
     }
 
     /**
-     * Simulator test 3: Two Tasks, one scheduled later
+     * Scenario test 3: Two Tasks, one scheduled later
      * In this test, two tasks are scheduled.
      *
      * There should be no problems running the task, so the total runtime should be 15 min.
@@ -138,7 +138,7 @@ class ExperimentTest {
      * The second task is using 100% of the available CPU capacity.
      */
     @Test
-    fun testSimulator3() {
+    fun testScenario3() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -174,7 +174,7 @@ class ExperimentTest {
     }
 
     /**
-     * Simulator test 4: Two Tasks, one scheduled later
+     * Scenario test 4: Two Tasks, one scheduled later
      * In this test, two tasks are scheduled.
      *
      * There should be no problems running the task, so the total runtime should be 15 min.
@@ -183,7 +183,7 @@ class ExperimentTest {
      * The second task is using 100% of the available CPU capacity.
      */
     @Test
-    fun testSimulator4() {
+    fun testScenario4() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -224,12 +224,12 @@ class ExperimentTest {
     }
 
     /**
-     * Simulator test 5: One Task purely running on GPU
+     * Scenario test 5: One Task purely running on GPU
      *
      * In this test, a single task is scheduled that takes 10 minutes to run. It solely uses the GPU.
      */
     @Test
-    fun testSimulator5() {
+    fun testScenario5() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -272,12 +272,12 @@ class ExperimentTest {
     }
 
     /**
-     * Simulator test 6: One Task running on CPU & GPU
+     * Scenario test 6: One Task running on CPU & GPU
      *
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used and have the same runtime.
      */
     @Test
-    fun testSimulator6() {
+    fun testScenario6() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -319,12 +319,12 @@ class ExperimentTest {
     }
 
     /**
-     * Simulator test 7: One Task running on CPU & GPU
+     * Scenario test 7: One Task running on CPU & GPU
      *
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used. CPU will finish way ahead of the GPU.
      */
     @Test
-    fun testSimulator7() {
+    fun testScenario7() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -365,12 +365,12 @@ class ExperimentTest {
     }
 
     /**
-     * Simulator test 8: One Task running on CPU & GPU
+     * Scenario test 8: One Task running on CPU & GPU
      *
      * In this test, a single task is scheduled that takes 10 minutes to run. CPU & GPU are used. GPU will finish way ahead of the CPU.
      */
     @Test
-    fun testSimulator8() {
+    fun testScenario8() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -410,12 +410,12 @@ class ExperimentTest {
     }
 
     /**
-     * Simulator test 9: Two tasks running on CPU & GPU
+     * Scenario test 9: Two tasks running on CPU & GPU
      *
      * In this test, two tasks are scheduled at the same time that takes 10 minutes to run. CPU & GPU are used. Both resources will finish at the same time.
      */
     @Test
-    fun testSimulator9() {
+    fun testScenario9() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(
@@ -465,12 +465,12 @@ class ExperimentTest {
     }
 
     /**
-     * Simulator test 10: Two tasks running on CPU & GPU
+     * Scenario test 10: Two tasks running on CPU & GPU
      *
      * In this test, two tasks are scheduled at the same time that takes 10 minutes to run. One task purely uses CPU, one purely GPU.
      */
     @Test
-    fun testSimulator10() {
+    fun testScenario10() {
         val workload: ArrayList<Task> =
             arrayListOf(
                 createTestTask(

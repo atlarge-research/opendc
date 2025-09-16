@@ -29,15 +29,15 @@ import java.io.File
 /**
  * An integration test suite for the Experiment Runner.
  */
-class ExperimentRunnerTest {
+class ExperimentCliTest {
     /**
-     * ExperimentRunner test 1
+     * ExperimentCli test 1
      * This test runs the experiment defined in the experiment_1.json file.
      *
      * In this test, the bitbrains-small workload is executed with and without a carbon trace.
      */
     @Test
-    fun testExperimentRunner1() {
+    fun testExperimentCli1() {
         ExperimentCommand().main(arrayOf("--experiment-path", "src/test/resources/experiments/experiment_1.json"))
 
         val someDir = File("output")
@@ -45,13 +45,13 @@ class ExperimentRunnerTest {
     }
 
     /**
-     * ExperimentRunner test 2
+     * ExperimentCli test 2
      * This test runs the experiment defined in the experiment_2.json file.
      *
      * In this test, parts of the Marconi 100 workload is executed  . This trace contains GPU tasks.
      */
     @Test
-    fun testExperimentRunner2() {
+    fun testExperimentCli2() {
         ExperimentCommand().main(arrayOf("--experiment-path", "src/test/resources/experiments/experiment_2.json"))
 
         val someDir = File("output")

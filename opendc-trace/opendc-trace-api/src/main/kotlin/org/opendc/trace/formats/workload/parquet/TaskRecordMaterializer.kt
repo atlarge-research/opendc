@@ -170,7 +170,7 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
             localMemCapacity,
             localGpuCount,
             localGpuCapacity,
-            localParents.toSet(),
+            localParents.toMutableSet(),
             localChildren.toSet(),
             localNature,
             localDeadline,
