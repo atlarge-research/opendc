@@ -94,6 +94,7 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
             return Long.MAX_VALUE;
         }
 
+        // TODO: look into whether this is always needed
         if (!this.outgoingSupplies.isEmpty()) {
             this.updateOutgoingSupplies();
         }
