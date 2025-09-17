@@ -61,10 +61,11 @@ public class SimMachine {
     private SimPsu psu;
     private Memory memory;
 
-    private final Hashtable<ResourceType, FlowDistributor> distributors = new Hashtable<>();
+    private final FlowDistributor[] distributors = new FlowDistributor[ResourceType.values().length];
+    //    private final Hashtable<ResourceType, FlowDistributor> distributors = new Hashtable<>();
 
+    private final List<ResourceType> availableResourceTypes;
     private final Hashtable<ResourceType, ArrayList<ComputeResource>> computeResources = new Hashtable<>();
-    private final List<ResourceType> availableResources;
 
     private final Consumer<Exception> completion;
 
@@ -184,8 +185,8 @@ public class SimMachine {
         return 0.0;
     }
 
-    public List<ResourceType> getAvailableResources() {
-        return availableResources;
+    public List<ResourceType> getAvailableResourceTypes() {
+        return availableResourceTypes;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -203,13 +204,13 @@ public class SimMachine {
         this.machineModel = machineModel;
         this.clock = engine.getClock();
 
-        this.availableResources = this.machineModel.getUsedResources();
+        this.availableResourceTypes = this.machineModel.getUsedResources();
 
         // Create the psu and cpu and connect them
         this.psu = new SimPsu(engine);
         new FlowEdge(this.psu, powerDistributor);
-        this.distributors.put(ResourceType.POWER, new MaxMinFairnessFlowDistributor(engine)); // Maybe First fit
-        new FlowEdge(this.distributors.get(ResourceType.POWER), this.psu);
+        this.distributors[ResourceType.POWER.ordinal()] = new MaxMinFairnessFlowDistributor(engine); // Maybe First fit
+        new FlowEdge(this.distributors[ResourceType.POWER.ordinal()], this.psu);
 
         this.computeResources.put(
                 ResourceType.CPU,
@@ -218,17 +219,16 @@ public class SimMachine {
         // Connect the CPU to the PSU
         new FlowEdge(
                 (FlowConsumer) this.computeResources.get(ResourceType.CPU).getFirst(),
-                (FlowSupplier) this.distributors.get(ResourceType.POWER),
+                (FlowSupplier) this.distributors[ResourceType.POWER.ordinal()],
                 ResourceType.POWER,
                 0,
                 -1);
 
         // Create a FlowDistributor and add the cpu as supplier
-        this.distributors.put(
-                ResourceType.CPU,
-                FlowDistributorFactory.getFlowDistributor(engine, this.machineModel.getCpuDistributionStrategy()));
+        this.distributors[ResourceType.CPU.ordinal()] =
+                FlowDistributorFactory.getFlowDistributor(engine, this.machineModel.getCpuDistributionStrategy());
         new FlowEdge(
-                this.distributors.get(ResourceType.CPU),
+                this.distributors[ResourceType.CPU.ordinal()],
                 (FlowSupplier) this.computeResources.get(ResourceType.CPU).getFirst(),
                 ResourceType.CPU,
                 -1,
@@ -237,10 +237,9 @@ public class SimMachine {
         // TODO: include memory as flow node
         this.memory = new Memory(engine, this.machineModel.getMemory());
 
-        if (this.availableResources.contains(ResourceType.GPU)) {
-            this.distributors.put(
-                    ResourceType.GPU,
-                    FlowDistributorFactory.getFlowDistributor(engine, this.machineModel.getGpuDistributionStrategy()));
+        if (this.availableResourceTypes.contains(ResourceType.GPU)) {
+            this.distributors[ResourceType.GPU.ordinal()] =
+                    FlowDistributorFactory.getFlowDistributor(engine, this.machineModel.getGpuDistributionStrategy());
             ArrayList<ComputeResource> gpus = new ArrayList<>();
 
             for (GpuModel gpuModel : machineModel.getGpuModels()) {
@@ -250,7 +249,7 @@ public class SimMachine {
                 gpus.add(gpu);
                 // Connect the GPU to the distributor
                 new FlowEdge(
-                        this.distributors.get(ResourceType.GPU),
+                        this.distributors[ResourceType.GPU.ordinal()],
                         gpu,
                         ResourceType.GPU,
                         gpuModel.getId(),
@@ -258,7 +257,7 @@ public class SimMachine {
                 // Connect the GPU to the PSU
                 new FlowEdge(
                         gpu,
-                        this.distributors.get(ResourceType.POWER),
+                        this.distributors[ResourceType.POWER.ordinal()],
                         ResourceType.POWER,
                         gpuModel.getId(),
                         gpuModel.getId());
@@ -289,10 +288,10 @@ public class SimMachine {
         }
         this.memory = null;
 
-        for (ResourceType resourceType : this.distributors.keySet()) {
-            this.distributors.get(resourceType).closeNode();
+        for (ResourceType resourceType : this.availableResourceTypes) {
+            this.distributors[resourceType.ordinal()].closeNode();
+            this.distributors[resourceType.ordinal()] = null;
         }
-        this.distributors.clear();
 
         this.completion.accept(cause);
     }
@@ -319,8 +318,8 @@ public class SimMachine {
     public VirtualMachine startWorkload(ChainWorkload workload, Consumer<Exception> completion) {
 
         ArrayList<FlowSupplier> distributors = new ArrayList<>();
-        for (ResourceType resourceType : this.availableResources) {
-            distributors.add(this.distributors.get(resourceType));
+        for (ResourceType resourceType : this.availableResourceTypes) {
+            distributors.add(this.distributors[resourceType.ordinal()]);
         }
 
         return (VirtualMachine) workload.startWorkload(distributors, this, completion);
