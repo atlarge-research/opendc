@@ -132,6 +132,7 @@ public class HostsProvisioningStep internal constructor(
                 val simHost =
                     SimHost(
                         hostSpec.name,
+                        hostSpec.type,
                         cluster.name,
                         ctx.dispatcher.timeSource,
                         engine,

@@ -88,6 +88,10 @@ public class MemorizingTimeshift(
         numHosts--
     }
 
+    override fun setHostEmpty(hostView: HostView) {
+        // No-op
+    }
+
     override fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult {
         if (numHosts == 0) {
             return SchedulingResult(SchedulingResultType.FAILURE)

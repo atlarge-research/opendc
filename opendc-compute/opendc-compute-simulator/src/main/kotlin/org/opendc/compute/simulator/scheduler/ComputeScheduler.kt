@@ -39,6 +39,8 @@ public interface ComputeScheduler {
      */
     public fun removeHost(host: HostView)
 
+    public fun setHostEmpty(hostView: HostView)
+
     /**
      * Select a host for the specified [iter].
      * We implicity assume that the task has been scheduled onto the host.

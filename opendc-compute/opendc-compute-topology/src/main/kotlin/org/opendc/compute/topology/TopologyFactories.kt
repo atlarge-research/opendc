@@ -224,6 +224,7 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
     val hostSpec =
         HostSpec(
             createUniqueName(this.name, hostNames),
+            this.name,
             clusterName,
             machineModel,
             cpuPowerModel,

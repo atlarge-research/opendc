@@ -193,6 +193,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
                 host.delete(task);
 
+                if (host.isEmpty()) {
+                    setHostEmpty(host);
+                }
+
                 if (newState == TaskState.COMPLETED) {
                     tasksCompleted++;
                     addCompletedTask(task);
@@ -292,6 +296,12 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
         scheduler.addHost(hv);
         host.addListener(hostListener);
+    }
+
+    public void setHostEmpty(SimHost host) {
+        HostView hv = hostToView.get(host);
+
+        this.scheduler.setHostEmpty(hv);
     }
 
     public void addPowerSource(SimPowerSource simPowerSource) {
@@ -437,11 +447,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     void addCompletedTask(ServiceTask completedTask) {
         int parentId = completedTask.getId();
-        //        int taskId = task.getId();
-
-        //        if (!this.completedTasks.contains(taskId)) {
-        //            this.completedTasks.add(taskId);
-        //        }
 
         for (int taskId : completedTask.getFlavor().getChildren()) {
             SchedulingRequest request = blockedTasks.get(taskId);
@@ -457,24 +462,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 }
             }
         }
-
-        //        List<SchedulingRequest> requestsToRemove = new ArrayList<>();
-        //
-        //        for (SchedulingRequest request : blockedTasks) {
-        //            request.getTask().getFlavor().updatePendingDependencies(taskId);
-        //
-        //            Set<Integer> pendingDependencies = request.getTask().getFlavor().getDependencies();
-        //
-        //            if (pendingDependencies.isEmpty()) {
-        //                requestsToRemove.add(request);
-        //                taskQueue.add(request);
-        //                tasksPending++;
-        //            }
-        //        }
-        //
-        //        for (SchedulingRequest request : requestsToRemove) {
-        //            blockedTasks.remove(request);
-        //        }
     }
 
     void addTerminatedTask(ServiceTask task) {
@@ -493,25 +480,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 blockedTasks.remove(childTask.getId());
             }
         }
-
-        //        int taskId = task.getId();
-        //
-        //        List<SchedulingRequest> requestsToRemove = new ArrayList<>();
-        //
-        //        if (!this.terminatedTasks.contains(taskId)) {
-        //            this.terminatedTasks.add(taskId);
-        //        }
-        //
-        //        for (SchedulingRequest request : blockedTasks) {
-        //            if (request.getTask().getFlavor().isInDependencies(taskId)) {
-        //                requestsToRemove.add(request);
-        //                request.getTask().setState(TaskState.TERMINATED);
-        //            }
-        //        }
-        //
-        //        for (SchedulingRequest request : requestsToRemove) {
-        //            blockedTasks.remove(request);
-        //        }
     }
 
     void delete(ServiceFlavor flavor) {
