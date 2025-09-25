@@ -98,10 +98,10 @@ public class FilterScheduler(
             }
         }
 
-        val availableHosts = usedHosts
+        val availableHosts = usedHosts.toMutableList()
         for (emptyHosts in emptyHostMap.values) {
             if (!emptyHosts.isEmpty()) {
-                usedHosts += emptyHosts.first()
+                availableHosts += emptyHosts.first()
             }
         }
 
