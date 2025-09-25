@@ -73,6 +73,10 @@ public class TimeshiftScheduler(
         hosts.remove(host)
     }
 
+    override fun setHostEmpty(hostView: HostView) {
+        // No-op
+    }
+
     override fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult {
         var result: SchedulingResult? = null
         for (req in iter) {

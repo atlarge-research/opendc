@@ -35,6 +35,7 @@ import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFac
  */
 public data class HostSpec(
     val name: String,
+    val type: String,
     val clusterName: String,
     val model: MachineModel,
     val cpuPowerModel: PowerModel,

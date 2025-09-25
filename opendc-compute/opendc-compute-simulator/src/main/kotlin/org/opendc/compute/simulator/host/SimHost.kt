@@ -56,6 +56,7 @@ import java.time.InstantSource
  */
 public class SimHost(
     private val name: String,
+    private val type: String,
     private val clusterName: String,
     private val clock: InstantSource,
     private val engine: FlowEngine,
@@ -201,6 +202,10 @@ public class SimHost(
         return name
     }
 
+    public fun getType(): String {
+        return type
+    }
+
     public fun getClusterName(): String {
         return clusterName
     }
@@ -215,6 +220,10 @@ public class SimHost(
 
     public fun getInstances(): Set<ServiceTask> {
         return taskToGuestMap.keys
+    }
+
+    public fun isEmpty(): Boolean {
+        return guests.isEmpty()
     }
 
     public fun getGuests(): List<Guest> {

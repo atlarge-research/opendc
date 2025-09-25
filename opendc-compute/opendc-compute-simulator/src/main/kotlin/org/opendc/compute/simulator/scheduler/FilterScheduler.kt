@@ -28,7 +28,6 @@ import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
-import kotlin.math.min
 
 /**
  * A [ComputeScheduler] implementation that uses filtering and weighing passes to select
@@ -51,18 +50,39 @@ public class FilterScheduler(
     /**
      * The pool of hosts available to the scheduler.
      */
-    private val hosts = mutableListOf<HostView>()
+
+    private val emptyHostMap = mutableMapOf<String, MutableList<HostView>>()
+    private val usedHosts = mutableListOf<HostView>()
 
     init {
         require(subsetSize >= 1) { "Subset size must be one or greater" }
     }
 
-    override fun addHost(host: HostView) {
-        hosts.add(host)
+    override fun addHost(hostView: HostView) {
+        val hostType = hostView.host.getType()
+
+        if (emptyHostMap.containsKey(hostType)) {
+            emptyHostMap[hostType]?.add(hostView);
+        } else {
+            emptyHostMap[hostType] = mutableListOf(hostView)
+        }
     }
 
-    override fun removeHost(host: HostView) {
-        hosts.remove(host)
+    override fun removeHost(hostView: HostView) {
+        val hostType = hostView.host.getType()
+
+        emptyHostMap[hostType]?.remove(hostView)
+    }
+
+    override fun setHostEmpty(hostView: HostView) {
+        val hostType = hostView.host.getType()
+
+        usedHosts.remove(hostView)
+        if (emptyHostMap.containsKey(hostType)) {
+            emptyHostMap[hostType]?.add(hostView);
+        } else {
+            emptyHostMap[hostType] = mutableListOf(hostView)
+        }
     }
 
     override fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult {
@@ -78,8 +98,15 @@ public class FilterScheduler(
             }
         }
 
+        val availableHosts = usedHosts
+        for (emptyHosts in emptyHostMap.values) {
+            if (!emptyHosts.isEmpty()) {
+                usedHosts += emptyHosts.first();
+            }
+        }
+
         val task = req.task
-        val filteredHosts = hosts.filter { host -> filters.all { filter -> filter.test(host, task) } }
+        val filteredHosts = availableHosts.filter { host -> filters.all { filter -> filter.test(host, task) } }
 
         val subset =
             if (weighers.isNotEmpty()) {
@@ -113,14 +140,19 @@ public class FilterScheduler(
                 filteredHosts
             }
 
-        // fixme: currently finding no matching hosts can result in an error
-        val maxSize = min(subsetSize, subset.size)
-        if (maxSize == 0) {
+        if (subset.isEmpty()) {
             return SchedulingResult(SchedulingResultType.FAILURE, null, req)
-        } else {
-            iter.remove()
-            return SchedulingResult(SchedulingResultType.SUCCESS, subset[random.nextInt(maxSize)], req)
         }
+
+        iter.remove()
+
+        val host = subset.first()
+        val hostType = host.host.getType()
+
+        emptyHostMap[hostType]?.remove(host)
+        usedHosts.add(host)
+
+        return SchedulingResult(SchedulingResultType.SUCCESS, host, req)
     }
 
     override fun removeTask(
