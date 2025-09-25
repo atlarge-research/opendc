@@ -358,6 +358,7 @@ public class OpenDCRunner(
             val spec =
                 HostSpec(
                     "node-$clusterId-$position",
+                    "node-$clusterId",
                     clusterId,
                     MachineModel(processors, memoryUnits[0]),
                     cpuPowerModel,

@@ -62,7 +62,7 @@ public class FilterScheduler(
         val hostType = hostView.host.getType()
 
         if (emptyHostMap.containsKey(hostType)) {
-            emptyHostMap[hostType]?.add(hostView);
+            emptyHostMap[hostType]?.add(hostView)
         } else {
             emptyHostMap[hostType] = mutableListOf(hostView)
         }
@@ -79,7 +79,7 @@ public class FilterScheduler(
 
         usedHosts.remove(hostView)
         if (emptyHostMap.containsKey(hostType)) {
-            emptyHostMap[hostType]?.add(hostView);
+            emptyHostMap[hostType]?.add(hostView)
         } else {
             emptyHostMap[hostType] = mutableListOf(hostView)
         }
@@ -101,7 +101,7 @@ public class FilterScheduler(
         val availableHosts = usedHosts
         for (emptyHosts in emptyHostMap.values) {
             if (!emptyHosts.isEmpty()) {
-                usedHosts += emptyHosts.first();
+                usedHosts += emptyHosts.first()
             }
         }
 
