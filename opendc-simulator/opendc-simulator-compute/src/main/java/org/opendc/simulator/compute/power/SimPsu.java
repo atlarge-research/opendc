@@ -38,11 +38,13 @@ import org.opendc.simulator.engine.graph.FlowSupplier;
 public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer {
     private long lastUpdate;
 
-    private double powerDemand = 0.0;
-    private double powerSupplied = 0.0;
+    private double incomingPowerDemand = 0.0;
+    private double outgoingPowerDemand = 0.0;
+    private double incomingPowerSupply = 0.0;
+    private double outgoingPowerSupply = 0.0;
     private double totalEnergyUsage = 0.0;
 
-    private FlowEdge cpuEdge;
+    private FlowEdge componentEdge;
     private FlowEdge powerSupplyEdge;
 
     private double capacity = Long.MAX_VALUE;
@@ -57,7 +59,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
      * @return <code>true</code> if the InPort is connected to an OutPort, <code>false</code> otherwise.
      */
     public boolean isConnected() {
-        return cpuEdge != null;
+        return componentEdge != null;
     }
 
     /**
@@ -65,15 +67,15 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
      * <p>
      * This method provides access to the power consumption of the machine before PSU losses are applied.
      */
-    public double getPowerDemand() {
-        return this.powerDemand;
+    public double getIncomingPowerDemand() {
+        return this.incomingPowerDemand;
     }
 
     /**
      * Return the instantaneous power usage of the machine (in W) measured at the InPort of the power supply.
      */
     public double getPowerDraw() {
-        return this.powerSupplied;
+        return this.incomingPowerSupply;
     }
 
     /**
@@ -106,10 +108,10 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
     @Override
     public long onUpdate(long now) {
         updateCounters();
-        double powerSupply = this.powerDemand;
+        double powerSupply = this.incomingPowerSupply;
 
-        if (powerSupply != this.powerSupplied) {
-            this.pushOutgoingSupply(this.cpuEdge, powerSupply);
+        if (powerSupply != this.incomingPowerDemand) {
+            this.pushOutgoingSupply(this.componentEdge, powerSupply);
         }
 
         return Long.MAX_VALUE;
@@ -129,7 +131,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
         long duration = now - lastUpdate;
         if (duration > 0) {
             // Compute the energy usage of the psu
-            this.totalEnergyUsage += (this.powerSupplied * duration * 0.001);
+            this.totalEnergyUsage += (this.incomingPowerSupply * duration * 0.001);
         }
     }
 
@@ -139,37 +141,35 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
-        this.powerDemand = newDemand;
+        this.outgoingPowerDemand = newDemand;
         powerSupplyEdge.pushDemand(newDemand);
     }
 
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
-        this.powerSupplied = newSupply;
-        cpuEdge.pushSupply(newSupply);
+        this.outgoingPowerSupply = newSupply;
+        componentEdge.pushSupply(newSupply);
     }
 
     @Override
     public void handleIncomingDemand(FlowEdge consumerEdge, double newPowerDemand) {
-
         updateCounters();
-        this.powerDemand = newPowerDemand;
+        this.incomingPowerDemand = newPowerDemand;
 
         pushOutgoingDemand(this.powerSupplyEdge, newPowerDemand);
     }
 
     @Override
     public void handleIncomingSupply(FlowEdge supplierEdge, double newPowerSupply) {
-
         updateCounters();
-        this.powerSupplied = newPowerSupply;
+        this.incomingPowerSupply = newPowerSupply;
 
-        pushOutgoingSupply(this.cpuEdge, newPowerSupply);
+        pushOutgoingSupply(this.componentEdge, newPowerSupply);
     }
 
     @Override
     public void addConsumerEdge(FlowEdge consumerEdge) {
-        this.cpuEdge = consumerEdge;
+        this.componentEdge = consumerEdge;
     }
 
     @Override
@@ -179,7 +179,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public void removeConsumerEdge(FlowEdge consumerEdge) {
-        this.cpuEdge = null;
+        this.componentEdge = null;
     }
 
     @Override
@@ -189,7 +189,7 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
 
     @Override
     public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
-        List<FlowEdge> supplyingEdges = cpuEdge != null ? List.of(cpuEdge) : List.of();
+        List<FlowEdge> supplyingEdges = componentEdge != null ? List.of(componentEdge) : List.of();
         List<FlowEdge> consumingEdges = powerSupplyEdge != null ? List.of(powerSupplyEdge) : List.of();
 
         return Map.of(

@@ -23,7 +23,6 @@
 package org.opendc.simulator.engine.graph.distributionPolicies;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -46,7 +45,7 @@ public class FixedShareFlowDistributor extends FlowDistributor {
 
     private double fixedShare;
     private final double shareRatio;
-    private int[] notSuppliedConsumers;
+    private final ArrayList<Integer> notSuppliedConsumers = new ArrayList<>();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Constructor
@@ -58,8 +57,8 @@ public class FixedShareFlowDistributor extends FlowDistributor {
      * @param engine The flow engine
      * @param shareRatio The fixed share ratio for each consumer (between 0.0 and 1.0)
      */
-    public FixedShareFlowDistributor(FlowEngine engine, double shareRatio) {
-        super(engine);
+    public FixedShareFlowDistributor(FlowEngine engine, double shareRatio, int maxConsumers) {
+        super(engine, maxConsumers);
 
         if (shareRatio <= 0 || shareRatio > 1) {
             throw new IllegalArgumentException("Share ratio must be between 0.0 and 1.0");
@@ -68,9 +67,6 @@ public class FixedShareFlowDistributor extends FlowDistributor {
 
         // Each consumer gets an equal fixed share of the total capacity
         this.fixedShare = this.shareRatio * this.capacity / this.supplierEdges.size();
-
-        // Initialize tracking for round-robin prioritization
-        this.notSuppliedConsumers = new int[0];
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,62 +99,47 @@ public class FixedShareFlowDistributor extends FlowDistributor {
     protected void updateOutgoingSupplies() {
         // Calculate the fixed allocation per consumer
 
-        // Distribute to each consumer
-        int consumerIndex = 0;
-        if (this.consumerEdges.size() == this.supplierEdges.size()) {
-            for (FlowEdge consumerEdge : this.consumerEdges) {
-                this.pushOutgoingSupply(consumerEdge, this.fixedShare);
-            }
-        } else {
-            double[] supplies = distributeSupply(this.incomingDemands, this.outgoingSupplies, this.totalIncomingSupply);
-            for (FlowEdge consumerEdge : this.consumerEdges) {
-                this.pushOutgoingSupply(consumerEdge, this.fixedShare);
-            }
+        double[] supplies = distributeSupply(
+                this.incomingDemands, new ArrayList<>(this.currentIncomingSupplies.values()), this.totalIncomingSupply);
+
+        for (int consumerIndex : this.usedConsumerIndices) {
+            this.pushOutgoingSupply(
+                    this.consumerEdges[consumerIndex], supplies[consumerIndex], this.getConsumerResourceType());
         }
     }
 
-    public double[] distributeSupply(ArrayList<Double> demands, ArrayList<Double> currentSupply, double totalSupply) {
-        double[] supplies = new double[this.consumerEdges.size()];
+    public double[] distributeSupply(double[] demands, ArrayList<Double> currentSupply, double totalSupply) {
+        double[] supplies = new double[this.maxConsumers];
 
-        if (this.consumerEdges.size() < this.supplierEdges.size()
-                && this.fixedShare * this.consumerEdges.size() <= totalSupply) {
-            for (FlowEdge consumerEdge : this.consumerEdges) {
-                supplies[consumerEdge.getConsumerIndex()] = this.fixedShare;
+        if (this.numConsumers < this.supplierEdges.size() && this.fixedShare * this.numConsumers <= totalSupply) {
+
+            for (int consumerIndex : this.usedConsumerIndices) {
+                supplies[consumerIndex] = this.fixedShare;
             }
         } else {
-            // Round-robin approach: prioritize consumers that didn't get resources last time
-            ArrayList<Integer> currentNotSuppliedList = new ArrayList<>();
-
             // Calculate how many consumers we can supply with available resources
             int maxConsumersToSupply = (int) Math.floor(totalSupply / this.fixedShare);
             int consumersSupplied = 0;
 
             // First pass: try to supply consumers that were not supplied in the previous round
-            for (int index : this.notSuppliedConsumers) {
-                if (index < this.consumerEdges.size() && consumersSupplied < maxConsumersToSupply) {
-                    supplies[index] = this.fixedShare;
+            for (int consumerIndex : this.notSuppliedConsumers) {
+                if (consumersSupplied >= maxConsumersToSupply) {
+                    break;
+                }
+                supplies[consumerIndex] = this.fixedShare;
+                consumersSupplied++;
+            }
+
+            this.notSuppliedConsumers.clear();
+            for (int consumerIndex : this.usedConsumerIndices) {
+                if (supplies[consumerIndex] == 0.0) {
+                    if (consumersSupplied >= maxConsumersToSupply) {
+                        this.notSuppliedConsumers.add(consumerIndex);
+                    }
+                    supplies[consumerIndex] = this.fixedShare;
                     consumersSupplied++;
                 }
             }
-
-            // Second pass: supply remaining consumers if we still have capacity
-            for (int i = 0; i < this.consumerEdges.size() && consumersSupplied < maxConsumersToSupply; i++) {
-                if (supplies[i] == 0.0) { // This consumer hasn't been supplied yet
-                    supplies[i] = this.fixedShare;
-                    consumersSupplied++;
-                }
-            }
-
-            // Build the list of consumers that didn't get resources this round
-            for (int i = 0; i < this.consumerEdges.size(); i++) {
-                if (supplies[i] == 0.0) {
-                    currentNotSuppliedList.add(i);
-                }
-            }
-
-            // Update the tracking array for next round
-            this.notSuppliedConsumers =
-                    currentNotSuppliedList.stream().mapToInt(Integer::intValue).toArray();
         }
 
         return supplies;
@@ -167,46 +148,16 @@ public class FixedShareFlowDistributor extends FlowDistributor {
     @Override
     // index of not supplied consumers also need to be updated
     public void removeConsumerEdge(FlowEdge consumerEdge) {
-        int idx = consumerEdge.getConsumerIndex();
+        int consumerIndex = consumerEdge.getConsumerIndex();
 
-        if (idx == -1) {
+        if (consumerIndex == -1) {
             return;
         }
 
-        this.totalIncomingDemand -= consumerEdge.getDemand();
-
-        // Remove idx from consumers that updated their demands
-        this.updatedDemands.remove(idx);
-
-        this.consumerEdges.remove(idx);
-        this.incomingDemands.remove(idx);
-        this.outgoingSupplies.remove(idx);
-
-        // update the consumer index for all consumerEdges higher than this.
-        for (int i = idx; i < this.consumerEdges.size(); i++) {
-            FlowEdge other = this.consumerEdges.get(i);
-
-            other.setConsumerIndex(other.getConsumerIndex() - 1);
+        if (this.notSuppliedConsumers.contains(consumerIndex)) {
+            this.notSuppliedConsumers.remove(Integer.valueOf(consumerIndex));
         }
 
-        HashSet<Integer> newUpdatedDemands = new HashSet<>();
-        for (int idx_other : this.updatedDemands) {
-            if (idx_other > idx) {
-                newUpdatedDemands.add(idx_other - 1);
-            } else {
-                newUpdatedDemands.add(idx_other);
-            }
-        }
-        this.updatedDemands = newUpdatedDemands;
-
-        // Decrease the index of not supplied consumers
-        for (int i = 0; i < this.notSuppliedConsumers.length; i++) {
-            if (this.notSuppliedConsumers[i] > idx) {
-                this.notSuppliedConsumers[i]--;
-            }
-        }
-
-        this.outgoingDemandUpdateNeeded = true;
-        this.invalidate();
+        super.removeConsumerEdge(consumerEdge);
     }
 }

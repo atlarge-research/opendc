@@ -36,8 +36,8 @@ import org.opendc.simulator.engine.graph.FlowDistributor;
  */
 public class EqualShareFlowDistributor extends FlowDistributor {
 
-    public EqualShareFlowDistributor(FlowEngine engine) {
-        super(engine);
+    public EqualShareFlowDistributor(FlowEngine engine, int maxConsumers) {
+        super(engine, maxConsumers);
     }
 
     /**
@@ -65,18 +65,19 @@ public class EqualShareFlowDistributor extends FlowDistributor {
      */
     @Override
     protected void updateOutgoingSupplies() {
-        double[] equalShare = distributeSupply(incomingDemands, outgoingSupplies, this.capacity);
+        double[] equalShare = distributeSupply(
+                incomingDemands, new ArrayList<>(this.currentIncomingSupplies.values()), this.capacity);
 
-        for (var consumerEdge : this.consumerEdges) {
-            this.pushOutgoingSupply(consumerEdge, equalShare[consumerEdge.getConsumerIndex()]);
+        for (int consumerIndex : this.usedConsumerIndices) {
+            this.pushOutgoingSupply(
+                    this.consumerEdges[consumerIndex], equalShare[consumerIndex], this.getConsumerResourceType());
         }
     }
 
     @Override
-    public double[] distributeSupply(ArrayList<Double> demands, ArrayList<Double> currentSupply, double totalSupply) {
-        int numConsumers = demands.size();
-        double[] allocation = new double[numConsumers];
-        double equalShare = totalSupply / numConsumers;
+    public double[] distributeSupply(double[] demands, ArrayList<Double> currentSupply, double totalSupply) {
+        double[] allocation = new double[this.numConsumers];
+        double equalShare = totalSupply / this.numConsumers;
 
         // Equal share regardless of individual demands
         Arrays.fill(allocation, equalShare);

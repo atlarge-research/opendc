@@ -206,10 +206,15 @@ public class SimMachine {
 
         this.availableResourceTypes = this.machineModel.getUsedResources();
 
+        int maxTasks = Math.max(
+                this.machineModel.getCpuModel().getCoreCount(),
+                this.machineModel.getGpuModels().size() * 100);
+
         // Create the psu and cpu and connect them
         this.psu = new SimPsu(engine);
         new FlowEdge(this.psu, powerDistributor);
-        this.distributors[ResourceType.POWER.ordinal()] = new MaxMinFairnessFlowDistributor(engine); // Maybe First fit
+        this.distributors[ResourceType.POWER.ordinal()] = new MaxMinFairnessFlowDistributor(
+                engine, 1 + this.machineModel.getGpuModels().size()); // Maybe First fit
         new FlowEdge(this.distributors[ResourceType.POWER.ordinal()], this.psu);
 
         this.computeResources.put(
@@ -225,8 +230,8 @@ public class SimMachine {
                 -1);
 
         // Create a FlowDistributor and add the cpu as supplier
-        this.distributors[ResourceType.CPU.ordinal()] =
-                FlowDistributorFactory.getFlowDistributor(engine, this.machineModel.getCpuDistributionStrategy());
+        this.distributors[ResourceType.CPU.ordinal()] = FlowDistributorFactory.getFlowDistributor(
+                engine, this.machineModel.getCpuDistributionStrategy(), maxTasks);
         new FlowEdge(
                 this.distributors[ResourceType.CPU.ordinal()],
                 (FlowSupplier) this.computeResources.get(ResourceType.CPU).getFirst(),
@@ -238,8 +243,8 @@ public class SimMachine {
         this.memory = new Memory(engine, this.machineModel.getMemory());
 
         if (this.availableResourceTypes.contains(ResourceType.GPU)) {
-            this.distributors[ResourceType.GPU.ordinal()] =
-                    FlowDistributorFactory.getFlowDistributor(engine, this.machineModel.getGpuDistributionStrategy());
+            this.distributors[ResourceType.GPU.ordinal()] = FlowDistributorFactory.getFlowDistributor(
+                    engine, this.machineModel.getGpuDistributionStrategy(), maxTasks);
             ArrayList<ComputeResource> gpus = new ArrayList<>();
 
             for (GpuModel gpuModel : machineModel.getGpuModels()) {

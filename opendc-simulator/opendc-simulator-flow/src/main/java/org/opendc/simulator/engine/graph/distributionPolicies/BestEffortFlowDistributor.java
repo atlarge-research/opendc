@@ -23,7 +23,6 @@
 package org.opendc.simulator.engine.graph.distributionPolicies;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -47,8 +46,8 @@ public class BestEffortFlowDistributor extends FlowDistributor {
     private final long roundRobinInterval;
     private long lastRoundRobinUpdate;
 
-    public BestEffortFlowDistributor(FlowEngine flowEngine, long roundRobinInterval) {
-        super(flowEngine);
+    public BestEffortFlowDistributor(FlowEngine flowEngine, long roundRobinInterval, int maxConsumers) {
+        super(flowEngine, maxConsumers);
         this.roundRobinInterval = roundRobinInterval;
         this.lastRoundRobinUpdate = -roundRobinInterval;
     }
@@ -122,28 +121,33 @@ public class BestEffortFlowDistributor extends FlowDistributor {
                     new ArrayList<>(this.currentIncomingSupplies.values()),
                     this.totalIncomingSupply);
 
-            for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
-                this.pushOutgoingSupply(this.consumerEdges.get(idx), supplies[idx], this.getConsumerResourceType());
+            for (int consumerIndex : this.usedConsumerIndices) {
+                this.pushOutgoingSupply(
+                        this.consumerEdges[consumerIndex], supplies[consumerIndex], this.getConsumerResourceType());
             }
         } else {
             // System is not overloaded - satisfy all demands and utilize remaining capacity
 
             if (this.overloaded) {
-                // Transitioning from overloaded to non-overloaded state
-                for (int idx = 0; idx < this.consumerEdges.size(); idx++) {
-                    if (!Objects.equals(this.outgoingSupplies.get(idx), this.incomingDemands.get(idx))) {
+                for (int consumerIndex : this.usedConsumerIndices) {
+                    // TODO: I think we can remove this check
+                    if (this.outgoingSupplies[consumerIndex] == this.incomingDemands[consumerIndex]) {
                         this.pushOutgoingSupply(
-                                this.consumerEdges.get(idx),
-                                this.incomingDemands.get(idx),
+                                this.consumerEdges[consumerIndex],
+                                this.incomingDemands[consumerIndex],
                                 this.getConsumerResourceType());
                     }
                 }
                 this.overloaded = false;
-            } else {
-                // Update supplies for consumers that changed their demand
-                for (int idx : this.updatedDemands) {
+            }
+
+            // Update the supplies of the consumers that changed their demand in the current cycle
+            else {
+                for (int consumerIndex : this.updatedDemands) {
                     this.pushOutgoingSupply(
-                            this.consumerEdges.get(idx), this.incomingDemands.get(idx), this.getConsumerResourceType());
+                            this.consumerEdges[consumerIndex],
+                            this.incomingDemands[consumerIndex],
+                            this.getConsumerResourceType());
                 }
             }
         }
@@ -160,8 +164,8 @@ public class BestEffortFlowDistributor extends FlowDistributor {
      * 3. Optimize utilization by giving extra capacity to active consumers
      */
     @Override
-    public double[] distributeSupply(ArrayList<Double> demands, ArrayList<Double> currentSupply, double totalSupply) {
-        int numConsumers = this.consumerEdges.size();
+    public double[] distributeSupply(double[] demands, ArrayList<Double> currentSupply, double totalSupply) {
+        int numConsumers = this.consumerEdges.length;
         double[] allocation = new double[numConsumers];
 
         if (numConsumers == 0 || totalSupply <= 0) {
@@ -174,7 +178,7 @@ public class BestEffortFlowDistributor extends FlowDistributor {
         // Start from the current round-robin index to ensure fairness over time
         for (int round = 0; round < numConsumers && remainingSupply > 0; round++) {
             int idx = (currentRoundRobinIndex + round) % numConsumers;
-            double demand = demands.get(idx);
+            double demand = demands[idx];
 
             if (demand > allocation[idx]) {
                 // Calculate how much we can allocate in this round
@@ -192,7 +196,7 @@ public class BestEffortFlowDistributor extends FlowDistributor {
             // Create a list of consumers with unsatisfied demand, sorted by relative need
             ArrayList<Integer> unsatisfiedConsumers = new ArrayList<>();
             for (int i = 0; i < numConsumers; i++) {
-                if (demands.get(i) > allocation[i]) {
+                if (demands[i] > allocation[i]) {
                     unsatisfiedConsumers.add(i);
                 }
             }
@@ -202,7 +206,7 @@ public class BestEffortFlowDistributor extends FlowDistributor {
                 // Find consumers with any demand (active consumers)
                 ArrayList<Integer> activeConsumers = new ArrayList<>();
                 for (int i = 0; i < numConsumers; i++) {
-                    if (demands.get(i) > 0) {
+                    if (demands[i] > 0) {
                         activeConsumers.add(i);
                     }
                 }
@@ -217,11 +221,11 @@ public class BestEffortFlowDistributor extends FlowDistributor {
                 // Distribute remaining supply proportionally to unsatisfied demand
                 double totalUnsatisfiedDemand = 0;
                 for (int idx : unsatisfiedConsumers) {
-                    totalUnsatisfiedDemand += demands.get(idx) - allocation[idx];
+                    totalUnsatisfiedDemand += demands[idx] - allocation[idx];
                 }
 
                 for (int idx : unsatisfiedConsumers) {
-                    double unsatisfiedDemand = demands.get(idx) - allocation[idx];
+                    double unsatisfiedDemand = demands[idx] - allocation[idx];
                     double proportion = unsatisfiedDemand / totalUnsatisfiedDemand;
                     allocation[idx] += remainingSupply * proportion;
                 }
@@ -269,7 +273,7 @@ public class BestEffortFlowDistributor extends FlowDistributor {
             this.updateOutgoingSupplies();
         }
 
-        if (this.consumerEdges.isEmpty() || !this.hasSupplierEdges()) {
+        if (this.numConsumers == 0 || !this.hasSupplierEdges()) {
             nextUpdate = Long.MAX_VALUE;
         }
 

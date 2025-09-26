@@ -118,12 +118,6 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             // instead iterate over the resources in the fragment as required resources not provided by the VM
             for (ResourceType resourceType : workload.getResourceTypes()) {
                 this.usedResourceTypes.add(resourceType);
-
-                //                this.resourcesSupplied.put(resourceType, 0.0);
-                //                this.newResourcesSupply.put(resourceType, 0.0);
-                //                this.resourcesDemand.put(resourceType, 0.0);
-                //                this.remainingWork.put(resourceType, 0.0);
-                //                this.workloadFinished.put(resourceType, false);
             }
         }
     }
@@ -146,11 +140,6 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             if (supplier.getSupplierResourceType() != ResourceType.AUXILIARY) {
                 new FlowEdge(this, supplier);
                 this.usedResourceTypes.add(supplier.getSupplierResourceType());
-                //                this.resourcesSupplied.put(supplier.getSupplierResourceType(), 0.0);
-                //                this.newResourcesSupply.put(supplier.getSupplierResourceType(), 0.0);
-                //                this.resourcesDemand.put(supplier.getSupplierResourceType(), 0.0);
-                //                this.remainingWork.put(supplier.getSupplierResourceType(), 0.0);
-                //                this.workloadFinished.put(supplier.getSupplierResourceType(), false);
             }
         }
     }
