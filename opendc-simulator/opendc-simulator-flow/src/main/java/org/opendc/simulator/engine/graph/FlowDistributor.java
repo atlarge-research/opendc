@@ -73,25 +73,6 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
 
     protected double capacity; // What is the max capacity. Can probably be removed
 
-    //    protected final ArrayList<FlowEdge> consumerEdges = new ArrayList<>();
-    //    protected final ArrayList<Double> incomingDemands = new ArrayList<>(); // What is demanded by the consumers
-    //    protected final ArrayList<Double> outgoingSupplies = new ArrayList<>(); // What is supplied to the consumers
-    //
-    //    protected double totalIncomingDemand; // The total demand of all the consumers
-    //    protected HashMap<Integer, Double> currentIncomingSupplies = new HashMap<>(); // The current supply provided
-    // by the suppliers
-    //    protected Double totalIncomingSupply = 0.0; // The total supply provided by the suppliers
-    //
-    //    protected boolean outgoingDemandUpdateNeeded = false;
-    //    protected boolean outgoingSupplyUpdateNeeded = false;
-    //    protected Set<Integer> updatedDemands =
-    //            new HashSet<>(); // Array of consumers that updated their demand in this cycle
-    //
-    //    protected ResourceType supplierResourceType;
-    //    protected ResourceType consumerResourceType;
-    //
-    //    protected double capacity; // What is the max capacity. Can probably be removed
-
     public FlowDistributor(FlowEngine engine, int maxConsumers) {
         super(engine);
 
@@ -110,7 +91,6 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
 
         this.incomingDemands = new double[this.maxConsumers];
         this.outgoingSupplies = new double[this.maxConsumers];
-        //        this.updatedDemands = new boolean[this.maxConsumers];
     }
 
     public double getTotalIncomingDemand() {
@@ -189,7 +169,6 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         }
 
         // Remove idx from consumers that updated their demands
-        //        this.updatedDemands[consumerIndex] = false;
         if (this.updatedDemands.contains(consumerIndex)) {
             this.updatedDemands.remove(Integer.valueOf(consumerIndex));
         }
@@ -211,8 +190,6 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
     public void removeSupplierEdge(FlowEdge supplierEdge) {
         // supplierIndex not always set, so we use 0 as default to avoid index out of bounds
         int idx = supplierEdge.getSupplierIndex() == -1 ? 0 : supplierEdge.getSupplierIndex();
-        // to keep index consistent, entries are neutralized instead of removed
-        //        this.supplierEdges.put(idx, null);
 
         this.supplierEdges.remove(idx);
         this.capacity -= supplierEdge.getCapacity();
@@ -220,7 +197,6 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
 
         if (this.supplierEdges.isEmpty()) {
             this.updatedDemands.clear();
-            //            Arrays.fill(this.updatedDemands, false);
         }
     }
 
