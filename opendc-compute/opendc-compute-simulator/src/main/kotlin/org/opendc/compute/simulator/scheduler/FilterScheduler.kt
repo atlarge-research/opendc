@@ -146,13 +146,15 @@ public class FilterScheduler(
 
         iter.remove()
 
-        val host = subset.first()
-        val hostType = host.host.getType()
+        val hostView = subset.first()
+        val hostType = hostView.host.getType()
 
-        emptyHostMap[hostType]?.remove(host)
-        usedHosts.add(host)
+        if (hostView.host.isEmpty()) {
+            emptyHostMap[hostType]?.remove(hostView)
+            usedHosts.add(hostView)
+        }
 
-        return SchedulingResult(SchedulingResultType.SUCCESS, host, req)
+        return SchedulingResult(SchedulingResultType.SUCCESS, hostView, req)
     }
 
     override fun removeTask(
