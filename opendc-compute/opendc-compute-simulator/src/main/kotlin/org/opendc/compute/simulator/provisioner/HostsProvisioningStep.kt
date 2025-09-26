@@ -68,10 +68,11 @@ public class HostsProvisioningStep internal constructor(
             simPowerSources.add(simPowerSource)
             service.addPowerSource(simPowerSource)
 
-            val hostDistributor =
+            val powerDistributor =
                 FlowDistributorFactory.getFlowDistributor(
                     engine,
                     DistributionPolicy.MAX_MIN_FAIRNESS,
+                    cluster.hostSpecs.size,
                 )
 
             val carbonFragments = getCarbonFragments(cluster.powerSource.carbonTracePath)
@@ -90,6 +91,7 @@ public class HostsProvisioningStep internal constructor(
                     FlowDistributorFactory.getFlowDistributor(
                         engine,
                         DistributionPolicy.MAX_MIN_FAIRNESS,
+                        2,
                     )
                 FlowEdge(batteryDistributor, simPowerSource)
 
@@ -120,11 +122,11 @@ public class HostsProvisioningStep internal constructor(
 
                 carbonModel?.addReceiver(batteryPolicy)
 
-                FlowEdge(hostDistributor, batteryAggregator, ResourceType.POWER)
+                FlowEdge(powerDistributor, batteryAggregator, ResourceType.POWER)
 
                 service.addBattery(battery)
             } else {
-                FlowEdge(hostDistributor, simPowerSource, ResourceType.POWER)
+                FlowEdge(powerDistributor, simPowerSource, ResourceType.POWER)
             }
 
             // Create hosts, they are connected to the powerMux when SimMachine is created
@@ -141,7 +143,7 @@ public class HostsProvisioningStep internal constructor(
                         hostSpec.gpuPowerModel,
                         hostSpec.embodiedCarbon,
                         hostSpec.expectedLifetime,
-                        hostDistributor,
+                        powerDistributor,
                     )
 
                 require(simHosts.add(simHost)) { "Host with name ${hostSpec.name} already exists" }

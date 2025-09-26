@@ -56,22 +56,23 @@ public class FlowDistributorFactory {
         }
     }
 
-    public static FlowDistributor getFlowDistributor(FlowEngine flowEngine, DistributionPolicy distributionPolicyType) {
+    public static FlowDistributor getFlowDistributor(
+            FlowEngine flowEngine, DistributionPolicy distributionPolicyType, int maxConsumers) {
 
         return switch (distributionPolicyType) {
             case BEST_EFFORT -> new BestEffortFlowDistributor(
-                    flowEngine, distributionPolicyType.getProperty("updateIntervalLength", Long.class));
-            case EQUAL_SHARE -> new EqualShareFlowDistributor(flowEngine);
-            case FIRST_FIT -> new FirstFitPolicyFlowDistributor(flowEngine);
+                    flowEngine, distributionPolicyType.getProperty("updateIntervalLength", Long.class), maxConsumers);
+            case EQUAL_SHARE -> new EqualShareFlowDistributor(flowEngine, maxConsumers);
+            case FIRST_FIT -> new FirstFitPolicyFlowDistributor(flowEngine, maxConsumers);
             case FIXED_SHARE -> {
                 if (!distributionPolicyType.getPropertyNames().contains("shareRatio")) {
                     throw new IllegalArgumentException(
                             "FixedShare distribution policy requires a 'shareRatio' property to be set.");
                 }
                 yield new FixedShareFlowDistributor(
-                        flowEngine, distributionPolicyType.getProperty("shareRatio", Double.class));
+                        flowEngine, distributionPolicyType.getProperty("shareRatio", Double.class), maxConsumers);
             }
-            default -> new MaxMinFairnessFlowDistributor(flowEngine);
+            default -> new MaxMinFairnessFlowDistributor(flowEngine, maxConsumers);
         };
     }
 }

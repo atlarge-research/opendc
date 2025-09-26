@@ -25,7 +25,6 @@ package org.opendc.simulator.engine.graph.distributionPolicies;
 import java.util.ArrayList;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
-import org.opendc.simulator.engine.graph.FlowEdge;
 
 /**
  * A {@link FlowDistributor} that implements the First Fit policy for distributing flow.
@@ -37,8 +36,8 @@ import org.opendc.simulator.engine.graph.FlowEdge;
  */
 public class FirstFitPolicyFlowDistributor extends FlowDistributor {
 
-    public FirstFitPolicyFlowDistributor(FlowEngine engine) {
-        super(engine);
+    public FirstFitPolicyFlowDistributor(FlowEngine engine, int maxConsumers) {
+        super(engine, maxConsumers);
     }
 
     /**
@@ -90,8 +89,9 @@ public class FirstFitPolicyFlowDistributor extends FlowDistributor {
 
         double[] shares = distributeSupply(incomingDemands, currentPossibleSupplies, totalIncomingSupply);
 
-        for (FlowEdge consumerEdge : this.consumerEdges) {
-            this.pushOutgoingSupply(consumerEdge, shares[consumerEdge.getConsumerIndex()]);
+        for (int consumerIndex : this.usedConsumerIndices) {
+            this.pushOutgoingSupply(
+                    this.consumerEdges[consumerIndex], shares[consumerIndex], this.getConsumerResourceType());
         }
     }
 
@@ -108,8 +108,8 @@ public class FirstFitPolicyFlowDistributor extends FlowDistributor {
      * @see #updateOutgoingSupplies()
      */
     @Override
-    public double[] distributeSupply(ArrayList<Double> demands, ArrayList<Double> currentSupply, double totalSupply) {
-        int numConsumers = demands.size();
+    public double[] distributeSupply(double[] demands, ArrayList<Double> currentSupply, double totalSupply) {
+        int numConsumers = demands.length;
         double[] allocation = new double[numConsumers];
 
         // Create a copy of current supply to track remaining capacity as we allocate
@@ -117,7 +117,7 @@ public class FirstFitPolicyFlowDistributor extends FlowDistributor {
 
         // For each demand, try to satisfy it using suppliers in order
         for (int i = 0; i < numConsumers; i++) {
-            double remainingDemand = demands.get(i);
+            double remainingDemand = demands[i];
             double totalAllocated = 0.0;
 
             if (remainingDemand > 0) {
