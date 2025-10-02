@@ -32,6 +32,7 @@ public class HostView {
     int instanceCount;
     long availableMemory;
     int provisionedCpuCores;
+    int availableCpuCores;
     int provisionedGpuCores;
 
     /**
@@ -58,6 +59,7 @@ public class HostView {
     public HostView(SimHost host) {
         this.host = host;
         this.availableMemory = host.getModel().memoryCapacity();
+        this.availableCpuCores = host.getModel().coreCount();
     }
 
     /**
@@ -86,6 +88,10 @@ public class HostView {
      */
     public int getProvisionedCpuCores() {
         return provisionedCpuCores;
+    }
+
+    public int getAvailableCpuCores() {
+        return availableCpuCores;
     }
 
     public int getProvisionedGpuCores() {

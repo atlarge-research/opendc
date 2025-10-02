@@ -88,6 +88,10 @@ public class MemorizingTimeshift(
         numHosts--
     }
 
+    override fun updateHost(hostView: HostView) {
+        // No-op
+    }
+
     override fun setHostEmpty(hostView: HostView) {
         // No-op
     }

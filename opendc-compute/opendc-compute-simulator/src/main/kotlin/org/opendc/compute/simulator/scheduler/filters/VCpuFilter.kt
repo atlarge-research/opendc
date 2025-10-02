@@ -30,21 +30,34 @@ import org.opendc.compute.simulator.service.ServiceTask
  *
  * @param allocationRatio Virtual CPU to physical CPU allocation ratio.
  */
-public class VCpuFilter(private val allocationRatio: Double) : HostFilter {
+public class VCpuFilter(private val allocationRatio: Double = 1.0) : HostFilter {
+    private val isSimple = allocationRatio == 1.0
+
     override fun test(
         host: HostView,
         task: ServiceTask,
     ): Boolean {
+        if (isSimple) return host.availableCpuCores >= task.flavor.cpuCoreCount
+
         val requested = task.flavor.cpuCoreCount
         val totalCores = host.host.getModel().coreCount
-        val limit = totalCores * allocationRatio
 
         // Do not allow an instance to overcommit against itself, only against other instances
         if (requested > totalCores) {
             return false
         }
 
+        val limit = totalCores * allocationRatio
+
         val availableCores = limit - host.provisionedCpuCores
         return availableCores >= requested
+    }
+
+    override fun score(host: HostView): Double {
+        return if (isSimple) {
+            host.availableCpuCores.toDouble()
+        } else {
+            host.host.getModel().coreCount * allocationRatio
+        }
     }
 }

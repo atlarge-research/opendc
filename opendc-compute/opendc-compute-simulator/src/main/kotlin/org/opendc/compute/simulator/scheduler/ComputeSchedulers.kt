@@ -59,8 +59,9 @@ public fun createPrefabComputeScheduler(
     name: String,
     seeder: RandomGenerator,
     clock: InstantSource,
+    numHosts: Int = 1000,
 ): ComputeScheduler {
-    return createPrefabComputeScheduler(ComputeSchedulerEnum.valueOf(name.uppercase()), seeder, clock)
+    return createPrefabComputeScheduler(ComputeSchedulerEnum.valueOf(name.uppercase()), seeder, clock, numHosts)
 }
 
 /**
@@ -70,50 +71,59 @@ public fun createPrefabComputeScheduler(
     name: ComputeSchedulerEnum,
     seeder: RandomGenerator,
     clock: InstantSource,
+    numHosts: Int = 1000,
 ): ComputeScheduler {
     val cpuAllocationRatio = 1.0
-    val ramAllocationRatio = 1.5
+    val ramAllocationRatio = 1.0
     val gpuAllocationRatio = 1.0
     return when (name) {
         ComputeSchedulerEnum.Mem ->
             FilterScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+                filters = listOf(VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
                 weighers = listOf(RamWeigher(multiplier = 1.0)),
+                numHosts = numHosts,
             )
         ComputeSchedulerEnum.MemInv ->
             FilterScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
                 weighers = listOf(RamWeigher(multiplier = -1.0)),
+                numHosts = numHosts,
             )
         ComputeSchedulerEnum.CoreMem ->
             FilterScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
                 weighers = listOf(CoreRamWeigher(multiplier = 1.0)),
+                numHosts = numHosts,
             )
         ComputeSchedulerEnum.CoreMemInv ->
             FilterScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
                 weighers = listOf(CoreRamWeigher(multiplier = -1.0)),
+                numHosts = numHosts,
             )
         ComputeSchedulerEnum.ActiveServers ->
             FilterScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
                 weighers = listOf(InstanceCountWeigher(multiplier = -1.0)),
+                numHosts = numHosts,
             )
         ComputeSchedulerEnum.ActiveServersInv ->
             FilterScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
                 weighers = listOf(InstanceCountWeigher(multiplier = 1.0)),
+                numHosts = numHosts,
             )
         ComputeSchedulerEnum.ProvisionedCores ->
             FilterScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
                 weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = 1.0)),
+                numHosts = numHosts,
             )
         ComputeSchedulerEnum.ProvisionedCoresInv ->
             FilterScheduler(
                 filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
                 weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = -1.0)),
+                numHosts = numHosts,
             )
         ComputeSchedulerEnum.Random ->
             FilterScheduler(
@@ -121,6 +131,7 @@ public fun createPrefabComputeScheduler(
                 weighers = emptyList(),
                 subsetSize = Int.MAX_VALUE,
                 random = SplittableRandom(seeder.nextLong()),
+                numHosts = numHosts,
             )
         ComputeSchedulerEnum.TaskNumMemorizing ->
             MemorizingScheduler(
@@ -144,6 +155,7 @@ public fun createPrefabComputeScheduler(
                         RamFilter(ramAllocationRatio),
                     ),
                 weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = 1.0), VGpuWeigher(gpuAllocationRatio, multiplier = 1.0)),
+                numHosts = numHosts,
             )
         ComputeSchedulerEnum.ProvisionedCpuGpuCoresInv ->
             FilterScheduler(
@@ -159,6 +171,7 @@ public fun createPrefabComputeScheduler(
                         VCpuWeigher(cpuAllocationRatio, multiplier = -1.0),
                         VGpuWeigher(gpuAllocationRatio, multiplier = -1.0),
                     ),
+                numHosts = numHosts,
             )
         ComputeSchedulerEnum.GpuTaskMemorizing ->
             MemorizingScheduler(

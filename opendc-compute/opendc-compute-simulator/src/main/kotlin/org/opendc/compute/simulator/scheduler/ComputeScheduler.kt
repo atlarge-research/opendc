@@ -39,6 +39,12 @@ public interface ComputeScheduler {
      */
     public fun removeHost(host: HostView)
 
+    public fun failHost(host: HostView) {}
+
+    public fun restartHost(host: HostView) {}
+
+    public fun updateHost(host: HostView)
+
     public fun setHostEmpty(hostView: HostView)
 
     /**
