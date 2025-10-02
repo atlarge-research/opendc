@@ -151,8 +151,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             if (hv != null) {
                 if (newState == HostState.UP) {
                     availableHosts.add(hv);
+                    restartHosts(hv);
                 } else {
                     availableHosts.remove(hv);
+                    failHosts(hv);
                 }
             }
 
@@ -184,6 +186,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 final ServiceFlavor flavor = task.getFlavor();
                 if (hv != null) {
                     hv.provisionedCpuCores -= flavor.getCpuCoreCount();
+                    hv.availableCpuCores += flavor.getCpuCoreCount();
                     hv.instanceCount--;
                     hv.availableMemory += flavor.getMemorySize();
                     hv.provisionedGpuCores -= flavor.getGpuCoreCount();
@@ -193,9 +196,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
                 host.delete(task);
 
-                if (host.isEmpty()) {
-                    setHostEmpty(host);
-                }
+                updateHost(host);
 
                 if (newState == TaskState.COMPLETED) {
                     tasksCompleted++;
@@ -298,10 +299,18 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         host.addListener(hostListener);
     }
 
-    public void setHostEmpty(SimHost host) {
+    public void updateHost(SimHost host) {
         HostView hv = hostToView.get(host);
 
-        this.scheduler.setHostEmpty(hv);
+        this.scheduler.updateHost(hv);
+    }
+
+    public void failHosts(HostView hv) {
+        this.scheduler.failHost(hv);
+    }
+
+    public void restartHosts(HostView hv) {
+        this.scheduler.restartHost(hv);
     }
 
     public void addPowerSource(SimPowerSource simPowerSource) {
@@ -519,6 +528,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         for (Iterator<SchedulingRequest> iterator = taskQueue.iterator();
                 iterator.hasNext();
                 iterator = taskQueue.iterator()) {
+
             final SchedulingResult result = scheduler.select(iterator);
             if (result.getResultType() == SchedulingResultType.EMPTY) {
                 break;
@@ -570,10 +580,13 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
                 hv.instanceCount++;
                 hv.provisionedCpuCores += flavor.getCpuCoreCount();
+                hv.availableCpuCores -= flavor.getCpuCoreCount();
                 hv.availableMemory -= flavor.getMemorySize();
                 hv.provisionedGpuCores += flavor.getGpuCoreCount();
 
                 activeTasks.put(task, host);
+
+                updateHost(host);
             } catch (Exception cause) {
                 LOGGER.error("Failed to deploy VM", cause);
                 scheduler.removeTask(task, hv);

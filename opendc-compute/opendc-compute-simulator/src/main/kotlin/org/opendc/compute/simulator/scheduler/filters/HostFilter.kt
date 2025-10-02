@@ -37,4 +37,8 @@ public fun interface HostFilter {
         host: HostView,
         task: ServiceTask,
     ): Boolean
+
+    public fun score(host: HostView): Number = 0.0
+
+    public fun requiredScore(task: ServiceTask): Number = 0.0
 }

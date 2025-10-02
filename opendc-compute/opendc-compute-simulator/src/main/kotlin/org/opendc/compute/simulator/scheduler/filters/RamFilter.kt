@@ -30,11 +30,15 @@ import org.opendc.compute.simulator.service.ServiceTask
  *
  * @param allocationRatio Virtual RAM to physical RAM allocation ratio.
  */
-public class RamFilter(private val allocationRatio: Double) : HostFilter {
+public class RamFilter(private val allocationRatio: Double = 1.0) : HostFilter {
+    private val isSimple = allocationRatio == 1.0
+
     override fun test(
         host: HostView,
         task: ServiceTask,
     ): Boolean {
+        if (isSimple) return host.availableMemory >= task.flavor.memorySize
+
         val requestedMemory = task.flavor.memorySize
         val availableMemory = host.availableMemory
         val memoryCapacity = host.host.getModel().memoryCapacity
@@ -51,5 +55,13 @@ public class RamFilter(private val allocationRatio: Double) : HostFilter {
 
         val result = usable >= requestedMemory
         return result
+    }
+
+    override fun score(host: HostView): Double {
+        return if (isSimple) {
+            return host.availableMemory.toDouble()
+        } else {
+            host.host.getModel().memoryCapacity * allocationRatio
+        }
     }
 }

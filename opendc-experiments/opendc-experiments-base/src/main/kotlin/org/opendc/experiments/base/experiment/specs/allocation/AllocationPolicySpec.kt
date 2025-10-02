@@ -76,13 +76,14 @@ public fun createComputeScheduler(
     spec: AllocationPolicySpec,
     seeder: RandomGenerator,
     clock: InstantSource,
+    numHosts: Int = 1000,
 ): ComputeScheduler {
     return when (spec) {
-        is PrefabAllocationPolicySpec -> createPrefabComputeScheduler(spec.policyName, seeder, clock)
+        is PrefabAllocationPolicySpec -> createPrefabComputeScheduler(spec.policyName, seeder, clock, numHosts)
         is FilterAllocationPolicySpec -> {
             val filters = spec.filters.map { createHostFilter(it) }
             val weighers = spec.weighers.map { createHostWeigher(it) }
-            FilterScheduler(filters, weighers, spec.subsetSize, seeder)
+            FilterScheduler(filters, weighers, spec.subsetSize, seeder, numHosts)
         }
         is TimeShiftAllocationPolicySpec -> {
             val filters = spec.filters.map { createHostFilter(it) }

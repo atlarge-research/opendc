@@ -46,13 +46,18 @@ public class FilterScheduler(
     private val weighers: List<HostWeigher>,
     private val subsetSize: Int = 1,
     private val random: RandomGenerator = SplittableRandom(0),
+    numHosts: Int = 1000,
 ) : ComputeScheduler {
     /**
      * The pool of hosts available to the scheduler.
      */
 
+    private val failedHosts = mutableListOf<HostView>() // List of Hosts that are currently not available
     private val emptyHostMap = mutableMapOf<String, MutableList<HostView>>()
-    private val usedHosts = mutableListOf<HostView>()
+
+    private val weights = DoubleArray(numHosts)
+
+    private val usedHosts = SortedHostViewList(numHosts, filters)
 
     init {
         require(subsetSize >= 1) { "Subset size must be one or greater" }
@@ -68,10 +73,39 @@ public class FilterScheduler(
         }
     }
 
+    // Remove host from the Available hosts list
     override fun removeHost(hostView: HostView) {
         val hostType = hostView.host.getType()
 
-        emptyHostMap[hostType]?.remove(hostView)
+        // remove from emptyHosts if present
+        val removed = emptyHostMap[hostType]?.remove(hostView)
+        if (removed != null && removed) {
+            return
+        }
+
+        // If the hosts was being used, remove it from there
+        usedHosts.remove(hostView)
+    }
+
+    // Remove a failed host from available hosts, and add it to the failed hosts.
+    override fun failHost(hostView: HostView) {
+        removeHost(hostView)
+        failedHosts.add(hostView)
+    }
+
+    override fun restartHost(hostView: HostView) {
+        val removed = failedHosts.remove(hostView)
+        if (removed) {
+            addHost(hostView)
+        }
+    }
+
+    override fun updateHost(hostView: HostView) {
+        if (hostView.host.isEmpty()) {
+            setHostEmpty(hostView)
+        } else {
+            usedHosts.updateHost(hostView)
+        }
     }
 
     override fun setHostEmpty(hostView: HostView) {
@@ -98,20 +132,29 @@ public class FilterScheduler(
             }
         }
 
-        val availableHosts = usedHosts.toMutableList()
+        val task = req.task
+
+        val fittingHosts = usedHosts.getFittingHosts(task)
+
         for (emptyHosts in emptyHostMap.values) {
             if (!emptyHosts.isEmpty()) {
-                availableHosts += emptyHosts.first()
+                val host = emptyHosts.first()
+                if (filters.all { filter -> filter.test(host, req.task) }) {
+                    fittingHosts.add(host)
+                }
             }
         }
 
-        val task = req.task
-        val filteredHosts = availableHosts.filter { host -> filters.all { filter -> filter.test(host, task) } }
+        if (fittingHosts.isEmpty()) {
+            return SchedulingResult(SchedulingResultType.FAILURE, null, req)
+        }
 
-        val subset =
+        var maxWeight = Double.MIN_VALUE
+        var maxIndex = 0
+
+        val hostView =
             if (weighers.isNotEmpty()) {
-                val results = weighers.map { it.getWeights(filteredHosts, task) }
-                val weights = DoubleArray(filteredHosts.size)
+                val results = weighers.map { it.getWeights(fittingHosts, task) }
 
                 for (result in results) {
                     val min = result.min
@@ -126,32 +169,26 @@ public class FilterScheduler(
                     val factor = multiplier / range
 
                     for ((i, weight) in result.weights.withIndex()) {
-                        weights[i] += factor * (weight - min)
+                        this.weights[i] += factor * (weight - min)
+                        if (this.weights[i] > maxWeight) {
+                            maxIndex = i
+                            maxWeight = weight
+                        }
                     }
                 }
 
-                weights.indices
-                    .asSequence()
-                    .sortedByDescending { weights[it] }
-                    .map { filteredHosts[it] }
-                    .take(subsetSize)
-                    .toList()
+                fittingHosts[maxIndex]
             } else {
-                filteredHosts
+                fittingHosts.first()
             }
-
-        if (subset.isEmpty()) {
-            return SchedulingResult(SchedulingResultType.FAILURE, null, req)
-        }
 
         iter.remove()
 
-        val hostView = subset.first()
         val hostType = hostView.host.getType()
 
         if (hostView.host.isEmpty()) {
             emptyHostMap[hostType]?.remove(hostView)
-            usedHosts.add(hostView)
+            usedHosts.addSorted(hostView)
         }
 
         return SchedulingResult(SchedulingResultType.SUCCESS, hostView, req)

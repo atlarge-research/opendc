@@ -107,6 +107,8 @@ public fun runScenario(
             val startTime = Duration.ofMillis(startTimeLong)
 
             val topology = clusterTopology(scenario.topologySpec.pathToFile)
+
+            val numHosts = topology.sumOf { it.hostSpecs.size }
             provisioner.runSteps(
                 setupComputeService(
                     serviceDomain,
@@ -116,6 +118,7 @@ public fun runScenario(
                                 scenario.allocationPolicySpec,
                                 Random(it.seeder.nextLong()),
                                 timeSource,
+                                numHosts,
                             )
 
                         provisioner.registry.register(serviceDomain, ComputeScheduler::class.java, computeScheduler)
