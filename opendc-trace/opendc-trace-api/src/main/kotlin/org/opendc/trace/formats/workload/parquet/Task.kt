@@ -39,6 +39,6 @@ internal data class Task(
     val gpuCapacity: Double = 0.0,
     val parents: MutableSet<Int> = mutableSetOf(),
     val children: Set<Int> = emptySet(),
-    val nature: String? = null,
+    val deferrable: Boolean = false,
     val deadline: Long = -1,
 )

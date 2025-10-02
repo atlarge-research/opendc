@@ -100,7 +100,7 @@ fun createTestTask(
         gpuCount = gpuCount,
         gpuCapacity = fragments.maxOfOrNull { it.gpuUsage } ?: 0.0,
         gpuMemCapacity = 0L,
-        "",
+        false,
         -1,
         TraceWorkload(
             fragments,

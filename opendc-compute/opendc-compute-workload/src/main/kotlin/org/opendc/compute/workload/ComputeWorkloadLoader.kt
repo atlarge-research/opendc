@@ -36,13 +36,13 @@ import org.opendc.trace.conv.TASK_CHILDREN
 import org.opendc.trace.conv.TASK_CPU_CAPACITY
 import org.opendc.trace.conv.TASK_CPU_COUNT
 import org.opendc.trace.conv.TASK_DEADLINE
+import org.opendc.trace.conv.TASK_DEFERRABLE
 import org.opendc.trace.conv.TASK_DURATION
 import org.opendc.trace.conv.TASK_GPU_CAPACITY
 import org.opendc.trace.conv.TASK_GPU_COUNT
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.conv.TASK_MEM_CAPACITY
 import org.opendc.trace.conv.TASK_NAME
-import org.opendc.trace.conv.TASK_NATURE
 import org.opendc.trace.conv.TASK_PARENTS
 import org.opendc.trace.conv.TASK_SUBMISSION_TIME
 import java.io.File
@@ -136,7 +136,7 @@ public class ComputeWorkloadLoader(
         val gpuCoreCountCol = reader.resolve(TASK_GPU_COUNT) // Assuming GPU cores are also present
         val parentsCol = reader.resolve(TASK_PARENTS)
         val childrenCol = reader.resolve(TASK_CHILDREN)
-        val natureCol = reader.resolve(TASK_NATURE)
+        val deferrableCol = reader.resolve(TASK_DEFERRABLE)
         val deadlineCol = reader.resolve(TASK_DEADLINE)
 
         val entries = mutableListOf<Task>()
@@ -174,10 +174,10 @@ public class ComputeWorkloadLoader(
                 val parents = reader.getSet(parentsCol, Int::class.java) // No dependencies in the trace
                 val children = reader.getSet(childrenCol, Int::class.java) // No dependencies in the trace
 
-                var nature = reader.getString(natureCol)
+                var deferrable = reader.getBoolean(deferrableCol)
                 var deadline = reader.getLong(deadlineCol)
                 if (deferAll) {
-                    nature = "deferrable"
+                    deferrable = true
                     deadline = submissionTime + (3 * duration)
                 }
 
@@ -199,7 +199,7 @@ public class ComputeWorkloadLoader(
                         gpuCoreCount,
                         gpuUsage,
                         gpuMemory,
-                        nature,
+                        deferrable,
                         deadline,
                         builder.build(),
                     ),

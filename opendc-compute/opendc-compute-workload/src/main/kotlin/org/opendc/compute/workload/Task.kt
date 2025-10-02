@@ -49,7 +49,7 @@ public data class Task(
     val gpuCount: Int = 0,
     val gpuCapacity: Double = 0.0,
     val gpuMemCapacity: Long = 0L,
-    val nature: String?,
+    val deferrable: Boolean,
     var deadline: Long,
     val trace: TraceWorkload,
 )

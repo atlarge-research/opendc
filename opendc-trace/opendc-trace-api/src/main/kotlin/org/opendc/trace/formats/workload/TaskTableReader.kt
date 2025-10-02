@@ -28,13 +28,13 @@ import org.opendc.trace.conv.TASK_CHILDREN
 import org.opendc.trace.conv.TASK_CPU_CAPACITY
 import org.opendc.trace.conv.TASK_CPU_COUNT
 import org.opendc.trace.conv.TASK_DEADLINE
+import org.opendc.trace.conv.TASK_DEFERRABLE
 import org.opendc.trace.conv.TASK_DURATION
 import org.opendc.trace.conv.TASK_GPU_CAPACITY
 import org.opendc.trace.conv.TASK_GPU_COUNT
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.conv.TASK_MEM_CAPACITY
 import org.opendc.trace.conv.TASK_NAME
-import org.opendc.trace.conv.TASK_NATURE
 import org.opendc.trace.conv.TASK_PARENTS
 import org.opendc.trace.conv.TASK_SUBMISSION_TIME
 import org.opendc.trace.formats.workload.parquet.Task
@@ -76,7 +76,7 @@ internal class TaskTableReader(private val reader: LocalParquetReader<Task>) : T
     private val colGpuCount = 8
     private val colParents = 9
     private val colChildren = 10
-    private val colNature = 11
+    private val colDeferrable = 11
     private val colDeadline = 12
 
     private val typeParents = TableColumnType.Set(TableColumnType.Int)
@@ -95,7 +95,7 @@ internal class TaskTableReader(private val reader: LocalParquetReader<Task>) : T
             TASK_GPU_CAPACITY -> colGpuCapacity
             TASK_PARENTS -> colParents
             TASK_CHILDREN -> colChildren
-            TASK_NATURE -> colNature
+            TASK_DEFERRABLE -> colDeferrable
             TASK_DEADLINE -> colDeadline
             else -> -1
         }
@@ -106,14 +106,17 @@ internal class TaskTableReader(private val reader: LocalParquetReader<Task>) : T
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
-            colNature -> record.nature == null
             colDeadline -> record.deadline == -1L
             else -> false
         }
     }
 
     override fun getBoolean(index: Int): Boolean {
-        throw IllegalArgumentException("Invalid column")
+        val record = checkNotNull(record) { "Reader in invalid state" }
+        return when (index) {
+            colDeferrable -> record.deferrable
+            else -> throw IllegalArgumentException("Invalid column")
+        }
     }
 
     override fun getInt(index: Int): Int {
@@ -156,7 +159,6 @@ internal class TaskTableReader(private val reader: LocalParquetReader<Task>) : T
 
         return when (index) {
             colName -> record.name
-            colNature -> record.nature
             else -> throw IllegalArgumentException("Invalid column")
         }
     }

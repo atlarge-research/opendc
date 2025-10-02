@@ -24,7 +24,6 @@ package org.opendc.trace.formats.workload.parquet
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.api.WriteSupport
-import org.apache.parquet.io.api.Binary
 import org.apache.parquet.io.api.RecordConsumer
 import kotlin.math.roundToLong
 
@@ -79,11 +78,9 @@ internal class TaskWriteSupport : WriteSupport<Task>() {
         consumer.addLong(record.memCapacity.roundToLong())
         consumer.endField("mem_capacity", 5)
 
-        record.nature?.let {
-            consumer.startField("nature", 6)
-            consumer.addBinary(Binary.fromCharSequence(it))
-            consumer.endField("nature", 6)
-        }
+        consumer.startField("deferrable", 6)
+        consumer.addBoolean(record.deferrable)
+        consumer.endField("deferrable", 6)
 
         if (record.deadline != -1L) {
             consumer.startField("deadline", 7)

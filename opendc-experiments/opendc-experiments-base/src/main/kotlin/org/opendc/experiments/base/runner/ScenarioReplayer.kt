@@ -122,12 +122,7 @@ public suspend fun ComputeService.replay(
                 val workload = entry.trace
                 val meta = mutableMapOf<String, Any>("workload" to workload)
 
-                val nature =
-                    if (entry.nature == "deferrable") {
-                        TaskNature(true)
-                    } else {
-                        TaskNature(false)
-                    }
+                val nature = TaskNature(entry.deferrable)
 
                 val flavorMeta = mutableMapOf<String, Any>()
 
