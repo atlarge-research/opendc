@@ -28,13 +28,13 @@ import org.opendc.trace.conv.TASK_CHILDREN
 import org.opendc.trace.conv.TASK_CPU_CAPACITY
 import org.opendc.trace.conv.TASK_CPU_COUNT
 import org.opendc.trace.conv.TASK_DEADLINE
+import org.opendc.trace.conv.TASK_DEFERRABLE
 import org.opendc.trace.conv.TASK_DURATION
 import org.opendc.trace.conv.TASK_GPU_CAPACITY
 import org.opendc.trace.conv.TASK_GPU_COUNT
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.conv.TASK_MEM_CAPACITY
 import org.opendc.trace.conv.TASK_NAME
-import org.opendc.trace.conv.TASK_NATURE
 import org.opendc.trace.conv.TASK_PARENTS
 import org.opendc.trace.conv.TASK_SUBMISSION_TIME
 import org.opendc.trace.formats.workload.parquet.Task
@@ -61,7 +61,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<Task>) : TableW
     private var localGpuCapacity: Double = Double.NaN
     private var localParents = mutableSetOf<Int>()
     private var localChildren = mutableSetOf<Int>()
-    private var localNature: String? = null
+    private var localDeferrable: Boolean = false
     private var localDeadline: Long = -1
 
     override fun startRow() {
@@ -77,7 +77,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<Task>) : TableW
         localGpuCapacity = Double.NaN
         localParents.clear()
         localChildren.clear()
-        localNature = null
+        localDeferrable = false
         localDeadline = -1L
     }
 
@@ -97,7 +97,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<Task>) : TableW
                 localGpuCapacity,
                 localParents,
                 localChildren,
-                localNature,
+                localDeferrable,
                 localDeadline,
             ),
         )
@@ -116,7 +116,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<Task>) : TableW
             TASK_GPU_CAPACITY -> colGpuCapacity
             TASK_PARENTS -> colParents
             TASK_CHILDREN -> colChildren
-            TASK_NATURE -> colNature
+            TASK_DEFERRABLE -> colNature
             TASK_DEADLINE -> colDeadline
             else -> -1
         }
@@ -126,7 +126,10 @@ internal class TaskTableWriter(private val writer: ParquetWriter<Task>) : TableW
         index: Int,
         value: Boolean,
     ) {
-        throw IllegalArgumentException("Invalid column or type [index $index]")
+        when (index) {
+            colNature -> localDeferrable = value
+            else -> throw IllegalArgumentException("Invalid column index $index")
+        }
     }
 
     override fun setInt(
@@ -181,7 +184,6 @@ internal class TaskTableWriter(private val writer: ParquetWriter<Task>) : TableW
         check(localIsActive) { "No active row" }
         when (index) {
             colName -> localName = value
-            colNature -> localNature = value
             else -> throw IllegalArgumentException("Invalid column index $index")
         }
     }

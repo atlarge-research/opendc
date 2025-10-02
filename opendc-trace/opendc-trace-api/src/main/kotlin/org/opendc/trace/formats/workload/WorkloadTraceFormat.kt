@@ -37,12 +37,12 @@ import org.opendc.trace.conv.TASK_CHILDREN
 import org.opendc.trace.conv.TASK_CPU_CAPACITY
 import org.opendc.trace.conv.TASK_CPU_COUNT
 import org.opendc.trace.conv.TASK_DEADLINE
+import org.opendc.trace.conv.TASK_DEFERRABLE
 import org.opendc.trace.conv.TASK_DURATION
 import org.opendc.trace.conv.TASK_GPU_CAPACITY
 import org.opendc.trace.conv.TASK_GPU_COUNT
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.conv.TASK_MEM_CAPACITY
-import org.opendc.trace.conv.TASK_NATURE
 import org.opendc.trace.conv.TASK_PARENTS
 import org.opendc.trace.conv.TASK_SUBMISSION_TIME
 import org.opendc.trace.formats.workload.parquet.FragmentReadSupport
@@ -97,7 +97,7 @@ public class WorkloadTraceFormat : TraceFormat {
                         TableColumn(TASK_GPU_CAPACITY, TableColumnType.Double),
                         TableColumn(TASK_PARENTS, TableColumnType.Set(TableColumnType.String)),
                         TableColumn(TASK_CHILDREN, TableColumnType.Set(TableColumnType.String)),
-                        TableColumn(TASK_NATURE, TableColumnType.String),
+                        TableColumn(TASK_DEFERRABLE, TableColumnType.Boolean),
                         TableColumn(TASK_DEADLINE, TableColumnType.Long),
                     ),
                 )

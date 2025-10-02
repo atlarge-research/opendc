@@ -87,7 +87,7 @@ public const val TASK_CHILDREN: String = "children"
 /**
  * Nature of the task. Delayable, interruptible, etc.
  */
-public const val TASK_NATURE: String = "nature"
+public const val TASK_DEFERRABLE: String = "deferrable"
 
 /**
  * Deadline of the task.

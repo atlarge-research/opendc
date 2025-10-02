@@ -48,7 +48,7 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
     private var localGpuCapacity = 0.0
     private var localParents = mutableSetOf<Int>()
     private var localChildren = mutableSetOf<Int>()
-    private var localNature: String? = null
+    private var localDeferrable: Boolean = false
     private var localDeadline = -1L
 
     /**
@@ -122,10 +122,10 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
                             }
                         "parents" -> RelationConverter(localParents)
                         "children" -> RelationConverter(localChildren)
-                        "nature" ->
+                        "deferrable" ->
                             object : PrimitiveConverter() {
-                                override fun addBinary(value: Binary) {
-                                    localNature = value.toStringUsingUTF8()
+                                override fun addBoolean(value: Boolean) {
+                                    localDeferrable = value
                                 }
                             }
                         "deadline" ->
@@ -150,7 +150,7 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
                 localGpuCapacity = 0.0
                 localParents.clear()
                 localChildren.clear()
-                localNature = null
+                localDeferrable = false
                 localDeadline = -1
             }
 
@@ -172,7 +172,7 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
             localGpuCapacity,
             localParents.toMutableSet(),
             localChildren.toSet(),
-            localNature,
+            localDeferrable,
             localDeadline,
         )
 

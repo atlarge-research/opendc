@@ -33,13 +33,13 @@ import org.opendc.trace.conv.TASK_CHILDREN
 import org.opendc.trace.conv.TASK_CPU_CAPACITY
 import org.opendc.trace.conv.TASK_CPU_COUNT
 import org.opendc.trace.conv.TASK_DEADLINE
+import org.opendc.trace.conv.TASK_DEFERRABLE
 import org.opendc.trace.conv.TASK_DURATION
 import org.opendc.trace.conv.TASK_GPU_CAPACITY
 import org.opendc.trace.conv.TASK_GPU_COUNT
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.conv.TASK_MEM_CAPACITY
 import org.opendc.trace.conv.TASK_NAME
-import org.opendc.trace.conv.TASK_NATURE
 import org.opendc.trace.conv.TASK_PARENTS
 import org.opendc.trace.conv.TASK_SUBMISSION_TIME
 
@@ -66,7 +66,7 @@ internal class TaskReadSupport(private val projection: List<String>?) : ReadSupp
             "gpu_capacity" to TASK_GPU_CAPACITY,
             "parents" to TASK_PARENTS,
             "children" to TASK_CHILDREN,
-            "nature" to TASK_NATURE,
+            "deferrable" to TASK_DEFERRABLE,
             "deadline" to TASK_DEADLINE,
         )
 
