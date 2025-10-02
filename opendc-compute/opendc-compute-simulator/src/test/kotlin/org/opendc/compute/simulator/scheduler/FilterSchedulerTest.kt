@@ -34,14 +34,13 @@ import org.opendc.compute.simulator.host.HostState
 import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
 import org.opendc.compute.simulator.scheduler.filters.DifferentHostFilter
 import org.opendc.compute.simulator.scheduler.filters.InstanceCountFilter
+import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.scheduler.filters.SameHostFilter
 import org.opendc.compute.simulator.scheduler.filters.VCpuCapacityFilter
+import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
 import org.opendc.compute.simulator.scheduler.filters.VGpuCapacityFilter
 import org.opendc.compute.simulator.scheduler.filters.VGpuFilter
-import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
-import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
-import org.opendc.compute.simulator.scheduler.weights.InstanceCountWeigher
 import org.opendc.compute.simulator.scheduler.weights.RamWeigher
 import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher
 import org.opendc.compute.simulator.service.HostView

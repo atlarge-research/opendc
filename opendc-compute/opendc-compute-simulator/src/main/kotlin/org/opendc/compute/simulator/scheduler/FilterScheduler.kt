@@ -46,7 +46,7 @@ public class FilterScheduler(
     private val weighers: List<HostWeigher>,
     private val subsetSize: Int = 1,
     private val random: RandomGenerator = SplittableRandom(0),
-    numHosts: Int = 1000,// Hosts that are currently running a task.
+    numHosts: Int = 1000,
 ) : ComputeScheduler {
     /**
      * The pool of hosts available to the scheduler.
@@ -57,7 +57,7 @@ public class FilterScheduler(
 
     private val weights = DoubleArray(numHosts)
 
-    private val usedHosts = SortedHostViewList(numHosts, filters);
+    private val usedHosts = SortedHostViewList(numHosts, filters)
 
     init {
         require(subsetSize >= 1) { "Subset size must be one or greater" }

@@ -30,8 +30,8 @@ public class SortedHostViewList(
     public val capacity: Int,
     public val filters: List<HostFilter>,
 ) {
-    private var firstFilter: HostFilter;
-    private var otherFilters: List<HostFilter> = listOf();
+    private var firstFilter: HostFilter
+    private var otherFilters: List<HostFilter> = listOf()
 
     private var noFilters = false
 
@@ -48,16 +48,20 @@ public class SortedHostViewList(
         if (filters.isNotEmpty()) {
             firstFilter = filters[0]
         } else {
-            noFilters = true;
-            firstFilter = object : HostFilter {
-                override fun test(host: HostView, task: ServiceTask): Boolean {
-                    return true
-                }
+            noFilters = true
+            firstFilter =
+                object : HostFilter {
+                    override fun test(
+                        host: HostView,
+                        task: ServiceTask,
+                    ): Boolean {
+                        return true
+                    }
 
-                override fun score(host: HostView): Double {
-                    return 0.0
+                    override fun score(host: HostView): Double {
+                        return 0.0
+                    }
                 }
-            }
         }
 
         if (filters.size > 1) {
