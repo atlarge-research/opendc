@@ -61,14 +61,6 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     private final PerformanceCounters[] resourcePerformanceCounters =
             new PerformanceCounters[ResourceType.values().length];
 
-    //    private final Hashtable<ResourceType, Double> resourceDemands = new Hashtable<>();
-    //    private final Hashtable<ResourceType, Double> resourceSupplies = new Hashtable<>();
-    //    private final Hashtable<ResourceType, Double> resourceCapacities = new Hashtable<>();
-    //    private final Hashtable<ResourceType, Double> resourceTimeScalingFactor = new Hashtable<>(); // formerly known
-    // as d
-    //    private final Hashtable<ResourceType, FlowEdge> distributorEdges = new Hashtable<>();
-    //    private final Hashtable<ResourceType, PerformanceCounters> resourcePerformanceCounters = new Hashtable<>();
-
     private final long checkpointInterval;
     private final long checkpointDuration;
     private final double checkpointIntervalScaling;
@@ -326,7 +318,6 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
-        // FIXME: Needs to be assigned to specific resource if multiple exist -> add resource Id as parameter
         this.pushOutgoingDemand(supplierEdge, newDemand, supplierEdge.getSupplierResourceType());
     }
 
@@ -338,7 +329,6 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
      */
     @Override
     public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand, ResourceType resourceType) {
-        // FIXME: Needs to be assigned to specific resource if multiple exist -> add resource Id as parameter
         this.resourceDemands[resourceType.ordinal()] = newDemand;
         this.distributorEdges[resourceType.ordinal()].pushDemand(newDemand, false, resourceType);
     }
