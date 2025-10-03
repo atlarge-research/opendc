@@ -56,8 +56,6 @@ public class MaxMinFairnessFlowDistributor extends FlowDistributor {
         }
 
         this.outgoingDemandUpdateNeeded = false;
-
-//        this.invalidate();
     }
 
     // TODO: This should probably be moved to the distribution strategy
