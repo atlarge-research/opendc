@@ -43,13 +43,21 @@ public class MaxMinFairnessFlowDistributor extends FlowDistributor {
     }
 
     protected void updateOutgoingDemand() {
+        if (this.totalIncomingDemand == this.previousTotalDemand) {
+            this.outgoingDemandUpdateNeeded = false;
+            this.updateOutgoingSupplies();
+            return;
+        }
+
+        this.previousTotalDemand = this.totalIncomingDemand;
+
         for (FlowEdge supplierEdge : this.supplierEdges.values()) {
             this.pushOutgoingDemand(supplierEdge, this.totalIncomingDemand / this.supplierEdges.size());
         }
 
         this.outgoingDemandUpdateNeeded = false;
 
-        this.invalidate();
+//        this.invalidate();
     }
 
     // TODO: This should probably be moved to the distribution strategy
