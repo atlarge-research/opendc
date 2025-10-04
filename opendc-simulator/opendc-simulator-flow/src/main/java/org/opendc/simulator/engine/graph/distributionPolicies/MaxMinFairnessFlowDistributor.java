@@ -63,6 +63,7 @@ public class MaxMinFairnessFlowDistributor extends FlowDistributor {
 
         // If the demand is higher than the current supply, the system is overloaded.
         // The available supply is distributed based on the current distribution function.
+        // FIXME: There can a problem that the incoming supply is ony 11 decimal numbers and thus is smaller.
         if (this.totalIncomingDemand > this.totalIncomingSupply) {
             this.overloaded = true;
 
@@ -95,16 +96,30 @@ public class MaxMinFairnessFlowDistributor extends FlowDistributor {
 
             // Update the supplies of the consumers that changed their demand in the current cycle
             else {
-                for (int consumerIndex : this.updatedDemands) {
+                for (int consumerIndex = 0; consumerIndex < this.numConsumers; consumerIndex++) {
+                    if (!this.updatedDemands[consumerIndex]) {
+                        continue;
+                    }
                     this.pushOutgoingSupply(
-                            this.consumerEdges[consumerIndex],
-                            this.incomingDemands[consumerIndex],
-                            this.getConsumerResourceType());
+                        this.consumerEdges[consumerIndex],
+                        this.incomingDemands[consumerIndex],
+                        this.getConsumerResourceType());
+
                 }
+//                    int consumerIndex = this.updatedDemands.get(consumerIndex);
+//
+//
+//                for (int consumerIndex : this.updatedDemands) {
+//                    this.pushOutgoingSupply(
+//                            this.consumerEdges[consumerIndex],
+//                            this.incomingDemands[consumerIndex],
+//                            this.getConsumerResourceType());
+//                }
             }
         }
 
-        this.updatedDemands.clear();
+//        this.updatedDemands.clear();
+        Arrays.fill(this.updatedDemands, false);
     }
 
     private record Demand(int idx, double value) {}

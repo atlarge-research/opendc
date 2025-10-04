@@ -54,7 +54,8 @@ public class EqualShareFlowDistributor extends FlowDistributor {
         }
 
         this.outgoingDemandUpdateNeeded = false;
-        this.updatedDemands.clear();
+//        this.updatedDemands.clear();
+        Arrays.fill(this.updatedDemands, false);
         this.invalidate();
     }
 

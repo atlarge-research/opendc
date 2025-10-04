@@ -55,7 +55,9 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
     protected final FlowEdge[] consumerEdges;
     protected final double[] incomingDemands; // What is demanded by the consumers
     protected final double[] outgoingSupplies; // What is supplied to the consumers
-    protected ArrayList<Integer> updatedDemands = new ArrayList<>();
+    protected final boolean[] updatedDemands;
+//    protected ArrayList<Integer> updatedDemands = new ArrayList<>();
+
 
     protected double previousTotalDemand = 0.0;
     protected double totalIncomingDemand; // The total demand of all the consumers
@@ -91,6 +93,8 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
 
         this.incomingDemands = new double[this.maxConsumers];
         this.outgoingSupplies = new double[this.maxConsumers];
+
+        this.updatedDemands = new boolean[this.maxConsumers];
     }
 
     public double getTotalIncomingDemand() {
@@ -141,7 +145,7 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
 
         this.numConsumers++;
         this.consumerEdges[consumerIndex] = consumerEdge;
-        this.outgoingDemandUpdateNeeded = true;
+//        this.outgoingDemandUpdateNeeded = true;
     }
 
     @Override
@@ -169,9 +173,11 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         }
 
         // Remove idx from consumers that updated their demands
-        if (this.updatedDemands.contains(consumerIndex)) {
-            this.updatedDemands.remove(Integer.valueOf(consumerIndex));
-        }
+//        if (this.updatedDemands.contains(consumerIndex)) {
+//            this.updatedDemands.remove(Integer.valueOf(consumerIndex));
+//        }
+
+        this.updatedDemands[consumerIndex] = false;
 
         this.consumerEdges[consumerIndex] = null;
         this.incomingDemands[consumerIndex] = 0.0;
@@ -196,7 +202,8 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         this.currentIncomingSupplies.put(idx, 0.0);
 
         if (this.supplierEdges.isEmpty()) {
-            this.updatedDemands.clear();
+//            this.updatedDemands.clear();
+            Arrays.fill(this.updatedDemands, false);
         }
     }
 
@@ -220,7 +227,8 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         }
 
         // TODO: can be optimized by using a boolean array
-        this.updatedDemands.add(consumerIndex);
+//        this.updatedDemands.add(consumerIndex);
+        this.updatedDemands[consumerIndex] = true;
 
         this.outgoingDemandUpdateNeeded = true;
         this.invalidate();

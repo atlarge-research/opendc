@@ -42,8 +42,7 @@ public interface FlowSupplier {
 
     default void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply, ResourceType resourceType) {
         pushOutgoingSupply(consumerEdge, newSupply);
-    }
-    ;
+    };
 
     void addConsumerEdge(FlowEdge consumerEdge);
 
