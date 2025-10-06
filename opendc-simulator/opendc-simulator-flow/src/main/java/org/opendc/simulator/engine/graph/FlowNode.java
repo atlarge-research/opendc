@@ -137,10 +137,12 @@ public abstract class FlowNode {
         // If there is already an update running,
         // notify the update, that a next update should be run after
 
-        if (this.nodeState != NodeState.CLOSING && this.nodeState != NodeState.CLOSED) {
-            this.nodeState = NodeState.INVALIDATED;
-            engine.scheduleImmediate(now, this);
+        if (this.nodeState == NodeState.CLOSING || this.nodeState == NodeState.CLOSED || this.nodeState == NodeState.INVALIDATED) {
+            return;
         }
+
+        this.nodeState = NodeState.INVALIDATED;
+        engine.scheduleImmediate(now, this);
     }
 
     /**

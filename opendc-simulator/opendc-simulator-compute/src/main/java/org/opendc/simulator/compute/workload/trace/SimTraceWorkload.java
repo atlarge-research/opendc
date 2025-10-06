@@ -23,6 +23,7 @@
 package org.opendc.simulator.compute.workload.trace;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -116,9 +117,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         new FlowEdge(this, supplier);
         if (supplier instanceof VirtualMachine) {
             // instead iterate over the resources in the fragment as required resources not provided by the VM
-            for (ResourceType resourceType : workload.getResourceTypes()) {
-                this.usedResourceTypes.add(resourceType);
-            }
+            this.usedResourceTypes.addAll(Arrays.asList(workload.getResourceTypes()));
         }
     }
 
@@ -182,8 +181,14 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         if ((int) this.totalRemainingWork <= 0 && this.isWorkloadFinished()) {
             this.startNextFragment();
 
-            this.invalidate();
-            return Long.MAX_VALUE;
+            if (this.nodeState == NodeState.CLOSING || this.nodeState == NodeState.CLOSED) {
+                return Long.MAX_VALUE;
+            }
+
+            return this.onUpdate(now);
+
+//            this.invalidate();
+//            return Long.MAX_VALUE;
         }
 
         for (ResourceType resourceType : this.usedResourceTypes) {
@@ -388,6 +393,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
                 this.newResourcesSupply[suppliedResourceType.ordinal()];
         this.newResourcesSupply[suppliedResourceType.ordinal()] = newSupply;
 
+        // TODO: Change this to just update deadline
         this.invalidate();
     }
 
@@ -409,6 +415,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.resourcesSupplied[resourceType.ordinal()] = this.newResourcesSupply[resourceType.ordinal()];
         this.newResourcesSupply[resourceType.ordinal()] = newSupply;
 
+        // TODO: Change this to just update deadline
         this.invalidate();
     }
 

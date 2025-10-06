@@ -49,6 +49,8 @@ import java.util.Random
 import java.util.concurrent.ForkJoinPool
 import java.util.stream.LongStream
 
+import org.opendc.simulator.engine.engine.FlowCycleQueue;
+
 /**
  * Run scenario when a pool is available for parallel execution
  * The scenario is run multiple times based on the user input
