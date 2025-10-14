@@ -108,7 +108,7 @@ class DistributionPoliciesTest {
         assertAll(
             // single gpu
             { assertEquals(2000.0, singleMonitor.taskGpuDemands[0]?.get(1), "Single GPU demand in task \"0\" should be 2000.0") },
-            { assertEquals(4000.0, singleMonitor.taskGpuSupplied[0]?.get(1), "Single GPU demand in task \"0\" should be 2000.0") },
+            { assertEquals(4000.0, singleMonitor.taskGpuSupplied[0]?.get(1), "Single GPU supplied in task \"0\" should be 4000.0") },
             {
                 assertEquals(
                     4000.0,

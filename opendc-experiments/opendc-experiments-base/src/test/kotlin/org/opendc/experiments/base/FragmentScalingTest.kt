@@ -71,8 +71,8 @@ class FragmentScalingTest {
             )
         val topology = createTopology("single_1_2000.json")
 
-        val monitorNoDelay = runTest(topology, workloadNoDelay)
         val monitorPerfect = runTest(topology, workloadPerfect)
+        val monitorNoDelay = runTest(topology, workloadNoDelay)
 
         assertAll(
             { assertEquals(1200000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },

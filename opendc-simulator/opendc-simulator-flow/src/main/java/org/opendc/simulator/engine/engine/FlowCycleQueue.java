@@ -24,6 +24,7 @@ package org.opendc.simulator.engine.engine;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.HashMap;
 import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
@@ -32,7 +33,8 @@ import org.opendc.simulator.engine.graph.FlowNode;
  * <p>
  * By using a specialized class, we reduce the overhead caused by type-erasure.
  */
-final class FlowCycleQueue {
+public final class FlowCycleQueue {
+
     /**
      * The array of elements in the queue.
      */
@@ -45,10 +47,16 @@ final class FlowCycleQueue {
         nodeQueue = new FlowNode[initialCapacity];
     }
 
+    public final HashMap<String, Integer> nodeTypeCounter = new HashMap<>();
     /**
      * Add the specified context to the queue.
      */
     void add(FlowNode ctx) {
+
+        String nodeType = ctx.getClass().getSimpleName();
+        nodeTypeCounter.putIfAbsent(nodeType, 0);
+        nodeTypeCounter.put(nodeType, nodeTypeCounter.get(nodeType) + 1);
+
         if (ctx.getInCycleQueue()) {
             return;
         }

@@ -36,8 +36,6 @@ import org.opendc.simulator.engine.graph.FlowEdge;
  */
 public class MaxMinFairnessFlowDistributor extends FlowDistributor {
 
-    private boolean overloaded = false;
-
     public MaxMinFairnessFlowDistributor(FlowEngine engine, int maxConsumers) {
         super(engine, maxConsumers);
     }
@@ -63,6 +61,7 @@ public class MaxMinFairnessFlowDistributor extends FlowDistributor {
 
         // If the demand is higher than the current supply, the system is overloaded.
         // The available supply is distributed based on the current distribution function.
+        // FIXME: There can a problem that the incoming supply is ony 11 decimal numbers and thus is smaller.
         if (this.totalIncomingDemand > this.totalIncomingSupply) {
             this.overloaded = true;
 
@@ -95,16 +94,29 @@ public class MaxMinFairnessFlowDistributor extends FlowDistributor {
 
             // Update the supplies of the consumers that changed their demand in the current cycle
             else {
-                for (int consumerIndex : this.updatedDemands) {
+                for (int consumerIndex : this.usedConsumerIndices) {
+                    if (!this.updatedDemands[consumerIndex]) {
+                        continue;
+                    }
                     this.pushOutgoingSupply(
                             this.consumerEdges[consumerIndex],
                             this.incomingDemands[consumerIndex],
                             this.getConsumerResourceType());
                 }
+
+                //
+                //                for (int consumerIndex : this.updatedDemands) {
+                //                    this.pushOutgoingSupply(
+                //                            this.consumerEdges[consumerIndex],
+                //                            this.incomingDemands[consumerIndex],
+                //                            this.getConsumerResourceType());
+                //                }
             }
         }
 
-        this.updatedDemands.clear();
+        //        this.updatedDemands.clear();
+        Arrays.fill(this.updatedDemands, false);
+        this.numUpdatedDemands = 0;
     }
 
     private record Demand(int idx, double value) {}

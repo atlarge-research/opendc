@@ -50,6 +50,8 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
 
     private final PowerModel gpuPowerModel;
 
+    private double previousPowerDemand = 0.0f;
+
     private double currentGpuDemand = 0.0f; // gpu capacity demanded by the mux
     private double currentGpuUtilization = 0.0f;
     private double currentGpuSupplied = 0.0f; // gpu capacity supplied to the mux
@@ -239,7 +241,16 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         // Calculate Power Demand and send to PSU
         this.currentPowerDemand = this.gpuPowerModel.computePower(this.currentGpuUtilization);
 
-        this.invalidate();
+        // TODO: find a better solution for this
+        // If current Power Demand is equal to previous Power Demand, it means the CPU is overloaded and we can
+        // distribute
+        // immediately.
+        if (this.currentPowerDemand == this.previousPowerDemand) {
+            this.pushOutgoingSupply(consumerEdge, this.currentGpuSupplied);
+        } else {
+            this.previousPowerDemand = this.currentPowerDemand;
+            this.pushOutgoingDemand(this.psuEdge, this.currentPowerDemand);
+        }
     }
 
     /**
@@ -260,7 +271,16 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         // Calculate Power Demand and send to PSU
         this.currentPowerDemand = this.gpuPowerModel.computePower(this.currentGpuUtilization);
 
-        this.invalidate();
+        // TODO: find a better solution for this
+        // If current Power Demand is equal to previous Power Demand, it means the CPU is overloaded and we can
+        // distribute
+        // immediately.
+        if (this.currentPowerDemand == this.previousPowerDemand) {
+            this.pushOutgoingSupply(consumerEdge, this.currentGpuSupplied);
+        } else {
+            this.previousPowerDemand = this.currentPowerDemand;
+            this.pushOutgoingDemand(this.psuEdge, this.currentPowerDemand);
+        }
     }
 
     /**
@@ -271,7 +291,10 @@ public final class SimGpu extends FlowNode implements FlowSupplier, FlowConsumer
         updateCounters();
         this.currentPowerSupplied = newPowerSupply;
 
-        this.invalidate();
+        this.currentGpuSupplied = virtualizationOverheadModel.getSupply(
+                Math.min(this.currentGpuDemand, this.maxCapacity), this.consumerCount);
+
+        this.pushOutgoingSupply(this.distributorEdge, this.currentGpuSupplied, ResourceType.CPU);
     }
 
     /**

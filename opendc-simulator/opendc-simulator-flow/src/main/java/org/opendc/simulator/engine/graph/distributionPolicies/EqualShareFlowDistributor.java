@@ -54,8 +54,6 @@ public class EqualShareFlowDistributor extends FlowDistributor {
         }
 
         this.outgoingDemandUpdateNeeded = false;
-        this.updatedDemands.clear();
-        this.invalidate();
     }
 
     /**
@@ -72,6 +70,9 @@ public class EqualShareFlowDistributor extends FlowDistributor {
             this.pushOutgoingSupply(
                     this.consumerEdges[consumerIndex], equalShare[consumerIndex], this.getConsumerResourceType());
         }
+
+        Arrays.fill(this.updatedDemands, false);
+        this.numUpdatedDemands = 0;
     }
 
     @Override

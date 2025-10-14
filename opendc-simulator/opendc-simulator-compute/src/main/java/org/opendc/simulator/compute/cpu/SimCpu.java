@@ -50,6 +50,8 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
     private final PowerModel cpuPowerModel;
 
+    private double previousPowerDemand = 0.0f;
+
     private double currentCpuDemand = 0.0f; // cpu capacity demanded by the mux
     private double currentCpuUtilization = 0.0f;
     private double currentCpuSupplied = 0.0f; // cpu capacity supplied to the mux
@@ -228,6 +230,10 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
      */
     @Override
     public void handleIncomingDemand(FlowEdge consumerEdge, double newCpuDemand) {
+        if (newCpuDemand == this.currentCpuDemand) {
+            return;
+        }
+
         updateCounters();
         this.currentCpuDemand = newCpuDemand;
 
@@ -236,7 +242,16 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         // Calculate Power Demand and send to PSU
         this.currentPowerDemand = this.cpuPowerModel.computePower(this.currentCpuUtilization);
 
-        this.invalidate();
+        // TODO: find a better solution for this
+        // If current Power Demand is equal to previous Power Demand, it means the CPU is overloaded and we can
+        // distribute
+        // immediately.
+        if (this.currentPowerDemand == this.previousPowerDemand) {
+            this.pushOutgoingSupply(consumerEdge, this.currentCpuSupplied);
+        } else {
+            this.previousPowerDemand = this.currentPowerDemand;
+            this.pushOutgoingDemand(this.psuEdge, this.currentPowerDemand);
+        }
     }
 
     /**
@@ -247,7 +262,9 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         updateCounters();
         this.currentPowerSupplied = newPowerSupply;
 
-        this.invalidate();
+        this.currentCpuSupplied = Math.min(this.currentCpuDemand, this.maxCapacity);
+
+        this.pushOutgoingSupply(this.distributorEdge, this.currentCpuSupplied, ResourceType.CPU);
     }
 
     /**

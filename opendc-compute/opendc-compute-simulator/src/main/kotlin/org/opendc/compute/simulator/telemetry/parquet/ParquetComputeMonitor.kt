@@ -44,7 +44,6 @@ public class ParquetComputeMonitor(
     private val batteryExporter: Exporter<BatteryTableReader>?,
     private val serviceExporter: Exporter<ServiceTableReader>?,
 ) : ComputeMonitor, AutoCloseable {
-    // FIXME: Include GPU
     override fun record(reader: HostTableReader) {
         hostExporter?.write(reader)
     }
@@ -179,16 +178,11 @@ public class ParquetComputeMonitor(
                 }
 
             return ParquetComputeMonitor(
-                hostExporter =
-                hostExporter,
-                taskExporter =
-                taskExporter,
-                powerSourceExporter =
-                powerSourceExporter,
-                batteryExporter =
-                batteryExporter,
-                serviceExporter =
-                serviceExporter,
+                hostExporter = hostExporter,
+                taskExporter = taskExporter,
+                powerSourceExporter = powerSourceExporter,
+                batteryExporter = batteryExporter,
+                serviceExporter = serviceExporter,
             )
         }
     }

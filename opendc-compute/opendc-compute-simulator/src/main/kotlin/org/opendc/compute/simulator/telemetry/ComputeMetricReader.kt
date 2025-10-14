@@ -196,7 +196,7 @@ public class ComputeMetricReader(
 
             if (toMonitor[OutputFiles.SERVICE] == true) {
                 this.serviceTableReader.record(now)
-                monitor.record(this.serviceTableReader.copy())
+                this.monitor.record(this.serviceTableReader.copy())
             }
 
             if (printFrequency != null && loggCounter % printFrequency == 0) {
