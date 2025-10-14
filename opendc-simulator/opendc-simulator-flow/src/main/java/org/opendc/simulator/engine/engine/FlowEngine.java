@@ -24,6 +24,7 @@ package org.opendc.simulator.engine.engine;
 
 import java.time.Clock;
 import java.time.InstantSource;
+import java.util.LinkedList;
 import kotlin.coroutines.CoroutineContext;
 import org.opendc.common.Dispatcher;
 import org.opendc.simulator.engine.graph.FlowNode;
@@ -38,7 +39,9 @@ public final class FlowEngine implements Runnable {
     /**
      * The queue of {@link FlowNode} updates that need to be updated in the current cycle.
      */
-    private final FlowCycleQueue cycleQueue = new FlowCycleQueue(256);
+    //    private final FlowCycleQueue cycleQueue = new FlowCycleQueue(256);
+
+    private final LinkedList<FlowNode> cycleQueue = new LinkedList<>();
 
     /**
      * A priority queue containing the {@link FlowNode} updates to be scheduled in the future.
@@ -139,16 +142,14 @@ public final class FlowEngine implements Runnable {
      * Run all the enqueued actions for the specified timestamp (<code>now</code>).
      */
     private void doRunEngine(long now) {
-        final FlowCycleQueue cycleQueue = this.cycleQueue;
-        final FlowEventQueue eventQueue = this.eventQueue;
-
         try {
             // Mark the engine as active to prevent concurrent calls to this method
             active = true;
 
+            //            int EventCount = 0;
             // Execute all scheduled updates at current timestamp
             while (true) {
-                final FlowNode ctx = eventQueue.poll(now);
+                final FlowNode ctx = this.eventQueue.poll(now);
                 if (ctx == null) {
                     break;
                 }
@@ -158,13 +159,14 @@ public final class FlowEngine implements Runnable {
 
             // Execute all immediate updates
             while (true) {
-                final FlowNode ctx = cycleQueue.poll();
+                final FlowNode ctx = this.cycleQueue.poll();
                 if (ctx == null) {
                     break;
                 }
 
                 ctx.update(now);
             }
+
         } finally {
             active = false;
         }

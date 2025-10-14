@@ -54,8 +54,6 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
     private final double[] resourcesSupplied =
             new double[ResourceType.values().length]; // the currently supplied resources
-    private final double[] newResourcesSupply =
-            new double[ResourceType.values().length]; // The supplied resources with next update
     private final double[] resourcesDemand = new double[ResourceType.values().length]; // The demands per resource type
     private final double[] remainingWork =
             new double[ResourceType.values().length]; // The duration of the fragment at the demanded speeds
@@ -156,11 +154,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         return true;
     }
 
-    @Override
-    public long onUpdate(long now) {
-        long passedTime = getPassedTime(now);
-        this.startOfFragment = now;
-
+    // Update the remaining work for all resources based on the time passed since last update
+    private void updateRemainingWork(long passedTime) {
         for (ResourceType resourceType : this.usedResourceTypes) {
             // The amount of work done since last update
             double finishedWork = this.scalingPolicy.getFinishedWork(
@@ -171,40 +166,17 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             // TODO: maybe remove Math.max, as as we are already checking for <= 0
             this.remainingWork[resourceType.ordinal()] =
                     Math.max(0, this.remainingWork[resourceType.ordinal()] - finishedWork);
+
             this.totalRemainingWork -= finishedWork;
+
             if (this.remainingWork[resourceType.ordinal()] <= 0) {
                 this.workloadFinished[resourceType.ordinal()] = true;
             }
         }
+    }
 
-        // If this.totalRemainingWork <= 0, the fragment has been completed across all resources
-        if ((int) this.totalRemainingWork <= 0 && this.isWorkloadFinished()) {
-            this.startNextFragment();
-
-            if (this.nodeState == NodeState.CLOSING || this.nodeState == NodeState.CLOSED) {
-                return Long.MAX_VALUE;
-            }
-
-            return this.onUpdate(now);
-
-//            this.invalidate();
-//            return Long.MAX_VALUE;
-        }
-
-        for (ResourceType resourceType : this.usedResourceTypes) {
-            if (this.machineResourceEdges[resourceType.ordinal()] != null) {
-                this.pushOutgoingDemand(
-                        this.machineResourceEdges[resourceType.ordinal()],
-                        this.resourcesDemand[resourceType.ordinal()],
-                        resourceType);
-            }
-        }
-
-        // Update the supplied resources
-        for (ResourceType resourceType : this.usedResourceTypes) {
-            this.resourcesSupplied[resourceType.ordinal()] = this.newResourcesSupply[resourceType.ordinal()];
-        }
-
+    // Determine the next update time based on the remaining work and supplied resources
+    private long getNextUpdateTime(long now) {
         long timeUntilNextUpdate = Long.MIN_VALUE;
 
         for (ResourceType resourceType : this.usedResourceTypes) {
@@ -231,7 +203,41 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             }
         }
 
-        long nextUpdate = timeUntilNextUpdate == Long.MAX_VALUE ? Long.MAX_VALUE : now + timeUntilNextUpdate;
+        return timeUntilNextUpdate == Long.MAX_VALUE ? Long.MAX_VALUE : now + timeUntilNextUpdate;
+    }
+
+    private void pushNewDemands() {
+        for (ResourceType resourceType : this.usedResourceTypes) {
+            if (this.machineResourceEdges[resourceType.ordinal()] != null) {
+                this.pushOutgoingDemand(
+                        this.machineResourceEdges[resourceType.ordinal()],
+                        this.resourcesDemand[resourceType.ordinal()],
+                        resourceType);
+            }
+        }
+    }
+
+    @Override
+    public long onUpdate(long now) {
+        long passedTime = getPassedTime(now);
+        this.startOfFragment = now;
+
+        this.updateRemainingWork(passedTime);
+
+        // If this.totalRemainingWork <= 0, the fragment has been completed across all resources
+        if ((int) this.totalRemainingWork <= 0 && this.isWorkloadFinished()) {
+            this.startNextFragment();
+
+            if (this.nodeState == NodeState.CLOSING || this.nodeState == NodeState.CLOSED) {
+                return Long.MAX_VALUE;
+            }
+
+            return getNextUpdateTime(this.startOfFragment);
+        }
+
+        this.pushNewDemands();
+
+        long nextUpdate = getNextUpdateTime(this.startOfFragment);
 
         // if for all resources the remaining work is 0, then invalidate the workload, to reschedule the next fragment
         if (nextUpdate == now + Long.MIN_VALUE) {
@@ -262,7 +268,6 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         // Reset the remaining work for all resources
         this.totalRemainingWork = 0.0;
 
-        // TODO: only acceleration is considered, not memory
         for (ResourceType resourceType : usedResourceTypes) {
             double demand = nextFragment.getResourceUsage(resourceType);
 
@@ -389,9 +394,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         if (this.resourcesSupplied[suppliedResourceType.ordinal()] == newSupply) {
             return;
         }
-        this.resourcesSupplied[suppliedResourceType.ordinal()] =
-                this.newResourcesSupply[suppliedResourceType.ordinal()];
-        this.newResourcesSupply[suppliedResourceType.ordinal()] = newSupply;
+
+        this.resourcesSupplied[suppliedResourceType.ordinal()] = newSupply;
 
         // TODO: Change this to just update deadline
         this.invalidate();
@@ -412,11 +416,19 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         if (this.resourcesSupplied[resourceType.ordinal()] == newSupply) {
             return;
         }
-        this.resourcesSupplied[resourceType.ordinal()] = this.newResourcesSupply[resourceType.ordinal()];
-        this.newResourcesSupply[resourceType.ordinal()] = newSupply;
 
-        // TODO: Change this to just update deadline
-        this.invalidate();
+        this.resourcesSupplied[resourceType.ordinal()] = newSupply;
+
+        long now = this.clock.millis();
+        this.startOfFragment = now;
+        long passedTime = getPassedTime(now);
+
+        this.updateRemainingWork(passedTime);
+        long next_deadline = this.getNextUpdateTime(now);
+
+        // Remove stage from the timer queue
+        this.setDeadline(next_deadline);
+        this.engine.scheduleDelayedInContext(this);
     }
 
     /**

@@ -24,7 +24,6 @@ package org.opendc.simulator.engine.graph.distributionPolicies;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -150,24 +149,24 @@ public class BestEffortFlowDistributor extends FlowDistributor {
                         continue;
                     }
                     this.pushOutgoingSupply(
-                        this.consumerEdges[consumerIndex],
-                        this.incomingDemands[consumerIndex],
-                        this.getConsumerResourceType());
-
+                            this.consumerEdges[consumerIndex],
+                            this.incomingDemands[consumerIndex],
+                            this.getConsumerResourceType());
                 }
 
-//                for (int consumerIndex : this.updatedDemands) {
-//                    this.pushOutgoingSupply(
-//                            this.consumerEdges[consumerIndex],
-//                            this.incomingDemands[consumerIndex],
-//                            this.getConsumerResourceType());
-//                }
+                //                for (int consumerIndex : this.updatedDemands) {
+                //                    this.pushOutgoingSupply(
+                //                            this.consumerEdges[consumerIndex],
+                //                            this.incomingDemands[consumerIndex],
+                //                            this.getConsumerResourceType());
+                //                }
             }
         }
 
         this.outgoingSupplyUpdateNeeded = false;
-//        this.updatedDemands.clear();
+        //        this.updatedDemands.clear();
         Arrays.fill(this.updatedDemands, false);
+        this.numUpdatedDemands = 0;
     }
 
     /**

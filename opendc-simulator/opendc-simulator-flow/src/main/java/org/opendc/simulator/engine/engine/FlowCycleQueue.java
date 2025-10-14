@@ -25,10 +25,7 @@ package org.opendc.simulator.engine.engine;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashMap;
-
 import org.opendc.simulator.engine.graph.FlowNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A specialized {@link ArrayDeque} implementation that contains the {@link FlowNode}s
@@ -37,7 +34,6 @@ import org.slf4j.LoggerFactory;
  * By using a specialized class, we reduce the overhead caused by type-erasure.
  */
 public final class FlowCycleQueue {
-    public final HashMap<String, Integer> nodeTypeCounter = new HashMap<>();
 
     /**
      * The array of elements in the queue.
@@ -51,6 +47,7 @@ public final class FlowCycleQueue {
         nodeQueue = new FlowNode[initialCapacity];
     }
 
+    public final HashMap<String, Integer> nodeTypeCounter = new HashMap<>();
     /**
      * Add the specified context to the queue.
      */

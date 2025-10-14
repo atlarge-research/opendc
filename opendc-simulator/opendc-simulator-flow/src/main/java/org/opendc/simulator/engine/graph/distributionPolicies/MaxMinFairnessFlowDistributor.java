@@ -36,8 +36,6 @@ import org.opendc.simulator.engine.graph.FlowEdge;
  */
 public class MaxMinFairnessFlowDistributor extends FlowDistributor {
 
-    private boolean overloaded = false;
-
     public MaxMinFairnessFlowDistributor(FlowEngine engine, int maxConsumers) {
         super(engine, maxConsumers);
     }
@@ -96,30 +94,29 @@ public class MaxMinFairnessFlowDistributor extends FlowDistributor {
 
             // Update the supplies of the consumers that changed their demand in the current cycle
             else {
-                for (int consumerIndex = 0; consumerIndex < this.numConsumers; consumerIndex++) {
+                for (int consumerIndex : this.usedConsumerIndices) {
                     if (!this.updatedDemands[consumerIndex]) {
                         continue;
                     }
                     this.pushOutgoingSupply(
-                        this.consumerEdges[consumerIndex],
-                        this.incomingDemands[consumerIndex],
-                        this.getConsumerResourceType());
-
+                            this.consumerEdges[consumerIndex],
+                            this.incomingDemands[consumerIndex],
+                            this.getConsumerResourceType());
                 }
-//                    int consumerIndex = this.updatedDemands.get(consumerIndex);
-//
-//
-//                for (int consumerIndex : this.updatedDemands) {
-//                    this.pushOutgoingSupply(
-//                            this.consumerEdges[consumerIndex],
-//                            this.incomingDemands[consumerIndex],
-//                            this.getConsumerResourceType());
-//                }
+
+                //
+                //                for (int consumerIndex : this.updatedDemands) {
+                //                    this.pushOutgoingSupply(
+                //                            this.consumerEdges[consumerIndex],
+                //                            this.incomingDemands[consumerIndex],
+                //                            this.getConsumerResourceType());
+                //                }
             }
         }
 
-//        this.updatedDemands.clear();
+        //        this.updatedDemands.clear();
         Arrays.fill(this.updatedDemands, false);
+        this.numUpdatedDemands = 0;
     }
 
     private record Demand(int idx, double value) {}

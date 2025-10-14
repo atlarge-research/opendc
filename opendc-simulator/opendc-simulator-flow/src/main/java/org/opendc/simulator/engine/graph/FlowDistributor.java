@@ -55,9 +55,10 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
     protected final FlowEdge[] consumerEdges;
     protected final double[] incomingDemands; // What is demanded by the consumers
     protected final double[] outgoingSupplies; // What is supplied to the consumers
-    protected final boolean[] updatedDemands;
-//    protected ArrayList<Integer> updatedDemands = new ArrayList<>();
 
+    protected final boolean[] updatedDemands;
+    protected int numUpdatedDemands = 0;
+    //    protected ArrayList<Integer> updatedDemands = new ArrayList<>();
 
     protected double previousTotalDemand = 0.0;
     protected double totalIncomingDemand; // The total demand of all the consumers
@@ -74,6 +75,10 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
     protected ResourceType consumerResourceType;
 
     protected double capacity; // What is the max capacity. Can probably be removed
+
+    protected static HashMap<Integer, Integer> updateMap = new HashMap<Integer, Integer>();
+
+    protected boolean overloaded = false;
 
     public FlowDistributor(FlowEngine engine, int maxConsumers) {
         super(engine);
@@ -113,13 +118,13 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
 
         // Check if current supply is different from total demand
         if (this.outgoingDemandUpdateNeeded) {
+
             this.updateOutgoingDemand();
 
             return Long.MAX_VALUE;
         }
 
-        // TODO: look into whether this is always needed
-        if (this.numConsumers > 0) {
+        if (this.numUpdatedDemands > 0 || this.overloaded) {
             this.updateOutgoingSupplies();
         }
 
@@ -145,7 +150,6 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
 
         this.numConsumers++;
         this.consumerEdges[consumerIndex] = consumerEdge;
-//        this.outgoingDemandUpdateNeeded = true;
     }
 
     @Override
@@ -173,9 +177,9 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         }
 
         // Remove idx from consumers that updated their demands
-//        if (this.updatedDemands.contains(consumerIndex)) {
-//            this.updatedDemands.remove(Integer.valueOf(consumerIndex));
-//        }
+        //        if (this.updatedDemands.contains(consumerIndex)) {
+        //            this.updatedDemands.remove(Integer.valueOf(consumerIndex));
+        //        }
 
         this.updatedDemands[consumerIndex] = false;
 
@@ -202,8 +206,9 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         this.currentIncomingSupplies.put(idx, 0.0);
 
         if (this.supplierEdges.isEmpty()) {
-//            this.updatedDemands.clear();
+            //            this.updatedDemands.clear();
             Arrays.fill(this.updatedDemands, false);
+            this.numUpdatedDemands = 0;
         }
     }
 
@@ -227,10 +232,12 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         }
 
         // TODO: can be optimized by using a boolean array
-//        this.updatedDemands.add(consumerIndex);
+        //        this.updatedDemands.add(consumerIndex);
         this.updatedDemands[consumerIndex] = true;
+        this.numUpdatedDemands++;
 
         this.outgoingDemandUpdateNeeded = true;
+
         this.invalidate();
     }
 
@@ -254,6 +261,7 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         this.totalIncomingSupply += (newSupply - prevSupply);
 
         this.outgoingSupplyUpdateNeeded = true;
+
         this.invalidate();
     }
 
@@ -289,7 +297,6 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
 
     @Override
     public ResourceType getSupplierResourceType() {
-        //        return this.supplierEdge.getSupplierResourceType();
         return this.supplierResourceType;
     }
 

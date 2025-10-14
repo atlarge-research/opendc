@@ -191,7 +191,7 @@ class VirtualizationOverheadTests {
     }
 
     /**
-     * Test that the share-based overhead model does not applies the correct amount of overhead, depending on the number of VMs.
+     * Test that the share-based overhead model does not apply the correct amount of overhead, depending on the number of VMs.
      */
     @Test
     fun shareBasedVirtualizationOverheadModelTest() {
