@@ -57,8 +57,8 @@ public class FixedShareFlowDistributor extends FlowDistributor {
      * @param engine The flow engine
      * @param shareRatio The fixed share ratio for each consumer (between 0.0 and 1.0)
      */
-    public FixedShareFlowDistributor(FlowEngine engine, double shareRatio, int maxConsumers) {
-        super(engine, maxConsumers);
+    public FixedShareFlowDistributor(FlowEngine engine, double shareRatio, int maxConsumers, int maxSuppliers) {
+        super(engine, maxConsumers, maxSuppliers);
 
         if (shareRatio <= 0 || shareRatio > 1) {
             throw new IllegalArgumentException("Share ratio must be between 0.0 and 1.0");
@@ -66,7 +66,7 @@ public class FixedShareFlowDistributor extends FlowDistributor {
         this.shareRatio = shareRatio;
 
         // Each consumer gets an equal fixed share of the total capacity
-        this.fixedShare = this.shareRatio * this.capacity / this.supplierEdges.size();
+        this.fixedShare = this.shareRatio * this.capacity / this.numSuppliers;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,10 +80,13 @@ public class FixedShareFlowDistributor extends FlowDistributor {
     @Override
     protected void updateOutgoingDemand() {
         // Calculate total demand based on active consumers
-        this.fixedShare = this.shareRatio * this.capacity / this.supplierEdges.size();
+        this.fixedShare = this.shareRatio * this.capacity / this.numSuppliers;
 
         // Distribute demand equally across all suppliers
-        for (FlowEdge supplierEdge : supplierEdges.values()) {
+        for (FlowEdge supplierEdge : this.supplierEdges) {
+            if (supplierEdge == null) {
+                continue;
+            }
             this.pushOutgoingDemand(supplierEdge, this.fixedShare);
         }
 
@@ -99,8 +102,7 @@ public class FixedShareFlowDistributor extends FlowDistributor {
     protected void updateOutgoingSupplies() {
         // Calculate the fixed allocation per consumer
 
-        double[] supplies = distributeSupply(
-                this.incomingDemands, new ArrayList<>(this.currentIncomingSupplies.values()), this.totalIncomingSupply);
+        double[] supplies = distributeSupply(this.incomingDemands, this.incomingSupplies, this.totalIncomingSupply);
 
         for (int consumerIndex : this.usedConsumerIndices) {
             this.pushOutgoingSupply(
@@ -108,10 +110,10 @@ public class FixedShareFlowDistributor extends FlowDistributor {
         }
     }
 
-    public double[] distributeSupply(double[] demands, ArrayList<Double> currentSupply, double totalSupply) {
+    public double[] distributeSupply(double[] demands, double[] currentSupply, double totalSupply) {
         double[] supplies = new double[this.maxConsumers];
 
-        if (this.numConsumers < this.supplierEdges.size() && this.fixedShare * this.numConsumers <= totalSupply) {
+        if (this.numConsumers < this.supplierEdges.length && this.fixedShare * this.numConsumers <= totalSupply) {
 
             for (int consumerIndex : this.usedConsumerIndices) {
                 supplies[consumerIndex] = this.fixedShare;

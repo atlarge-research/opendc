@@ -73,6 +73,7 @@ public class HostsProvisioningStep internal constructor(
                     engine,
                     DistributionPolicy.MAX_MIN_FAIRNESS,
                     cluster.hostSpecs.size,
+                    1,
                 )
 
             val carbonFragments = getCarbonFragments(cluster.powerSource.carbonTracePath)
@@ -92,6 +93,7 @@ public class HostsProvisioningStep internal constructor(
                         engine,
                         DistributionPolicy.MAX_MIN_FAIRNESS,
                         2,
+                        1,
                     )
                 FlowEdge(batteryDistributor, simPowerSource)
 

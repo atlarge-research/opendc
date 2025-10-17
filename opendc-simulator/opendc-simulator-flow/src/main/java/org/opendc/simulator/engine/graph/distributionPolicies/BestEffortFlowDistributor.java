@@ -47,8 +47,9 @@ public class BestEffortFlowDistributor extends FlowDistributor {
     private final long roundRobinInterval;
     private long lastRoundRobinUpdate;
 
-    public BestEffortFlowDistributor(FlowEngine flowEngine, long roundRobinInterval, int maxConsumers) {
-        super(flowEngine, maxConsumers);
+    public BestEffortFlowDistributor(
+            FlowEngine flowEngine, long roundRobinInterval, int maxConsumers, int maxSuppliers) {
+        super(flowEngine, maxConsumers, maxSuppliers);
         this.roundRobinInterval = roundRobinInterval;
         this.lastRoundRobinUpdate = -roundRobinInterval;
     }
@@ -66,10 +67,9 @@ public class BestEffortFlowDistributor extends FlowDistributor {
             double remainingDemand = this.totalIncomingDemand;
 
             // Phase 1: Prioritize suppliers that are currently providing supply
-            for (var entry : this.supplierEdges.entrySet()) {
-                int supplierIdx = entry.getKey();
-                FlowEdge supplierEdge = entry.getValue();
-                double currentSupply = this.currentIncomingSupplies.get(supplierIdx);
+            for (int supplierIndex : this.usedSupplierIndices) {
+                FlowEdge supplierEdge = this.supplierEdges[supplierIndex];
+                double currentSupply = this.incomingSupplies[supplierIndex];
 
                 if (currentSupply > 0 && remainingDemand > 0) {
                     // Try to satisfy as much demand as possible from this already active supplier
@@ -81,10 +81,9 @@ public class BestEffortFlowDistributor extends FlowDistributor {
 
             // Phase 2: If demand still remains, use inactive suppliers
             if (remainingDemand > 0) {
-                for (var entry : this.supplierEdges.entrySet()) {
-                    int supplierIdx = entry.getKey();
-                    FlowEdge supplierEdge = entry.getValue();
-                    double currentSupply = this.currentIncomingSupplies.get(supplierIdx);
+                for (int supplierIndex : this.usedSupplierIndices) {
+                    FlowEdge supplierEdge = this.supplierEdges[supplierIndex];
+                    double currentSupply = this.incomingSupplies[supplierIndex];
 
                     if (currentSupply == 0 && remainingDemand > 0) {
                         double demandForThisSupplier = Math.min(remainingDemand, supplierEdge.getCapacity());
@@ -95,10 +94,10 @@ public class BestEffortFlowDistributor extends FlowDistributor {
             }
         } else {
             // System is overloaded or no demand: distribute demand equally across all suppliers
-            double demandPerSupplier = this.totalIncomingDemand / this.supplierEdges.size();
+            double demandPerSupplier = this.totalIncomingDemand / this.numSuppliers;
 
-            for (FlowEdge supplierEdge : this.supplierEdges.values()) {
-                this.pushOutgoingDemand(supplierEdge, demandPerSupplier);
+            for (int supplierIndex : this.usedSupplierIndices) {
+                this.pushOutgoingDemand(this.supplierEdges[supplierIndex], demandPerSupplier);
             }
         }
 
@@ -117,10 +116,8 @@ public class BestEffortFlowDistributor extends FlowDistributor {
             this.overloaded = true;
 
             // Use the distribution algorithm for supply allocation
-            double[] supplies = this.distributeSupply(
-                    this.incomingDemands,
-                    new ArrayList<>(this.currentIncomingSupplies.values()),
-                    this.totalIncomingSupply);
+            double[] supplies =
+                    this.distributeSupply(this.incomingDemands, this.incomingSupplies, this.totalIncomingSupply);
 
             for (int consumerIndex : this.usedConsumerIndices) {
                 this.pushOutgoingSupply(
@@ -153,18 +150,10 @@ public class BestEffortFlowDistributor extends FlowDistributor {
                             this.incomingDemands[consumerIndex],
                             this.getConsumerResourceType());
                 }
-
-                //                for (int consumerIndex : this.updatedDemands) {
-                //                    this.pushOutgoingSupply(
-                //                            this.consumerEdges[consumerIndex],
-                //                            this.incomingDemands[consumerIndex],
-                //                            this.getConsumerResourceType());
-                //                }
             }
         }
 
         this.outgoingSupplyUpdateNeeded = false;
-        //        this.updatedDemands.clear();
         Arrays.fill(this.updatedDemands, false);
         this.numUpdatedDemands = 0;
     }
@@ -177,7 +166,7 @@ public class BestEffortFlowDistributor extends FlowDistributor {
      * 3. Optimize utilization by giving extra capacity to active consumers
      */
     @Override
-    public double[] distributeSupply(double[] demands, ArrayList<Double> currentSupply, double totalSupply) {
+    public double[] distributeSupply(double[] demands, double[] currentSupply, double totalSupply) {
         int numConsumers = this.consumerEdges.length;
         double[] allocation = new double[numConsumers];
 
