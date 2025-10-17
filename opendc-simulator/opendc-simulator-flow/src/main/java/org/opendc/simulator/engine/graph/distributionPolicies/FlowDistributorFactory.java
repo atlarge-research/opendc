@@ -57,22 +57,28 @@ public class FlowDistributorFactory {
     }
 
     public static FlowDistributor getFlowDistributor(
-            FlowEngine flowEngine, DistributionPolicy distributionPolicyType, int maxConsumers) {
+            FlowEngine flowEngine, DistributionPolicy distributionPolicyType, int maxConsumers, int maxSuppliers) {
 
         return switch (distributionPolicyType) {
             case BEST_EFFORT -> new BestEffortFlowDistributor(
-                    flowEngine, distributionPolicyType.getProperty("updateIntervalLength", Long.class), maxConsumers);
-            case EQUAL_SHARE -> new EqualShareFlowDistributor(flowEngine, maxConsumers);
-            case FIRST_FIT -> new FirstFitPolicyFlowDistributor(flowEngine, maxConsumers);
+                    flowEngine,
+                    distributionPolicyType.getProperty("updateIntervalLength", Long.class),
+                    maxConsumers,
+                    maxSuppliers);
+            case EQUAL_SHARE -> new EqualShareFlowDistributor(flowEngine, maxConsumers, maxSuppliers);
+            case FIRST_FIT -> new FirstFitPolicyFlowDistributor(flowEngine, maxConsumers, maxSuppliers);
             case FIXED_SHARE -> {
                 if (!distributionPolicyType.getPropertyNames().contains("shareRatio")) {
                     throw new IllegalArgumentException(
                             "FixedShare distribution policy requires a 'shareRatio' property to be set.");
                 }
                 yield new FixedShareFlowDistributor(
-                        flowEngine, distributionPolicyType.getProperty("shareRatio", Double.class), maxConsumers);
+                        flowEngine,
+                        distributionPolicyType.getProperty("shareRatio", Double.class),
+                        maxConsumers,
+                        maxSuppliers);
             }
-            default -> new MaxMinFairnessFlowDistributor(flowEngine, maxConsumers);
+            default -> new MaxMinFairnessFlowDistributor(flowEngine, maxConsumers, maxSuppliers);
         };
     }
 }

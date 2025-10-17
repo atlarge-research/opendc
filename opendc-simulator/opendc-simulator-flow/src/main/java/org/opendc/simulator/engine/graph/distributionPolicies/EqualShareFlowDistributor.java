@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.engine.graph.distributionPolicies;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
@@ -36,8 +35,8 @@ import org.opendc.simulator.engine.graph.FlowDistributor;
  */
 public class EqualShareFlowDistributor extends FlowDistributor {
 
-    public EqualShareFlowDistributor(FlowEngine engine, int maxConsumers) {
-        super(engine, maxConsumers);
+    public EqualShareFlowDistributor(FlowEngine engine, int maxConsumers, int maxSuppliers) {
+        super(engine, maxConsumers, maxSuppliers);
     }
 
     /**
@@ -47,10 +46,10 @@ public class EqualShareFlowDistributor extends FlowDistributor {
      */
     @Override
     protected void updateOutgoingDemand() {
-        double equalShare = this.capacity / this.supplierEdges.size();
+        double equalShare = this.capacity / this.numSuppliers;
 
-        for (var supplierEdge : this.supplierEdges.values()) {
-            this.pushOutgoingDemand(supplierEdge, equalShare);
+        for (int supplierIndex : this.usedSupplierIndices) {
+            this.pushOutgoingDemand(this.supplierEdges[supplierIndex], equalShare);
         }
 
         this.outgoingDemandUpdateNeeded = false;
@@ -63,8 +62,7 @@ public class EqualShareFlowDistributor extends FlowDistributor {
      */
     @Override
     protected void updateOutgoingSupplies() {
-        double[] equalShare = distributeSupply(
-                incomingDemands, new ArrayList<>(this.currentIncomingSupplies.values()), this.capacity);
+        double[] equalShare = distributeSupply(incomingDemands, this.incomingSupplies, this.capacity);
 
         for (int consumerIndex : this.usedConsumerIndices) {
             this.pushOutgoingSupply(
@@ -76,7 +74,7 @@ public class EqualShareFlowDistributor extends FlowDistributor {
     }
 
     @Override
-    public double[] distributeSupply(double[] demands, ArrayList<Double> currentSupply, double totalSupply) {
+    public double[] distributeSupply(double[] demands, double[] currentSupply, double totalSupply) {
         double[] allocation = new double[this.numConsumers];
         double equalShare = totalSupply / this.numConsumers;
 

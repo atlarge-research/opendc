@@ -22,9 +22,9 @@
 
 package org.opendc.simulator.engine.graph.distributionPolicies;
 
-import java.util.ArrayList;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowDistributor;
+import org.opendc.simulator.engine.graph.FlowEdge;
 
 /**
  * A {@link FlowDistributor} that implements the First Fit policy for distributing flow.
@@ -36,8 +36,8 @@ import org.opendc.simulator.engine.graph.FlowDistributor;
  */
 public class FirstFitPolicyFlowDistributor extends FlowDistributor {
 
-    public FirstFitPolicyFlowDistributor(FlowEngine engine, int maxConsumers) {
-        super(engine, maxConsumers);
+    public FirstFitPolicyFlowDistributor(FlowEngine engine, int maxConsumers, int maxSuppliers) {
+        super(engine, maxConsumers, maxSuppliers);
     }
 
     /**
@@ -48,14 +48,9 @@ public class FirstFitPolicyFlowDistributor extends FlowDistributor {
     protected void updateOutgoingDemand() {
         double remainingDemand = this.totalIncomingDemand;
 
-        // Sort supplier edges by their index to ensure consistent first-fit ordering
-        var sortedSuppliers = this.supplierEdges.entrySet().stream()
-                .sorted((e1, e2) -> Integer.compare(e1.getKey(), e2.getKey()))
-                .toList();
-
         // Apply First Fit strategy: fill suppliers in order until demand is satisfied
-        for (var supplierEntry : sortedSuppliers) {
-            var supplierEdge = supplierEntry.getValue();
+        for (int supplierIndex : this.usedSupplierIndices) {
+            FlowEdge supplierEdge = this.supplierEdges[supplierIndex];
             double supplierCapacity = supplierEdge.getCapacity();
 
             if (remainingDemand <= 0) {
@@ -82,12 +77,17 @@ public class FirstFitPolicyFlowDistributor extends FlowDistributor {
      */
     @Override
     protected void updateOutgoingSupplies() {
-        ArrayList<Double> currentPossibleSupplies = new ArrayList<>();
-        for (var currentIncomingSupply : currentIncomingSupplies.entrySet()) {
-            currentPossibleSupplies.add(currentIncomingSupply.getValue());
-        }
+        //        ArrayList<Double> currentPossibleSupplies = new ArrayList<>();
+        //
+        //
+        //
+        //
+        //        for (var currentIncomingSupply : incomingSupplies.entrySet()) {
+        //            currentPossibleSupplies.add(currentIncomingSupply.getValue());
+        //        }
 
-        double[] shares = distributeSupply(incomingDemands, currentPossibleSupplies, totalIncomingSupply);
+        //        double[] shares = distributeSupply(incomingDemands, currentPossibleSupplies, totalIncomingSupply);
+        double[] shares = distributeSupply(this.incomingDemands, this.incomingSupplies, this.totalIncomingSupply);
 
         for (int consumerIndex : this.usedConsumerIndices) {
             this.pushOutgoingSupply(
@@ -108,22 +108,24 @@ public class FirstFitPolicyFlowDistributor extends FlowDistributor {
      * @see #updateOutgoingSupplies()
      */
     @Override
-    public double[] distributeSupply(double[] demands, ArrayList<Double> currentSupply, double totalSupply) {
-        int numConsumers = demands.length;
-        double[] allocation = new double[numConsumers];
+    public double[] distributeSupply(double[] demands, double[] currentSupply, double totalSupply) {
+        double[] allocation = new double[this.numConsumers];
 
         // Create a copy of current supply to track remaining capacity as we allocate
-        ArrayList<Double> remainingSupply = new ArrayList<>(currentSupply);
+        double[] remainingSupply = new double[currentSupply.length];
+        System.arraycopy(currentSupply, 0, remainingSupply, 0, currentSupply.length);
 
         // For each demand, try to satisfy it using suppliers in order
-        for (int i = 0; i < numConsumers; i++) {
-            double remainingDemand = demands[i];
+        for (int consumerIndex : this.usedConsumerIndices) {
+            double remainingDemand = demands[consumerIndex];
             double totalAllocated = 0.0;
 
             if (remainingDemand > 0) {
                 // Try each supplier in order until demand is satisfied
-                for (int j = 0; j < remainingSupply.size() && remainingDemand > 0; j++) {
-                    double availableSupply = remainingSupply.get(j);
+                for (int supplierIndex = 0;
+                        supplierIndex < remainingSupply.length && remainingDemand > 0;
+                        supplierIndex++) {
+                    double availableSupply = remainingSupply[supplierIndex];
 
                     if (availableSupply > 0) {
                         // Allocate as much as possible from this supplier
@@ -133,12 +135,12 @@ public class FirstFitPolicyFlowDistributor extends FlowDistributor {
                         remainingDemand -= allocatedFromThisSupplier;
 
                         // Reduce the remaining supply capacity
-                        remainingSupply.set(j, availableSupply - allocatedFromThisSupplier);
+                        remainingSupply[supplierIndex] = availableSupply - allocatedFromThisSupplier;
                     }
                 }
             }
 
-            allocation[i] = totalAllocated;
+            allocation[consumerIndex] = totalAllocated;
         }
 
         return allocation;
