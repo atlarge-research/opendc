@@ -43,8 +43,8 @@ internal class MemorizingSchedulerTest {
             )
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.cpuCoreCount } returns 2
-        every { req.task.flavor.memorySize } returns 1024
+        every { req.task.cpuCoreCount } returns 2
+        every { req.task.memorySize } returns 1024
         every { req.isCancelled } returns false
 
         assertEquals(SchedulingResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
@@ -67,8 +67,8 @@ internal class MemorizingSchedulerTest {
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.cpuCoreCount } returns 2
-        every { req.task.flavor.memorySize } returns 1024
+        every { req.task.cpuCoreCount } returns 2
+        every { req.task.memorySize } returns 1024
         every { req.isCancelled } returns false
 
         // Make sure we get the first host both times
@@ -101,8 +101,8 @@ internal class MemorizingSchedulerTest {
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.cpuCoreCount } returns 2
-        every { req.task.flavor.memorySize } returns 1024
+        every { req.task.cpuCoreCount } returns 2
+        every { req.task.memorySize } returns 1024
         every { req.isCancelled } returns false
         val skipped = slot<Int>()
         justRun { req.setProperty("timesSkipped") value capture(skipped) }
@@ -129,8 +129,8 @@ internal class MemorizingSchedulerTest {
         scheduler.addHost(host)
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.cpuCoreCount } returns 2
-        every { req.task.flavor.memorySize } returns 2300
+        every { req.task.cpuCoreCount } returns 2
+        every { req.task.memorySize } returns 2300
         every { req.isCancelled } returns false
         val skipped = slot<Int>()
         justRun { req.setProperty("timesSkipped") value capture(skipped) }

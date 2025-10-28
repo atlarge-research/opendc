@@ -33,15 +33,15 @@ import org.opendc.simulator.compute.workload.trace.TraceWorkload
  * @param cpuCount The number of vCPUs in the VM.
  * @param memCapacity The provisioned memory for the VM in MB.
  * @param submissionTime The start time of the VM.
- * @param trace The trace that belong to this VM.
+ * @param traceWorkload The trace that belong to this VM.
  */
 public data class Task(
     val id: Int,
-    val name: String,
+    val name: String?,
     var submissionTime: Long,
     val duration: Long,
-    val parents: Set<Int> = mutableSetOf(),
-    val children: Set<Int> = emptySet(),
+    val parents: ArrayList<Int>? = null,
+    val children: Set<Int>? = null,
     val cpuCount: Int,
     val cpuCapacity: Double,
     val totalCpuLoad: Double,
@@ -51,5 +51,5 @@ public data class Task(
     val gpuMemCapacity: Long = 0L,
     val deferrable: Boolean,
     var deadline: Long,
-    val trace: TraceWorkload,
+    val traceWorkload: TraceWorkload,
 )

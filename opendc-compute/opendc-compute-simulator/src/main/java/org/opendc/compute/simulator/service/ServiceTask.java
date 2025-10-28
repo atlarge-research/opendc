@@ -22,15 +22,12 @@
 
 package org.opendc.compute.simulator.service;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.opendc.compute.api.TaskState;
 import org.opendc.compute.simulator.TaskWatcher;
 import org.opendc.compute.simulator.host.SimHost;
@@ -47,21 +44,27 @@ public class ServiceTask {
 
     private final ComputeService service;
     private final int id;
+    private final ArrayList<Integer> parents;
+    private final Set<Integer> children;
 
     private final String name;
-    private final TaskNature nature;
-    private final Duration duration;
-    private final Long deadline;
-    private ServiceFlavor flavor;
+    private final boolean deferrable;
+
+    private final long duration;
+    private final long deadline;
     public Workload workload;
 
-    private final Map<String, ?> meta; // TODO: remove this
+    private final int cpuCoreCount;
+    private final double cpuCapacity;
+    private final long memorySize;
+    private final int gpuCoreCount;
+    private final double gpuCapacity;
 
-    private final List<TaskWatcher> watchers = new ArrayList<>();
-    private TaskState state = TaskState.CREATED;
-    Instant scheduledAt = null;
-    Instant submittedAt;
-    Instant finishedAt;
+    private final List<TaskWatcher> watchers = new ArrayList<>(1);
+    private int stateOrdinal = TaskState.CREATED.ordinal();
+    private long submittedAt;
+    private long scheduledAt;
+    private long finishedAt;
     private SimHost host = null;
     private String hostName = null;
 
@@ -74,36 +77,66 @@ public class ServiceTask {
             ComputeService service,
             int id,
             String name,
-            TaskNature nature,
-            Duration duration,
-            Long deadline,
-            ServiceFlavor flavor,
+            boolean deferrable,
+            long duration,
+            long deadline,
+            int cpuCoreCount,
+            double cpuCapacity,
+            long memorySize,
+            int gpuCoreCount,
+            double gpuCapacity,
             Workload workload,
-            Map<String, ?> meta) {
+            ArrayList<Integer> parents,
+            Set<Integer> children) {
         this.service = service;
         this.id = id;
         this.name = name;
-        this.nature = nature;
+        this.deferrable = deferrable;
         this.duration = duration;
         this.deadline = deadline;
-        this.flavor = flavor;
         this.workload = workload;
-        this.meta = meta;
 
-        this.submittedAt = this.service.getClock().instant();
+        this.cpuCoreCount = cpuCoreCount;
+        this.cpuCapacity = cpuCapacity;
+        this.memorySize = memorySize;
+        this.gpuCoreCount = gpuCoreCount;
+        this.gpuCapacity = gpuCapacity;
+
+        this.parents = parents;
+        this.children = children;
+
+        this.submittedAt = this.service.getClock().millis();
     }
 
     public int getId() {
         return id;
     }
 
-    @NotNull
-    public TaskNature getNature() {
-        return nature;
+    public int getCpuCoreCount() {
+        return cpuCoreCount;
     }
 
-    @NotNull
-    public Duration getDuration() {
+    public double getCpuCapacity() {
+        return cpuCapacity;
+    }
+
+    public long getMemorySize() {
+        return memorySize;
+    }
+
+    public int getGpuCoreCount() {
+        return gpuCoreCount;
+    }
+
+    public double getGpuCapacity() {
+        return gpuCapacity;
+    }
+
+    public boolean getDeferrable() {
+        return deferrable;
+    }
+
+    public long getDuration() {
         return duration;
     }
 
@@ -117,37 +150,36 @@ public class ServiceTask {
         return name;
     }
 
-    @NotNull
-    public ServiceFlavor getFlavor() {
-        return flavor;
-    }
-
-    @NotNull
-    public Map<String, Object> getMeta() {
-        return Collections.unmodifiableMap(meta);
-    }
-
     public void setWorkload(Workload newWorkload) {
         this.workload = newWorkload;
     }
 
     @NotNull
     public TaskState getState() {
-        return state;
+        return TaskState.getEntries().get(stateOrdinal);
     }
 
-    @Nullable
-    public Instant getScheduledAt() {
+    public void setScheduledAt(long scheduledAt) {
+        this.scheduledAt = scheduledAt;
+    }
+
+    public void setSubmittedAt(long submittedAt) {
+        this.submittedAt = submittedAt;
+    }
+
+    public void setFinishedAt(long finishedAt) {
+        this.finishedAt = finishedAt;
+    }
+
+    public long getScheduledAt() {
         return scheduledAt;
     }
 
-    @Nullable
-    public Instant getSubmittedAt() {
+    public long getSubmittedAt() {
         return submittedAt;
     }
 
-    @Nullable
-    public Instant getFinishedAt() {
+    public long getFinishedAt() {
         return finishedAt;
     }
 
@@ -178,7 +210,7 @@ public class ServiceTask {
     }
 
     public void start() {
-        switch (state) {
+        switch (this.getState()) {
             case PROVISIONING:
                 LOGGER.debug("User tried to start task but request is already pending: doing nothing");
             case RUNNING:
@@ -224,7 +256,6 @@ public class ServiceTask {
         service.delete(this);
 
         this.workload = null;
-        this.flavor = null;
 
         this.setState(TaskState.DELETED);
     }
@@ -241,11 +272,11 @@ public class ServiceTask {
     }
 
     public String toString() {
-        return "Task[uid=" + id + ",name=" + name + ",state=" + state + "]";
+        return "Task[uid=" + this.id + ",name=" + this.name + ",state=" + this.getState() + "]";
     }
 
     void setState(TaskState newState) {
-        if (this.state == newState) {
+        if (this.getState() == newState) {
             return;
         }
 
@@ -259,10 +290,10 @@ public class ServiceTask {
         }
 
         if ((newState == TaskState.COMPLETED) || (newState == TaskState.FAILED) || (newState == TaskState.TERMINATED)) {
-            this.finishedAt = this.service.getClock().instant();
+            this.finishedAt = this.service.getClock().millis();
         }
 
-        this.state = newState;
+        this.stateOrdinal = newState.ordinal();
     }
 
     /**
@@ -274,5 +305,48 @@ public class ServiceTask {
             this.request = null;
             request.setCancelled(true);
         }
+    }
+
+    public void removeFromParents(List<Integer> completedTasks) {
+        if (this.parents == null) {
+            return;
+        }
+
+        for (int task : completedTasks) {
+            this.removeFromParents(task);
+        }
+    }
+
+    public void removeFromParents(int completedTask) {
+        if (this.parents == null) {
+            return;
+        }
+
+        this.parents.remove(completedTask);
+    }
+
+    public ArrayList<Integer> getParents() {
+        return parents;
+    }
+
+    public boolean hasChildren() {
+        if (children == null) {
+            return false;
+        }
+
+        return !children.isEmpty();
+    }
+
+
+    public boolean hasParents() {
+        if (parents == null) {
+            return false;
+        }
+
+        return !parents.isEmpty();
+    }
+
+    public Set<Integer> getChildren() {
+        return children;
     }
 }

@@ -34,8 +34,8 @@ public class VCpuCapacityWeigher(override val multiplier: Double = 1.0) : HostWe
         task: ServiceTask,
     ): Double {
         val model = host.host.getModel()
-        val requiredCapacity = task.flavor.meta["cpu-capacity"] as? Double ?: 0.0
-        return model.cpuCapacity - requiredCapacity / task.flavor.cpuCoreCount
+        val requiredCapacity = task.cpuCapacity
+        return model.cpuCapacity - requiredCapacity / task.cpuCoreCount
     }
 
     override fun toString(): String = "VCpuWeigher"

@@ -34,9 +34,9 @@ public class VGpuCapacityWeigher(override val multiplier: Double = 1.0) : HostWe
         task: ServiceTask,
     ): Double {
         val model = host.host.getModel()
-        val requiredCapacity = task.flavor.meta["gpu-capacity"] as? Double ?: 0.0
+        val requiredCapacity = task.gpuCapacity
         val availableCapacity = model.gpuHostModels.maxOfOrNull { it.gpuCoreCapacity } ?: 0.0
-        return availableCapacity - requiredCapacity / task.flavor.gpuCoreCount
+        return availableCapacity - requiredCapacity / task.gpuCoreCount
     }
 
     override fun toString(): String = "VGpuWeigher"

@@ -126,18 +126,25 @@ public class MemorizingTimeshift(
              Only delay tasks if they are deferrable and it doesn't violate the deadline.
              Separate delay thresholds for short and long tasks.
              */
-            if (task.nature.deferrable) {
-                val durInHours = task.duration.toHours()
+            if (task.deferrable) {
+                val durInHours = task.duration / (1000.0 * 60.0 * 60.0)
                 if ((durInHours < 2 && !shortLowCarbon) ||
                     (durInHours >= 2 && !longLowCarbon)
                 ) {
-                    val currentTime = clock.instant()
-                    val estimatedCompletion = currentTime.plus(task.duration)
-                    val deadline = Instant.ofEpochMilli(task.deadline)
-                    if (estimatedCompletion.isBefore(deadline)) {
+                    val currentTime = clock.millis()
+                    val estimatedCompletion = currentTime + task.duration
+                    val deadline = task.deadline
+                    if (estimatedCompletion <= deadline) {
                         // No need to schedule this task in a high carbon intensity period
                         continue
                     }
+//                    val currentTime = clock.instant()
+//                    val estimatedCompletion = currentTime.plus(task.duration)
+//                    val deadline = Instant.ofEpochMilli(task.deadline)
+//                    if (estimatedCompletion.isBefore(deadline)) {
+//                        // No need to schedule this task in a high carbon intensity period
+//                        continue
+//                    }
                 }
             }
 

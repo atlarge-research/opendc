@@ -34,9 +34,9 @@ import org.opendc.trace.conv.FRAGMENT_DURATION
 import org.opendc.trace.conv.TASK_ID
 
 /**
- * A [ReadSupport] instance for [Fragment] objects.
+ * A [ReadSupport] instance for [FragmentParquetSchema] objects.
  */
-internal class FragmentReadSupport(private val projection: List<String>?) : ReadSupport<Fragment>() {
+internal class FragmentReadSupport(private val projection: List<String>?) : ReadSupport<FragmentParquetSchema>() {
     /**
      * Mapping from field names to [TableColumn]s.
      */
@@ -75,5 +75,5 @@ internal class FragmentReadSupport(private val projection: List<String>?) : Read
         keyValueMetaData: Map<String, String>,
         fileSchema: MessageType,
         readContext: ReadContext,
-    ): RecordMaterializer<Fragment> = FragmentRecordMaterializer(readContext.requestedSchema)
+    ): RecordMaterializer<FragmentParquetSchema> = FragmentRecordMaterializer(readContext.requestedSchema)
 }

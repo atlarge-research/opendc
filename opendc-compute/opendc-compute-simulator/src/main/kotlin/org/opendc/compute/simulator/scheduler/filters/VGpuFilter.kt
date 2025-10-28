@@ -35,7 +35,7 @@ public class VGpuFilter(private val allocationRatio: Double) : HostFilter {
         host: HostView,
         task: ServiceTask,
     ): Boolean {
-        val requested = task.flavor.gpuCoreCount
+        val requested = task.gpuCoreCount
         val totalCores = host.host.getModel().gpuHostModels()?.sumOf { it.gpuCoreCount() } ?: 0
         val limit = totalCores * allocationRatio
 

@@ -27,7 +27,7 @@ import org.opendc.trace.conv.FRAGMENT_CPU_USAGE
 import org.opendc.trace.conv.FRAGMENT_DURATION
 import org.opendc.trace.conv.FRAGMENT_GPU_USAGE
 import org.opendc.trace.conv.TASK_ID
-import org.opendc.trace.formats.workload.parquet.Fragment
+import org.opendc.trace.formats.workload.parquet.FragmentParquetSchema
 import org.opendc.trace.util.parquet.LocalParquetReader
 import java.time.Duration
 import java.time.Instant
@@ -36,11 +36,11 @@ import java.util.UUID
 /**
  * A [TableReader] implementation for the OpenDC virtual machine trace format.
  */
-internal class FragmentTableReader(private val reader: LocalParquetReader<Fragment>) : TableReader {
+internal class FragmentTableReader(private val reader: LocalParquetReader<FragmentParquetSchema>) : TableReader {
     /**
      * The current record.
      */
-    private var record: Fragment? = null
+    private var record: FragmentParquetSchema? = null
 
     override fun nextRow(): Boolean {
         try {

@@ -34,7 +34,8 @@ public class DifferentHostFilter : HostFilter {
         task: ServiceTask,
     ): Boolean {
         @Suppress("UNCHECKED_CAST")
-        val affinityIDs = task.meta["scheduler_hint:different_host"] as? Set<Int> ?: return true
-        return host.host.getInstances().none { it.id in affinityIDs }
+        return true // TODO: re-enable different_host filter
+//        val affinityIDs = task.meta["scheduler_hint:different_host"] as? Set<Int> ?: return true
+//        return host.host.getInstances().none { it.id in affinityIDs }
     }
 }

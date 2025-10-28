@@ -48,11 +48,11 @@ class TimeshiftSchedulerTest {
             )
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.cpuCoreCount } returns 2
-        every { req.task.flavor.memorySize } returns 1024
+        every { req.task.cpuCoreCount } returns 2
+        every { req.task.memorySize } returns 1024
         every { req.isCancelled } returns false
-        every { req.task.nature } returns TaskNature(true)
-        every { req.task.duration } returns Duration.ofMillis(10)
+        every { req.task.deferrable } returns true
+        every { req.task.duration } returns 10
         every { req.task.deadline } returns 50
 
         scheduler.updateCarbonIntensity(100.0)
@@ -76,11 +76,11 @@ class TimeshiftSchedulerTest {
             )
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.cpuCoreCount } returns 2
-        every { req.task.flavor.memorySize } returns 1024
+        every { req.task.cpuCoreCount } returns 2
+        every { req.task.memorySize } returns 1024
         every { req.isCancelled } returns false
-        every { req.task.nature } returns TaskNature(true)
-        every { req.task.duration } returns Duration.ofMillis(10)
+        every { req.task.deferrable } returns true
+        every { req.task.duration } returns 10
         every { req.task.deadline } returns 20
 
         scheduler.updateCarbonIntensity(100.0)

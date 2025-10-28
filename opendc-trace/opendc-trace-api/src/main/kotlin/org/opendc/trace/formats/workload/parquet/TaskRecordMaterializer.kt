@@ -31,14 +31,14 @@ import org.apache.parquet.schema.MessageType
 import java.time.Instant
 
 /**
- * A [RecordMaterializer] for [Task] records.
+ * A [RecordMaterializer] for [TaskParquetSchema] records.
  */
-internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<Task>() {
+internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<TaskParquetSchema>() {
     /**
      * State of current record being read.
      */
     private var localId = -99
-    private var localName = ""
+    private var localName : String? = null
     private var localSubmissionTime = Instant.MIN
     private var localDuration = 0L
     private var localCpuCount = 0
@@ -140,7 +140,7 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
 
             override fun start() {
                 localId = -99
-                localName = ""
+                localName = null
                 localSubmissionTime = Instant.MIN
                 localDuration = 0L
                 localCpuCount = 0
@@ -159,8 +159,8 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
             override fun getConverter(fieldIndex: Int): Converter = converters[fieldIndex]
         }
 
-    override fun getCurrentRecord(): Task =
-        Task(
+    override fun getCurrentRecord(): TaskParquetSchema =
+        TaskParquetSchema(
             localId,
             localName,
             localSubmissionTime,

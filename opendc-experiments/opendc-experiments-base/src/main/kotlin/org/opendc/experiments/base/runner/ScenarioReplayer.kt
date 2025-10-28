@@ -34,11 +34,9 @@ import org.opendc.compute.failure.models.FailureModel
 import org.opendc.compute.simulator.TaskWatcher
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceTask
-import org.opendc.compute.simulator.service.TaskNature
 import org.opendc.compute.workload.Task
 import org.opendc.experiments.base.experiment.specs.FailureModelSpec
 import org.opendc.experiments.base.experiment.specs.createFailureModel
-import java.time.Duration
 import java.time.InstantSource
 import java.util.Random
 import kotlin.coroutines.coroutineContext
@@ -119,39 +117,22 @@ public suspend fun ComputeService.replay(
                     entry.deadline -= simulationOffset
                 }
 
-                val workload = entry.trace
-                val meta = mutableMapOf<String, Any>("workload" to workload)
-
-                val nature = TaskNature(entry.deferrable)
-
-                val flavorMeta = mutableMapOf<String, Any>()
-
-                if (entry.cpuCapacity > 0.0) {
-                    flavorMeta["cpu-capacity"] = entry.cpuCapacity
-                }
-                if (entry.gpuCapacity > 0.0) {
-                    flavorMeta["gpu-capacity"] = entry.gpuCapacity
-                }
-
                 launch {
                     val task =
                         client.newTask(
                             entry.id,
                             entry.name,
-                            nature,
-                            Duration.ofMillis(entry.duration),
+                            entry.deferrable,
+                            entry.duration,
                             entry.deadline,
-                            client.newFlavor(
-                                entry.id,
-                                entry.cpuCount,
-                                entry.memCapacity,
-                                entry.gpuCount,
-                                entry.parents,
-                                entry.children,
-                                flavorMeta,
-                            ),
-                            workload,
-                            meta,
+                            entry.cpuCount,
+                            entry.cpuCapacity,
+                            entry.memCapacity,
+                            entry.gpuCount,
+                            entry.gpuCapacity,
+                            entry.traceWorkload,
+                            entry.parents,
+                            entry.children,
                         )
 
                     val taskWatcher = RunningTaskWatcher()

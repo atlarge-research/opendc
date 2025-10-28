@@ -28,9 +28,9 @@ import org.apache.parquet.io.api.RecordConsumer
 import kotlin.math.roundToLong
 
 /**
- * Support for writing [Task] instances to Parquet format.
+ * Support for writing [TaskParquetSchema] instances to Parquet format.
  */
-internal class TaskWriteSupport : WriteSupport<Task>() {
+internal class TaskWriteSupport : WriteSupport<TaskParquetSchema>() {
     /**
      * The current active record consumer.
      */
@@ -44,13 +44,13 @@ internal class TaskWriteSupport : WriteSupport<Task>() {
         this.recordConsumer = recordConsumer
     }
 
-    override fun write(record: Task) {
+    override fun write(record: TaskParquetSchema) {
         write(recordConsumer, record)
     }
 
     private fun write(
         consumer: RecordConsumer,
-        record: Task,
+        record: TaskParquetSchema,
     ) {
         consumer.startMessage()
 

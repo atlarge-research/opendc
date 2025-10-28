@@ -37,7 +37,7 @@ import org.opendc.trace.conv.TASK_MEM_CAPACITY
 import org.opendc.trace.conv.TASK_NAME
 import org.opendc.trace.conv.TASK_PARENTS
 import org.opendc.trace.conv.TASK_SUBMISSION_TIME
-import org.opendc.trace.formats.workload.parquet.Task
+import org.opendc.trace.formats.workload.parquet.TaskParquetSchema
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
@@ -45,7 +45,7 @@ import java.util.UUID
 /**
  * A [TableWriter] implementation for the OpenDC virtual machine trace format.
  */
-internal class TaskTableWriter(private val writer: ParquetWriter<Task>) : TableWriter {
+internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSchema>) : TableWriter {
     /**
      * The current state for the record that is being written.
      */
@@ -85,7 +85,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<Task>) : TableW
         check(localIsActive) { "No active row" }
         localIsActive = false
         writer.write(
-            Task(
+            TaskParquetSchema(
                 localId,
                 localName,
                 localSubmissionTime,

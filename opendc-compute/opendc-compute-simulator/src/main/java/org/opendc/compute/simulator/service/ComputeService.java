@@ -176,20 +176,19 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                     || newState == TaskState.PAUSED
                     || newState == TaskState.TERMINATED
                     || newState == TaskState.FAILED) {
-                LOGGER.info("task {} {} {} finished", task.getId(), task.getName(), task.getFlavor());
+                LOGGER.info("task {} {} {} finished", task.getId(), task.getName());
 
                 if (activeTasks.remove(task) != null) {
                     tasksActive--;
                 }
 
                 HostView hv = hostToView.get(host);
-                final ServiceFlavor flavor = task.getFlavor();
                 if (hv != null) {
-                    hv.provisionedCpuCores -= flavor.getCpuCoreCount();
-                    hv.availableCpuCores += flavor.getCpuCoreCount();
+                    hv.provisionedCpuCores -= task.getCpuCoreCount();
+                    hv.availableCpuCores += task.getCpuCoreCount();
                     hv.instanceCount--;
-                    hv.availableMemory += flavor.getMemorySize();
-                    hv.provisionedGpuCores -= flavor.getGpuCoreCount();
+                    hv.availableMemory += task.getMemorySize();
+                    hv.provisionedGpuCores -= task.getGpuCoreCount();
                 } else {
                     LOGGER.error("Unknown host {}", host);
                 }
@@ -436,10 +435,8 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         long now = clock.millis();
         SchedulingRequest request = new SchedulingRequest(task, now);
 
-        ServiceFlavor flavor = task.getFlavor();
-
         // If the task has parents, put in blocked tasks
-        if (!flavor.getParents().isEmpty()) {
+        if (task.hasParents()) {
             blockedTasks.put(task.getId(), request);
             return null;
         }
@@ -457,17 +454,21 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     void addCompletedTask(ServiceTask completedTask) {
         int parentId = completedTask.getId();
 
-        for (int taskId : completedTask.getFlavor().getChildren()) {
-            SchedulingRequest request = blockedTasks.get(taskId);
-            if (request != null) {
-                request.getTask().getFlavor().removeFromParents(parentId);
+        if (!completedTask.hasChildren()) {
+            return;
+        }
 
-                Set<Integer> pendingDependencies = request.getTask().getFlavor().getParents();
+        for (int childTaskId: completedTask.getChildren()) {
+            SchedulingRequest childRequest = blockedTasks.get(childTaskId);
+            if (childRequest != null) {
+                ServiceTask childTask = childRequest.getTask();
+                childTask.removeFromParents(parentId);
 
-                if (pendingDependencies.isEmpty()) {
-                    taskQueue.add(request);
+                // If the child task has no more parents, it can be scheduled
+                if (!childTask.hasParents()) {
+                    taskQueue.add(childRequest);
                     tasksPending++;
-                    blockedTasks.remove(taskId);
+                    blockedTasks.remove(childTaskId);
                 }
             }
         }
@@ -475,8 +476,8 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     void addTerminatedTask(ServiceTask task) {
 
-        for (int taskId : task.getFlavor().getChildren()) {
-            SchedulingRequest request = blockedTasks.get(taskId);
+        for (int childTaskId : task.getChildren()) {
+            SchedulingRequest request = blockedTasks.get(childTaskId);
             if (request != null) {
                 ServiceTask childTask = request.getTask();
 
@@ -537,12 +538,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             final SchedulingRequest req = result.getReq();
             final ServiceTask task = req.getTask();
 
-            final ServiceFlavor flavor = task.getFlavor();
-
             if (result.getResultType() == SchedulingResultType.FAILURE) {
                 LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);
 
-                if (flavor.getMemorySize() > maxMemory || flavor.getCpuCoreCount() > maxCores) {
+                if (task.getMemorySize() > maxMemory || task.getCpuCoreCount() > maxCores) {
                     // Remove the incoming image
                     taskQueue.remove(req);
                     tasksPending--;
@@ -571,7 +570,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
             try {
                 task.setHost(host);
-                task.scheduledAt = clock.instant();
+                task.setScheduledAt(clock.millis());
 
                 host.spawn(task);
 
@@ -579,10 +578,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 attemptsSuccess++;
 
                 hv.instanceCount++;
-                hv.provisionedCpuCores += flavor.getCpuCoreCount();
-                hv.availableCpuCores -= flavor.getCpuCoreCount();
-                hv.availableMemory -= flavor.getMemorySize();
-                hv.provisionedGpuCores += flavor.getGpuCoreCount();
+                hv.provisionedCpuCores += task.getCpuCoreCount();
+                hv.availableCpuCores -= task.getCpuCoreCount();
+                hv.availableMemory -= task.getMemorySize();
+                hv.provisionedGpuCores += task.getGpuCoreCount();
 
                 activeTasks.put(task, host);
 
@@ -659,34 +658,38 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         @NotNull
         public ServiceFlavor newFlavor(
                 int taskId,
-                int cpuCount,
-                long memorySize,
-                int gpuCoreCount,
-                @NotNull Set<Integer> parents,
-                @NotNull Set<Integer> children,
                 @NotNull Map<String, ?> meta) {
             checkOpen();
 
             final ComputeService service = this.service;
 
-            return new ServiceFlavor(service, taskId, cpuCount, memorySize, gpuCoreCount, parents, children, meta);
+            return new ServiceFlavor(service, taskId, meta);
         }
 
         @NotNull
         public ServiceTask newTask(
                 int id,
-                @NotNull String name,
-                @NotNull TaskNature nature,
-                @NotNull Duration duration,
-                @NotNull Long deadline,
-                @NotNull ServiceFlavor flavor,
+                String name,
+                boolean deferrable,
+                long duration,
+                long deadline,
+                int cpuCount,
+                double cpuCapacity,
+                long memorySize,
+                int gpuCoreCount,
+                double gpuCapacity,
                 @NotNull Workload workload,
-                @NotNull Map<String, ?> meta) {
+                ArrayList<Integer> parents,
+                Set<Integer> children) {
+
             checkOpen();
 
             final ComputeService service = this.service;
 
-            ServiceTask task = new ServiceTask(service, id, name, nature, duration, deadline, flavor, workload, meta);
+            ServiceTask task = new ServiceTask(service, id, name, deferrable,
+                                                duration, deadline, cpuCount, cpuCapacity,
+                                                memorySize, gpuCoreCount, gpuCapacity, workload,
+                                                parents, children);
 
             service.taskById.put(id, task);
 

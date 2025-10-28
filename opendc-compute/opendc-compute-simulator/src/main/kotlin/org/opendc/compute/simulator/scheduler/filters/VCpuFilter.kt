@@ -37,9 +37,9 @@ public class VCpuFilter(private val allocationRatio: Double = 1.0) : HostFilter 
         host: HostView,
         task: ServiceTask,
     ): Boolean {
-        if (isSimple) return host.availableCpuCores >= task.flavor.cpuCoreCount
+        if (isSimple) return host.availableCpuCores >= task.cpuCoreCount
 
-        val requested = task.flavor.cpuCoreCount
+        val requested = task.cpuCoreCount
         val totalCores = host.host.getModel().coreCount
 
         // Do not allow an instance to overcommit against itself, only against other instances

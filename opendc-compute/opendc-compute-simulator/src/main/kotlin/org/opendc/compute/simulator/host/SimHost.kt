@@ -231,9 +231,9 @@ public class SimHost(
     }
 
     public fun canFit(task: ServiceTask): Boolean {
-        val sufficientMemory = model.memoryCapacity >= task.flavor.memorySize
-        val enoughCpus = model.coreCount >= task.flavor.cpuCoreCount
-        val canFit = simMachine!!.canFit(task.flavor.toMachineModel())
+        val sufficientMemory = model.memoryCapacity >= task.memorySize
+        val enoughCpus = model.coreCount >= task.cpuCoreCount
+        val canFit = simMachine!!.canFit(task.toMachineModel())
 
         return sufficientMemory && enoughCpus && canFit
     }
@@ -404,10 +404,10 @@ public class SimHost(
     /**
      * Convert flavor to machine model.
      */
-    private fun Flavor.toMachineModel(): MachineModel {
+    private fun ServiceTask.toMachineModel(): MachineModel {
         return MachineModel(
             simMachine!!.machineModel.cpuModel,
-            MemoryUnit("Generic", "Generic", 3200.0, memorySize),
+            MemoryUnit("Generic", "Generic", 3200.0, this.memorySize),
             simMachine!!.machineModel.gpuModels,
             simMachine!!.machineModel.cpuDistributionStrategy,
             simMachine!!.machineModel.gpuDistributionStrategy,

@@ -83,17 +83,17 @@ public interface TaskTableReader : Exportable {
     /**
      * The [Instant] at which the task was scheduled relative to the start of the workload.
      */
-    public val scheduleTime: Instant?
+    public val scheduleTime: Long?
 
     /**
      * The [Instant] at which the task was submitted relative to the start of the workload.
      */
-    public val submissionTime: Instant?
+    public val submissionTime: Long?
 
     /**
      * The [Instant] at which the task finished relative to the start of the workload.
      */
-    public val finishTime: Instant?
+    public val finishTime: Long?
 
     /**
      * The capacity of the CPUs of Host on which the task is running (in MHz).

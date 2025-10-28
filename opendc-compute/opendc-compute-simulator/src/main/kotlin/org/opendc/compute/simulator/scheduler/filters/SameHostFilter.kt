@@ -34,7 +34,8 @@ public class SameHostFilter : HostFilter {
         task: ServiceTask,
     ): Boolean {
         @Suppress("UNCHECKED_CAST")
-        val affinityIDs = task.meta["scheduler_hint:same_host"] as? Set<Int> ?: return true
-        return host.host.getInstances().any { it.id in affinityIDs }
+//        val affinityIDs = task.meta["scheduler_hint:same_host"] as? Set<Int> ?: return true
+//        return host.host.getInstances().any { it.id in affinityIDs }
+        return true
     }
 }

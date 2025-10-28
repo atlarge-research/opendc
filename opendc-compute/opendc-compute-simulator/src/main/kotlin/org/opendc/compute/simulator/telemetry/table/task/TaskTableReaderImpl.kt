@@ -93,9 +93,9 @@ public class TaskTableReaderImpl(
             task.name,
             "vm",
             "x86",
-            task.flavor.cpuCoreCount,
-            task.flavor.memorySize,
-            task.flavor.gpuCoreCount,
+            task.cpuCoreCount,
+            task.memorySize,
+            task.gpuCoreCount,
         )
 
     /**
@@ -134,17 +134,17 @@ public class TaskTableReaderImpl(
         get() = _numPauses
     private var _numPauses = 0
 
-    override val submissionTime: Instant?
+    override val submissionTime: Long?
         get() = _submissionTime
-    private var _submissionTime: Instant? = null
+    private var _submissionTime: Long? = null
 
-    override val scheduleTime: Instant?
+    override val scheduleTime: Long?
         get() = _scheduleTime
-    private var _scheduleTime: Instant? = null
+    private var _scheduleTime: Long? = null
 
-    override val finishTime: Instant?
+    override val finishTime: Long?
         get() = _finishTime
-    private var _finishTime: Instant? = null
+    private var _finishTime: Long? = null
 
     override val cpuLimit: Double
         get() = _cpuLimit
@@ -190,22 +190,22 @@ public class TaskTableReaderImpl(
         get() = _gpuDemand
     private var _gpuDemand: Double? = 0.0
 
-    override val gpuActiveTime: Long?
+    override val gpuActiveTime: Long
         get() = (_gpuActiveTime ?: 0L) - (previousGpuActiveTime ?: 0L)
     private var _gpuActiveTime: Long? = null
     private var previousGpuActiveTime: Long? = null
 
-    override val gpuIdleTime: Long?
+    override val gpuIdleTime: Long
         get() = (_gpuIdleTime ?: 0L) - (previousGpuIdleTime ?: 0L)
     private var _gpuIdleTime: Long? = null
     private var previousGpuIdleTime: Long? = null
 
-    override val gpuStealTime: Long?
+    override val gpuStealTime: Long
         get() = (_gpuStealTime ?: 0L) - (previousGpuStealTime ?: 0L)
     private var _gpuStealTime: Long? = null
     private var previousGpuStealTime: Long? = null
 
-    override val gpuLostTime: Long?
+    override val gpuLostTime: Long
         get() = (_gpuLostTime ?: 0L) - (previousGpuLostTime ?: 0L)
     private var _gpuLostTime: Long? = null
     private var previousGpuLostTime: Long? = null

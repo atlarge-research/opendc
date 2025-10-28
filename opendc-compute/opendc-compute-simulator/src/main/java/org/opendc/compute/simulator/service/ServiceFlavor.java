@@ -22,6 +22,7 @@
 
 package org.opendc.compute.simulator.service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,45 +37,31 @@ import org.opendc.compute.api.Flavor;
 public final class ServiceFlavor implements Flavor {
     private final ComputeService service;
     private final int taskId;
-    private final int cpuCoreCount;
-    private final long memorySize;
-    private final int gpuCoreCount;
-    private final Set<Integer> parents;
-    private final Set<Integer> children;
+
     private final Map<String, ?> meta;
 
     ServiceFlavor(
             ComputeService service,
             int taskId,
-            int cpuCoreCount,
-            long memorySize,
-            int gpuCoreCount,
-            Set<Integer> parents,
-            Set<Integer> children,
             Map<String, ?> meta) {
         this.service = service;
         this.taskId = taskId;
-        this.cpuCoreCount = cpuCoreCount;
-        this.memorySize = memorySize;
-        this.gpuCoreCount = gpuCoreCount;
-        this.parents = parents;
-        this.children = children;
         this.meta = meta;
     }
 
     @Override
     public int getCpuCoreCount() {
-        return cpuCoreCount;
+        return 0;
     }
 
     @Override
     public long getMemorySize() {
-        return memorySize;
+        return 0;
     }
 
     @Override
     public int getGpuCoreCount() {
-        return gpuCoreCount;
+        return 0;
     }
 
     @Override
@@ -123,20 +110,20 @@ public final class ServiceFlavor implements Flavor {
     }
 
     public void removeFromParents(int completedTask) {
-        this.parents.remove(completedTask);
+
     }
 
     public boolean isInDependencies(int task) {
-        return this.parents.contains(task);
+        return false;
     }
 
     @Override
-    public @NotNull Set<Integer> getParents() {
-        return parents;
+    public @NotNull ArrayList<Integer> getParents() {
+        return new ArrayList<>();
     }
 
     @Override
     public @NotNull Set<Integer> getChildren() {
-        return children;
+        return Collections.emptySet();
     }
 }

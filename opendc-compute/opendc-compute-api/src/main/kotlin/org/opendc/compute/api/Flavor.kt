@@ -45,7 +45,7 @@ public interface Flavor : Resource {
     /**
      * Set of Tasks that need to be finished before this can startAdd commentMore actions
      */
-    public val parents: Set<Int>
+    public val parents: ArrayList<Int>
 
     /**
      * Set of Tasks that need to be finished before this can startAdd commentMore actions

@@ -119,7 +119,7 @@ public class ComputeWorkloadLoader(
     /**
      * Read the metadata into a workload.
      */
-    private fun parseMeta(
+    private fun parseTasks(
         trace: Trace,
         fragments: Map<Int, Builder>,
     ): List<Task> {
@@ -146,10 +146,6 @@ public class ComputeWorkloadLoader(
                 val id = reader.getInt(idCol)
                 var name = reader.getString(idName)
 
-                if (name == null) {
-                    name = id.toString()
-                }
-
                 if (!fragments.containsKey(id)) {
                     continue
                 }
@@ -171,8 +167,18 @@ public class ComputeWorkloadLoader(
                 val gpuCoreCount = reader.getInt(gpuCoreCountCol) // Default to 0 if not present
                 val gpuMemory = 0L // currently not implemented
 
-                val parents = reader.getSet(parentsCol, Int::class.java) // No dependencies in the trace
-                val children = reader.getSet(childrenCol, Int::class.java) // No dependencies in the trace
+                var parents = reader.getSet(parentsCol, Int::class.java) // No dependencies in the trace
+                var children = reader.getSet(childrenCol, Int::class.java) // No dependencies in the trace
+
+                var parents_output : ArrayList<Int>? = null;
+
+                if (parents?.isEmpty() == true) {
+                    parents_output = null
+                    children = null
+                }
+                else {
+                    parents_output = ArrayList(parents!!);
+                }
 
                 var deferrable = reader.getBoolean(deferrableCol)
                 var deadline = reader.getLong(deadlineCol)
@@ -190,8 +196,8 @@ public class ComputeWorkloadLoader(
                         name,
                         submissionTime,
                         duration,
-                        parents!!,
-                        children!!,
+                        parents_output,
+                        children,
                         cpuCount,
                         cpuCapacity,
                         totalLoad,
@@ -224,7 +230,7 @@ public class ComputeWorkloadLoader(
     override fun load(): List<Task> {
         val trace = Trace.open(pathToFile, "workload")
         val fragments = parseFragments(trace)
-        val vms = parseMeta(trace, fragments)
+        val vms = parseTasks(trace, fragments)
 
         return vms
     }
