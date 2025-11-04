@@ -38,7 +38,7 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
      * State of current record being read.
      */
     private var localId = -99
-    private var localName : String? = null
+    private var localName: String? = null
     private var localSubmissionTime = Instant.MIN
     private var localDuration = 0L
     private var localCpuCount = 0

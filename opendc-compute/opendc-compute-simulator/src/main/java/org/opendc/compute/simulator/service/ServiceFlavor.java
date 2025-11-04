@@ -40,10 +40,7 @@ public final class ServiceFlavor implements Flavor {
 
     private final Map<String, ?> meta;
 
-    ServiceFlavor(
-            ComputeService service,
-            int taskId,
-            Map<String, ?> meta) {
+    ServiceFlavor(ComputeService service, int taskId, Map<String, ?> meta) {
         this.service = service;
         this.taskId = taskId;
         this.meta = meta;
@@ -109,9 +106,7 @@ public final class ServiceFlavor implements Flavor {
         }
     }
 
-    public void removeFromParents(int completedTask) {
-
-    }
+    public void removeFromParents(int completedTask) {}
 
     public boolean isInDependencies(int task) {
         return false;

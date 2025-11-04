@@ -25,6 +25,7 @@ package org.opendc.experiments.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.workload.Task
 import org.opendc.experiments.base.experiment.specs.TraceBasedFailureModelSpec
 import org.opendc.simulator.compute.workload.trace.TraceFragment
@@ -47,7 +48,7 @@ class FailuresAndCheckpointingTest {
      */
     @Test
     fun testFailures1() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -55,7 +56,7 @@ class FailuresAndCheckpointingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -88,7 +89,7 @@ class FailuresAndCheckpointingTest {
      */
     @Test
     fun testFailures2() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -96,7 +97,7 @@ class FailuresAndCheckpointingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -132,7 +133,7 @@ class FailuresAndCheckpointingTest {
      */
     @Test
     fun testFailures3() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -140,7 +141,7 @@ class FailuresAndCheckpointingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -178,7 +179,7 @@ class FailuresAndCheckpointingTest {
      */
     @Test
     fun testFailures4() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -186,7 +187,7 @@ class FailuresAndCheckpointingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -238,7 +239,7 @@ class FailuresAndCheckpointingTest {
      */
     @Test
     fun testCheckpoints1() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -246,7 +247,7 @@ class FailuresAndCheckpointingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
                 ),
@@ -293,7 +294,7 @@ class FailuresAndCheckpointingTest {
      */
     @Test
     fun testCheckpoints2() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -302,7 +303,7 @@ class FailuresAndCheckpointingTest {
                             TraceFragment(10 * 60 * 1000, 2000.0),
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
                 ),
@@ -347,7 +348,7 @@ class FailuresAndCheckpointingTest {
      */
     @Test
     fun testCheckpoints3() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -356,7 +357,7 @@ class FailuresAndCheckpointingTest {
                             TraceFragment(10 * 60 * 1000, 1000.0),
                             TraceFragment(10 * 60 * 1000, 2000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
                 ),
@@ -397,7 +398,7 @@ class FailuresAndCheckpointingTest {
      */
     @Test
     fun testCheckpoints4() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -405,7 +406,7 @@ class FailuresAndCheckpointingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
                     checkpointIntervalScaling = 1.5,
@@ -440,7 +441,7 @@ class FailuresAndCheckpointingTest {
      */
     @Test
     fun testCheckpoints5() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -448,7 +449,7 @@ class FailuresAndCheckpointingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
                 ),
@@ -483,7 +484,7 @@ class FailuresAndCheckpointingTest {
      */
     @Test
     fun testCheckpoints6() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -491,7 +492,7 @@ class FailuresAndCheckpointingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     checkpointInterval = 60 * 1000L,
                     checkpointDuration = 1000L,
                 ),

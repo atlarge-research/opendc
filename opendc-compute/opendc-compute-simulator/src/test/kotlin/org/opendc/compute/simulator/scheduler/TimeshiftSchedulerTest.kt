@@ -27,8 +27,6 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
-import org.opendc.compute.simulator.service.TaskNature
-import java.time.Duration
 import java.time.Instant
 import java.time.InstantSource
 

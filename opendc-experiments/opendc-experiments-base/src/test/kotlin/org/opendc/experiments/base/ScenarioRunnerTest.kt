@@ -29,6 +29,7 @@ import org.opendc.compute.simulator.scheduler.MemorizingScheduler
 import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
 import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
+import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.workload.Task
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
@@ -49,7 +50,7 @@ class ScenarioRunnerTest {
      */
     @Test
     fun testScenario1() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -57,7 +58,7 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -86,7 +87,7 @@ class ScenarioRunnerTest {
      */
     @Test
     fun testScenario2() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -94,7 +95,7 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -102,7 +103,7 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(5 * 60 * 1000, 2000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -139,7 +140,7 @@ class ScenarioRunnerTest {
      */
     @Test
     fun testScenario3() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -147,7 +148,7 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -155,7 +156,7 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -184,7 +185,7 @@ class ScenarioRunnerTest {
      */
     @Test
     fun testScenario4() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -192,7 +193,7 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -200,7 +201,7 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(5 * 60 * 1000, 2000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     submissionTime = "1970-01-01T00:20",
                 ),
             )
@@ -230,7 +231,7 @@ class ScenarioRunnerTest {
      */
     @Test
     fun testScenario5() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -238,8 +239,8 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
             )
 
@@ -278,7 +279,7 @@ class ScenarioRunnerTest {
      */
     @Test
     fun testScenario6() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -286,8 +287,8 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                 ),
             )
 
@@ -325,7 +326,7 @@ class ScenarioRunnerTest {
      */
     @Test
     fun testScenario7() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -333,8 +334,8 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 2000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                 ),
             )
 
@@ -371,7 +372,7 @@ class ScenarioRunnerTest {
      */
     @Test
     fun testScenario8() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -379,8 +380,8 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 2000.0, 1000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
@@ -416,7 +417,7 @@ class ScenarioRunnerTest {
      */
     @Test
     fun testScenario9() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -424,8 +425,8 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -433,8 +434,8 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                 ),
             )
 
@@ -471,7 +472,7 @@ class ScenarioRunnerTest {
      */
     @Test
     fun testScenario10() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -479,8 +480,8 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 0.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 0,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 0,
                 ),
                 createTestTask(
                     id = 1,
@@ -488,8 +489,8 @@ class ScenarioRunnerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
             )
 

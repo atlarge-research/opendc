@@ -199,17 +199,17 @@ public object DfltTaskExportColumns {
     public val SCHEDULE_TIME: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("schedule_time"),
-        ) { it.scheduleTime}
+        ) { it.scheduleTime }
 
     public val SUBMISSION_TIME: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("submission_time"),
-        ) { it.submissionTime}
+        ) { it.submissionTime }
 
     public val FINISH_TIME: ExportColumn<TaskTableReader> =
         ExportColumn(
             field = Types.optional(INT64).named("finish_time"),
-        ) { it.finishTime}
+        ) { it.finishTime }
 
     public val TASK_STATE: ExportColumn<TaskTableReader> =
         ExportColumn(

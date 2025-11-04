@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
 import org.jetbrains.annotations.NotNull;
 import org.opendc.compute.api.TaskState;
 import org.opendc.compute.simulator.TaskWatcher;
@@ -42,7 +41,20 @@ import org.slf4j.LoggerFactory;
 public class ServiceTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceTask.class);
 
-    private final ComputeService service;
+    public ComputeService getService() {
+        return service;
+    }
+
+    public void setService(ComputeService service) {
+        this.service = service;
+    }
+
+    private ComputeService service;
+
+    public boolean isDeferrable() {
+        return deferrable;
+    }
+
     private final int id;
     private final ArrayList<Integer> parents;
     private final Set<Integer> children;
@@ -51,11 +63,17 @@ public class ServiceTask {
     private final boolean deferrable;
 
     private final long duration;
-    private final long deadline;
+    private long deadline;
     public Workload workload;
 
     private final int cpuCoreCount;
     private final double cpuCapacity;
+
+    public double getTotalCPULoad() {
+        return totalCPULoad;
+    }
+
+    private final double totalCPULoad;
     private final long memorySize;
     private final int gpuCoreCount;
     private final double gpuCapacity;
@@ -73,22 +91,24 @@ public class ServiceTask {
     private int numFailures = 0;
     private int numPauses = 0;
 
-    ServiceTask(
-            ComputeService service,
+    public ServiceTask(
             int id,
             String name,
-            boolean deferrable,
+            long submissionTime,
             long duration,
-            long deadline,
             int cpuCoreCount,
             double cpuCapacity,
+            double totalCPULoad,
             long memorySize,
             int gpuCoreCount,
             double gpuCapacity,
+            long gpuMemorySize,
             Workload workload,
+            boolean deferrable,
+            long deadline,
             ArrayList<Integer> parents,
             Set<Integer> children) {
-        this.service = service;
+        //        this.service = service;
         this.id = id;
         this.name = name;
         this.deferrable = deferrable;
@@ -98,6 +118,7 @@ public class ServiceTask {
 
         this.cpuCoreCount = cpuCoreCount;
         this.cpuCapacity = cpuCapacity;
+        this.totalCPULoad = totalCPULoad;
         this.memorySize = memorySize;
         this.gpuCoreCount = gpuCoreCount;
         this.gpuCapacity = gpuCapacity;
@@ -105,7 +126,7 @@ public class ServiceTask {
         this.parents = parents;
         this.children = children;
 
-        this.submittedAt = this.service.getClock().millis();
+        this.submittedAt = submissionTime;
     }
 
     public int getId() {
@@ -143,6 +164,10 @@ public class ServiceTask {
     @NotNull
     public Long getDeadline() {
         return deadline;
+    }
+
+    public void setDeadline(long deadline) {
+        this.deadline = deadline;
     }
 
     @NotNull
@@ -336,7 +361,6 @@ public class ServiceTask {
 
         return !children.isEmpty();
     }
-
 
     public boolean hasParents() {
         if (parents == null) {

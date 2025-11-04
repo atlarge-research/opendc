@@ -33,6 +33,7 @@ import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
 import org.opendc.compute.simulator.scheduler.filters.VGpuFilter
 import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher
 import org.opendc.compute.simulator.scheduler.weights.VGpuWeigher
+import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.workload.Task
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
@@ -40,7 +41,7 @@ import java.util.ArrayList
 class SchedulerTest {
     @Test
     fun testSimulator4Memorizing() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -48,7 +49,7 @@ class SchedulerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -56,7 +57,7 @@ class SchedulerTest {
                         arrayListOf(
                             TraceFragment(5 * 60 * 1000, 2000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     submissionTime = "1970-01-01T00:20",
                 ),
             )
@@ -91,7 +92,7 @@ class SchedulerTest {
     @Test
     fun testGpuAwareSchedulers() {
         // Define workload with tasks requiring both CPU and GPU resources
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -99,8 +100,8 @@ class SchedulerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 2000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -108,8 +109,8 @@ class SchedulerTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 2000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                     submissionTime = "1970-01-01T00:20",
                 ),
             )

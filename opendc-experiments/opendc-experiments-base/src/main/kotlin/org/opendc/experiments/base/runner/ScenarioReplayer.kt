@@ -82,7 +82,7 @@ public class RunningTaskWatcher : TaskWatcher {
  */
 public suspend fun ComputeService.replay(
     clock: InstantSource,
-    trace: List<Task>,
+    trace: List<ServiceTask>,
     failureModelSpec: FailureModelSpec? = null,
     seed: Long = 0,
     submitImmediately: Boolean = false,
@@ -97,14 +97,19 @@ public suspend fun ComputeService.replay(
 
     try {
         coroutineScope {
+            val startTimer = System.currentTimeMillis()
+
             // Start the fault injector
             failureModel?.start()
 
             var simulationOffset = Long.MIN_VALUE
 
-            for (entry in trace.sortedBy { it.submissionTime }) {
+//            val numTasks = trace.size
+//            var counter = 0
+
+            for (serviceTask in trace.sortedBy { it.submittedAt }) {
                 val now = clock.millis()
-                val start = entry.submissionTime
+                val start = serviceTask.submittedAt
 
                 // Set the simulationOffset based on the starting time of the first task
                 if (simulationOffset == Long.MIN_VALUE) {
@@ -114,25 +119,24 @@ public suspend fun ComputeService.replay(
                 // Delay the task based on the startTime given by the trace.
                 if (!submitImmediately) {
                     delay(max(0, (start - now - simulationOffset)))
-                    entry.deadline -= simulationOffset
+                    serviceTask.deadline -= simulationOffset
                 }
+
+//                if (counter % 100000 == 0) {
+//                    val endTimer = System.currentTimeMillis()
+//
+//                    println("Submitted $counter / $numTasks")
+//                    println("Finished ${String.format("%.2f", (counter.toDouble() / numTasks) * 100)}% of task submissions")
+//                    println("Simulation has been running for: ${(endTimer - startTimer) / 1000} s")
+//                    println("Simulation time is time: ${now / 1000 / 60 / 60} hours\n")
+//                }
+
+//                counter++
 
                 launch {
                     val task =
                         client.newTask(
-                            entry.id,
-                            entry.name,
-                            entry.deferrable,
-                            entry.duration,
-                            entry.deadline,
-                            entry.cpuCount,
-                            entry.cpuCapacity,
-                            entry.memCapacity,
-                            entry.gpuCount,
-                            entry.gpuCapacity,
-                            entry.traceWorkload,
-                            entry.parents,
-                            entry.children,
+                            serviceTask,
                         )
 
                     val taskWatcher = RunningTaskWatcher()
@@ -143,6 +147,10 @@ public suspend fun ComputeService.replay(
                     taskWatcher.wait()
                 }
             }
+
+//            println("All tasks submitted, waiting for completion...")
+//            val endTimer = System.currentTimeMillis()
+//            println("Simulation has been running for: ${(endTimer - startTimer) / 1000} s")
         }
         yield()
     } finally {

@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.workload.Task
 import org.opendc.simulator.compute.virtualization.OverheadModels.ConstantVirtualizationOverhead
 import org.opendc.simulator.compute.virtualization.OverheadModels.NoVirtualizationOverHead
@@ -114,7 +115,7 @@ class VirtualizationOverheadTests {
     @Test
     fun noVirtualizationOverheadModelTest() {
         val topology = createTopology("virtualizationOverhead/single_gpu_no_overhead.json")
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -122,8 +123,8 @@ class VirtualizationOverheadTests {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                 ),
             )
 
@@ -140,7 +141,7 @@ class VirtualizationOverheadTests {
     @Test
     fun constantVirtualizationOverheadModelTest() {
         val topology = createTopology("virtualizationOverhead/single_gpu_constant_overhead.json")
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -148,8 +149,8 @@ class VirtualizationOverheadTests {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                 ),
             )
 
@@ -168,7 +169,7 @@ class VirtualizationOverheadTests {
     @Test
     fun customConstantVirtualizationOverheadModelTest() {
         val topology = createTopology("virtualizationOverhead/single_gpu_custom_constant_overhead.json")
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -176,8 +177,8 @@ class VirtualizationOverheadTests {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                 ),
             )
 
@@ -196,7 +197,7 @@ class VirtualizationOverheadTests {
     @Test
     fun shareBasedVirtualizationOverheadModelTest() {
         val topology = createTopology("virtualizationOverhead/single_gpu_share_based_overhead.json")
-        val workload1: ArrayList<Task> =
+        val workload1: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -204,12 +205,12 @@ class VirtualizationOverheadTests {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                 ),
             )
 
-        val workload2: ArrayList<Task> =
+        val workload2: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -217,8 +218,8 @@ class VirtualizationOverheadTests {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -226,12 +227,12 @@ class VirtualizationOverheadTests {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
             )
 
-        val workload3: ArrayList<Task> =
+        val workload3: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -239,8 +240,8 @@ class VirtualizationOverheadTests {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -248,8 +249,8 @@ class VirtualizationOverheadTests {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 2,
@@ -257,8 +258,8 @@ class VirtualizationOverheadTests {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
             )
 

@@ -23,7 +23,6 @@
 package org.opendc.compute.simulator.host
 
 import org.opendc.common.ResourceType
-import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.TaskState
 import org.opendc.compute.simulator.internal.Guest
 import org.opendc.compute.simulator.internal.GuestListener

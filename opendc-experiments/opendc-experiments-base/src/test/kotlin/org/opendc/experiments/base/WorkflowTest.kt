@@ -25,6 +25,7 @@ package org.opendc.experiments.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.workload.Task
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
@@ -45,7 +46,7 @@ class WorkflowTest {
      */
     @Test
     fun testWorkflow1() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -53,8 +54,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = emptySet(),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(1, 2),
                 ),
                 createTestTask(
@@ -63,8 +64,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(0),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(3),
                 ),
                 createTestTask(
@@ -73,8 +74,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(0),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(3),
                 ),
                 createTestTask(
@@ -83,8 +84,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(1, 2),
+                    cpuCoreCount = 1,
+                    parents = arrayListOf<Int>(1,2),
                     children = emptySet(),
                 ),
             )
@@ -132,7 +133,7 @@ class WorkflowTest {
      */
     @Test
     fun testWorkflow2() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -140,8 +141,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = emptySet(),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(1, 2),
                 ),
                 createTestTask(
@@ -150,8 +151,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(0),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(3),
                 ),
                 createTestTask(
@@ -160,8 +161,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(5 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(0),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(3),
                 ),
                 createTestTask(
@@ -170,8 +171,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(1, 2),
+                    cpuCoreCount = 1,
+                    parents = arrayListOf(1,2),
                     children = emptySet(),
                 ),
             )
@@ -238,7 +239,7 @@ class WorkflowTest {
      */
     @Test
     fun testWorkflow3() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -246,8 +247,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = emptySet(),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(1, 2),
                 ),
                 createTestTask(
@@ -256,8 +257,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(0),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(3),
                 ),
                 createTestTask(
@@ -266,8 +267,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(0),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(3),
                 ),
                 createTestTask(
@@ -276,8 +277,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(1, 2),
+                    cpuCoreCount = 1,
+                    parents = arrayListOf(1,2),
                     children = emptySet(),
                 ),
                 createTestTask(
@@ -286,7 +287,7 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(40 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -353,7 +354,7 @@ class WorkflowTest {
      */
     @Test
     fun testWorkflow4() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -361,8 +362,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = emptySet(),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(1, 2),
                 ),
                 createTestTask(
@@ -371,8 +372,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(0),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(3),
                 ),
                 createTestTask(
@@ -381,8 +382,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(0),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(3),
                 ),
                 createTestTask(
@@ -391,8 +392,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(1, 2),
+                    cpuCoreCount = 1,
+                    parents = arrayListOf(1,2),
                     children = emptySet(),
                 ),
                 createTestTask(
@@ -401,7 +402,7 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(15 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -468,7 +469,7 @@ class WorkflowTest {
      */
     @Test
     fun testWorkflow5() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -476,8 +477,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 10000.0),
                         ),
-                    cpuCount = 10,
-                    parents = emptySet(),
+                    cpuCoreCount = 10,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(1, 2),
                 ),
                 createTestTask(
@@ -486,8 +487,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(0),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(3),
                 ),
                 createTestTask(
@@ -496,8 +497,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(0),
+                    cpuCoreCount = 1,
+                    parents = ArrayList<Int>(),
                     children = mutableSetOf(3),
                 ),
                 createTestTask(
@@ -506,8 +507,8 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
-                    parents = mutableSetOf(1, 2),
+                    cpuCoreCount = 1,
+                    parents = arrayListOf(1,2),
                     children = emptySet(),
                 ),
                 createTestTask(
@@ -516,7 +517,7 @@ class WorkflowTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 

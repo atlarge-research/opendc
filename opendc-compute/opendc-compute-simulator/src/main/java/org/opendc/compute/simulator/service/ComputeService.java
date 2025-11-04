@@ -458,7 +458,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             return;
         }
 
-        for (int childTaskId: completedTask.getChildren()) {
+        for (int childTaskId : completedTask.getChildren()) {
             SchedulingRequest childRequest = blockedTasks.get(childTaskId);
             if (childRequest != null) {
                 ServiceTask childTask = childRequest.getTask();
@@ -656,9 +656,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         }
 
         @NotNull
-        public ServiceFlavor newFlavor(
-                int taskId,
-                @NotNull Map<String, ?> meta) {
+        public ServiceFlavor newFlavor(int taskId, @NotNull Map<String, ?> meta) {
             checkOpen();
 
             final ComputeService service = this.service;
@@ -667,31 +665,15 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         }
 
         @NotNull
-        public ServiceTask newTask(
-                int id,
-                String name,
-                boolean deferrable,
-                long duration,
-                long deadline,
-                int cpuCount,
-                double cpuCapacity,
-                long memorySize,
-                int gpuCoreCount,
-                double gpuCapacity,
-                @NotNull Workload workload,
-                ArrayList<Integer> parents,
-                Set<Integer> children) {
+        public ServiceTask newTask(ServiceTask task) {
 
             checkOpen();
 
             final ComputeService service = this.service;
 
-            ServiceTask task = new ServiceTask(service, id, name, deferrable,
-                                                duration, deadline, cpuCount, cpuCapacity,
-                                                memorySize, gpuCoreCount, gpuCapacity, workload,
-                                                parents, children);
+            task.setService(service);
 
-            service.taskById.put(id, task);
+            service.taskById.put(task.getId(), task);
 
             service.tasksTotal++;
 
@@ -718,9 +700,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         @Nullable
         public void rescheduleTask(@NotNull ServiceTask task, @NotNull Workload workload) {
             ServiceTask internalTask = findTask(task.getId());
-            //            SimHost from = service.lookupHost(internalTask);
-
-            //            from.delete(internalTask);
 
             internalTask.setHost(null);
 
