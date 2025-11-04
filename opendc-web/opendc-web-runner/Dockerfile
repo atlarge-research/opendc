@@ -1,4 +1,4 @@
-FROM openjdk:21-slim
+FROM eclipse-temurin:21-jdk-jammy
 MAINTAINER OpenDC Maintainers <opendc@atlarge-research.com>
 
 # Obtain (cache) Gradle wrapper
@@ -11,7 +11,7 @@ RUN ./gradlew --version
 COPY ./ /app/
 RUN ./gradlew --no-daemon :opendc-web:opendc-web-runner:installDist
 
-FROM openjdk:21-slim
+FROM eclipse-temurin:21-jdk-jammy
 COPY --from=0 /app/opendc-web/opendc-web-runner/build/install /opt/
 COPY --from=0 /app/opendc-experiments/opendc-experiments-base/src/test/resources/workloadTraces \
     /opt/opendc/traces

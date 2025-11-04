@@ -1,4 +1,4 @@
-/*
+/*opendcSimulatorCore
  * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,6 +32,7 @@ dependencies {
     implementation(projects.opendcCommon)
     implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))
     implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-compute")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-simulator")))
 
     implementation(libs.kotlin.logging)
 }

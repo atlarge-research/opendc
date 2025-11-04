@@ -31,9 +31,9 @@ import java.time.Duration
 import java.time.Instant
 
 /**
- * A [RecordMaterializer] for [Fragment] records.
+ * A [RecordMaterializer] for [FragmentParquetSchema] records.
  */
-internal class FragmentRecordMaterializer(schema: MessageType) : RecordMaterializer<Fragment>() {
+internal class FragmentRecordMaterializer(schema: MessageType) : RecordMaterializer<FragmentParquetSchema>() {
     /**
      * State of current record being read.
      */
@@ -116,8 +116,8 @@ internal class FragmentRecordMaterializer(schema: MessageType) : RecordMateriali
             override fun getConverter(fieldIndex: Int): Converter = converters[fieldIndex]
         }
 
-    override fun getCurrentRecord(): Fragment =
-        Fragment(
+    override fun getCurrentRecord(): FragmentParquetSchema =
+        FragmentParquetSchema(
             localId,
             localDuration,
             localCpuUsage,

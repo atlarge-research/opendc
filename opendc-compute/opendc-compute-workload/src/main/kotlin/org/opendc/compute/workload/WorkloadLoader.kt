@@ -22,34 +22,35 @@
 
 package org.opendc.compute.workload
 import mu.KotlinLogging
+import org.opendc.compute.simulator.service.ServiceTask
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 public abstract class WorkloadLoader(private val submissionTime: String? = null) {
     private val logger = KotlinLogging.logger {}
 
-    public fun reScheduleTasks(workload: List<Task>) {
+    public fun reScheduleTasks(workload: List<ServiceTask>) {
         if (submissionTime == null) {
             return
         }
 
-        val workloadSubmissionTime = workload.minOf({ it.submissionTime })
+        val workloadSubmissionTime = workload.minOf({ it.submittedAt })
         val submissionTimeLong = LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli()
 
         val timeShift = submissionTimeLong - workloadSubmissionTime
 
         for (task in workload) {
-            task.submissionTime += timeShift
+            task.submittedAt += timeShift
             task.deadline = if (task.deadline == -1L) -1L else task.deadline + timeShift
         }
     }
 
-    public abstract fun load(): List<Task>
+    public abstract fun load(): List<ServiceTask>
 
     /**
      * Load the workload at sample tasks until a fraction of the workload is loaded
      */
-    public fun sampleByLoad(fraction: Double): List<Task> {
+    public fun sampleByLoad(fraction: Double): List<ServiceTask> {
         val workload = this.load()
 
         reScheduleTasks(workload)
@@ -62,9 +63,9 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
             throw Error("The fraction of tasks to load cannot be 0.0 or lower")
         }
 
-        val res = mutableListOf<Task>()
+        val res = mutableListOf<ServiceTask>()
 
-        val totalLoad = workload.sumOf { it.totalCpuLoad }
+        val totalLoad = workload.sumOf { it.totalCPULoad }
         val desiredLoad = totalLoad * fraction
         var currentLoad = 0.0
 
@@ -72,11 +73,11 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
             val entry = workload.random()
             res += entry
 
-            currentLoad += entry.totalCpuLoad
+            currentLoad += entry.totalCPULoad
         }
 
         logger.info { "Sampled ${workload.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
 
-        return res.sortedBy { it.submissionTime }
+        return res.sortedBy { it.submittedAt }
     }
 }

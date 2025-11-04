@@ -25,7 +25,7 @@ package org.opendc.experiments.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.workload.Task
+import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
 import org.opendc.simulator.compute.workload.trace.scaling.PerfectScaling
@@ -42,7 +42,7 @@ class FragmentScalingTest {
      */
     @Test
     fun testScaling1() {
-        val workloadNoDelay: ArrayList<Task> =
+        val workloadNoDelay: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -51,12 +51,12 @@ class FragmentScalingTest {
                             TraceFragment(10 * 60 * 1000, 2000.0),
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
             )
 
-        val workloadPerfect: ArrayList<Task> =
+        val workloadPerfect: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -65,7 +65,7 @@ class FragmentScalingTest {
                             TraceFragment(10 * 60 * 1000, 2000.0),
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
             )
@@ -98,7 +98,7 @@ class FragmentScalingTest {
      */
     @Test
     fun testScaling2() {
-        val workloadNoDelay: ArrayList<Task> =
+        val workloadNoDelay: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -106,12 +106,12 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 4000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
             )
 
-        val workloadPerfect: ArrayList<Task> =
+        val workloadPerfect: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -119,7 +119,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 4000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
             )
@@ -149,7 +149,7 @@ class FragmentScalingTest {
      */
     @Test
     fun testScaling3() {
-        val workloadNoDelay: ArrayList<Task> =
+        val workloadNoDelay: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -159,12 +159,12 @@ class FragmentScalingTest {
                             TraceFragment(10 * 60 * 1000, 4000.0),
                             TraceFragment(10 * 60 * 1000, 1500.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
             )
 
-        val workloadPerfect: ArrayList<Task> =
+        val workloadPerfect: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -174,7 +174,7 @@ class FragmentScalingTest {
                             TraceFragment(10 * 60 * 1000, 4000.0),
                             TraceFragment(10 * 60 * 1000, 1500.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
             )
@@ -211,7 +211,7 @@ class FragmentScalingTest {
      */
     @Test
     fun testScaling4() {
-        val workloadNoDelay: ArrayList<Task> =
+        val workloadNoDelay: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -219,7 +219,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
                 createTestTask(
@@ -228,12 +228,12 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 3000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
             )
 
-        val workloadPerfect: ArrayList<Task> =
+        val workloadPerfect: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -241,7 +241,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
                 createTestTask(
@@ -250,7 +250,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 3000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
             )
@@ -285,7 +285,7 @@ class FragmentScalingTest {
      */
     @Test
     fun testScaling5() {
-        val workloadNoDelay: ArrayList<Task> =
+        val workloadNoDelay: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -293,7 +293,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 2000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
                 createTestTask(
@@ -302,12 +302,12 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 4000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = NoDelayScaling(),
                 ),
             )
 
-        val workloadPerfect: ArrayList<Task> =
+        val workloadPerfect: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -315,7 +315,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 2000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
                 createTestTask(
@@ -324,7 +324,7 @@ class FragmentScalingTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 4000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                     scalingPolicy = PerfectScaling(),
                 ),
             )

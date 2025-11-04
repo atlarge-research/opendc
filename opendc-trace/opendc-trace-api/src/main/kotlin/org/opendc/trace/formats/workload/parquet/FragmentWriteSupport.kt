@@ -31,9 +31,9 @@ import org.apache.parquet.schema.PrimitiveType
 import org.apache.parquet.schema.Types
 
 /**
- * Support for writing [Task] instances to Parquet format.
+ * Support for writing [TaskParquetSchema] instances to Parquet format.
  */
-internal class FragmentWriteSupport : WriteSupport<Fragment>() {
+internal class FragmentWriteSupport : WriteSupport<FragmentParquetSchema>() {
     /**
      * The current active record consumer.
      */
@@ -47,13 +47,13 @@ internal class FragmentWriteSupport : WriteSupport<Fragment>() {
         this.recordConsumer = recordConsumer
     }
 
-    override fun write(record: Fragment) {
+    override fun write(record: FragmentParquetSchema) {
         write(recordConsumer, record)
     }
 
     private fun write(
         consumer: RecordConsumer,
-        record: Fragment,
+        record: FragmentParquetSchema,
     ) {
         consumer.startMessage()
 

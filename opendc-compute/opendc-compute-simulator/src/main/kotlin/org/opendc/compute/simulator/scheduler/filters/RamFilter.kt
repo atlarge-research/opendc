@@ -37,9 +37,9 @@ public class RamFilter(private val allocationRatio: Double = 1.0) : HostFilter {
         host: HostView,
         task: ServiceTask,
     ): Boolean {
-        if (isSimple) return host.availableMemory >= task.flavor.memorySize
+        if (isSimple) return host.availableMemory >= task.memorySize
 
-        val requestedMemory = task.flavor.memorySize
+        val requestedMemory = task.memorySize
         val availableMemory = host.availableMemory
         val memoryCapacity = host.host.getModel().memoryCapacity
 

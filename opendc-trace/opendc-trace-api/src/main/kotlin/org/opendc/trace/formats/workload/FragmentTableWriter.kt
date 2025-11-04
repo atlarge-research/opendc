@@ -28,7 +28,7 @@ import org.opendc.trace.conv.FRAGMENT_CPU_USAGE
 import org.opendc.trace.conv.FRAGMENT_DURATION
 import org.opendc.trace.conv.FRAGMENT_GPU_USAGE
 import org.opendc.trace.conv.TASK_ID
-import org.opendc.trace.formats.workload.parquet.Fragment
+import org.opendc.trace.formats.workload.parquet.FragmentParquetSchema
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
@@ -36,7 +36,7 @@ import java.util.UUID
 /**
  * A [TableWriter] implementation for the OpenDC virtual machine trace format.
  */
-internal class FragmentTableWriter(private val writer: ParquetWriter<Fragment>) : TableWriter {
+internal class FragmentTableWriter(private val writer: ParquetWriter<FragmentParquetSchema>) : TableWriter {
     /**
      * The current state for the record that is being written.
      */
@@ -60,7 +60,7 @@ internal class FragmentTableWriter(private val writer: ParquetWriter<Fragment>) 
 
         check(lastId != localID) { "Records need to be ordered by (id, timestamp)" }
 
-        writer.write(Fragment(localID, localDuration, localCpuUsage, localGpuUsage))
+        writer.write(FragmentParquetSchema(localID, localDuration, localCpuUsage, localGpuUsage))
 
         lastId = localID
     }

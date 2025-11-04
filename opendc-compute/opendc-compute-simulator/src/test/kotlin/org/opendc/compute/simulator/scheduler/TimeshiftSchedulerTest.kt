@@ -27,8 +27,6 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
-import org.opendc.compute.simulator.service.TaskNature
-import java.time.Duration
 import java.time.Instant
 import java.time.InstantSource
 
@@ -37,6 +35,7 @@ class TimeshiftSchedulerTest {
     fun testBasicDeferring() {
         val clock = mockk<InstantSource>()
         every { clock.instant() } returns Instant.ofEpochMilli(10)
+        every { clock.millis() } returns 10
 
         val scheduler =
             TimeshiftScheduler(
@@ -48,11 +47,11 @@ class TimeshiftSchedulerTest {
             )
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.cpuCoreCount } returns 2
-        every { req.task.flavor.memorySize } returns 1024
+        every { req.task.cpuCoreCount } returns 2
+        every { req.task.memorySize } returns 1024
         every { req.isCancelled } returns false
-        every { req.task.nature } returns TaskNature(true)
-        every { req.task.duration } returns Duration.ofMillis(10)
+        every { req.task.deferrable } returns true
+        every { req.task.duration } returns 10
         every { req.task.deadline } returns 50
 
         scheduler.updateCarbonIntensity(100.0)
@@ -65,6 +64,7 @@ class TimeshiftSchedulerTest {
     fun testRespectDeadline() {
         val clock = mockk<InstantSource>()
         every { clock.instant() } returns Instant.ofEpochMilli(10)
+        every { clock.millis() } returns 10
 
         val scheduler =
             TimeshiftScheduler(
@@ -76,11 +76,11 @@ class TimeshiftSchedulerTest {
             )
 
         val req = mockk<SchedulingRequest>()
-        every { req.task.flavor.cpuCoreCount } returns 2
-        every { req.task.flavor.memorySize } returns 1024
+        every { req.task.cpuCoreCount } returns 2
+        every { req.task.memorySize } returns 1024
         every { req.isCancelled } returns false
-        every { req.task.nature } returns TaskNature(true)
-        every { req.task.duration } returns Duration.ofMillis(10)
+        every { req.task.deferrable } returns true
+        every { req.task.duration } returns 10
         every { req.task.deadline } returns 20
 
         scheduler.updateCarbonIntensity(100.0)

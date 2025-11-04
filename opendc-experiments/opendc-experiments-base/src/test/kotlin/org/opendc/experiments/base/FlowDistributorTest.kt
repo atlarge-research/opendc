@@ -25,7 +25,7 @@ package org.opendc.experiments.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.workload.Task
+import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
 
@@ -40,7 +40,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor1() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -49,7 +49,7 @@ class FlowDistributorTest {
                             TraceFragment(10 * 60 * 1000, 1000.0),
                             TraceFragment(10 * 60 * 1000, 2000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("single_1_2000.json")
@@ -76,7 +76,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor2() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -85,7 +85,7 @@ class FlowDistributorTest {
                             TraceFragment(10 * 60 * 1000, 3000.0),
                             TraceFragment(10 * 60 * 1000, 4000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("single_1_2000.json")
@@ -112,7 +112,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor3() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -121,7 +121,7 @@ class FlowDistributorTest {
                             TraceFragment(10 * 60 * 1000, 1000.0),
                             TraceFragment(10 * 60 * 1000, 4000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("single_1_2000.json")
@@ -148,7 +148,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor4() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -157,7 +157,7 @@ class FlowDistributorTest {
                             TraceFragment(10 * 60 * 1000, 4000.0),
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("single_1_2000.json")
@@ -184,7 +184,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor5() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -193,7 +193,7 @@ class FlowDistributorTest {
                             TraceFragment(10 * 60 * 1000, 4000.0),
                             TraceFragment(10 * 60 * 1000, 2000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("single_1_2000.json")
@@ -220,7 +220,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor6() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -229,7 +229,7 @@ class FlowDistributorTest {
                             TraceFragment(10 * 60 * 1000, 1000.0),
                             TraceFragment(10 * 60 * 1000, 3000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -238,7 +238,7 @@ class FlowDistributorTest {
                             TraceFragment(10 * 60 * 1000, 3000.0),
                             TraceFragment(10 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("single_2_2000.json")
@@ -269,7 +269,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor7() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -278,7 +278,7 @@ class FlowDistributorTest {
                             TraceFragment(10 * 60 * 1000, 6000.0),
                             TraceFragment(10 * 60 * 1000, 5000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -287,7 +287,7 @@ class FlowDistributorTest {
                             TraceFragment(10 * 60 * 1000, 5000.0),
                             TraceFragment(10 * 60 * 1000, 6000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("single_2_2000.json")
@@ -317,7 +317,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor8() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -327,7 +327,7 @@ class FlowDistributorTest {
                             TraceFragment(10 * 60 * 1000, 1000.0),
                             TraceFragment(10 * 60 * 1000, 2000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -336,7 +336,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 2000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("single_2_2000.json")
@@ -377,7 +377,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor9() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -386,7 +386,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(20 * 60 * 1000, 3000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -395,7 +395,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1500.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("single_2_2000.json")
@@ -433,7 +433,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor10() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -444,7 +444,7 @@ class FlowDistributorTest {
                             TraceFragment(5 * 60 * 1000, 2500.0),
                             TraceFragment(5 * 60 * 1000, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -452,7 +452,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(20 * 60 * 1000, 3000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("single_2_2000.json")
@@ -496,7 +496,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor11() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -504,7 +504,7 @@ class FlowDistributorTest {
                         arrayListOf<TraceFragment>().apply {
                             repeat(1) { this.add(TraceFragment(10 * 60 * 1000, 3000.0)) }
                         },
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("single_5000_2000.json")
@@ -525,7 +525,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor12() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -533,7 +533,7 @@ class FlowDistributorTest {
                         arrayListOf<TraceFragment>().apply {
                             repeat(1000) { this.add(TraceFragment(10 * 60 * 1000, 2000.0)) }
                         },
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("single_1_2000.json")
@@ -556,15 +556,15 @@ class FlowDistributorTest {
     fun testFlowDistributor13() {
         val numTasks = 1000
 
-        val workload: ArrayList<Task> =
-            arrayListOf<Task>().apply {
+        val workload: ArrayList<ServiceTask> =
+            arrayListOf<ServiceTask>().apply {
                 repeat(numTasks) {
                     this.add(
                         createTestTask(
                             id = 0,
                             fragments =
                                 arrayListOf(TraceFragment(10 * 60 * 1000, 2000.0)),
-                            cpuCount = 1,
+                            cpuCoreCount = 1,
                         ),
                     )
                 }
@@ -585,7 +585,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor14() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -594,7 +594,7 @@ class FlowDistributorTest {
                             TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                             TraceFragment(10 * 60 * 1000, 0.0, 2000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -635,7 +635,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor15() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -643,7 +643,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -684,7 +684,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor16() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -692,7 +692,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 2000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -733,7 +733,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor17() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -741,7 +741,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 2000.0, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("Gpus/single_gpu_no_vendor_no_memory.json")
@@ -782,7 +782,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor18() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -790,7 +790,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -798,7 +798,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 1000.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
             )
 
@@ -851,7 +851,7 @@ class FlowDistributorTest {
      */
     @Test
     fun testFlowDistributor19() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -859,7 +859,7 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 0.0),
                         ),
-                    cpuCount = 1,
+                    cpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -867,8 +867,8 @@ class FlowDistributorTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
             )
 

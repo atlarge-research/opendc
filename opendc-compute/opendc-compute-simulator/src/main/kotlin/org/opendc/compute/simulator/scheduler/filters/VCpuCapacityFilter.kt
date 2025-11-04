@@ -34,13 +34,10 @@ public class VCpuCapacityFilter : HostFilter {
         host: HostView,
         task: ServiceTask,
     ): Boolean {
-        val requiredCapacity = task.flavor.meta["cpu-capacity"] as? Double
+        val requiredCapacity = task.cpuCapacity
         val availableCapacity = host.host.getModel().cpuCapacity
 
-        return (
-            requiredCapacity == null ||
-                (availableCapacity / host.host.getModel().coreCount)
-                >= (requiredCapacity / task.flavor.cpuCoreCount)
-        )
+        return (availableCapacity / host.host.getModel().coreCount) >=
+            (requiredCapacity / task.cpuCoreCount)
     }
 }

@@ -25,7 +25,7 @@ package org.opendc.experiments.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.workload.Task
+import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
 import java.util.ArrayList
@@ -86,7 +86,7 @@ class DistributionPoliciesTest {
      */
     @Test
     fun equalShareDistributionPolicyTest1() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -94,8 +94,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 2000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
             )
 
@@ -163,7 +163,7 @@ class DistributionPoliciesTest {
      */
     @Test
     fun equalShareDistributionPolicyTest2() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -171,8 +171,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 4000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
                 createTestTask(
                     id = 1,
@@ -180,8 +180,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 4000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
             )
 
@@ -259,7 +259,7 @@ class DistributionPoliciesTest {
      */
     @Test
     fun fixedShareDistributionPolicyTest() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -267,8 +267,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 4000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
             )
 
@@ -305,7 +305,7 @@ class DistributionPoliciesTest {
      */
     @Test
     fun fixedShareDistributionPolicyContentionTest() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -313,8 +313,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 6000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
             )
 
@@ -366,7 +366,7 @@ class DistributionPoliciesTest {
      */
     @Test
     fun fixedShareDistributionPolicyMultipleTasksTest() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -374,8 +374,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 3000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
                 createTestTask(
                     id = 1,
@@ -383,8 +383,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 3000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
             )
 
@@ -428,7 +428,7 @@ class DistributionPoliciesTest {
      */
     @Test
     fun bestEffortDistributionPolicyBasicTest() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -436,8 +436,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1500.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
             )
 
@@ -507,7 +507,7 @@ class DistributionPoliciesTest {
      */
     @Test
     fun bestEffortDistributionPolicyContentionTest() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -515,8 +515,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 3000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
                 createTestTask(
                     id = 1,
@@ -524,8 +524,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 2500.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
             )
 
@@ -556,7 +556,7 @@ class DistributionPoliciesTest {
      */
     @Test
     fun bestEffortDistributionPolicyUtilizationOptimizationTest() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -564,8 +564,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
             )
 
@@ -592,7 +592,7 @@ class DistributionPoliciesTest {
      */
     @Test
     fun bestEffortDistributionPolicyVaryingDemandsTest() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -600,8 +600,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 3500.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
                 createTestTask(
                     id = 1,
@@ -609,8 +609,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 500.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
             )
 
@@ -639,7 +639,7 @@ class DistributionPoliciesTest {
      */
     @Test
     fun bestEffortDistributionPolicyFairnessTest() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -647,8 +647,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 2000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
                 createTestTask(
                     id = 1,
@@ -656,8 +656,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 2000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
                 createTestTask(
                     id = 2,
@@ -665,8 +665,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 2000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
             )
 
@@ -718,7 +718,7 @@ class DistributionPoliciesTest {
      */
     @Test
     fun firstFitDistributionPolicyGpuPlacementTest() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -726,8 +726,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1500.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
                 createTestTask(
                     id = 1,
@@ -735,8 +735,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 2,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 2,
                 ),
             )
 
@@ -768,7 +768,7 @@ class DistributionPoliciesTest {
      */
     @Test
     fun firstFitDistributionPolicyOverdemandTest() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -776,8 +776,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 2000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -785,8 +785,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 2000.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 2,
@@ -794,8 +794,8 @@ class DistributionPoliciesTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 0.0, 1500.0),
                         ),
-                    cpuCount = 0,
-                    gpuCount = 1,
+                    cpuCoreCount = 0,
+                    gpuCoreCount = 1,
                 ),
             )
 

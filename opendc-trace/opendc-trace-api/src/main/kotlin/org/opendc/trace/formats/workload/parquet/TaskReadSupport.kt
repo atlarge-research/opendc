@@ -44,9 +44,9 @@ import org.opendc.trace.conv.TASK_PARENTS
 import org.opendc.trace.conv.TASK_SUBMISSION_TIME
 
 /**
- * A [ReadSupport] instance for [Task] objects.
+ * A [ReadSupport] instance for [TaskParquetSchema] objects.
  */
-internal class TaskReadSupport(private val projection: List<String>?) : ReadSupport<Task>() {
+internal class TaskReadSupport(private val projection: List<String>?) : ReadSupport<TaskParquetSchema>() {
     /**
      * Mapping from field names to [TableColumn]s.
      */
@@ -97,5 +97,5 @@ internal class TaskReadSupport(private val projection: List<String>?) : ReadSupp
         keyValueMetaData: Map<String, String>,
         fileSchema: MessageType,
         readContext: ReadContext,
-    ): RecordMaterializer<Task> = TaskRecordMaterializer(readContext.requestedSchema)
+    ): RecordMaterializer<TaskParquetSchema> = TaskRecordMaterializer(readContext.requestedSchema)
 }

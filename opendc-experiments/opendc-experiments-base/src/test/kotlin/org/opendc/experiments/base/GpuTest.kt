@@ -25,8 +25,8 @@ package org.opendc.experiments.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.topology.specs.ClusterSpec
-import org.opendc.compute.workload.Task
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
 
@@ -199,7 +199,7 @@ class GpuTest {
      */
     @Test
     fun testMultiGpuConcation() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -207,8 +207,8 @@ class GpuTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 2000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                 ),
                 createTestTask(
                     id = 1,
@@ -216,8 +216,8 @@ class GpuTest {
                         arrayListOf(
                             TraceFragment(10 * 60 * 1000, 1000.0, 2000.0),
                         ),
-                    cpuCount = 1,
-                    gpuCount = 1,
+                    cpuCoreCount = 1,
+                    gpuCoreCount = 1,
                 ),
             )
         val topology = createTopology("Gpus/multi_gpu_host.json")

@@ -25,7 +25,7 @@ package org.opendc.experiments.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.workload.Task
+import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
 
@@ -43,7 +43,7 @@ class CarbonTest {
      */
     @Test
     fun testCarbon1() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -90,7 +90,7 @@ class CarbonTest {
      */
     @Test
     fun testCarbon2() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,
@@ -159,7 +159,7 @@ class CarbonTest {
      */
     @Test
     fun testCarbon3() {
-        val workload: ArrayList<Task> =
+        val workload: ArrayList<ServiceTask> =
             arrayListOf(
                 createTestTask(
                     id = 0,

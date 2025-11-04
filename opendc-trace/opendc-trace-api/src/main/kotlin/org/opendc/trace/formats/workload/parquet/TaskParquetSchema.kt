@@ -22,11 +22,23 @@
 
 package org.opendc.trace.formats.workload.parquet
 
-import java.time.Duration
+import java.time.Instant
 
-internal class Fragment(
+/**
+ * A description of a resource in a trace.
+ */
+internal data class TaskParquetSchema(
     val id: Int,
-    val duration: Duration,
-    val cpuUsage: Double,
-    val gpuUsage: Double,
+    val name: String?,
+    val submissionTime: Instant,
+    val durationTime: Long,
+    val cpuCount: Int,
+    val cpuCapacity: Double,
+    val memCapacity: Double,
+    val gpuCount: Int = 0,
+    val gpuCapacity: Double = 0.0,
+    val parents: MutableSet<Int> = mutableSetOf(),
+    val children: Set<Int> = emptySet(),
+    val deferrable: Boolean = false,
+    val deadline: Long = -1,
 )

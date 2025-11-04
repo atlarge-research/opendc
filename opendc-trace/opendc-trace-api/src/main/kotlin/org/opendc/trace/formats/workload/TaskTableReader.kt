@@ -37,7 +37,7 @@ import org.opendc.trace.conv.TASK_MEM_CAPACITY
 import org.opendc.trace.conv.TASK_NAME
 import org.opendc.trace.conv.TASK_PARENTS
 import org.opendc.trace.conv.TASK_SUBMISSION_TIME
-import org.opendc.trace.formats.workload.parquet.Task
+import org.opendc.trace.formats.workload.parquet.TaskParquetSchema
 import org.opendc.trace.util.convertTo
 import org.opendc.trace.util.parquet.LocalParquetReader
 import java.time.Duration
@@ -47,11 +47,11 @@ import java.util.UUID
 /**
  * A [TableReader] implementation for the "resources table" in the OpenDC virtual machine trace format.
  */
-internal class TaskTableReader(private val reader: LocalParquetReader<Task>) : TableReader {
+internal class TaskTableReader(private val reader: LocalParquetReader<TaskParquetSchema>) : TableReader {
     /**
      * The current record.
      */
-    private var record: Task? = null
+    private var record: TaskParquetSchema? = null
 
     override fun nextRow(): Boolean {
         try {
@@ -163,7 +163,7 @@ internal class TaskTableReader(private val reader: LocalParquetReader<Task>) : T
         }
     }
 
-    override fun getUUID(index: Int): UUID? {
+    override fun getUUID(index: Int): UUID {
         throw IllegalArgumentException("Invalid column")
     }
 
@@ -176,7 +176,7 @@ internal class TaskTableReader(private val reader: LocalParquetReader<Task>) : T
         }
     }
 
-    override fun getDuration(index: Int): Duration? {
+    override fun getDuration(index: Int): Duration {
         throw IllegalArgumentException("Invalid column")
     }
 

@@ -34,6 +34,7 @@ import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
 import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.simulator.service.ComputeService
+import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
@@ -41,7 +42,6 @@ import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.compute.topology.specs.ClusterSpec
-import org.opendc.compute.workload.Task
 import org.opendc.experiments.base.experiment.specs.FailureModelSpec
 import org.opendc.experiments.base.runner.replay
 import org.opendc.simulator.compute.workload.trace.TraceFragment
@@ -68,16 +68,16 @@ fun createTestTask(
     memCapacity: Long = 0L,
     submissionTime: String = "1970-01-01T00:00",
     duration: Long = 0L,
-    cpuCount: Int = 1,
-    gpuCount: Int = 0,
+    cpuCoreCount: Int = 1,
+    gpuCoreCount: Int = 0,
     fragments: ArrayList<TraceFragment>,
     checkpointInterval: Long = 0L,
     checkpointDuration: Long = 0L,
     checkpointIntervalScaling: Double = 1.0,
     scalingPolicy: ScalingPolicy = NoDelayScaling(),
-    parents: Set<Int> = emptySet(),
+    parents: ArrayList<Int> = ArrayList<Int>(),
     children: Set<Int> = emptySet(),
-): Task {
+): ServiceTask {
     var usedResources = arrayOf<ResourceType>()
     if (fragments.any { it.cpuUsage > 0.0 }) {
         usedResources += ResourceType.CPU
@@ -86,22 +86,18 @@ fun createTestTask(
         usedResources += ResourceType.GPU
     }
 
-    return Task(
+    return ServiceTask(
         id,
         name,
         LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli(),
         duration,
-        parents,
-        children,
-        cpuCount,
+        cpuCoreCount,
         fragments.maxOf { it.cpuUsage },
         1800000.0,
         memCapacity,
-        gpuCount = gpuCount,
-        gpuCapacity = fragments.maxOfOrNull { it.gpuUsage } ?: 0.0,
-        gpuMemCapacity = 0L,
-        false,
-        -1,
+        gpuCoreCount,
+        fragments.maxOfOrNull { it.gpuUsage } ?: 0.0,
+        0L,
         TraceWorkload(
             fragments,
             checkpointInterval,
@@ -111,12 +107,16 @@ fun createTestTask(
             id,
             usedResources,
         ),
+        false,
+        -1,
+        parents,
+        children,
     )
 }
 
 fun runTest(
     topology: List<ClusterSpec>,
-    workload: ArrayList<Task>,
+    workload: ArrayList<ServiceTask>,
     failureModelSpec: FailureModelSpec? = null,
     computeScheduler: ComputeScheduler =
         FilterScheduler(
@@ -130,7 +130,7 @@ fun runTest(
         val seed = 0L
         Provisioner(dispatcher, seed).use { provisioner ->
 
-            val startTimeLong = workload.minOf { it.submissionTime }
+            val startTimeLong = workload.minOf { it.submittedAt }
             val startTime = Duration.ofMillis(startTimeLong)
 
             provisioner.runSteps(
@@ -143,7 +143,12 @@ fun runTest(
             service.setTasksExpected(workload.size)
             service.setMetricReader(provisioner.getMonitor())
 
-            service.replay(timeSource, ArrayDeque(workload), failureModelSpec = failureModelSpec)
+            val workloadCopy = ArrayList<ServiceTask>()
+            for (task in workload) {
+                workloadCopy.add(task.copy())
+            }
+
+            service.replay(timeSource, ArrayDeque(workloadCopy), failureModelSpec = failureModelSpec)
         }
     }
 
