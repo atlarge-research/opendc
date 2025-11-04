@@ -35,6 +35,7 @@ class TimeshiftSchedulerTest {
     fun testBasicDeferring() {
         val clock = mockk<InstantSource>()
         every { clock.instant() } returns Instant.ofEpochMilli(10)
+        every { clock.millis() } returns 10
 
         val scheduler =
             TimeshiftScheduler(
@@ -63,6 +64,7 @@ class TimeshiftSchedulerTest {
     fun testRespectDeadline() {
         val clock = mockk<InstantSource>()
         every { clock.instant() } returns Instant.ofEpochMilli(10)
+        every { clock.millis() } returns 10
 
         val scheduler =
             TimeshiftScheduler(

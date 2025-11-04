@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.simulator.service.ServiceTask
-import org.opendc.compute.workload.Task
 import org.opendc.simulator.compute.virtualization.OverheadModels.ConstantVirtualizationOverhead
 import org.opendc.simulator.compute.virtualization.OverheadModels.NoVirtualizationOverHead
 import org.opendc.simulator.compute.virtualization.OverheadModels.ShareBasedVirtualizationOverhead

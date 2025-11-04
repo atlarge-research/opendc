@@ -41,20 +41,7 @@ import org.slf4j.LoggerFactory;
 public class ServiceTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceTask.class);
 
-    public ComputeService getService() {
-        return service;
-    }
-
-    public void setService(ComputeService service) {
-        this.service = service;
-    }
-
     private ComputeService service;
-
-    public boolean isDeferrable() {
-        return deferrable;
-    }
-
     private final int id;
     private final ArrayList<Integer> parents;
     private final Set<Integer> children;
@@ -68,15 +55,12 @@ public class ServiceTask {
 
     private final int cpuCoreCount;
     private final double cpuCapacity;
-
-    public double getTotalCPULoad() {
-        return totalCPULoad;
-    }
-
     private final double totalCPULoad;
     private final long memorySize;
+
     private final int gpuCoreCount;
     private final double gpuCapacity;
+    private final long gpuMemorySize;
 
     private final List<TaskWatcher> watchers = new ArrayList<>(1);
     private int stateOrdinal = TaskState.CREATED.ordinal();
@@ -90,6 +74,195 @@ public class ServiceTask {
 
     private int numFailures = 0;
     private int numPauses = 0;
+
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Getters and Setters
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public ComputeService getService() {
+        return service;
+    }
+
+    public void setService(ComputeService service) {
+        this.service = service;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public ArrayList<Integer> getParents() {
+        return parents;
+    }
+
+    public Set<Integer> getChildren() {
+        return children;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean getDeferrable() {
+        return deferrable;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public long getDeadline() {
+        return deadline;
+    }
+
+    public void setDeadline(long deadline) {
+        this.deadline = deadline;
+    }
+
+    public Workload getWorkload() {
+        return workload;
+    }
+
+    public void setWorkload(Workload workload) {
+        this.workload = workload;
+    }
+
+    public int getCpuCoreCount() {
+        return cpuCoreCount;
+    }
+
+    public double getCpuCapacity() {
+        return cpuCapacity;
+    }
+
+    public double getTotalCPULoad() {
+        return totalCPULoad;
+    }
+
+    public long getMemorySize() {
+        return memorySize;
+    }
+
+    public int getGpuCoreCount() {
+        return gpuCoreCount;
+    }
+
+    public double getGpuCapacity() {
+        return gpuCapacity;
+    }
+
+    public long getGpuMemorySize() {
+        return gpuMemorySize;
+    }
+
+    public List<TaskWatcher> getWatchers() {
+        return watchers;
+    }
+
+    @NotNull
+    public TaskState getState() {
+        return TaskState.getEntries().get(stateOrdinal);
+    }
+
+    void setState(TaskState newState) {
+        if (this.getState() == newState) {
+            return;
+        }
+
+        for (TaskWatcher watcher : watchers) {
+            watcher.onStateChanged(this, newState);
+        }
+        if (newState == TaskState.FAILED) {
+            this.numFailures++;
+        } else if (newState == TaskState.PAUSED) {
+            this.numPauses++;
+        }
+
+        if ((newState == TaskState.COMPLETED) || (newState == TaskState.FAILED) || (newState == TaskState.TERMINATED)) {
+            this.finishedAt = this.service.getClock().millis();
+        }
+
+        this.stateOrdinal = newState.ordinal();
+    }
+
+    public int getStateOrdinal() {
+        return stateOrdinal;
+    }
+
+    public void setStateOrdinal(int stateOrdinal) {
+        this.stateOrdinal = stateOrdinal;
+    }
+
+    public long getSubmittedAt() {
+        return submittedAt;
+    }
+
+    public void setSubmittedAt(long submittedAt) {
+        this.submittedAt = submittedAt;
+    }
+
+    public long getScheduledAt() {
+        return scheduledAt;
+    }
+
+    public void setScheduledAt(long scheduledAt) {
+        this.scheduledAt = scheduledAt;
+    }
+
+    public long getFinishedAt() {
+        return finishedAt;
+    }
+
+    public void setFinishedAt(long finishedAt) {
+        this.finishedAt = finishedAt;
+    }
+
+    public SimHost getHost() {
+        return host;
+    }
+
+    public void setHost(SimHost newHost) {
+        this.host = newHost;
+        if (newHost != null) {
+            this.setHostName(newHost.getName());
+        }
+    }
+
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
+
+    public SchedulingRequest getRequest() {
+        return request;
+    }
+
+    public void setRequest(SchedulingRequest request) {
+        this.request = request;
+    }
+
+    public int getNumFailures() {
+        return numFailures;
+    }
+
+    public void setNumFailures(int numFailures) {
+        this.numFailures = numFailures;
+    }
+
+    public int getNumPauses() {
+        return numPauses;
+    }
+
+    public void setNumPauses(int numPauses) {
+        this.numPauses = numPauses;
+    }
+
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Constructor and Public Methods
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
 
     public ServiceTask(
             int id,
@@ -108,130 +281,46 @@ public class ServiceTask {
             long deadline,
             ArrayList<Integer> parents,
             Set<Integer> children) {
-        //        this.service = service;
         this.id = id;
         this.name = name;
-        this.deferrable = deferrable;
+        this.submittedAt = submissionTime;
         this.duration = duration;
-        this.deadline = deadline;
         this.workload = workload;
 
         this.cpuCoreCount = cpuCoreCount;
         this.cpuCapacity = cpuCapacity;
         this.totalCPULoad = totalCPULoad;
         this.memorySize = memorySize;
+
         this.gpuCoreCount = gpuCoreCount;
         this.gpuCapacity = gpuCapacity;
+        this.gpuMemorySize = gpuMemorySize;
+
+        this.deferrable = deferrable;
+        this.deadline = deadline;
 
         this.parents = parents;
         this.children = children;
-
-        this.submittedAt = submissionTime;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public int getCpuCoreCount() {
-        return cpuCoreCount;
-    }
-
-    public double getCpuCapacity() {
-        return cpuCapacity;
-    }
-
-    public long getMemorySize() {
-        return memorySize;
-    }
-
-    public int getGpuCoreCount() {
-        return gpuCoreCount;
-    }
-
-    public double getGpuCapacity() {
-        return gpuCapacity;
-    }
-
-    public boolean getDeferrable() {
-        return deferrable;
-    }
-
-    public long getDuration() {
-        return duration;
-    }
-
-    @NotNull
-    public Long getDeadline() {
-        return deadline;
-    }
-
-    public void setDeadline(long deadline) {
-        this.deadline = deadline;
-    }
-
-    @NotNull
-    public String getName() {
-        return name;
-    }
-
-    public void setWorkload(Workload newWorkload) {
-        this.workload = newWorkload;
-    }
-
-    @NotNull
-    public TaskState getState() {
-        return TaskState.getEntries().get(stateOrdinal);
-    }
-
-    public void setScheduledAt(long scheduledAt) {
-        this.scheduledAt = scheduledAt;
-    }
-
-    public void setSubmittedAt(long submittedAt) {
-        this.submittedAt = submittedAt;
-    }
-
-    public void setFinishedAt(long finishedAt) {
-        this.finishedAt = finishedAt;
-    }
-
-    public long getScheduledAt() {
-        return scheduledAt;
-    }
-
-    public long getSubmittedAt() {
-        return submittedAt;
-    }
-
-    public long getFinishedAt() {
-        return finishedAt;
-    }
-
-    /**
-     * Return the {@link SimHost} on which the task is running or <code>null</code> if it is not running on a host.
-     */
-    public SimHost getHost() {
-        return host;
-    }
-
-    public String getHostName() {
-        return hostName;
-    }
-
-    public void setHost(SimHost newHost) {
-        this.host = newHost;
-        if (newHost != null) {
-            this.hostName = newHost.getName();
-        }
-    }
-
-    public int getNumFailures() {
-        return this.numFailures;
-    }
-
-    public int getNumPauses() {
-        return this.numPauses;
+    public ServiceTask copy() {
+        return new ServiceTask(
+                this.id,
+                this.name,
+                this.submittedAt,
+                this.duration,
+                this.cpuCoreCount,
+                this.cpuCapacity,
+                this.totalCPULoad,
+                this.memorySize,
+                this.gpuCoreCount,
+                this.gpuCapacity,
+                0,
+                this.workload,
+                this.deferrable,
+                this.deadline,
+                this.parents == null ? null : new ArrayList<>(this.parents),
+                this.children == null ? null : Set.copyOf(this.children));
     }
 
     public void start() {
@@ -300,27 +389,6 @@ public class ServiceTask {
         return "Task[uid=" + this.id + ",name=" + this.name + ",state=" + this.getState() + "]";
     }
 
-    void setState(TaskState newState) {
-        if (this.getState() == newState) {
-            return;
-        }
-
-        for (TaskWatcher watcher : watchers) {
-            watcher.onStateChanged(this, newState);
-        }
-        if (newState == TaskState.FAILED) {
-            this.numFailures++;
-        } else if (newState == TaskState.PAUSED) {
-            this.numPauses++;
-        }
-
-        if ((newState == TaskState.COMPLETED) || (newState == TaskState.FAILED) || (newState == TaskState.TERMINATED)) {
-            this.finishedAt = this.service.getClock().millis();
-        }
-
-        this.stateOrdinal = newState.ordinal();
-    }
-
     /**
      * Cancel the provisioning request if active.
      */
@@ -347,11 +415,7 @@ public class ServiceTask {
             return;
         }
 
-        this.parents.remove(completedTask);
-    }
-
-    public ArrayList<Integer> getParents() {
-        return parents;
+        this.parents.remove(Integer.valueOf(completedTask));
     }
 
     public boolean hasChildren() {
@@ -368,9 +432,5 @@ public class ServiceTask {
         }
 
         return !parents.isEmpty();
-    }
-
-    public Set<Integer> getChildren() {
-        return children;
     }
 }

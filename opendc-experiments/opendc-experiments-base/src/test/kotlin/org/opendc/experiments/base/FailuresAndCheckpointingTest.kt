@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.simulator.service.ServiceTask
-import org.opendc.compute.workload.Task
 import org.opendc.experiments.base.experiment.specs.TraceBasedFailureModelSpec
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList

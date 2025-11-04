@@ -103,7 +103,7 @@ public class TimeshiftScheduler(
                     val currentTime = clock.millis()
                     val estimatedCompletion = currentTime + task.duration
                     val deadline = task.deadline
-                    if (estimatedCompletion <= deadline) {
+                    if (estimatedCompletion < deadline) {
                         // No need to schedule this task in a high carbon intensity period
                         continue
                     }

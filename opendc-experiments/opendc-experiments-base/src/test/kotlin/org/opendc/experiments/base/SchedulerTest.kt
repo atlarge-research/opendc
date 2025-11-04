@@ -34,7 +34,6 @@ import org.opendc.compute.simulator.scheduler.filters.VGpuFilter
 import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher
 import org.opendc.compute.simulator.scheduler.weights.VGpuWeigher
 import org.opendc.compute.simulator.service.ServiceTask
-import org.opendc.compute.workload.Task
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import java.util.ArrayList
 

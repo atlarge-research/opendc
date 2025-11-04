@@ -42,7 +42,6 @@ import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.compute.topology.specs.ClusterSpec
-import org.opendc.compute.workload.Task
 import org.opendc.experiments.base.experiment.specs.FailureModelSpec
 import org.opendc.experiments.base.runner.replay
 import org.opendc.simulator.compute.workload.trace.TraceFragment
@@ -144,7 +143,12 @@ fun runTest(
             service.setTasksExpected(workload.size)
             service.setMetricReader(provisioner.getMonitor())
 
-            service.replay(timeSource, ArrayDeque(workload), failureModelSpec = failureModelSpec)
+            val workloadCopy = ArrayList<ServiceTask>()
+            for (task in workload) {
+                workloadCopy.add(task.copy())
+            }
+
+            service.replay(timeSource, ArrayDeque(workloadCopy), failureModelSpec = failureModelSpec)
         }
     }
 
