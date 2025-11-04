@@ -73,7 +73,7 @@ public class ComputeWorkloadLoader(
     /**
      * The cache of workloads.
      */
-    private val cache = ConcurrentHashMap<File, SoftReference<List<Task>>>()
+    private val cache = ConcurrentHashMap<File, SoftReference<List<ServiceTask>>>()
 
     /**
      * Read the fragments into memory.
@@ -190,26 +190,6 @@ public class ComputeWorkloadLoader(
                 val builder = fragments.getValue(id) // Get all fragments related to this VM
                 val totalLoad = builder.totalLoad
 
-//                entries.add(
-//                    Task(
-//                        id,
-//                        name,
-//                        submissionTime,
-//                        duration,
-//                        parents_output,
-//                        children,
-//                        cpuCount,
-//                        cpuCapacity,
-//                        totalLoad,
-//                        memCapacity.roundToLong(),
-//                        gpuCoreCount,
-//                        gpuUsage,
-//                        gpuMemory,
-//                        deferrable,
-//                        deadline,
-//                        builder.build(),
-//                    ),
-//                )
                 entries.add(
                     ServiceTask(
                         id,

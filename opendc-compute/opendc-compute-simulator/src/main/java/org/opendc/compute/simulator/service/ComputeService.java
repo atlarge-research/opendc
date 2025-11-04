@@ -38,7 +38,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.opendc.common.Dispatcher;
 import org.opendc.common.util.Pacer;
-import org.opendc.compute.api.Flavor;
 import org.opendc.compute.api.TaskState;
 import org.opendc.compute.simulator.host.HostListener;
 import org.opendc.compute.simulator.host.HostModel;
@@ -121,13 +120,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private final List<Integer> completedTasks = new ArrayList<>();
 
     private final List<Integer> terminatedTasks = new ArrayList<>();
-
-    /**
-     * The registered flavors for this compute service.
-     */
-    private final Map<Integer, ServiceFlavor> flavorById = new HashMap<>();
-
-    private final List<ServiceFlavor> flavors = new ArrayList<>();
 
     /**
      * The registered tasks for this compute service.
@@ -492,11 +484,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         }
     }
 
-    void delete(ServiceFlavor flavor) {
-        flavorById.remove(flavor.getTaskId());
-        flavors.remove(flavor);
-    }
-
     void delete(ServiceTask task) {
         completedTasks.remove(task);
         taskById.remove(task.getId());
@@ -647,21 +634,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             if (isClosed) {
                 throw new IllegalStateException("Client is already closed");
             }
-        }
-
-        @NotNull
-        public List<Flavor> queryFlavors() {
-            checkOpen();
-            return new ArrayList<>(service.flavors);
-        }
-
-        @NotNull
-        public ServiceFlavor newFlavor(int taskId, @NotNull Map<String, ?> meta) {
-            checkOpen();
-
-            final ComputeService service = this.service;
-
-            return new ServiceFlavor(service, taskId, meta);
         }
 
         @NotNull
