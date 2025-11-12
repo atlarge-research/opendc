@@ -53,6 +53,7 @@ public enum class ComputeSchedulerEnum {
     ProvisionedCpuGpuCores,
     ProvisionedCpuGpuCoresInv,
     GpuTaskMemorizing,
+    CarbonAware,
 }
 
 public fun createPrefabComputeScheduler(
@@ -76,6 +77,9 @@ public fun createPrefabComputeScheduler(
     val cpuAllocationRatio = 1.0
     val ramAllocationRatio = 1.0
     val gpuAllocationRatio = 1.0
+
+    println("Creating ComputeScheduler: $name with $numHosts hosts")
+
     return when (name) {
         ComputeSchedulerEnum.Mem ->
             FilterScheduler(
@@ -182,6 +186,15 @@ public fun createPrefabComputeScheduler(
                         VGpuFilter(gpuAllocationRatio),
                         RamFilter(ramAllocationRatio),
                     ),
+            )
+        ComputeSchedulerEnum.CarbonAware ->
+        // For time being this works same as timeshift prefab scheduler
+            TimeshiftScheduler(
+                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+                weighers = listOf(RamWeigher(multiplier = 1.0)),
+                windowSize = 168,
+                clock = clock,
+                random = SplittableRandom(seeder.nextLong()),
             )
     }
 }
