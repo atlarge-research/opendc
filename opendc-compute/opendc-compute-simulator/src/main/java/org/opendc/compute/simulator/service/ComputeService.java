@@ -573,6 +573,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 activeTasks.put(task, host);
 
                 updateHost(host);
+
+                long new_scheduling_delay = clock.millis() - req.getSubmitTime() + task.getSchedulingDelay();
+                task.setSchedulingDelay(new_scheduling_delay);
+
             } catch (Exception cause) {
                 LOGGER.error("Failed to deploy VM", cause);
                 scheduler.removeTask(task, hv);

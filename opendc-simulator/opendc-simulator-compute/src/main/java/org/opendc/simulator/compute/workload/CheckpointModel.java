@@ -37,7 +37,7 @@ public class CheckpointModel extends FlowNode {
     private SimWorkload simWorkload;
     private long checkpointInterval;
     private final long checkpointDuration;
-    private double checkpointIntervalScaling;
+    private final double checkpointIntervalScaling;
 
     private long startOfInterval;
 

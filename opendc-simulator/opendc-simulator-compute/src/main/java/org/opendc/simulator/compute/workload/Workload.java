@@ -35,6 +35,10 @@ public interface Workload {
 
     double checkpointIntervalScaling();
 
+    long failureDelay();
+
+    long checkpointDelay();
+
     SimWorkload startWorkload(FlowSupplier supplier);
 
     SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion);

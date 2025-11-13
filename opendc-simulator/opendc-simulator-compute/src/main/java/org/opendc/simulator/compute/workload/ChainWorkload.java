@@ -35,6 +35,26 @@ public record ChainWorkload(
         double checkpointIntervalScaling)
         implements Workload {
 
+    public long failureDelay() {
+        long duration_saved = 0L;
+
+        for (Workload wl : workloads) {
+            duration_saved += wl.failureDelay();
+        }
+
+        return duration_saved;
+    }
+
+    public long checkpointDelay() {
+        long duration_added = 0L;
+
+        for (Workload wl : workloads) {
+            duration_added += wl.checkpointDelay();
+        }
+
+        return duration_added;
+    }
+
     public void removeWorkloads(int numberOfWorkloads) {
         if (numberOfWorkloads <= 0) {
             return;

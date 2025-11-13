@@ -169,6 +169,12 @@ public interface TaskTableReader : Exportable {
      * The state of the task
      */
     public val taskState: TaskState?
+
+    public val schedulingDelay: Long
+
+    public val failureDelay: Long
+
+    public val checkpointDelay: Long
 }
 
 // Loads the default export fields for deserialization whenever this file is loaded.

@@ -75,6 +75,8 @@ public class ServiceTask {
     private int numFailures = 0;
     private int numPauses = 0;
 
+    private long schedulingDelay = 0;
+
     /// //////////////////////////////////////////////////////////////////////////////////////////////////
     /// Getters and Setters
     /// //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -343,12 +345,12 @@ public class ServiceTask {
             case PAUSED:
                 LOGGER.info("User requested to start task after pause {}", id);
                 setState(TaskState.PROVISIONING);
-                request = service.schedule(this, true);
+                request = service.schedule(this, false);
                 break;
             case FAILED:
                 LOGGER.info("User requested to start task after failure {}", id);
                 setState(TaskState.PROVISIONING);
-                request = service.schedule(this, true);
+                request = service.schedule(this, false);
                 break;
         }
     }
@@ -432,5 +434,13 @@ public class ServiceTask {
         }
 
         return !parents.isEmpty();
+    }
+
+    public long getSchedulingDelay() {
+        return schedulingDelay;
+    }
+
+    public void setSchedulingDelay(long schedulingDelay) {
+        this.schedulingDelay = schedulingDelay;
     }
 }
