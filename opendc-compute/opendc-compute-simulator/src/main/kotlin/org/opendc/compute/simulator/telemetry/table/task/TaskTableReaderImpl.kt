@@ -82,6 +82,10 @@ public class TaskTableReaderImpl(
         _finishTime = table.finishTime
 
         _taskState = table.taskState
+
+        _schedulingDelay = table.schedulingDelay
+        _failureDelay = table.failureDelay
+        _checkpointDelay = table.checkpointDelay
     }
 
     /**
@@ -214,6 +218,18 @@ public class TaskTableReaderImpl(
         get() = _taskState
     private var _taskState: TaskState? = null
 
+    override val schedulingDelay: Long
+        get() = _schedulingDelay
+    private var _schedulingDelay: Long = 0L
+
+    override val failureDelay: Long
+        get() = _failureDelay
+    private var _failureDelay: Long = 0L
+
+    override val checkpointDelay: Long
+        get() = _checkpointDelay
+    private var _checkpointDelay: Long = 0L
+
     /**
      * Record the next cycle.
      */
@@ -256,6 +272,10 @@ public class TaskTableReaderImpl(
         _submissionTime = task.submittedAt
         _scheduleTime = task.scheduledAt
         _finishTime = task.finishedAt
+
+        _schedulingDelay = task.schedulingDelay
+        _failureDelay = task.workload.failureDelay()
+        _checkpointDelay = task.workload.checkpointDelay()
 
         if (gpuStats != null) {
             _gpuLimit = gpuStats.capacity

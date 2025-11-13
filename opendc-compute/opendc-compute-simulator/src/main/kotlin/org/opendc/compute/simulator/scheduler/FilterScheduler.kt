@@ -22,6 +22,7 @@
 
 package org.opendc.compute.simulator.scheduler
 
+import org.opendc.compute.simulator.host.HostState
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
 import org.opendc.compute.simulator.scheduler.weights.HostWeigher
 import org.opendc.compute.simulator.service.HostView
@@ -101,6 +102,10 @@ public class FilterScheduler(
     }
 
     override fun updateHost(hostView: HostView) {
+        if (hostView.host.getState() == HostState.ERROR) {
+            return
+        }
+
         if (hostView.host.isEmpty()) {
             setHostEmpty(hostView)
         } else {

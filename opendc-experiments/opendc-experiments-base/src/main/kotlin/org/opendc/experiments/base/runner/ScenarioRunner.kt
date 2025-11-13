@@ -180,7 +180,7 @@ public fun runScenario(
     }
 
 /**
- * Saves the simulation results into a specific output folder received from the input.
+ * Saves the simulation results into a specific output folder received from the input.A
  *
  * @param provisioner The provisioner used to setup and run the simulation.
  * @param serviceDomain The domain of the compute service.

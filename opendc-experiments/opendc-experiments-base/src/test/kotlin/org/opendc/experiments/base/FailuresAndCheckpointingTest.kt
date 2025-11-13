@@ -270,7 +270,6 @@ class FailuresAndCheckpointingTest {
                     monitor.maxTimestamp,
                 ) { "Total runtime incorrect" }
             },
-            // TODO: The energy draw of last item (56 * 150.0) is wrong. Figure out why?
             {
                 assertEquals(
                     (10 * 60 * 150.0) + (5 * 60 * 100.0) + (9 * 150.0) + (56 * 150.0),

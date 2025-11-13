@@ -224,6 +224,21 @@ public object DfltTaskExportColumns {
             return@ExportColumn Binary.fromString(it.taskState!!.name)
         }
 
+    public val schedulingDelay: ExportColumn<TaskTableReader> =
+        ExportColumn(
+            field = Types.optional(INT64).named("scheduling_delay"),
+        ) { it.schedulingDelay }
+
+    public val failureDelay: ExportColumn<TaskTableReader> =
+        ExportColumn(
+            field = Types.optional(INT64).named("failure_delay"),
+        ) { it.failureDelay }
+
+    public val checkpointDelay: ExportColumn<TaskTableReader> =
+        ExportColumn(
+            field = Types.optional(INT64).named("checkpoint_delay"),
+        ) { it.checkpointDelay }
+
     /**
      * The columns that are always included in the output file.
      */

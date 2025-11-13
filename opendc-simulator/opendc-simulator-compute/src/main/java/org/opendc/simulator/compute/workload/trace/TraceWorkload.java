@@ -46,6 +46,9 @@ public class TraceWorkload implements Workload {
     private final int taskId;
     private final ResourceType[] resourceTypes;
 
+    public long checkpointDelay = 0;
+    public long failureDelay = 0;
+
     public ScalingPolicy getScalingPolicy() {
         return scalingPolicy;
     }
@@ -116,10 +119,19 @@ public class TraceWorkload implements Workload {
         return taskId;
     }
 
+    public long failureDelay() {
+        return failureDelay;
+    }
+
+    public long checkpointDelay() {
+        return checkpointDelay;
+    }
+
     public void removeFragments(int numberOfFragments) {
         if (numberOfFragments <= 0) {
             return;
         }
+
         this.fragments.subList(0, numberOfFragments).clear();
     }
 
