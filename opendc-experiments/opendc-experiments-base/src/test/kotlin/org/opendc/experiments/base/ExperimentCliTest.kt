@@ -57,4 +57,18 @@ class ExperimentCliTest {
         val someDir = File("output")
         someDir.deleteRecursively()
     }
+
+    /**
+     * ExperimentCli test 3
+     * This test runs the experiment defined in the experiment_3.json file.
+     *
+     * In this test, a small workflow is executed.
+     */
+    @Test
+    fun testExperimentCli3() {
+        ExperimentCommand().main(arrayOf("--experiment-path", "src/test/resources/experiments/experiment_3.json"))
+
+        val someDir = File("output")
+        someDir.deleteRecursively()
+    }
 }
