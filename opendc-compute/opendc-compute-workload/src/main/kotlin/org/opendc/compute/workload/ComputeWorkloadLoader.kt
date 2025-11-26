@@ -175,9 +175,12 @@ public class ComputeWorkloadLoader(
 
                 if (parents?.isEmpty() == true) {
                     parentsOutput = null
-                    children = null
                 } else {
                     parentsOutput = ArrayList(parents!!)
+                }
+
+                if (children?.isEmpty() == true) {
+                    children = null
                 }
 
                 var deferrable = reader.getBoolean(deferrableCol)

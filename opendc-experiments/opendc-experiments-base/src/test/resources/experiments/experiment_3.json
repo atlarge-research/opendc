@@ -1,0 +1,26 @@
+{
+    "name": "simple",
+    "topologies": [
+        {
+            "pathToFile": "src/test/resources/topologies/workflow_topology.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "src/test/resources/workloadTraces/workflow_example",
+            "type": "ComputeWorkload"
+        }
+    ],
+    "exportModels": [
+        {
+            "exportInterval": 60,
+            "printFrequency": 168,
+            "filesToExport": [
+                "host",
+                "powerSource",
+                "service",
+                "task"
+            ]
+        }
+    ]
+}

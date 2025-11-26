@@ -57,4 +57,18 @@ class ExperimentCliTest {
         val someDir = File("output")
         someDir.deleteRecursively()
     }
+
+    /**
+     * ExperimentCli test 2
+     * This test runs the experiment defined in the experiment_3.json file.
+     *
+     * In this test, parts of the Marconi 100 workload is executed  . This trace contains GPU tasks.
+     */
+    @Test
+    fun testExperimentCli3() {
+        ExperimentCommand().main(arrayOf("--experiment-path", "src/test/resources/experiments/experiment_3.json"))
+
+        val someDir = File("output")
+        someDir.deleteRecursively()
+    }
 }
