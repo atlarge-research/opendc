@@ -59,7 +59,7 @@ class ExperimentCliTest {
     }
 
     /**
-     * ExperimentCli test 2
+     * ExperimentCli test 3
      * This test runs the experiment defined in the experiment_3.json file.
      *
      * In this test, a small workflow is executed.
