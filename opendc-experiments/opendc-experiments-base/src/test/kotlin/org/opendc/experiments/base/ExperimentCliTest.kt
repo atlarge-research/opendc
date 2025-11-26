@@ -62,7 +62,7 @@ class ExperimentCliTest {
      * ExperimentCli test 2
      * This test runs the experiment defined in the experiment_3.json file.
      *
-     * In this test, parts of the Marconi 100 workload is executed  . This trace contains GPU tasks.
+     * In this test, a small workflow is executed.
      */
     @Test
     fun testExperimentCli3() {
