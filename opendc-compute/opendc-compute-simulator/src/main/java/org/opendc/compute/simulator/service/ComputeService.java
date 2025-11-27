@@ -121,6 +121,12 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     private final List<Integer> terminatedTasks = new ArrayList<>();
 
+    // Maps task ID → DagNode wrapper
+    private final Map<Integer, DagNode> dagNodes = new HashMap<>();
+
+    // Optional: track root nodes for convenience (multiple independent DAGs)
+    private final Set<DagNode> dagRoots = new HashSet<>();
+
     /**
      * The registered tasks for this compute service.
      */
@@ -129,6 +135,86 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private final List<ServiceTask> tasksToRemove = new ArrayList<>();
 
     private ComputeMetricReader metricReader;
+
+    private DagNode getOrCreateDagNode(int taskId) {
+    return dagNodes.computeIfAbsent(taskId, id -> {
+        // Placeholder: Node without its ServiceTask yet
+        return new DagNode(null);
+    });
+}
+
+private DagNode attachTaskToDagNode(ServiceTask task) {
+    DagNode node = dagNodes.computeIfAbsent(task.getId(), id -> new DagNode(task));
+
+    // If placeholder was created earlier, update its task reference
+    if (node.getTask() == null) {
+        node.setTask(task);  // You can add a setter or alternate constructor logic
+    }
+
+    return node;
+}
+
+private void connectDagEdges(DagNode node) {
+    ServiceTask task = node.getTask();
+    if (task == null) return;
+
+    List<Integer> parentIds = task.getParents();
+    if (parentIds != null) {
+        for (int pid : parentIds) {
+            DagNode parentNode = getOrCreateDagNode(pid);
+            parentNode.addChild(node);
+
+            // Node can't be root anymore
+            dagRoots.remove(node);
+        }
+    }
+
+    // If it has no parents, this is a root
+    if (parentIds == null || parentIds.isEmpty()) {
+        dagRoots.add(node);
+    }
+}
+
+public void updateDagForNewTask(ServiceTask task) {
+    DagNode node = attachTaskToDagNode(task);
+    connectDagEdges(node);
+}
+
+private void printDagRecursive(DagNode node, String indent, Set<Integer> visited) {
+    if (node == null) {
+        System.out.println(indent + "(null)");
+        return;
+    }
+
+    int id = node.getTaskId();
+
+    // Prevent infinite recursion if cycles ever appear
+    if (visited.contains(id)) {
+        System.out.println(indent + id + " (visited)");
+        return;
+    }
+
+    visited.add(id);
+
+    System.out.println(indent + id);
+
+    for (DagNode child : node.getChildren()) {
+        printDagRecursive(child, indent + "  ", visited);
+    }
+}
+
+public void printAllDags() {
+    System.out.println("===== DAGs in ComputeService =====");
+
+    for (DagNode root : dagRoots) {
+        System.out.println("\nDAG Root " + root.getTaskId());
+        printDagRecursive(root, "  ", new HashSet<>());
+    }
+
+    System.out.println("======= End DAG Print =======");
+}
+
+
 
     /**
      * A [HostListener] used to track the active tasks.
@@ -648,6 +734,9 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             final ComputeService service = this.service;
 
             task.setService(service);
+            
+            LOGGER.info("task {} : children {} , parents {}", task.getId(), task.getChildren(), task.getParents());
+            service.updateDagForNewTask(task);
 
             service.taskById.put(task.getId(), task);
 
@@ -666,6 +755,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
         public void close() {
             isClosed = true;
+            this.service.printAllDags();
         }
 
         @Override
