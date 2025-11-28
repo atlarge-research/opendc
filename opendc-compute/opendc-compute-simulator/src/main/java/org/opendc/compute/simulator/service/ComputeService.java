@@ -121,11 +121,9 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     private final List<Integer> terminatedTasks = new ArrayList<>();
 
-    // Maps task ID → DagNode wrapper
-    private final Map<Integer, DagNode> dagNodes = new HashMap<>();
-
-    // Optional: track root nodes for convenience (multiple independent DAGs)
-    private final Set<DagNode> dagRoots = new HashSet<>();
+    // // Can also keep it as a list of taskIds and look up in taskById if needed
+    // private final List<ServiceTask> rootTasks = new ArrayList<>();
+    private final List<Integer> rootTaskIds = new ArrayList<>();
 
     /**
      * The registered tasks for this compute service.
@@ -136,85 +134,61 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     private ComputeMetricReader metricReader;
 
-    private DagNode getOrCreateDagNode(int taskId) {
-    return dagNodes.computeIfAbsent(taskId, id -> {
-        // Placeholder: Node without its ServiceTask yet
-        return new DagNode(null);
-    });
-}
+    /** 
+     * Add a new task and track it
+     */
+    public void addNewTask(ServiceTask task) {
+        final int taskId = task.getId();
+        
+        this.taskById.put(taskId, task);
+        this.tasksTotal++;
 
-private DagNode attachTaskToDagNode(ServiceTask task) {
-    DagNode node = dagNodes.computeIfAbsent(task.getId(), id -> new DagNode(task));
+        // Connect to parents
+        if (task.hasParents()) {
+            for (Integer parentId : task.getParents()) {
+                ServiceTask parentTask = this.taskById.get(parentId);
+                
+                if (parentTask != null) {
+                    task.connectToParent(parentTask);
+                } else {
+                    LOGGER.warn("Parent task : {} has not arrived yet for child task : {}.", 
+                            parentId, taskId);
+                }
+            }
+        } else {
+            // no parents, so this is a root task for a workflow
+            this.rootTaskIds.add(taskId);
+        }
 
-    // If placeholder was created earlier, update its task reference
-    if (node.getTask() == null) {
-        node.setTask(task);  // You can add a setter or alternate constructor logic
-    }
-
-    return node;
-}
-
-private void connectDagEdges(DagNode node) {
-    ServiceTask task = node.getTask();
-    if (task == null) return;
-
-    List<Integer> parentIds = task.getParents();
-    if (parentIds != null) {
-        for (int pid : parentIds) {
-            DagNode parentNode = getOrCreateDagNode(pid);
-            parentNode.addChild(node);
-
-            // Node can't be root anymore
-            dagRoots.remove(node);
+        // a bit redundant check  but needed to handle
+        // out-of-order arrival where child arrives before parent
+        if (task.hasChildren()) {
+            for (Integer childId : task.getChildren()) {
+                ServiceTask childTask = this.taskById.get(childId);
+                
+                if (childTask != null) {
+                    task.connectToChild(childTask);
+                    LOGGER.debug("Connected out of order arrived task {} to its child {}", 
+                            taskId, childId);
+                }
+            }
         }
     }
 
-    // If it has no parents, this is a root
-    if (parentIds == null || parentIds.isEmpty()) {
-        dagRoots.add(node);
+    // for debug purposes
+    public void printAllWorkflowTrees() {
+        System.out.println("\n========== WORKFLOW DAG STRUCTURE ==========");
+        System.out.println("Total root tasks: " + rootTaskIds.size());
+        System.out.println("taskbyId" + taskById);
+        
+        for (Integer rootId : rootTaskIds) {
+            ServiceTask rootTask = taskById.get(rootId);
+            if (rootTask != null) {
+                rootTask.printTaskTree();
+            }
+        }
+        System.out.println("============================================\n");
     }
-}
-
-public void updateDagForNewTask(ServiceTask task) {
-    DagNode node = attachTaskToDagNode(task);
-    connectDagEdges(node);
-}
-
-private void printDagRecursive(DagNode node, String indent, Set<Integer> visited) {
-    if (node == null) {
-        System.out.println(indent + "(null)");
-        return;
-    }
-
-    int id = node.getTaskId();
-
-    // Prevent infinite recursion if cycles ever appear
-    if (visited.contains(id)) {
-        System.out.println(indent + id + " (visited)");
-        return;
-    }
-
-    visited.add(id);
-
-    System.out.println(indent + id);
-
-    for (DagNode child : node.getChildren()) {
-        printDagRecursive(child, indent + "  ", visited);
-    }
-}
-
-public void printAllDags() {
-    System.out.println("===== DAGs in ComputeService =====");
-
-    for (DagNode root : dagRoots) {
-        System.out.println("\nDAG Root " + root.getTaskId());
-        printDagRecursive(root, "  ", new HashSet<>());
-    }
-
-    System.out.println("======= End DAG Print =======");
-}
-
-
 
     /**
      * A [HostListener] used to track the active tasks.
@@ -735,12 +709,7 @@ public void printAllDags() {
 
             task.setService(service);
             
-            LOGGER.info("task {} : children {} , parents {}", task.getId(), task.getChildren(), task.getParents());
-            service.updateDagForNewTask(task);
-
-            service.taskById.put(task.getId(), task);
-
-            service.tasksTotal++;
+            this.service.addNewTask(task);
 
             task.start();
 
@@ -755,7 +724,6 @@ public void printAllDags() {
 
         public void close() {
             isClosed = true;
-            this.service.printAllDags();
         }
 
         @Override

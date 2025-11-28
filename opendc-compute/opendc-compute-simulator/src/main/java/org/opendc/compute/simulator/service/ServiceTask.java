@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.HashMap;
+import java.util.HashSet;
 import org.jetbrains.annotations.NotNull;
 import org.opendc.compute.api.TaskState;
 import org.opendc.compute.simulator.TaskWatcher;
@@ -36,236 +38,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of {@link ServiceTask} provided by {@link ComputeService}.
+ * This is essentially a WorkflowServiceTask
  */
-public class ServiceTask {
+public class ServiceTask extends ServiceTaskBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceTask.class);
-
-    private ComputeService service;
-    private final int id;
-    private final ArrayList<Integer> parents;
-    private final Set<Integer> children;
-
-    private final String name;
-    private final boolean deferrable;
-
-    private final long duration;
-    private long deadline;
-    public Workload workload;
-
-    private final int cpuCoreCount;
-    private final double cpuCapacity;
-    private final double totalCPULoad;
-    private final long memorySize;
-
-    private final int gpuCoreCount;
-    private final double gpuCapacity;
-    private final long gpuMemorySize;
-
-    private final List<TaskWatcher> watchers = new ArrayList<>(1);
-    private int stateOrdinal = TaskState.CREATED.ordinal();
-    private long submittedAt;
-    private long scheduledAt;
-    private long finishedAt;
-    private SimHost host = null;
-    private String hostName = null;
-
-    private SchedulingRequest request = null;
-
-    private int numFailures = 0;
-    private int numPauses = 0;
-
-    private long schedulingDelay = 0;
-
+    
+    // Workflow DAG - specific fields
+    private final Set<ServiceTask> wfParents = new HashSet<>();
+    private final Set<ServiceTask> wfChildren = new HashSet<>();
+    // a field which tracks the dependecy depth of all its children
+    // a workflow root identfying field so that we can quickly check if they are part of same dependecy chain somehow so that we can quickly assess the depth and select the required one
+    
     /// //////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Getters and Setters
+    /// Constructor
     /// //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public ComputeService getService() {
-        return service;
-    }
-
-    public void setService(ComputeService service) {
-        this.service = service;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public ArrayList<Integer> getParents() {
-        return parents;
-    }
-
-    public Set<Integer> getChildren() {
-        return children;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean getDeferrable() {
-        return deferrable;
-    }
-
-    public long getDuration() {
-        return duration;
-    }
-
-    public long getDeadline() {
-        return deadline;
-    }
-
-    public void setDeadline(long deadline) {
-        this.deadline = deadline;
-    }
-
-    public Workload getWorkload() {
-        return workload;
-    }
-
-    public void setWorkload(Workload workload) {
-        this.workload = workload;
-    }
-
-    public int getCpuCoreCount() {
-        return cpuCoreCount;
-    }
-
-    public double getCpuCapacity() {
-        return cpuCapacity;
-    }
-
-    public double getTotalCPULoad() {
-        return totalCPULoad;
-    }
-
-    public long getMemorySize() {
-        return memorySize;
-    }
-
-    public int getGpuCoreCount() {
-        return gpuCoreCount;
-    }
-
-    public double getGpuCapacity() {
-        return gpuCapacity;
-    }
-
-    public long getGpuMemorySize() {
-        return gpuMemorySize;
-    }
-
-    public List<TaskWatcher> getWatchers() {
-        return watchers;
-    }
-
-    @NotNull
-    public TaskState getState() {
-        return TaskState.getEntries().get(stateOrdinal);
-    }
-
-    void setState(TaskState newState) {
-        if (this.getState() == newState) {
-            return;
-        }
-
-        for (TaskWatcher watcher : watchers) {
-            watcher.onStateChanged(this, newState);
-        }
-        if (newState == TaskState.FAILED) {
-            this.numFailures++;
-        } else if (newState == TaskState.PAUSED) {
-            this.numPauses++;
-        }
-
-        if ((newState == TaskState.COMPLETED) || (newState == TaskState.FAILED) || (newState == TaskState.TERMINATED)) {
-            this.finishedAt = this.service.getClock().millis();
-        }
-
-        this.stateOrdinal = newState.ordinal();
-    }
-
-    public int getStateOrdinal() {
-        return stateOrdinal;
-    }
-
-    public void setStateOrdinal(int stateOrdinal) {
-        this.stateOrdinal = stateOrdinal;
-    }
-
-    public long getSubmittedAt() {
-        return submittedAt;
-    }
-
-    public void setSubmittedAt(long submittedAt) {
-        this.submittedAt = submittedAt;
-    }
-
-    public long getScheduledAt() {
-        return scheduledAt;
-    }
-
-    public void setScheduledAt(long scheduledAt) {
-        this.scheduledAt = scheduledAt;
-    }
-
-    public long getFinishedAt() {
-        return finishedAt;
-    }
-
-    public void setFinishedAt(long finishedAt) {
-        this.finishedAt = finishedAt;
-    }
-
-    public SimHost getHost() {
-        return host;
-    }
-
-    public void setHost(SimHost newHost) {
-        this.host = newHost;
-        if (newHost != null) {
-            this.setHostName(newHost.getName());
-        }
-    }
-
-    public String getHostName() {
-        return hostName;
-    }
-
-    public void setHostName(String hostName) {
-        this.hostName = hostName;
-    }
-
-    public SchedulingRequest getRequest() {
-        return request;
-    }
-
-    public void setRequest(SchedulingRequest request) {
-        this.request = request;
-    }
-
-    public int getNumFailures() {
-        return numFailures;
-    }
-
-    public void setNumFailures(int numFailures) {
-        this.numFailures = numFailures;
-    }
-
-    public int getNumPauses() {
-        return numPauses;
-    }
-
-    public void setNumPauses(int numPauses) {
-        this.numPauses = numPauses;
-    }
-
-    /// //////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Constructor and Public Methods
-    /// //////////////////////////////////////////////////////////////////////////////////////////////////
-
+    
     public ServiceTask(
             int id,
             String name,
@@ -283,48 +70,108 @@ public class ServiceTask {
             long deadline,
             ArrayList<Integer> parents,
             Set<Integer> children) {
-        this.id = id;
-        this.name = name;
-        this.submittedAt = submissionTime;
-        this.duration = duration;
-        this.workload = workload;
-
-        this.cpuCoreCount = cpuCoreCount;
-        this.cpuCapacity = cpuCapacity;
-        this.totalCPULoad = totalCPULoad;
-        this.memorySize = memorySize;
-
-        this.gpuCoreCount = gpuCoreCount;
-        this.gpuCapacity = gpuCapacity;
-        this.gpuMemorySize = gpuMemorySize;
-
-        this.deferrable = deferrable;
-        this.deadline = deadline;
-
-        this.parents = parents;
-        this.children = children;
+        // base class constructor
+        super(id, name, submissionTime, duration, cpuCoreCount, cpuCapacity,
+              totalCPULoad, memorySize, gpuCoreCount, gpuCapacity, gpuMemorySize,
+              workload, deferrable, deadline, parents, children);
+        
+        // DAG fields are initialized inline already above
+    }
+    
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Overridden Methods - preserve original behavior + add workflow dag logic
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    // @Override
+    // void setState(TaskState newState) {
+    //     // Execute base class behavior first
+    //     super.setState(newState);
+        
+    //     // Add DAG-specific logic
+    //     if (newState == TaskState.COMPLETED) {
+    //         propagateCompletionToChildren();
+    //     }
+    // }
+    
+    // @Override
+    // public ServiceTask copy() {
+    //     // Create a new ServiceTask with base class data
+    //     ServiceTask copy = new ServiceTask(
+    //         this.getId(),
+    //         this.getName(),
+    //         this.getSubmittedAt(),
+    //         this.getDuration(),
+    //         this.getCpuCoreCount(),
+    //         this.getCpuCapacity(),
+    //         this.getTotalCPULoad(),
+    //         this.getMemorySize(),
+    //         this.getGpuCoreCount(),
+    //         this.getGpuCapacity(),
+    //         this.getGpuMemorySize(),
+    //         this.getWorkload(),
+    //         this.getDeferrable(),
+    //         this.getDeadline(),
+    //         this.getParents() == null ? null : new ArrayList<>(this.getParents()),
+    //         this.getChildren() == null ? null : Set.copyOf(this.getChildren())
+    //     );
+        
+    //     // to copy dag relationship or not?
+    //     // completedParentsDepth is initialized to 0 by default
+        
+    //     return copy;
+    // }
+    
+    // @Override
+    // public boolean equals(Object o) {
+    //     // Use base class equality (based on service and id)
+    //     return super.equals(o);
+    // }
+    
+    // @Override
+    // public int hashCode() {
+    //     // Use base class hash code
+    //     return super.hashCode();
+    // }
+    
+    @Override
+    public String toString() {
+        return super.toString() + 
+               "[wfParents=" + wfParents.size() + 
+               ",wfChildren=" + wfChildren.size() 
+               //",depth=" + completedParentsDepth + "]"
+               ;
     }
 
-    public ServiceTask copy() {
-        return new ServiceTask(
-                this.id,
-                this.name,
-                this.submittedAt,
-                this.duration,
-                this.cpuCoreCount,
-                this.cpuCapacity,
-                this.totalCPULoad,
-                this.memorySize,
-                this.gpuCoreCount,
-                this.gpuCapacity,
-                0,
-                this.workload,
-                this.deferrable,
-                this.deadline,
-                this.parents == null ? null : new ArrayList<>(this.parents),
-                this.children == null ? null : Set.copyOf(this.children));
+
+    // have to override fns where servicetask needs to be passed to
+    // external interfaces instead of serviceTaskBase
+    // @Override
+    public void setState(TaskState newState) {
+
+        if (this.getState() == newState) {
+            return;
+        }
+
+        for (TaskWatcher watcher : this.getWatchers()) {
+            watcher.onStateChanged(this, newState);   // to pass ServiceTask as this here
+        }
+
+        if (newState == TaskState.FAILED) {
+            this.setNumFailures(this.getNumFailures() + 1);
+        } else if (newState == TaskState.PAUSED) {
+            this.setNumPauses(this.getNumPauses() + 1);
+        }
+
+        if (newState == TaskState.COMPLETED
+                || newState == TaskState.FAILED
+                || newState == TaskState.TERMINATED) {
+            this.setFinishedAt(this.getService().getClock().millis());
+        }
+
+        this.setStateOrdinal(newState.ordinal());
     }
 
+    // @Override
     public void start() {
         switch (this.getState()) {
             case PROVISIONING:
@@ -337,110 +184,298 @@ public class ServiceTask {
                 LOGGER.warn("User tried to start deleted task");
                 throw new IllegalStateException("Task is deleted");
             case CREATED:
-                LOGGER.info("User requested to start task {}", id);
-                setState(TaskState.PROVISIONING);
-                assert request == null : "Scheduling request already active";
-                request = service.schedule(this);
+                LOGGER.info("User requested to start task {}", this.getId());
+                this.setState(TaskState.PROVISIONING);
+                assert this.getRequest() == null : "Scheduling request already active";
+                this.setRequest(this.getService().schedule(this));
                 break;
+
             case PAUSED:
-                LOGGER.info("User requested to start task after pause {}", id);
-                setState(TaskState.PROVISIONING);
-                request = service.schedule(this, false);
+                LOGGER.info("User requested to start task after pause {}", this.getId());
+                this.setState(TaskState.PROVISIONING);
+                this.setRequest(this.getService().schedule(this, false));
                 break;
+
             case FAILED:
-                LOGGER.info("User requested to start task after failure {}", id);
-                setState(TaskState.PROVISIONING);
-                request = service.schedule(this, false);
+                LOGGER.info("User requested to start task after failure {}", this.getId());
+                this.setState(TaskState.PROVISIONING);
+                this.setRequest(this.getService().schedule(this, false));
                 break;
         }
     }
 
-    public void watch(@NotNull TaskWatcher watcher) {
-        watchers.add(watcher);
-    }
-
-    public void unwatch(@NotNull TaskWatcher watcher) {
-        watchers.remove(watcher);
-    }
-
+    // @Override
     public void delete() {
         cancelProvisioningRequest();
-        final SimHost host = this.host;
+        final SimHost host = this.getHost();
         if (host != null) {
             host.delete(this);
         }
-        service.delete(this);
 
-        this.workload = null;
-
+        this.getService().delete(this);
+        this.setWorkload(null);
         this.setState(TaskState.DELETED);
     }
 
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ServiceTask task = (ServiceTask) o;
-        return service.equals(task.service) && id == task.id;
-    }
+    
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
+    /// DAG-Specific Methods
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public int hashCode() {
-        return Objects.hash(service, id);
-    }
+    /**
+     * Connects parent-child dependencies between tasks in the list.
+     * establishing the workflow DAG by linking tasks based on their ID references.
+     * Doesnt handle if parent/child not in the list, i.e. they never arrrived 
+     * 
+     * @param tasks The list of tasks to connect
+     * @return The same list with dependencies established
+     */
+    // public static List<ServiceTask> connectDependencies(List<ServiceTask> tasks) {
 
-    public String toString() {
-        return "Task[uid=" + this.id + ",name=" + this.name + ",state=" + this.getState() + "]";
+    //     Map<Integer, ServiceTask> taskMap = new HashMap<>();
+    //     for (ServiceTask task : tasks) {
+    //         taskMap.put(task.getId(), task);
+    //     }
+        
+    //     // Connect parents and children
+    //     for (ServiceTask task : tasks) {
+    //         // Connect parents
+    //         if (task.getParents() != null) {
+    //             for (Integer parentId : task.getParents()) {
+    //                 ServiceTask parentTask = taskMap.get(parentId);
+    //                 if (parentTask != null) {
+    //                     task.addWfParent(parentTask);
+    //                 } else {
+    //                     LOGGER.warn("Parent task with ID {} not found for task {}", 
+    //                                parentId, task.getId());
+    //                 }
+    //             }
+    //         }
+            
+    //         // Connect children
+    //         if (task.getChildren() != null) {
+    //             for (Integer childId : task.getChildren()) {
+    //                 ServiceTask childTask = taskMap.get(childId);
+    //                 if (childTask != null) {
+    //                     task.addWfChild(childTask);
+    //                 } else {
+    //                     LOGGER.warn("Child task with ID {} not found for task {}", 
+    //                                childId, task.getId());
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return tasks;
+    // }
+
+    
+    // public void addWfParent(ServiceTask parent) {
+    //     this.wfParents.add(parent);
+    // }
+    
+    // public void addWfChild(ServiceTask child) {
+    //     this.wfChildren.add(child);
+    // }
+    
+    public Set<ServiceTask> getWfParents() {
+        return wfParents;
+    }
+    
+    public Set<ServiceTask> getWfChildren() {
+        return wfChildren;
     }
 
     /**
-     * Cancel the provisioning request if active.
+     * bidirectionally connect this task and a parent task.
+     * @param parent The parent task to connect to
      */
-    private void cancelProvisioningRequest() {
-        final SchedulingRequest request = this.request;
-        if (request != null) {
-            this.request = null;
-            request.setCancelled(true);
+    public void connectToParent(ServiceTask parent) {
+        this.wfParents.add(parent);
+        parent.wfChildren.add(this);
+    }
+    
+    /**
+     * bidirectionally connect this task and a child task.
+     * @param child The child task to connect to
+     */
+    public void connectToChild(ServiceTask child) {
+        this.wfChildren.add(child);
+        child.wfParents.add(this);
+    }
+
+    /**
+     * Prints this task and recursively prints all its children in a tree structure.
+     * @param indent The indentation level for pretty printing
+     * @param visited Set of already visited task IDs to handle cycles/shared children
+     */
+    public void printTaskTree(String indent, Set<Integer> visited) {
+        // Print current task
+        System.out.println(indent + "├─ Task[id=" + getId() + 
+                        ", state=" + getState() + 
+                        ", parents=" + (getParents() != null ? getParents().size() : 0) +
+                        ", children=" + (getChildren() != null ? getChildren().size() : 0) + "]");
+        visited.add(getId());
+        
+        // print children recursively
+        if (hasChildren()) {
+            String childIndent = indent + "│  ";
+            int childCount = 0;
+            
+            for (ServiceTask child : wfChildren) {
+                childCount++;
+                boolean isLast = (childCount == wfChildren.size());
+                
+                if (visited.contains(child.getId())) {
+                    // already printed 
+                    System.out.println(childIndent + "├─ Task[id=" + child.getId() + 
+                                    "] (already printed above)");
+                } else {
+                    // recursively print child
+                    child.printTaskTree(childIndent, visited);
+                }
+            }
         }
     }
 
-    public void removeFromParents(List<Integer> completedTasks) {
-        if (this.parents == null) {
-            return;
-        }
-
-        for (int task : completedTasks) {
-            this.removeFromParents(task);
-        }
+    /**
+     * Prints this task and all its descendants starting from this task(for root case).
+     */
+    public void printTaskTree() {
+        System.out.println("\n=== Task DAG starting from root ===");
+        printTaskTree("", new HashSet<>());
+        System.out.println("===================================\n");
     }
-
-    public void removeFromParents(int completedTask) {
-        if (this.parents == null) {
-            return;
-        }
-
-        this.parents.remove(Integer.valueOf(completedTask));
+    
+    // /**
+    //  * Add a parent dependency to this task.
+    //  * This creates a bidirectional relationship.
+    //  */
+    // public void addDagParent(ServiceTask parent) {
+    //     if (parent == null) {
+    //         LOGGER.warn("Attempted to add null parent to task {}", getId());
+    //         return;
+    //     }
+    //     wfParents.add(parent);
+    //     parent.wfChildren.add(this);
+    // }
+    
+    // /**
+    //  * Add a child dependency to this task.
+    //  * This creates a bidirectional relationship.
+    //  */
+    // public void addDagChild(ServiceTask child) {
+    //     if (child == null) {
+    //         LOGGER.warn("Attempted to add null child to task {}", getId());
+    //         return;
+    //     }
+    //     wfChildren.add(child);
+    //     child.wfParents.add(this);
+    // }
+    
+    // /**
+    //  * Remove a parent dependency from this task.
+    //  */
+    // public void removeDagParent(ServiceTask parent) {
+    //     if (parent != null) {
+    //         wfParents.remove(parent);
+    //         parent.wfChildren.remove(this);
+    //     }
+    // }
+    
+    // /**
+    //  * Remove a child dependency from this task.
+    //  */
+    // public void removeDagChild(ServiceTask child) {
+    //     if (child != null) {
+    //         wfChildren.remove(child);
+    //         child.wfParents.remove(this);
+    //     }
+    // }
+    
+    // /**
+    //  * Check if all parent tasks have completed execution.
+    //  */
+    // public boolean areParentsCompleted() {
+    //     for (ServiceTask parent : wfParents) {
+    //         if (parent.getState() != TaskState.COMPLETED) {
+    //             return false;
+    //         }
+    //     }
+    //     return true;
+    // }
+    
+    /**
+     * Check if this task has no parent dependencies (is a root node).
+     */
+    public boolean isRootTask() {
+        return wfParents.isEmpty();
     }
-
-    public boolean hasChildren() {
-        if (children == null) {
-            return false;
-        }
-
-        return !children.isEmpty();
-    }
-
-    public boolean hasParents() {
-        if (parents == null) {
-            return false;
-        }
-
-        return !parents.isEmpty();
-    }
-
-    public long getSchedulingDelay() {
-        return schedulingDelay;
-    }
-
-    public void setSchedulingDelay(long schedulingDelay) {
-        this.schedulingDelay = schedulingDelay;
-    }
+    
+    // /**
+    //  * Check if this task has no child dependencies (is a leaf node).
+    //  */
+    // public boolean isLeafTask() {
+    //     return wfChildren.isEmpty();
+    // }
+    
+    // /**
+    //  * Propagate completion metrics to all child tasks.
+    //  * Called automatically when this task completes.
+    //  */
+    // private void propagateCompletionToChildren() {
+    //     for (ServiceTask child : wfChildren) {
+    //         child.incrementCompletedParentsDepth();
+    //     }
+    // }
+    
+    // /**
+    //  * Increment the completed parents depth metric.
+    //  * This is called by parent tasks when they complete.
+    //  */
+    // private void incrementCompletedParentsDepth() {
+    //     this.completedParentsDepth++;
+    // }
+    
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Getters for DAG Fields
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    // public Set<ServiceTask> getDagParents() {
+    //     return Collections.unmodifiableSet(wfParents);
+    // }
+    
+    // public Set<ServiceTask> getDagChildren() {
+    //     return Collections.unmodifiableSet(wfChildren);
+    // }
+    
+    // public int getCompletedParentsDepth() {
+    //     return completedParentsDepth;
+    // }
+    
+    // /**
+    //  * Get the number of parent tasks that have completed.
+    //  */
+    // public int getNumCompletedParents() {
+    //     int count = 0;
+    //     for (ServiceTask parent : wfParents) {
+    //         if (parent.getState() == TaskState.COMPLETED) {
+    //             count++;
+    //         }
+    //     }
+    //     return count;
+    // }
+    
+    // /**
+    //  * Get the total number of parent dependencies.
+    //  */
+    // public int getDagParentCount() {
+    //     return wfParents.size();
+    // }
+    
+    // /**
+    //  * Get the total number of child dependencies.
+    //  */
+    // public int getDagChildCount() {
+    //     return wfChildren.size();
+    // }
 }

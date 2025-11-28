@@ -29,6 +29,7 @@ import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
 import org.opendc.compute.simulator.scheduler.filters.VGpuFilter
 import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
+//import org.opendc.compute.simulator.scheduler.workflow.WorkflowScheduler
 import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.simulator.scheduler.weights.InstanceCountWeigher
 import org.opendc.compute.simulator.scheduler.weights.RamWeigher
@@ -53,7 +54,8 @@ public enum class ComputeSchedulerEnum {
     ProvisionedCpuGpuCores,
     ProvisionedCpuGpuCoresInv,
     GpuTaskMemorizing,
-    CarbonAware,
+//    WorkflowAware,
+//    CarbonAware,
 }
 
 public fun createPrefabComputeScheduler(
@@ -187,14 +189,20 @@ public fun createPrefabComputeScheduler(
                         RamFilter(ramAllocationRatio),
                     ),
             )
-        ComputeSchedulerEnum.CarbonAware ->
-        // For time being this works same as timeshift prefab scheduler
-            TimeshiftScheduler(
-                filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-                weighers = listOf(RamWeigher(multiplier = 1.0)),
-                windowSize = 168,
-                clock = clock,
-                random = SplittableRandom(seeder.nextLong()),
-            )
+        // ComputeSchedulerEnum.WorkflowAware->
+        //     WorkflowScheduler(
+        //         filters = listOf(VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+        //         weighers = listOf(RamWeigher(multiplier = 1.0)),
+        //         numHosts = numHosts,
+        //     )
+        // ComputeSchedulerEnum.CarbonAware ->
+        // // For time being this works same as timeshift prefab scheduler
+        //     TimeshiftScheduler(
+        //         filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+        //         weighers = listOf(RamWeigher(multiplier = 1.0)),
+        //         windowSize = 168,
+        //         clock = clock,
+        //         random = SplittableRandom(seeder.nextLong()),
+        //     )
     }
 }
