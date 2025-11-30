@@ -25,12 +25,14 @@ package org.opendc.compute.simulator.service;
 import java.time.Duration;
 import java.time.InstantSource;
 import java.util.ArrayDeque;
+import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -108,7 +110,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     /**
      * The tasks that should be launched by the service.
      */
-    private final Deque<SchedulingRequest> taskQueue = new ArrayDeque<>();
+    private final LinkedList<SchedulingRequest> taskQueue = new LinkedList<>();
 
     private final Map<Integer, SchedulingRequest> blockedTasks = new HashMap<>();
 
@@ -134,10 +136,19 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     private ComputeMetricReader metricReader;
 
+    // i dont know if the clock and the clock passed to scheduler is the same or not so
+    // i just store firstsubmitted at and calculate simulation offest in scheduler itself
+    public Long firstTaskSubmittedAt = null;
+
     /** 
      * Add a new task and track it
      */
     public void addNewTask(ServiceTask task) {
+
+        if(firstTaskSubmittedAt == null) {
+            firstTaskSubmittedAt = task.getSubmittedAt();
+        }
+
         final int taskId = task.getId();
         
         this.taskById.put(taskId, task);
@@ -573,9 +584,9 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      * Run a single scheduling iteration.
      */
     private void doSchedule() {
-        for (Iterator<SchedulingRequest> iterator = taskQueue.iterator();
+        for (ListIterator<SchedulingRequest> iterator = taskQueue.listIterator();
                 iterator.hasNext();
-                iterator = taskQueue.iterator()) {
+                iterator = taskQueue.listIterator()) {
 
             final SchedulingResult result = scheduler.select(iterator);
             if (result.getResultType() == SchedulingResultType.EMPTY) {

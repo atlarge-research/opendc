@@ -27,6 +27,7 @@ import kotlinx.serialization.Serializable
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.simulator.scheduler.FilterScheduler
+import org.opendc.compute.simulator.scheduler.WorkflowAwareScheduler
 import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
 import org.opendc.compute.simulator.scheduler.timeshift.MemorizingTimeshift
 import org.opendc.compute.simulator.scheduler.timeshift.TaskStopper
@@ -72,6 +73,17 @@ public data class TimeShiftAllocationPolicySpec(
     val memorize: Boolean = true,
 ) : AllocationPolicySpec
 
+@Serializable
+@SerialName("workflowAware")
+public data class WorkflowAwareAllocationPolicySpec(
+    val filters: List<HostFilterSpec> = listOf(ComputeFilterSpec()),
+    val weighers: List<HostWeigherSpec> = emptyList(),
+    val taskDeadlineScore: Boolean = true, // whether to include deadlines in task selection score or not
+    val weightUrgency: Double = 0.2,
+    val weightCriticalDependencyChain: Double = 0.2,
+    val subsetSize: Int = 1,
+) : AllocationPolicySpec
+
 public fun createComputeScheduler(
     spec: AllocationPolicySpec,
     seeder: RandomGenerator,
@@ -104,6 +116,14 @@ public fun createComputeScheduler(
                     spec.shortForecastThreshold, spec.longForecastThreshold, spec.forecastSize, seeder,
                 )
             }
+        }
+        is WorkflowAwareAllocationPolicySpec -> {
+            val filters = spec.filters.map { createHostFilter(it) }
+            val weighers = spec.weighers.map { createHostWeigher(it) }
+            WorkflowAwareScheduler(
+                filters, weighers, spec.taskDeadlineScore, spec.weightUrgency, 
+                spec.weightCriticalDependencyChain, clock, spec.subsetSize, seeder, numHosts
+            )
         }
     }
 }

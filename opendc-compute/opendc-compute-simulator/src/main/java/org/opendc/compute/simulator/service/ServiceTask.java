@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +47,17 @@ public class ServiceTask extends ServiceTaskBase {
     // Workflow DAG - specific fields
     private final Set<ServiceTask> wfParents = new HashSet<>();
     private final Set<ServiceTask> wfChildren = new HashSet<>();
-    // a field which tracks the dependecy depth of all its children
+
+    /**
+     * Tracks the maximum dependency chain length for each child task.
+     * 
+     * For a child C with value N:
+     * - N represents the longest path from C to any leaf in C's subtree
+     * - N = 1 + max(dependency chain lengths of C's children)
+     * - Leaf tasks have a dependency chain length of 0
+     */
+    private final Map<Integer, Integer> childDependencyChainLengths = new HashMap<>();
+
     // a workflow root identfying field so that we can quickly check if they are part of same dependecy chain somehow so that we can quickly assess the depth and select the required one
     
     /// //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,45 +92,35 @@ public class ServiceTask extends ServiceTaskBase {
     /// //////////////////////////////////////////////////////////////////////////////////////////////////
     /// Overridden Methods - preserve original behavior + add workflow dag logic
     /// //////////////////////////////////////////////////////////////////////////////////////////////////
+
     
-    // @Override
-    // void setState(TaskState newState) {
-    //     // Execute base class behavior first
-    //     super.setState(newState);
+    @Override
+    public ServiceTask copy() {
+        // Create a new ServiceTask with base class data
+        ServiceTask copy = new ServiceTask(
+            this.getId(),
+            this.getName(),
+            this.getSubmittedAt(),
+            this.getDuration(),
+            this.getCpuCoreCount(),
+            this.getCpuCapacity(),
+            this.getTotalCPULoad(),
+            this.getMemorySize(),
+            this.getGpuCoreCount(),
+            this.getGpuCapacity(),
+            this.getGpuMemorySize(),
+            this.getWorkload(),
+            this.getDeferrable(),
+            this.getDeadline(),
+            this.getParents() == null ? null : new ArrayList<>(this.getParents()),
+            this.getChildren() == null ? null : Set.copyOf(this.getChildren())
+        );
         
-    //     // Add DAG-specific logic
-    //     if (newState == TaskState.COMPLETED) {
-    //         propagateCompletionToChildren();
-    //     }
-    // }
-    
-    // @Override
-    // public ServiceTask copy() {
-    //     // Create a new ServiceTask with base class data
-    //     ServiceTask copy = new ServiceTask(
-    //         this.getId(),
-    //         this.getName(),
-    //         this.getSubmittedAt(),
-    //         this.getDuration(),
-    //         this.getCpuCoreCount(),
-    //         this.getCpuCapacity(),
-    //         this.getTotalCPULoad(),
-    //         this.getMemorySize(),
-    //         this.getGpuCoreCount(),
-    //         this.getGpuCapacity(),
-    //         this.getGpuMemorySize(),
-    //         this.getWorkload(),
-    //         this.getDeferrable(),
-    //         this.getDeadline(),
-    //         this.getParents() == null ? null : new ArrayList<>(this.getParents()),
-    //         this.getChildren() == null ? null : Set.copyOf(this.getChildren())
-    //     );
+        // to copy dag relationship or not?
+        // completedParentsDepth is initialized to 0 by default
         
-    //     // to copy dag relationship or not?
-    //     // completedParentsDepth is initialized to 0 by default
-        
-    //     return copy;
-    // }
+        return copy;
+    }
     
     // @Override
     // public boolean equals(Object o) {
@@ -137,9 +138,8 @@ public class ServiceTask extends ServiceTaskBase {
     public String toString() {
         return super.toString() + 
                "[wfParents=" + wfParents.size() + 
-               ",wfChildren=" + wfChildren.size() 
-               //",depth=" + completedParentsDepth + "]"
-               ;
+               ",wfChildren=" + wfChildren.size() +
+               ",maxDependencyChainLength=" + calcMaxDependencyChainLength() + "]";
     }
 
 
@@ -217,58 +217,38 @@ public class ServiceTask extends ServiceTaskBase {
         this.setState(TaskState.DELETED);
     }
 
+    /**
+     * maximum dependency chain length from this task
+    */
+    public int calcMaxDependencyChainLength() {
+        if (childDependencyChainLengths.isEmpty()) {
+            return 0;
+        }
+        return childDependencyChainLengths.values().stream().mapToInt(i -> i).max().getAsInt();
+    }
+
     
     /// //////////////////////////////////////////////////////////////////////////////////////////////////
     /// DAG-Specific Methods
     /// //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Connects parent-child dependencies between tasks in the list.
-     * establishing the workflow DAG by linking tasks based on their ID references.
-     * Doesnt handle if parent/child not in the list, i.e. they never arrrived 
-     * 
-     * @param tasks The list of tasks to connect
-     * @return The same list with dependencies established
-     */
-    // public static List<ServiceTask> connectDependencies(List<ServiceTask> tasks) {
-
-    //     Map<Integer, ServiceTask> taskMap = new HashMap<>();
-    //     for (ServiceTask task : tasks) {
-    //         taskMap.put(task.getId(), task);
-    //     }
+    private void updateDependencyChainUpwards(ServiceTask child) {
+        int prevMaxChainLength = this.calcMaxDependencyChainLength();
+        int newChainLength = child.calcMaxDependencyChainLength() + 1;
         
-    //     // Connect parents and children
-    //     for (ServiceTask task : tasks) {
-    //         // Connect parents
-    //         if (task.getParents() != null) {
-    //             for (Integer parentId : task.getParents()) {
-    //                 ServiceTask parentTask = taskMap.get(parentId);
-    //                 if (parentTask != null) {
-    //                     task.addWfParent(parentTask);
-    //                 } else {
-    //                     LOGGER.warn("Parent task with ID {} not found for task {}", 
-    //                                parentId, task.getId());
-    //                 }
-    //             }
-    //         }
+        Integer currentChainLength = childDependencyChainLengths.get(child.getId());
+        if (currentChainLength == null || currentChainLength != newChainLength) {
+            childDependencyChainLengths.put(child.getId(), newChainLength);
             
-    //         // Connect children
-    //         if (task.getChildren() != null) {
-    //             for (Integer childId : task.getChildren()) {
-    //                 ServiceTask childTask = taskMap.get(childId);
-    //                 if (childTask != null) {
-    //                     task.addWfChild(childTask);
-    //                 } else {
-    //                     LOGGER.warn("Child task with ID {} not found for task {}", 
-    //                                childId, task.getId());
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return tasks;
-    // }
+            if (this.calcMaxDependencyChainLength() != prevMaxChainLength) {
+                for (ServiceTask parent : wfParents) {
+                    parent.updateDependencyChainUpwards(this);
+                }
+            }
+        }
+    }
 
-    
+    // these two fns mostly unused.
     // public void addWfParent(ServiceTask parent) {
     //     this.wfParents.add(parent);
     // }
@@ -292,6 +272,9 @@ public class ServiceTask extends ServiceTaskBase {
     public void connectToParent(ServiceTask parent) {
         this.wfParents.add(parent);
         parent.wfChildren.add(this);
+
+        parent.childDependencyChainLengths.put(this.getId(), this.calcMaxDependencyChainLength() + 1);
+        parent.propagateDependencyToParents();
     }
     
     /**
@@ -301,6 +284,15 @@ public class ServiceTask extends ServiceTaskBase {
     public void connectToChild(ServiceTask child) {
         this.wfChildren.add(child);
         child.wfParents.add(this);
+
+        this.childDependencyChainLengths.put(child.getId(), child.calcMaxDependencyChainLength() + 1);
+        this.propagateDependencyToParents();
+    }
+
+    private void propagateDependencyToParents() {
+        for (ServiceTask parent : wfParents) {
+            parent.updateDependencyChainUpwards(this);
+        }
     }
 
     /**
@@ -346,64 +338,6 @@ public class ServiceTask extends ServiceTaskBase {
         System.out.println("===================================\n");
     }
     
-    // /**
-    //  * Add a parent dependency to this task.
-    //  * This creates a bidirectional relationship.
-    //  */
-    // public void addDagParent(ServiceTask parent) {
-    //     if (parent == null) {
-    //         LOGGER.warn("Attempted to add null parent to task {}", getId());
-    //         return;
-    //     }
-    //     wfParents.add(parent);
-    //     parent.wfChildren.add(this);
-    // }
-    
-    // /**
-    //  * Add a child dependency to this task.
-    //  * This creates a bidirectional relationship.
-    //  */
-    // public void addDagChild(ServiceTask child) {
-    //     if (child == null) {
-    //         LOGGER.warn("Attempted to add null child to task {}", getId());
-    //         return;
-    //     }
-    //     wfChildren.add(child);
-    //     child.wfParents.add(this);
-    // }
-    
-    // /**
-    //  * Remove a parent dependency from this task.
-    //  */
-    // public void removeDagParent(ServiceTask parent) {
-    //     if (parent != null) {
-    //         wfParents.remove(parent);
-    //         parent.wfChildren.remove(this);
-    //     }
-    // }
-    
-    // /**
-    //  * Remove a child dependency from this task.
-    //  */
-    // public void removeDagChild(ServiceTask child) {
-    //     if (child != null) {
-    //         wfChildren.remove(child);
-    //         child.wfParents.remove(this);
-    //     }
-    // }
-    
-    // /**
-    //  * Check if all parent tasks have completed execution.
-    //  */
-    // public boolean areParentsCompleted() {
-    //     for (ServiceTask parent : wfParents) {
-    //         if (parent.getState() != TaskState.COMPLETED) {
-    //             return false;
-    //         }
-    //     }
-    //     return true;
-    // }
-    
     /**
      * Check if this task has no parent dependencies (is a root node).
      */
@@ -411,71 +345,15 @@ public class ServiceTask extends ServiceTaskBase {
         return wfParents.isEmpty();
     }
     
-    // /**
-    //  * Check if this task has no child dependencies (is a leaf node).
-    //  */
-    // public boolean isLeafTask() {
-    //     return wfChildren.isEmpty();
-    // }
-    
-    // /**
-    //  * Propagate completion metrics to all child tasks.
-    //  * Called automatically when this task completes.
-    //  */
-    // private void propagateCompletionToChildren() {
-    //     for (ServiceTask child : wfChildren) {
-    //         child.incrementCompletedParentsDepth();
-    //     }
-    // }
-    
-    // /**
-    //  * Increment the completed parents depth metric.
-    //  * This is called by parent tasks when they complete.
-    //  */
-    // private void incrementCompletedParentsDepth() {
-    //     this.completedParentsDepth++;
-    // }
+    /**
+     * Check if this task has no child dependencies (is a leaf node).
+     */
+    public boolean isLeafTask() {
+        return wfChildren.isEmpty();
+    }
     
     /// //////////////////////////////////////////////////////////////////////////////////////////////////
     /// Getters for DAG Fields
     /// //////////////////////////////////////////////////////////////////////////////////////////////////
     
-    // public Set<ServiceTask> getDagParents() {
-    //     return Collections.unmodifiableSet(wfParents);
-    // }
-    
-    // public Set<ServiceTask> getDagChildren() {
-    //     return Collections.unmodifiableSet(wfChildren);
-    // }
-    
-    // public int getCompletedParentsDepth() {
-    //     return completedParentsDepth;
-    // }
-    
-    // /**
-    //  * Get the number of parent tasks that have completed.
-    //  */
-    // public int getNumCompletedParents() {
-    //     int count = 0;
-    //     for (ServiceTask parent : wfParents) {
-    //         if (parent.getState() == TaskState.COMPLETED) {
-    //             count++;
-    //         }
-    //     }
-    //     return count;
-    // }
-    
-    // /**
-    //  * Get the total number of parent dependencies.
-    //  */
-    // public int getDagParentCount() {
-    //     return wfParents.size();
-    // }
-    
-    // /**
-    //  * Get the total number of child dependencies.
-    //  */
-    // public int getDagChildCount() {
-    //     return wfChildren.size();
-    // }
 }

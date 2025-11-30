@@ -28,6 +28,8 @@ import org.opendc.compute.simulator.scheduler.weights.HostWeigher
 import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 import java.util.SplittableRandom
+import org.opendc.common.logger.errAndNull
+import org.opendc.common.logger.logger
 import java.util.random.RandomGenerator
 
 /**
@@ -42,7 +44,7 @@ import java.util.random.RandomGenerator
  * @param subsetSize The size of the subset of best hosts from which a target is randomly chosen.
  * @param random A [RandomGenerator] instance for selecting
  */
-public class FilterScheduler(
+public open class FilterScheduler(
     private val filters: List<HostFilter>,
     private val weighers: List<HostWeigher>,
     private val subsetSize: Int = 1,
@@ -125,18 +127,8 @@ public class FilterScheduler(
     }
 
     override fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult {
-        var req = iter.next()
-
-        while (req.isCancelled) {
-            iter.remove()
-            if (iter.hasNext()) {
-                req = iter.next()
-            } else {
-                // No tasks in queue
-                return SchedulingResult(SchedulingResultType.EMPTY)
-            }
-        }
-
+        val req = selectTask(iter) ?: return SchedulingResult(SchedulingResultType.EMPTY)
+        
         val task = req.task
 
         val fittingHosts = usedHosts.getFittingHosts(task)
@@ -199,9 +191,34 @@ public class FilterScheduler(
         return SchedulingResult(SchedulingResultType.SUCCESS, hostView, req)
     }
 
+
+    protected open fun selectTask(iter: MutableIterator<SchedulingRequest>): SchedulingRequest? {
+        if (!iter.hasNext()) {
+            return null
+        }
+        
+        var req = iter.next()
+
+        while (req.isCancelled) {
+            iter.remove()
+            if (iter.hasNext()) {
+                req = iter.next()
+            } else {
+                // No tasks in queue
+                return null
+            }
+        }
+        
+        return req
+    }
+
     override fun removeTask(
         task: ServiceTask,
         host: HostView?,
     ) {
+    }
+
+    private companion object {
+        val LOG by logger()
     }
 }
