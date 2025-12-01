@@ -32,17 +32,19 @@ import java.lang.ref.SoftReference
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
+// TODO NICO code in here is crap, copy paste of carbon, needs rewrite to read energy cost trace instead.
+
 /**
  * A helper class for loading compute workload traces into memory.
  *
  */
-public class DummyCarbonTraceLoader {
+public class EnergyCostTraceLoader {
     /**
      * The cache of workloads.
      */
     private val cache = ConcurrentHashMap<String, SoftReference<List<CarbonFragment>>>()
 
-    private val builder = DummyCarbonFragmentNewBuilder()
+    private val builder = EnergyCostFragmentNewBuilder()
 
     /**
      * Read the metadata into a workload.
@@ -92,7 +94,7 @@ public class DummyCarbonTraceLoader {
     /**
      * A builder for a VM trace.
      */
-    private class DummyCarbonFragmentNewBuilder {
+    private class EnergyCostFragmentNewBuilder {
         /**
          * The total load of the trace.
          */

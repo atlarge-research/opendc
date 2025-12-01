@@ -24,7 +24,7 @@ package org.opendc.compute.simulator.provisioner
 
 import org.opendc.common.ResourceType
 import org.opendc.compute.carbon.getCarbonFragments
-import org.opendc.compute.costmodel.dummyGetCarbonFragments
+import org.opendc.compute.costmodel.getEnergyCostFragments
 import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
@@ -88,6 +88,11 @@ public class HostsProvisioningStep internal constructor(
             }
 
             // TODO trying to see how the carbon model module ties into the code
+
+            val energyCostFragments = getEnergyCostFragments(cluster.powerSource.energyCostTracePath)
+
+            //TODO we have to register our model here I think, the one that actually does something with the above trace.
+
 //            val dummyCarbonFragments = dummyGetCarbonFragments(cluster.powerSource.carbonTracePath)
 //            var dummyCarbonModel: CarbonModel? = null
 //            // Create Carbon Model

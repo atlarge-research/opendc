@@ -27,6 +27,7 @@ import org.apache.parquet.schema.LogicalTypeAnnotation
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32 // test int
 import org.apache.parquet.schema.Types
 import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReader
 import org.opendc.trace.util.parquet.exporter.ExportColumn
@@ -92,6 +93,11 @@ public object DfltCostModelExportColumns {
         ExportColumn(
             field = Types.required(FLOAT).named("carbon_emission"),
         ) { it.carbonEmission }
+
+    public val TEST_INT: ExportColumn<CostModelTableReader> =
+        ExportColumn(
+            field = Types.required(INT32).named("test_int"),
+        ) { it.testInt }
 
     /**
      * The columns that are always included in the output file.

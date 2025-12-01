@@ -52,6 +52,7 @@ public class CostModelTableReaderImpl(
         _energyUsage = table.energyUsage
         _carbonIntensity = table.carbonIntensity
         _carbonEmission = table.carbonEmission
+        _testInt = table.testInt
     }
 
     public override val costModelInfo: CostModelInfo =
@@ -92,6 +93,10 @@ public class CostModelTableReaderImpl(
     private var _carbonEmission = 0.0
     private var previousCarbonEmission = 0.0
 
+    override val testInt: Int
+        get() = _testInt
+    private var _testInt: Int = 0
+
     /**
      * Record the next cycle.
      */
@@ -106,6 +111,8 @@ public class CostModelTableReaderImpl(
         _energyUsage = powerSource.energyUsage
         _carbonIntensity = powerSource.carbonIntensity
         _carbonEmission = powerSource.carbonEmission
+
+        _testInt = 0
     }
 
     /**
@@ -120,5 +127,7 @@ public class CostModelTableReaderImpl(
         _energyUsage = 0.0
         _carbonIntensity = 0.0
         _carbonEmission = 0.0
+
+        _testInt = 0
     }
 }

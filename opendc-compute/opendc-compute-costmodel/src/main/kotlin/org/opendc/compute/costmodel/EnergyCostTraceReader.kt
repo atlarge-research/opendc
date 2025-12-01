@@ -31,21 +31,21 @@ import javax.management.InvalidAttributeValueException
 /**
  * Construct a workload from a trace.
  */
-public fun dummyGetCarbonFragments(pathToFile: String?): List<CarbonFragment>? {
+public fun getEnergyCostFragments(pathToFile: String?): List<CarbonFragment>? {
     if (pathToFile == null) {
         return null
     }
 
-    return dummyGetCarbonFragments(File(pathToFile))
+    return getEnergyCostFragments(File(pathToFile))
 }
 
 /**
  * Construct a workload from a trace.
  */
-public fun dummyGetCarbonFragments(file: File): List<CarbonFragment> {
+public fun getEnergyCostFragments(file: File): List<CarbonFragment> {
     if (!file.exists()) {
-        throw InvalidAttributeValueException("The carbon trace cannot be found")
+        throw InvalidAttributeValueException("The energy price cost trace can not be found")
     }
 
-    return DummyCarbonTraceLoader().get(file)
+    return EnergyCostTraceLoader().get(file)
 }

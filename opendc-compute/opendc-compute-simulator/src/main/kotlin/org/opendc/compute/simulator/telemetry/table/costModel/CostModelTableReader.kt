@@ -73,4 +73,9 @@ public interface CostModelTableReader : Exportable {
      * The current carbon emission since the last deadline in g.
      */
     public val carbonEmission: Double
+
+    /*
+     * trying to extend the interface
+     */
+    public val testInt: Int
 }
