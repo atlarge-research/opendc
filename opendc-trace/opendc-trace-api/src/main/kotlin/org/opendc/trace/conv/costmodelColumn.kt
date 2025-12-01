@@ -20,31 +20,18 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
+@file:JvmName("costColumns")
 
 package org.opendc.trace.conv
 
-/**
- * A table containing all tasks in a workload.
- */
-public const val TABLE_TASKS: String = "tasks"
+// ADD SOME RELEVENT STUFF WE ACTUALLY WANT, just trying to get errors from the compiler and solve them in retrospect
 
 /**
- * A table containing all resource states in a workload.
+ * A column containing the timestamp of the carbon intensity measurement.
  */
-public const val TABLE_FRAGMENTS: String = "fragments"
+public const val DUMMY_CARBON_TIMESTAMP: String = "timestamp"
 
 /**
- * A table containing the carbon intensities of the region
+ * A column containing the intensity of the carbon when sampled.
  */
-public const val TABLE_CARBON: String = "carbon"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-public const val TABLE_FAILURES: String = "failures"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-public const val TABLE_COSTMODEL: String = "costModel"
+public const val DUMMY_CARBON_INTENSITY: String = "carbon_intensity"

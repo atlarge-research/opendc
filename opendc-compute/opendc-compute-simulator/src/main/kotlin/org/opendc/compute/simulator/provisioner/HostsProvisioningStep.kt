@@ -24,6 +24,7 @@ package org.opendc.compute.simulator.provisioner
 
 import org.opendc.common.ResourceType
 import org.opendc.compute.carbon.getCarbonFragments
+import org.opendc.compute.costmodel.dummyGetCarbonFragments
 import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
@@ -85,6 +86,17 @@ public class HostsProvisioningStep internal constructor(
                 carbonModel.addReceiver(simPowerSource)
                 ctx.registry.register(serviceDomain, CarbonModel::class.java, carbonModel)
             }
+
+            // TODO trying to see how the carbon model module ties into the code
+//            val dummyCarbonFragments = dummyGetCarbonFragments(cluster.powerSource.carbonTracePath)
+//            var dummyCarbonModel: CarbonModel? = null
+//            // Create Carbon Model
+//            if (dummyCarbonFragments != null) {
+//                dummyCarbonModel = CarbonModel(engine, dummyCarbonFragments, startTime)
+//                dummyCarbonModel.addReceiver(simPowerSource)
+//                ctx.registry.register(serviceDomain, CarbonModel::class.java, dummyCarbonModel)
+//            }
+            // todo this doesnt work, double registers CarbonModel and crashes when running
 
             if (cluster.battery != null) {
                 // Create Battery Distributor

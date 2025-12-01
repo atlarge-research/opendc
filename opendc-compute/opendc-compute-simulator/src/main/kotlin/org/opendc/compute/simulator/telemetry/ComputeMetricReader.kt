@@ -37,6 +37,7 @@ import org.opendc.compute.simulator.telemetry.table.host.HostTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReaderImpl
+import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReaderImpl
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.SimBattery
 import java.time.Duration
@@ -63,6 +64,7 @@ public class ComputeMetricReader(
             OutputFiles.POWER_SOURCE to true,
             OutputFiles.BATTERY to true,
             OutputFiles.SERVICE to true,
+            OutputFiles.COSTMODEL to true,
         ),
     private val printFrequency: Int? = null,
 ) : AutoCloseable {
@@ -100,6 +102,11 @@ public class ComputeMetricReader(
      * Mapping from [SimPowerSource] instances to [PowerSourceTableReaderImpl]
      */
     private val batteryTableReaders = mutableMapOf<SimBattery, BatteryTableReaderImpl>()
+
+    /**
+     * Mapping from [SimPowerSource] instances to [CostModelTableReaderImpl]
+     */
+    private val costModelTableReaders = mutableMapOf<SimPowerSource, CostModelTableReaderImpl>()
 
     /**
      * The background job that is responsible for collecting the metrics every cycle.
@@ -197,6 +204,22 @@ public class ComputeMetricReader(
             if (toMonitor[OutputFiles.SERVICE] == true) {
                 this.serviceTableReader.record(now)
                 this.monitor.record(this.serviceTableReader.copy())
+            }
+
+            if (toMonitor[OutputFiles.COSTMODEL] == true) {
+                for (simPowerSource in this.service.powerSources) {
+                    val reader =
+                        this.costModelTableReaders.computeIfAbsent(simPowerSource) {
+                            CostModelTableReaderImpl(
+                                it,
+                                startTime,
+                            )
+                        }
+
+                    reader.record(now)
+                    this.monitor.record(reader.copy())
+                    reader.reset()
+                }
             }
 
             if (printFrequency != null && loggCounter % printFrequency == 0) {

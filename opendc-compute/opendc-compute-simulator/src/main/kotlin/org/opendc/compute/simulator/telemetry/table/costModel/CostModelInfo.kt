@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,31 +20,11 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
+package org.opendc.compute.simulator.telemetry.table.costModel
 
-package org.opendc.trace.conv
-
-/**
- * A table containing all tasks in a workload.
- */
-public const val TABLE_TASKS: String = "tasks"
-
-/**
- * A table containing all resource states in a workload.
- */
-public const val TABLE_FRAGMENTS: String = "fragments"
-
-/**
- * A table containing the carbon intensities of the region
- */
-public const val TABLE_CARBON: String = "carbon"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-public const val TABLE_FAILURES: String = "failures"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-public const val TABLE_COSTMODEL: String = "costModel"
+public data class CostModelInfo(
+    val name: String,
+    val clusterName: String,
+    val arch: String,
+    val capacity: Double,
+)

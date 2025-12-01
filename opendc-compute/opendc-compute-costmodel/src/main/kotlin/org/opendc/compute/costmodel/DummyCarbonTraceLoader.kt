@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.carbon
+package org.opendc.compute.costmodel
 
 import org.opendc.simulator.compute.power.CarbonFragment
 import org.opendc.trace.Trace
@@ -36,13 +36,13 @@ import java.util.concurrent.ConcurrentHashMap
  * A helper class for loading compute workload traces into memory.
  *
  */
-public class    CarbonTraceLoader {
+public class DummyCarbonTraceLoader {
     /**
      * The cache of workloads.
      */
     private val cache = ConcurrentHashMap<String, SoftReference<List<CarbonFragment>>>()
 
-    private val builder = CarbonFragmentNewBuilder()
+    private val builder = DummyCarbonFragmentNewBuilder()
 
     /**
      * Read the metadata into a workload.
@@ -92,7 +92,7 @@ public class    CarbonTraceLoader {
     /**
      * A builder for a VM trace.
      */
-    private class CarbonFragmentNewBuilder {
+    private class DummyCarbonFragmentNewBuilder {
         /**
          * The total load of the trace.
          */
