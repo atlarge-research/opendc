@@ -20,18 +20,20 @@
  * SOFTWARE.
  */
 
-@file:JvmName("costColumns")
+@file:JvmName("CostModelColumns")
 
 package org.opendc.trace.conv
 
-// ADD SOME RELEVENT STUFF WE ACTUALLY WANT, just trying to get errors from the compiler and solve them in retrospect
+/**
+ * TODO ADD HERE THE COLUMNS WE WANT FROM THE TRACE, we then read it in  {@link EnergyCostTraceLoader}
+*/
 
 /**
  * A column containing the timestamp of the carbon intensity measurement.
  */
-public const val DUMMY_CARBON_TIMESTAMP: String = "timestamp"
+public const val ENERGY_PRICE_TIMESTAMP: String = "timestamp"
 
 /**
  * A column containing the intensity of the carbon when sampled.
  */
-public const val DUMMY_CARBON_INTENSITY: String = "carbon_intensity"
+public const val ENERGY_PRICE_COST: String = "price_per_kwh"

@@ -38,6 +38,7 @@ import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTable
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReaderImpl
+import org.opendc.simulator.compute.costmodel.CostModel
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.SimBattery
 import java.time.Duration
@@ -104,9 +105,9 @@ public class ComputeMetricReader(
     private val batteryTableReaders = mutableMapOf<SimBattery, BatteryTableReaderImpl>()
 
     /**
-     * Mapping from [SimPowerSource] instances to [CostModelTableReaderImpl]
+     * Mapping from [CostModel] instances to [CostModelTableReaderImpl]
      */
-    private val costModelTableReaders = mutableMapOf<SimPowerSource, CostModelTableReaderImpl>()
+    private val costModelTableReaders = mutableMapOf<CostModel, CostModelTableReaderImpl>()
 
     /**
      * The background job that is responsible for collecting the metrics every cycle.
@@ -172,7 +173,7 @@ public class ComputeMetricReader(
             if (toMonitor[OutputFiles.POWER_SOURCE] == true) {
                 for (simPowerSource in this.service.powerSources) {
                     val reader =
-                        this.powerSourceTableReaders.computeIfAbsent(simPowerSource) {
+                        this.powerSourceTableReaders.computeIfAbsent(simPowerSource) { it ->
                             PowerSourceTableReaderImpl(
                                 it,
                                 startTime,
@@ -207,9 +208,9 @@ public class ComputeMetricReader(
             }
 
             if (toMonitor[OutputFiles.COSTMODEL] == true) {
-                for (simPowerSource in this.service.powerSources) {
+                for (costModel in this.service.costModels) {
                     val reader =
-                        this.costModelTableReaders.computeIfAbsent(simPowerSource) {
+                        this.costModelTableReaders.computeIfAbsent(costModel) { it ->
                             CostModelTableReaderImpl(
                                 it,
                                 startTime,

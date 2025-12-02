@@ -47,4 +47,5 @@ public const val TABLE_FAILURES: String = "failures"
 /**
  * A table containing failures that can be injected during simulation.
  */
-public const val TABLE_COSTMODEL: String = "costModel"
+
+public const val TABLE_COSTMODEL: String = "costmodel"

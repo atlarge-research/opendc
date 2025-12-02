@@ -30,6 +30,7 @@ import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.createSimBatteryPolicy
+import org.opendc.simulator.compute.costmodel.CostModel
 import org.opendc.simulator.compute.power.CarbonModel
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
@@ -58,6 +59,7 @@ public class HostsProvisioningStep internal constructor(
             ) { "Compute service $serviceDomain does not exist" }
         val simHosts = mutableSetOf<SimHost>()
         val simPowerSources = mutableListOf<SimPowerSource>()
+        val simCostModels = mutableListOf<CostModel>()
 
         val engine = FlowEngine.create(ctx.dispatcher)
 
@@ -87,21 +89,23 @@ public class HostsProvisioningStep internal constructor(
                 ctx.registry.register(serviceDomain, CarbonModel::class.java, carbonModel)
             }
 
-            // TODO trying to see how the carbon model module ties into the code
+            /** TODO add a costmodel
+             * right now im trying to do it similar to simPowerSource,
+             * im just trying stuff and it might make more sense to register it similarly as the carbon model
+             * but I expect that for the cost model we will do more then just match a price to
+             * energy consumed, which would make it more complex then the carbon model I believe.
+             * I dont think we consume or supply anything so Im not sure we have anything to do with those
+             * concepts, but we have to be able to read out the energy consumed by the cluster,
+             * for this we might have to link ourselves to the simPowerSource, similarly for stuff like hardware
+             * degrading costs and such we might have to read stuff from the simHosts part.
+             * If so we are a "reciever" i believe
+            */
 
             val energyCostFragments = getEnergyCostFragments(cluster.powerSource.energyCostTracePath)
 
-            //TODO we have to register our model here I think, the one that actually does something with the above trace.
-
-//            val dummyCarbonFragments = dummyGetCarbonFragments(cluster.powerSource.carbonTracePath)
-//            var dummyCarbonModel: CarbonModel? = null
-//            // Create Carbon Model
-//            if (dummyCarbonFragments != null) {
-//                dummyCarbonModel = CarbonModel(engine, dummyCarbonFragments, startTime)
-//                dummyCarbonModel.addReceiver(simPowerSource)
-//                ctx.registry.register(serviceDomain, CarbonModel::class.java, dummyCarbonModel)
-//            }
-            // todo this doesnt work, double registers CarbonModel and crashes when running
+            val costModel = CostModel(engine, energyCostFragments, startTime);
+            simCostModels.add(costModel)
+            service.addCostModel(costModel)
 
             if (cluster.battery != null) {
                 // Create Battery Distributor
@@ -178,6 +182,11 @@ public class HostsProvisioningStep internal constructor(
             for (simPowerSource in simPowerSources) {
                 simPowerSource.close()
             }
+
+            for (costModel in simCostModels) {
+                costModel.close()
+            }
         }
     }
 }
+

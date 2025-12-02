@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.telemetry.table.costModel
 
-import org.opendc.simulator.compute.power.SimPowerSource
+import org.opendc.simulator.compute.costmodel.CostModel
 import java.time.Duration
 import java.time.Instant
 
@@ -30,13 +30,13 @@ import java.time.Instant
  * An aggregator for task metrics before they are reported.
  */
 public class CostModelTableReaderImpl(
-    private val powerSource: SimPowerSource,
+    private val costModel: CostModel,
     private val startTime: Duration = Duration.ofMillis(0),
 ) : CostModelTableReader {
     override fun copy(): CostModelTableReader {
         val newCostModelTable =
             CostModelTableReaderImpl(
-                powerSource,
+                costModel,
             )
         newCostModelTable.setValues(this)
 
@@ -46,21 +46,12 @@ public class CostModelTableReaderImpl(
     override fun setValues(table: CostModelTableReader) {
         _timestamp = table.timestamp
         _timestampAbsolute = table.timestampAbsolute
-
-        _hostsConnected = table.hostsConnected
-        _powerDraw = table.powerDraw
-        _energyUsage = table.energyUsage
-        _carbonIntensity = table.carbonIntensity
-        _carbonEmission = table.carbonEmission
-        _testInt = table.testInt
+        _test = table.test
     }
 
     public override val costModelInfo: CostModelInfo =
         CostModelInfo(
-            powerSource.name,
-            powerSource.clusterName,
-            "XXX",
-            powerSource.capacity,
+            costModel.test,
         )
 
     private var _timestamp = Instant.MIN
@@ -71,31 +62,10 @@ public class CostModelTableReaderImpl(
     override val timestampAbsolute: Instant
         get() = _timestampAbsolute
 
-    override val hostsConnected: Int
-        get() = _hostsConnected
-    private var _hostsConnected: Int = 0
+    private var _test: Double = 0.0
+    override val test: Double
+        get() = _test
 
-    override val powerDraw: Double
-        get() = _powerDraw
-    private var _powerDraw = 0.0
-
-    override val energyUsage: Double
-        get() = _energyUsage - previousEnergyUsage
-    private var _energyUsage = 0.0
-    private var previousEnergyUsage = 0.0
-
-    override val carbonIntensity: Double
-        get() = _carbonIntensity
-    private var _carbonIntensity = 0.0
-
-    override val carbonEmission: Double
-        get() = _carbonEmission - previousCarbonEmission
-    private var _carbonEmission = 0.0
-    private var previousCarbonEmission = 0.0
-
-    override val testInt: Int
-        get() = _testInt
-    private var _testInt: Int = 0
 
     /**
      * Record the next cycle.
@@ -104,30 +74,14 @@ public class CostModelTableReaderImpl(
         _timestamp = now
         _timestampAbsolute = now + startTime
 
-        _hostsConnected = 0
-
-        powerSource.updateCounters()
-        _powerDraw = powerSource.powerDraw
-        _energyUsage = powerSource.energyUsage
-        _carbonIntensity = powerSource.carbonIntensity
-        _carbonEmission = powerSource.carbonEmission
-
-        _testInt = 0
+        costModel.updateCounters()
+        _test = costModel.test
     }
 
     /**
      * Finish the aggregation for this cycle.
      */
     override fun reset() {
-        previousEnergyUsage = _energyUsage
-        previousCarbonEmission = _carbonEmission
-
-        _hostsConnected = 0
-        _powerDraw = 0.0
-        _energyUsage = 0.0
-        _carbonIntensity = 0.0
-        _carbonEmission = 0.0
-
-        _testInt = 0
+        _test = 0.0
     }
 }

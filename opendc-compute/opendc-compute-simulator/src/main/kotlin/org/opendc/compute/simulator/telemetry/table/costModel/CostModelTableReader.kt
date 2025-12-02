@@ -49,33 +49,8 @@ public interface CostModelTableReader : Exportable {
      */
     public val timestampAbsolute: Instant
 
-    /**
-     * The number of connected hosts
-     */
-    public val hostsConnected: Int
+    public val test: Double
 
-    /**
-     * The current power draw of the host in W.
-     */
-    public val powerDraw: Double
-
-    /**
-     * The total energy consumption of the host since last sample in J.
-     */
-    public val energyUsage: Double
-
-    /**
-     * The current carbon intensity of the host in gCO2 / kW.
-     */
-    public val carbonIntensity: Double
-
-    /**
-     * The current carbon emission since the last deadline in g.
-     */
-    public val carbonEmission: Double
-
-    /*
-     * trying to extend the interface
-     */
-    public val testInt: Int
 }
+
+

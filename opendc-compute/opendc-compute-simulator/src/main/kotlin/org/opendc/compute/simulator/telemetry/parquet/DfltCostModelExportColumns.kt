@@ -24,6 +24,7 @@ package org.opendc.compute.simulator.telemetry.parquet
 
 import org.apache.parquet.io.api.Binary
 import org.apache.parquet.schema.LogicalTypeAnnotation
+import org.apache.parquet.schema.PrimitiveType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
@@ -58,55 +59,18 @@ public object DfltCostModelExportColumns {
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
-    public val SOURCE_NAME: ExportColumn<CostModelTableReader> =
+    public val TEST: ExportColumn<CostModelTableReader> =
         ExportColumn(
-            field =
-                Types.required(BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("source_name"),
-        ) { Binary.fromString(it.costModelInfo.name) }
-
-    public val CLUSTER_NAME: ExportColumn<CostModelTableReader> =
-        ExportColumn(
-            field =
-                Types.required(BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("cluster_name"),
-        ) { Binary.fromString(it.costModelInfo.clusterName) }
-
-    public val POWER_DRAW: ExportColumn<CostModelTableReader> =
-        ExportColumn(
-            field = Types.required(FLOAT).named("power_draw"),
-        ) { it.powerDraw }
-
-    public val ENERGY_USAGE: ExportColumn<CostModelTableReader> =
-        ExportColumn(
-            field = Types.required(FLOAT).named("energy_usage"),
-        ) { it.energyUsage }
-
-    public val CARBON_INTENSITY: ExportColumn<CostModelTableReader> =
-        ExportColumn(
-            field = Types.required(FLOAT).named("carbon_intensity"),
-        ) { it.carbonIntensity }
-
-    public val CARBON_EMISSION: ExportColumn<CostModelTableReader> =
-        ExportColumn(
-            field = Types.required(FLOAT).named("carbon_emission"),
-        ) { it.carbonEmission }
-
-    public val TEST_INT: ExportColumn<CostModelTableReader> =
-        ExportColumn(
-            field = Types.required(INT32).named("test_int"),
-        ) { it.testInt }
+            field = Types.required(FLOAT).named("test"),
+        ) { it.test}
 
     /**
      * The columns that are always included in the output file.
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
-            SOURCE_NAME,
-            CLUSTER_NAME,
             TIMESTAMP,
             TIMESTAMP_ABS,
+            TEST
         )
 }

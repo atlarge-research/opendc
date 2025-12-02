@@ -24,14 +24,14 @@
 
 package org.opendc.compute.costmodel
 
-import org.opendc.simulator.compute.power.CarbonFragment
+import org.opendc.simulator.compute.costmodel.EnergyCostFragment
 import java.io.File
 import javax.management.InvalidAttributeValueException
 
 /**
  * Construct a workload from a trace.
  */
-public fun getEnergyCostFragments(pathToFile: String?): List<CarbonFragment>? {
+public fun getEnergyCostFragments(pathToFile: String?): List<EnergyCostFragment>? {
     if (pathToFile == null) {
         return null
     }
@@ -42,7 +42,7 @@ public fun getEnergyCostFragments(pathToFile: String?): List<CarbonFragment>? {
 /**
  * Construct a workload from a trace.
  */
-public fun getEnergyCostFragments(file: File): List<CarbonFragment> {
+public fun getEnergyCostFragments(file: File): List<EnergyCostFragment> {
     if (!file.exists()) {
         throw InvalidAttributeValueException("The energy price cost trace can not be found")
     }
