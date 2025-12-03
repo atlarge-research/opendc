@@ -1,5 +1,6 @@
 package org.opendc.simulator.compute.costmodel;
 
+import org.opendc.simulator.compute.power.SimPowerSource;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
@@ -16,17 +17,20 @@ import java.util.Map;
     "FieldMayBeFinal",
     "FieldCanBeLocal"
 }) // STFU WHILE TYPE THANK YOU
-public class CostModel extends FlowNode {
+public class CostModel extends FlowNode implements PowerReceiver { //implements PowerReceiver
 
     private final long startTime; // The absolute timestamp on which the workload started
 
     //TODO test var
     private double test = 0f;
     private double energyCostPerKWH = 0f;
+    private double energyConsumed = 0f;
 
     private final List<EnergyCostFragment> fragments;
     private int fragment_index;
     private EnergyCostFragment current_fragment;
+
+    private SimPowerSource simPowerSource = null;
 
     public CostModel(FlowEngine engine, List<EnergyCostFragment> energyCostFragmentsList, long startTime) {
         super(engine);
@@ -39,6 +43,10 @@ public class CostModel extends FlowNode {
     }
 
     public void close() {
+        if (this.simPowerSource != null) {
+            this.simPowerSource.close();
+        }
+
         this.closeNode();
     }
 
@@ -124,5 +132,20 @@ public class CostModel extends FlowNode {
     @Override
     public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
         return Map.of();
+    }
+
+    @Override
+    public void updatePowerData(double energyConsumed) {
+        this.energyConsumed = energyConsumed;
+    }
+
+    @Override
+    public void setPowerSource(SimPowerSource powerSource) {
+        this.simPowerSource = powerSource;
+    }
+
+    @Override
+    public void removePowerSource(SimPowerSource powerSource) {
+        this.simPowerSource = null;
     }
 }
