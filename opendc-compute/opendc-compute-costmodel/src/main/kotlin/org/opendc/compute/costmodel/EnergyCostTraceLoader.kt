@@ -54,9 +54,9 @@ public class EnergyCostTraceLoader {
     @Suppress("UNREACHABLE_CODE", "UNUSED_PARAMETER")
     private fun parseEnergy(trace: Trace): List<EnergyCostFragment> {
         //TODO TEMPORARILY MAKING A SINGLE ENTITY LIST WITH A FRAGMENT THAT SPANS ALL TIME WITH RANDOM PRICE
-        return listOf(EnergyCostFragment(0,
-                            Long.MAX_VALUE,
-                            0.018124))
+//        return listOf(EnergyCostFragment(0,
+//                            Long.MAX_VALUE,
+//                            0.018124))
 
 
         // TODO we need to implement a reader for our trace format, once more carbon is an excellent starting point here
@@ -91,7 +91,7 @@ public class EnergyCostTraceLoader {
      * Load the Carbon Trace at the given path.
      */
     public fun get(pathToFile: File): List<EnergyCostFragment> {
-        val trace = Trace.open(pathToFile, "carbon")
+        val trace = Trace.open(pathToFile, "costmodel")
 
         return parseEnergy(trace)
     }
