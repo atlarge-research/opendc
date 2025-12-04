@@ -68,22 +68,12 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
     public long onUpdate(long now) {
         long absolute_time = getAbsoluteTime(now);
 
-        //TODO JUST like in carbon model we need to fin the correct fragment, im testing with a singular fragment
-        // spanning all of time that can be represented in a long, so there is no need yet
+        if ((absolute_time < current_fragment.getStartTime()) || (absolute_time >= current_fragment.getEndTime())) {
+            this.findCorrectFragment(absolute_time);
 
-        // TODO FIgure out if this is a reasonable way of sending the energy cost towards output
-        updateEnergyCostPerKWH(current_fragment.getEnergyPrice());
+            updateEnergyCostPerKWH(current_fragment.getEnergyPrice());
+        }
 
-        // Check if the current fragment is still the correct fragment,
-        // Otherwise, find the correct fragment.
-//        if ((absolute_time < current_fragment.getStartTime()) || (absolute_time >= current_fragment.getEndTime())) {
-//            this.findCorrectFragment(absolute_time);
-//
-//            pushCarbonIntensity(current_fragment.getCarbonIntensity());
-//        }
-
-        //We make the simulator aware of our fragments timeline, so that we are called at the end of each fragment and
-        //can update our own bookkeeping based on the current state of the simulator
         return getRelativeTime(current_fragment.getEndTime());
     }
 
@@ -114,6 +104,19 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
 //            receiver.updateEnergyCost(carbonIntensity);
 //        }
 //    }
+
+    private void findCorrectFragment(long absoluteTime) {
+
+        // Traverse to the previous fragment, until you reach the correct fragment
+        while (absoluteTime < this.current_fragment.getStartTime()) {
+            this.current_fragment = fragments.get(--this.fragment_index);
+        }
+
+        // Traverse to the next fragment, until you reach the correct fragment
+        while (absoluteTime >= this.current_fragment.getEndTime()) {
+            this.current_fragment = fragments.get(++this.fragment_index);
+        }
+    }
 
     public void updateEnergyCostPerKWH(double energyPricePerKWH) {
         this.updateCounters();

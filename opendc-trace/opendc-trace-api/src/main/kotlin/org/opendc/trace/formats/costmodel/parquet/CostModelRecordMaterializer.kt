@@ -56,7 +56,7 @@ internal class CostModelRecordMaterializer(schema: MessageType) : RecordMaterial
                                     localTimestamp = Instant.ofEpochMilli(value)
                                 }
                             }
-                        "energy_price_kwh" ->
+                        "price_per_kwh" ->
                             object : PrimitiveConverter() {
                                 override fun addDouble(value: Double) {
                                     localEnergyCostPerKWH = value

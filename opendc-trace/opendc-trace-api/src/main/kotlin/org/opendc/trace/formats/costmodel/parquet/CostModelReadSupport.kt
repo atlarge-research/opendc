@@ -43,7 +43,7 @@ internal class CostModelReadSupport(private val projection: List<String>?) : Rea
     private val colMap =
         mapOf(
             ENERGY_PRICE_TIMESTAMP to "timestamp",
-            ENERGY_PRICE_COST to "energy_price_kwh",
+            ENERGY_PRICE_COST to "price_per_kwh",
         )
 
     override fun init(context: InitContext): ReadContext {

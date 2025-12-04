@@ -36,7 +36,7 @@ private val COST_MODEL_SCHEMA_v1: MessageType =
                 .named("timestamp"),
             Types
                 .optional(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                .named("energy_price_kwh"),
+                .named("price_per_kwh"),
         )
         .named("cost_model_energy_price_kwh_fragment")
 

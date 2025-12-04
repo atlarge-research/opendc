@@ -35,9 +35,7 @@ import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.parquet.LocalParquetReader
 import java.nio.file.Path
 
-/**
- * A [TraceFormat] implementation for the Carbon Intensity trace.
- */
+
 public class CostModelTraceFormat : TraceFormat {
     override val name: String = "price_per_kwh"
 
