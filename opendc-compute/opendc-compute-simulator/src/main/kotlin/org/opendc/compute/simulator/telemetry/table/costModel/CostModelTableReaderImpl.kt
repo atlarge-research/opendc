@@ -46,12 +46,12 @@ public class CostModelTableReaderImpl(
     override fun setValues(table: CostModelTableReader) {
         _timestamp = table.timestamp
         _timestampAbsolute = table.timestampAbsolute
-        _test = table.test
+        _energyCost = table.energyCost
     }
 
     public override val costModelInfo: CostModelInfo =
         CostModelInfo(
-            costModel.test,
+            costModel.energyCost
         )
 
     private var _timestamp = Instant.MIN
@@ -62,9 +62,11 @@ public class CostModelTableReaderImpl(
     override val timestampAbsolute: Instant
         get() = _timestampAbsolute
 
-    private var _test: Double = 0.0
-    override val test: Double
-        get() = _test
+
+    override val energyCost: Double
+        get() = _energyCost - previousEnergyCost
+    private var _energyCost = 0.0
+    private var previousEnergyCost = 0.0
 
 
     /**
@@ -75,13 +77,15 @@ public class CostModelTableReaderImpl(
         _timestampAbsolute = now + startTime
 
         costModel.updateCounters()
-        _test = costModel.test
+        _energyCost = costModel.energyCost
     }
 
     /**
      * Finish the aggregation for this cycle.
      */
     override fun reset() {
-        _test = 0.0
+        previousEnergyCost = _energyCost
+        _energyCost = 0.0
+
     }
 }

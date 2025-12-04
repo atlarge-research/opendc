@@ -59,10 +59,10 @@ public object DfltCostModelExportColumns {
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
-    public val TEST: ExportColumn<CostModelTableReader> =
+    public val ENERGY_COST: ExportColumn<CostModelTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("test"),
-        ) { it.test}
+            field = Types.required(FLOAT).named("energy_cost"),
+        ) { it.energyCost}
 
     /**
      * The columns that are always included in the output file.
@@ -71,6 +71,6 @@ public object DfltCostModelExportColumns {
         setOf(
             TIMESTAMP,
             TIMESTAMP_ABS,
-            TEST
+            ENERGY_COST
         )
 }

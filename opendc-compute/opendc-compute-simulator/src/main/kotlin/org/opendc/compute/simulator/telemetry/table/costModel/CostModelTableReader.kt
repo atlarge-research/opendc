@@ -49,7 +49,7 @@ public interface CostModelTableReader : Exportable {
      */
     public val timestampAbsolute: Instant
 
-    public val test: Double
+    public val energyCost: Double
 
 }
 

@@ -25,6 +25,7 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
     private double test = 0f;
     private double energyCostPerKWH = 0f;
     private double energyConsumed = 0f;
+    private double energyCost = 0f;
 
     private final List<EnergyCostFragment> fragments;
     private int fragment_index;
@@ -58,8 +59,8 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
         return energyCostPerKWH;
     }
 
-    public double getTest() {
-        return test;
+    public double getEnergyCost() {
+        return energyCost;
     }
 
 
@@ -71,7 +72,7 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
         // spanning all of time that can be represented in a long, so there is no need yet
 
         // TODO FIgure out if this is a reasonable way of sending the energy cost towards output
-        updateEnergyCost(current_fragment.getEnergyPrice());
+        updateEnergyCostPerKWH(current_fragment.getEnergyPrice());
 
         // Check if the current fragment is still the correct fragment,
         // Otherwise, find the correct fragment.
@@ -96,7 +97,14 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
          * say we have X cost per Month, we can work out the elapsed time, and use
          * that to get the correct fraction of that cost relative to the elapsed time.
          */
+
+
+        simPowerSource.updateCounters();
+        energyCost = (energyCostPerKWH / 3600000) * energyConsumed;
+
         test = (test + 1) % 100; // TODO bogus
+
+        // ensure update on classes that supply us
 
     }
 
@@ -107,7 +115,7 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
 //        }
 //    }
 
-    public void updateEnergyCost(double energyPricePerKWH) {
+    public void updateEnergyCostPerKWH(double energyPricePerKWH) {
         this.updateCounters();
         this.energyCostPerKWH = energyPricePerKWH;
     }
