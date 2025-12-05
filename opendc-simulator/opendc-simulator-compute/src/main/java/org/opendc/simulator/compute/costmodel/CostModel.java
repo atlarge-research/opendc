@@ -21,7 +21,6 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
 
     private final long startTime; // The absolute timestamp on which the workload started
 
-    //TODO test var
     private double test = 0f;
     private double energyCostPerKWH = 0f;
     private double energyConsumed = 0f;
