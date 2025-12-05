@@ -274,6 +274,7 @@ public data class PowerSourceJSONSpec(
     val name: String = "PowerSource",
     val maxPower: Long = Long.MAX_VALUE,
     val carbonTracePath: String? = null,
+    val energyCostTracePath: String? = null,
 ) {
     public companion object {
         public val DFLT: PowerSourceJSONSpec =

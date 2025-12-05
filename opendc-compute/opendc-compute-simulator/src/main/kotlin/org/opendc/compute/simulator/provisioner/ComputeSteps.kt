@@ -67,6 +67,7 @@ public fun registerComputeMonitor(
             OutputFiles.SERVICE to true,
             OutputFiles.POWER_SOURCE to true,
             OutputFiles.BATTERY to true,
+            OutputFiles.COSTMODEL to true,
         ),
     printFrequency: Int? = null,
 ): ProvisioningStep {

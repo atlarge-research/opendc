@@ -27,6 +27,7 @@ import org.opendc.trace.TableWriter
 import org.opendc.trace.formats.carbon.CarbonTraceFormat
 import org.opendc.trace.formats.failure.FailureTraceFormat
 import org.opendc.trace.formats.workload.WorkloadTraceFormat
+import org.opendc.trace.formats.costmodel.CostModelTraceFormat
 import java.nio.file.Path
 import java.util.ServiceLoader
 
@@ -119,6 +120,7 @@ public interface TraceFormat {
                 "carbon" -> CarbonTraceFormat()
                 "failure" -> FailureTraceFormat()
                 "workload" -> WorkloadTraceFormat()
+                "costmodel" -> CostModelTraceFormat()
                 else -> null
             }
         }

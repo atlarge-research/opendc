@@ -20,32 +20,14 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
+package org.opendc.trace.formats.costmodel.parquet
 
-package org.opendc.trace.conv
-
-/**
- * A table containing all tasks in a workload.
- */
-public const val TABLE_TASKS: String = "tasks"
+import java.time.Instant
 
 /**
- * A table containing all resource states in a workload.
+ * A task in the Workflow Trace Format.
  */
-public const val TABLE_FRAGMENTS: String = "fragments"
-
-/**
- * A table containing the carbon intensities of the region
- */
-public const val TABLE_CARBON: String = "carbon"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-public const val TABLE_FAILURES: String = "failures"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-
-public const val TABLE_COSTMODEL: String = "costmodel"
+internal data class CostModelFragment(
+    val timestamp: Instant,
+    val energyPricePerKWH: Double,
+)

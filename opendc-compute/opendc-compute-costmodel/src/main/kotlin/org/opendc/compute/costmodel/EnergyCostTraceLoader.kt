@@ -20,45 +20,59 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.carbon
+package org.opendc.compute.costmodel
 
-import org.opendc.simulator.compute.power.CarbonFragment
+import org.opendc.simulator.compute.costmodel.EnergyCostFragment
 import org.opendc.trace.Trace
-import org.opendc.trace.conv.CARBON_INTENSITY
-import org.opendc.trace.conv.CARBON_TIMESTAMP
-import org.opendc.trace.conv.TABLE_CARBON
+import org.opendc.trace.conv.ENERGY_PRICE_COST
+import org.opendc.trace.conv.ENERGY_PRICE_TIMESTAMP
+import org.opendc.trace.conv.TABLE_COSTMODEL
 import java.io.File
 import java.lang.ref.SoftReference
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
+// TODO NICO code in here is crap, copy paste of carbon, needs rewrite to read energy cost trace instead.
+// Similarity to reading a carbon trace is high so I left the code in, but it needs to be at least renamed
+//  and possibly slightly rewritten to read an energy cost trace
+
 /**
  * A helper class for loading compute workload traces into memory.
  *
  */
-public class    CarbonTraceLoader {
+public class EnergyCostTraceLoader {
     /**
      * The cache of workloads.
      */
-    private val cache = ConcurrentHashMap<String, SoftReference<List<CarbonFragment>>>()
+    private val cache = ConcurrentHashMap<String, SoftReference<List<EnergyCostFragment>>>()
 
-    private val builder = CarbonFragmentNewBuilder()
+    private val builder = EnergyCostFragmentNewBuilder()
 
     /**
      * Read the metadata into a workload.
      */
-    private fun parseCarbon(trace: Trace): List<CarbonFragment> {
-        val reader = checkNotNull(trace.getTable(TABLE_CARBON)).newReader()
+    @Suppress("UNREACHABLE_CODE", "UNUSED_PARAMETER")
+    private fun parseEnergy(trace: Trace): List<EnergyCostFragment> {
+        //TODO TEMPORARILY MAKING A SINGLE ENTITY LIST WITH A FRAGMENT THAT SPANS ALL TIME WITH RANDOM PRICE
+//        return listOf(EnergyCostFragment(0,
+//                            Long.MAX_VALUE,
+//                            0.018124))
 
-        val startTimeCol = reader.resolve(CARBON_TIMESTAMP)
-        val carbonIntensityCol = reader.resolve(CARBON_INTENSITY)
+
+        // TODO we need to implement a reader for our trace format, once more carbon is an excellent starting point here
+        // opendc-trace/opendc-trace-api/src/main/kotlin/org/opendc/trace/formats/carbon
+        // I haven't gotten to it yet, its gna be a bunch  of copy paste boiler plate and should be straightforward
+        val reader = checkNotNull(trace.getTable(TABLE_COSTMODEL)).newReader()
+
+        val startTimeCol = reader.resolve(ENERGY_PRICE_TIMESTAMP)
+        val energyPriceCol = reader.resolve(ENERGY_PRICE_COST)
 
         try {
             while (reader.nextRow()) {
                 val startTime = reader.getInstant(startTimeCol)!!
-                val carbonIntensity = reader.getDouble(carbonIntensityCol)
+                val energyPriceCost = reader.getDouble(energyPriceCol)
 
-                builder.add(startTime, carbonIntensity)
+                builder.add(startTime, energyPriceCost)
             }
 
             // Make sure the virtual machines are ordered by start time
@@ -76,10 +90,10 @@ public class    CarbonTraceLoader {
     /**
      * Load the Carbon Trace at the given path.
      */
-    public fun get(pathToFile: File): List<CarbonFragment> {
-        val trace = Trace.open(pathToFile, "carbon")
+    public fun get(pathToFile: File): List<EnergyCostFragment> {
+        val trace = Trace.open(pathToFile, "costmodel")
 
-        return parseCarbon(trace)
+        return parseEnergy(trace)
     }
 
     /**
@@ -92,27 +106,27 @@ public class    CarbonTraceLoader {
     /**
      * A builder for a VM trace.
      */
-    private class CarbonFragmentNewBuilder {
+    private class EnergyCostFragmentNewBuilder {
         /**
          * The total load of the trace.
          */
-        val fragments: MutableList<CarbonFragment> = mutableListOf()
+        val fragments: MutableList<EnergyCostFragment> = mutableListOf()
 
         /**
          * Add a fragment to the trace.
          *
          * @param startTime Timestamp at which the fragment starts (in epoch millis).
-         * @param carbonIntensity The carbon intensity during this fragment
+         * @param energyPriceCost the price per kwh
          */
         fun add(
             startTime: Instant,
-            carbonIntensity: Double,
+            energyPriceCost: Double,
         ) {
             fragments.add(
-                CarbonFragment(
+                EnergyCostFragment(
                     startTime.toEpochMilli(),
                     Long.MAX_VALUE,
-                    carbonIntensity,
+                    energyPriceCost,
                 ),
             )
         }

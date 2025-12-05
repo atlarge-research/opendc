@@ -134,6 +134,7 @@ private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
             createUniqueName(this.powerSource.name, powerSourceNames),
             totalPower = this.powerSource.maxPower,
             carbonTracePath = this.powerSource.carbonTracePath,
+            energyCostTracePath = this.powerSource.energyCostTracePath,
         )
 
     var batterySpec: BatteryJSONSpec? = null

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,18 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
+description = "OpenDC Compute Service implementation"
 
-package org.opendc.trace.conv
+// Build configuration
+plugins {
+    `kotlin-library-conventions`
+}
 
-/**
- * A table containing all tasks in a workload.
- */
-public const val TABLE_TASKS: String = "tasks"
+dependencies {
+    api(projects.opendcCompute.opendcComputeApi)
+    implementation(projects.opendcCommon)
+    implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))
+    implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-compute")))
 
-/**
- * A table containing all resource states in a workload.
- */
-public const val TABLE_FRAGMENTS: String = "fragments"
-
-/**
- * A table containing the carbon intensities of the region
- */
-public const val TABLE_CARBON: String = "carbon"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-public const val TABLE_FAILURES: String = "failures"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-
-public const val TABLE_COSTMODEL: String = "costmodel"
+    implementation(libs.kotlin.logging)
+}

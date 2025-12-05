@@ -40,6 +40,7 @@ import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
+import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReader
 import org.opendc.trace.util.parquet.exporter.ColListSerializer
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 import org.opendc.trace.util.parquet.exporter.Exportable
@@ -53,6 +54,7 @@ import org.opendc.trace.util.parquet.exporter.columnSerializer
  * @param[taskExportColumns]   the columns that will be included in the `task.parquet` raw output file.
  * @param[powerSourceExportColumns]  the columns that will be included in the `power.parquet` raw output file.
  * @param[serviceExportColumns]  the columns that will be included in the `service.parquet` raw output file.
+ * @param[costModelExportColumns]  the columns that will be included in the `costmodel.parquet` raw output file.
  */
 @Serializable(with = ComputeExportConfig.Companion.ComputeExportConfigSerializer::class)
 public data class ComputeExportConfig(
@@ -61,6 +63,7 @@ public data class ComputeExportConfig(
     public val powerSourceExportColumns: Set<ExportColumn<PowerSourceTableReader>>,
     public val batteryExportColumns: Set<ExportColumn<BatteryTableReader>>,
     public val serviceExportColumns: Set<ExportColumn<ServiceTableReader>>,
+    public val costModelExportColumns: Set<ExportColumn<CostModelTableReader>>,
 ) {
     public constructor(
         hostExportColumns: Collection<ExportColumn<HostTableReader>>,
@@ -68,12 +71,14 @@ public data class ComputeExportConfig(
         powerSourceExportColumns: Collection<ExportColumn<PowerSourceTableReader>>,
         batteryExportColumns: Collection<ExportColumn<BatteryTableReader>>,
         serviceExportColumns: Collection<ExportColumn<ServiceTableReader>>,
+        costModelExportColumns: Collection<ExportColumn<CostModelTableReader>>,
     ) : this(
         hostExportColumns.toSet() + DfltHostExportColumns.BASE_EXPORT_COLUMNS,
         taskExportColumns.toSet() + DfltTaskExportColumns.BASE_EXPORT_COLUMNS,
         powerSourceExportColumns.toSet() + DfltPowerSourceExportColumns.BASE_EXPORT_COLUMNS,
         batteryExportColumns.toSet() + DfltBatteryExportColumns.BASE_EXPORT_COLUMNS,
         serviceExportColumns.toSet() + DfltServiceExportColumns.BASE_EXPORT_COLUMNS,
+        costModelExportColumns.toSet() + DfltCostModelExportColumns.BASE_EXPORT_COLUMNS,
     )
 
     /**
@@ -87,6 +92,7 @@ public data class ComputeExportConfig(
         | Power Source columns : ${powerSourceExportColumns.map { it.name }.toString().trim('[', ']')}
         | Power Source columns : ${batteryExportColumns.map { it.name }.toString().trim('[', ']')}
         | Service columns : ${serviceExportColumns.map { it.name }.toString().trim('[', ']')}
+        | CostModel columns : ${costModelExportColumns.map { it.name }.toString().trim('[', ']')}
         """.trimIndent()
 
     public companion object {
@@ -102,12 +108,13 @@ public data class ComputeExportConfig(
             DfltPowerSourceExportColumns
             DfltBatteryExportColumns
             DfltServiceExportColumns
+            DfltCostModelExportColumns
         }
 
         /**
          * Config that includes all columns defined in [DfltHostExportColumns], [DfltTaskExportColumns],
          * [DfltPowerSourceExportColumns], [DfltBatteryExportColumns], [DfltServiceExportColumns] among all other loaded
-         * columns for [HostTableReader], [TaskTableReader] and [ServiceTableReader].
+         * columns for [HostTableReader], [TaskTableReader], [ServiceTableReader] and [CostModelTableReader].
          */
         public val ALL_COLUMNS: ComputeExportConfig by lazy {
             loadDfltColumns()
@@ -117,6 +124,7 @@ public data class ComputeExportConfig(
                 powerSourceExportColumns = ExportColumn.getAllLoadedColumns(),
                 batteryExportColumns = ExportColumn.getAllLoadedColumns(),
                 serviceExportColumns = ExportColumn.getAllLoadedColumns(),
+                costModelExportColumns = ExportColumn.getAllLoadedColumns(),
             )
         }
 
@@ -148,6 +156,10 @@ public data class ComputeExportConfig(
                         "serviceExportColumns",
                         ListSerializer(columnSerializer<ServiceTableReader>()).descriptor,
                     )
+                    element(
+                        "costModelTableColumns",
+                        ListSerializer(columnSerializer<CostModelTableReader>()).descriptor,
+                    )
                 }
 
             override fun deserialize(decoder: Decoder): ComputeExportConfig {
@@ -166,6 +178,7 @@ public data class ComputeExportConfig(
                 val powerSourceFields: List<ExportColumn<PowerSourceTableReader>> = elem["powerSourceExportColumns"].toFieldList()
                 val batteryFields: List<ExportColumn<BatteryTableReader>> = elem["batteryExportColumns"].toFieldList()
                 val serviceFields: List<ExportColumn<ServiceTableReader>> = elem["serviceExportColumns"].toFieldList()
+                val costModelFields: List<ExportColumn<CostModelTableReader>> = elem["costModelTableColumns"].toFieldList()
 
                 return ComputeExportConfig(
                     hostExportColumns = hostFields,
@@ -173,6 +186,7 @@ public data class ComputeExportConfig(
                     powerSourceExportColumns = powerSourceFields,
                     batteryExportColumns = batteryFields,
                     serviceExportColumns = serviceFields,
+                    costModelExportColumns = costModelFields,
                 )
             }
 
@@ -210,6 +224,12 @@ public data class ComputeExportConfig(
                         4,
                         ColListSerializer(columnSerializer<ServiceTableReader>()),
                         value.serviceExportColumns.toList(),
+                    )
+                    encodeSerializableElement(
+                        descriptor,
+                        5,
+                        ColListSerializer(columnSerializer<CostModelTableReader>()),
+                        value.costModelExportColumns.toList(),
                     )
                 }
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,37 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
+package org.opendc.compute.simulator.telemetry.table.costModel
 
-package org.opendc.trace.conv
-
-/**
- * A table containing all tasks in a workload.
- */
-public const val TABLE_TASKS: String = "tasks"
+import org.opendc.trace.util.parquet.exporter.Exportable
+import java.time.Instant
 
 /**
- * A table containing all resource states in a workload.
+ * An interface that is used to read a row of a host trace entry.
  */
-public const val TABLE_FRAGMENTS: String = "fragments"
+public interface CostModelTableReader : Exportable {
+    public fun copy(): CostModelTableReader
 
-/**
- * A table containing the carbon intensities of the region
- */
-public const val TABLE_CARBON: String = "carbon"
+    public fun setValues(table: CostModelTableReader)
 
-/**
- * A table containing failures that can be injected during simulation.
- */
-public const val TABLE_FAILURES: String = "failures"
+    public fun record(now: Instant)
 
-/**
- * A table containing failures that can be injected during simulation.
- */
+    public fun reset()
 
-public const val TABLE_COSTMODEL: String = "costmodel"
+    public val costModelInfo: CostModelInfo
+
+    /**
+     * The timestamp of the current entry of the reader relative to the start of the workload.
+     */
+    public val timestamp: Instant
+
+    /**
+     * The timestamp of the current entry of the reader.
+     */
+    public val timestampAbsolute: Instant
+
+    public val energyCost: Double
+
+}
+
+

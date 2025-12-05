@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,24 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
+package org.opendc.trace.formats.costmodel.parquet
 
-package org.opendc.trace.conv
+import org.apache.parquet.schema.LogicalTypeAnnotation
+import org.apache.parquet.schema.MessageType
+import org.apache.parquet.schema.PrimitiveType
+import org.apache.parquet.schema.Types
 
-/**
- * A table containing all tasks in a workload.
- */
-public const val TABLE_TASKS: String = "tasks"
+private val COST_MODEL_SCHEMA_v1: MessageType =
+    Types.buildMessage()
+        .addFields(
+            Types
+                .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                .named("timestamp"),
+            Types
+                .optional(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                .named("price_per_kwh"),
+        )
+        .named("cost_model_energy_price_kwh_fragment")
 
-/**
- * A table containing all resource states in a workload.
- */
-public const val TABLE_FRAGMENTS: String = "fragments"
-
-/**
- * A table containing the carbon intensities of the region
- */
-public const val TABLE_CARBON: String = "carbon"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-public const val TABLE_FAILURES: String = "failures"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-
-public const val TABLE_COSTMODEL: String = "costmodel"
+public val COST_MODEL_SCHEMA: MessageType = COST_MODEL_SCHEMA_v1

@@ -20,32 +20,20 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
+@file:JvmName("CostModelColumns")
 
 package org.opendc.trace.conv
 
 /**
- * A table containing all tasks in a workload.
- */
-public const val TABLE_TASKS: String = "tasks"
+ * TODO ADD HERE THE COLUMNS WE WANT FROM THE TRACE, we then read it in  {@link EnergyCostTraceLoader}
+*/
 
 /**
- * A table containing all resource states in a workload.
+ * A column containing the timestamp of the carbon intensity measurement.
  */
-public const val TABLE_FRAGMENTS: String = "fragments"
+public const val ENERGY_PRICE_TIMESTAMP: String = "timestamp"
 
 /**
- * A table containing the carbon intensities of the region
+ * A column containing the intensity of the carbon when sampled.
  */
-public const val TABLE_CARBON: String = "carbon"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-public const val TABLE_FAILURES: String = "failures"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-
-public const val TABLE_COSTMODEL: String = "costmodel"
+public const val ENERGY_PRICE_COST: String = "price_per_kwh"

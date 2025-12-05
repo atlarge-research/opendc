@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,32 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
+@file:JvmName("ComputeWorkloadsNew")
 
-package org.opendc.trace.conv
+package org.opendc.compute.costmodel
 
-/**
- * A table containing all tasks in a workload.
- */
-public const val TABLE_TASKS: String = "tasks"
-
-/**
- * A table containing all resource states in a workload.
- */
-public const val TABLE_FRAGMENTS: String = "fragments"
+import org.opendc.simulator.compute.costmodel.EnergyCostFragment
+import java.io.File
+import javax.management.InvalidAttributeValueException
 
 /**
- * A table containing the carbon intensities of the region
+ * Construct a workload from a trace.
  */
-public const val TABLE_CARBON: String = "carbon"
+public fun getEnergyCostFragments(pathToFile: String?): List<EnergyCostFragment>? {
+    if (pathToFile == null) {
+        return null
+    }
+
+    return getEnergyCostFragments(File(pathToFile))
+}
 
 /**
- * A table containing failures that can be injected during simulation.
+ * Construct a workload from a trace.
  */
-public const val TABLE_FAILURES: String = "failures"
+public fun getEnergyCostFragments(file: File): List<EnergyCostFragment> {
+    if (!file.exists()) {
+        throw InvalidAttributeValueException("The energy price cost trace can not be found")
+    }
 
-/**
- * A table containing failures that can be injected during simulation.
- */
-
-public const val TABLE_COSTMODEL: String = "costmodel"
+    return EnergyCostTraceLoader().get(file)
+}

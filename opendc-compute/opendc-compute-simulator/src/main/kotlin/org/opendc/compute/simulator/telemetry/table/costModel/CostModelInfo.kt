@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,8 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
-
-package org.opendc.trace.conv
-
-/**
- * A table containing all tasks in a workload.
- */
-public const val TABLE_TASKS: String = "tasks"
-
-/**
- * A table containing all resource states in a workload.
- */
-public const val TABLE_FRAGMENTS: String = "fragments"
-
-/**
- * A table containing the carbon intensities of the region
- */
-public const val TABLE_CARBON: String = "carbon"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-public const val TABLE_FAILURES: String = "failures"
-
-/**
- * A table containing failures that can be injected during simulation.
- */
-
-public const val TABLE_COSTMODEL: String = "costmodel"
+package org.opendc.compute.simulator.telemetry.table.costModel
+// TODO orignally copied over from powersourceinfo, not sure yet how this ties into the rest or if its needed
+public data class CostModelInfo(
+    val energyCost: Double,
+)

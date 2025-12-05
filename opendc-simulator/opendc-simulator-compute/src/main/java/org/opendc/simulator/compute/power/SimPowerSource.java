@@ -22,9 +22,12 @@
 
 package org.opendc.simulator.compute.power;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.opendc.common.ResourceType;
+import org.opendc.common.units.Power;
+import org.opendc.simulator.compute.costmodel.PowerReceiver;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -35,6 +38,9 @@ import org.opendc.simulator.engine.graph.FlowSupplier;
  * A {@link SimPsu} implementation that estimates the power consumption based on CPU usage.
  */
 public final class SimPowerSource extends FlowNode implements FlowSupplier, CarbonReceiver {
+
+    private final ArrayList<PowerReceiver> receivers = new ArrayList<>();
+
     private long lastUpdate;
 
     private double powerDemand = 0.0f;
@@ -73,6 +79,12 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
      */
     public double getPowerDemand() {
         return this.powerDemand;
+    }
+
+    public void addReceiver(PowerReceiver receiver) {
+        this.receivers.add(receiver);
+        receiver.setPowerSource(this);
+        receiver.updatePowerData(this.getEnergyUsage());
     }
 
     /**
@@ -130,6 +142,12 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
             this.carbonModel.close();
         }
 
+        for (PowerReceiver receiver : receivers) {
+            receiver.removePowerSource(this);
+        }
+
+        receivers.clear();
+
         this.closeNode();
     }
 
@@ -160,6 +178,10 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
             // Compute the energy usage of the machine
             this.totalEnergyUsage += energyUsage;
             this.totalCarbonEmission += this.carbonIntensity * (energyUsage / 3600000.0);
+
+            for (PowerReceiver receiver : this.receivers) {
+                receiver.updatePowerData(totalEnergyUsage);
+            }
         }
     }
 

@@ -39,6 +39,7 @@ dependencies {
     api(libs.microprofile.config)
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-costmodel")))
 
     implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))
     implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-parquet")))
