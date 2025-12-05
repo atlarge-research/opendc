@@ -178,10 +178,10 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
             // Compute the energy usage of the machine
             this.totalEnergyUsage += energyUsage;
             this.totalCarbonEmission += this.carbonIntensity * (energyUsage / 3600000.0);
-        }
 
-        for (PowerReceiver receiver : this.receivers) {
-            receiver.updatePowerData(totalEnergyUsage);
+            for (PowerReceiver receiver : this.receivers) {
+                receiver.updatePowerData(totalEnergyUsage);
+            }
         }
     }
 

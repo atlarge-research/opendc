@@ -68,7 +68,6 @@ public class CostModelTableReaderImpl(
     private var _energyCost = 0.0
     private var previousEnergyCost = 0.0
 
-
     /**
      * Record the next cycle.
      */

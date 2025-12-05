@@ -1,5 +1,7 @@
 package org.opendc.simulator.compute.costmodel;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.opendc.simulator.compute.power.SimPowerSource;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -17,12 +19,15 @@ import java.util.Map;
     "FieldMayBeFinal",
     "FieldCanBeLocal"
 }) // STFU WHILE TYPE THANK YOU
-public class CostModel extends FlowNode implements PowerReceiver { //implements PowerReceiver
+public class CostModel extends FlowNode implements PowerReceiver {
+    private static final Logger log = LogManager.getLogger(CostModel.class); //implements PowerReceiver
 
     private final long startTime; // The absolute timestamp on which the workload started
+    private long lastUpdate;
 
     private double test = 0f;
     private double energyCostPerKWH = 0f;
+    private double energyConsumedAccounted = 0f;
     private double energyConsumed = 0f;
     private double energyCost = 0f;
 
@@ -37,6 +42,7 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
 
         this.startTime = startTime;
         this.fragments = energyCostFragmentsList;
+        this.lastUpdate = this.clock.millis();
 
         this.fragment_index = 0;
         this.current_fragment = this.fragments.get(this.fragment_index);
@@ -59,7 +65,7 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
     }
 
     public double getEnergyCost() {
-        return energyCost;
+        return this.energyCost;
     }
 
 
@@ -67,11 +73,14 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
     public long onUpdate(long now) {
         long absolute_time = getAbsoluteTime(now);
 
+        updateEnergyCost();
+
         if ((absolute_time < current_fragment.getStartTime()) || (absolute_time >= current_fragment.getEndTime())) {
             this.findCorrectFragment(absolute_time);
-
             updateEnergyCostPerKWH(current_fragment.getEnergyPrice());
         }
+
+
 
         return getRelativeTime(current_fragment.getEndTime());
     }
@@ -86,14 +95,15 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
          * say we have X cost per Month, we can work out the elapsed time, and use
          * that to get the correct fraction of that cost relative to the elapsed time.
          */
+        long lastUpdate = this.lastUpdate;
+        this.lastUpdate = now;
 
+        long passedTime = now - lastUpdate;
+        if (passedTime > 0) {
+            simPowerSource.updateCounters(now);
 
-        simPowerSource.updateCounters();
-        energyCost = (energyCostPerKWH / 3600000) * energyConsumed;
-
-        test = (test + 1) % 100; // TODO bogus
-
-        // ensure update on classes that supply us
+            updateEnergyCost();
+        }
 
     }
 
@@ -103,6 +113,14 @@ public class CostModel extends FlowNode implements PowerReceiver { //implements 
 //            receiver.updateEnergyCost(carbonIntensity);
 //        }
 //    }
+
+    private void updateEnergyCost(){
+        if (this.energyConsumed > this.energyConsumedAccounted) {
+            double energyConsumedUnAccounted = this.energyConsumed - this.energyConsumedAccounted;
+            this.energyCost += energyConsumedUnAccounted*this.energyCostPerKWH/3600000;
+            this.energyConsumedAccounted += energyConsumedUnAccounted;
+        }
+    }
 
     private void findCorrectFragment(long absoluteTime) {
 
