@@ -80,10 +80,14 @@ public data class TimeShiftAllocationPolicySpec(
 public data class WorkflowAwareAllocationPolicySpec(
     val filters: List<HostFilterSpec> = listOf(ComputeFilterSpec()),
     val weighers: List<HostWeigherSpec> = emptyList(),
-    val taskDeadlineScore: Boolean = true, // whether to include deadlines in task selection score or not
+    val enableDeadlineScore: Boolean = true, // whether to include deadlines in task selection score or not
     val weightUrgency: Double = 0.2,
     val weightCriticalDependencyChain: Double = 0.2,
+    val enableParallelismScore: Boolean = false,
+    val weightParallelism: Double = 0.0,
+    val parallelismDecayRate: Double = 0.15,
     val subsetSize: Int = 1,
+    val taskLookaheadThreshold = 1000,
 ) : AllocationPolicySpec
 
 @Serializable
@@ -155,8 +159,10 @@ public fun createComputeScheduler(
             val filters = spec.filters.map { createHostFilter(it) }
             val weighers = spec.weighers.map { createHostWeigher(it) }
             WorkflowAwareScheduler(
-                filters, weighers, spec.taskDeadlineScore, spec.weightUrgency,
-                spec.weightCriticalDependencyChain, clock, spec.subsetSize, seeder, numHosts
+                filters, weighers, spec.enableDeadlineScore, spec.weightUrgency, 
+                spec.weightCriticalDependencyChain, spec.enableParallelismScore, 
+                spec.weightParallelism, spec.parallelismDecayRate, clock, 
+                spec.subsetSize, seeder, numHosts, spec.taskLookaheadThreshold
             )
         }
         is CarbonAwareWorkflowAllocationPolicySpec -> {

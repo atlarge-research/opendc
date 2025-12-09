@@ -248,6 +248,38 @@ public class ServiceTask extends ServiceTaskBase {
         }
     }
 
+    public double calculateParallelismScore(double decayRate) {
+        // Small epsilon to prevent infinite recursion for very small contributions
+        return calculateParallelismScore(decayRate, 0, 1e-6);
+    }
+
+    private double calculateParallelismScore(double decayRate, int depth, double epsilon) {
+        
+        // Calculate decay factor for current depth
+        double decayFactor = Math.exp(-decayRate * depth);
+        
+        // Base case if contribution is too small, stop recursion
+        if (decayFactor < epsilon) {
+            return 0.0;
+        }
+        
+        // Score = outdegree - indegree
+        double currentScore = (wfChildren.size() - wfParents.size()) * decayFactor;
+        
+        // If no children, just return current score
+        if (wfChildren.isEmpty()) {
+            return currentScore;
+        }
+        
+        // Recursively calculate children's scores
+        double childrenScore = 0.0;
+        for (ServiceTask child : wfChildren) {
+            childrenScore += child.calculateParallelismScore(decayRate, depth + 1, epsilon);
+        }
+        
+        return currentScore + childrenScore;
+    }
+
     // these two fns mostly unused.
     // public void addWfParent(ServiceTask parent) {
     //     this.wfParents.add(parent);

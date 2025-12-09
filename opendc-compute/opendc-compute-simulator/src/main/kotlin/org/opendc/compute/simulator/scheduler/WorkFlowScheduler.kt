@@ -13,9 +13,12 @@ import org.opendc.common.logger.logger
 public class WorkflowAwareScheduler(
     filters: List<HostFilter>,
     weighers: List<HostWeigher>,
-    private val taskDeadlineScore: Boolean,
+    private val enableDeadlineScore: Boolean,
     private val weightUrgency: Double = 0.2,
     private val weightCriticalDependencyChain: Double = 0.2,
+    private val enableParallelismScore: Boolean = false,
+    private val weightParallelism: Double = 0.0,
+    private val parallelismDecayRate: Double = 0.15,
     private val clock: InstantSource,
     subsetSize: Int = 1,
     random: RandomGenerator = SplittableRandom(0),
@@ -34,13 +37,13 @@ public class WorkflowAwareScheduler(
         val currentTime = clock.millis()
 
         var simulationOffsetCurrentTime: Long? = null
-        
         val listIter = iter as ListIterator<SchedulingRequest>
         
-        // Take a snapshot of current tasks (optional debugging/inspection)
-        val snapshot = mutableListOf<SchedulingRequest>()
+        // Count ready tasks
+        var readyCount = 0
         while (listIter.hasNext()) {
-            snapshot.add(listIter.next())
+            val req = listIter.next()
+            if (!req.isCancelled) readyCount++
         }
         while (listIter.hasPrevious()) listIter.previous()
     
@@ -63,7 +66,7 @@ public class WorkflowAwareScheduler(
             if (req.isCancelled) continue  // Skip cancelled tasks
     
             // Calculate task priority score
-            val score = calculatePriorityScore(req, simulationOffsetCurrentTime!!)
+            val score = calculatePriorityScore(req, simulationOffsetCurrentTime!!, readyCount)
     
             // Track the task with the highest score
             if (score > highestPriorityScore) {
@@ -90,22 +93,41 @@ public class WorkflowAwareScheduler(
         return selected
     }
     
-    private fun calculatePriorityScore(req: SchedulingRequest, currentTime: Long): Double {
+    private fun calculatePriorityScore(req: SchedulingRequest, currentTime: Long, readyCount: Int): Double {
         val task = req.task
     
         // Compute urgency score based on task deadline
-        var urgencyScore = 0.0
-        if (this.taskDeadlineScore) {
-            val slack = task.deadline - currentTime
-            urgencyScore = if (slack != 0L) 1.0 / slack.toDouble() else Double.MAX_VALUE
-        }
+        val urgencyScore =
+            if (this.enableDeadlineScore) {
+                val slack = task.deadline - currentTime
+
+                if (slack < 0L) {
+                    // TODO: how to prioritze among overdue tasks
+                    Double.MAX_VALUE // 1_000_000.0 + (1.0 / abs(slack.toDouble()))
+                } else if (slack > 0L) {
+                    1.0 / slack.toDouble()
+                } else {
+                    Double.MAX_VALUE
+                }
+            } else {
+                0.0
+            }
     
         // Compute chain score based on critical dependency chain length
         val chainLength = task.calcMaxDependencyChainLength()
         val chainScore = chainLength.toDouble()
+
+        // Enable parallelism scoring only when the ready pool is small
+        val parallelismScore =
+        if (this.enableParallelismScore && readyCount < this.taskLookaheadThreshold)
+            task.calculateParallelismScore(this.parallelismDecayRate)
+        else
+            0.0
     
         // Weighted sum of urgency and chain scores
-        return (this.weightUrgency * urgencyScore) + (this.weightCriticalDependencyChain * chainScore)
+        return (this.weightUrgency * urgencyScore) +
+            (this.weightCriticalDependencyChain * chainScore) +
+            (this.weightParallelism * parallelismScore)
     }
     
     private companion object {
