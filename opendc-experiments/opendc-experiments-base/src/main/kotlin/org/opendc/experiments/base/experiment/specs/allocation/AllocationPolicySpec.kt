@@ -24,10 +24,12 @@ package org.opendc.experiments.base.experiment.specs.allocation
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.opendc.compute.simulator.scheduler.CarbonAwareWorkflowScheduler
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.simulator.scheduler.FilterScheduler
 import org.opendc.compute.simulator.scheduler.WorkflowAwareScheduler
+import org.opendc.compute.simulator.scheduler.WorkflowAwareTimeshiftScheduler
 import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
 import org.opendc.compute.simulator.scheduler.timeshift.MemorizingTimeshift
 import org.opendc.compute.simulator.scheduler.timeshift.TaskStopper
@@ -84,6 +86,38 @@ public data class WorkflowAwareAllocationPolicySpec(
     val subsetSize: Int = 1,
 ) : AllocationPolicySpec
 
+@Serializable
+@SerialName("carbonAwareWorkflow")
+public data class CarbonAwareWorkflowAllocationPolicySpec(
+    val filters: List<HostFilterSpec> = listOf(ComputeFilterSpec()),
+    val weighers: List<HostWeigherSpec> = emptyList(),
+    val slotLengthMs: Long = 3_600_000L, // 1 hour slots
+    val horizonSlots: Int = 24, // 24 hour horizon
+    val enableOptimization: Boolean = true,
+    val batchSize: Int = 100, // Optimize up to 100 tasks at a time
+    val maxSlotsToTry: Int = 10, // Try up to 10 different time slots per task
+    val searchWindowSize: Int = 24, // Search 24 slots ahead for low-carbon slots
+    val subsetSize: Int = 1,
+) : AllocationPolicySpec
+
+@Serializable
+@SerialName("workflowAwareTimeshift")
+public data class WorkflowAwareTimeshiftAllocationPolicySpec(
+    val filters: List<HostFilterSpec> = listOf(ComputeFilterSpec()),
+    val weighers: List<HostWeigherSpec> = emptyList(),
+    val taskDeadlineScore: Boolean = true,
+    val weightUrgency: Double = 0.3,
+    val weightCriticalDependencyChain: Double = 0.4,
+    val weightCarbonImpact: Double = 0.3,
+    val windowSize: Int = 168,
+    val forecast: Boolean = true,
+    val shortForecastThreshold: Double = 0.2,
+    val longForecastThreshold: Double = 0.35,
+    val forecastSize: Int = 24,
+    val subsetSize: Int = 1,
+    val taskLookaheadThreshold: Int = 1000,
+) : AllocationPolicySpec
+
 public fun createComputeScheduler(
     spec: AllocationPolicySpec,
     seeder: RandomGenerator,
@@ -121,8 +155,48 @@ public fun createComputeScheduler(
             val filters = spec.filters.map { createHostFilter(it) }
             val weighers = spec.weighers.map { createHostWeigher(it) }
             WorkflowAwareScheduler(
-                filters, weighers, spec.taskDeadlineScore, spec.weightUrgency, 
+                filters, weighers, spec.taskDeadlineScore, spec.weightUrgency,
                 spec.weightCriticalDependencyChain, clock, spec.subsetSize, seeder, numHosts
+            )
+        }
+        is CarbonAwareWorkflowAllocationPolicySpec -> {
+            val filters = spec.filters.map { createHostFilter(it) }
+            val weighers = spec.weighers.map { createHostWeigher(it) }
+            CarbonAwareWorkflowScheduler(
+                filters = filters,
+                weighers = weighers,
+                clock = clock,
+                slotLengthMs = spec.slotLengthMs,
+                horizonSlots = spec.horizonSlots,
+                enableOptimization = spec.enableOptimization,
+                batchSize = spec.batchSize,
+                maxSlotsToTry = spec.maxSlotsToTry,
+                searchWindowSize = spec.searchWindowSize,
+                subsetSize = spec.subsetSize,
+                random = seeder,
+                numHosts = numHosts,
+            )
+        }
+        is WorkflowAwareTimeshiftAllocationPolicySpec -> {
+            val filters = spec.filters.map { createHostFilter(it) }
+            val weighers = spec.weighers.map { createHostWeigher(it) }
+            WorkflowAwareTimeshiftScheduler(
+                filters = filters,
+                weighers = weighers,
+                taskDeadlineScore = spec.taskDeadlineScore,
+                weightUrgency = spec.weightUrgency,
+                weightCriticalDependencyChain = spec.weightCriticalDependencyChain,
+                weightCarbonImpact = spec.weightCarbonImpact,
+                clock = clock,
+                windowSize = spec.windowSize,
+                forecast = spec.forecast,
+                shortForecastThreshold = spec.shortForecastThreshold,
+                longForecastThreshold = spec.longForecastThreshold,
+                forecastSize = spec.forecastSize,
+                subsetSize = spec.subsetSize,
+                random = seeder,
+                numHosts = numHosts,
+                taskLookaheadThreshold = spec.taskLookaheadThreshold,
             )
         }
     }

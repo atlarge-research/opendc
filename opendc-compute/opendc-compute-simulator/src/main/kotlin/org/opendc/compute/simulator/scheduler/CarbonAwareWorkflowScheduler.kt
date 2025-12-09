@@ -28,6 +28,9 @@ import java.util.random.RandomGenerator
  * @param slotLengthMs Duration of each time slot in milliseconds (default: 1 hour)
  * @param horizonSlots Number of time slots in planning horizon (default: 1 week)
  * @param enableOptimization Enable/disable DFS optimization (default: true)
+ * @param batchSize Number of tasks to optimize together in each batch (default: 100)
+ * @param maxSlotsToTry Maximum number of time slots to try per task in optimizer (default: 5)
+ * @param searchWindowSize How many slots ahead from earliest to search for low-carbon slots (default: 12)
  * @param subsetSize Number of hosts to consider after weighing
  * @param random Random number generator
  * @param numHosts Expected number of hosts
@@ -39,6 +42,9 @@ public class CarbonAwareWorkflowScheduler(
     private val slotLengthMs: Long = 3_600_000L, // 1 hour default
     private val horizonSlots: Int = 168, // 1 week default
     private val enableOptimization: Boolean = true,
+    private val batchSize: Int = 100, // Optimize N tasks at a time
+    private val maxSlotsToTry: Int = 5, // Try up to 5 different time slots per task
+    private val searchWindowSize: Int = 12, // Search 12 slots ahead from earliest
     subsetSize: Int = 1,
     random: RandomGenerator = SplittableRandom(0),
     private val numHosts: Int = 1000,
@@ -65,8 +71,9 @@ public class CarbonAwareWorkflowScheduler(
         val currentTime = clock.millis()
 
         // Check if we should re-optimize
+        // Run optimization if: enabled AND (never optimized OR enough time has passed)
         if (enableOptimization &&
-            currentTime - lastOptimizationTime >= optimizationInterval
+            (lastOptimizationTime == 0L || currentTime - lastOptimizationTime >= optimizationInterval)
         ) {
             performOptimization(iter)
             lastOptimizationTime = currentTime
@@ -78,6 +85,8 @@ public class CarbonAwareWorkflowScheduler(
 
     /**
      * Perform global optimization of the task schedule.
+     *
+     * Optimizes only a small batch of tasks at a time to keep DFS fast.
      */
     private fun performOptimization(iter: MutableIterator<SchedulingRequest>) {
         // Collect all pending tasks
@@ -99,35 +108,59 @@ public class CarbonAwareWorkflowScheduler(
 
         if (tasks.isEmpty()) return
 
+        // Only optimize tasks whose dependencies are actually met
+        val readyTasks = tasks.filter { req ->
+            areDependenciesMet(req.task)
+        }
+
+        if (readyTasks.isEmpty()) {
+            println("[CarbonAware] No ready tasks to optimize (all blocked by dependencies)")
+            return
+        }
+
+        // Take a batch of ready tasks (configurable batch size for performance)
+        val tasksToOptimize = readyTasks.take(batchSize)
+
+        println("[CarbonAware] Optimizing batch of ${tasksToOptimize.size} ready tasks (out of ${tasks.size} total, ${readyTasks.size} ready)")
+
         // Build optimization state
-        val state = buildScheduleState(tasks)
+        val state = buildScheduleState(tasksToOptimize)
 
         // Get carbon forecast
         val carbonForecast = getCarbonForecast()
 
         // Run optimization
-        val optimizer = CarbonOptimizer(carbonForecast, numHosts)
+        val optimizer = CarbonOptimizer(
+            carbonIntensity = carbonForecast,
+            maxParallelTasks = numHosts,
+            maxSlotsToTry = maxSlotsToTry,
+            searchWindowSize = searchWindowSize
+        )
         optimizer.optimize(state)
 
         // Update scheduled tasks map with results
         if (state.bestCost < Double.POSITIVE_INFINITY) {
+            var scheduled = 0
             for (i in 0 until state.taskCount) {
                 val taskIdx = state.topoOrder[i]
-                val req = tasks[taskIdx]
+                val req = tasksToOptimize[taskIdx]
                 val startSlot = state.bestAssignment[taskIdx]
 
                 if (startSlot >= 0) {
                     scheduledTasks[req.task.id] = startSlot
+                    scheduled++
                 }
             }
+            println("[CarbonAware] Successfully scheduled $scheduled tasks in batch")
         } else {
             // Optimization failed - use greedy fallback
             val currentSlot = (clock.millis() / slotLengthMs).toInt()
-            for (req in tasks) {
+            for (req in tasksToOptimize) {
                 if (req.task.id !in scheduledTasks) {
                     scheduledTasks[req.task.id] = currentSlot
                 }
             }
+            println("[CarbonAware] Batch optimization failed - used greedy fallback")
         }
     }
 
@@ -144,7 +177,7 @@ public class CarbonAwareWorkflowScheduler(
                 req.task.id to idx
             }.toMap()
 
-        // Build parent relationships
+        // Build parent relationships (only parents within this batch)
         for ((idx, req) in tasks.withIndex()) {
             val parents = req.task.parents
             if (parents != null && parents.isNotEmpty()) {
@@ -160,19 +193,64 @@ public class CarbonAwareWorkflowScheduler(
 
         // Calculate durations and release slots
         val minSubmission = tasks.minOf { it.task.submittedAt }
+
         for ((idx, req) in tasks.withIndex()) {
             val task = req.task
             state.durationMs[idx] = task.duration
             state.durationSlots[idx] =
                 ((task.duration + slotLengthMs - 1) / slotLengthMs).toInt()
 
+            // Calculate base release slot from submission time
             val delta = task.submittedAt - minSubmission
-            state.releaseSlot[idx] =
+            var releaseSlot =
                 if (delta <= 0) {
                     0
                 } else {
                     ((delta + slotLengthMs - 1) / slotLengthMs).toInt()
                 }
+
+            // Check if task has parents outside this batch that aren't complete yet
+            // If so, we can't schedule it yet (set release slot very far in future)
+            val allParents = task.wfParents
+            if (allParents.isNotEmpty()) {
+                // Check if there are parents not in this batch
+                val hasExternalParents = allParents.any { parent ->
+                    parent.id !in taskIdToIndex
+                }
+
+                if (hasExternalParents) {
+                    // Check if all external parents are complete
+                    val allExternalParentsComplete = allParents
+                        .filter { parent -> parent.id !in taskIdToIndex }
+                        .all { parent ->
+                            parent.state == TaskState.COMPLETED ||
+                            parent.state == TaskState.DELETED ||
+                            parent.state == TaskState.TERMINATED
+                        }
+
+                    if (!allExternalParentsComplete) {
+                        // Can't schedule this task yet - push it far into the future
+                        // This will prevent the optimizer from scheduling it
+                        releaseSlot = horizonSlots + 1000
+                    }
+                }
+            }
+
+            state.releaseSlot[idx] = releaseSlot
+
+            // Extract deadline
+            val deadline = task.deadline
+            if (deadline > 0) {
+                val deadlineFromStart = deadline - minSubmission
+                state.deadlineSlot[idx] =
+                    if (deadlineFromStart <= 0) {
+                        0
+                    } else {
+                        (deadlineFromStart / slotLengthMs).toInt()
+                    }
+            } else {
+                state.deadlineSlot[idx] = -1
+            }
         }
 
         return state
@@ -205,10 +283,15 @@ public class CarbonAwareWorkflowScheduler(
         var bestReq: SchedulingRequest? = null
         var bestPriority = Double.NEGATIVE_INFINITY
         var bestIsUnscheduled = false
+        var bestIndex = -1
+        var currentIndex = 0
 
         while (listIter.hasNext()) {
             val req = listIter.next()
-            if (req.isCancelled) continue
+            if (req.isCancelled) {
+                currentIndex++
+                continue
+            }
 
             val scheduledSlot = this.scheduledTasks[req.task.id]
 
@@ -219,6 +302,7 @@ public class CarbonAwareWorkflowScheduler(
                         if (!bestIsUnscheduled || priority > bestPriority) {
                             bestPriority = priority
                             bestReq = req
+                            bestIndex = currentIndex
                             bestIsUnscheduled = false
                         }
                     }
@@ -230,15 +314,25 @@ public class CarbonAwareWorkflowScheduler(
                     if (bestReq == null || (bestIsUnscheduled && priority > bestPriority)) {
                         bestPriority = priority
                         bestReq = req
+                        bestIndex = currentIndex
                         bestIsUnscheduled = true
                     }
                 }
             }
+            currentIndex++
         }
 
-        // Reset iterator
+        // Reset iterator to the beginning
         while (listIter.hasPrevious()) {
             listIter.previous()
+        }
+
+        // If we found a best task, position the iterator at that task
+        // so that the parent class can remove it correctly
+        if (bestReq != null) {
+            repeat(bestIndex + 1) {
+                listIter.next()
+            }
         }
 
         return bestReq
@@ -262,8 +356,43 @@ public class CarbonAwareWorkflowScheduler(
 
     /**
      * Calculate priority score for a task.
+     * Higher priority = more urgent
+     *
+     * Priority is based on:
+     * 1. Deadline urgency (if task has a deadline)
+     * 2. Dependency chain length (longer chains get higher priority)
      */
     private fun calculatePriority(req: SchedulingRequest): Double {
-        return req.task.calcMaxDependencyChainLength().toDouble()
+        val currentTime = clock.millis()
+        val task = req.task
+
+        // Base priority from dependency chain length
+        var priority = task.calcMaxDependencyChainLength().toDouble()
+
+        // Add deadline urgency boost
+        val deadline = task.deadline
+        if (deadline > 0) {
+            val timeUntilDeadline = deadline - currentTime
+
+            if (timeUntilDeadline <= 0) {
+                // Deadline passed - maximum priority
+                priority += 1000000.0
+            } else {
+                // Calculate slack: time until deadline - task duration
+                val slack = timeUntilDeadline - task.duration
+
+                if (slack <= 0) {
+                    // No slack - very high priority
+                    priority += 100000.0
+                } else {
+                    // Boost priority inversely proportional to slack
+                    // Tasks with less slack get higher priority
+                    val slackHours = slack.toDouble() / 3_600_000.0 // Convert to hours
+                    priority += 10000.0 / (slackHours + 1.0)
+                }
+            }
+        }
+
+        return priority
     }
 }

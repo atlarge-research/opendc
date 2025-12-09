@@ -224,8 +224,11 @@ public fun createPrefabComputeScheduler(
                  weighers = listOf(RamWeigher(multiplier = 1.0)),
                  clock = clock,
                  slotLengthMs = 3_600_000L, // 1 hour slots
-                 horizonSlots = 168, // 1 week horizon
+                 horizonSlots = 24, // 24 hour horizon
                  enableOptimization = true,
+                 batchSize = 100, // Optimize up to 100 tasks at a time
+                 maxSlotsToTry = 10, // Try up to 10 different time slots per task
+                 searchWindowSize = 24, // Search 24 slots (24 hours) ahead for low-carbon slots
                  numHosts = numHosts,
                  random = SplittableRandom(seeder.nextLong()),
              )

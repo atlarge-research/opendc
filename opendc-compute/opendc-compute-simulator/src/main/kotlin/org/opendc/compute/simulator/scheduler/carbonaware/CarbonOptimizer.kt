@@ -8,11 +8,18 @@ import kotlin.math.min
  *
  * @param carbonIntensity Array of carbon intensity values for each time slot
  * @param maxParallelTasks Maximum number of tasks that can run in parallel (number of hosts)
+ * @param maxSlotsToTry Maximum number of different time slots to try for each task (controls search breadth)
+ * @param searchWindowSize How many slots ahead from earliest to search for low-carbon alternatives
  */
 public class CarbonOptimizer(
     private val carbonIntensity: DoubleArray,
     private val maxParallelTasks: Int,
+    private val maxSlotsToTry: Int = 5,
+    private val searchWindowSize: Int = 12,
 ) {
+    private var iterationCount = 0
+    private val maxIterations = 10_000_000 // Increased limit with reduced search space
+
     /**
      * Optimize the task schedule to minimize carbon emissions.
      *
@@ -23,6 +30,7 @@ public class CarbonOptimizer(
      */
     public fun optimize(state: CarbonScheduleState) {
         state.reset()
+        iterationCount = 0
         dfs(0, state, 0.0)
     }
 
@@ -38,6 +46,12 @@ public class CarbonOptimizer(
         state: CarbonScheduleState,
         currentCost: Double,
     ) {
+        // Check iteration limit to prevent infinite loops
+        iterationCount++
+        if (iterationCount > maxIterations) {
+            return
+        }
+
         // Base case: all tasks have been assigned
         if (index == state.taskCount) {
             if (currentCost < state.bestCost) {
@@ -61,10 +75,41 @@ public class CarbonOptimizer(
             }
         }
 
-        // Try all possible start slots for this task
-        for (startSlot in earliest until state.horizonSlots) {
+
+        val maxSlot = minOf(state.horizonSlots, carbonIntensity.size)
+        val slotsToTry = mutableListOf<Int>()
+
+        // Always try earliest slot first
+        if (earliest < maxSlot) {
+            slotsToTry.add(earliest)
+        }
+
+        // Find additional low-carbon slots after earliest, up to maxSlotsToTry total
+        if (earliest + 1 < maxSlot - durSlots) {
+            val candidates = mutableListOf<Pair<Int, Double>>()
+            val searchEnd = minOf(earliest + searchWindowSize, maxSlot - durSlots + 1)
+
+            for (slot in (earliest + 1) until searchEnd) {
+                val cost = carbonIntensity.getOrElse(slot) { 100.0 }
+                candidates.add(slot to cost)
+            }
+
+            // Sort by carbon intensity and take up to (maxSlotsToTry - 1) more slots
+            // -1 because we already added the earliest slot
+            candidates.sortBy { it.second }
+            slotsToTry.addAll(candidates.take(maxSlotsToTry - 1).map { it.first })
+        }
+
+        for (startSlot in slotsToTry) {
             val endSlot = startSlot + durSlots
-            if (endSlot > state.horizonSlots) break
+            if (endSlot > maxSlot) continue
+
+            // Check deadline constraint: task must complete before deadline
+            val deadline = state.deadlineSlot[taskIdx]
+            if (deadline >= 0 && endSlot > deadline) {
+                // This placement would violate the deadline, skip it
+                continue
+            }
 
             // Check capacity constraints
             if (!hasCapacity(state, startSlot, endSlot)) continue

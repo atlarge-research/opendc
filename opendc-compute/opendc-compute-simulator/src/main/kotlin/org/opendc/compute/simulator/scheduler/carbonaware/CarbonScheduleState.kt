@@ -42,6 +42,12 @@ public class CarbonScheduleState(
     public val releaseSlot: IntArray = IntArray(taskCount)
 
     /**
+     * Latest slot a task must complete by (based on deadline)
+     * -1 means no deadline constraint
+     */
+    public val deadlineSlot: IntArray = IntArray(taskCount) { -1 }
+
+    /**
      * Current assignment of tasks to start slots during DFS
      * -1 means not yet assigned
      */
