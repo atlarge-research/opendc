@@ -87,7 +87,7 @@ public data class WorkflowAwareAllocationPolicySpec(
     val weightParallelism: Double = 0.0,
     val parallelismDecayRate: Double = 0.15,
     val subsetSize: Int = 1,
-    val taskLookaheadThreshold = 1000,
+    val taskLookaheadThreshold: Int = 1000,
 ) : AllocationPolicySpec
 
 @Serializable

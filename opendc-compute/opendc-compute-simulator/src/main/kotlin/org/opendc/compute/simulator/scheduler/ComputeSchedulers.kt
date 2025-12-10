@@ -189,14 +189,14 @@ public fun createPrefabComputeScheduler(
                         RamFilter(ramAllocationRatio),
                     ),
             )
-        //  ComputeSchedulerEnum.WorkflowAware->
-        //      WorkflowAwareScheduler(
-        //          filters = listOf(VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
-        //          weighers = listOf(RamWeigher(multiplier = 1.0)),
-        //          numHosts = numHosts,
-        //          clock = clock,
-        //          taskDeadlineScore = false
-        //      )
+         ComputeSchedulerEnum.WorkflowAware->
+             WorkflowAwareScheduler(
+                 filters = listOf(VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+                 weighers = listOf(RamWeigher(multiplier = 1.0)),
+                 numHosts = numHosts,
+                 clock = clock,
+                 enableDeadlineScore = false
+             )
          ComputeSchedulerEnum.WorkflowAwareTimeshift->
              WorkflowAwareTimeshiftScheduler(
                  filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
