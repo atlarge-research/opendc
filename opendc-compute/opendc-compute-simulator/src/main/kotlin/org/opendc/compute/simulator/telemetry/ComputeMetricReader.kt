@@ -33,11 +33,11 @@ import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReaderImpl
+import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.host.HostTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReaderImpl
-import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReaderImpl
 import org.opendc.simulator.compute.costmodel.CostModel
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.SimBattery

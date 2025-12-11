@@ -25,6 +25,7 @@
 package org.opendc.compute.topology
 
 import org.opendc.compute.topology.specs.BatteryJSONSpec
+import org.opendc.compute.topology.specs.ClusterCostModelSpec
 import org.opendc.compute.topology.specs.ClusterJSONSpec
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostJSONSpec
@@ -33,6 +34,7 @@ import org.opendc.compute.topology.specs.PowerSourceSpec
 import org.opendc.compute.topology.specs.TopologySpec
 import org.opendc.compute.topology.specs.toDistributionPolicy
 import org.opendc.compute.topology.specs.toVirtualizationOverheadModel
+import org.opendc.simulator.compute.models.ComponentDegradationModel
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuModel
 import org.opendc.simulator.compute.models.MachineModel
@@ -134,7 +136,13 @@ private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
             createUniqueName(this.powerSource.name, powerSourceNames),
             totalPower = this.powerSource.maxPower,
             carbonTracePath = this.powerSource.carbonTracePath,
-            energyCostTracePath = this.powerSource.energyCostTracePath,
+        )
+
+    val clusterCostModelSourceSpec =
+        ClusterCostModelSpec(
+            monthlySalaries = this.clusterCostModel.monthlySalaries,
+            generalUtilities = this.clusterCostModel.generalUtilities,
+            energyCostTracePath = this.clusterCostModel.energyCostTracePath,
         )
 
     var batterySpec: BatteryJSONSpec? = null
@@ -151,7 +159,7 @@ private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
             )
     }
 
-    return ClusterSpec(clusterName, hostSpecs, powerSourceSpec, batterySpec)
+    return ClusterSpec(clusterName, hostSpecs, powerSourceSpec, batterySpec, clusterCostModelSourceSpec)
 }
 
 /**
@@ -167,6 +175,11 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
                 globalCoreId++,
                 cpu.coreCount,
                 cpu.coreSpeed.toMHz(),
+                ComponentDegradationModel(
+                    cpu.degradationModel?.baselineWearRate ?: 0.0,
+                    cpu.degradationModel?.utilizationWearCoeff ?: 0.0,
+                    cpu.degradationModel?.powerDegradation ?: 0.0,
+                ),
             )
         }
 

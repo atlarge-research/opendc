@@ -64,7 +64,6 @@ public class HostsProvisioningStep internal constructor(
         val engine = FlowEngine.create(ctx.dispatcher)
 
         for (cluster in clusterSpecs) {
-
             /** TODO add a costmodel
              * right now im trying to do it similar to simPowerSource,
              * im just trying stuff and it might make more sense to register it similarly as the carbon model
@@ -75,14 +74,21 @@ public class HostsProvisioningStep internal constructor(
              * for this we might have to link ourselves to the simPowerSource, similarly for stuff like hardware
              * degrading costs and such we might have to read stuff from the simHosts part.
              * If so we are a "reciever" i believe
+             * TODO TODO nico aayush, this ? nullable call, we should think about what it does when it is null
              */
 
-            val energyCostFragments = getEnergyCostFragments(cluster.powerSource.energyCostTracePath)
+            if (cluster.clusterCostModel?.energyCostTracePath == null) {
+                // do something?
+                kotlin.system.exitProcess(0)
+            }
+            val energyCostFragments = getEnergyCostFragments(cluster.clusterCostModel?.energyCostTracePath)
 
-            val costModel = CostModel(engine, energyCostFragments, startTime);
+            val costModel = CostModel(engine, energyCostFragments, startTime,
+                cluster.clusterCostModel?.monthlySalaries?:0.0,
+                cluster.clusterCostModel?.generalUtilities?:0.0)
             simCostModels.add(costModel)
             service.addCostModel(costModel)
-            //TODO maybe an if that if no data is given on costs we dont do jack shit
+            // TODO maybe an if that if no data is given on costs we dont do jack shit
 
             // Create the Power Source to which hosts are connected
 
@@ -109,7 +115,6 @@ public class HostsProvisioningStep internal constructor(
                 carbonModel.addReceiver(simPowerSource)
                 ctx.registry.register(serviceDomain, CarbonModel::class.java, carbonModel)
             }
-
 
             if (cluster.battery != null) {
                 // Create Battery Distributor
@@ -193,4 +198,3 @@ public class HostsProvisioningStep internal constructor(
         }
     }
 }
-

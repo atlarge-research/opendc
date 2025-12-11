@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.opendc.common.ResourceType;
-import org.opendc.common.units.Power;
 import org.opendc.simulator.compute.costmodel.PowerReceiver;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.engine.engine.FlowEngine;

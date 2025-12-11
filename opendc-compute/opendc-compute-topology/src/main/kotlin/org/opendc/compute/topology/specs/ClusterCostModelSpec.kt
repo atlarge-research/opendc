@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,39 +20,12 @@
  * SOFTWARE.
  */
 
-plugins {
-    id("com.diffplug.spotless")
-}
+package org.opendc.compute.topology.specs
 
-spotless {
-    pluginManager.withPlugin("java") {
-        java {
-            importOrder()
-            removeUnusedImports()
-
-            palantirJavaFormat()
-
-            trimTrailingWhitespace()
-            endWithNewline()
-
-            licenseHeaderFile(rootProject.file("buildSrc/src/main/kotlin/license.kt"))
-        }
-    }
-
-    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
-        kotlin {
-            ktlint("1.2.1")
-            trimTrailingWhitespace()
-            endWithNewline()
-
-            licenseHeaderFile(rootProject.file("buildSrc/src/main/kotlin/license.kt"))
-        }
-    }
-
-    kotlinGradle {
-        ktlint("1.2.1")
-
-        trimTrailingWhitespace()
-        endWithNewline()
-    }
-}
+public data class ClusterCostModelSpec(
+    val name: String = "unknown",
+    val meta: Map<String, Any> = emptyMap(),
+    val monthlySalaries: Double = 0.0,
+    val generalUtilities: Double = 0.0,
+    val energyCostTracePath: String? = null,
+)

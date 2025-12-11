@@ -25,11 +25,11 @@ package org.opendc.compute.simulator.telemetry.parquet
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.OutputFiles
 import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReader
+import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReader
 import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
-import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReader
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 import org.opendc.trace.util.parquet.exporter.Exportable
 import org.opendc.trace.util.parquet.exporter.Exporter
@@ -126,7 +126,7 @@ public class ParquetComputeMonitor(
             powerSourceExportColumns: Collection<ExportColumn<PowerSourceTableReader>>? = null,
             batteryExportColumns: Collection<ExportColumn<BatteryTableReader>>? = null,
             serviceExportColumns: Collection<ExportColumn<ServiceTableReader>>? = null,
-            costModelExportColumns : Collection<ExportColumn<CostModelTableReader>>? = null,
+            costModelExportColumns: Collection<ExportColumn<CostModelTableReader>>? = null,
         ): ParquetComputeMonitor {
             // Loads the fields in case they need to be retrieved if optional params are omitted.
             ComputeExportConfig.loadDfltColumns()

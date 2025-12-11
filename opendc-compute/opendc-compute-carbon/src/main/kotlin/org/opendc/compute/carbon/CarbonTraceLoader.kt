@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap
  * A helper class for loading compute workload traces into memory.
  *
  */
-public class    CarbonTraceLoader {
+public class CarbonTraceLoader {
     /**
      * The cache of workloads.
      */

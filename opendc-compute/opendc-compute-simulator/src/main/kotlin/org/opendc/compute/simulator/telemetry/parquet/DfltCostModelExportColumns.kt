@@ -22,13 +22,8 @@
 
 package org.opendc.compute.simulator.telemetry.parquet
 
-import org.apache.parquet.io.api.Binary
-import org.apache.parquet.schema.LogicalTypeAnnotation
-import org.apache.parquet.schema.PrimitiveType
-import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
-import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32 // test int
 import org.apache.parquet.schema.Types
 import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReader
 import org.opendc.trace.util.parquet.exporter.ExportColumn
@@ -62,7 +57,17 @@ public object DfltCostModelExportColumns {
     public val ENERGY_COST: ExportColumn<CostModelTableReader> =
         ExportColumn(
             field = Types.required(FLOAT).named("energy_cost"),
-        ) { it.energyCost}
+        ) { it.energyCost }
+
+    public val EMPLOYEE_COST: ExportColumn<CostModelTableReader> =
+        ExportColumn(
+            field = Types.required(FLOAT).named("employee_cost"),
+        ) { it.employeeCost }
+
+    public val GENERAL_COST: ExportColumn<CostModelTableReader> =
+        ExportColumn(
+            field = Types.required(FLOAT).named("general_cost"),
+        ) { it.generalCost }
 
     /**
      * The columns that are always included in the output file.
@@ -71,6 +76,8 @@ public object DfltCostModelExportColumns {
         setOf(
             TIMESTAMP,
             TIMESTAMP_ABS,
-            ENERGY_COST
+            ENERGY_COST,
+            EMPLOYEE_COST,
+            GENERAL_COST,
         )
 }

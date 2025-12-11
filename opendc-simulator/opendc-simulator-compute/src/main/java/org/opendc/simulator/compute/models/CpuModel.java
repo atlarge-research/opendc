@@ -36,6 +36,7 @@ public final class CpuModel {
     private final String vendor;
     private final String modelName;
     private final String arch;
+    private final ComponentDegradationModel degradationModel;
 
     /**
      * Construct a {@link CpuModel} instance.
@@ -47,7 +48,14 @@ public final class CpuModel {
      * @param modelName The name of the CPU
      * @param arch The architecture of the CPU
      */
-    public CpuModel(int id, int coreCount, double coreSpeed, String vendor, String modelName, String arch) {
+    public CpuModel(
+            int id,
+            int coreCount,
+            double coreSpeed,
+            String vendor,
+            String modelName,
+            String arch,
+            ComponentDegradationModel degradationModel) {
         this.id = id;
         this.coreCount = coreCount;
         this.coreSpeed = coreSpeed;
@@ -55,10 +63,11 @@ public final class CpuModel {
         this.vendor = vendor;
         this.modelName = modelName;
         this.arch = arch;
+        this.degradationModel = degradationModel;
     }
 
-    public CpuModel(int id, int coreCount, double coreSpeed) {
-        this(id, coreCount, coreSpeed, "unkown", "unkown", "unkown");
+    public CpuModel(int id, int coreCount, double coreSpeed, ComponentDegradationModel degradationModel) {
+        this(id, coreCount, coreSpeed, "unkown", "unkown", "unkown", degradationModel);
     }
 
     /**
@@ -108,6 +117,10 @@ public final class CpuModel {
      */
     public String getArchitecture() {
         return arch;
+    }
+
+    public ComponentDegradationModel getDegradationModel() {
+        return degradationModel;
     }
 
     @Override

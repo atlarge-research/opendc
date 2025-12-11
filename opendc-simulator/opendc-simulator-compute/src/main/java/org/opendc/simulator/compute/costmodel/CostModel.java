@@ -1,5 +1,29 @@
+/*
+ * Copyright (c) 2025 AtLarge Research
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package org.opendc.simulator.compute.costmodel;
 
+import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.opendc.simulator.compute.power.SimPowerSource;
@@ -7,20 +31,12 @@ import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * CostModel used work out the costs based on other consumers
  */
-
-@SuppressWarnings({
-    "unused",
-    "FieldMayBeFinal",
-    "FieldCanBeLocal"
-}) // STFU WHILE TYPE THANK YOU
+@SuppressWarnings({"unused", "FieldMayBeFinal", "FieldCanBeLocal"}) // STFU WHILE TYPE THANK YOU
 public class CostModel extends FlowNode implements PowerReceiver {
-    private static final Logger log = LogManager.getLogger(CostModel.class); //implements PowerReceiver
+    private static final Logger log = LogManager.getLogger(CostModel.class); // implements PowerReceiver
 
     private final long startTime; // The absolute timestamp on which the workload started
     private long lastUpdate;
@@ -31,18 +47,27 @@ public class CostModel extends FlowNode implements PowerReceiver {
     private double energyConsumed = 0f;
     private double energyCost = 0f;
 
+    private double employeeCost = 0f;
+    private double generalCost = 0f;
+
+    private double monthlySalaries = 0f;
+    private double generalUtilities = 0f;
+
     private final List<EnergyCostFragment> fragments;
     private int fragment_index;
     private EnergyCostFragment current_fragment;
 
     private SimPowerSource simPowerSource = null;
 
-    public CostModel(FlowEngine engine, List<EnergyCostFragment> energyCostFragmentsList, long startTime) {
+    public CostModel(FlowEngine engine, List<EnergyCostFragment> energyCostFragmentsList, long startTime, double monthlySalaries, double generalUtilities) {
         super(engine);
 
         this.startTime = startTime;
         this.fragments = energyCostFragmentsList;
         this.lastUpdate = this.clock.millis();
+
+        this.monthlySalaries = monthlySalaries;
+        this.generalUtilities = generalUtilities;
 
         this.fragment_index = 0;
         this.current_fragment = this.fragments.get(this.fragment_index);
@@ -68,6 +93,13 @@ public class CostModel extends FlowNode implements PowerReceiver {
         return this.energyCost;
     }
 
+    public double getEmployeeCost() {
+        return this.employeeCost;
+    }
+
+    public double getGeneralCost() {
+        return this.generalCost;
+    }
 
     @Override
     public long onUpdate(long now) {
@@ -79,8 +111,6 @@ public class CostModel extends FlowNode implements PowerReceiver {
             this.findCorrectFragment(absolute_time);
             updateEnergyCostPerKWH(current_fragment.getEnergyPrice());
         }
-
-
 
         return getRelativeTime(current_fragment.getEndTime());
     }
@@ -103,21 +133,30 @@ public class CostModel extends FlowNode implements PowerReceiver {
             simPowerSource.updateCounters(now);
 
             updateEnergyCost();
+            updateStaticCosts(passedTime);
         }
-
     }
 
-    //TODO carbon send it to a bunch of recievers, why?!
-//    private void pushEnergyCost(double energyPricePER_KWH) {
-//        for (CarbonReceiver receiver : this.receivers) {
-//            receiver.updateEnergyCost(carbonIntensity);
-//        }
-//    }
+    private void updateStaticCosts(long passedTime) {
+        double MillisInMonth = 365.0/12.0 * 24 * 60 * 60 * 1000.0;
+        double salariesPerFragmentDuration = monthlySalaries / (MillisInMonth / passedTime);
+        double generalCostsFragmentDuration =  generalUtilities / (MillisInMonth / passedTime);
 
-    private void updateEnergyCost(){
+        this.employeeCost += salariesPerFragmentDuration;
+        this.generalCost += generalCostsFragmentDuration;
+    }
+
+    // TODO carbon send it to a bunch of recievers, why?!
+    //    private void pushEnergyCost(double energyPricePER_KWH) {
+    //        for (CarbonReceiver receiver : this.receivers) {
+    //            receiver.updateEnergyCost(carbonIntensity);
+    //        }
+    //    }
+
+    private void updateEnergyCost() {
         if (this.energyConsumed > this.energyConsumedAccounted) {
             double energyConsumedUnAccounted = this.energyConsumed - this.energyConsumedAccounted;
-            this.energyCost += energyConsumedUnAccounted*this.energyCostPerKWH/3600000;
+            this.energyCost += energyConsumedUnAccounted * this.energyCostPerKWH / 3600000;
             this.energyConsumedAccounted += energyConsumedUnAccounted;
         }
     }

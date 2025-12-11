@@ -32,36 +32,12 @@ import java.lang.ref.SoftReference
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
-// TODO NICO code in here is crap, copy paste of carbon, needs rewrite to read energy cost trace instead.
-// Similarity to reading a carbon trace is high so I left the code in, but it needs to be at least renamed
-//  and possibly slightly rewritten to read an energy cost trace
-
-/**
- * A helper class for loading compute workload traces into memory.
- *
- */
 public class EnergyCostTraceLoader {
-    /**
-     * The cache of workloads.
-     */
     private val cache = ConcurrentHashMap<String, SoftReference<List<EnergyCostFragment>>>()
 
     private val builder = EnergyCostFragmentNewBuilder()
 
-    /**
-     * Read the metadata into a workload.
-     */
-    @Suppress("UNREACHABLE_CODE", "UNUSED_PARAMETER")
     private fun parseEnergy(trace: Trace): List<EnergyCostFragment> {
-        //TODO TEMPORARILY MAKING A SINGLE ENTITY LIST WITH A FRAGMENT THAT SPANS ALL TIME WITH RANDOM PRICE
-//        return listOf(EnergyCostFragment(0,
-//                            Long.MAX_VALUE,
-//                            0.018124))
-
-
-        // TODO we need to implement a reader for our trace format, once more carbon is an excellent starting point here
-        // opendc-trace/opendc-trace-api/src/main/kotlin/org/opendc/trace/formats/carbon
-        // I haven't gotten to it yet, its gna be a bunch  of copy paste boiler plate and should be straightforward
         val reader = checkNotNull(trace.getTable(TABLE_COSTMODEL)).newReader()
 
         val startTimeCol = reader.resolve(ENERGY_PRICE_TIMESTAMP)
@@ -75,7 +51,6 @@ public class EnergyCostTraceLoader {
                 builder.add(startTime, energyPriceCost)
             }
 
-            // Make sure the virtual machines are ordered by start time
             builder.fixReportTimes()
 
             return builder.fragments
@@ -87,29 +62,17 @@ public class EnergyCostTraceLoader {
         }
     }
 
-    /**
-     * Load the Carbon Trace at the given path.
-     */
     public fun get(pathToFile: File): List<EnergyCostFragment> {
         val trace = Trace.open(pathToFile, "costmodel")
 
         return parseEnergy(trace)
     }
 
-    /**
-     * Clear the workload cache.
-     */
     public fun reset() {
         cache.clear()
     }
 
-    /**
-     * A builder for a VM trace.
-     */
     private class EnergyCostFragmentNewBuilder {
-        /**
-         * The total load of the trace.
-         */
         val fragments: MutableList<EnergyCostFragment> = mutableListOf()
 
         /**

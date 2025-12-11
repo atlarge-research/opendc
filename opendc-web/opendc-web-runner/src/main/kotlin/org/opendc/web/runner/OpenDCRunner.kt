@@ -265,6 +265,7 @@ public class OpenDCRunner(
                     PowerSourceSpec(
                         totalPower = Long.MAX_VALUE,
                     )
+
                 val topology = listOf(ClusterSpec("cluster", topologyHosts, powerSourceSpec))
 
                 Provisioner(dispatcher, seed).use { provisioner ->
@@ -339,6 +340,7 @@ public class OpenDCRunner(
                         "Intel",
                         "amd64",
                         cpu.name,
+                        null,
                     )
                 }
 

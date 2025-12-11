@@ -25,9 +25,9 @@ package org.opendc.trace.spi
 import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
 import org.opendc.trace.formats.carbon.CarbonTraceFormat
+import org.opendc.trace.formats.costmodel.CostModelTraceFormat
 import org.opendc.trace.formats.failure.FailureTraceFormat
 import org.opendc.trace.formats.workload.WorkloadTraceFormat
-import org.opendc.trace.formats.costmodel.CostModelTraceFormat
 import java.nio.file.Path
 import java.util.ServiceLoader
 
