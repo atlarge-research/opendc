@@ -32,7 +32,6 @@ import org.opendc.compute.simulator.host.SimHost
  */
 public class CostModelTableReaderImpl(
     private val costModel: CostModel,
-    private val hosts: Set<SimHost>,
 
     private val startTime: Duration = Duration.ofMillis(0),
 ) : CostModelTableReader {
@@ -40,7 +39,6 @@ public class CostModelTableReaderImpl(
         val newCostModelTable =
             CostModelTableReaderImpl(
                 costModel,
-                hosts,
             )
         newCostModelTable.setValues(this)
 
@@ -53,7 +51,7 @@ public class CostModelTableReaderImpl(
         _energyCost = table.energyCost
         _generalCost = table.generalCost
         _employeeCost = table.employeeCost
-        _componentValue = table.componentValueX
+        //_componentValue = table.componentValue
     }
 
     public override val costModelInfo: CostModelInfo =
@@ -86,10 +84,10 @@ public class CostModelTableReaderImpl(
     private var _generalCost = 0.0
     private var previousGeneralCost = 0.0
 
-    override val componentValueX: Double
-        get() = _componentValue - previousComponentValue
-    private var _componentValue = 0.0
-    private var previousComponentValue = 0.0
+//    override val componentValue: Double
+//        get() = _componentValue - previousComponentValue
+//    private var _componentValue = 0.0
+//    private var previousComponentValue = 0.0
 
 
     /**
@@ -98,10 +96,6 @@ public class CostModelTableReaderImpl(
     override fun record(now: Instant) {
         _timestamp = now
         _timestampAbsolute = now + startTime
-
-        for (host in hosts) {
-            _componentValue += host.getCpuStats().totalComponentValue()
-        }
 
         costModel.updateCounters()
         _energyCost = costModel.energyCost
@@ -119,7 +113,7 @@ public class CostModelTableReaderImpl(
         _employeeCost = 0.0
         previousGeneralCost = _generalCost
         _generalCost = 0.0
-        previousComponentValue = _componentValue
-        _componentValue = 0.0
+//        previousComponentValue = _componentValue
+//        _componentValue = 0.0
     }
 }

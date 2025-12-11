@@ -22,11 +22,14 @@
 
 package org.opendc.simulator.compute.costmodel;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.compute.power.SimPowerSource;
+import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
@@ -35,7 +38,7 @@ import org.opendc.simulator.engine.graph.FlowNode;
  * CostModel used work out the costs based on other consumers
  */
 @SuppressWarnings({"unused", "FieldMayBeFinal", "FieldCanBeLocal"}) // STFU WHILE TYPE THANK YOU
-public class CostModel extends FlowNode implements PowerReceiver {
+public class CostModel extends FlowNode implements PowerReceiver, HostReceiver {
     private static final Logger log = LogManager.getLogger(CostModel.class); // implements PowerReceiver
 
     private final long startTime; // The absolute timestamp on which the workload started
@@ -59,6 +62,8 @@ public class CostModel extends FlowNode implements PowerReceiver {
     private EnergyCostFragment current_fragment;
 
     private SimPowerSource simPowerSource = null;
+    private List<SimMachine> simMachines = new ArrayList<>();
+
 
     public CostModel(FlowEngine engine, List<EnergyCostFragment> energyCostFragmentsList, long startTime, double monthlySalaries, double generalUtilities) {
         super(engine);
@@ -128,14 +133,26 @@ public class CostModel extends FlowNode implements PowerReceiver {
          */
         long lastUpdate = this.lastUpdate;
         this.lastUpdate = now;
+        updatetHardwareValue();
 
         long passedTime = now - lastUpdate;
         if (passedTime > 0) {
             simPowerSource.updateCounters(now);
-
             updateEnergyCost();
             updateStaticCosts(passedTime);
+
+
         }
+    }
+
+    private void updatetHardwareValue() {
+        double valueCounter = 0;
+        for (SimMachine machine : simMachines) {
+            SimCpu cpu = machine.getCpu();
+            cpu.updateCounters();
+            valueCounter += cpu.getCurrentValue();
+        }
+        this.totalHardwareValue = valueCounter;
     }
 
     private void updateStaticCosts(long passedTime) {
@@ -215,5 +232,15 @@ public class CostModel extends FlowNode implements PowerReceiver {
     @Override
     public void removePowerSource(SimPowerSource powerSource) {
         this.simPowerSource = null;
+    }
+
+    @Override
+    public void setMachine(SimMachine simMachine) {
+        this.simMachines.add(simMachine);
+    }
+
+    @Override
+    public void removeMachine(SimMachine simMachine) {
+        this.simMachines.remove(simMachine);
     }
 }

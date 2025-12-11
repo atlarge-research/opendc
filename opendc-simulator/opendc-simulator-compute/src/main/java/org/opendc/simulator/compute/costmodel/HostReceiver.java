@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,40 +20,12 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.telemetry.table.costModel
+package org.opendc.simulator.compute.costmodel;
 
-import org.opendc.trace.util.parquet.exporter.Exportable
-import java.time.Instant
+import org.opendc.simulator.compute.machine.SimMachine;
 
-/**
- * An interface that is used to read a row of a host trace entry.
- */
-public interface CostModelTableReader : Exportable {
-    public fun copy(): CostModelTableReader
+public interface HostReceiver {
+    public void setMachine(SimMachine Machine);
 
-    public fun setValues(table: CostModelTableReader)
-
-    public fun record(now: Instant)
-
-    public fun reset()
-
-    public val costModelInfo: CostModelInfo
-
-    /**
-     * The timestamp of the current entry of the reader relative to the start of the workload.
-     */
-    public val timestamp: Instant
-
-    /**
-     * The timestamp of the current entry of the reader.
-     */
-    public val timestampAbsolute: Instant
-
-    public val energyCost: Double
-
-    public val generalCost: Double
-
-    public val employeeCost: Double
-
-    //public val componentValue: Double
+    public void removeMachine(SimMachine Machine);
 }

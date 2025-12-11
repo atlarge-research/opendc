@@ -213,7 +213,6 @@ public class ComputeMetricReader(
                         this.costModelTableReaders.computeIfAbsent(costModel) { it ->
                             CostModelTableReaderImpl(
                                 it,
-                                this.service.hosts,
                                 startTime
                             )
                         }

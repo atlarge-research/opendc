@@ -229,6 +229,10 @@ public class SimHost(
         return this.guests.toList()
     }
 
+    public fun getSimMachine(): SimMachine? {
+        return this.simMachine
+    }
+
     public fun canFit(task: ServiceTask): Boolean {
         val sufficientMemory = model.memoryCapacity >= task.memorySize
         val enoughCpus = model.coreCount >= task.cpuCoreCount

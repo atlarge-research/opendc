@@ -177,10 +177,12 @@ public class HostsProvisioningStep internal constructor(
                         hostSpec.expectedLifetime,
                         powerDistributor,
                     )
-
                 require(simHosts.add(simHost)) { "Host with name ${hostSpec.name} already exists" }
                 service.addHost(simHost)
+                simHost.getSimMachine()?.addReceiver(costModel)
             }
+
+            costModel.updateCounters() // Init the cost model, needed to calculate the hardware values before anything runs
         }
 
         return AutoCloseable {
