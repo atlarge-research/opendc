@@ -61,6 +61,9 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
     private double maxCapacity;
 
+    private double health;
+    private double cpuCost;
+
     private final PerformanceCounters performanceCounters = new PerformanceCounters();
     private long lastCounterUpdate;
     private final double cpuFrequencyInv;
@@ -107,8 +110,16 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         return this.currentCpuSupplied;
     }
 
+    public double getHealth() {
+        return health;
+    }
+
     public CpuModel getCpuModel() {
         return cpuModel;
+    }
+
+    public double getCurrentValue() {
+        return this.health * this.cpuCost;
     }
 
     @Override
@@ -131,6 +142,9 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         this.lastCounterUpdate = clock.millis();
 
         this.cpuFrequencyInv = 1 / this.maxCapacity;
+
+        this.health = 1.0f;
+        this.cpuCost = 1000.0f;
 
         this.currentPowerDemand = this.cpuPowerModel.computePower(this.currentCpuUtilization);
     }
@@ -184,6 +198,26 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
             this.performanceCounters.addActiveTime(Math.round(rate * factor));
             this.performanceCounters.addIdleTime(Math.round((capacity - rate) * factor));
             this.performanceCounters.addStealTime(Math.round((demand - rate) * factor));
+
+            // Compute health degradation
+            // delta time in ms
+            long msInDay = 24L * 60 * 60 * 1000;
+            double passedTimeInDays = delta/(double)msInDay;
+            double backgroundWear = passedTimeInDays * this.cpuModel.getDegradationModel().getBaseLineWearRate();
+            double utilizationDegradation = this.cpuModel.getDegradationModel().getUtilizationWearCoefficient() * passedTimeInDays;
+            if (currentCpuUtilization > 1 ){
+                System.exit(0);
+            }
+            double utilizationWear = currentCpuUtilization * utilizationDegradation;
+            double powerDegradation = this.cpuModel.getDegradationModel().getPowerWearCoefficient() * passedTimeInDays;
+            //TODO FIX HARDCODED, read from json
+            double cpuMaxWatt = 120;
+            double powerDegradationWear = powerDegradation * (this.currentCpuSupplied / cpuMaxWatt);
+
+            double totalWear = backgroundWear + utilizationWear + powerDegradationWear;
+
+            this.health -= totalWear;
+            this.performanceCounters.setTotalComponentValue(getCurrentValue());
         }
 
         this.performanceCounters.setDemand(this.currentCpuDemand);

@@ -27,4 +27,5 @@ public data class CostModelInfo(
     val energyCost: Double,
     val employeeCost: Double,
     val generalCost: Double,
+//    val componentDegradationCost: Double,
 )

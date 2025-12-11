@@ -36,6 +36,7 @@ public final class CpuModel {
     private final String vendor;
     private final String modelName;
     private final String arch;
+    private final Double componentPrice;
     private final ComponentDegradationModel degradationModel;
 
     /**
@@ -55,6 +56,7 @@ public final class CpuModel {
             String vendor,
             String modelName,
             String arch,
+            Double componentPrice,
             ComponentDegradationModel degradationModel) {
         this.id = id;
         this.coreCount = coreCount;
@@ -63,11 +65,12 @@ public final class CpuModel {
         this.vendor = vendor;
         this.modelName = modelName;
         this.arch = arch;
+        this.componentPrice = componentPrice;
         this.degradationModel = degradationModel;
     }
 
-    public CpuModel(int id, int coreCount, double coreSpeed, ComponentDegradationModel degradationModel) {
-        this(id, coreCount, coreSpeed, "unkown", "unkown", "unkown", degradationModel);
+    public CpuModel(int id, int coreCount, double coreSpeed, double componentPrice, ComponentDegradationModel degradationModel) {
+        this(id, coreCount, coreSpeed, "unkown", "unkown", "unkown",componentPrice, degradationModel);
     }
 
     /**
@@ -117,6 +120,10 @@ public final class CpuModel {
      */
     public String getArchitecture() {
         return arch;
+    }
+
+    public Double getComponentPrice() {
+        return componentPrice;
     }
 
     public ComponentDegradationModel getDegradationModel() {

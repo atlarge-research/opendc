@@ -109,6 +109,7 @@ public data class CPUJSONSpec(
     val count: Int = 1,
     val coreCount: Int,
     val coreSpeed: Frequency,
+    val componentPrice: Double,
     val degradationModel: DegradationModelJSONSpec? = null,
 )
 

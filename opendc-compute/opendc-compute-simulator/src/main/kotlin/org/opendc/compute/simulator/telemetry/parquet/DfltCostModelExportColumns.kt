@@ -69,6 +69,11 @@ public object DfltCostModelExportColumns {
             field = Types.required(FLOAT).named("general_cost"),
         ) { it.generalCost }
 
+    public val COMPONENT_DEGRADATION_COST: ExportColumn<CostModelTableReader> =
+        ExportColumn(
+            field = Types.required(FLOAT).named("degradation_cost"),
+        ) { it.componentValueX }
+
     /**
      * The columns that are always included in the output file.
      */
@@ -79,5 +84,6 @@ public object DfltCostModelExportColumns {
             ENERGY_COST,
             EMPLOYEE_COST,
             GENERAL_COST,
+            COMPONENT_DEGRADATION_COST,
         )
 }

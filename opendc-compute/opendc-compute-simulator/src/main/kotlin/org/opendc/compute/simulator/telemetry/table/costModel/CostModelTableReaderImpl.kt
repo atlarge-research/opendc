@@ -25,18 +25,22 @@ package org.opendc.compute.simulator.telemetry.table.costModel
 import org.opendc.simulator.compute.costmodel.CostModel
 import java.time.Duration
 import java.time.Instant
+import org.opendc.compute.simulator.host.SimHost
 
 /**
  * An aggregator for task metrics before they are reported.
  */
 public class CostModelTableReaderImpl(
     private val costModel: CostModel,
+    private val hosts: Set<SimHost>,
+
     private val startTime: Duration = Duration.ofMillis(0),
 ) : CostModelTableReader {
     override fun copy(): CostModelTableReader {
         val newCostModelTable =
             CostModelTableReaderImpl(
                 costModel,
+                hosts,
             )
         newCostModelTable.setValues(this)
 
@@ -49,6 +53,7 @@ public class CostModelTableReaderImpl(
         _energyCost = table.energyCost
         _generalCost = table.generalCost
         _employeeCost = table.employeeCost
+        _componentValue = table.componentValueX
     }
 
     public override val costModelInfo: CostModelInfo =
@@ -81,12 +86,22 @@ public class CostModelTableReaderImpl(
     private var _generalCost = 0.0
     private var previousGeneralCost = 0.0
 
+    override val componentValueX: Double
+        get() = _componentValue - previousComponentValue
+    private var _componentValue = 0.0
+    private var previousComponentValue = 0.0
+
+
     /**
      * Record the next cycle.
      */
     override fun record(now: Instant) {
         _timestamp = now
         _timestampAbsolute = now + startTime
+
+        for (host in hosts) {
+            _componentValue += host.getCpuStats().totalComponentValue()
+        }
 
         costModel.updateCounters()
         _energyCost = costModel.energyCost
@@ -104,5 +119,7 @@ public class CostModelTableReaderImpl(
         _employeeCost = 0.0
         previousGeneralCost = _generalCost
         _generalCost = 0.0
+        previousComponentValue = _componentValue
+        _componentValue = 0.0
     }
 }

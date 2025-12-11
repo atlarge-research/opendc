@@ -340,6 +340,7 @@ public class OpenDCRunner(
                         "Intel",
                         "amd64",
                         cpu.name,
+                        0.0,
                         null,
                     )
                 }

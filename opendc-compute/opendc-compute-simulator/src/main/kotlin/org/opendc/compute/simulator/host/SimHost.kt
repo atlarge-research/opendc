@@ -356,6 +356,7 @@ public class SimHost(
             counters.demand,
             counters.supply,
             counters.supply / cpuLimit,
+            counters.totalComponentValue
         )
     }
 

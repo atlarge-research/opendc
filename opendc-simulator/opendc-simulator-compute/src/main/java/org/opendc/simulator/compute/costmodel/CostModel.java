@@ -52,6 +52,7 @@ public class CostModel extends FlowNode implements PowerReceiver {
 
     private double monthlySalaries = 0f;
     private double generalUtilities = 0f;
+    private double totalHardwareValue =  0f;
 
     private final List<EnergyCostFragment> fragments;
     private int fragment_index;
