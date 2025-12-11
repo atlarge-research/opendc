@@ -25,7 +25,6 @@ package org.opendc.compute.simulator.telemetry.table.costModel
 import org.opendc.simulator.compute.costmodel.CostModel
 import java.time.Duration
 import java.time.Instant
-import org.opendc.compute.simulator.host.SimHost
 
 /**
  * An aggregator for task metrics before they are reported.
@@ -51,7 +50,7 @@ public class CostModelTableReaderImpl(
         _energyCost = table.energyCost
         _generalCost = table.generalCost
         _employeeCost = table.employeeCost
-        //_componentValue = table.componentValue
+        _componentDegradationCost = table.componentDegradationCost
     }
 
     public override val costModelInfo: CostModelInfo =
@@ -59,6 +58,7 @@ public class CostModelTableReaderImpl(
             costModel.energyCost,
             costModel.employeeCost,
             costModel.generalCost,
+            costModel.hardwareDegradationCost,
         )
 
     private var _timestamp = Instant.MIN
@@ -84,10 +84,10 @@ public class CostModelTableReaderImpl(
     private var _generalCost = 0.0
     private var previousGeneralCost = 0.0
 
-//    override val componentValue: Double
-//        get() = _componentValue - previousComponentValue
-//    private var _componentValue = 0.0
-//    private var previousComponentValue = 0.0
+    override val componentDegradationCost: Double
+        get() = _componentDegradationCost - previousValueDegradationCost
+    private var _componentDegradationCost = 0.0
+    private var previousValueDegradationCost = 0.0
 
 
     /**
@@ -101,6 +101,7 @@ public class CostModelTableReaderImpl(
         _energyCost = costModel.energyCost
         _employeeCost = costModel.employeeCost
         _generalCost = costModel.generalCost
+        _componentDegradationCost = costModel.hardwareDegradationCost
     }
 
     /**
@@ -113,7 +114,7 @@ public class CostModelTableReaderImpl(
         _employeeCost = 0.0
         previousGeneralCost = _generalCost
         _generalCost = 0.0
-//        previousComponentValue = _componentValue
-//        _componentValue = 0.0
+        previousValueDegradationCost = _componentDegradationCost
+        _componentDegradationCost = 0.0
     }
 }

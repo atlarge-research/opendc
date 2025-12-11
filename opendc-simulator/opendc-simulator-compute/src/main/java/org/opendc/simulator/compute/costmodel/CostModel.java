@@ -56,6 +56,7 @@ public class CostModel extends FlowNode implements PowerReceiver, HostReceiver {
     private double monthlySalaries = 0f;
     private double generalUtilities = 0f;
     private double totalHardwareValue =  0f;
+    private double initialHardwareValue = 0f;
 
     private final List<EnergyCostFragment> fragments;
     private int fragment_index;
@@ -107,6 +108,14 @@ public class CostModel extends FlowNode implements PowerReceiver, HostReceiver {
         return this.generalCost;
     }
 
+    public double getTotalHardwareValue() {
+        return this.totalHardwareValue;
+    }
+
+    public double getHardwareDegradationCost() {
+        return this.initialHardwareValue - this.totalHardwareValue;
+    }
+
     @Override
     public long onUpdate(long now) {
         long absolute_time = getAbsoluteTime(now);
@@ -133,26 +142,29 @@ public class CostModel extends FlowNode implements PowerReceiver, HostReceiver {
          */
         long lastUpdate = this.lastUpdate;
         this.lastUpdate = now;
-        updatetHardwareValue();
+
+        updateHardwareValue(now);
 
         long passedTime = now - lastUpdate;
         if (passedTime > 0) {
             simPowerSource.updateCounters(now);
             updateEnergyCost();
             updateStaticCosts(passedTime);
-
-
         }
     }
 
-    private void updatetHardwareValue() {
+    private void updateHardwareValue(long now) {
         double valueCounter = 0;
         for (SimMachine machine : simMachines) {
             SimCpu cpu = machine.getCpu();
-            cpu.updateCounters();
+            cpu.updateCounters(now);
             valueCounter += cpu.getCurrentValue();
         }
         this.totalHardwareValue = valueCounter;
+
+        if (this.initialHardwareValue == 0f){
+            this.initialHardwareValue = valueCounter;
+        }
     }
 
     private void updateStaticCosts(long passedTime) {
@@ -163,13 +175,6 @@ public class CostModel extends FlowNode implements PowerReceiver, HostReceiver {
         this.employeeCost += salariesPerFragmentDuration;
         this.generalCost += generalCostsFragmentDuration;
     }
-
-    // TODO carbon send it to a bunch of recievers, why?!
-    //    private void pushEnergyCost(double energyPricePER_KWH) {
-    //        for (CarbonReceiver receiver : this.receivers) {
-    //            receiver.updateEnergyCost(carbonIntensity);
-    //        }
-    //    }
 
     private void updateEnergyCost() {
         if (this.energyConsumed > this.energyConsumedAccounted) {

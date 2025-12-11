@@ -55,5 +55,5 @@ public interface CostModelTableReader : Exportable {
 
     public val employeeCost: Double
 
-    //public val componentValue: Double
+    public val componentDegradationCost: Double
 }

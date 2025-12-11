@@ -22,10 +22,9 @@
 
 package org.opendc.compute.simulator.telemetry.table.costModel
 
-// TODO orignally copied over from powersourceinfo, not sure yet how this ties into the rest or if its needed
 public data class CostModelInfo(
     val energyCost: Double,
     val employeeCost: Double,
     val generalCost: Double,
-//    val componentDegradationCost: Double,
+    val componentDegradationCost: Double,
 )
