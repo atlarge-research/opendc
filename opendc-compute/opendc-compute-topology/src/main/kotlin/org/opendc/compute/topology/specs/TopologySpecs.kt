@@ -109,6 +109,7 @@ public data class CPUJSONSpec(
     val count: Int = 1,
     val coreCount: Int,
     val coreSpeed: Frequency,
+    val cpuTDP: Double,
     val componentPrice: Double,
     val degradationModel: DegradationModelJSONSpec? = null,
 )
@@ -291,6 +292,7 @@ public data class DegradationModelJSONSpec(
     val baselineWearRate: Double = 0.0,
     val utilizationWearCoeff: Double = 0.0,
     val powerDegradation: Double = 0.0,
+    val replacementThreshold: Double = 0.0,
 ) { // dont even use this I tink, the DFLT
     public companion object {
         public val DFLT: DegradationModelJSONSpec =

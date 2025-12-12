@@ -175,11 +175,13 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
                 globalCoreId++,
                 cpu.coreCount,
                 cpu.coreSpeed.toMHz(),
+                cpu.cpuTDP,
                 cpu.componentPrice,
                 ComponentDegradationModel(
                     cpu.degradationModel?.baselineWearRate ?: 0.0,
                     cpu.degradationModel?.utilizationWearCoeff ?: 0.0,
                     cpu.degradationModel?.powerDegradation ?: 0.0,
+                    cpu.degradationModel?.replacementThreshold ?: 0.0,
                 ),
             )
         }

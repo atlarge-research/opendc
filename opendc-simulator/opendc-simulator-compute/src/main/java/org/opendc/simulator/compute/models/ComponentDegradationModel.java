@@ -26,12 +26,15 @@ public final class ComponentDegradationModel {
     private final double baseLineWearRate;
     private final double utilizationWearCoefficient;
     private final double powerWearCoefficient;
+    private final double replacementThreshold;
 
     public ComponentDegradationModel(
-            double baseLineWearRate, double utilizationWearCoefficient, double powerWearCoefficient) {
+            double baseLineWearRate, double utilizationWearCoefficient,
+            double powerWearCoefficient,  double replacementThreshold) {
         this.baseLineWearRate = baseLineWearRate;
         this.utilizationWearCoefficient = utilizationWearCoefficient;
         this.powerWearCoefficient = powerWearCoefficient;
+        this.replacementThreshold = replacementThreshold;
     }
 
     public double getBaseLineWearRate() {
@@ -46,6 +49,10 @@ public final class ComponentDegradationModel {
         return powerWearCoefficient;
     }
 
+    public double getReplacementThreshold() {
+        return replacementThreshold;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -53,7 +60,8 @@ public final class ComponentDegradationModel {
         ComponentDegradationModel that = (ComponentDegradationModel) o;
         return Double.compare(that.baseLineWearRate, baseLineWearRate) == 0
                 && Double.compare(that.utilizationWearCoefficient, utilizationWearCoefficient) == 0
-                && Double.compare(that.powerWearCoefficient, powerWearCoefficient) == 0;
+                && Double.compare(that.powerWearCoefficient, powerWearCoefficient) == 0
+                && Double.compare(that.replacementThreshold, replacementThreshold) == 0;
     }
 
     @Override
@@ -61,6 +69,7 @@ public final class ComponentDegradationModel {
         return "DegradationCoeffecients[" + "baseline wear= " + baseLineWearRate
                 + ", utilization wear= " + utilizationWearCoefficient
                 + ", power wear = " + powerWearCoefficient
+                + ", replacement threshold = " + replacementThreshold
                 + "]";
     }
 }
