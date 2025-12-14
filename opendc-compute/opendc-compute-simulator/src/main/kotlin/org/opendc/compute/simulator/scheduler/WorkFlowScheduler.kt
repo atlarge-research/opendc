@@ -1,146 +1,291 @@
-    package org.opendc.compute.simulator.scheduler
+package org.opendc.compute.simulator.scheduler
 
-    import org.opendc.compute.simulator.service.HostView
-    import org.opendc.compute.simulator.service.ServiceTask
-    import org.opendc.compute.simulator.scheduler.filters.HostFilter
-    import org.opendc.compute.simulator.scheduler.weights.HostWeigher
-    import java.time.InstantSource
-    import java.util.SplittableRandom
-    import java.util.random.RandomGenerator
-    import org.opendc.common.logger.errAndNull
-    import org.opendc.common.logger.logger
+import org.opendc.compute.simulator.scheduler.filters.HostFilter
+import org.opendc.compute.simulator.scheduler.weights.HostWeigher
+import java.time.InstantSource
+import java.util.SplittableRandom
+import java.util.random.RandomGenerator
+import org.opendc.common.logger.logger
+import kotlin.math.abs
 
-    public class WorkflowAwareScheduler(
-        filters: List<HostFilter>,
-        weighers: List<HostWeigher>,
-        private val enableDeadlineScore: Boolean,
-        private val weightUrgency: Double = 0.2,
-        private val weightCriticalDependencyChain: Double = 0.2,
-        private val enableParallelismScore: Boolean = false,
-        private val weightParallelism: Double = 0.0,
-        private val parallelismDecayRate: Double = 0.15,
-        private val clock: InstantSource,
-        subsetSize: Int = 1,
-        random: RandomGenerator = SplittableRandom(0),
-        numHosts: Int = 1000,
-        private val taskLookaheadThreshold: Int = 1000,
-    ) : FilterScheduler(filters, weighers, subsetSize, random, numHosts) {
+// Emily's version
 
-        private val initTime: Long
+public class WorkflowAwareScheduler(
+    filters: List<HostFilter>,
+    weighers: List<HostWeigher>,
+    private val enableDeadlineScore: Boolean,
+    private val weightUrgency: Double = 0.2,
+    private val weightCriticalDependencyChain: Double = 0.2,
+    private val enableParallelismScore: Boolean = false,
+    private val weightParallelism: Double = 0.0,
+    private val parallelismDecayRate: Double = 0.15,
+    private val clock: InstantSource,
+    subsetSize: Int = 1,
+    random: RandomGenerator = SplittableRandom(0),
+    numHosts: Int = 1000,
+    private val taskLookaheadThreshold: Int = 1000,
+) : FilterScheduler(filters, weighers, subsetSize, random, numHosts) {
 
-        init {
-            // Record scheduler initialization time
-            initTime = clock.millis()
-        }
+    private val initTime: Long = clock.millis()
 
-        override fun selectTask(iter: MutableIterator<SchedulingRequest>): SchedulingRequest? {
-            val currentTime = clock.millis()
+    @Volatile
+    private var simToEpochOffset: Long? = null
 
-            var simulationOffsetCurrentTime: Long? = null
-            val listIter = iter as ListIterator<SchedulingRequest>
+    // Debug controls
+    private var pickedCount: Int = 0
 
-            // Count ready tasks
-            var readyCount = 0
-            while (listIter.hasNext()) {
-                val req = listIter.next()
-                if (!req.isCancelled) readyCount++
-            }
-            while (listIter.hasPrevious()) listIter.previous()
-
-            var highestPriorityIndex = -1
-            var highestPriorityScore = Double.NEGATIVE_INFINITY
-            var count = 0
-
-            // --- Lookahead phase: evaluate up to 'taskLookaheadThreshold' tasks ---
-            while (listIter.hasNext() && count < taskLookaheadThreshold) {
-                val currentIndex = listIter.nextIndex()
-                val req = listIter.next()
-
-                // Initialize simulation offset based on first submitted task
-                if (simulationOffsetCurrentTime == null) {
-                    val firstSubmit = req.task.getService().firstTaskSubmittedAt.toLong()
-                    val simulationOffset = firstSubmit - initTime
-                    simulationOffsetCurrentTime = currentTime + simulationOffset
-                }
-
-                if (req.isCancelled) continue  // Skip cancelled tasks
-                
-                // Calculate task priority score
-                val score = calculatePriorityScore(req, simulationOffsetCurrentTime!!, readyCount)
-
-                // Track the task with the highest score
-                if (score > highestPriorityScore) {
-                    highestPriorityScore = score
-                    highestPriorityIndex = currentIndex
-                }
-
-                count++
-            }
-
-            // Reset iterator back to the beginning
-            while (listIter.hasPrevious()) {
-                listIter.previous()
-            }
-
-            if (highestPriorityIndex == -1) return null  // No valid task found
-
-            // --- Navigation phase: move iterator to highest priority task ---
-            while (listIter.nextIndex() < highestPriorityIndex) {
-                listIter.next()
-            }
-
-            val selected = listIter.next()  // Return selected task
-            return selected
-        }
-
-        private fun calculatePriorityScore(req: SchedulingRequest, currentTime: Long, readyCount: Int): Double {
-            val task = req.task
-
-            // Compute urgency score based on task deadline
-            val urgencyScore =
-                if (this.enableDeadlineScore) {
-                    val slack = task.deadline + task.getSubmittedAt() - currentTime
-
-                    if (slack < 0L) {
-                        // TODO: how to prioritze among overdue tasks
-                        Double.MAX_VALUE  // 1_000_000.0 + (1.0 / abs(slack.toDouble()))
-                    } else if (slack > 0L) {
-                        1.0 / slack.toDouble()
-                    } else {
-                        Double.MAX_VALUE
-                    }
-                } else {
-                    0.0
-                }
-
-            // Compute chain score based on critical dependency chain length
-            val chainLength = task.calcMaxDependencyChainLength()
-            val chainScore = chainLength.toDouble()
-
-            // Enable parallelism scoring only when the ready pool is small
-            val parallelismScore =
-                if (this.enableParallelismScore && readyCount < this.taskLookaheadThreshold) {
-                    val calculatedParallelism = task.calculateParallelismScore(this.parallelismDecayRate)
-                    calculatedParallelism
-                } else {
-                    0.0
-                }
-
-            // Weighted sum of urgency and chain scores
-
-            val weightedUrgency = this.weightUrgency * urgencyScore
-            val weightedChain = this.weightCriticalDependencyChain * chainScore
-            val weightedParallelism = this.weightParallelism * parallelismScore
-
-            val finalScore = weightedUrgency + weightedChain + weightedParallelism
-
-            return finalScore
-        }
-
-        private companion object {
-            val LOG by logger()
-        }
+    private companion object {
+        val LOG by logger()
     }
+
+    override fun selectTask(iter: MutableIterator<SchedulingRequest>): SchedulingRequest? {
+        val listIter = iter as ListIterator<SchedulingRequest>
+
+        // Count ready tasks
+        var readyCount = 0
+        while (listIter.hasNext()) {
+            val req = listIter.next()
+            if (!req.isCancelled) readyCount++
+        }
+        while (listIter.hasPrevious()) listIter.previous()
+
+        var highestPriorityIndex = -1
+        var highestPriorityScore = Double.NEGATIVE_INFINITY
+        var count = 0
+
+        // Lookahead
+        while (listIter.hasNext() && count < taskLookaheadThreshold) {
+            val currentIndex = listIter.nextIndex()
+            val req = listIter.next()
+            if (req.isCancelled) continue
+
+            // Initialize offset once
+            if (simToEpochOffset == null) {
+                val firstSubmitEpoch = req.task.getService().firstTaskSubmittedAt.toLong()
+                simToEpochOffset = firstSubmitEpoch - initTime
+            }
+
+            val nowEpoch = clock.millis() + simToEpochOffset!!
+            val score = calculatePriorityScore(req, nowEpoch, readyCount)
+
+            if (score > highestPriorityScore) {
+                highestPriorityScore = score
+                highestPriorityIndex = currentIndex
+            }
+
+            count++
+        }
+
+        // Reset iterator
+        while (listIter.hasPrevious()) listIter.previous()
+
+        if (highestPriorityIndex == -1) return null
+
+        // Move to selected task
+        while (listIter.nextIndex() < highestPriorityIndex) {
+            listIter.next()
+        }
+
+        val selected = listIter.next()
+
+        return selected
+    }
+
+    private fun calculatePriorityScore(
+        req: SchedulingRequest,
+        currentTimeEpoch: Long,
+        readyCount: Int
+    ): Double {
+        val task = req.task
+        val parallelismActive = enableParallelismScore && readyCount < taskLookaheadThreshold
+        val deadlineEpoch = task.getSubmittedAt() + abs(task.deadline)
+
+        val slack =
+            if (enableDeadlineScore) {
+                deadlineEpoch - currentTimeEpoch
+            } else {
+                0L
+            }
+
+        val urgencyScore =
+            if (enableDeadlineScore) {
+                when {
+                    // TODO: how to prioritize among overdue tasks
+                    slack < 0L -> Double.MAX_VALUE
+                    slack > 0L -> 1.0 / slack.toDouble()
+                    else -> Double.MAX_VALUE
+                }
+            } else {
+                0.0
+            }
+
+        // Compute chain score based on critical dependency chain length
+        val chainLength = task.calcMaxDependencyChainLength()
+        val chainScore = chainLength.toDouble()
+
+        // Enable parallelism scoring only when the ready pool is small
+        val parallelismScore =
+            if (parallelismActive) {
+                task.calculateParallelismScore(parallelismDecayRate)
+            } else {
+                0.0
+            }
+
+        // Weighted sum of urgency and chain scores
+        val weightedUrgency = weightUrgency * urgencyScore
+        val weightedChain = weightCriticalDependencyChain * chainScore
+        val weightedParallelism = weightParallelism * parallelismScore
+
+        val finalScore = weightedUrgency + weightedChain + weightedParallelism
+
+        return finalScore
+    }
+}
+
+
+//    package org.opendc.compute.simulator.scheduler
+//
+//    import org.opendc.compute.simulator.service.HostView
+//    import org.opendc.compute.simulator.service.ServiceTask
+//    import org.opendc.compute.simulator.scheduler.filters.HostFilter
+//    import org.opendc.compute.simulator.scheduler.weights.HostWeigher
+//    import java.time.InstantSource
+//    import java.util.SplittableRandom
+//    import java.util.random.RandomGenerator
+//    import org.opendc.common.logger.errAndNull
+//    import org.opendc.common.logger.logger
+//
+//    public class WorkflowAwareScheduler(
+//        filters: List<HostFilter>,
+//        weighers: List<HostWeigher>,
+//        private val enableDeadlineScore: Boolean,
+//        private val weightUrgency: Double = 0.2,
+//        private val weightCriticalDependencyChain: Double = 0.2,
+//        private val enableParallelismScore: Boolean = false,
+//        private val weightParallelism: Double = 0.0,
+//        private val parallelismDecayRate: Double = 0.15,
+//        private val clock: InstantSource,
+//        subsetSize: Int = 1,
+//        random: RandomGenerator = SplittableRandom(0),
+//        numHosts: Int = 1000,
+//        private val taskLookaheadThreshold: Int = 1000,
+//    ) : FilterScheduler(filters, weighers, subsetSize, random, numHosts) {
+//
+//        private val initTime: Long
+//
+//        init {
+//            // Record scheduler initialization time
+//            initTime = clock.millis()
+//        }
+//
+//        override fun selectTask(iter: MutableIterator<SchedulingRequest>): SchedulingRequest? {
+//            val currentTime = clock.millis()
+//
+//            var simulationOffsetCurrentTime: Long? = null
+//            val listIter = iter as ListIterator<SchedulingRequest>
+//
+//            // Count ready tasks
+//            var readyCount = 0
+//            while (listIter.hasNext()) {
+//                val req = listIter.next()
+//                if (!req.isCancelled) readyCount++
+//            }
+//            while (listIter.hasPrevious()) listIter.previous()
+//
+//            var highestPriorityIndex = -1
+//            var highestPriorityScore = Double.NEGATIVE_INFINITY
+//            var count = 0
+//
+//            // --- Lookahead phase: evaluate up to 'taskLookaheadThreshold' tasks ---
+//            while (listIter.hasNext() && count < taskLookaheadThreshold) {
+//                val currentIndex = listIter.nextIndex()
+//                val req = listIter.next()
+//
+//                // Initialize simulation offset based on first submitted task
+//                if (simulationOffsetCurrentTime == null) {
+//                    val firstSubmit = req.task.getService().firstTaskSubmittedAt.toLong()
+//                    val simulationOffset = firstSubmit - initTime
+//                    simulationOffsetCurrentTime = currentTime + simulationOffset
+//                }
+//
+//                if (req.isCancelled) continue  // Skip cancelled tasks
+//
+//                // Calculate task priority score
+//                val score = calculatePriorityScore(req, simulationOffsetCurrentTime!!, readyCount)
+//
+//                // Track the task with the highest score
+//                if (score > highestPriorityScore) {
+//                    highestPriorityScore = score
+//                    highestPriorityIndex = currentIndex
+//                }
+//
+//                count++
+//            }
+//
+//            // Reset iterator back to the beginning
+//            while (listIter.hasPrevious()) {
+//                listIter.previous()
+//            }
+//
+//            if (highestPriorityIndex == -1) return null  // No valid task found
+//
+//            // --- Navigation phase: move iterator to highest priority task ---
+//            while (listIter.nextIndex() < highestPriorityIndex) {
+//                listIter.next()
+//            }
+//
+//            val selected = listIter.next()  // Return selected task
+//            return selected
+//        }
+//
+//        private fun calculatePriorityScore(req: SchedulingRequest, currentTime: Long, readyCount: Int): Double {
+//            val task = req.task
+//
+//            // Compute urgency score based on task deadline
+//            val urgencyScore =
+//                if (this.enableDeadlineScore) {
+//                    val slack = task.deadline + task.getSubmittedAt() - currentTime
+//
+//                    if (slack < 0L) {
+//                        // TODO: how to prioritze among overdue tasks
+//                        Double.MAX_VALUE  // 1_000_000.0 + (1.0 / abs(slack.toDouble()))
+//                    } else if (slack > 0L) {
+//                        1.0 / slack.toDouble()
+//                    } else {
+//                        Double.MAX_VALUE
+//                    }
+//                } else {
+//                    0.0
+//                }
+//
+//            // Compute chain score based on critical dependency chain length
+//            val chainLength = task.calcMaxDependencyChainLength()
+//            val chainScore = chainLength.toDouble()
+//
+//            // Enable parallelism scoring only when the ready pool is small
+//            val parallelismScore =
+//                if (this.enableParallelismScore && readyCount < this.taskLookaheadThreshold) {
+//                    val calculatedParallelism = task.calculateParallelismScore(this.parallelismDecayRate)
+//                    calculatedParallelism
+//                } else {
+//                    0.0
+//                }
+//
+//            // Weighted sum of urgency and chain scores
+//
+//            val weightedUrgency = this.weightUrgency * urgencyScore
+//            val weightedChain = this.weightCriticalDependencyChain * chainScore
+//            val weightedParallelism = this.weightParallelism * parallelismScore
+//
+//            val finalScore = weightedUrgency + weightedChain + weightedParallelism
+//
+//            return finalScore
+//        }
+//
+//        private companion object {
+//            val LOG by logger()
+//        }
+//    }
 
 
 
