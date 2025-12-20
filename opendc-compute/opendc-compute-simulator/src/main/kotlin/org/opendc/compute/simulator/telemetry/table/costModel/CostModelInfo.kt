@@ -23,6 +23,7 @@
 package org.opendc.compute.simulator.telemetry.table.costModel
 
 public data class CostModelInfo(
+    val hostName: String,
     val energyCost: Double,
     val employeeCost: Double,
     val generalCost: Double,

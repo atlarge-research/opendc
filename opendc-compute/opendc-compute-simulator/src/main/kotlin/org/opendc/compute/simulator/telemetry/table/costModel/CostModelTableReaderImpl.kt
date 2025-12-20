@@ -45,6 +45,7 @@ public class CostModelTableReaderImpl(
     }
 
     override fun setValues(table: CostModelTableReader) {
+        _hostName = table.hostName
         _timestamp = table.timestamp
         _timestampAbsolute = table.timestampAbsolute
         _energyCost = table.energyCost
@@ -55,11 +56,16 @@ public class CostModelTableReaderImpl(
 
     public override val costModelInfo: CostModelInfo =
         CostModelInfo(
+            costModel.hostName,
             costModel.energyCost,
             costModel.employeeCost,
             costModel.generalCost,
             costModel.hardwareDegradationCost,
         )
+
+    override val hostName: String
+        get () = _hostName
+    private var _hostName : String = ""
 
     private var _timestamp = Instant.MIN
     override val timestamp: Instant
@@ -96,6 +102,7 @@ public class CostModelTableReaderImpl(
     override fun record(now: Instant) {
         _timestamp = now
         _timestampAbsolute = now + startTime
+        _hostName = costModel.hostName
 
         costModel.updateCounters()
         _energyCost = costModel.energyCost

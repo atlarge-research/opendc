@@ -22,10 +22,14 @@
 
 package org.opendc.compute.simulator.telemetry.parquet
 
+import org.apache.parquet.io.api.Binary
+import org.apache.parquet.schema.LogicalTypeAnnotation
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
 import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReader
+import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 
 /**
@@ -54,6 +58,14 @@ public object DfltCostModelExportColumns {
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
+    public val CLUSTER_NAME: ExportColumn<CostModelTableReader> =
+        ExportColumn(
+            field =
+                Types.required(BINARY)
+                    .`as`(LogicalTypeAnnotation.stringType())
+                    .named("cluster_name"),
+        ) { Binary.fromString(it.hostName) }
+
     public val ENERGY_COST: ExportColumn<CostModelTableReader> =
         ExportColumn(
             field = Types.required(FLOAT).named("energy_cost"),
@@ -81,6 +93,7 @@ public object DfltCostModelExportColumns {
         setOf(
             TIMESTAMP,
             TIMESTAMP_ABS,
+            CLUSTER_NAME,
             ENERGY_COST,
             EMPLOYEE_COST,
             GENERAL_COST,

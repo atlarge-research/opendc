@@ -39,6 +39,8 @@ public interface CostModelTableReader : Exportable {
 
     public val costModelInfo: CostModelInfo
 
+    public val hostName: String
+
     /**
      * The timestamp of the current entry of the reader relative to the start of the workload.
      */

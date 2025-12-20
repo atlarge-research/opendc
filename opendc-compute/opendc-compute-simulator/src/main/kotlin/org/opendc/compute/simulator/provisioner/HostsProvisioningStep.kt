@@ -72,7 +72,9 @@ public class HostsProvisioningStep internal constructor(
 
             val costModel = CostModel(engine, energyCostFragments, startTime,
                 cluster.clusterCostModel?.monthlySalaries?:0.0,
-                cluster.clusterCostModel?.generalUtilities?:0.0)
+                cluster.clusterCostModel?.generalUtilities?:0.0,
+                cluster.name
+                )
             simCostModels.add(costModel)
             service.addCostModel(costModel)
 

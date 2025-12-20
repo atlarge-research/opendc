@@ -41,10 +41,10 @@ import org.opendc.simulator.engine.graph.FlowNode;
 public class CostModel extends FlowNode implements PowerReceiver, HostReceiver {
     private static final Logger log = LogManager.getLogger(CostModel.class); // implements PowerReceiver
 
+    private final String hostName;
     private final long startTime; // The absolute timestamp on which the workload started
     private long lastUpdate;
 
-    private double test = 0f;
     private double energyCostPerKWH = 0f;
     private double energyConsumedAccounted = 0f;
     private double energyConsumed = 0f;
@@ -53,8 +53,8 @@ public class CostModel extends FlowNode implements PowerReceiver, HostReceiver {
     private double employeeCost = 0f;
     private double generalCost = 0f;
 
-    private double monthlySalaries = 0f;
-    private double generalUtilities = 0f;
+    private double monthlySalaries;
+    private double generalUtilities;
     private double totalHardwareValue =  0f;
     private double initialHardwareValue = 0f;
 
@@ -66,9 +66,10 @@ public class CostModel extends FlowNode implements PowerReceiver, HostReceiver {
     private List<SimMachine> simMachines = new ArrayList<>();
 
 
-    public CostModel(FlowEngine engine, List<EnergyCostFragment> energyCostFragmentsList, long startTime, double monthlySalaries, double generalUtilities) {
+    public CostModel(FlowEngine engine, List<EnergyCostFragment> energyCostFragmentsList, long startTime, double monthlySalaries, double generalUtilities, String hostName) {
         super(engine);
 
+        this.hostName = hostName;
         this.startTime = startTime;
         this.fragments = energyCostFragmentsList;
         this.lastUpdate = this.clock.millis();
@@ -91,6 +92,7 @@ public class CostModel extends FlowNode implements PowerReceiver, HostReceiver {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public String getHostName() { return this.hostName; }
 
     public double getEnergyCostPerKWH() {
         return energyCostPerKWH;
