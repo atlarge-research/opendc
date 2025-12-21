@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,39 +20,12 @@
  * SOFTWARE.
  */
 
-plugins {
-    id("com.diffplug.spotless")
-}
+package org.opendc.simulator.compute.costmodel;
 
-spotless {
-    pluginManager.withPlugin("java") {
-        java {
-            importOrder()
-            removeUnusedImports()
+import org.opendc.simulator.compute.machine.SimMachine;
 
-            palantirJavaFormat()
+public interface HostReceiver {
+    public void setMachine(SimMachine Machine);
 
-            trimTrailingWhitespace()
-            endWithNewline()
-
-            licenseHeaderFile(rootProject.file("buildSrc/src/main/kotlin/license.kt"))
-        }
-    }
-
-    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
-        kotlin {
-            ktlint("1.2.1")
-            trimTrailingWhitespace()
-            endWithNewline()
-
-            licenseHeaderFile(rootProject.file("buildSrc/src/main/kotlin/license.kt"))
-        }
-    }
-
-    kotlinGradle {
-        ktlint("1.2.1")
-
-        trimTrailingWhitespace()
-        endWithNewline()
-    }
+    public void removeMachine(SimMachine Machine);
 }

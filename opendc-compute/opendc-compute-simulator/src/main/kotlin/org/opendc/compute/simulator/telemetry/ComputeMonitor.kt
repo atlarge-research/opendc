@@ -23,11 +23,11 @@
 package org.opendc.compute.simulator.telemetry
 
 import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReader
+import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReader
 import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
-import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReader
 
 /**
  * A monitor that tracks the metrics and events of the OpenDC Compute service.
@@ -62,5 +62,4 @@ public interface ComputeMonitor {
      * Record an entry with the specified [reader].
      */
     public fun record(reader: CostModelTableReader) {}
-
 }

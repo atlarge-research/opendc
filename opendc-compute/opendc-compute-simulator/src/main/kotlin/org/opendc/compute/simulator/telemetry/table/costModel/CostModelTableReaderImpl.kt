@@ -31,6 +31,7 @@ import java.time.Instant
  */
 public class CostModelTableReaderImpl(
     private val costModel: CostModel,
+
     private val startTime: Duration = Duration.ofMillis(0),
 ) : CostModelTableReader {
     override fun copy(): CostModelTableReader {
@@ -44,15 +45,27 @@ public class CostModelTableReaderImpl(
     }
 
     override fun setValues(table: CostModelTableReader) {
+        _hostName = table.hostName
         _timestamp = table.timestamp
         _timestampAbsolute = table.timestampAbsolute
         _energyCost = table.energyCost
+        _generalCost = table.generalCost
+        _employeeCost = table.employeeCost
+        _componentDegradationCost = table.componentDegradationCost
     }
 
     public override val costModelInfo: CostModelInfo =
         CostModelInfo(
-            costModel.energyCost
+            costModel.hostName,
+            costModel.energyCost,
+            costModel.employeeCost,
+            costModel.generalCost,
+            costModel.hardwareDegradationCost,
         )
+
+    override val hostName: String
+        get () = _hostName
+    private var _hostName : String = ""
 
     private var _timestamp = Instant.MIN
     override val timestamp: Instant
@@ -62,11 +75,26 @@ public class CostModelTableReaderImpl(
     override val timestampAbsolute: Instant
         get() = _timestampAbsolute
 
-
     override val energyCost: Double
         get() = _energyCost - previousEnergyCost
     private var _energyCost = 0.0
     private var previousEnergyCost = 0.0
+
+    override val employeeCost: Double
+        get() = _employeeCost - previousEmployeeCost
+    private var _employeeCost = 0.0
+    private var previousEmployeeCost = 0.0
+
+    override val generalCost: Double
+        get() = _generalCost - previousGeneralCost
+    private var _generalCost = 0.0
+    private var previousGeneralCost = 0.0
+
+    override val componentDegradationCost: Double
+        get() = _componentDegradationCost - previousValueDegradationCost
+    private var _componentDegradationCost = 0.0
+    private var previousValueDegradationCost = 0.0
+
 
     /**
      * Record the next cycle.
@@ -74,9 +102,13 @@ public class CostModelTableReaderImpl(
     override fun record(now: Instant) {
         _timestamp = now
         _timestampAbsolute = now + startTime
+        _hostName = costModel.hostName
 
         costModel.updateCounters()
         _energyCost = costModel.energyCost
+        _employeeCost = costModel.employeeCost
+        _generalCost = costModel.generalCost
+        _componentDegradationCost = costModel.hardwareDegradationCost
     }
 
     /**
@@ -85,6 +117,11 @@ public class CostModelTableReaderImpl(
     override fun reset() {
         previousEnergyCost = _energyCost
         _energyCost = 0.0
-
+        previousEmployeeCost = _employeeCost
+        _employeeCost = 0.0
+        previousGeneralCost = _generalCost
+        _generalCost = 0.0
+        previousValueDegradationCost = _componentDegradationCost
+        _componentDegradationCost = 0.0
     }
 }

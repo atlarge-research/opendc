@@ -62,6 +62,7 @@ public data class ClusterJSONSpec(
     val hosts: List<HostJSONSpec>,
     val powerSource: PowerSourceJSONSpec = PowerSourceJSONSpec.DFLT,
     val battery: BatteryJSONSpec? = null,
+    val clusterCostModel: ClusterCostModelJSONSpec = ClusterCostModelJSONSpec.DFLT,
 )
 
 /**
@@ -108,6 +109,9 @@ public data class CPUJSONSpec(
     val count: Int = 1,
     val coreCount: Int,
     val coreSpeed: Frequency,
+    val cpuTDP: Double,
+    val componentPrice: Double,
+    val degradationModel: DegradationModelJSONSpec? = null,
 )
 
 /**
@@ -279,6 +283,33 @@ public data class PowerSourceJSONSpec(
     public companion object {
         public val DFLT: PowerSourceJSONSpec =
             PowerSourceJSONSpec()
+    }
+}
+
+@Serializable
+public data class DegradationModelJSONSpec(
+    val name: String = "degradationModel",
+    val baselineWearRate: Double = 0.0,
+    val utilizationWearCoeff: Double = 0.0,
+    val powerDegradation: Double = 0.0,
+    val replacementThreshold: Double = 0.0,
+) { // dont even use this I tink, the DFLT
+    public companion object {
+        public val DFLT: DegradationModelJSONSpec =
+            DegradationModelJSONSpec()
+    }
+}
+
+@Serializable
+public data class ClusterCostModelJSONSpec(
+    val name: String = "ClusterCostModel",
+    val monthlySalaries: Double = 0.0,
+    val generalUtilities: Double = 0.0,
+    val energyCostTracePath: String? = null,
+) {
+    public companion object {
+        public val DFLT: ClusterCostModelJSONSpec =
+            ClusterCostModelJSONSpec()
     }
 }
 

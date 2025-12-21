@@ -64,27 +64,19 @@ public class HostsProvisioningStep internal constructor(
         val engine = FlowEngine.create(ctx.dispatcher)
 
         for (cluster in clusterSpecs) {
+            if (cluster.clusterCostModel?.energyCostTracePath == null) {
+                // do something?
+                kotlin.system.exitProcess(0)
+            }
+            val energyCostFragments = getEnergyCostFragments(cluster.clusterCostModel?.energyCostTracePath)
 
-            /** TODO add a costmodel
-             * right now im trying to do it similar to simPowerSource,
-             * im just trying stuff and it might make more sense to register it similarly as the carbon model
-             * but I expect that for the cost model we will do more then just match a price to
-             * energy consumed, which would make it more complex then the carbon model I believe.
-             * I dont think we consume or supply anything so Im not sure we have anything to do with those
-             * concepts, but we have to be able to read out the energy consumed by the cluster,
-             * for this we might have to link ourselves to the simPowerSource, similarly for stuff like hardware
-             * degrading costs and such we might have to read stuff from the simHosts part.
-             * If so we are a "reciever" i believe
-             */
-
-            val energyCostFragments = getEnergyCostFragments(cluster.powerSource.energyCostTracePath)
-
-            val costModel = CostModel(engine, energyCostFragments, startTime);
+            val costModel = CostModel(engine, energyCostFragments, startTime,
+                cluster.clusterCostModel?.monthlySalaries?:0.0,
+                cluster.clusterCostModel?.generalUtilities?:0.0,
+                cluster.name
+                )
             simCostModels.add(costModel)
             service.addCostModel(costModel)
-            //TODO maybe an if that if no data is given on costs we dont do jack shit
-
-            // Create the Power Source to which hosts are connected
 
             // Create Power Source
             val simPowerSource = SimPowerSource(engine, cluster.powerSource.totalPower.toDouble(), cluster.powerSource.name, cluster.name)
@@ -109,7 +101,6 @@ public class HostsProvisioningStep internal constructor(
                 carbonModel.addReceiver(simPowerSource)
                 ctx.registry.register(serviceDomain, CarbonModel::class.java, carbonModel)
             }
-
 
             if (cluster.battery != null) {
                 // Create Battery Distributor
@@ -172,10 +163,12 @@ public class HostsProvisioningStep internal constructor(
                         hostSpec.expectedLifetime,
                         powerDistributor,
                     )
-
                 require(simHosts.add(simHost)) { "Host with name ${hostSpec.name} already exists" }
                 service.addHost(simHost)
+                simHost.getSimMachine()?.addReceiver(costModel)
             }
+
+            costModel.updateCounters() // Init the cost model, needed to calculate the hardware values before anything runs
         }
 
         return AutoCloseable {
@@ -193,4 +186,3 @@ public class HostsProvisioningStep internal constructor(
         }
     }
 }
-

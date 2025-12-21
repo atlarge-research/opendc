@@ -35,7 +35,6 @@ import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.parquet.LocalParquetReader
 import java.nio.file.Path
 
-
 public class CostModelTraceFormat : TraceFormat {
     override val name: String = "price_per_kwh"
 

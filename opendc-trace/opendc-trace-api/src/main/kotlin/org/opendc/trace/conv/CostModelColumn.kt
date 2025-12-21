@@ -25,10 +25,6 @@
 package org.opendc.trace.conv
 
 /**
- * TODO ADD HERE THE COLUMNS WE WANT FROM THE TRACE, we then read it in  {@link EnergyCostTraceLoader}
-*/
-
-/**
  * A column containing the timestamp of the carbon intensity measurement.
  */
 public const val ENERGY_PRICE_TIMESTAMP: String = "timestamp"
