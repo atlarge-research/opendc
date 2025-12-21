@@ -49,6 +49,7 @@ import org.opendc.compute.simulator.scheduler.SchedulingResult;
 import org.opendc.compute.simulator.scheduler.SchedulingResultType;
 import org.opendc.compute.simulator.telemetry.ComputeMetricReader;
 import org.opendc.compute.simulator.telemetry.SchedulerStats;
+import org.opendc.simulator.compute.costmodel.CostModel;
 import org.opendc.simulator.compute.power.CarbonModel;
 import org.opendc.simulator.compute.power.CarbonReceiver;
 import org.opendc.simulator.compute.power.SimPowerSource;
@@ -104,6 +105,8 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      * The available powerSources
      */
     private final Set<SimBattery> batteries = new HashSet<>();
+
+    private final Set<CostModel> costModels = new HashSet<>();
 
     /**
      * The tasks that should be launched by the service.
@@ -322,6 +325,15 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         batteries.add(simBattery);
     }
 
+    public void addCostModel(CostModel costModel) {
+        // Check if host is already known
+        if (costModels.contains(costModel)) {
+            return;
+        }
+
+        costModels.add(costModel);
+    }
+
     /**
      * Remove a {@link SimHost} from the scheduling pool of the compute service.
      */
@@ -358,6 +370,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     public Set<SimBattery> getBatteries() {
         return Collections.unmodifiableSet(this.batteries);
+    }
+
+    public Set<CostModel> getCostModels() {
+        return Collections.unmodifiableSet(this.costModels);
     }
 
     public void setMetricReader(ComputeMetricReader metricReader) {

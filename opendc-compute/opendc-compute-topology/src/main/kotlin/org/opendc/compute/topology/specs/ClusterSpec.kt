@@ -27,4 +27,5 @@ public data class ClusterSpec(
     val hostSpecs: List<HostSpec>,
     val powerSource: PowerSourceSpec,
     val battery: BatteryJSONSpec? = null,
+    val clusterCostModel: ClusterCostModelSpec? = null,
 )

@@ -25,6 +25,7 @@ package org.opendc.compute.simulator.telemetry.parquet
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.OutputFiles
 import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReader
+import org.opendc.compute.simulator.telemetry.table.costModel.CostModelTableReader
 import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
@@ -43,6 +44,7 @@ public class ParquetComputeMonitor(
     private val powerSourceExporter: Exporter<PowerSourceTableReader>?,
     private val batteryExporter: Exporter<BatteryTableReader>?,
     private val serviceExporter: Exporter<ServiceTableReader>?,
+    private val costModelExporter: Exporter<CostModelTableReader>?,
 ) : ComputeMonitor, AutoCloseable {
     override fun record(reader: HostTableReader) {
         hostExporter?.write(reader)
@@ -64,12 +66,17 @@ public class ParquetComputeMonitor(
         serviceExporter?.write(reader)
     }
 
+    override fun record(reader: CostModelTableReader) {
+        costModelExporter?.write(reader)
+    }
+
     override fun close() {
         hostExporter?.close()
         taskExporter?.close()
         powerSourceExporter?.close()
         batteryExporter?.close()
         serviceExporter?.close()
+        costModelExporter?.close()
     }
 
     public companion object {
@@ -97,6 +104,7 @@ public class ParquetComputeMonitor(
                 powerSourceExportColumns = computeExportConfig.powerSourceExportColumns,
                 batteryExportColumns = computeExportConfig.batteryExportColumns,
                 serviceExportColumns = computeExportConfig.serviceExportColumns,
+                costModelExportColumns = computeExportConfig.costModelExportColumns,
             )
 
         /**
@@ -118,6 +126,7 @@ public class ParquetComputeMonitor(
             powerSourceExportColumns: Collection<ExportColumn<PowerSourceTableReader>>? = null,
             batteryExportColumns: Collection<ExportColumn<BatteryTableReader>>? = null,
             serviceExportColumns: Collection<ExportColumn<ServiceTableReader>>? = null,
+            costModelExportColumns: Collection<ExportColumn<CostModelTableReader>>? = null,
         ): ParquetComputeMonitor {
             // Loads the fields in case they need to be retrieved if optional params are omitted.
             ComputeExportConfig.loadDfltColumns()
@@ -177,12 +186,24 @@ public class ParquetComputeMonitor(
                     null
                 }
 
+            val costModelExporter =
+                if (filesToExport[OutputFiles.COSTMODEL] == true) {
+                    Exporter(
+                        outputFile = File(base, "$partition/costmodel.parquet").also { it.parentFile.mkdirs() },
+                        columns = costModelExportColumns ?: Exportable.getAllLoadedColumns(),
+                        bufferSize = bufferSize,
+                    )
+                } else {
+                    null
+                }
+
             return ParquetComputeMonitor(
                 hostExporter = hostExporter,
                 taskExporter = taskExporter,
                 powerSourceExporter = powerSourceExporter,
                 batteryExporter = batteryExporter,
                 serviceExporter = serviceExporter,
+                costModelExporter = costModelExporter,
             )
         }
     }

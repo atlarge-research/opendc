@@ -24,11 +24,13 @@ package org.opendc.compute.simulator.provisioner
 
 import org.opendc.common.ResourceType
 import org.opendc.compute.carbon.getCarbonFragments
+import org.opendc.compute.costmodel.getEnergyCostFragments
 import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.createSimBatteryPolicy
+import org.opendc.simulator.compute.costmodel.CostModel
 import org.opendc.simulator.compute.power.CarbonModel
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
@@ -57,16 +59,30 @@ public class HostsProvisioningStep internal constructor(
             ) { "Compute service $serviceDomain does not exist" }
         val simHosts = mutableSetOf<SimHost>()
         val simPowerSources = mutableListOf<SimPowerSource>()
+        val simCostModels = mutableListOf<CostModel>()
 
         val engine = FlowEngine.create(ctx.dispatcher)
 
         for (cluster in clusterSpecs) {
-            // Create the Power Source to which hosts are connected
+            if (cluster.clusterCostModel?.energyCostTracePath == null) {
+                // do something?
+                kotlin.system.exitProcess(0)
+            }
+            val energyCostFragments = getEnergyCostFragments(cluster.clusterCostModel?.energyCostTracePath)
+
+            val costModel = CostModel(engine, energyCostFragments, startTime,
+                cluster.clusterCostModel?.monthlySalaries?:0.0,
+                cluster.clusterCostModel?.generalUtilities?:0.0,
+                cluster.name
+                )
+            simCostModels.add(costModel)
+            service.addCostModel(costModel)
 
             // Create Power Source
             val simPowerSource = SimPowerSource(engine, cluster.powerSource.totalPower.toDouble(), cluster.powerSource.name, cluster.name)
             simPowerSources.add(simPowerSource)
             service.addPowerSource(simPowerSource)
+            simPowerSource.addReceiver(costModel)
 
             val powerDistributor =
                 FlowDistributorFactory.getFlowDistributor(
@@ -147,10 +163,12 @@ public class HostsProvisioningStep internal constructor(
                         hostSpec.expectedLifetime,
                         powerDistributor,
                     )
-
                 require(simHosts.add(simHost)) { "Host with name ${hostSpec.name} already exists" }
                 service.addHost(simHost)
+                simHost.getSimMachine()?.addReceiver(costModel)
             }
+
+            costModel.updateCounters() // Init the cost model, needed to calculate the hardware values before anything runs
         }
 
         return AutoCloseable {
@@ -160,6 +178,10 @@ public class HostsProvisioningStep internal constructor(
 
             for (simPowerSource in simPowerSources) {
                 simPowerSource.close()
+            }
+
+            for (costModel in simCostModels) {
+                costModel.close()
             }
         }
     }
