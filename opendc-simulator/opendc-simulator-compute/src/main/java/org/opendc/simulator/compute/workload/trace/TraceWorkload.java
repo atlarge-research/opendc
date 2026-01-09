@@ -190,6 +190,8 @@ public class TraceWorkload implements Workload {
             this.checkpointIntervalScaling = checkpointIntervalScaling;
             this.scalingPolicy = scalingPolicy;
             this.taskId = taskId;
+
+            this.resourceTypes[ResourceType.CPU.ordinal()] = ResourceType.CPU;
         }
 
         /**

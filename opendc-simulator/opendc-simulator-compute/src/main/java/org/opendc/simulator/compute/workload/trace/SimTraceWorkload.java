@@ -329,7 +329,6 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      */
     @Override
     public void stopWorkload() {
-
         // If the workload is stopped due to an error or failure, calculate the wasted time for bookkeeping.
         if (this.totalRemainingWork > 0.0 || !this.remainingFragments.isEmpty()) {
             // Failure
@@ -462,6 +461,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      */
     @Override
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply, ResourceType resourceType) {
+
         // for cases where equal share or fixed share is used and the resource is provided despite not being used
         if (!this.usedResourceTypes.contains(resourceType)) {
             return;
@@ -473,8 +473,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.resourcesSupplied[resourceType.ordinal()] = newSupply;
 
         long now = this.clock.millis();
-        this.startOfFragment = now;
         long passedTime = getPassedTime(now);
+        this.startOfFragment = now;
 
         this.updateRemainingWork(passedTime);
         this.updateRemainingTime();
