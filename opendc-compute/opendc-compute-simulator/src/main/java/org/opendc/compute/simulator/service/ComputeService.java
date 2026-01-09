@@ -591,7 +591,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     public static class Builder {
         private final Dispatcher dispatcher;
         private final ComputeScheduler computeScheduler;
-        private Duration quantum = Duration.ofSeconds(1);
+        private Duration quantum = Duration.ofMillis(1);
         private int maxNumFailures = 10;
 
         Builder(Dispatcher dispatcher, ComputeScheduler computeScheduler) {
