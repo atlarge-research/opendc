@@ -1,0 +1,40 @@
+{
+    "clusters": [
+        {
+            "name": "A01",
+            "hosts": [
+                {
+                    "name": "A01",
+                    "count": 277,
+                    "cpu": {
+                        "coreCount": 16,
+                        "coreSpeed": 2100,
+                        "costModelDegradation" :
+                        {
+                            "baselineWearRate": 0.001,
+                            "utilizationWearCoeff": 0.02,
+                            "powerDegradation": 0.015
+                        }
+                    },
+                    "memory": {
+                        "memorySize": 128000000
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "sqrt",
+                        "power": 400.0,
+                        "idlePower": 32.0,
+                        "maxPower": 180.0
+                    }
+                }
+            ],
+            "costModelCluster": {
+                "monthlySalaries": 1500,
+                "generalUtilities": 500,
+                "energyCostTracePath": "no-file.parquet"
+            },
+            "powerSource": {
+                "carbonTracePath": "src/test/resources/carbonTraces/experiment1/co2.parquet"
+            }
+        }
+    ]
+}

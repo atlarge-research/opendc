@@ -25,6 +25,7 @@ rootProject.name = "opendc"
 include(":opendc-common")
 include(":opendc-compute:opendc-compute-api")
 include(":opendc-compute:opendc-compute-carbon")
+include(":opendc-compute:opendc-compute-costmodel")
 include(":opendc-compute:opendc-compute-failure")
 include(":opendc-compute:opendc-compute-simulator")
 include(":opendc-compute:opendc-compute-topology")

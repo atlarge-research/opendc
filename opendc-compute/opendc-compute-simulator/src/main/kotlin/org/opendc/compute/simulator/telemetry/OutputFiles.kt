@@ -41,4 +41,7 @@ public enum class OutputFiles {
 
     @SerialName("service")
     SERVICE,
+
+    @SerialName("costmodel")
+    COSTMODEL,
 }

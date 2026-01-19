@@ -44,6 +44,7 @@ public class ComputeMonitorProvisioningStep(
             OutputFiles.SERVICE to true,
             OutputFiles.POWER_SOURCE to true,
             OutputFiles.BATTERY to true,
+            OutputFiles.COSTMODEL to true,
         ),
     private val printFrequency: Int? = null,
 ) : ProvisioningStep {

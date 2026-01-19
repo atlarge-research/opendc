@@ -33,6 +33,7 @@ public class PerformanceCounters {
     private double demand = 0.0f;
     private double supply = 0.0f;
     private double powerDraw = 0.0f;
+    private double totalComponentValue = 0.0f;
 
     public long getActiveTime() {
         return this.activeTime;
@@ -66,6 +67,8 @@ public class PerformanceCounters {
         return powerDraw;
     }
 
+    public double getTotalComponentValue() {return this.totalComponentValue;}
+
     public void setActiveTime(long activeTime) {
         this.activeTime = activeTime;
     }
@@ -98,6 +101,10 @@ public class PerformanceCounters {
         this.powerDraw = powerDraw;
     }
 
+    public void setTotalComponentValue(double totalComponentValue) {
+        this.totalComponentValue = totalComponentValue;
+    }
+
     public void addActiveTime(long activeTime) {
         this.activeTime += activeTime;
     }
@@ -108,6 +115,10 @@ public class PerformanceCounters {
 
     public void addStealTime(long stealTime) {
         this.stealTime += stealTime;
+    }
+
+    public void addTotalComponentValue(double componentValue) {
+        this.totalComponentValue += componentValue;
     }
 
     public void addLostTime(long lostTime) {

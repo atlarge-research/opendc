@@ -12,7 +12,11 @@
         },
         {
             "pathToFile": "src/test/resources/topologies/experiment1/topology_asymptotic2.json"
+        },
+        {
+            "pathToFile": "src/test/resources/topologies/experiment1/topology_test.json"
         }
+
     ],
     "workloads": [
         {

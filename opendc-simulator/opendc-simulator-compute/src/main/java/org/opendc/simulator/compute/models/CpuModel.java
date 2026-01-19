@@ -36,6 +36,9 @@ public final class CpuModel {
     private final String vendor;
     private final String modelName;
     private final String arch;
+    private final Double cpuTDP;
+    private final Double componentPrice;
+    private final ComponentDegradationModel degradationModel;
 
     /**
      * Construct a {@link CpuModel} instance.
@@ -47,7 +50,16 @@ public final class CpuModel {
      * @param modelName The name of the CPU
      * @param arch The architecture of the CPU
      */
-    public CpuModel(int id, int coreCount, double coreSpeed, String vendor, String modelName, String arch) {
+    public CpuModel(
+            int id,
+            int coreCount,
+            double coreSpeed,
+            String vendor,
+            String modelName,
+            String arch,
+            Double cpuTDP,
+            Double componentPrice,
+            ComponentDegradationModel degradationModel) {
         this.id = id;
         this.coreCount = coreCount;
         this.coreSpeed = coreSpeed;
@@ -55,10 +67,13 @@ public final class CpuModel {
         this.vendor = vendor;
         this.modelName = modelName;
         this.arch = arch;
+        this.cpuTDP = cpuTDP;
+        this.componentPrice = componentPrice;
+        this.degradationModel = degradationModel;
     }
 
-    public CpuModel(int id, int coreCount, double coreSpeed) {
-        this(id, coreCount, coreSpeed, "unkown", "unkown", "unkown");
+    public CpuModel(int id, int coreCount, double coreSpeed, double cpuTDP, double componentPrice, ComponentDegradationModel degradationModel) {
+        this(id, coreCount, coreSpeed, "unkown", "unkown", "unkown", cpuTDP, componentPrice, degradationModel);
     }
 
     /**
@@ -110,6 +125,18 @@ public final class CpuModel {
         return arch;
     }
 
+    public Double getCpuTDP() {
+        return cpuTDP;
+    }
+
+    public Double getComponentPrice() {
+        return componentPrice;
+    }
+
+    public ComponentDegradationModel getDegradationModel() {
+        return degradationModel;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -120,12 +147,14 @@ public final class CpuModel {
                 && Double.compare(that.coreSpeed, coreSpeed) == 0
                 && Objects.equals(vendor, that.vendor)
                 && Objects.equals(modelName, that.modelName)
-                && Objects.equals(arch, that.arch);
+                && Objects.equals(arch, that.arch)
+                && Objects.equals(cpuTDP, that.cpuTDP)
+                && Objects.equals(componentPrice, that.componentPrice);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, coreCount, coreSpeed, totalCapacity, vendor, modelName, arch);
+        return Objects.hash(id, coreCount, coreSpeed, totalCapacity, vendor, modelName, arch, cpuTDP, componentPrice);
     }
 
     @Override

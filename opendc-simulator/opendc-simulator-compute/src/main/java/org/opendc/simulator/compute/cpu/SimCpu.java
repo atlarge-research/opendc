@@ -61,6 +61,10 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
 
     private double maxCapacity;
 
+    private double health;
+    private double cpuCost;
+    private double cpuReplacementThreshold;
+
     private final PerformanceCounters performanceCounters = new PerformanceCounters();
     private long lastCounterUpdate;
     private final double cpuFrequencyInv;
@@ -107,9 +111,24 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         return this.currentCpuSupplied;
     }
 
+    public double getHealth() {
+        return health;
+    }
+
     public CpuModel getCpuModel() {
         return cpuModel;
     }
+
+    public double getCurrentValue() {
+        // Scale health from [threshold, 1] → [0, 1]
+        double scaled = (this.health - this.cpuReplacementThreshold) / (1.0 - this.cpuReplacementThreshold);
+
+        // Clamp between 0 and 1
+        scaled = Math.max(0.0, Math.min(1.0, scaled));
+
+        return scaled * this.cpuCost;
+    }
+
 
     @Override
     public String toString() {
@@ -131,6 +150,10 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
         this.lastCounterUpdate = clock.millis();
 
         this.cpuFrequencyInv = 1 / this.maxCapacity;
+
+        this.health = 1.0f;
+        this.cpuCost = cpuModel.getComponentPrice();
+        this.cpuReplacementThreshold = cpuModel.getDegradationModel().getReplacementThreshold();
 
         this.currentPowerDemand = this.cpuPowerModel.computePower(this.currentCpuUtilization);
     }
@@ -184,12 +207,41 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
             this.performanceCounters.addActiveTime(Math.round(rate * factor));
             this.performanceCounters.addIdleTime(Math.round((capacity - rate) * factor));
             this.performanceCounters.addStealTime(Math.round((demand - rate) * factor));
+
+
+            updateComponentHealth(delta);
+            this.performanceCounters.setTotalComponentValue(getCurrentValue()); // updates based on new health
         }
 
         this.performanceCounters.setDemand(this.currentCpuDemand);
         this.performanceCounters.setSupply(this.currentCpuSupplied);
         this.performanceCounters.setCapacity(this.maxCapacity);
         this.performanceCounters.setPowerDraw(this.currentPowerDemand);
+    }
+
+    private void updateComponentHealth(long msPassedSince){
+        if (currentCpuUtilization > 1 ){ //Todo left this in for fun.
+            System.exit(0);
+        }
+
+        long msInDay = 24L * 60 * 60 * 1000;
+        double passedTimeInDays = msPassedSince/(double)msInDay;
+
+        double totalWear = getTotalWear(passedTimeInDays);
+        this.health -= totalWear;
+    }
+
+    private double getTotalWear(double passedTimeInDays) {
+        double backgroundWear = passedTimeInDays * this.cpuModel.getDegradationModel().getBaseLineWearRate();
+
+        double utilizationDegradation = this.cpuModel.getDegradationModel().getUtilizationWearCoefficient() * passedTimeInDays;
+        double utilizationWear = currentCpuUtilization * utilizationDegradation;
+
+        double powerDegradation = this.cpuModel.getDegradationModel().getPowerWearCoefficient() * passedTimeInDays;
+        double cpuMaxWatt = this.cpuModel.getCpuTDP();
+        double powerDegradationWear = powerDegradation * (this.currentCpuSupplied / cpuMaxWatt);
+
+        return backgroundWear + utilizationWear + powerDegradationWear;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

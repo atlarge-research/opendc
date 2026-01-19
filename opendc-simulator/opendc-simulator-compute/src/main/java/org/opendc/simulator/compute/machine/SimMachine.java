@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 import org.jetbrains.annotations.Nullable;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
+import org.opendc.simulator.compute.costmodel.HostReceiver;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.compute.gpu.SimGpu;
 import org.opendc.simulator.compute.memory.Memory;
@@ -69,9 +70,16 @@ public class SimMachine {
 
     private final Consumer<Exception> completion;
 
+    private final ArrayList<HostReceiver> receivers = new ArrayList<>();
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void addReceiver(HostReceiver receiver) {
+        this.receivers.add(receiver);
+        receiver.setMachine(this);
+    }
 
     public ComputeResource getResource(ResourceType resourceType, int id) {
         if (!this.computeResources.containsKey(resourceType)) {
@@ -302,6 +310,11 @@ public class SimMachine {
         }
 
         this.completion.accept(cause);
+
+        for (HostReceiver receiver : this.receivers){
+            receiver.removeMachine(this);
+        }
+        this.receivers.clear();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

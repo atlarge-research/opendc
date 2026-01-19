@@ -41,7 +41,7 @@ spotless {
 
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
         kotlin {
-            ktlint()
+            ktlint("1.2.1")
             trimTrailingWhitespace()
             endWithNewline()
 
@@ -50,7 +50,7 @@ spotless {
     }
 
     kotlinGradle {
-        ktlint()
+        ktlint("1.2.1")
 
         trimTrailingWhitespace()
         endWithNewline()
