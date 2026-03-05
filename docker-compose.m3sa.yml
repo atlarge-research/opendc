@@ -1,0 +1,17 @@
+services:
+  m3sa:
+    build:
+      context: .
+      dockerfile: opendc-experiments/opendc-experiments-m3sa/Dockerfile
+    image: opendc-m3sa:latest
+    volumes:
+      # Mount data directory (topologies, workload traces, scenarios)
+      - ./data:/opt/opendc/data
+      # Mount output directory for results
+      - ./output:/opt/opendc/output
+    # Override command with your experiment + M3SA config
+    # Example:
+    #   docker compose -f docker-compose.m3sa.yml run m3sa \
+    #     --experiment-path data/scenario.json \
+    #     --m3sa-setup-path data/m3sa_setup.json
+    command: ["--experiment-path", "data/scenario.json"]

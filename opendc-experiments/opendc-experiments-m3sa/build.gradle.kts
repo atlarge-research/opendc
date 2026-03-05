@@ -28,7 +28,12 @@ plugins {
     `testing-conventions`
     `jacoco-conventions`
     distribution
+    application
     kotlin("plugin.serialization") version "1.9.22"
+}
+
+application {
+    mainClass.set("org.opendc.experiments.m3sa.runner.M3SACli")
 }
 
 dependencies {
