@@ -67,11 +67,11 @@ public fun m3saAnalyze(
 
     val exitCode = process.waitFor()
     val output = process.inputStream.bufferedReader().readText()
-    
+
     if (exitCode == 0) {
         println("[M3SA says] Success:\n$output")
         return
-    } 
+    }
 
     if (output.contains("ModuleNotFoundError") || output.contains("No such file or directory")) {
         println("[M3SA] Local Python dependencies missing. Falling back to Docker (opendc-m3sa)...")
@@ -82,28 +82,32 @@ public fun m3saAnalyze(
     }
 }
 
-private fun runViaDocker(outputFolderPath: String, m3saSetupPath: String) {
+private fun runViaDocker(
+    outputFolderPath: String,
+    m3saSetupPath: String,
+) {
     // We mount the absolute paths to the Docker container
     val absOutput = Paths.get(outputFolderPath).toAbsolutePath().normalize().toString()
     val absSetup = Paths.get(m3saSetupPath).toAbsolutePath().normalize().toString()
     val dockerOutput = "/opt/opendc/output"
     val dockerSetup = "/opt/opendc/setup.json"
 
-    val process = ProcessBuilder(
-        "docker", "run", "--rm",
-        "--entrypoint", "python3",
-        // Mount output directory where M3SA writes its plots
-        "-v", "$absOutput:$dockerOutput",
-        // Mount the setup file directly
-        "-v", "$absSetup:$dockerSetup",
-        "opendc-m3sa",
-        "/opt/opendc-m3sa/python/main.py",
-        dockerSetup,
-        "$dockerOutput/raw-output",
-        "-o", dockerOutput
-    )
-        .redirectErrorStream(true)
-        .start()
+    val process =
+        ProcessBuilder(
+            "docker", "run", "--rm",
+            "--entrypoint", "python3",
+            // Mount output directory where M3SA writes its plots
+            "-v", "$absOutput:$dockerOutput",
+            // Mount the setup file directly
+            "-v", "$absSetup:$dockerSetup",
+            "opendc-m3sa",
+            "/opt/opendc-m3sa/python/main.py",
+            dockerSetup,
+            "$dockerOutput/raw-output",
+            "-o", dockerOutput,
+        )
+            .redirectErrorStream(true)
+            .start()
 
     val exitCode = process.waitFor()
     val output = process.inputStream.bufferedReader().readText()
