@@ -39,6 +39,7 @@
         "react-konva": "^18.2.5",
         "react-query": "^3.39.3",
         "react-redux": "^8.0.5",
+        "next-runtime-env": "^1.7.1",
         "redux": "^4.2.1",
         "redux-logger": "^3.0.6",
         "redux-saga": "^1.2.3",
