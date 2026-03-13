@@ -229,8 +229,26 @@ public class SimHost(
         return this.guests.toList()
     }
 
+    /**
+     * Calculates the total memory used by the currently running tasks on the host.
+     *
+     * Iterates through the tasks mapped to guests in `taskToGuestMap`. For tasks that are in the
+     * `TaskState.RUNNING` state, their memory consumption is summed up.
+     *
+     * @return Total memory used by tasks currently in the RUNNING state, in bytes.
+     */
+    private fun usedMemoryByRunningTasks(): Long {
+        var usedMemory: Long = 0
+        for (vm in this.taskToGuestMap) {
+            if (vm.value.state == TaskState.RUNNING) {
+                usedMemory += vm.key.memorySize
+            }
+        }
+        return usedMemory
+    }
+
     public fun canFit(task: ServiceTask): Boolean {
-        val sufficientMemory = model.memoryCapacity >= task.memorySize
+        val sufficientMemory = (model.memoryCapacity - this.usedMemoryByRunningTasks()) >= task.memorySize
         val enoughCpus = model.coreCount >= task.cpuCoreCount
         val canFit = simMachine!!.canFit(task.toMachineModel())
 
@@ -307,17 +325,8 @@ public class SimHost(
         for (guest in guests) {
             when (guest.state) {
                 TaskState.RUNNING -> running++
-                TaskState.FAILED, TaskState.TERMINATED -> {
-                    failed++
-                    // Remove guests that have been deleted
-                    this.taskToGuestMap.remove(guest.task)
-                    guests.remove(guest)
-                }
-                TaskState.COMPLETED -> {
-                    completed++
-                    this.taskToGuestMap.remove(guest.task)
-                    guests.remove(guest)
-                }
+                TaskState.FAILED, TaskState.TERMINATED -> failed++
+                TaskState.COMPLETED -> completed++
                 TaskState.PAUSED -> {}
                 else -> invalid++
             }
@@ -337,8 +346,8 @@ public class SimHost(
         )
     }
 
-    public fun getSystemStats(task: ServiceTask): GuestSystemStats {
-        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
+    public fun getSystemStats(task: ServiceTask): GuestSystemStats? {
+        val guest = taskToGuestMap[task] ?: return null
         return guest.getSystemStats()
     }
 
@@ -359,8 +368,8 @@ public class SimHost(
         )
     }
 
-    public fun getCpuStats(task: ServiceTask): GuestCpuStats {
-        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
+    public fun getCpuStats(task: ServiceTask): GuestCpuStats? {
+        val guest = taskToGuestMap[task] ?: return null
         return guest.getCpuStats()
     }
 
@@ -388,7 +397,7 @@ public class SimHost(
     }
 
     public fun getGpuStats(task: ServiceTask): GuestGpuStats? {
-        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.name} at host $name" }
+        val guest = taskToGuestMap[task] ?: return null
         return guest.getGpuStats()
     }
 
