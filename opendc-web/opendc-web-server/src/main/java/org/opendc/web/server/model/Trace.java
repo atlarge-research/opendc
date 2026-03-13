@@ -32,7 +32,7 @@ import jakarta.persistence.Table;
  * A workload trace available for simulation.
  */
 @Entity
-@Table
+@Table(name = "traces")
 public class Trace extends PanacheEntityBase {
     /**
      * The unique identifier of the trace.

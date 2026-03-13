@@ -44,7 +44,7 @@ import java.util.Set;
  * A project in OpenDC encapsulates all the datacenter designs and simulation runs for a set of users.
  */
 @Entity
-@Table
+@Table(name = "projects")
 @NamedQueries({
     @NamedQuery(
             name = "Project.findByUser",
@@ -52,7 +52,7 @@ import java.util.Set;
                     """
             SELECT a
             FROM ProjectAuthorization a
-            WHERE a.key.userName = :userName
+            WHERE a.key.userId = :userId
         """),
     @NamedQuery(
             name = "Project.allocatePortfolio",

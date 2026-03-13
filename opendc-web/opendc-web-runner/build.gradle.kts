@@ -72,7 +72,7 @@ val createCli by tasks.creating(CreateStartScripts::class) {
     applicationName = "opendc-runner"
     mainClass.set("org.opendc.web.runner.cli.MainKt")
     classpath = cliJar.outputs.files + cliRuntimeClasspath
-    outputDir = project.layout.buildDirectory.get().asFile.resolve("scripts")
+    outputDir = project.layout.buildDirectory.dir("scripts").get().asFile
 }
 
 distributions {

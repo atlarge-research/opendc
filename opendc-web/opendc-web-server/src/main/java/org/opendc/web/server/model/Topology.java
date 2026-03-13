@@ -48,6 +48,7 @@ import org.opendc.web.proto.Room;
  */
 @Entity
 @Table(
+        name = "topologies",
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "uk_topologies_number",
