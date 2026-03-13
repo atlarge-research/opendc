@@ -20,32 +20,36 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.ui.deployment;
+package org.opendc.web.ui.runtime;
 
-import io.quarkus.runtime.annotations.ConfigGroup;
-import io.quarkus.runtime.annotations.ConfigItem;
-import java.util.Optional;
+import io.quarkus.runtime.annotations.Recorder;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 /**
- * Auth configuration for the OpenDC UI extension.
+ * Recorder class for building route handlers for Next.js pages and redirects.
  */
-@ConfigGroup
-public class AuthConfiguration {
+@Recorder
+public class QuinoaNextRoutingRecorder {
     /**
-     * The authentication domain.
+     * Construct a {@link Handler} for serving a dynamic route of a Next.js application.
      */
-    @ConfigItem
-    Optional<String> domain;
+    public Handler<RoutingContext> pageHandler(String basePath, String page) {
+        return (event) -> event.reroute(basePath + page + ".html");
+    }
 
     /**
-     * The client identifier used by the OpenDC web ui.
+     * Construct a {@link Handler} for handling redirects of a Next.js application.
      */
-    @ConfigItem
-    Optional<String> clientId;
+    public Handler<RoutingContext> redirectHandler(String destination, int statusCode) {
+        return (event) -> {
+            String query = event.request().query();
+            String fullDestination = query != null ? destination + "?" + query : destination;
 
-    /**
-     * The audience of the OpenDC API.
-     */
-    @ConfigItem
-    Optional<String> audience;
+            event.response()
+                    .setStatusCode(statusCode)
+                    .putHeader("Location", fullDestination)
+                    .end();
+        };
+    }
 }

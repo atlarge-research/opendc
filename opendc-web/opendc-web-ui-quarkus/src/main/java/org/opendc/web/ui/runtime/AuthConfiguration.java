@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,30 @@
 
 package org.opendc.web.ui.runtime;
 
+import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
-import io.quarkus.runtime.annotations.ConfigPhase;
-import io.quarkus.runtime.annotations.ConfigRoot;
+import java.util.Optional;
 
 /**
- * Configuration for the OpenDC web UI.
+ * Auth configuration for the OpenDC UI extension.
  */
-@ConfigRoot(phase = ConfigPhase.RUN_TIME, name = "opendc-ui")
-public class OpenDCUiRuntimeConfig {
+@ConfigGroup
+public class AuthConfiguration {
     /**
-     * Flag to indicate whether the web interface should be served by the OpenDC API server.
+     * The authentication domain.
      */
-    @ConfigItem(defaultValue = "true")
-    public boolean enable;
+    @ConfigItem
+    Optional<String> domain;
+
+    /**
+     * The client identifier used by the OpenDC web ui.
+     */
+    @ConfigItem
+    Optional<String> clientId;
+
+    /**
+     * The audience of the OpenDC API.
+     */
+    @ConfigItem
+    Optional<String> audience;
 }

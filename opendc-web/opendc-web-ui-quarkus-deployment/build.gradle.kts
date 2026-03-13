@@ -30,10 +30,10 @@ plugins {
 dependencies {
     implementation(platform(libs.quarkus.bom))
 
-    implementation(projects.opendcWeb.opendcWebUi)
     implementation(projects.opendcWeb.opendcWebUiQuarkus)
 
     implementation(libs.quarkus.core.deployment)
     implementation(libs.quarkus.vertx.http.deployment)
     implementation(libs.quarkus.arc.deployment)
+    implementation(libs.quarkus.quinoa.deployment)
 }
