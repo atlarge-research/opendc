@@ -20,13 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto;
+
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 
 /**
- * A task in the Workflow Trace Format.
+ * The workload to simulate for a scenario.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public record Workload(Trace trace, double samplingFraction) {
+    /**
+     * Specification for a workload.
+     *
+     * @param trace The unique identifier of the trace.
+     * @param samplingFraction The fraction of the workload to sample.
+     */
+    public record Spec(
+            String trace,
+            @DecimalMin(value = "0.001", message = "Sampling fraction must be non-zero")
+                    @DecimalMax(value = "1", message = "Sampling fraction cannot exceed one")
+                    double samplingFraction) {}
+}

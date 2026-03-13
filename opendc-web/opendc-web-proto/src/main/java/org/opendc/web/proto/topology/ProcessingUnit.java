@@ -20,13 +20,10 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto.topology;
 
 /**
- * A task in the Workflow Trace Format.
+ * A CPU model.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public record ProcessingUnit(
+        String id, String name, double clockRateMhz, int numberOfCores, double energyConsumptionW) {}

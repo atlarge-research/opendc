@@ -20,13 +20,32 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto.runner;
+
+import java.time.Instant;
+import java.util.Map;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.JobState;
 
 /**
- * A task in the Workflow Trace Format.
+ * A simulation job to be simulated by a runner.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+@Schema(name = "Runner.Job")
+public record Job(
+        long id,
+        Scenario scenario,
+        JobState state,
+        Instant createdAt,
+        Instant updatedAt,
+        int runtime,
+        Map<String, ?> results) {
+    /**
+     * A request to update the state of a job.
+     *
+     * @param state The next state of the job.
+     * @param runtime The runtime of the job (in seconds).
+     * @param results The results of the job.
+     */
+    @Schema(name = "Runner.Job.Update")
+    public record Update(JobState state, int runtime, Map<String, ?> results) {}
+}

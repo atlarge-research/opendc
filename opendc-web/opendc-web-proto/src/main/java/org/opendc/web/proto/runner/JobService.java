@@ -20,13 +20,41 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto.runner;
+
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import java.util.List;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 /**
- * A task in the Workflow Trace Format.
+ * Service for interacting with the OpenDC job server.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+@Path("/jobs")
+@RegisterRestClient
+public interface JobService {
+    /**
+     * Obtain all pending simulation jobs.
+     */
+    @GET
+    List<Job> queryPending();
+
+    /**
+     * Get a job by identifier.
+     */
+    @GET
+    @Path("{job}")
+    Job get(@PathParam("job") long id);
+
+    /**
+     * Atomically update the state of a job.
+     */
+    @POST
+    @Path("{job}")
+    @Consumes("application/json")
+    Job update(@PathParam("job") long id, @Valid Job.Update update);
+}

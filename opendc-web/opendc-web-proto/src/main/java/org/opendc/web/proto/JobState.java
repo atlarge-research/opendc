@@ -20,13 +20,34 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto;
 
 /**
- * A task in the Workflow Trace Format.
+ * State of a scenario for the simulator runner.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public enum JobState {
+    /**
+     * The job is pending to be claimed by a runner.
+     */
+    PENDING,
+
+    /**
+     * The job is claimed by a runner.
+     */
+    CLAIMED,
+
+    /**
+     * The job is currently running.
+     */
+    RUNNING,
+
+    /**
+     * The job has finished.
+     */
+    FINISHED,
+
+    /**
+     * The job has failed.
+     */
+    FAILED
+}

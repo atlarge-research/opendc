@@ -20,13 +20,11 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto.topology;
+
+import java.util.List;
 
 /**
- * A task in the Workflow Trace Format.
+ * A rack in a datacenter.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public record Rack(String id, String name, int capacity, double powerCapacityW, List<Machine> machines) {}

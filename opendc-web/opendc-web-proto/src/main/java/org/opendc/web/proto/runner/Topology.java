@@ -20,13 +20,15 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto.runner;
+
+import java.time.Instant;
+import java.util.List;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.topology.Room;
 
 /**
- * A task in the Workflow Trace Format.
+ * A [Topology] that is exposed to an OpenDC runner.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+@Schema(name = "Runner.Topology")
+public record Topology(long id, int number, String name, List<Room> rooms, Instant createdAt, Instant updatedAt) {}

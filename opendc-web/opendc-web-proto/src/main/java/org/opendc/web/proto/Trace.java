@@ -20,13 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto;
 
 /**
- * A task in the Workflow Trace Format.
+ * A workload trace available for simulation.
+ *
+ * @param id The unique identifier of the trace.
+ * @param name The name of the trace.
+ * @param type The type of trace.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public record Trace(String id, String name, String type) {}

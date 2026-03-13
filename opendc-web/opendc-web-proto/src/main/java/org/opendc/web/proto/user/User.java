@@ -20,13 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto.user;
 
 /**
- * A task in the Workflow Trace Format.
+ * A user of OpenDC.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public record User(String userId, UserAccounting accounting) {}

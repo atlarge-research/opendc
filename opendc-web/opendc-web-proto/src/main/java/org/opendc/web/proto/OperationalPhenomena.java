@@ -20,13 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto;
 
 /**
- * A task in the Workflow Trace Format.
+ * Object describing the enabled operational phenomena for a scenario.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public record OperationalPhenomena(boolean failures, boolean interference) {}

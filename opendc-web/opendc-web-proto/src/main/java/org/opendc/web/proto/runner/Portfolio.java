@@ -20,13 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto.runner;
+
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.Targets;
 
 /**
- * A task in the Workflow Trace Format.
+ * A {@link Portfolio} as seen from the runner's perspective.
+ *
+ * @param id The unique identifier of the portfolio.
+ * @param number The number of the portfolio for the project.
+ * @param name The name of the portfolio.
+ * @param targets The targets of the portfolio.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+@Schema(name = "Runner.Portfolio")
+public record Portfolio(long id, int number, String name, Targets targets) {}

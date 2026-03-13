@@ -22,7 +22,6 @@
 
 package org.opendc.web.server.model;
 
-import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
@@ -97,8 +96,7 @@ public class Job extends PanacheEntityBase {
     /**
      * The state of the job.
      */
-    @Type(PostgreSQLEnumType.class)
-    @Column(nullable = false, columnDefinition = "enum")
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     public JobState state = JobState.PENDING;
 

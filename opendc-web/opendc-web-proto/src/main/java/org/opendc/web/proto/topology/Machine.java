@@ -20,13 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto.topology;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 
 /**
- * A task in the Workflow Trace Format.
+ * A machine in a rack.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public record Machine(
+        String id,
+        int position,
+        List<ProcessingUnit> cpus,
+        List<ProcessingUnit> gpus,
+        @JsonProperty("memories") List<MemoryUnit> memory,
+        @JsonProperty("storages") List<MemoryUnit> storage,
+        String rackId) {}

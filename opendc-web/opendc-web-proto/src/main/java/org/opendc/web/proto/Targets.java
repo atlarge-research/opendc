@@ -20,13 +20,15 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto;
+
+import jakarta.validation.constraints.Min;
+import java.util.Set;
 
 /**
- * A task in the Workflow Trace Format.
+ * The targets of a portfolio.
+ *
+ * @param metrics The selected metrics to track during simulation.
+ * @param repeats The number of repetitions per scenario.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public record Targets(Set<String> metrics, @Min(1) int repeats) {}

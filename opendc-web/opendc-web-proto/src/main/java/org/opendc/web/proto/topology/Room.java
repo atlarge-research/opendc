@@ -20,13 +20,11 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto.topology;
+
+import java.util.Set;
 
 /**
- * A task in the Workflow Trace Format.
+ * A room in a datacenter.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public record Room(String id, String name, Set<RoomTile> tiles, String topologyId) {}

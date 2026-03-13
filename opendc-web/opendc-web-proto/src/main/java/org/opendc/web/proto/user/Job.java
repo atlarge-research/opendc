@@ -20,13 +20,15 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto.user;
+
+import java.time.Instant;
+import java.util.Map;
+import org.opendc.web.proto.JobState;
 
 /**
- * A task in the Workflow Trace Format.
+ * A simulation job that is associated with a {@link Scenario}.
+ * <p>
+ * This entity is exposed in the runner-facing API via {@link Job}.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public record Job(long id, JobState state, Instant createdAt, Instant updatedAt, Map<String, ?> results) {}

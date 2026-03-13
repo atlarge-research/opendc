@@ -20,13 +20,11 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto.user;
+
+import java.time.LocalDate;
 
 /**
- * A task in the Workflow Trace Format.
+ * Accounting data for a user.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public record UserAccounting(LocalDate periodEnd, int simulationTime, int simulationTimeBudget) {}

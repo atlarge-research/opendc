@@ -22,7 +22,6 @@
 
 package org.opendc.web.server.model;
 
-import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
@@ -42,7 +41,6 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.Objects;
-import org.hibernate.annotations.Type;
 import org.opendc.web.proto.user.ProjectRole;
 
 /**
@@ -83,9 +81,8 @@ public class ProjectAuthorization extends PanacheEntityBase {
     /**
      * The role of the user in the project.
      */
-    @Column(nullable = false, columnDefinition = "enum")
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    @Type(PostgreSQLEnumType.class)
     public ProjectRole role;
 
     /**

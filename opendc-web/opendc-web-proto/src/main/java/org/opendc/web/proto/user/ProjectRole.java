@@ -20,13 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.formats.failure.parquet
+package org.opendc.web.proto.user;
 
 /**
- * A task in the Workflow Trace Format.
+ * The role of a user in a project.
  */
-internal data class FailureFragment(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-)
+public enum ProjectRole {
+    /**
+     * The user is allowed to view the project.
+     */
+    VIEWER,
+
+    /**
+     * The user is allowed to edit the project.
+     */
+    EDITOR,
+
+    /**
+     * The user owns the project (so he can delete it).
+     */
+    OWNER,
+}
