@@ -235,17 +235,19 @@ public class TaskTableReaderImpl(
      */
     override fun record(now: Instant) {
         val newHost = service.lookupHost(task)
-        if (newHost != null && newHost.getName() != simHost?.getName()) {
+        if (newHost != simHost) {
             simHost = newHost
-            hostInfo =
-                HostInfo(
-                    newHost.getName(),
-                    newHost.getClusterName(),
-                    "x86",
-                    newHost.getModel().coreCount,
-                    newHost.getModel().cpuCapacity,
-                    newHost.getModel().memoryCapacity,
-                )
+            if (newHost != null) {
+                hostInfo =
+                    HostInfo(
+                        newHost.getName(),
+                        newHost.getClusterName(),
+                        "x86",
+                        newHost.getModel().coreCount,
+                        newHost.getModel().cpuCapacity,
+                        newHost.getModel().memoryCapacity,
+                    )
+            }
         }
 
         val cpuStats = simHost?.getCpuStats(task)
