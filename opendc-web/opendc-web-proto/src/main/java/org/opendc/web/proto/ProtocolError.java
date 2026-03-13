@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,15 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto
+package org.opendc.web.proto;
 
 /**
- * A room tile.
+ * Container for reporting errors.
  */
-public data class RoomTile(
-    val id: String,
-    val positionX: Double,
-    val positionY: Double,
-    val rack: Rack? = null,
-    val roomId: String? = null,
-)
+public record ProtocolError(int code, String message) {}

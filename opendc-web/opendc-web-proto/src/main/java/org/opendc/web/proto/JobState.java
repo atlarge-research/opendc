@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,12 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto
+package org.opendc.web.proto;
 
 /**
  * State of a scenario for the simulator runner.
  */
-public enum class JobState {
+public enum JobState {
     /**
      * The job is pending to be claimed by a runner.
      */
@@ -49,5 +49,5 @@ public enum class JobState {
     /**
      * The job has failed.
      */
-    FAILED,
+    FAILED
 }

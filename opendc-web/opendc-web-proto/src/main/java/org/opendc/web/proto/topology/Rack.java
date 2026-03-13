@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,15 +20,11 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto
+package org.opendc.web.proto.topology;
+
+import java.util.List;
 
 /**
  * A rack in a datacenter.
  */
-public data class Rack(
-    val id: String,
-    val name: String,
-    val capacity: Int,
-    val powerCapacityW: Double,
-    val machines: List<Machine>,
-)
+public record Rack(String id, String name, int capacity, double powerCapacityW, List<Machine> machines) {}

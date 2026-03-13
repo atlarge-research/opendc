@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,40 +20,30 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.user
+package org.opendc.web.proto.user;
 
-import jakarta.validation.constraints.NotBlank
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.Room
-import java.time.Instant
+import jakarta.validation.constraints.NotBlank;
+import java.time.Instant;
+import java.util.List;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.topology.Room;
 
 /**
  * Model for an OpenDC topology.
  */
-public data class Topology(
-    val id: Long,
-    val number: Int,
-    val project: Project,
-    val name: String,
-    val rooms: List<Room>,
-    val createdAt: Instant,
-    val updatedAt: Instant,
-) {
+public record Topology(
+    long id, int number, Project project, String name, List<Room> rooms, Instant createdAt, Instant updatedAt) {
     /**
      * Create a new topology for a project.
      */
     @Schema(name = "Topology.Create")
-    public data class Create(
-        @field:NotBlank(message = "Name must not be empty")
-        val name: String,
-        val rooms: List<Room>,
-    )
+    public record Create(@NotBlank(message = "Name must not be empty") String name, List<Room> rooms) {}
 
     /**
      * Update an existing topology.
      */
     @Schema(name = "Topology.Update")
-    public data class Update(val rooms: List<Room>)
+    public record Update(List<Room> rooms) {}
 
     /**
      * A summary view of a [Topology] provided for nested relations.
@@ -65,11 +55,5 @@ public data class Topology(
      * @param updatedAt The instant at which the topology was updated.
      */
     @Schema(name = "Topology.Summary")
-    public data class Summary(
-        val id: Long,
-        val number: Int,
-        val name: String,
-        val createdAt: Instant,
-        val updatedAt: Instant,
-    )
+    public record Summary(long id, int number, String name, Instant createdAt, Instant updatedAt) {}
 }

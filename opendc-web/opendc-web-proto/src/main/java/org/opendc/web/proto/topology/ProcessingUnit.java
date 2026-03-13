@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,15 +20,10 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto
+package org.opendc.web.proto.topology;
 
 /**
  * A CPU model.
  */
-public data class ProcessingUnit(
-    val id: String,
-    val name: String,
-    val clockRateMhz: Double,
-    val numberOfCores: Int,
-    val energyConsumptionW: Double,
-)
+public record ProcessingUnit(
+    String id, String name, double clockRateMhz, int numberOfCores, double energyConsumptionW) {}

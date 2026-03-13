@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto
+package org.opendc.web.proto;
 
-import jakarta.validation.constraints.DecimalMax
-import jakarta.validation.constraints.DecimalMin
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 
 /**
  * The workload to simulate for a scenario.
  */
-public data class Workload(val trace: Trace, val samplingFraction: Double) {
+public record Workload(Trace trace, double samplingFraction) {
     /**
      * Specification for a workload.
      *
      * @param trace The unique identifier of the trace.
      * @param samplingFraction The fraction of the workload to sample.
      */
-    public data class Spec(
-        val trace: String,
+    public record Spec(
+        String trace,
         @DecimalMin(value = "0.001", message = "Sampling fraction must be non-zero")
         @DecimalMax(value = "1", message = "Sampling fraction cannot exceed one")
-        val samplingFraction: Double,
-    )
+        double samplingFraction) {}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto
+package org.opendc.web.proto;
 
 /**
  * A workload trace available for simulation.
@@ -29,8 +29,4 @@ package org.opendc.web.proto
  * @param name The name of the trace.
  * @param type The type of trace.
  */
-public data class Trace(
-    val id: String,
-    val name: String,
-    val type: String,
-)
+public record Trace(String id, String name, String type) {}

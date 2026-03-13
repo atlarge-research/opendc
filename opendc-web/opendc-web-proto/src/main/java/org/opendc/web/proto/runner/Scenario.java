@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +20,22 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.runner
+package org.opendc.web.proto.runner;
 
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.OperationalPhenomena
-import org.opendc.web.proto.Workload
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.OperationalPhenomena;
+import org.opendc.web.proto.Workload;
 
 /**
- * A [Scenario] that is exposed to an OpenDC runner.
+ * A {@link Scenario} that is exposed to an OpenDC runner.
  */
 @Schema(name = "Runner.Scenario")
-public data class Scenario(
-    val id: Long,
-    val number: Int,
-    val portfolio: Portfolio,
-    val name: String,
-    val workload: Workload,
-    val topology: Topology,
-    val phenomena: OperationalPhenomena,
-    val schedulerName: String,
-)
+public record Scenario(
+    long id,
+    int number,
+    Portfolio portfolio,
+    String name,
+    Workload workload,
+    Topology topology,
+    OperationalPhenomena phenomena,
+    String schedulerName) {}

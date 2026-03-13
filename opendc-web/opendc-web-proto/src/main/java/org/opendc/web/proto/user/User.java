@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.user
+package org.opendc.web.proto.user;
 
 /**
  * A user of OpenDC.
  */
-public data class User(
-    val userId: String,
-    val accounting: UserAccounting,
-)
+public record User(String userId, UserAccounting accounting) {}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,12 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.user
+package org.opendc.web.proto.user;
 
-import jakarta.validation.constraints.NotBlank
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.Targets
-import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotBlank;
+import java.util.List;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.Targets;
 
 /**
  * A portfolio is the composition of multiple scenarios.
@@ -37,23 +37,13 @@ import jakarta.validation.constraints.NotBlank
  * @param targets The targets of the portfolio.
  * @param scenarios The scenarios in the portfolio.
  */
-public data class Portfolio(
-    val id: Long,
-    val number: Int,
-    val project: Project,
-    val name: String,
-    val targets: Targets,
-    val scenarios: List<Scenario.Summary>,
-) {
+public record Portfolio(
+    long id, int number, Project project, String name, Targets targets, List<Scenario.Summary> scenarios) {
     /**
      * A request to create a new portfolio.
      */
     @Schema(name = "Portfolio.Update")
-    public data class Create(
-        @field:NotBlank(message = "Name must not be empty")
-        val name: String,
-        val targets: Targets,
-    )
+    public record Create(@NotBlank(message = "Name must not be empty") String name, Targets targets) {}
 
     /**
      * A summary view of a [Portfolio] provided for nested relations.
@@ -64,10 +54,5 @@ public data class Portfolio(
      * @param targets The targets of the portfolio.
      */
     @Schema(name = "Portfolio.Summary")
-    public data class Summary(
-        val id: Long,
-        val number: Int,
-        val name: String,
-        val targets: Targets,
-    )
+    public record Summary(long id, int number, String name, Targets targets) {}
 }

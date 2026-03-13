@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,15 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto
+package org.opendc.web.proto.topology;
 
 /**
  * A memory unit in a system.
  */
-public data class MemoryUnit(
-    val id: String,
-    val name: String,
-    val speedMbPerS: Double,
-    val sizeMb: Double,
-    val energyConsumptionW: Double,
-)
+public record MemoryUnit(String id, String name, double speedMbPerS, double sizeMb, double energyConsumptionW) {}

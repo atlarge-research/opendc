@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,28 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.user
+package org.opendc.web.proto.user;
 
-import jakarta.validation.constraints.NotBlank
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import java.time.Instant
-import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotBlank;
+import java.time.Instant;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  * A project in OpenDC encapsulates all the datacenter designs and simulation runs for a set of users.
  */
-public data class Project(
-    val id: Long,
-    val name: String,
-    val createdAt: Instant,
-    val updatedAt: Instant,
-    val role: ProjectRole,
-) {
+public record Project(long id, String name, Instant createdAt, Instant updatedAt, ProjectRole role) {
     /**
      * A request to create a new project.
      */
     @Schema(name = "Project.Create")
-    public data class Create(
-        @field:NotBlank(message = "Name must not be empty") val name: String,
-    )
+    public record Create(@NotBlank(message = "Name must not be empty") String name) {}
 }

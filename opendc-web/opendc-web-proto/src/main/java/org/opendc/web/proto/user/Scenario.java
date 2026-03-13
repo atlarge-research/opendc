@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,28 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.user
+package org.opendc.web.proto.user;
 
-import jakarta.validation.constraints.NotBlank
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.OperationalPhenomena
-import org.opendc.web.proto.Workload
-import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotBlank;
+import java.util.List;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.OperationalPhenomena;
+import org.opendc.web.proto.Workload;
 
 /**
  * A single scenario to be explored by the simulator.
  */
-public data class Scenario(
-    val id: Long,
-    val number: Int,
-    val project: Project,
-    val portfolio: Portfolio.Summary,
-    val name: String,
-    val workload: Workload,
-    val topology: Topology.Summary,
-    val phenomena: OperationalPhenomena,
-    val schedulerName: String,
-    val jobs: List<Job>,
-) {
+public record Scenario(
+    long id,
+    int number,
+    Project project,
+    Portfolio.Summary portfolio,
+    String name,
+    Workload workload,
+    Topology.Summary topology,
+    OperationalPhenomena phenomena,
+    String schedulerName,
+    List<Job> jobs) {
     /**
      * Create a new scenario.
      *
@@ -53,14 +52,12 @@ public data class Scenario(
      * @param schedulerName The name of the scheduler.
      */
     @Schema(name = "Scenario.Create")
-    public data class Create(
-        @field:NotBlank(message = "Name must not be empty")
-        val name: String,
-        val workload: Workload.Spec,
-        val topology: Long,
-        val phenomena: OperationalPhenomena,
-        val schedulerName: String,
-    )
+    public record Create(
+        @NotBlank(message = "Name must not be empty") String name,
+        Workload.Spec workload,
+        long topology,
+        OperationalPhenomena phenomena,
+        String schedulerName) {}
 
     /**
      * A summary view of a [Scenario] provided for nested relations.
@@ -71,17 +68,16 @@ public data class Scenario(
      * @param workload The workload to be modeled by the scenario.
      * @param phenomena The phenomena simulated for this scenario.
      * @param schedulerName The scheduler name to use for the experiment.
-     * @param job The simulation job associated with the scenario.
+     * @param jobs The simulation jobs associated with the scenario.
      */
     @Schema(name = "Scenario.Summary")
-    public data class Summary(
-        val id: Long,
-        val number: Int,
-        val name: String,
-        val workload: Workload,
-        val topology: Topology.Summary,
-        val phenomena: OperationalPhenomena,
-        val schedulerName: String,
-        val jobs: List<Job>,
-    )
+    public record Summary(
+        long id,
+        int number,
+        String name,
+        Workload workload,
+        Topology.Summary topology,
+        OperationalPhenomena phenomena,
+        String schedulerName,
+        List<Job> jobs) {}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,15 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.runner
+package org.opendc.web.proto.runner;
 
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.Room
-import java.time.Instant
+import java.time.Instant;
+import java.util.List;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.topology.Room;
 
 /**
  * A [Topology] that is exposed to an OpenDC runner.
  */
 @Schema(name = "Runner.Topology")
-public data class Topology(
-    val id: Long,
-    val number: Int,
-    val name: String,
-    val rooms: List<Room>,
-    val createdAt: Instant,
-    val updatedAt: Instant,
-)
+public record Topology(long id, int number, String name, List<Room> rooms, Instant createdAt, Instant updatedAt) {}

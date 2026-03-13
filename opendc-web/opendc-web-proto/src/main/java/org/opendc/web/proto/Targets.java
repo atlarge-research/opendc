@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,10 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto
+package org.opendc.web.proto;
 
-import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.Min;
+import java.util.Set;
 
 /**
  * The targets of a portfolio.
@@ -30,8 +31,4 @@ import jakarta.validation.constraints.Min
  * @param metrics The selected metrics to track during simulation.
  * @param repeats The number of repetitions per scenario.
  */
-public data class Targets(
-    val metrics: Set<String>,
-    @field:Min(1)
-    val repeats: Int = 1,
-)
+public record Targets(Set<String> metrics, @Min(1) int repeats) {}

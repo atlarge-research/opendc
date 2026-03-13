@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,15 +20,11 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.user
+package org.opendc.web.proto.user;
 
-import java.time.LocalDate
+import java.time.LocalDate;
 
 /**
  * Accounting data for a user.
  */
-public data class UserAccounting(
-    val periodEnd: LocalDate,
-    val simulationTime: Int,
-    val simulationTimeBudget: Int,
-)
+public record UserAccounting(LocalDate periodEnd, int simulationTime, int simulationTimeBudget) {}

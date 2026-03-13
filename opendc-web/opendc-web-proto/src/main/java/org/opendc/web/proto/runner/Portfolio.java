@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto.runner
+package org.opendc.web.proto.runner;
 
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.opendc.web.proto.Targets
-import org.opendc.web.proto.user.Portfolio
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.Targets;
 
 /**
- * A [Portfolio] as seen from the runner's perspective.
+ * A {@link Portfolio} as seen from the runner's perspective.
  *
  * @param id The unique identifier of the portfolio.
  * @param number The number of the portfolio for the project.
@@ -35,9 +34,4 @@ import org.opendc.web.proto.user.Portfolio
  * @param targets The targets of the portfolio.
  */
 @Schema(name = "Runner.Portfolio")
-public data class Portfolio(
-    val id: Long,
-    val number: Int,
-    val name: String,
-    val targets: Targets,
-)
+public record Portfolio(long id, int number, String name, Targets targets) {}

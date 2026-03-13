@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto
+package org.opendc.web.proto;
 
 /**
  * Object describing the enabled operational phenomena for a scenario.
  */
-public data class OperationalPhenomena(
-    val failures: Boolean,
-    val interference: Boolean,
-)
+public record OperationalPhenomena(boolean failures, boolean interference) {}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2023 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,11 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.proto
+package org.opendc.web.proto.topology;
+
+import java.util.Set;
 
 /**
  * A room in a datacenter.
  */
-public data class Room(
-    val id: String,
-    val name: String,
-    val tiles: Set<RoomTile>,
-    val topologyId: String? = null,
-)
+public record Room(String id, String name, Set<RoomTile> tiles, String topologyId) {}
