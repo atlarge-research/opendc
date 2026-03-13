@@ -27,7 +27,7 @@ progressbar = "0.10.0"
 quarkus = "3.8.0"
 quarkus-quinoa = "2.3.4"
 sentry = "7.4.0"
-slf4j = "2.0.7"
+slf4j = "2.0.9"
 spotless = "6.25.0"
 
 [libraries]
