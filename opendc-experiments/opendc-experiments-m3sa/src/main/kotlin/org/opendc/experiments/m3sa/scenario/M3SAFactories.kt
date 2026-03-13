@@ -34,5 +34,11 @@ private val experimentReader = ExperimentReader()
  * @return A list of Scenarios.
  */
 public fun getOutputFolder(file: File): String {
-    return experimentReader.read(file).outputFolder + "/outputs"
+    val experiment = experimentReader.read(file)
+    val name = experiment.name
+    return if (name.isNotEmpty() && !name.startsWith("/")) {
+        "${experiment.outputFolder}/$name"
+    } else {
+        "${experiment.outputFolder}$name"
+    }
 }
