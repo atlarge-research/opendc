@@ -15,10 +15,10 @@ ENV OPENDC_AUTH0_AUDIENCE=$OPENDC_AUTH0_AUDIENCE
 ENV OPENDC_AUTH0_DOCS_CLIENT_ID=$OPENDC_AUTH0_DOCS_CLIENT_ID
 
 COPY ./ /app/
-RUN curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
-RUN . ~/.nvm/nvm.sh
-RUN nvm install --lts
-RUN ./gradlew --no-daemon :opendc-web:opendc-web-server:quarkusBuild -Dquarkus.profile=docker
+RUN curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash && \
+    . ~/.nvm/nvm.sh && \
+    nvm install --lts && \
+    ./gradlew --no-daemon :opendc-web:opendc-web-server:quarkusBuild -Dquarkus.profile=docker
 
 FROM eclipse-temurin:21-jdk-jammy
 COPY --from=0 /app/opendc-web/opendc-web-server/build/quarkus-app /opt/opendc
