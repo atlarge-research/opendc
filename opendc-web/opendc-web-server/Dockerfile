@@ -1,4 +1,4 @@
-FROM nove
+FROM eclipse-temurin:21-jdk-jammy
 # Obtain (cache) Gradle wrapper
 COPY gradlew /app/
 COPY gradle /app/gradle
