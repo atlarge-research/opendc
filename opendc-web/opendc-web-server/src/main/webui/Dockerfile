@@ -1,6 +1,5 @@
 FROM node:18-slim AS staging
-MAINTAINER OpenDC Maintainers <opendc@atlarge-research.com>
-
+LABEL org.opencontainers.image.authors="OpenDC Maintainers <opendc@atlarge-research.com>"
 # Copy package details
 COPY ./package.json ./package-lock.json /opendc/
 RUN cd /opendc && npm ci
