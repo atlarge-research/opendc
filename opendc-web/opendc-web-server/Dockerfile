@@ -1,6 +1,4 @@
 FROM eclipse-temurin:21-jdk-jammy
-MAINTAINER OpenDC Maintainers <opendc@atlarge-research.com>
-
 # Obtain (cache) Gradle wrapper
 COPY gradlew /app/
 COPY gradle /app/gradle
