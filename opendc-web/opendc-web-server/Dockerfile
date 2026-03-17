@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-jammy
+FROM nove
 # Obtain (cache) Gradle wrapper
 COPY gradlew /app/
 COPY gradle /app/gradle
@@ -15,6 +15,9 @@ ENV OPENDC_AUTH0_AUDIENCE=$OPENDC_AUTH0_AUDIENCE
 ENV OPENDC_AUTH0_DOCS_CLIENT_ID=$OPENDC_AUTH0_DOCS_CLIENT_ID
 
 COPY ./ /app/
+RUN curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash && \
+    source ~/.nvm/nvm.sh && \
+    nvm install --lts
 RUN ./gradlew --no-daemon :opendc-web:opendc-web-server:quarkusBuild -Dquarkus.profile=docker
 
 FROM eclipse-temurin:21-jdk-jammy
