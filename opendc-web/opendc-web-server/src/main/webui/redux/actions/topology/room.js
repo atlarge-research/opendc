@@ -1,4 +1,6 @@
 import { v4 as uuid } from 'uuid'
+import { normalize } from 'normalizr'
+import { Rack as RackSchema } from '../../../util/topology-schema'
 import {
     DEFAULT_RACK_SLOT_CAPACITY,
     DEFAULT_RACK_POWER_CAPACITY,
@@ -31,9 +33,10 @@ export function editRoomName(roomId, name) {
     }
 }
 
-export function startRackConstruction() {
+export function startRackConstruction(rackPrefab) {
     return {
         type: START_RACK_CONSTRUCTION,
+        rackPrefab,
     }
 }
 
@@ -45,22 +48,34 @@ export function stopRackConstruction() {
 
 export function addRackToTile(positionX, positionY) {
     return (dispatch, getState) => {
-        const { topology, interactionLevel } = getState()
+        const { topology, interactionLevel, construction } = getState()
         const currentRoom = topology.rooms[interactionLevel.roomId]
         const tiles = currentRoom.tiles.map((tileId) => topology.tiles[tileId])
         const tile = findTileWithPosition(tiles, positionX, positionY)
 
         if (tile !== null) {
+            const prefab = construction.currentRackPrefab
+            const rackId = uuid()
+            const rack = prefab
+                ? {
+                      ...prefab.rack,
+                      id: rackId,
+                      machines: (prefab.rack.machines || []).map((m) => ({ ...m, id: uuid(), rackId })),
+                  }
+                : {
+                      id: rackId,
+                      name: 'Rack',
+                      capacity: DEFAULT_RACK_SLOT_CAPACITY,
+                      powerCapacityW: DEFAULT_RACK_POWER_CAPACITY,
+                      machines: [],
+                  }
+
+            const { entities, result: normalizedRackId } = normalize(rack, RackSchema)
             dispatch({
                 type: ADD_RACK_TO_TILE,
                 tileId: tile.id,
-                rack: {
-                    id: uuid(),
-                    name: 'Rack',
-                    capacity: DEFAULT_RACK_SLOT_CAPACITY,
-                    powerCapacityW: DEFAULT_RACK_POWER_CAPACITY,
-                    machines: [],
-                },
+                rack: entities.racks[normalizedRackId],
+                entities,
             })
         }
     }

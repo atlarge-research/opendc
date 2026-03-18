@@ -26,6 +26,7 @@ import org.opendc.web.server.model.Job;
 import org.opendc.web.server.model.Portfolio;
 import org.opendc.web.server.model.Project;
 import org.opendc.web.server.model.ProjectAuthorization;
+import org.opendc.web.server.model.RackPrefab;
 import org.opendc.web.server.model.Scenario;
 import org.opendc.web.server.model.Topology;
 import org.opendc.web.server.rest.BaseProtocol;
@@ -89,6 +90,20 @@ public final class UserProtocol {
     public static org.opendc.web.proto.user.Topology.Summary toSummaryDto(Topology topology) {
         return new org.opendc.web.proto.user.Topology.Summary(
                 topology.id, topology.number, topology.name, topology.createdAt, topology.updatedAt);
+    }
+
+    /**
+     * Convert a {@link RackPrefab} entity into a {@link org.opendc.web.proto.user.RackPrefab} DTO.
+     */
+    public static org.opendc.web.proto.user.RackPrefab toDto(RackPrefab rackPrefab, ProjectAuthorization auth) {
+        return new org.opendc.web.proto.user.RackPrefab(
+                rackPrefab.id,
+                rackPrefab.number,
+                toDto(auth),
+                rackPrefab.name,
+                rackPrefab.rack,
+                rackPrefab.createdAt,
+                rackPrefab.updatedAt);
     }
 
     /**
