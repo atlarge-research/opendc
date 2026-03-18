@@ -1,18 +1,5 @@
 version: "3.8"
 services:
-  ui:
-    image: atlargeresearch/opendc-ui:v2.1
-    restart: on-failure
-    networks:
-      - backend
-    depends_on:
-      - server
-    environment:
-      NEXT_PUBLIC_AUTH0_DOMAIN: ${OPENDC_AUTH0_DOMAIN}
-      NEXT_PUBLIC_AUTH0_CLIENT_ID: ${OPENDC_AUTH0_CLIENT_ID}
-      NEXT_PUBLIC_AUTH0_AUDIENCE: ${OPENDC_AUTH0_AUDIENCE}
-      NEXT_PUBLIC_SENTRY_DSN: ${OPENDC_UI_SENTRY_DSN-}
-
   server:
     image: atlargeresearch/opendc:v2.1
     restart: on-failure
@@ -34,7 +21,7 @@ services:
       SENTRY_DSN: ${OPENDC_SERVER_SENTRY_DSN-}
 
   postgres:
-    image: postgres
+    image: postgres:17.9
     restart: on-failure
     environment:
       POSTGRES_USER: ${OPENDC_DB_USERNAME}

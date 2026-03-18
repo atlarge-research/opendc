@@ -51,6 +51,7 @@ import org.opendc.web.proto.Targets;
  */
 @Entity
 @Table(
+        name = "portfolios",
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "uk_portfolios_number",

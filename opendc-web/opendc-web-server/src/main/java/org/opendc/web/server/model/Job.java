@@ -27,7 +27,20 @@ import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Map;
 import org.hibernate.annotations.Type;
@@ -37,7 +50,7 @@ import org.opendc.web.proto.JobState;
  * A simulation job to be run by the simulator.
  */
 @Entity
-@Table
+@Table(name = "jobs")
 @NamedQueries({
     @NamedQuery(
             name = "Job.updateOne",
@@ -83,8 +96,8 @@ public class Job extends PanacheEntityBase {
     /**
      * The state of the job.
      */
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     public JobState state = JobState.PENDING;
 
     /**

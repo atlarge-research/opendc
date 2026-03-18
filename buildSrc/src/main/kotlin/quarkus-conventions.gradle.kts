@@ -23,10 +23,7 @@
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.VerificationType
-import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.kotlin
-import org.gradle.kotlin.dsl.withType
 
 plugins {
     id("java-conventions")
@@ -48,7 +45,6 @@ configurations.create("coverageDataElementsForQuarkus") {
 
     extendsFrom(configurations["implementation"], configurations["runtimeOnly"])
 
-    @Suppress("UnstableApiUsage")
     attributes {
         attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category::class.java, Category.VERIFICATION))
         attribute(VerificationType.VERIFICATION_TYPE_ATTRIBUTE, objects.named(VerificationType::class.java, VerificationType.JACOCO_RESULTS))
@@ -56,7 +52,6 @@ configurations.create("coverageDataElementsForQuarkus") {
 
     artifacts {
         add("coverageDataElementsForQuarkus", layout.buildDirectory.file("jacoco-quarkus.exec")) {
-            @Suppress("UnstableApiUsage")
             type = ArtifactTypeDefinition.BINARY_DATA_TYPE
             builtBy(tasks.test)
         }
