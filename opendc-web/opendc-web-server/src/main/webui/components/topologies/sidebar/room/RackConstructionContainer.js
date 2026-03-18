@@ -22,21 +22,28 @@
 
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useRouter } from 'next/router'
 import { startRackConstruction, stopRackConstruction } from '../../../../redux/actions/topology/room'
+import { useRackPrefabs } from '../../../../data/rack-prefabs'
 import RackConstructionComponent from './RackConstructionComponent'
 
 function RackConstructionContainer(props) {
+    const router = useRouter()
+    const { project: projectId } = router.query
+    const { data: prefabs = [] } = useRackPrefabs(projectId)
+
     const isRackConstructionMode = useSelector((state) => state.construction.inRackConstructionMode)
     const isEditingRoom = useSelector((state) => state.construction.currentRoomInConstruction !== '-1')
 
     const dispatch = useDispatch()
-    const onStart = () => dispatch(startRackConstruction())
+    const onStart = (rackPrefab) => dispatch(startRackConstruction(rackPrefab))
     const onStop = () => dispatch(stopRackConstruction())
     return (
         <RackConstructionComponent
             {...props}
             inRackConstructionMode={isRackConstructionMode}
             isEditingRoom={isEditingRoom}
+            prefabs={prefabs}
             onStart={onStart}
             onStop={onStop}
         />

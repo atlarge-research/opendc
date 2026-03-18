@@ -1,8 +1,8 @@
 
 -- Insert data
 
-INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, updated_at, id)
-       VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 1', 0, 0, 0, '2024-03-01T15:31:41.579969Z', 1);
+INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, rack_prefabs_created, updated_at, id)
+       VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 1', 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 1);
 
 INSERT INTO project_authorizations (role, project_id, user_id)
 VALUES ('OWNER', 1, 'test_user_1');
@@ -19,36 +19,36 @@ VALUES ('EDITOR', 1, 'test_user_3');
 
 -- Create a project for test user 2
 
-INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, updated_at, id)
-VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 2', 0, 0, 0, '2024-03-01T15:31:41.579969Z', 2);
+INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, rack_prefabs_created, updated_at, id)
+VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 2', 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 2);
 
 INSERT INTO project_authorizations (role, project_id, user_id)
 VALUES ('OWNER', 2, 'test_user_2');
 
 -- Create three projects for test user 3. User 3 has multiple projects to test getAll
 
-INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, updated_at, id)
-VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 3', 0, 0, 0, '2024-03-01T15:31:41.579969Z', 3);
+INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, rack_prefabs_created, updated_at, id)
+VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 3', 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 3);
 
 INSERT INTO project_authorizations (role, project_id, user_id)
 VALUES ('OWNER', 3, 'test_user_3');
 
-INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, updated_at, id)
-VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 4', 0, 0, 0, '2024-03-01T15:31:41.579969Z', 4);
+INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, rack_prefabs_created, updated_at, id)
+VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 4', 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 4);
 
 INSERT INTO project_authorizations (role, project_id, user_id)
 VALUES ('OWNER', 4, 'test_user_3');
 
-INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, updated_at, id)
-VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 5', 0, 0, 0, '2024-03-01T15:31:41.579969Z', 5);
+INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, rack_prefabs_created, updated_at, id)
+VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 5', 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 5);
 
 INSERT INTO project_authorizations (role, project_id, user_id)
 VALUES ('OWNER', 5, 'test_user_3');
 
 -- Project to delete
 
-INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, updated_at, id)
-VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project Delete', 0, 0, 0, '2024-03-01T15:31:41.579969Z', 6);
+INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, rack_prefabs_created, updated_at, id)
+VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project Delete', 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 6);
 
 INSERT INTO project_authorizations (role, project_id, user_id)
 VALUES ('OWNER', 6, 'test_user_1');

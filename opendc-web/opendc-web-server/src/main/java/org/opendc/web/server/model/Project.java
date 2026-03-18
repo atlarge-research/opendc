@@ -77,6 +77,14 @@ import java.util.Set;
             UPDATE Project p
             SET p.scenariosCreated = :oldState + 1, p.updatedAt = :now
             WHERE p.id = :id AND p.scenariosCreated = :oldState
+        """),
+    @NamedQuery(
+            name = "Project.allocateRackPrefab",
+            query =
+                    """
+            UPDATE Project p
+            SET p.rackPrefabsCreated = :oldState + 1, p.updatedAt = :now
+            WHERE p.id = :id AND p.rackPrefabsCreated = :oldState
         """)
 })
 public class Project extends PanacheEntityBase {
@@ -151,6 +159,22 @@ public class Project extends PanacheEntityBase {
      */
     @Column(name = "scenarios_created", nullable = false)
     public int scenariosCreated = 0;
+
+    /**
+     * The rack prefabs belonging to this project.
+     */
+    @OneToMany(
+            cascade = {CascadeType.ALL},
+            mappedBy = "project",
+            orphanRemoval = true)
+    @OrderBy("id ASC")
+    public Set<RackPrefab> rackPrefabs = new HashSet<>();
+
+    /**
+     * The number of rack prefabs created for this project (including deleted rack prefabs).
+     */
+    @Column(name = "rack_prefabs_created", nullable = false)
+    public int rackPrefabsCreated = 0;
 
     /**
      * The users authorized to access the project.
@@ -233,5 +257,25 @@ public class Project extends PanacheEntityBase {
         }
 
         throw new IllegalStateException("Failed to allocate next scenario");
+    }
+
+    /**
+     * Allocate the next rack prefab number for the specified [project].
+     *
+     * @param time The time at which the new rack prefab is created.
+     */
+    public int allocateRackPrefab(Instant time) {
+        for (int i = 0; i < 4; i++) {
+            long count = update(
+                    "#Project.allocateRackPrefab",
+                    Parameters.with("id", id).and("oldState", rackPrefabsCreated).and("now", time));
+            if (count > 0) {
+                return rackPrefabsCreated + 1;
+            } else {
+                Panache.getEntityManager().refresh(this);
+            }
+        }
+
+        throw new IllegalStateException("Failed to allocate next rack prefab");
     }
 }
