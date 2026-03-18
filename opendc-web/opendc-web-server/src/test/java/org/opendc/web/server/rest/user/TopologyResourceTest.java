@@ -157,6 +157,23 @@ public final class TopologyResourceTest {
     }
 
     /**
+     * Test to create a topology with a duplicate name.
+     */
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"openid"})
+    public void testCreateDuplicateName() {
+        given().pathParam("project", "1")
+                .body(new Topology.Create("Test Topology testUpdate", List.of()))
+                .contentType(ContentType.JSON)
+                .when()
+                .post()
+                .then()
+                .statusCode(409);
+    }
+
+    /**
      * Test that tries to obtain a topology without token.
      */
     @Test
