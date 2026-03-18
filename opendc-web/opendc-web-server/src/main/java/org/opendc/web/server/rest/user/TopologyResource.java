@@ -39,6 +39,15 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.opendc.web.proto.topology.Machine;
+import org.opendc.web.proto.topology.MemoryUnit;
+import org.opendc.web.proto.topology.ProcessingUnit;
+import org.opendc.web.proto.topology.Rack;
+import org.opendc.web.proto.topology.Room;
+import org.opendc.web.proto.topology.RoomTile;
 import org.opendc.web.server.model.Project;
 import org.opendc.web.server.model.ProjectAuthorization;
 import org.opendc.web.server.model.Topology;
@@ -102,9 +111,14 @@ public final class TopologyResource {
 
         Instant now = Instant.now();
         Project project = auth.project;
+
+        if (Topology.findByName(projectId, request.name()) != null) {
+            throw new WebApplicationException("Topology name already exists", 409);
+        }
+
         int number = project.allocateTopology(now);
 
-        Topology topology = new Topology(project, number, request.name(), now, request.rooms());
+        Topology topology = new Topology(project, number, request.name(), now, createNewInstances(request.rooms()));
 
         project.topologies.add(topology);
         topology.persist();
@@ -204,5 +218,113 @@ public final class TopologyResource {
         }
 
         return UserProtocol.toDto(entity, auth);
+    }
+
+    /**
+     * Create new instances of the specified rooms.
+     */
+    private List<Room> createNewInstances(List<Room> rooms) {
+        if (rooms == null) {
+            return null;
+        }
+
+        return rooms.stream().map(this::createNewInstance).toList();
+    }
+
+    /**
+     * Create a new instance of the specified room.
+     */
+    private Room createNewInstance(Room room) {
+        String roomId = UUID.randomUUID().toString();
+        Set<RoomTile> tiles = room.tiles();
+        if (tiles != null) {
+            tiles = tiles.stream().map(tile -> createNewInstance(tile, roomId)).collect(Collectors.toSet());
+        }
+
+        return new Room(roomId, room.name(), tiles, room.topologyId());
+    }
+
+    /**
+     * Create a new instance of the specified room tile.
+     */
+    private RoomTile createNewInstance(RoomTile tile, String roomId) {
+        String tileId = UUID.randomUUID().toString();
+        return new RoomTile(
+                tileId,
+                tile.positionX(),
+                tile.positionY(),
+                tile.rack() != null ? createNewInstance(tile.rack()) : null,
+                roomId);
+    }
+
+    /**
+     * Create a new instance of the specified rack.
+     */
+    private Rack createNewInstance(Rack rack) {
+        String rackId = UUID.randomUUID().toString();
+        List<Machine> machines = rack.machines();
+        if (machines != null) {
+            machines = machines.stream().map(machine -> createNewInstance(machine, rackId)).toList();
+        }
+
+        return new Rack(rackId, rack.name(), rack.capacity(), rack.powerCapacityW(), machines);
+    }
+
+    /**
+     * Create a new instance of the specified machine.
+     */
+    private Machine createNewInstance(Machine machine, String rackId) {
+        String machineId = UUID.randomUUID().toString();
+        List<ProcessingUnit> cpus = machine.cpus();
+        if (cpus != null) {
+            cpus = cpus.stream().map(this::createNewInstance).toList();
+        }
+
+        List<ProcessingUnit> gpus = machine.gpus();
+        if (gpus != null) {
+            gpus = gpus.stream().map(this::createNewInstance).toList();
+        }
+
+        List<MemoryUnit> memory = machine.memory();
+        if (memory != null) {
+            memory = memory.stream().map(this::createNewInstance).toList();
+        }
+
+        List<MemoryUnit> storage = machine.storage();
+        if (storage != null) {
+            storage = storage.stream().map(this::createNewInstance).toList();
+        }
+
+        return new Machine(machineId, machine.position(), cpus, gpus, memory, storage, rackId);
+    }
+
+    /**
+     * Create a new instance of the specified processing unit.
+     */
+    private ProcessingUnit createNewInstance(ProcessingUnit unit) {
+        if (unit != null && (unit.id() == null || unit.id().isBlank())) {
+            return new ProcessingUnit(
+                    UUID.randomUUID().toString(),
+                    unit.name(),
+                    unit.clockRateMhz(),
+                    unit.numberOfCores(),
+                    unit.energyConsumptionW());
+        }
+        return unit;
+    }
+
+    /**
+     * Create a new instance of the specified memory unit.
+     */
+    private MemoryUnit createNewInstance(MemoryUnit unit) {
+        if (unit != null && (unit.id() == null || unit.id().isBlank())) {
+            return new MemoryUnit(
+                    UUID.randomUUID().toString(),
+                    unit.name(),
+                    unit.speedMbPerS(),
+                    unit.sizeMb(),
+                    unit.energyConsumptionW());
+        }
+        return unit;
     }
 }
