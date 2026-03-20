@@ -37,33 +37,23 @@ internal class JobManagerImpl(private val client: OpenDCRunnerClient) : JobManag
 
     override fun claim(id: Long): Boolean {
         return try {
-            client.jobs.update(id, Job.Update(JobState.CLAIMED, 0))
+            client.jobs.update(id, Job.Update(JobState.CLAIMED, 0, null))
             true
         } catch (e: IllegalStateException) {
             false
         }
     }
 
-    override fun heartbeat(
-        id: Long,
-        runtime: Int,
-    ): Boolean {
-        val res = client.jobs.update(id, Job.Update(JobState.RUNNING, runtime))
+    override fun heartbeat(id: Long, runtime: Int): Boolean {
+        val res = client.jobs.update(id, Job.Update(JobState.RUNNING, runtime, null))
         return res?.state != JobState.FAILED
     }
 
-    override fun fail(
-        id: Long,
-        runtime: Int,
-    ) {
-        client.jobs.update(id, Job.Update(JobState.FAILED, runtime))
+    override fun fail(id: Long, runtime: Int) {
+        client.jobs.update(id, Job.Update(JobState.FAILED, runtime, null))
     }
 
-    override fun finish(
-        id: Long,
-        runtime: Int,
-        results: Map<String, Any>,
-    ) {
-        client.jobs.update(id, Job.Update(JobState.FINISHED, runtime))
+    override fun finish(id: Long, runtime: Int, results: Map<String, Any>) {
+        client.jobs.update(id, Job.Update(JobState.FINISHED, runtime, results))
     }
 }
