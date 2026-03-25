@@ -22,8 +22,6 @@
 
 package org.opendc.web.server.model;
 
-import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
