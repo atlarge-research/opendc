@@ -41,7 +41,6 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.Objects;
-import org.hibernate.annotations.Type;
 import org.opendc.web.proto.user.ProjectRole;
 
 /**

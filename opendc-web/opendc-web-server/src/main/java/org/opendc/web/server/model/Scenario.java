@@ -23,11 +23,10 @@
 package org.opendc.web.server.model;
 
 import io.hypersistence.utils.hibernate.type.json.JsonType;
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
+import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -42,7 +41,6 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.annotations.Type;
