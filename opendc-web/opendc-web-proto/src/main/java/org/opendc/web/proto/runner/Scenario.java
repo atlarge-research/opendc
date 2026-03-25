@@ -31,11 +31,11 @@ import org.opendc.web.proto.Workload;
  */
 @Schema(name = "Runner.Scenario")
 public record Scenario(
-    long id,
-    int number,
-    Portfolio portfolio,
-    String name,
-    Workload workload,
-    Topology topology,
-    OperationalPhenomena phenomena,
-    String schedulerName) {}
+        long id,
+        int number,
+        Portfolio portfolio,
+        String name,
+        Workload workload,
+        Topology topology,
+        OperationalPhenomena phenomena,
+        String schedulerName) {}

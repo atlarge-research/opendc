@@ -32,7 +32,7 @@ import org.opendc.web.proto.topology.Room;
  * Model for an OpenDC topology.
  */
 public record Topology(
-    long id, int number, Project project, String name, List<Room> rooms, Instant createdAt, Instant updatedAt) {
+        long id, int number, Project project, String name, List<Room> rooms, Instant createdAt, Instant updatedAt) {
     /**
      * Create a new topology for a project.
      */

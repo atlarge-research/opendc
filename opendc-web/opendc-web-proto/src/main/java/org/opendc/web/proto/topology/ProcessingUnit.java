@@ -26,4 +26,4 @@ package org.opendc.web.proto.topology;
  * A CPU model.
  */
 public record ProcessingUnit(
-    String id, String name, double clockRateMhz, int numberOfCores, double energyConsumptionW) {}
+        String id, String name, double clockRateMhz, int numberOfCores, double energyConsumptionW) {}

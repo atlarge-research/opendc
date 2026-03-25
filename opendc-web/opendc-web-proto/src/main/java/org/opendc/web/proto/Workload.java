@@ -36,8 +36,8 @@ public record Workload(Trace trace, double samplingFraction) {
      * @param samplingFraction The fraction of the workload to sample.
      */
     public record Spec(
-        String trace,
-        @DecimalMin(value = "0.001", message = "Sampling fraction must be non-zero")
-        @DecimalMax(value = "1", message = "Sampling fraction cannot exceed one")
-        double samplingFraction) {}
+            String trace,
+            @DecimalMin(value = "0.001", message = "Sampling fraction must be non-zero")
+                    @DecimalMax(value = "1", message = "Sampling fraction cannot exceed one")
+                    double samplingFraction) {}
 }

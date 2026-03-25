@@ -32,16 +32,16 @@ import org.opendc.web.proto.Workload;
  * A single scenario to be explored by the simulator.
  */
 public record Scenario(
-    long id,
-    int number,
-    Project project,
-    Portfolio.Summary portfolio,
-    String name,
-    Workload workload,
-    Topology.Summary topology,
-    OperationalPhenomena phenomena,
-    String schedulerName,
-    List<Job> jobs) {
+        long id,
+        int number,
+        Project project,
+        Portfolio.Summary portfolio,
+        String name,
+        Workload workload,
+        Topology.Summary topology,
+        OperationalPhenomena phenomena,
+        String schedulerName,
+        List<Job> jobs) {
     /**
      * Create a new scenario.
      *
@@ -53,11 +53,11 @@ public record Scenario(
      */
     @Schema(name = "Scenario.Create")
     public record Create(
-        @NotBlank(message = "Name must not be empty") String name,
-        Workload.Spec workload,
-        long topology,
-        OperationalPhenomena phenomena,
-        String schedulerName) {}
+            @NotBlank(message = "Name must not be empty") String name,
+            Workload.Spec workload,
+            long topology,
+            OperationalPhenomena phenomena,
+            String schedulerName) {}
 
     /**
      * A summary view of a [Scenario] provided for nested relations.
@@ -72,12 +72,12 @@ public record Scenario(
      */
     @Schema(name = "Scenario.Summary")
     public record Summary(
-        long id,
-        int number,
-        String name,
-        Workload workload,
-        Topology.Summary topology,
-        OperationalPhenomena phenomena,
-        String schedulerName,
-        List<Job> jobs) {}
+            long id,
+            int number,
+            String name,
+            Workload workload,
+            Topology.Summary topology,
+            OperationalPhenomena phenomena,
+            String schedulerName,
+            List<Job> jobs) {}
 }

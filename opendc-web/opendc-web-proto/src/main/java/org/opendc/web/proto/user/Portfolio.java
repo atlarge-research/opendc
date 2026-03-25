@@ -38,7 +38,7 @@ import org.opendc.web.proto.Targets;
  * @param scenarios The scenarios in the portfolio.
  */
 public record Portfolio(
-    long id, int number, Project project, String name, Targets targets, List<Scenario.Summary> scenarios) {
+        long id, int number, Project project, String name, Targets targets, List<Scenario.Summary> scenarios) {
     /**
      * A request to create a new portfolio.
      */

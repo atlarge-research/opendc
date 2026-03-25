@@ -23,17 +23,16 @@
 package org.opendc.web.proto.topology;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 /**
  * A machine in a rack.
  */
 public record Machine(
-    String id,
-    int position,
-    List<ProcessingUnit> cpus,
-    List<ProcessingUnit> gpus,
-    @JsonProperty("memories") List<MemoryUnit> memory,
-    @JsonProperty("storages") List<MemoryUnit> storage,
-    String rackId) {}
+        String id,
+        int position,
+        List<ProcessingUnit> cpus,
+        List<ProcessingUnit> gpus,
+        @JsonProperty("memories") List<MemoryUnit> memory,
+        @JsonProperty("storages") List<MemoryUnit> storage,
+        String rackId) {}
