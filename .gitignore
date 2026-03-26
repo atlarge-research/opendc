@@ -118,3 +118,10 @@ gradle-app.setting
 
 # Demo files
 demo/*
+
+.ai
+.junie
+AGENTS.md
+target
+.claude
+CLAUDE.md

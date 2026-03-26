@@ -41,13 +41,14 @@ import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import java.util.List;
 import org.hibernate.annotations.Type;
-import org.opendc.web.proto.Room;
+import org.opendc.web.proto.topology.Room;
 
 /**
  * A datacenter design in OpenDC.
  */
 @Entity
 @Table(
+        name = "topologies",
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "uk_topologies_number",
@@ -103,8 +104,6 @@ public class Topology extends PanacheEntityBase {
 
     /**
      * Datacenter design in JSON
-     *     @Column(columnDefinition = "jsonb", nullable = false)
-     *     @Type(JsonType.class)
      */
     @Column(columnDefinition = "jsonb", nullable = false)
     @Type(JsonType.class)

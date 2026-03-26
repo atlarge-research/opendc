@@ -78,11 +78,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Build UI
-        uses: docker/build-push-action@v6
-        with:
-          context: opendc-web/opendc-web-ui
-          file: opendc-web/opendc-web-ui/Dockerfile
       - name: Build Web Server
         uses: docker/build-push-action@v6
         with:
