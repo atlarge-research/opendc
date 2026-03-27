@@ -26,7 +26,6 @@ import io.hypersistence.utils.hibernate.type.json.JsonType;
 import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
-import io.quarkus.panache.common.Parameters;
 import jakarta.persistence.*;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,8 +35,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Map;
@@ -49,16 +46,6 @@ import org.opendc.web.proto.JobState;
  */
 @Entity
 @Table
-@NamedQueries({
-    @NamedQuery(
-            name = "Job.updateOne",
-            query =
-                    """
-                UPDATE Job j
-                SET j.state = :newState, j.updatedAt = :updatedAt, j.runtime = :runtime, j.results = :results
-                WHERE j.id = :id AND j.state = :oldState
-            """)
-})
 public class Job extends PanacheEntityBase {
     /**
      * The main ID of a project.
@@ -146,16 +133,16 @@ public class Job extends PanacheEntityBase {
      * @return <code>true</code> when the update succeeded`, <code>false</code> when there was a conflict.
      */
     public boolean updateAtomically(JobState newState, Instant time, int runtime, Map<String, ?> results) {
-        long count = update(
-                "#Job.updateOne",
-                Parameters.with("id", id)
-                        .and("oldState", state)
-                        .and("newState", newState)
-                        .and("updatedAt", time)
-                        .and("runtime", runtime)
-                        .and("results", results));
-        Panache.getEntityManager().refresh(this);
-        return count > 0;
+        // Update entity fields directly - this uses the JsonType converter for proper JSON serialization
+        this.state = newState;
+        this.updatedAt = time;
+        this.runtime = runtime;
+        this.results = results;
+
+        // Flush changes to database - JsonType will properly serialize the results map to JSON
+        Panache.getEntityManager().flush();
+
+        return true;
     }
 
     /**

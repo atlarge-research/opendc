@@ -468,6 +468,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     void addTerminatedTask(ServiceTask task) {
 
+        if (!task.hasChildren()) {
+            return;
+        }
+
         for (int childTaskId : task.getChildren()) {
             SchedulingRequest request = blockedTasks.get(childTaskId);
             if (request != null) {

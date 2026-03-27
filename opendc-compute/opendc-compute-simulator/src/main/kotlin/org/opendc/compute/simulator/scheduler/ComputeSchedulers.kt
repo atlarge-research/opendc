@@ -61,7 +61,22 @@ public fun createPrefabComputeScheduler(
     clock: InstantSource,
     numHosts: Int = 1000,
 ): ComputeScheduler {
-    return createPrefabComputeScheduler(ComputeSchedulerEnum.valueOf(name.uppercase()), seeder, clock, numHosts)
+    val trimmedName = name.trim()
+
+    // Find the enum value case-insensitively
+    val schedulerEnum =
+        ComputeSchedulerEnum.entries.find {
+            it.name.equals(trimmedName, ignoreCase = true)
+        }
+
+    if (schedulerEnum == null) {
+        val validNames = ComputeSchedulerEnum.entries.joinToString(", ") { it.name }
+        throw IllegalArgumentException(
+            "Invalid scheduler name: '$name'. Valid scheduler names are: $validNames (case-insensitive)",
+        )
+    }
+
+    return createPrefabComputeScheduler(schedulerEnum, seeder, clock, numHosts)
 }
 
 /**

@@ -85,7 +85,7 @@ distributions {
                 into("lib")
             }
 
-            from("../../traces") {
+            from("opendc-experiments/opendc-experiments-base/src/test/resources/workloadTraces/bitbrains-small") {
                 into("traces")
             }
         }

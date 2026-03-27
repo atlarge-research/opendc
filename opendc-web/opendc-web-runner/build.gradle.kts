@@ -24,7 +24,7 @@ description = "Experiment runner for OpenDC"
 
 // Build configuration
 plugins {
-    `kotlin-library-conventions`
+    `kotlin-conventions`
     distribution
 }
 
@@ -67,11 +67,11 @@ dependencies {
 }
 
 val createCli by tasks.creating(CreateStartScripts::class) {
-    dependsOn(cliJar)
+    dependsOn(cliJar, tasks.jar)
 
     applicationName = "opendc-runner"
-    mainClass.set("org.opendc.web.runner.cli.MainKt")
-    classpath = cliJar.outputs.files + cliRuntimeClasspath
+    mainClass.set("org.opendc.web.runner.MainKt")
+    classpath = tasks.jar.get().outputs.files + cliJar.outputs.files + cliRuntimeClasspath
     outputDir = project.layout.buildDirectory.get().asFile.resolve("scripts")
 }
 
@@ -83,6 +83,7 @@ distributions {
             }
 
             into("lib") {
+                from(tasks.jar)
                 from(cliJar)
                 from(cliRuntimeClasspath) // Also includes main classpath
             }

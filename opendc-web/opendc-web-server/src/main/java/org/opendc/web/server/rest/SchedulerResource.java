@@ -39,14 +39,19 @@ public final class SchedulerResource {
     @GET
     public List<String> getAll() {
         return List.of(
-                "mem",
-                "mem-inv",
-                "core-mem",
-                "core-mem-inv",
-                "active-tasks",
-                "active-tasks-inv",
-                "provisioned-cores",
-                "provisioned-cores-inv",
-                "random");
+                "Mem",
+                "MemInv",
+                "CoreMem",
+                "CoreMemInv",
+                "ActiveServers",
+                "ActiveServersInv",
+                "ProvisionedCores",
+                "ProvisionedCoresInv",
+                "Random",
+                "TaskNumMemorizing",
+                "Timeshift",
+                "ProvisionedCpuGpuCores",
+                "ProvisionedCpuGpuCoresInv",
+                "GpuTaskMemorizing");
     }
 }

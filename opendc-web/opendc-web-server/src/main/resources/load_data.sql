@@ -103,10 +103,10 @@ VALUES ('bitbrains-small', 'Bitbrains Small', 'small');
 -- --------------------------------------------------------------------------------
 
 INSERT INTO scenarios (name, number, phenomena, portfolio_id, project_id, scheduler_name, topology_id, sampling_fraction, trace_id, id)
-VALUES ('Test Scenario testDelete', 1, '{"failures": false, "interference": false}' FORMAT JSON, 1, 1, 'test', 1, 1.0, 'bitbrains-small', 1);
+VALUES ('Test Scenario testDelete', 1, '{"failures": false, "interference": false}' FORMAT JSON, 1, 1, 'Mem', 1, 1.0, 'bitbrains-small', 1);
 
 INSERT INTO scenarios (name, number, phenomena, portfolio_id, project_id, scheduler_name, topology_id, sampling_fraction, trace_id, id)
-VALUES ('Test Scenario testDeleteUsed', 2, '{"failures": false, "interference": false}' FORMAT JSON, 1, 1, 'test', 4, 1.0, 'bitbrains-small', 2);
+VALUES ('Test Scenario testDeleteUsed', 2, '{"failures": false, "interference": false}' FORMAT JSON, 1, 1, 'Random', 4, 1.0, 'bitbrains-small', 2);
 
 
 UPDATE projects p

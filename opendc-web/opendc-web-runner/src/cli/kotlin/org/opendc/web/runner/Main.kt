@@ -26,8 +26,8 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.defaultLazy
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import mu.KotlinLogging
@@ -54,6 +54,15 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
         .default(URI("https://api.opendc.org/v2"))
 
     /**
+     * Flag to disable authentication (for local development).
+     */
+    private val noAuth by option(
+        "--no-auth",
+        help = "disable authentication (for local development)",
+    )
+        .flag()
+
+    /**
      * The auth domain to use.
      */
     private val authDomain by option(
@@ -61,17 +70,15 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
         help = "auth domain of the OpenDC API",
         envvar = "AUTH0_DOMAIN",
     )
-        .required()
 
     /**
-     * The auth domain to use.
+     * The auth audience to use.
      */
     private val authAudience by option(
         "--auth-audience",
         help = "auth audience of the OpenDC API",
         envvar = "AUTH0_AUDIENCE",
     )
-        .required()
 
     /**
      * The auth client ID to use.
@@ -81,7 +88,6 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
         help = "auth client id of the OpenDC API",
         envvar = "AUTH0_CLIENT_ID",
     )
-        .required()
 
     /**
      * The auth client secret to use.
@@ -91,7 +97,6 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
         help = "auth client secret of the OpenDC API",
         envvar = "AUTH0_CLIENT_SECRET",
     )
-        .required()
 
     /**
      * The path to the traces directory.
@@ -117,7 +122,31 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
     override fun run() {
         logger.info { "Starting OpenDC web runner" }
 
-        val client = OpenDCRunnerClient(baseUrl = apiUrl, OpenIdAuthController(authDomain, authClientId, authClientSecret, authAudience))
+        // Validate auth parameters if authentication is enabled
+        if (!noAuth) {
+            require(
+                authDomain != null,
+            ) { "Auth domain is required when authentication is enabled. Use --no-auth to disable authentication." }
+            require(
+                authAudience != null,
+            ) { "Auth audience is required when authentication is enabled. Use --no-auth to disable authentication." }
+            require(
+                authClientId != null,
+            ) { "Auth client ID is required when authentication is enabled. Use --no-auth to disable authentication." }
+            require(authClientSecret != null) {
+                "Auth client secret is required when authentication is enabled. Use --no-auth to disable authentication."
+            }
+        }
+
+        val authController =
+            if (noAuth) {
+                logger.info { "Running without authentication" }
+                null
+            } else {
+                OpenIdAuthController(authDomain!!, authClientId!!, authClientSecret!!, authAudience!!)
+            }
+
+        val client = OpenDCRunnerClient(baseUrl = apiUrl, authController)
         val manager = JobManager(client)
         val runner = OpenDCRunner(manager, tracePath, parallelism = parallelism)
 
