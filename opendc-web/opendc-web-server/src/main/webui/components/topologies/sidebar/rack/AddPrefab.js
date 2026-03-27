@@ -22,15 +22,81 @@
 
 import PropTypes from 'prop-types'
 import React from 'react'
-import { Button } from '@patternfly/react-core'
+import { Button, AlertGroup, Alert, AlertVariant, AlertActionCloseButton } from '@patternfly/react-core'
 import { SaveIcon } from '@patternfly/react-icons'
+import { useSelector } from 'react-redux'
+import { useRouter } from 'next/router'
+import { denormalize } from 'normalizr'
+import { Rack } from '../../../../util/topology-schema'
+import { useNewRackPrefab } from '../../../../data/rack-prefabs'
 
-function AddPrefab() {
-    const onClick = () => {} // TODO
+function AddPrefab({ tileId }) {
+    const [alert, setAlert] = React.useState(null)
+    const router = useRouter()
+    const { project: projectId } = router.query
+    const { mutate: addRackPrefab } = useNewRackPrefab()
+
+    const rackId = useSelector((state) => state.topology.tiles[tileId]?.rack)
+    const rack = useSelector((state) => {
+        const topologyState = state.topology
+        if (!rackId || !topologyState.racks[rackId]) {
+            return null
+        }
+        return denormalize(rackId, Rack, topologyState)
+    })
+
+    const onClick = () => {
+        if (rack && projectId) {
+            addRackPrefab(
+                {
+                    projectId,
+                    name: rack.name,
+                    rack: {
+                        ...rack,
+                        id: 0,
+                        machines: rack.machines.map((m) => ({ ...m, id: 0 })),
+                    },
+                },
+                {
+                    onSuccess: () => {
+                        setAlert({ variant: AlertVariant.success, title: 'Rack saved as prefab' })
+                    },
+                    onError: (error) => {
+                        setAlert({ variant: AlertVariant.danger, title: `Failed to save rack: ${error}` })
+                    },
+                }
+            )
+        }
+    }
+
     return (
-        <Button variant="primary" icon={<SaveIcon />} isBlock onClick={onClick} className="pf-u-mb-sm">
-            Save this rack to a prefab
-        </Button>
+        <>
+            <AlertGroup isToast>
+                {alert && (
+                    <Alert
+                        isLiveRegion
+                        variant={alert.variant}
+                        title={alert.title}
+                        actionClose={
+                            <AlertActionCloseButton
+                                title={alert.title}
+                                onClose={() => setAlert(null)}
+                            />
+                        }
+                    />
+                )}
+            </AlertGroup>
+            <Button
+                variant="primary"
+                icon={<SaveIcon />}
+                isBlock
+                onClick={onClick}
+                className="pf-u-mb-sm"
+                isDisabled={!rack}
+            >
+                Save this rack to a prefab
+            </Button>
+        </>
     )
 }
 

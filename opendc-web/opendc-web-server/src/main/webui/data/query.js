@@ -25,6 +25,7 @@ import { QueryClient } from 'react-query'
 import { useAuth } from '../auth'
 import { configureExperimentClient } from './experiments'
 import { configureProjectClient } from './project'
+import { configureRackPrefabClient } from './rack-prefabs'
 import { configureTopologyClient } from './topology'
 import { configureUserClient } from './user'
 
@@ -33,6 +34,7 @@ let queryClient
 function createQueryClient(auth) {
     const client = new QueryClient()
     configureProjectClient(client, auth)
+    configureRackPrefabClient(client, auth)
     configureExperimentClient(client, auth)
     configureTopologyClient(client, auth)
     configureUserClient(client, auth)

@@ -37,7 +37,20 @@ export function inRackConstructionMode(state = false, action) {
     }
 }
 
+export function currentRackPrefab(state = null, action) {
+    switch (action.type) {
+        case START_RACK_CONSTRUCTION:
+            return action.rackPrefab || null
+        case STOP_RACK_CONSTRUCTION:
+        case GO_DOWN_ONE_INTERACTION_LEVEL:
+            return null
+        default:
+            return state
+    }
+}
+
 export const construction = combineReducers({
     currentRoomInConstruction,
     inRackConstructionMode,
+    currentRackPrefab,
 })
