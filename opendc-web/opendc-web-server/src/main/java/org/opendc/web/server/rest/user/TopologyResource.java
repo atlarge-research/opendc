@@ -264,7 +264,9 @@ public final class TopologyResource {
         String rackId = UUID.randomUUID().toString();
         List<Machine> machines = rack.machines();
         if (machines != null) {
-            machines = machines.stream().map(machine -> createNewInstance(machine, rackId)).toList();
+            machines = machines.stream()
+                    .map(machine -> createNewInstance(machine, rackId))
+                    .toList();
         }
 
         return new Rack(rackId, rack.name(), rack.capacity(), rack.powerCapacityW(), machines);
