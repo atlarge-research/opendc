@@ -118,3 +118,11 @@ gradle-app.setting
 
 # Demo files
 demo/*
+
+.ai/*
+.junie/*
+AGENTS.md
+CLAUDE.md
+opendc-experiments
+opendc-web
+target
