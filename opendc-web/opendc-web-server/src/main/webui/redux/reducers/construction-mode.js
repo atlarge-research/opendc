@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux'
 import { GO_DOWN_ONE_INTERACTION_LEVEL } from '../actions/interaction-level'
+import { OPEN_TOPOLOGY } from '../actions/topology'
 import {
     CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED,
     FINISH_NEW_ROOM_CONSTRUCTION,
@@ -11,6 +12,8 @@ import { DELETE_ROOM, START_RACK_CONSTRUCTION, STOP_RACK_CONSTRUCTION } from '..
 
 export function currentRoomInConstruction(state = '-1', action) {
     switch (action.type) {
+        case OPEN_TOPOLOGY:
+            return '-1'
         case START_NEW_ROOM_CONSTRUCTION_SUCCEEDED:
             return action.roomId
         case START_ROOM_EDIT:
@@ -27,6 +30,8 @@ export function currentRoomInConstruction(state = '-1', action) {
 
 export function inRackConstructionMode(state = false, action) {
     switch (action.type) {
+        case OPEN_TOPOLOGY:
+            return false
         case START_RACK_CONSTRUCTION:
             return true
         case STOP_RACK_CONSTRUCTION:
@@ -39,6 +44,8 @@ export function inRackConstructionMode(state = false, action) {
 
 export function currentRackPrefab(state = null, action) {
     switch (action.type) {
+        case OPEN_TOPOLOGY:
+            return null
         case START_RACK_CONSTRUCTION:
             return action.rackPrefab || null
         case STOP_RACK_CONSTRUCTION:

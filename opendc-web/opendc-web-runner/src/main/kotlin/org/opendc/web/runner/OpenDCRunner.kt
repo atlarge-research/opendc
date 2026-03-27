@@ -276,6 +276,8 @@ public class OpenDCRunner(
                     val vms = workloadLoader.sampleByLoad(scenario.workload.samplingFraction)
                     val startTime = vms.minOf { it.submittedAt }
 
+                    logger.debug { "Using scheduler: '${scenario.schedulerName}' for scenario ${scenario.id}" }
+
                     provisioner.runSteps(
                         setupComputeService(
                             serviceDomain,

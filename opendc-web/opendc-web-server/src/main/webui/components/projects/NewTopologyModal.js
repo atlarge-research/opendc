@@ -54,7 +54,10 @@ const NewTopologyModal = ({ projectId, isOpen, onSubmit: onSubmitUpstream, onCan
         const name = nameInput.current.value
 
         if (!name) {
-            setErrors({ name: true })
+            setErrors({ name: 'empty' })
+            return false
+        } else if (topologies.some((topology) => topology.name === name)) {
+            setErrors({ name: 'duplicate' })
             return false
         } else {
             const candidate = topologies.find((topology) => topology.id === originTopology) || { rooms: [] }
@@ -83,7 +86,11 @@ const NewTopologyModal = ({ projectId, isOpen, onSubmit: onSubmitUpstream, onCan
                     fieldId="name"
                     isRequired
                     validated={isSubmitted && errors.name ? 'error' : 'default'}
-                    helperTextInvalid="This field cannot be empty"
+                    helperTextInvalid={
+                        errors.name === 'empty'
+                            ? 'This field cannot be empty'
+                            : 'This topology name already exists'
+                    }
                 >
                     <TextInput id="name" name="name" type="text" isRequired ref={nameInput} />
                 </FormGroup>

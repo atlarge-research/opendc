@@ -59,7 +59,10 @@ import org.opendc.web.proto.topology.Room;
     @NamedQuery(name = "Topology.findByProject", query = "SELECT t FROM Topology t WHERE t.project.id = :projectId"),
     @NamedQuery(
             name = "Topology.findOneByProject",
-            query = "SELECT t FROM Topology t WHERE t.project.id = :projectId AND t.number = :number")
+            query = "SELECT t FROM Topology t WHERE t.project.id = :projectId AND t.number = :number"),
+    @NamedQuery(
+            name = "Topology.findOneByName",
+            query = "SELECT t FROM Topology t WHERE t.project.id = :projectId AND t.name = :name")
 })
 public class Topology extends PanacheEntityBase {
     /**
@@ -147,6 +150,20 @@ public class Topology extends PanacheEntityBase {
         return find(
                         "#Topology.findOneByProject",
                         Parameters.with("projectId", projectId).and("number", number))
+                .firstResult();
+    }
+
+    /**
+     * Find the [Topology] with the specified [name] belonging to [project][projectId].
+     *
+     * @param projectId The unique identifier of the project.
+     * @param name The name of the topology.
+     * @return The topology or `null` if it does not exist.
+     */
+    public static Topology findByName(long projectId, String name) {
+        return find(
+                        "#Topology.findOneByName",
+                        Parameters.with("projectId", projectId).and("name", name))
                 .firstResult();
     }
 }

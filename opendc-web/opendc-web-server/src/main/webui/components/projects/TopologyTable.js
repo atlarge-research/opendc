@@ -37,11 +37,37 @@ function TopologyTable({ projectId }) {
         onError: (error) => setError(error),
     })
 
-    const actions = ({ number }) => [
+    const downloadTopology = (topology) => {
+        const data = JSON.stringify(
+            { name: topology.name, rooms: topology.rooms },
+            (key, value) => {
+                if (key === 'id' || key === 'topologyId' || key === 'roomId' || key === 'rackId' || key === 'roomid') {
+                    return undefined
+                }
+                return value
+            },
+            4
+        )
+        const blob = new Blob([data], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${topology.name}.json`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+    }
+
+    const actions = (topology) => [
+        {
+            title: 'Download as JSON',
+            onClick: () => downloadTopology(topology),
+        },
         {
             title: 'Delete Topology',
-            onClick: () => deleteTopology({ projectId, number }),
-            isDisabled: number === 0,
+            onClick: () => deleteTopology({ projectId, number: topology.number }),
+            isDisabled: topology.number === 0,
         },
     ]
 

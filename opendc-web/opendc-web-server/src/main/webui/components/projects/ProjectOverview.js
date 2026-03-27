@@ -36,6 +36,7 @@ import {
     Skeleton,
 } from '@patternfly/react-core'
 import NewTopology from './NewTopology'
+import ImportTopology from './ImportTopology'
 import TopologyTable from './TopologyTable'
 import NewPortfolio from './NewPortfolio'
 import PortfolioTable from './PortfolioTable'
@@ -65,6 +66,7 @@ function ProjectOverview({ projectId }) {
                 <Card>
                     <CardHeader>
                         <CardActions>
+                            <ImportTopology projectId={projectId} />
                             <NewTopology projectId={projectId} />
                         </CardActions>
                         <CardTitle>Topologies</CardTitle>
