@@ -55,7 +55,9 @@ import org.opendc.web.proto.topology.Rack;
         },
         indexes = {@Index(name = "ux_rack_prefabs_number", columnList = "project_id, number")})
 @NamedQueries({
-    @NamedQuery(name = "RackPrefab.findByProject", query = "SELECT r FROM RackPrefab r WHERE r.project.id = :projectId"),
+    @NamedQuery(
+            name = "RackPrefab.findByProject",
+            query = "SELECT r FROM RackPrefab r WHERE r.project.id = :projectId"),
     @NamedQuery(
             name = "RackPrefab.findOneByProject",
             query = "SELECT r FROM RackPrefab r WHERE r.project.id = :projectId AND r.number = :number")

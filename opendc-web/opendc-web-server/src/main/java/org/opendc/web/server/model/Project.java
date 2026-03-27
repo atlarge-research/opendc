@@ -268,7 +268,9 @@ public class Project extends PanacheEntityBase {
         for (int i = 0; i < 4; i++) {
             long count = update(
                     "#Project.allocateRackPrefab",
-                    Parameters.with("id", id).and("oldState", rackPrefabsCreated).and("now", time));
+                    Parameters.with("id", id)
+                            .and("oldState", rackPrefabsCreated)
+                            .and("now", time));
             if (count > 0) {
                 return rackPrefabsCreated + 1;
             } else {

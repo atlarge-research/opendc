@@ -69,12 +69,7 @@ public class RackPrefabResourceTest {
             user = "test_user_1",
             roles = {"openid"})
     public void testGetAll() {
-        given().pathParam("project", "1")
-                .when()
-                .get()
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON);
+        given().pathParam("project", "1").when().get().then().statusCode(200).contentType(ContentType.JSON);
     }
 
     /**
