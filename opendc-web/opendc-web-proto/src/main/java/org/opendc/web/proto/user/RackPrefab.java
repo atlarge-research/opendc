@@ -30,7 +30,8 @@ import org.opendc.web.proto.topology.Rack;
 /**
  * Model for a rack prefab.
  */
-public record RackPrefab(long id, int number, Project project, String name, Rack rack, Instant createdAt, Instant updatedAt) {
+public record RackPrefab(
+        long id, int number, Project project, String name, Rack rack, Instant createdAt, Instant updatedAt) {
     /**
      * Create a new rack prefab.
      */
