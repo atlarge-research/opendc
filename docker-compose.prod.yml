@@ -2,14 +2,9 @@ version: "3.8"
 
 # Docker Compose overrides for production environments
 services:
-  ui:
-    ports:
-      - "8080:3000"
-    environment:
-      NEXT_PUBLIC_API_BASE_URL: ${OPENDC_API_BASE_URL}
-
   server:
     ports:
-      - "8081:8080"
+      - "8080:8080"
     environment:
       SENTRY_ENVIRONMENT: "production"
+      NEXT_PUBLIC_API_BASE_URL: ${OPENDC_API_BASE_URL}
