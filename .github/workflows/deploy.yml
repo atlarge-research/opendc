@@ -21,6 +21,6 @@ jobs:
       - name: Pull Changes
         run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && git pull origin'
       - name: Rebuild Images
-        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml build frontend api simulator'
+        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml build api simulator'
       - name: Deploy Images
         run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d'
