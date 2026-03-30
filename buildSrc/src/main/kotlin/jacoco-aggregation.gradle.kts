@@ -1,7 +1,7 @@
+import io.quarkus.gradle.QuarkusPlugin
+
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,8 @@
 
 
 plugins {
-    jacoco
+    base
+    id("jacoco-report-aggregation")
 }
 
 repositories {
@@ -32,25 +33,23 @@ repositories {
     mavenCentral()
 }
 
-tasks.register<JacocoReport>("codeCoverageReport") {
-    group = "Coverage reports"
-    description = "Generates an aggregate report based on all subprojects"
-
-    reports {
-        xml.isEnabled = true
-        xml.destination = file("${buildDir}/reports/jacoco/report.xml")
-
-        html.isEnabled = true
-    }
-
+dependencies {
     subprojects {
-        this@subprojects.plugins.withType<JacocoPlugin>().configureEach {
-            this@subprojects.tasks.matching {
-                it.extensions.findByType<JacocoTaskExtension>() != null }
-                .configureEach {
-                    sourceSets(this@subprojects.the<SourceSetContainer>().named("main").get())
-                    executionData(this)
-                }
+        plugins.withType<JacocoPlugin>().configureEach {
+            jacocoAggregation(this@subprojects)
+        }
+
+        plugins.withType<QuarkusPlugin>().configureEach {
+            jacocoAggregation(this@subprojects)
         }
     }
+}
+
+@Suppress("UnstableApiUsage")
+val codeCoverageReport by reporting.reports.creating(JacocoCoverageReport::class) {
+    testType.set(TestSuiteType.UNIT_TEST)
+}
+
+tasks.check {
+    dependsOn(codeCoverageReport.reportTask)
 }

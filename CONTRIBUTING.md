@@ -1,12 +1,15 @@
 # Contributing to OpenDC
 
-First of all, thank you for wanting to contribute to OpenDC! 🎉
+First of all, thank you for wanting to contribute to OpenDC!
+You can contribute in various meaningful ways:
 
-## 💬 Have a question or general feedback relating to OpenDC?
+* Report a bug through [GitHub issues](https://github.com/fabianishere/atlarge-research/issues).
+* Propose new functionality for using this project.
+* Contribute improvements to the code and documentation.
+* Provide feedback about how we can improve the project.
+* Help answer questions on our [Discussions](https://github.com/atlarge-research/discussions) page.
 
-Contact us at 📧[opendc@atlarge-research.com](mailto:opendc@atlarge-research.com)!
-
-## 🐞 Want to report a bug or suggest a feature?
+## Want to report a bug or suggest a feature?
 
 Please file an issue! First, have a look if someone has already filed an issue addressing your concern. If there already
 is such an issue, feel free to comment on the issue to show your support for it, or to add additional information that
@@ -16,11 +19,13 @@ resolution. This can help us prioritize what we spend our development time on.
 If you can't find an issue that fits your problem or feature request, open a new one. Describe actual and expected
 behavior, and be as detailed as you can. We'll get back to you asap!
 
-## 💻 Want to contribute code?
+## Want to contribute code?
 
 That's great! If you want to contribute to this
-repository, [fork it](https://github.com/atlarge-research/opendc/new/master) and submit a PR here when you're ready! Be
-sure to describe *what* you changed and *why* you changed it, to help us understand what your contribution is about.
+repository, [fork it](https://github.com/atlarge-research/opendc/new/master) and submit a pull request here when you're
+ready! Be sure to describe *what* you changed and *why* you changed it, to help us understand what your contribution is
+about.
 
 A quick note on commit messages: Please follow common Git standards when writing commit messages,
-see [this post](https://chris.beams.io/posts/git-commit/) for details.
+see [this post](https://cbea.ms/git-commit/) for details.
+

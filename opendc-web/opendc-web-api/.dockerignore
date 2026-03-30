@@ -1,8 +1,0 @@
-Dockerfile
-
-.idea/
-**/out
-*.iml
-.idea_modules/
-
-.pytest_cache

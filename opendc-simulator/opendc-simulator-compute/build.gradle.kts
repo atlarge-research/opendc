@@ -24,15 +24,12 @@ description = "Library for simulating computing workloads"
 
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
     `benchmark-conventions`
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcSimulator.opendcSimulatorResources)
+    api(projects.opendcSimulator.opendcSimulatorFlow)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcUtils)
-    implementation(libs.yaml)
+
+    testImplementation(libs.slf4j.simple)
 }

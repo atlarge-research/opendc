@@ -22,11 +22,10 @@
 
 description = "API interface for the OpenDC Compute service"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }
-
 dependencies {
-    api(platform(projects.opendcPlatform))
+    implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-compute")))
 }

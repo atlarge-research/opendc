@@ -1,0 +1,44 @@
+/*
+ * Copyright (c) 2021 AtLarge Research
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+.pageSelector.pageSelector {
+    /* Ensure this selector has precedence over the default one */
+    margin-right: 20px;
+
+    --pf-c-context-selector__menu--ZIndex: var(--pf-global--ZIndex--lg);
+    --pf-c-context-selector__toggle--PaddingTop: var(--pf-global--spacer--sm);
+    --pf-c-context-selector__toggle--PaddingRight: 0;
+    --pf-c-context-selector__toggle--PaddingBottom: var(--pf-global--spacer--sm);
+    --pf-c-context-selector__toggle--PaddingLeft: 0;
+    --pf-c-context-selector__toggle--BorderWidth: 0;
+    --pf-c-context-selector__toggle-text--FontSize: var(--pf-global--FontSize--sm);
+}
+
+.pageSelector.pageSelector :global(.pf-c-context-selector__toggle):active,
+.pageSelector.pageSelector :global(.pf-c-context-selector__toggle):focus-within,
+.pageSelector.pageSelector :global(.pf-c-context-selector__toggle):global(.pf-m-active) {
+    --pf-c-context-selector__toggle--after--BorderBottomWidth: 0;
+}
+
+.pageSelector.pageSelector:global(.pf-m-expanded) > :global(.pf-c-context-selector__toggle) {
+    --pf-c-context-selector__toggle--after--BorderBottomWidth: 0;
+}

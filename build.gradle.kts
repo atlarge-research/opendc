@@ -23,10 +23,7 @@
 plugins {
     `dokka-conventions`
     `jacoco-aggregation`
-    `distribution-conventions`
 }
 
-allprojects {
-    group = "org.opendc"
-    version = "2.0-rc1"
-}
+group = "org.opendc"
+version = "3.0-SNAPSHOT"

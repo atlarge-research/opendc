@@ -1,0 +1,5 @@
+matplotlib >= 3.10.0
+numpy >= 2.2.0
+pandas >= 2.2.3
+pyarrow >= 18.1.0
+tqdm

@@ -23,22 +23,32 @@
 package org.opendc.compute.api
 
 /**
- * Flavors define the compute and memory capacity of [Server] instance. To put it simply, a flavor is an available
- * hardware configuration for a server. It defines the size of a virtual server that can be launched.
+ * Flavors define the compute and memory capacity of [ServiceTask] instance. To put it simply, a flavor is an available
+ * hardware configuration for a task. It defines the size of a virtual task that can be launched.
  */
 public interface Flavor : Resource {
     /**
      * The number of (virtual) processing cores to use.
      */
-    public val cpuCount: Int
+    public val cpuCoreCount: Int
 
     /**
-     * The amount of RAM available to the server (in MB).
+     * The amount of RAM available to the task (in MB).
      */
     public val memorySize: Long
 
     /**
-     * Delete the flavor instance.
+     * The amount of gpu cores available to the task.
      */
-    public suspend fun delete()
+    public val gpuCoreCount: Int
+
+    /**
+     * Set of Tasks that need to be finished before this can startAdd commentMore actions
+     */
+    public val parents: ArrayList<Int>
+
+    /**
+     * Set of Tasks that need to be finished before this can startAdd commentMore actions
+     */
+    public val children: Set<Int>
 }

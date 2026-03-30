@@ -1,0 +1,14 @@
+.sidebarContainer {
+    display: flex;
+    flex-direction: column;
+
+    height: 100%;
+}
+
+.machineListContainer {
+    overflow-y: auto;
+
+    flex: 1 0 300px;
+
+    margin-top: 10px;
+}

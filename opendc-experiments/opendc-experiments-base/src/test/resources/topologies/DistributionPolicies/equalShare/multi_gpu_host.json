@@ -1,0 +1,42 @@
+{
+    "clusters": [
+        {
+            "name": "C01",
+            "hosts": [
+                {
+                    "name": "DualGpuHost",
+                    "cpu": {
+                        "coreCount": 4,
+                        "coreSpeed": 2000
+                    },
+                    "memory": {
+                        "memorySize": 140457600000
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    },
+                    "cpuDistributionPolicy": {
+                        "type": "MAX_MIN_FAIRNESS"
+                    },
+                    "gpu": {
+                        "count": 2,
+                        "coreCount": 1,
+                        "coreSpeed": 2000
+                    },
+                    "gpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    },
+                    "gpuDistributionPolicy": {
+                        "type": "EQUAL_SHARE"
+                    }
+                }
+            ]
+        }
+    ]
+}

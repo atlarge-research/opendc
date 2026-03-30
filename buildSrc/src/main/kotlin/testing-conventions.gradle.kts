@@ -25,19 +25,21 @@ plugins {
 }
 
 tasks.test {
+//    val javaVersion = project.defaultVersionCatalog.getVersion("java")
+//    languageVersion.set(JavaLanguageVersion.of(javaVersion))
     useJUnitPlatform()
 
     reports {
-        html.isEnabled = true
-        junitXml.isEnabled = true
+        html.required.set(true)
+        junitXml.required.set(true)
     }
 }
 
 dependencies {
-    val libs = Libs(project)
+    val versionCatalog = project.defaultVersionCatalog
 
-    testImplementation(libs["junit-jupiter-api"])
-    testImplementation(libs["junit-jupiter-params"])
-    testImplementation(libs["mockk"])
-    testRuntimeOnly(libs["junit-jupiter-engine"])
+    testImplementation(versionCatalog["junit.jupiter.api"])
+    testImplementation(versionCatalog["junit.jupiter.params"])
+    testImplementation(versionCatalog["mockk"])
+    testRuntimeOnly(versionCatalog["junit.jupiter.engine"])
 }

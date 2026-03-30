@@ -1,0 +1,37 @@
+{
+    "clusters": [
+        {
+            "name": "C01",
+            "hosts": [
+                {
+                    "name": "H01",
+                    "cpu": {
+                        "coreCount": 4,
+                        "coreSpeed": 2000
+                    },
+                    "memory": {
+                        "memorySize": 140457600000
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    },
+                    "gpu": {
+                        "coreCount": 2,
+                        "coreSpeed": 2000,
+                        "count": 3
+                    },
+                    "gpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    },
+                    "count": 4
+                }
+            ]
+        }
+    ]
+}

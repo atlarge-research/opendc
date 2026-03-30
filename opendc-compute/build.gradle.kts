@@ -21,3 +21,7 @@
  */
 
 description = "Cloud computing fabric controller of OpenDC"
+
+subprojects {
+    group = "org.opendc.compute"
+}

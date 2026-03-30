@@ -7,44 +7,32 @@
 Collaborative Datacenter Simulation and Exploration for Everybody
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](/LICENSE.txt)
-[![Documentation](https://img.shields.io/badge/docs-master-green.svg)](./docs)
-[![GitHub release](https://img.shields.io/github/release/atlarge-research/opendc)](https://github.com/atlarge-research/opendc/releases)
+[![Documentation](https://img.shields.io/badge/docs-master-green.svg)](https://atlarge-research.github.io/opendc)
+[![GitHub release](https://img.shields.io/github/v/release/atlarge-research/opendc?include_prereleases)](https://github.com/atlarge-research/opendc/releases)
 [![Build](https://github.com/atlarge-research/opendc/actions/workflows/build.yml/badge.svg)](https://github.com/atlarge-research/opendc/actions/workflows/build.yml)
 
 -----
 
-OpenDC is a free and open-source platform for datacenter simulation aimed at both research and education.
+This repository is the home of the OpenDC project, a free and open-source platform for cloud datacenter simulation.
 
-![Datacenter construction in OpenDC](docs/images/screenshot-construction.png)
+## Latest Release
 
-Users can construct datacenters (see above) and define portfolios of scenarios (experiments) to see how these
-datacenters perform under different workloads and schedulers (see below).
-
-![Datacenter simulation in OpenDC](docs/images/screenshot-simulation.png)
-
-The simulator is accessible both as a ready-to-use website hosted by us at [opendc.org](https://opendc.org), and as
-source code that users can run locally on their own machine, through Docker.
-
-To learn more
-about OpenDC, have a look through our paper [OpenDC 2.0](https://atlarge-research.com/pdfs/ccgrid21-opendc-paper.pdf)
-or on our [vision](https://atlarge-research.com/pdfs/opendc-vision17ispdc_cr.pdf).
-
-🛠 OpenDC is a project by the [@Large Research Group](https://atlarge-research.com).
-
-🐟 OpenDC comes bundled
-with [Capelin](https://repository.tudelft.nl/islandora/object/uuid:d6d50861-86a3-4dd3-a13f-42d84db7af66?collection=education)
-, the capacity planning tool for cloud datacenters based on portfolios of what-if scenarios. More information on how to
-use and extend Capelin coming soon!
+All releases of OpenDC can be found [here](https://github.com/atlarge-research/opendc/releases).
+The latest release will be marked _latest_.
 
 ## Documentation
 
-The documentation is located in the [docs/](docs) directory and is divided as follows:
+You can find the OpenDC documentation [on the website](https://atlarge-research.github.io/opendc/).
+The documentation is divided into several sections:
 
-1. [Deployment Guide](docs/deploy.md)
-1. [Architectural Overview](docs/architecture.md)
-1. [Toolchain Setup](docs/toolchain.md)
-1. [Research with OpenDC](docs/research.md)
-1. [Contributing Guide](CONTRIBUTING.md)
+* [Getting Started](https://atlarge-research.github.io/opendc/docs/category/getting-started/)
+* [Tutorials](https://atlarge-research.github.io/opendc/docs/category/tutorials/)
+* [Advanced Guides](https://atlarge-research.github.io/opendc/docs/category/advanced-guides/)
+* [Where to Get Support](https://atlarge-research.github.io/opendc/community/support/)
+* [Contributing Guide](https://atlarge-research.github.io/opendc/community/contributing/)
+
+The source code for the documentation is located in the [gh-pages branch](https://github.com/atlarge-research/opendc/tree/gh-pages).
+Push to that branch to update the documentation.
 
 ## Contributing
 

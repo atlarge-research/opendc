@@ -1,13 +1,12 @@
-name: Deploy to opendc.org
+name: Deploy app.opendc.org
 
 on:
   push:
-    branches:
-      - prod
+    branches: ["prod"]
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  deploy-app:
+    runs-on: ubuntu-22.04
     steps:
       - name: Create SSH key
         run: |
@@ -22,6 +21,6 @@ jobs:
       - name: Pull Changes
         run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && git pull origin'
       - name: Rebuild Images
-        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml build frontend api simulator'
+        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml build api simulator'
       - name: Deploy Images
         run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d'

@@ -1,0 +1,76 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "OpenDC"
+authors:
+- family-names: Mastenbroek
+  given-names: Fabian
+- family-names: Andreadis
+  given-names: Georgios
+- family-names: Jounaid
+  given-names: Soufiane
+- family-names: Lai
+  given-names: Wenchen
+- family-names: Burley
+  given-names: Jacob
+- family-names: Bosch
+  given-names: Jaro
+- family-names: van Eyk
+  given-names: Erwin
+- family-names: Versluis
+  given-names: Laurens
+- family-names: van Beek
+  given-names: Vincent
+- family-names: Iosup
+  given-names: Alexandru
+version: 2.0
+preferred-citation:
+  type: conference-paper
+  title: "OpenDC 2.0: Convenient Modeling and Simulation of Emerging Technologies in Cloud Datacenters"
+  collection-title: "21st IEEE/ACM International Symposium on Cluster, Cloud and Internet Computing, CCGrid 2021, Melbourne, Australia, May 10-13, 2021"
+  collection-type: proceedings
+  conference:
+     name: "CCGrid 2021"
+  publisher:
+    name: "IEEE"
+  doi: "10.1109/CCGrid51090.2021.00055"
+  year: "2021"
+  start: "455"
+  end: "464"
+  authors:
+  - family-names: Mastenbroek
+    given-names: Fabian
+  - family-names: Andreadis
+    given-names: Georgios
+  - family-names: Jounaid
+    given-names: Soufiane
+  - family-names: Lai
+    given-names: Wenchen
+  - family-names: Burley
+    given-names: Jacob
+  - family-names: Bosch
+    given-names: Jaro
+  - family-names: van Eyk
+    given-names: Erwin
+  - family-names: Versluis
+    given-names: Laurens
+  - family-names: van Beek
+    given-names: Vincent
+  - family-names: Iosup
+    given-names: Alexandru
+  editors:
+  - family-names: Lefèvre
+    given-names: Laurent
+  - family-names: Patterson
+    given-names: Stacy
+  - family-names: Lee
+    given-names: Young Choon
+  - family-names: Shen
+    given-names: Haiying
+  - family-names: Ilager
+    given-names: Shashikant
+  - family-names: Goudarzi
+    given-names: Mohammad
+  - family-names: Toosi
+    given-names: Adel Nadjaran
+  - family-names: Buyya
+    given-names: Rajkumar

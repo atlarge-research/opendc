@@ -20,49 +20,37 @@
  * SOFTWARE.
  */
 
-import kotlinx.benchmark.gradle.*
+import me.champeau.jmh.JMHTask
 import org.jetbrains.kotlin.allopen.gradle.*
 
 plugins {
-    id("org.jetbrains.kotlinx.benchmark")
     `java-library`
     kotlin("plugin.allopen")
-}
-
-sourceSets {
-    register("jmh") {
-        compileClasspath += sourceSets["main"].output
-        runtimeClasspath += sourceSets["main"].output
-    }
-}
-
-configurations {
-    named("jmhImplementation") {
-        extendsFrom(configurations["implementation"])
-    }
+    id("me.champeau.jmh")
 }
 
 configure<AllOpenExtension> {
     annotation("org.openjdk.jmh.annotations.State")
 }
 
-benchmark {
-    targets {
-        register("jmh") {
-            this as JvmBenchmarkTarget
-            jmhVersion = "1.21"
-        }
-    }
+jmh {
+    jmhVersion.set("1.35")
+
+    profilers.add("stack")
+    profilers.add("gc")
+
+    includeTests.set(false) // Do not include tests by default
+}
+
+tasks.named("jmh", JMHTask::class) {
+    outputs.upToDateWhen { false } // XXX Do not cache the output of this task
+
+    testRuntimeClasspath.setFrom() // XXX Clear test runtime classpath to eliminate duplicate dependencies on classpath
 }
 
 dependencies {
-    val libs = Libs(project)
-    implementation(libs["kotlinx-benchmark-runtime-jvm"])
-}
-
-// Workaround for https://github.com/Kotlin/kotlinx-benchmark/issues/39
-afterEvaluate {
-    tasks.named<org.gradle.jvm.tasks.Jar>("jmhBenchmarkJar") {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    constraints {
+        val versionCatalog = project.defaultVersionCatalog
+        jmh(versionCatalog["commons.math3"]) // XXX Force JMH to use the same commons-math3 version as OpenDC
     }
 }

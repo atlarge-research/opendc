@@ -23,22 +23,21 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    `java-library`
+    id("java-conventions")
     kotlin("jvm")
-    id("org.jlleitschuh.gradle.ktlint")
+    id("spotless-conventions")
 }
 
 /* Project configuration */
-repositories {
-    mavenCentral()
-}
 
-java {
-    sourceCompatibility = Libs.jvmTarget
+kotlin {
+    jvmToolchain {
+        val javaVersion = project.defaultVersionCatalog.getVersion("java")
+        languageVersion.set(JavaLanguageVersion.of(javaVersion))
+    }
 }
 
 tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = Libs.jvmTarget.toString()
-    kotlinOptions.useIR = true
-    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+    kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+    kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
 }

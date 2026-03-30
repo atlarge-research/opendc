@@ -22,12 +22,12 @@
 
 description = "Simulation-specific code for use in OpenDC"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-library-conventions`
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
+    api(projects.opendc.opendcCommon)
     api(libs.kotlinx.coroutines)
 }

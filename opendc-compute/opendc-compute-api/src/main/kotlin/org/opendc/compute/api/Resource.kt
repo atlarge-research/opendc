@@ -22,26 +22,14 @@
 
 package org.opendc.compute.api
 
-import java.util.UUID
-
 /**
  * A generic resource provided by the OpenDC Compute service.
  */
 public interface Resource {
     /**
-     * The unique identifier of the resource.
-     */
-    public val uid: UUID
-
-    /**
      * The name of the resource.
      */
-    public val name: String
-
-    /**
-     * The identifying labels attached to the resource.
-     */
-    public val labels: Map<String, String>
+    public val taskId: Int
 
     /**
      * The non-identifying metadata attached to the resource.
@@ -49,7 +37,12 @@ public interface Resource {
     public val meta: Map<String, Any>
 
     /**
-     * Refresh the local state of the resource.
+     * Reload the attributes of the resource.
      */
-    public suspend fun refresh()
+    public fun reload()
+
+    /**
+     * Delete the resource.
+     */
+    public fun delete()
 }

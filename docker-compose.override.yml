@@ -2,35 +2,36 @@ version: "3.8"
 
 # Docker Compose overrides for development environments
 services:
-  frontend:
+  server:
+    build:
+      context: .
+      dockerfile: opendc-web/opendc-web-server/Dockerfile
+      args:
+        OPENDC_AUTH0_DOMAIN: ${OPENDC_AUTH0_DOMAIN:?No Auth0 domain specified}
+        OPENDC_AUTH0_AUDIENCE: ${OPENDC_AUTH0_AUDIENCE:?No Auth0 audience specified}
+        OPENDC_AUTH0_DOCS_CLIENT_ID: ${OPENDC_AUTH0_DOCS_CLIENT_ID}
     ports:
-      - "8080:80"
-    environment:
-      REACT_APP_API_BASE_URL: http://localhost:8081
-
-  api:
-    ports:
-      - "8081:8081"
-    environment:
-      SENTRY_ENVIRONMENT: "development"
-
-  simulator:
+      - "8080:8080"
     environment:
       SENTRY_ENVIRONMENT: "development"
 
-  mongo:
+  postgres:
     ports:
-      - "27017:27017"
+      - "5432:5432"
 
-  mongo-express:
-    image: mongo-express
+  pgadmin:
+    image: dpage/pgadmin4
     restart: on-failure
     networks:
       - backend
     depends_on:
-      - mongo
+      - postgres
     ports:
-      - "8082:8081"
+      - "5050:80"
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: "${MONGO_INITDB_ROOT_USERNAME}"
-      ME_CONFIG_MONGODB_ADMINPASSWORD: "${MONGO_INITDB_ROOT_PASSWORD}"
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+
+volumes:
+  pgadmin:

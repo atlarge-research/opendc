@@ -1,0 +1,23 @@
+{
+    "topologies": [
+        {"pathToFile": "src/test/resources/topologies/single_50_big.json"},
+        {"pathToFile": "src/test/resources/topologies/single_50_big_BE.json"}
+    ],
+    "workloads": [{
+        "pathToFile": "src/test/resources/workloadTraces/bitbrains-small",
+        "type": "ComputeWorkload",
+        "submissionTime": "2024-03-01T00:00:00"
+    }],
+    "allocationPolicies": [
+        {
+            "type": "prefab",
+            "policyName": "Mem"
+        }
+    ],
+    "exportModels": [
+        {
+            "exportInterval": 3600,
+            "printFrequency": 24
+        }
+    ]
+}

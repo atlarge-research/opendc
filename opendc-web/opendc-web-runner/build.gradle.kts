@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,29 +22,71 @@
 
 description = "Experiment runner for OpenDC"
 
-/* Build configuration */
+// Build configuration
 plugins {
     `kotlin-conventions`
-    application
+    distribution
 }
 
-application {
-    mainClass.set("org.opendc.runner.web.MainKt")
+val cli: SourceSet by sourceSets.creating {
+    compileClasspath += sourceSets["main"].output
+    runtimeClasspath += sourceSets["main"].output
+}
+
+val cliImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations["implementation"])
+}
+val cliRuntimeOnly: Configuration by configurations.getting
+val cliRuntimeClasspath: Configuration by configurations.getting {
+    extendsFrom(configurations["runtimeClasspath"])
+}
+
+val cliJar by tasks.creating(Jar::class) {
+    from(cli.output)
+
+    archiveBaseName.set("${project.name}-cli")
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcFormat)
-    implementation(projects.opendcExperiments.opendcExperimentsCapelin)
+    api(projects.opendcWeb.opendcWebClient)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
+    implementation(projects.opendcTrace.opendcTraceApi)
 
     implementation(libs.kotlin.logging)
-    implementation(libs.clikt)
-    implementation(libs.jackson.module.kotlin)
-    implementation(libs.sentry.log4j2)
-    implementation(libs.mongodb)
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-workload")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
+    implementation(project(mapOf("path" to ":opendc-experiments:opendc-experiments-base")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
+    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-failure")))
 
-    runtimeOnly(libs.log4j.slf4j)
+    cliImplementation(libs.clikt)
+
+    cliRuntimeOnly(libs.log4j.core)
+    cliRuntimeOnly(libs.log4j.slf4j)
+    cliRuntimeOnly(libs.sentry.log4j2)
+}
+
+val createCli by tasks.creating(CreateStartScripts::class) {
+    dependsOn(cliJar, tasks.jar)
+
+    applicationName = "opendc-runner"
+    mainClass.set("org.opendc.web.runner.MainKt")
+    classpath = tasks.jar.get().outputs.files + cliJar.outputs.files + cliRuntimeClasspath
+    outputDir = project.layout.buildDirectory.get().asFile.resolve("scripts")
+}
+
+distributions {
+    main {
+        contents {
+            into("bin") {
+                from(createCli)
+            }
+
+            into("lib") {
+                from(tasks.jar)
+                from(cliJar)
+                from(cliRuntimeClasspath) // Also includes main classpath
+            }
+        }
+    }
 }

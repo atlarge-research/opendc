@@ -22,15 +22,28 @@
 
 plugins {
     id("kotlin-conventions")
+    id("java-library-conventions")
     id("publishing-conventions")
     id("dokka-conventions")
 }
 
 /* Project configuration */
-java {
-    withSourcesJar()
-}
-
 kotlin {
     explicitApi()
+}
+
+val javadocJar by tasks.registering(Jar::class) {
+    // Note that we publish the Dokka HTML artifacts as Javadoc
+    dependsOn(tasks.dokkaHtml)
+    archiveClassifier.set("javadoc")
+    from(tasks.dokkaHtml)
+}
+
+configure<PublishingExtension> {
+    publications {
+        named<MavenPublication>("maven") {
+            from(components["java"])
+            artifact(javadocJar)
+        }
+    }
 }
