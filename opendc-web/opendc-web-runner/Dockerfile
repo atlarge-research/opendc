@@ -15,7 +15,7 @@ COPY --from=0 /app/opendc-web/opendc-web-runner/build/install /opt/
 COPY --from=0 /app/opendc-experiments/opendc-experiments-base/src/test/resources/workloadTraces \
     /opt/opendc/traces
 WORKDIR /opt/opendc
-CMD bin/opendc-web-runner
+CMD /opt/opendc-web-runner/bin/opendc-runner
 
 LABEL org.opencontainers.image.authors="OpenDC Maintainers <opendc@atlarge-research.com>"
 LABEL org.opencontainers.image.url="https://opendc.org"
