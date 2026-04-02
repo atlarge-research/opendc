@@ -211,8 +211,8 @@ However, in addittion, the user can provide parameters that influence how tasks 
 | weighters              | List[Weighter]              | no        | []              | Weighters used to rank hosts.                                                     |
 | windowSize             | integer                     | no        | 168             | How far back does the scheduler look to determine the Carbon Intensity threshold? |
 | forecast               | boolean                     | no        | true            | Does the the policy use carbon forecasts?                                         |
-| shortForecastThreshold | double                      | no        | 0.2             | Threshold is used for short tasks (<2hours)                                       |
-| longForecastThreshold  | double                      | no        | 0.35            | Threshold is used for long tasks (>2hours)                                        |
+| shortForecastThreshold | double                      | no        | 0.2             | Threshold is used for short tasks (&lt;2hours)                                       |
+| longForecastThreshold  | double                      | no        | 0.35            | Threshold is used for long tasks (&gt;2hours)                                        |
 | forecastSize           | integer                     | no        | 24              | The number of hours of forecasts that is taken into account                       |
 | taskStopper            | [TaskStopper](#taskstopper) | no        | null            | Policy for interrupting tasks. If not provided, tasks are never interrupted       |
 
@@ -228,7 +228,7 @@ A TasksStopper consists of the following components:
 |-----------------------|-----------------------------|-----------|---------|-----------------------------------------------------------------------------------|
 | windowSize            | integer                     | no        | 168     | How far back does the scheduler look to determine the Carbon Intensity threshold? |
 | forecast              | boolean                     | no        | true    | Does the the policy use carbon forecasts?                                         |
-| forecastThreshold     | double                      | no        | 0.6     | Threshold is used for short tasks (<2hours)                                       |
+| forecastThreshold     | double                      | no        | 0.6     | Threshold is used for short tasks (&lt;2hours)                                       |
 | forecastSize          | integer                     | no        | 24      | The number of hours of forecasts that is taken into account                       |
 
 

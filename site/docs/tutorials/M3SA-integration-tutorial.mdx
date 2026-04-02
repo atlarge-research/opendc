@@ -83,7 +83,7 @@ The simulator data file must be a 🪵 _parquet_ 🪵 file.
 The file must contain (at least) the columns:
 
 - timestamp: the timestamp, in miliseconds, of the data point (e.g., 30000, 60000, 90000) - the time unit is flexible.
-- {metric_name}: the value of the metric at the given timestamp. This is the metric analyzed (e.g., CO2_emissions,
+- `{metric_name}`: the value of the metric at the given timestamp. This is the metric analyzed (e.g., CO2_emissions,
 energy_usage).
 
 e.g., if you are analyzing the CO2 emissions of a datacenter, for a timeperiod of 5 minutes, and the data is sampled
