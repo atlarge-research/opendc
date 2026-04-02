@@ -3,8 +3,8 @@ name: Publish website docker image
 
 on:
   push:
-    branches: [ gh-pages ]
-  workflow_dispatch:
+    tags:
+    - '*'
 
 jobs:
   push-website:
