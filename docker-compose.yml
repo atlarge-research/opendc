@@ -1,7 +1,6 @@
-version: "3.8"
 services:
   server:
-    image: atlargeresearch/opendc:v2.1
+    image: atlargeresearch/opendc:v2.4k
     restart: on-failure
     networks:
       - backend
@@ -12,6 +11,12 @@ services:
         source: ./traces
         target: /opt/opendc/traces
     environment:
+      QUARKUS_OPENDC_UI_AUTH_DOMAIN: ${OPENDC_AUTH0_DOMAIN}
+      QUARKUS_OPENDC_UI_AUTH_CLIENT_ID: ${OPENDC_AUTH0_CLIENT_ID}
+      QUARKUS_OPENDC_UI_AUTH_AUDIENCE: ${OPENDC_AUTH0_AUDIENCE}
+      QUARKUS_OIDC_APPLICATION_TYPE: service
+      QUARKUS_OIDC_TOKEN_AUDIENCE: ${OPENDC_AUTH0_AUDIENCE}
+      OPENDC_AUTH0_CLIENT_ID: ${OPENDC_AUTH0_CLIENT_ID}
       OPENDC_DB_USERNAME: ${OPENDC_DB_USERNAME:?No database username specified}
       OPENDC_DB_PASSWORD: ${OPENDC_DB_PASSWORD:?No database password specified}
       OPENDC_DB_URL: jdbc:postgresql://postgres:5432/opendc

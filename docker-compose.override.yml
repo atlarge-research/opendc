@@ -1,6 +1,4 @@
-version: "3.8"
-
-# Docker Compose overrides for development environments
+q# Docker Compose overrides for development environments
 services:
   server:
     build:
