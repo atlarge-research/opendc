@@ -19,6 +19,8 @@ jobs:
             VERSION=${GITHUB_REF#refs/tags/v}
           fi
           echo "tags=${DOCKER_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
@@ -30,5 +32,4 @@ jobs:
         with:
           context: ./site
           push: true
-          file: ./site/Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
