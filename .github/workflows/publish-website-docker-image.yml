@@ -1,5 +1,5 @@
 # Workflow for publishing the artifacts once a GitHub release is published
-name: Publish website
+name: Publish website docker image
 
 on:
   push:
