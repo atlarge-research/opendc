@@ -28,6 +28,7 @@ jobs:
       - name: Push to Docker Hub
         uses: docker/build-push-action@v6
         with:
+          context: site
           push: true
           file: site/Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
