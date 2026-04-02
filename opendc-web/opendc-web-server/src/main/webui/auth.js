@@ -83,6 +83,8 @@ export function AuthProvider({ children }) {
                 clientId={authConfig.clientId}
                 redirectUri={authConfig.redirectUri}
                 audience={authConfig.audience}
+                cacheLocation="localstorage"
+                useRefreshTokens={true}
             >
                 {children}
             </Auth0Provider>
