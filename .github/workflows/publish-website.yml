@@ -2,9 +2,8 @@
 name: Publish website
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
+  push:
+    branches: [ gh-pages ]
 
 jobs:
   push-website:
