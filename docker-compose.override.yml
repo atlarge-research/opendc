@@ -1,4 +1,4 @@
-q# Docker Compose overrides for development environments
+# Docker Compose overrides for development environments
 services:
   server:
     build:
