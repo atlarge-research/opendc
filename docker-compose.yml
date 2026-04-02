@@ -1,6 +1,6 @@
 services:
   server:
-    image: atlargeresearch/opendc:v2.4k
+    image: ghcr.io/atlarge-research/opendc-web-api:2.4k
     restart: on-failure
     networks:
       - backend
