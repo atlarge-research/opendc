@@ -16,8 +16,8 @@ jobs:
         run: |
           DOCKER_IMAGE=ghcr.io/atlarge-research/opendc-website
           VERSION=3.0-SNAPSHOT
-          if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
+          if [[ $GITHUB_REF == refs/tags/website* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/website}
           fi
           echo "tags=${DOCKER_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
       - name: Checkout
