@@ -13,6 +13,16 @@ services:
     environment:
       SENTRY_ENVIRONMENT: "development"
 
+  runner:
+    build:
+      context: .
+      dockerfile: opendc-web/opendc-web-runner/Dockerfile
+    environment:
+      JAVA_TOOL_OPTIONS: >-
+        -Dlog4j2.rootLogger.level=DEBUG
+        -Dlog4j2.logger.org.opendc.level=DEBUG
+        -Dlog4j2.logger.org.opendc.web.client.level=TRACE
+
   postgres:
     ports:
       - "5432:5432"

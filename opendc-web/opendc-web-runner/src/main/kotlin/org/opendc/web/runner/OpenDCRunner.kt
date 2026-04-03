@@ -268,12 +268,12 @@ public class OpenDCRunner(
                 val topology = listOf(ClusterSpec("cluster", topologyHosts, powerSourceSpec))
 
                 Provisioner(dispatcher, seed).use { provisioner ->
+                    // Create a trace-specific workload loader
+                    val traceId = scenario.workload.trace.id
+                    val traceSpecificPath = tracePath.resolve(traceId)
+                    val traceLoader = ComputeWorkloadLoader(traceSpecificPath)
 
-//                    val workload =
-//                        trace(scenario.workload.trace.id).sampleByLoad(scenario.workload.samplingFraction)
-//                    val vms = workload.resolve(workloadLoader, Random(seed))
-
-                    val vms = workloadLoader.sampleByLoad(scenario.workload.samplingFraction)
+                    val vms = traceLoader.sampleByLoad(scenario.workload.samplingFraction)
                     val startTime = vms.minOf { it.submittedAt }
 
                     logger.debug { "Using scheduler: '${scenario.schedulerName}' for scenario ${scenario.id}" }
