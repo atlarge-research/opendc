@@ -119,6 +119,39 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
         .int()
         .default(Runtime.getRuntime().availableProcessors() - 1)
 
+    /**
+     * The maximum duration of a simulation job in minutes.
+     */
+    private val jobTimeout by option(
+        "--job-timeout",
+        help = "maximum duration of a simulation job in minutes",
+        envvar = "OPENDC_JOB_TIMEOUT",
+    )
+        .int()
+        .default(10)
+
+    /**
+     * The interval to poll the API for new jobs in seconds.
+     */
+    private val pollInterval by option(
+        "--poll-interval",
+        help = "interval to poll the API for new jobs in seconds",
+        envvar = "OPENDC_POLL_INTERVAL",
+    )
+        .int()
+        .default(30)
+
+    /**
+     * The interval to send a heartbeat to the API server in seconds.
+     */
+    private val heartbeatInterval by option(
+        "--heartbeat-interval",
+        help = "interval to send a heartbeat to the API server in seconds",
+        envvar = "OPENDC_HEARTBEAT_INTERVAL",
+    )
+        .int()
+        .default(60)
+
     override fun run() {
         logger.info { "Starting OpenDC web runner" }
 
@@ -148,7 +181,15 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
 
         val client = OpenDCRunnerClient(baseUrl = apiUrl, authController)
         val manager = JobManager(client)
-        val runner = OpenDCRunner(manager, tracePath, parallelism = parallelism)
+        val runner =
+            OpenDCRunner(
+                manager,
+                tracePath,
+                parallelism = parallelism,
+                jobTimeout = java.time.Duration.ofMinutes(jobTimeout.toLong()),
+                pollInterval = java.time.Duration.ofSeconds(pollInterval.toLong()),
+                heartbeatInterval = java.time.Duration.ofSeconds(heartbeatInterval.toLong()),
+            )
 
         logger.info { "Watching for queued scenarios" }
         runner.run()
