@@ -1,13 +1,16 @@
 # Docker Compose overrides for production environments
 services:
   server:
+    image: ghcr.io/atlarge-research/opendc-web-api:${OPENDC_WEB_API_VERSION}
     ports:
       - "8080:8080"
     environment:
       SENTRY_ENVIRONMENT: "production"
       NEXT_PUBLIC_API_BASE_URL: ${OPENDC_API_BASE_URL}
       QUARKUS_HTTP_CORS_ORIGINS: https://app.opendc.org
+  runner:
+    image: ghcr.io/atlarge-research/opendc:${OPENDC_RUNNER_VERSION}
   website:
-    image: ghcr.io/atlarge-research/opendc-website:v2.4m
+    image: ghcr.io/atlarge-research/opendc-website:${OPENDC_WEBSITE_VERSION}
     ports:
       - "3000:80"
