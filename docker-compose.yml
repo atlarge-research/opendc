@@ -36,6 +36,32 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
 
+  runner:
+    image: ghcr.io/atlarge-research/opendc:2.4k
+    restart: on-failure
+    networks:
+      - backend
+    depends_on:
+      - postgres
+    volumes:
+      - type: bind
+        source: ./traces
+        target: /opt/opendc/traces
+    environment:
+      OPENDC_API_URL: http://server:8080/api
+      OPENDC_DB_USERNAME: ${OPENDC_DB_USERNAME:?No database username specified}
+      OPENDC_DB_PASSWORD: ${OPENDC_DB_PASSWORD:?No database password specified}
+      OPENDC_DB_URL: jdbc:postgresql://postgres:5432/opendc
+      AUTH0_AUDIENCE: ${OPENDC_AUTH0_AUDIENCE}
+      AUTH0_CLIENT_ID: ${OPENDC_RUNNER_AUTH0_CLIENT_ID}
+      AUTH0_DOMAIN: ${OPENDC_RUNNER_AUTH0_DOMAIN}
+      AUTH0_CLIENT_SECRET: ${OPENDC_RUNNER_AUTH0_CLIENT_SECRET}
+      SENTRY_DSN: ${OPENDC_SERVER_SENTRY_DSN-}
+      JAVA_TOOL_OPTIONS: >-
+        -Dlog4j2.rootLogger.level=DEBUG
+        -Dlog4j2.logger.org.opendc.level=DEBUG
+        -Dlog4j2.logger.org.opendc.web.client.level=TRACE
+
 volumes:
   postgres:
 
