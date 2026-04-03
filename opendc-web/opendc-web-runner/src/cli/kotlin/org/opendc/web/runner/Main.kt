@@ -181,14 +181,15 @@ class RunnerCli : CliktCommand(name = "opendc-runner") {
 
         val client = OpenDCRunnerClient(baseUrl = apiUrl, authController)
         val manager = JobManager(client)
-        val runner = OpenDCRunner(
-            manager,
-            tracePath,
-            parallelism = parallelism,
-            jobTimeout = java.time.Duration.ofMinutes(jobTimeout.toLong()),
-            pollInterval = java.time.Duration.ofSeconds(pollInterval.toLong()),
-            heartbeatInterval = java.time.Duration.ofSeconds(heartbeatInterval.toLong())
-        )
+        val runner =
+            OpenDCRunner(
+                manager,
+                tracePath,
+                parallelism = parallelism,
+                jobTimeout = java.time.Duration.ofMinutes(jobTimeout.toLong()),
+                pollInterval = java.time.Duration.ofSeconds(pollInterval.toLong()),
+                heartbeatInterval = java.time.Duration.ofSeconds(heartbeatInterval.toLong()),
+            )
 
         logger.info { "Watching for queued scenarios" }
         runner.run()
