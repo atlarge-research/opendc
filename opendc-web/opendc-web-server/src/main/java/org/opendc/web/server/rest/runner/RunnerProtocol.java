@@ -42,7 +42,14 @@ public final class RunnerProtocol {
      */
     public static org.opendc.web.proto.runner.Job toDto(Job job) {
         return new org.opendc.web.proto.runner.Job(
-                job.id, toDto(job.scenario), job.state, job.createdAt, job.updatedAt, job.runtime, job.results);
+                job.id,
+                toDto(job.scenario),
+                job.state,
+                job.createdAt,
+                job.startedAt,
+                job.updatedAt,
+                job.runtime,
+                job.results);
     }
 
     /**

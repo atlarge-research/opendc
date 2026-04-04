@@ -32,7 +32,7 @@
         <Sentry name="Sentry" />
     </Appenders>
     <Loggers>
-        <Logger name="org.opendc" level="warn" additivity="false">
+        <Logger name="org.opendc" level="warn" additivity="true">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="Sentry"/>
         </Logger>

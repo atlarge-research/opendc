@@ -58,6 +58,7 @@ public interface JobManager {
     public fun fail(
         id: Long,
         runtime: Int,
+        report: Map<String, Any>? = null,
     )
 
     /**
@@ -67,6 +68,7 @@ public interface JobManager {
         id: Long,
         runtime: Int,
         results: Map<String, Any>,
+        report: Map<String, Any>? = null,
     )
 
     public companion object {

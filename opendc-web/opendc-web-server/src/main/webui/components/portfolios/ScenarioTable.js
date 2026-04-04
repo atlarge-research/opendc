@@ -23,24 +23,36 @@
 import { Bullseye } from '@patternfly/react-core'
 import Link from 'next/link'
 import { TableComposable, Thead, Tr, Th, Tbody, Td, ActionsColumn } from '@patternfly/react-table'
-import React from 'react'
+import React, { useState } from 'react'
 import { Portfolio, Status } from '../../shapes'
 import TableEmptyState from '../util/TableEmptyState'
 import ScenarioState from './ScenarioState'
 import { useDeleteScenario } from '../../data/project'
+import JobReportModal from './JobReportModal'
 
 function ScenarioTable({ portfolio, status }) {
     const { mutate: deleteScenario } = useDeleteScenario()
     const projectId = portfolio?.project?.id
     const scenarios = portfolio?.scenarios ?? []
+    const [reportJobId, setReportJobId] = useState(null)
 
-    const actions = ({ number }) => [
-        {
-            title: 'Delete Scenario',
-            onClick: () => deleteScenario({ projectId: projectId, number }),
-            isDisabled: number === 0,
-        },
-    ]
+    const actions = (scenario) => {
+        const latestJob = scenario.jobs[scenario.jobs.length - 1]
+        const canViewReport = latestJob && (latestJob.state === 'FINISHED' || latestJob.state === 'FAILED')
+
+        return [
+            {
+                title: 'View Report',
+                onClick: () => setReportJobId(latestJob.id),
+                isDisabled: !canViewReport,
+            },
+            {
+                title: 'Delete Scenario',
+                onClick: () => deleteScenario({ projectId: projectId, number: scenario.number }),
+                isDisabled: scenario.number === 0,
+            },
+        ]
+    }
 
     return (
         <TableComposable aria-label="Scenario List" variant="compact">
@@ -49,6 +61,7 @@ function ScenarioTable({ portfolio, status }) {
                     <Th>Name</Th>
                     <Th>Topology</Th>
                     <Th>Trace</Th>
+                    <Th>Created</Th>
                     <Th>State</Th>
                 </Tr>
             </Thead>
@@ -68,6 +81,11 @@ function ScenarioTable({ portfolio, status }) {
                         <Td dataLabel="Workload">{`${scenario.workload.trace.name} (${
                             scenario.workload.samplingFraction * 100
                         }%)`}</Td>
+                        <Td dataLabel="Created">
+                            {scenario.jobs && scenario.jobs.length > 0
+                                ? new Date(scenario.jobs[0].createdAt).toLocaleString()
+                                : '-'}
+                        </Td>
                         <Td dataLabel="State">
                             <ScenarioState state={scenario.jobs[scenario.jobs.length - 1].state} />
                         </Td>
@@ -78,7 +96,7 @@ function ScenarioTable({ portfolio, status }) {
                 ))}
                 {scenarios.length === 0 && (
                     <Tr>
-                        <Td colSpan={4}>
+                        <Td colSpan={5}>
                             <Bullseye>
                                 <TableEmptyState
                                     status={status}
@@ -91,6 +109,7 @@ function ScenarioTable({ portfolio, status }) {
                     </Tr>
                 )}
             </Tbody>
+            {reportJobId && <JobReportModal jobId={reportJobId} isOpen={true} onClose={() => setReportJobId(null)} />}
         </TableComposable>
     )
 }

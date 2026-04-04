@@ -67,6 +67,12 @@ public class Job extends PanacheEntityBase {
     public Instant createdAt;
 
     /**
+     * The instant at which the job started running.
+     */
+    @Column(name = "started_at")
+    public Instant startedAt;
+
+    /**
      * The number of simulation runs to perform.
      */
     @Column(nullable = false, updatable = false)
@@ -99,6 +105,13 @@ public class Job extends PanacheEntityBase {
     public Map<String, ?> results = null;
 
     /**
+     * Job report containing warnings and errors in JSON
+     */
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    public Map<String, Object> report = null;
+
+    /**
      * Construct a {@link Job} instance.
      */
     public Job(Scenario scenario, String createdBy, Instant createdAt, int repeats) {
@@ -129,15 +142,28 @@ public class Job extends PanacheEntityBase {
      *
      * @param newState The new state to enter into.
      * @param time The time at which the update occurs.
+     * @param startedAt The time at which the job started running (optional).
+     * @param runtime The runtime (in seconds) consumed by the simulation job so far.
      * @param results The results to possible set.
+     * @param report The report to possible set.
      * @return <code>true</code> when the update succeeded`, <code>false</code> when there was a conflict.
      */
-    public boolean updateAtomically(JobState newState, Instant time, int runtime, Map<String, ?> results) {
+    public boolean updateAtomically(
+            JobState newState,
+            Instant time,
+            Instant startedAt,
+            int runtime,
+            Map<String, ?> results,
+            Map<String, Object> report) {
         // Update entity fields directly - this uses the JsonType converter for proper JSON serialization
         this.state = newState;
         this.updatedAt = time;
+        if (startedAt != null) {
+            this.startedAt = startedAt;
+        }
         this.runtime = runtime;
         this.results = results;
+        this.report = report;
 
         // Flush changes to database - JsonType will properly serialize the results map to JSON
         Panache.getEntityManager().flush();
