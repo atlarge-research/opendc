@@ -141,4 +141,26 @@ public final class JobResourceTest {
                 .statusCode(400)
                 .contentType(ContentType.JSON);
     }
+
+    /**
+     * Test that tries to get the report for a non-existent job.
+     */
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"runner"})
+    public void testGetReportNonExistent() {
+        given().get("/0/report").then().statusCode(404);
+    }
+
+    /**
+     * Test that tries to get the report for a job with no report (returns empty map).
+     */
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"runner"})
+    public void testGetReportEmpty() {
+        given().get("/1/report").then().statusCode(200).contentType(ContentType.JSON);
+    }
 }
