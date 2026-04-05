@@ -67,25 +67,29 @@ public class QuarkusJobManager implements JobManager {
     @Transactional
     @Override
     public boolean claim(long id) {
-        return updateState(id, JobState.CLAIMED, 0, null);
+        return updateState(id, JobState.CLAIMED, 0, null, null);
     }
 
     @Transactional
     @Override
     public boolean heartbeat(long id, int runtime) {
-        return updateState(id, JobState.RUNNING, runtime, null);
+        return updateState(id, JobState.RUNNING, runtime, null, null);
     }
 
     @Transactional
     @Override
-    public void fail(long id, int runtime) {
-        updateState(id, JobState.FAILED, runtime, null);
+    public void fail(long id, int runtime, @Nullable Map<String, ? extends Object> report) {
+        updateState(id, JobState.FAILED, runtime, null, report);
     }
 
     @Transactional
     @Override
-    public void finish(long id, int runtime, @NotNull Map<String, ?> results) {
-        updateState(id, JobState.FINISHED, runtime, results);
+    public void finish(
+            long id,
+            int runtime,
+            @NotNull Map<String, ? extends Object> results,
+            @Nullable Map<String, ? extends Object> report) {
+        updateState(id, JobState.FINISHED, runtime, results, report);
     }
 
     /**
@@ -95,9 +99,11 @@ public class QuarkusJobManager implements JobManager {
      * @param newState The new state to transition to.
      * @param runtime The runtime of the job.
      * @param results The results of the job.
+     * @param report The report containing warnings and errors.
      * @return <code>true</code> if the operation succeeded, <code>false</code> otherwise.
      */
-    private boolean updateState(long id, JobState newState, int runtime, Map<String, ?> results) {
+    private boolean updateState(
+            long id, JobState newState, int runtime, Map<String, ?> results, Map<String, ? extends Object> report) {
         Job job = Job.findById(id);
 
         if (job == null) {
@@ -105,7 +111,9 @@ public class QuarkusJobManager implements JobManager {
         }
 
         try {
-            jobService.updateJob(job, newState, runtime, results);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> reportMap = report != null ? (Map<String, Object>) report : null;
+            jobService.updateJob(job, newState, runtime, results, reportMap);
             return true;
         } catch (IllegalArgumentException | IllegalStateException e) {
             return false;

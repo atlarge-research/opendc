@@ -44,6 +44,7 @@ import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.web.proto.runner.Job
 import org.opendc.web.proto.runner.Scenario
 import org.opendc.web.proto.runner.Topology
+import org.opendc.web.runner.internal.ReportCollector
 import org.opendc.web.runner.internal.WebComputeMonitor
 import java.io.File
 import java.time.Duration
@@ -159,6 +160,9 @@ public class OpenDCRunner(
                     TimeUnit.MILLISECONDS,
                 )
 
+            val reportCollector = ReportCollector()
+            reportCollector.attach()
+
             try {
                 val topology = convertTopology(scenario.topology)
                 val jobs =
@@ -175,6 +179,16 @@ public class OpenDCRunner(
 
                 val duration = startTime.secondsSince()
                 logger.info { "Finished simulation for job $id (in $duration seconds)" }
+
+                reportCollector.detach()
+
+                // Calculate wait time if startedAt is available
+                val waitTime =
+                    job.startedAt?.let { started ->
+                        ChronoUnit.SECONDS.between(job.createdAt, started).toInt()
+                    }
+
+                val report = reportCollector.collect(duration, waitTime, job.createdAt, job.startedAt)
 
                 manager.finish(
                     id,
@@ -196,18 +210,42 @@ public class OpenDCRunner(
                         "total_vms_finished" to results.map { it.totalVmsFinished },
                         "total_vms_failed" to results.map { it.totalVmsFailed },
                     ),
+                    report,
                 )
             } catch (e: Exception) {
+                reportCollector.detach()
+
+                val duration = startTime.secondsSince()
+
+                // Calculate wait time if startedAt is available
+                val waitTime =
+                    job.startedAt?.let { started ->
+                        ChronoUnit.SECONDS.between(job.createdAt, started).toInt()
+                    }
+
+                val report = reportCollector.collect(duration, waitTime, job.createdAt, job.startedAt).toMutableMap()
+
                 // Check whether the job failed due to exceeding its time budget
                 if (Thread.interrupted()) {
-                    logger.info { "Simulation job $id exceeded time limit (${startTime.secondsSince()} seconds)" }
+                    logger.info { "Simulation job $id exceeded time limit ($duration seconds)" }
+                    report["error"] =
+                        mapOf(
+                            "message" to "Simulation exceeded time limit",
+                            "type" to "TIMEOUT",
+                        )
                 } else {
                     logger.info(e) { "Simulation job $id failed" }
+                    report["error"] =
+                        mapOf(
+                            "message" to (e.message ?: "Unknown error"),
+                            "type" to e.javaClass.simpleName,
+                            "stackTrace" to e.stackTraceToString(),
+                        )
                 }
 
                 try {
                     heartbeat.cancel(true)
-                    manager.fail(id, startTime.secondsSince())
+                    manager.fail(id, duration, report)
                 } catch (e: Throwable) {
                     logger.error(e) { "Failed to update job" }
                 }

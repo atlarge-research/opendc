@@ -36,6 +36,7 @@ public record Job(
         Scenario scenario,
         JobState state,
         Instant createdAt,
+        Instant startedAt,
         Instant updatedAt,
         int runtime,
         Map<String, ?> results) {
@@ -45,7 +46,8 @@ public record Job(
      * @param state The next state of the job.
      * @param runtime The runtime of the job (in seconds).
      * @param results The results of the job.
+     * @param report The report containing warnings and errors.
      */
     @Schema(name = "Runner.Job.Update")
-    public record Update(JobState state, int runtime, Map<String, ?> results) {}
+    public record Update(JobState state, int runtime, Map<String, ?> results, Map<String, Object> report) {}
 }

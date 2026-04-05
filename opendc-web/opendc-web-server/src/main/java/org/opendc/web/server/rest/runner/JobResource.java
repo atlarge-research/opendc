@@ -33,6 +33,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
 import java.util.List;
+import java.util.Map;
 import org.opendc.web.proto.JobState;
 import org.opendc.web.server.model.Job;
 import org.opendc.web.server.service.JobService;
@@ -98,7 +99,7 @@ public final class JobResource {
         }
 
         try {
-            jobService.updateJob(job, update.state(), update.runtime(), update.results());
+            jobService.updateJob(job, update.state(), update.runtime(), update.results(), update.report());
         } catch (IllegalArgumentException e) {
             throw new WebApplicationException(e, 400);
         } catch (IllegalStateException e) {
@@ -106,5 +107,20 @@ public final class JobResource {
         }
 
         return RunnerProtocol.toDto(job);
+    }
+
+    /**
+     * Get the report for a job.
+     */
+    @GET
+    @Path("{job}/report")
+    public Map<String, Object> getReport(@PathParam("job") long id) {
+        Job job = Job.findById(id);
+
+        if (job == null) {
+            throw new WebApplicationException("Job not found", 404);
+        }
+
+        return job.report != null ? job.report : Map.of();
     }
 }
