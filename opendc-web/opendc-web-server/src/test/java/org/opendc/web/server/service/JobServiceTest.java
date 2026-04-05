@@ -73,11 +73,11 @@ public class JobServiceTest {
 
         Mockito.when(mockAccountingService.consumeSimulationBudget(any(), anyInt()))
                 .thenReturn(true);
-        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), anyInt(), any(), any());
+        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), any(), anyInt(), any(), any());
 
         service.updateJob(job, JobState.RUNNING, 0, null, null);
 
-        Mockito.verify(job).updateAtomically(eq(JobState.FAILED), any(), anyInt(), any(), any());
+        Mockito.verify(job).updateAtomically(eq(JobState.FAILED), any(), any(), anyInt(), any(), any());
     }
 
     @Test
@@ -87,11 +87,11 @@ public class JobServiceTest {
 
         Mockito.when(mockAccountingService.consumeSimulationBudget(any(), anyInt()))
                 .thenReturn(true);
-        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), anyInt(), any(), any());
+        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), any(), anyInt(), any(), any());
 
         service.updateJob(job, JobState.FINISHED, 0, null, null);
 
-        Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), anyInt(), any(), any());
+        Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), any(), anyInt(), any(), any());
     }
 
     @Test
@@ -101,11 +101,11 @@ public class JobServiceTest {
 
         Mockito.when(mockAccountingService.consumeSimulationBudget(any(), anyInt()))
                 .thenReturn(false);
-        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), anyInt(), any(), any());
+        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), any(), anyInt(), any(), any());
 
         service.updateJob(job, JobState.FINISHED, 0, null, null);
 
-        Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), anyInt(), any(), any());
+        Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), any(), anyInt(), any(), any());
     }
 
     @Test
@@ -115,10 +115,10 @@ public class JobServiceTest {
 
         Mockito.when(mockAccountingService.consumeSimulationBudget(any(), anyInt()))
                 .thenReturn(false);
-        Mockito.doReturn(false).when(job).updateAtomically(any(), any(), anyInt(), any(), any());
+        Mockito.doReturn(false).when(job).updateAtomically(any(), any(), any(), anyInt(), any(), any());
 
         assertThrows(IllegalStateException.class, () -> service.updateJob(job, JobState.FINISHED, 0, null, null));
 
-        Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), anyInt(), any(), any());
+        Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), any(), anyInt(), any(), any());
     }
 }
