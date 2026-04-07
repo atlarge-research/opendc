@@ -25,6 +25,7 @@ package org.opendc.web.runner.internal
 import org.opendc.web.client.runner.OpenDCRunnerClient
 import org.opendc.web.proto.JobState
 import org.opendc.web.proto.runner.Job
+import org.opendc.web.proto.runner.Report
 import org.opendc.web.runner.JobManager
 
 /**
@@ -55,7 +56,7 @@ internal class JobManagerImpl(private val client: OpenDCRunnerClient) : JobManag
     override fun fail(
         id: Long,
         runtime: Int,
-        report: Map<String, Any>?,
+        report: Report?,
     ) {
         client.jobs.update(id, Job.Update(JobState.FAILED, runtime, null, report))
     }
@@ -64,7 +65,7 @@ internal class JobManagerImpl(private val client: OpenDCRunnerClient) : JobManag
         id: Long,
         runtime: Int,
         results: Map<String, Any>,
-        report: Map<String, Any>?,
+        report: Report?,
     ) {
         client.jobs.update(id, Job.Update(JobState.FINISHED, runtime, results, report))
     }

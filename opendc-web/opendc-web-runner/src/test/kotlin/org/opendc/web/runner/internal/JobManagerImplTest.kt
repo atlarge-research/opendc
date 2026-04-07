@@ -35,6 +35,7 @@ import org.opendc.web.client.runner.JobResource
 import org.opendc.web.client.runner.OpenDCRunnerClient
 import org.opendc.web.proto.JobState
 import org.opendc.web.proto.runner.Job
+import org.opendc.web.proto.runner.Report
 
 /**
  * Test suite for [JobManagerImpl].
@@ -117,7 +118,8 @@ class JobManagerImplTest {
 
     @Test
     fun testFail() {
-        val report = mapOf("error" to "some error")
+        val report =
+            Report(null, null, emptyList(), Report.Summary(0, 1, null, null), Report.ErrorInfo("some error", "RuntimeException", null))
         every { jobResource.update(1L, Job.Update(JobState.FAILED, 60, null, report)) } returns makeJob(1L, JobState.FAILED)
 
         manager.fail(1L, 60, report)
@@ -137,7 +139,7 @@ class JobManagerImplTest {
     @Test
     fun testFinish() {
         val results = mapOf("total_power_draw" to listOf(100.0))
-        val report = mapOf("logs" to emptyList<Any>())
+        val report = Report(null, null, emptyList(), Report.Summary(0, 0, 120, null), null)
         every { jobResource.update(1L, Job.Update(JobState.FINISHED, 120, results, report)) } returns makeJob(1L, JobState.FINISHED)
 
         manager.finish(1L, 120, results, report)

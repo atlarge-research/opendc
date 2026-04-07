@@ -42,6 +42,7 @@ import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.PowerModels
 import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.web.proto.runner.Job
+import org.opendc.web.proto.runner.Report
 import org.opendc.web.proto.runner.Scenario
 import org.opendc.web.proto.runner.Topology
 import org.opendc.web.runner.internal.ReportCollector
@@ -223,25 +224,16 @@ public class OpenDCRunner(
                         ChronoUnit.SECONDS.between(job.createdAt, started).toInt()
                     }
 
-                val report = reportCollector.collect(duration, waitTime, job.createdAt, job.startedAt).toMutableMap()
+                val errorInfo =
+                    if (Thread.interrupted()) {
+                        logger.info { "Simulation job $id exceeded time limit ($duration seconds)" }
+                        Report.ErrorInfo("Simulation exceeded time limit", "TIMEOUT", null)
+                    } else {
+                        logger.info(e) { "Simulation job $id failed" }
+                        Report.ErrorInfo(e.message ?: "Unknown error", e.javaClass.simpleName, e.stackTraceToString())
+                    }
 
-                // Check whether the job failed due to exceeding its time budget
-                if (Thread.interrupted()) {
-                    logger.info { "Simulation job $id exceeded time limit ($duration seconds)" }
-                    report["error"] =
-                        mapOf(
-                            "message" to "Simulation exceeded time limit",
-                            "type" to "TIMEOUT",
-                        )
-                } else {
-                    logger.info(e) { "Simulation job $id failed" }
-                    report["error"] =
-                        mapOf(
-                            "message" to (e.message ?: "Unknown error"),
-                            "type" to e.javaClass.simpleName,
-                            "stackTrace" to e.stackTraceToString(),
-                        )
-                }
+                val report = reportCollector.collect(duration, waitTime, job.createdAt, job.startedAt, errorInfo)
 
                 try {
                     heartbeat.cancel(true)

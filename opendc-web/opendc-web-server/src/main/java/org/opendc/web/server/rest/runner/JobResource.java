@@ -22,6 +22,7 @@
 
 package org.opendc.web.server.rest.runner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -50,13 +51,17 @@ public final class JobResource {
      */
     private final JobService jobService;
 
+    private final ObjectMapper objectMapper;
+
     /**
      * Construct a {@link JobResource} instance.
      *
      * @param jobService The {@link JobService} for managing the job lifecycle.
+     * @param objectMapper The {@link ObjectMapper} for JSON conversions.
      */
-    public JobResource(JobService jobService) {
+    public JobResource(JobService jobService, ObjectMapper objectMapper) {
         this.jobService = jobService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -99,7 +104,10 @@ public final class JobResource {
         }
 
         try {
-            jobService.updateJob(job, update.state(), update.runtime(), update.results(), update.report());
+            @SuppressWarnings("unchecked")
+            Map<String, Object> reportMap =
+                    update.report() != null ? objectMapper.convertValue(update.report(), Map.class) : null;
+            jobService.updateJob(job, update.state(), update.runtime(), update.results(), reportMap);
         } catch (IllegalArgumentException e) {
             throw new WebApplicationException(e, 400);
         } catch (IllegalStateException e) {

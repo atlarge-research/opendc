@@ -28,6 +28,7 @@ import org.apache.logging.log4j.core.LogEvent
 import org.apache.logging.log4j.core.Logger
 import org.apache.logging.log4j.core.appender.AbstractAppender
 import org.apache.logging.log4j.core.config.Property
+import org.opendc.web.proto.runner.Report
 import java.time.Instant
 
 /**
@@ -88,39 +89,33 @@ internal class ReportCollector : AbstractAppender(
         waitTimeSeconds: Int? = null,
         createdAt: Instant? = null,
         startedAt: Instant? = null,
-    ): Map<String, Any> {
+        error: Report.ErrorInfo? = null,
+    ): Report {
         val logEntries =
             logs.map {
-                mapOf(
-                    "timestamp" to it.timestamp.toString(),
-                    "level" to it.level,
-                    "logger" to it.logger,
-                    "message" to it.message,
+                Report.LogEntry(
+                    it.timestamp.toString(),
+                    it.level,
+                    it.logger,
+                    it.message,
                 )
             }
 
         val summary =
-            buildMap<String, Any> {
-                put("totalWarnings", logs.count { it.level == "WARN" })
-                put("totalErrors", logs.count { it.level == "ERROR" })
-                if (runtimeSeconds != null) {
-                    put("runtimeSeconds", runtimeSeconds)
-                }
-                if (waitTimeSeconds != null) {
-                    put("waitTimeSeconds", waitTimeSeconds)
-                }
-            }
+            Report.Summary(
+                logs.count { it.level == "WARN" },
+                logs.count { it.level == "ERROR" },
+                runtimeSeconds,
+                waitTimeSeconds,
+            )
 
-        return buildMap {
-            if (createdAt != null) {
-                put("createdAt", createdAt.toString())
-            }
-            if (startedAt != null) {
-                put("startedAt", startedAt.toString())
-            }
-            put("logs", logEntries)
-            put("summary", summary)
-        }
+        return Report(
+            createdAt?.toString(),
+            startedAt?.toString(),
+            logEntries,
+            summary,
+            error,
+        )
     }
 
     /**

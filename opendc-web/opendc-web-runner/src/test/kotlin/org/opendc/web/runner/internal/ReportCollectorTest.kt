@@ -25,6 +25,7 @@ package org.opendc.web.runner.internal
 import org.apache.logging.log4j.LogManager
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -44,21 +45,18 @@ class ReportCollectorTest {
     @Test
     fun testCollectEmpty() {
         val report = collector.collect()
-        val logs = report["logs"] as List<*>
-        val summary = report["summary"] as Map<*, *>
 
-        assertTrue(logs.isEmpty())
-        assertEquals(0, summary["totalWarnings"])
-        assertEquals(0, summary["totalErrors"])
+        assertTrue(report.logs().isEmpty())
+        assertEquals(0, report.summary().totalWarnings())
+        assertEquals(0, report.summary().totalErrors())
     }
 
     @Test
     fun testCollectWithRuntimeAndWaitTime() {
         val report = collector.collect(runtimeSeconds = 120, waitTimeSeconds = 30)
-        val summary = report["summary"] as Map<*, *>
 
-        assertEquals(120, summary["runtimeSeconds"])
-        assertEquals(30, summary["waitTimeSeconds"])
+        assertEquals(120, report.summary().runtimeSeconds())
+        assertEquals(30, report.summary().waitTimeSeconds())
     }
 
     @Test
@@ -68,19 +66,18 @@ class ReportCollectorTest {
 
         val report = collector.collect(createdAt = createdAt, startedAt = startedAt)
 
-        assertEquals(createdAt.toString(), report["createdAt"])
-        assertEquals(startedAt.toString(), report["startedAt"])
+        assertEquals(createdAt.toString(), report.createdAt())
+        assertEquals(startedAt.toString(), report.startedAt())
     }
 
     @Test
     fun testCollectWithoutOptionalParams() {
         val report = collector.collect()
 
-        assertTrue(!report.containsKey("createdAt"))
-        assertTrue(!report.containsKey("startedAt"))
-        val summary = report["summary"] as Map<*, *>
-        assertTrue(!summary.containsKey("runtimeSeconds"))
-        assertTrue(!summary.containsKey("waitTimeSeconds"))
+        assertNull(report.createdAt())
+        assertNull(report.startedAt())
+        assertNull(report.summary().runtimeSeconds())
+        assertNull(report.summary().waitTimeSeconds())
     }
 
     @Test
@@ -98,12 +95,10 @@ class ReportCollectorTest {
         logger.warn("this should not be captured")
 
         val report = collector.collect()
-        val logs = report["logs"] as List<*>
-        val summary = report["summary"] as Map<*, *>
 
-        assertEquals(2, logs.size)
-        assertEquals(1, summary["totalWarnings"])
-        assertEquals(1, summary["totalErrors"])
+        assertEquals(2, report.logs().size)
+        assertEquals(1, report.summary().totalWarnings())
+        assertEquals(1, report.summary().totalErrors())
     }
 
     @Test
@@ -119,9 +114,8 @@ class ReportCollectorTest {
         collector.detach()
 
         val report = collector.collect()
-        val logs = report["logs"] as List<*>
 
-        assertEquals(2, logs.size)
+        assertEquals(2, report.logs().size)
     }
 
     @Test
@@ -134,13 +128,12 @@ class ReportCollectorTest {
         collector.detach()
 
         val report = collector.collect()
-        val logs = report["logs"] as List<*>
-        val entry = logs[0] as Map<*, *>
+        val entry = report.logs()[0]
 
-        assertNotNull(entry["timestamp"])
-        assertEquals("WARN", entry["level"])
-        assertEquals(ReportCollectorTest::class.java.name, entry["logger"])
-        assertEquals("test warning", entry["message"])
+        assertNotNull(entry.timestamp())
+        assertEquals("WARN", entry.level())
+        assertEquals(ReportCollectorTest::class.java.name, entry.logger())
+        assertEquals("test warning", entry.message())
     }
 
     @Test
@@ -155,8 +148,7 @@ class ReportCollectorTest {
         collector.clear()
 
         val report = collector.collect()
-        val logs = report["logs"] as List<*>
-        assertTrue(logs.isEmpty())
+        assertTrue(report.logs().isEmpty())
     }
 
     @Test
@@ -171,9 +163,8 @@ class ReportCollectorTest {
         collector.detach()
 
         val report = collector.collect()
-        val summary = report["summary"] as Map<*, *>
 
-        assertEquals(2, summary["totalWarnings"])
-        assertEquals(1, summary["totalErrors"])
+        assertEquals(2, report.summary().totalWarnings())
+        assertEquals(1, report.summary().totalErrors())
     }
 }
