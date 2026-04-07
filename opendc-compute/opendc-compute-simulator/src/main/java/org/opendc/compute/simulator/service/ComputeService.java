@@ -379,6 +379,13 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     /**
+     * Returns the scheduler used by this service.
+     */
+    public ComputeScheduler getScheduler() {
+        return scheduler;
+    }
+
+    /**
      * Collect the statistics about the scheduler component of this service.
      */
     public SchedulerStats getSchedulerStats() {

@@ -28,6 +28,9 @@ import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
 import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
 import org.opendc.compute.simulator.scheduler.filters.VGpuFilter
+import org.opendc.compute.simulator.scheduler.portfolio.OperationalRiskUtility
+import org.opendc.compute.simulator.scheduler.portfolio.DisasterRecoveryRiskUtility
+import org.opendc.compute.simulator.scheduler.portfolio.PortfolioScheduler
 import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
 import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.simulator.scheduler.weights.InstanceCountWeigher
@@ -53,6 +56,7 @@ public enum class ComputeSchedulerEnum {
     ProvisionedCpuGpuCores,
     ProvisionedCpuGpuCoresInv,
     GpuTaskMemorizing,
+    Portfolio,
 }
 
 public fun createPrefabComputeScheduler(
@@ -198,5 +202,16 @@ public fun createPrefabComputeScheduler(
                         RamFilter(ramAllocationRatio),
                     ),
             )
+        ComputeSchedulerEnum.Portfolio -> {
+            val defaultPolicies =
+                listOf(
+                    ComputeSchedulerEnum.Mem,
+                    ComputeSchedulerEnum.CoreMem,
+                    ComputeSchedulerEnum.ActiveServers,
+                    ComputeSchedulerEnum.Random,
+                    ComputeSchedulerEnum.ProvisionedCores,
+                ).map { createPrefabComputeScheduler(it, seeder, clock, numHosts) }
+            PortfolioScheduler(defaultPolicies, OperationalRiskUtility(), clock)
+        }
     }
 }

@@ -57,6 +57,7 @@ public class SimHost(
     private val name: String,
     private val type: String,
     private val clusterName: String,
+    private val datacenterName: String = "",
     private val clock: InstantSource,
     private val engine: FlowEngine,
     private val machineModel: MachineModel,
@@ -207,6 +208,10 @@ public class SimHost(
 
     public fun getClusterName(): String {
         return clusterName
+    }
+
+    public fun getDatacenterName(): String {
+        return datacenterName
     }
 
     public fun getModel(): HostModel {

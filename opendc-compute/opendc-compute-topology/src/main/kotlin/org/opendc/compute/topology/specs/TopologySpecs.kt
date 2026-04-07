@@ -40,13 +40,27 @@ import org.opendc.simulator.engine.engine.FlowEngine
 import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
 
 /**
+ * Definition of a datacenter containing one or more clusters.
+ *
+ * @param name The name of the datacenter.
+ * @param clusters List of the clusters in this datacenter.
+ */
+@Serializable
+public data class DatacenterJSONSpec(
+    val name: String = "Datacenter",
+    val clusters: List<ClusterJSONSpec>,
+)
+
+/**
  * Definition of a Topology modeled in the simulation.
  *
- * @param clusters List of the clusters in this topology
+ * @param clusters List of the clusters in this topology (for backward compatibility)
+ * @param datacenters List of datacenters, each containing clusters (for multi-datacenter topologies)
  */
 @Serializable
 public data class TopologySpec(
-    val clusters: List<ClusterJSONSpec>,
+    val clusters: List<ClusterJSONSpec> = emptyList(),
+    val datacenters: List<DatacenterJSONSpec> = emptyList(),
 )
 
 /**

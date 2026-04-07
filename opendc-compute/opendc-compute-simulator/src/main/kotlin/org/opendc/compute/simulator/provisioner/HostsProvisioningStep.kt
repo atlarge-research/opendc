@@ -138,6 +138,7 @@ public class HostsProvisioningStep internal constructor(
                         hostSpec.name,
                         hostSpec.type,
                         cluster.name,
+                        cluster.datacenterName,
                         ctx.dispatcher.timeSource,
                         engine,
                         hostSpec.model,

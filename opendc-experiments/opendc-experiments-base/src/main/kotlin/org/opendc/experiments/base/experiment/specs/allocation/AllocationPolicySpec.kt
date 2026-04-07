@@ -28,6 +28,11 @@ import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.simulator.scheduler.FilterScheduler
 import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
+import org.opendc.compute.simulator.scheduler.portfolio.CombinedDORUtility
+import org.opendc.compute.simulator.scheduler.portfolio.DisasterRecoveryRiskUtility
+import org.opendc.compute.simulator.scheduler.portfolio.OperationalRiskUtility
+import org.opendc.compute.simulator.scheduler.portfolio.PortfolioScheduler
+import org.opendc.compute.simulator.scheduler.portfolio.UtilityFunction
 import org.opendc.compute.simulator.scheduler.timeshift.MemorizingTimeshift
 import org.opendc.compute.simulator.scheduler.timeshift.TaskStopper
 import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
@@ -58,6 +63,38 @@ public data class FilterAllocationPolicySpec(
 ) : AllocationPolicySpec
 
 @Serializable
+public sealed interface UtilityFunctionSpec
+
+@Serializable
+@SerialName("operational-risk")
+public class OperationalRiskSpec : UtilityFunctionSpec
+
+@Serializable
+@SerialName("disaster-recovery-risk")
+public class DisasterRecoveryRiskSpec : UtilityFunctionSpec
+
+@Serializable
+@SerialName("combined-dor")
+public data class CombinedDORSpec(
+    val operationalWeight: Double = 1.0,
+    val disasterRecoveryWeight: Double = 1.0,
+) : UtilityFunctionSpec
+
+@Serializable
+@SerialName("portfolio")
+public data class PortfolioAllocationPolicySpec(
+    val policies: List<AllocationPolicySpec> =
+        listOf(
+            PrefabAllocationPolicySpec(ComputeSchedulerEnum.Mem),
+            PrefabAllocationPolicySpec(ComputeSchedulerEnum.CoreMem),
+            PrefabAllocationPolicySpec(ComputeSchedulerEnum.ActiveServers),
+            PrefabAllocationPolicySpec(ComputeSchedulerEnum.Random),
+            PrefabAllocationPolicySpec(ComputeSchedulerEnum.ProvisionedCores),
+        ),
+    val utilityFunction: UtilityFunctionSpec = OperationalRiskSpec(),
+) : AllocationPolicySpec
+
+@Serializable
 @SerialName("timeshift")
 public data class TimeShiftAllocationPolicySpec(
     val filters: List<HostFilterSpec> = listOf(ComputeFilterSpec()),
@@ -84,6 +121,11 @@ public fun createComputeScheduler(
             val filters = spec.filters.map { createHostFilter(it) }
             val weighers = spec.weighers.map { createHostWeigher(it) }
             FilterScheduler(filters, weighers, spec.subsetSize, seeder, numHosts)
+        }
+        is PortfolioAllocationPolicySpec -> {
+            val subPolicies = spec.policies.map { createComputeScheduler(it, seeder, clock, numHosts) }
+            val utilityFunction = createUtilityFunction(spec.utilityFunction)
+            PortfolioScheduler(subPolicies, utilityFunction, clock)
         }
         is TimeShiftAllocationPolicySpec -> {
             val filters = spec.filters.map { createHostFilter(it) }
@@ -137,4 +179,12 @@ public fun createTaskStopper(
         }
 
     return taskStopper
+}
+
+public fun createUtilityFunction(spec: UtilityFunctionSpec): UtilityFunction {
+    return when (spec) {
+        is OperationalRiskSpec -> OperationalRiskUtility()
+        is DisasterRecoveryRiskSpec -> DisasterRecoveryRiskUtility()
+        is CombinedDORSpec -> CombinedDORUtility(spec.operationalWeight, spec.disasterRecoveryWeight)
+    }
 }

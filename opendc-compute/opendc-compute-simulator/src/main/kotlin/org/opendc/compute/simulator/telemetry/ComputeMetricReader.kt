@@ -30,11 +30,13 @@ import mu.KotlinLogging
 import org.opendc.common.Dispatcher
 import org.opendc.common.asCoroutineDispatcher
 import org.opendc.compute.simulator.host.SimHost
+import org.opendc.compute.simulator.scheduler.portfolio.PortfolioScheduler
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.host.HostTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReaderImpl
+import org.opendc.compute.simulator.telemetry.table.scheduler.SchedulerTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReaderImpl
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReaderImpl
 import org.opendc.simulator.compute.power.SimPowerSource
@@ -100,6 +102,8 @@ public class ComputeMetricReader(
      * Mapping from [SimPowerSource] instances to [PowerSourceTableReaderImpl]
      */
     private val batteryTableReaders = mutableMapOf<SimBattery, BatteryTableReaderImpl>()
+
+    private val schedulerTableReader = SchedulerTableReaderImpl(startTime)
 
     /**
      * The background job that is responsible for collecting the metrics every cycle.
@@ -197,6 +201,16 @@ public class ComputeMetricReader(
             if (toMonitor[OutputFiles.SERVICE] == true) {
                 this.serviceTableReader.record(now)
                 this.monitor.record(this.serviceTableReader.copy())
+            }
+
+            if (toMonitor[OutputFiles.SCHEDULER] == true) {
+                val scheduler = this.service.scheduler
+                if (scheduler is PortfolioScheduler) {
+                    for (record in scheduler.drainDecisionRecords()) {
+                        this.schedulerTableReader.setFrom(record)
+                        this.monitor.record(this.schedulerTableReader.copy())
+                    }
+                }
             }
 
             if (printFrequency != null && loggCounter % printFrequency == 0) {

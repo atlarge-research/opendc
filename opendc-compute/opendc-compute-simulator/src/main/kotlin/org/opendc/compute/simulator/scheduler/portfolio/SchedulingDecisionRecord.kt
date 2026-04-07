@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,27 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.topology.specs
-
-import org.opendc.simulator.compute.models.MachineModel
-import org.opendc.simulator.compute.power.PowerModel
-import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
+package org.opendc.compute.simulator.scheduler.portfolio
 
 /**
- * Description of a physical host that will be simulated by OpenDC and host the virtual machines.
+ * A record of a single policy's evaluation within a portfolio scheduling decision.
  *
- * @param name The name of the host.
- * @param model The physical model of the machine.
- * @param cpuPowerModel The [cpuPowerModel] that determines the power draw based on cpu utilization
+ * @param decisionId A unique identifier for the scheduling decision.
+ * @param timestampMs The simulation time in milliseconds when the decision was made.
+ * @param taskId The ID of the task being scheduled.
+ * @param policyIndex The index of this policy in the portfolio.
+ * @param candidateHostName The host this policy proposed, or empty if none.
+ * @param score The utility function score for this placement.
+ * @param selected Whether this policy was chosen.
+ * @param winningScore The best (lowest) score among all policies for this decision.
  */
-public data class HostSpec(
-    val name: String,
-    val type: String,
-    val clusterName: String,
-    val datacenterName: String = "",
-    val model: MachineModel,
-    val cpuPowerModel: PowerModel,
-    val gpuPowerModel: PowerModel?,
-    val embodiedCarbon: Double = 1000.0,
-    val expectedLifetime: Double = 5.0,
-    val cpuDistributionPolicy: DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
-    val gpuDistributionPolicy: DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
+public data class SchedulingDecisionRecord(
+    val decisionId: Long,
+    val timestampMs: Long,
+    val taskId: Int,
+    val policyIndex: Int,
+    val candidateHostName: String,
+    val score: Double,
+    val selected: Boolean,
+    val winningScore: Double,
 )
