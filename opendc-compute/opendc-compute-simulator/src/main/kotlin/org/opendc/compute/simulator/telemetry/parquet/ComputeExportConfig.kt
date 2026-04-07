@@ -38,6 +38,7 @@ import org.opendc.common.logger.logger
 import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReader
 import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
+import org.opendc.compute.simulator.telemetry.table.scheduler.SchedulerTableReader
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
 import org.opendc.trace.util.parquet.exporter.ColListSerializer
@@ -61,6 +62,7 @@ public data class ComputeExportConfig(
     public val powerSourceExportColumns: Set<ExportColumn<PowerSourceTableReader>>,
     public val batteryExportColumns: Set<ExportColumn<BatteryTableReader>>,
     public val serviceExportColumns: Set<ExportColumn<ServiceTableReader>>,
+    public val schedulerExportColumns: Set<ExportColumn<SchedulerTableReader>> = emptySet(),
 ) {
     public constructor(
         hostExportColumns: Collection<ExportColumn<HostTableReader>>,
@@ -68,12 +70,14 @@ public data class ComputeExportConfig(
         powerSourceExportColumns: Collection<ExportColumn<PowerSourceTableReader>>,
         batteryExportColumns: Collection<ExportColumn<BatteryTableReader>>,
         serviceExportColumns: Collection<ExportColumn<ServiceTableReader>>,
+        schedulerExportColumns: Collection<ExportColumn<SchedulerTableReader>> = emptyList(),
     ) : this(
         hostExportColumns.toSet() + DfltHostExportColumns.BASE_EXPORT_COLUMNS,
         taskExportColumns.toSet() + DfltTaskExportColumns.BASE_EXPORT_COLUMNS,
         powerSourceExportColumns.toSet() + DfltPowerSourceExportColumns.BASE_EXPORT_COLUMNS,
         batteryExportColumns.toSet() + DfltBatteryExportColumns.BASE_EXPORT_COLUMNS,
         serviceExportColumns.toSet() + DfltServiceExportColumns.BASE_EXPORT_COLUMNS,
+        schedulerExportColumns.toSet() + DfltSchedulerExportColumns.BASE_EXPORT_COLUMNS,
     )
 
     /**
@@ -102,6 +106,7 @@ public data class ComputeExportConfig(
             DfltPowerSourceExportColumns
             DfltBatteryExportColumns
             DfltServiceExportColumns
+            DfltSchedulerExportColumns
         }
 
         /**
@@ -117,6 +122,7 @@ public data class ComputeExportConfig(
                 powerSourceExportColumns = ExportColumn.getAllLoadedColumns(),
                 batteryExportColumns = ExportColumn.getAllLoadedColumns(),
                 serviceExportColumns = ExportColumn.getAllLoadedColumns(),
+                schedulerExportColumns = ExportColumn.getAllLoadedColumns(),
             )
         }
 

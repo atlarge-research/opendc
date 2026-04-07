@@ -265,7 +265,7 @@ public class OpenDCRunner(
                     PowerSourceSpec(
                         totalPower = Long.MAX_VALUE,
                     )
-                val topology = listOf(ClusterSpec("cluster", topologyHosts, powerSourceSpec))
+                val topology = listOf(ClusterSpec("cluster", "", topologyHosts, powerSourceSpec))
 
                 Provisioner(dispatcher, seed).use { provisioner ->
                     // Create a trace-specific workload loader
@@ -362,6 +362,7 @@ public class OpenDCRunner(
                     "node-$clusterId-$position",
                     "node-$clusterId",
                     clusterId,
+                    "",
                     MachineModel(processors, memoryUnits[0]),
                     cpuPowerModel,
                     null,
