@@ -29,7 +29,6 @@ import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
 import org.opendc.compute.simulator.scheduler.filters.VGpuFilter
 import org.opendc.compute.simulator.scheduler.portfolio.OperationalRiskUtility
-import org.opendc.compute.simulator.scheduler.portfolio.DisasterRecoveryRiskUtility
 import org.opendc.compute.simulator.scheduler.portfolio.PortfolioScheduler
 import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
 import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
