@@ -117,8 +117,8 @@ WHERE p.id = 1;
 --  Job
 -- --------------------------------------------------------------------------------
 
-INSERT INTO job (scenario_id, created_by, created_at, repeats, updated_at, state, runtime, results, id)
-VALUES (1, 'test_user_1', '2024-03-01T15:31:41.579969Z', 1, '2024-03-01T15:31:41.579969Z', 'PENDING', 1, '{}' FORMAT JSON, 1);
+INSERT INTO job (scenario_id, created_by, created_at, repeats, updated_at, state, runtime, results, report, started_at, id)
+VALUES (1, 'test_user_1', '2024-03-01T15:31:41.579969Z', 1, '2024-03-01T15:31:41.579969Z', 'PENDING', 1, '{}' FORMAT JSON, NULL, NULL, 1);
 
-INSERT INTO job (scenario_id, created_by, created_at, repeats, updated_at, state, runtime, results, id)
-VALUES (1, 'test_user_1', '2024-03-01T15:31:41.579969Z', 1, '2024-03-01T15:31:41.579969Z', 'PENDING', 1, '{}' FORMAT JSON, 2);
+INSERT INTO job (scenario_id, created_by, created_at, repeats, updated_at, state, runtime, results, report, started_at, id)
+VALUES (1, 'test_user_1', '2024-03-01T15:31:41.579969Z', 1, '2024-03-01T15:31:41.579969Z', 'PENDING', 1, '{}' FORMAT JSON, NULL, NULL, 2);

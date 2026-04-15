@@ -164,3 +164,20 @@ export function useNewScenario() {
 export function useDeleteScenario() {
     return useMutation('deleteScenario')
 }
+
+/**
+ * Return the job report for the specified job.
+ */
+export function useJobReport(jobId, options = {}) {
+    return useQuery(
+        ['job-report', jobId],
+        async () => {
+            const response = await fetch(`/api/jobs/${jobId}/report`)
+            if (!response.ok) {
+                throw new Error('Failed to fetch job report')
+            }
+            return response.json()
+        },
+        { enabled: !!jobId, ...options }
+    )
+}

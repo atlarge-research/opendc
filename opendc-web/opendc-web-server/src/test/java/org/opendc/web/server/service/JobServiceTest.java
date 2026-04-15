@@ -61,7 +61,7 @@ public class JobServiceTest {
         Job job = new Job(null, "test", Instant.now(), 1);
         job.state = JobState.RUNNING;
 
-        assertThrows(IllegalArgumentException.class, () -> service.updateJob(job, JobState.CLAIMED, 0, null));
+        assertThrows(IllegalArgumentException.class, () -> service.updateJob(job, JobState.CLAIMED, 0, null, null));
 
         Mockito.verifyNoInteractions(mockAccountingService);
     }
@@ -73,11 +73,11 @@ public class JobServiceTest {
 
         Mockito.when(mockAccountingService.consumeSimulationBudget(any(), anyInt()))
                 .thenReturn(true);
-        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), anyInt(), any());
+        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), any(), anyInt(), any(), any());
 
-        service.updateJob(job, JobState.RUNNING, 0, null);
+        service.updateJob(job, JobState.RUNNING, 0, null, null);
 
-        Mockito.verify(job).updateAtomically(eq(JobState.FAILED), any(), anyInt(), any());
+        Mockito.verify(job).updateAtomically(eq(JobState.FAILED), any(), any(), anyInt(), any(), any());
     }
 
     @Test
@@ -87,11 +87,11 @@ public class JobServiceTest {
 
         Mockito.when(mockAccountingService.consumeSimulationBudget(any(), anyInt()))
                 .thenReturn(true);
-        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), anyInt(), any());
+        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), any(), anyInt(), any(), any());
 
-        service.updateJob(job, JobState.FINISHED, 0, null);
+        service.updateJob(job, JobState.FINISHED, 0, null, null);
 
-        Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), anyInt(), any());
+        Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), any(), anyInt(), any(), any());
     }
 
     @Test
@@ -101,11 +101,11 @@ public class JobServiceTest {
 
         Mockito.when(mockAccountingService.consumeSimulationBudget(any(), anyInt()))
                 .thenReturn(false);
-        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), anyInt(), any());
+        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), any(), anyInt(), any(), any());
 
-        service.updateJob(job, JobState.FINISHED, 0, null);
+        service.updateJob(job, JobState.FINISHED, 0, null, null);
 
-        Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), anyInt(), any());
+        Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), any(), anyInt(), any(), any());
     }
 
     @Test
@@ -115,10 +115,43 @@ public class JobServiceTest {
 
         Mockito.when(mockAccountingService.consumeSimulationBudget(any(), anyInt()))
                 .thenReturn(false);
-        Mockito.doReturn(false).when(job).updateAtomically(any(), any(), anyInt(), any());
+        Mockito.doReturn(false).when(job).updateAtomically(any(), any(), any(), anyInt(), any(), any());
 
-        assertThrows(IllegalStateException.class, () -> service.updateJob(job, JobState.FINISHED, 0, null));
+        assertThrows(IllegalStateException.class, () -> service.updateJob(job, JobState.FINISHED, 0, null, null));
 
-        Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), anyInt(), any());
+        Mockito.verify(job).updateAtomically(eq(JobState.FINISHED), any(), any(), anyInt(), any(), any());
+    }
+
+    @Test
+    public void testStartedAtSetOnFirstTransitionToRunning() {
+        Job job = Mockito.spy(new Job(null, "test", Instant.now(), 1));
+        job.state = JobState.CLAIMED;
+
+        Mockito.when(mockAccountingService.consumeSimulationBudget(any(), anyInt()))
+                .thenReturn(false);
+        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), any(), anyInt(), any(), any());
+
+        service.updateJob(job, JobState.RUNNING, 0, null, null);
+
+        // startedAt should be set (non-null) when transitioning to RUNNING for the first time
+        Mockito.verify(job).updateAtomically(eq(JobState.RUNNING), any(), Mockito.notNull(), anyInt(), any(), any());
+    }
+
+    @Test
+    public void testStartedAtNotOverriddenWhenAlreadyRunning() {
+        Job job = Mockito.spy(new Job(null, "test", Instant.now(), 1));
+        job.state = JobState.RUNNING;
+        Instant originalStartedAt = Instant.now().minusSeconds(60);
+        job.startedAt = originalStartedAt;
+
+        Mockito.when(mockAccountingService.consumeSimulationBudget(any(), anyInt()))
+                .thenReturn(false);
+        Mockito.doReturn(true).when(job).updateAtomically(any(), any(), any(), anyInt(), any(), any());
+
+        service.updateJob(job, JobState.RUNNING, 30, null, null);
+
+        // startedAt should remain the original value (not reset)
+        Mockito.verify(job)
+                .updateAtomically(eq(JobState.RUNNING), any(), eq(originalStartedAt), anyInt(), any(), any());
     }
 }

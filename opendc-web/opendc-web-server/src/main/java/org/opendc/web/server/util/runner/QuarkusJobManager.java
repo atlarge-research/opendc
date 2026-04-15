@@ -22,12 +22,14 @@
 
 package org.opendc.web.server.util.runner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.opendc.web.proto.JobState;
+import org.opendc.web.proto.runner.Report;
 import org.opendc.web.runner.JobManager;
 import org.opendc.web.server.model.Job;
 import org.opendc.web.server.rest.runner.RunnerProtocol;
@@ -43,13 +45,17 @@ public class QuarkusJobManager implements JobManager {
      */
     private final JobService jobService;
 
+    private final ObjectMapper objectMapper;
+
     /**
      * Construct a {@link QuarkusJobManager}.
      *
      * @param jobService The {@link JobService} for managing the job's lifecycle.
+     * @param objectMapper The {@link ObjectMapper} for JSON conversions.
      */
-    public QuarkusJobManager(JobService jobService) {
+    public QuarkusJobManager(JobService jobService, ObjectMapper objectMapper) {
         this.jobService = jobService;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -67,25 +73,25 @@ public class QuarkusJobManager implements JobManager {
     @Transactional
     @Override
     public boolean claim(long id) {
-        return updateState(id, JobState.CLAIMED, 0, null);
+        return updateState(id, JobState.CLAIMED, 0, null, null);
     }
 
     @Transactional
     @Override
     public boolean heartbeat(long id, int runtime) {
-        return updateState(id, JobState.RUNNING, runtime, null);
+        return updateState(id, JobState.RUNNING, runtime, null, null);
     }
 
     @Transactional
     @Override
-    public void fail(long id, int runtime) {
-        updateState(id, JobState.FAILED, runtime, null);
+    public void fail(long id, int runtime, @Nullable Report report) {
+        updateState(id, JobState.FAILED, runtime, null, report);
     }
 
     @Transactional
     @Override
-    public void finish(long id, int runtime, @NotNull Map<String, ?> results) {
-        updateState(id, JobState.FINISHED, runtime, results);
+    public void finish(long id, int runtime, @NotNull Map<String, ? extends Object> results, @Nullable Report report) {
+        updateState(id, JobState.FINISHED, runtime, results, report);
     }
 
     /**
@@ -95,9 +101,10 @@ public class QuarkusJobManager implements JobManager {
      * @param newState The new state to transition to.
      * @param runtime The runtime of the job.
      * @param results The results of the job.
+     * @param report The report containing warnings and errors.
      * @return <code>true</code> if the operation succeeded, <code>false</code> otherwise.
      */
-    private boolean updateState(long id, JobState newState, int runtime, Map<String, ?> results) {
+    private boolean updateState(long id, JobState newState, int runtime, Map<String, ?> results, Report report) {
         Job job = Job.findById(id);
 
         if (job == null) {
@@ -105,7 +112,9 @@ public class QuarkusJobManager implements JobManager {
         }
 
         try {
-            jobService.updateJob(job, newState, runtime, results);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> reportMap = report != null ? objectMapper.convertValue(report, Map.class) : null;
+            jobService.updateJob(job, newState, runtime, results, reportMap);
             return true;
         } catch (IllegalArgumentException | IllegalStateException e) {
             return false;

@@ -55,10 +55,11 @@ public final class JobService {
      * @param newState The new state to transition the job to.
      * @param runtime The runtime (in seconds) consumed by the simulation jbo so far.
      * @param results The results to attach to the job.
+     * @param report The report containing warnings and errors.
      * @throws IllegalArgumentException if the state transition is invalid.
      * @throws IllegalStateException if someone tries to update the job concurrently.
      */
-    public void updateJob(Job job, JobState newState, int runtime, Map<String, ?> results) {
+    public void updateJob(Job job, JobState newState, int runtime, Map<String, ?> results, Map<String, Object> report) {
         JobState state = job.state;
 
         if (!job.canTransitionTo(newState)) {
@@ -69,12 +70,18 @@ public final class JobService {
         JobState nextState = newState;
         int consumedBudget = Math.min(1, runtime - job.runtime);
 
+        // Set startedAt when transitioning to RUNNING for the first time
+        Instant startedAt = job.startedAt;
+        if (newState == JobState.RUNNING && job.state != JobState.RUNNING && startedAt == null) {
+            startedAt = now;
+        }
+
         // Check whether the user still has any simulation budget left
         if (accountingService.consumeSimulationBudget(job.createdBy, consumedBudget) && nextState == JobState.RUNNING) {
             nextState = JobState.FAILED; // User has consumed all their budget; cancel the job
         }
 
-        if (!job.updateAtomically(nextState, now, runtime, results)) {
+        if (!job.updateAtomically(nextState, now, startedAt, runtime, results, report)) {
             throw new IllegalStateException("Conflicting update");
         }
     }

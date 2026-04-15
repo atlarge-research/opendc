@@ -98,7 +98,7 @@ public final class JobResourceTest {
             user = "test_user_1",
             roles = {"runner"})
     public void testUpdateNonExistent() {
-        given().body(new org.opendc.web.proto.runner.Job.Update(JobState.PENDING, 0, null))
+        given().body(new org.opendc.web.proto.runner.Job.Update(JobState.PENDING, 0, null, null))
                 .contentType(ContentType.JSON)
                 .when()
                 .post("/0")
@@ -115,7 +115,7 @@ public final class JobResourceTest {
             user = "test_user_1",
             roles = {"runner"})
     public void testUpdateState() {
-        given().body(new org.opendc.web.proto.runner.Job.Update(JobState.CLAIMED, 0, null))
+        given().body(new org.opendc.web.proto.runner.Job.Update(JobState.CLAIMED, 0, null, null))
                 .contentType(ContentType.JSON)
                 .when()
                 .post("/2")
@@ -140,5 +140,27 @@ public final class JobResourceTest {
                 .then()
                 .statusCode(400)
                 .contentType(ContentType.JSON);
+    }
+
+    /**
+     * Test that tries to get the report for a non-existent job.
+     */
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"runner"})
+    public void testGetReportNonExistent() {
+        given().get("/0/report").then().statusCode(404);
+    }
+
+    /**
+     * Test that tries to get the report for a job with no report (returns empty map).
+     */
+    @Test
+    @TestSecurity(
+            user = "test_user_1",
+            roles = {"runner"})
+    public void testGetReportEmpty() {
+        given().get("/1/report").then().statusCode(200).contentType(ContentType.JSON);
     }
 }
