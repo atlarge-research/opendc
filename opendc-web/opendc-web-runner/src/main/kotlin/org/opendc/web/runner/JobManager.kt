@@ -24,6 +24,7 @@ package org.opendc.web.runner
 
 import org.opendc.web.client.runner.OpenDCRunnerClient
 import org.opendc.web.proto.runner.Job
+import org.opendc.web.proto.runner.Report
 import org.opendc.web.runner.internal.JobManagerImpl
 
 /**
@@ -58,6 +59,7 @@ public interface JobManager {
     public fun fail(
         id: Long,
         runtime: Int,
+        report: Report? = null,
     )
 
     /**
@@ -67,6 +69,7 @@ public interface JobManager {
         id: Long,
         runtime: Int,
         results: Map<String, Any>,
+        report: Report? = null,
     )
 
     public companion object {

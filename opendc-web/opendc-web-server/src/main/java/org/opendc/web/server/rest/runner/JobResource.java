@@ -22,6 +22,7 @@
 
 package org.opendc.web.server.rest.runner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -33,6 +34,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
 import java.util.List;
+import java.util.Map;
 import org.opendc.web.proto.JobState;
 import org.opendc.web.server.model.Job;
 import org.opendc.web.server.service.JobService;
@@ -49,13 +51,17 @@ public final class JobResource {
      */
     private final JobService jobService;
 
+    private final ObjectMapper objectMapper;
+
     /**
      * Construct a {@link JobResource} instance.
      *
      * @param jobService The {@link JobService} for managing the job lifecycle.
+     * @param objectMapper The {@link ObjectMapper} for JSON conversions.
      */
-    public JobResource(JobService jobService) {
+    public JobResource(JobService jobService, ObjectMapper objectMapper) {
         this.jobService = jobService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -98,7 +104,10 @@ public final class JobResource {
         }
 
         try {
-            jobService.updateJob(job, update.state(), update.runtime(), update.results());
+            @SuppressWarnings("unchecked")
+            Map<String, Object> reportMap =
+                    update.report() != null ? objectMapper.convertValue(update.report(), Map.class) : null;
+            jobService.updateJob(job, update.state(), update.runtime(), update.results(), reportMap);
         } catch (IllegalArgumentException e) {
             throw new WebApplicationException(e, 400);
         } catch (IllegalStateException e) {
@@ -106,5 +115,20 @@ public final class JobResource {
         }
 
         return RunnerProtocol.toDto(job);
+    }
+
+    /**
+     * Get the report for a job.
+     */
+    @GET
+    @Path("{job}/report")
+    public Map<String, Object> getReport(@PathParam("job") long id) {
+        Job job = Job.findById(id);
+
+        if (job == null) {
+            throw new WebApplicationException("Job not found", 404);
+        }
+
+        return job.report != null ? job.report : Map.of();
     }
 }

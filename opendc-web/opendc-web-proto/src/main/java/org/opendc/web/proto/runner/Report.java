@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,32 +22,30 @@
 
 package org.opendc.web.proto.runner;
 
-import java.time.Instant;
-import java.util.Map;
+import java.util.List;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.opendc.web.proto.JobState;
 
 /**
- * A simulation job to be simulated by a runner.
+ * A report containing metadata, logs, and summary information about a simulation job.
  */
-@Schema(name = "Runner.Job")
-public record Job(
-        long id,
-        Scenario scenario,
-        JobState state,
-        Instant createdAt,
-        Instant startedAt,
-        Instant updatedAt,
-        int runtime,
-        Map<String, ?> results) {
+@Schema(name = "Runner.Report")
+public record Report(String createdAt, String startedAt, List<LogEntry> logs, Summary summary, ErrorInfo error) {
+
     /**
-     * A request to update the state of a job.
-     *
-     * @param state The next state of the job.
-     * @param runtime The runtime of the job (in seconds).
-     * @param results The results of the job.
-     * @param report The report containing warnings and errors.
+     * A single log entry captured during simulation execution.
      */
-    @Schema(name = "Runner.Job.Update")
-    public record Update(JobState state, int runtime, Map<String, ?> results, Report report) {}
+    @Schema(name = "Runner.Report.LogEntry")
+    public record LogEntry(String timestamp, String level, String logger, String message) {}
+
+    /**
+     * Aggregate summary of the simulation job.
+     */
+    @Schema(name = "Runner.Report.Summary")
+    public record Summary(int totalWarnings, int totalErrors, Integer runtimeSeconds, Integer waitTimeSeconds) {}
+
+    /**
+     * Error information when a simulation job fails.
+     */
+    @Schema(name = "Runner.Report.ErrorInfo")
+    public record ErrorInfo(String message, String type, String stackTrace) {}
 }

@@ -42,8 +42,10 @@ import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.PowerModels
 import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.web.proto.runner.Job
+import org.opendc.web.proto.runner.Report
 import org.opendc.web.proto.runner.Scenario
 import org.opendc.web.proto.runner.Topology
+import org.opendc.web.runner.internal.ReportCollector
 import org.opendc.web.runner.internal.WebComputeMonitor
 import java.io.File
 import java.time.Duration
@@ -159,6 +161,9 @@ public class OpenDCRunner(
                     TimeUnit.MILLISECONDS,
                 )
 
+            val reportCollector = ReportCollector()
+            reportCollector.attach()
+
             try {
                 val topology = convertTopology(scenario.topology)
                 val jobs =
@@ -175,6 +180,16 @@ public class OpenDCRunner(
 
                 val duration = startTime.secondsSince()
                 logger.info { "Finished simulation for job $id (in $duration seconds)" }
+
+                reportCollector.detach()
+
+                // Calculate wait time if startedAt is available
+                val waitTime =
+                    job.startedAt?.let { started ->
+                        ChronoUnit.SECONDS.between(job.createdAt, started).toInt()
+                    }
+
+                val report = reportCollector.collect(duration, waitTime, job.createdAt, job.startedAt)
 
                 manager.finish(
                     id,
@@ -196,18 +211,33 @@ public class OpenDCRunner(
                         "total_vms_finished" to results.map { it.totalVmsFinished },
                         "total_vms_failed" to results.map { it.totalVmsFailed },
                     ),
+                    report,
                 )
             } catch (e: Exception) {
-                // Check whether the job failed due to exceeding its time budget
-                if (Thread.interrupted()) {
-                    logger.info { "Simulation job $id exceeded time limit (${startTime.secondsSince()} seconds)" }
-                } else {
-                    logger.info(e) { "Simulation job $id failed" }
-                }
+                reportCollector.detach()
+
+                val duration = startTime.secondsSince()
+
+                // Calculate wait time if startedAt is available
+                val waitTime =
+                    job.startedAt?.let { started ->
+                        ChronoUnit.SECONDS.between(job.createdAt, started).toInt()
+                    }
+
+                val errorInfo =
+                    if (Thread.interrupted()) {
+                        logger.info { "Simulation job $id exceeded time limit ($duration seconds)" }
+                        Report.ErrorInfo("Simulation exceeded time limit", "TIMEOUT", null)
+                    } else {
+                        logger.info(e) { "Simulation job $id failed" }
+                        Report.ErrorInfo(e.message ?: "Unknown error", e.javaClass.simpleName, e.stackTraceToString())
+                    }
+
+                val report = reportCollector.collect(duration, waitTime, job.createdAt, job.startedAt, errorInfo)
 
                 try {
                     heartbeat.cancel(true)
-                    manager.fail(id, startTime.secondsSince())
+                    manager.fail(id, duration, report)
                 } catch (e: Throwable) {
                     logger.error(e) { "Failed to update job" }
                 }

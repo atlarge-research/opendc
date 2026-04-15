@@ -25,6 +25,7 @@ description = "Experiment runner for OpenDC"
 // Build configuration
 plugins {
     `kotlin-conventions`
+    `testing-conventions`
     distribution
 }
 
@@ -64,6 +65,8 @@ dependencies {
     cliRuntimeOnly(libs.log4j.core)
     cliRuntimeOnly(libs.log4j.slf4j)
     cliRuntimeOnly(libs.sentry.log4j2)
+
+    testImplementation(libs.log4j.core)
 }
 
 val createCli by tasks.creating(CreateStartScripts::class) {
