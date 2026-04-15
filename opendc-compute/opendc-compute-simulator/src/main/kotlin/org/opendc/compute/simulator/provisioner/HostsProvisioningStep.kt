@@ -48,6 +48,7 @@ import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFac
 public class HostsProvisioningStep internal constructor(
     private val serviceDomain: String,
     private val clusterSpecs: List<ClusterSpec>,
+    private val cpuAllocationRatio: Double = 1.0,
     private val startTime: Long = 0L,
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
@@ -147,6 +148,7 @@ public class HostsProvisioningStep internal constructor(
                         hostSpec.embodiedCarbon,
                         hostSpec.expectedLifetime,
                         powerDistributor,
+                        cpuAllocationRatio,
                     )
 
                 require(simHosts.add(simHost)) { "Host with name ${hostSpec.name} already exists" }

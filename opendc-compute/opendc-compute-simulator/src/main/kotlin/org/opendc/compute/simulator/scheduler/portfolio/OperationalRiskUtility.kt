@@ -23,51 +23,83 @@
 package org.opendc.compute.simulator.scheduler.portfolio
 
 import org.opendc.compute.simulator.service.HostView
+import org.opendc.simulator.compute.workload.trace.TraceWorkload
 
 /**
  * Operational Risk (OR) utility function.
  *
- * Computes the risk that VMs will not receive the requested amount of CPU resources.
- * Based on Equation 1 from "Portfolio Scheduling for Managing Operational and
- * Disaster-Recovery Risks" (van Beek et al., ISPDC 2019).
+ * Discretizes the forward-look window into 5-minute intervals. For each host and interval,
+ * computes CPU utilization (demand / capacity) and multiplies by the CPU overcommit ratio
+ * (total vCPUs / physical cores) to get a contention score. The per-host risk is the MAX
+ * contention score across all intervals. The final score is the mean across all hosts.
  *
- * OR = (1/N) * Σ((demand - usage) / demand) for all hosts where demand > 0
- *
- * When a [SimulatedPlacement] is provided, the task's CPU capacity is added to the
- * target host's demand, simulating what would happen if the task were placed there.
- *
- * @return A score in [0, 1], where 0 means no contention and 1 means full contention.
+ * @param forwardLookMs How far ahead to look in milliseconds (default 1 hour).
  */
-public class OperationalRiskUtility : UtilityFunction {
+public class OperationalRiskUtility(
+    private val forwardLookMs: Long = 3600000L,
+) : UtilityFunction {
     override fun evaluate(
         hosts: Collection<HostView>,
         simulatedPlacement: SimulatedPlacement?,
     ): Double {
+        val intervalMs = 300_000L // 5 minutes
+        val numIntervals = ((forwardLookMs + intervalMs - 1) / intervalMs).toInt()
+        if (numIntervals <= 0) return 0.0
+
         var totalRisk = 0.0
-        var hostsWithDemand = 0
+        var hostCount = 0
 
         for (host in hosts) {
-            val cpuStats = host.host.getCpuStats()
-            var demand = cpuStats.demand()
-            var usage = cpuStats.usage()
-            val capacity = cpuStats.capacity()
+            val capacity = host.host.getCpuStats().capacity()
+            val physicalCores = host.host.getModel().coreCount()
+            val guests = host.host.getGuests()
 
-            // If this host is the target of a simulated placement,
-            // add the task's CPU demand and estimate new usage
+            val allTasks =
+                guests.map { it.task }.toMutableList()
             if (simulatedPlacement != null && host === simulatedPlacement.host) {
-                demand += simulatedPlacement.task.cpuCapacity
-                // Usage can't exceed capacity
-                usage = demand.coerceAtMost(capacity)
+                allTasks.add(simulatedPlacement.task)
             }
 
-            if (demand <= 0.0) continue
+            val totalVCpus = allTasks.sumOf { it.cpuCoreCount }
+            val overcommitRatio = if (physicalCores > 0) totalVCpus.toDouble() / physicalCores else 0.0
 
-            val contention = (demand - usage).coerceAtLeast(0.0) / demand
-            totalRisk += contention
-            hostsWithDemand++
+            val intervalDemand = DoubleArray(numIntervals)
+
+            for (task in allTasks) {
+                val fragments = (task.workload as? TraceWorkload)?.fragments ?: continue
+                var elapsed = 0L
+                for (fragment in fragments) {
+                    if (elapsed >= forwardLookMs) break
+                    val fragStart = elapsed
+                    val fragEnd = minOf(elapsed + fragment.duration(), forwardLookMs)
+                    val startInterval = (fragStart / intervalMs).toInt()
+                    val endInterval = minOf(((fragEnd - 1) / intervalMs).toInt(), numIntervals - 1)
+
+                    for (i in startInterval..endInterval) {
+                        val iStart = i.toLong() * intervalMs
+                        val iEnd = (i + 1).toLong() * intervalMs
+                        val overlapStart = maxOf(fragStart, iStart)
+                        val overlapEnd = minOf(fragEnd, iEnd)
+                        val overlap = overlapEnd - overlapStart
+                        if (overlap > 0) {
+                            intervalDemand[i] += fragment.cpuUsage() * overlap / intervalMs
+                        }
+                    }
+                    elapsed += fragment.duration()
+                }
+            }
+
+            var maxContention = 0.0
+            for (i in 0 until numIntervals) {
+                val utilization = if (capacity > 0) intervalDemand[i] / capacity else 0.0
+                val contention = utilization * overcommitRatio
+                if (contention > maxContention) maxContention = contention
+            }
+
+            totalRisk += maxContention
+            hostCount++
         }
 
-        if (hostsWithDemand == 0) return 0.0
-        return totalRisk / hostsWithDemand
+        return if (hostCount > 0) totalRisk / hostCount else 0.0
     }
 }

@@ -29,21 +29,42 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.compute.simulator.host.HostModel
+import org.opendc.compute.simulator.internal.Guest
 import org.opendc.compute.simulator.service.HostView
+import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.HostCpuStats
+import org.opendc.simulator.compute.workload.trace.TraceFragment
+import org.opendc.simulator.compute.workload.trace.TraceWorkload
+import java.util.ArrayList
 
 internal class UtilityFunctionTest {
+    private fun createGuest(
+        fragments: List<TraceFragment>,
+        cpuCoreCount: Int = 1,
+    ): Guest {
+        val guest = mockk<Guest>()
+        val task = mockk<ServiceTask>(relaxed = true)
+        val workload = mockk<TraceWorkload>()
+        every { workload.fragments } returns ArrayList(fragments)
+        every { task.getWorkload() } returns workload
+        every { task.getCpuCoreCount() } returns cpuCoreCount
+        every { guest.task } returns task
+        return guest
+    }
+
     private fun createHostView(
-        demand: Double,
-        usage: Double,
-        memoryCapacity: Long,
-        availableMemory: Long,
+        capacity: Double = 1000.0,
+        coreCount: Int = 4,
+        memoryCapacity: Long = 8192,
+        availableMemory: Long = 4096,
         datacenterName: String = "",
+        guests: List<Guest> = emptyList(),
     ): HostView {
         val hv = mockk<HostView>()
-        val cpuStats = HostCpuStats(0, 0, 0, 0, 0.0, demand, usage, 0.0)
+        val cpuStats = HostCpuStats(0, 0, 0, 0, capacity, 0.0, 0.0, 0.0)
         every { hv.host.getCpuStats() } returns cpuStats
-        every { hv.host.getModel() } returns HostModel(0.0, 0, memoryCapacity)
+        every { hv.host.getModel() } returns HostModel(capacity, coreCount, memoryCapacity)
+        every { hv.host.getGuests() } returns guests
         every { hv.availableMemory } returns availableMemory
         every { hv.datacenterName } returns datacenterName
         return hv
@@ -58,51 +79,65 @@ internal class UtilityFunctionTest {
     }
 
     @Test
-    fun testORNoContention() {
+    fun testORNoGuests() {
         val or = OperationalRiskUtility()
-        val hosts =
-            listOf(
-                createHostView(demand = 1000.0, usage = 1000.0, memoryCapacity = 8192, availableMemory = 4096),
-                createHostView(demand = 500.0, usage = 500.0, memoryCapacity = 8192, availableMemory = 4096),
-            )
+        val hosts = listOf(createHostView(capacity = 1000.0, coreCount = 4, guests = emptyList()))
         assertEquals(0.0, or.evaluate(hosts), 0.001)
     }
 
     @Test
-    fun testORFullContention() {
+    fun testORSingleGuestNoOvercommit() {
         val or = OperationalRiskUtility()
-        val hosts =
-            listOf(
-                createHostView(demand = 1000.0, usage = 0.0, memoryCapacity = 8192, availableMemory = 4096),
-            )
+        // 1 guest with 4 vCPUs on 4 physical cores → overcommit = 1.0
+        // Guest uses 1000 MHz on 1000 MHz host → utilization = 1.0
+        // Contention = 1.0 × 1.0 = 1.0
+        val guest = createGuest(listOf(TraceFragment(300_000L, 1000.0)), cpuCoreCount = 4)
+        val hosts = listOf(createHostView(capacity = 1000.0, coreCount = 4, guests = listOf(guest)))
         assertEquals(1.0, or.evaluate(hosts), 0.001)
     }
 
     @Test
-    fun testORPartialContention() {
+    fun testOROvercommit() {
         val or = OperationalRiskUtility()
-        // Host 1: 50% contention (demand=1000, usage=500)
-        // Host 2: 0% contention (demand=1000, usage=1000)
-        // Average: 25%
+        // 2 guests with 4 vCPUs each on 4 physical cores → overcommit = 2.0
+        // Each uses 250 MHz on 1000 MHz → total demand = 500 MHz → utilization = 0.5
+        // Contention = 0.5 × 2.0 = 1.0
+        val guest1 = createGuest(listOf(TraceFragment(300_000L, 250.0)), cpuCoreCount = 4)
+        val guest2 = createGuest(listOf(TraceFragment(300_000L, 250.0)), cpuCoreCount = 4)
+        val hosts = listOf(createHostView(capacity = 1000.0, coreCount = 4, guests = listOf(guest1, guest2)))
+        assertEquals(1.0, or.evaluate(hosts), 0.001)
+    }
+
+    @Test
+    fun testORMeanAcrossHosts() {
+        val or = OperationalRiskUtility()
+        // Host 1: 1 guest, 4 vCPUs / 4 cores = 1.0 overcommit, 500/1000 = 0.5 util → contention 0.5
+        // Host 2: no guests → contention 0
+        // Mean = 0.25
+        val guest = createGuest(listOf(TraceFragment(300_000L, 500.0)), cpuCoreCount = 4)
         val hosts =
             listOf(
-                createHostView(demand = 1000.0, usage = 500.0, memoryCapacity = 8192, availableMemory = 4096),
-                createHostView(demand = 1000.0, usage = 1000.0, memoryCapacity = 8192, availableMemory = 4096),
+                createHostView(capacity = 1000.0, coreCount = 4, guests = listOf(guest)),
+                createHostView(capacity = 1000.0, coreCount = 4, guests = emptyList()),
             )
         assertEquals(0.25, or.evaluate(hosts), 0.001)
     }
 
     @Test
-    fun testORIgnoresIdleHosts() {
-        val or = OperationalRiskUtility()
-        // Idle host (demand=0) should be ignored
-        val hosts =
-            listOf(
-                createHostView(demand = 0.0, usage = 0.0, memoryCapacity = 8192, availableMemory = 8192),
-                createHostView(demand = 1000.0, usage = 500.0, memoryCapacity = 8192, availableMemory = 4096),
+    fun testORMaxAcrossIntervals() {
+        val or = OperationalRiskUtility(forwardLookMs = 600_000L)
+        // Two 5-min intervals: first at 1000 MHz, second at 200 MHz
+        // overcommit = 4/4 = 1.0
+        // interval 0: util = 1000/1000 = 1.0, contention = 1.0
+        // interval 1: util = 200/1000 = 0.2, contention = 0.2
+        // MAX = 1.0
+        val guest =
+            createGuest(
+                listOf(TraceFragment(300_000L, 1000.0), TraceFragment(300_000L, 200.0)),
+                cpuCoreCount = 4,
             )
-        // Only 1 host with demand, 50% contention
-        assertEquals(0.5, or.evaluate(hosts), 0.001)
+        val hosts = listOf(createHostView(capacity = 1000.0, coreCount = 4, guests = listOf(guest)))
+        assertEquals(1.0, or.evaluate(hosts), 0.001)
     }
 
     // ========== Disaster Recovery Risk Tests ==========
@@ -118,7 +153,7 @@ internal class UtilityFunctionTest {
         val drr = DisasterRecoveryRiskUtility()
         val hosts =
             listOf(
-                createHostView(demand = 0.0, usage = 0.0, memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC1"),
+                createHostView(memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC1"),
             )
         // Single datacenter: DRR is 0 (not meaningful)
         assertEquals(0.0, drr.evaluate(hosts))
@@ -134,8 +169,8 @@ internal class UtilityFunctionTest {
         // product = 0.5 * 0.5 = 0.25, geometric mean = 0.25^(1/2) = 0.5
         val hosts =
             listOf(
-                createHostView(demand = 0.0, usage = 0.0, memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC1"),
-                createHostView(demand = 0.0, usage = 0.0, memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC2"),
+                createHostView(memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC1"),
+                createHostView(memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC2"),
             )
         assertEquals(0.5, drr.evaluate(hosts), 0.001)
     }
@@ -152,8 +187,8 @@ internal class UtilityFunctionTest {
         // geometric mean = 0.5
         val hosts =
             listOf(
-                createHostView(demand = 0.0, usage = 0.0, memoryCapacity = 8192, availableMemory = 1024, datacenterName = "DC1"),
-                createHostView(demand = 0.0, usage = 0.0, memoryCapacity = 8192, availableMemory = 7168, datacenterName = "DC2"),
+                createHostView(memoryCapacity = 8192, availableMemory = 1024, datacenterName = "DC1"),
+                createHostView(memoryCapacity = 8192, availableMemory = 7168, datacenterName = "DC2"),
             )
         assertEquals(0.5, drr.evaluate(hosts), 0.001)
     }
@@ -170,8 +205,8 @@ internal class UtilityFunctionTest {
         // geometric mean = 0.929
         val hosts =
             listOf(
-                createHostView(demand = 0.0, usage = 0.0, memoryCapacity = 8192, availableMemory = 1024, datacenterName = "DC1"),
-                createHostView(demand = 0.0, usage = 0.0, memoryCapacity = 8192, availableMemory = 1024, datacenterName = "DC2"),
+                createHostView(memoryCapacity = 8192, availableMemory = 1024, datacenterName = "DC1"),
+                createHostView(memoryCapacity = 8192, availableMemory = 1024, datacenterName = "DC2"),
             )
         val score = drr.evaluate(hosts)
         assertTrue(score > 0.9, "DRR should be high when both DCs are nearly full, got $score")
@@ -181,15 +216,14 @@ internal class UtilityFunctionTest {
     fun testDRRFullyEmpty() {
         val drr = DisasterRecoveryRiskUtility()
         // Two datacenters, both empty (no workload)
-        // W_i = 0, E_complement_i = 8192
-        // rd_i = (0-8192)/8192 = -1 → normalized = 0
-        // geometric mean = 0
+        // W_i = 0 → skipped in risk computation → product stays 1.0
+        // geometric mean = 1.0^(1/2) = 1.0
         val hosts =
             listOf(
-                createHostView(demand = 0.0, usage = 0.0, memoryCapacity = 8192, availableMemory = 8192, datacenterName = "DC1"),
-                createHostView(demand = 0.0, usage = 0.0, memoryCapacity = 8192, availableMemory = 8192, datacenterName = "DC2"),
+                createHostView(memoryCapacity = 8192, availableMemory = 8192, datacenterName = "DC1"),
+                createHostView(memoryCapacity = 8192, availableMemory = 8192, datacenterName = "DC2"),
             )
-        assertEquals(0.0, drr.evaluate(hosts), 0.001)
+        assertEquals(1.0, drr.evaluate(hosts), 0.001)
     }
 
     // ========== Combined DOR Tests ==========
@@ -203,14 +237,14 @@ internal class UtilityFunctionTest {
     @Test
     fun testDOREqualWeights() {
         val dor = CombinedDORUtility(1.0, 1.0)
-        // Two DCs, no contention, balanced
+        // Two DCs, no guests (OR=0), balanced memory (DRR=0.5)
         val hosts =
             listOf(
-                createHostView(demand = 1000.0, usage = 1000.0, memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC1"),
-                createHostView(demand = 1000.0, usage = 1000.0, memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC2"),
+                createHostView(capacity = 1000.0, memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC1"),
+                createHostView(capacity = 1000.0, memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC2"),
             )
         val score = dor.evaluate(hosts)
-        // OR=0 (no contention), DRR=0.5 (balanced)
+        // OR=0 (no guests), DRR=0.5 (balanced)
         // DOR = (1*0 + 1*0.5) / 2 = 0.25
         assertEquals(0.25, score, 0.001)
     }
@@ -218,13 +252,23 @@ internal class UtilityFunctionTest {
     @Test
     fun testDORWeightedTowardsOR() {
         val dor = CombinedDORUtility(3.0, 1.0)
+        // DC1: 1 guest with 4 vCPUs on 4 cores (overcommit=1.0), 500/1000 util → contention 0.5
+        // DC2: no guests → contention 0. Mean OR = 0.25
+        val guest = createGuest(listOf(TraceFragment(300_000L, 500.0)), cpuCoreCount = 4)
         val hosts =
             listOf(
-                createHostView(demand = 1000.0, usage = 500.0, memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC1"),
-                createHostView(demand = 1000.0, usage = 1000.0, memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC2"),
+                createHostView(
+                    capacity = 1000.0,
+                    coreCount = 4,
+                    memoryCapacity = 8192,
+                    availableMemory = 4096,
+                    datacenterName = "DC1",
+                    guests = listOf(guest),
+                ),
+                createHostView(capacity = 1000.0, coreCount = 4, memoryCapacity = 8192, availableMemory = 4096, datacenterName = "DC2"),
             )
         val score = dor.evaluate(hosts)
-        // OR = 0.25 (avg of 0.5 and 0.0), DRR ≈ 0.5
+        // OR = 0.25, DRR ≈ 0.5
         // DOR = (3*0.25 + 1*0.5) / 4 = 1.25/4 = 0.3125
         assertEquals(0.3125, score, 0.001)
     }

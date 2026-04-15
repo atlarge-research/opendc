@@ -78,4 +78,14 @@ public interface SchedulerTableReader : Exportable {
      * (the winning score).
      */
     public val winningScore: Double
+
+    /**
+     * The Disaster Recovery Risk score for this policy's proposed placement.
+     */
+    public val drrScore: Double
+
+    /**
+     * The Operational Risk score for this policy's proposed placement.
+     */
+    public val orScore: Double
 }

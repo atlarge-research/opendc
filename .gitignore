@@ -125,7 +125,11 @@ AGENTS.md
 target
 .claude
 CLAUDE.md
-opendc-experiments/opendc-experiments-m3sa/src/test/resources/outputs/*
 opendc-experiments/opendc-experiments-m3sa/src/test/resources/outputs
 opendc-experiments/opendc-experiments-m3sa/analysis.txt
 opendc-experiments/opendc-experiments-m3sa/src/test/resources/outputs/analysis.txt
+output
+output_analysis
+experiments
+experiment_portfolio.json
+

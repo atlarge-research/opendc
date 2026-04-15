@@ -314,7 +314,7 @@ public class OpenDCRunner(
                             { createPrefabComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong()), timeSource) },
                         ),
                         registerComputeMonitor(serviceDomain, monitor),
-                        setupHosts(serviceDomain, topology, startTime),
+                        setupHosts(serviceDomain, topology, startTime = startTime),
                     )
 
                     val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!

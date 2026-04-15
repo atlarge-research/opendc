@@ -25,7 +25,7 @@ package org.opendc.compute.simulator.telemetry.parquet
 import org.apache.parquet.io.api.Binary
 import org.apache.parquet.schema.LogicalTypeAnnotation
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
-import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.DOUBLE
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
@@ -106,22 +106,22 @@ public object DfltHostExportColumns {
 
     public val CPU_CAPACITY: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("cpu_capacity"),
+            field = Types.required(DOUBLE).named("cpu_capacity"),
         ) { it.cpuCapacity }
 
     public val CPU_USAGE: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("cpu_usage"),
+            field = Types.required(DOUBLE).named("cpu_usage"),
         ) { it.cpuUsage }
 
     public val CPU_DEMAND: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("cpu_demand"),
+            field = Types.required(DOUBLE).named("cpu_demand"),
         ) { it.cpuDemand }
 
     public val CPU_UTILIZATION: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("cpu_utilization"),
+            field = Types.required(DOUBLE).named("cpu_utilization"),
         ) { it.cpuUtilization }
 
     public val CPU_TIME_ACTIVE: ExportColumn<HostTableReader> =
@@ -146,17 +146,17 @@ public object DfltHostExportColumns {
 
     public val POWER_DRAW: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("power_draw"),
+            field = Types.required(DOUBLE).named("power_draw"),
         ) { it.powerDraw }
 
     public val ENERGY_USAGE: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("energy_usage"),
+            field = Types.required(DOUBLE).named("energy_usage"),
         ) { it.energyUsage }
 
     public val EMBODIED_CARBON: ExportColumn<HostTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("embodied_carbon"),
+            field = Types.required(DOUBLE).named("embodied_carbon"),
         ) { it.embodiedCarbon }
 
     public val UP_TIME: ExportColumn<HostTableReader> =
@@ -181,16 +181,16 @@ public object DfltHostExportColumns {
         (0 until count).flatMap { i ->
             listOf<ExportColumn<HostTableReader>>(
                 ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_capacity_$i"),
+                    field = Types.optional(DOUBLE).named("gpu_capacity_$i"),
                 ) { it.gpuCapacities.getOrNull(i) },
                 ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_usage_$i"),
+                    field = Types.optional(DOUBLE).named("gpu_usage_$i"),
                 ) { it.gpuUsages.getOrNull(i) },
                 ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_demand_$i"),
+                    field = Types.optional(DOUBLE).named("gpu_demand_$i"),
                 ) { it.gpuDemands.getOrNull(i) },
                 ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_utilization_$i"),
+                    field = Types.optional(DOUBLE).named("gpu_utilization_$i"),
                 ) { it.gpuUtilizations.getOrNull(i) },
                 ExportColumn(
                     field = Types.optional(INT64).named("gpu_time_active_$i"),
@@ -205,7 +205,7 @@ public object DfltHostExportColumns {
                     field = Types.optional(INT64).named("gpu_time_lost_$i"),
                 ) { it.gpuLostTimes.getOrNull(i) },
                 ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_power_draw_$i"),
+                    field = Types.optional(DOUBLE).named("gpu_power_draw_$i"),
                 ) { it.gpuPowerDraws.getOrNull(i) },
             )
         }.toSet()
