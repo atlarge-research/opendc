@@ -25,7 +25,7 @@ package org.opendc.compute.simulator.telemetry.parquet
 import org.apache.parquet.io.api.Binary
 import org.apache.parquet.schema.LogicalTypeAnnotation
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
-import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.DOUBLE
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
@@ -75,22 +75,22 @@ public object DfltPowerSourceExportColumns {
 
     public val POWER_DRAW: ExportColumn<PowerSourceTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("power_draw"),
+            field = Types.required(DOUBLE).named("power_draw"),
         ) { it.powerDraw }
 
     public val ENERGY_USAGE: ExportColumn<PowerSourceTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("energy_usage"),
+            field = Types.required(DOUBLE).named("energy_usage"),
         ) { it.energyUsage }
 
     public val CARBON_INTENSITY: ExportColumn<PowerSourceTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("carbon_intensity"),
+            field = Types.required(DOUBLE).named("carbon_intensity"),
         ) { it.carbonIntensity }
 
     public val CARBON_EMISSION: ExportColumn<PowerSourceTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("carbon_emission"),
+            field = Types.required(DOUBLE).named("carbon_emission"),
         ) { it.carbonEmission }
 
     /**

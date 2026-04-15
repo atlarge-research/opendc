@@ -41,6 +41,8 @@ public class SchedulerTableReaderImpl(
     private var _score: Double = 0.0
     private var _selected: Boolean = false
     private var _winningScore: Double = 0.0
+    private var _drrScore: Double = 0.0
+    private var _orScore: Double = 0.0
 
     override val timestamp: Instant get() = _timestamp
     override val timestampAbsolute: Instant get() = _timestampAbsolute
@@ -51,6 +53,8 @@ public class SchedulerTableReaderImpl(
     override val score: Double get() = _score
     override val selected: Boolean get() = _selected
     override val winningScore: Double get() = _winningScore
+    override val drrScore: Double get() = _drrScore
+    override val orScore: Double get() = _orScore
 
     public fun setFrom(record: SchedulingDecisionRecord) {
         _timestamp = Instant.ofEpochMilli(record.timestampMs)
@@ -62,6 +66,8 @@ public class SchedulerTableReaderImpl(
         _score = record.score
         _selected = record.selected
         _winningScore = record.winningScore
+        _drrScore = record.drrScore
+        _orScore = record.orScore
     }
 
     override fun copy(): SchedulerTableReader {
@@ -75,6 +81,8 @@ public class SchedulerTableReaderImpl(
         copy._score = _score
         copy._selected = _selected
         copy._winningScore = _winningScore
+        copy._drrScore = _drrScore
+        copy._orScore = _orScore
         return copy
     }
 }

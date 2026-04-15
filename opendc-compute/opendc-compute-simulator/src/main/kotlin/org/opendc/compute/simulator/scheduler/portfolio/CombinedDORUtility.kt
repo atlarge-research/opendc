@@ -39,8 +39,9 @@ import org.opendc.compute.simulator.service.HostView
 public class CombinedDORUtility(
     private val operationalWeight: Double = 1.0,
     private val disasterRecoveryWeight: Double = 1.0,
+    forwardLookMs: Long = 3600000L,
 ) : UtilityFunction {
-    private val orUtility = OperationalRiskUtility()
+    private val orUtility = OperationalRiskUtility(forwardLookMs)
     private val drrUtility = DisasterRecoveryRiskUtility()
 
     init {

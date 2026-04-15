@@ -66,6 +66,7 @@ public class SimHost(
     private val embodiedCarbon: Double,
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
+    private val cpuAllocationRatio: Double = 1.0,
 ) : AutoCloseable {
     /**
      * The event listeners registered with this host.
@@ -153,6 +154,7 @@ public class SimHost(
                 this.powerDistributor,
                 this.cpuPowerModel,
                 this.gpuPowerModel,
+                this.cpuAllocationRatio,
             ) { cause ->
                 hostState = if (cause != null) HostState.ERROR else HostState.DOWN
             }

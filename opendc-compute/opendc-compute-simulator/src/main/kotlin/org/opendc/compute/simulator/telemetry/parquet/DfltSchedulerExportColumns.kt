@@ -79,6 +79,16 @@ public object DfltSchedulerExportColumns {
             field = Types.required(DOUBLE).named("winning_score"),
         ) { it.winningScore }
 
+    public val DRR_SCORE: ExportColumn<SchedulerTableReader> =
+        ExportColumn(
+            field = Types.required(DOUBLE).named("drr_score"),
+        ) { it.drrScore }
+
+    public val OR_SCORE: ExportColumn<SchedulerTableReader> =
+        ExportColumn(
+            field = Types.required(DOUBLE).named("or_score"),
+        ) { it.orScore }
+
     internal val BASE_EXPORT_COLUMNS =
         setOf(
             TIMESTAMP,

@@ -119,9 +119,15 @@ gradle-app.setting
 # Demo files
 demo/*
 
+opendc-experiments/opendc-experiments-m3sa/src/test/resources/outputs/*
+
 .ai
 .junie
 AGENTS.md
 target
 .claude
 CLAUDE.md
+output
+output_analysis
+experiments
+experiment_portfolio.json

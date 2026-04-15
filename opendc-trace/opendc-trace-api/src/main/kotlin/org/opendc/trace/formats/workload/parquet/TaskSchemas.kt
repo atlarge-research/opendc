@@ -167,27 +167,27 @@ private val TASK_SCHEMA_V3: MessageType =
     Types.buildMessage()
         .addFields(
             Types
-                .required(PrimitiveType.PrimitiveTypeName.INT32)
+                .optional(PrimitiveType.PrimitiveTypeName.INT32)
                 .named("id"),
             Types
                 .optional(PrimitiveType.PrimitiveTypeName.BINARY)
                 .`as`(LogicalTypeAnnotation.stringType())
                 .named("name"),
             Types
-                .required(PrimitiveType.PrimitiveTypeName.INT64)
+                .optional(PrimitiveType.PrimitiveTypeName.INT64)
                 .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
                 .named("submission_time"),
             Types
-                .required(PrimitiveType.PrimitiveTypeName.INT64)
+                .optional(PrimitiveType.PrimitiveTypeName.INT64)
                 .named("duration"),
             Types
-                .required(PrimitiveType.PrimitiveTypeName.INT32)
+                .optional(PrimitiveType.PrimitiveTypeName.INT32)
                 .named("cpu_count"),
             Types
-                .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                .optional(PrimitiveType.PrimitiveTypeName.DOUBLE)
                 .named("cpu_capacity"),
             Types
-                .required(PrimitiveType.PrimitiveTypeName.INT64)
+                .optional(PrimitiveType.PrimitiveTypeName.INT64)
                 .named("mem_capacity"),
             Types
                 .optional(PrimitiveType.PrimitiveTypeName.INT32)

@@ -82,6 +82,9 @@ public class DisasterRecoveryRiskUtility : UtilityFunction {
         var product = 1.0
         for (dc in dcStats) {
             val wi = dc.workload.toDouble()
+            if (wi == 0.0) {
+                continue
+            }
             val eComplement = (totalAvailable - dc.availableMemory).toDouble()
 
             val rdi: Double =

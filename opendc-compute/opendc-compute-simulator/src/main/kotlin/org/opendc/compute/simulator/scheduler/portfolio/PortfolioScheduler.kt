@@ -50,6 +50,8 @@ public class PortfolioScheduler(
     private val policies: List<ComputeScheduler>,
     private val utilityFunction: UtilityFunction,
     private val clock: InstantSource? = null,
+    private val orUtility: OperationalRiskUtility? = null,
+    private val drrUtility: DisasterRecoveryRiskUtility? = null,
 ) : ComputeScheduler {
     private val hosts = mutableSetOf<HostView>()
     private var lastSelectedPolicyIndex: Int = 0
@@ -121,7 +123,13 @@ public class PortfolioScheduler(
         val decisionId = nextDecisionId++
 
         // Evaluate each policy: which host would it pick?
-        data class PolicyEvaluation(val index: Int, val host: HostView?, val score: Double)
+        data class PolicyEvaluation(
+            val index: Int,
+            val host: HostView?,
+            val score: Double,
+            val drrScore: Double,
+            val orScore: Double,
+        )
 
         val evaluations = mutableListOf<PolicyEvaluation>()
         var bestHost: HostView? = null
@@ -130,13 +138,20 @@ public class PortfolioScheduler(
 
         for ((index, policy) in policies.withIndex()) {
             val candidateHost = policy.evaluatePlacement(task)
-            val score =
-                if (candidateHost != null) {
-                    evaluateWithPlacement(candidateHost, task)
-                } else {
-                    Double.MAX_VALUE
-                }
-            evaluations.add(PolicyEvaluation(index, candidateHost, score))
+            val score: Double
+            val drrScore: Double
+            val orScore: Double
+            if (candidateHost != null) {
+                val placement = SimulatedPlacement(candidateHost, task)
+                score = utilityFunction.evaluate(hosts, placement)
+                drrScore = drrUtility?.evaluate(hosts, placement) ?: 0.0
+                orScore = orUtility?.evaluate(hosts, placement) ?: 0.0
+            } else {
+                score = Double.MAX_VALUE
+                drrScore = Double.MAX_VALUE
+                orScore = Double.MAX_VALUE
+            }
+            evaluations.add(PolicyEvaluation(index, candidateHost, score, drrScore, orScore))
             if (candidateHost != null && score < bestScore) {
                 bestScore = score
                 bestHost = candidateHost
@@ -157,6 +172,8 @@ public class PortfolioScheduler(
                         score = eval.score,
                         selected = false,
                         winningScore = Double.MAX_VALUE,
+                        drrScore = eval.drrScore,
+                        orScore = eval.orScore,
                     ),
                 )
             }
@@ -180,6 +197,8 @@ public class PortfolioScheduler(
                     score = eval.score,
                     selected = eval.index == bestPolicyIndex,
                     winningScore = bestScore,
+                    drrScore = eval.drrScore,
+                    orScore = eval.orScore,
                 ),
             )
         }

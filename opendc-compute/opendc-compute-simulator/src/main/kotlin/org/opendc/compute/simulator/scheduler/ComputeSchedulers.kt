@@ -28,6 +28,7 @@ import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
 import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
 import org.opendc.compute.simulator.scheduler.filters.VGpuFilter
+import org.opendc.compute.simulator.scheduler.portfolio.DisasterRecoveryRiskUtility
 import org.opendc.compute.simulator.scheduler.portfolio.OperationalRiskUtility
 import org.opendc.compute.simulator.scheduler.portfolio.PortfolioScheduler
 import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
@@ -63,6 +64,9 @@ public fun createPrefabComputeScheduler(
     seeder: RandomGenerator,
     clock: InstantSource,
     numHosts: Int = 1000,
+    cpuAllocationRatio: Double = 1.0,
+    ramAllocationRatio: Double = 1.0,
+    gpuAllocationRatio: Double = 1.0,
 ): ComputeScheduler {
     val trimmedName = name.trim()
 
@@ -79,7 +83,7 @@ public fun createPrefabComputeScheduler(
         )
     }
 
-    return createPrefabComputeScheduler(schedulerEnum, seeder, clock, numHosts)
+    return createPrefabComputeScheduler(schedulerEnum, seeder, clock, numHosts, cpuAllocationRatio, ramAllocationRatio, gpuAllocationRatio)
 }
 
 /**
@@ -90,10 +94,10 @@ public fun createPrefabComputeScheduler(
     seeder: RandomGenerator,
     clock: InstantSource,
     numHosts: Int = 1000,
+    cpuAllocationRatio: Double = 1.0,
+    ramAllocationRatio: Double = 1.0,
+    gpuAllocationRatio: Double = 1.0,
 ): ComputeScheduler {
-    val cpuAllocationRatio = 1.0
-    val ramAllocationRatio = 1.0
-    val gpuAllocationRatio = 1.0
     return when (name) {
         ComputeSchedulerEnum.Mem ->
             FilterScheduler(
@@ -209,8 +213,23 @@ public fun createPrefabComputeScheduler(
                     ComputeSchedulerEnum.ActiveServers,
                     ComputeSchedulerEnum.Random,
                     ComputeSchedulerEnum.ProvisionedCores,
-                ).map { createPrefabComputeScheduler(it, seeder, clock, numHosts) }
-            PortfolioScheduler(defaultPolicies, OperationalRiskUtility(), clock)
+                    ComputeSchedulerEnum.CoreMemInv,
+                    ComputeSchedulerEnum.ActiveServersInv,
+                    ComputeSchedulerEnum.ProvisionedCoresInv,
+                ).map {
+                    createPrefabComputeScheduler(
+                        it,
+                        seeder,
+                        clock,
+                        numHosts,
+                        cpuAllocationRatio,
+                        ramAllocationRatio,
+                        gpuAllocationRatio,
+                    )
+                }
+            val orUtility = OperationalRiskUtility()
+            val drrUtility = DisasterRecoveryRiskUtility()
+            PortfolioScheduler(defaultPolicies, orUtility, clock, orUtility = orUtility, drrUtility = drrUtility)
         }
     }
 }

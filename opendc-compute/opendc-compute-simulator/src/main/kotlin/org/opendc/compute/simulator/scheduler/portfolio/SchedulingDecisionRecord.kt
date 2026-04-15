@@ -43,4 +43,6 @@ public data class SchedulingDecisionRecord(
     val score: Double,
     val selected: Boolean,
     val winningScore: Double,
+    val drrScore: Double,
+    val orScore: Double,
 )
