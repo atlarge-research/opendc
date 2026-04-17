@@ -130,6 +130,10 @@ const config = {
                             {
                                 label: "GitHub",
                                 href: `https://github.com/${organizationName}/${projectName}`
+                            },
+                            {
+                                label: "Uptime",
+                                href: `https://stats.uptimerobot.com/Ngu1lPrzsm`
                             }
                         ]
                     }
