@@ -31,10 +31,10 @@ val isSnapshot = project.version.toString().contains("SNAPSHOT")
 
 // Ensure project is built successfully before publishing it
 tasks.withType<PublishToMavenRepository>().configureEach {
-    dependsOn(tasks.build)
+    dependsOn(tasks.assemble)
 }
 tasks.withType<PublishToMavenLocal>().configureEach {
-    dependsOn(tasks.build)
+    dependsOn(tasks.assemble)
 }
 
 signing {
