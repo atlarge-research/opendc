@@ -50,6 +50,7 @@ export const StorageUnit = PropTypes.shape({
 
 export const Machine = PropTypes.shape({
     id: PropTypes.string.isRequired,
+    name: PropTypes.string,
     position: PropTypes.number.isRequired,
     cpus: PropTypes.arrayOf(PropTypes.oneOfType([ProcessingUnit, PropTypes.string])),
     gpus: PropTypes.arrayOf(PropTypes.oneOfType([ProcessingUnit, PropTypes.string])),
@@ -62,6 +63,7 @@ export const Rack = PropTypes.shape({
     capacity: PropTypes.number.isRequired,
     powerCapacityW: PropTypes.number.isRequired,
     machines: PropTypes.arrayOf(PropTypes.oneOfType([Machine, PropTypes.string])),
+    clusterName: PropTypes.string,
 })
 
 export const Tile = PropTypes.shape({
@@ -75,14 +77,25 @@ export const Room = PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     tiles: PropTypes.arrayOf(PropTypes.oneOfType([Tile, PropTypes.string])),
+    datacenterId: PropTypes.string,
+})
+
+export const Datacenter = PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    rooms: PropTypes.arrayOf(PropTypes.oneOfType([Room, PropTypes.string])),
+    width: PropTypes.number,
+    height: PropTypes.number,
+    x: PropTypes.number,
+    y: PropTypes.number,
 })
 
 export const Topology = PropTypes.shape({
     id: PropTypes.number.isRequired,
     number: PropTypes.number.isRequired,
-    project: Project.isRequired,
+    project: Project,
     name: PropTypes.string.isRequired,
-    rooms: PropTypes.arrayOf(PropTypes.oneOfType([Room, PropTypes.string])),
+    datacenters: PropTypes.arrayOf(PropTypes.oneOfType([Datacenter, PropTypes.string])),
 })
 
 export const Phenomena = PropTypes.shape({
@@ -95,7 +108,7 @@ export const Scheduler = PropTypes.shape({
 })
 
 export const Trace = PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
 })
@@ -113,11 +126,11 @@ export const Targets = PropTypes.shape({
 export const TopologySummary = PropTypes.shape({
     id: PropTypes.number.isRequired,
     number: PropTypes.number.isRequired,
-    project: Project.isRequired,
+    project: Project,
     name: PropTypes.string.isRequired,
 })
 
-export const PortfolioSummary = PropTypes.shape({
+export const ExperimentSummary = PropTypes.shape({
     id: PropTypes.number.isRequired,
     number: PropTypes.number.isRequired,
     project: Project.isRequired,
@@ -141,28 +154,35 @@ export const ScenarioSummary = PropTypes.shape({
 
 export const JobState = PropTypes.oneOf(['PENDING', 'CLAIMED', 'RUNNING', 'FAILED', 'FINISHED'])
 
+export const ExportModel = PropTypes.shape({
+    exportInterval: PropTypes.number.isRequired,
+    filesToExport: PropTypes.arrayOf(PropTypes.string).isRequired,
+})
+
 export const Job = PropTypes.shape({
     id: PropTypes.number.isRequired,
     state: JobState.isRequired,
     createdAt: PropTypes.string.isRequired,
     updatedAt: PropTypes.string.isRequired,
     results: PropTypes.object,
+    hasExports: PropTypes.bool,
 })
 
 export const Scenario = PropTypes.shape({
     id: PropTypes.number.isRequired,
     number: PropTypes.number.isRequired,
     project: Project.isRequired,
-    portfolio: PortfolioSummary.isRequired,
+    experiment: ExperimentSummary.isRequired,
     name: PropTypes.string.isRequired,
     workload: Workload.isRequired,
     topology: TopologySummary.isRequired,
     phenomena: Phenomena.isRequired,
     schedulerName: PropTypes.string.isRequired,
     jobs: PropTypes.arrayOf(Job).isRequired,
+    exportModels: PropTypes.arrayOf(ExportModel),
 })
 
-export const Portfolio = PropTypes.shape({
+export const Experiment = PropTypes.shape({
     id: PropTypes.number.isRequired,
     number: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
@@ -180,8 +200,10 @@ export const WallSegment = PropTypes.shape({
 
 export const InteractionLevel = PropTypes.shape({
     mode: PropTypes.string.isRequired,
+    datacenterId: PropTypes.string,
     roomId: PropTypes.string,
-    rackId: PropTypes.string,
+    tileId: PropTypes.string,
+    position: PropTypes.number,
 })
 
 export const Status = PropTypes.oneOf(['idle', 'loading', 'error', 'success'])

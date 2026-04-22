@@ -38,7 +38,7 @@ function TableEmptyState({
             <Bullseye>
                 <EmptyState variant="xs">
                     <EmptyStateIcon variant="container" component={Spinner} />
-                    <Title headingLevel="h4" size="md">
+                    <Title headingLevel="h4" size="md" ouiaId="table-empty-loading-title">
                         {loadingTitle}
                     </Title>
                 </EmptyState>
@@ -47,7 +47,7 @@ function TableEmptyState({
     } else if (status === 'error') {
         return (
             <EmptyState variant="xs">
-                <Title headingLevel="h4" size="md">
+                <Title headingLevel="h4" size="md" ouiaId="table-empty-error-title">
                     Unable to connect
                 </Title>
                 <EmptyStateBody>
@@ -59,7 +59,7 @@ function TableEmptyState({
         return (
             <EmptyState variant="xs">
                 <EmptyStateIcon icon={CubesIcon} />
-                <Title headingLevel="h4" size="md">
+                <Title headingLevel="h4" size="md" ouiaId="table-empty-idle-title">
                     {emptyTitle}
                 </Title>
                 <EmptyStateBody>No results available at this moment.</EmptyStateBody>
@@ -69,7 +69,7 @@ function TableEmptyState({
         return (
             <EmptyState variant="xs">
                 <EmptyStateIcon icon={SearchIcon} />
-                <Title headingLevel="h4" size="md">
+                <Title headingLevel="h4" size="md" ouiaId="table-empty-filtering-title">
                     No results found
                 </Title>
                 <EmptyStateBody>
@@ -82,7 +82,7 @@ function TableEmptyState({
     return (
         <EmptyState variant="xs">
             <EmptyStateIcon icon={CubesIcon} />
-            <Title headingLevel="h4" size="md">
+            <Title headingLevel="h4" size="md" ouiaId="table-empty-default-title">
                 {emptyTitle}
             </Title>
             <EmptyStateBody>{emptyText}</EmptyStateBody>

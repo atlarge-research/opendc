@@ -23,7 +23,13 @@
 import produce from 'immer'
 import { STORE_TOPOLOGY } from '../../actions/topology'
 import { DELETE_MACHINE } from '../../actions/topology/machine'
-import { DELETE_RACK, EDIT_RACK_NAME, ADD_MACHINE } from '../../actions/topology/rack'
+import {
+    ADD_MACHINE,
+    DELETE_RACK,
+    EDIT_RACK_CLUSTER_NAME,
+    EDIT_RACK_NAME,
+    EDIT_RACK_POWER_CAPACITY,
+} from '../../actions/topology/rack'
 import { ADD_RACK_TO_TILE } from '../../actions/topology/room'
 
 function rack(state = {}, action, { machines }) {
@@ -39,6 +45,16 @@ function rack(state = {}, action, { machines }) {
             return produce(state, (draft) => {
                 const { rackId, name } = action
                 draft[rackId].name = name
+            })
+        case EDIT_RACK_CLUSTER_NAME:
+            return produce(state, (draft) => {
+                const { rackId, clusterName } = action
+                draft[rackId].clusterName = clusterName
+            })
+        case EDIT_RACK_POWER_CAPACITY:
+            return produce(state, (draft) => {
+                const { rackId, powerCapacityW } = action
+                draft[rackId].powerCapacityW = powerCapacityW
             })
         case DELETE_RACK:
             return produce(state, (draft) => {

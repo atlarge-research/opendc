@@ -49,8 +49,8 @@ export default function AppHeader({ nav }) {
                 </MastheadBrand>
             </MastheadMain>
             <MastheadContent>
-                <Toolbar id="toolbar" isFullHeight isStatic>
-                    <ToolbarContent>
+                <Toolbar id="toolbar" ouiaId="app-toolbar" isFullHeight isStatic>
+                    <ToolbarContent toolbarId="toolbar">
                         <ToolbarItem>
                             <ProjectSelector />
                         </ToolbarItem>

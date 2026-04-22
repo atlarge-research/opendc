@@ -22,7 +22,7 @@ const NotFound = () => {
                 <Bullseye>
                     <EmptyState>
                         <EmptyStateIcon variant="container" component={UnknownIcon} />
-                        <Title size="lg" headingLevel="h4">
+                        <Title size="lg" headingLevel="h4" ouiaId="not-found-title">
                             404: That page does not exist
                         </Title>
                         <EmptyStateBody>

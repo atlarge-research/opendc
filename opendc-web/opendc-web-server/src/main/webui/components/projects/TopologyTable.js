@@ -39,9 +39,16 @@ function TopologyTable({ projectId }) {
 
     const downloadTopology = (topology) => {
         const data = JSON.stringify(
-            { name: topology.name, rooms: topology.rooms },
+            { name: topology.name, datacenters: topology.datacenters },
             (key, value) => {
-                if (key === 'id' || key === 'topologyId' || key === 'roomId' || key === 'rackId' || key === 'roomid') {
+                if (
+                    key === 'id' ||
+                    key === 'topologyId' ||
+                    key === 'datacenterId' ||
+                    key === 'roomId' ||
+                    key === 'rackId' ||
+                    key === 'roomid'
+                ) {
                     return undefined
                 }
                 return value
@@ -106,7 +113,13 @@ function TopologyTable({ projectId }) {
                                 </Link>
                             </Td>
                             <Td dataLabel="Rooms">
-                                {topology.rooms.length === 1 ? '1 room' : `${topology.rooms.length} rooms`}
+                                {(() => {
+                                    const roomCount = (topology.datacenters ?? []).reduce(
+                                        (sum, dc) => sum + (dc.rooms?.length ?? 0),
+                                        0
+                                    )
+                                    return roomCount === 1 ? '1 room' : `${roomCount} rooms`
+                                })()}
                             </Td>
                             <Td dataLabel="Last Edited">{parseAndFormatDateTime(topology.updatedAt)}</Td>
                             <Td isActionCell>

@@ -31,4 +31,5 @@ import org.opendc.web.proto.JobState;
  * <p>
  * This entity is exposed in the runner-facing API via {@link Job}.
  */
-public record Job(long id, JobState state, Instant createdAt, Instant updatedAt, Map<String, ?> results) {}
+public record Job(
+        long id, JobState state, Instant createdAt, Instant updatedAt, Map<String, ?> results, boolean hasExports) {}

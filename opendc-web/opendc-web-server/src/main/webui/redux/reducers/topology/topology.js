@@ -22,22 +22,22 @@
 
 import produce from 'immer'
 import { STORE_TOPOLOGY } from '../../actions/topology'
-import { ADD_ROOM, DELETE_ROOM } from '../../actions/topology/room'
+import { ADD_DATACENTER, DELETE_DATACENTER } from '../../actions/topology/datacenter'
 
 function topology(state = undefined, action) {
     switch (action.type) {
         case STORE_TOPOLOGY:
             return action.topology
-        case ADD_ROOM:
+        case ADD_DATACENTER:
             return produce(state, (draft) => {
-                const { room } = action
-                draft.rooms.push(room.id)
+                const { datacenter } = action
+                draft.datacenters.push(datacenter.id)
             })
-        case DELETE_ROOM:
+        case DELETE_DATACENTER:
             return produce(state, (draft) => {
-                const { roomId } = action
-                const index = draft.rooms.indexOf(roomId)
-                draft.rooms.splice(index, 1)
+                const { datacenterId } = action
+                const index = draft.datacenters.indexOf(datacenterId)
+                draft.datacenters.splice(index, 1)
             })
         default:
             return state

@@ -49,7 +49,7 @@ function TopologyMap() {
         <Bullseye>
             <EmptyState>
                 <EmptyStateIcon variant="container" component={Spinner} />
-                <Title size="lg" headingLevel="h4">
+                <Title size="lg" headingLevel="h4" ouiaId="topology-map-loading-title">
                     Loading Topology
                 </Title>
             </EmptyState>

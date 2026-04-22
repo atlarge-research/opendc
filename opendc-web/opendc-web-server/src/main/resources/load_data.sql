@@ -1,11 +1,15 @@
 
 -- Insert data
 
-INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, rack_prefabs_created, updated_at, id)
-       VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 1', 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 1);
+INSERT INTO projects (created_at, name, experiments_created, scenarios_created, topologies_created, rack_prefabs_created, machine_prefabs_created, updated_at, id)
+       VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 1', 0, 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 1);
 
 INSERT INTO project_authorizations (role, project_id, user_id)
 VALUES ('OWNER', 1, 'test_user_1');
+
+-- Add dev anonymous user as owner (used by DevSecurityOverrideFilter in dev mode)
+INSERT INTO project_authorizations (role, project_id, user_id)
+VALUES ('OWNER', 1, 'anon');
 
 -- Add test user 2 as a viewer for project 1
 
@@ -19,56 +23,56 @@ VALUES ('EDITOR', 1, 'test_user_3');
 
 -- Create a project for test user 2
 
-INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, rack_prefabs_created, updated_at, id)
-VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 2', 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 2);
+INSERT INTO projects (created_at, name, experiments_created, scenarios_created, topologies_created, rack_prefabs_created, machine_prefabs_created, updated_at, id)
+VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 2', 0, 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 2);
 
 INSERT INTO project_authorizations (role, project_id, user_id)
 VALUES ('OWNER', 2, 'test_user_2');
 
 -- Create three projects for test user 3. User 3 has multiple projects to test getAll
 
-INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, rack_prefabs_created, updated_at, id)
-VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 3', 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 3);
+INSERT INTO projects (created_at, name, experiments_created, scenarios_created, topologies_created, rack_prefabs_created, machine_prefabs_created, updated_at, id)
+VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 3', 0, 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 3);
 
 INSERT INTO project_authorizations (role, project_id, user_id)
 VALUES ('OWNER', 3, 'test_user_3');
 
-INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, rack_prefabs_created, updated_at, id)
-VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 4', 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 4);
+INSERT INTO projects (created_at, name, experiments_created, scenarios_created, topologies_created, rack_prefabs_created, machine_prefabs_created, updated_at, id)
+VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 4', 0, 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 4);
 
 INSERT INTO project_authorizations (role, project_id, user_id)
 VALUES ('OWNER', 4, 'test_user_3');
 
-INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, rack_prefabs_created, updated_at, id)
-VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 5', 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 5);
+INSERT INTO projects (created_at, name, experiments_created, scenarios_created, topologies_created, rack_prefabs_created, machine_prefabs_created, updated_at, id)
+VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project 5', 0, 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 5);
 
 INSERT INTO project_authorizations (role, project_id, user_id)
 VALUES ('OWNER', 5, 'test_user_3');
 
 -- Project to delete
 
-INSERT INTO projects (created_at, name, portfolios_created, scenarios_created, topologies_created, rack_prefabs_created, updated_at, id)
-VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project Delete', 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 6);
+INSERT INTO projects (created_at, name, experiments_created, scenarios_created, topologies_created, rack_prefabs_created, machine_prefabs_created, updated_at, id)
+VALUES ('2024-03-01T15:31:41.579969Z', 'Test Project Delete', 0, 0, 0, 0, 0, '2024-03-01T15:31:41.579969Z', 6);
 
 INSERT INTO project_authorizations (role, project_id, user_id)
 VALUES ('OWNER', 6, 'test_user_1');
 
 -- --------------------------------------------------------------------------------
---  PortFolios
+--  Experiments
 -- --------------------------------------------------------------------------------
 
--- Add Portfolio to project 1
-INSERT INTO portfolios (name, number, project_id, targets, id)
-VALUES ('Test PortFolio Base', 1, 1, '{"metrics": [], "repeats":1}' FORMAT JSON, 1);
+-- Add Experiment to project 1
+INSERT INTO experiments (name, number, project_id, targets, id)
+VALUES ('Test Experiment Base', 1, 1, '{"metrics": [], "repeats":1}' FORMAT JSON, 1);
 
-INSERT INTO portfolios (name, number, project_id, targets, id)
-VALUES ('Test PortFolio Delete', 2, 1, '{"metrics": [], "repeats":1}' FORMAT JSON, 2);
+INSERT INTO experiments (name, number, project_id, targets, id)
+VALUES ('Test Experiment Delete', 2, 1, '{"metrics": [], "repeats":1}' FORMAT JSON, 2);
 
-INSERT INTO portfolios (name, number, project_id, targets, id)
-VALUES ('Test PortFolio DeleteEditor', 3, 1, '{"metrics": [], "repeats":1}' FORMAT JSON, 3);
+INSERT INTO experiments (name, number, project_id, targets, id)
+VALUES ('Test Experiment DeleteEditor', 3, 1, '{"metrics": [], "repeats":1}' FORMAT JSON, 3);
 
 UPDATE projects p
-SET p.portfolios_created = 3, p.updated_at = '2024-03-01T15:31:41.579969Z'
+SET p.experiments_created = 3, p.updated_at = '2024-03-01T15:31:41.579969Z'
 WHERE p.id = 1;
 
 -- --------------------------------------------------------------------------------
@@ -95,17 +99,21 @@ WHERE p.id = 1;
 --  Traces
 -- --------------------------------------------------------------------------------
 
-INSERT INTO trace (id, name, type)
-VALUES ('bitbrains-small', 'Bitbrains Small', 'small');
+INSERT INTO trace (id, name, type) VALUES ('bitbrains-small', 'Bitbrains Small', 'small');
+INSERT INTO trace (id, name, type) VALUES ('bitbrains-full', 'Bitbrains Full', 'bitbrains');
+INSERT INTO trace (id, name, type) VALUES ('bitbrains-full-delayed', 'Bitbrains Full (Delayed)', 'bitbrains');
+INSERT INTO trace (id, name, type) VALUES ('solvinity-2025', 'Solvinity 2025', 'solvinity');
+INSERT INTO trace (id, name, type) VALUES ('solvinity-2025-extended', 'Solvinity 2025 Extended', 'solvinity');
+INSERT INTO trace (id, name, type) VALUES ('solvinity-2025-extended-reduced-topology', 'Solvinity 2025 Extended (Reduced Topology)', 'solvinity');
 
 -- --------------------------------------------------------------------------------
 --  Scenario
 -- --------------------------------------------------------------------------------
 
-INSERT INTO scenarios (name, number, phenomena, portfolio_id, project_id, scheduler_name, topology_id, sampling_fraction, trace_id, id)
+INSERT INTO scenarios (name, number, phenomena, experiment_id, project_id, scheduler_name, topology_id, sampling_fraction, trace_id, id)
 VALUES ('Test Scenario testDelete', 1, '{"failures": false, "interference": false}' FORMAT JSON, 1, 1, 'Mem', 1, 1.0, 'bitbrains-small', 1);
 
-INSERT INTO scenarios (name, number, phenomena, portfolio_id, project_id, scheduler_name, topology_id, sampling_fraction, trace_id, id)
+INSERT INTO scenarios (name, number, phenomena, experiment_id, project_id, scheduler_name, topology_id, sampling_fraction, trace_id, id)
 VALUES ('Test Scenario testDeleteUsed', 2, '{"failures": false, "interference": false}' FORMAT JSON, 1, 1, 'Random', 4, 1.0, 'bitbrains-small', 2);
 
 
@@ -117,8 +125,8 @@ WHERE p.id = 1;
 --  Job
 -- --------------------------------------------------------------------------------
 
-INSERT INTO job (scenario_id, created_by, created_at, repeats, updated_at, state, runtime, results, report, started_at, id)
-VALUES (1, 'test_user_1', '2024-03-01T15:31:41.579969Z', 1, '2024-03-01T15:31:41.579969Z', 'PENDING', 1, '{}' FORMAT JSON, NULL, NULL, 1);
+INSERT INTO job (scenario_id, created_by, created_at, repeats, updated_at, state, runtime, results, report, started_at, has_exports, id)
+VALUES (1, 'test_user_1', '2024-03-01T15:31:41.579969Z', 1, '2024-03-01T15:31:41.579969Z', 'PENDING', 1, '{}' FORMAT JSON, NULL, NULL, false, 1);
 
-INSERT INTO job (scenario_id, created_by, created_at, repeats, updated_at, state, runtime, results, report, started_at, id)
-VALUES (1, 'test_user_1', '2024-03-01T15:31:41.579969Z', 1, '2024-03-01T15:31:41.579969Z', 'PENDING', 1, '{}' FORMAT JSON, NULL, NULL, 2);
+INSERT INTO job (scenario_id, created_by, created_at, repeats, updated_at, state, runtime, results, report, started_at, has_exports, id)
+VALUES (1, 'test_user_1', '2024-03-01T15:31:41.579969Z', 1, '2024-03-01T15:31:41.579969Z', 'PENDING', 1, '{}' FORMAT JSON, NULL, NULL, false, 2);

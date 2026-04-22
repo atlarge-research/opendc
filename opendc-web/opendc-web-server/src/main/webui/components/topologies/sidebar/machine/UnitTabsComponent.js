@@ -8,7 +8,7 @@ function UnitTabsComponent({ machineId }) {
     const [activeTab, setActiveTab] = useState('cpuModel-units')
 
     return (
-        <Tabs activeKey={activeTab} onSelect={(_, tab) => setActiveTab(tab)}>
+        <Tabs activeKey={activeTab} onSelect={(_, tab) => setActiveTab(tab)} ouiaId="machine-unit-tabs">
             <Tab eventKey="cpuModel-units" title={<TabTitleText>CPU</TabTitleText>}>
                 <UnitAddContainer machineId={machineId} unitType="cpus" />
                 <UnitListContainer machineId={machineId} unitType="cpus" />

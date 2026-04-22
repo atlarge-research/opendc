@@ -22,8 +22,8 @@
 
 package org.opendc.web.server.rest.runner;
 
+import org.opendc.web.server.model.Experiment;
 import org.opendc.web.server.model.Job;
-import org.opendc.web.server.model.Portfolio;
 import org.opendc.web.server.model.Scenario;
 import org.opendc.web.server.model.Topology;
 import org.opendc.web.server.rest.BaseProtocol;
@@ -59,20 +59,21 @@ public final class RunnerProtocol {
         return new org.opendc.web.proto.runner.Scenario(
                 scenario.id,
                 scenario.number,
-                toDto(scenario.portfolio),
+                toDto(scenario.experiment),
                 scenario.name,
                 BaseProtocol.toDto(scenario.workload),
                 toDto(scenario.topology),
                 scenario.phenomena,
-                scenario.schedulerName);
+                scenario.schedulerName,
+                scenario.exportModels);
     }
 
     /**
-     * Convert a {@link Portfolio} into a runner-facing DTO.
+     * Convert a {@link Experiment} into a runner-facing DTO.
      */
-    public static org.opendc.web.proto.runner.Portfolio toDto(Portfolio portfolio) {
-        return new org.opendc.web.proto.runner.Portfolio(
-                portfolio.id, portfolio.number, portfolio.name, portfolio.targets);
+    public static org.opendc.web.proto.runner.Experiment toDto(Experiment experiment) {
+        return new org.opendc.web.proto.runner.Experiment(
+                experiment.id, experiment.number, experiment.name, experiment.targets);
     }
 
     /**
@@ -80,6 +81,11 @@ public final class RunnerProtocol {
      */
     public static org.opendc.web.proto.runner.Topology toDto(Topology topology) {
         return new org.opendc.web.proto.runner.Topology(
-                topology.id, topology.number, topology.name, topology.rooms, topology.createdAt, topology.updatedAt);
+                topology.id,
+                topology.number,
+                topology.name,
+                topology.datacenters,
+                topology.createdAt,
+                topology.updatedAt);
     }
 }

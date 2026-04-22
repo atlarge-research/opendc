@@ -22,6 +22,7 @@
 
 import PropTypes from 'prop-types'
 import {
+    Button,
     Card,
     CardBody,
     CardTitle,
@@ -36,7 +37,26 @@ import {
 import React from 'react'
 import { useTopology } from '../../data/topology'
 import { parseAndFormatDateTime } from '../../util/date-time'
-import RoomTable from './RoomTable'
+import TopologyTree from './TopologyTree'
+
+const STRIP_KEYS = new Set(['id', 'topologyId', 'datacenterId', 'roomId', 'rackId', 'roomid'])
+
+function downloadTopology(topology) {
+    const data = JSON.stringify(
+        { name: topology.name, datacenters: topology.datacenters },
+        (key, value) => (STRIP_KEYS.has(key) ? undefined : value),
+        4
+    )
+    const blob = new Blob([data], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${topology.name}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+}
 
 function TopologyOverview({ projectId, topologyNumber, onSelect }) {
     const { data: topology } = useTopology(projectId, topologyNumber)
@@ -63,19 +83,25 @@ function TopologyOverview({ projectId, topologyNumber, onSelect }) {
                                     )}
                                 </DescriptionListDescription>
                             </DescriptionListGroup>
+                            {topology && (
+                                <DescriptionListGroup>
+                                    <DescriptionListTerm>Export</DescriptionListTerm>
+                                    <DescriptionListDescription>
+                                        <Button variant="link" isInline onClick={() => downloadTopology(topology)} ouiaId={`topology-download-${topology.number}`}>
+                                            Download as JSON
+                                        </Button>
+                                    </DescriptionListDescription>
+                                </DescriptionListGroup>
+                            )}
                         </DescriptionList>
                     </CardBody>
                 </Card>
             </GridItem>
-            <GridItem md={5}>
+            <GridItem md={7}>
                 <Card>
-                    <CardTitle>Rooms</CardTitle>
+                    <CardTitle>Topology</CardTitle>
                     <CardBody>
-                        <RoomTable
-                            projectId={projectId}
-                            topologyId={topologyNumber}
-                            onSelect={(room) => onSelect('room', room)}
-                        />
+                        <TopologyTree topology={topology} onSelect={onSelect} />
                     </CardBody>
                 </Card>
             </GridItem>

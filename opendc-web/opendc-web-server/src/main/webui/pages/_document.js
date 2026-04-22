@@ -21,8 +21,17 @@
  */
 
 import Document, { Html, Head, Main, NextScript } from 'next/document'
+import { ToolbarContent } from '@patternfly/react-core'
 
 class OpenDCDocument extends Document {
+    static async getInitialProps(ctx) {
+        // Reset PatternFly's ToolbarContent counter before each render.
+        // This is a static class counter that persists across SSR requests in dev mode,
+        // causing hydration mismatches since the client always starts from 0.
+        ToolbarContent.currentId = 0
+        return Document.getInitialProps(ctx)
+    }
+
     render() {
         return (
             <Html lang="en">

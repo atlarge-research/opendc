@@ -73,25 +73,30 @@ public class QuarkusJobManager implements JobManager {
     @Transactional
     @Override
     public boolean claim(long id) {
-        return updateState(id, JobState.CLAIMED, 0, null, null);
+        return updateState(id, JobState.CLAIMED, 0, null, null, false);
     }
 
     @Transactional
     @Override
     public boolean heartbeat(long id, int runtime) {
-        return updateState(id, JobState.RUNNING, runtime, null, null);
+        return updateState(id, JobState.RUNNING, runtime, null, null, false);
     }
 
     @Transactional
     @Override
     public void fail(long id, int runtime, @Nullable Report report) {
-        updateState(id, JobState.FAILED, runtime, null, report);
+        updateState(id, JobState.FAILED, runtime, null, report, false);
     }
 
     @Transactional
     @Override
-    public void finish(long id, int runtime, @NotNull Map<String, ? extends Object> results, @Nullable Report report) {
-        updateState(id, JobState.FINISHED, runtime, results, report);
+    public void finish(
+            long id,
+            int runtime,
+            @NotNull Map<String, ? extends Object> results,
+            @Nullable Report report,
+            boolean hasExports) {
+        updateState(id, JobState.FINISHED, runtime, results, report, hasExports);
     }
 
     /**
@@ -102,9 +107,11 @@ public class QuarkusJobManager implements JobManager {
      * @param runtime The runtime of the job.
      * @param results The results of the job.
      * @param report The report containing warnings and errors.
+     * @param hasExports Whether the runner produced export files for this job.
      * @return <code>true</code> if the operation succeeded, <code>false</code> otherwise.
      */
-    private boolean updateState(long id, JobState newState, int runtime, Map<String, ?> results, Report report) {
+    private boolean updateState(
+            long id, JobState newState, int runtime, Map<String, ?> results, Report report, boolean hasExports) {
         Job job = Job.findById(id);
 
         if (job == null) {
@@ -114,7 +121,7 @@ public class QuarkusJobManager implements JobManager {
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> reportMap = report != null ? objectMapper.convertValue(report, Map.class) : null;
-            jobService.updateJob(job, newState, runtime, results, reportMap);
+            jobService.updateJob(job, newState, runtime, results, reportMap, hasExports);
             return true;
         } catch (IllegalArgumentException | IllegalStateException e) {
             return false;

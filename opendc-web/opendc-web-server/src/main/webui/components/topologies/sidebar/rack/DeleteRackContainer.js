@@ -40,7 +40,7 @@ function DeleteRackContainer({ tileId }) {
     }
     return (
         <>
-            <Button variant="danger" icon={<TrashIcon />} isBlock onClick={() => setVisible(true)}>
+            <Button variant="danger" icon={<TrashIcon />} isBlock onClick={() => setVisible(true)} ouiaId="delete-rack">
                 Delete this rack
             </Button>
             <ConfirmationModal

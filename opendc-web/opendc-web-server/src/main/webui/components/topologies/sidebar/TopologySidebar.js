@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { InteractionLevel } from '../../../shapes'
 import BuildingSidebar from './building/BuildingSidebar'
+import DatacenterSidebar from './datacenter/DatacenterSidebar'
 import {
     Button,
     DrawerActions,
@@ -22,6 +23,7 @@ import { goDownOneInteractionLevel } from '../../../redux/actions/interaction-le
 
 const name = {
     BUILDING: 'Building',
+    DATACENTER: 'Datacenter',
     ROOM: 'Room',
     RACK: 'Rack',
     MACHINE: 'Machine',
@@ -33,6 +35,9 @@ function TopologySidebar({ interactionLevel, onClose }) {
     switch (interactionLevel.mode) {
         case 'BUILDING':
             sidebarContent = <BuildingSidebar />
+            break
+        case 'DATACENTER':
+            sidebarContent = <DatacenterSidebar datacenterId={interactionLevel.datacenterId} />
             break
         case 'ROOM':
             sidebarContent = <RoomSidebar roomId={interactionLevel.roomId} />
@@ -59,10 +64,11 @@ function TopologySidebar({ interactionLevel, onClose }) {
                         isSmall
                         className={backButton}
                         onClick={interactionLevel.mode === 'BUILDING' ? onClose : onClick}
+                        ouiaId="sidebar-back"
                     >
                         <AngleLeftIcon />
                     </Button>
-                    <Title className="pf-u-align-self-center" headingLevel="h1">
+                    <Title className="pf-u-align-self-center" headingLevel="h1" ouiaId="topology-sidebar-level-title">
                         {name[interactionLevel.mode]}
                     </Title>
                 </Flex>

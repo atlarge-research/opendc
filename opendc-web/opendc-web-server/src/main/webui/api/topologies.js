@@ -35,8 +35,8 @@ export function addTopology(auth, projectId, topology) {
 }
 
 export function updateTopology(auth, topology) {
-    const { project, number, rooms } = topology
-    return request(auth, `projects/${project.id}/topologies/${number}`, 'PUT', { rooms })
+    const { project, number, datacenters } = topology
+    return request(auth, `projects/${project.id}/topologies/${number}`, 'PUT', { datacenters })
 }
 
 export function deleteTopology(auth, projectId, number) {

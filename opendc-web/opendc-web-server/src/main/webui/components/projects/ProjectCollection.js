@@ -22,7 +22,7 @@ import {
 } from '@patternfly/react-core'
 import { PlusIcon, FolderIcon, TrashIcon } from '@patternfly/react-icons'
 import PropTypes from 'prop-types'
-import React, { useReducer, useMemo } from 'react'
+import React, { useReducer, useMemo, useRef } from 'react'
 import { Project, Status } from '../../shapes'
 import { parseAndFormatDateTime } from '../../util/date-time'
 import { AUTH_DESCRIPTION_MAP, AUTH_ICON_MAP, AUTH_NAME_MAP } from '../../util/authorizations'
@@ -32,6 +32,7 @@ function ProjectCard({ project, onDelete }) {
     const [isKebabOpen, toggleKebab] = useReducer((t) => !t, false)
     const { id, role, name, updatedAt } = project
     const Icon = AUTH_ICON_MAP[role]
+    const labelRef = useRef(null)
 
     return (
         <Card
@@ -46,13 +47,15 @@ function ProjectCard({ project, onDelete }) {
                     <FolderIcon />
                 </CardHeaderMain>
                 <CardActions>
-                    <Tooltip content={AUTH_DESCRIPTION_MAP[role]}>
-                        <Label icon={<Icon />}>{AUTH_NAME_MAP[role]}</Label>
+                    <Tooltip content={AUTH_DESCRIPTION_MAP[role]} reference={labelRef} removeFindDomNode>
+                        <span ref={labelRef}>
+                            <Label icon={<Icon />}>{AUTH_NAME_MAP[role]}</Label>
+                        </span>
                     </Tooltip>
                     <Dropdown
                         isPlain
                         position="right"
-                        toggle={<KebabToggle className="pf-u-px-0" onToggle={toggleKebab} />}
+                        toggle={<KebabToggle id={`project-kebab-toggle-${id}`} className="pf-u-px-0" onToggle={toggleKebab} />}
                         isOpen={isKebabOpen}
                         dropdownItems={[
                             <DropdownItem
@@ -98,7 +101,7 @@ function ProjectCollection({ status, projects, onDelete, onCreate, isFiltering }
                 emptyTitle="No projects"
                 emptyText="You have not created any projects yet. Create a new project to get started quickly."
                 emptyAction={
-                    <Button icon={<PlusIcon />} onClick={onCreate}>
+                    <Button icon={<PlusIcon />} onClick={onCreate} ouiaId="create-project">
                         Create Project
                     </Button>
                 }
@@ -114,7 +117,7 @@ function ProjectCollection({ status, projects, onDelete, onCreate, isFiltering }
             <Card isCompact isFlat isRounded style={{ borderStyle: 'dotted' }}>
                 <Bullseye>
                     <EmptyState>
-                        <Button isBlock variant="link" onClick={onCreate}>
+                        <Button isBlock variant="link" onClick={onCreate} ouiaId="create-project-link">
                             <EmptyStateIcon icon={PlusIcon} />
                             <br />
                             Create Project

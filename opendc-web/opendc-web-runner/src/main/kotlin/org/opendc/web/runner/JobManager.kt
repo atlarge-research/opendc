@@ -70,6 +70,7 @@ public interface JobManager {
         runtime: Int,
         results: Map<String, Any>,
         report: Report? = null,
+        hasExports: Boolean = false,
     )
 
     public companion object {

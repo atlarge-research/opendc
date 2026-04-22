@@ -98,7 +98,7 @@ public final class JobResourceTest {
             user = "test_user_1",
             roles = {"runner"})
     public void testUpdateNonExistent() {
-        given().body(new org.opendc.web.proto.runner.Job.Update(JobState.PENDING, 0, null, null))
+        given().body(new org.opendc.web.proto.runner.Job.Update(JobState.PENDING, 0, null, null, false))
                 .contentType(ContentType.JSON)
                 .when()
                 .post("/0")
@@ -115,7 +115,7 @@ public final class JobResourceTest {
             user = "test_user_1",
             roles = {"runner"})
     public void testUpdateState() {
-        given().body(new org.opendc.web.proto.runner.Job.Update(JobState.CLAIMED, 0, null, null))
+        given().body(new org.opendc.web.proto.runner.Job.Update(JobState.CLAIMED, 0, null, null, false))
                 .contentType(ContentType.JSON)
                 .when()
                 .post("/2")

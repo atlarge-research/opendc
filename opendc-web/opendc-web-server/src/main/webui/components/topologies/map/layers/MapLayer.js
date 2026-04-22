@@ -22,17 +22,22 @@
 
 import React from 'react'
 import { Group, Layer } from 'react-konva'
+import { useSelector } from 'react-redux'
 import Backdrop from '../elements/Backdrop'
 import TopologyContainer from '../TopologyContainer'
 import GridGroup from '../groups/GridGroup'
 
 function MapLayer() {
+    const datacenters = useSelector((state) => Object.values(state.topology.datacenters ?? {}))
+
     return (
         <Layer>
             <Group>
                 <Backdrop />
                 <TopologyContainer />
-                <GridGroup />
+                {datacenters.map((dc) => (
+                    <GridGroup key={dc.id} width={dc.width} height={dc.height} x={dc.x ?? 0} y={dc.y ?? 0} />
+                ))}
             </Group>
         </Layer>
     )

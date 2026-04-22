@@ -25,10 +25,11 @@ package org.opendc.web.proto.runner;
 import java.time.Instant;
 import java.util.List;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.opendc.web.proto.topology.Room;
+import org.opendc.web.proto.topology.Datacenter;
 
 /**
  * A [Topology] that is exposed to an OpenDC runner.
  */
 @Schema(name = "Runner.Topology")
-public record Topology(long id, int number, String name, List<Room> rooms, Instant createdAt, Instant updatedAt) {}
+public record Topology(
+        long id, int number, String name, List<Datacenter> datacenters, Instant createdAt, Instant updatedAt) {}

@@ -22,8 +22,9 @@
 
 package org.opendc.web.server.rest.user;
 
+import org.opendc.web.server.model.Experiment;
 import org.opendc.web.server.model.Job;
-import org.opendc.web.server.model.Portfolio;
+import org.opendc.web.server.model.MachinePrefab;
 import org.opendc.web.server.model.Project;
 import org.opendc.web.server.model.ProjectAuthorization;
 import org.opendc.web.server.model.RackPrefab;
@@ -50,24 +51,24 @@ public final class UserProtocol {
     }
 
     /**
-     * Convert a {@link Portfolio} entity into a {@link org.opendc.web.proto.user.Portfolio} DTO.
+     * Convert a {@link Experiment} entity into a {@link org.opendc.web.proto.user.Experiment} DTO.
      */
-    public static org.opendc.web.proto.user.Portfolio toDto(Portfolio portfolio, ProjectAuthorization auth) {
-        return new org.opendc.web.proto.user.Portfolio(
-                portfolio.id,
-                portfolio.number,
+    public static org.opendc.web.proto.user.Experiment toDto(Experiment experiment, ProjectAuthorization auth) {
+        return new org.opendc.web.proto.user.Experiment(
+                experiment.id,
+                experiment.number,
                 toDto(auth),
-                portfolio.name,
-                portfolio.targets,
-                portfolio.scenarios.stream().map(UserProtocol::toSummaryDto).toList());
+                experiment.name,
+                experiment.targets,
+                experiment.scenarios.stream().map(UserProtocol::toSummaryDto).toList());
     }
 
     /**
-     * Convert a {@link Portfolio} entity into a {@link org.opendc.web.proto.user.Portfolio.Summary} DTO.
+     * Convert a {@link Experiment} entity into a {@link org.opendc.web.proto.user.Experiment.Summary} DTO.
      */
-    public static org.opendc.web.proto.user.Portfolio.Summary toSummaryDto(Portfolio portfolio) {
-        return new org.opendc.web.proto.user.Portfolio.Summary(
-                portfolio.id, portfolio.number, portfolio.name, portfolio.targets);
+    public static org.opendc.web.proto.user.Experiment.Summary toSummaryDto(Experiment experiment) {
+        return new org.opendc.web.proto.user.Experiment.Summary(
+                experiment.id, experiment.number, experiment.name, experiment.targets);
     }
 
     /**
@@ -79,7 +80,7 @@ public final class UserProtocol {
                 topology.number,
                 toDto(auth),
                 topology.name,
-                topology.rooms,
+                topology.datacenters,
                 topology.createdAt,
                 topology.updatedAt);
     }
@@ -107,6 +108,21 @@ public final class UserProtocol {
     }
 
     /**
+     * Convert a {@link MachinePrefab} entity into a {@link org.opendc.web.proto.user.MachinePrefab} DTO.
+     */
+    public static org.opendc.web.proto.user.MachinePrefab toDto(
+            MachinePrefab machinePrefab, ProjectAuthorization auth) {
+        return new org.opendc.web.proto.user.MachinePrefab(
+                machinePrefab.id,
+                machinePrefab.number,
+                toDto(auth),
+                machinePrefab.name,
+                machinePrefab.machine,
+                machinePrefab.createdAt,
+                machinePrefab.updatedAt);
+    }
+
+    /**
      * Convert a {@link Scenario} entity into a {@link org.opendc.web.proto.user.Scenario} DTO.
      */
     public static org.opendc.web.proto.user.Scenario toDto(Scenario scenario, ProjectAuthorization auth) {
@@ -114,13 +130,14 @@ public final class UserProtocol {
                 scenario.id,
                 scenario.number,
                 toDto(auth),
-                toSummaryDto(scenario.portfolio),
+                toSummaryDto(scenario.experiment),
                 scenario.name,
                 BaseProtocol.toDto(scenario.workload),
                 toSummaryDto(scenario.topology),
                 scenario.phenomena,
                 scenario.schedulerName,
-                scenario.jobs.stream().map(UserProtocol::toDto).toList());
+                scenario.jobs.stream().map(UserProtocol::toDto).toList(),
+                scenario.exportModels);
     }
 
     /**
@@ -142,6 +159,7 @@ public final class UserProtocol {
      * Convert a {@link Job} entity into a {@link org.opendc.web.proto.user.Job} DTO.
      */
     public static org.opendc.web.proto.user.Job toDto(Job job) {
-        return new org.opendc.web.proto.user.Job(job.id, job.state, job.createdAt, job.updatedAt, job.results);
+        return new org.opendc.web.proto.user.Job(
+                job.id, job.state, job.createdAt, job.updatedAt, job.results, job.hasExports);
     }
 }

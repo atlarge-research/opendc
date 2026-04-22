@@ -1,26 +1,31 @@
+import PropTypes from 'prop-types'
 import React from 'react'
-import { Group, Line } from 'react-konva'
+import { Group, Line, Rect } from 'react-konva'
 import { GRID_COLOR } from '../../../../util/colors'
-import { GRID_LINE_WIDTH_IN_PIXELS, MAP_SIZE, MAP_SIZE_IN_PIXELS, TILE_SIZE_IN_PIXELS } from '../MapConstants'
+import { GRID_LINE_WIDTH_IN_PIXELS, TILE_SIZE_IN_PIXELS } from '../MapConstants'
 
-const MAP_COORDINATE_ENTRIES = Array.from(new Array(MAP_SIZE), (x, i) => i)
-const HORIZONTAL_POINT_PAIRS = MAP_COORDINATE_ENTRIES.map((index) => [
-    0,
-    index * TILE_SIZE_IN_PIXELS,
-    MAP_SIZE_IN_PIXELS,
-    index * TILE_SIZE_IN_PIXELS,
-])
-const VERTICAL_POINT_PAIRS = MAP_COORDINATE_ENTRIES.map((index) => [
-    index * TILE_SIZE_IN_PIXELS,
-    0,
-    index * TILE_SIZE_IN_PIXELS,
-    MAP_SIZE_IN_PIXELS,
-])
+function GridGroup({ width, height, x = 0, y = 0 }) {
+    if (!width || !height) {
+        return <Group />
+    }
 
-function GridGroup() {
+    const offsetX = x * TILE_SIZE_IN_PIXELS
+    const offsetY = y * TILE_SIZE_IN_PIXELS
+    const widthPx = width * TILE_SIZE_IN_PIXELS
+    const heightPx = height * TILE_SIZE_IN_PIXELS
+
+    const horizontalLines = Array.from({ length: height + 1 }, (_, i) => [
+        offsetX, offsetY + i * TILE_SIZE_IN_PIXELS,
+        offsetX + widthPx, offsetY + i * TILE_SIZE_IN_PIXELS,
+    ])
+    const verticalLines = Array.from({ length: width + 1 }, (_, i) => [
+        offsetX + i * TILE_SIZE_IN_PIXELS, offsetY,
+        offsetX + i * TILE_SIZE_IN_PIXELS, offsetY + heightPx,
+    ])
+
     return (
         <Group>
-            {HORIZONTAL_POINT_PAIRS.concat(VERTICAL_POINT_PAIRS).map((points, index) => (
+            {horizontalLines.concat(verticalLines).map((points, index) => (
                 <Line
                     key={index}
                     points={points}
@@ -29,8 +34,25 @@ function GridGroup() {
                     listening={false}
                 />
             ))}
+            <Rect
+                x={offsetX}
+                y={offsetY}
+                width={widthPx}
+                height={heightPx}
+                stroke={GRID_COLOR}
+                strokeWidth={GRID_LINE_WIDTH_IN_PIXELS * 3}
+                fill={null}
+                listening={false}
+            />
         </Group>
     )
+}
+
+GridGroup.propTypes = {
+    width: PropTypes.number,
+    height: PropTypes.number,
+    x: PropTypes.number,
+    y: PropTypes.number,
 }
 
 export default GridGroup

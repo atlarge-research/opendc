@@ -107,7 +107,8 @@ public final class JobResource {
             @SuppressWarnings("unchecked")
             Map<String, Object> reportMap =
                     update.report() != null ? objectMapper.convertValue(update.report(), Map.class) : null;
-            jobService.updateJob(job, update.state(), update.runtime(), update.results(), reportMap);
+            jobService.updateJob(
+                    job, update.state(), update.runtime(), update.results(), reportMap, update.hasExports());
         } catch (IllegalArgumentException e) {
             throw new WebApplicationException(e, 400);
         } catch (IllegalStateException e) {

@@ -49,5 +49,5 @@ public record Job(
      * @param report The report containing warnings and errors.
      */
     @Schema(name = "Runner.Job.Update")
-    public record Update(JobState state, int runtime, Map<String, ?> results, Report report) {}
+    public record Update(JobState state, int runtime, Map<String, ?> results, Report report, boolean hasExports) {}
 }

@@ -36,6 +36,7 @@ function ContextSelector({ id, type = 'page', toggleText, items, onSelect, onTog
     return (
         <PFContextSelector
             id={id}
+            ouiaId={id}
             className={type === 'page' && styles.pageSelector}
             toggleText={toggleText}
             onSearchInputChange={(value) => setSearchValue(value)}

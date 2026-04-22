@@ -1,6 +1,7 @@
 export const DELETE_MACHINE = 'DELETE_MACHINE'
 export const ADD_UNIT = 'ADD_UNIT'
 export const DELETE_UNIT = 'DELETE_UNIT'
+export const EDIT_MACHINE_NAME = 'EDIT_MACHINE_NAME'
 
 export function deleteMachine(machineId) {
     return {
@@ -16,6 +17,10 @@ export function addUnit(machineId, unitType, unitId) {
         unitType,
         unitId,
     }
+}
+
+export function editMachineName(machineId, name) {
+    return { type: EDIT_MACHINE_NAME, machineId, name }
 }
 
 export function deleteUnit(machineId, unitType, unitId) {

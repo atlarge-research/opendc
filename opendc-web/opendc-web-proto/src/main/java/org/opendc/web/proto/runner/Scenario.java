@@ -22,7 +22,9 @@
 
 package org.opendc.web.proto.runner;
 
+import java.util.List;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.ExportModel;
 import org.opendc.web.proto.OperationalPhenomena;
 import org.opendc.web.proto.Workload;
 
@@ -33,9 +35,10 @@ import org.opendc.web.proto.Workload;
 public record Scenario(
         long id,
         int number,
-        Portfolio portfolio,
+        Experiment experiment,
         String name,
         Workload workload,
         Topology topology,
         OperationalPhenomena phenomena,
-        String schedulerName) {}
+        String schedulerName,
+        List<ExportModel> exportModels) {}

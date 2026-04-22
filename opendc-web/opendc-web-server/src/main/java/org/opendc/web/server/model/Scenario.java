@@ -44,6 +44,7 @@ import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.annotations.Type;
+import org.opendc.web.proto.ExportModel;
 import org.opendc.web.proto.OperationalPhenomena;
 
 /**
@@ -61,12 +62,12 @@ import org.opendc.web.proto.OperationalPhenomena;
 @NamedQueries({
     @NamedQuery(name = "Scenario.findByProject", query = "SELECT s FROM Scenario s WHERE s.project.id = :projectId"),
     @NamedQuery(
-            name = "Scenario.findByPortfolio",
+            name = "Scenario.findByExperiment",
             query =
                     """
                 SELECT s
                 FROM Scenario s
-                JOIN Portfolio p ON p.id = s.portfolio.id AND p.number = :number
+                JOIN Experiment e ON e.id = s.experiment.id AND e.number = :number
                 WHERE s.project.id = :projectId
             """),
     @NamedQuery(
@@ -91,11 +92,11 @@ public class Scenario extends PanacheEntityBase {
     public Project project;
 
     /**
-     * The {@link Portfolio} to which this scenario belongs.
+     * The {@link Experiment} to which this scenario belongs.
      */
     @ManyToOne(optional = false)
-    @JoinColumn(name = "portfolio_id", nullable = false, foreignKey = @ForeignKey(name = "fk_scenarios_portfolio"))
-    public Portfolio portfolio;
+    @JoinColumn(name = "experiment_id", nullable = false, foreignKey = @ForeignKey(name = "fk_scenarios_experiment"))
+    public Experiment experiment;
 
     /**
      * Unique number of the scenario for the project.
@@ -135,6 +136,13 @@ public class Scenario extends PanacheEntityBase {
     public String schedulerName;
 
     /**
+     * Optional export model configurations for producing output files per repeat.
+     */
+    @Column(name = "export_models", columnDefinition = "jsonb", updatable = false)
+    @Type(JsonType.class)
+    public List<ExportModel> exportModels;
+
+    /**
      * The {@link Job} associated with the scenario.
      */
     @OneToMany(
@@ -148,21 +156,23 @@ public class Scenario extends PanacheEntityBase {
      */
     public Scenario(
             Project project,
-            Portfolio portfolio,
+            Experiment experiment,
             int number,
             String name,
             Workload workload,
             Topology topology,
             OperationalPhenomena phenomena,
-            String schedulerName) {
+            String schedulerName,
+            List<ExportModel> exportModels) {
         this.project = project;
-        this.portfolio = portfolio;
+        this.experiment = experiment;
         this.number = number;
         this.name = name;
         this.workload = workload;
         this.topology = topology;
         this.phenomena = phenomena;
         this.schedulerName = schedulerName;
+        this.exportModels = exportModels;
     }
 
     /**
@@ -181,15 +191,15 @@ public class Scenario extends PanacheEntityBase {
     }
 
     /**
-     * Find all {@link Scenario}s that belong to the specified portfolio.
+     * Find all {@link Scenario}s that belong to the specified experiment.
      *
      * @param projectId The unique identifier of the project.
-     * @param number The number of the portfolio.
-     * @return The query of scenarios that belong to the specified project and portfolio..
+     * @param number The number of the experiment.
+     * @return The query of scenarios that belong to the specified project and experiment..
      */
-    public static PanacheQuery<Scenario> findByPortfolio(long projectId, int number) {
+    public static PanacheQuery<Scenario> findByExperiment(long projectId, int number) {
         return find(
-                "#Scenario.findByPortfolio",
+                "#Scenario.findByExperiment",
                 Parameters.with("projectId", projectId).and("number", number));
     }
 

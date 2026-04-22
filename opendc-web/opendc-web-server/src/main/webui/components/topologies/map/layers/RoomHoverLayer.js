@@ -35,12 +35,25 @@ export default function RoomHoverLayer() {
     const onClick = (x, y) => dispatch(toggleTileAtLocation(x, y))
     const isEnabled = useSelector((state) => state.construction.currentRoomInConstruction !== '-1')
     const isValid = useSelector((state) => (x, y) => {
+        const datacenterId = state.interactionLevel.datacenterId
+        const datacenter = datacenterId ? state.topology.datacenters?.[datacenterId] : null
+        if (datacenter) {
+            const dcX = datacenter.x ?? 0
+            const dcY = datacenter.y ?? 0
+            if (x < dcX || x >= dcX + datacenter.width || y < dcY || y >= dcY + datacenter.height) {
+                return false
+            }
+        }
+
         const newRoom = { ...state.topology.rooms[state.construction.currentRoomInConstruction] }
+        const allRoomIds = (state.topology.root?.datacenters ?? []).flatMap(
+            (dcId) => state.topology.datacenters[dcId]?.rooms ?? []
+        )
         const oldRooms = Object.keys(state.topology.rooms)
             .map((id) => ({ ...state.topology.rooms[id] }))
             .filter(
                 (room) =>
-                    state.topology.root.rooms.indexOf(room.id) !== -1 &&
+                    allRoomIds.indexOf(room.id) !== -1 &&
                     room.id !== state.construction.currentRoomInConstruction
             )
 

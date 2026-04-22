@@ -30,6 +30,7 @@ import java.util.List;
  */
 public record Machine(
         String id,
+        String name,
         int position,
         List<ProcessingUnit> cpus,
         List<ProcessingUnit> gpus,

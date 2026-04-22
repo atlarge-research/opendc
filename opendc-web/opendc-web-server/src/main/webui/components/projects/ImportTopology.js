@@ -39,7 +39,7 @@ function ImportTopology({ projectId }) {
 
     return (
         <>
-            <Button variant="secondary" icon={<UploadIcon />} isSmall onClick={() => setVisible(true)}>
+            <Button variant="secondary" icon={<UploadIcon />} isSmall onClick={() => setVisible(true)} ouiaId="import-topology">
                 Import Topology
             </Button>
             <ImportTopologyModal

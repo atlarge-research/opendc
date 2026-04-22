@@ -28,7 +28,7 @@ import { Button } from '@patternfly/react-core'
 function Collapse({ onClick }) {
     return (
         <div className={collapseContainer}>
-            <Button variant="tertiary" onClick={onClick}>
+            <Button variant="tertiary" onClick={onClick} ouiaId="collapse-sidebar">
                 <ChevronLeftIcon />
             </Button>
         </div>

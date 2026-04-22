@@ -41,7 +41,7 @@ import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import java.util.List;
 import org.hibernate.annotations.Type;
-import org.opendc.web.proto.topology.Room;
+import org.opendc.web.proto.topology.Datacenter;
 
 /**
  * A datacenter design in OpenDC.
@@ -106,22 +106,22 @@ public class Topology extends PanacheEntityBase {
     public Instant updatedAt;
 
     /**
-     * Datacenter design in JSON
+     * Datacenter design in JSON (stored in the "rooms" column for backwards compatibility).
      */
-    @Column(columnDefinition = "jsonb", nullable = false)
+    @Column(name = "rooms", columnDefinition = "jsonb", nullable = false)
     @Type(JsonType.class)
-    public List<Room> rooms;
+    public List<Datacenter> datacenters;
 
     /**
      * Construct a {@link Topology} object.
      */
-    public Topology(Project project, int number, String name, Instant createdAt, List<Room> rooms) {
+    public Topology(Project project, int number, String name, Instant createdAt, List<Datacenter> datacenters) {
         this.project = project;
         this.number = number;
         this.name = name;
         this.createdAt = createdAt;
         this.updatedAt = createdAt;
-        this.rooms = rooms;
+        this.datacenters = datacenters;
     }
 
     /**

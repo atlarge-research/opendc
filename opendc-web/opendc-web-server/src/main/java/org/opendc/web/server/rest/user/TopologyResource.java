@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.opendc.web.proto.topology.Datacenter;
 import org.opendc.web.proto.topology.Machine;
 import org.opendc.web.proto.topology.MemoryUnit;
 import org.opendc.web.proto.topology.ProcessingUnit;
@@ -118,7 +119,8 @@ public final class TopologyResource {
 
         int number = project.allocateTopology(now);
 
-        Topology topology = new Topology(project, number, request.name(), now, createNewInstances(request.rooms()));
+        Topology topology =
+                new Topology(project, number, request.name(), now, createNewDatacenterInstances(request.datacenters()));
 
         project.topologies.add(topology);
         topology.persist();
@@ -178,7 +180,7 @@ public final class TopologyResource {
         }
 
         entity.updatedAt = Instant.now();
-        entity.rooms = request.rooms();
+        entity.datacenters = request.datacenters() != null ? request.datacenters() : List.of();
 
         return UserProtocol.toDto(entity, auth);
     }
@@ -221,27 +223,49 @@ public final class TopologyResource {
     }
 
     /**
-     * Create new instances of the specified rooms.
+     * Create new instances of the specified datacenters.
      */
-    private List<Room> createNewInstances(List<Room> rooms) {
-        if (rooms == null) {
-            return null;
+    private List<Datacenter> createNewDatacenterInstances(List<Datacenter> datacenters) {
+        if (datacenters == null) {
+            return List.of();
         }
 
-        return rooms.stream().map(this::createNewInstance).toList();
+        return datacenters.stream().map(this::createNewInstance).toList();
+    }
+
+    /**
+     * Create a new instance of the specified datacenter.
+     */
+    private Datacenter createNewInstance(Datacenter datacenter) {
+        String datacenterId = UUID.randomUUID().toString();
+        Set<Room> rooms = datacenter.rooms();
+        if (rooms != null) {
+            rooms = rooms.stream()
+                    .map(room -> createNewInstance(room, datacenterId))
+                    .collect(Collectors.toSet());
+        }
+
+        return new Datacenter(
+                datacenterId,
+                datacenter.name(),
+                rooms,
+                datacenter.width(),
+                datacenter.height(),
+                datacenter.x(),
+                datacenter.y());
     }
 
     /**
      * Create a new instance of the specified room.
      */
-    private Room createNewInstance(Room room) {
+    private Room createNewInstance(Room room, String datacenterId) {
         String roomId = UUID.randomUUID().toString();
         Set<RoomTile> tiles = room.tiles();
         if (tiles != null) {
             tiles = tiles.stream().map(tile -> createNewInstance(tile, roomId)).collect(Collectors.toSet());
         }
 
-        return new Room(roomId, room.name(), tiles, room.topologyId());
+        return new Room(roomId, room.name(), tiles, datacenterId);
     }
 
     /**
@@ -269,7 +293,7 @@ public final class TopologyResource {
                     .toList();
         }
 
-        return new Rack(rackId, rack.name(), rack.capacity(), rack.powerCapacityW(), machines);
+        return new Rack(rackId, rack.name(), rack.capacity(), rack.powerCapacityW(), machines, rack.clusterName());
     }
 
     /**
@@ -297,7 +321,7 @@ public final class TopologyResource {
             storage = storage.stream().map(this::createNewInstance).toList();
         }
 
-        return new Machine(machineId, machine.position(), cpus, gpus, memory, storage, rackId);
+        return new Machine(machineId, machine.name(), machine.position(), cpus, gpus, memory, storage, rackId);
     }
 
     /**

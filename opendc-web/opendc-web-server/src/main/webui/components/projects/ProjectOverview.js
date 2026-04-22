@@ -38,8 +38,8 @@ import {
 import NewTopology from './NewTopology'
 import ImportTopology from './ImportTopology'
 import TopologyTable from './TopologyTable'
-import NewPortfolio from './NewPortfolio'
-import PortfolioTable from './PortfolioTable'
+import NewExperiment from './NewExperiment'
+import ExperimentTable from './ExperimentTable'
 import { useProject } from '../../data/project'
 
 function ProjectOverview({ projectId }) {
@@ -80,12 +80,12 @@ function ProjectOverview({ projectId }) {
                 <Card>
                     <CardHeader>
                         <CardActions>
-                            <NewPortfolio projectId={projectId} />
+                            <NewExperiment projectId={projectId} />
                         </CardActions>
-                        <CardTitle>Portfolios</CardTitle>
+                        <CardTitle>Experiments</CardTitle>
                     </CardHeader>
                     <CardBody>
-                        <PortfolioTable projectId={projectId} />
+                        <ExperimentTable projectId={projectId} />
                     </CardBody>
                 </Card>
             </GridItem>

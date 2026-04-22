@@ -67,4 +67,10 @@ public class OpenDCRunnerRuntimeConfig {
      */
     @ConfigItem(defaultValue = "1m")
     public Duration heartbeatInterval;
+
+    /**
+     * The directory where export ZIP files are written by the runner and served by the server.
+     */
+    @ConfigItem(defaultValue = "/tmp/opendc-exports")
+    public String exportDir;
 }

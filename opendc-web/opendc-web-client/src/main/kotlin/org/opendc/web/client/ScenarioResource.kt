@@ -38,12 +38,12 @@ public class ScenarioResource internal constructor(private val client: Transport
     public fun getAll(project: Long): List<Scenario> = client.get("projects/$project/scenarios") ?: emptyList()
 
     /**
-     * List all scenarios that belong to the specified [portfolioNumber].
+     * List all scenarios that belong to the specified [experimentNumber].
      */
     public fun getAll(
         project: Long,
-        portfolioNumber: Int,
-    ): List<Scenario> = client.get("projects/$project/portfolios/$portfolioNumber/scenarios") ?: emptyList()
+        experimentNumber: Int,
+    ): List<Scenario> = client.get("projects/$project/experiments/$experimentNumber/scenarios") ?: emptyList()
 
     /**
      * Obtain the scenario for [project] with [index].
@@ -54,14 +54,14 @@ public class ScenarioResource internal constructor(private val client: Transport
     ): Scenario? = client.get("projects/$project/scenarios/$index")
 
     /**
-     * Create a new scenario for [portfolio][portfolioNumber] with the specified [request].
+     * Create a new scenario for [experiment][experimentNumber] with the specified [request].
      */
     public fun create(
         project: Long,
-        portfolioNumber: Int,
+        experimentNumber: Int,
         request: Scenario.Create,
     ): Scenario {
-        return checkNotNull(client.post("projects/$project/portfolios/$portfolioNumber", request))
+        return checkNotNull(client.post("projects/$project/experiments/$experimentNumber", request))
     }
 
     /**

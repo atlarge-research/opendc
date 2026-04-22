@@ -37,4 +37,5 @@ public data class Job(
     val createdAt: Instant,
     val updatedAt: Instant,
     val results: Map<String, Any>? = null,
+    val hasExports: Boolean = false,
 )

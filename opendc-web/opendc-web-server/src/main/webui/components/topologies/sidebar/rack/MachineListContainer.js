@@ -23,11 +23,15 @@
 import PropTypes from 'prop-types'
 import React, { useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useRouter } from 'next/router'
 import MachineListComponent from './MachineListComponent'
 import { goFromRackToMachine } from '../../../../redux/actions/interaction-level'
 import { addMachine } from '../../../../redux/actions/topology/rack'
+import { useMachinePrefabs } from '../../../../data/machine-prefabs'
 
 function MachineListContainer({ tileId, ...props }) {
+    const router = useRouter()
+    const { project: projectId } = router.query
     const rack = useSelector((state) => state.topology.racks[state.topology.tiles[tileId].rack])
     const machines = useSelector((state) => rack.machines.map((id) => state.topology.machines[id]))
     const machinesNull = useMemo(() => {
@@ -38,12 +42,14 @@ function MachineListContainer({ tileId, ...props }) {
         return res
     }, [rack, machines])
     const dispatch = useDispatch()
+    const { data: machinePrefabs = [] } = useMachinePrefabs(projectId ? parseInt(projectId) : undefined)
 
     return (
         <MachineListComponent
             {...props}
             machines={machinesNull}
-            onAdd={(index) => dispatch(addMachine(rack.id, index))}
+            prefabs={machinePrefabs}
+            onAdd={(index, prefab) => dispatch(addMachine(rack.id, index, prefab?.machine ?? null))}
             onSelect={(index) => dispatch(goFromRackToMachine(index))}
         />
     )

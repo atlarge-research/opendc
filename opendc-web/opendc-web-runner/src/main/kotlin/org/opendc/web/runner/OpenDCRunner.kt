@@ -31,6 +31,9 @@ import org.opendc.compute.simulator.provisioner.setupComputeService
 import org.opendc.compute.simulator.provisioner.setupHosts
 import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
+import org.opendc.compute.simulator.telemetry.OutputFiles
+import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
+import org.opendc.compute.simulator.telemetry.parquet.ParquetComputeMonitor
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.PowerSourceSpec
@@ -41,6 +44,7 @@ import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.PowerModels
 import org.opendc.simulator.kotlin.runSimulation
+import org.opendc.web.proto.ExportModel
 import org.opendc.web.proto.runner.Job
 import org.opendc.web.proto.runner.Report
 import org.opendc.web.proto.runner.Scenario
@@ -48,6 +52,7 @@ import org.opendc.web.proto.runner.Topology
 import org.opendc.web.runner.internal.ReportCollector
 import org.opendc.web.runner.internal.WebComputeMonitor
 import java.io.File
+import java.io.FileOutputStream
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -60,6 +65,8 @@ import java.util.concurrent.RecursiveAction
 import java.util.concurrent.RecursiveTask
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  * Class to execute the pending jobs via the OpenDC web API.
@@ -77,6 +84,7 @@ public class OpenDCRunner(
     private val jobTimeout: Duration = Duration.ofMinutes(10),
     private val pollInterval: Duration = Duration.ofSeconds(30),
     private val heartbeatInterval: Duration = Duration.ofMinutes(1),
+    private val exportDir: File = File("/tmp/opendc-exports"),
 ) : Runnable {
     /**
      * Logging instance for this runner.
@@ -167,11 +175,12 @@ public class OpenDCRunner(
             try {
                 val topology = convertTopology(scenario.topology)
                 val jobs =
-                    (0 until scenario.portfolio.targets.repeats).map { repeat ->
+                    (0 until scenario.experiment.targets.repeats).map { repeat ->
                         SimulationTask(
                             scenario,
                             repeat,
                             topology,
+                            id,
                         )
                     }
                 val results = invokeAll(jobs).map { it.rawResult }
@@ -182,6 +191,9 @@ public class OpenDCRunner(
                 logger.info { "Finished simulation for job $id (in $duration seconds)" }
 
                 reportCollector.detach()
+
+                // Zip export files if export models were configured
+                val hasExports = zipExports(id, scenario.exportModels)
 
                 // Calculate wait time if startedAt is available
                 val waitTime =
@@ -212,6 +224,7 @@ public class OpenDCRunner(
                         "total_vms_failed" to results.map { it.totalVmsFailed },
                     ),
                     report,
+                    hasExports,
                 )
             } catch (e: Exception) {
                 reportCollector.detach()
@@ -263,6 +276,7 @@ public class OpenDCRunner(
         private val scenario: Scenario,
         private val repeat: Int,
         private val topologyHosts: List<HostSpec>,
+        private val jobId: Long,
     ) : RecursiveTask<WebComputeMonitor.Results>() {
         override fun compute(): WebComputeMonitor.Results {
             val monitor = WebComputeMonitor()
@@ -308,14 +322,43 @@ public class OpenDCRunner(
 
                     logger.debug { "Using scheduler: '${scenario.schedulerName}' for scenario ${scenario.id}" }
 
-                    provisioner.runSteps(
-                        setupComputeService(
-                            serviceDomain,
-                            { createPrefabComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong()), timeSource) },
-                        ),
-                        registerComputeMonitor(serviceDomain, monitor),
-                        setupHosts(serviceDomain, topology, startTime = startTime),
-                    )
+                    val steps =
+                        mutableListOf(
+                            setupComputeService(
+                                serviceDomain,
+                                { createPrefabComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong()), timeSource) },
+                            ),
+                            registerComputeMonitor(serviceDomain, monitor),
+                            setupHosts(serviceDomain, topology, startTime = startTime),
+                        )
+
+                    // Register Parquet monitor if export models are configured
+                    val exportModels = scenario.exportModels
+                    if (!exportModels.isNullOrEmpty()) {
+                        val exportModel = exportModels[0]
+                        val repeatDir = File(exportDir, "tmp/$jobId/repeat-${repeat + 1}")
+                        repeatDir.mkdirs()
+                        val filesToExport = buildFilesToExportMap(exportModel.filesToExport)
+                        val parquetMonitor =
+                            ParquetComputeMonitor(
+                                base = repeatDir,
+                                partition = "",
+                                bufferSize = 4096,
+                                filesToExport = filesToExport,
+                                computeExportConfig = ComputeExportConfig.ALL_COLUMNS,
+                            )
+                        steps.add(
+                            registerComputeMonitor(
+                                serviceDomain,
+                                parquetMonitor,
+                                Duration.ofSeconds(exportModel.exportInterval),
+                                Duration.ofMillis(startTime),
+                                filesToExport,
+                            ),
+                        )
+                    }
+
+                    provisioner.runSteps(*steps.toTypedArray())
 
                     val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
 
@@ -343,62 +386,121 @@ public class OpenDCRunner(
     }
 
     /**
+     * Zip the per-repeat export files for a job and delete the temp directory.
+     * Returns true if a ZIP was successfully created, false if no exports were configured or an error occurred.
+     */
+    private fun zipExports(
+        jobId: Long,
+        exportModels: List<ExportModel>?,
+    ): Boolean {
+        if (exportModels.isNullOrEmpty()) return false
+
+        val tmpDir = File(exportDir, "tmp/$jobId")
+        if (!tmpDir.exists()) return false
+
+        exportDir.mkdirs()
+        val zipFile = File(exportDir, "$jobId.zip")
+
+        return try {
+            ZipOutputStream(FileOutputStream(zipFile)).use { zos ->
+                tmpDir.walkTopDown().filter { it.isFile }.forEach { file ->
+                    val entryName = file.relativeTo(tmpDir).path
+                    zos.putNextEntry(ZipEntry(entryName))
+                    file.inputStream().use { it.copyTo(zos) }
+                    zos.closeEntry()
+                }
+            }
+            tmpDir.deleteRecursively()
+            logger.info { "Created export archive for job $jobId: $zipFile" }
+            true
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to create export archive for job $jobId" }
+            false
+        }
+    }
+
+    /**
+     * Convert a list of file name strings to the [OutputFiles] map expected by [ParquetComputeMonitor].
+     */
+    private fun buildFilesToExportMap(filesToExport: List<String>): Map<OutputFiles, Boolean> {
+        val nameMap =
+            mapOf(
+                "host" to OutputFiles.HOST,
+                "task" to OutputFiles.TASK,
+                "service" to OutputFiles.SERVICE,
+                "scheduler" to OutputFiles.SCHEDULER,
+                "power_source" to OutputFiles.POWER_SOURCE,
+                "battery" to OutputFiles.BATTERY,
+            )
+        val requested = filesToExport.map { it.lowercase() }.toSet()
+        return OutputFiles.entries.associateWith {
+            it.name.lowercase() in requested || it.name.lowercase().replace("_", "") in
+                requested.map {
+                        s ->
+                    s.replace("_", "")
+                }
+        }
+    }
+
+    /**
      * Convert the specified [topology] into an [Topology] understood by OpenDC.
      */
     private fun convertTopology(topology: Topology): List<HostSpec> {
         val res = mutableListOf<HostSpec>()
-        val random = Random(0)
 
-        val machines =
-            topology.rooms.asSequence()
-                .flatMap { room ->
-                    room.tiles.flatMap { tile ->
-                        val rack = tile.rack
-                        rack?.machines?.map { machine -> rack to machine } ?: emptyList()
+        for (datacenter in topology.datacenters) {
+            val datacenterName = datacenter.name
+            val machines =
+                datacenter.rooms.asSequence()
+                    .flatMap { room ->
+                        room.tiles.flatMap { tile ->
+                            val rack = tile.rack
+                            rack?.machines?.map { machine -> Triple(datacenterName, rack, machine) } ?: emptyList()
+                        }
                     }
-                }
 
-        for ((rack, machine) in machines) {
-            val clusterId = rack.id
-            val position = machine.position
+            for ((dcName, rack, machine) in machines) {
+                val clusterName = rack.clusterName ?: rack.id
+                val position = machine.position
 
-            val processors =
-                machine.cpus.map { cpu ->
-                    CpuModel(
-                        0,
-                        cpu.numberOfCores,
-                        cpu.clockRateMhz,
-                        "Intel",
-                        "amd64",
-                        cpu.name,
+                val processors =
+                    machine.cpus.map { cpu ->
+                        CpuModel(
+                            0,
+                            cpu.numberOfCores,
+                            cpu.clockRateMhz,
+                            "Intel",
+                            "amd64",
+                            cpu.name,
+                        )
+                    }
+
+                val memoryUnits =
+                    machine.memory.map { memory ->
+                        MemoryUnit(
+                            "Samsung",
+                            memory.name,
+                            memory.speedMbPerS,
+                            memory.sizeMb.toLong(),
+                        )
+                    }
+
+                val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
+                val cpuPowerModel = PowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
+
+                val spec =
+                    HostSpec(
+                        "node-$clusterName-$position",
+                        "node-$clusterName",
+                        clusterName,
+                        dcName,
+                        MachineModel(processors, memoryUnits[0]),
+                        cpuPowerModel,
+                        null,
                     )
-                }
 
-            val memoryUnits =
-                machine.memory.map { memory ->
-                    MemoryUnit(
-                        "Samsung",
-                        memory.name,
-                        memory.speedMbPerS,
-                        memory.sizeMb.toLong(),
-                    )
-                }
-
-            val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
-            val cpuPowerModel = PowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
-
-            val spec =
-                HostSpec(
-                    "node-$clusterId-$position",
-                    "node-$clusterId",
-                    clusterId,
-                    "",
-                    MachineModel(processors, memoryUnits[0]),
-                    cpuPowerModel,
-                    null,
-                )
-
-            res += spec
+                res += spec
+            }
         }
 
         return res

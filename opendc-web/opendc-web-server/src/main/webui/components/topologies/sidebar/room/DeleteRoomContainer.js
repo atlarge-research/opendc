@@ -39,7 +39,7 @@ function DeleteRoomContainer({ roomId }) {
     }
     return (
         <>
-            <Button variant="danger" icon={<TrashIcon />} isBlock onClick={() => setVisible(true)}>
+            <Button variant="danger" icon={<TrashIcon />} isBlock onClick={() => setVisible(true)} ouiaId="delete-room">
                 Delete this room
             </Button>
             <ConfirmationModal

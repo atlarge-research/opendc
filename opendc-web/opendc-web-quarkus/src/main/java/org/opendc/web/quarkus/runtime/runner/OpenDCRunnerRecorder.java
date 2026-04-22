@@ -56,7 +56,8 @@ public class OpenDCRunnerRecorder {
                 parallelism,
                 config.jobTimeout,
                 config.pollInterval,
-                config.heartbeatInterval);
+                config.heartbeatInterval,
+                new File(config.exportDir));
 
         return new RuntimeValue<>(runner);
     }

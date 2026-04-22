@@ -44,4 +44,6 @@ export const Tile = new schema.Entity('tiles', { rack: Rack }, { idAttribute: 'i
 
 export const Room = new schema.Entity('rooms', { tiles: [Tile] }, { idAttribute: 'id' })
 
-export const Topology = new schema.Entity('topologies', { rooms: [Room] }, { idAttribute: 'id' })
+export const Datacenter = new schema.Entity('datacenters', { rooms: [Room] }, { idAttribute: 'id' })
+
+export const Topology = new schema.Entity('topologies', { datacenters: [Datacenter] }, { idAttribute: 'id' })
