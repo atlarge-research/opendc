@@ -121,7 +121,7 @@ public class LocalParquetReader<out T>(
      * Construct a [ParquetReader] for the specified [input] with a custom [ReadSupport].
      */
     private fun createReader(input: InputFile): ParquetReader<T> {
-        return object : ParquetReader.Builder<T>(input) {
+        return object : ParquetReader.Builder<@UnsafeVariance T>(input) {
             override fun getReadSupport(): ReadSupport<@UnsafeVariance T> = this@LocalParquetReader.readSupport
         }
             .set("parquet.strict.typing", strictTyping.toString())

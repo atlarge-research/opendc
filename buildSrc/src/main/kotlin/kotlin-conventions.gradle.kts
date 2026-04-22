@@ -20,8 +20,6 @@
  * SOFTWARE.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     id("java-conventions")
     kotlin("jvm")
@@ -35,9 +33,4 @@ kotlin {
         val javaVersion = project.defaultVersionCatalog.getVersion("java")
         languageVersion.set(JavaLanguageVersion.of(javaVersion))
     }
-}
-
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-    kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
 }
