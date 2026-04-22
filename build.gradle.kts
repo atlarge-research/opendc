@@ -27,3 +27,18 @@ plugins {
 
 group = "org.opendc"
 version = "3.0-SNAPSHOT"
+
+tasks.register<Copy>("generateDocs") {
+    dependsOn(tasks.dokkaHtmlMultiModule)
+    from(tasks.dokkaHtmlMultiModule.flatMap { it.outputDirectory })
+    into(layout.buildDirectory.dir("docs/api"))
+}
+
+tasks.register("generateAllDocs") {
+    dependsOn("generateDocs")
+    doLast {
+        logger.lifecycle("Documentation generated in build/docs/")
+        logger.lifecycle("  API docs (Kotlin/Java): build/docs/api/")
+        logger.lifecycle("  Frontend docs (JS):     build/docs/frontend/")
+    }
+}

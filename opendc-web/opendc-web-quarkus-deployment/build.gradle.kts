@@ -25,6 +25,7 @@ description = "Quarkus extension for serving OpenDC web interface"
 // Build configuration
 plugins {
     `java-library-conventions`
+    `dokka-conventions`
 }
 
 dependencies {

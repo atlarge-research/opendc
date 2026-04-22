@@ -51,7 +51,8 @@
     },
     "devDependencies": {
         "eslint": "^8.36.0",
-        "eslint-config-next": "^13.2.4"
+        "eslint-config-next": "^13.2.4",
+        "jsdoc": "^4.0.4"
     },
     "scripts": {
         "format": "prettier --write src",
@@ -60,7 +61,8 @@
         "lint": "next lint",
         "build": "next build && next export",
         "start": "next start",
-        "export": "next export -o build/export"
+        "export": "next export -o build/export",
+        "docs": "jsdoc -c jsdoc.json -r -d ../../../../../../build/docs/frontend"
     },
     "browserslist": {
         "production": [

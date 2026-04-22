@@ -26,6 +26,7 @@ description = "Experiment runner for OpenDC"
 plugins {
     `kotlin-conventions`
     `testing-conventions`
+    `dokka-conventions`
     distribution
 }
 

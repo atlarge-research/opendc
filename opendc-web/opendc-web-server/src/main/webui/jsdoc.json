@@ -1,0 +1,14 @@
+{
+  "source": {
+    "include": ["components", "redux", "util", "data", "api"],
+    "includePattern": ".+\\.js$"
+  },
+  "opts": {
+    "recurse": true
+  },
+  "templates": {
+    "default": {
+      "outputSourceFiles": true
+    }
+  }
+}

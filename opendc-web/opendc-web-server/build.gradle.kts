@@ -25,6 +25,7 @@ description = "Web server of OpenDC"
 // Build configuration
 plugins {
     `quarkus-conventions`
+    `dokka-conventions`
     distribution
 }
 

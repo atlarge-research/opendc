@@ -25,6 +25,7 @@ description = "Web communication protocol for OpenDC"
 // Build configuration
 plugins {
     `java-library-conventions`
+    `dokka-conventions`
 }
 
 dependencies {
