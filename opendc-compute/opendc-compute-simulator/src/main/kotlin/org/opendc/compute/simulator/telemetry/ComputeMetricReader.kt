@@ -198,15 +198,18 @@ public class ComputeMetricReader(
                 }
             }
 
+            // Always record service metrics (needed for console logging)
+            this.serviceTableReader.record(now)
             if (toMonitor[OutputFiles.SERVICE] == true) {
-                this.serviceTableReader.record(now)
                 this.monitor.record(this.serviceTableReader.copy())
             }
 
-            if (toMonitor[OutputFiles.SCHEDULER] == true) {
-                val scheduler = this.service.scheduler
-                if (scheduler is PortfolioScheduler) {
-                    for (record in scheduler.drainDecisionRecords()) {
+            // Always drain records to prevent memory accumulation
+            val scheduler = this.service.scheduler
+            if (scheduler is PortfolioScheduler) {
+                val records = scheduler.drainDecisionRecords()
+                if (toMonitor[OutputFiles.SCHEDULER] == true) {
+                    for (record in records) {
                         this.schedulerTableReader.setFrom(record)
                         this.monitor.record(this.schedulerTableReader.copy())
                     }

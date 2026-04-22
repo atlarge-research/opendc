@@ -27,6 +27,7 @@ import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
 import org.opendc.compute.simulator.telemetry.table.service.ServiceData
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.service.toServiceData
+import java.time.Instant
 import kotlin.math.roundToLong
 
 /**
@@ -78,7 +79,7 @@ internal class WebComputeMonitor : ComputeMonitor {
         val count: Long,
     )
 
-    private lateinit var serviceData: ServiceData
+    private var serviceData: ServiceData = ServiceData(Instant.MIN, 0, 0, 0, 0, 0, 0, 0)
 
     override fun record(reader: ServiceTableReader) {
         serviceData = reader.toServiceData()
