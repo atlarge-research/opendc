@@ -81,9 +81,9 @@ jobs:
       - name: Publish with Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          arguments: publish -Pversion="${{ steps.prep.outputs.version }}"
+          arguments: publishAggregationToCentralPortal -Pversion="${{ steps.prep.outputs.version }}"
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
-          ORG_GRADLE_PROJECT_ossrhUsername: ${{ secrets.OSSRH_USERNAME }}
-          ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
+          ORG_GRADLE_PROJECT_centralPortalUsername: ${{ secrets.CENTRAL_PORTAL_USERNAME }}
+          ORG_GRADLE_PROJECT_centralPortalPassword: ${{ secrets.CENTRAL_PORTAL_PASSWORD }}
