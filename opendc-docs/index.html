@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenDC Code Documentation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f6fa;
+            color: #2d3436;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 640px;
+            padding: 2rem;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #636e72;
+            margin-bottom: 2.5rem;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+        .card h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+        .card p { color: #636e72; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OpenDC Code Documentation</h1>
+        <p class="subtitle">Browse the generated API references for the OpenDC platform.</p>
+        <div class="cards">
+            <a class="card" href="/api/">
+                <h2>Backend API</h2>
+                <p>Kotlin &amp; Java API reference generated with Dokka.</p>
+            </a>
+            <a class="card" href="/frontend/">
+                <h2>Frontend</h2>
+                <p>JavaScript component &amp; utility reference generated with JSDoc.</p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
