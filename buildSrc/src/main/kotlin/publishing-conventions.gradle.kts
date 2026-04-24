@@ -20,14 +20,10 @@
  * SOFTWARE.
  */
 
-import org.gradle.api.credentials.PasswordCredentials
-
 plugins {
     `maven-publish`
     signing
 }
-
-val isSnapshot = project.version.toString().contains("SNAPSHOT")
 
 // Ensure project is built successfully before publishing it
 tasks.withType<PublishToMavenRepository>().configureEach {
@@ -80,17 +76,6 @@ publishing {
                     url.set("https://github.com/atlarge-research/opendc")
                 }
             }
-        }
-    }
-
-    repositories {
-        maven {
-            val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-
-            name = "ossrh"
-            url = if (isSnapshot) snapshotsRepoUrl else releasesRepoUrl
-            credentials(PasswordCredentials::class)
         }
     }
 }

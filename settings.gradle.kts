@@ -19,7 +19,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+plugins {
+    id("com.gradleup.nmcp.settings").version("1.4.4")
+}
+
 rootProject.name = "opendc"
+
+nmcpSettings {
+    centralPortal {
+        username = providers.gradleProperty("centralPortalUsername").orNull
+        password = providers.gradleProperty("centralPortalPassword").orNull
+        publishingType = "AUTOMATIC"
+    }
+}
 
 
 include(":opendc-common")
