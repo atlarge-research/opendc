@@ -57,7 +57,7 @@ function ExperimentResults({ projectId, experimentId }) {
         const dataPerMetric = {}
         AVAILABLE_METRICS.forEach((metric) => {
             dataPerMetric[metric] = scenarios
-                .filter((scenario) => scenario.jobs && scenario.jobs[scenario.jobs.length - 1].results)
+                .filter((scenario) => scenario.jobs?.length > 0 && scenario.jobs[scenario.jobs.length - 1].results)
                 .map((scenario) => {
                     const job = scenario.jobs[scenario.jobs.length - 1]
                     return {

@@ -23,6 +23,7 @@
 package org.opendc.web.runner
 
 import mu.KotlinLogging
+import java.io.IOException
 import org.opendc.compute.failure.prefab.FailurePrefab
 import org.opendc.compute.failure.prefab.createFailureModelPrefab
 import org.opendc.compute.simulator.provisioner.Provisioner
@@ -115,26 +116,11 @@ public class OpenDCRunner(
      */
     override fun run() {
         try {
-            while (true) {
-                val job = manager.findNext()
-                if (job == null) {
+            while (true)
+                if (pollOnce())
                     Thread.sleep(pollInterval.toMillis())
-                    continue
-                }
-
-                val id = job.id
-
-                logger.info { "Found queued job $id: attempting to claim" }
-
-                if (!manager.claim(id)) {
-                    logger.info { "Failed to claim scenario" }
-                    continue
-                }
-
-                pool.submit(JobAction(job))
-            }
         } catch (_: InterruptedException) {
-            // Gracefully exit when the thread is interrupted
+            logger.warn { "Runner process interrupted, shutting down" }
         } finally {
             workloadLoader.reset()
 
@@ -143,6 +129,36 @@ public class OpenDCRunner(
 
             pool.awaitTermination(5, TimeUnit.SECONDS)
         }
+    }
+
+    /**
+     * Attempt to find and dispatch one pending job.
+     *
+     * Returns `true` if the caller should sleep for [pollInterval] before the next attempt (no work
+     * was found, or a transient error occurred), `false` to poll again immediately.
+     */
+    private fun pollOnce(): Boolean {
+        val job = try {
+            manager.findNext()
+        } catch (e: IOException) {
+            logger.warn(e) { "Transient error polling for jobs; retrying after poll interval" }
+            return true
+        }
+
+        logger.info { "Polling for jobs: found ${if (job == null) "no" else "job ${job.id}"} to execute" }
+        if (job == null) return true
+
+        val id = job.id
+
+        logger.info { "Found queued job $id: attempting to claim" }
+
+        if (!manager.claim(id)) {
+            logger.info { "Failed to claim scenario" }
+            return false
+        }
+
+        pool.submit(JobAction(job))
+        return false
     }
 
     /**
@@ -174,6 +190,7 @@ public class OpenDCRunner(
 
             try {
                 val topology = convertTopology(scenario.topology)
+                require(topology.isNotEmpty()) { "Topology '${scenario.topology.name}' has no hosts configured" }
                 val jobs =
                     (0 until scenario.experiment.targets.repeats).map { repeat ->
                         SimulationTask(
@@ -226,8 +243,12 @@ public class OpenDCRunner(
                     report,
                     hasExports,
                 )
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 reportCollector.detach()
+
+                // Cancel the heartbeat first so it cannot re-interrupt this thread after
+                // Thread.interrupted() clears the flag below.
+                heartbeat.cancel(true)
 
                 val duration = startTime.secondsSince()
 
@@ -238,7 +259,7 @@ public class OpenDCRunner(
                     }
 
                 val errorInfo =
-                    if (Thread.interrupted()) {
+                    if (Thread.interrupted() || e is InterruptedException) {
                         logger.info { "Simulation job $id exceeded time limit ($duration seconds)" }
                         Report.ErrorInfo("Simulation exceeded time limit", "TIMEOUT", null)
                     } else {
@@ -249,7 +270,6 @@ public class OpenDCRunner(
                 val report = reportCollector.collect(duration, waitTime, job.createdAt, job.startedAt, errorInfo)
 
                 try {
-                    heartbeat.cancel(true)
                     manager.fail(id, duration, report)
                 } catch (e: Throwable) {
                     logger.error(e) { "Failed to update job" }
@@ -292,6 +312,9 @@ public class OpenDCRunner(
                 interruptTask.cancel(false)
             }
 
+            if (Thread.interrupted())
+                throw InterruptedException("Simulation timed out")
+
             return monitor.collectResults()
         }
 
@@ -326,7 +349,13 @@ public class OpenDCRunner(
                         mutableListOf(
                             setupComputeService(
                                 serviceDomain,
-                                { createPrefabComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong()), timeSource) },
+                                {
+                                    createPrefabComputeScheduler(
+                                        scenario.schedulerName,
+                                        Random(it.seeder.nextLong()),
+                                        timeSource
+                                    )
+                                },
                             ),
                             registerComputeMonitor(serviceDomain, monitor),
                             setupHosts(serviceDomain, topology, startTime = startTime),
@@ -365,7 +394,13 @@ public class OpenDCRunner(
                     val phenomena = scenario.phenomena
                     val failureModel =
                         if (phenomena.failures) {
-                            createFailureModelPrefab(coroutineContext, timeSource, service, Random(seed), FailurePrefab.G5k06Exp)
+                            createFailureModelPrefab(
+                                coroutineContext,
+                                timeSource,
+                                service,
+                                Random(seed),
+                                FailurePrefab.G5k06Exp
+                            )
                         } else {
                             null
                         }
@@ -435,8 +470,7 @@ public class OpenDCRunner(
         val requested = filesToExport.map { it.lowercase() }.toSet()
         return OutputFiles.entries.associateWith {
             it.name.lowercase() in requested || it.name.lowercase().replace("_", "") in
-                requested.map {
-                        s ->
+                requested.map { s ->
                     s.replace("_", "")
                 }
         }

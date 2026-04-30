@@ -91,7 +91,11 @@ function ScenarioTable({ experiment, status }) {
                                 : '-'}
                         </Td>
                         <Td dataLabel="State">
-                            <ScenarioState state={scenario.jobs[scenario.jobs.length - 1].state} />
+                            {scenario.jobs && scenario.jobs.length > 0 ? (
+                                <ScenarioState state={scenario.jobs[scenario.jobs.length - 1].state} />
+                            ) : (
+                                '-'
+                            )}
                         </Td>
                         <Td isActionCell>
                             <ActionsColumn items={actions(scenario)} />
