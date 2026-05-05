@@ -16,6 +16,7 @@
     "author": "OpenDC Maintainers <opendc@atlarge-research.com>",
     "license": "MIT",
     "private": true,
+    "output": "export",
     "dependencies": {
         "@auth0/auth0-react": "^1.12.1",
         "@patternfly/react-charts": "^6.94.18",

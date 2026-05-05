@@ -22,17 +22,20 @@
 
 package org.opendc.web.quarkus.deployment.runner;
 
-import io.quarkus.runtime.annotations.ConfigItem;
+import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
 
 /**
  * Build-time configuration for the OpenDC web runner extension.
  */
-@ConfigRoot(name = "opendc-runner")
-public class OpenDCRunnerConfig {
+@ConfigMapping(prefix = "quarkus.opendc-runner")
+@ConfigRoot(phase = ConfigPhase.BUILD_TIME)
+public interface OpenDCRunnerConfig {
     /**
      * A flag to include the OpenDC web runner extension into the build.
      */
-    @ConfigItem(defaultValue = "true")
-    boolean include;
+    @WithDefault("true")
+    boolean include();
 }

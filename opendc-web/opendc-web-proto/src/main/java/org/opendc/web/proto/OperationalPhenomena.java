@@ -22,7 +22,9 @@
 
 package org.opendc.web.proto;
 
+import java.io.Serializable;
+
 /**
  * Object describing the enabled operational phenomena for a scenario.
  */
-public record OperationalPhenomena(boolean failures, boolean interference) {}
+public record OperationalPhenomena(boolean failures, boolean interference) implements Serializable {}

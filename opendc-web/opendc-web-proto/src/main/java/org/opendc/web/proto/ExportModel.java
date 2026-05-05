@@ -22,6 +22,7 @@
 
 package org.opendc.web.proto;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -30,4 +31,4 @@ import java.util.List;
  * @param exportInterval The interval (in seconds) at which metrics are flushed to output files.
  * @param filesToExport The list of output file types to produce (e.g. "host", "task", "service", "scheduler").
  */
-public record ExportModel(long exportInterval, List<String> filesToExport) {}
+public record ExportModel(long exportInterval, List<String> filesToExport) implements Serializable {}

@@ -22,55 +22,57 @@
 
 package org.opendc.web.quarkus.runtime.runner;
 
-import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
 import java.time.Duration;
 
 /**
  * Configuration for the OpenDC web runner.
  */
-@ConfigRoot(phase = ConfigPhase.RUN_TIME, name = "opendc-runner")
-public class OpenDCRunnerRuntimeConfig {
+@ConfigMapping(prefix = "quarkus.opendc-runner")
+@ConfigRoot(phase = ConfigPhase.RUN_TIME)
+public interface OpenDCRunnerRuntimeConfig {
     /**
      * Flag to indicate whether the runner should be enabled.
      */
-    @ConfigItem(defaultValue = "true")
-    public boolean enable;
+    @WithDefault("true")
+    boolean enable();
 
     /**
      * The path where the workload traces are located.
      */
-    @ConfigItem(defaultValue = "traces")
-    public String tracePath;
+    @WithDefault("traces")
+    String tracePath();
 
     /**
      * The number of concurrent simulations
      */
-    @ConfigItem(defaultValue = "1")
-    public int parallelism;
+    @WithDefault("1")
+    int parallelism();
 
     /**
      * The maximum duration of a job.
      */
-    @ConfigItem(defaultValue = "10m")
-    public Duration jobTimeout;
+    @WithDefault("10m")
+    Duration jobTimeout();
 
     /**
      * The interval between successive polls to the API.
      */
-    @ConfigItem(defaultValue = "30s")
-    public Duration pollInterval;
+    @WithDefault("30s")
+    Duration pollInterval();
 
     /**
      * The interval between successive heartbeats to the API.
      */
-    @ConfigItem(defaultValue = "1m")
-    public Duration heartbeatInterval;
+    @WithDefault("1m")
+    Duration heartbeatInterval();
 
     /**
      * The directory where export ZIP files are written by the runner and served by the server.
      */
-    @ConfigItem(defaultValue = "/tmp/opendc-exports")
-    public String exportDir;
+    @WithDefault("/tmp/opendc-exports")
+    String exportDir();
 }

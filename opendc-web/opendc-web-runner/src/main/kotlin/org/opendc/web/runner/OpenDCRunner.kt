@@ -23,7 +23,6 @@
 package org.opendc.web.runner
 
 import mu.KotlinLogging
-import java.io.IOException
 import org.opendc.compute.failure.prefab.FailurePrefab
 import org.opendc.compute.failure.prefab.createFailureModelPrefab
 import org.opendc.compute.simulator.provisioner.Provisioner
@@ -54,6 +53,7 @@ import org.opendc.web.runner.internal.ReportCollector
 import org.opendc.web.runner.internal.WebComputeMonitor
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -117,8 +117,9 @@ public class OpenDCRunner(
     override fun run() {
         try {
             while (true)
-                if (pollOnce())
+                if (pollOnce()) {
                     Thread.sleep(pollInterval.toMillis())
+                }
         } catch (_: InterruptedException) {
             logger.warn { "Runner process interrupted, shutting down" }
         } finally {
@@ -312,8 +313,9 @@ public class OpenDCRunner(
                 interruptTask.cancel(false)
             }
 
-            if (Thread.interrupted())
+            if (Thread.interrupted()) {
                 throw InterruptedException("Simulation timed out")
+            }
 
             return monitor.collectResults()
         }
@@ -353,7 +355,7 @@ public class OpenDCRunner(
                                     createPrefabComputeScheduler(
                                         scenario.schedulerName,
                                         Random(it.seeder.nextLong()),
-                                        timeSource
+                                        timeSource,
                                     )
                                 },
                             ),
@@ -399,7 +401,7 @@ public class OpenDCRunner(
                                 timeSource,
                                 service,
                                 Random(seed),
-                                FailurePrefab.G5k06Exp
+                                FailurePrefab.G5k06Exp,
                             )
                         } else {
                             null

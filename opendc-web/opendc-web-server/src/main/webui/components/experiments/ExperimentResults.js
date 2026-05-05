@@ -57,14 +57,19 @@ function ExperimentResults({ projectId, experimentId }) {
         const dataPerMetric = {}
         AVAILABLE_METRICS.forEach((metric) => {
             dataPerMetric[metric] = scenarios
-                .filter((scenario) => scenario.jobs?.length > 0 && scenario.jobs[scenario.jobs.length - 1].results)
+                .filter((scenario) => {
+                    if (!scenario.jobs?.length) return false
+                    const job = scenario.jobs[scenario.jobs.length - 1]
+                    return job.results?.[metric] != null
+                })
                 .map((scenario) => {
                     const job = scenario.jobs[scenario.jobs.length - 1]
+                    const values = [].concat(job.results[metric])
                     return {
                         metric,
                         x: scenario.name,
-                        y: mean(job.results[metric]),
-                        errorY: std(job.results[metric]),
+                        y: mean(values),
+                        errorY: values.length > 1 ? std(values) : 0,
                         label,
                     }
                 })

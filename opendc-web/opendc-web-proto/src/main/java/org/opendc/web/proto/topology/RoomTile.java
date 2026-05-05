@@ -22,7 +22,10 @@
 
 package org.opendc.web.proto.topology;
 
+import java.io.Serializable;
+
 /**
  * A location in a room.
  */
-public record RoomTile(String id, double positionX, double positionY, Rack rack, String roomId) {}
+public record RoomTile(String id, double positionX, double positionY, Rack rack, String roomId)
+        implements Serializable {}

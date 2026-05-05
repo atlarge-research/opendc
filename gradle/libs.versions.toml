@@ -4,7 +4,7 @@ clikt = "4.2.1"
 commons-math3 = "3.6.1"
 dokka = "1.9.10"
 hadoop = "3.3.6"
-hypersistence-utils = "3.7.3"
+hypersistence-utils = "3.15.2"
 jackson = "2.16.1"
 jandex-gradle = "1.1.0"
 java = "21"
@@ -16,7 +16,7 @@ junit-jupiter = "5.10.2"
 kotlin = "2.3.20"
 kotlin-logging = "3.0.5"
 kotlinx-coroutines = "1.8.0"
-log4j = "2.23.0"
+log4j = "2.25.3"
 microprofile-rest-client = "3.0.1"
 microprofile-openapi = "3.1.1"
 microprofile-config = "3.1"
@@ -24,8 +24,8 @@ mockk = "1.13.9"
 node = "18.15.0"
 parquet = "1.13.1"
 progressbar = "0.10.0"
-quarkus = "3.8.0"
-quarkus-quinoa = "2.3.4"
+quarkus = "3.33.1"
+quarkus-quinoa = "2.8.1"
 sentry = "7.4.0"
 slf4j = "2.0.9"
 spotless = "6.25.0"
@@ -87,12 +87,12 @@ quarkus-hibernate-validator = { module = "io.quarkus:quarkus-hibernate-validator
 quarkus-jdbc-h2 = { module = "io.quarkus:quarkus-jdbc-h2" }
 quarkus-jdbc-postgresql = { module = "io.quarkus:quarkus-jdbc-postgresql" }
 quarkus-flyway = { module = "io.quarkus:quarkus-flyway" }
-hypersistence-utils-hibernate = { module = "io.hypersistence:hypersistence-utils-hibernate-63", version.ref = "hypersistence-utils" }
+hypersistence-utils-hibernate = { module = "io.hypersistence:hypersistence-utils-hibernate-71", version.ref = "hypersistence-utils" }
 quarkus-quinoa-runtime = { module = "io.quarkiverse.quinoa:quarkus-quinoa", version.ref = "quarkus-quinoa" }
 quarkus-quinoa-deployment = { module = "io.quarkiverse.quinoa:quarkus-quinoa-deployment", version.ref = "quarkus-quinoa" }
 
 # Quarkus (Testing)
-quarkus-junit5-core = { module = "io.quarkus:quarkus-junit5" }
+quarkus-junit5-core = { module = "io.quarkus:quarkus-junit" }
 quarkus-jacoco = { module = "io.quarkus:quarkus-jacoco" }
 quarkus-panache-mock = { module = "io.quarkus:quarkus-panache-mock" }
 quarkus-test-security = { module = "io.quarkus:quarkus-test-security" }
