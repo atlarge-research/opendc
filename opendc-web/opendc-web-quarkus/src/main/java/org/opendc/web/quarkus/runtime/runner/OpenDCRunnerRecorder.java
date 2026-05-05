@@ -44,8 +44,9 @@ public class OpenDCRunnerRecorder {
      * Helper method to create an {@link OpenDCRunner} instance.
      */
     public RuntimeValue<OpenDCRunner> createRunner() {
-        OpenDCRunnerRuntimeConfig config =
-                ConfigProvider.getConfig().unwrap(SmallRyeConfig.class).getConfigMapping(OpenDCRunnerRuntimeConfig.class);
+        OpenDCRunnerRuntimeConfig config = ConfigProvider.getConfig()
+                .unwrap(SmallRyeConfig.class)
+                .getConfigMapping(OpenDCRunnerRuntimeConfig.class);
 
         int parallelism = config.parallelism();
         if (parallelism < 0) {
@@ -71,8 +72,9 @@ public class OpenDCRunnerRecorder {
      * Helper method to start the OpenDC runner service.
      */
     public void startRunner(RuntimeValue<OpenDCRunner> runner, ShutdownContext shutdownContext) {
-        OpenDCRunnerRuntimeConfig config =
-                ConfigProvider.getConfig().unwrap(SmallRyeConfig.class).getConfigMapping(OpenDCRunnerRuntimeConfig.class);
+        OpenDCRunnerRuntimeConfig config = ConfigProvider.getConfig()
+                .unwrap(SmallRyeConfig.class)
+                .getConfigMapping(OpenDCRunnerRuntimeConfig.class);
 
         if (config.enable()) {
             LOGGER.info("Starting OpenDC Runner in background (polling every " + config.pollInterval() + ")");

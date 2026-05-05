@@ -45,7 +45,9 @@ dependencies {
     }
 }
 
-val codeCoverageReport by reporting.reports.creating(JacocoCoverageReport::class) {}
+val codeCoverageReport by reporting.reports.creating(JacocoCoverageReport::class) {
+    testSuiteName.set("test")
+}
 
 tasks.check {
     dependsOn(codeCoverageReport.reportTask)

@@ -139,12 +139,13 @@ public class OpenDCRunner(
      * was found, or a transient error occurred), `false` to poll again immediately.
      */
     private fun pollOnce(): Boolean {
-        val job = try {
-            manager.findNext()
-        } catch (e: IOException) {
-            logger.warn(e) { "Transient error polling for jobs; retrying after poll interval" }
-            return true
-        }
+        val job =
+            try {
+                manager.findNext()
+            } catch (e: IOException) {
+                logger.warn(e) { "Transient error polling for jobs; retrying after poll interval" }
+                return true
+            }
 
         logger.info { "Polling for jobs: found ${if (job == null) "no" else "job ${job.id}"} to execute" }
         if (job == null) return true
