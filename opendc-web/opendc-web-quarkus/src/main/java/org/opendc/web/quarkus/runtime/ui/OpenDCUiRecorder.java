@@ -54,9 +54,8 @@ public class OpenDCUiRecorder {
                 return;
             }
 
-            OpenDCUiConfig config = ConfigProvider.getConfig()
-                    .unwrap(SmallRyeConfig.class)
-                    .getConfigMapping(OpenDCUiConfig.class);
+            OpenDCUiConfig config =
+                    ConfigProvider.getConfig().unwrap(SmallRyeConfig.class).getConfigMapping(OpenDCUiConfig.class);
             String dateHeader = DateTimeFormatter.RFC_1123_DATE_TIME.format(
                     ZonedDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneOffset.UTC));
 

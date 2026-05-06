@@ -34,7 +34,7 @@ import {
     TextInput,
 } from '@patternfly/react-core'
 import Modal from '../util/modals/Modal'
-import { METRIC_GROUPS, METRIC_NAMES } from '../../util/available-metrics'
+import {METRIC_GROUPS, METRIC_NAMES, METRIC_UNITS} from '../../util/available-metrics'
 
 const NewExperimentModal = ({ isOpen, onSubmit: onSubmitUpstream, onCancel: onUpstreamCancel }) => {
     const nameInput = useRef(null)
@@ -130,6 +130,7 @@ const NewExperimentModal = ({ isOpen, onSubmit: onSubmitUpstream, onCancel: onUp
                                     {metrics.map((metric) => (
                                         <SelectOption key={metric} value={metric}>
                                             {METRIC_NAMES[metric]}
+                                            {metric in METRIC_UNITS ? ` (${METRIC_UNITS[metric]})` : ''}
                                         </SelectOption>
                                     ))}
                                 </SelectGroup>
