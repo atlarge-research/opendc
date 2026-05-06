@@ -10,3 +10,20 @@
 **/node_modules
 
 **/Dockerfile
+docker-compose*.yml
+
+# Python caches
+**/__pycache__/
+**/venv/
+**/*.pyc
+
+# OS files
+.DS_Store
+
+# Large data (mounted at runtime, not baked into the image)
+data/outputs/
+data/raw_traces/
+output/
+
+# Site docs
+site/
