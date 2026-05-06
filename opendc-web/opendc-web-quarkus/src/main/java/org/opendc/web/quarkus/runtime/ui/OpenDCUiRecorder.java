@@ -25,17 +25,18 @@ package org.opendc.web.quarkus.runtime.ui;
 import static io.vertx.ext.web.handler.StaticHandler.DEFAULT_MAX_AGE_SECONDS;
 
 import io.quarkus.runtime.annotations.Recorder;
+import io.smallrye.config.SmallRyeConfig;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import jakarta.enterprise.inject.spi.CDI;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 /**
  * Recorder class for the OpenDC web UI.
@@ -53,7 +54,9 @@ public class OpenDCUiRecorder {
                 return;
             }
 
-            OpenDCUiConfig config = CDI.current().select(OpenDCUiConfig.class).get();
+            OpenDCUiConfig config = ConfigProvider.getConfig()
+                    .unwrap(SmallRyeConfig.class)
+                    .getConfigMapping(OpenDCUiConfig.class);
             String dateHeader = DateTimeFormatter.RFC_1123_DATE_TIME.format(
                     ZonedDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneOffset.UTC));
 
