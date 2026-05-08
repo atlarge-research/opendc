@@ -29,9 +29,18 @@ plugins {
     `jacoco-conventions`
     distribution
     kotlin("plugin.serialization") version "1.9.22"
+    id("me.champeau.jmh")
+}
+
+jmh {
+    jvmArgsAppend.set(listOf(
+        "-XX:StartFlightRecording=filename=build/bench.jfr,settings=profile,duration=60s"
+    ))
 }
 
 dependencies {
+
+    implementation(kotlin("stdlib"))
 
     api(projects.opendcCompute.opendcComputeSimulator)
 
