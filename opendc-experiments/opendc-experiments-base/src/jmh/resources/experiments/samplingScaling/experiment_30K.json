@@ -1,0 +1,22 @@
+{
+    "topologies": [
+        {"pathToFile": "src/jmh/resources/topologies/taskScaling/topology_100.json"}
+    ],
+    "workloads": [{
+        "pathToFile": "src/jmh/resources/workloadTraces/taskScaling/10K_tasks",
+        "type": "ComputeWorkload",
+        "submissionTime": "2024-03-01T00:00:00"
+    }],
+    "allocationPolicies": [
+        {
+            "type": "prefab",
+            "policyName": "Mem"
+        }
+    ],
+    "exportModels": [
+        {
+            "exportInterval": 120,
+            "printFrequency": 9999999
+        }
+    ]
+}
