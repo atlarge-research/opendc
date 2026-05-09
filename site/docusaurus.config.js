@@ -31,6 +31,7 @@ const config = {
             ({
                 docs: {
                     path: "learn",
+                    routeBasePath: "learn",
                     sidebarPath: require.resolve("./sidebars.js"),
                     editUrl: `https://github.com/${organizationName}/${projectName}/tree/master/site/`
                 },
@@ -116,11 +117,15 @@ const config = {
                         items: [
                             {
                                 label: "Getting Started",
-                                to: "/docs/category/getting-started"
+                                to: "/learn/category/getting-started"
                             },
                             {
                                 label: "Tutorials",
-                                to: "/docs/category/tutorials"
+                                to: "/learn/category/tutorials"
+                            },
+                            {
+                                label: "Documentation",
+                                to: "/learn/category/documentation"
                             }
                         ]
                     },
