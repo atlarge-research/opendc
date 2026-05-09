@@ -14,9 +14,9 @@ In the following section, we describe the different components of a topology fil
 |-------------|---------------------------------------------------------------|-----------|---------|-----------------------------------------------------------------------------------|
 | name        | string                                                        | no        | Cluster | The name of the cluster. This is only important for debugging and post-processing |
 | count       | integer                                                       | no        | 1       | The amount of clusters of this type are in the data center                        |
-| hosts       | List[[Host](/docs/documentation/Input/Topology/Host)]         | yes       | N/A     | A list of the hosts in a cluster.                                                 |
-| powerSource | [PowerSource](/docs/documentation/Input/Topology/PowerSource) | no        | N/A     | The power source used by all hosts connected to this cluster.                     |
-| battery     | [Battery](/docs/documentation/Input/Topology/Battery)         | no        | null    | The battery used by a cluster to store energy. When null, no batteries are used.  |
+| hosts       | List[[Host](/learn/documentation/Input/Topology/Host)]         | yes       | N/A     | A list of the hosts in a cluster.                                                 |
+| powerSource | [PowerSource](/learn/documentation/Input/Topology/PowerSource) | no        | N/A     | The power source used by all hosts connected to this cluster.                     |
+| battery     | [Battery](/learn/documentation/Input/Topology/Battery)         | no        | null    | The battery used by a cluster to store energy. When null, no batteries are used.  |
 
 Hosts, power sources and batteries all require objects to use. See their respective pages for more information.
 

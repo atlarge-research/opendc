@@ -6,7 +6,7 @@ Running OpenDC results in five output files:
 4. [Battery](#battery) contains all metrics related to the batteries that power the hosts.
 5. [Service](#service) contains metrics describing the overall performance.
 
-User can define which files, and features are to be included in the output in the experiment file (see [ExportModel](/docs/documentation/Input/ExportModel.md)).
+User can define which files, and features are to be included in the output in the experiment file (see [ExportModel](/learn/documentation/Input/ExportModel.md)).
 
 ### Task
 The task output file, contains all metrics of related to the tasks that are being executed.

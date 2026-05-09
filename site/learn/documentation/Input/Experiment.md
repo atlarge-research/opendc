@@ -19,12 +19,12 @@ In the following section, we describe the different components of an experiment.
 | runs               | integer                                                              | no        | 1             | Number of times the same scenario should be run. Each scenario is run with a different seed.          |
 | initialSeed        | integer                                                              | no        | 0             | The seed used for random number generation during a scenario. Setting a seed ensures reproducability. |
 | topologies         | List[path/to/file]                                                   | yes       | N/A           | Paths to the JSON files defining the topologies.                                                      |
-| workloads          | List[[Workload](/docs/documentation/Input/Workload)]                 | yes       | N/A           | Paths to the files defining the workloads executed.                                                   |
-| allocationPolicies | List[[AllocationPolicy](/docs/documentation/Input/AllocationPolicy)] | yes       | N/A           | Allocation policies used for resource management in the scenario.                                     |
-| failureModels      | List[[FailureModel](/docs/documentation/Input/FailureModel)]         | no        | List[null]    | List of failure models to simulate various types of failures.                                         |
+| workloads          | List[[Workload](/learn/documentation/Input/Workload)]                 | yes       | N/A           | Paths to the files defining the workloads executed.                                                   |
+| allocationPolicies | List[[AllocationPolicy](/learn/documentation/Input/AllocationPolicy)] | yes       | N/A           | Allocation policies used for resource management in the scenario.                                     |
+| failureModels      | List[[FailureModel](/learn/documentation/Input/FailureModel)]         | no        | List[null]    | List of failure models to simulate various types of failures.                                         |
 | maxNumFailures     | List[integer]                                                        | no        | [10]          | The max number of times a task can fail before being terminated.                                      |
-| checkpointModels   | List[[CheckpointModel](/docs/documentation/Input/CheckpointModel)]   | no        | List[null]    | Paths to carbon footprint trace files.                                                                |
-| exportModels       | List[[ExportModel](/docs/documentation/Input/ExportModel)]           | no        | List[default] | Specifications for exporting data from the simulation.                                                |
+| checkpointModels   | List[[CheckpointModel](/learn/documentation/Input/CheckpointModel)]   | no        | List[null]    | Paths to carbon footprint trace files.                                                                |
+| exportModels       | List[[ExportModel](/learn/documentation/Input/ExportModel)]           | no        | List[default] | Specifications for exporting data from the simulation.                                                |
 
 Most components of an experiment are not single values, but lists of values.
 This allows users to run multiple scenarios using a single experiment file.

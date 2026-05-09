@@ -30,6 +30,7 @@ const config = {
             /** @type {import("@docusaurus/preset-classic").Options} */
             ({
                 docs: {
+                    path: "learn",
                     sidebarPath: require.resolve("./sidebars.js"),
                     editUrl: `https://github.com/${organizationName}/${projectName}/tree/master/site/`
                 },
@@ -51,6 +52,16 @@ const config = {
                 editUrl: `https://github.com/${organizationName}/${projectName}/tree/master/site/`,
                 sidebarPath: require.resolve("./sidebars.js")
             })
+        ],
+        [
+            "content-docs",
+            ({
+                id: "research",
+                path: "research",
+                routeBasePath: "research",
+                editUrl: `https://github.com/${organizationName}/${projectName}/tree/master/site/`,
+                sidebarPath: require.resolve("./sidebars.js")
+            })
         ]
     ],
 
@@ -69,6 +80,12 @@ const config = {
                         docId: "intro",
                         position: "left",
                         label: "Learn"
+                    },
+                    {
+                        to: "/research/publications",
+                        label: "Research",
+                        position: "left",
+                        activeBaseRegex: `/research/`
                     },
                     {
                         to: "/community/support",
@@ -121,6 +138,23 @@ const config = {
                             {
                                 label: "GitHub Discussions",
                                 href: `https://github.com/${organizationName}/${projectName}/discussions`
+                            }
+                        ]
+                    },
+                    {
+                        title: "Research",
+                        items: [
+                            {
+                                label: "Publications",
+                                to: "/research/publications"
+                            },
+                            {
+                                label: "Projects",
+                                to: "/research/projects"
+                            },
+                            {
+                                label: "Students",
+                                to: "/research/students"
                             }
                         ]
                     },

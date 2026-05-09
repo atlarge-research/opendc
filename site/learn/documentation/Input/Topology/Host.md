@@ -6,10 +6,10 @@ A host is a machine that can execute tasks. A host consist of the following comp
 | count                 | integer                                                                      | no        | 1       | The amount of hosts of this type are in the cluster                            |
 | cpuModel              | [CPU](#cpu)                                                                  | yes       | N/A     | The CPUs in the host                                                           |
 | memory                | [Memory](#memory)                                                            | yes       | N/A     | The memory used by the host                                                    |
-| cpuPowerModel         | [Power Model](/docs/documentation/Input/Topology/PowerModel)                 | no        | Default | The power model used to determine the power draw of the cpu                    |
-| gpuPowerModel         | [Power Model](/docs/documentation/Input/Topology/PowerModel)                 | no        | Default | The power model used to determine the power draw of the gpu                    |
-| cpuDistributionPolicy | [Distribution Policy](/docs/documentation/Input/Topology/DistributionPolicy) | no        | Default | The distribution policy used for the CPU                                       |
-| gpuDistributionPolicy | [Distribution Policy](/docs/documentation/Input/Topology/DistributionPolicy) | no        | Default | The distribution policy used for the GPU                                       |
+| cpuPowerModel         | [Power Model](/learn/documentation/Input/Topology/PowerModel)                 | no        | Default | The power model used to determine the power draw of the cpu                    |
+| gpuPowerModel         | [Power Model](/learn/documentation/Input/Topology/PowerModel)                 | no        | Default | The power model used to determine the power draw of the gpu                    |
+| cpuDistributionPolicy | [Distribution Policy](/learn/documentation/Input/Topology/DistributionPolicy) | no        | Default | The distribution policy used for the CPU                                       |
+| gpuDistributionPolicy | [Distribution Policy](/learn/documentation/Input/Topology/DistributionPolicy) | no        | Default | The distribution policy used for the GPU                                       |
 
 ## CPU
 
@@ -46,7 +46,7 @@ GPUS are an optional component of a host. The required fields are only required 
 | coreSpeed                    | Double                                                                                        | Mhz              | yes       | N/A     | The speed of each core in Mhz                                          |
 | memorySize                   | integer                                                                                       | Byte             | no        | N/A     | The speed of each core in Mhz                                          |
 | memoryBandwidth              | Double                                                                                        | Bytes per Second | no        | N/A     | The speed of each core in Mhz                                          |
-| virtualizationOverHeadModel  | [VirtualizationOverHeadModel](/docs/documentation/Input/Topology/VirtualizationOverHeadModel) | N/A              | no        | N/A     | The virtualization model of the GPU, used to determine the performance |
+| virtualizationOverHeadModel  | [VirtualizationOverHeadModel](/learn/documentation/Input/Topology/VirtualizationOverHeadModel) | N/A              | no        | N/A     | The virtualization model of the GPU, used to determine the performance |
 
 ## Example - No GPU
 
@@ -71,7 +71,7 @@ GPUS are an optional component of a host. The required fields are only required 
 
 This example creates 100 hosts with 16 cores and 2.1 Ghz CPU speed, and 100 GB of memory.
 The power model used is a square root model with a power of 400 W, idle power of 32 W, and max power of 180 W.
-For more information on the power model, see [Power Model](/docs/documentation/Input/Topology/PowerModel).
+For more information on the power model, see [Power Model](/learn/documentation/Input/Topology/PowerModel).
 
 ## Example - With GPU
 
@@ -126,4 +126,4 @@ For more information on the power model, see [Power Model](/docs/documentation/I
 
 This example creates a host with 4 CPU cores and 2 GPU cores, both with a speed of 2.0 Ghz.
 The host has 140 GB of memory and uses a linear power model for both CPU and GPU with a power of 400 W, idle power of 100 W, and max power of 200 W.
-For more information on the power model, see [Power Model](/docs/documentation/Input/Topology/PowerModel).
+For more information on the power model, see [Power Model](/learn/documentation/Input/Topology/PowerModel).

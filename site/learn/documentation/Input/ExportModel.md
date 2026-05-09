@@ -1,4 +1,4 @@
-During simulation, OpenDC exports data to files (see [Output](/docs/documentation/Output.md)).
+During simulation, OpenDC exports data to files (see [Output](/learn/documentation/Output.md)).
 The user can define what and how data is exported using the `exportModels` parameter in the experiment file.
 
 ## ExportModel
