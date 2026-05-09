@@ -150,11 +150,11 @@ const config = {
                             },
                             {
                                 label: "Projects",
-                                to: "/research/projects"
+                                to: "/research/research-projects"
                             },
                             {
                                 label: "Students",
-                                to: "/research/students"
+                                to: "/research/student-projects"
                             }
                         ]
                     },
