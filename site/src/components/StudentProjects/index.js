@@ -32,6 +32,23 @@ const studentProjects = [
         type: "Master Thesis",
         year: 2020,
         student: "Wenchen Lai",
+        abstract: [
+            `Recently, many powerful machine learning (ML) systems or ecosystems have
+            been developed to render ML solutions feasible for more complex applications.
+            Google TensorFlow ecosystem is one of the most famous and popular machine
+            learning ecosystem. Because of some emerging technologies, such as big data,
+            Internet of Things (IoT), high-performance computing (HPC), the power of dat-
+            acenters are expected to be applied in Artificial Intelligence (AI) field. However,
+            when performing ML tasks in datacenters, new challenges and issues arise, such
+            as data management. Understanding the behaviors of the Google TensorFlow
+            ecosystem is our main objective.`,
+            `We adopt the reference architecture method and extend our reference archi-
+            tecture created in our literature survey. We add additional deeper layers and
+            identify more than 10 new components to enrich our reference architecture.
+            Based on the reference architecture, we create a predictive model of Google
+            TensorFlow and integrate it into a discrete event simulator OpenDC. We design simulation experiments to validate our model and evaluate the performance
+            of the TensorFlow ecosystem in HPC environments.`
+        ]
     },
     {
         title: "OpenDC Serverless: Design, Implementation and Evaluation of a FaaS Platform Simulator",

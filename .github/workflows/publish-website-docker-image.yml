@@ -1,25 +1,25 @@
-# Workflow for publishing the artifacts once a GitHub release is published
 name: Publish website docker image
 
 on:
-  push:
-    tags:
-    - '*'
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
+    branches:
+      - gh-pages
   workflow_dispatch:
 
 jobs:
   push-website:
     name: Push website to DockerHub
     runs-on: ubuntu-22.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     steps:
       - name: Prepare
         id: prep
         run: |
           DOCKER_IMAGE=ghcr.io/atlarge-research/opendc-website
-          VERSION=3.0-SNAPSHOT
-          if [[ $GITHUB_REF == refs/tags/website* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/website-}
-          fi
+          VERSION=website-1.0.0
           echo "tags=${DOCKER_IMAGE}:${VERSION},${DOCKER_IMAGE}:latest" >> $GITHUB_OUTPUT
       - name: Checkout
         uses: actions/checkout@v3
