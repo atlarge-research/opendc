@@ -26,12 +26,12 @@ export function fetchScenario(auth, projectId, scenarioId) {
     return request(auth, `projects/${projectId}/scenarios/${scenarioId}`)
 }
 
-export function fetchScenariosOfPortfolio(auth, projectId, portfolioId) {
-    return request(auth, `projects/${projectId}/portfolios/${portfolioId}/scenarios`)
+export function fetchScenariosOfExperiment(auth, projectId, experimentId) {
+    return request(auth, `projects/${projectId}/experiments/${experimentId}/scenarios`)
 }
 
-export function addScenario(auth, projectId, portfolioId, scenario) {
-    return request(auth, `projects/${projectId}/portfolios/${portfolioId}/scenarios`, 'POST', scenario)
+export function addScenario(auth, projectId, experimentId, scenario) {
+    return request(auth, `projects/${projectId}/experiments/${experimentId}/scenarios`, 'POST', scenario)
 }
 
 export function deleteScenario(auth, projectId, scenarioId) {

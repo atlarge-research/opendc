@@ -199,15 +199,15 @@ public class SimMachine {
             FlowDistributor powerDistributor,
             PowerModel cpuPowerModel,
             @Nullable PowerModel gpuPowerModel,
+            double cpuAllocationRatio,
             Consumer<Exception> completion) {
         this.engine = engine;
         this.machineModel = machineModel;
         this.clock = engine.getClock();
 
         this.availableResourceTypes = this.machineModel.getUsedResources();
-
         int maxTasks = Math.max(
-                this.machineModel.getCpuModel().getCoreCount(),
+                (int) (this.machineModel.getCpuModel().getCoreCount() * cpuAllocationRatio),
                 this.machineModel.getGpuModels().size() * 100);
 
         // Create the psu and cpu and connect them

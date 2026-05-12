@@ -23,6 +23,7 @@
 package org.opendc.web.proto.topology;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -30,9 +31,11 @@ import java.util.List;
  */
 public record Machine(
         String id,
+        String name,
         int position,
         List<ProcessingUnit> cpus,
         List<ProcessingUnit> gpus,
         @JsonProperty("memories") List<MemoryUnit> memory,
         @JsonProperty("storages") List<MemoryUnit> storage,
-        String rackId) {}
+        String rackId)
+        implements Serializable {}

@@ -59,6 +59,7 @@ function AppHeaderTools() {
                         target="_blank"
                         aria-label="Source code"
                         variant={ButtonVariant.plain}
+                        ouiaId="header-github"
                     >
                         <GithubIcon />
                     </Button>
@@ -70,6 +71,7 @@ function AppHeaderTools() {
                         target="_blank"
                         aria-label="Help actions"
                         variant={ButtonVariant.plain}
+                        ouiaId="header-help"
                     >
                         <HelpIcon />
                     </Button>
@@ -79,7 +81,8 @@ function AppHeaderTools() {
                 <Dropdown
                     isPlain
                     position="right"
-                    toggle={<KebabToggle onToggle={toggleKebabDropdown} />}
+                    ouiaId="header-kebab-dropdown"
+                    toggle={<KebabToggle id="header-kebab-toggle" onToggle={toggleKebabDropdown} />}
                     isOpen={isKebabDropdownOpen}
                     dropdownItems={kebabDropdownItems}
                 />

@@ -84,7 +84,8 @@ public fun registerComputeMonitor(
 public fun setupHosts(
     serviceDomain: String,
     specs: List<ClusterSpec>,
+    cpuAllocationRatio: Double = 1.0,
     startTime: Long = 0L,
 ): ProvisioningStep {
-    return HostsProvisioningStep(serviceDomain, specs, startTime)
+    return HostsProvisioningStep(serviceDomain, specs, cpuAllocationRatio, startTime)
 }

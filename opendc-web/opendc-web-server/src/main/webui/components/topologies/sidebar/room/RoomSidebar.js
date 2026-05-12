@@ -16,7 +16,7 @@ import {
 const RoomSidebar = ({ roomId }) => {
     return (
         <TextContent>
-            <Title headingLevel="h2">Details</Title>
+            <Title headingLevel="h2" ouiaId="room-details-title">Details</Title>
             <TextList component={TextListVariants.dl}>
                 <TextListItem
                     component={TextListItemVariants.dt}
@@ -28,7 +28,7 @@ const RoomSidebar = ({ roomId }) => {
                     <RoomName roomId={roomId} />
                 </TextListItem>
             </TextList>
-            <Title headingLevel="h2">Construction</Title>
+            <Title headingLevel="h2" ouiaId="room-construction-title">Construction</Title>
             <RackConstructionContainer />
             <EditRoomContainer roomId={roomId} />
             <DeleteRoomContainer roomId={roomId} />

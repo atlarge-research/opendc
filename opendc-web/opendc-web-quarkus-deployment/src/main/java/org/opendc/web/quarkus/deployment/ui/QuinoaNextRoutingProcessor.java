@@ -125,7 +125,7 @@ public class QuinoaNextRoutingProcessor {
             BuiltResourcesBuildItem uiResources,
             NextRouteManifestBuildItem routeManifestBuildItem) {
 
-        if (uiResources.getNames().isEmpty()) {
+        if (uiResources.resources().isEmpty()) {
             return;
         }
 

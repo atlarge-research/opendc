@@ -35,23 +35,23 @@ function NameComponent({ name, onEdit }) {
                     {name}
                 </div>
                 <div className="pf-c-inline-edit__action pf-m-enable-editable">
-                    <Button className="pf-u-py-0" variant="plain" aria-label="Edit" onClick={() => setEditing(true)}>
+                    <Button className="pf-u-py-0" variant="plain" aria-label="Edit" ouiaId="name-edit" onClick={() => setEditing(true)}>
                         <PencilAltIcon />
                     </Button>
                 </div>
             </div>
             <div className="pf-c-inline-edit__group">
                 <div className="pf-c-inline-edit__input">
-                    <TextInput type="text" defaultValue={name} ref={nameInput} aria-label="Editable text input" />
+                    <TextInput type="text" defaultValue={name} ref={nameInput} aria-label="Editable text input" ouiaId="name-component-text-input" />
                 </div>
                 <div className="pf-c-inline-edit__group pf-m-action-group pf-m-icon-group">
                     <div className="pf-c-inline-edit__action pf-m-valid">
-                        <Button className="pf-u-py-0" variant="plain" aria-label="Save edits" onClick={onSubmit}>
+                        <Button className="pf-u-py-0" variant="plain" aria-label="Save edits" ouiaId="name-save" onClick={onSubmit}>
                             <CheckIcon />
                         </Button>
                     </div>
                     <div className="pf-c-inline-edit__action">
-                        <Button className="pf-u-py-0" variant="plain" aria-label="Cancel edits" onClick={onCancel}>
+                        <Button className="pf-u-py-0" variant="plain" aria-label="Cancel edits" ouiaId="name-cancel" onClick={onCancel}>
                             <TimesIcon />
                         </Button>
                     </div>

@@ -1,6 +1,6 @@
 services:
   server:
-    image: ghcr.io/atlarge-research/opendc-web-api:2.4k
+    image: ghcr.io/atlarge-research/opendc-web-api:2.4o
     restart: on-failure
     networks:
       - backend
@@ -37,7 +37,7 @@ services:
       - postgres:/var/lib/postgresql/data
 
   runner:
-    image: ghcr.io/atlarge-research/opendc:2.4k
+    image: ghcr.io/atlarge-research/opendc:2.4o
     restart: on-failure
     networks:
       - backend

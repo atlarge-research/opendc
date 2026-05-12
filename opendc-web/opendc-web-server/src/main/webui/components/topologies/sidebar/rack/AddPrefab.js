@@ -93,6 +93,7 @@ function AddPrefab({ tileId }) {
                 onClick={onClick}
                 className="pf-u-mb-sm"
                 isDisabled={!rack}
+                ouiaId="save-rack-prefab"
             >
                 Save this rack to a prefab
             </Button>

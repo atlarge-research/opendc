@@ -23,7 +23,7 @@
 import produce from 'immer'
 import { STORE_TOPOLOGY } from '../../actions/topology'
 import { ADD_TILE, DELETE_TILE } from '../../actions/topology/building'
-import { DELETE_ROOM, EDIT_ROOM_NAME, ADD_ROOM } from '../../actions/topology/room'
+import { ADD_ROOM, DELETE_ROOM, EDIT_ROOM_NAME } from '../../actions/topology/room'
 
 function room(state = {}, action, { tiles }) {
     switch (action.type) {

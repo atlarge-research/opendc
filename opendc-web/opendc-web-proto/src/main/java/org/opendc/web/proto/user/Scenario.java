@@ -25,6 +25,7 @@ package org.opendc.web.proto.user;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.opendc.web.proto.ExportModel;
 import org.opendc.web.proto.OperationalPhenomena;
 import org.opendc.web.proto.Workload;
 
@@ -35,13 +36,14 @@ public record Scenario(
         long id,
         int number,
         Project project,
-        Portfolio.Summary portfolio,
+        Experiment.Summary experiment,
         String name,
         Workload workload,
         Topology.Summary topology,
         OperationalPhenomena phenomena,
         String schedulerName,
-        List<Job> jobs) {
+        List<Job> jobs,
+        List<ExportModel> exportModels) {
     /**
      * Create a new scenario.
      *
@@ -57,7 +59,8 @@ public record Scenario(
             Workload.Spec workload,
             long topology,
             OperationalPhenomena phenomena,
-            String schedulerName) {}
+            String schedulerName,
+            List<ExportModel> exportModels) {}
 
     /**
      * A summary view of a [Scenario] provided for nested relations.

@@ -45,9 +45,8 @@ dependencies {
     }
 }
 
-@Suppress("UnstableApiUsage")
 val codeCoverageReport by reporting.reports.creating(JacocoCoverageReport::class) {
-    testType.set(TestSuiteType.UNIT_TEST)
+    testSuiteName.set("test")
 }
 
 tasks.check {

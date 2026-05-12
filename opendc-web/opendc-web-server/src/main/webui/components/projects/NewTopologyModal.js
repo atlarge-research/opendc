@@ -79,7 +79,7 @@ const NewTopologyModal = ({ projectId, isOpen, onSubmit: onSubmitUpstream, onCan
     }
 
     return (
-        <Modal title="New Topology" isOpen={isOpen} onSubmit={onSubmit} onCancel={onCancel}>
+        <Modal title="New Topology" isOpen={isOpen} onSubmit={onSubmit} onCancel={onCancel} ouiaId="new-topology-modal">
             <Form onSubmit={onSubmit}>
                 <FormGroup
                     label="Name"
@@ -92,7 +92,7 @@ const NewTopologyModal = ({ projectId, isOpen, onSubmit: onSubmitUpstream, onCan
                             : 'This topology name already exists'
                     }
                 >
-                    <TextInput id="name" name="name" type="text" isRequired ref={nameInput} />
+                    <TextInput id="name" name="name" type="text" isRequired ref={nameInput} ouiaId="new-topology-name-input" />
                 </FormGroup>
                 <FormGroup label="Topology to duplicate" fieldId="origin" isRequired>
                     <FormSelect
@@ -100,6 +100,7 @@ const NewTopologyModal = ({ projectId, isOpen, onSubmit: onSubmitUpstream, onCan
                         name="origin"
                         value={originTopology}
                         onChange={(v) => setOriginTopology(+v)}
+                        ouiaId="new-topology-origin-select"
                     >
                         <FormSelectOption value={-1} key={-1} label="None - start from scratch" />
                         {topologies.map((topology) => (

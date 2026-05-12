@@ -22,9 +22,10 @@
 
 package org.opendc.web.proto.topology;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
  * A room in a datacenter.
  */
-public record Room(String id, String name, Set<RoomTile> tiles, String topologyId) {}
+public record Room(String id, String name, Set<RoomTile> tiles, String datacenterId) implements Serializable {}

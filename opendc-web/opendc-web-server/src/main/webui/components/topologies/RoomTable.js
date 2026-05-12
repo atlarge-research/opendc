@@ -18,6 +18,8 @@ function RoomTable({ projectId, topologyId, onSelect }) {
         },
     ]
 
+    const allRooms = topology?.datacenters?.flatMap((dc) => dc.rooms ?? []) ?? []
+
     return (
         <TableComposable aria-label="Room list" variant="compact">
             <Thead>
@@ -28,13 +30,13 @@ function RoomTable({ projectId, topologyId, onSelect }) {
                 </Tr>
             </Thead>
             <Tbody>
-                {topology?.rooms.map((room) => {
+                {allRooms.map((room) => {
                     const tileCount = room.tiles.length
                     const rackCount = room.tiles.filter((tile) => tile.rack).length
                     return (
                         <Tr key={room.id}>
                             <Td dataLabel="Name">
-                                <Button variant="link" isInline onClick={() => onSelect(room)}>
+                                <Button variant="link" isInline onClick={() => onSelect(room)} ouiaId={`room-select-${room.id}`}>
                                     {room.name}
                                 </Button>
                             </Td>
@@ -46,7 +48,7 @@ function RoomTable({ projectId, topologyId, onSelect }) {
                         </Tr>
                     )
                 })}
-                {topology?.rooms.length === 0 && (
+                {allRooms.length === 0 && (
                     <Tr>
                         <Td colSpan={4}>
                             <Bullseye>

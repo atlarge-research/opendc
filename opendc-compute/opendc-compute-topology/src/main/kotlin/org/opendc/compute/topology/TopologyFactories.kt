@@ -100,7 +100,7 @@ public fun clusterTopology(input: InputStream): List<ClusterSpec> {
 }
 
 /**
- * Helper method to convert a [TopologySpec] into a list of [HostSpec]s.
+ * Helper method to convert a [TopologySpec] into a list of [ClusterSpec]s.
  */
 private fun TopologySpec.toClusterSpec(): List<ClusterSpec> {
     clusterNames.clear()
@@ -108,15 +108,27 @@ private fun TopologySpec.toClusterSpec(): List<ClusterSpec> {
     powerSourceNames.clear()
     batteryNames.clear()
 
-    return clusters.map { cluster ->
-        cluster.toClusterSpec()
+    val clusterSpecs = mutableListOf<ClusterSpec>()
+
+    // Handle top-level clusters (backward compatible, no datacenter grouping)
+    for (cluster in clusters) {
+        clusterSpecs.add(cluster.toClusterSpec(""))
     }
+
+    // Handle datacenter-grouped clusters
+    for (datacenter in datacenters) {
+        for (cluster in datacenter.clusters) {
+            clusterSpecs.add(cluster.toClusterSpec(datacenter.name))
+        }
+    }
+
+    return clusterSpecs
 }
 
 /**
  * Helper method to convert a [ClusterJSONSpec] into a list of [HostSpec]s.
  */
-private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
+private fun ClusterJSONSpec.toClusterSpec(datacenterName: String = ""): ClusterSpec {
     val clusterName = createUniqueName(this.name, clusterNames)
 
     val hostSpecs =
@@ -125,6 +137,7 @@ private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
                 List(host.count) {
                     host.toHostSpec(
                         clusterName,
+                        datacenterName,
                     )
                 }
             )
@@ -150,7 +163,7 @@ private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
             )
     }
 
-    return ClusterSpec(clusterName, hostSpecs, powerSourceSpec, batterySpec)
+    return ClusterSpec(clusterName, datacenterName, hostSpecs, powerSourceSpec, batterySpec)
 }
 
 /**
@@ -159,7 +172,10 @@ private fun ClusterJSONSpec.toClusterSpec(): ClusterSpec {
 private var globalCoreId = 0
 private var globalGpuId = 0
 
-private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
+private fun HostJSONSpec.toHostSpec(
+    clusterName: String,
+    datacenterName: String = "",
+): HostSpec {
     val units =
         List(cpu.count) {
             CpuModel(
@@ -226,6 +242,7 @@ private fun HostJSONSpec.toHostSpec(clusterName: String): HostSpec {
             createUniqueName(this.name, hostNames),
             this.name,
             clusterName,
+            datacenterName,
             machineModel,
             cpuPowerModel,
             gpuPowerModel,

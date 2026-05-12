@@ -120,7 +120,7 @@ public final class SimulationDispatcher implements Dispatcher {
     public void advanceUntilIdle() {
         final TaskQueue queue = this.queue;
 
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
             long deadline = queue.peekDeadline();
             Runnable task = queue.poll();
 

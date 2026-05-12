@@ -48,7 +48,7 @@ public class RackPrefabResourceTest {
             user = "test_user_1",
             roles = {"openid"})
     public void testCreate() {
-        Rack rack = new Rack("1", "Rack 1", 42, 1000.0, List.of());
+        Rack rack = new Rack("1", "Rack 1", 42, 1000.0, List.of(), null);
         given().pathParam("project", "1")
                 .body(new RackPrefab.Create("Test Rack Prefab", rack))
                 .contentType(ContentType.JSON)
@@ -80,7 +80,7 @@ public class RackPrefabResourceTest {
             user = "test_user_1",
             roles = {"openid"})
     public void testDelete() {
-        Rack rack = new Rack("1", "Rack 1", 42, 1000.0, List.of());
+        Rack rack = new Rack("1", "Rack 1", 42, 1000.0, List.of(), null);
         int number = given().pathParam("project", "1")
                 .body(new RackPrefab.Create("Test Rack Prefab to Delete", rack))
                 .contentType(ContentType.JSON)

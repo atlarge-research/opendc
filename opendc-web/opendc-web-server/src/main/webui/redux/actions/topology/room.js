@@ -14,12 +14,12 @@ export const START_RACK_CONSTRUCTION = 'START_RACK_CONSTRUCTION'
 export const STOP_RACK_CONSTRUCTION = 'STOP_RACK_CONSTRUCTION'
 export const ADD_RACK_TO_TILE = 'ADD_RACK_TO_TILE'
 
-export function addRoom(topologyId, room) {
+export function addRoom(datacenterId, room) {
     return {
         type: ADD_ROOM,
         room: {
             id: uuid(),
-            topologyId,
+            datacenterId,
             ...room,
         },
     }
@@ -60,6 +60,7 @@ export function addRackToTile(positionX, positionY) {
                 ? {
                       ...prefab.rack,
                       id: rackId,
+                      clusterName: rackId,
                       machines: (prefab.rack.machines || []).map((m) => ({ ...m, id: uuid(), rackId })),
                   }
                 : {
@@ -68,6 +69,7 @@ export function addRackToTile(positionX, positionY) {
                       capacity: DEFAULT_RACK_SLOT_CAPACITY,
                       powerCapacityW: DEFAULT_RACK_POWER_CAPACITY,
                       machines: [],
+                      clusterName: rackId,
                   }
 
             const { entities, result: normalizedRackId } = normalize(rack, RackSchema)

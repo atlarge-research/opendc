@@ -22,7 +22,7 @@
 
 import { useQuery, useMutation } from 'react-query'
 import { addProject, deleteProject, fetchProject, fetchProjects } from '../api/projects'
-import { addPortfolio, deletePortfolio, fetchPortfolio, fetchPortfolios } from '../api/portfolios'
+import { addExperiment, deleteExperiment, fetchExperiment, fetchExperiments } from '../api/experiments'
 import { addScenario, deleteScenario, fetchScenario } from '../api/scenarios'
 
 /**
@@ -48,24 +48,24 @@ export function configureProjectClient(queryClient, auth) {
         },
     })
 
-    queryClient.setQueryDefaults('portfolios', {
+    queryClient.setQueryDefaults('experiments', {
         queryFn: ({ queryKey }) =>
-            queryKey.length === 2 ? fetchPortfolios(auth, queryKey[1]) : fetchPortfolio(auth, queryKey[1], queryKey[2]),
+            queryKey.length === 2 ? fetchExperiments(auth, queryKey[1]) : fetchExperiment(auth, queryKey[1], queryKey[2]),
     })
-    queryClient.setMutationDefaults('addPortfolio', {
-        mutationFn: ({ projectId, ...data }) => addPortfolio(auth, projectId, data),
+    queryClient.setMutationDefaults('addExperiment', {
+        mutationFn: ({ projectId, ...data }) => addExperiment(auth, projectId, data),
         onSuccess: async (result) => {
-            queryClient.setQueryData(['portfolios', result.project.id], (old = []) => [...old, result])
-            queryClient.setQueryData(['portfolios', result.project.id, result.number], result)
+            queryClient.setQueryData(['experiments', result.project.id], (old = []) => [...old, result])
+            queryClient.setQueryData(['experiments', result.project.id, result.number], result)
         },
     })
-    queryClient.setMutationDefaults('deletePortfolio', {
-        mutationFn: ({ projectId, number }) => deletePortfolio(auth, projectId, number),
+    queryClient.setMutationDefaults('deleteExperiment', {
+        mutationFn: ({ projectId, number }) => deleteExperiment(auth, projectId, number),
         onSuccess: async (result) => {
-            queryClient.setQueryData(['portfolios', result.project.id], (old = []) =>
-                old.filter((portfolio) => portfolio.id !== result.id)
+            queryClient.setQueryData(['experiments', result.project.id], (old = []) =>
+                old.filter((experiment) => experiment.id !== result.id)
             )
-            queryClient.removeQueries(['portfolios', result.project.id, result.number])
+            queryClient.removeQueries(['experiments', result.project.id, result.number])
         },
     })
 
@@ -73,11 +73,11 @@ export function configureProjectClient(queryClient, auth) {
         queryFn: ({ queryKey }) => fetchScenario(auth, queryKey[1], queryKey[2]),
     })
     queryClient.setMutationDefaults('addScenario', {
-        mutationFn: ({ projectId, portfolioNumber, data }) => addScenario(auth, projectId, portfolioNumber, data),
+        mutationFn: ({ projectId, experimentNumber, data }) => addScenario(auth, projectId, experimentNumber, data),
         onSuccess: async (result) => {
             // Register updated scenario in cache
             queryClient.setQueryData(['scenarios', result.project.id, result.id], result)
-            queryClient.setQueryData(['portfolios', result.project.id, result.portfolio.number], (old) => ({
+            queryClient.setQueryData(['experiments', result.project.id, result.experiment.number], (old) => ({
                 ...old,
                 scenarios: [...old.scenarios, result],
             }))
@@ -87,7 +87,7 @@ export function configureProjectClient(queryClient, auth) {
         mutationFn: ({ projectId, number }) => deleteScenario(auth, projectId, number),
         onSuccess: async (result) => {
             queryClient.removeQueries(['scenarios', result.project.id, result.id])
-            queryClient.setQueryData(['portfolios', result.project.id, result.portfolio.number], (old) => ({
+            queryClient.setQueryData(['experiments', result.project.id, result.experiment.number], (old) => ({
                 ...old,
                 scenarios: old?.scenarios?.filter((scenario) => scenario.id !== result.id),
             }))
@@ -124,31 +124,31 @@ export function useDeleteProject() {
 }
 
 /**
- * Return the portfolio with the specified identifier.
+ * Return the experiment with the specified identifier.
  */
-export function usePortfolio(projectId, portfolioId, options = {}) {
-    return useQuery(['portfolios', projectId, portfolioId], { enabled: !!(projectId && portfolioId), ...options })
+export function useExperiment(projectId, experimentId, options = {}) {
+    return useQuery(['experiments', projectId, experimentId], { enabled: !!(projectId && experimentId), ...options })
 }
 
 /**
- * Return the portfolios of the specified project.
+ * Return the experiments of the specified project.
  */
-export function usePortfolios(projectId, options = {}) {
-    return useQuery(['portfolios', projectId], { enabled: !!projectId, ...options })
+export function useExperiments(projectId, options = {}) {
+    return useQuery(['experiments', projectId], { enabled: !!projectId, ...options })
 }
 
 /**
- * Create a mutation for a new portfolio.
+ * Create a mutation for a new experiment.
  */
-export function useNewPortfolio() {
-    return useMutation('addPortfolio')
+export function useNewExperiment() {
+    return useMutation('addExperiment')
 }
 
 /**
- * Create a mutation for deleting a portfolio.
+ * Create a mutation for deleting an experiment.
  */
-export function useDeletePortfolio() {
-    return useMutation('deletePortfolio')
+export function useDeleteExperiment() {
+    return useMutation('deleteExperiment')
 }
 
 /**

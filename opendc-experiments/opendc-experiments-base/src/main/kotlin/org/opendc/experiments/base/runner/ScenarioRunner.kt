@@ -35,6 +35,9 @@ import org.opendc.compute.simulator.telemetry.parquet.ParquetComputeMonitor
 import org.opendc.compute.simulator.telemetry.parquet.withGpuColumns
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.experiments.base.experiment.Scenario
+import org.opendc.experiments.base.experiment.specs.allocation.FilterAllocationPolicySpec
+import org.opendc.experiments.base.experiment.specs.allocation.PortfolioAllocationPolicySpec
+import org.opendc.experiments.base.experiment.specs.allocation.PrefabAllocationPolicySpec
 import org.opendc.experiments.base.experiment.specs.allocation.TimeShiftAllocationPolicySpec
 import org.opendc.experiments.base.experiment.specs.allocation.createComputeScheduler
 import org.opendc.experiments.base.experiment.specs.allocation.createTaskStopper
@@ -127,7 +130,18 @@ public fun runScenario(
                     },
                     maxNumFailures = scenario.maxNumFailures,
                 ),
-                setupHosts(serviceDomain, topology, startTimeLong),
+                setupHosts(
+                    serviceDomain,
+                    topology,
+                    cpuAllocationRatio =
+                        when (val spec = scenario.allocationPolicySpec) {
+                            is PrefabAllocationPolicySpec -> spec.cpuAllocationRatio
+                            is PortfolioAllocationPolicySpec -> spec.cpuAllocationRatio
+                            is TimeShiftAllocationPolicySpec -> spec.cpuAllocationRatio
+                            is FilterAllocationPolicySpec -> 1.0
+                        },
+                    startTimeLong,
+                ),
             )
 
             val gpuCount = topology.flatMap { it.hostSpecs }.maxOfOrNull { it.model.gpuModels.size } ?: 0

@@ -59,7 +59,13 @@ public final class JobService {
      * @throws IllegalArgumentException if the state transition is invalid.
      * @throws IllegalStateException if someone tries to update the job concurrently.
      */
-    public void updateJob(Job job, JobState newState, int runtime, Map<String, ?> results, Map<String, Object> report) {
+    public void updateJob(
+            Job job,
+            JobState newState,
+            int runtime,
+            Map<String, ?> results,
+            Map<String, Object> report,
+            boolean hasExports) {
         JobState state = job.state;
 
         if (!job.canTransitionTo(newState)) {
@@ -81,7 +87,8 @@ public final class JobService {
             nextState = JobState.FAILED; // User has consumed all their budget; cancel the job
         }
 
-        if (!job.updateAtomically(nextState, now, startedAt, runtime, results, report)) {
+        if (!job.updateAtomically(
+                nextState, now, startedAt, runtime, results, report, hasExports && nextState == JobState.FINISHED)) {
             throw new IllegalStateException("Conflicting update");
         }
     }

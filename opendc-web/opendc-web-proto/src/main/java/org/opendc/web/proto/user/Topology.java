@@ -26,24 +26,30 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.List;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.opendc.web.proto.topology.Room;
+import org.opendc.web.proto.topology.Datacenter;
 
 /**
  * Model for an OpenDC topology.
  */
 public record Topology(
-        long id, int number, Project project, String name, List<Room> rooms, Instant createdAt, Instant updatedAt) {
+        long id,
+        int number,
+        Project project,
+        String name,
+        List<Datacenter> datacenters,
+        Instant createdAt,
+        Instant updatedAt) {
     /**
      * Create a new topology for a project.
      */
     @Schema(name = "Topology.Create")
-    public record Create(@NotBlank(message = "Name must not be empty") String name, List<Room> rooms) {}
+    public record Create(@NotBlank(message = "Name must not be empty") String name, List<Datacenter> datacenters) {}
 
     /**
      * Update an existing topology.
      */
     @Schema(name = "Topology.Update")
-    public record Update(List<Room> rooms) {}
+    public record Update(List<Datacenter> datacenters) {}
 
     /**
      * A summary view of a [Topology] provided for nested relations.

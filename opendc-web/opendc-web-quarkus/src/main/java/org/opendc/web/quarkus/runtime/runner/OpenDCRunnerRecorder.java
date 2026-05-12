@@ -25,8 +25,10 @@ package org.opendc.web.quarkus.runtime.runner;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.ShutdownContext;
 import io.quarkus.runtime.annotations.Recorder;
+import io.smallrye.config.SmallRyeConfig;
 import jakarta.enterprise.inject.spi.CDI;
 import java.io.File;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
 import org.opendc.web.runner.JobManager;
 import org.opendc.web.runner.OpenDCRunner;
@@ -41,8 +43,12 @@ public class OpenDCRunnerRecorder {
     /**
      * Helper method to create an {@link OpenDCRunner} instance.
      */
-    public RuntimeValue<OpenDCRunner> createRunner(OpenDCRunnerRuntimeConfig config) {
-        int parallelism = config.parallelism;
+    public RuntimeValue<OpenDCRunner> createRunner() {
+        OpenDCRunnerRuntimeConfig config = ConfigProvider.getConfig()
+                .unwrap(SmallRyeConfig.class)
+                .getConfigMapping(OpenDCRunnerRuntimeConfig.class);
+
+        int parallelism = config.parallelism();
         if (parallelism < 0) {
             throw new IllegalArgumentException("Parallelism must be non-negative");
         } else if (parallelism == 0) {
@@ -52,11 +58,12 @@ public class OpenDCRunnerRecorder {
         JobManager manager = CDI.current().select(JobManager.class).get();
         OpenDCRunner runner = new OpenDCRunner(
                 manager,
-                new File(config.tracePath),
+                new File(config.tracePath()),
                 parallelism,
-                config.jobTimeout,
-                config.pollInterval,
-                config.heartbeatInterval);
+                config.jobTimeout(),
+                config.pollInterval(),
+                config.heartbeatInterval(),
+                new File(config.exportDir()));
 
         return new RuntimeValue<>(runner);
     }
@@ -64,10 +71,13 @@ public class OpenDCRunnerRecorder {
     /**
      * Helper method to start the OpenDC runner service.
      */
-    public void startRunner(
-            RuntimeValue<OpenDCRunner> runner, OpenDCRunnerRuntimeConfig config, ShutdownContext shutdownContext) {
-        if (config.enable) {
-            LOGGER.info("Starting OpenDC Runner in background (polling every " + config.pollInterval + ")");
+    public void startRunner(RuntimeValue<OpenDCRunner> runner, ShutdownContext shutdownContext) {
+        OpenDCRunnerRuntimeConfig config = ConfigProvider.getConfig()
+                .unwrap(SmallRyeConfig.class)
+                .getConfigMapping(OpenDCRunnerRuntimeConfig.class);
+
+        if (config.enable()) {
+            LOGGER.info("Starting OpenDC Runner in background (polling every " + config.pollInterval() + ")");
 
             Thread thread = new Thread(runner.getValue());
             thread.setName("opendc-runner");

@@ -13,16 +13,16 @@ export const DELETE_TILE = 'DELETE_TILE'
 
 export function startNewRoomConstruction() {
     return (dispatch, getState) => {
-        const { topology } = getState()
-        const topologyId = topology.root.id
+        const { interactionLevel } = getState()
+        const datacenterId = interactionLevel.datacenterId
         const room = {
             id: uuid(),
             name: 'Room',
-            topologyId,
+            datacenterId,
             tiles: [],
         }
 
-        dispatch(addRoom(topologyId, room))
+        dispatch(addRoom(datacenterId, room))
         dispatch(startNewRoomConstructionSucceeded(room.id))
     }
 }

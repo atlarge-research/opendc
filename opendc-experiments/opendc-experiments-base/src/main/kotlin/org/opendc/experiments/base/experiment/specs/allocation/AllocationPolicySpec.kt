@@ -28,6 +28,11 @@ import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.scheduler.ComputeSchedulerEnum
 import org.opendc.compute.simulator.scheduler.FilterScheduler
 import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
+import org.opendc.compute.simulator.scheduler.portfolio.CombinedDORUtility
+import org.opendc.compute.simulator.scheduler.portfolio.DisasterRecoveryRiskUtility
+import org.opendc.compute.simulator.scheduler.portfolio.OperationalRiskUtility
+import org.opendc.compute.simulator.scheduler.portfolio.PortfolioScheduler
+import org.opendc.compute.simulator.scheduler.portfolio.UtilityFunction
 import org.opendc.compute.simulator.scheduler.timeshift.MemorizingTimeshift
 import org.opendc.compute.simulator.scheduler.timeshift.TaskStopper
 import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
@@ -45,6 +50,9 @@ public sealed interface AllocationPolicySpec
 @SerialName("prefab")
 public data class PrefabAllocationPolicySpec(
     val policyName: ComputeSchedulerEnum = ComputeSchedulerEnum.Mem,
+    val cpuAllocationRatio: Double = 1.0,
+    val ramAllocationRatio: Double = 1.0,
+    val gpuAllocationRatio: Double = 1.0,
 ) : AllocationPolicySpec {
     public val name: String = policyName.toString()
 }
@@ -55,6 +63,44 @@ public data class FilterAllocationPolicySpec(
     val filters: List<HostFilterSpec> = listOf(ComputeFilterSpec()),
     val weighers: List<HostWeigherSpec> = emptyList(),
     val subsetSize: Int = 1,
+) : AllocationPolicySpec
+
+@Serializable
+public sealed interface UtilityFunctionSpec
+
+@Serializable
+@SerialName("operational-risk")
+public data class OperationalRiskSpec(
+    val forwardLookMs: Long = 3600000L,
+) : UtilityFunctionSpec
+
+@Serializable
+@SerialName("disaster-recovery-risk")
+public data class DisasterRecoveryRiskSpec(val forwardLookMs: Long = 3600000L) : UtilityFunctionSpec
+
+@Serializable
+@SerialName("combined-dor")
+public data class CombinedDORSpec(
+    val operationalWeight: Double = 1.0,
+    val disasterRecoveryWeight: Double = 1.0,
+    val forwardLookMs: Long = 3600000L,
+) : UtilityFunctionSpec
+
+@Serializable
+@SerialName("portfolio")
+public data class PortfolioAllocationPolicySpec(
+    val policies: List<AllocationPolicySpec> =
+        listOf(
+            PrefabAllocationPolicySpec(ComputeSchedulerEnum.Mem),
+            PrefabAllocationPolicySpec(ComputeSchedulerEnum.CoreMem),
+            PrefabAllocationPolicySpec(ComputeSchedulerEnum.ActiveServers),
+            PrefabAllocationPolicySpec(ComputeSchedulerEnum.Random),
+            PrefabAllocationPolicySpec(ComputeSchedulerEnum.ProvisionedCores),
+        ),
+    val utilityFunction: UtilityFunctionSpec = OperationalRiskSpec(),
+    val cpuAllocationRatio: Double = 1.0,
+    val ramAllocationRatio: Double = 1.0,
+    val gpuAllocationRatio: Double = 1.0,
 ) : AllocationPolicySpec
 
 @Serializable
@@ -70,6 +116,9 @@ public data class TimeShiftAllocationPolicySpec(
     val forecastSize: Int = 24,
     val taskStopper: TaskStopperSpec? = null,
     val memorize: Boolean = true,
+    val cpuAllocationRatio: Double = 1.0,
+    val ramAllocationRatio: Double = 1.0,
+    val gpuAllocationRatio: Double = 1.0,
 ) : AllocationPolicySpec
 
 public fun createComputeScheduler(
@@ -79,11 +128,53 @@ public fun createComputeScheduler(
     numHosts: Int = 1000,
 ): ComputeScheduler {
     return when (spec) {
-        is PrefabAllocationPolicySpec -> createPrefabComputeScheduler(spec.policyName, seeder, clock, numHosts)
+        is PrefabAllocationPolicySpec ->
+            createPrefabComputeScheduler(
+                spec.policyName,
+                seeder,
+                clock,
+                numHosts,
+                spec.cpuAllocationRatio,
+                spec.ramAllocationRatio,
+                spec.gpuAllocationRatio,
+            )
         is FilterAllocationPolicySpec -> {
             val filters = spec.filters.map { createHostFilter(it) }
             val weighers = spec.weighers.map { createHostWeigher(it) }
             FilterScheduler(filters, weighers, spec.subsetSize, seeder, numHosts)
+        }
+        is PortfolioAllocationPolicySpec -> {
+            val resolvedPolicies =
+                spec.policies.map { policy ->
+                    when (policy) {
+                        is PrefabAllocationPolicySpec ->
+                            policy.copy(
+                                cpuAllocationRatio = policy.cpuAllocationRatio.takeUnless { it == 1.0 } ?: spec.cpuAllocationRatio,
+                                ramAllocationRatio = policy.ramAllocationRatio.takeUnless { it == 1.0 } ?: spec.ramAllocationRatio,
+                                gpuAllocationRatio = policy.gpuAllocationRatio.takeUnless { it == 1.0 } ?: spec.gpuAllocationRatio,
+                            )
+                        else -> policy
+                    }
+                }
+            val subPolicies = resolvedPolicies.map { createComputeScheduler(it, seeder, clock, numHosts) }
+            val utilityFunction = createUtilityFunction(spec.utilityFunction)
+            val orUtility: OperationalRiskUtility?
+            val drrUtility: DisasterRecoveryRiskUtility?
+            when (spec.utilityFunction) {
+                is OperationalRiskSpec -> {
+                    orUtility = utilityFunction as OperationalRiskUtility
+                    drrUtility = DisasterRecoveryRiskUtility()
+                }
+                is DisasterRecoveryRiskSpec -> {
+                    orUtility = OperationalRiskUtility(spec.utilityFunction.forwardLookMs)
+                    drrUtility = utilityFunction as DisasterRecoveryRiskUtility
+                }
+                is CombinedDORSpec -> {
+                    orUtility = OperationalRiskUtility(spec.utilityFunction.forwardLookMs)
+                    drrUtility = DisasterRecoveryRiskUtility()
+                }
+            }
+            PortfolioScheduler(subPolicies, utilityFunction, clock, orUtility = orUtility, drrUtility = drrUtility)
         }
         is TimeShiftAllocationPolicySpec -> {
             val filters = spec.filters.map { createHostFilter(it) }
@@ -137,4 +228,12 @@ public fun createTaskStopper(
         }
 
     return taskStopper
+}
+
+public fun createUtilityFunction(spec: UtilityFunctionSpec): UtilityFunction {
+    return when (spec) {
+        is OperationalRiskSpec -> OperationalRiskUtility(spec.forwardLookMs)
+        is DisasterRecoveryRiskSpec -> DisasterRecoveryRiskUtility()
+        is CombinedDORSpec -> CombinedDORUtility(spec.operationalWeight, spec.disasterRecoveryWeight, spec.forwardLookMs)
+    }
 }

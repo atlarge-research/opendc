@@ -23,7 +23,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { goFromBuildingToRoom } from '../../../redux/actions/interaction-level'
+import { goFromDatacenterToRoom } from '../../../redux/actions/interaction-level'
 import RoomGroup from './groups/RoomGroup'
 
 function RoomContainer({ roomId, ...props }) {
@@ -42,7 +42,7 @@ function RoomContainer({ roomId, ...props }) {
             interactionLevel={interactionLevel}
             currentRoomInConstruction={currentRoomInConstruction}
             room={room}
-            onClick={() => dispatch(goFromBuildingToRoom(roomId))}
+            onClick={() => dispatch(goFromDatacenterToRoom(roomId))}
         />
     )
 }

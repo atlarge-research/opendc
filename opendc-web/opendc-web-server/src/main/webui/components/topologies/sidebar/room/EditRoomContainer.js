@@ -37,7 +37,7 @@ function EditRoomContainer({ roomId }) {
     const onFinish = () => dispatch(finishRoomEdit())
 
     return isEditing ? (
-        <Button variant="tertiary" icon={<CheckIcon />} isBlock onClick={onFinish} className="pf-u-mb-sm">
+        <Button variant="tertiary" icon={<CheckIcon />} isBlock onClick={onFinish} className="pf-u-mb-sm" ouiaId="finish-room-edit">
             Finish editing room
         </Button>
     ) : (
@@ -46,6 +46,7 @@ function EditRoomContainer({ roomId }) {
             icon={<PencilAltIcon />}
             isBlock
             disabled={isInRackConstructionMode}
+            ouiaId="edit-room-tiles"
             onClick={() => (isInRackConstructionMode ? undefined : onEdit())}
             className="pf-u-mb-sm"
         >

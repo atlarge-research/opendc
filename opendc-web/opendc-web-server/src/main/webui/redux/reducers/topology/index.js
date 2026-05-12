@@ -23,6 +23,7 @@
 import { CPU_UNITS, GPU_UNITS, MEMORY_UNITS, STORAGE_UNITS } from '../../../util/unit-specifications'
 import { STORE_TOPOLOGY } from '../../actions/topology'
 import { ADD_RACK_TO_TILE } from '../../actions/topology/room'
+import datacenter from './datacenter'
 import machine from './machine'
 import rack from './rack'
 import room from './room'
@@ -55,6 +56,7 @@ function objects(state = {}, action) {
         racks: rack(state.racks, action, state),
         tiles: tile(state.tiles, action),
         rooms: room(state.rooms, action, state),
+        datacenters: datacenter(state.datacenters, action, state),
         root: topology(state.root, action, state),
     }
 }

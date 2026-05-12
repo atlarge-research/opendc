@@ -79,9 +79,10 @@ export default function AppHeaderUser() {
             <Dropdown
                 isFullHeight
                 position="right"
+                ouiaId="header-user-dropdown"
                 isOpen={isDropdownOpen}
                 toggle={
-                    <DropdownToggle onToggle={toggleDropdown} icon={avatarComponent}>
+                    <DropdownToggle id="header-user-toggle" ouiaId="header-user-toggle" onToggle={toggleDropdown} icon={avatarComponent}>
                         {username ?? (
                             <Skeleton
                                 fontSize="xs"

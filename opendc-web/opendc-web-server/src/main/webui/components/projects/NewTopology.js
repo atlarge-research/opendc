@@ -37,7 +37,7 @@ function NewTopology({ projectId }) {
     }
     return (
         <>
-            <Button icon={<PlusIcon />} isSmall onClick={() => setVisible(true)}>
+            <Button icon={<PlusIcon />} isSmall onClick={() => setVisible(true)} ouiaId="new-topology">
                 New Topology
             </Button>
             <NewTopologyModal

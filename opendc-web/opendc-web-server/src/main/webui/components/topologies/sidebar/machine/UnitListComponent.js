@@ -70,7 +70,7 @@ function UnitListComponent({ unitType, units, onDelete }) {
         return (
             <EmptyState>
                 <EmptyStateIcon icon={CubesIcon} />
-                <Title headingLevel="h5" size="lg">
+                <Title headingLevel="h5" size="lg" ouiaId="unit-list-empty-title">
                     No units found
                 </Title>
                 <EmptyStateBody>You have not configured any units yet. Add some with the menu above!</EmptyStateBody>
@@ -89,11 +89,11 @@ function UnitListComponent({ unitType, units, onDelete }) {
                                 headerContent="Unit Information"
                                 bodyContent={<UnitInfo unitType={unitType} unit={unit} />}
                             >
-                                <Button isSmall variant="plain" className="pf-u-p-0">
+                                <Button isSmall variant="plain" className="pf-u-p-0" ouiaId={`unit-info-${index}`}>
                                     <InfoIcon />
                                 </Button>
                             </Popover>
-                            <Button isSmall variant="plain" className="pf-u-p-0" onClick={() => onDelete(units[index])}>
+                            <Button isSmall variant="plain" className="pf-u-p-0" ouiaId={`unit-delete-${index}`} onClick={() => onDelete(units[index])}>
                                 <TrashIcon />
                             </Button>
                         </DataListAction>

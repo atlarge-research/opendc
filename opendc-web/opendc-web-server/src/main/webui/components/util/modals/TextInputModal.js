@@ -36,7 +36,7 @@ function TextInputModal({ title, label, isOpen, callback, initialValue }) {
     }
 
     return (
-        <Modal title={title} isOpen={isOpen} onSubmit={onSubmit} onCancel={onCancel}>
+        <Modal title={title} isOpen={isOpen} onSubmit={onSubmit} onCancel={onCancel} ouiaId="text-input-modal">
             <Form onSubmit={onSubmit}>
                 <FormGroup
                     label={label}
@@ -52,6 +52,7 @@ function TextInputModal({ title, label, isOpen, callback, initialValue }) {
                         type="text"
                         ref={textInput}
                         defaultValue={initialValue}
+                        ouiaId="text-input-modal-input"
                     />
                 </FormGroup>
             </Form>

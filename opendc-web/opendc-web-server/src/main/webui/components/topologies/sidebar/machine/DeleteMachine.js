@@ -39,7 +39,7 @@ function DeleteMachine({ machineId }) {
     }
     return (
         <>
-            <Button variant="danger" icon={<TrashIcon />} isBlock onClick={() => setVisible(true)}>
+            <Button variant="danger" icon={<TrashIcon />} isBlock onClick={() => setVisible(true)} ouiaId="delete-machine">
                 Delete this machine
             </Button>
             <ConfirmationModal

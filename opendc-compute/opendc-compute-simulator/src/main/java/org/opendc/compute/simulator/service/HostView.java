@@ -84,6 +84,14 @@ public class HostView {
     }
 
     /**
+     * Set the available memory of the host.
+     * Used by portfolio schedulers for temporary simulation of placements.
+     */
+    public void setAvailableMemory(long availableMemory) {
+        this.availableMemory = availableMemory;
+    }
+
+    /**
      * Return the provisioned cores on the host.
      */
     public int getProvisionedCpuCores() {
@@ -96,6 +104,20 @@ public class HostView {
 
     public int getProvisionedGpuCores() {
         return provisionedGpuCores;
+    }
+
+    /**
+     * Return the cluster name of the host.
+     */
+    public String getClusterName() {
+        return host.getClusterName();
+    }
+
+    /**
+     * Return the datacenter name of the host.
+     */
+    public String getDatacenterName() {
+        return host.getDatacenterName();
     }
 
     @Override

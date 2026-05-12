@@ -7,10 +7,10 @@ import { SearchPlusIcon, SearchMinusIcon, CameraIcon } from '@patternfly/react-i
 function Toolbar({ onZoom, onExport }) {
     return (
         <div className={toolBar}>
-            <Button variant="tertiary" title="Zoom in" onClick={() => onZoom(true)} className={control}>
+            <Button variant="tertiary" title="Zoom in" onClick={() => onZoom(true)} className={control} ouiaId="map-zoom-in">
                 <SearchPlusIcon />
             </Button>
-            <Button variant="tertiary" title="Zoom out" onClick={() => onZoom(false)} className={control}>
+            <Button variant="tertiary" title="Zoom out" onClick={() => onZoom(false)} className={control} ouiaId="map-zoom-out">
                 <SearchMinusIcon />
             </Button>
             <Button
@@ -18,6 +18,7 @@ function Toolbar({ onZoom, onExport }) {
                 title="Export Canvas to PNG Image"
                 onClick={() => onExport()}
                 className={control}
+                ouiaId="map-export"
             >
                 <CameraIcon />
             </Button>

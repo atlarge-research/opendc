@@ -27,7 +27,7 @@ function UnitAddComponent({ units, onAdd }) {
                     </SelectOption>
                 ))}
             </Select>
-            <Button icon={<PlusIcon />} variant="control" onClick={() => onAdd(selected)} isDisabled={!selected}>
+            <Button icon={<PlusIcon />} variant="control" onClick={() => onAdd(selected)} isDisabled={!selected} ouiaId="add-unit">
                 Add
             </Button>
         </InputGroup>

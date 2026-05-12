@@ -57,6 +57,7 @@ public class SimHost(
     private val name: String,
     private val type: String,
     private val clusterName: String,
+    private val datacenterName: String = "",
     private val clock: InstantSource,
     private val engine: FlowEngine,
     private val machineModel: MachineModel,
@@ -65,6 +66,7 @@ public class SimHost(
     private val embodiedCarbon: Double,
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
+    private val cpuAllocationRatio: Double = 1.0,
 ) : AutoCloseable {
     /**
      * The event listeners registered with this host.
@@ -152,6 +154,7 @@ public class SimHost(
                 this.powerDistributor,
                 this.cpuPowerModel,
                 this.gpuPowerModel,
+                this.cpuAllocationRatio,
             ) { cause ->
                 hostState = if (cause != null) HostState.ERROR else HostState.DOWN
             }
@@ -207,6 +210,10 @@ public class SimHost(
 
     public fun getClusterName(): String {
         return clusterName
+    }
+
+    public fun getDatacenterName(): String {
+        return datacenterName
     }
 
     public fun getModel(): HostModel {

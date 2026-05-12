@@ -1,6 +1,6 @@
 import produce from 'immer'
 import { STORE_TOPOLOGY } from '../../actions/topology'
-import { DELETE_MACHINE, ADD_UNIT, DELETE_UNIT } from '../../actions/topology/machine'
+import { DELETE_MACHINE, ADD_UNIT, DELETE_UNIT, EDIT_MACHINE_NAME } from '../../actions/topology/machine'
 import { ADD_MACHINE, DELETE_RACK } from '../../actions/topology/rack'
 import { ADD_RACK_TO_TILE } from '../../actions/topology/room'
 
@@ -19,6 +19,10 @@ function machine(state = {}, action, { racks }) {
             return produce(state, (draft) => {
                 const { machine } = action
                 draft[machine.id] = machine
+            })
+        case EDIT_MACHINE_NAME:
+            return produce(state, (draft) => {
+                draft[action.machineId].name = action.name
             })
         case DELETE_MACHINE:
             return produce(state, (draft) => {

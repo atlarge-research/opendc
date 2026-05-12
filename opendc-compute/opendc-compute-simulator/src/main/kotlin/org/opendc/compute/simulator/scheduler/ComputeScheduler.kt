@@ -57,6 +57,30 @@ public interface ComputeScheduler {
     public fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult
 
     /**
+     * Evaluate which host this scheduler would select for the given task,
+     * without modifying internal state. Used by portfolio schedulers
+     * to compare policies.
+     *
+     * @param task The task to evaluate placement for.
+     * @return The host that would be selected, or null if no host is available.
+     */
+    public fun evaluatePlacement(task: ServiceTask): HostView? {
+        return null
+    }
+
+    /**
+     * Notify the scheduler that a task was placed on a host by an external decision.
+     * Used by portfolio schedulers to keep all constituent policies in sync.
+     *
+     * @param host The host that the task was placed on.
+     * @param task The task that was placed.
+     */
+    public fun notifyPlacement(
+        host: HostView,
+        task: ServiceTask,
+    ) {}
+
+    /**
      * Inform the scheduler that a [task] has been removed from the [host].
      * Could be due to completion or failure.
      */

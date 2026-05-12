@@ -25,7 +25,7 @@ package org.opendc.compute.simulator.telemetry.parquet
 import org.apache.parquet.io.api.Binary
 import org.apache.parquet.schema.LogicalTypeAnnotation
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
-import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.DOUBLE
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
@@ -103,17 +103,17 @@ public object DfltTaskExportColumns {
 
     public val CPU_LIMIT: ExportColumn<TaskTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("cpu_limit"),
+            field = Types.required(DOUBLE).named("cpu_limit"),
         ) { it.cpuLimit }
 
     public val CPU_USAGE: ExportColumn<TaskTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("cpu_usage"),
+            field = Types.required(DOUBLE).named("cpu_usage"),
         ) { it.cpuUsage }
 
     public val CPU_DEMAND: ExportColumn<TaskTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("cpu_demand"),
+            field = Types.required(DOUBLE).named("cpu_demand"),
         ) { it.cpuDemand }
 
     public val CPU_TIME_ACTIVE: ExportColumn<TaskTableReader> =
@@ -143,17 +143,17 @@ public object DfltTaskExportColumns {
 
     public val GPU_LIMIT: ExportColumn<TaskTableReader> =
         ExportColumn(
-            field = Types.optional(FLOAT).named("gpu_limit"),
+            field = Types.optional(DOUBLE).named("gpu_limit"),
         ) { it.gpuLimit }
 
     public val GPU_USAGE: ExportColumn<TaskTableReader> =
         ExportColumn(
-            field = Types.optional(FLOAT).named("gpu_usage"),
+            field = Types.optional(DOUBLE).named("gpu_usage"),
         ) { it.gpuUsage }
 
     public val GPU_DEMAND: ExportColumn<TaskTableReader> =
         ExportColumn(
-            field = Types.optional(FLOAT).named("gpu_demand"),
+            field = Types.optional(DOUBLE).named("gpu_demand"),
         ) { it.gpuDemand }
 
     public val GPU_TIME_ACTIVE: ExportColumn<TaskTableReader> =

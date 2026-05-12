@@ -1,7 +1,7 @@
 import React from 'react'
 import { Group } from 'react-konva'
 import { InteractionLevel, Topology } from '../../../../shapes'
-import RoomContainer from '../RoomContainer'
+import DatacenterContainer from '../DatacenterContainer'
 import GrayContainer from '../GrayContainer'
 
 function TopologyGroup({ topology, interactionLevel }) {
@@ -12,8 +12,8 @@ function TopologyGroup({ topology, interactionLevel }) {
     if (interactionLevel.mode === 'BUILDING') {
         return (
             <Group>
-                {topology.rooms.map((roomId) => (
-                    <RoomContainer key={roomId} roomId={roomId} />
+                {topology.datacenters.map((datacenterId) => (
+                    <DatacenterContainer key={datacenterId} datacenterId={datacenterId} />
                 ))}
             </Group>
         )
@@ -21,16 +21,16 @@ function TopologyGroup({ topology, interactionLevel }) {
 
     return (
         <Group>
-            {topology.rooms
-                .filter((roomId) => roomId !== interactionLevel.roomId)
-                .map((roomId) => (
-                    <RoomContainer key={roomId} roomId={roomId} />
+            {topology.datacenters
+                .filter((datacenterId) => datacenterId !== interactionLevel.datacenterId)
+                .map((datacenterId) => (
+                    <DatacenterContainer key={datacenterId} datacenterId={datacenterId} />
                 ))}
-            {interactionLevel.mode === 'ROOM' ? <GrayContainer /> : null}
-            {topology.rooms
-                .filter((roomId) => roomId === interactionLevel.roomId)
-                .map((roomId) => (
-                    <RoomContainer key={roomId} roomId={roomId} />
+            {interactionLevel.mode === 'DATACENTER' ? <GrayContainer /> : null}
+            {topology.datacenters
+                .filter((datacenterId) => datacenterId === interactionLevel.datacenterId)
+                .map((datacenterId) => (
+                    <DatacenterContainer key={datacenterId} datacenterId={datacenterId} />
                 ))}
         </Group>
     )

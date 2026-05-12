@@ -37,6 +37,7 @@ public data class HostSpec(
     val name: String,
     val type: String,
     val clusterName: String,
+    val datacenterName: String = "",
     val model: MachineModel,
     val cpuPowerModel: PowerModel,
     val gpuPowerModel: PowerModel?,

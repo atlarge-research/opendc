@@ -8,7 +8,7 @@ const RackConstructionComponent = ({ onStart, onStop, inRackConstructionMode, is
 
     if (inRackConstructionMode) {
         return (
-            <Button isBlock={true} icon={<TimesIcon />} onClick={onStop} className="pf-u-mb-sm">
+            <Button isBlock={true} icon={<TimesIcon />} onClick={onStop} className="pf-u-mb-sm" ouiaId="stop-rack-construction">
                 Stop rack construction
             </Button>
         )
@@ -25,6 +25,7 @@ const RackConstructionComponent = ({ onStart, onStop, inRackConstructionMode, is
                 onChange={onChangePrefab}
                 aria-label="Select rack prefab"
                 className="pf-u-mb-sm"
+                ouiaId="rack-construction-prefab-select"
             >
                 <FormSelectOption key="" value="" label="Empty Rack" />
                 {prefabs.map((prefab) => (
@@ -35,6 +36,7 @@ const RackConstructionComponent = ({ onStart, onStop, inRackConstructionMode, is
                 icon={<PlusIcon />}
                 isBlock
                 isDisabled={isEditingRoom}
+                ouiaId="start-rack-construction"
                 onClick={() => {
                     if (!isEditingRoom) {
                         const prefab = prefabs.find((p) => p.id === parseInt(selectedPrefabId))

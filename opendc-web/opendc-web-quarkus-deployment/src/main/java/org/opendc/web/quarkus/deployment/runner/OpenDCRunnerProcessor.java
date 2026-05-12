@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.function.BooleanSupplier;
 import org.opendc.trace.spi.TraceFormat;
 import org.opendc.web.quarkus.runtime.runner.OpenDCRunnerRecorder;
-import org.opendc.web.quarkus.runtime.runner.OpenDCRunnerRuntimeConfig;
 import org.opendc.web.runner.JobManager;
 import org.opendc.web.runner.OpenDCRunner;
 
@@ -84,10 +83,8 @@ public class OpenDCRunnerProcessor {
     @BuildStep(onlyIf = IsIncluded.class)
     @Record(RUNTIME_INIT)
     ServiceStartBuildItem createRunnerService(
-            OpenDCRunnerRecorder recorder,
-            OpenDCRunnerRuntimeConfig config,
-            BuildProducer<OpenDCRunnerBuildItem> runnerBuildItem) {
-        RuntimeValue<OpenDCRunner> runner = recorder.createRunner(config);
+            OpenDCRunnerRecorder recorder, BuildProducer<OpenDCRunnerBuildItem> runnerBuildItem) {
+        RuntimeValue<OpenDCRunner> runner = recorder.createRunner();
         runnerBuildItem.produce(new OpenDCRunnerBuildItem(runner));
         return new ServiceStartBuildItem("OpenDCRunnerService");
     }
@@ -101,9 +98,8 @@ public class OpenDCRunnerProcessor {
             ApplicationStartBuildItem start,
             OpenDCRunnerBuildItem runnerBuildItem,
             OpenDCRunnerRecorder recorder,
-            OpenDCRunnerRuntimeConfig config,
             ShutdownContextBuildItem shutdownContextBuildItem) {
-        recorder.startRunner(runnerBuildItem.getRunner(), config, shutdownContextBuildItem);
+        recorder.startRunner(runnerBuildItem.getRunner(), shutdownContextBuildItem);
     }
 
     /**
@@ -114,7 +110,7 @@ public class OpenDCRunnerProcessor {
 
         @Override
         public boolean getAsBoolean() {
-            return config.include;
+            return config.include();
         }
     }
 }

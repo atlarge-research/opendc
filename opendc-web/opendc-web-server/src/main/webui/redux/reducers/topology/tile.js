@@ -25,6 +25,7 @@ import { STORE_TOPOLOGY } from '../../actions/topology'
 import { ADD_TILE, DELETE_TILE } from '../../actions/topology/building'
 import { DELETE_RACK } from '../../actions/topology/rack'
 import { ADD_RACK_TO_TILE } from '../../actions/topology/room'
+import { RESIZE_DATACENTER } from '../../actions/topology/datacenter'
 
 function tile(state = {}, action) {
     switch (action.type) {
@@ -49,6 +50,16 @@ function tile(state = {}, action) {
             return produce(state, (draft) => {
                 const { tileId } = action
                 draft[tileId].rack = undefined
+            })
+        case RESIZE_DATACENTER:
+            if (!action.tileMoves || Object.keys(action.tileMoves).length === 0) return state
+            return produce(state, (draft) => {
+                for (const [tileId, pos] of Object.entries(action.tileMoves)) {
+                    if (draft[tileId]) {
+                        draft[tileId].positionX = pos.positionX
+                        draft[tileId].positionY = pos.positionY
+                    }
+                }
             })
         default:
             return state

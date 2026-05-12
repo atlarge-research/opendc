@@ -25,7 +25,7 @@ package org.opendc.compute.simulator.telemetry.parquet
 import org.apache.parquet.io.api.Binary
 import org.apache.parquet.schema.LogicalTypeAnnotation
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
-import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.DOUBLE
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
 import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReader
@@ -75,27 +75,27 @@ public object DfltBatteryExportColumns {
 
     public val POWER_DRAW: ExportColumn<BatteryTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("power_draw"),
+            field = Types.required(DOUBLE).named("power_draw"),
         ) { it.powerDraw }
 
     public val ENERGY_USAGE: ExportColumn<BatteryTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("energy_usage"),
+            field = Types.required(DOUBLE).named("energy_usage"),
         ) { it.energyUsage }
 
     public val EMBODIED_CARBON: ExportColumn<BatteryTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("embodied_carbon_emission"),
+            field = Types.required(DOUBLE).named("embodied_carbon_emission"),
         ) { it.embodiedCarbonEmission }
 
     public val CHARGE: ExportColumn<BatteryTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("charge"),
+            field = Types.required(DOUBLE).named("charge"),
         ) { it.charge }
 
     public val CAPACITY: ExportColumn<BatteryTableReader> =
         ExportColumn(
-            field = Types.required(FLOAT).named("capacity"),
+            field = Types.required(DOUBLE).named("capacity"),
         ) { it.capacity }
 
     public val BATTERY_STATE: ExportColumn<BatteryTableReader> =

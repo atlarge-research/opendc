@@ -55,12 +55,12 @@ import java.util.Set;
             WHERE a.key.userId = :userId
         """),
     @NamedQuery(
-            name = "Project.allocatePortfolio",
+            name = "Project.allocateExperiment",
             query =
                     """
             UPDATE Project p
-            SET p.portfoliosCreated = :oldState + 1, p.updatedAt = :now
-            WHERE p.id = :id AND p.portfoliosCreated = :oldState
+            SET p.experimentsCreated = :oldState + 1, p.updatedAt = :now
+            WHERE p.id = :id AND p.experimentsCreated = :oldState
         """),
     @NamedQuery(
             name = "Project.allocateTopology",
@@ -85,6 +85,14 @@ import java.util.Set;
             UPDATE Project p
             SET p.rackPrefabsCreated = :oldState + 1, p.updatedAt = :now
             WHERE p.id = :id AND p.rackPrefabsCreated = :oldState
+        """),
+    @NamedQuery(
+            name = "Project.allocateMachinePrefab",
+            query =
+                    """
+            UPDATE Project p
+            SET p.machinePrefabsCreated = :oldState + 1, p.updatedAt = :now
+            WHERE p.id = :id AND p.machinePrefabsCreated = :oldState
         """)
 })
 public class Project extends PanacheEntityBase {
@@ -117,20 +125,20 @@ public class Project extends PanacheEntityBase {
     public Instant updatedAt;
 
     /**
-     * The portfolios belonging to this project.
+     * The experiments belonging to this project.
      */
     @OneToMany(
             cascade = {CascadeType.ALL},
             mappedBy = "project",
             orphanRemoval = true)
     @OrderBy("id ASC")
-    public Set<Portfolio> portfolios = new HashSet<>();
+    public Set<Experiment> experiments = new HashSet<>();
 
     /**
-     * The number of portfolios created for this project (including deleted portfolios).
+     * The number of experiments created for this project (including deleted experiments).
      */
-    @Column(name = "portfolios_created", nullable = false)
-    public int portfoliosCreated = 0;
+    @Column(name = "experiments_created", nullable = false)
+    public int experimentsCreated = 0;
 
     /**
      * The topologies belonging to this project.
@@ -177,6 +185,22 @@ public class Project extends PanacheEntityBase {
     public int rackPrefabsCreated = 0;
 
     /**
+     * The machine prefabs belonging to this project.
+     */
+    @OneToMany(
+            cascade = {CascadeType.ALL},
+            mappedBy = "project",
+            orphanRemoval = true)
+    @OrderBy("id ASC")
+    public Set<MachinePrefab> machinePrefabs = new HashSet<>();
+
+    /**
+     * The number of machine prefabs created for this project (including deleted machine prefabs).
+     */
+    @Column(name = "machine_prefabs_created", nullable = false)
+    public int machinePrefabsCreated = 0;
+
+    /**
      * The users authorized to access the project.
      */
     @OneToMany(
@@ -200,23 +224,25 @@ public class Project extends PanacheEntityBase {
     protected Project() {}
 
     /**
-     * Allocate the next portfolio number for the specified [project].
+     * Allocate the next experiment number for the specified [project].
      *
-     * @param time The time at which the new portfolio is created.
+     * @param time The time at which the new experiment is created.
      */
-    public int allocatePortfolio(Instant time) {
+    public int allocateExperiment(Instant time) {
         for (int i = 0; i < 4; i++) {
             long count = update(
-                    "#Project.allocatePortfolio",
-                    Parameters.with("id", id).and("oldState", portfoliosCreated).and("now", time));
+                    "#Project.allocateExperiment",
+                    Parameters.with("id", id)
+                            .and("oldState", experimentsCreated)
+                            .and("now", time));
             if (count > 0) {
-                return portfoliosCreated + 1;
+                return experimentsCreated + 1;
             } else {
                 Panache.getEntityManager().refresh(this);
             }
         }
 
-        throw new IllegalStateException("Failed to allocate next portfolio");
+        throw new IllegalStateException("Failed to allocate next experiment");
     }
 
     /**
@@ -279,5 +305,27 @@ public class Project extends PanacheEntityBase {
         }
 
         throw new IllegalStateException("Failed to allocate next rack prefab");
+    }
+
+    /**
+     * Allocate the next machine prefab number for the specified [project].
+     *
+     * @param time The time at which the new machine prefab is created.
+     */
+    public int allocateMachinePrefab(Instant time) {
+        for (int i = 0; i < 4; i++) {
+            long count = update(
+                    "#Project.allocateMachinePrefab",
+                    Parameters.with("id", id)
+                            .and("oldState", machinePrefabsCreated)
+                            .and("now", time));
+            if (count > 0) {
+                return machinePrefabsCreated + 1;
+            } else {
+                Panache.getEntityManager().refresh(this);
+            }
+        }
+
+        throw new IllegalStateException("Failed to allocate next machine prefab");
     }
 }

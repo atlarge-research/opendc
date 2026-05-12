@@ -76,19 +76,19 @@ function Projects() {
             </Head>
             <PageSection variant={PageSectionVariants.light} isFilled>
                 <div className="pf-u-mx-auto pf-u-max-width" style={{ '--pf-u-max-width--MaxWidth': '100ch' }}>
-                    <Title className="pf-u-mt-xl-on-md" headingLevel="h1" size="4xl">
+                    <Title className="pf-u-mt-xl-on-md" headingLevel="h1" size="4xl" ouiaId="projects-title">
                         Welcome
                     </Title>
                     <TextContent>
-                        <Text component="p">Find all your personal and shared projects</Text>
+                        <Text component="p" ouiaId="projects-description">Find all your personal and shared projects</Text>
                     </TextContent>
-                    <Toolbar inset={{ default: 'insetNone' }}>
-                        <ToolbarContent>
+                    <Toolbar id="projects-toolbar" ouiaId="projects-toolbar" inset={{ default: 'insetNone' }}>
+                        <ToolbarContent toolbarId="projects-toolbar">
                             <ToolbarItem>
                                 <ProjectFilterPanel onSelect={setFilter} activeFilter={filter} />
                             </ToolbarItem>
                             <ToolbarItem alignment={{ default: 'alignRight' }}>
-                                <Button icon={<PlusIcon />} onClick={() => setProjectCreationModalVisible(true)}>
+                                <Button icon={<PlusIcon />} ouiaId="create-project-button" onClick={() => setProjectCreationModalVisible(true)}>
                                     Create Project
                                 </Button>
                             </ToolbarItem>

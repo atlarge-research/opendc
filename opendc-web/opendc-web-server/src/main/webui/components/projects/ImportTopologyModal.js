@@ -67,8 +67,8 @@ function ImportTopologyModal({ isOpen, onCancel, onSubmit, topologies = [] }) {
 
         try {
             const topology = JSON.parse(fileValue)
-            if (!topology.name || !topology.rooms) {
-                setError('Invalid topology format. Name and rooms are required.')
+            if (!topology.name || !topology.datacenters) {
+                setError('Invalid topology format. Name and datacenters are required.')
                 return
             }
 

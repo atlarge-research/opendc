@@ -95,7 +95,7 @@ function Topology() {
             </Head>
             <PageSection variant={PageSectionVariants.light}>
                 <TextContent>
-                    <Text component="h1">Topology</Text>
+                    <Text component="h1" ouiaId="topology-heading">Topology</Text>
                 </TextContent>
             </PageSection>
             <PageSection type="none" variant={PageSectionVariants.light} className="pf-c-page__main-tabs" sticky="top">
@@ -104,6 +104,7 @@ function Topology() {
                     activeKey={activeTab}
                     onSelect={(_, tabIndex) => setActiveTab(tabIndex)}
                     className="pf-m-page-insets"
+                    ouiaId="topology-tabs"
                 >
                     <Tab eventKey="overview" title={<TabTitleText>Overview</TabTitleText>} tabContentId="overview" />
                     <Tab

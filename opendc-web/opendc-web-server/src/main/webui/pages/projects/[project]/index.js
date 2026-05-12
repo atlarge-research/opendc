@@ -60,7 +60,7 @@ function Project() {
             </Head>
             <PageSection variant={PageSectionVariants.light}>
                 <TextContent>
-                    <Text component="h1">
+                    <Text component="h1" ouiaId="project-heading">
                         {project?.name ?? <Skeleton width="15%" screenreaderText="Loading project" />}
                     </Text>
                 </TextContent>

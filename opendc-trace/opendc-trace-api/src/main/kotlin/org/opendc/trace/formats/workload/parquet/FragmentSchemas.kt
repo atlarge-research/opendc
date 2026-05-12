@@ -60,13 +60,13 @@ private val FRAGMENT_SCHEMA_v2: MessageType =
     Types.buildMessage()
         .addFields(
             Types
-                .required(PrimitiveType.PrimitiveTypeName.INT32)
+                .optional(PrimitiveType.PrimitiveTypeName.INT32)
                 .named("id"),
             Types
-                .required(PrimitiveType.PrimitiveTypeName.INT64)
+                .optional(PrimitiveType.PrimitiveTypeName.INT64)
                 .named("duration"),
             Types
-                .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                .optional(PrimitiveType.PrimitiveTypeName.DOUBLE)
                 .named("cpu_usage"),
             Types
                 .optional(PrimitiveType.PrimitiveTypeName.DOUBLE)

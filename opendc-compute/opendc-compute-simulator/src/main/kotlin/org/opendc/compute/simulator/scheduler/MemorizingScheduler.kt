@@ -150,6 +150,47 @@ public class MemorizingScheduler(
         return result
     }
 
+    override fun evaluatePlacement(task: ServiceTask): HostView? {
+        if (numHosts == 0) return null
+
+        for (chosenListIndex in minAvailableHost until hostsQueue.size) {
+            val chosenList = hostsQueue[chosenListIndex]
+            for (host in chosenList) {
+                if (filters.all { filter -> filter.test(host, task) }) {
+                    return host
+                }
+            }
+        }
+        return null
+    }
+
+    override fun notifyPlacement(
+        host: HostView,
+        task: ServiceTask,
+    ) {
+        // Move host to the next priority level (one more task)
+        val priorityIdx = host.priorityIndex
+        val listIdx = host.listIndex
+        val chosenList = hostsQueue[priorityIdx]
+
+        if (chosenList.size == 1) {
+            chosenList.removeLast()
+            if (priorityIdx == minAvailableHost) {
+                minAvailableHost++
+            }
+        } else {
+            val lastItem = chosenList.last()
+            chosenList[listIdx] = lastItem
+            lastItem.listIndex = listIdx
+            chosenList.removeLast()
+        }
+
+        val nextList = hostsQueue[priorityIdx + 1]
+        nextList.add(host)
+        host.priorityIndex++
+        host.listIndex = nextList.size - 1
+    }
+
     override fun removeTask(
         task: ServiceTask,
         host: HostView?,

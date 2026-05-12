@@ -80,14 +80,14 @@ class JobManagerImplTest {
 
     @Test
     fun testClaimSuccess() {
-        every { jobResource.update(1L, Job.Update(JobState.CLAIMED, 0, null, null)) } returns makeJob(1L, JobState.CLAIMED)
+        every { jobResource.update(1L, Job.Update(JobState.CLAIMED, 0, null, null, false)) } returns makeJob(1L, JobState.CLAIMED)
 
         assertTrue(manager.claim(1L))
     }
 
     @Test
     fun testClaimFailsOnIllegalState() {
-        every { jobResource.update(1L, Job.Update(JobState.CLAIMED, 0, null, null)) } throws IllegalStateException("conflict")
+        every { jobResource.update(1L, Job.Update(JobState.CLAIMED, 0, null, null, false)) } throws IllegalStateException("conflict")
 
         assertFalse(manager.claim(1L))
     }
@@ -95,7 +95,7 @@ class JobManagerImplTest {
     @Test
     fun testHeartbeatSuccessWhenNotFailed() {
         val job = makeJob(1L, JobState.RUNNING)
-        every { jobResource.update(1L, Job.Update(JobState.RUNNING, 30, null, null)) } returns job
+        every { jobResource.update(1L, Job.Update(JobState.RUNNING, 30, null, null, false)) } returns job
 
         assertTrue(manager.heartbeat(1L, 30))
     }
@@ -103,14 +103,14 @@ class JobManagerImplTest {
     @Test
     fun testHeartbeatReturnsFalseWhenJobFailed() {
         val job = makeJob(1L, JobState.FAILED)
-        every { jobResource.update(1L, Job.Update(JobState.RUNNING, 30, null, null)) } returns job
+        every { jobResource.update(1L, Job.Update(JobState.RUNNING, 30, null, null, false)) } returns job
 
         assertFalse(manager.heartbeat(1L, 30))
     }
 
     @Test
     fun testHeartbeatReturnsTrueWhenResponseNull() {
-        every { jobResource.update(1L, Job.Update(JobState.RUNNING, 30, null, null)) } returns null
+        every { jobResource.update(1L, Job.Update(JobState.RUNNING, 30, null, null, false)) } returns null
 
         // null response means no FAILED state, so heartbeat can continue
         assertTrue(manager.heartbeat(1L, 30))
@@ -120,40 +120,40 @@ class JobManagerImplTest {
     fun testFail() {
         val report =
             Report(null, null, emptyList(), Report.Summary(0, 1, null, null), Report.ErrorInfo("some error", "RuntimeException", null))
-        every { jobResource.update(1L, Job.Update(JobState.FAILED, 60, null, report)) } returns makeJob(1L, JobState.FAILED)
+        every { jobResource.update(1L, Job.Update(JobState.FAILED, 60, null, report, false)) } returns makeJob(1L, JobState.FAILED)
 
         manager.fail(1L, 60, report)
 
-        verify { jobResource.update(1L, Job.Update(JobState.FAILED, 60, null, report)) }
+        verify { jobResource.update(1L, Job.Update(JobState.FAILED, 60, null, report, false)) }
     }
 
     @Test
     fun testFailWithNullReport() {
-        every { jobResource.update(1L, Job.Update(JobState.FAILED, 60, null, null)) } returns makeJob(1L, JobState.FAILED)
+        every { jobResource.update(1L, Job.Update(JobState.FAILED, 60, null, null, false)) } returns makeJob(1L, JobState.FAILED)
 
         manager.fail(1L, 60, null)
 
-        verify { jobResource.update(1L, Job.Update(JobState.FAILED, 60, null, null)) }
+        verify { jobResource.update(1L, Job.Update(JobState.FAILED, 60, null, null, false)) }
     }
 
     @Test
     fun testFinish() {
         val results = mapOf("total_power_draw" to listOf(100.0))
         val report = Report(null, null, emptyList(), Report.Summary(0, 0, 120, null), null)
-        every { jobResource.update(1L, Job.Update(JobState.FINISHED, 120, results, report)) } returns makeJob(1L, JobState.FINISHED)
+        every { jobResource.update(1L, Job.Update(JobState.FINISHED, 120, results, report, false)) } returns makeJob(1L, JobState.FINISHED)
 
         manager.finish(1L, 120, results, report)
 
-        verify { jobResource.update(1L, Job.Update(JobState.FINISHED, 120, results, report)) }
+        verify { jobResource.update(1L, Job.Update(JobState.FINISHED, 120, results, report, false)) }
     }
 
     @Test
     fun testFinishWithNullReport() {
         val results = mapOf("total_power_draw" to listOf(100.0))
-        every { jobResource.update(1L, Job.Update(JobState.FINISHED, 120, results, null)) } returns makeJob(1L, JobState.FINISHED)
+        every { jobResource.update(1L, Job.Update(JobState.FINISHED, 120, results, null, false)) } returns makeJob(1L, JobState.FINISHED)
 
         manager.finish(1L, 120, results, null)
 
-        verify { jobResource.update(1L, Job.Update(JobState.FINISHED, 120, results, null)) }
+        verify { jobResource.update(1L, Job.Update(JobState.FINISHED, 120, results, null, false)) }
     }
 }

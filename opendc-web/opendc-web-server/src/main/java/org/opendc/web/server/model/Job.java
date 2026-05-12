@@ -112,6 +112,12 @@ public class Job extends PanacheEntityBase {
     public Map<String, Object> report = null;
 
     /**
+     * Whether the runner produced export files (a ZIP archive) for this job.
+     */
+    @Column(name = "has_exports", nullable = false, columnDefinition = "boolean default false")
+    public boolean hasExports = false;
+
+    /**
      * Construct a {@link Job} instance.
      */
     public Job(Scenario scenario, String createdBy, Instant createdAt, int repeats) {
@@ -154,7 +160,8 @@ public class Job extends PanacheEntityBase {
             Instant startedAt,
             int runtime,
             Map<String, ?> results,
-            Map<String, Object> report) {
+            Map<String, Object> report,
+            boolean hasExports) {
         // Update entity fields directly - this uses the JsonType converter for proper JSON serialization
         this.state = newState;
         this.updatedAt = time;
@@ -164,6 +171,9 @@ public class Job extends PanacheEntityBase {
         this.runtime = runtime;
         this.results = results;
         this.report = report;
+        if (hasExports) {
+            this.hasExports = true;
+        }
 
         // Flush changes to database - JsonType will properly serialize the results map to JSON
         Panache.getEntityManager().flush();

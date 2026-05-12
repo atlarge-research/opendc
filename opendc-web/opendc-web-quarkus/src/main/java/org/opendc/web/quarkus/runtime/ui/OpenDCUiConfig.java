@@ -22,30 +22,31 @@
 
 package org.opendc.web.quarkus.runtime.ui;
 
-import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
 import java.util.Optional;
 
 /**
  * Configuration for the OpenDC web UI.
  */
-@ConfigRoot(phase = ConfigPhase.RUN_TIME, name = "opendc-ui")
-public class OpenDCUiConfig {
+@ConfigMapping(prefix = "quarkus.opendc-ui")
+@ConfigRoot(phase = ConfigPhase.RUN_TIME)
+public interface OpenDCUiConfig {
     /**
      * The base URL of the OpenDC API.
      */
-    @ConfigItem(defaultValue = "/api")
-    String apiBaseUrl;
+    @WithDefault("/api")
+    String apiBaseUrl();
 
     /**
      * Configuration properties for web UI authentication.
      */
-    AuthConfiguration auth;
+    AuthConfiguration auth();
 
     /**
      * Sentry DSN.
      */
-    @ConfigItem
-    Optional<String> sentryDsn;
+    Optional<String> sentryDsn();
 }

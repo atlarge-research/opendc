@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import UnitTabsComponent from './UnitTabsComponent'
+import AddMachinePrefab from './AddMachinePrefab'
 import DeleteMachine from './DeleteMachine'
+import NameComponent from '../NameComponent'
 import {
     TextContent,
     TextList,
@@ -10,7 +12,8 @@ import {
     TextListVariants,
     Title,
 } from '@patternfly/react-core'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { editMachineName } from '../../../../redux/actions/topology/machine'
 
 function MachineSidebar({ tileId, position }) {
     const machine = useSelector(({ topology }) => {
@@ -24,21 +27,26 @@ function MachineSidebar({ tileId, position }) {
         }
     })
     const machineId = machine.id
+    const dispatch = useDispatch()
     return (
         <div>
             <TextContent>
-                <Title headingLevel="h2">Details</Title>
+                <Title headingLevel="h2" ouiaId="machine-details-title">Details</Title>
                 <TextList component={TextListVariants.dl}>
                     <TextListItem component={TextListItemVariants.dt}>Name</TextListItem>
                     <TextListItem component={TextListItemVariants.dd}>
-                        Machine at position {machine.position}
+                        <NameComponent
+                            name={machine.name ?? `Machine at position ${machine.position}`}
+                            onEdit={(name) => dispatch(editMachineName(machine.id, name))}
+                        />
                     </TextListItem>
                 </TextList>
 
-                <Title headingLevel="h2">Actions</Title>
+                <Title headingLevel="h2" ouiaId="machine-actions-title">Actions</Title>
+                <AddMachinePrefab tileId={tileId} position={position} />
                 <DeleteMachine machineId={machineId} />
 
-                <Title headingLevel="h2">Units</Title>
+                <Title headingLevel="h2" ouiaId="machine-units-title">Units</Title>
             </TextContent>
             <div className="pf-u-h-100">
                 <UnitTabsComponent machineId={machineId} />

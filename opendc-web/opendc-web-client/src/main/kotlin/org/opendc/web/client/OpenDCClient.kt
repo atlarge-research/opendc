@@ -52,9 +52,9 @@ public class OpenDCClient(client: TransportClient) {
     public val topologies: TopologyResource = TopologyResource(client)
 
     /**
-     * A resource for the portfolios available to the user.
+     * A resource for the experiments available to the user.
      */
-    public val portfolios: PortfolioResource = PortfolioResource(client)
+    public val experiments: ExperimentResource = ExperimentResource(client)
 
     /**
      * A resource for the scenarios available to the user.

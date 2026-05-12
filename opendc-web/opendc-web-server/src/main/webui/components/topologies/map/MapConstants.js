@@ -1,4 +1,6 @@
 export const MAP_SIZE = 50
+export const DEFAULT_FLOORPLAN_WIDTH = 4
+export const DEFAULT_FLOORPLAN_HEIGHT = 8
 export const TILE_SIZE_IN_PIXELS = 100
 export const TILE_SIZE_IN_METERS = 0.5
 export const MAP_SIZE_IN_PIXELS = MAP_SIZE * TILE_SIZE_IN_PIXELS

@@ -199,6 +199,56 @@ public class FilterScheduler(
         return SchedulingResult(SchedulingResultType.SUCCESS, hostView, req)
     }
 
+    override fun evaluatePlacement(task: ServiceTask): HostView? {
+        val fittingHosts = usedHosts.getFittingHosts(task)
+
+        for (emptyHosts in emptyHostMap.values) {
+            if (emptyHosts.isNotEmpty()) {
+                val host = emptyHosts.first()
+                if (filters.all { filter -> filter.test(host, task) }) {
+                    fittingHosts.add(host)
+                }
+            }
+        }
+
+        if (fittingHosts.isEmpty()) return null
+
+        if (weighers.isEmpty()) return fittingHosts.first()
+
+        var maxWeight = Double.MIN_VALUE
+        var maxIndex = 0
+        val tempWeights = DoubleArray(fittingHosts.size)
+
+        val results = weighers.map { it.getWeights(fittingHosts, task) }
+        for (result in results) {
+            val min = result.min
+            val range = result.max - min
+            if (range == 0.0) continue
+            val multiplier = result.multiplier
+            val factor = multiplier / range
+            for ((i, weight) in result.weights.withIndex()) {
+                tempWeights[i] += factor * (weight - min)
+                if (tempWeights[i] > maxWeight) {
+                    maxIndex = i
+                    maxWeight = tempWeights[i]
+                }
+            }
+        }
+
+        return fittingHosts[maxIndex]
+    }
+
+    override fun notifyPlacement(
+        host: HostView,
+        task: ServiceTask,
+    ) {
+        val hostType = host.host.getType()
+        if (host.host.isEmpty()) {
+            emptyHostMap[hostType]?.remove(host)
+            usedHosts.addSorted(host)
+        }
+    }
+
     override fun removeTask(
         task: ServiceTask,
         host: HostView?,
