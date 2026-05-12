@@ -21,3 +21,5 @@ Details about completed research projects will be listed here.
 
 ### Graph Massivizer
 
+OpenDC has been used and extended to support the operations of GraphGreenifier (https://github.com/graph-massivizer/graph-greenifier), one of the toolkits developed by the project, in charge of simulating the execution of graph processing workloads on a large-scale infrastructure, reporting sustainability metrics, and proposing alternative execution scenarios. 
+
