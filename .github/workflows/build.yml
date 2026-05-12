@@ -6,6 +6,7 @@ on:
   push:
     branches: [ gh-pages ]
   merge_group:
+  workflow_dispatch:
 
 jobs:
   build-docs:
