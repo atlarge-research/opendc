@@ -1,4 +1,3 @@
-import React from 'react'
 
 const aboutOpenDC = [
     {
@@ -33,6 +32,32 @@ const usingOpenDC = [
         authors: [
             "Dante Niewenhuis", "Sacheendra Talluri", "Alexandru Iosup", "Tiziano de Matteis"
         ],
+        abstract: [
+            `The need to reduce datacenter carbon-footprint is
+            urgent. While many sustainability techniques have been pro-
+            posed, they are often evaluated in isolation, using limited setups
+            or analytical models that overlook real-world dynamics and
+            interactions between methods. This makes it challenging for
+            researchers and operators to understand the effectiveness and
+            trade-offs of combining such techniques. We design OpenDC-
+            STEAM, an open-source customizable datacenter simulator, to
+            investigate the individual and combined impact of sustainability
+            techniques on datacenter operational and embodied carbon emis-
+            sions, and their trade-off with performance. Using STEAM, we
+            systematically explore three representative techniques–horizontal
+            scaling, leveraging batteries, and temporal shifting–with diverse
+            representative workloads, datacenter configurations, and carbon-
+            intensity traces. Our analysis highlights that datacenter dynamics
+            can influence their effectiveness and that combining strategies
+            can significantly lower emissions, but introduces complex cost-
+            emissions-performance trade-offs that STEAM can help nav-
+            igate. STEAM supports the integration of new models and
+            techniques, making it a foundation framework for holistic,
+            quantitative, and reproducible research in sustainable computing.
+            Following open-science principles, STEAM is available as FOSS:
+            https://github.com/atlarge-research/OpenDC-STEAM. This is an
+            extended version of a paper published at CCGRID 2026.`
+        ]
     },
     {
         title: "Capelin: Data-Driven Compute Capacity Procurement for Cloud Datacenters Using Portfolios of Scenarios",
@@ -50,14 +75,22 @@ const usingOpenDC = [
     },
 ]
 
-function Publication({ title, link, venue, year, authors }) {
+function Publication({ title, link, venue, year, authors, abstract }) {
     return (
         <li style={{ marginBottom: '1rem' }}>
-            <a href={link}>{title}</a>
+            {link ? <a href={link}>{title}</a> : <span>{title}</span>}
             <br />
             <strong>{venue}, {year}</strong>
             <br />
             <span>{authors.join(', ')}</span>
+            {abstract && (
+                <details style={{ marginTop: '0.5rem' }}>
+                    <summary style={{ cursor: 'pointer' }}>Abstract</summary>
+                    {abstract.map((paragraph, i) => (
+                        <p key={i} style={{ marginTop: '0.5rem', textAlign: 'justify' }}>{paragraph}</p>
+                    ))}
+                </details>
+            )}
         </li>
     )
 }

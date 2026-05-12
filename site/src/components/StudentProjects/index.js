@@ -3,6 +3,11 @@ const studentProjects = [
     {
         title: "Radice: Data-driven Risk Analysis of Sustainable Cloud Infrastructure using Simulation",
         link: "https://repository.tudelft.nl/islandora/object/uuid:00afeb36-724d-4edf-adc7-67ce991c7d12",
+        abstract: [
+            `Cloud datacenters underpin our increasingly digital society, serving stakeholders across industry, government, and academia. These stakeholders have come to expect reliable operation and high quality of service, yet demand low cost, high scalability, and corporate (environmental) responsibility. Datacenter operators are confronted frequently with highly complex decisions that involve numerous aspects of risk. The consequence of bad decisions can be financial penalties or even loss of customers on the one hand, or a competitive disadvantage or unsustainable environmental impact on the other hand. Despite risk analysis being an integral part of the design and operation of cloud infrastructure, relatively few comprehensive approaches and tools exist, leaving many datacenter operators ill-equipped to make informed decisions with confidence.`,
+            `We propose Radice, an instrument for data-driven analysis of IT-related operational risks in sustainable cloud datacenters. Unlike most state-of-the-art approaches used by the industry, Radice automates the process of risk analysis in datacenters and utilizes the large and diverse volume of data reported by the monitoring systems in datacenters, including environmental data. Underpinning this system is the trace-based, discrete-event simulator OpenDC, which enables the exploration of many risk scenarios through its support for diverse workloads, datacenter topologies, and operational phenomena. Radice’s interactive and explorative user interface assists datacenter operators in addressing complex decisions involving risks, providing them with actionable insights, automated visualizations, and suggestions to reduce risk.`,
+            `We implement Radice and conduct a comprehensive evaluation of the system to demonstrate how it can aid datacenter operators when confronted with fundamental risk trade-offs. Although Radice is designed to work across many kinds of datacenters, in this work, we focus on private-cloud, business-critical workloads, and on public-cloud operations, representing the majority of workloads in Dutch datacenters. Our experiments show many interesting findings, supporting our claim for a need for data-driven risk analysis in datacenters. We highlight the increasing risk faced by datacenter operators due to price surges in the electricity and CO2 bond markets, and demonstrate how Radice can be used to control such risks. We further show that Radice can automatically optimize topology and operational settings in datacenters for risk, revealing configurations that reduce the overall risk by 10%–30%. Following extensive performance engineering, Radice is able to evaluate risk scenarios by a factor 70x–330x faster than others, opening possibilities for interactive risk exploration. We release Radice as free and open-source software for the community to inspect and re-use.`,
+        ],
         type: "Master Thesis",
         year: 2022,
         student: "Fabian Mastenbroek",
@@ -62,7 +67,7 @@ const categories = ["Master Thesis", "Bachelor Thesis", "Other"]
 
 const standardTypes = ["Master Thesis", "Bachelor Thesis"]
 
-function StudentProject({ title, link, type, year, student }) {
+function StudentProject({ title, link, type, year, student, abstract }) {
     return (
         <li style={{ marginBottom: '1rem' }}>
             {link ? <a href={link}>{title}</a> : <span>{title}</span>}
@@ -70,6 +75,14 @@ function StudentProject({ title, link, type, year, student }) {
             <strong>{!standardTypes.includes(type) ? `${type}, ` : ''}{year}</strong>
             <br />
             <span>{student}</span>
+            {abstract && (
+                <details style={{ marginTop: '0.5rem' }}>
+                    <summary style={{ cursor: 'pointer' }}>Abstract</summary>
+                    {abstract.map((paragraph, i) => (
+                        <p key={i} style={{ marginTop: '0.5rem', textAlign: 'justify' }}>{paragraph}</p>
+                    ))}
+                </details>
+            )}
         </li>
     )
 }
