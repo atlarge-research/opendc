@@ -2,6 +2,7 @@ name: Test latest Gradle RC
 on:
   schedule:
     - cron: 0 0 * * 0 # weekly
+  workflow_dispatch:
 
 jobs:
   gradle-rc:
