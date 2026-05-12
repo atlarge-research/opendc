@@ -3,6 +3,7 @@ name: Deploy app.opendc.org
 on:
   push:
     branches: ["prod"]
+  workflow_dispatch:
 
 jobs:
   deploy-app:
