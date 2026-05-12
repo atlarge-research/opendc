@@ -20,7 +20,7 @@ jobs:
           if [[ $GITHUB_REF == refs/tags/website* ]]; then
             VERSION=${GITHUB_REF#refs/tags/website-}
           fi
-          echo "tags=${DOCKER_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
+          echo "tags=${DOCKER_IMAGE}:${VERSION},${DOCKER_IMAGE}:latest" >> $GITHUB_OUTPUT
       - name: Checkout
         uses: actions/checkout@v3
       - name: Login to DockerHub
