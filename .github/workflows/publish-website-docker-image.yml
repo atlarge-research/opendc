@@ -1,6 +1,8 @@
 name: Publish website docker image
 
 on:
+  push:
+    tags: ['*']
   workflow_run:
     workflows: ["Build"]
     types:
