@@ -7,6 +7,6 @@ description: How to supercharge your designs and experiments with OpenDC.
 Congratulations! You have just learned how to design and experiment with a (virtual) datacenter in OpenDC. What's next?
 
 - Follow one of the [tutorials](/learn/category/tutorials) using OpenDC.
-- Read about [existing work using OpenDC](/community/research).
+- Read about [existing work using OpenDC](/research/publications).
 - Get involved in the [OpenDC Community](/community/support).
 - If you are interested in contributing to OpenDC you can find a How-To here [start-using-intellij](./start-using-intellij), please also read https://github.com/atlarge-research/opendc/blob/master/CONTRIBUTING.md.
