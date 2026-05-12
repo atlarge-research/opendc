@@ -21,7 +21,16 @@ jobs:
           SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
       - name: Pull Changes
         run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && git pull origin'
+      - name: Print Versions
+        run: |
+          ssh -i ../opendc.key opendc@opendc.org bash << 'EOF'
+          cd /opt/opendc
+          source .env
+          echo "OPENDC_WEB_API_VERSION=$OPENDC_WEB_API_VERSION"
+          echo "OPENDC_RUNNER_VERSION=$OPENDC_RUNNER_VERSION"
+          echo "OPENDC_WEBSITE_VERSION=$OPENDC_WEBSITE_VERSION"
+          EOF
       - name: Pull Images
         run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && source .env && docker-compose -f docker-compose.yml -f docker-compose.prod.yml pull'
       - name: Deploy Images
-        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && source .env && docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d'
+        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && source .env && docker-compose -f docker-compose.yml -f docker-compose.prod.yml down && docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d'
