@@ -4,9 +4,13 @@ on:
   push:
     branches: ["prod"]
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Publish website docker image"]
+    types: [completed]
 
 jobs:
   deploy-app:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
     runs-on: ubuntu-22.04
     steps:
       - name: Create SSH key

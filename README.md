@@ -22,17 +22,18 @@ The latest release will be marked _latest_.
 
 ## Documentation
 
-You can find the OpenDC documentation [on the website](https://opendc.org/opendc/).
+You can find the OpenDC documentation [on the website](https://opendc.org).
 The documentation is divided into several sections:
 
-* [Getting Started](https://opendc.org/opendc/docs/category/getting-started/)
-* [Tutorials](https://opendc.org/opendc/docs/category/tutorials/)
-* [Advanced Guides](https://opendc.org/opendc/docs/category/advanced-guides/)
-* [Where to Get Support](https://opendc.org/opendc/community/support/)
-* [Contributing Guide](https://opendc.org/opendc/community/contributing/)
+* [Getting Started](https://opendc.org/learn/category/getting-started)
+* [Tutorials](https://opendc.org/learn/category/tutorials)
+* [Where to Get Support](https://opendc.org/community/support)
+* [Contributing Guide](https://opendc.org/community/contributing)
 
-The source code for the documentation is located in the [gh-pages branch](https://github.com/atlarge-research/opendc/tree/gh-pages).
-Push to that branch to update the documentation.
+You find information about the research projects and publications related to OpenDC in the [research section](https://opendc.org/research/publications).
+
+The source code for the website is located in the [gh-pages branch](https://github.com/atlarge-research/opendc/tree/gh-pages).
+Push to that branch to update the website.
 
 ## Contributing
 
