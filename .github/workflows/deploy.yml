@@ -9,7 +9,7 @@ on:
 
 jobs:
   deploy-app:
-    if: ${{ github.event_name != 'repository_dispatch' || github.event.action == 'publish-completed' }}
+    if: ${{ github.event_name != 'repository_dispatch' || github.event.action == 'publish-website-completed' }}
     runs-on: ubuntu-22.04
     steps:
       - name: Create SSH key
