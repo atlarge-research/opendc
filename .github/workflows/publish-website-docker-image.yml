@@ -37,3 +37,10 @@ jobs:
           context: ./site
           push: true
           tags: ${{ steps.prep.outputs.tags }}
+      - name: Trigger deploy
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.OPENDC_DEPLOY_PAT }}" \
+            https://api.github.com/repos/atlarge-research/opendc/dispatches \
+            -d '{"event_type":"publish-website-completed"}'
