@@ -1,0 +1,1335 @@
+{
+    "clusters": [
+        {
+            "name": "DC2-C3",
+            "hosts": [
+                {
+                    "name": "DC2-C3-1",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "549755813888 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C3-2",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "549755813888 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C3-3",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "549755813888 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC2-C4",
+            "hosts": [
+                {
+                    "name": "DC2-C4-1",
+                    "cpu": {
+                        "coreCount": 16,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C4-2",
+                    "cpu": {
+                        "coreCount": 16,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C4-3",
+                    "cpu": {
+                        "coreCount": 16,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C4-4",
+                    "cpu": {
+                        "coreCount": 16,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C4-5",
+                    "cpu": {
+                        "coreCount": 16,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC2-C7",
+            "hosts": [
+                {
+                    "name": "DC2-C7-1",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C7-2",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C7-3",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C7-4",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C7-5",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C7-6",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C7-7",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC2-C9",
+            "hosts": [
+                {
+                    "name": "DC2-C9-1",
+                    "cpu": {
+                        "coreCount": 14,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C9-2",
+                    "cpu": {
+                        "coreCount": 14,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C9-3",
+                    "cpu": {
+                        "coreCount": 14,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C9-4",
+                    "cpu": {
+                        "coreCount": 14,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC2-C14",
+            "hosts": [
+                {
+                    "name": "DC2-C14-1",
+                    "cpu": {
+                        "coreCount": 14,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C14-2",
+                    "cpu": {
+                        "coreCount": 14,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC2-C17",
+            "hosts": [
+                {
+                    "name": "DC2-C17-1",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC2-C20",
+            "hosts": [
+                {
+                    "name": "DC2-C20-1",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 3600
+                    },
+                    "memory": {
+                        "memorySize": "2199023255552 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C20-2",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 3600
+                    },
+                    "memory": {
+                        "memorySize": "2199023255552 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C20-3",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 3600
+                    },
+                    "memory": {
+                        "memorySize": "2199023255552 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C20-4",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 3600
+                    },
+                    "memory": {
+                        "memorySize": "2199023255552 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC2-C22",
+            "hosts": [
+                {
+                    "name": "DC2-C22-1",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C22-2",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C22-3",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C22-4",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC2-C24",
+            "hosts": [
+                {
+                    "name": "DC2-C24-1",
+                    "cpu": {
+                        "coreCount": 32,
+                        "coreSpeed": 3600
+                    },
+                    "memory": {
+                        "memorySize": "137438953472 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC2-C25",
+            "hosts": [
+                {
+                    "name": "DC2-C25-1",
+                    "cpu": {
+                        "coreCount": 24,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "824633720832 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC2-C27",
+            "hosts": [
+                {
+                    "name": "DC2-C27-1",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C27-2",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C27-3",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC2-C27-4",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC3-C5",
+            "hosts": [
+                {
+                    "name": "DC3-C5-1",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "549755813888 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC4-C6",
+            "hosts": [
+                {
+                    "name": "DC4-C6-1",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C6-2",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "824633720832 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C6-3",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C6-4",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C6-5",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "824633720832 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C6-6",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "824633720832 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C6-7",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "824633720832 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C6-8",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "824633720832 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C6-9",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C6-10",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "824633720832 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C6-11",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "824633720832 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC4-C10",
+            "hosts": [
+                {
+                    "name": "DC4-C10-1",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C10-2",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C10-3",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C10-4",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C10-5",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C10-6",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C10-7",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C10-8",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C10-9",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC4-C11",
+            "hosts": [
+                {
+                    "name": "DC4-C11-1",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 3600
+                    },
+                    "memory": {
+                        "memorySize": "2199023255552 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C11-2",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 3600
+                    },
+                    "memory": {
+                        "memorySize": "2199023255552 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C11-3",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 3600
+                    },
+                    "memory": {
+                        "memorySize": "2199023255552 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C11-4",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 3600
+                    },
+                    "memory": {
+                        "memorySize": "2199023255552 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC4-C12",
+            "hosts": [
+                {
+                    "name": "DC4-C12-1",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C12-2",
+                    "cpu": {
+                        "coreCount": 14,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C12-3",
+                    "cpu": {
+                        "coreCount": 14,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C12-4",
+                    "cpu": {
+                        "coreCount": 14,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C12-5",
+                    "cpu": {
+                        "coreCount": 14,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC4-C15",
+            "hosts": [
+                {
+                    "name": "DC4-C15-1",
+                    "cpu": {
+                        "coreCount": 14,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C15-2",
+                    "cpu": {
+                        "coreCount": 14,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "412316860416 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC4-C16",
+            "hosts": [
+                {
+                    "name": "DC4-C16-1",
+                    "cpu": {
+                        "coreCount": 48,
+                        "coreSpeed": 3000
+                    },
+                    "memory": {
+                        "memorySize": "68719476736 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC4-C21",
+            "hosts": [
+                {
+                    "name": "DC4-C21-1",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C21-2",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                },
+                {
+                    "name": "DC4-C21-3",
+                    "cpu": {
+                        "coreCount": 64,
+                        "coreSpeed": 2900
+                    },
+                    "memory": {
+                        "memorySize": "1099511627776 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC4-C23",
+            "hosts": [
+                {
+                    "name": "DC4-C23-1",
+                    "cpu": {
+                        "coreCount": 32,
+                        "coreSpeed": 3600
+                    },
+                    "memory": {
+                        "memorySize": "137438953472 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC4-C26",
+            "hosts": [
+                {
+                    "name": "DC4-C26-1",
+                    "cpu": {
+                        "coreCount": 24,
+                        "coreSpeed": 3200
+                    },
+                    "memory": {
+                        "memorySize": "824633720832 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC5-C8",
+            "hosts": [
+                {
+                    "name": "DC5-C8-1",
+                    "cpu": {
+                        "coreCount": 48,
+                        "coreSpeed": 3000
+                    },
+                    "memory": {
+                        "memorySize": "68719476736 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DC6-C19",
+            "hosts": [
+                {
+                    "name": "DC6-C19-1",
+                    "cpu": {
+                        "coreCount": 8,
+                        "coreSpeed": 3800
+                    },
+                    "memory": {
+                        "memorySize": "549755813888 bytes"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    }
+                }
+            ]
+        }
+    ]
+}
