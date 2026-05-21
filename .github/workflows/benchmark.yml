@@ -5,6 +5,7 @@ on:
     branches: [master]
   push:
     branches: [master]
+  workflow_dispatch:
 
 # Cancel in-flight benchmark runs for the same PR/branch so only the latest commit is benchmarked.
 concurrency:
