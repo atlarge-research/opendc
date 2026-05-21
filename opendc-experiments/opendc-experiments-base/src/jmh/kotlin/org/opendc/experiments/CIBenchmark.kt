@@ -43,14 +43,20 @@ import java.util.concurrent.TimeUnit
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 open class CIBenchmark : OpenDCBenchmark() {
     @Benchmark
-    fun benchmark1() {
-        ExperimentCommand().main(arrayOf("--experiment-path", "src/jmh/resources/experiments/experiment_100.json"))
+    fun surfWeekBenchmark() {
+        ExperimentCommand().main(arrayOf("--experiment-path", "src/jmh/resources/experiments/workloadScaling/surf_week.json"))
         File("output").deleteRecursively()
     }
 
     @Benchmark
-    fun benchmark2() {
-        ExperimentCommand().main(arrayOf("--experiment-path", "src/jmh/resources/experiments/experiment_2.json"))
+    fun surfMonthBenchmark() {
+        ExperimentCommand().main(arrayOf("--experiment-path", "src/jmh/resources/experiments/workloadScaling/surf_month.json"))
+        File("output").deleteRecursively()
+    }
+
+    @Benchmark
+    fun surfHalfYearBenchmark() {
+        ExperimentCommand().main(arrayOf("--experiment-path", "src/jmh/resources/experiments/workloadScaling/surf_halfyear.json"))
         File("output").deleteRecursively()
     }
 }
