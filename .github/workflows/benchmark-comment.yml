@@ -43,11 +43,13 @@ jobs:
         id: pr
         run: echo "number=$(cat pr-number.txt)" >> "$GITHUB_OUTPUT"
 
-      - name: Fetch baseline from benchmark-data branch
+      - name: Fetch baseline from benchmark-data release
         run: |
-          git fetch origin benchmark-data 2>/dev/null || true
-          git show origin/benchmark-data:benchmark-history.json > baseline.json 2>/dev/null \
+          gh release download benchmark-data --asset benchmark-history.json \
+            --output baseline.json 2>/dev/null \
             || echo "[]" > baseline.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate comparison comment
         run: |
