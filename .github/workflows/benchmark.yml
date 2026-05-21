@@ -1,0 +1,103 @@
+name: Benchmark
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Cancel in-flight benchmark runs for the same PR/branch so only the latest commit is benchmarked.
+concurrency:
+  group: benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    name: Run CIBenchmark
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run CIBenchmark
+        run: >
+          ./gradlew :opendc-experiments:opendc-experiments-base:jmh
+          -PjmhIncludes=.*CIBenchmark.*
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: opendc-experiments/opendc-experiments-base/build/results/jmh/results.json
+          retention-days: 7
+
+      # Store the PR number so the comment workflow (which runs with write permissions)
+      # knows which PR to comment on. Only needed for pull_request runs.
+      - name: Save PR number
+        if: github.event_name == 'pull_request'
+        run: echo "${{ github.event.pull_request.number }}" > pr-number.txt
+
+      - name: Upload PR number
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-number
+          path: pr-number.txt
+          retention-days: 1
+
+  # ── Master push: store results on the benchmark-data branch ──────────────────
+  store-results:
+    name: Store benchmark results
+    if: github.event_name == 'push'
+    needs: benchmark
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download current results
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results
+          path: current-results
+
+      - name: Check out or create benchmark-data branch
+        run: |
+          git fetch origin benchmark-data 2>/dev/null || true
+          if git rev-parse --verify origin/benchmark-data 2>/dev/null; then
+            git worktree add benchmark-data-dir origin/benchmark-data
+          else
+            git worktree add --orphan -b benchmark-data benchmark-data-dir
+          fi
+
+      - name: Update history
+        run: |
+          python .github/scripts/update_history.py \
+            current-results/results.json \
+            benchmark-data-dir \
+            "${{ github.sha }}"
+
+      - name: Commit and push
+        run: |
+          git -C benchmark-data-dir config user.name  "github-actions[bot]"
+          git -C benchmark-data-dir config user.email "github-actions[bot]@users.noreply.github.com"
+          git -C benchmark-data-dir add benchmark-history.json
+          git -C benchmark-data-dir commit \
+            -m "chore: benchmark results for ${{ github.sha }}"
+          git -C benchmark-data-dir push origin HEAD:benchmark-data

@@ -34,7 +34,8 @@ plugins {
 
 jmh {
     resultFormat.set("JSON")
-    includes.add(".*WorkloadNoExportBenchmark.*")
+    val jmhIncludes = findProperty("jmhIncludes") as? String ?: ".*WorkloadNoExportBenchmark.*"
+    includes.add(jmhIncludes)
 }
 
 tasks.named("jmh") {
