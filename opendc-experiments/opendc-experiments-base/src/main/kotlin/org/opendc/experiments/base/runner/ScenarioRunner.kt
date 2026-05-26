@@ -106,12 +106,7 @@ public fun runScenario(
             val startTimeLong = workload.minOf { it.submittedAt }
             val startTime = Duration.ofMillis(startTimeLong)
 
-//            println("LOADED WORKLOADDDD ${scenario.workloadSpec.name}")
-//            println("LOADED WORKLOADDDD ${scenario.workloadSpec.name}")
-//            println("LOADED WORKLOADDDD ${scenario.workloadSpec.name}")
-//            println("LOADED WORKLOADDDD ${scenario.workloadSpec.name}")
-//
-//            Thread.sleep(10000000)
+            Thread.sleep(10000)
 
             val topology = clusterTopology(scenario.topologySpec.pathToFile)
 
