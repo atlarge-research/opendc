@@ -79,7 +79,8 @@ jobs:
 
       - name: Download existing benchmark history
         run: |
-          gh release download benchmark-data --asset benchmark-history.json \
+          gh release download benchmark-data \
+            --pattern benchmark-history.json \
             --output existing-history.json 2>/dev/null \
             || echo "[]" > existing-history.json
         env:
@@ -87,7 +88,7 @@ jobs:
 
       - name: Update history
         run: |
-          python .github/scripts/update_history.py \
+          python3 .github/scripts/update_history.py \
             current-results/results.json \
             existing-history.json \
             updated-history.json \
@@ -95,8 +96,8 @@ jobs:
 
       - name: Upload to release
         run: |
-          gh release upload benchmark-data updated-history.json \
-            --name benchmark-history.json --clobber 2>/dev/null \
+          gh release upload benchmark-data updated-history.json#benchmark-history.json \
+            --clobber 2>/dev/null \
             || gh release create benchmark-data \
               --title "Benchmark Data" \
               --notes "Permanent storage for benchmark history. Managed automatically by CI." \

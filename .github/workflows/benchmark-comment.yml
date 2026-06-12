@@ -45,7 +45,8 @@ jobs:
 
       - name: Fetch baseline from benchmark-data release
         run: |
-          gh release download benchmark-data --asset benchmark-history.json \
+          gh release download benchmark-data \
+            --pattern benchmark-history.json \
             --output baseline.json 2>/dev/null \
             || echo "[]" > baseline.json
         env:
@@ -53,7 +54,7 @@ jobs:
 
       - name: Generate comparison comment
         run: |
-          python .github/scripts/compare_benchmarks.py \
+          python3 .github/scripts/compare_benchmarks.py \
             current-results/results.json \
             baseline.json \
             > comment.md
