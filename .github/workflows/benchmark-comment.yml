@@ -46,6 +46,7 @@ jobs:
       - name: Fetch baseline from benchmark-data release
         run: |
           gh release download benchmark-data \
+            --repo atlarge-research/opendc \
             --pattern benchmark-history.json \
             --output baseline.json 2>/dev/null \
             || echo "[]" > baseline.json
@@ -69,6 +70,9 @@ jobs:
             const fullBody = marker + '\n' + body;
             const prNumber = parseInt(fs.readFileSync('pr-number.txt', 'utf8').trim());
 
+            core.info(`Posting comment to ${context.repo.owner}/${context.repo.repo} PR #${prNumber}`);
+            core.info(`Comment body length: ${body.length} chars`);
+
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -77,6 +81,7 @@ jobs:
 
             const existing = comments.find(c => c.body.includes(marker));
             if (existing) {
+              core.info(`Updating existing comment ${existing.id}`);
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -84,6 +89,7 @@ jobs:
                 body: fullBody,
               });
             } else {
+              core.info('Creating new comment');
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,

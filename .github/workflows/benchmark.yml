@@ -80,6 +80,7 @@ jobs:
       - name: Download existing benchmark history
         run: |
           gh release download benchmark-data \
+            --repo atlarge-research/opendc \
             --pattern benchmark-history.json \
             --output existing-history.json 2>/dev/null \
             || echo "[]" > existing-history.json
@@ -97,8 +98,10 @@ jobs:
       - name: Upload to release
         run: |
           gh release upload benchmark-data updated-history.json#benchmark-history.json \
+            --repo atlarge-research/opendc \
             --clobber 2>/dev/null \
             || gh release create benchmark-data \
+              --repo atlarge-research/opendc \
               --title "Benchmark Data" \
               --notes "Permanent storage for benchmark history. Managed automatically by CI." \
               updated-history.json#benchmark-history.json
