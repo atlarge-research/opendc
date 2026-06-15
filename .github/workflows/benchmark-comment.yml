@@ -47,8 +47,8 @@ jobs:
         run: |
           gh release download benchmark-data \
             --repo atlarge-research/opendc \
-            --pattern benchmark-history.json \
-            --output baseline.json 2>/dev/null \
+            -A benchmark-history.json \
+            -O baseline.json 2>/dev/null \
             || echo "[]" > baseline.json
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
