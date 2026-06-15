@@ -15,6 +15,7 @@ concurrency:
 jobs:
   benchmark:
     name: Run CIBenchmark
+    if: github.repository == 'atlarge-research/opendc'
     runs-on: ubuntu-latest
 
     permissions:
@@ -61,7 +62,7 @@ jobs:
   # ── Master push: store results in the benchmark-data GitHub Release ───────────
   store-results:
     name: Store benchmark results
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.repository == 'atlarge-research/opendc'
     needs: benchmark
     runs-on: ubuntu-latest
 
@@ -81,8 +82,8 @@ jobs:
         run: |
           gh release download benchmark-data \
             --repo atlarge-research/opendc \
-            --pattern benchmark-history.json \
-            --output existing-history.json 2>/dev/null \
+            -A benchmark-history.json \
+            -O existing-history.json 2>/dev/null \
             || echo "[]" > existing-history.json
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

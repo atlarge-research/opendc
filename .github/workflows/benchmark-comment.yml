@@ -48,8 +48,8 @@ jobs:
           gh release download benchmark-data \
             --repo atlarge-research/opendc \
             -A benchmark-history.json \
-            -O baseline.json 2>/dev/null \
-            || echo "[]" > baseline.json
+            -O baseline.json \
+            || { echo "Warning: Could not fetch baseline, using empty baseline"; echo "[]" > baseline.json; }
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
