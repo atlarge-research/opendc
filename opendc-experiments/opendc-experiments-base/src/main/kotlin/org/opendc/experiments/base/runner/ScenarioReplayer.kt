@@ -103,9 +103,6 @@ public suspend fun ComputeService.replay(
 
             var simulationOffset = Long.MIN_VALUE
 
-//            val numTasks = trace.size
-//            var counter = 0
-
             for (serviceTask in trace.sortedBy { it.submittedAt }) {
                 val now = clock.millis()
                 val start = serviceTask.submittedAt
@@ -121,17 +118,6 @@ public suspend fun ComputeService.replay(
                     serviceTask.deadline -= simulationOffset
                 }
 
-//                if (counter % 100000 == 0) {
-//                    val endTimer = System.currentTimeMillis()
-//
-//                    println("Submitted $counter / $numTasks")
-//                    println("Finished ${String.format("%.2f", (counter.toDouble() / numTasks) * 100)}% of task submissions")
-//                    println("Simulation has been running for: ${(endTimer - startTimer) / 1000} s")
-//                    println("Simulation time is time: ${now / 1000 / 60 / 60} hours\n")
-//                }
-
-//                counter++
-
                 launch {
                     val task =
                         client.newTask(
@@ -146,10 +132,6 @@ public suspend fun ComputeService.replay(
                     taskWatcher.wait()
                 }
             }
-
-//            println("All tasks submitted, waiting for completion...")
-//            val endTimer = System.currentTimeMillis()
-//            println("Simulation has been running for: ${(endTimer - startTimer) / 1000} s")
         }
         yield()
     } finally {
