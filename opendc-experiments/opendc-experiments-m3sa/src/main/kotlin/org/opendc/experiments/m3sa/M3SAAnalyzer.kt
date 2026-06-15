@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 AtLarge Research
+ * Copyright (c) 2026 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-import java.nio.file.Files
+package org.opendc.experiments.m3sa
 import java.nio.file.Paths
 
 /**
@@ -33,29 +33,29 @@ public fun m3saAnalyze(
     m3saSetupPath: String,
     m3saExecPath: String,
 ) {
-    // script to run
-    val scriptPath =
-        Paths.get(m3saExecPath, "main.py")
-            .toAbsolutePath()
-            .normalize()
-            .toString()
-
-    // look for venv python; if missing, use system python3
-    val venvPython =
-        Paths.get(m3saExecPath, "venv", "bin", "python3")
-            .toAbsolutePath()
-            .normalize()
-    val pythonBin =
-        if (Files.isRegularFile(venvPython) && Files.isExecutable(venvPython)) {
-            venvPython.toString()
+    val isWindows: Boolean =
+        System.getProperty("os.name").startsWith("Windows", ignoreCase = true)
+    val command: List<String> =
+        if (isWindows) {
+            listOf(
+                "python",
+                Paths.get(m3saExecPath, "main.py")
+                    .toAbsolutePath()
+                    .normalize()
+                    .toString(),
+            )
         } else {
-            "python3" // fallback
+            listOf(
+                Paths.get(m3saExecPath, "m3sa")
+                    .toAbsolutePath()
+                    .normalize()
+                    .toString(),
+            )
         }
 
     val process =
         ProcessBuilder(
-            pythonBin,
-            scriptPath,
+            *command.toTypedArray(),
             m3saSetupPath,
             "$outputFolderPath/raw-output",
             "-o",
