@@ -25,7 +25,7 @@ description = "OpenDC Compute Topology implementation"
 // Build configuration
 plugins {
     `kotlin-library-conventions`
-    kotlin("plugin.serialization") version "1.9.22"
+    kotlin("plugin.serialization") version "2.3.20"
 }
 
 dependencies {
