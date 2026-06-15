@@ -28,6 +28,16 @@ plugins {
     distribution
 }
 
+// This Quarkus application uses JBoss LogManager for logging. The OpenDC simulation modules route
+// SLF4J through Log4j2 and expose the Log4j2 SLF4J binding (log4j-slf4j2-impl) as an api dependency,
+// so it leaks transitively into this server, leaving SLF4J with two competing providers. Whichever
+// one wins is classpath-order dependent; when Log4j2 wins, its Interpolator boots inside Quarkus'
+// isolated classloader and fails to load its lookup plugins (ClassCastException against StrLookup).
+// Drop the Log4j2 SLF4J binding here so SLF4J binds deterministically to Quarkus' JBoss LogManager.
+configurations.all {
+    exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j2-impl")
+}
+
 dependencies {
     implementation(enforcedPlatform(libs.quarkus.bom))
 

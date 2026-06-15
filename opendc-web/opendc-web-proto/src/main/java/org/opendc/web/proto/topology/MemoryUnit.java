@@ -22,7 +22,10 @@
 
 package org.opendc.web.proto.topology;
 
+import java.io.Serializable;
+
 /**
  * A memory unit in a system.
  */
-public record MemoryUnit(String id, String name, double speedMbPerS, double sizeMb, double energyConsumptionW) {}
+public record MemoryUnit(String id, String name, double speedMbPerS, double sizeMb, double energyConsumptionW)
+        implements Serializable {}
