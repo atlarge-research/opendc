@@ -106,7 +106,7 @@ public fun runScenario(
             val startTimeLong = workload.minOf { it.submittedAt }
             val startTime = Duration.ofMillis(startTimeLong)
 
-            Thread.sleep(10000)
+            Thread.sleep(15000)
 
             val topology = clusterTopology(scenario.topologySpec.pathToFile)
 
