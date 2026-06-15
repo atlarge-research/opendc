@@ -11,6 +11,7 @@ on:
 jobs:
   build:
     name: Build (Java ${{ matrix.java }} - ${{ matrix.os }})
+    if: github.repository == 'atlarge-research/opendc'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -75,6 +76,7 @@ jobs:
           files: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
   build-docker:
     name: Build Docker Images
+    if: github.repository == 'atlarge-research/opendc'
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
