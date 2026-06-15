@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-import java.nio.file.Files
 import java.nio.file.Paths
 
 /**
@@ -33,28 +32,14 @@ public fun m3saAnalyze(
     m3saSetupPath: String,
     m3saExecPath: String,
 ) {
-    // script to run
     val scriptPath =
-        Paths.get(m3saExecPath, "main.py")
+        Paths.get(m3saExecPath, "m3sa")
             .toAbsolutePath()
             .normalize()
             .toString()
 
-    // look for venv python; if missing, use system python3
-    val venvPython =
-        Paths.get(m3saExecPath, "venv", "bin", "python3")
-            .toAbsolutePath()
-            .normalize()
-    val pythonBin =
-        if (Files.isRegularFile(venvPython) && Files.isExecutable(venvPython)) {
-            venvPython.toString()
-        } else {
-            "python3" // fallback
-        }
-
     val process =
         ProcessBuilder(
-            pythonBin,
             scriptPath,
             m3saSetupPath,
             "$outputFolderPath/raw-output",
