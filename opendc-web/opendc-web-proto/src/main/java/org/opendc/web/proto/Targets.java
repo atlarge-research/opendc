@@ -23,6 +23,7 @@
 package org.opendc.web.proto;
 
 import jakarta.validation.constraints.Min;
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -31,4 +32,4 @@ import java.util.Set;
  * @param metrics The selected metrics to track during simulation.
  * @param repeats The number of repetitions per scenario.
  */
-public record Targets(Set<String> metrics, @Min(1) int repeats) {}
+public record Targets(Set<String> metrics, @Min(1) int repeats) implements Serializable {}

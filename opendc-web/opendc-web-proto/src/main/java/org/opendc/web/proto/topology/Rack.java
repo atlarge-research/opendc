@@ -22,9 +22,11 @@
 
 package org.opendc.web.proto.topology;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * A rack in a datacenter.
  */
-public record Rack(String id, String name, int capacity, double powerCapacityW, List<Machine> machines) {}
+public record Rack(String id, String name, int capacity, double powerCapacityW, List<Machine> machines)
+        implements Serializable {}

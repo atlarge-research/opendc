@@ -28,7 +28,6 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.vertx.http.deployment.HttpRootPathBuildItem;
 import io.quarkus.vertx.http.deployment.RouteBuildItem;
-import org.opendc.web.quarkus.runtime.ui.OpenDCUiConfig;
 import org.opendc.web.quarkus.runtime.ui.OpenDCUiRecorder;
 
 /**
@@ -43,15 +42,14 @@ public class OpenDCUiProcessor {
     public RouteBuildItem registerConfigHandler(
             OpenDCUiRecorder openDCUiRecorder,
             BuildProducer<RouteBuildItem> routes,
-            HttpRootPathBuildItem httpRootPathBuildItem,
-            OpenDCUiConfig openDCUiConfig) {
+            HttpRootPathBuildItem httpRootPathBuildItem) {
 
         String basePath = httpRootPathBuildItem.getRootPath();
 
         return httpRootPathBuildItem
                 .routeBuilder()
                 .route(basePath + "/__ENV.js")
-                .handler(openDCUiRecorder.configHandler(openDCUiConfig))
+                .handler(openDCUiRecorder.configHandler())
                 .build();
     }
 }

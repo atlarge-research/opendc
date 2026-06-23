@@ -43,7 +43,7 @@ import java.nio.file.Paths
 public class HttpTransportClient(
     private val baseUrl: URI,
     private val auth: AuthController?,
-    private val client: HttpClient = HttpClient.newHttpClient(),
+    private val client: HttpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build(),
 ) : TransportClient {
     /**
      * The Jackson object mapper to convert messages from/to JSON.

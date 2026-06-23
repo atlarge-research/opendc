@@ -22,8 +22,10 @@
 
 package org.opendc.web.proto.topology;
 
+import java.io.Serializable;
+
 /**
  * A CPU model.
  */
-public record ProcessingUnit(
-        String id, String name, double clockRateMhz, int numberOfCores, double energyConsumptionW) {}
+public record ProcessingUnit(String id, String name, double clockRateMhz, int numberOfCores, double energyConsumptionW)
+        implements Serializable {}
