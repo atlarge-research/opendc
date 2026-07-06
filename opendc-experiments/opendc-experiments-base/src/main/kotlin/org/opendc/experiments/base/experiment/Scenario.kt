@@ -22,10 +22,11 @@
 
 package org.opendc.experiments.base.experiment
 
+import kotlinx.serialization.Serializable
 import org.opendc.experiments.base.experiment.specs.CheckpointModelSpec
 import org.opendc.experiments.base.experiment.specs.ExportModelSpec
 import org.opendc.experiments.base.experiment.specs.FailureModelSpec
-import org.opendc.experiments.base.experiment.specs.ScenarioTopologySpec
+import org.opendc.experiments.base.experiment.specs.TopologyPathSpec
 import org.opendc.experiments.base.experiment.specs.WorkloadSpec
 import org.opendc.experiments.base.experiment.specs.allocation.AllocationPolicySpec
 
@@ -43,13 +44,15 @@ import org.opendc.experiments.base.experiment.specs.allocation.AllocationPolicyS
  * @property initialSeed The Int representing the initial seed of the scenario. It defaults to 0.
  * @property computeExportConfig configures which parquet columns are to be included in the output files.
  */
+
+@Serializable
 public data class Scenario(
     var id: Int = -1,
     val name: String = "",
     val outputFolder: String = "output",
     val runs: Int = 1,
     val initialSeed: Int = 0,
-    val topologySpec: ScenarioTopologySpec,
+    val topologyPathSpec: TopologyPathSpec,
     val workloadSpec: WorkloadSpec,
     val allocationPolicySpec: AllocationPolicySpec,
     val exportModelSpec: ExportModelSpec = ExportModelSpec(),

@@ -31,12 +31,24 @@ import java.io.File
  * @property pathToFile
  */
 @Serializable
-public data class ScenarioTopologySpec(
+public data class TopologyPathSpec(
     val pathToFile: String,
 ) {
     public val name: String = File(pathToFile).nameWithoutExtension
 
-    init {
-        require(File(pathToFile).exists()) { "The provided path to the topology: $pathToFile does not exist " }
+    public fun validate() {
+        if (!File(pathToFile).exists()) {
+            throw InvalidTopologyException("The provided path to the topology '$pathToFile' does not exist")
+        }
     }
 }
+
+/**
+ * Exception thrown when a [TopologyPathSpec] is invalid.
+ *
+ * Unlike a plain [IllegalArgumentException], [message] is non-null, so callers that catch this
+ * specific type can use it directly without a null fallback.
+ */
+public class InvalidTopologyException(
+    override val message: String,
+) : IllegalArgumentException(message)

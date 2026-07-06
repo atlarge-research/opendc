@@ -23,7 +23,6 @@
 package org.opendc.experiments.base.experiment
 
 import org.opendc.experiments.base.experiment.specs.ExperimentSpec
-import org.opendc.experiments.base.experiment.specs.ScenarioSpec
 import java.io.File
 
 private val experimentReader = ExperimentReader()
@@ -63,31 +62,7 @@ public fun getExperiment(experimentSpec: ExperimentSpec): List<Scenario> {
     val trackrPath = "$outputFolder/trackr.json"
     File(trackrPath).createNewFile()
 
-    val scenarios = mutableListOf<Scenario>()
-
-    val cartesianInput = experimentSpec.getCartesian()
-
-    for ((scenarioID, scenarioSpec) in cartesianInput.withIndex()) {
-        val scenario =
-            Scenario(
-                id = scenarioID,
-                name = scenarioID.toString(),
-                outputFolder = outputFolder,
-                runs = experimentSpec.runs,
-                initialSeed = experimentSpec.initialSeed,
-                topologySpec = scenarioSpec.topology,
-                workloadSpec = scenarioSpec.workload,
-                allocationPolicySpec = scenarioSpec.allocationPolicy,
-                exportModelSpec = scenarioSpec.exportModel,
-                failureModelSpec = scenarioSpec.failureModel,
-                checkpointModelSpec = scenarioSpec.checkpointModel,
-                maxNumFailures = scenarioSpec.maxNumFailures,
-            )
-        trackScenario(scenarioSpec, outputFolder)
-        scenarios.add(scenario)
-    }
-
-    return scenarios
+    return experimentSpec.getCartesian()
 }
 
 /**
@@ -100,12 +75,12 @@ public fun getExperiment(experimentSpec: ExperimentSpec): List<Scenario> {
 
  */
 public fun trackScenario(
-    scenarioSpec: ScenarioSpec,
+    scenario: Scenario,
     outputFolder: String,
 ) {
     val trackrPath = "$outputFolder/trackr.json"
     experimentWriter.write(
-        scenarioSpec,
+        scenario,
         File(trackrPath),
     )
 
