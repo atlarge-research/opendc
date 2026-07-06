@@ -134,10 +134,9 @@ public data class PrefabFailureModelSpec(
     override var name: String = prefabName.toString()
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Custom Failure Model
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Specification of a custom failure model that is defined by three distributions to sample from.
@@ -214,7 +213,7 @@ public data class ConstantDistributionSpec(
     override fun validate() {
         if (value <= 0.0) {
             throw InvalidDistributionException(
-                listOf("Value must be greater than 0.0 (currently value=$value)")
+                listOf("Value must be greater than 0.0 (currently value=$value)"),
             )
         }
     }
@@ -310,7 +309,7 @@ public data class UniformDistributionSpec(
     override fun validate() {
         if (upper <= lower) {
             throw InvalidDistributionException(
-                listOf("Upper bound must be greater than the lower bound (currently upper=$upper, lower=$lower)")
+                listOf("Upper bound must be greater than the lower bound (currently upper=$upper, lower=$lower)"),
             )
         }
     }
@@ -347,7 +346,6 @@ public data class WeibullDistributionSpec(
     }
 }
 
-
 /**
  * Exception thrown when a [FailureModelSpec] violates one or more of its constraints.
  *
@@ -368,8 +366,8 @@ public class InvalidFailureModelException(
 public class InvalidDistributionException(
     public val errors: List<String>,
 ) : IllegalArgumentException(
-    "Invalid distribution model specification:\n" + errors.joinToString("\n") { "  - $it" },
-)
+        "Invalid distribution model specification:\n" + errors.joinToString("\n") { "  - $it" },
+    )
 
 /**
  * Create a [FailureModel] based on the provided [FailureModelSpec]
