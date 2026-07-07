@@ -1,0 +1,96 @@
+{
+    "name": "timeshift-taskstopper-experiment",
+    "topologies": [
+        {
+            "clusters": [
+                {
+                    "name": "green-cluster",
+                    "count": 2,
+                    "hosts": [
+                        {
+                            "name": "host",
+                            "count": 16,
+                            "cpu": {
+                                "coreCount": 24,
+                                "coreSpeed": "2.8 GHz",
+                                "count": 2,
+                                "vendor": "Intel",
+                                "modelName": "Xeon Gold 6248"
+                            },
+                            "memory": {
+                                "size": "192 GiB"
+                            },
+                            "cpuPowerModel": {
+                                "type": "linear",
+                                "maxPower": "350 Watts",
+                                "idlePower": "100 Watts"
+                            }
+                        }
+                    ],
+                    "powerSource": {
+                        "name": "grid",
+                        "maxPower": "50 kWatts",
+                        "carbon": {
+                            "type": "named",
+                            "name": "de-carbon-2022"
+                        }
+                    },
+                    "battery": {
+                        "name": "cluster-battery",
+                        "capacity": 100.0,
+                        "chargingSpeed": 5000.0,
+                        "initialCharge": 20.0,
+                        "policy": {
+                            "type": "runningMean",
+                            "startingThreshold": 150.0,
+                            "windowSize": 24
+                        },
+                        "embodiedCarbon": 1200.0,
+                        "expectedLifetime": 10.0
+                    }
+                }
+            ]
+        }
+    ],
+    "workloads": [
+        {
+            "type": "trace",
+            "source": {
+                "type": "named",
+                "name": "azure-deferrable"
+            },
+            "deferAll": true
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "type": "timeshift",
+            "filters": [
+                {
+                    "type": "compute"
+                }
+            ],
+            "weighers": [
+                {
+                    "type": "ram",
+                    "multiplier": 1.0
+                }
+            ],
+            "windowSize": 168,
+            "subsetSize": 1,
+            "forecast": true,
+            "shortForecastThreshold": 0.2,
+            "longForecastThreshold": 0.35,
+            "forecastSize": 24,
+            "taskStopper": {
+                "windowSize": 168,
+                "forecast": true,
+                "forecastThreshold": 0.6,
+                "forecastSize": 24
+            },
+            "memorize": true
+        }
+    ],
+    "runs": 2,
+    "initialSeed": 42
+}

@@ -1,0 +1,70 @@
+{
+    "name": "custom-failure-experiment",
+    "topologies": [
+        {
+            "clusters": [
+                {
+                    "name": "cluster",
+                    "count": 1,
+                    "hosts": [
+                        {
+                            "name": "host",
+                            "count": 4,
+                            "cpu": {
+                                "coreCount": 16,
+                                "coreSpeed": "2.0 GHz",
+                                "count": 1
+                            },
+                            "memory": {
+                                "size": "64 GiB"
+                            },
+                            "cpuPowerModel": {
+                                "type": "linear",
+                                "maxPower": "300 Watts",
+                                "idlePower": "80 Watts"
+                            }
+                        }
+                    ],
+                    "powerSource": {
+                        "name": "grid",
+                        "maxPower": "10000 Watts"
+                    }
+                }
+            ]
+        }
+    ],
+    "workloads": [
+        {
+            "type": "trace",
+            "source": {
+                "type": "uri",
+                "uri": "file:///traces/workloads/solvinity.parquet"
+            }
+        }
+    ],
+    "failureModels": [
+        {
+            "type": "custom",
+            "interArrival": {
+                "type": "exponential",
+                "mean": 3600.0
+            },
+            "duration": {
+                "type": "log-normal",
+                "scale": 2.0,
+                "shape": 0.5
+            },
+            "hostFraction": {
+                "type": "uniform",
+                "upper": 0.5,
+                "lower": 0.1
+            }
+        }
+    ],
+    "maxNumFailures": [
+        5,
+        10
+    ],
+    "runs": 3,
+    "initialSeed": 7
+}

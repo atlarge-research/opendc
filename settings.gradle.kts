@@ -74,5 +74,10 @@ include(":opendc-trace:opendc-trace-parquet")
 include(":opendc-trace:opendc-trace-testkit")
 include(":opendc-trace:opendc-trace-failure")
 include(":opendc-trace:opendc-trace-tools")
+include("opendc-cli")
+include("opendc-sdk")
+include("opendc-sdk:opendc-sdk-model")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+include("opendc-sdk:opendc-sdk-python")

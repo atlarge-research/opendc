@@ -1,8 +1,0 @@
-{
-  "task.timestamp": "Simulation time of the sample, in milliseconds since the start of the simulation.",
-  "task.timestamp_absolute": "Wall-clock time of the sample, in milliseconds since the Unix epoch.",
-  "task.task_id": "Identifier of the task within the simulation.",
-  "task.task_name": "Name of the task as given in the workload trace.",
-  "host.timestamp": "Simulation time of the sample, in milliseconds since the start of the simulation.",
-  "service.timestamp": "Simulation time of the sample, in milliseconds since the start of the simulation."
-}
