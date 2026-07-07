@@ -34,8 +34,8 @@ private val experimentWriter = ExperimentWriter()
  * @param filePath The path to the file containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getExperiment(filePath: String): List<Scenario> {
-    return getExperiment(File(filePath))
+public fun getScenarios(filePath: String): List<Scenario> {
+    return getScenarios(File(filePath))
 }
 
 /**
@@ -44,8 +44,8 @@ public fun getExperiment(filePath: String): List<Scenario> {
  * @param file The file containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getExperiment(file: File): List<Scenario> {
-    return getExperiment(experimentReader.read(file))
+public fun getScenarios(file: File): List<Scenario> {
+    return getScenarios(experimentReader.read(file))
 }
 
 /**
@@ -55,30 +55,29 @@ public fun getExperiment(file: File): List<Scenario> {
  * @param experimentSpec The ScenarioSpec containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getExperiment(experimentSpec: ExperimentSpec): List<Scenario> {
+public fun getScenarios(experimentSpec: ExperimentSpec): List<Scenario> {
     val outputFolder = experimentSpec.outputFolder + "/" + experimentSpec.name
     File(outputFolder).mkdirs()
 
     val trackrPath = "$outputFolder/trackr.json"
     File(trackrPath).createNewFile()
 
-    return experimentSpec.getCartesian()
+    val scenarios = experimentSpec.getCartesian()
+
+    for (scenario in scenarios) {
+        trackScenario(scenario)
+    }
+
+    return scenarios
 }
 
 /**
  * Writes a ScenarioSpec to a file.
  *
- * @param scenariosSpec The ScenarioSpec.
- * @param outputFolder The output folder path.
  * @param scenario The Scenario.
- * @param topologySpec The TopologySpec.
-
  */
-public fun trackScenario(
-    scenario: Scenario,
-    outputFolder: String,
-) {
-    val trackrPath = "$outputFolder/trackr.json"
+public fun trackScenario(scenario: Scenario) {
+    val trackrPath = "${scenario.outputFolder}/trackr.json"
     experimentWriter.write(
         scenario,
         File(trackrPath),
