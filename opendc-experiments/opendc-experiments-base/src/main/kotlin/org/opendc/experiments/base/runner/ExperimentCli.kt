@@ -26,6 +26,7 @@ package org.opendc.experiments.base.runner
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.defaultLazy
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import org.opendc.experiments.base.experiment.getScenarios
@@ -47,8 +48,15 @@ internal class ExperimentCommand : CliktCommand(name = "experiment") {
         .file(canBeDir = false, canBeFile = true)
         .defaultLazy { File("resources/experiment.json") }
 
+    /**
+     * Use a strict JSON reader.
+     * If False, unknown parameters are ignored.
+     * If True, unknown parameters will throw an error.
+     */
+    private val strictReader by option("-strict", help = "strict").flag(default = false)
+
     override fun run() {
-        val experiment = getScenarios(experimentPath)
-        runExperiment(experiment)
+        val experiment = getScenarios(experimentPath, strictReader)
+        runExperiment(experiment, strictReader)
     }
 }

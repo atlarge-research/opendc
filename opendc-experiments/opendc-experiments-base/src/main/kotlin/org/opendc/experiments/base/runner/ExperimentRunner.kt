@@ -31,7 +31,10 @@ import org.opendc.experiments.base.experiment.Scenario
  *
  * @param experiment The scenarios to run
  */
-public fun runExperiment(experiment: List<Scenario>) {
+public fun runExperiment(
+    experiment: List<Scenario>,
+    strictReader: Boolean = false,
+) {
     val ansiReset = "\u001B[0m"
     val ansiGreen = "\u001B[32m"
     val ansiBlue = "\u001B[34m"
@@ -52,7 +55,7 @@ public fun runExperiment(experiment: List<Scenario>) {
 
         for (seed in 0..<scenario.runs) {
             println("$ansiBlue Starting seed: $seed $ansiReset")
-            runScenario(scenario, seed.toLong())
+            runScenario(scenario, seed.toLong(), strictReader)
             pb.step()
         }
     }

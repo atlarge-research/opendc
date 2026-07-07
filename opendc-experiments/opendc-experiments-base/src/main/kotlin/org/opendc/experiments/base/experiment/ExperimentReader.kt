@@ -22,9 +22,9 @@
 
 package org.opendc.experiments.base.experiment
 
-import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
+import org.opendc.common.logger.logger
 import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 import org.opendc.experiments.base.experiment.specs.ExperimentSpec
 import java.io.File
@@ -33,24 +33,56 @@ import java.nio.file.Path
 import kotlin.io.path.inputStream
 
 public class ExperimentReader {
-    private val jsonReader = Json
+    private val jsonReader = Json { ignoreUnknownKeys = true }
+    private val strictJsonReader = Json { ignoreUnknownKeys = false }
 
-    public fun read(file: File): ExperimentSpec = read(file.inputStream())
+    public fun read(
+        file: File,
+        strictReader: Boolean = false,
+    ): ExperimentSpec = read(file.inputStream(), strictReader)
 
-    public fun read(path: Path): ExperimentSpec = read(path.inputStream())
+    public fun read(
+        path: Path,
+        strictReader: Boolean = false,
+    ): ExperimentSpec = read(path.inputStream(), strictReader)
 
     /**
      * Read the specified [input].
      */
-    @OptIn(ExperimentalSerializationApi::class)
-    public fun read(input: InputStream): ExperimentSpec {
+    public fun read(
+        input: InputStream,
+        strictReader: Boolean = false,
+    ): ExperimentSpec {
         // Loads the default parquet output fields,
         // so that they can be deserialized
         ComputeExportConfig.loadDfltColumns()
 
-        val experiment = jsonReader.decodeFromStream<ExperimentSpec>(input)
+        val text = input.bufferedReader().use { it.readText() }
+
+        if (strictReader) {
+            val experiment = strictJsonReader.decodeFromString<ExperimentSpec>(text)
+            experiment.validate()
+            return experiment
+        }
+
+        val experiment = jsonReader.decodeFromString<ExperimentSpec>(text)
+
+        // [jsonReader] ignores unknown keys, so typos and stale fields would otherwise pass silently.
+        // Decode once more with a strict reader to surface them: the two readers differ only in
+        // [JsonBuilder.ignoreUnknownKeys], and the lenient decode above already succeeded, so any
+        // failure here can only be caused by an unknown key that is being ignored.
+        try {
+            strictJsonReader.decodeFromString<ExperimentSpec>(text)
+        } catch (e: SerializationException) {
+            LOG.warn("The experiment file contains an unknown key that is ignored: ${e.message?.substringBefore('\n')}")
+        }
+
         experiment.validate()
 
         return experiment
+    }
+
+    private companion object {
+        private val LOG by logger("org.opendc.experiments.base.experiment.ExperimentReader")
     }
 }
