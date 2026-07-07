@@ -30,7 +30,7 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
-import org.opendc.experiments.base.experiment.getExperiment
+import org.opendc.experiments.base.experiment.getScenarios
 import org.opendc.experiments.m3sa.m3saAnalyze
 import org.opendc.experiments.m3sa.scenario.getOutputFolder
 import java.io.File
@@ -73,7 +73,7 @@ internal class M3SACommand : CliktCommand(name = "experiment") {
 
         while (iterations > 0) {
             val startTime = System.currentTimeMillis()
-            val experiment = getExperiment(scenarioPath)
+            val experiment = getScenarios(scenarioPath)
             org.opendc.experiments.base.runner.runExperiment(experiment)
             val simulationEnd = System.currentTimeMillis()
             println("Simulation time: ${(simulationEnd - startTime) / 1000} ms")

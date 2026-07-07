@@ -28,7 +28,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
-import org.opendc.experiments.base.experiment.getExperiment
+import org.opendc.experiments.base.experiment.getScenarios
 import java.io.File
 
 /**
@@ -48,7 +48,7 @@ internal class ExperimentCommand : CliktCommand(name = "experiment") {
         .defaultLazy { File("resources/experiment.json") }
 
     override fun run() {
-        val experiment = getExperiment(experimentPath)
+        val experiment = getScenarios(experimentPath)
         runExperiment(experiment)
     }
 }

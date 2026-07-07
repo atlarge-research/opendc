@@ -23,7 +23,6 @@
 package org.opendc.experiments.base.experiment
 
 import org.opendc.experiments.base.experiment.specs.ExperimentSpec
-import org.opendc.experiments.base.experiment.specs.ScenarioSpec
 import java.io.File
 
 private val experimentReader = ExperimentReader()
@@ -35,8 +34,8 @@ private val experimentWriter = ExperimentWriter()
  * @param filePath The path to the file containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getExperiment(filePath: String): List<Scenario> {
-    return getExperiment(File(filePath))
+public fun getScenarios(filePath: String): List<Scenario> {
+    return getScenarios(File(filePath))
 }
 
 /**
@@ -45,8 +44,8 @@ public fun getExperiment(filePath: String): List<Scenario> {
  * @param file The file containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getExperiment(file: File): List<Scenario> {
-    return getExperiment(experimentReader.read(file))
+public fun getScenarios(file: File): List<Scenario> {
+    return getScenarios(experimentReader.read(file))
 }
 
 /**
@@ -56,35 +55,17 @@ public fun getExperiment(file: File): List<Scenario> {
  * @param experimentSpec The ScenarioSpec containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getExperiment(experimentSpec: ExperimentSpec): List<Scenario> {
+public fun getScenarios(experimentSpec: ExperimentSpec): List<Scenario> {
     val outputFolder = experimentSpec.outputFolder + "/" + experimentSpec.name
     File(outputFolder).mkdirs()
 
     val trackrPath = "$outputFolder/trackr.json"
     File(trackrPath).createNewFile()
 
-    val scenarios = mutableListOf<Scenario>()
+    val scenarios = experimentSpec.getCartesian()
 
-    val cartesianInput = experimentSpec.getCartesian()
-
-    for ((scenarioID, scenarioSpec) in cartesianInput.withIndex()) {
-        val scenario =
-            Scenario(
-                id = scenarioID,
-                name = scenarioID.toString(),
-                outputFolder = outputFolder,
-                runs = experimentSpec.runs,
-                initialSeed = experimentSpec.initialSeed,
-                topologySpec = scenarioSpec.topology,
-                workloadSpec = scenarioSpec.workload,
-                allocationPolicySpec = scenarioSpec.allocationPolicy,
-                exportModelSpec = scenarioSpec.exportModel,
-                failureModelSpec = scenarioSpec.failureModel,
-                checkpointModelSpec = scenarioSpec.checkpointModel,
-                maxNumFailures = scenarioSpec.maxNumFailures,
-            )
-        trackScenario(scenarioSpec, outputFolder)
-        scenarios.add(scenario)
+    for (scenario in scenarios) {
+        trackScenario(scenario)
     }
 
     return scenarios
@@ -93,19 +74,12 @@ public fun getExperiment(experimentSpec: ExperimentSpec): List<Scenario> {
 /**
  * Writes a ScenarioSpec to a file.
  *
- * @param scenariosSpec The ScenarioSpec.
- * @param outputFolder The output folder path.
  * @param scenario The Scenario.
- * @param topologySpec The TopologySpec.
-
  */
-public fun trackScenario(
-    scenarioSpec: ScenarioSpec,
-    outputFolder: String,
-) {
-    val trackrPath = "$outputFolder/trackr.json"
+public fun trackScenario(scenario: Scenario) {
+    val trackrPath = "${scenario.outputFolder}/trackr.json"
     experimentWriter.write(
-        scenarioSpec,
+        scenario,
         File(trackrPath),
     )
 

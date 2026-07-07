@@ -48,6 +48,9 @@ public class ExperimentReader {
         // so that they can be deserialized
         ComputeExportConfig.loadDfltColumns()
 
-        return jsonReader.decodeFromStream<ExperimentSpec>(input)
+        val experiment = jsonReader.decodeFromStream<ExperimentSpec>(input)
+        experiment.validate()
+
+        return experiment
     }
 }

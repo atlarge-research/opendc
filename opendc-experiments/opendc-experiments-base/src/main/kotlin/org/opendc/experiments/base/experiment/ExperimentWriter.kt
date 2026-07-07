@@ -24,7 +24,6 @@ package org.opendc.experiments.base.experiment
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.opendc.experiments.base.experiment.specs.ScenarioSpec
 import java.io.File
 
 /**
@@ -40,7 +39,7 @@ public class ExperimentWriter {
      * Write the given [scenariosSpec] to the given [file].
      */
     public fun write(
-        scenarioSpec: ScenarioSpec,
+        scenarioSpec: Scenario,
         file: File,
     ) {
         openArray(file)

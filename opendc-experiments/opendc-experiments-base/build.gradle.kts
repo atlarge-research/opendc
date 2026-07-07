@@ -88,6 +88,21 @@ dependencies {
     runtimeOnly(libs.log4j.slf4j)
 }
 
+/**
+ * Regenerates the Markdown reference docs (experiment input format and Parquet output columns)
+ * from the source of truth in this module. The generated files are committed under `docs/reference/`.
+ */
+val generateDocs by tasks.registering(JavaExec::class) {
+    group = "documentation"
+    description = "Generate Markdown reference docs for experiment input and output."
+    mainClass.set("org.opendc.experiments.base.documentation.GenerateDocsKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    args(
+        rootProject.projectDir.resolve("docs").absolutePath,
+        projectDir.resolve("src/main/kotlin/org/opendc/experiments/base/experiment/specs").absolutePath,
+    )
+}
+
 val createScenarioApp by tasks.creating(CreateStartScripts::class) {
     dependsOn(tasks.jar)
 

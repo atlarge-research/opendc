@@ -1,0 +1,41 @@
+site_name: OpenDC Documentation
+site_description: Reference documentation for the OpenDC datacenter simulation platform
+repo_url: https://github.com/atlarge-research/opendc
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+markdown_extensions:
+  # Required for the explicit `{ #anchor }` heading ids emitted by the doc generator.
+  - attr_list
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Reference:
+      - Input format:
+          - Experiment: reference/input/experiment.md
+          - Allocation policies: reference/input/allocation-scheduling.md
+          - Export models: reference/input/export.md
+          - Workloads: reference/input/workload.md
+          - Failure models: reference/input/failures.md
+          - Checkpointing models: reference/input/checkpointing.md
+      - Output columns: reference/output-columns.md

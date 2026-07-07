@@ -38,8 +38,7 @@ import org.opendc.experiments.base.experiment.Scenario
 import org.opendc.experiments.base.experiment.specs.allocation.TimeShiftAllocationPolicySpec
 import org.opendc.experiments.base.experiment.specs.allocation.createComputeScheduler
 import org.opendc.experiments.base.experiment.specs.allocation.createTaskStopper
-import org.opendc.experiments.base.experiment.specs.getScalingPolicy
-import org.opendc.experiments.base.experiment.specs.getWorkloadLoader
+import org.opendc.experiments.base.experiment.specs.getWorkload
 import org.opendc.simulator.compute.power.CarbonModel
 import org.opendc.simulator.compute.power.CarbonReceiver
 import org.opendc.simulator.kotlin.runSimulation
@@ -84,31 +83,19 @@ public fun runScenario(
         val serviceDomain = "compute.opendc.org"
         Provisioner(dispatcher, seed).use { provisioner ->
 
-            val checkpointInterval = scenario.checkpointModelSpec?.checkpointInterval ?: 0L
-            val checkpointDuration = scenario.checkpointModelSpec?.checkpointDuration ?: 0L
-            val checkpointIntervalScaling = scenario.checkpointModelSpec?.checkpointIntervalScaling ?: 1.0
-
-            val scalingPolicy = getScalingPolicy(scenario.workloadSpec.scalingPolicy)
-
-            val workloadLoader =
-                getWorkloadLoader(
-                    scenario.workloadSpec.type,
-                    File(scenario.workloadSpec.pathToFile),
-                    scenario.workloadSpec.submissionTime,
-                    checkpointInterval,
-                    checkpointDuration,
-                    checkpointIntervalScaling,
-                    scalingPolicy,
-                    scenario.workloadSpec.deferAll,
+            val workload =
+                getWorkload(
+                    scenario.workloadSpec,
+                    scenario.checkpointModelSpec,
                 )
-            val workload = workloadLoader.sampleByLoad(scenario.workloadSpec.sampleFraction)
 
             val startTimeLong = workload.minOf { it.submittedAt }
             val startTime = Duration.ofMillis(startTimeLong)
 
-            val topology = clusterTopology(scenario.topologySpec.pathToFile)
-
+            val topology = clusterTopology(scenario.topologyPathSpec.pathToFile)
             val numHosts = topology.sumOf { it.hostSpecs.size }
+            val gpuCount = topology.flatMap { it.hostSpecs }.maxOfOrNull { it.model.gpuModels.size } ?: 0
+
             provisioner.runSteps(
                 setupComputeService(
                     serviceDomain,
@@ -130,8 +117,7 @@ public fun runScenario(
                 setupHosts(serviceDomain, topology, startTimeLong),
             )
 
-            val gpuCount = topology.flatMap { it.hostSpecs }.maxOfOrNull { it.model.gpuModels.size } ?: 0
-            addExportModel(
+            initializeExportModel(
                 provisioner,
                 serviceDomain,
                 scenario,
@@ -146,6 +132,7 @@ public fun runScenario(
             service.setTasksExpected(workload.size)
             service.setMetricReader(provisioner.getMonitor())
 
+            // TODO: Improve how the allocation policy and carbon model are created.
             var carbonModel: CarbonModel?
             if (provisioner.registry.hasService(serviceDomain, CarbonModel::class.java)) {
                 carbonModel = provisioner.registry.resolve(serviceDomain, CarbonModel::class.java)!!
@@ -170,6 +157,7 @@ public fun runScenario(
                 }
             }
 
+            // Starts replaying the given scenario
             service.replay(
                 timeSource,
                 workload,
@@ -188,7 +176,7 @@ public fun runScenario(
  * @param seed The seed of the current run
  * @param startTime The start time of the simulation given by the workload trace.
  */
-public fun addExportModel(
+public fun initializeExportModel(
     provisioner: Provisioner,
     serviceDomain: String,
     scenario: Scenario,

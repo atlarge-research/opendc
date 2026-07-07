@@ -36,40 +36,98 @@ import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher
  *
  * A host weigher can be defined in a JSON file by adding the serialName as the type parameter.
  *
- * The user then has to specify any additional parameters required for the weigher.
+ * The user then has to specify any additional parameters required for the weigher. Every weigher is
+ * scaled by a `multiplier`, which controls how strongly it contributes to the final host ranking.
+ * The following weighers are available: [RamWeigherSpec] (`"Ram"`), [CoreRamWeigherSpec] (`"CoreRam"`),
+ * [InstanceCountWeigherSpec] (`"InstanceCount"`), [VCpuCapacityWeigherSpec] (`"VCpuCapacity"`) and
+ * [VCpuWeigherSpec] (`"VCpu"`).
  */
 @Serializable
-public sealed class HostWeigherSpec
+public sealed class HostWeigherSpec {
+    /**
+     * The factor by which this weigher is scaled when ranking hosts.
+     */
+    public abstract val multiplier: Double
 
+    /**
+     * Validate the constraints of this host weigher specification.
+     *
+     * The first violated constraint is reported by throwing an [InvalidHostWeigherException];
+     * otherwise this returns nothing.
+     *
+     * @throws InvalidHostWeigherException if one of the constraints is violated.
+     */
+    public fun validate() {
+        if (!multiplier.isFinite()) {
+            throw InvalidHostWeigherException("The weigher multiplier must be a finite number (currently multiplier=$multiplier)")
+        }
+    }
+}
+
+/**
+ * Weigher that ranks hosts by the amount of memory they have available, favouring emptier hosts.
+ *
+ * @property multiplier Factor by which this weigher is scaled when combined with other weighers. Default is 1.0.
+ */
 @Serializable
 @SerialName("Ram")
 public data class RamWeigherSpec(
-    val multiplier: Double = 1.0,
+    override val multiplier: Double = 1.0,
 ) : HostWeigherSpec()
 
+/**
+ * Weigher that ranks hosts by their available memory per CPU core.
+ *
+ * @property multiplier Factor by which this weigher is scaled when combined with other weighers. Default is 1.0.
+ */
 @Serializable
 @SerialName("CoreRam")
 public data class CoreRamWeigherSpec(
-    val multiplier: Double = 1.0,
+    override val multiplier: Double = 1.0,
 ) : HostWeigherSpec()
 
+/**
+ * Weigher that ranks hosts by the number of tasks already running on them.
+ *
+ * @property multiplier Factor by which this weigher is scaled when combined with other weighers. Default is 1.0.
+ */
 @Serializable
 @SerialName("InstanceCount")
 public data class InstanceCountWeigherSpec(
-    val multiplier: Double = 1.0,
+    override val multiplier: Double = 1.0,
 ) : HostWeigherSpec()
 
+/**
+ * Weigher that ranks hosts by their spare CPU capacity per core.
+ *
+ * @property multiplier Factor by which this weigher is scaled when combined with other weighers. Default is 1.0.
+ */
 @Serializable
 @SerialName("VCpuCapacity")
 public data class VCpuCapacityWeigherSpec(
-    val multiplier: Double = 1.0,
+    override val multiplier: Double = 1.0,
 ) : HostWeigherSpec()
 
+/**
+ * Weigher that ranks hosts by their available vCPU cores.
+ *
+ * @property multiplier Factor by which this weigher is scaled when combined with other weighers. Default is 1.0.
+ */
 @Serializable
 @SerialName("VCpu")
 public data class VCpuWeigherSpec(
-    val multiplier: Double = 1.0,
+    override val multiplier: Double = 1.0,
 ) : HostWeigherSpec()
+
+/**
+ * Exception thrown when a [HostWeigherSpec] violates one of its constraints.
+ *
+ * Unlike a plain [IllegalArgumentException], [message] is non-null, so callers that catch this
+ * specific type can use it directly without a null fallback.
+ */
+public class InvalidHostWeigherException(
+    override val message: String,
+) : IllegalArgumentException(message)
 
 public fun createHostWeigher(weigherSpec: HostWeigherSpec): HostWeigher {
     return when (weigherSpec) {
