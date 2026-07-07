@@ -34,8 +34,11 @@ private val experimentWriter = ExperimentWriter()
  * @param filePath The path to the file containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getScenarios(filePath: String): List<Scenario> {
-    return getScenarios(File(filePath))
+public fun getScenarios(
+    filePath: String,
+    strictReader: Boolean = false,
+): List<Scenario> {
+    return getScenarios(File(filePath), strictReader)
 }
 
 /**
@@ -44,8 +47,11 @@ public fun getScenarios(filePath: String): List<Scenario> {
  * @param file The file containing the scenario specifications.
  * @return A list of Scenarios.
  */
-public fun getScenarios(file: File): List<Scenario> {
-    return getScenarios(experimentReader.read(file))
+public fun getScenarios(
+    file: File,
+    strictReader: Boolean = false,
+): List<Scenario> {
+    return getScenarios(experimentReader.read(file, strictReader))
 }
 
 /**

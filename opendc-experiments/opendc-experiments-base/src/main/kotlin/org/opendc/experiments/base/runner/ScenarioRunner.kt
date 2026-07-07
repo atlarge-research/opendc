@@ -54,7 +54,10 @@ import java.util.stream.LongStream
  *
  * @param scenario The scenario to run
  */
-public fun runScenario(scenario: Scenario) {
+public fun runScenario(
+    scenario: Scenario,
+    strictReader: Boolean = false,
+) {
     val pb =
         ProgressBarBuilder().setInitialMax(scenario.runs.toLong()).setStyle(ProgressBarStyle.ASCII)
             .setTaskName("Simulating...").build()
@@ -62,7 +65,7 @@ public fun runScenario(scenario: Scenario) {
     val pool = ForkJoinPool(5)
     pool.submit {
         LongStream.range(0, scenario.runs.toLong()).parallel().forEach {
-            runScenario(scenario, scenario.initialSeed + it)
+            runScenario(scenario, scenario.initialSeed + it, strictReader)
             pb.step()
         }
         pb.close()
@@ -78,6 +81,7 @@ public fun runScenario(scenario: Scenario) {
 public fun runScenario(
     scenario: Scenario,
     seed: Long,
+    strictReader: Boolean = false,
 ): Unit =
     runSimulation {
         val serviceDomain = "compute.opendc.org"
@@ -92,7 +96,7 @@ public fun runScenario(
             val startTimeLong = workload.minOf { it.submittedAt }
             val startTime = Duration.ofMillis(startTimeLong)
 
-            val topology = clusterTopology(scenario.topologyPathSpec.pathToFile)
+            val topology = clusterTopology(scenario.topologyPathSpec.pathToFile, strictReader)
             val numHosts = topology.sumOf { it.hostSpecs.size }
             val gpuCount = topology.flatMap { it.hostSpecs }.maxOfOrNull { it.model.gpuModels.size } ?: 0
 

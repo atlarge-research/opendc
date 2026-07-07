@@ -22,9 +22,9 @@
 
 package org.opendc.compute.topology
 
-import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
+import org.opendc.common.logger.logger
 import org.opendc.compute.topology.specs.TopologySpec
 import java.io.File
 import java.io.InputStream
@@ -35,20 +35,48 @@ import kotlin.io.path.inputStream
  * A helper class for reading a topology specification file.
  */
 public class TopologyReader {
-    public fun read(path: Path): TopologySpec {
-        return read(path.inputStream())
-    }
+    private val jsonReader = Json { ignoreUnknownKeys = true }
+    private val strictJsonReader = Json { ignoreUnknownKeys = false }
 
-    public fun read(file: File): TopologySpec {
-        return read(file.inputStream())
-    }
+    public fun read(
+        path: Path,
+        strictReader: Boolean = false,
+    ): TopologySpec = read(path.inputStream(), strictReader)
+
+    public fun read(
+        file: File,
+        strictReader: Boolean = false,
+    ): TopologySpec = read(file.inputStream(), strictReader)
 
     /**
      * Read the specified [input].
      */
-    @OptIn(ExperimentalSerializationApi::class)
-    public fun read(input: InputStream): TopologySpec {
-        val obj = Json.decodeFromStream<TopologySpec>(input)
-        return obj
+    public fun read(
+        input: InputStream,
+        strictReader: Boolean = false,
+    ): TopologySpec {
+        val text = input.bufferedReader().use { it.readText() }
+
+        if (strictReader) {
+            return strictJsonReader.decodeFromString<TopologySpec>(text)
+        }
+
+        val topology = jsonReader.decodeFromString<TopologySpec>(text)
+
+        // [jsonReader] ignores unknown keys, so typos and stale fields would otherwise pass silently.
+        // Decode once more with a strict reader to surface them: the two readers differ only in
+        // [JsonBuilder.ignoreUnknownKeys], and the lenient decode above already succeeded, so any
+        // failure here can only be caused by an unknown key that is being ignored.
+        try {
+            strictJsonReader.decodeFromString<TopologySpec>(text)
+        } catch (e: SerializationException) {
+            LOG.warn("The topology file contains an unknown key that is ignored: ${e.message?.substringBefore('\n')}")
+        }
+
+        return topology
+    }
+
+    private companion object {
+        private val LOG by logger("org.opendc.compute.topology.TopologyReader")
     }
 }

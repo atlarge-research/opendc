@@ -79,15 +79,21 @@ private fun createUniqueName(
 /**
  * Construct a topology from the specified [pathToFile].
  */
-public fun clusterTopology(pathToFile: String): List<ClusterSpec> {
-    return clusterTopology(File(pathToFile))
+public fun clusterTopology(
+    pathToFile: String,
+    strictReader: Boolean,
+): List<ClusterSpec> {
+    return clusterTopology(File(pathToFile), strictReader)
 }
 
 /**
  * Construct a topology from the specified [file].
  */
-public fun clusterTopology(file: File): List<ClusterSpec> {
-    val topology = reader.read(file)
+public fun clusterTopology(
+    file: File,
+    strictReader: Boolean,
+): List<ClusterSpec> {
+    val topology = reader.read(file, strictReader)
     return topology.toClusterSpec()
 }
 
