@@ -50,4 +50,4 @@ public fun List<ValidationIssue>.prefixed(prefix: String): List<ValidationIssue>
  * Validates each element and prefixes its issues with an indexed path such as `prefix[0]`.
  */
 public fun Iterable<Validatable>.validateEach(prefix: String): List<ValidationIssue> =
-    flatMapIndexed { i, v -> v.validate().prefixed(prefix + "[" + i + "]") }
+    flatMapIndexed { i, v -> v.validate().prefixed("$prefix[$i]") }

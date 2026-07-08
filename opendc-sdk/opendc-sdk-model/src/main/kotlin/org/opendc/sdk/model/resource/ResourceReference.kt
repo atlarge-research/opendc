@@ -26,13 +26,17 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * A path-agnostic handle to an external data resource, resolved at runtime by a [ResourceResolver].
+ * A path-agnostic handle to an external data resource (a workload, carbon, or failure trace),
+ * provisioned at run time by a [ResourceProvisioner]. The model only denotes the resource; it
+ * never performs I/O or embeds a filesystem path.
  */
 @Serializable
 public sealed interface ResourceReference
 
 /**
- * A [ResourceReference] identified by a logical [name] that the resolver maps to concrete data.
+ * A [ResourceReference] identified by a logical [name] that a [ResourceProvisioner] maps to
+ * concrete data — for example a trace id looked up in a database, or a name resolved under a
+ * configured root directory.
  *
  * @property name The logical name of the resource.
  */
@@ -41,7 +45,9 @@ public sealed interface ResourceReference
 public data class NamedReference(public val name: String) : ResourceReference
 
 /**
- * A [ResourceReference] identified by a [uri] pointing at the resource.
+ * A [ResourceReference] identified by a [uri]. Its scheme (`file`, `http`, `ftp`, `s3`, `jdbc`,
+ * …) denotes where and how the resource lives — filesystem, a hosted location, or a database —
+ * and is interpreted entirely by the [ResourceProvisioner]; the SDK treats it as opaque.
  *
  * @property uri The uniform resource identifier of the resource.
  */

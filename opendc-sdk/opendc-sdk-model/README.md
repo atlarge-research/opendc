@@ -13,9 +13,9 @@ from.
 
 - **Path-agnostic.** External data (traces, carbon curves, failure traces) is never
   referenced by a hard-coded path. Instead the model holds a [`ResourceReference`]
-  (`NamedReference` or `UriReference`) that a [`ResourceResolver`] turns into a stream at
-  run time. The same experiment can therefore move between a laptop, a test fixture, and a
-  server without editing paths.
+  (`NamedReference` or `UriReference`) that a [`ResourceProvisioner`] turns into a local,
+  seekable resource at run time. The same experiment can therefore move between a laptop, a
+  test fixture, and a server without editing paths.
 - **Serializable.** Every model type is a `@Serializable` `kotlinx.serialization` type.
   Sealed hierarchies carry a `type` discriminator, so polymorphic choices (which
   scheduler, which failure model, which workload) round-trip through JSON with no
@@ -56,8 +56,8 @@ The model is one shape with three front doors. All three produce the same `Exper
   `InlineWorkload` (a list of `Task`s, each with its `TaskFragment` execution profile).
 - **ResourceReference.** The indirection that keeps the model path-agnostic. Bulk external
   data — workload traces, carbon-intensity curves, failure traces — is a `NamedReference("…")`
-  or `UriReference("…")` resolved by a `ResourceResolver` you supply at run time. Topologies
-  are small structured config and are always inlined, never referenced.
+  or `UriReference("…")` provisioned by a `ResourceProvisioner` you supply at run time.
+  Topologies are small structured config and are always inlined, never referenced.
 - **Validation.** Call `.validate()` on any `Validatable` (an `Experiment`, a `Scenario`,
   or any nested part) to get back a `List<ValidationIssue>`; an empty list means valid.
   Issues carry a path like `topologies[0].clusters[0].hosts` so problems are easy to
@@ -176,10 +176,10 @@ subtype. Unspecified fields fall back to their model defaults.
 Loading a topology (or any fragment) from a separate file is deliberately **not** a model
 concern — the in-memory model is always concrete. Such imports can be layered onto
 [`SdkJson`] as a serialization-time step (an `$import`/`$ref`-style directive resolved
-through a [`ResourceResolver`]), without changing any data class.
+through a [`ResourceProvisioner`]), without changing any data class.
 
 [`ResourceReference`]: src/main/kotlin/org/opendc/sdk/model/resource/ResourceReference.kt
-[`ResourceResolver`]: src/main/kotlin/org/opendc/sdk/model/resource/ResourceResolver.kt
+[`ResourceProvisioner`]: src/main/kotlin/org/opendc/sdk/model/resource/ResourceProvisioner.kt
 [`Validatable`]: src/main/kotlin/org/opendc/sdk/model/validation/Validation.kt
 [`ValidationIssue`]: src/main/kotlin/org/opendc/sdk/model/validation/Validation.kt
 [`SdkJson`]: src/main/kotlin/org/opendc/sdk/model/serialization/SdkJson.kt

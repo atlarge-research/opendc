@@ -22,7 +22,6 @@
 
 package org.opendc.sdk.model.serialization
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -38,11 +37,12 @@ import java.io.InputStream
  */
 public object SdkJson {
     /** Shared [Json] instance: tolerant of unknown keys, emits defaults, and pretty-prints. */
-    public val json: Json = Json {
-        ignoreUnknownKeys = true
-        encodeDefaults = true
-        prettyPrint = true
-    }
+    public val json: Json =
+        Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+            prettyPrint = true
+        }
 
     /** Serialize an [Experiment] to a JSON string. */
     public fun encodeToString(experiment: Experiment): String = json.encodeToString(experiment)
