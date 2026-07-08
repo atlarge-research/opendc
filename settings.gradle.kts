@@ -77,6 +77,7 @@ include(":opendc-trace:opendc-trace-tools")
 include("opendc-cli")
 include("opendc-sdk")
 include("opendc-sdk:opendc-sdk-model")
+include("opendc-sdk:opendc-sdk-runner")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 

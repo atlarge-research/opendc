@@ -83,3 +83,12 @@ public data class VCpuCapacityWeigher(override val multiplier: Double = 1.0) : H
 @Serializable
 @SerialName("vcpu")
 public data class VCpuWeigher(override val multiplier: Double = 1.0) : HostWeigher
+
+/**
+ * Weighs hosts by their available vGPUs.
+ *
+ * @property multiplier The weight applied to the vGPU score.
+ */
+@Serializable
+@SerialName("vgpu")
+public data class VGpuWeigher(override val multiplier: Double = 1.0) : HostWeigher

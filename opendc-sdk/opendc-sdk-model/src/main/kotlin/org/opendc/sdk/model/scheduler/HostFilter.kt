@@ -89,3 +89,15 @@ public data class VCpuFilter(public val allocationRatio: Double = 1.0) : HostFil
     override fun validate(): List<ValidationIssue> =
         if (allocationRatio > 0.0) emptyList() else listOf(ValidationIssue("allocationRatio", "must be > 0"))
 }
+
+/**
+ * Keeps hosts with enough vGPUs given an over-commit [allocationRatio].
+ *
+ * @property allocationRatio The multiplier applied to physical GPU core count.
+ */
+@Serializable
+@SerialName("vgpu")
+public data class VGpuFilter(public val allocationRatio: Double = 1.0) : HostFilter {
+    override fun validate(): List<ValidationIssue> =
+        if (allocationRatio > 0.0) emptyList() else listOf(ValidationIssue("allocationRatio", "must be > 0"))
+}
