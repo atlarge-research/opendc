@@ -37,7 +37,6 @@ import org.opendc.sdk.runner.sink.SinkSession
 internal class ProgressSink(private val progress: ExperimentProgress) : OutputSink {
     override fun open(context: RunContext): SinkSession {
         val key = RunKey(context.scenarioId, context.seed)
-        progress.registerRun(key, context.taskCount)
         return object : SinkSession {
             override val monitor: ComputeMonitor =
                 object : ComputeMonitor {

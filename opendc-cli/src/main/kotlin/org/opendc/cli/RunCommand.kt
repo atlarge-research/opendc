@@ -38,11 +38,18 @@ import org.opendc.cli.progress.ProgressReporter
 import org.opendc.cli.progress.ProgressSink
 import org.opendc.cli.render.renderOutputs
 import org.opendc.cli.render.renderSummary
+import org.opendc.cli.tui.DashboardReporter
+import org.opendc.cli.tui.RunReporter
+import org.opendc.cli.tui.SimulationFacts
 import org.opendc.sdk.model.experiment.Experiment
 import org.opendc.sdk.model.experiment.expand
-import org.opendc.sdk.model.export.OutputFile
+import org.opendc.sdk.model.export.OutputFile.HOST
+import org.opendc.sdk.model.export.OutputFile.POWER_SOURCE
+import org.opendc.sdk.model.export.OutputFile.SERVICE
+import org.opendc.sdk.model.resource.ResourceProvisioner
 import org.opendc.sdk.runner.OpenDC
 import org.opendc.sdk.runner.SimulationReport
+import org.opendc.sdk.runner.planTaskCounts
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
 import org.opendc.sdk.runner.sink.InMemorySink
 import java.nio.file.Path
@@ -73,7 +80,10 @@ internal class RunCommand : CliktCommand(name = "run") {
 
     private val noProgress by option("--no-progress", help = "Disable the live progress bar.").flag()
 
-    private val noSummary by option("--no-summary", help = "Skip the in-memory metrics summary (saves memory on very large sweeps).").flag()
+    private val noSummary by option(
+        "--no-summary",
+        help = "Skip the in-memory metrics summary (saves memory on very large sweeps).",
+    ).flag()
 
     override fun run() {
         val experiment = loadExperiment(experimentFile)
@@ -95,11 +105,12 @@ internal class RunCommand : CliktCommand(name = "run") {
 
     private fun simulate(experiment: Experiment): SimulationReport {
         val root = inputRoot ?: experimentFile.absoluteFile.parentFile.toPath()
-        val builder = OpenDC.builder().provisioner(FileSystemResourceProvisioner(root)).output(output)
+        val provisioner = FileSystemResourceProvisioner(root)
+        val builder = OpenDC.builder().provisioner(provisioner).output(output)
         parallelism?.let { builder.parallelism(it) }
-        if (!noSummary) builder.sink(InMemorySink(setOf(OutputFile.HOST, OutputFile.SERVICE, OutputFile.POWER_SOURCE)))
+        if (!noSummary) builder.sink(InMemorySink(setOf(HOST, SERVICE, POWER_SOURCE)))
 
-        val reporter = attachProgress(experiment, builder)
+        val reporter = attachProgress(experiment, provisioner, root, builder)
         return try {
             builder.build().simulate(experiment)
         } finally {
@@ -109,11 +120,39 @@ internal class RunCommand : CliktCommand(name = "run") {
 
     private fun attachProgress(
         experiment: Experiment,
+        provisioner: ResourceProvisioner,
+        root: Path,
         builder: OpenDC.Builder,
-    ): ProgressReporter? {
+    ): RunReporter? {
         if (noProgress) return null
-        val progress = ExperimentProgress(experiment.expand().sumOf { it.runs })
+
+        val scenarios = experiment.expand()
+        val totalTasks = experiment.planTaskCounts(provisioner).sumOf { it.taskCount.toLong() * it.scenario.runs }
+        val progress = ExperimentProgress(totalTasks)
         builder.sink(ProgressSink(progress))
-        return ProgressReporter(terminal, progress).also { it.start() }
+
+        // The dashboard needs full multi-line in-place redraw. Mordant reports `supportsAnsiCursor`
+        // true ONLY for the IntelliJ console (which can only rewrite a single line), so a real
+        // interactive terminal reports it false — precisely where the dashboard works. Fall back to
+        // the single-line bar when output is not interactive or is that cursor-limited console.
+        val info = terminal.terminalInfo
+        if (!info.outputInteractive || info.supportsAnsiCursor) {
+            return ProgressReporter(terminal, progress).also { it.start() }
+        }
+
+        val facts =
+            SimulationFacts(
+                name = experiment.name.ifEmpty { "(unnamed)" },
+                scenarios = scenarios.size,
+                runs = scenarios.sumOf { it.runs },
+                topologies = experiment.topologies.size,
+                workloads = experiment.workloads.size,
+                policies = experiment.allocationPolicies.size,
+                totalTasks = totalTasks,
+                parallelism = parallelism ?: Runtime.getRuntime().availableProcessors(),
+                output = output,
+                inputRoot = root,
+            )
+        return DashboardReporter(terminal, progress, facts).also { it.start() }
     }
 }

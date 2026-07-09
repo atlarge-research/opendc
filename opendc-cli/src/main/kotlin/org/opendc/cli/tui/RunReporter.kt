@@ -20,22 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.cli
+package org.opendc.cli.tui
 
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.core.main
-import com.github.ajalt.clikt.core.subcommands
-
-/** Entry point of the `opendc` command-line interface. */
-fun main(args: Array<String>): Unit =
-    OpendcCommand()
-        .subcommands(RunCommand(), ValidateCommand(), ShowCommand())
-        .main(args)
-
-/** The root `opendc` command; it only groups the subcommands. */
-internal class OpendcCommand : CliktCommand(name = "opendc") {
-    override fun help(context: Context): String = "Run, validate and inspect OpenDC datacenter simulations."
-
-    override fun run() = Unit
+/**
+ * A live, during-run reporter that must be torn down once the simulation finishes. Lets the run
+ * command drive either the rich [DashboardReporter] or the plain fallback bar uniformly.
+ */
+internal fun interface RunReporter {
+    /** Stops rendering and releases every resource the reporter acquired (threads, log capture). */
+    fun stop()
 }

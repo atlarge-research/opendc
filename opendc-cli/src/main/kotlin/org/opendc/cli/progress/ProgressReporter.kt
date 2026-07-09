@@ -30,22 +30,25 @@ import com.github.ajalt.mordant.widgets.progress.percentage
 import com.github.ajalt.mordant.widgets.progress.progressBar
 import com.github.ajalt.mordant.widgets.progress.progressBarLayout
 import com.github.ajalt.mordant.widgets.progress.text
-import com.github.ajalt.mordant.widgets.progress.timeElapsed
+import com.github.ajalt.mordant.widgets.progress.timeRemaining
+import org.opendc.cli.tui.RunReporter
 import java.util.concurrent.Future
 
 /**
  * Renders a live, task-granularity progress bar for a running experiment. A daemon thread polls an
  * [ExperimentProgress] and pushes the aggregate into the single Mordant animation; it is the only
  * thread that touches the animator, keeping the many simulation callbacks fully decoupled.
+ *
+ * This is the plain fallback used when the terminal cannot host the richer [org.opendc.cli.tui.DashboardReporter].
  */
-internal class ProgressReporter(terminal: Terminal, private val progress: ExperimentProgress) {
+internal class ProgressReporter(terminal: Terminal, private val progress: ExperimentProgress) : RunReporter {
     private val animator =
         progressBarLayout {
             text("simulating")
             progressBar()
             percentage()
             completed(suffix = " tasks")
-            timeElapsed()
+            timeRemaining()
         }.animateOnThread(terminal)
 
     @Volatile private var running = true
@@ -61,7 +64,7 @@ internal class ProgressReporter(terminal: Terminal, private val progress: Experi
             }
     }
 
-    fun stop() {
+    override fun stop() {
         running = false
         poller?.join(2 * POLL_INTERVAL_MS)
         val snap = progress.snapshot
@@ -80,11 +83,9 @@ internal class ProgressReporter(terminal: Terminal, private val progress: Experi
     }
 
     private fun pushSnapshot(snap: ProgressSnapshot) {
-        val stableTotal = snap.runsOpened >= snap.totalRuns
-        val denominator = if (stableTotal) snap.totalTasks else maxOf(snap.totalTasks, snap.completedTasks + 1)
         animator.update {
             completed = snap.completedTasks
-            total = if (denominator > 0) denominator else null
+            total = if (snap.totalTasks > 0) snap.totalTasks else null
         }
     }
 

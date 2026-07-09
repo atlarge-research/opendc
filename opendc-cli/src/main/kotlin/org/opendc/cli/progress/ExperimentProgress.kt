@@ -31,27 +31,15 @@ internal data class RunKey(val scenarioId: Int, val seed: Long)
 internal data class ProgressSnapshot(
     val completedTasks: Long,
     val totalTasks: Long,
-    val runsOpened: Int,
-    val totalRuns: Int,
 )
 
 /**
  * Thread-safe aggregate of per-task completion across every (possibly parallel) run of an
- * experiment. Each run reports its *stable* task count once when it opens and its running tally of
- * completed + terminated tasks thereafter, so the total is a fixed denominator rather than the
- * moving "tasks seen so far" the service reports mid-run.
+ * experiment. The [totalTasks] denominator is fixed up front from the resolved workloads, so the bar
+ * only ever advances; each run reports its running tally of completed + terminated tasks as it goes.
  */
-internal class ExperimentProgress(private val totalRuns: Int) {
-    private val totals = ConcurrentHashMap<RunKey, Int>()
+internal class ExperimentProgress(private val totalTasks: Long) {
     private val completed = ConcurrentHashMap<RunKey, Long>()
-
-    fun registerRun(
-        key: RunKey,
-        taskCount: Int,
-    ) {
-        totals[key] = taskCount
-        completed.putIfAbsent(key, 0L)
-    }
 
     fun update(
         key: RunKey,
@@ -64,8 +52,6 @@ internal class ExperimentProgress(private val totalRuns: Int) {
         get() =
             ProgressSnapshot(
                 completedTasks = completed.values.sumOf { it },
-                totalTasks = totals.values.sumOf { it.toLong() },
-                runsOpened = totals.size,
-                totalRuns = totalRuns,
+                totalTasks = totalTasks,
             )
 }

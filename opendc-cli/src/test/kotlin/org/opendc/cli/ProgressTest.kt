@@ -24,9 +24,9 @@ package org.opendc.cli
 
 import org.opendc.cli.progress.ExperimentProgress
 import org.opendc.cli.progress.ProgressSink
-import org.opendc.sdk.model.experiment.expand
 import org.opendc.sdk.model.serialization.SdkJson
 import org.opendc.sdk.runner.OpenDC
+import org.opendc.sdk.runner.planTaskCounts
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
 import java.io.File
 import java.nio.file.Path
@@ -34,23 +34,26 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** Verifies the progress plumbing: the stable task denominator is known and every task is counted. */
+/** Verifies the progress plumbing: the stable task denominator is fixed up front and every task is counted. */
 class ProgressTest {
     @Test
     fun `progress counts every task in the workload`() {
         val file = File(checkNotNull(javaClass.classLoader.getResource("experiments/tiny-experiment.json")).toURI())
         val experiment = file.inputStream().use { SdkJson.decodeExperiment(it) }
-        val progress = ExperimentProgress(experiment.expand().sumOf { it.runs })
+        val provisioner = FileSystemResourceProvisioner(Path.of("."))
+
+        val totalTasks = experiment.planTaskCounts(provisioner).sumOf { it.taskCount.toLong() * it.scenario.runs }
+        val progress = ExperimentProgress(totalTasks)
 
         OpenDC.builder()
-            .provisioner(FileSystemResourceProvisioner(Path.of(".")))
+            .provisioner(provisioner)
             .sink(ProgressSink(progress))
             .parallelism(1)
             .build()
             .simulate(experiment)
 
         val snapshot = progress.snapshot
-        assertTrue(snapshot.totalTasks > 0, "the workload's task count must be discovered before the run")
+        assertTrue(snapshot.totalTasks > 0, "the workload's task count must be resolved before the run")
         assertEquals(snapshot.totalTasks, snapshot.completedTasks, "every task should be accounted for at the end")
     }
 }

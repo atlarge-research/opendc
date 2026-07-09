@@ -20,7 +20,7 @@ dependencies {
     implementation(libs.clikt5)
     implementation(libs.mordant)
 
-    runtimeOnly(libs.log4j.core)
+    implementation(libs.log4j.core)
     runtimeOnly(libs.log4j.slf4j)
 
     testImplementation(kotlin("test"))
