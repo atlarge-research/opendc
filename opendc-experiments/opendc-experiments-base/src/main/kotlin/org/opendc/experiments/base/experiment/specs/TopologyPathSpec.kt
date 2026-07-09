@@ -31,6 +31,7 @@ import java.io.File
  * @property pathToFile
  */
 @Serializable
+@Deprecated("Replaced by the opendc-sdk model (org.opendc.sdk.model.*); run experiments with the new opendc CLI (opendc-cli).")
 public data class TopologyPathSpec(
     val pathToFile: String,
 ) {

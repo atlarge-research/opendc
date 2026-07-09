@@ -24,18 +24,29 @@ package org.opendc.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.core.main
-import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.core.ProgramResult
+import com.github.ajalt.clikt.core.terminal
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.types.file
 
-/** Entry point of the `opendc` command-line interface. */
-public fun main(args: Array<String>): Unit =
-    OpendcCommand()
-        .subcommands(RunCommand(), ValidateCommand(), ShowCommand())
-        .main(args)
+/** `opendc validate` — parse an experiment file and report any configuration issues. */
+internal class ValidateCommand : CliktCommand(name = "validate") {
+    override fun help(context: Context): String = "Validate an experiment file and report any configuration issues."
 
-/** The root `opendc` command; it only groups the subcommands. */
-internal class OpendcCommand : CliktCommand(name = "opendc") {
-    override fun help(context: Context): String = "Run, validate and inspect OpenDC datacenter simulations."
+    private val experimentFile by argument(name = "experiment", help = "Path to the experiment JSON file.")
+        .file(mustExist = true, canBeDir = false, mustBeReadable = true)
 
-    override fun run() = Unit
+    override fun run() {
+        val experiment = loadExperiment(experimentFile)
+        val issues = experiment.validate()
+
+        if (issues.isEmpty()) {
+            terminal.println(terminal.theme.success("✓ ${experimentFile.name} is valid"))
+            return
+        }
+
+        terminal.println(terminal.theme.danger("✗ ${experimentFile.name} has ${issues.size} issue(s):"))
+        issues.forEach { terminal.println("  • ${it.path}: ${it.message}") }
+        throw ProgramResult(1)
+    }
 }

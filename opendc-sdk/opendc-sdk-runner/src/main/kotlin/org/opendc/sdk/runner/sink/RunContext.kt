@@ -33,6 +33,8 @@ import org.opendc.sdk.runner.internal.ExportSettings
  * @property scenarioId The scenario's index within its experiment's cartesian expansion.
  * @property seed The random seed of this specific run.
  * @property gpuCount The maximum number of GPUs on any host in the topology.
+ * @property taskCount The number of tasks in the resolved workload, known before the run starts and
+ *   stable for its whole duration — the correct denominator for run progress.
  */
 public class RunContext internal constructor(
     public val scenario: Scenario,
@@ -40,5 +42,6 @@ public class RunContext internal constructor(
     public val scenarioId: Int,
     public val seed: Long,
     public val gpuCount: Int,
+    public val taskCount: Int,
     internal val export: ExportSettings,
 )

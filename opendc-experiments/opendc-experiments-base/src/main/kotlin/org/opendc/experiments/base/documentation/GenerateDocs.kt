@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.opendc.experiments.base.documentation
 
 import kotlinx.serialization.Serializable

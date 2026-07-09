@@ -1,0 +1,73 @@
+{
+    "name": "tiny",
+    "topologies": [
+        {
+            "clusters": [
+                {
+                    "name": "cluster",
+                    "hosts": [
+                        {
+                            "name": "host",
+                            "count": 1,
+                            "cpu": {
+                                "coreCount": 8,
+                                "coreSpeed": "3.0 GHz"
+                            },
+                            "memory": {
+                                "size": "16 GiB"
+                            },
+                            "cpuPowerModel": {
+                                "type": "linear",
+                                "maxPower": "300 Watts",
+                                "idlePower": "80 Watts"
+                            }
+                        }
+                    ],
+                    "powerSource": {
+                        "name": "grid",
+                        "maxPower": "10000 Watts"
+                    }
+                }
+            ]
+        }
+    ],
+    "workloads": [
+        {
+            "type": "inline",
+            "tasks": [
+                {
+                    "id": 0,
+                    "name": "task-0",
+                    "submissionTime": "0 minutes",
+                    "duration": "10 minutes",
+                    "cpuCoreCount": 2,
+                    "cpuCapacity": "3.0 GHz",
+                    "memory": "2 GiB",
+                    "fragments": [
+                        { "duration": "5 minutes", "cpuUsage": "3.0 GHz" },
+                        { "duration": "5 minutes", "cpuUsage": "1.5 GHz" }
+                    ]
+                },
+                {
+                    "id": 1,
+                    "name": "task-1",
+                    "submissionTime": "1 minutes",
+                    "duration": "5 minutes",
+                    "cpuCoreCount": 1,
+                    "cpuCapacity": "2.0 GHz",
+                    "memory": "1 GiB",
+                    "fragments": [
+                        { "duration": "5 minutes", "cpuUsage": "2.0 GHz" }
+                    ]
+                }
+            ]
+        }
+    ],
+    "allocationPolicies": [
+        { "type": "prefab", "scheduler": "Mem" }
+    ],
+    "exportModels": [
+        { "exportInterval": "1 minutes", "printFrequency": null }
+    ],
+    "runs": 1
+}

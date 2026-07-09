@@ -38,6 +38,7 @@ import kotlinx.serialization.Serializable
  * of `1.0` keeps the interval constant. Must be positive.
  */
 @Serializable
+@Deprecated("Replaced by the opendc-sdk model (org.opendc.sdk.model.*); run experiments with the new opendc CLI (opendc-cli).")
 public data class CheckpointModelSpec(
     val checkpointInterval: Long = 60 * 60 * 1000,
     val checkpointDuration: Long = 5 * 60 * 1000,

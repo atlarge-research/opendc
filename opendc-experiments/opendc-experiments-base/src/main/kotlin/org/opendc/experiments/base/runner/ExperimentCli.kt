@@ -22,6 +22,8 @@
 
 @file:JvmName("ExperimentCli")
 
+@file:Suppress("DEPRECATION")
+
 package org.opendc.experiments.base.runner
 
 import com.github.ajalt.clikt.core.CliktCommand
@@ -32,14 +34,19 @@ import com.github.ajalt.clikt.parameters.types.file
 import org.opendc.experiments.base.experiment.getScenarios
 import java.io.File
 
+private const val DEPRECATION_NOTICE =
+    "⚠  The opendc-experiments-base runner is deprecated. Run experiments with the new 'opendc' CLI (opendc-cli) instead."
+
 /**
  * Main entrypoint of the application.
  */
+@Deprecated("Replaced by the opendc CLI (opendc-cli), built on the opendc-sdk.")
 public fun main(args: Array<String>): Unit = ExperimentCommand().main(args)
 
 /**
  * Represents the command for the Scenario experiments.
  */
+@Deprecated("Replaced by org.opendc.cli (opendc-cli), built on the opendc-sdk.")
 internal class ExperimentCommand : CliktCommand(name = "experiment") {
     /**
      * The path to the environment directory.
@@ -56,6 +63,7 @@ internal class ExperimentCommand : CliktCommand(name = "experiment") {
     private val strictReader by option("-strict", help = "strict").flag(default = false)
 
     override fun run() {
+        echo(DEPRECATION_NOTICE, err = true)
         val experiment = getScenarios(experimentPath, strictReader)
         runExperiment(experiment, strictReader)
     }

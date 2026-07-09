@@ -22,20 +22,15 @@
 
 package org.opendc.cli
 
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.core.main
-import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.core.CliktError
+import org.opendc.sdk.model.experiment.Experiment
+import org.opendc.sdk.model.serialization.SdkJson
+import java.io.File
 
-/** Entry point of the `opendc` command-line interface. */
-public fun main(args: Array<String>): Unit =
-    OpendcCommand()
-        .subcommands(RunCommand(), ValidateCommand(), ShowCommand())
-        .main(args)
-
-/** The root `opendc` command; it only groups the subcommands. */
-internal class OpendcCommand : CliktCommand(name = "opendc") {
-    override fun help(context: Context): String = "Run, validate and inspect OpenDC datacenter simulations."
-
-    override fun run() = Unit
-}
+/** Reads and deserializes [file] into an [Experiment], reporting a friendly error on failure. */
+internal fun loadExperiment(file: File): Experiment =
+    try {
+        file.inputStream().use { SdkJson.decodeExperiment(it) }
+    } catch (e: Exception) {
+        throw CliktError("Could not read experiment '${file.path}': ${e.message}")
+    }

@@ -125,7 +125,7 @@ private class ScenarioRun(
         taskCount: Int,
     ): List<SinkSession> {
         val export = scenario.exportModel.toExportSettings(gpuCount)
-        val context = RunContext(scenario, experimentName, scenarioId, seed, gpuCount, export)
+        val context = RunContext(scenario, experimentName, scenarioId, seed, gpuCount, taskCount, export)
         val sessions = sinks.map { it.open(context) }
         val monitor = CompositeComputeMonitor(sessions.map { it.monitor })
         val recorded = OutputFiles.entries.associateWith { file -> sessions.any { file in it.tables } }

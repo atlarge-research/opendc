@@ -24,18 +24,20 @@ package org.opendc.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.core.main
-import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.core.terminal
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.types.file
+import org.opendc.cli.render.renderTopologies
 
-/** Entry point of the `opendc` command-line interface. */
-public fun main(args: Array<String>): Unit =
-    OpendcCommand()
-        .subcommands(RunCommand(), ValidateCommand(), ShowCommand())
-        .main(args)
+/** `opendc show` — print every topology declared in an experiment file. */
+internal class ShowCommand : CliktCommand(name = "show") {
+    override fun help(context: Context): String = "Show the datacenter topologies declared in an experiment file."
 
-/** The root `opendc` command; it only groups the subcommands. */
-internal class OpendcCommand : CliktCommand(name = "opendc") {
-    override fun help(context: Context): String = "Run, validate and inspect OpenDC datacenter simulations."
+    private val experimentFile by argument(name = "experiment", help = "Path to the experiment JSON file.")
+        .file(mustExist = true, canBeDir = false, mustBeReadable = true)
 
-    override fun run() = Unit
+    override fun run() {
+        val experiment = loadExperiment(experimentFile)
+        renderTopologies(terminal, experiment)
+    }
 }

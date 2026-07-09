@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.opendc.experiments.base.experiment
 
 import kotlinx.serialization.Serializable
@@ -46,6 +48,7 @@ import org.opendc.experiments.base.experiment.specs.allocation.AllocationPolicyS
  */
 
 @Serializable
+@Deprecated("Replaced by the opendc-sdk model (org.opendc.sdk.model.*); run experiments with the new opendc CLI (opendc-cli).")
 public data class Scenario(
     var id: Int = -1,
     val name: String = "",
