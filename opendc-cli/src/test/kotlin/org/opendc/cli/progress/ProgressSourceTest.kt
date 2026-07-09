@@ -20,17 +20,32 @@
  * SOFTWARE.
  */
 
-package org.opendc.cli
+package org.opendc.cli.progress
 
-import com.github.ajalt.clikt.core.CliktError
-import org.opendc.sdk.model.experiment.Experiment
-import org.opendc.sdk.model.serialization.SdkJson
-import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
-/** Reads and deserializes [file] into an [Experiment], reporting a friendly error on failure. */
-internal fun loadExperiment(file: File): Experiment =
-    try {
-        file.inputStream().use { SdkJson.decodeExperiment(it) }
-    } catch (e: Exception) {
-        throw CliktError("Could not read experiment '${file.path}': ${e.message}")
+/**
+ * Verifies the [ProgressSource] seam: the local [ExperimentProgress] satisfies it, and so can an
+ * arbitrary producer — which is exactly the drop-in point a future remote (API-polling) source needs.
+ */
+class ProgressSourceTest {
+    /** A stand-in producer with no simulation behind it, mimicking a remote poller. */
+    private class FakeProgressSource(private val fixed: ProgressSnapshot) : ProgressSource {
+        override val snapshot: ProgressSnapshot get() = fixed
     }
+
+    @Test
+    fun `the local aggregate is a ProgressSource`() {
+        val source: ProgressSource = ExperimentProgress(10)
+        assertEquals(10, source.snapshot.totalTasks)
+        assertEquals(0, source.snapshot.completedTasks)
+    }
+
+    @Test
+    fun `an arbitrary producer can satisfy the seam`() {
+        val source: ProgressSource = FakeProgressSource(ProgressSnapshot(completedTasks = 3, totalTasks = 10))
+        assertEquals(3, source.snapshot.completedTasks)
+        assertEquals(10, source.snapshot.totalTasks)
+    }
+}

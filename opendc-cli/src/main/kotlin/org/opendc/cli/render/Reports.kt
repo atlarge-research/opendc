@@ -24,47 +24,70 @@ package org.opendc.cli.render
 
 import com.github.ajalt.mordant.table.table
 import com.github.ajalt.mordant.terminal.Terminal
+import org.opendc.cli.config.CliConfig
 import org.opendc.sdk.model.experiment.Scenario
 import org.opendc.sdk.runner.RunResult
 import org.opendc.sdk.runner.SimulationReport
-import org.opendc.sdk.runner.sink.CollectedMetrics
 import java.nio.file.Path
 
 private const val JOULES_PER_KWH = 3.6e6
 
-/** The headline metrics of a single run, derived from its in-memory [CollectedMetrics]. */
-private class RunSummary(scenario: Scenario, val seed: Long, metrics: CollectedMetrics) {
-    val name: String = scenario.name.ifEmpty { "#${scenario.id}" }
-    val tasksTotal = metrics.service.maxOfOrNull { it.tasksTotal } ?: 0
-    val tasksCompleted = metrics.service.maxOfOrNull { it.tasksCompleted } ?: 0
-    val tasksTerminated = metrics.service.maxOfOrNull { it.tasksTerminated } ?: 0
-    val meanCpuUtilization = if (metrics.host.isEmpty()) 0.0 else metrics.host.map { it.cpuUtilization }.average()
-    val energyKWh = metrics.powerSource.sumOf { it.energyUsage } / JOULES_PER_KWH
-    val carbonKg = metrics.powerSource.sumOf { it.carbonEmission } / 1000.0
+/** One row of the per-run summary: the headline metrics of a single run, already reduced to display values. */
+internal data class RunSummaryRow(
+    val name: String,
+    val seed: Long,
+    val tasksTotal: Int,
+    val tasksCompleted: Int,
+    val tasksTerminated: Int,
+    val meanCpuUtilization: Double,
+    val energyKWh: Double,
+    val carbonKg: Double,
+)
+
+/**
+ * The render-ready per-run summary, decoupled from how the run was produced. A local run builds it
+ * from a [SimulationReport]; a future remote run can build the same shape from an API response, so
+ * both render identically.
+ */
+internal data class RunSummaryView(val rows: List<RunSummaryRow>) {
+    companion object {
+        /** Reduces every run's in-memory metrics into display rows; runs without metrics are skipped. */
+        fun from(report: SimulationReport): RunSummaryView =
+            RunSummaryView(report.scenarios.flatMap { s -> s.runs.mapNotNull { it.toRow(s.scenario) } })
+    }
+}
+
+/** Where the run's Parquet output landed, and how many runs it covers. */
+internal data class OutputView(val runCount: Int, val outputRoot: Path) {
+    companion object {
+        fun from(
+            report: SimulationReport,
+            outputRoot: Path,
+        ): OutputView = OutputView(report.runs.size, outputRoot)
+    }
 }
 
 /** Prints a per-run table of the headline metrics captured in memory during the run. */
 internal fun renderSummary(
     terminal: Terminal,
-    report: SimulationReport,
+    view: RunSummaryView,
+    config: CliConfig,
 ) {
-    val summaries = report.scenarios.flatMap { s -> s.runs.mapNotNull { it.summarize(s.scenario) } }
-    if (summaries.isEmpty()) return
-
+    if (view.rows.isEmpty()) return
     terminal.println(
         table {
-            header { row("Scenario", "Seed", "Tasks", "Completed", "Terminated", "Mean CPU", "Energy [kWh]", "Carbon [kg]") }
+            header { row(*config.headers.summary.toTypedArray()) }
             body {
-                for (s in summaries) {
+                for (r in view.rows) {
                     row(
-                        s.name,
-                        s.seed,
-                        s.tasksTotal,
-                        s.tasksCompleted,
-                        s.tasksTerminated,
-                        "%.1f%%".format(s.meanCpuUtilization * 100),
-                        "%.3f".format(s.energyKWh),
-                        "%.3f".format(s.carbonKg),
+                        r.name,
+                        r.seed,
+                        r.tasksTotal,
+                        r.tasksCompleted,
+                        r.tasksTerminated,
+                        "%.1f%%".format(r.meanCpuUtilization * 100),
+                        "%.3f".format(r.energyKWh),
+                        "%.3f".format(r.carbonKg),
                     )
                 }
             }
@@ -75,13 +98,25 @@ internal fun renderSummary(
 /** Reports where the primary Parquet output was written. */
 internal fun renderOutputs(
     terminal: Terminal,
-    report: SimulationReport,
-    outputRoot: Path,
+    view: OutputView,
 ) {
-    val runs = report.runs.size
     terminal.println(
-        "Simulated ${terminal.theme.info(runs.toString())} run(s); Parquet results in ${terminal.theme.success(outputRoot.toString())}",
+        "Simulated ${terminal.theme.info(view.runCount.toString())} run(s); " +
+            "Parquet results in ${terminal.theme.success(view.outputRoot.toString())}",
     )
 }
 
-private fun RunResult.summarize(scenario: Scenario): RunSummary? = metrics?.let { RunSummary(scenario, seed, it) }
+/** Reduces a single run's in-memory metrics into a display [RunSummaryRow], or null when it has none. */
+private fun RunResult.toRow(scenario: Scenario): RunSummaryRow? =
+    metrics?.let { m ->
+        RunSummaryRow(
+            name = scenario.name.ifEmpty { "#${scenario.id}" },
+            seed = seed,
+            tasksTotal = m.service.maxOfOrNull { it.tasksTotal } ?: 0,
+            tasksCompleted = m.service.maxOfOrNull { it.tasksCompleted } ?: 0,
+            tasksTerminated = m.service.maxOfOrNull { it.tasksTerminated } ?: 0,
+            meanCpuUtilization = if (m.host.isEmpty()) 0.0 else m.host.map { it.cpuUtilization }.average(),
+            energyKWh = m.powerSource.sumOf { it.energyUsage } / JOULES_PER_KWH,
+            carbonKg = m.powerSource.sumOf { it.carbonEmission } / 1000.0,
+        )
+    }

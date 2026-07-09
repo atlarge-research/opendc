@@ -71,6 +71,13 @@ class CliTest {
         }
     }
 
+    @Test
+    fun `run rejects the not-yet-implemented --api-url with a clean error`() {
+        val result = opendc().test(listOf("run", tiny, "--api-url", "http://example.com", "--no-progress"))
+        assertEquals(1, result.statusCode)
+        assertContains(result.output, "not implemented")
+    }
+
     private fun opendc() = OpendcCommand().subcommands(RunCommand(), ValidateCommand(), ShowCommand())
 
     private fun resourcePath(name: String): String = File(checkNotNull(javaClass.classLoader.getResource(name)).toURI()).absolutePath

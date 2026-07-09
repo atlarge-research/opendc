@@ -38,7 +38,7 @@ internal data class ProgressSnapshot(
  * experiment. The [totalTasks] denominator is fixed up front from the resolved workloads, so the bar
  * only ever advances; each run reports its running tally of completed + terminated tasks as it goes.
  */
-internal class ExperimentProgress(private val totalTasks: Long) {
+internal class ExperimentProgress(private val totalTasks: Long) : ProgressSource {
     private val completed = ConcurrentHashMap<RunKey, Long>()
 
     fun update(
@@ -48,7 +48,7 @@ internal class ExperimentProgress(private val totalTasks: Long) {
         completed[key] = done
     }
 
-    val snapshot: ProgressSnapshot
+    override val snapshot: ProgressSnapshot
         get() =
             ProgressSnapshot(
                 completedTasks = completed.values.sumOf { it },

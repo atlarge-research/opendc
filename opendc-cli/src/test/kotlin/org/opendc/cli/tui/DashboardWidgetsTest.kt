@@ -25,18 +25,21 @@ package org.opendc.cli.tui
 import com.github.ajalt.mordant.rendering.AnsiLevel
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.widgets.Text
+import org.opendc.cli.config.CliConfig
+import org.opendc.cli.run.SimulationOverview
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
-/** Verifies the dashboard widgets render the three panels, show the facts, and clip the log tail. */
+/** Verifies the dashboard widgets render the three panels, show the overview, and clip the log tail. */
 class DashboardWidgetsTest {
     private val terminal = Terminal(ansiLevel = AnsiLevel.NONE, width = 80, interactive = false)
+    private val config = CliConfig.DEFAULTS
 
-    private val facts =
-        SimulationFacts(
+    private val overview =
+        SimulationOverview(
             name = "demo",
             scenarios = 12,
             runs = 240,
@@ -50,15 +53,15 @@ class DashboardWidgetsTest {
         )
 
     @Test
-    fun `renders three panels with facts and the newest logs`() {
+    fun `renders three panels with overview and the newest logs`() {
         val logs = (1..50).map { "line$it" }
         val out =
             terminal.render(
                 dashboardWidget(
                     listOf(
-                        infoPanel(terminal, facts),
-                        progressPanel(terminal, Text("BAR")),
-                        logsPanel(terminal, logs, rows = 8),
+                        infoPanel(terminal.theme, terminal.size.width, overview, config),
+                        progressPanel(terminal.theme, Text("BAR"), config),
+                        logsPanel(terminal.theme, terminal.size.width, logs, rows = 8, config),
                     ),
                 ),
             )
@@ -75,8 +78,8 @@ class DashboardWidgetsTest {
 
     @Test
     fun `logs box keeps a fixed height regardless of line count`() {
-        val short = terminal.render(logsPanel(terminal, listOf("only one"), rows = 8))
-        val full = terminal.render(logsPanel(terminal, (1..40).map { "line$it" }, rows = 8))
+        val short = terminal.render(logsPanel(terminal.theme, terminal.size.width, listOf("only one"), rows = 8, config))
+        val full = terminal.render(logsPanel(terminal.theme, terminal.size.width, (1..40).map { "line$it" }, rows = 8, config))
         assertEquals(full.trimEnd().lines().size, short.trimEnd().lines().size)
     }
 }

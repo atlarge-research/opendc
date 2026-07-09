@@ -20,21 +20,29 @@
  * SOFTWARE.
  */
 
-package org.opendc.cli
+package org.opendc.cli.render
 
-import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.core.ProgramResult
-import com.github.ajalt.clikt.core.terminal
+import com.github.ajalt.mordant.terminal.Terminal
 import org.opendc.cli.config.CliConfig
-import org.opendc.cli.render.renderValidation
+import org.opendc.sdk.model.validation.ValidationIssue
 
-/** `opendc validate` — parse an experiment file and report any configuration issues. */
-internal class ValidateCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCommand("validate", config) {
-    override fun help(context: Context): String = "Validate an experiment file and report any configuration issues."
-
-    override fun run() {
-        val experiment = loadExperiment()
-        val valid = renderValidation(terminal, experimentFile.name, experiment.validate(), config)
-        if (!valid) throw ProgramResult(1)
+/**
+ * Prints the outcome of validating an experiment named [name] and returns whether it is valid. Shared
+ * by `opendc validate` (which shows the success line and exits non-zero on failure) and `opendc run`
+ * (which only needs the failure path, so it passes [showSuccess] = false).
+ */
+internal fun renderValidation(
+    terminal: Terminal,
+    name: String,
+    issues: List<ValidationIssue>,
+    config: CliConfig,
+    showSuccess: Boolean = true,
+): Boolean {
+    if (issues.isEmpty()) {
+        if (showSuccess) terminal.println(terminal.theme.success("${config.symbols.success} $name is valid"))
+        return true
     }
+    terminal.println(terminal.theme.danger("${config.symbols.failure} $name has ${issues.size} issue(s):"))
+    issues.forEach { terminal.println("  ${config.symbols.bullet} ${it.path}: ${it.message}") }
+    return false
 }

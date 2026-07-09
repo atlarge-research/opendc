@@ -26,6 +26,7 @@ import org.apache.logging.log4j.core.LogEvent
 import org.apache.logging.log4j.core.appender.AbstractAppender
 import org.apache.logging.log4j.core.config.Property
 import org.apache.logging.log4j.core.layout.PatternLayout
+import org.opendc.cli.config.CliConfig
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -36,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 internal class RingBufferAppender(
     private val patternLayout: PatternLayout,
-    private val capacity: Int = RING_CAPACITY,
+    private val capacity: Int = CliConfig.DEFAULTS.logging.ringCapacity,
 ) : AbstractAppender("TuiRingBuffer", null, patternLayout, true, Property.EMPTY_ARRAY) {
     private val lines = ConcurrentLinkedDeque<String>()
     private val count = AtomicInteger(0)
@@ -54,8 +55,4 @@ internal class RingBufferAppender(
 
     /** An immutable copy of the buffered lines, oldest first. Non-draining: safe to poll every frame. */
     fun snapshot(): List<String> = ArrayList(lines)
-
-    private companion object {
-        const val RING_CAPACITY = 500
-    }
 }

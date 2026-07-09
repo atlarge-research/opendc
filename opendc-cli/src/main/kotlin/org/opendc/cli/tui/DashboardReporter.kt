@@ -35,43 +35,66 @@ import com.github.ajalt.mordant.widgets.progress.percentage
 import com.github.ajalt.mordant.widgets.progress.progressBar
 import com.github.ajalt.mordant.widgets.progress.progressBarLayout
 import com.github.ajalt.mordant.widgets.progress.timeRemaining
-import org.opendc.cli.progress.ExperimentProgress
+import org.opendc.cli.config.CliConfig
 import org.opendc.cli.progress.ProgressSnapshot
+import org.opendc.cli.progress.ProgressSource
+import org.opendc.cli.run.SimulationOverview
+
+/** The top and bottom border rows of the logs panel, excluded when sizing it to fill the terminal. */
+private const val LOG_PANEL_BORDERS = 2
+
+/**
+ * Starts a live dashboard for the run when the terminal can host one, or returns null so the run
+ * proceeds with plain streaming logs. The dashboard needs full multi-line in-place redraw: Mordant
+ * reports `supportsAnsiCursor` true ONLY for the IntelliJ console (which can rewrite just one line),
+ * so a real interactive terminal reports it false — precisely where the dashboard works. A
+ * non-interactive or cursor-limited terminal cannot host it, and no live progress UI is shown.
+ */
+internal fun startDashboard(
+    terminal: Terminal,
+    progress: ProgressSource,
+    overview: SimulationOverview,
+    config: CliConfig,
+): DashboardReporter? {
+    val info = terminal.terminalInfo
+    if (!info.outputInteractive || info.supportsAnsiCursor) return null
+    return DashboardReporter(terminal, progress, overview, config).also { it.start() }
+}
 
 /**
  * Renders the live three-panel dashboard (info · progress · logs) while a run executes. A single
  * daemon thread owns the Mordant animation and the log tail; simulation threads only ever touch the
- * thread-safe [ExperimentProgress] and the log capture. Restores logging on [stop].
+ * thread-safe progress source and the log capture. Restores logging on [stop].
  */
 internal class DashboardReporter(
     private val terminal: Terminal,
-    private val progress: ExperimentProgress,
-    facts: SimulationFacts,
-    private val logsMode: LogsPanel = LOGS,
-) : RunReporter {
-    private val logCapture = LogCapture()
+    private val progress: ProgressSource,
+    overview: SimulationOverview,
+    private val config: CliConfig,
+) {
+    private val logCapture = LogCapture(config.logging)
 
     private val definition =
         progressBarLayout {
-            progressBar(completeChar = "█", pendingChar = "━")
+            progressBar(completeChar = config.symbols.barComplete, pendingChar = config.symbols.barPending)
             percentage()
-            completed(suffix = " tasks")
+            completed(suffix = config.bar.completedSuffix)
             timeRemaining()
         }
 
     // Used purely as the ETA/speed state machine; its own drawing (refresh) is never invoked.
     private val holder = MultiProgressBarAnimation(terminal)
-    private val task = holder.addTask(definition, total = facts.totalTasks)
+    private val task = holder.addTask(definition, total = overview.totalTasks)
 
-    private val infoPanel = infoPanel(terminal, facts)
+    private val infoPanel = infoPanel(terminal.theme, terminal.size.width, overview, config)
     private val animation: Animation<DashboardFrame> =
         terminal.animation { frame ->
-            val progressPanel = progressPanel(terminal, frame.progressBar)
+            val progressPanel = progressPanel(terminal.theme, frame.progressBar, config)
             val panels =
                 buildList {
                     add(infoPanel)
                     add(progressPanel)
-                    logRows(progressPanel)?.let { add(logsPanel(terminal, frame.logs, it)) }
+                    add(logsPanel(terminal.theme, terminal.size.width, frame.logs, logRows(progressPanel), config))
                 }
             dashboardWidget(panels)
         }
@@ -90,10 +113,10 @@ internal class DashboardReporter(
             }
     }
 
-    override fun stop() {
+    fun stop() {
         logCapture.use {
             running = false
-            poller?.join(2 * POLL_INTERVAL_MS)
+            poller?.join(2 * config.timing.pollIntervalMs)
             val snap = progress.snapshot
             animation.update(frame(ProgressSnapshot(completedTasks = snap.totalTasks, totalTasks = snap.totalTasks)))
             animation.stop() // leave the final dashboard on screen
@@ -103,7 +126,7 @@ internal class DashboardReporter(
     private fun pollLoop() {
         while (running) {
             animation.update(frame(progress.snapshot))
-            Thread.sleep(POLL_INTERVAL_MS)
+            Thread.sleep(config.timing.pollIntervalMs)
         }
     }
 
@@ -116,21 +139,21 @@ internal class DashboardReporter(
         return DashboardFrame(bar, logCapture.snapshot())
     }
 
-    /** How many log rows to render this frame, or `null` to hide the logs panel. */
-    private fun logRows(progressPanel: Widget): Int? =
-        when (val mode = logsMode) {
-            LogsPanel.Hidden -> null
-            is LogsPanel.Fixed -> mode.rows
-            LogsPanel.Fill -> {
-                val width = terminal.size.width
-                val used = infoPanel.render(terminal, width).height + progressPanel.render(terminal, width).height
-                (terminal.size.height - used - LOG_PANEL_BORDERS).coerceAtLeast(1)
-            }
-        }
-
-    private companion object {
-        val LOGS: LogsPanel = LogsPanel.Fill
-        const val POLL_INTERVAL_MS = 100L
-        const val LOG_PANEL_BORDERS = 2
+    /** How many log rows to render this frame: the logs panel grows to fill the leftover terminal height. */
+    private fun logRows(progressPanel: Widget): Int {
+        val width = terminal.size.width
+        val used = infoPanel.render(terminal, width).height + progressPanel.render(terminal, width).height
+        return (terminal.size.height - used - LOG_PANEL_BORDERS).coerceAtLeast(1)
     }
 }
+
+/**
+ * One frame of the live dashboard: the freshly rendered progress bar and the tail of the log buffer.
+ *
+ * @property progressBar The progress bar rendered to a widget for this frame.
+ * @property logs The most recent log lines to show, oldest first.
+ */
+internal data class DashboardFrame(
+    val progressBar: Widget,
+    val logs: List<String>,
+)

@@ -20,13 +20,53 @@
  * SOFTWARE.
  */
 
-package org.opendc.cli.tui
+package org.opendc.cli.run
 
-import com.github.ajalt.mordant.rendering.Widget
+import org.opendc.cli.progress.ProgressSource
+import org.opendc.cli.render.OutputView
+import org.opendc.cli.render.RunSummaryView
+import org.opendc.sdk.model.experiment.Experiment
 import java.nio.file.Path
 
 /**
- * The constant facts shown in the dashboard's top panel, computed once at run start.
+ * Runs experiments, decoupling the `run` command from where a simulation actually executes.
+ * [LocalBackend] runs it in-process through the SDK; a future remote backend would submit it to an
+ * OpenDC server and poll for progress. Both expose the same [SimulationSession], so the command and
+ * its dashboard behave identically regardless of where the work happens.
+ */
+internal fun interface SimulationBackend {
+    /** Resolves [request] and prepares a run without starting it. */
+    fun prepare(request: RunRequest): SimulationSession
+}
+
+/** A prepared run: its up-front [overview], a pollable [progress] source, and a blocking [run]. */
+internal interface SimulationSession {
+    val overview: SimulationOverview
+    val progress: ProgressSource
+
+    /** Runs to completion (blocking) and returns the render-ready outcome. */
+    fun run(): RunOutcome
+}
+
+/** Everything a backend needs to prepare a run. A null [parallelism] lets the backend choose. */
+internal data class RunRequest(
+    val experiment: Experiment,
+    val inputRoot: Path,
+    val output: Path,
+    val parallelism: Int?,
+    val wantSummary: Boolean,
+)
+
+/** The render-ready result of a completed run: the optional per-run [summary] and the [outputs] location. */
+internal data class RunOutcome(
+    val summary: RunSummaryView?,
+    val outputs: OutputView,
+)
+
+/**
+ * The constant facts about a simulation, known before it starts and shown in the dashboard's top
+ * panel. A backend computes these once when preparing a run (locally from the resolved experiment; a
+ * future remote backend from the API's submission response).
  *
  * @property name The experiment name (or a placeholder when unset).
  * @property scenarios The number of scenarios the experiment expands to.
@@ -39,7 +79,7 @@ import java.nio.file.Path
  * @property output The directory Parquet results are written to.
  * @property inputRoot The root against which named/relative references are resolved.
  */
-internal data class SimulationFacts(
+internal data class SimulationOverview(
     val name: String,
     val scenarios: Int,
     val runs: Int,
@@ -51,26 +91,3 @@ internal data class SimulationFacts(
     val output: Path,
     val inputRoot: Path,
 )
-
-/**
- * One frame of the live dashboard: the freshly rendered progress bar and the tail of the log buffer.
- *
- * @property progressBar The progress bar rendered to a widget for this frame.
- * @property logs The most recent log lines to show, oldest first.
- */
-internal data class DashboardFrame(
-    val progressBar: Widget,
-    val logs: List<String>,
-)
-
-/** How the dashboard's logs panel is sized. */
-internal sealed interface LogsPanel {
-    /** Omit the logs panel entirely. */
-    data object Hidden : LogsPanel
-
-    /** Grow the logs panel to fill whatever terminal height the info and progress panels leave. */
-    data object Fill : LogsPanel
-
-    /** Show a fixed number of log [rows]. */
-    data class Fixed(val rows: Int) : LogsPanel
-}

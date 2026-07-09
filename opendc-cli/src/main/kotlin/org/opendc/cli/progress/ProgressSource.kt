@@ -20,13 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.cli.tui
+package org.opendc.cli.progress
 
 /**
- * A live, during-run reporter that must be torn down once the simulation finishes. Lets the run
- * command drive either the rich [DashboardReporter] or the plain fallback bar uniformly.
+ * A pollable source of experiment progress. The live reporters read [snapshot] on a fixed cadence and
+ * never care where it comes from, so the same rendering works for any producer:
+ *  - locally, [ExperimentProgress] is fed task-completion counts by a [ProgressSink] during the run;
+ *  - remotely (future), a poller that queries a simulation API endpoint would map the response to a
+ *    [ProgressSnapshot] and implement this interface — a drop-in swap for the reporters.
  */
-internal fun interface RunReporter {
-    /** Stops rendering and releases every resource the reporter acquired (threads, log capture). */
-    fun stop()
+internal interface ProgressSource {
+    /** An immutable, aggregate view of how far the experiment has progressed right now. */
+    val snapshot: ProgressSnapshot
 }

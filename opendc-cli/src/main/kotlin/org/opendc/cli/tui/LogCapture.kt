@@ -31,6 +31,8 @@ import org.apache.logging.log4j.core.config.Configurator
 import org.apache.logging.log4j.core.config.LoggerConfig
 import org.apache.logging.log4j.core.layout.PatternLayout
 import org.apache.logging.log4j.status.StatusLogger
+import org.opendc.cli.config.CliConfig
+import org.opendc.cli.config.Logging
 
 /**
  * Redirects log4j into an in-memory buffer for the lifetime of the dashboard, then restores the
@@ -45,14 +47,15 @@ import org.apache.logging.log4j.status.StatusLogger
  *  - attaches a bounded [RingBufferAppender] to the root logger and forces `org.opendc` to be
  *    additive and INFO, so its records stream into the ring regardless of the original layout.
  */
-internal class LogCapture(capacity: Int = RING_CAPACITY) : AutoCloseable {
+internal class LogCapture(private val logging: Logging = CliConfig.DEFAULTS.logging) : AutoCloseable {
     private val context = LogManager.getContext(false) as LoggerContext
     private val layout =
         PatternLayout.newBuilder()
             .withPattern(PATTERN)
             .withConfiguration(context.configuration)
             .build()
-    private val appender = RingBufferAppender(layout, capacity)
+    private val appender = RingBufferAppender(layout, logging.ringCapacity)
+    private val captureLevel: Level = Level.toLevel(logging.captureLevel, Level.WARN)
 
     private var previousLevel: Level? = null
     private var previousStatusLevel: Level? = null
@@ -80,7 +83,7 @@ internal class LogCapture(capacity: Int = RING_CAPACITY) : AutoCloseable {
         }
         config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME).addAppender(appender, null, null)
         context.updateLoggers()
-        Configurator.setLevel(CAPTURE_LOGGER, CAPTURE_LEVEL)
+        Configurator.setLevel(CAPTURE_LOGGER, captureLevel)
     }
 
     /** The most recent buffered log lines, oldest first. */
@@ -98,11 +101,8 @@ internal class LogCapture(capacity: Int = RING_CAPACITY) : AutoCloseable {
     }
 
     private companion object {
+        /** The logger namespace whose records the dashboard captures, and the layout it formats them with. */
         const val CAPTURE_LOGGER = "org.opendc"
         const val PATTERN = "%-5level %logger{1} %msg"
-        const val RING_CAPACITY = 500
-
-        /** Level captured while the dashboard is live: WARN = periodic metrics + warnings; INFO = lively per-task stream. */
-        val CAPTURE_LEVEL: Level = Level.WARN
     }
 }

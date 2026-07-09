@@ -22,45 +22,30 @@
 
 package org.opendc.cli
 
-import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.terminal
-import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
-import org.opendc.cli.progress.ExperimentProgress
-import org.opendc.cli.progress.ProgressReporter
-import org.opendc.cli.progress.ProgressSink
+import org.opendc.cli.config.CliConfig
 import org.opendc.cli.render.renderOutputs
 import org.opendc.cli.render.renderSummary
-import org.opendc.cli.tui.DashboardReporter
-import org.opendc.cli.tui.RunReporter
-import org.opendc.cli.tui.SimulationFacts
-import org.opendc.sdk.model.experiment.Experiment
-import org.opendc.sdk.model.experiment.expand
-import org.opendc.sdk.model.export.OutputFile.HOST
-import org.opendc.sdk.model.export.OutputFile.POWER_SOURCE
-import org.opendc.sdk.model.export.OutputFile.SERVICE
-import org.opendc.sdk.model.resource.ResourceProvisioner
-import org.opendc.sdk.runner.OpenDC
-import org.opendc.sdk.runner.SimulationReport
-import org.opendc.sdk.runner.planTaskCounts
-import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
-import org.opendc.sdk.runner.sink.InMemorySink
+import org.opendc.cli.render.renderValidation
+import org.opendc.cli.run.LocalBackend
+import org.opendc.cli.run.RemoteBackend
+import org.opendc.cli.run.RunRequest
+import org.opendc.cli.run.SimulationBackend
+import org.opendc.cli.tui.startDashboard
 import java.nio.file.Path
 
 /** `opendc run` — simulate every scenario of an experiment and write per-run Parquet results. */
-internal class RunCommand : CliktCommand(name = "run") {
+internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCommand("run", config) {
     override fun help(context: Context): String =
-        "Run an experiment: simulate every scenario and write the results to Parquet, showing a live progress bar."
-
-    private val experimentFile by argument(name = "experiment", help = "Path to the experiment JSON file.")
-        .file(mustExist = true, canBeDir = false, mustBeReadable = true)
+        "Run an experiment: simulate every scenario and write the results to Parquet, showing a live progress dashboard."
 
     private val output by option("--output", "-o", help = "Directory for the Parquet results.")
         .path(canBeFile = false)
@@ -78,81 +63,50 @@ internal class RunCommand : CliktCommand(name = "run") {
     )
         .int()
 
-    private val noProgress by option("--no-progress", help = "Disable the live progress bar.").flag()
+    private val noProgress by option("--no-progress", help = "Disable the live progress dashboard.").flag()
 
     private val noSummary by option(
         "--no-summary",
         help = "Skip the in-memory metrics summary (saves memory on very large sweeps).",
     ).flag()
 
+    private val apiUrl by option(
+        "--api-url",
+        help = "Run remotely against this OpenDC API instead of locally (experimental; not yet implemented).",
+    )
+
     override fun run() {
-        val experiment = loadExperiment(experimentFile)
-        rejectInvalid(experiment)
-
-        val report = simulate(experiment)
-
-        if (!noSummary) renderSummary(terminal, report)
-        renderOutputs(terminal, report, output)
-    }
-
-    private fun rejectInvalid(experiment: Experiment) {
-        val issues = experiment.validate()
-        if (issues.isEmpty()) return
-        terminal.println(terminal.theme.danger("✗ ${experimentFile.name} has ${issues.size} issue(s):"))
-        issues.forEach { terminal.println("  • ${it.path}: ${it.message}") }
-        throw ProgramResult(1)
-    }
-
-    private fun simulate(experiment: Experiment): SimulationReport {
-        val root = inputRoot ?: experimentFile.absoluteFile.parentFile.toPath()
-        val provisioner = FileSystemResourceProvisioner(root)
-        val builder = OpenDC.builder().provisioner(provisioner).output(output)
-        parallelism?.let { builder.parallelism(it) }
-        if (!noSummary) builder.sink(InMemorySink(setOf(HOST, SERVICE, POWER_SOURCE)))
-
-        val reporter = attachProgress(experiment, provisioner, root, builder)
-        return try {
-            builder.build().simulate(experiment)
-        } finally {
-            reporter?.stop()
-        }
-    }
-
-    private fun attachProgress(
-        experiment: Experiment,
-        provisioner: ResourceProvisioner,
-        root: Path,
-        builder: OpenDC.Builder,
-    ): RunReporter? {
-        if (noProgress) return null
-
-        val scenarios = experiment.expand()
-        val totalTasks = experiment.planTaskCounts(provisioner).sumOf { it.taskCount.toLong() * it.scenario.runs }
-        val progress = ExperimentProgress(totalTasks)
-        builder.sink(ProgressSink(progress))
-
-        // The dashboard needs full multi-line in-place redraw. Mordant reports `supportsAnsiCursor`
-        // true ONLY for the IntelliJ console (which can only rewrite a single line), so a real
-        // interactive terminal reports it false — precisely where the dashboard works. Fall back to
-        // the single-line bar when output is not interactive or is that cursor-limited console.
-        val info = terminal.terminalInfo
-        if (!info.outputInteractive || info.supportsAnsiCursor) {
-            return ProgressReporter(terminal, progress).also { it.start() }
+        val experiment = loadExperiment()
+        if (!renderValidation(terminal, experimentFile.name, experiment.validate(), config, showSuccess = false)) {
+            throw ProgramResult(1)
         }
 
-        val facts =
-            SimulationFacts(
-                name = experiment.name.ifEmpty { "(unnamed)" },
-                scenarios = scenarios.size,
-                runs = scenarios.sumOf { it.runs },
-                topologies = experiment.topologies.size,
-                workloads = experiment.workloads.size,
-                policies = experiment.allocationPolicies.size,
-                totalTasks = totalTasks,
-                parallelism = parallelism ?: Runtime.getRuntime().availableProcessors(),
+        val request =
+            RunRequest(
+                experiment = experiment,
+                inputRoot = inputRoot ?: experimentFile.absoluteFile.parentFile.toPath(),
                 output = output,
-                inputRoot = root,
+                parallelism = parallelism,
+                wantSummary = !noSummary,
             )
-        return DashboardReporter(terminal, progress, facts).also { it.start() }
+        val backend: SimulationBackend = apiUrl?.let { RemoteBackend(it) } ?: LocalBackend()
+        // The backend stays framework-agnostic; translate its "not implemented yet" into a clean CLI error.
+        val session =
+            try {
+                backend.prepare(request)
+            } catch (e: NotImplementedError) {
+                throw CliktError(e.message ?: "Not implemented.")
+            }
+
+        val reporter = if (noProgress) null else startDashboard(terminal, session.progress, session.overview, config)
+        val outcome =
+            try {
+                session.run()
+            } finally {
+                reporter?.stop()
+            }
+
+        outcome.summary?.let { renderSummary(terminal, it, config) }
+        renderOutputs(terminal, outcome.outputs)
     }
 }
