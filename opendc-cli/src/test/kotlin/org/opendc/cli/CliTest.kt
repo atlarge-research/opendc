@@ -38,21 +38,21 @@ class CliTest {
 
     @Test
     fun `validate accepts a valid experiment`() {
-        val result = opendc().test("validate $tiny")
+        val result = opendc().test(listOf("validate", tiny))
         assertEquals(0, result.statusCode, result.output)
         assertContains(result.stdout, "valid")
     }
 
     @Test
     fun `validate rejects an invalid experiment`() {
-        val result = opendc().test("validate $invalid")
+        val result = opendc().test(listOf("validate", invalid))
         assertEquals(1, result.statusCode)
         assertContains(result.stdout, "coreCount")
     }
 
     @Test
     fun `show prints the topologies`() {
-        val result = opendc().test("show $tiny")
+        val result = opendc().test(listOf("show", tiny))
         assertEquals(0, result.statusCode, result.output)
         assertContains(result.stdout, "Topology")
     }
@@ -61,7 +61,7 @@ class CliTest {
     fun `run simulates and writes parquet and a summary`() {
         val out = createTempDirectory("opendc-cli-run")
         try {
-            val result = opendc().test("run $tiny -o $out --no-progress")
+            val result = opendc().test(listOf("run", tiny, "-o", out.toString(), "--no-progress"))
             assertEquals(0, result.statusCode, result.output)
             assertContains(result.stdout, "Tasks")
             val parquet = out.toFile().walkTopDown().filter { it.extension == "parquet" }.toList()
