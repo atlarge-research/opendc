@@ -35,6 +35,7 @@ import kotlin.test.assertTrue
 class CliTest {
     private val tiny = resourcePath("experiments/tiny-experiment.json")
     private val invalid = resourcePath("experiments/invalid-experiment.json")
+    private val imports = resourcePath("experiments/imports/experiment.json")
 
     @Test
     fun `validate accepts a valid experiment`() {
@@ -76,6 +77,28 @@ class CliTest {
         val result = opendc().test(listOf("run", tiny, "--api-url", "http://example.com", "--no-progress"))
         assertEquals(1, result.statusCode)
         assertContains(result.output, "not implemented")
+    }
+
+    /** An experiment composed from other files with `importFrom` runs like any other. */
+    @Test
+    fun `run simulates an experiment that imports its topology and workload`() {
+        val out = createTempDirectory("opendc-cli-imports")
+        try {
+            val result = opendc().test(listOf("run", imports, "-o", out.toString(), "--no-progress"))
+            assertEquals(0, result.statusCode, result.output)
+            val parquet = out.toFile().walkTopDown().filter { it.extension == "parquet" }.toList()
+            assertTrue(parquet.isNotEmpty(), "expected parquet output under $out")
+        } finally {
+            out.toFile().deleteRecursively()
+        }
+    }
+
+    /** `show` renders the imported topology, proving the import is resolved before anything reads it. */
+    @Test
+    fun `show prints a topology pulled in with importFrom`() {
+        val result = opendc().test(listOf("show", imports))
+        assertEquals(0, result.statusCode, result.output)
+        assertContains(result.stdout, "big-host")
     }
 
     /**

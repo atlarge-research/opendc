@@ -39,7 +39,6 @@ import org.opendc.cli.config.CliConfig
 import org.opendc.cli.config.toMordantTheme
 import org.opendc.cli.legacy.readLegacyExperiment
 import org.opendc.sdk.model.experiment.Experiment
-import org.opendc.sdk.model.serialization.SdkJson
 import java.nio.file.Path
 
 /**
@@ -109,14 +108,15 @@ internal abstract class ExperimentCommand(
      * Reads and deserializes the [experimentFile] into an [Experiment], reporting a friendly error on
      * failure. Under the root command's `--legacy` flag the file is read as a deprecated
      * `opendc-experiments-base` document and converted, resolving the topologies it references against
-     * [root]; otherwise it is SDK-model JSON, which inlines its topologies and needs no root.
+     * [root]; otherwise it is SDK-model JSON, which composes the files it names with `importFrom`
+     * relative to itself and so needs no root.
      */
     protected fun loadExperiment(root: Path = defaultInputRoot): Experiment =
         try {
             if (isLegacy) {
                 readLegacyExperiment(experimentFile, root.toFile())
             } else {
-                experimentFile.inputStream().use { SdkJson.decodeExperiment(it) }
+                readExperiment(experimentFile)
             }
         } catch (e: Exception) {
             throw CliktError("Could not read experiment '${experimentFile.path}': ${e.message}")
