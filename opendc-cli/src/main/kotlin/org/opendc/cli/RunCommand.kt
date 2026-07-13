@@ -53,7 +53,9 @@ internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCo
 
     private val inputRoot by option(
         "--input-root",
-        help = "Root for resolving named/relative workload and trace references (default: the experiment file's directory).",
+        help =
+            "Root for resolving named/relative topology, workload and trace references " +
+                "(default: the experiment file's directory, or the working directory under --legacy).",
     ).path(canBeFile = false, mustExist = true)
 
     private val parallelism by option(
@@ -76,7 +78,10 @@ internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCo
     )
 
     override fun run() {
-        val experiment = loadExperiment()
+        // The topologies inlined while loading and the traces provisioned while running are resolved
+        // against the same root, so `--input-root` moves the whole experiment rather than half of it.
+        val root = inputRoot ?: defaultInputRoot
+        val experiment = loadExperiment(root)
         if (!renderValidation(terminal, experimentFile.name, experiment.validate(), config, showSuccess = false)) {
             throw ProgramResult(1)
         }
@@ -84,7 +89,7 @@ internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCo
         val request =
             RunRequest(
                 experiment = experiment,
-                inputRoot = inputRoot ?: experimentFile.absoluteFile.parentFile.toPath(),
+                inputRoot = root,
                 output = output,
                 parallelism = parallelism,
                 wantSummary = !noSummary,

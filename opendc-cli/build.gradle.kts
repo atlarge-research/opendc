@@ -20,6 +20,10 @@ dependencies {
     implementation(libs.clikt5)
     implementation(libs.mordant)
 
+    // The legacy experiment adapter rewrites JSON trees; it declares no serializable types of its own,
+    // so it needs the library but not the serialization compiler plugin.
+    implementation(libs.kotlinx.serialization.json)
+
     implementation(libs.log4j.core)
     runtimeOnly(libs.log4j.slf4j)
 

@@ -142,6 +142,8 @@ private val PowerModelType.modelType: String
             PowerModelType.SQUARE -> "square"
             PowerModelType.CUBIC -> "cubic"
             PowerModelType.SQRT -> "sqrt"
+            PowerModelType.MSE -> "mse"
+            PowerModelType.ASYMPTOTIC -> "asymptotic"
         }
 
 private fun SdkDistributionPolicy.toEngine(): EngineDistributionPolicy =

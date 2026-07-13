@@ -1,0 +1,29 @@
+{
+    "clusters": [
+        {
+            "name": "C01",
+            "hosts": [
+                {
+                    "name": "H01",
+                    "cpu": {
+                        "coreCount": 16,
+                        "coreSpeed": 2100
+                    },
+                    "memory": {
+                        "memorySize": 100000
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "sqrt",
+                        "power": 400.0,
+                        "idlePower": 32.0,
+                        "maxPower": 180.0
+                    },
+                    "count": 277
+                }
+            ],
+            "powerSource": {
+                "carbonTracePath": "carbon_traces/NL_2021-2024.parquet"
+            }
+        }
+    ]
+}

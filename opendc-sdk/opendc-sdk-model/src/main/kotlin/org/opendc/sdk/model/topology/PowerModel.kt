@@ -45,6 +45,12 @@ public enum class PowerModelType {
 
     @SerialName("sqrt")
     SQRT,
+
+    @SerialName("mse")
+    MSE,
+
+    @SerialName("asymptotic")
+    ASYMPTOTIC,
 }
 
 /**
@@ -53,10 +59,10 @@ public enum class PowerModelType {
  * @property type Shape of the utilization-to-power curve.
  * @property maxPower Power draw at full utilization.
  * @property idlePower Power draw at zero utilization.
- * @property power Reference power used by some model types.
- * @property calibrationFactor Multiplier applied to the modelled power draw.
- * @property asymUtil Asymptotic utilization parameter for non-linear models.
- * @property dvfs Whether dynamic voltage and frequency scaling is modelled.
+ * @property power Reference power used by [PowerModelType.CONSTANT].
+ * @property calibrationFactor Multiplier applied to the modelled power draw, used by [PowerModelType.MSE].
+ * @property asymUtil Asymptotic utilization parameter, used by [PowerModelType.ASYMPTOTIC].
+ * @property dvfs Whether dynamic voltage and frequency scaling is modelled, used by [PowerModelType.ASYMPTOTIC].
  */
 @Serializable
 public data class PowerModel(

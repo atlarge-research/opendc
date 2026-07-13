@@ -78,6 +78,72 @@ class CliTest {
         assertContains(result.output, "not implemented")
     }
 
+    /**
+     * A legacy experiment names its topology relative to the directory it is *run from*, as the
+     * deprecated runner resolved it. The fixture is therefore written below the working directory and
+     * referenced by a working-directory-relative path — the very thing that has to keep working.
+     */
+    @Test
+    fun `--legacy resolves an experiment's paths against the working directory`() {
+        withLegacyExperimentBelowWorkingDirectory { experiment ->
+            val result = opendc().test(listOf("--legacy", "show", experiment))
+            assertEquals(0, result.statusCode, result.output)
+            // The topology the experiment only referenced by a relative path was found and inlined.
+            assertContains(result.stdout, "C01")
+        }
+    }
+
+    @Test
+    fun `a legacy experiment read without --legacy fails with a clean error`() {
+        withLegacyExperimentBelowWorkingDirectory { experiment ->
+            val result = opendc().test(listOf("validate", experiment))
+            assertEquals(1, result.statusCode)
+            assertContains(result.output, "Could not read experiment")
+        }
+    }
+
+    /**
+     * Writes a legacy experiment and its topology under the working directory and hands the [body] the
+     * experiment's working-directory-relative path.
+     */
+    private fun withLegacyExperimentBelowWorkingDirectory(body: (String) -> Unit) {
+        val relativeRoot = "build/tmp/legacy-cli-test"
+        val root = File(relativeRoot)
+        root.deleteRecursively()
+        root.mkdirs()
+        try {
+            File(root, "topology.json").writeText(
+                """
+                {
+                  "clusters": [{
+                    "name": "C01",
+                    "hosts": [{
+                      "name": "H01",
+                      "count": 2,
+                      "cpu": { "coreCount": 8, "coreSpeed": 2100 },
+                      "memory": { "memorySize": 100000 },
+                      "cpuPowerModel": { "modelType": "linear", "idlePower": 32.0, "maxPower": 180.0 }
+                    }]
+                  }]
+                }
+                """.trimIndent(),
+            )
+            File(root, "experiment.json").writeText(
+                """
+                {
+                  "name": "legacy",
+                  "topologies": [{ "pathToFile": "$relativeRoot/topology.json" }],
+                  "workloads": [{ "pathToFile": "workload_traces/surf_week", "type": "ComputeWorkload" }],
+                  "exportModels": [{ "exportInterval": 3600 }]
+                }
+                """.trimIndent(),
+            )
+            body("$relativeRoot/experiment.json")
+        } finally {
+            root.deleteRecursively()
+        }
+    }
+
     private fun opendc() = OpendcCommand().subcommands(RunCommand(), ValidateCommand(), ShowCommand())
 
     private fun resourcePath(name: String): String = File(checkNotNull(javaClass.classLoader.getResource(name)).toURI()).absolutePath

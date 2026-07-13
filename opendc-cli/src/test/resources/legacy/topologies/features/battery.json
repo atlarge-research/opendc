@@ -1,0 +1,78 @@
+{
+    "clusters": [
+        {
+            "name": "BatteryCluster",
+            "hosts": [
+                {
+                    "name": "MseHost",
+                    "cpu": {
+                        "coreCount": 8,
+                        "coreSpeed": 2100
+                    },
+                    "memory": {
+                        "memorySize": 100000
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "mse",
+                        "power": 400.0,
+                        "idlePower": 32.0,
+                        "maxPower": 180.0,
+                        "calibrationFactor": 1.5
+                    }
+                },
+                {
+                    "name": "AsymptoticHost",
+                    "cpu": {
+                        "coreCount": 8,
+                        "coreSpeed": 2100
+                    },
+                    "memory": {
+                        "memorySize": 100000
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "asymptotic",
+                        "power": 400.0,
+                        "idlePower": 32.0,
+                        "maxPower": 180.0,
+                        "asymUtil": 0.7,
+                        "dvfs": false
+                    }
+                },
+                {
+                    "name": "ConstantHost",
+                    "cpu": {
+                        "coreCount": 8,
+                        "coreSpeed": 2100
+                    },
+                    "memory": {
+                        "memorySize": 100000
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "constant",
+                        "power": 350.0,
+                        "idlePower": 32.0,
+                        "maxPower": 180.0
+                    }
+                }
+            ],
+            "powerSource": {
+                "name": "grid",
+                "maxPower": 50000,
+                "carbonTracePath": "carbon_traces/NL_2021-2024.parquet"
+            },
+            "battery": {
+                "name": "cluster-battery",
+                "capacity": 0.1,
+                "chargingSpeed": 1000,
+                "initialCharge": 0.05,
+                "batteryPolicy": {
+                    "type": "runningMean",
+                    "startingThreshold": 150.0,
+                    "windowSize": 24
+                },
+                "embodiedCarbon": 1200.0,
+                "expectedLifetime": 10.0
+            }
+        }
+    ]
+}
