@@ -33,7 +33,7 @@ Each simulation run writes one Parquet file per output type under `output/raw-ou
 | `tasks_invalid` | INT32 |  |
 | `tasks_running` | INT32 |  |
 | `tasks_terminated` | INT32 |  |
-| `timestamp` | INT64 |  |
+| `timestamp` | INT64 | Simulation time of the sample, in milliseconds since the start of the simulation. |
 | `timestamp_absolute` | INT64 |  |
 | `uptime` | INT64 |  |
 
@@ -68,11 +68,11 @@ Each simulation run writes one Parquet file per output type under `output/raw-ou
 | `schedule_time` | INT64 |  |
 | `scheduling_delay` | INT64 |  |
 | `submission_time` | INT64 |  |
-| `task_id` | INT32 |  |
-| `task_name` | BINARY |  |
+| `task_id` | INT32 | Identifier of the task within the simulation. |
+| `task_name` | BINARY | Name of the task as given in the workload trace. |
 | `task_state` | BINARY |  |
-| `timestamp` | INT64 |  |
-| `timestamp_absolute` | INT64 |  |
+| `timestamp` | INT64 | Simulation time of the sample, in milliseconds since the start of the simulation. |
+| `timestamp_absolute` | INT64 | Wall-clock time of the sample, in milliseconds since the Unix epoch. |
 | `uptime` | INT64 |  |
 
 ## `powerSource.parquet` { #powerSource }
@@ -114,6 +114,6 @@ Each simulation run writes one Parquet file per output type under `output/raw-ou
 | `tasks_pending` | INT32 |  |
 | `tasks_terminated` | INT32 |  |
 | `tasks_total` | INT32 |  |
-| `timestamp` | INT64 |  |
+| `timestamp` | INT64 | Simulation time of the sample, in milliseconds since the start of the simulation. |
 | `timestamp_absolute` | INT64 |  |
 
