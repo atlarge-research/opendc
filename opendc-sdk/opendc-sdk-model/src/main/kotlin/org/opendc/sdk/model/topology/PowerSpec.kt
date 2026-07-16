@@ -65,7 +65,7 @@ public enum class PowerModelType {
  * @property dvfs Whether dynamic voltage and frequency scaling is modelled, used by [PowerModelType.ASYMPTOTIC].
  */
 @Serializable
-public data class PowerModel(
+public data class PowerSpec(
     public val type: PowerModelType = PowerModelType.LINEAR,
     public val maxPower: Power,
     public val idlePower: Power,
@@ -82,7 +82,7 @@ public data class PowerModel(
 
     public companion object {
         /** A sensible default power model. */
-        public val DEFAULT: PowerModel =
-            PowerModel(PowerModelType.LINEAR, Power.ofWatts(400), Power.ofWatts(200), Power.ofWatts(350))
+        public val DEFAULT: PowerSpec =
+            PowerSpec(PowerModelType.LINEAR, Power.ofWatts(400), Power.ofWatts(200), Power.ofWatts(350))
     }
 }

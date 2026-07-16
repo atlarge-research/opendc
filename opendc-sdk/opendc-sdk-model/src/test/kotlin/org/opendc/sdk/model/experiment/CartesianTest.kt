@@ -26,8 +26,8 @@ import org.junit.jupiter.api.Test
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
 import org.opendc.sdk.model.scheduler.SchedulerName
-import org.opendc.sdk.model.topology.Cluster
-import org.opendc.sdk.model.topology.Topology
+import org.opendc.sdk.model.topology.ClusterSpec
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.validHost
 import org.opendc.sdk.model.workload.TraceWorkload
 import org.opendc.sdk.model.workload.Workload
@@ -35,7 +35,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class CartesianTest {
-    private fun topology(name: String): Topology = Topology(listOf(Cluster(name = name, hosts = listOf(validHost))))
+    private fun topology(name: String): TopologySpec = TopologySpec(listOf(ClusterSpec(name = name, hosts = listOf(validHost))))
 
     private fun workload(name: String): Workload = TraceWorkload(NamedReference(name))
 

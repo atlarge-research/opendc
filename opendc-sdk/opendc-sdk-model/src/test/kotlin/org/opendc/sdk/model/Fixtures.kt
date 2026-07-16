@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.model
 
-import org.opendc.sdk.model.checkpoint.CheckpointModel
+import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.dsl.ghz
 import org.opendc.sdk.model.dsl.gib
 import org.opendc.sdk.model.dsl.kwatts
@@ -30,27 +30,27 @@ import org.opendc.sdk.model.dsl.minutes
 import org.opendc.sdk.model.dsl.watts
 import org.opendc.sdk.model.experiment.Experiment
 import org.opendc.sdk.model.experiment.Scenario
-import org.opendc.sdk.model.export.ExportModel
+import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.failure.NoFailure
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
 import org.opendc.sdk.model.scheduler.SchedulerName
-import org.opendc.sdk.model.topology.Battery
-import org.opendc.sdk.model.topology.Cluster
-import org.opendc.sdk.model.topology.Cpu
+import org.opendc.sdk.model.topology.BatterySpec
+import org.opendc.sdk.model.topology.ClusterSpec
+import org.opendc.sdk.model.topology.CpuSpec
 import org.opendc.sdk.model.topology.DoubleThresholdPolicy
 import org.opendc.sdk.model.topology.EqualShare
 import org.opendc.sdk.model.topology.FixedShare
-import org.opendc.sdk.model.topology.Host
-import org.opendc.sdk.model.topology.Memory
-import org.opendc.sdk.model.topology.PowerModel
+import org.opendc.sdk.model.topology.HostSpec
+import org.opendc.sdk.model.topology.MemorySpec
 import org.opendc.sdk.model.topology.PowerModelType
-import org.opendc.sdk.model.topology.PowerSource
-import org.opendc.sdk.model.topology.Topology
+import org.opendc.sdk.model.topology.PowerSourceSpec
+import org.opendc.sdk.model.topology.PowerSpec
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.InlineWorkload
 import org.opendc.sdk.model.workload.ScalingPolicy
-import org.opendc.sdk.model.workload.Task
-import org.opendc.sdk.model.workload.TaskFragment
+import org.opendc.sdk.model.workload.TaskFragmentSpec
+import org.opendc.sdk.model.workload.TaskSpec
 
 /**
  * Shared, constructor-built test data. This is the single source of truth for the SDK-model test suite;
@@ -58,16 +58,16 @@ import org.opendc.sdk.model.workload.TaskFragment
  * All fixtures are built with whole-unit magnitudes so they survive a JSON round-trip unchanged.
  */
 
-public val validMemory: Memory = Memory(size = 64.gib)
+public val validMemory: MemorySpec = MemorySpec(size = 64.gib)
 
-public val validCpu: Cpu = Cpu(coreCount = 8, coreSpeed = 3.ghz)
+public val validCpu: CpuSpec = CpuSpec(coreCount = 8, coreSpeed = 3.ghz)
 
-public val validHost: Host = Host(cpu = validCpu, memory = validMemory)
+public val validHost: HostSpec = HostSpec(cpu = validCpu, memory = validMemory)
 
-public val validTopology: Topology = Topology(listOf(Cluster(hosts = listOf(validHost))))
+public val validTopology: TopologySpec = TopologySpec(listOf(ClusterSpec(hosts = listOf(validHost))))
 
-public val validTask: Task =
-    Task(
+public val validTask: TaskSpec =
+    TaskSpec(
         id = 0,
         name = "task",
         submissionTime = 0.minutes,
@@ -75,32 +75,32 @@ public val validTask: Task =
         cpuCoreCount = 1,
         cpuCapacity = 1.ghz,
         memory = 1.gib,
-        fragments = listOf(TaskFragment(duration = 10.minutes, cpuUsage = 1.ghz)),
+        fragments = listOf(TaskFragmentSpec(duration = 10.minutes, cpuUsage = 1.ghz)),
     )
 
 public val validWorkload: InlineWorkload = InlineWorkload(listOf(validTask))
 
 public val validExperiment: Experiment = Experiment(topologies = setOf(validTopology), workloads = setOf(validWorkload))
 
-public val sampleHost: Host =
-    Host(
+public val sampleHost: HostSpec =
+    HostSpec(
         name = "compute-host",
         count = 4,
-        cpu = Cpu(coreCount = 8, coreSpeed = 3.ghz, count = 2, vendor = "AMD", modelName = "EPYC", architecture = "Zen4"),
-        memory = Memory(size = 32.gib, speed = 3.ghz, vendor = "Samsung"),
-        cpuPowerModel = PowerModel(PowerModelType.SQUARE, 500.watts, 100.watts, 350.watts),
+        cpu = CpuSpec(coreCount = 8, coreSpeed = 3.ghz, count = 2, vendor = "AMD", modelName = "EPYC", architecture = "Zen4"),
+        memory = MemorySpec(size = 32.gib, speed = 3.ghz, vendor = "Samsung"),
+        cpuPowerModel = PowerSpec(PowerModelType.SQUARE, 500.watts, 100.watts, 350.watts),
         cpuDistribution = FixedShare(0.5),
         gpuDistribution = EqualShare,
     )
 
-public val sampleCluster: Cluster =
-    Cluster(
+public val sampleCluster: ClusterSpec =
+    ClusterSpec(
         name = "cluster-a",
         count = 2,
         hosts = listOf(sampleHost),
-        powerSource = PowerSource(name = "grid", maxPower = 50.kwatts, carbon = NamedReference("carbon-trace")),
+        powerSource = PowerSourceSpec(name = "grid", maxPower = 50.kwatts, carbon = NamedReference("carbon-trace")),
         battery =
-            Battery(
+            BatterySpec(
                 name = "cell",
                 capacity = 100.0,
                 chargingSpeed = 1000.0,
@@ -111,10 +111,10 @@ public val sampleCluster: Cluster =
             ),
     )
 
-public val sampleTopology: Topology = Topology(listOf(sampleCluster))
+public val sampleTopology: TopologySpec = TopologySpec(listOf(sampleCluster))
 
-public val sampleRootTask: Task =
-    Task(
+public val sampleRootTask: TaskSpec =
+    TaskSpec(
         id = 0,
         name = "t0",
         submissionTime = 0.minutes,
@@ -124,13 +124,13 @@ public val sampleRootTask: Task =
         memory = 8.gib,
         fragments =
             listOf(
-                TaskFragment(duration = 5.minutes, cpuUsage = 2.ghz),
-                TaskFragment(duration = 5.minutes, cpuUsage = 1.ghz, gpuUsage = 1.ghz, gpuMemory = 2.gib),
+                TaskFragmentSpec(duration = 5.minutes, cpuUsage = 2.ghz),
+                TaskFragmentSpec(duration = 5.minutes, cpuUsage = 1.ghz, gpuUsage = 1.ghz, gpuMemory = 2.gib),
             ),
     )
 
-public val sampleLeafTask: Task =
-    Task(
+public val sampleLeafTask: TaskSpec =
+    TaskSpec(
         id = 1,
         name = "t1",
         submissionTime = 2.minutes,
@@ -138,7 +138,7 @@ public val sampleLeafTask: Task =
         cpuCoreCount = 8,
         cpuCapacity = 3.ghz,
         memory = 16.gib,
-        fragments = listOf(TaskFragment(duration = 20.minutes, cpuUsage = 3.ghz)),
+        fragments = listOf(TaskFragmentSpec(duration = 20.minutes, cpuUsage = 3.ghz)),
         deferrable = true,
         deadline = 60.minutes,
         parents = setOf(0),
@@ -151,9 +151,9 @@ public val sampleScenario: Scenario =
         topology = sampleTopology,
         workload = sampleWorkload,
         allocationPolicy = PrefabAllocationPolicy(SchedulerName.CoreMem),
-        exportModel = ExportModel(exportInterval = 10.minutes),
+        exportModel = ExportSpec(exportInterval = 10.minutes),
         failureModel = NoFailure,
-        checkpointModel = CheckpointModel(),
+        checkpointModel = CheckpointSpec(),
         maxNumFailures = 5,
         runs = 3,
         initialSeed = 42,

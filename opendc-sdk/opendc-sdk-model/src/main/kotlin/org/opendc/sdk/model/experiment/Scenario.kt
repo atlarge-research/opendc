@@ -23,12 +23,12 @@
 package org.opendc.sdk.model.experiment
 
 import kotlinx.serialization.Serializable
-import org.opendc.sdk.model.checkpoint.CheckpointModel
-import org.opendc.sdk.model.export.ExportModel
+import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.failure.FailureModel
 import org.opendc.sdk.model.failure.NoFailure
 import org.opendc.sdk.model.scheduler.AllocationPolicy
-import org.opendc.sdk.model.topology.Topology
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.prefixed
@@ -51,12 +51,12 @@ import org.opendc.sdk.model.workload.Workload
  */
 @Serializable
 public data class Scenario(
-    public val topology: Topology,
+    public val topology: TopologySpec,
     public val workload: Workload,
     public val allocationPolicy: AllocationPolicy,
-    public val exportModel: ExportModel = ExportModel(),
+    public val exportModel: ExportSpec = ExportSpec(),
     public val failureModel: FailureModel = NoFailure,
-    public val checkpointModel: CheckpointModel? = null,
+    public val checkpointModel: CheckpointSpec? = null,
     public val maxNumFailures: Int = 10,
     public val runs: Int = 1,
     public val initialSeed: Int = 0,

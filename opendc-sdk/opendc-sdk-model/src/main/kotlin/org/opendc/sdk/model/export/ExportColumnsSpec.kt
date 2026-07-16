@@ -20,22 +20,43 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.topology
+package org.opendc.sdk.model.export
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.opendc.common.units.Power
-import org.opendc.sdk.model.resource.ResourceReference
+
+/** Selects which columns of an output file are written. */
+@Serializable
+public sealed interface ColumnSelection
+
+/** Writes every available column. */
+@Serializable
+@SerialName("all")
+public data object AllColumns : ColumnSelection
 
 /**
- * A power source feeding a cluster.
+ * Writes only the named columns.
  *
- * @property name Human-readable identifier.
- * @property maxPower Maximum power the source can deliver.
- * @property carbon Optional reference to a carbon-intensity trace.
+ * @property columns Names of the columns to keep.
  */
 @Serializable
-public data class PowerSource(
-    public val name: String = "PowerSource",
-    public val maxPower: Power = Power.ofWatts(Long.MAX_VALUE.toDouble()),
-    public val carbon: ResourceReference? = null,
+@SerialName("only")
+public data class OnlyColumns(public val columns: Set<String>) : ColumnSelection
+
+/**
+ * Per-output-file column selections.
+ *
+ * @property host Column selection for host output.
+ * @property task Column selection for task output.
+ * @property powerSource Column selection for power source output.
+ * @property battery Column selection for battery output.
+ * @property service Column selection for service output.
+ */
+@Serializable
+public data class ExportColumnsSpec(
+    public val host: ColumnSelection = AllColumns,
+    public val task: ColumnSelection = AllColumns,
+    public val powerSource: ColumnSelection = AllColumns,
+    public val battery: ColumnSelection = AllColumns,
+    public val service: ColumnSelection = AllColumns,
 )

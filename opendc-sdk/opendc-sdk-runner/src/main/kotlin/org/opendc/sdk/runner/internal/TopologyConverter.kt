@@ -34,27 +34,24 @@ import org.opendc.compute.topology.specs.RunningMedianPolicyJSONSpec
 import org.opendc.compute.topology.specs.RunningQuartilesPolicyJSONSpec
 import org.opendc.compute.topology.specs.SingleBatteryPolicyJSONSpec
 import org.opendc.sdk.model.resource.ResourceReference
-import org.opendc.sdk.model.topology.Battery
+import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.BestEffort
-import org.opendc.sdk.model.topology.Cluster
 import org.opendc.sdk.model.topology.ConstantVirtualizationOverhead
 import org.opendc.sdk.model.topology.DoubleThresholdPolicy
 import org.opendc.sdk.model.topology.EqualShare
 import org.opendc.sdk.model.topology.FirstFit
 import org.opendc.sdk.model.topology.FixedShare
-import org.opendc.sdk.model.topology.Gpu
-import org.opendc.sdk.model.topology.Host
+import org.opendc.sdk.model.topology.GpuSpec
 import org.opendc.sdk.model.topology.MaxMinFairness
 import org.opendc.sdk.model.topology.NoVirtualizationOverhead
 import org.opendc.sdk.model.topology.PowerModelType
-import org.opendc.sdk.model.topology.PowerSource
 import org.opendc.sdk.model.topology.RunningMeanPlusPolicy
 import org.opendc.sdk.model.topology.RunningMeanPolicy
 import org.opendc.sdk.model.topology.RunningMedianPolicy
 import org.opendc.sdk.model.topology.RunningQuartilesPolicy
 import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverhead
 import org.opendc.sdk.model.topology.SingleThresholdPolicy
-import org.opendc.sdk.model.topology.Topology
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuModel
 import org.opendc.simulator.compute.models.MachineModel
@@ -63,21 +60,24 @@ import org.opendc.simulator.compute.power.getPowerModel
 import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModelFactory.VirtualizationOverheadModelEnum
 import java.nio.file.Path
 import org.opendc.sdk.model.topology.BatteryPolicy as SdkBatteryPolicy
+import org.opendc.sdk.model.topology.ClusterSpec as SdkClusterSpec
 import org.opendc.sdk.model.topology.DistributionPolicy as SdkDistributionPolicy
-import org.opendc.sdk.model.topology.PowerModel as SdkPowerModel
+import org.opendc.sdk.model.topology.HostSpec as SdkHostSpec
+import org.opendc.sdk.model.topology.PowerSourceSpec as SdkPowerSourceSpec
+import org.opendc.sdk.model.topology.PowerSpec as SdkPowerModel
 import org.opendc.sdk.model.topology.VirtualizationOverhead as SdkVirtualizationOverhead
 import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy as EngineDistributionPolicy
 
 /**
- * Converts an SDK [Topology] into the engine's [ClusterSpec] list consumed by
+ * Converts an SDK [TopologySpec] into the engine's [ClusterSpec] list consumed by
  * `setupHosts`. External carbon traces are materialized through [resolve].
  */
-internal fun Topology.toClusterSpecs(resolve: (ResourceReference) -> Path): List<ClusterSpec> {
+internal fun TopologySpec.toClusterSpecs(resolve: (ResourceReference) -> Path): List<ClusterSpec> {
     val naming = TopologyNaming()
     return clusters.flatMap { cluster -> List(cluster.count) { cluster.toClusterSpec(naming, resolve) } }
 }
 
-private fun Cluster.toClusterSpec(
+private fun SdkClusterSpec.toClusterSpec(
     naming: TopologyNaming,
     resolve: (ResourceReference) -> Path,
 ): ClusterSpec {
@@ -86,7 +86,7 @@ private fun Cluster.toClusterSpec(
     return ClusterSpec(clusterName, hostSpecs, powerSource.toSpec(naming, resolve), battery?.toSpec(naming))
 }
 
-private fun Host.toHostSpec(
+private fun SdkHostSpec.toHostSpec(
     clusterName: String,
     naming: TopologyNaming,
 ): HostSpec {
@@ -112,13 +112,13 @@ private fun Host.toHostSpec(
     )
 }
 
-private fun Gpu.toGpuModel(id: Int): GpuModel =
+private fun GpuSpec.toGpuModel(id: Int): GpuModel =
     GpuModel(
         id, coreCount, coreSpeed.toMHz(), memoryBandwidth.toKibps(), memory.toMiB().toLong(),
         vendor, modelName, architecture, virtualizationOverhead.toEngine(),
     )
 
-private fun PowerSource.toSpec(
+private fun SdkPowerSourceSpec.toSpec(
     naming: TopologyNaming,
     resolve: (ResourceReference) -> Path,
 ): PowerSourceSpec =
@@ -128,7 +128,7 @@ private fun PowerSource.toSpec(
         carbonTracePath = carbon?.let { resolve(it).toString() },
     )
 
-private fun Battery.toSpec(naming: TopologyNaming): BatteryJSONSpec =
+private fun BatterySpec.toSpec(naming: TopologyNaming): BatteryJSONSpec =
     BatteryJSONSpec(naming.battery(name), capacity, chargingSpeed, initialCharge, policy.toSpec(), embodiedCarbon, expectedLifetime)
 
 private fun SdkPowerModel.toEngine() =

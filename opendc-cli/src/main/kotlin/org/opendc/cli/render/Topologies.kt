@@ -27,8 +27,8 @@ import com.github.ajalt.mordant.terminal.Terminal
 import org.opendc.cli.config.CliConfig
 import org.opendc.sdk.model.experiment.Experiment
 import org.opendc.sdk.model.experiment.expand
-import org.opendc.sdk.model.topology.Host
-import org.opendc.sdk.model.topology.Topology
+import org.opendc.sdk.model.topology.HostSpec
+import org.opendc.sdk.model.topology.TopologySpec
 
 /** One table row describing a host group within a topology. */
 internal data class TopologyRow(
@@ -108,7 +108,7 @@ private fun renderTopology(
     )
 }
 
-private fun Topology.toEntry(
+private fun TopologySpec.toEntry(
     index: Int,
     config: CliConfig,
 ): TopologyEntry =
@@ -132,7 +132,8 @@ private fun Topology.toEntry(
             },
     )
 
-private fun Host.describeCpu(config: CliConfig): String = "${cpu.count}${config.symbols.times} ${cpu.coreCount} cores @ ${cpu.coreSpeed}"
+private fun HostSpec.describeCpu(config: CliConfig): String =
+    "${cpu.count}${config.symbols.times} ${cpu.coreCount} cores @ ${cpu.coreSpeed}"
 
-private fun Host.describeGpu(config: CliConfig): String =
+private fun HostSpec.describeGpu(config: CliConfig): String =
     gpu?.let { "${it.count}${config.symbols.times} ${it.coreCount} cores @ ${it.coreSpeed}" } ?: config.symbols.dash

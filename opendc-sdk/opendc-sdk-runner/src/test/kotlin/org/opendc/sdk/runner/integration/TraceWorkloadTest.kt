@@ -30,10 +30,10 @@ import org.opendc.sdk.model.dsl.hours
 import org.opendc.sdk.model.dsl.mhz
 import org.opendc.sdk.model.dsl.topology
 import org.opendc.sdk.model.dsl.watts
-import org.opendc.sdk.model.export.ExportModel
+import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.topology.PowerModelType
-import org.opendc.sdk.model.topology.Topology
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.TraceWorkload
 import org.opendc.sdk.runner.OpenDC
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
@@ -58,7 +58,7 @@ class TraceWorkloadTest {
                 topology(datacenter(PowerModelType.LINEAR))
                 topology(datacenter(PowerModelType.SQRT))
                 workload(TraceWorkload(source = NamedReference("workloadTraces/bitbrains-small"), submissionTime = "2022-02-01T00:00:00"))
-                exportModel(ExportModel(exportInterval = 1.hours, printFrequency = null))
+                exportModel(ExportSpec(exportInterval = 1.hours, printFrequency = null))
             }
 
         val output = Files.createTempDirectory("opendc-trace-it")
@@ -92,7 +92,7 @@ class TraceWorkloadTest {
         assert(captured.powerSource.sumOf { it.energyUsage } > 0.0) { "expected non-zero energy usage" }
     }
 
-    private fun datacenter(powerModel: PowerModelType): Topology =
+    private fun datacenter(powerModel: PowerModelType): TopologySpec =
         topology {
             cluster(name = "C01") {
                 host(count = 1, name = "H01") {

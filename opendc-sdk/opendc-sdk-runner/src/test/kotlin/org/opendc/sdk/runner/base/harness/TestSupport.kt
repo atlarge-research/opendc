@@ -27,9 +27,9 @@ import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.TimeDelta
 import org.opendc.compute.topology.specs.ClusterSpec
-import org.opendc.sdk.model.checkpoint.CheckpointModel
+import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.experiment.Scenario
-import org.opendc.sdk.model.export.ExportModel
+import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.failure.FailureModel
 import org.opendc.sdk.model.failure.NoFailure
 import org.opendc.sdk.model.scheduler.AllocationPolicy
@@ -39,11 +39,11 @@ import org.opendc.sdk.model.scheduler.FilterAllocationPolicy
 import org.opendc.sdk.model.scheduler.RamFilter
 import org.opendc.sdk.model.scheduler.VCpuFilter
 import org.opendc.sdk.model.serialization.SdkJson
-import org.opendc.sdk.model.topology.Topology
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.InlineWorkload
 import org.opendc.sdk.model.workload.ScalingPolicy
-import org.opendc.sdk.model.workload.Task
-import org.opendc.sdk.model.workload.TaskFragment
+import org.opendc.sdk.model.workload.TaskFragmentSpec
+import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.runner.internal.runScenario
 import org.opendc.sdk.runner.internal.toClusterSpecs
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
@@ -64,24 +64,24 @@ internal val testResourcesRoot: Path by lazy { Path.of(object {}.javaClass.getRe
 
 private val provisioner = FileSystemResourceProvisioner(testResourcesRoot)
 
-/** Loads an SDK-model [Topology] from `/topologies/<name>` on the test classpath. */
-internal fun createTopology(name: String): Topology {
+/** Loads an SDK-model [TopologySpec] from `/topologies/<name>` on the test classpath. */
+internal fun createTopology(name: String): TopologySpec {
     val text = checkNotNull(object {}.javaClass.getResourceAsStream("/topologies/$name")).use { it.readBytes().decodeToString() }
     return SdkJson.json.decodeFromString(text)
 }
 
-/** Converts a [Topology] to engine [ClusterSpec]s for topology-parsing assertions. */
-internal fun Topology.toClusters(): List<ClusterSpec> = toClusterSpecs { provisioner.provision(it).path }
+/** Converts a [TopologySpec] to engine [ClusterSpec]s for topology-parsing assertions. */
+internal fun TopologySpec.toClusters(): List<ClusterSpec> = toClusterSpecs { provisioner.provision(it).path }
 
-/** Builds an SDK [TaskFragment] with durations in milliseconds and usages in MHz. */
+/** Builds an SDK [TaskFragmentSpec] with durations in milliseconds and usages in MHz. */
 internal fun fragment(
     duration: Long,
     cpuUsage: Double,
     gpuUsage: Double = 0.0,
-): TaskFragment = TaskFragment(TimeDelta.ofMillis(duration), Frequency.ofMHz(cpuUsage), Frequency.ofMHz(gpuUsage))
+): TaskFragmentSpec = TaskFragmentSpec(TimeDelta.ofMillis(duration), Frequency.ofMHz(cpuUsage), Frequency.ofMHz(gpuUsage))
 
 /**
- * Builds an SDK [Task] reproducing the legacy `createTestTask`: per-core capacity is the peak
+ * Builds an SDK [TaskSpec] reproducing the legacy `createTestTask`: per-core capacity is the peak
  * fragment usage, submission is parsed as a UTC instant, and memory is in MiB.
  */
 internal fun createTestTask(
@@ -92,12 +92,12 @@ internal fun createTestTask(
     duration: Long = 0L,
     cpuCoreCount: Int = 1,
     gpuCoreCount: Int = 0,
-    fragments: List<TaskFragment>,
+    fragments: List<TaskFragmentSpec>,
     parents: Set<Int> = emptySet(),
     children: Set<Int> = emptySet(),
-): Task {
+): TaskSpec {
     val submitMs = LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli()
-    return Task(
+    return TaskSpec(
         id = id,
         name = name,
         submissionTime = TimeDelta.ofMillis(submitMs),
@@ -122,11 +122,11 @@ internal fun createTestTask(
  * the legacy `runTest`.
  */
 internal fun runTest(
-    topology: Topology,
-    workload: List<Task>,
+    topology: TopologySpec,
+    workload: List<TaskSpec>,
     failureModel: FailureModel = NoFailure,
     allocationPolicy: AllocationPolicy = defaultPolicy,
-    checkpointModel: CheckpointModel? = null,
+    checkpointModel: CheckpointSpec? = null,
     scalingPolicy: ScalingPolicy = ScalingPolicy.NoDelay,
 ): TestComputeMonitor {
     val monitor = TestComputeMonitor()
@@ -135,7 +135,7 @@ internal fun runTest(
             topology = topology,
             workload = InlineWorkload(workload, scalingPolicy),
             allocationPolicy = allocationPolicy,
-            exportModel = ExportModel(exportInterval = TimeDelta.ofMin(1), printFrequency = null),
+            exportModel = ExportSpec(exportInterval = TimeDelta.ofMin(1), printFrequency = null),
             failureModel = failureModel,
             checkpointModel = checkpointModel,
         )

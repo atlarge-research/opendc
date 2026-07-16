@@ -27,7 +27,7 @@ import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
-import org.opendc.sdk.model.checkpoint.CheckpointModel
+import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.experiment.Experiment
 import org.opendc.sdk.model.export.AllColumns
 import org.opendc.sdk.model.export.OnlyColumns
@@ -49,7 +49,7 @@ import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
 import org.opendc.sdk.model.scheduler.RamFilter
 import org.opendc.sdk.model.scheduler.RamWeigher
 import org.opendc.sdk.model.scheduler.SchedulerName
-import org.opendc.sdk.model.scheduler.TaskStopper
+import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
 import org.opendc.sdk.model.scheduler.VCpuCapacityWeigher
 import org.opendc.sdk.model.scheduler.VCpuFilter
@@ -222,7 +222,7 @@ class LegacyExperimentTest {
                 filters = listOf(ComputeHostFilter),
                 weighers = listOf(RamWeigher(multiplier = 1.0)),
                 memorize = false,
-                taskStopper = TaskStopper(windowSize = 168, forecast = true, forecastThreshold = 0.6, forecastSize = 24),
+                taskStopper = TaskStopperSpec(windowSize = 168, forecast = true, forecastThreshold = 0.6, forecastSize = 24),
             ),
         )
     }
@@ -259,7 +259,7 @@ class LegacyExperimentTest {
         assertContains(checkpoints, null)
         assertContains(
             checkpoints,
-            CheckpointModel(interval = TimeDelta.ofHours(1), duration = TimeDelta.ofMin(5), intervalScaling = 1.5),
+            CheckpointSpec(interval = TimeDelta.ofHours(1), duration = TimeDelta.ofMin(5), intervalScaling = 1.5),
         )
     }
 

@@ -28,8 +28,8 @@ import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.workload.InlineWorkload
 import org.opendc.sdk.model.workload.ScalingPolicy
-import org.opendc.sdk.model.workload.Task
-import org.opendc.sdk.model.workload.TaskFragment
+import org.opendc.sdk.model.workload.TaskFragmentSpec
+import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.model.workload.TraceWorkload
 
 /**
@@ -55,7 +55,7 @@ public fun inlineWorkload(block: InlineWorkloadBuilder.() -> Unit): InlineWorklo
 /** Collects the tasks composing an [InlineWorkload]. */
 @SdkDsl
 public class InlineWorkloadBuilder {
-    private val tasks = mutableListOf<Task>()
+    private val tasks = mutableListOf<TaskSpec>()
 
     /** How tasks react to resource contention. */
     public var scalingPolicy: ScalingPolicy = ScalingPolicy.NoDelay
@@ -79,7 +79,7 @@ public class InlineWorkloadBuilder {
     ) {
         val fragments = TaskBuilder().apply(block).build()
         tasks +=
-            Task(
+            TaskSpec(
                 id, name, submissionTime, duration, cpuCoreCount, cpuCapacity, memory, fragments,
                 gpuCoreCount, gpuCapacity, gpuMemory, deferrable, deadline, parents, children,
             )
@@ -88,10 +88,10 @@ public class InlineWorkloadBuilder {
     internal fun build(): InlineWorkload = InlineWorkload(tasks.toList(), scalingPolicy)
 }
 
-/** Collects the execution fragments of a [Task]. */
+/** Collects the execution fragments of a [TaskSpec]. */
 @SdkDsl
 public class TaskBuilder {
-    private val fragments = mutableListOf<TaskFragment>()
+    private val fragments = mutableListOf<TaskFragmentSpec>()
 
     public fun fragment(
         duration: TimeDelta,
@@ -99,8 +99,8 @@ public class TaskBuilder {
         gpuUsage: Frequency = Frequency.ofMHz(0),
         gpuMemory: DataSize = DataSize.ofBytes(0),
     ) {
-        fragments += TaskFragment(duration, cpuUsage, gpuUsage, gpuMemory)
+        fragments += TaskFragmentSpec(duration, cpuUsage, gpuUsage, gpuMemory)
     }
 
-    internal fun build(): List<TaskFragment> = fragments.toList()
+    internal fun build(): List<TaskFragmentSpec> = fragments.toList()
 }

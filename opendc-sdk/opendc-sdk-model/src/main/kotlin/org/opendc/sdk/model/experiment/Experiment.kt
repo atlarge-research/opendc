@@ -23,13 +23,13 @@
 package org.opendc.sdk.model.experiment
 
 import kotlinx.serialization.Serializable
-import org.opendc.sdk.model.checkpoint.CheckpointModel
-import org.opendc.sdk.model.export.ExportModel
+import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.failure.FailureModel
 import org.opendc.sdk.model.failure.NoFailure
 import org.opendc.sdk.model.scheduler.AllocationPolicy
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
-import org.opendc.sdk.model.topology.Topology
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.validateEach
@@ -51,13 +51,13 @@ import org.opendc.sdk.model.workload.Workload
  */
 @Serializable
 public data class Experiment(
-    public val topologies: Set<Topology>,
+    public val topologies: Set<TopologySpec>,
     public val workloads: Set<Workload>,
     public val allocationPolicies: Set<AllocationPolicy> = setOf(PrefabAllocationPolicy()),
     public val failureModels: Set<FailureModel> = setOf(NoFailure),
     public val maxNumFailures: Set<Int> = setOf(10),
-    public val checkpointModels: Set<CheckpointModel?> = setOf(null),
-    public val exportModels: Set<ExportModel> = setOf(ExportModel()),
+    public val checkpointModels: Set<CheckpointSpec?> = setOf(null),
+    public val exportModels: Set<ExportSpec> = setOf(ExportSpec()),
     public val runs: Int = 1,
     public val initialSeed: Int = 0,
     public val name: String = "",

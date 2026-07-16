@@ -28,7 +28,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
-import org.opendc.sdk.model.checkpoint.CheckpointModel
+import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.dsl.experiment
 import org.opendc.sdk.model.dsl.filterScheduler
 import org.opendc.sdk.model.dsl.minutes
@@ -39,8 +39,8 @@ import org.opendc.sdk.model.dsl.topology
 import org.opendc.sdk.model.dsl.traceWorkload
 import org.opendc.sdk.model.export.AllColumns
 import org.opendc.sdk.model.export.ColumnSelection
-import org.opendc.sdk.model.export.ExportColumns
-import org.opendc.sdk.model.export.ExportModel
+import org.opendc.sdk.model.export.ExportColumnsSpec
+import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.export.OnlyColumns
 import org.opendc.sdk.model.export.OutputFile
 import org.opendc.sdk.model.failure.ConstantDistribution
@@ -76,7 +76,7 @@ import org.opendc.sdk.model.scheduler.RamFilter
 import org.opendc.sdk.model.scheduler.RamWeigher
 import org.opendc.sdk.model.scheduler.SameHostFilter
 import org.opendc.sdk.model.scheduler.SchedulerName
-import org.opendc.sdk.model.scheduler.TaskStopper
+import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
 import org.opendc.sdk.model.scheduler.VCpuCapacityFilter
 import org.opendc.sdk.model.scheduler.VCpuCapacityWeigher
@@ -98,7 +98,7 @@ import org.opendc.sdk.model.topology.RunningMedianPolicy
 import org.opendc.sdk.model.topology.RunningQuartilesPolicy
 import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverhead
 import org.opendc.sdk.model.topology.SingleThresholdPolicy
-import org.opendc.sdk.model.topology.Topology
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.topology.VirtualizationOverhead
 import org.opendc.sdk.model.workload.ScalingPolicy
 import org.opendc.sdk.model.workload.TraceWorkload
@@ -144,8 +144,8 @@ class RoundTripTest {
                 )
                 failureModel(PrefabFailure(FailurePrefab.G5k06Exp))
                 failureModel(NoFailure)
-                exportModel(ExportModel())
-                checkpointModel(CheckpointModel())
+                exportModel(ExportSpec())
+                checkpointModel(CheckpointSpec())
                 checkpointModel(null)
                 maxNumFailures(5)
                 maxNumFailures(10)
@@ -175,17 +175,17 @@ class RoundTripTest {
                         longForecastThreshold = 0.4
                         forecastSize = 12
                         memorize = false
-                        taskStopper = TaskStopper(windowSize = 100, forecast = false, forecastThreshold = 0.5, forecastSize = 6)
+                        taskStopper = TaskStopperSpec(windowSize = 100, forecast = false, forecastThreshold = 0.5, forecastSize = 6)
                         filter(ComputeHostFilter)
                         filter(VCpuFilter(2.0))
                         weigher(CoreRamWeigher(1.5))
                     },
                 )
                 exportModel =
-                    ExportModel(
+                    ExportSpec(
                         exportInterval = 10.minutes,
                         printFrequency = null,
-                        columns = ExportColumns(host = OnlyColumns(setOf("timestamp", "cpu_usage")), task = AllColumns),
+                        columns = ExportColumnsSpec(host = OnlyColumns(setOf("timestamp", "cpu_usage")), task = AllColumns),
                         filesToExport = listOf(OutputFile.HOST, OutputFile.TASK),
                     )
                 failureModel =
@@ -194,7 +194,7 @@ class RoundTripTest {
                         duration = ConstantDistribution(value = 300.0),
                         hostFraction = UniformDistribution(upper = 0.5, lower = 0.1),
                     )
-                checkpointModel = CheckpointModel()
+                checkpointModel = CheckpointSpec()
             }
 
         val text = SdkJson.encodeToString(builtScenario)
@@ -214,7 +214,7 @@ class RoundTripTest {
                 TimeShiftAllocationPolicy(
                     filters = listOf(ComputeHostFilter),
                     weighers = listOf(VCpuWeigher(1.0)),
-                    taskStopper = TaskStopper(),
+                    taskStopper = TaskStopperSpec(),
                 ),
             )
         return policies.map { policy ->
@@ -298,9 +298,9 @@ class RoundTripTest {
 
     @TestFactory
     fun `topologies round-trip`(): List<DynamicTest> {
-        val topologies: List<Topology> = listOf(sampleTopology)
+        val topologies: List<TopologySpec> = listOf(sampleTopology)
         return topologies.map { topology ->
-            dynamicTest(topology::class.simpleName ?: "topology") { assertEquals(topology, roundTrip<Topology>(topology)) }
+            dynamicTest(topology::class.simpleName ?: "topology") { assertEquals(topology, roundTrip<TopologySpec>(topology)) }
         }
     }
 

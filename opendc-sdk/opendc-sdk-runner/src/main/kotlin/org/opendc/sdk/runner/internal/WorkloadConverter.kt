@@ -25,11 +25,11 @@ package org.opendc.sdk.runner.internal
 import org.opendc.common.ResourceType
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.sdk.model.checkpoint.CheckpointModel
+import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.workload.InlineWorkload
 import org.opendc.sdk.model.workload.ScalingPolicy
-import org.opendc.sdk.model.workload.Task
+import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.model.workload.TraceWorkload
 import org.opendc.sdk.model.workload.Workload
 import org.opendc.simulator.compute.workload.trace.TraceFragment
@@ -44,7 +44,7 @@ import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy as Engi
  * loaded from the resource resolved by [resolve]; inline workloads are built in memory.
  */
 internal fun Workload.toServiceTasks(
-    checkpoint: CheckpointModel?,
+    checkpoint: CheckpointSpec?,
     resolve: (ResourceReference) -> Path,
 ): List<ServiceTask> =
     when (this) {
@@ -54,7 +54,7 @@ internal fun Workload.toServiceTasks(
 
 private fun TraceWorkload.loadTrace(
     path: Path,
-    checkpoint: CheckpointModel?,
+    checkpoint: CheckpointSpec?,
 ): List<ServiceTask> =
     ComputeWorkloadLoader(
         path.toFile(),
@@ -66,9 +66,9 @@ private fun TraceWorkload.loadTrace(
         deferAll,
     ).sampleByLoad(sampleFraction)
 
-private fun Task.toServiceTask(
+private fun TaskSpec.toServiceTask(
     scaling: EngineScalingPolicy,
-    checkpoint: CheckpointModel?,
+    checkpoint: CheckpointSpec?,
 ): ServiceTask {
     val engineFragments =
         ArrayList(
@@ -109,7 +109,7 @@ private fun Task.toServiceTask(
     )
 }
 
-private fun Task.totalLoad(): Double = fragments.sumOf { it.cpuUsage.toMHz() * it.duration.toHours() }
+private fun TaskSpec.totalLoad(): Double = fragments.sumOf { it.cpuUsage.toMHz() * it.duration.toHours() }
 
 private fun ScalingPolicy.toEngine(): EngineScalingPolicy =
     when (this) {
@@ -117,8 +117,8 @@ private fun ScalingPolicy.toEngine(): EngineScalingPolicy =
         ScalingPolicy.Perfect -> PerfectScaling()
     }
 
-private fun CheckpointModel?.intervalMs(): Long = this?.interval?.toMsLong() ?: 0L
+private fun CheckpointSpec?.intervalMs(): Long = this?.interval?.toMsLong() ?: 0L
 
-private fun CheckpointModel?.durationMs(): Long = this?.duration?.toMsLong() ?: 0L
+private fun CheckpointSpec?.durationMs(): Long = this?.duration?.toMsLong() ?: 0L
 
-private fun CheckpointModel?.scaling(): Double = this?.intervalScaling ?: 1.0
+private fun CheckpointSpec?.scaling(): Double = this?.intervalScaling ?: 1.0

@@ -23,23 +23,19 @@
 package org.opendc.sdk.model.topology
 
 import kotlinx.serialization.Serializable
-import org.opendc.common.units.DataSize
-import org.opendc.common.units.Frequency
+import org.opendc.common.units.Power
+import org.opendc.sdk.model.resource.ResourceReference
 
 /**
- * A memory (RAM) specification for a host.
+ * A power source feeding a cluster.
  *
- * @property size Total memory capacity.
- * @property speed Memory clock speed; a negative value denotes "unspecified".
- * @property vendor Hardware vendor name.
- * @property modelName Commercial model name.
- * @property architecture Memory technology identifier.
+ * @property name Human-readable identifier.
+ * @property maxPower Maximum power the source can deliver.
+ * @property carbon Optional reference to a carbon-intensity trace.
  */
 @Serializable
-public data class Memory(
-    public val size: DataSize,
-    public val speed: Frequency = Frequency.ofMHz(-1),
-    public val vendor: String = "unknown",
-    public val modelName: String = "unknown",
-    public val architecture: String = "unknown",
+public data class PowerSourceSpec(
+    public val name: String = "PowerSource",
+    public val maxPower: Power = Power.ofWatts(Long.MAX_VALUE.toDouble()),
+    public val carbon: ResourceReference? = null,
 )

@@ -20,30 +20,43 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.checkpoint
+package org.opendc.sdk.model.topology
 
 import kotlinx.serialization.Serializable
-import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
+import org.opendc.sdk.model.validation.prefixed
 
 /**
- * Configuration for periodic checkpointing of running tasks.
+ * A physical host in a cluster.
  *
- * @property interval Wall-clock time between consecutive checkpoints.
- * @property duration Time it takes to write a single checkpoint.
- * @property intervalScaling Multiplier applied to [interval] after each checkpoint.
+ * @property name Human-readable identifier.
+ * @property count Number of identical hosts to instantiate.
+ * @property cpu CPU specification.
+ * @property memory Memory specification.
+ * @property gpu Optional GPU specification.
+ * @property cpuPowerModel Power model for the CPU.
+ * @property gpuPowerModel Power model for the GPU.
+ * @property cpuDistribution Policy distributing CPU capacity across tasks.
+ * @property gpuDistribution Policy distributing GPU capacity across tasks.
  */
 @Serializable
-public data class CheckpointModel(
-    public val interval: TimeDelta = TimeDelta.ofHours(1),
-    public val duration: TimeDelta = TimeDelta.ofMin(5),
-    public val intervalScaling: Double = 1.0,
+public data class HostSpec(
+    public val name: String = "Host",
+    public val count: Int = 1,
+    public val cpu: CpuSpec,
+    public val memory: MemorySpec,
+    public val gpu: GpuSpec? = null,
+    public val cpuPowerModel: PowerSpec = PowerSpec.DEFAULT,
+    public val gpuPowerModel: PowerSpec = PowerSpec.DEFAULT,
+    public val cpuDistribution: DistributionPolicy = MaxMinFairness,
+    public val gpuDistribution: DistributionPolicy = MaxMinFairness,
 ) : Validatable {
     override fun validate(): List<ValidationIssue> =
         buildList {
-            if (interval.value <= 0.0) add(ValidationIssue("interval", "must be greater than zero"))
-            if (duration.value <= 0.0) add(ValidationIssue("duration", "must be greater than zero"))
-            if (intervalScaling <= 0.0) add(ValidationIssue("intervalScaling", "must be greater than zero"))
+            if (count <= 0) add(ValidationIssue("count", "must be > 0"))
+            addAll(cpu.validate().prefixed("cpu"))
+            addAll(cpuPowerModel.validate().prefixed("cpuPowerModel"))
+            if (gpu != null) addAll(gpuPowerModel.validate().prefixed("gpuPowerModel"))
         }
 }

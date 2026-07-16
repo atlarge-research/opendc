@@ -20,35 +20,33 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.topology
+package org.opendc.sdk.model.export
 
 import kotlinx.serialization.Serializable
-import org.opendc.common.units.Frequency
+import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 
 /**
- * A CPU specification for a host.
+ * Configuration controlling how simulation results are exported.
  *
- * @property coreCount Number of cores per CPU package.
- * @property coreSpeed Clock speed of a single core.
- * @property count Number of identical CPU packages on the host.
- * @property vendor Hardware vendor name.
- * @property modelName Commercial model name.
- * @property architecture Micro-architecture identifier.
+ * @property exportInterval Wall-clock time between consecutive metric snapshots.
+ * @property printFrequency Number of snapshots between progress prints, or `null` to disable printing.
+ * @property columns Per-output-file column selections.
+ * @property filesToExport Output files to produce.
  */
 @Serializable
-public data class Cpu(
-    public val coreCount: Int,
-    public val coreSpeed: Frequency,
-    public val count: Int = 1,
-    public val vendor: String = "unknown",
-    public val modelName: String = "unknown",
-    public val architecture: String = "unknown",
+public data class ExportSpec(
+    public val exportInterval: TimeDelta = TimeDelta.ofMin(5),
+    public val printFrequency: Int? = 24,
+    public val columns: ExportColumnsSpec = ExportColumnsSpec(),
+    public val filesToExport: List<OutputFile> = OutputFile.entries.toList(),
 ) : Validatable {
     override fun validate(): List<ValidationIssue> =
         buildList {
-            if (coreCount <= 0) add(ValidationIssue("coreCount", "must be > 0"))
-            if (count <= 0) add(ValidationIssue("count", "must be > 0"))
+            if (exportInterval.value <= 0.0) add(ValidationIssue("exportInterval", "must be greater than zero"))
+            if (printFrequency != null && printFrequency <= 0) {
+                add(ValidationIssue("printFrequency", "must be greater than zero"))
+            }
         }
 }

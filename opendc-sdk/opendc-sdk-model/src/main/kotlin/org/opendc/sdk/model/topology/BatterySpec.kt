@@ -119,7 +119,7 @@ public data class RunningQuartilesPolicy(
  * @property expectedLifetime The expected operational lifetime, in years.
  */
 @Serializable
-public data class Battery(
+public data class BatterySpec(
     public val name: String = "Battery",
     public val capacity: Double,
     public val chargingSpeed: Double,

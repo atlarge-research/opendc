@@ -28,7 +28,7 @@ import org.opendc.sdk.model.scheduler.HostFilter
 import org.opendc.sdk.model.scheduler.HostWeigher
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
 import org.opendc.sdk.model.scheduler.SchedulerName
-import org.opendc.sdk.model.scheduler.TaskStopper
+import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
 
 /**
@@ -101,7 +101,7 @@ public class TimeShiftSchedulerBuilder {
     public var forecastSize: Int = 24
 
     /** The optional policy controlling when deferrable tasks are paused. */
-    public var taskStopper: TaskStopper? = null
+    public var taskStopper: TaskStopperSpec? = null
 
     /** Whether to memoize scheduling decisions across invocations. */
     public var memorize: Boolean = true

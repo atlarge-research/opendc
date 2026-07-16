@@ -1,0 +1,49 @@
+/* OpenDC docs — palette.
+   The top bar carries the distinctive OpenDC blue; the body stays clean with
+   blue links. Dark mode uses a higher-contrast text ramp so headings and the
+   navigation read clearly. */
+
+:root {
+  --opendc-blue:      #0066cc; /* OpenDC / PatternFly primary */
+  --opendc-blue-dark: #004b95; /* hover / active */
+  --opendc-blue-lt:   #6cb3f5; /* brighter blue, for dark backgrounds */
+}
+
+/* Light */
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color:        var(--opendc-blue);
+  --md-primary-fg-color--light: #519de9;
+  --md-primary-fg-color--dark:  var(--opendc-blue-dark);
+  --md-primary-bg-color:        #ffffff;
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.7);
+  --md-accent-fg-color:         var(--opendc-blue-dark);
+  --md-typeset-a-color:         var(--opendc-blue);
+}
+
+/* Dark */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:        var(--opendc-blue);
+  --md-primary-fg-color--light: #519de9;
+  --md-primary-fg-color--dark:  var(--opendc-blue-dark);
+  --md-primary-bg-color:        #ffffff;
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.7);
+  --md-accent-fg-color:         var(--opendc-blue-lt);
+  --md-typeset-a-color:         var(--opendc-blue-lt);
+
+  /* Brighter text ramp: legible headings, nav and body on the dark surface. */
+  --md-default-fg-color:           rgba(237, 241, 245, 0.94);
+  --md-default-fg-color--light:    rgba(237, 241, 245, 0.76);
+  --md-default-fg-color--lighter:  rgba(237, 241, 245, 0.46);
+  --md-default-fg-color--lightest: rgba(237, 241, 245, 0.14);
+}
+
+/* Material renders h1 (and some headings) in a lighter tone that reads dim on
+   dark; force crisp headings in dark mode. */
+[data-md-color-scheme="slate"] .md-typeset h1,
+[data-md-color-scheme="slate"] .md-typeset h2,
+[data-md-color-scheme="slate"] .md-typeset h3,
+[data-md-color-scheme="slate"] .md-typeset h4,
+[data-md-color-scheme="slate"] .md-typeset h5,
+[data-md-color-scheme="slate"] .md-typeset h6 {
+  color: rgba(237, 241, 245, 0.98);
+}

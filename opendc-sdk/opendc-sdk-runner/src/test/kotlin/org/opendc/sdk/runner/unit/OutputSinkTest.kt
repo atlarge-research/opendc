@@ -34,12 +34,12 @@ import org.opendc.sdk.model.dsl.minutes
 import org.opendc.sdk.model.dsl.ms
 import org.opendc.sdk.model.dsl.topology
 import org.opendc.sdk.model.dsl.watts
-import org.opendc.sdk.model.export.ExportModel
+import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.export.OutputFile
 import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.workload.InlineWorkload
-import org.opendc.sdk.model.workload.Task
-import org.opendc.sdk.model.workload.TaskFragment
+import org.opendc.sdk.model.workload.TaskFragmentSpec
+import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.runner.OpenDC
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
 import org.opendc.sdk.runner.sink.CallbackSink
@@ -68,7 +68,7 @@ class OutputSinkTest {
                 }
             }
         val task =
-            Task(
+            TaskSpec(
                 id = 0,
                 name = "t0",
                 submissionTime = 0.ms,
@@ -76,14 +76,14 @@ class OutputSinkTest {
                 cpuCoreCount = 1,
                 cpuCapacity = 1000.mhz,
                 memory = 0.mib,
-                fragments = listOf(TaskFragment(duration = (10 * 60 * 1000).ms, cpuUsage = 1000.mhz)),
+                fragments = listOf(TaskFragmentSpec(duration = (10 * 60 * 1000).ms, cpuUsage = 1000.mhz)),
             )
         val design =
             experiment {
                 name = "sink-test"
                 topology(datacenter)
                 workload(InlineWorkload(listOf(task)))
-                exportModel(ExportModel(exportInterval = 1.minutes, printFrequency = null))
+                exportModel(ExportSpec(exportInterval = 1.minutes, printFrequency = null))
             }
 
         var hostCallbacks = 0

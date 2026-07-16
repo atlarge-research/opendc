@@ -30,12 +30,12 @@ import org.junit.jupiter.api.assertAll
 import org.opendc.sdk.model.dsl.experiment
 import org.opendc.sdk.model.dsl.hours
 import org.opendc.sdk.model.experiment.Experiment
-import org.opendc.sdk.model.export.ExportModel
+import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.failure.NoFailure
 import org.opendc.sdk.model.failure.TraceBasedFailure
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.serialization.SdkJson
-import org.opendc.sdk.model.topology.Topology
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.TraceWorkload
 import org.opendc.sdk.runner.OpenDC
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
@@ -205,14 +205,14 @@ class DemoExperimentsTest {
         val anyDowntime = metrics.host.any { it.downtime > 0 }
     }
 
-    private fun demoTopology(name: String): Topology {
+    private fun demoTopology(name: String): TopologySpec {
         val text = checkNotNull(object {}.javaClass.getResourceAsStream("/demo/topologies/$name")).use { it.readBytes().decodeToString() }
         return SdkJson.json.decodeFromString(text)
     }
 
     private val surfWeek = TraceWorkload(source = NamedReference("workload_traces/surf_week"))
 
-    private val demoExport = ExportModel(exportInterval = 1.hours, printFrequency = null)
+    private val demoExport = ExportSpec(exportInterval = 1.hours, printFrequency = null)
 
     private companion object {
         const val WORKLOAD_TASKS = 6295

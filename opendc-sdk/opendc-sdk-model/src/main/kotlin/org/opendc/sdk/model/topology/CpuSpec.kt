@@ -20,43 +20,35 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.export
+package org.opendc.sdk.model.topology
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-
-/** Selects which columns of an output file are written. */
-@Serializable
-public sealed interface ColumnSelection
-
-/** Writes every available column. */
-@Serializable
-@SerialName("all")
-public data object AllColumns : ColumnSelection
+import org.opendc.common.units.Frequency
+import org.opendc.sdk.model.validation.Validatable
+import org.opendc.sdk.model.validation.ValidationIssue
 
 /**
- * Writes only the named columns.
+ * A CPU specification for a host.
  *
- * @property columns Names of the columns to keep.
+ * @property coreCount Number of cores per CPU package.
+ * @property coreSpeed Clock speed of a single core.
+ * @property count Number of identical CPU packages on the host.
+ * @property vendor Hardware vendor name.
+ * @property modelName Commercial model name.
+ * @property architecture Micro-architecture identifier.
  */
 @Serializable
-@SerialName("only")
-public data class OnlyColumns(public val columns: Set<String>) : ColumnSelection
-
-/**
- * Per-output-file column selections.
- *
- * @property host Column selection for host output.
- * @property task Column selection for task output.
- * @property powerSource Column selection for power source output.
- * @property battery Column selection for battery output.
- * @property service Column selection for service output.
- */
-@Serializable
-public data class ExportColumns(
-    public val host: ColumnSelection = AllColumns,
-    public val task: ColumnSelection = AllColumns,
-    public val powerSource: ColumnSelection = AllColumns,
-    public val battery: ColumnSelection = AllColumns,
-    public val service: ColumnSelection = AllColumns,
-)
+public data class CpuSpec(
+    public val coreCount: Int,
+    public val coreSpeed: Frequency,
+    public val count: Int = 1,
+    public val vendor: String = "unknown",
+    public val modelName: String = "unknown",
+    public val architecture: String = "unknown",
+) : Validatable {
+    override fun validate(): List<ValidationIssue> =
+        buildList {
+            if (coreCount <= 0) add(ValidationIssue("coreCount", "must be > 0"))
+            if (count <= 0) add(ValidationIssue("count", "must be > 0"))
+        }
+}

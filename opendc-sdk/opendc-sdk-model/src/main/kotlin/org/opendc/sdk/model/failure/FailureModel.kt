@@ -64,7 +64,7 @@ public data class TraceBasedFailure(
 @SerialName("prefab")
 public data class PrefabFailure(
     /** The built-in failure model to use. */
-    public val prefab: FailurePrefab,
+    public val prefabName: FailurePrefab,
 ) : FailureModel
 
 /** A fully custom failure model built from three sampling distributions. */

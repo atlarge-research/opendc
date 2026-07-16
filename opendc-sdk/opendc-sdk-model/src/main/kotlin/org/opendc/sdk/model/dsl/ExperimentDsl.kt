@@ -22,15 +22,15 @@
 
 package org.opendc.sdk.model.dsl
 
-import org.opendc.sdk.model.checkpoint.CheckpointModel
+import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.experiment.Experiment
 import org.opendc.sdk.model.experiment.Scenario
-import org.opendc.sdk.model.export.ExportModel
+import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.failure.FailureModel
 import org.opendc.sdk.model.failure.NoFailure
 import org.opendc.sdk.model.scheduler.AllocationPolicy
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
-import org.opendc.sdk.model.topology.Topology
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.Workload
 
 /**
@@ -50,12 +50,12 @@ public fun scenario(block: ScenarioBuilder.() -> Unit): Scenario = ScenarioBuild
 /** Collects the candidate values of each experiment axis. */
 @SdkDsl
 public class ExperimentBuilder {
-    private val topologies = mutableSetOf<Topology>()
+    private val topologies = mutableSetOf<TopologySpec>()
     private val workloads = mutableSetOf<Workload>()
     private val allocationPolicies = mutableSetOf<AllocationPolicy>()
     private val failureModels = mutableSetOf<FailureModel>()
-    private val exportModels = mutableSetOf<ExportModel>()
-    private val checkpointModels = mutableSetOf<CheckpointModel?>()
+    private val exportModels = mutableSetOf<ExportSpec>()
+    private val checkpointModels = mutableSetOf<CheckpointSpec?>()
     private val maxNumFailures = mutableSetOf<Int>()
 
     /** The number of independent repetitions per scenario. */
@@ -67,7 +67,7 @@ public class ExperimentBuilder {
     /** A human-readable name for the experiment. */
     public var name: String = ""
 
-    public fun topology(topology: Topology) {
+    public fun topology(topology: TopologySpec) {
         topologies += topology
     }
 
@@ -91,11 +91,11 @@ public class ExperimentBuilder {
         failureModels += model
     }
 
-    public fun exportModel(model: ExportModel) {
+    public fun exportModel(model: ExportSpec) {
         exportModels += model
     }
 
-    public fun checkpointModel(model: CheckpointModel?) {
+    public fun checkpointModel(model: CheckpointSpec?) {
         checkpointModels += model
     }
 
@@ -111,7 +111,7 @@ public class ExperimentBuilder {
             failureModels = failureModels.ifEmpty { setOf(NoFailure) }.toSet(),
             maxNumFailures = maxNumFailures.ifEmpty { setOf(10) }.toSet(),
             checkpointModels = checkpointModels.ifEmpty { setOf(null) }.toSet(),
-            exportModels = exportModels.ifEmpty { setOf(ExportModel()) }.toSet(),
+            exportModels = exportModels.ifEmpty { setOf(ExportSpec()) }.toSet(),
             runs = runs,
             initialSeed = initialSeed,
             name = name,
@@ -121,18 +121,18 @@ public class ExperimentBuilder {
 /** Collects the components of a single [Scenario]. */
 @SdkDsl
 public class ScenarioBuilder {
-    private var topology: Topology? = null
+    private var topology: TopologySpec? = null
     private var workload: Workload? = null
     private var allocationPolicy: AllocationPolicy = PrefabAllocationPolicy()
 
     /** Controls which results are written and how often. */
-    public var exportModel: ExportModel = ExportModel()
+    public var exportModel: ExportSpec = ExportSpec()
 
     /** The failure-injection model applied during the run. */
     public var failureModel: FailureModel = NoFailure
 
     /** Optional checkpointing configuration for tasks. */
-    public var checkpointModel: CheckpointModel? = null
+    public var checkpointModel: CheckpointSpec? = null
 
     /** The maximum number of failures a task may survive before it is terminated. */
     public var maxNumFailures: Int = 10
@@ -149,7 +149,7 @@ public class ScenarioBuilder {
     /** A human-readable name for the scenario. */
     public var name: String = ""
 
-    public fun topology(topology: Topology) {
+    public fun topology(topology: TopologySpec) {
         this.topology = topology
     }
 

@@ -57,10 +57,3 @@ dependencies {
         useJUnitPlatform()
     }
 }
-
-sourceSets {
-    main {
-        kotlin.srcDirs("src/main/kotlin", "src/main/python")
-        resources.srcDir("src/main/resources")
-    }
-}

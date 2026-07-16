@@ -23,30 +23,32 @@
 package org.opendc.sdk.model.topology
 
 import kotlinx.serialization.Serializable
-import org.opendc.sdk.model.validation.Validatable
-import org.opendc.sdk.model.validation.ValidationIssue
-import org.opendc.sdk.model.validation.validateEach
+import org.opendc.common.units.DataRate
+import org.opendc.common.units.DataSize
+import org.opendc.common.units.Frequency
 
 /**
- * A cluster of hosts sharing a power source and optional battery.
+ * A GPU specification for a host.
  *
- * @property name Human-readable identifier.
- * @property count Number of identical clusters to instantiate.
- * @property hosts Hosts contained in the cluster.
- * @property powerSource Power source feeding the cluster.
- * @property battery Optional battery buffering the power source.
+ * @property coreCount Number of cores per GPU package.
+ * @property coreSpeed Clock speed of a single core.
+ * @property count Number of identical GPU packages on the host.
+ * @property memory Onboard GPU memory; a negative value denotes "unspecified".
+ * @property memoryBandwidth Memory bandwidth; a negative value denotes "unspecified".
+ * @property vendor Hardware vendor name.
+ * @property modelName Commercial model name.
+ * @property architecture Micro-architecture identifier.
+ * @property virtualizationOverhead Overhead model applied when the GPU is shared.
  */
 @Serializable
-public data class Cluster(
-    public val name: String = "Cluster",
+public data class GpuSpec(
+    public val coreCount: Int,
+    public val coreSpeed: Frequency,
     public val count: Int = 1,
-    public val hosts: List<Host>,
-    public val powerSource: PowerSource = PowerSource(),
-    public val battery: Battery? = null,
-) : Validatable {
-    override fun validate(): List<ValidationIssue> =
-        buildList {
-            if (hosts.isEmpty()) add(ValidationIssue("hosts", "must not be empty"))
-            addAll(hosts.validateEach("hosts"))
-        }
-}
+    public val memory: DataSize = DataSize.ofMiB(-1),
+    public val memoryBandwidth: DataRate = DataRate.ofKibps(-1),
+    public val vendor: String = "unknown",
+    public val modelName: String = "unknown",
+    public val architecture: String = "unknown",
+    public val virtualizationOverhead: VirtualizationOverhead = NoVirtualizationOverhead,
+)

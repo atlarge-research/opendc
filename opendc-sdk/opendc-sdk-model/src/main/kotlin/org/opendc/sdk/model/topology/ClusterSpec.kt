@@ -20,31 +20,33 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.scheduler
+package org.opendc.sdk.model.topology
 
 import kotlinx.serialization.Serializable
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
+import org.opendc.sdk.model.validation.validateEach
 
 /**
- * Configures when deferrable tasks are paused based on a (forecasted) carbon signal.
+ * A cluster of hosts sharing a power source and optional battery.
  *
- * @property windowSize The number of past samples considered when deciding to stop tasks.
- * @property forecast Whether to base the decision on forecasted rather than historical values.
- * @property forecastThreshold The normalized threshold above which tasks are stopped.
- * @property forecastSize The number of future samples to forecast.
+ * @property name Human-readable identifier.
+ * @property count Number of identical clusters to instantiate.
+ * @property hosts Hosts contained in the cluster.
+ * @property powerSource Power source feeding the cluster.
+ * @property battery Optional battery buffering the power source.
  */
 @Serializable
-public data class TaskStopper(
-    public val windowSize: Int = 168,
-    public val forecast: Boolean = true,
-    public val forecastThreshold: Double = 0.6,
-    public val forecastSize: Int = 24,
+public data class ClusterSpec(
+    public val name: String = "Cluster",
+    public val count: Int = 1,
+    public val hosts: List<HostSpec>,
+    public val powerSource: PowerSourceSpec = PowerSourceSpec(),
+    public val battery: BatterySpec? = null,
 ) : Validatable {
     override fun validate(): List<ValidationIssue> =
         buildList {
-            if (windowSize < 1) add(ValidationIssue("windowSize", "must be >= 1"))
-            if (forecastSize < 1) add(ValidationIssue("forecastSize", "must be >= 1"))
-            if (forecastThreshold !in 0.0..1.0) add(ValidationIssue("forecastThreshold", "must be in 0.0..1.0"))
+            if (hosts.isEmpty()) add(ValidationIssue("hosts", "must not be empty"))
+            addAll(hosts.validateEach("hosts"))
         }
 }

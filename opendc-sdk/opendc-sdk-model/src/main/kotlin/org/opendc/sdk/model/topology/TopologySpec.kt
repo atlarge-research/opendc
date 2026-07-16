@@ -23,32 +23,20 @@
 package org.opendc.sdk.model.topology
 
 import kotlinx.serialization.Serializable
-import org.opendc.common.units.DataRate
-import org.opendc.common.units.DataSize
-import org.opendc.common.units.Frequency
+import org.opendc.sdk.model.validation.Validatable
+import org.opendc.sdk.model.validation.ValidationIssue
+import org.opendc.sdk.model.validation.validateEach
 
 /**
- * A GPU specification for a host.
+ * The datacenter a scenario runs on, described as a list of clusters.
  *
- * @property coreCount Number of cores per GPU package.
- * @property coreSpeed Clock speed of a single core.
- * @property count Number of identical GPU packages on the host.
- * @property memory Onboard GPU memory; a negative value denotes "unspecified".
- * @property memoryBandwidth Memory bandwidth; a negative value denotes "unspecified".
- * @property vendor Hardware vendor name.
- * @property modelName Commercial model name.
- * @property architecture Micro-architecture identifier.
- * @property virtualizationOverhead Overhead model applied when the GPU is shared.
+ * @property clusters Clusters composing the datacenter.
  */
 @Serializable
-public data class Gpu(
-    public val coreCount: Int,
-    public val coreSpeed: Frequency,
-    public val count: Int = 1,
-    public val memory: DataSize = DataSize.ofMiB(-1),
-    public val memoryBandwidth: DataRate = DataRate.ofKibps(-1),
-    public val vendor: String = "unknown",
-    public val modelName: String = "unknown",
-    public val architecture: String = "unknown",
-    public val virtualizationOverhead: VirtualizationOverhead = NoVirtualizationOverhead,
-)
+public data class TopologySpec(public val clusters: List<ClusterSpec>) : Validatable {
+    override fun validate(): List<ValidationIssue> =
+        buildList {
+            if (clusters.isEmpty()) add(ValidationIssue("clusters", "must not be empty"))
+            addAll(clusters.validateEach("clusters"))
+        }
+}

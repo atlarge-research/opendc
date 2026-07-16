@@ -26,25 +26,25 @@ import org.opendc.common.units.DataRate
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
-import org.opendc.sdk.model.topology.Cpu
+import org.opendc.sdk.model.topology.CpuSpec
 import org.opendc.sdk.model.topology.DistributionPolicy
-import org.opendc.sdk.model.topology.Gpu
-import org.opendc.sdk.model.topology.Host
+import org.opendc.sdk.model.topology.GpuSpec
+import org.opendc.sdk.model.topology.HostSpec
 import org.opendc.sdk.model.topology.MaxMinFairness
-import org.opendc.sdk.model.topology.Memory
+import org.opendc.sdk.model.topology.MemorySpec
 import org.opendc.sdk.model.topology.NoVirtualizationOverhead
-import org.opendc.sdk.model.topology.PowerModel
 import org.opendc.sdk.model.topology.PowerModelType
+import org.opendc.sdk.model.topology.PowerSpec
 import org.opendc.sdk.model.topology.VirtualizationOverhead
 
-/** Builds a [Host]; `cpu` and `memory` must be set before the enclosing block returns. */
+/** Builds a [HostSpec]; `cpu` and `memory` must be set before the enclosing block returns. */
 @SdkDsl
 public class HostBuilder(private val name: String, private val count: Int) {
-    private var cpu: Cpu? = null
-    private var memory: Memory? = null
-    private var gpu: Gpu? = null
-    private var cpuPowerModel: PowerModel = PowerModel.DEFAULT
-    private var gpuPowerModel: PowerModel = PowerModel.DEFAULT
+    private var cpu: CpuSpec? = null
+    private var memory: MemorySpec? = null
+    private var gpu: GpuSpec? = null
+    private var cpuPowerModel: PowerSpec = PowerSpec.DEFAULT
+    private var gpuPowerModel: PowerSpec = PowerSpec.DEFAULT
 
     /** Policy distributing CPU capacity across tasks. */
     public var cpuDistribution: DistributionPolicy = MaxMinFairness
@@ -60,7 +60,7 @@ public class HostBuilder(private val name: String, private val count: Int) {
         modelName: String = "unknown",
         architecture: String = "unknown",
     ) {
-        cpu = Cpu(coreCount, coreSpeed, count, vendor, modelName, architecture)
+        cpu = CpuSpec(coreCount, coreSpeed, count, vendor, modelName, architecture)
     }
 
     public fun memory(
@@ -70,7 +70,7 @@ public class HostBuilder(private val name: String, private val count: Int) {
         modelName: String = "unknown",
         architecture: String = "unknown",
     ) {
-        memory = Memory(size, speed, vendor, modelName, architecture)
+        memory = MemorySpec(size, speed, vendor, modelName, architecture)
     }
 
     public fun gpu(
@@ -84,7 +84,7 @@ public class HostBuilder(private val name: String, private val count: Int) {
         architecture: String = "unknown",
         virtualizationOverhead: VirtualizationOverhead = NoVirtualizationOverhead,
     ) {
-        gpu = Gpu(coreCount, coreSpeed, count, memory, memoryBandwidth, vendor, modelName, architecture, virtualizationOverhead)
+        gpu = GpuSpec(coreCount, coreSpeed, count, memory, memoryBandwidth, vendor, modelName, architecture, virtualizationOverhead)
     }
 
     public fun power(block: PowerModelBuilder.() -> Unit) {
@@ -95,14 +95,14 @@ public class HostBuilder(private val name: String, private val count: Int) {
         gpuPowerModel = PowerModelBuilder().apply(block).build()
     }
 
-    internal fun build(): Host {
+    internal fun build(): HostSpec {
         val resolvedCpu = cpu ?: error("host '$name' requires a cpu")
         val resolvedMemory = memory ?: error("host '$name' requires memory")
-        return Host(name, count, resolvedCpu, resolvedMemory, gpu, cpuPowerModel, gpuPowerModel, cpuDistribution, gpuDistribution)
+        return HostSpec(name, count, resolvedCpu, resolvedMemory, gpu, cpuPowerModel, gpuPowerModel, cpuDistribution, gpuDistribution)
     }
 }
 
-/** Builds a [PowerModel]; unset fields fall back to [PowerModel.DEFAULT]. */
+/** Builds a [PowerSpec]; unset fields fall back to [PowerSpec.DEFAULT]. */
 @SdkDsl
 public class PowerModelBuilder {
     /** Shape of the utilization-to-power curve. */
@@ -126,5 +126,5 @@ public class PowerModelBuilder {
     /** Whether dynamic voltage and frequency scaling is modelled. */
     public var dvfs: Boolean = true
 
-    internal fun build(): PowerModel = PowerModel(type, maxPower, idlePower, power, calibrationFactor, asymUtil, dvfs)
+    internal fun build(): PowerSpec = PowerSpec(type, maxPower, idlePower, power, calibrationFactor, asymUtil, dvfs)
 }

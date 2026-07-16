@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +20,26 @@
  * SOFTWARE.
  */
 
-plugins {
-    `dokka-conventions`
-    `jacoco-aggregation`
-}
+package org.opendc.sdk.model.topology
 
-group = "org.opendc"
-version = "3.0-SNAPSHOT"
+import kotlinx.serialization.Serializable
+import org.opendc.common.units.DataSize
+import org.opendc.common.units.Frequency
 
-dependencies {
-    // Dokka 2 (DGP v2) dropped the automatic `dokkaHtmlMultiModule` aggregation: the aggregating
-    // project must consume each documented module explicitly. Register every subproject that applies
-    // the Dokka plugin (i.e. every `kotlin-library-conventions` module). `withId` defers each
-    // registration until that plugin is actually applied, so it does not depend on the order in which
-    // Gradle configures the projects.
-    subprojects.forEach { subproject ->
-        subproject.plugins.withId("org.jetbrains.dokka") {
-            dokka(subproject)
-        }
-    }
-}
+/**
+ * A memory (RAM) specification for a host.
+ *
+ * @property size Total memory capacity.
+ * @property speed Memory clock speed; a negative value denotes "unspecified".
+ * @property vendor Hardware vendor name.
+ * @property modelName Commercial model name.
+ * @property architecture Memory technology identifier.
+ */
+@Serializable
+public data class MemorySpec(
+    public val size: DataSize,
+    public val speed: Frequency = Frequency.ofMHz(-1),
+    public val vendor: String = "unknown",
+    public val modelName: String = "unknown",
+    public val architecture: String = "unknown",
+)

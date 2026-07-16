@@ -54,7 +54,7 @@ Remember to add any new files to the `nav` in `mkdocs.yml`.
 
 ## Previewing the site locally
 
-```bash
-pip install mkdocs-material
-mkdocs serve
+```{ .console .annotate }
+$ pip install mkdocs-material
+$ mkdocs serve
 ```

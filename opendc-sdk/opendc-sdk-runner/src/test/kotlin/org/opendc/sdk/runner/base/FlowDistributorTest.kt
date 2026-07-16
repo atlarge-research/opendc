@@ -24,8 +24,8 @@ package org.opendc.sdk.runner.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.sdk.model.workload.Task
-import org.opendc.sdk.model.workload.TaskFragment
+import org.opendc.sdk.model.workload.TaskFragmentSpec
+import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
 import org.opendc.sdk.runner.base.harness.fragment
@@ -436,7 +436,7 @@ class FlowDistributorTest {
                 createTestTask(
                     id = 0,
                     fragments =
-                        arrayListOf<TaskFragment>().apply {
+                        arrayListOf<TaskFragmentSpec>().apply {
                             repeat(1) { this.add(fragment(10 * 60 * 1000, 3000.0)) }
                         },
                     cpuCoreCount = 1,
@@ -458,7 +458,7 @@ class FlowDistributorTest {
                 createTestTask(
                     id = 0,
                     fragments =
-                        arrayListOf<TaskFragment>().apply {
+                        arrayListOf<TaskFragmentSpec>().apply {
                             repeat(1000) { this.add(fragment(10 * 60 * 1000, 2000.0)) }
                         },
                     cpuCoreCount = 1,
@@ -478,7 +478,7 @@ class FlowDistributorTest {
         val numTasks = 1000
 
         val workload =
-            arrayListOf<Task>().apply {
+            arrayListOf<TaskSpec>().apply {
                 repeat(numTasks) {
                     this.add(
                         createTestTask(

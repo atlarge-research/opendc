@@ -20,23 +20,31 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.topology
+package org.opendc.sdk.model.scheduler
 
 import kotlinx.serialization.Serializable
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
-import org.opendc.sdk.model.validation.validateEach
 
 /**
- * The datacenter a scenario runs on, described as a list of clusters.
+ * Configures when deferrable tasks are paused based on a (forecasted) carbon signal.
  *
- * @property clusters Clusters composing the datacenter.
+ * @property windowSize The number of past samples considered when deciding to stop tasks.
+ * @property forecast Whether to base the decision on forecasted rather than historical values.
+ * @property forecastThreshold The normalized threshold above which tasks are stopped.
+ * @property forecastSize The number of future samples to forecast.
  */
 @Serializable
-public data class Topology(public val clusters: List<Cluster>) : Validatable {
+public data class TaskStopperSpec(
+    public val windowSize: Int = 168,
+    public val forecast: Boolean = true,
+    public val forecastThreshold: Double = 0.6,
+    public val forecastSize: Int = 24,
+) : Validatable {
     override fun validate(): List<ValidationIssue> =
         buildList {
-            if (clusters.isEmpty()) add(ValidationIssue("clusters", "must not be empty"))
-            addAll(clusters.validateEach("clusters"))
+            if (windowSize < 1) add(ValidationIssue("windowSize", "must be >= 1"))
+            if (forecastSize < 1) add(ValidationIssue("forecastSize", "must be >= 1"))
+            if (forecastThreshold !in 0.0..1.0) add(ValidationIssue("forecastThreshold", "must be in 0.0..1.0"))
         }
 }

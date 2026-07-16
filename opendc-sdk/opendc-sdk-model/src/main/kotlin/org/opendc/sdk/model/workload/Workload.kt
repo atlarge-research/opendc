@@ -70,7 +70,7 @@ public data class TraceWorkload(
 @Serializable
 @SerialName("inline")
 public data class InlineWorkload(
-    public val tasks: List<Task>,
+    public val tasks: List<TaskSpec>,
     public val scalingPolicy: ScalingPolicy = ScalingPolicy.NoDelay,
 ) : Workload {
     override fun validate(): List<ValidationIssue> =

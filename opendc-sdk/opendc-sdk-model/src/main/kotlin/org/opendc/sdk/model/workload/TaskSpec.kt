@@ -49,7 +49,7 @@ import org.opendc.sdk.model.validation.ValidationIssue
  * @property children Identifiers of tasks that depend on this task.
  */
 @Serializable
-public data class Task(
+public data class TaskSpec(
     public val id: Int,
     public val name: String,
     public val submissionTime: TimeDelta,
@@ -57,7 +57,7 @@ public data class Task(
     public val cpuCoreCount: Int,
     public val cpuCapacity: Frequency,
     public val memory: DataSize,
-    public val fragments: List<TaskFragment>,
+    public val fragments: List<TaskFragmentSpec>,
     public val gpuCoreCount: Int = 0,
     public val gpuCapacity: Frequency = Frequency.ofMHz(0),
     public val gpuMemory: DataSize = DataSize.ofBytes(0),

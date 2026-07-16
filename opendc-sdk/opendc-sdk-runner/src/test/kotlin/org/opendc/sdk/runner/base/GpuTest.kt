@@ -24,7 +24,7 @@ package org.opendc.sdk.runner.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.sdk.model.topology.Topology
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
 import org.opendc.sdk.runner.base.harness.fragment
@@ -269,7 +269,7 @@ class GpuTest {
     }
 
     private fun assertGpuConfiguration(
-        topology: Topology,
+        topology: TopologySpec,
         coreCount: Int,
         coreSpeed: Double,
         memorySize: Long,

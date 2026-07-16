@@ -29,7 +29,7 @@ import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.experiment.Experiment
 import org.opendc.sdk.model.experiment.Scenario
-import org.opendc.sdk.model.export.ExportModel
+import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.failure.NoFailure
 import org.opendc.sdk.model.failure.TraceBasedFailure
 import org.opendc.sdk.model.resource.NamedReference
@@ -42,7 +42,7 @@ import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
 import org.opendc.sdk.model.scheduler.RamFilter
 import org.opendc.sdk.model.scheduler.RamWeigher
 import org.opendc.sdk.model.scheduler.SchedulerName
-import org.opendc.sdk.model.scheduler.TaskStopper
+import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
 import org.opendc.sdk.model.scheduler.VCpuFilter
 import org.opendc.sdk.model.scheduler.VCpuWeigher
@@ -149,7 +149,7 @@ class DslTest {
                 shortForecastThreshold = 0.1
                 longForecastThreshold = 0.5
                 forecastSize = 12
-                taskStopper = TaskStopper(windowSize = 50)
+                taskStopper = TaskStopperSpec(windowSize = 50)
                 memorize = false
                 filter(VCpuFilter(2.0))
                 weigher(VCpuWeigher())
@@ -159,7 +159,7 @@ class DslTest {
             TimeShiftAllocationPolicy(
                 filters = listOf(VCpuFilter(2.0)), weighers = listOf(VCpuWeigher()), windowSize = 100, subsetSize = 2,
                 forecast = false, shortForecastThreshold = 0.1, longForecastThreshold = 0.5, forecastSize = 12,
-                taskStopper = TaskStopper(windowSize = 50), memorize = false,
+                taskStopper = TaskStopperSpec(windowSize = 50), memorize = false,
             )
         assertEquals(expected, built)
     }
@@ -183,7 +183,7 @@ class DslTest {
                 topology(topology)
                 workload(workload)
                 allocationPolicy(policy)
-                exportModel = ExportModel(exportInterval = 15.minutes, printFrequency = 12)
+                exportModel = ExportSpec(exportInterval = 15.minutes, printFrequency = 12)
                 failureModel = TraceBasedFailure(NamedReference("failure-trace"))
                 maxNumFailures = 5
                 runs = 3
@@ -193,7 +193,7 @@ class DslTest {
         val expected =
             Scenario(
                 topology = topology, workload = workload, allocationPolicy = policy,
-                exportModel = ExportModel(exportInterval = 15.minutes, printFrequency = 12),
+                exportModel = ExportSpec(exportInterval = 15.minutes, printFrequency = 12),
                 failureModel = TraceBasedFailure(NamedReference("failure-trace")),
                 maxNumFailures = 5, runs = 3, initialSeed = 42, id = 7, name = "baseline",
             )
@@ -215,7 +215,7 @@ class DslTest {
                 allocationPolicy(prefabScheduler(SchedulerName.Mem))
                 allocationPolicy(prefabScheduler(SchedulerName.CoreMem))
                 failureModel(NoFailure)
-                exportModel(ExportModel())
+                exportModel(ExportSpec())
                 maxNumFailures(5)
                 maxNumFailures(10)
             }
@@ -225,7 +225,7 @@ class DslTest {
                 topologies = setOf(topology), workloads = setOf(workload),
                 allocationPolicies = setOf(PrefabAllocationPolicy(SchedulerName.Mem), PrefabAllocationPolicy(SchedulerName.CoreMem)),
                 failureModels = setOf(NoFailure), maxNumFailures = setOf(5, 10), checkpointModels = setOf(null),
-                exportModels = setOf(ExportModel()), runs = 5, initialSeed = 1, name = "sweep",
+                exportModels = setOf(ExportSpec()), runs = 5, initialSeed = 1, name = "sweep",
             )
         assertEquals(expected, built)
     }

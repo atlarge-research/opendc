@@ -72,7 +72,7 @@ internal fun SdkFailureModel.toEngine(
     when (this) {
         NoFailure -> null
         is TraceBasedFailure -> TraceBasedFailureModel(context, clock, service, random, resolve(source).toString(), startPoint, repeat)
-        is PrefabFailure -> createFailureModelPrefab(context, clock, service, random, EngineFailurePrefab.valueOf(prefab.name))
+        is PrefabFailure -> createFailureModelPrefab(context, clock, service, random, EngineFailurePrefab.valueOf(prefabName.name))
         is CustomFailure -> {
             val rng = Well19937c(random.nextLong())
             SampleBasedFailureModel(

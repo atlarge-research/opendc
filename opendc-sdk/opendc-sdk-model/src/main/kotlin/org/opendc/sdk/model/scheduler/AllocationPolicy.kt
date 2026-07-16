@@ -40,11 +40,11 @@ public sealed interface AllocationPolicy : Validatable {
 /**
  * Selects a named, prefabricated scheduler.
  *
- * @property scheduler The prefabricated scheduler to use.
+ * @property prefabName The prefabricated scheduler to use.
  */
 @Serializable
 @SerialName("prefab")
-public data class PrefabAllocationPolicy(public val scheduler: SchedulerName = SchedulerName.Mem) : AllocationPolicy
+public data class PrefabAllocationPolicy(public val prefabName: SchedulerName = SchedulerName.Mem) : AllocationPolicy
 
 /**
  * Builds a scheduler from a filter-then-weigh pipeline.
@@ -93,7 +93,7 @@ public data class TimeShiftAllocationPolicy(
     public val shortForecastThreshold: Double = 0.2,
     public val longForecastThreshold: Double = 0.35,
     public val forecastSize: Int = 24,
-    public val taskStopper: TaskStopper? = null,
+    public val taskStopper: TaskStopperSpec? = null,
     public val memorize: Boolean = true,
 ) : AllocationPolicy {
     override fun validate(): List<ValidationIssue> =

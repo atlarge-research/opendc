@@ -95,7 +95,7 @@ internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCo
                 wantSummary = !noSummary,
             )
         val backend: SimulationBackend = apiUrl?.let { RemoteBackend(it) } ?: LocalBackend()
-        // The backend stays framework-agnostic; translate its "not implemented yet" into a clean CLI error.
+
         val session =
             try {
                 backend.prepare(request)

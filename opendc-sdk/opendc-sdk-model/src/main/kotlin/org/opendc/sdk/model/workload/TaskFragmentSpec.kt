@@ -20,33 +20,25 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.export
+package org.opendc.sdk.model.workload
 
 import kotlinx.serialization.Serializable
+import org.opendc.common.units.DataSize
+import org.opendc.common.units.Frequency
 import org.opendc.common.units.TimeDelta
-import org.opendc.sdk.model.validation.Validatable
-import org.opendc.sdk.model.validation.ValidationIssue
 
 /**
- * Configuration controlling how simulation results are exported.
+ * A contiguous slice of a task's execution during which the resource demand is constant.
  *
- * @property exportInterval Wall-clock time between consecutive metric snapshots.
- * @property printFrequency Number of snapshots between progress prints, or `null` to disable printing.
- * @property columns Per-output-file column selections.
- * @property filesToExport Output files to produce.
+ * @property duration How long this slice lasts.
+ * @property cpuUsage The CPU demand held constant over the slice.
+ * @property gpuUsage The GPU compute demand held constant over the slice.
+ * @property gpuMemory The GPU memory demand held constant over the slice.
  */
 @Serializable
-public data class ExportModel(
-    public val exportInterval: TimeDelta = TimeDelta.ofMin(5),
-    public val printFrequency: Int? = 24,
-    public val columns: ExportColumns = ExportColumns(),
-    public val filesToExport: List<OutputFile> = OutputFile.entries.toList(),
-) : Validatable {
-    override fun validate(): List<ValidationIssue> =
-        buildList {
-            if (exportInterval.value <= 0.0) add(ValidationIssue("exportInterval", "must be greater than zero"))
-            if (printFrequency != null && printFrequency <= 0) {
-                add(ValidationIssue("printFrequency", "must be greater than zero"))
-            }
-        }
-}
+public data class TaskFragmentSpec(
+    public val duration: TimeDelta,
+    public val cpuUsage: Frequency,
+    public val gpuUsage: Frequency = Frequency.ofMHz(0),
+    public val gpuMemory: DataSize = DataSize.ofBytes(0),
+)

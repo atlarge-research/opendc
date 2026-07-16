@@ -20,25 +20,30 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.workload
+package org.opendc.sdk.model.checkpoint
 
 import kotlinx.serialization.Serializable
-import org.opendc.common.units.DataSize
-import org.opendc.common.units.Frequency
 import org.opendc.common.units.TimeDelta
+import org.opendc.sdk.model.validation.Validatable
+import org.opendc.sdk.model.validation.ValidationIssue
 
 /**
- * A contiguous slice of a task's execution during which the resource demand is constant.
+ * Configuration for periodic checkpointing of running tasks.
  *
- * @property duration How long this slice lasts.
- * @property cpuUsage The CPU demand held constant over the slice.
- * @property gpuUsage The GPU compute demand held constant over the slice.
- * @property gpuMemory The GPU memory demand held constant over the slice.
+ * @property interval Wall-clock time between consecutive checkpoints.
+ * @property duration Time it takes to write a single checkpoint.
+ * @property intervalScaling Multiplier applied to [interval] after each checkpoint.
  */
 @Serializable
-public data class TaskFragment(
-    public val duration: TimeDelta,
-    public val cpuUsage: Frequency,
-    public val gpuUsage: Frequency = Frequency.ofMHz(0),
-    public val gpuMemory: DataSize = DataSize.ofBytes(0),
-)
+public data class CheckpointSpec(
+    public val interval: TimeDelta = TimeDelta.ofHours(1),
+    public val duration: TimeDelta = TimeDelta.ofMin(5),
+    public val intervalScaling: Double = 1.0,
+) : Validatable {
+    override fun validate(): List<ValidationIssue> =
+        buildList {
+            if (interval.value <= 0.0) add(ValidationIssue("interval", "must be greater than zero"))
+            if (duration.value <= 0.0) add(ValidationIssue("duration", "must be greater than zero"))
+            if (intervalScaling <= 0.0) add(ValidationIssue("intervalScaling", "must be greater than zero"))
+        }
+}

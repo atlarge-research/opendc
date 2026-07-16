@@ -67,7 +67,7 @@ import org.opendc.compute.simulator.scheduler.weights.RamWeigher as EngineRamWei
 import org.opendc.compute.simulator.scheduler.weights.VCpuCapacityWeigher as EngineVCpuCapacityWeigher
 import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher as EngineVCpuWeigher
 import org.opendc.compute.simulator.scheduler.weights.VGpuWeigher as EngineVGpuWeigher
-import org.opendc.sdk.model.scheduler.TaskStopper as SdkTaskStopper
+import org.opendc.sdk.model.scheduler.TaskStopperSpec as SdkTaskStopper
 
 /**
  * Converts an SDK [AllocationPolicy] into an engine [ComputeScheduler], seeded by [seeder] and
@@ -79,7 +79,7 @@ internal fun AllocationPolicy.toScheduler(
     numHosts: Int,
 ): ComputeScheduler =
     when (this) {
-        is PrefabAllocationPolicy -> createPrefabComputeScheduler(scheduler.name, seeder, clock, numHosts)
+        is PrefabAllocationPolicy -> createPrefabComputeScheduler(prefabName.name, seeder, clock, numHosts)
         is FilterAllocationPolicy ->
             FilterScheduler(filters.map { it.toEngine() }, weighers.map { it.toEngine() }, subsetSize, seeder, numHosts)
         is TimeShiftAllocationPolicy -> toTimeshiftScheduler(seeder, clock)

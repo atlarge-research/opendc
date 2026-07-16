@@ -32,14 +32,14 @@ import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
 import org.opendc.sdk.model.export.AllColumns
 import org.opendc.sdk.model.export.ColumnSelection
-import org.opendc.sdk.model.export.ExportModel
+import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.export.OnlyColumns
 import org.opendc.sdk.model.export.OutputFile
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 import org.opendc.trace.util.parquet.exporter.Exportable
 import java.time.Duration
 
-/** The engine export settings derived from an SDK [ExportModel]. */
+/** The engine export settings derived from an SDK [ExportSpec]. */
 internal data class ExportSettings(
     val config: ComputeExportConfig,
     val filesToExport: Map<OutputFiles, Boolean>,
@@ -47,8 +47,8 @@ internal data class ExportSettings(
     val printFrequency: Int?,
 )
 
-/** Derives the engine export settings from this [ExportModel], adding GPU columns for [gpuCount] GPUs. */
-internal fun ExportModel.toExportSettings(gpuCount: Int): ExportSettings =
+/** Derives the engine export settings from this [ExportSpec], adding GPU columns for [gpuCount] GPUs. */
+internal fun ExportSpec.toExportSettings(gpuCount: Int): ExportSettings =
     ExportSettings(
         config = toComputeExportConfig(gpuCount),
         filesToExport = toFilesToExport(),
@@ -56,7 +56,7 @@ internal fun ExportModel.toExportSettings(gpuCount: Int): ExportSettings =
         printFrequency = printFrequency,
     )
 
-private fun ExportModel.toComputeExportConfig(gpuCount: Int): ComputeExportConfig {
+private fun ExportSpec.toComputeExportConfig(gpuCount: Int): ComputeExportConfig {
     ComputeExportConfig.loadDfltColumns()
     return ComputeExportConfig(
         columns.host.resolve<HostTableReader>(),
@@ -75,7 +75,7 @@ private inline fun <reified T : Exportable> ColumnSelection.resolve(): List<Expo
     }
 }
 
-private fun ExportModel.toFilesToExport(): Map<OutputFiles, Boolean> {
+private fun ExportSpec.toFilesToExport(): Map<OutputFiles, Boolean> {
     val enabled = filesToExport.map { it.toEngineOutputFiles() }.toSet()
     return OutputFiles.entries.associateWith { it in enabled }
 }
