@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.runner.internal
+package org.opendc.sdk.runner.factory
 
 import org.apache.commons.math3.distribution.ConstantRealDistribution
 import org.apache.commons.math3.distribution.RealDistribution

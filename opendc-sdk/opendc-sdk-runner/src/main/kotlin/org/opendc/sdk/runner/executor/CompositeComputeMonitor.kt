@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.runner.internal
+package org.opendc.sdk.runner.executor
 
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReader

@@ -27,8 +27,8 @@ import org.opendc.sdk.model.experiment.Scenario
 import org.opendc.sdk.model.experiment.expand
 import org.opendc.sdk.model.resource.ResourceProvisioner
 import org.opendc.sdk.model.workload.Workload
-import org.opendc.sdk.runner.internal.ResourceScope
-import org.opendc.sdk.runner.internal.toServiceTasks
+import org.opendc.sdk.runner.executor.ResourceScope
+import org.opendc.sdk.runner.factory.toServiceTasks
 
 /**
  * How many tasks a single run of [scenario] will submit, resolved before any simulation runs.

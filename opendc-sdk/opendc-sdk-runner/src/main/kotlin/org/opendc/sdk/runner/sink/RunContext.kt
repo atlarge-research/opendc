@@ -23,7 +23,7 @@
 package org.opendc.sdk.runner.sink
 
 import org.opendc.sdk.model.experiment.Scenario
-import org.opendc.sdk.runner.internal.ExportSettings
+import org.opendc.sdk.runner.factory.ExportSettings
 
 /**
  * Identifies the single run an [OutputSink] session is opened for.

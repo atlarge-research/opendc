@@ -24,6 +24,9 @@ package org.opendc.sdk.runner.sink
 
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.OutputFiles
+import org.opendc.sdk.model.export.ExportSpec
+import org.opendc.sdk.runner.factory.ExportSettings
+import org.opendc.sdk.runner.factory.toExportSettings
 
 /**
  * A destination for the metrics produced by a simulation run.
@@ -48,6 +51,8 @@ public fun interface OutputSink {
 public interface SinkSession {
     public val monitor: ComputeMonitor
     public val tables: Set<OutputFiles>
+    public val exportSpec: ExportSpec?
+        get() = null
 
     /** The result harvested after the run completes, or `null` if the sink produces none. */
     public fun result(): SinkResult?

@@ -30,7 +30,7 @@ import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTable
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
 import org.opendc.sdk.model.export.OutputFile
-import org.opendc.sdk.runner.internal.toEngineOutputFiles
+import org.opendc.sdk.runner.factory.toEngineOutputFiles
 
 /**
  * Captures each run's metrics in memory as strongly-typed [CollectedMetrics], available on the

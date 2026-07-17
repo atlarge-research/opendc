@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.runner.internal
+package org.opendc.sdk.runner.factory
 
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.scheduler.FilterScheduler

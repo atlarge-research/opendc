@@ -26,7 +26,7 @@ import org.opendc.sdk.model.experiment.Experiment
 import org.opendc.sdk.model.experiment.Scenario
 import org.opendc.sdk.model.experiment.expand
 import org.opendc.sdk.model.resource.ResourceProvisioner
-import org.opendc.sdk.runner.internal.runScenario
+import org.opendc.sdk.runner.executor.runScenario
 import org.opendc.sdk.runner.sink.OutputSink
 import org.opendc.sdk.runner.sink.ParquetSink
 import java.nio.file.Path
@@ -100,7 +100,7 @@ public class OpenDC private constructor(
     public class Builder {
         private var provisioner: ResourceProvisioner? = null
         private val sinks = mutableListOf<OutputSink>()
-        private var parallelism: Int = Runtime.getRuntime().availableProcessors()
+        private var parallelism: Int = 1
 
         /** Sets the provisioner that resolves external trace references (required). */
         public fun provisioner(provisioner: ResourceProvisioner): Builder = apply { this.provisioner = provisioner }
@@ -114,7 +114,9 @@ public class OpenDC private constructor(
         /** Sets how many runs execute concurrently (defaults to the available processor count). */
         public fun parallelism(threads: Int): Builder =
             apply {
-                require(threads >= 1) { "parallelism must be >= 1" }
+                require(threads in 1..Runtime.getRuntime().availableProcessors()) {
+                    "parallelism must be between 1 and the number of available processors"
+                }
                 this.parallelism = threads
             }
 

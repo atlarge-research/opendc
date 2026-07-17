@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.runner.internal
+package org.opendc.sdk.runner.executor
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -32,6 +32,7 @@ import org.opendc.compute.simulator.TaskWatcher
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.runner.factory.toEngine
 import java.nio.file.Path
 import java.time.InstantSource
 import java.util.Random

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.runner.internal
+package org.opendc.sdk.runner.executor
 
 import org.opendc.compute.simulator.provisioner.Provisioner
 import org.opendc.compute.simulator.provisioner.ProvisioningContext
@@ -32,9 +32,15 @@ import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.telemetry.OutputFiles
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.sdk.model.experiment.Scenario
+import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.resource.ResourceProvisioner
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
 import org.opendc.sdk.runner.RunResult
+import org.opendc.sdk.runner.factory.toClusterSpecs
+import org.opendc.sdk.runner.factory.toEngine
+import org.opendc.sdk.runner.factory.toExportSettings
+import org.opendc.sdk.runner.factory.toScheduler
+import org.opendc.sdk.runner.factory.toServiceTasks
 import org.opendc.sdk.runner.sink.OutputSink
 import org.opendc.sdk.runner.sink.RunContext
 import org.opendc.sdk.runner.sink.SinkSession
@@ -65,7 +71,8 @@ internal fun runScenario(
     runSimulation {
         ResourceScope(provisioner).use { resources ->
             Provisioner(dispatcher, seed).use { engine ->
-                result = ScenarioRun(this, engine, resources, scenario, experimentName, scenarioId, seed, sinks).execute()
+                result =
+                    ScenarioRun(this, engine, resources, scenario, experimentName, scenarioId, seed, sinks).execute()
             }
         }
     }
@@ -108,7 +115,11 @@ private class ScenarioRun(
     ) {
         val numHosts = clusters.sumOf { it.hostSpecs.size }
         engine.runSteps(
-            setupComputeService(SERVICE_DOMAIN, { it.createScheduler(numHosts) }, maxNumFailures = scenario.maxNumFailures),
+            setupComputeService(
+                SERVICE_DOMAIN,
+                { it.createScheduler(numHosts) },
+                maxNumFailures = scenario.maxNumFailures
+            ),
             setupHosts(SERVICE_DOMAIN, clusters, startTime),
         )
     }
@@ -127,18 +138,21 @@ private class ScenarioRun(
         val export = scenario.exportModel.toExportSettings(gpuCount)
         val context = RunContext(scenario, experimentName, scenarioId, seed, gpuCount, taskCount, export)
         val sessions = sinks.map { it.open(context) }
-        val monitor = CompositeComputeMonitor(sessions.map { it.monitor })
-        val recorded = OutputFiles.entries.associateWith { file -> sessions.any { file in it.tables } }
-        engine.runStep(
-            registerComputeMonitor(
-                SERVICE_DOMAIN,
-                monitor,
-                export.exportInterval,
-                Duration.ofMillis(startTime),
-                recorded,
-                export.printFrequency,
-            ),
-        )
+
+        sessions.forEach { session ->
+            val currentExport = session.exportSpec?.toExportSettings(gpuCount) ?: export
+            engine.runStep(
+                registerComputeMonitor(
+                    SERVICE_DOMAIN,
+                    session.monitor,
+                    currentExport.exportInterval,
+                    Duration.ofMillis(startTime),
+                    OutputFiles.entries.associateWith { it in session.tables },
+                    currentExport.printFrequency
+                )
+            )
+        }
+
         service.setTasksExpected(taskCount)
         service.setMetricReader(engine.getMonitor()!!)
         return sessions

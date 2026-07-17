@@ -22,7 +22,6 @@
 
 package org.opendc.sdk.runner.base.harness
 
-import kotlinx.serialization.decodeFromString
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.TimeDelta
@@ -44,8 +43,8 @@ import org.opendc.sdk.model.workload.InlineWorkload
 import org.opendc.sdk.model.workload.ScalingPolicy
 import org.opendc.sdk.model.workload.TaskFragmentSpec
 import org.opendc.sdk.model.workload.TaskSpec
-import org.opendc.sdk.runner.internal.runScenario
-import org.opendc.sdk.runner.internal.toClusterSpecs
+import org.opendc.sdk.runner.executor.runScenario
+import org.opendc.sdk.runner.factory.toClusterSpecs
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
 import org.opendc.sdk.runner.sink.MonitorSink
 import java.nio.file.Path

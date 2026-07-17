@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.runner.internal
+package org.opendc.sdk.runner.executor
 
 import org.opendc.sdk.model.resource.ProvisionedResource
 import org.opendc.sdk.model.resource.ResourceProvisioner
