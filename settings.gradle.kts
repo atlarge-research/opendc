@@ -80,5 +80,3 @@ include("opendc-sdk:opendc-sdk-model")
 include("opendc-sdk:opendc-sdk-runner")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-
-include("opendc-sdk:opendc-sdk-python")

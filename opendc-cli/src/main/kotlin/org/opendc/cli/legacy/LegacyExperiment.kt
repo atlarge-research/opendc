@@ -139,7 +139,7 @@ private fun JsonObject.toSdkAllocationPolicy(): JsonObject =
         "prefab" ->
             buildJsonObject {
                 put("type", JsonPrimitive("prefab"))
-                rename(this@toSdkAllocationPolicy, from = "policyName", to = "scheduler")
+                rename(this@toSdkAllocationPolicy, from = "policyName", to = "prefabName")
             }
         "filter", "timeshift" ->
             buildJsonObject {
@@ -201,7 +201,7 @@ private fun JsonElement.toSdkFailureModel(): JsonObject {
         "prefab" ->
             buildJsonObject {
                 put("type", JsonPrimitive("prefab"))
-                rename(legacy, from = "prefabName", to = "prefab")
+                keep(legacy, "prefabName")
             }
         "custom" ->
             buildJsonObject {
