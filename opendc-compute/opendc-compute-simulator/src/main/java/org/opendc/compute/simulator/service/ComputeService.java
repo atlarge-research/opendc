@@ -128,7 +128,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     private final List<ServiceTask> tasksToRemove = new ArrayList<>();
 
-    private ComputeMetricReader metricReader;
+    private final List<ComputeMetricReader> metricReaders = new ArrayList<>();
 
     /**
      * A [HostListener] used to track the active tasks.
@@ -360,8 +360,8 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         return Collections.unmodifiableSet(this.batteries);
     }
 
-    public void setMetricReader(ComputeMetricReader metricReader) {
-        this.metricReader = metricReader;
+    public void addMetricReader(List<ComputeMetricReader> metricReaders) {
+        this.metricReaders.addAll(metricReaders);
     }
 
     public void setTasksExpected(int numberOfTasks) {
@@ -371,10 +371,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     public void setTaskToBeRemoved(ServiceTask task) {
         this.tasksToRemove.add(task);
         if ((this.tasksTerminated + this.tasksCompleted) == this.tasksExpected) {
-            if (this.metricReader != null) {
-                this.metricReader
-                        .loggState(); // Logg the state for the final time. This will also delete all remaining tasks.
-            }
+            this.metricReaders.forEach(ComputeMetricReader::loggState);
         }
     }
 

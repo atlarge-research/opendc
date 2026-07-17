@@ -32,7 +32,6 @@ import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.telemetry.OutputFiles
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.sdk.model.experiment.Scenario
-import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.resource.ResourceProvisioner
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
 import org.opendc.sdk.runner.RunResult
@@ -118,7 +117,7 @@ private class ScenarioRun(
             setupComputeService(
                 SERVICE_DOMAIN,
                 { it.createScheduler(numHosts) },
-                maxNumFailures = scenario.maxNumFailures
+                maxNumFailures = scenario.maxNumFailures,
             ),
             setupHosts(SERVICE_DOMAIN, clusters, startTime),
         )
@@ -148,13 +147,13 @@ private class ScenarioRun(
                     currentExport.exportInterval,
                     Duration.ofMillis(startTime),
                     OutputFiles.entries.associateWith { it in session.tables },
-                    currentExport.printFrequency
-                )
+                    currentExport.printFrequency,
+                ),
             )
         }
 
         service.setTasksExpected(taskCount)
-        service.setMetricReader(engine.getMonitor()!!)
+        service.addMetricReader(engine.getMonitors())
         return sessions
     }
 

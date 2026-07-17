@@ -143,7 +143,7 @@ fun runTest(
 
             val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
             service.setTasksExpected(workload.size)
-            service.setMetricReader(provisioner.getMonitor())
+            service.addMetricReader(provisioner.getMonitors())
 
             val workloadCopy = ArrayList<ServiceTask>()
             for (task in workload) {

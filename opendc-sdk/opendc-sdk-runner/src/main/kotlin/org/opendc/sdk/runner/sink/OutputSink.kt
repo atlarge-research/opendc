@@ -25,8 +25,6 @@ package org.opendc.sdk.runner.sink
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.OutputFiles
 import org.opendc.sdk.model.export.ExportSpec
-import org.opendc.sdk.runner.factory.ExportSettings
-import org.opendc.sdk.runner.factory.toExportSettings
 
 /**
  * A destination for the metrics produced by a simulation run.

@@ -136,7 +136,7 @@ public fun runScenario(
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
             service.setTasksExpected(workload.size)
-            service.setMetricReader(provisioner.getMonitor())
+            service.addMetricReader(provisioner.getMonitors())
 
             // TODO: Improve how the allocation policy and carbon model are created.
             var carbonModel: CarbonModel?
