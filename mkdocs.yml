@@ -1,23 +1,34 @@
-site_name: OpenDC Documentation
+site_name: OpenDC Docs
 site_description: Reference documentation for the OpenDC datacenter simulation platform
 repo_url: https://github.com/atlarge-research/opendc
+repo_name: OpenDC
 docs_dir: docs
 
 theme:
   name: material
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+  icon:
+    repo: fontawesome/brands/github
   features:
     - navigation.sections
     - navigation.top
+    - content.code.annotate
     - content.code.copy
   palette:
-    - scheme: default
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
-    - scheme: slate
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
   # Required for the explicit `{ #anchor }` heading ids emitted by the doc generator.

@@ -1,0 +1,31 @@
+{
+    "clusters": [
+        {
+            "name": "C01",
+            "hosts": [
+                {
+                    "name": "H01",
+                    "cpu": {
+                        "coreCount": 1,
+                        "coreSpeed": "2 GHz"
+                    },
+                    "memory": {
+                        "size": "140457600000 Bytes"
+                    },
+                    "cpuPowerModel": {
+                        "type": "linear",
+                        "power": "400 Watts",
+                        "idlePower": "100 Watts",
+                        "maxPower": "200 Watts"
+                    },
+                    "gpu": {
+                        "coreCount": 1,
+                        "coreSpeed": "2 GHz",
+                        "memory": "4096 MiB",
+                        "memoryBandwidth": "500 Kibps"
+                    }
+                }
+            ]
+        }
+    ]
+}

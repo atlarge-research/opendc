@@ -62,14 +62,8 @@ public class Provisioner(dispatcher: Dispatcher, seed: Long) : AutoCloseable {
     public val registry: ServiceRegistry
         get() = context.registry
 
-    public fun getMonitor(): ComputeMetricReader? {
-        for (element in stack) {
-            if (element is ComputeMetricReader) {
-                return element
-            }
-        }
-
-        return null
+    public fun getMonitors(): List<ComputeMetricReader> {
+        return stack.filterIsInstance<ComputeMetricReader>()
     }
 
     /**

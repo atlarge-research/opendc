@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.opendc.experiments.base
 
 import org.junit.jupiter.api.Test

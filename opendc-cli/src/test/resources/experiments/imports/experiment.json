@@ -1,0 +1,16 @@
+{
+    "name": "imports",
+    "topologies": [
+        { "importFrom": "topology.json" }
+    ],
+    "workloads": [
+        { "importFrom": "workload.json" }
+    ],
+    "allocationPolicies": [
+        { "type": "prefab", "scheduler": "Mem" }
+    ],
+    "exportModels": [
+        { "exportInterval": "1 minutes", "printFrequency": null }
+    ],
+    "runs": 1
+}

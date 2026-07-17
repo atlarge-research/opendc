@@ -1,0 +1,154 @@
+{
+    "name": "features",
+    "outputFolder": "output",
+    "initialSeed": 7,
+    "runs": 3,
+    "maxNumFailures": [5, 20],
+    "topologies": [
+        {
+            "pathToFile": "topologies/features/accelerated.json"
+        },
+        {
+            "pathToFile": "topologies/features/battery.json"
+        }
+    ],
+    "workloads": [
+        {
+            "pathToFile": "workload_traces/surf_week",
+            "type": "ComputeWorkload",
+            "sampleFraction": 0.5,
+            "submissionTime": "2024-03-01T00:00:00",
+            "deferAll": true,
+            "scalingPolicy": "Perfect"
+        }
+    ],
+    "allocationPolicies": [
+        {
+            "type": "prefab",
+            "policyName": "CoreMem"
+        },
+        {
+            "type": "filter",
+            "filters": [
+                {
+                    "type": "Compute",
+                    "filterName": "Compute"
+                },
+                {
+                    "type": "Ram",
+                    "allocationRatio": 1.5
+                },
+                {
+                    "type": "VCpu",
+                    "allocationRatio": 16.0
+                },
+                {
+                    "type": "InstanceCount",
+                    "limit": 8
+                }
+            ],
+            "weighers": [
+                {
+                    "type": "CoreRam",
+                    "multiplier": 1.0
+                },
+                {
+                    "type": "VCpuCapacity",
+                    "multiplier": -1.0
+                }
+            ],
+            "subsetSize": 2
+        },
+        {
+            "type": "timeshift",
+            "filters": [
+                {
+                    "type": "Compute"
+                }
+            ],
+            "weighers": [
+                {
+                    "type": "Ram",
+                    "multiplier": 1.0
+                }
+            ],
+            "windowSize": 168,
+            "forecast": true,
+            "shortForecastThreshold": 0.2,
+            "longForecastThreshold": 0.35,
+            "forecastSize": 24,
+            "memorize": false,
+            "taskStopper": {
+                "windowSize": 168,
+                "forecast": true,
+                "forecastThreshold": 0.6,
+                "forecastSize": 24
+            }
+        }
+    ],
+    "failureModels": [
+        null,
+        {
+            "type": "no"
+        },
+        {
+            "type": "prefab",
+            "prefabName": "G5k06Exp"
+        },
+        {
+            "type": "trace-based",
+            "pathToFile": "failure_traces/Facebook_user_reported.parquet",
+            "startPoint": 0.25,
+            "repeat": false
+        },
+        {
+            "type": "custom",
+            "iatSampler": {
+                "type": "exponential",
+                "mean": 3600.0
+            },
+            "durationSampler": {
+                "type": "log-normal",
+                "scale": 2.0,
+                "shape": 0.5
+            },
+            "nohSampler": {
+                "type": "uniform",
+                "upper": 0.5,
+                "lower": 0.1
+            }
+        }
+    ],
+    "checkpointModels": [
+        null,
+        {
+            "checkpointInterval": 3600000,
+            "checkpointDuration": 300000,
+            "checkpointIntervalScaling": 1.5
+        }
+    ],
+    "exportModels": [
+        {
+            "exportInterval": 300,
+            "printFrequency": 24,
+            "filesToExport": [
+                "host",
+                "task",
+                "powerSource",
+                "battery",
+                "service"
+            ],
+            "computeExportConfig": {
+                "hostExportColumns": [
+                    "timestamp",
+                    "host_name",
+                    "cpu_utilization"
+                ],
+                "taskExportColumns": [
+                    "timestamp",
+                    "task_name"
+                ]
+            }
+        }
+    ]
+}

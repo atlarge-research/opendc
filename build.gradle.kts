@@ -27,3 +27,16 @@ plugins {
 
 group = "org.opendc"
 version = "3.0-SNAPSHOT"
+
+dependencies {
+    // Dokka 2 (DGP v2) dropped the automatic `dokkaHtmlMultiModule` aggregation: the aggregating
+    // project must consume each documented module explicitly. Register every subproject that applies
+    // the Dokka plugin (i.e. every `kotlin-library-conventions` module). `withId` defers each
+    // registration until that plugin is actually applied, so it does not depend on the order in which
+    // Gradle configures the projects.
+    subprojects.forEach { subproject ->
+        subproject.plugins.withId("org.jetbrains.dokka") {
+            dokka(subproject)
+        }
+    }
+}

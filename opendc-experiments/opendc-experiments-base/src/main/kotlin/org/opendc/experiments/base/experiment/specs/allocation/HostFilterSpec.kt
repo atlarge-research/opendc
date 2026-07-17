@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.opendc.experiments.base.experiment.specs.allocation
 
 import kotlinx.serialization.SerialName
@@ -56,6 +58,7 @@ public enum class HostFilterEnum {
  * [VCpuHostFilterSpec] (`"VCpu"`).
  */
 @Serializable
+@Deprecated("Replaced by the opendc-sdk model (org.opendc.sdk.model.*); run experiments with the new opendc CLI (opendc-cli).")
 public sealed class HostFilterSpec {
     /**
      * Validate the constraints of this host filter specification.

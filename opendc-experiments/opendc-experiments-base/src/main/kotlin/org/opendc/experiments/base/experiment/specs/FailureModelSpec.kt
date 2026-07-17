@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.opendc.experiments.base.experiment.specs
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -57,6 +59,7 @@ import kotlin.coroutines.CoroutineContext
  */
 
 @Serializable
+@Deprecated("Replaced by the opendc-sdk model (org.opendc.sdk.model.*); run experiments with the new opendc CLI (opendc-cli).")
 public sealed interface FailureModelSpec {
     public var name: String
 
@@ -188,6 +191,7 @@ public data class CustomFailureModelSpec(
 */
 
 @Serializable
+@Deprecated("Replaced by the opendc-sdk model (org.opendc.sdk.model.*); run experiments with the new opendc CLI (opendc-cli).")
 public sealed interface DistributionSpec {
     /**
      * Validate the constraints of this distribution specification.

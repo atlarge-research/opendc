@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.opendc.experiments.base.experiment.specs.allocation
 
 import kotlinx.serialization.SerialName
@@ -43,6 +45,7 @@ import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher
  * [VCpuWeigherSpec] (`"VCpu"`).
  */
 @Serializable
+@Deprecated("Replaced by the opendc-sdk model (org.opendc.sdk.model.*); run experiments with the new opendc CLI (opendc-cli).")
 public sealed class HostWeigherSpec {
     /**
      * The factor by which this weigher is scaled when ranking hosts.

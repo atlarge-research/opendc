@@ -1,0 +1,89 @@
+{
+    "name": "inline-workload",
+    "topology": {
+        "clusters": [
+            {
+                "name": "single-cluster",
+                "hosts": [
+                    {
+                        "cpu": {
+                            "coreCount": 16,
+                            "coreSpeed": "2.5 GHz"
+                        },
+                        "memory": {
+                            "size": "64 GiB"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "workload": {
+        "type": "inline",
+        "scalingPolicy": "Perfect",
+        "tasks": [
+            {
+                "id": 0,
+                "name": "web-0",
+                "submissionTime": "0 minutes",
+                "duration": "30 minutes",
+                "cpuCoreCount": 4,
+                "cpuCapacity": "2.4 GHz",
+                "memory": "8 GiB",
+                "fragments": [
+                    {
+                        "duration": "10 minutes",
+                        "cpuUsage": "2.4 GHz"
+                    },
+                    {
+                        "duration": "20 minutes",
+                        "cpuUsage": "1.2 GHz"
+                    }
+                ]
+            },
+            {
+                "id": 1,
+                "name": "batch-1",
+                "submissionTime": "5 minutes",
+                "duration": "15 minutes",
+                "cpuCoreCount": 8,
+                "cpuCapacity": "3.0 GHz",
+                "memory": "16 GiB",
+                "deferrable": true,
+                "deadline": "2 hours",
+                "parents": [
+                    0
+                ],
+                "fragments": [
+                    {
+                        "duration": "15 minutes",
+                        "cpuUsage": "3.0 GHz"
+                    }
+                ]
+            }
+        ]
+    },
+    "allocationPolicy": {
+        "type": "filter",
+        "filters": [
+            {
+                "type": "compute"
+            },
+            {
+                "type": "ram",
+                "allocationRatio": 1.5
+            },
+            {
+                "type": "vcpu",
+                "allocationRatio": 16.0
+            }
+        ],
+        "weighers": [
+            {
+                "type": "coreRam",
+                "multiplier": 1.0
+            }
+        ],
+        "subsetSize": 1
+    }
+}

@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.opendc.experiments
 
 import org.opendc.experiments.base.runner.ExperimentCommand

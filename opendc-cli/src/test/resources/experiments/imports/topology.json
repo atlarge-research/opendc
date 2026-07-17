@@ -1,0 +1,14 @@
+{
+    "clusters": [
+        {
+            "name": "cluster",
+            "hosts": [
+                { "importFrom": "hosts/big-host.json", "count": 4 }
+            ],
+            "powerSource": {
+                "name": "grid",
+                "maxPower": "10000 Watts"
+            }
+        }
+    ]
+}

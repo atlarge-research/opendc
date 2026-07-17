@@ -40,6 +40,7 @@ import kotlin.getValue
  * @property filesToExport The output files that should be written during the simulation. Default is all files.
  */
 @Serializable
+@Deprecated("Replaced by the opendc-sdk model (org.opendc.sdk.model.*); run experiments with the new opendc CLI (opendc-cli).")
 public data class ExportModelSpec(
     val exportInterval: Long = 5 * 60,
     var printFrequency: Int? = 24,

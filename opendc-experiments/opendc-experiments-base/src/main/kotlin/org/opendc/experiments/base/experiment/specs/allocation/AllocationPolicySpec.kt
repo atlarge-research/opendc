@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.opendc.experiments.base.experiment.specs.allocation
 
 import kotlinx.serialization.SerialName
@@ -45,6 +47,7 @@ import kotlin.coroutines.CoroutineContext
  * - [TimeShiftAllocationPolicySpec] (`"timeshift"`): a carbon-aware scheduler that shifts tasks in time.
  */
 @Serializable
+@Deprecated("Replaced by the opendc-sdk model (org.opendc.sdk.model.*); run experiments with the new opendc CLI (opendc-cli).")
 public sealed interface AllocationPolicySpec {
     /**
      * Validate the constraints of this allocation policy specification.

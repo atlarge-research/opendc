@@ -1,0 +1,94 @@
+{
+    "name": "inline-topology-trace-workload",
+    "topology": {
+        "clusters": [
+            {
+                "name": "compute-cluster",
+                "count": 1,
+                "hosts": [
+                    {
+                        "name": "cpu-host",
+                        "count": 8,
+                        "cpu": {
+                            "coreCount": 32,
+                            "coreSpeed": "3.2 GHz",
+                            "count": 2,
+                            "vendor": "AMD",
+                            "modelName": "EPYC 7502",
+                            "architecture": "Zen2"
+                        },
+                        "memory": {
+                            "size": "128 GiB",
+                            "speed": "3.2 GHz"
+                        },
+                        "cpuPowerModel": {
+                            "type": "linear",
+                            "maxPower": "400 Watts",
+                            "idlePower": "120 Watts"
+                        }
+                    },
+                    {
+                        "name": "gpu-host",
+                        "count": 2,
+                        "cpu": {
+                            "coreCount": 64,
+                            "coreSpeed": "2.6 GHz",
+                            "count": 2,
+                            "vendor": "Intel"
+                        },
+                        "memory": {
+                            "size": "256 GiB"
+                        },
+                        "gpu": {
+                            "coreCount": 6912,
+                            "coreSpeed": "1.4 GHz",
+                            "count": 4,
+                            "memory": "40 GiB",
+                            "memoryBandwidth": "1600 GBps",
+                            "vendor": "NVIDIA",
+                            "modelName": "A100",
+                            "architecture": "Ampere",
+                            "virtualizationOverhead": {
+                                "type": "constant",
+                                "percentageOverhead": 5.0
+                            }
+                        },
+                        "cpuPowerModel": {
+                            "type": "square",
+                            "maxPower": "500 Watts",
+                            "idlePower": "150 Watts"
+                        },
+                        "gpuPowerModel": {
+                            "type": "cubic",
+                            "maxPower": "400 Watts",
+                            "idlePower": "100 Watts"
+                        },
+                        "gpuDistribution": {
+                            "type": "bestEffort",
+                            "updateIntervalMs": 500
+                        }
+                    }
+                ],
+                "powerSource": {
+                    "name": "grid",
+                    "maxPower": "50 kWatts"
+                }
+            }
+        ]
+    },
+    "workload": {
+        "type": "trace",
+        "source": {
+            "type": "named",
+            "name": "bitbrains-small"
+        },
+        "sampleFraction": 0.5,
+        "submissionTime": "2022-01-01T00:00",
+        "scalingPolicy": "NoDelay",
+        "deferAll": false
+    },
+    "allocationPolicy": {
+        "type": "prefab",
+        "scheduler": "Mem"
+    }
+}

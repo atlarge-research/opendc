@@ -1,0 +1,122 @@
+{
+    "clusters": [
+        {
+            "name": "GpuCluster",
+            "count": 1,
+            "hosts": [
+                {
+                    "name": "ConstantOverheadHost",
+                    "count": 2,
+                    "cpu": {
+                        "coreCount": 4,
+                        "coreSpeed": 2000,
+                        "count": 2,
+                        "vendor": "AMD",
+                        "modelName": "EPYC 7502",
+                        "arch": "Zen2"
+                    },
+                    "memory": {
+                        "memorySize": 140457600000,
+                        "memorySpeed": 3200,
+                        "vendor": "Samsung",
+                        "modelName": "M393A4K40BB1",
+                        "arch": "DDR4"
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    },
+                    "cpuDistributionPolicy": {
+                        "type": "MAX_MIN_FAIRNESS"
+                    },
+                    "gpu": {
+                        "count": 4,
+                        "coreCount": 5120,
+                        "coreSpeed": 5000,
+                        "memorySize": 30517578125,
+                        "memoryBandwidth": "900 GBps",
+                        "vendor": "NVIDIA",
+                        "modelName": "Tesla V100",
+                        "architecture": "Volta",
+                        "virtualizationOverHeadModel": {
+                            "type": "CONSTANT",
+                            "percentageOverhead": 0.05
+                        }
+                    },
+                    "gpuPowerModel": {
+                        "modelType": "sqrt",
+                        "power": 800.0,
+                        "idlePower": 300.0,
+                        "maxPower": 600.0
+                    },
+                    "gpuDistributionPolicy": {
+                        "type": "BEST_EFFORT",
+                        "updateIntervalLength": 60000
+                    }
+                },
+                {
+                    "name": "ShareBasedHost",
+                    "cpu": {
+                        "coreCount": 1,
+                        "coreSpeed": 2000
+                    },
+                    "memory": {
+                        "memorySize": 140457600000
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "linear",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    },
+                    "gpu": {
+                        "coreCount": 3,
+                        "coreSpeed": 1000,
+                        "virtualizationOverHeadModel": {
+                            "type": "SHARE_BASED"
+                        }
+                    },
+                    "gpuPowerModel": {
+                        "modelType": "cubic",
+                        "power": 800.0,
+                        "idlePower": 300.0,
+                        "maxPower": 600.0
+                    },
+                    "gpuDistributionPolicy": {
+                        "type": "FIXED_SHARE",
+                        "shareRatio": 0.5
+                    }
+                },
+                {
+                    "name": "UnsetOverheadHost",
+                    "cpu": {
+                        "coreCount": 1,
+                        "coreSpeed": 2000
+                    },
+                    "memory": {
+                        "memorySize": 140457600000
+                    },
+                    "cpuPowerModel": {
+                        "modelType": "square",
+                        "power": 400.0,
+                        "idlePower": 100.0,
+                        "maxPower": 200.0
+                    },
+                    "gpu": {
+                        "coreCount": 2,
+                        "coreSpeed": 1000,
+                        "virtualizationOverHeadModel": {
+                            "type": "CONSTANT",
+                            "percentageOverhead": -1.0
+                        }
+                    },
+                    "gpuDistributionPolicy": {
+                        "type": "EQUAL_SHARE"
+                    }
+                }
+            ]
+        }
+    ]
+}

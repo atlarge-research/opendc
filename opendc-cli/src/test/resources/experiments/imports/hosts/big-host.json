@@ -1,0 +1,16 @@
+{
+    "name": "big-host",
+    "count": 1,
+    "cpu": {
+        "coreCount": 8,
+        "coreSpeed": "3.0 GHz"
+    },
+    "memory": {
+        "size": "16 GiB"
+    },
+    "cpuPowerModel": {
+        "type": "linear",
+        "maxPower": "300 Watts",
+        "idlePower": "80 Watts"
+    }
+}

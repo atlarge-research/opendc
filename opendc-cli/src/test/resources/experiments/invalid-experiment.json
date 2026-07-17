@@ -1,0 +1,42 @@
+{
+    "name": "invalid",
+    "topologies": [
+        {
+            "clusters": [
+                {
+                    "name": "cluster",
+                    "hosts": [
+                        {
+                            "cpu": {
+                                "coreCount": 0,
+                                "coreSpeed": "3.0 GHz"
+                            },
+                            "memory": {
+                                "size": "16 GiB"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "workloads": [
+        {
+            "type": "inline",
+            "tasks": [
+                {
+                    "id": 0,
+                    "name": "task-0",
+                    "submissionTime": "0 minutes",
+                    "duration": "5 minutes",
+                    "cpuCoreCount": 1,
+                    "cpuCapacity": "3.0 GHz",
+                    "memory": "1 GiB",
+                    "fragments": [
+                        { "duration": "5 minutes", "cpuUsage": "3.0 GHz" }
+                    ]
+                }
+            ]
+        }
+    ]
+}

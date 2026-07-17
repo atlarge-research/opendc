@@ -1,0 +1,39 @@
+{
+    "clusters": [
+        {
+            "name": "C01",
+            "hosts": [
+                {
+                    "name": "DualGpuHost",
+                    "cpu": {
+                        "coreCount": 4,
+                        "coreSpeed": "2 GHz"
+                    },
+                    "memory": {
+                        "size": "140457600000 Bytes"
+                    },
+                    "cpuPowerModel": {
+                        "type": "linear",
+                        "power": "400 Watts",
+                        "idlePower": "100 Watts",
+                        "maxPower": "200 Watts"
+                    },
+                    "gpu": {
+                        "count": 2,
+                        "coreCount": 1,
+                        "coreSpeed": "2 GHz"
+                    },
+                    "gpuPowerModel": {
+                        "type": "linear",
+                        "power": "400 Watts",
+                        "idlePower": "100 Watts",
+                        "maxPower": "200 Watts"
+                    },
+                    "gpuDistribution": {
+                        "type": "maxMinFairness"
+                    }
+                }
+            ]
+        }
+    ]
+}

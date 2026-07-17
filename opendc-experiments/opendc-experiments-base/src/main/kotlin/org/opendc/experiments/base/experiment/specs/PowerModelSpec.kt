@@ -37,6 +37,7 @@ import kotlinx.serialization.Serializable
  * @property dvfs Whether Dynamic Voltage and Frequency Scaling is modelled.
  */
 @Serializable
+@Deprecated("Replaced by the opendc-sdk model (org.opendc.sdk.model.*); run experiments with the new opendc CLI (opendc-cli).")
 public data class PowerModelSpec(
     val type: String = "constant",
     val idlePower: Double = 200.0,

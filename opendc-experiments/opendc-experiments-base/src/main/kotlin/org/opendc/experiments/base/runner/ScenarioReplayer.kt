@@ -22,6 +22,8 @@
 
 @file:JvmName("ScenarioHelpers")
 
+@file:Suppress("DEPRECATION")
+
 package org.opendc.experiments.base.runner
 
 import kotlinx.coroutines.coroutineScope

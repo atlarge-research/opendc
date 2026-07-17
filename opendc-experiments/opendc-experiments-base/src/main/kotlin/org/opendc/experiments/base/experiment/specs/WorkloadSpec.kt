@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.opendc.experiments.base.experiment.specs
 
 import kotlinx.serialization.Serializable
@@ -45,6 +47,7 @@ import java.io.File
  * its full demand. See [ScalingPolicyEnum].
  */
 @Serializable
+@Deprecated("Replaced by the opendc-sdk model (org.opendc.sdk.model.*); run experiments with the new opendc CLI (opendc-cli).")
 public data class WorkloadSpec(
     val pathToFile: String,
     val type: WorkloadTypes,

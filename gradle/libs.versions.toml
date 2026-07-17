@@ -1,8 +1,9 @@
 [versions]
 calcite = "1.36.0"
 clikt = "4.2.1"
+clikt5 = "5.0.3"
 commons-math3 = "3.6.1"
-dokka = "1.9.10"
+dokka = "2.2.0"
 hadoop = "3.3.6"
 hypersistence-utils = "3.15.2"
 jackson = "2.16.1"
@@ -16,11 +17,13 @@ junit-jupiter = "5.10.2"
 kotlin = "2.3.20"
 kotlin-logging = "3.0.5"
 kotlinx-coroutines = "1.8.0"
+kotlinx-serialization = "1.6.0"
 log4j = "2.25.3"
 microprofile-rest-client = "3.0.1"
 microprofile-openapi = "3.1.1"
 microprofile-config = "3.1"
 mockk = "1.13.9"
+mordant = "3.0.2"
 node = "18.15.0"
 parquet = "1.13.1"
 progressbar = "0.10.0"
@@ -36,6 +39,7 @@ kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
 kotlin-noarg = { module = "org.jetbrains.kotlin:kotlin-noarg", version.ref = "kotlin" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 # Logging
 kotlin-logging = { module = "io.github.microutils:kotlin-logging", version.ref = "kotlin-logging" }
@@ -53,6 +57,9 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 # CLI
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
+clikt5 = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt5" }
+mordant = { module = "com.github.ajalt.mordant:mordant", version.ref = "mordant" }
+mordant-coroutines = { module = "com.github.ajalt.mordant:mordant-coroutines", version.ref = "mordant" }
 progressbar = { module = "me.tongfei:progressbar", version.ref = "progressbar" }
 
 # Format
@@ -115,3 +122,6 @@ microprofile-config = { module = "org.eclipse.microprofile.config:microprofile-c
 dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 jmh-gradle = { module = "me.champeau.jmh:jmh-gradle-plugin", version.ref = "jmh-gradle" }
 spotless-gradle = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
+
+[plugins]
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
