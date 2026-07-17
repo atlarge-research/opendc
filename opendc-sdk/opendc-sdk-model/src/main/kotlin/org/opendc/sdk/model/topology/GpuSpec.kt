@@ -50,5 +50,5 @@ public data class GpuSpec(
     public val vendor: String = "unknown",
     public val modelName: String = "unknown",
     public val architecture: String = "unknown",
-    public val virtualizationOverhead: VirtualizationOverhead = NoVirtualizationOverhead,
+    public val virtualizationOverhead: VirtualizationOverheadSpec = NoVirtualizationOverheadSpec,
 )

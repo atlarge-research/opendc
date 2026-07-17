@@ -34,7 +34,7 @@ import org.opendc.sdk.model.export.AllColumns
 import org.opendc.sdk.model.export.ColumnSelection
 import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.export.OnlyColumns
-import org.opendc.sdk.model.export.OutputFile
+import org.opendc.sdk.model.export.OutputFileSpec
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 import org.opendc.trace.util.parquet.exporter.Exportable
 import java.time.Duration
@@ -80,11 +80,11 @@ private fun ExportSpec.toFilesToExport(): Map<OutputFiles, Boolean> {
     return OutputFiles.entries.associateWith { it in enabled }
 }
 
-internal fun OutputFile.toEngineOutputFiles(): OutputFiles =
+internal fun OutputFileSpec.toEngineOutputFiles(): OutputFiles =
     when (this) {
-        OutputFile.HOST -> OutputFiles.HOST
-        OutputFile.TASK -> OutputFiles.TASK
-        OutputFile.POWER_SOURCE -> OutputFiles.POWER_SOURCE
-        OutputFile.BATTERY -> OutputFiles.BATTERY
-        OutputFile.SERVICE -> OutputFiles.SERVICE
+        OutputFileSpec.HOST -> OutputFiles.HOST
+        OutputFileSpec.TASK -> OutputFiles.TASK
+        OutputFileSpec.POWER_SOURCE -> OutputFiles.POWER_SOURCE
+        OutputFileSpec.BATTERY -> OutputFiles.BATTERY
+        OutputFileSpec.SERVICE -> OutputFiles.SERVICE
     }

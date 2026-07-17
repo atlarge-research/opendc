@@ -22,7 +22,7 @@
 
 package org.opendc.cli.render
 
-import org.opendc.sdk.model.export.OutputFile
+import org.opendc.sdk.model.export.OutputFileSpec
 import org.opendc.sdk.model.serialization.SdkJson
 import org.opendc.sdk.runner.OpenDC
 import org.opendc.sdk.runner.SimulationReport
@@ -40,7 +40,7 @@ class SummaryViewTest {
         val experiment = file.inputStream().use { SdkJson.decodeExperiment(it) }
         return OpenDC.builder()
             .provisioner(FileSystemResourceProvisioner(file.absoluteFile.parentFile.toPath()))
-            .sink(InMemorySink(setOf(OutputFile.HOST, OutputFile.SERVICE, OutputFile.POWER_SOURCE)))
+            .sink(InMemorySink(setOf(OutputFileSpec.HOST, OutputFileSpec.SERVICE, OutputFileSpec.POWER_SOURCE)))
             .parallelism(1)
             .build()
             .simulate(experiment)

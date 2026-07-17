@@ -26,14 +26,14 @@ import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.resource.ResourceReference
-import org.opendc.sdk.model.workload.InlineWorkload
-import org.opendc.sdk.model.workload.ScalingPolicy
+import org.opendc.sdk.model.workload.InlineWorkloadSpec
+import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TaskFragmentSpec
 import org.opendc.sdk.model.workload.TaskSpec
-import org.opendc.sdk.model.workload.TraceWorkload
+import org.opendc.sdk.model.workload.TraceWorkloadSpec
 
 /**
- * Builds a [TraceWorkload] backed by an external trace resource.
+ * Builds a [TraceWorkloadSpec] backed by an external trace resource.
  *
  * @param source Handle to the trace data resolved at runtime.
  */
@@ -41,24 +41,24 @@ public fun traceWorkload(
     source: ResourceReference,
     sampleFraction: Double = 1.0,
     submissionTime: String? = null,
-    scalingPolicy: ScalingPolicy = ScalingPolicy.NoDelay,
+    scalingPolicy: ScalingPolicySpec = ScalingPolicySpec.NoDelay,
     deferAll: Boolean = false,
-): TraceWorkload = TraceWorkload(source, sampleFraction, submissionTime, scalingPolicy, deferAll)
+): TraceWorkloadSpec = TraceWorkloadSpec(source, sampleFraction, submissionTime, scalingPolicy, deferAll)
 
 /**
- * Builds an [InlineWorkload] from tasks defined directly in the [block].
+ * Builds an [InlineWorkloadSpec] from tasks defined directly in the [block].
  *
  * @param block Configures the workload through an [InlineWorkloadBuilder].
  */
-public fun inlineWorkload(block: InlineWorkloadBuilder.() -> Unit): InlineWorkload = InlineWorkloadBuilder().apply(block).build()
+public fun inlineWorkload(block: InlineWorkloadBuilder.() -> Unit): InlineWorkloadSpec = InlineWorkloadBuilder().apply(block).build()
 
-/** Collects the tasks composing an [InlineWorkload]. */
+/** Collects the tasks composing an [InlineWorkloadSpec]. */
 @SdkDsl
 public class InlineWorkloadBuilder {
     private val tasks = mutableListOf<TaskSpec>()
 
     /** How tasks react to resource contention. */
-    public var scalingPolicy: ScalingPolicy = ScalingPolicy.NoDelay
+    public var scalingPolicy: ScalingPolicySpec = ScalingPolicySpec.NoDelay
 
     public fun task(
         id: Int,
@@ -85,7 +85,7 @@ public class InlineWorkloadBuilder {
             )
     }
 
-    internal fun build(): InlineWorkload = InlineWorkload(tasks.toList(), scalingPolicy)
+    internal fun build(): InlineWorkloadSpec = InlineWorkloadSpec(tasks.toList(), scalingPolicy)
 }
 
 /** Collects the execution fragments of a [TaskSpec]. */

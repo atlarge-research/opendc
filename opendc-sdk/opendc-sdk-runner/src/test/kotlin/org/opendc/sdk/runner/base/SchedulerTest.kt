@@ -24,15 +24,15 @@ package org.opendc.sdk.runner.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.sdk.model.scheduler.ComputeHostFilter
-import org.opendc.sdk.model.scheduler.FilterAllocationPolicy
-import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
-import org.opendc.sdk.model.scheduler.RamFilter
-import org.opendc.sdk.model.scheduler.SchedulerName
-import org.opendc.sdk.model.scheduler.VCpuFilter
-import org.opendc.sdk.model.scheduler.VCpuWeigher
-import org.opendc.sdk.model.scheduler.VGpuFilter
-import org.opendc.sdk.model.scheduler.VGpuWeigher
+import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
+import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.RamFilterSpec
+import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.scheduler.VCpuFilterSpec
+import org.opendc.sdk.model.scheduler.VCpuWeigherSpec
+import org.opendc.sdk.model.scheduler.VGpuFilterSpec
+import org.opendc.sdk.model.scheduler.VGpuWeigherSpec
 import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
 import org.opendc.sdk.runner.base.harness.fragment
@@ -64,7 +64,7 @@ class SchedulerTest {
 
         val topology = createTopology("single_1_2000.json")
 
-        val monitor = runTest(topology, workload, allocationPolicy = PrefabAllocationPolicy(SchedulerName.TaskNumMemorizing))
+        val monitor = runTest(topology, workload, allocationPolicy = PrefabAllocationPolicySpec(SchedulerNameSpec.TaskNumMemorizing))
 
         assertAll(
             { assertEquals(25 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
@@ -123,28 +123,28 @@ class SchedulerTest {
 
         // Normal scheduler prioritizes hosts with more available resources
         val normalScheduler =
-            FilterAllocationPolicy(
+            FilterAllocationPolicySpec(
                 filters =
                     listOf(
-                        ComputeHostFilter,
-                        VCpuFilter(cpuAllocationRatio),
-                        VGpuFilter(gpuAllocationRatio),
-                        RamFilter(ramAllocationRatio),
+                        ComputeHostFilterSpec,
+                        VCpuFilterSpec(cpuAllocationRatio),
+                        VGpuFilterSpec(gpuAllocationRatio),
+                        RamFilterSpec(ramAllocationRatio),
                     ),
-                weighers = listOf(VCpuWeigher(1.0), VGpuWeigher(1.0)),
+                weighers = listOf(VCpuWeigherSpec(1.0), VGpuWeigherSpec(1.0)),
             )
 
         // Inverted scheduler prioritizes hosts with fewer available resources
         val invertedScheduler =
-            FilterAllocationPolicy(
+            FilterAllocationPolicySpec(
                 filters =
                     listOf(
-                        ComputeHostFilter,
-                        VCpuFilter(cpuAllocationRatio),
-                        VGpuFilter(gpuAllocationRatio),
-                        RamFilter(ramAllocationRatio),
+                        ComputeHostFilterSpec,
+                        VCpuFilterSpec(cpuAllocationRatio),
+                        VGpuFilterSpec(gpuAllocationRatio),
+                        RamFilterSpec(ramAllocationRatio),
                     ),
-                weighers = listOf(VCpuWeigher(-1.0), VGpuWeigher(-1.0)),
+                weighers = listOf(VCpuWeigherSpec(-1.0), VGpuWeigherSpec(-1.0)),
             )
 
         // Run the tests with both schedulers and both topologies

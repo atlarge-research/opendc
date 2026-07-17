@@ -38,7 +38,7 @@ import com.github.ajalt.mordant.terminal.Terminal
 import org.opendc.cli.config.CliConfig
 import org.opendc.cli.config.toMordantTheme
 import org.opendc.cli.legacy.readLegacyExperiment
-import org.opendc.sdk.model.experiment.Experiment
+import org.opendc.sdk.model.experiment.ExperimentSpec
 import java.nio.file.Path
 
 /**
@@ -63,12 +63,26 @@ internal class OpendcCommand : CliktCommand(name = "opendc") {
         help = "Read experiment files written in the deprecated opendc-experiments JSON format.",
     ).flag()
 
+    private val strict by option(
+        "--strict",
+        help = "Reject experiment files that contain unknown keys instead of ignoring them.",
+    ).flag()
+
     override fun help(context: Context): String = "Run, validate and inspect OpenDC datacenter simulations."
 
     override fun run() {
-        currentContext.obj = legacy
+        currentContext.obj = ExperimentReadOptions(legacy = legacy, strict = strict)
     }
 }
+
+/**
+ * How the root command was told to read each subcommand's experiment file: in which format ([legacy])
+ * and how tolerantly ([strict]). Published on the context so every subcommand reads the same choice.
+ */
+internal data class ExperimentReadOptions(
+    val legacy: Boolean,
+    val strict: Boolean,
+)
 
 /**
  * Base for the subcommands that operate on a single experiment file. It owns the shared `experiment`
@@ -85,7 +99,11 @@ internal abstract class ExperimentCommand(
 
     /** Whether the root command was asked to read the experiment in the deprecated format. */
     protected val isLegacy: Boolean
-        get() = currentContext.findObject<Boolean>() == true
+        get() = currentContext.findObject<ExperimentReadOptions>()?.legacy == true
+
+    /** Whether the root command was asked to reject experiments that carry unknown keys. */
+    protected val isStrict: Boolean
+        get() = currentContext.findObject<ExperimentReadOptions>()?.strict == true
 
     /**
      * The directory the experiment's relative paths resolve against, absent an explicit `--input-root`.
@@ -105,18 +123,18 @@ internal abstract class ExperimentCommand(
             }
 
     /**
-     * Reads and deserializes the [experimentFile] into an [Experiment], reporting a friendly error on
+     * Reads and deserializes the [experimentFile] into an [ExperimentSpec], reporting a friendly error on
      * failure. Under the root command's `--legacy` flag the file is read as a deprecated
      * `opendc-experiments-base` document and converted, resolving the topologies it references against
      * [root]; otherwise it is SDK-model JSON, which composes the files it names with `importFrom`
      * relative to itself and so needs no root.
      */
-    protected fun loadExperiment(root: Path = defaultInputRoot): Experiment =
+    protected fun loadExperiment(root: Path = defaultInputRoot): ExperimentSpec =
         try {
             if (isLegacy) {
-                readLegacyExperiment(experimentFile, root.toFile())
+                readLegacyExperiment(experimentFile, root.toFile(), isStrict)
             } else {
-                readExperiment(experimentFile)
+                readExperiment(experimentFile, isStrict)
             }
         } catch (e: Exception) {
             throw CliktError("Could not read experiment '${experimentFile.path}': ${e.message}")

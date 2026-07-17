@@ -28,26 +28,26 @@ import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
 import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
 import org.opendc.compute.simulator.scheduler.timeshift.MemorizingTimeshift
 import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
-import org.opendc.sdk.model.scheduler.AllocationPolicy
-import org.opendc.sdk.model.scheduler.ComputeHostFilter
-import org.opendc.sdk.model.scheduler.CoreRamWeigher
-import org.opendc.sdk.model.scheduler.DifferentHostFilter
-import org.opendc.sdk.model.scheduler.FilterAllocationPolicy
-import org.opendc.sdk.model.scheduler.HostFilter
-import org.opendc.sdk.model.scheduler.HostWeigher
-import org.opendc.sdk.model.scheduler.InstanceCountFilter
-import org.opendc.sdk.model.scheduler.InstanceCountWeigher
-import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
-import org.opendc.sdk.model.scheduler.RamFilter
-import org.opendc.sdk.model.scheduler.RamWeigher
-import org.opendc.sdk.model.scheduler.SameHostFilter
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
-import org.opendc.sdk.model.scheduler.VCpuCapacityFilter
-import org.opendc.sdk.model.scheduler.VCpuCapacityWeigher
-import org.opendc.sdk.model.scheduler.VCpuFilter
-import org.opendc.sdk.model.scheduler.VCpuWeigher
-import org.opendc.sdk.model.scheduler.VGpuFilter
-import org.opendc.sdk.model.scheduler.VGpuWeigher
+import org.opendc.sdk.model.scheduler.AllocationPolicySpec
+import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
+import org.opendc.sdk.model.scheduler.CoreRamWeigherSpec
+import org.opendc.sdk.model.scheduler.DifferentHostFilterSpec
+import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.HostFilterSpec
+import org.opendc.sdk.model.scheduler.HostWeigherSpec
+import org.opendc.sdk.model.scheduler.InstanceCountFilterSpec
+import org.opendc.sdk.model.scheduler.InstanceCountWeigherSpec
+import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.RamFilterSpec
+import org.opendc.sdk.model.scheduler.RamWeigherSpec
+import org.opendc.sdk.model.scheduler.SameHostFilterSpec
+import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.VCpuCapacityFilterSpec
+import org.opendc.sdk.model.scheduler.VCpuCapacityWeigherSpec
+import org.opendc.sdk.model.scheduler.VCpuFilterSpec
+import org.opendc.sdk.model.scheduler.VCpuWeigherSpec
+import org.opendc.sdk.model.scheduler.VGpuFilterSpec
+import org.opendc.sdk.model.scheduler.VGpuWeigherSpec
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
@@ -70,19 +70,19 @@ import org.opendc.compute.simulator.scheduler.weights.VGpuWeigher as EngineVGpuW
 import org.opendc.sdk.model.scheduler.TaskStopperSpec as SdkTaskStopper
 
 /**
- * Converts an SDK [AllocationPolicy] into an engine [ComputeScheduler], seeded by [seeder] and
+ * Converts an SDK [AllocationPolicySpec] into an engine [ComputeScheduler], seeded by [seeder] and
  * clocked by [clock]. [numHosts] sizes the scheduler's internal host bookkeeping.
  */
-internal fun AllocationPolicy.toScheduler(
+internal fun AllocationPolicySpec.toScheduler(
     seeder: RandomGenerator,
     clock: InstantSource,
     numHosts: Int,
 ): ComputeScheduler =
     when (this) {
-        is PrefabAllocationPolicy -> createPrefabComputeScheduler(prefabName.name, seeder, clock, numHosts)
-        is FilterAllocationPolicy ->
+        is PrefabAllocationPolicySpec -> createPrefabComputeScheduler(prefabName.name, seeder, clock, numHosts)
+        is FilterAllocationPolicySpec ->
             FilterScheduler(filters.map { it.toEngine() }, weighers.map { it.toEngine() }, subsetSize, seeder, numHosts)
-        is TimeShiftAllocationPolicy -> toTimeshiftScheduler(seeder, clock)
+        is TimeShiftAllocationPolicySpec -> toTimeshiftScheduler(seeder, clock)
     }
 
 /** Builds the engine [EngineTaskStopper] carried by a time-shifting policy, or null when absent. */
@@ -91,7 +91,7 @@ internal fun SdkTaskStopper?.toEngine(
     clock: InstantSource,
 ): EngineTaskStopper? = this?.let { EngineTaskStopper(clock, context, it.forecast, it.forecastThreshold, it.forecastSize, it.windowSize) }
 
-private fun TimeShiftAllocationPolicy.toTimeshiftScheduler(
+private fun TimeShiftAllocationPolicySpec.toTimeshiftScheduler(
     seeder: RandomGenerator,
     clock: InstantSource,
 ): ComputeScheduler {
@@ -113,24 +113,24 @@ private fun TimeShiftAllocationPolicy.toTimeshiftScheduler(
     )
 }
 
-private fun HostFilter.toEngine(): EngineHostFilter =
+private fun HostFilterSpec.toEngine(): EngineHostFilter =
     when (this) {
-        ComputeHostFilter -> ComputeFilter()
-        SameHostFilter -> EngineSameHostFilter()
-        DifferentHostFilter -> EngineDifferentHostFilter()
-        VCpuCapacityFilter -> EngineVCpuCapacityFilter()
-        is InstanceCountFilter -> EngineInstanceCountFilter(limit)
-        is RamFilter -> EngineRamFilter(allocationRatio)
-        is VCpuFilter -> EngineVCpuFilter(allocationRatio)
-        is VGpuFilter -> EngineVGpuFilter(allocationRatio)
+        ComputeHostFilterSpec -> ComputeFilter()
+        SameHostFilterSpec -> EngineSameHostFilter()
+        DifferentHostFilterSpec -> EngineDifferentHostFilter()
+        VCpuCapacityFilterSpec -> EngineVCpuCapacityFilter()
+        is InstanceCountFilterSpec -> EngineInstanceCountFilter(limit)
+        is RamFilterSpec -> EngineRamFilter(allocationRatio)
+        is VCpuFilterSpec -> EngineVCpuFilter(allocationRatio)
+        is VGpuFilterSpec -> EngineVGpuFilter(allocationRatio)
     }
 
-private fun HostWeigher.toEngine(): EngineHostWeigher =
+private fun HostWeigherSpec.toEngine(): EngineHostWeigher =
     when (this) {
-        is RamWeigher -> EngineRamWeigher(multiplier)
-        is CoreRamWeigher -> EngineCoreRamWeigher(multiplier)
-        is InstanceCountWeigher -> EngineInstanceCountWeigher(multiplier)
-        is VCpuCapacityWeigher -> EngineVCpuCapacityWeigher(multiplier)
-        is VCpuWeigher -> EngineVCpuWeigher(allocationRatio = 1.0, multiplier = multiplier)
-        is VGpuWeigher -> EngineVGpuWeigher(allocationRatio = 1.0, multiplier = multiplier)
+        is RamWeigherSpec -> EngineRamWeigher(multiplier)
+        is CoreRamWeigherSpec -> EngineCoreRamWeigher(multiplier)
+        is InstanceCountWeigherSpec -> EngineInstanceCountWeigher(multiplier)
+        is VCpuCapacityWeigherSpec -> EngineVCpuCapacityWeigher(multiplier)
+        is VCpuWeigherSpec -> EngineVCpuWeigher(allocationRatio = 1.0, multiplier = multiplier)
+        is VGpuWeigherSpec -> EngineVGpuWeigher(allocationRatio = 1.0, multiplier = multiplier)
     }

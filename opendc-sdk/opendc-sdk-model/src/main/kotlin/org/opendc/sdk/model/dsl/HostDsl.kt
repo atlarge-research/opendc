@@ -32,10 +32,10 @@ import org.opendc.sdk.model.topology.GpuSpec
 import org.opendc.sdk.model.topology.HostSpec
 import org.opendc.sdk.model.topology.MaxMinFairness
 import org.opendc.sdk.model.topology.MemorySpec
-import org.opendc.sdk.model.topology.NoVirtualizationOverhead
+import org.opendc.sdk.model.topology.NoVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.topology.PowerSpec
-import org.opendc.sdk.model.topology.VirtualizationOverhead
+import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
 
 /** Builds a [HostSpec]; `cpu` and `memory` must be set before the enclosing block returns. */
 @SdkDsl
@@ -82,7 +82,7 @@ public class HostBuilder(private val name: String, private val count: Int) {
         vendor: String = "unknown",
         modelName: String = "unknown",
         architecture: String = "unknown",
-        virtualizationOverhead: VirtualizationOverhead = NoVirtualizationOverhead,
+        virtualizationOverhead: VirtualizationOverheadSpec = NoVirtualizationOverheadSpec,
     ) {
         gpu = GpuSpec(coreCount, coreSpeed, count, memory, memoryBandwidth, vendor, modelName, architecture, virtualizationOverhead)
     }

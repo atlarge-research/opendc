@@ -34,7 +34,7 @@ import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.topology.TopologySpec
-import org.opendc.sdk.model.workload.TraceWorkload
+import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import org.opendc.sdk.runner.OpenDC
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
 import org.opendc.sdk.runner.sink.CollectedMetrics
@@ -57,7 +57,9 @@ class TraceWorkloadTest {
                 name = "trace-integration"
                 topology(datacenter(PowerModelType.LINEAR))
                 topology(datacenter(PowerModelType.SQRT))
-                workload(TraceWorkload(source = NamedReference("workloadTraces/bitbrains-small"), submissionTime = "2022-02-01T00:00:00"))
+                workload(
+                    TraceWorkloadSpec(source = NamedReference("workloadTraces/bitbrains-small"), submissionTime = "2022-02-01T00:00:00"),
+                )
                 exportModel(ExportSpec(exportInterval = 1.hours, printFrequency = null))
             }
 

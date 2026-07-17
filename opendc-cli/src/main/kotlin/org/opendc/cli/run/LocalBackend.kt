@@ -28,9 +28,9 @@ import org.opendc.cli.progress.ProgressSource
 import org.opendc.cli.render.OutputView
 import org.opendc.cli.render.RunSummaryView
 import org.opendc.sdk.model.experiment.expand
-import org.opendc.sdk.model.export.OutputFile.HOST
-import org.opendc.sdk.model.export.OutputFile.POWER_SOURCE
-import org.opendc.sdk.model.export.OutputFile.SERVICE
+import org.opendc.sdk.model.export.OutputFileSpec.HOST
+import org.opendc.sdk.model.export.OutputFileSpec.POWER_SOURCE
+import org.opendc.sdk.model.export.OutputFileSpec.SERVICE
 import org.opendc.sdk.runner.OpenDC
 import org.opendc.sdk.runner.planTaskCounts
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner

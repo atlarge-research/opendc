@@ -31,26 +31,26 @@ import org.opendc.sdk.model.validation.prefixed
 
 /** Describes how host failures are injected into a simulation. */
 @Serializable
-public sealed interface FailureModel : Validatable {
+public sealed interface FailureModelSpec : Validatable {
     override fun validate(): List<ValidationIssue> = emptyList()
 }
 
 /** No failures are injected. */
 @Serializable
 @SerialName("none")
-public data object NoFailure : FailureModel
+public data object NoFailureSpec : FailureModelSpec
 
 /** Failures replayed from an external availability trace. */
 @Serializable
 @SerialName("traceBased")
-public data class TraceBasedFailure(
+public data class TraceBasedFailureSpec(
     /** Reference to the trace supplying the failure events. */
     public val source: ResourceReference,
     /** Relative position in the trace at which replay starts, in the range [0.0, 1.0). */
     public val startPoint: Double = 0.0,
     /** Whether the trace is replayed from the beginning once exhausted. */
     public val repeat: Boolean = true,
-) : FailureModel {
+) : FailureModelSpec {
     override fun validate(): List<ValidationIssue> =
         if (startPoint >= 0.0 && startPoint < 1.0) {
             emptyList()
@@ -59,25 +59,25 @@ public data class TraceBasedFailure(
         }
 }
 
-/** A built-in failure model selected from a set of empirically fitted [FailurePrefab]s. */
+/** A built-in failure model selected from a set of empirically fitted [FailurePrefabSpec]s. */
 @Serializable
 @SerialName("prefab")
-public data class PrefabFailure(
+public data class PrefabFailureSpec(
     /** The built-in failure model to use. */
-    public val prefabName: FailurePrefab,
-) : FailureModel
+    public val prefabName: FailurePrefabSpec,
+) : FailureModelSpec
 
 /** A fully custom failure model built from three sampling distributions. */
 @Serializable
 @SerialName("custom")
-public data class CustomFailure(
+public data class CustomFailureSpec(
     /** Distribution of the time between successive failures. */
-    public val interArrival: Distribution,
+    public val interArrival: DistributionSpec,
     /** Distribution of the duration of each failure. */
-    public val duration: Distribution,
+    public val duration: DistributionSpec,
     /** Distribution of the fraction of hosts affected by each failure. */
-    public val hostFraction: Distribution,
-) : FailureModel {
+    public val hostFraction: DistributionSpec,
+) : FailureModelSpec {
     override fun validate(): List<ValidationIssue> =
         buildList {
             addAll(interArrival.validate().prefixed("interArrival"))

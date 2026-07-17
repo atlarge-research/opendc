@@ -27,8 +27,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
-import org.opendc.sdk.model.experiment.Experiment
-import org.opendc.sdk.model.experiment.Scenario
+import org.opendc.sdk.model.experiment.ExperimentSpec
+import org.opendc.sdk.model.experiment.ScenarioSpec
 import java.io.InputStream
 
 /**
@@ -44,29 +44,42 @@ public object SdkJson {
             prettyPrint = true
         }
 
-    /** Serialize an [Experiment] to a JSON string. */
-    public fun encodeToString(experiment: Experiment): String = json.encodeToString(experiment)
+    /**
+     * Strict counterpart of [json] that rejects an unknown key instead of dropping it silently, so a
+     * typo or a stale field fails the parse rather than passing unnoticed. It differs from [json] in
+     * nothing else. Selected by the `opendc --strict` flag.
+     */
+    public val strictJson: Json = Json(from = json) { ignoreUnknownKeys = false }
 
-    /** Serialize a [Scenario] to a JSON string. */
-    public fun encodeToString(scenario: Scenario): String = json.encodeToString(scenario)
+    /** Serialize an [ExperimentSpec] to a JSON string. */
+    public fun encodeToString(experiment: ExperimentSpec): String = json.encodeToString(experiment)
 
-    /** Parse an [Experiment] from a JSON string. */
-    public fun decodeExperiment(text: String): Experiment = json.decodeFromString(text)
+    /** Serialize a [ScenarioSpec] to a JSON string. */
+    public fun encodeToString(scenario: ScenarioSpec): String = json.encodeToString(scenario)
 
-    /** Parse an [Experiment] from a UTF-8 encoded JSON stream. */
-    public fun decodeExperiment(input: InputStream): Experiment = decodeExperiment(input.readText())
+    /** Parse an [ExperimentSpec] from a JSON string. */
+    public fun decodeExperiment(text: String): ExperimentSpec = json.decodeFromString(text)
 
-    /** Parse a [Scenario] from a JSON string. */
-    public fun decodeScenario(text: String): Scenario = json.decodeFromString(text)
+    /** Parse an [ExperimentSpec] from a UTF-8 encoded JSON stream. */
+    public fun decodeExperiment(input: InputStream): ExperimentSpec = decodeExperiment(input.readText())
 
-    /** Parse a [Scenario] from a UTF-8 encoded JSON stream. */
-    public fun decodeScenario(input: InputStream): Scenario = decodeScenario(input.readText())
+    /** Parse a [ScenarioSpec] from a JSON string. */
+    public fun decodeScenario(text: String): ScenarioSpec = json.decodeFromString(text)
 
-    /** Convert an [Experiment] into a [JsonElement] tree, suitable for jsonb storage. */
-    public fun toJsonElement(experiment: Experiment): JsonElement = json.encodeToJsonElement(experiment)
+    /** Parse a [ScenarioSpec] from a UTF-8 encoded JSON stream. */
+    public fun decodeScenario(input: InputStream): ScenarioSpec = decodeScenario(input.readText())
 
-    /** Reconstruct an [Experiment] from a [JsonElement] tree. */
-    public fun fromJsonElement(element: JsonElement): Experiment = json.decodeFromJsonElement(element)
+    /** Convert an [ExperimentSpec] into a [JsonElement] tree, suitable for jsonb storage. */
+    public fun toJsonElement(experiment: ExperimentSpec): JsonElement = json.encodeToJsonElement(experiment)
+
+    /**
+     * Reconstruct an [ExperimentSpec] from a [JsonElement] tree. When [strict], an unknown key fails
+     * the decode instead of being ignored.
+     */
+    public fun fromJsonElement(
+        element: JsonElement,
+        strict: Boolean = false,
+    ): ExperimentSpec = (if (strict) strictJson else json).decodeFromJsonElement(element)
 
     private fun InputStream.readText(): String = readBytes().decodeToString()
 }

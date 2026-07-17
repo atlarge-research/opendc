@@ -25,14 +25,14 @@ package org.opendc.sdk.model.experiment
 import kotlinx.serialization.Serializable
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.export.ExportSpec
-import org.opendc.sdk.model.failure.FailureModel
-import org.opendc.sdk.model.failure.NoFailure
-import org.opendc.sdk.model.scheduler.AllocationPolicy
+import org.opendc.sdk.model.failure.FailureModelSpec
+import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.scheduler.AllocationPolicySpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.prefixed
-import org.opendc.sdk.model.workload.Workload
+import org.opendc.sdk.model.workload.WorkloadSpec
 
 /**
  * A single, fully-resolved simulation configuration ready to be executed.
@@ -50,12 +50,12 @@ import org.opendc.sdk.model.workload.Workload
  * @property name A human-readable name for the scenario.
  */
 @Serializable
-public data class Scenario(
+public data class ScenarioSpec(
     public val topology: TopologySpec,
-    public val workload: Workload,
-    public val allocationPolicy: AllocationPolicy,
+    public val workload: WorkloadSpec,
+    public val allocationPolicy: AllocationPolicySpec,
     public val exportModel: ExportSpec = ExportSpec(),
-    public val failureModel: FailureModel = NoFailure,
+    public val failureModel: FailureModelSpec = NoFailureSpec,
     public val checkpointModel: CheckpointSpec? = null,
     public val maxNumFailures: Int = 10,
     public val runs: Int = 1,

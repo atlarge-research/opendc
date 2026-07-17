@@ -27,20 +27,20 @@ import org.opendc.common.units.Frequency
 import org.opendc.common.units.TimeDelta
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
-import org.opendc.sdk.model.experiment.Scenario
+import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.export.ExportSpec
-import org.opendc.sdk.model.failure.FailureModel
-import org.opendc.sdk.model.failure.NoFailure
-import org.opendc.sdk.model.scheduler.AllocationPolicy
-import org.opendc.sdk.model.scheduler.ComputeHostFilter
-import org.opendc.sdk.model.scheduler.CoreRamWeigher
-import org.opendc.sdk.model.scheduler.FilterAllocationPolicy
-import org.opendc.sdk.model.scheduler.RamFilter
-import org.opendc.sdk.model.scheduler.VCpuFilter
+import org.opendc.sdk.model.failure.FailureModelSpec
+import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.scheduler.AllocationPolicySpec
+import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
+import org.opendc.sdk.model.scheduler.CoreRamWeigherSpec
+import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.RamFilterSpec
+import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.serialization.SdkJson
 import org.opendc.sdk.model.topology.TopologySpec
-import org.opendc.sdk.model.workload.InlineWorkload
-import org.opendc.sdk.model.workload.ScalingPolicy
+import org.opendc.sdk.model.workload.InlineWorkloadSpec
+import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TaskFragmentSpec
 import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.runner.executor.runScenario
@@ -52,10 +52,10 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 /** The default scheduler used by the ported tests: the legacy `FilterScheduler` default. */
-internal val defaultPolicy: AllocationPolicy =
-    FilterAllocationPolicy(
-        filters = listOf(ComputeHostFilter, VCpuFilter(1.0), RamFilter(1.0)),
-        weighers = listOf(CoreRamWeigher(1.0)),
+internal val defaultPolicy: AllocationPolicySpec =
+    FilterAllocationPolicySpec(
+        filters = listOf(ComputeHostFilterSpec, VCpuFilterSpec(1.0), RamFilterSpec(1.0)),
+        weighers = listOf(CoreRamWeigherSpec(1.0)),
     )
 
 /** The test-resources root, used to resolve trace references against the classpath. */
@@ -123,16 +123,16 @@ internal fun createTestTask(
 internal fun runTest(
     topology: TopologySpec,
     workload: List<TaskSpec>,
-    failureModel: FailureModel = NoFailure,
-    allocationPolicy: AllocationPolicy = defaultPolicy,
+    failureModel: FailureModelSpec = NoFailureSpec,
+    allocationPolicy: AllocationPolicySpec = defaultPolicy,
     checkpointModel: CheckpointSpec? = null,
-    scalingPolicy: ScalingPolicy = ScalingPolicy.NoDelay,
+    scalingPolicy: ScalingPolicySpec = ScalingPolicySpec.NoDelay,
 ): TestComputeMonitor {
     val monitor = TestComputeMonitor()
     val scenario =
-        Scenario(
+        ScenarioSpec(
             topology = topology,
-            workload = InlineWorkload(workload, scalingPolicy),
+            workload = InlineWorkloadSpec(workload, scalingPolicy),
             allocationPolicy = allocationPolicy,
             exportModel = ExportSpec(exportInterval = TimeDelta.ofMin(1), printFrequency = null),
             failureModel = failureModel,

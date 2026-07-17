@@ -25,18 +25,18 @@ package org.opendc.sdk.model.experiment
 import kotlinx.serialization.Serializable
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.export.ExportSpec
-import org.opendc.sdk.model.failure.FailureModel
-import org.opendc.sdk.model.failure.NoFailure
-import org.opendc.sdk.model.scheduler.AllocationPolicy
-import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
+import org.opendc.sdk.model.failure.FailureModelSpec
+import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.scheduler.AllocationPolicySpec
+import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.validateEach
-import org.opendc.sdk.model.workload.Workload
+import org.opendc.sdk.model.workload.WorkloadSpec
 
 /**
- * A design of experiments: a set of choices per axis whose cartesian product yields the [Scenario]s to run.
+ * A design of experiments: a set of choices per axis whose cartesian product yields the [ScenarioSpec]s to run.
  *
  * @property topologies The candidate topologies.
  * @property workloads The candidate workloads.
@@ -50,11 +50,11 @@ import org.opendc.sdk.model.workload.Workload
  * @property name A human-readable name for the experiment.
  */
 @Serializable
-public data class Experiment(
+public data class ExperimentSpec(
     public val topologies: Set<TopologySpec>,
-    public val workloads: Set<Workload>,
-    public val allocationPolicies: Set<AllocationPolicy> = setOf(PrefabAllocationPolicy()),
-    public val failureModels: Set<FailureModel> = setOf(NoFailure),
+    public val workloads: Set<WorkloadSpec>,
+    public val allocationPolicies: Set<AllocationPolicySpec> = setOf(PrefabAllocationPolicySpec()),
+    public val failureModels: Set<FailureModelSpec> = setOf(NoFailureSpec),
     public val maxNumFailures: Set<Int> = setOf(10),
     public val checkpointModels: Set<CheckpointSpec?> = setOf(null),
     public val exportModels: Set<ExportSpec> = setOf(ExportSpec()),

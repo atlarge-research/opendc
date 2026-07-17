@@ -61,9 +61,10 @@ internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCo
     private val parallelism by option(
         "--parallelism",
         "-p",
-        help = "Number of runs to simulate concurrently (default: available processors).",
+        help = "Number of runs to simulate concurrently.",
     )
         .int()
+        .default(1)
 
     private val noProgress by option("--no-progress", help = "Disable the live progress dashboard.").flag()
 

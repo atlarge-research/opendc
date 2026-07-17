@@ -28,7 +28,7 @@ import kotlinx.serialization.Serializable
  * Identifies a prefabricated task scheduler by name.
  */
 @Serializable
-public enum class SchedulerName {
+public enum class SchedulerNameSpec {
     Mem,
     MemInv,
     CoreMem,

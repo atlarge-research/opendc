@@ -38,7 +38,7 @@ import java.time.InstantSource
 import java.util.Random
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
-import org.opendc.sdk.model.failure.FailureModel as SdkFailureModel
+import org.opendc.sdk.model.failure.FailureModelSpec as SdkFailureModel
 
 /**
  * Submits [trace] to this [ComputeService] on the simulated [clock], honouring each task's

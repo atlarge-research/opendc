@@ -35,9 +35,9 @@ import org.opendc.sdk.model.dsl.ms
 import org.opendc.sdk.model.dsl.topology
 import org.opendc.sdk.model.dsl.watts
 import org.opendc.sdk.model.export.ExportSpec
-import org.opendc.sdk.model.export.OutputFile
+import org.opendc.sdk.model.export.OutputFileSpec
 import org.opendc.sdk.model.topology.PowerModelType
-import org.opendc.sdk.model.workload.InlineWorkload
+import org.opendc.sdk.model.workload.InlineWorkloadSpec
 import org.opendc.sdk.model.workload.TaskFragmentSpec
 import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.runner.OpenDC
@@ -82,7 +82,7 @@ class OutputSinkTest {
             experiment {
                 name = "sink-test"
                 topology(datacenter)
-                workload(InlineWorkload(listOf(task)))
+                workload(InlineWorkloadSpec(listOf(task)))
                 exportModel(ExportSpec(exportInterval = 1.minutes, printFrequency = null))
             }
 
@@ -90,7 +90,7 @@ class OutputSinkTest {
         val report =
             OpenDC.builder()
                 .provisioner(FileSystemResourceProvisioner(Files.createTempDirectory("sink")))
-                .sink(InMemorySink(tables = setOf(OutputFile.HOST, OutputFile.SERVICE)))
+                .sink(InMemorySink(tables = setOf(OutputFileSpec.HOST, OutputFileSpec.SERVICE)))
                 .sink(CallbackSink(onHost = { hostCallbacks++ }))
                 .parallelism(1)
                 .build()

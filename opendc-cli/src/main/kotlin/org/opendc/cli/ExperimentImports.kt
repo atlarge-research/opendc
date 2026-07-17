@@ -26,7 +26,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import org.opendc.sdk.model.experiment.Experiment
+import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.serialization.SdkJson
 import java.io.File
 
@@ -56,12 +56,18 @@ private const val IMPORT_KEY = "importFrom"
  * exactly as the experiment does. This is a pure source-level composition: once resolved, the document
  * is ordinary SDK JSON and goes through [SdkJson] unchanged.
  *
+ * Composition is source-level, so [strict] is checked only once, against the fully resolved document:
+ * an unknown key anywhere in it — the experiment or any file it imports — fails the read.
+ *
  * @throws ImportException if an import is missing, is not a JSON object, or forms a cycle.
  */
-internal fun readExperiment(file: File): Experiment {
+internal fun readExperiment(
+    file: File,
+    strict: Boolean = false,
+): ExperimentSpec {
     val start = file.canonicalFile
     val document = SdkJson.json.parseToJsonElement(start.readText()).asImportable(start)
-    return SdkJson.fromJsonElement(document.resolveImports(start.parentFile, listOf(start)))
+    return SdkJson.fromJsonElement(document.resolveImports(start.parentFile, listOf(start)), strict)
 }
 
 /** Signals an `importFrom` that cannot be resolved. */

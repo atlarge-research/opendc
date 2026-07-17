@@ -25,9 +25,9 @@ package org.opendc.cli
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
-import org.opendc.sdk.model.experiment.Experiment
+import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.topology.PowerModelType
-import org.opendc.sdk.model.workload.InlineWorkload
+import org.opendc.sdk.model.workload.InlineWorkloadSpec
 import java.io.File
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
@@ -65,7 +65,7 @@ class ExperimentImportsTest {
     fun `an experiment imports its workload from another file`() {
         val workload = load("experiments/imports/experiment.json").workloads.single()
 
-        assertEquals(listOf("task-0", "task-1"), (workload as InlineWorkload).tasks.map { it.name })
+        assertEquals(listOf("task-0", "task-1"), (workload as InlineWorkloadSpec).tasks.map { it.name })
     }
 
     /**
@@ -120,7 +120,7 @@ class ExperimentImportsTest {
         assertContains(error.message.orEmpty(), "imports itself")
     }
 
-    private fun load(resource: String): Experiment = readExperiment(resourceFile(resource))
+    private fun load(resource: String): ExperimentSpec = readExperiment(resourceFile(resource))
 
     private fun resourceFile(name: String): File =
         File(checkNotNull(javaClass.classLoader.getResource(name)) { "missing fixture $name" }.toURI())

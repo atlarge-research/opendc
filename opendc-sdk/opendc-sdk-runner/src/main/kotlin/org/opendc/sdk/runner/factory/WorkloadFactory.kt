@@ -27,11 +27,11 @@ import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.resource.ResourceReference
-import org.opendc.sdk.model.workload.InlineWorkload
-import org.opendc.sdk.model.workload.ScalingPolicy
+import org.opendc.sdk.model.workload.InlineWorkloadSpec
+import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TaskSpec
-import org.opendc.sdk.model.workload.TraceWorkload
-import org.opendc.sdk.model.workload.Workload
+import org.opendc.sdk.model.workload.TraceWorkloadSpec
+import org.opendc.sdk.model.workload.WorkloadSpec
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
 import org.opendc.simulator.compute.workload.trace.scaling.PerfectScaling
@@ -40,19 +40,19 @@ import org.opendc.simulator.compute.workload.trace.TraceWorkload as EngineTraceW
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy as EngineScalingPolicy
 
 /**
- * Materializes an SDK [Workload] into the engine's list of [ServiceTask]s. Trace workloads are
+ * Materializes an SDK [WorkloadSpec] into the engine's list of [ServiceTask]s. Trace workloads are
  * loaded from the resource resolved by [resolve]; inline workloads are built in memory.
  */
-internal fun Workload.toServiceTasks(
+internal fun WorkloadSpec.toServiceTasks(
     checkpoint: CheckpointSpec?,
     resolve: (ResourceReference) -> Path,
 ): List<ServiceTask> =
     when (this) {
-        is TraceWorkload -> loadTrace(resolve(source), checkpoint)
-        is InlineWorkload -> tasks.map { it.toServiceTask(scalingPolicy.toEngine(), checkpoint) }
+        is TraceWorkloadSpec -> loadTrace(resolve(source), checkpoint)
+        is InlineWorkloadSpec -> tasks.map { it.toServiceTask(scalingPolicy.toEngine(), checkpoint) }
     }
 
-private fun TraceWorkload.loadTrace(
+private fun TraceWorkloadSpec.loadTrace(
     path: Path,
     checkpoint: CheckpointSpec?,
 ): List<ServiceTask> =
@@ -111,10 +111,10 @@ private fun TaskSpec.toServiceTask(
 
 private fun TaskSpec.totalLoad(): Double = fragments.sumOf { it.cpuUsage.toMHz() * it.duration.toHours() }
 
-private fun ScalingPolicy.toEngine(): EngineScalingPolicy =
+private fun ScalingPolicySpec.toEngine(): EngineScalingPolicy =
     when (this) {
-        ScalingPolicy.NoDelay -> NoDelayScaling()
-        ScalingPolicy.Perfect -> PerfectScaling()
+        ScalingPolicySpec.NoDelay -> NoDelayScaling()
+        ScalingPolicySpec.Perfect -> PerfectScaling()
     }
 
 private fun CheckpointSpec?.intervalMs(): Long = this?.interval?.toMsLong() ?: 0L

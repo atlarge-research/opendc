@@ -28,12 +28,12 @@ import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
-import org.opendc.sdk.model.experiment.Experiment
-import org.opendc.sdk.model.failure.UniformDistribution
-import org.opendc.sdk.model.failure.WeibullDistribution
+import org.opendc.sdk.model.experiment.ExperimentSpec
+import org.opendc.sdk.model.failure.UniformDistributionSpec
+import org.opendc.sdk.model.failure.WeibullDistributionSpec
 import org.opendc.sdk.model.resource.NamedReference
-import org.opendc.sdk.model.scheduler.FilterAllocationPolicy
-import org.opendc.sdk.model.scheduler.InstanceCountFilter
+import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.InstanceCountFilterSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec
@@ -43,7 +43,7 @@ import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.validExperiment
 import org.opendc.sdk.model.validMemory
 import org.opendc.sdk.model.validTask
-import org.opendc.sdk.model.workload.TraceWorkload
+import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -55,7 +55,7 @@ import kotlin.test.assertTrue
 class ValidationTest {
     @Test
     fun `trace workload with non-positive sampleFraction reports sampleFraction`() {
-        val workload = TraceWorkload(source = NamedReference("trace"), sampleFraction = 0.0)
+        val workload = TraceWorkloadSpec(source = NamedReference("trace"), sampleFraction = 0.0)
 
         val issues = assertDoesNotThrow { workload.validate() }
 
@@ -64,7 +64,7 @@ class ValidationTest {
 
     @Test
     fun `filter allocation policy with zero subsetSize reports subsetSize`() {
-        val policy = FilterAllocationPolicy(subsetSize = 0)
+        val policy = FilterAllocationPolicySpec(subsetSize = 0)
 
         val issues = assertDoesNotThrow { policy.validate() }
 
@@ -82,7 +82,7 @@ class ValidationTest {
 
     @Test
     fun `instance count filter with zero limit reports limit`() {
-        val filter = InstanceCountFilter(limit = 0)
+        val filter = InstanceCountFilterSpec(limit = 0)
 
         val issues = assertDoesNotThrow { filter.validate() }
 
@@ -100,7 +100,7 @@ class ValidationTest {
 
     @Test
     fun `experiment with empty topologies and workloads reports both`() {
-        val experiment = Experiment(topologies = emptySet(), workloads = emptySet())
+        val experiment = ExperimentSpec(topologies = emptySet(), workloads = emptySet())
 
         val issues = assertDoesNotThrow { experiment.validate() }
 
@@ -111,7 +111,7 @@ class ValidationTest {
 
     @Test
     fun `uniform distribution with upper not above lower reports upper`() {
-        val distribution = UniformDistribution(upper = 1.0, lower = 1.0)
+        val distribution = UniformDistributionSpec(upper = 1.0, lower = 1.0)
 
         val issues = assertDoesNotThrow { distribution.validate() }
 
@@ -120,7 +120,7 @@ class ValidationTest {
 
     @Test
     fun `weibull distribution with non-positive alpha reports alpha`() {
-        val distribution = WeibullDistribution(alpha = 0.0, beta = 1.0)
+        val distribution = WeibullDistributionSpec(alpha = 0.0, beta = 1.0)
 
         val issues = assertDoesNotThrow { distribution.validate() }
 

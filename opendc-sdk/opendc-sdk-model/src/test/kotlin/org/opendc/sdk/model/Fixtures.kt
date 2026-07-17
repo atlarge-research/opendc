@@ -28,13 +28,13 @@ import org.opendc.sdk.model.dsl.gib
 import org.opendc.sdk.model.dsl.kwatts
 import org.opendc.sdk.model.dsl.minutes
 import org.opendc.sdk.model.dsl.watts
-import org.opendc.sdk.model.experiment.Experiment
-import org.opendc.sdk.model.experiment.Scenario
+import org.opendc.sdk.model.experiment.ExperimentSpec
+import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.export.ExportSpec
-import org.opendc.sdk.model.failure.NoFailure
+import org.opendc.sdk.model.failure.NoFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
-import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
-import org.opendc.sdk.model.scheduler.SchedulerName
+import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.SchedulerNameSpec
 import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec
@@ -47,8 +47,8 @@ import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.topology.PowerSourceSpec
 import org.opendc.sdk.model.topology.PowerSpec
 import org.opendc.sdk.model.topology.TopologySpec
-import org.opendc.sdk.model.workload.InlineWorkload
-import org.opendc.sdk.model.workload.ScalingPolicy
+import org.opendc.sdk.model.workload.InlineWorkloadSpec
+import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TaskFragmentSpec
 import org.opendc.sdk.model.workload.TaskSpec
 
@@ -78,9 +78,9 @@ public val validTask: TaskSpec =
         fragments = listOf(TaskFragmentSpec(duration = 10.minutes, cpuUsage = 1.ghz)),
     )
 
-public val validWorkload: InlineWorkload = InlineWorkload(listOf(validTask))
+public val validWorkload: InlineWorkloadSpec = InlineWorkloadSpec(listOf(validTask))
 
-public val validExperiment: Experiment = Experiment(topologies = setOf(validTopology), workloads = setOf(validWorkload))
+public val validExperiment: ExperimentSpec = ExperimentSpec(topologies = setOf(validTopology), workloads = setOf(validWorkload))
 
 public val sampleHost: HostSpec =
     HostSpec(
@@ -144,15 +144,15 @@ public val sampleLeafTask: TaskSpec =
         parents = setOf(0),
     )
 
-public val sampleWorkload: InlineWorkload = InlineWorkload(listOf(sampleRootTask, sampleLeafTask), ScalingPolicy.Perfect)
+public val sampleWorkload: InlineWorkloadSpec = InlineWorkloadSpec(listOf(sampleRootTask, sampleLeafTask), ScalingPolicySpec.Perfect)
 
-public val sampleScenario: Scenario =
-    Scenario(
+public val sampleScenario: ScenarioSpec =
+    ScenarioSpec(
         topology = sampleTopology,
         workload = sampleWorkload,
-        allocationPolicy = PrefabAllocationPolicy(SchedulerName.CoreMem),
+        allocationPolicy = PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem),
         exportModel = ExportSpec(exportInterval = 10.minutes),
-        failureModel = NoFailure,
+        failureModel = NoFailureSpec,
         checkpointModel = CheckpointSpec(),
         maxNumFailures = 5,
         runs = 3,
@@ -161,12 +161,16 @@ public val sampleScenario: Scenario =
         name = "sample",
     )
 
-public val sampleExperiment: Experiment =
-    Experiment(
+public val sampleExperiment: ExperimentSpec =
+    ExperimentSpec(
         topologies = setOf(sampleTopology),
         workloads = setOf(sampleWorkload),
-        allocationPolicies = setOf(PrefabAllocationPolicy(SchedulerName.Mem), PrefabAllocationPolicy(SchedulerName.CoreMem)),
-        failureModels = setOf(NoFailure),
+        allocationPolicies =
+            setOf(
+                PrefabAllocationPolicySpec(SchedulerNameSpec.Mem),
+                PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem),
+            ),
+        failureModels = setOf(NoFailureSpec),
         maxNumFailures = setOf(5, 10),
         runs = 3,
         initialSeed = 1,

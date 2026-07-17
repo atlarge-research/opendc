@@ -31,24 +31,24 @@ import org.opendc.sdk.model.validation.ValidationIssue
  * A predicate that decides whether a candidate host is eligible to receive a task.
  */
 @Serializable
-public sealed interface HostFilter : Validatable {
+public sealed interface HostFilterSpec : Validatable {
     override fun validate(): List<ValidationIssue> = emptyList()
 }
 
 /** Keeps only hosts able to fulfil the task's compute requirements. */
 @Serializable
 @SerialName("compute")
-public data object ComputeHostFilter : HostFilter
+public data object ComputeHostFilterSpec : HostFilterSpec
 
 /** Keeps hosts that already run tasks affine to the current one. */
 @Serializable
 @SerialName("sameHost")
-public data object SameHostFilter : HostFilter
+public data object SameHostFilterSpec : HostFilterSpec
 
 /** Keeps hosts that do not run tasks anti-affine to the current one. */
 @Serializable
 @SerialName("differentHost")
-public data object DifferentHostFilter : HostFilter
+public data object DifferentHostFilterSpec : HostFilterSpec
 
 /**
  * Keeps hosts running fewer than [limit] instances of the task group.
@@ -57,7 +57,7 @@ public data object DifferentHostFilter : HostFilter
  */
 @Serializable
 @SerialName("instanceCount")
-public data class InstanceCountFilter(public val limit: Int) : HostFilter {
+public data class InstanceCountFilterSpec(public val limit: Int) : HostFilterSpec {
     override fun validate(): List<ValidationIssue> = if (limit >= 1) emptyList() else listOf(ValidationIssue("limit", "must be >= 1"))
 }
 
@@ -68,7 +68,7 @@ public data class InstanceCountFilter(public val limit: Int) : HostFilter {
  */
 @Serializable
 @SerialName("ram")
-public data class RamFilter(public val allocationRatio: Double = 1.0) : HostFilter {
+public data class RamFilterSpec(public val allocationRatio: Double = 1.0) : HostFilterSpec {
     override fun validate(): List<ValidationIssue> =
         if (allocationRatio > 0.0) emptyList() else listOf(ValidationIssue("allocationRatio", "must be > 0"))
 }
@@ -76,7 +76,7 @@ public data class RamFilter(public val allocationRatio: Double = 1.0) : HostFilt
 /** Keeps hosts whose per-core capacity covers the task's requested capacity. */
 @Serializable
 @SerialName("vcpuCapacity")
-public data object VCpuCapacityFilter : HostFilter
+public data object VCpuCapacityFilterSpec : HostFilterSpec
 
 /**
  * Keeps hosts with enough vCPUs given an over-commit [allocationRatio].
@@ -85,7 +85,7 @@ public data object VCpuCapacityFilter : HostFilter
  */
 @Serializable
 @SerialName("vcpu")
-public data class VCpuFilter(public val allocationRatio: Double = 1.0) : HostFilter {
+public data class VCpuFilterSpec(public val allocationRatio: Double = 1.0) : HostFilterSpec {
     override fun validate(): List<ValidationIssue> =
         if (allocationRatio > 0.0) emptyList() else listOf(ValidationIssue("allocationRatio", "must be > 0"))
 }
@@ -97,7 +97,7 @@ public data class VCpuFilter(public val allocationRatio: Double = 1.0) : HostFil
  */
 @Serializable
 @SerialName("vgpu")
-public data class VGpuFilter(public val allocationRatio: Double = 1.0) : HostFilter {
+public data class VGpuFilterSpec(public val allocationRatio: Double = 1.0) : HostFilterSpec {
     override fun validate(): List<ValidationIssue> =
         if (allocationRatio > 0.0) emptyList() else listOf(ValidationIssue("allocationRatio", "must be > 0"))
 }

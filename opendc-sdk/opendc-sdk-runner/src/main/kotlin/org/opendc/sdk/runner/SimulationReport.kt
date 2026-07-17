@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.runner
 
-import org.opendc.sdk.model.experiment.Scenario
+import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.runner.sink.CollectedMetrics
 import org.opendc.sdk.runner.sink.ParquetOutput
 import org.opendc.sdk.runner.sink.SinkResult
@@ -43,7 +43,7 @@ public data class SimulationReport(public val scenarios: List<ScenarioResult>) {
  * @property runs One [RunResult] per repetition, ordered by seed.
  */
 public data class ScenarioResult(
-    public val scenario: Scenario,
+    public val scenario: ScenarioSpec,
     public val runs: List<RunResult>,
 )
 

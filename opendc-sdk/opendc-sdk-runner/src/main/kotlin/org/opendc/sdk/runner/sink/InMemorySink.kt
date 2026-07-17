@@ -29,7 +29,7 @@ import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
-import org.opendc.sdk.model.export.OutputFile
+import org.opendc.sdk.model.export.OutputFileSpec
 import org.opendc.sdk.runner.factory.toEngineOutputFiles
 
 /**
@@ -41,11 +41,11 @@ import org.opendc.sdk.runner.factory.toEngineOutputFiles
 public class InMemorySink
     @JvmOverloads
     constructor(
-        private val tables: Set<OutputFile> = OutputFile.entries.toSet(),
+        private val tables: Set<OutputFileSpec> = OutputFileSpec.entries.toSet(),
     ) : OutputSink {
         override fun open(context: RunContext): SinkSession = Session(tables)
 
-        private class Session(private val captureTables: Set<OutputFile>) : SinkSession {
+        private class Session(private val captureTables: Set<OutputFileSpec>) : SinkSession {
             private val host = mutableListOf<HostSample>()
             private val task = mutableListOf<TaskSample>()
             private val service = mutableListOf<ServiceSample>()
@@ -55,23 +55,23 @@ public class InMemorySink
             override val monitor: ComputeMonitor =
                 object : ComputeMonitor {
                     override fun record(reader: HostTableReader) {
-                        if (OutputFile.HOST in captureTables) host += reader.toSample()
+                        if (OutputFileSpec.HOST in captureTables) host += reader.toSample()
                     }
 
                     override fun record(reader: TaskTableReader) {
-                        if (OutputFile.TASK in captureTables) task += reader.toSample()
+                        if (OutputFileSpec.TASK in captureTables) task += reader.toSample()
                     }
 
                     override fun record(reader: ServiceTableReader) {
-                        if (OutputFile.SERVICE in captureTables) service += reader.toSample()
+                        if (OutputFileSpec.SERVICE in captureTables) service += reader.toSample()
                     }
 
                     override fun record(reader: PowerSourceTableReader) {
-                        if (OutputFile.POWER_SOURCE in captureTables) powerSource += reader.toSample()
+                        if (OutputFileSpec.POWER_SOURCE in captureTables) powerSource += reader.toSample()
                     }
 
                     override fun record(reader: BatteryTableReader) {
-                        if (OutputFile.BATTERY in captureTables) battery += reader.toSample()
+                        if (OutputFileSpec.BATTERY in captureTables) battery += reader.toSample()
                     }
                 }
 

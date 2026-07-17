@@ -25,7 +25,7 @@ package org.opendc.cli.run
 import org.opendc.cli.progress.ProgressSource
 import org.opendc.cli.render.OutputView
 import org.opendc.cli.render.RunSummaryView
-import org.opendc.sdk.model.experiment.Experiment
+import org.opendc.sdk.model.experiment.ExperimentSpec
 import java.nio.file.Path
 
 /**
@@ -50,7 +50,7 @@ internal interface SimulationSession {
 
 /** Everything a backend needs to prepare a run. A null [parallelism] lets the backend choose. */
 internal data class RunRequest(
-    val experiment: Experiment,
+    val experiment: ExperimentSpec,
     val inputRoot: Path,
     val output: Path,
     val parallelism: Int?,

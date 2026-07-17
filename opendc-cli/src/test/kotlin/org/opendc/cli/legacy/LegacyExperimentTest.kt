@@ -28,41 +28,41 @@ import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
-import org.opendc.sdk.model.experiment.Experiment
+import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.export.AllColumns
 import org.opendc.sdk.model.export.OnlyColumns
-import org.opendc.sdk.model.export.OutputFile
-import org.opendc.sdk.model.failure.CustomFailure
-import org.opendc.sdk.model.failure.ExponentialDistribution
-import org.opendc.sdk.model.failure.FailurePrefab
-import org.opendc.sdk.model.failure.LogNormalDistribution
-import org.opendc.sdk.model.failure.NoFailure
-import org.opendc.sdk.model.failure.PrefabFailure
-import org.opendc.sdk.model.failure.TraceBasedFailure
-import org.opendc.sdk.model.failure.UniformDistribution
+import org.opendc.sdk.model.export.OutputFileSpec
+import org.opendc.sdk.model.failure.CustomFailureSpec
+import org.opendc.sdk.model.failure.ExponentialDistributionSpec
+import org.opendc.sdk.model.failure.FailurePrefabSpec
+import org.opendc.sdk.model.failure.LogNormalDistributionSpec
+import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.failure.PrefabFailureSpec
+import org.opendc.sdk.model.failure.TraceBasedFailureSpec
+import org.opendc.sdk.model.failure.UniformDistributionSpec
 import org.opendc.sdk.model.resource.NamedReference
-import org.opendc.sdk.model.scheduler.ComputeHostFilter
-import org.opendc.sdk.model.scheduler.CoreRamWeigher
-import org.opendc.sdk.model.scheduler.FilterAllocationPolicy
-import org.opendc.sdk.model.scheduler.InstanceCountFilter
-import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
-import org.opendc.sdk.model.scheduler.RamFilter
-import org.opendc.sdk.model.scheduler.RamWeigher
-import org.opendc.sdk.model.scheduler.SchedulerName
+import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
+import org.opendc.sdk.model.scheduler.CoreRamWeigherSpec
+import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.InstanceCountFilterSpec
+import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.RamFilterSpec
+import org.opendc.sdk.model.scheduler.RamWeigherSpec
+import org.opendc.sdk.model.scheduler.SchedulerNameSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
-import org.opendc.sdk.model.scheduler.VCpuCapacityWeigher
-import org.opendc.sdk.model.scheduler.VCpuFilter
+import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.VCpuCapacityWeigherSpec
+import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.topology.BestEffort
-import org.opendc.sdk.model.topology.ConstantVirtualizationOverhead
+import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.EqualShare
 import org.opendc.sdk.model.topology.FixedShare
 import org.opendc.sdk.model.topology.MaxMinFairness
 import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.topology.RunningMeanPolicy
-import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverhead
-import org.opendc.sdk.model.workload.ScalingPolicy
-import org.opendc.sdk.model.workload.TraceWorkload
+import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
+import org.opendc.sdk.model.workload.ScalingPolicySpec
+import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -81,7 +81,7 @@ import kotlin.test.assertTrue
  * what the old runner resolved its relative paths against.
  *
  * These tests assert *loadability* — that an old document becomes an equivalent, valid SDK
- * [Experiment]. That the simulator then reproduces the old numbers is asserted separately, by
+ * [ExperimentSpec]. That the simulator then reproduces the old numbers is asserted separately, by
  * `opendc-sdk`.
  */
 class LegacyExperimentTest {
@@ -108,7 +108,7 @@ class LegacyExperimentTest {
         assertEquals(NamedReference("carbon_traces/NL_2021-2024.parquet"), cluster.powerSource.carbon)
 
         val workload = experiment.workloads.single()
-        assertEquals(TraceWorkload(source = NamedReference("workload_traces/surf_week")), workload)
+        assertEquals(TraceWorkloadSpec(source = NamedReference("workload_traces/surf_week")), workload)
 
         val export = experiment.exportModels.single()
         assertEquals(
@@ -117,7 +117,10 @@ class LegacyExperimentTest {
             "the legacy export interval counts seconds, so 3600 is an hour — not 3.6 seconds",
         )
         assertEquals(24, export.printFrequency)
-        assertEquals(listOf(OutputFile.HOST, OutputFile.POWER_SOURCE, OutputFile.SERVICE, OutputFile.TASK), export.filesToExport)
+        assertEquals(
+            listOf(OutputFileSpec.HOST, OutputFileSpec.POWER_SOURCE, OutputFileSpec.SERVICE, OutputFileSpec.TASK),
+            export.filesToExport,
+        )
     }
 
     /** Demo 2 — four topologies, each a `sqrt` power model in a different country. */
@@ -153,12 +156,12 @@ class LegacyExperimentTest {
     fun `demo 4 loads its failure models`() {
         val experiment = load("experiments/4.failures_answers/failure_experiment.json")
 
-        assertContains(experiment.failureModels, NoFailure)
+        assertContains(experiment.failureModels, NoFailureSpec)
         assertEquals(
             listOf("Facebook", "Instagram", "Netflix")
                 .map { NamedReference("failure_traces/${it}_user_reported.parquet") }
                 .toSet(),
-            experiment.failureModels.filterIsInstance<TraceBasedFailure>().map { it.source }.toSet(),
+            experiment.failureModels.filterIsInstance<TraceBasedFailureSpec>().map { it.source }.toSet(),
         )
     }
 
@@ -186,11 +189,11 @@ class LegacyExperimentTest {
         val experiment = load(FEATURES)
 
         assertEquals(
-            TraceWorkload(
+            TraceWorkloadSpec(
                 source = NamedReference("workload_traces/surf_week"),
                 sampleFraction = 0.5,
                 submissionTime = "2024-03-01T00:00:00",
-                scalingPolicy = ScalingPolicy.Perfect,
+                scalingPolicy = ScalingPolicySpec.Perfect,
                 deferAll = true,
             ),
             experiment.workloads.single(),
@@ -201,26 +204,26 @@ class LegacyExperimentTest {
     fun `prefab, filter and timeshift allocation policies carry over`() {
         val policies = load(FEATURES).allocationPolicies
 
-        assertContains(policies, PrefabAllocationPolicy(SchedulerName.CoreMem))
+        assertContains(policies, PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem))
         assertContains(
             policies,
-            FilterAllocationPolicy(
+            FilterAllocationPolicySpec(
                 filters =
                     listOf(
-                        ComputeHostFilter,
-                        RamFilter(allocationRatio = 1.5),
-                        VCpuFilter(allocationRatio = 16.0),
-                        InstanceCountFilter(limit = 8),
+                        ComputeHostFilterSpec,
+                        RamFilterSpec(allocationRatio = 1.5),
+                        VCpuFilterSpec(allocationRatio = 16.0),
+                        InstanceCountFilterSpec(limit = 8),
                     ),
-                weighers = listOf(CoreRamWeigher(multiplier = 1.0), VCpuCapacityWeigher(multiplier = -1.0)),
+                weighers = listOf(CoreRamWeigherSpec(multiplier = 1.0), VCpuCapacityWeigherSpec(multiplier = -1.0)),
                 subsetSize = 2,
             ),
         )
         assertContains(
             policies,
-            TimeShiftAllocationPolicy(
-                filters = listOf(ComputeHostFilter),
-                weighers = listOf(RamWeigher(multiplier = 1.0)),
+            TimeShiftAllocationPolicySpec(
+                filters = listOf(ComputeHostFilterSpec),
+                weighers = listOf(RamWeigherSpec(multiplier = 1.0)),
                 memorize = false,
                 taskStopper = TaskStopperSpec(windowSize = 168, forecast = true, forecastThreshold = 0.6, forecastSize = 24),
             ),
@@ -231,11 +234,11 @@ class LegacyExperimentTest {
     fun `prefab, trace-based and custom failure models carry over, and a null one means no failure`() {
         val failures = load(FEATURES).failureModels
 
-        assertContains(failures, NoFailure, "a null failure model, like an explicit 'no' one, injects no failures")
-        assertContains(failures, PrefabFailure(FailurePrefab.G5k06Exp))
+        assertContains(failures, NoFailureSpec, "a null failure model, like an explicit 'no' one, injects no failures")
+        assertContains(failures, PrefabFailureSpec(FailurePrefabSpec.G5k06Exp))
         assertContains(
             failures,
-            TraceBasedFailure(
+            TraceBasedFailureSpec(
                 source = NamedReference("failure_traces/Facebook_user_reported.parquet"),
                 startPoint = 0.25,
                 repeat = false,
@@ -243,10 +246,10 @@ class LegacyExperimentTest {
         )
         assertContains(
             failures,
-            CustomFailure(
-                interArrival = ExponentialDistribution(mean = 3600.0),
-                duration = LogNormalDistribution(scale = 2.0, shape = 0.5),
-                hostFraction = UniformDistribution(upper = 0.5, lower = 0.1),
+            CustomFailureSpec(
+                interArrival = ExponentialDistributionSpec(mean = 3600.0),
+                duration = LogNormalDistributionSpec(scale = 2.0, shape = 0.5),
+                hostFraction = UniformDistributionSpec(upper = 0.5, lower = 0.1),
             ),
         )
     }
@@ -285,7 +288,7 @@ class LegacyExperimentTest {
         assertEquals(DataSize.ofMiB(30517578125), gpu.memory, "a bare GPU memorySize still counts MiB")
         assertEquals(DataRate.ofGBps(900), gpu.memoryBandwidth, "a spelled-out bandwidth is honoured as written")
         assertEquals("Volta", gpu.architecture)
-        assertEquals(ConstantVirtualizationOverhead(percentageOverhead = 0.05), gpu.virtualizationOverhead)
+        assertEquals(ConstantVirtualizationOverheadSpec(percentageOverhead = 0.05), gpu.virtualizationOverhead)
         assertEquals(PowerModelType.SQRT, constant.gpuPowerModel.type)
         assertEquals(MaxMinFairness, constant.cpuDistribution)
         assertEquals(BestEffort(updateIntervalMs = 60000), constant.gpuDistribution)
@@ -296,10 +299,10 @@ class LegacyExperimentTest {
         assertEquals("DDR4", constant.memory.architecture)
         assertEquals(Frequency.ofMHz(3200), constant.memory.speed)
 
-        assertEquals(ShareBasedVirtualizationOverhead, checkNotNull(shareBased.gpu).virtualizationOverhead)
+        assertEquals(ShareBasedVirtualizationOverheadSpec, checkNotNull(shareBased.gpu).virtualizationOverhead)
         assertEquals(FixedShare(shareRatio = 0.5), shareBased.gpuDistribution)
 
-        val unsetOverhead = checkNotNull(unset.gpu).virtualizationOverhead as ConstantVirtualizationOverhead
+        val unsetOverhead = checkNotNull(unset.gpu).virtualizationOverhead as ConstantVirtualizationOverheadSpec
         assertNull(unsetOverhead.percentageOverhead, "the legacy -1.0 sentinel meant 'unset'")
         assertEquals(EqualShare, unset.gpuDistribution)
     }
@@ -354,10 +357,10 @@ class LegacyExperimentTest {
         }.also { assertContains(it.message.orEmpty(), "psychic") }
     }
 
-    private fun load(fixture: String): Experiment = readLegacyExperiment(File(legacyRoot, fixture), legacyRoot)
+    private fun load(fixture: String): ExperimentSpec = readLegacyExperiment(File(legacyRoot, fixture), legacyRoot)
 
     /** Reads a throwaway legacy document, used to pin down the error a malformed one produces. */
-    private fun read(json: String): Experiment {
+    private fun read(json: String): ExperimentSpec {
         val file =
             File.createTempFile("legacy-experiment", ".json").apply {
                 deleteOnExit()

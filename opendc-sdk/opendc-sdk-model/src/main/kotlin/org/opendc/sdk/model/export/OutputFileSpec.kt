@@ -20,51 +20,26 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.failure
+package org.opendc.sdk.model.export
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/**
- * A named, built-in failure model derived from an empirical availability trace fitted to a
- * statistical distribution. The prefix identifies the source dataset and the suffix the fitted
- * distribution family (Exp, Wbl, LogN, Gam).
- */
+/** Identifies a category of output produced by a simulation run. */
 @Serializable
-public enum class FailurePrefab {
-    G5k06Exp,
-    G5k06Wbl,
-    G5k06LogN,
-    G5k06Gam,
-    Lanl05Exp,
-    Lanl05Wbl,
-    Lanl05LogN,
-    Lanl05Gam,
-    Ldns04Exp,
-    Ldns04Wbl,
-    Ldns04LogN,
-    Ldns04Gam,
-    Microsoft99Exp,
-    Microsoft99Wbl,
-    Microsoft99LogN,
-    Microsoft99Gam,
-    Nd07cpuExp,
-    Nd07cpuWbl,
-    Nd07cpuLogN,
-    Nd07cpuGam,
-    Overnet03Exp,
-    Overnet03Wbl,
-    Overnet03LogN,
-    Overnet03Gam,
-    Pl05Exp,
-    Pl05Wbl,
-    Pl05LogN,
-    Pl05Gam,
-    Skype06Exp,
-    Skype06Wbl,
-    Skype06LogN,
-    Skype06Gam,
-    Websites02Exp,
-    Websites02Wbl,
-    Websites02LogN,
-    Websites02Gam,
+public enum class OutputFileSpec {
+    @SerialName("host")
+    HOST,
+
+    @SerialName("task")
+    TASK,
+
+    @SerialName("powerSource")
+    POWER_SOURCE,
+
+    @SerialName("battery")
+    BATTERY,
+
+    @SerialName("service")
+    SERVICE,
 }

@@ -31,9 +31,9 @@ import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.telemetry.OutputFiles
 import org.opendc.compute.topology.specs.ClusterSpec
-import org.opendc.sdk.model.experiment.Scenario
+import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.resource.ResourceProvisioner
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
+import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
 import org.opendc.sdk.runner.RunResult
 import org.opendc.sdk.runner.factory.toClusterSpecs
 import org.opendc.sdk.runner.factory.toEngine
@@ -59,7 +59,7 @@ private const val SERVICE_DOMAIN = "compute.opendc.org"
  * metrics harvested by the [sinks].
  */
 internal fun runScenario(
-    scenario: Scenario,
+    scenario: ScenarioSpec,
     experimentName: String,
     scenarioId: Int,
     seed: Long,
@@ -86,7 +86,7 @@ private class ScenarioRun(
     private val sim: SimulationCoroutineScope,
     private val engine: Provisioner,
     private val resources: ResourceScope,
-    private val scenario: Scenario,
+    private val scenario: ScenarioSpec,
     private val experimentName: String,
     private val scenarioId: Int,
     private val seed: Long,
@@ -169,7 +169,7 @@ private class ScenarioRun(
     }
 
     private suspend fun connectTaskStopper(carbon: CarbonModel) {
-        val policy = scenario.allocationPolicy as? TimeShiftAllocationPolicy ?: return
+        val policy = scenario.allocationPolicy as? TimeShiftAllocationPolicySpec ?: return
         val taskStopper = policy.taskStopper.toEngine(coroutineContext, clock) ?: return
         taskStopper.setService(service)
         carbon.addReceiver(taskStopper)

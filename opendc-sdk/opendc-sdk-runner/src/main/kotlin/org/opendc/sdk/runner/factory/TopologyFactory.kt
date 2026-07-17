@@ -36,20 +36,20 @@ import org.opendc.compute.topology.specs.SingleBatteryPolicyJSONSpec
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.BestEffort
-import org.opendc.sdk.model.topology.ConstantVirtualizationOverhead
+import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.DoubleThresholdPolicy
 import org.opendc.sdk.model.topology.EqualShare
 import org.opendc.sdk.model.topology.FirstFit
 import org.opendc.sdk.model.topology.FixedShare
 import org.opendc.sdk.model.topology.GpuSpec
 import org.opendc.sdk.model.topology.MaxMinFairness
-import org.opendc.sdk.model.topology.NoVirtualizationOverhead
+import org.opendc.sdk.model.topology.NoVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.topology.RunningMeanPlusPolicy
 import org.opendc.sdk.model.topology.RunningMeanPolicy
 import org.opendc.sdk.model.topology.RunningMedianPolicy
 import org.opendc.sdk.model.topology.RunningQuartilesPolicy
-import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverhead
+import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.SingleThresholdPolicy
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.simulator.compute.models.CpuModel
@@ -65,7 +65,7 @@ import org.opendc.sdk.model.topology.DistributionPolicy as SdkDistributionPolicy
 import org.opendc.sdk.model.topology.HostSpec as SdkHostSpec
 import org.opendc.sdk.model.topology.PowerSourceSpec as SdkPowerSourceSpec
 import org.opendc.sdk.model.topology.PowerSpec as SdkPowerModel
-import org.opendc.sdk.model.topology.VirtualizationOverhead as SdkVirtualizationOverhead
+import org.opendc.sdk.model.topology.VirtualizationOverheadSpec as SdkVirtualizationOverhead
 import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy as EngineDistributionPolicy
 
 /**
@@ -157,9 +157,9 @@ private fun SdkDistributionPolicy.toEngine(): EngineDistributionPolicy =
 
 private fun SdkVirtualizationOverhead.toEngine(): VirtualizationOverheadModelEnum =
     when (this) {
-        NoVirtualizationOverhead -> VirtualizationOverheadModelEnum.NONE
-        ShareBasedVirtualizationOverhead -> VirtualizationOverheadModelEnum.SHARE_BASED
-        is ConstantVirtualizationOverhead ->
+        NoVirtualizationOverheadSpec -> VirtualizationOverheadModelEnum.NONE
+        ShareBasedVirtualizationOverheadSpec -> VirtualizationOverheadModelEnum.SHARE_BASED
+        is ConstantVirtualizationOverheadSpec ->
             VirtualizationOverheadModelEnum.CONSTANT.apply {
                 setProperty("percentageOverhead", percentageOverhead ?: -1.0)
             }

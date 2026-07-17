@@ -22,7 +22,6 @@
 
 package org.opendc.sdk.model.serialization
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
@@ -35,74 +34,73 @@ import org.opendc.sdk.model.dsl.minutes
 import org.opendc.sdk.model.dsl.prefabScheduler
 import org.opendc.sdk.model.dsl.scenario
 import org.opendc.sdk.model.dsl.timeShiftScheduler
-import org.opendc.sdk.model.dsl.topology
 import org.opendc.sdk.model.dsl.traceWorkload
 import org.opendc.sdk.model.export.AllColumns
 import org.opendc.sdk.model.export.ColumnSelection
 import org.opendc.sdk.model.export.ExportColumnsSpec
 import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.export.OnlyColumns
-import org.opendc.sdk.model.export.OutputFile
-import org.opendc.sdk.model.failure.ConstantDistribution
-import org.opendc.sdk.model.failure.CustomFailure
-import org.opendc.sdk.model.failure.Distribution
-import org.opendc.sdk.model.failure.ExponentialDistribution
-import org.opendc.sdk.model.failure.FailureModel
-import org.opendc.sdk.model.failure.FailurePrefab
-import org.opendc.sdk.model.failure.GammaDistribution
-import org.opendc.sdk.model.failure.LogNormalDistribution
-import org.opendc.sdk.model.failure.NoFailure
-import org.opendc.sdk.model.failure.NormalDistribution
-import org.opendc.sdk.model.failure.ParetoDistribution
-import org.opendc.sdk.model.failure.PrefabFailure
-import org.opendc.sdk.model.failure.TraceBasedFailure
-import org.opendc.sdk.model.failure.UniformDistribution
-import org.opendc.sdk.model.failure.WeibullDistribution
+import org.opendc.sdk.model.export.OutputFileSpec
+import org.opendc.sdk.model.failure.ConstantDistributionSpec
+import org.opendc.sdk.model.failure.CustomFailureSpec
+import org.opendc.sdk.model.failure.DistributionSpec
+import org.opendc.sdk.model.failure.ExponentialDistributionSpec
+import org.opendc.sdk.model.failure.FailureModelSpec
+import org.opendc.sdk.model.failure.FailurePrefabSpec
+import org.opendc.sdk.model.failure.GammaDistributionSpec
+import org.opendc.sdk.model.failure.LogNormalDistributionSpec
+import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.failure.NormalDistributionSpec
+import org.opendc.sdk.model.failure.ParetoDistributionSpec
+import org.opendc.sdk.model.failure.PrefabFailureSpec
+import org.opendc.sdk.model.failure.TraceBasedFailureSpec
+import org.opendc.sdk.model.failure.UniformDistributionSpec
+import org.opendc.sdk.model.failure.WeibullDistributionSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.resource.UriReference
 import org.opendc.sdk.model.sampleTopology
 import org.opendc.sdk.model.sampleWorkload
-import org.opendc.sdk.model.scheduler.AllocationPolicy
-import org.opendc.sdk.model.scheduler.ComputeHostFilter
-import org.opendc.sdk.model.scheduler.CoreRamWeigher
-import org.opendc.sdk.model.scheduler.DifferentHostFilter
-import org.opendc.sdk.model.scheduler.FilterAllocationPolicy
-import org.opendc.sdk.model.scheduler.HostFilter
-import org.opendc.sdk.model.scheduler.HostWeigher
-import org.opendc.sdk.model.scheduler.InstanceCountFilter
-import org.opendc.sdk.model.scheduler.InstanceCountWeigher
-import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
-import org.opendc.sdk.model.scheduler.RamFilter
-import org.opendc.sdk.model.scheduler.RamWeigher
-import org.opendc.sdk.model.scheduler.SameHostFilter
-import org.opendc.sdk.model.scheduler.SchedulerName
+import org.opendc.sdk.model.scheduler.AllocationPolicySpec
+import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
+import org.opendc.sdk.model.scheduler.CoreRamWeigherSpec
+import org.opendc.sdk.model.scheduler.DifferentHostFilterSpec
+import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.HostFilterSpec
+import org.opendc.sdk.model.scheduler.HostWeigherSpec
+import org.opendc.sdk.model.scheduler.InstanceCountFilterSpec
+import org.opendc.sdk.model.scheduler.InstanceCountWeigherSpec
+import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.RamFilterSpec
+import org.opendc.sdk.model.scheduler.RamWeigherSpec
+import org.opendc.sdk.model.scheduler.SameHostFilterSpec
+import org.opendc.sdk.model.scheduler.SchedulerNameSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
-import org.opendc.sdk.model.scheduler.VCpuCapacityFilter
-import org.opendc.sdk.model.scheduler.VCpuCapacityWeigher
-import org.opendc.sdk.model.scheduler.VCpuFilter
-import org.opendc.sdk.model.scheduler.VCpuWeigher
+import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.VCpuCapacityFilterSpec
+import org.opendc.sdk.model.scheduler.VCpuCapacityWeigherSpec
+import org.opendc.sdk.model.scheduler.VCpuFilterSpec
+import org.opendc.sdk.model.scheduler.VCpuWeigherSpec
 import org.opendc.sdk.model.topology.BatteryPolicy
 import org.opendc.sdk.model.topology.BestEffort
-import org.opendc.sdk.model.topology.ConstantVirtualizationOverhead
+import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.DistributionPolicy
 import org.opendc.sdk.model.topology.DoubleThresholdPolicy
 import org.opendc.sdk.model.topology.EqualShare
 import org.opendc.sdk.model.topology.FirstFit
 import org.opendc.sdk.model.topology.FixedShare
 import org.opendc.sdk.model.topology.MaxMinFairness
-import org.opendc.sdk.model.topology.NoVirtualizationOverhead
+import org.opendc.sdk.model.topology.NoVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.RunningMeanPlusPolicy
 import org.opendc.sdk.model.topology.RunningMeanPolicy
 import org.opendc.sdk.model.topology.RunningMedianPolicy
 import org.opendc.sdk.model.topology.RunningQuartilesPolicy
-import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverhead
+import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.SingleThresholdPolicy
 import org.opendc.sdk.model.topology.TopologySpec
-import org.opendc.sdk.model.topology.VirtualizationOverhead
-import org.opendc.sdk.model.workload.ScalingPolicy
-import org.opendc.sdk.model.workload.TraceWorkload
-import org.opendc.sdk.model.workload.Workload
+import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
+import org.opendc.sdk.model.workload.ScalingPolicySpec
+import org.opendc.sdk.model.workload.TraceWorkloadSpec
+import org.opendc.sdk.model.workload.WorkloadSpec
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -128,22 +126,22 @@ class RoundTripTest {
                         source = UriReference("file:///traces/bitbrains"),
                         sampleFraction = 0.5,
                         submissionTime = "2022-01-01T00:00",
-                        scalingPolicy = ScalingPolicy.Perfect,
+                        scalingPolicy = ScalingPolicySpec.Perfect,
                         deferAll = true,
                     ),
                 )
                 workload(sampleWorkload)
-                allocationPolicy(prefabScheduler(SchedulerName.CoreMem))
+                allocationPolicy(prefabScheduler(SchedulerNameSpec.CoreMem))
                 allocationPolicy(
                     filterScheduler {
                         subsetSize = 2
-                        filter(ComputeHostFilter)
-                        filter(RamFilter(1.5))
-                        weigher(RamWeigher(2.0))
+                        filter(ComputeHostFilterSpec)
+                        filter(RamFilterSpec(1.5))
+                        weigher(RamWeigherSpec(2.0))
                     },
                 )
-                failureModel(PrefabFailure(FailurePrefab.G5k06Exp))
-                failureModel(NoFailure)
+                failureModel(PrefabFailureSpec(FailurePrefabSpec.G5k06Exp))
+                failureModel(NoFailureSpec)
                 exportModel(ExportSpec())
                 checkpointModel(CheckpointSpec())
                 checkpointModel(null)
@@ -176,9 +174,9 @@ class RoundTripTest {
                         forecastSize = 12
                         memorize = false
                         taskStopper = TaskStopperSpec(windowSize = 100, forecast = false, forecastThreshold = 0.5, forecastSize = 6)
-                        filter(ComputeHostFilter)
-                        filter(VCpuFilter(2.0))
-                        weigher(CoreRamWeigher(1.5))
+                        filter(ComputeHostFilterSpec)
+                        filter(VCpuFilterSpec(2.0))
+                        weigher(CoreRamWeigherSpec(1.5))
                     },
                 )
                 exportModel =
@@ -186,13 +184,13 @@ class RoundTripTest {
                         exportInterval = 10.minutes,
                         printFrequency = null,
                         columns = ExportColumnsSpec(host = OnlyColumns(setOf("timestamp", "cpu_usage")), task = AllColumns),
-                        filesToExport = listOf(OutputFile.HOST, OutputFile.TASK),
+                        filesToExport = listOf(OutputFileSpec.HOST, OutputFileSpec.TASK),
                     )
                 failureModel =
-                    CustomFailure(
-                        interArrival = ExponentialDistribution(mean = 3600.0),
-                        duration = ConstantDistribution(value = 300.0),
-                        hostFraction = UniformDistribution(upper = 0.5, lower = 0.1),
+                    CustomFailureSpec(
+                        interArrival = ExponentialDistributionSpec(mean = 3600.0),
+                        duration = ConstantDistributionSpec(value = 300.0),
+                        hostFraction = UniformDistributionSpec(upper = 0.5, lower = 0.1),
                     )
                 checkpointModel = CheckpointSpec()
             }
@@ -203,96 +201,96 @@ class RoundTripTest {
 
     @TestFactory
     fun `allocation policies round-trip`(): List<DynamicTest> {
-        val policies: List<AllocationPolicy> =
+        val policies: List<AllocationPolicySpec> =
             listOf(
-                PrefabAllocationPolicy(SchedulerName.Random),
-                FilterAllocationPolicy(
-                    filters = listOf(ComputeHostFilter, RamFilter(1.5)),
-                    weighers = listOf(RamWeigher(1.0), CoreRamWeigher(2.0)),
+                PrefabAllocationPolicySpec(SchedulerNameSpec.Random),
+                FilterAllocationPolicySpec(
+                    filters = listOf(ComputeHostFilterSpec, RamFilterSpec(1.5)),
+                    weighers = listOf(RamWeigherSpec(1.0), CoreRamWeigherSpec(2.0)),
                     subsetSize = 3,
                 ),
-                TimeShiftAllocationPolicy(
-                    filters = listOf(ComputeHostFilter),
-                    weighers = listOf(VCpuWeigher(1.0)),
+                TimeShiftAllocationPolicySpec(
+                    filters = listOf(ComputeHostFilterSpec),
+                    weighers = listOf(VCpuWeigherSpec(1.0)),
                     taskStopper = TaskStopperSpec(),
                 ),
             )
         return policies.map { policy ->
-            dynamicTest(policy.toString()) { assertEquals(policy, roundTrip<AllocationPolicy>(policy)) }
+            dynamicTest(policy.toString()) { assertEquals(policy, roundTrip<AllocationPolicySpec>(policy)) }
         }
     }
 
     @TestFactory
     fun `host filters round-trip`(): List<DynamicTest> {
-        val filters: List<HostFilter> =
+        val filters: List<HostFilterSpec> =
             listOf(
-                ComputeHostFilter,
-                SameHostFilter,
-                DifferentHostFilter,
-                InstanceCountFilter(limit = 4),
-                RamFilter(allocationRatio = 1.5),
-                VCpuCapacityFilter,
-                VCpuFilter(allocationRatio = 2.0),
+                ComputeHostFilterSpec,
+                SameHostFilterSpec,
+                DifferentHostFilterSpec,
+                InstanceCountFilterSpec(limit = 4),
+                RamFilterSpec(allocationRatio = 1.5),
+                VCpuCapacityFilterSpec,
+                VCpuFilterSpec(allocationRatio = 2.0),
             )
         return filters.map { filter ->
-            dynamicTest(filter.toString()) { assertEquals(filter, roundTrip<HostFilter>(filter)) }
+            dynamicTest(filter.toString()) { assertEquals(filter, roundTrip<HostFilterSpec>(filter)) }
         }
     }
 
     @TestFactory
     fun `host weighers round-trip`(): List<DynamicTest> {
-        val weighers: List<HostWeigher> =
+        val weighers: List<HostWeigherSpec> =
             listOf(
-                RamWeigher(1.0),
-                CoreRamWeigher(2.0),
-                InstanceCountWeigher(0.5),
-                VCpuCapacityWeigher(1.5),
-                VCpuWeigher(3.0),
+                RamWeigherSpec(1.0),
+                CoreRamWeigherSpec(2.0),
+                InstanceCountWeigherSpec(0.5),
+                VCpuCapacityWeigherSpec(1.5),
+                VCpuWeigherSpec(3.0),
             )
         return weighers.map { weigher ->
-            dynamicTest(weigher.toString()) { assertEquals(weigher, roundTrip<HostWeigher>(weigher)) }
+            dynamicTest(weigher.toString()) { assertEquals(weigher, roundTrip<HostWeigherSpec>(weigher)) }
         }
     }
 
     @TestFactory
     fun `failure models round-trip`(): List<DynamicTest> {
-        val models: List<FailureModel> =
+        val models: List<FailureModelSpec> =
             listOf(
-                NoFailure,
-                TraceBasedFailure(source = NamedReference("availability"), startPoint = 0.25, repeat = false),
-                PrefabFailure(FailurePrefab.Lanl05Wbl),
-                CustomFailure(
-                    interArrival = ExponentialDistribution(3600.0),
-                    duration = ConstantDistribution(300.0),
-                    hostFraction = UniformDistribution(upper = 0.5, lower = 0.1),
+                NoFailureSpec,
+                TraceBasedFailureSpec(source = NamedReference("availability"), startPoint = 0.25, repeat = false),
+                PrefabFailureSpec(FailurePrefabSpec.Lanl05Wbl),
+                CustomFailureSpec(
+                    interArrival = ExponentialDistributionSpec(3600.0),
+                    duration = ConstantDistributionSpec(300.0),
+                    hostFraction = UniformDistributionSpec(upper = 0.5, lower = 0.1),
                 ),
             )
         return models.map { model ->
-            dynamicTest(model.toString()) { assertEquals(model, roundTrip<FailureModel>(model)) }
+            dynamicTest(model.toString()) { assertEquals(model, roundTrip<FailureModelSpec>(model)) }
         }
     }
 
     @TestFactory
     fun `distributions round-trip`(): List<DynamicTest> =
         distributionCases.map { (distribution, _) ->
-            dynamicTest(distribution.toString()) { assertEquals(distribution, roundTrip<Distribution>(distribution)) }
+            dynamicTest(distribution.toString()) { assertEquals(distribution, roundTrip<DistributionSpec>(distribution)) }
         }
 
     @TestFactory
     fun `workloads round-trip`(): List<DynamicTest> {
-        val workloads: List<Workload> =
+        val workloads: List<WorkloadSpec> =
             listOf(
-                TraceWorkload(
+                TraceWorkloadSpec(
                     source = NamedReference("bitbrains"),
                     sampleFraction = 0.75,
                     submissionTime = "2022-01-01T00:00",
-                    scalingPolicy = ScalingPolicy.Perfect,
+                    scalingPolicy = ScalingPolicySpec.Perfect,
                     deferAll = true,
                 ),
                 sampleWorkload,
             )
         return workloads.map { workload ->
-            dynamicTest(workload::class.simpleName ?: "workload") { assertEquals(workload, roundTrip<Workload>(workload)) }
+            dynamicTest(workload::class.simpleName ?: "workload") { assertEquals(workload, roundTrip<WorkloadSpec>(workload)) }
         }
     }
 
@@ -337,15 +335,15 @@ class RoundTripTest {
 
     @TestFactory
     fun `virtualization overheads round-trip`(): List<DynamicTest> {
-        val overheads: List<VirtualizationOverhead> =
+        val overheads: List<VirtualizationOverheadSpec> =
             listOf(
-                NoVirtualizationOverhead,
-                ConstantVirtualizationOverhead(percentageOverhead = 12.5),
-                ConstantVirtualizationOverhead(percentageOverhead = null),
-                ShareBasedVirtualizationOverhead,
+                NoVirtualizationOverheadSpec,
+                ConstantVirtualizationOverheadSpec(percentageOverhead = 12.5),
+                ConstantVirtualizationOverheadSpec(percentageOverhead = null),
+                ShareBasedVirtualizationOverheadSpec,
             )
         return overheads.map { overhead ->
-            dynamicTest(overhead.toString()) { assertEquals(overhead, roundTrip<VirtualizationOverhead>(overhead)) }
+            dynamicTest(overhead.toString()) { assertEquals(overhead, roundTrip<VirtualizationOverheadSpec>(overhead)) }
         }
     }
 
@@ -364,34 +362,34 @@ class RoundTripTest {
     @Test
     fun `distributions serialize their fields in declaration order`() {
         distributionCases.forEach { (distribution, fields) ->
-            assertFieldOrder(encode<Distribution>(distribution), fields)
+            assertFieldOrder(encode<DistributionSpec>(distribution), fields)
         }
     }
 
     @Test
     fun `polymorphic types use a type discriminator with the declared serial names`() {
-        assertTrue(encode<AllocationPolicy>(PrefabAllocationPolicy()).contains("\"type\": \"prefab\""))
-        assertTrue(encode<HostFilter>(ComputeHostFilter).contains("\"type\": \"compute\""))
-        assertTrue(encode<HostWeigher>(CoreRamWeigher()).contains("\"type\": \"coreRam\""))
-        assertTrue(encode<FailureModel>(NoFailure).contains("\"type\": \"none\""))
-        assertTrue(encode<Distribution>(LogNormalDistribution(1.0, 2.0)).contains("\"type\": \"log-normal\""))
-        assertTrue(encode<Workload>(TraceWorkload(NamedReference("t"))).contains("\"type\": \"trace\""))
+        assertTrue(encode<AllocationPolicySpec>(PrefabAllocationPolicySpec()).contains("\"type\": \"prefab\""))
+        assertTrue(encode<HostFilterSpec>(ComputeHostFilterSpec).contains("\"type\": \"compute\""))
+        assertTrue(encode<HostWeigherSpec>(CoreRamWeigherSpec()).contains("\"type\": \"coreRam\""))
+        assertTrue(encode<FailureModelSpec>(NoFailureSpec).contains("\"type\": \"none\""))
+        assertTrue(encode<DistributionSpec>(LogNormalDistributionSpec(1.0, 2.0)).contains("\"type\": \"log-normal\""))
+        assertTrue(encode<WorkloadSpec>(TraceWorkloadSpec(NamedReference("t"))).contains("\"type\": \"trace\""))
         assertTrue(encode<DistributionPolicy>(MaxMinFairness).contains("\"type\": \"maxMinFairness\""))
         assertTrue(encode<BatteryPolicy>(SingleThresholdPolicy(100.0)).contains("\"type\": \"single\""))
-        assertTrue(encode<VirtualizationOverhead>(ShareBasedVirtualizationOverhead).contains("\"type\": \"shareBased\""))
+        assertTrue(encode<VirtualizationOverheadSpec>(ShareBasedVirtualizationOverheadSpec).contains("\"type\": \"shareBased\""))
         assertTrue(encode<ColumnSelection>(AllColumns).contains("\"type\": \"all\""))
     }
 
-    private val distributionCases: List<Pair<Distribution, List<String>>> =
+    private val distributionCases: List<Pair<DistributionSpec, List<String>>> =
         listOf(
-            ConstantDistribution(value = 5.0) to listOf("type", "value"),
-            ExponentialDistribution(mean = 2.0) to listOf("type", "mean"),
-            GammaDistribution(shape = 2.0, scale = 3.0) to listOf("type", "shape", "scale"),
-            LogNormalDistribution(scale = 1.0, shape = 2.0) to listOf("type", "scale", "shape"),
-            NormalDistribution(mean = 1.0, std = 2.0) to listOf("type", "mean", "std"),
-            ParetoDistribution(scale = 1.0, shape = 2.0) to listOf("type", "scale", "shape"),
-            UniformDistribution(upper = 0.9, lower = 0.1) to listOf("type", "upper", "lower"),
-            WeibullDistribution(alpha = 1.0, beta = 2.0) to listOf("type", "alpha", "beta"),
+            ConstantDistributionSpec(value = 5.0) to listOf("type", "value"),
+            ExponentialDistributionSpec(mean = 2.0) to listOf("type", "mean"),
+            GammaDistributionSpec(shape = 2.0, scale = 3.0) to listOf("type", "shape", "scale"),
+            LogNormalDistributionSpec(scale = 1.0, shape = 2.0) to listOf("type", "scale", "shape"),
+            NormalDistributionSpec(mean = 1.0, std = 2.0) to listOf("type", "mean", "std"),
+            ParetoDistributionSpec(scale = 1.0, shape = 2.0) to listOf("type", "scale", "shape"),
+            UniformDistributionSpec(upper = 0.9, lower = 0.1) to listOf("type", "upper", "lower"),
+            WeibullDistributionSpec(alpha = 1.0, beta = 2.0) to listOf("type", "alpha", "beta"),
         )
 }
 

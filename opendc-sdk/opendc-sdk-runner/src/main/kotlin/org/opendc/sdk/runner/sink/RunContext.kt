@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.runner.sink
 
-import org.opendc.sdk.model.experiment.Scenario
+import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.runner.factory.ExportSettings
 
 /**
@@ -37,7 +37,7 @@ import org.opendc.sdk.runner.factory.ExportSettings
  *   stable for its whole duration — the correct denominator for run progress.
  */
 public class RunContext internal constructor(
-    public val scenario: Scenario,
+    public val scenario: ScenarioSpec,
     public val experimentName: String,
     public val scenarioId: Int,
     public val seed: Long,

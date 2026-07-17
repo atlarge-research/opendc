@@ -40,7 +40,7 @@ public data class ExportSpec(
     public val exportInterval: TimeDelta = TimeDelta.ofMin(5),
     public val printFrequency: Int? = 24,
     public val columns: ExportColumnsSpec = ExportColumnsSpec(),
-    public val filesToExport: List<OutputFile> = OutputFile.entries.toList(),
+    public val filesToExport: List<OutputFileSpec> = OutputFileSpec.entries.toList(),
 ) : Validatable {
     override fun validate(): List<ValidationIssue> =
         buildList {

@@ -23,7 +23,7 @@
 package org.opendc.cli.render
 
 import org.opendc.cli.config.CliConfig
-import org.opendc.sdk.model.experiment.Experiment
+import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.serialization.SdkJson
 import java.io.File
 import kotlin.test.Test
@@ -32,7 +32,7 @@ import kotlin.test.assertTrue
 
 /** Verifies the topology view-model maps every topology, counts hosts, and formats CPU/GPU cells. */
 class TopologyViewTest {
-    private fun tinyExperiment(): Experiment {
+    private fun tinyExperiment(): ExperimentSpec {
         val file = File(checkNotNull(javaClass.classLoader.getResource("experiments/tiny-experiment.json")).toURI())
         return file.inputStream().use { SdkJson.decodeExperiment(it) }
     }

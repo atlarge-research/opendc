@@ -27,30 +27,30 @@ import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
-import org.opendc.sdk.model.experiment.Experiment
-import org.opendc.sdk.model.experiment.Scenario
+import org.opendc.sdk.model.experiment.ExperimentSpec
+import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.export.ExportSpec
-import org.opendc.sdk.model.failure.NoFailure
-import org.opendc.sdk.model.failure.TraceBasedFailure
+import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.sampleTopology
 import org.opendc.sdk.model.sampleWorkload
-import org.opendc.sdk.model.scheduler.ComputeHostFilter
-import org.opendc.sdk.model.scheduler.CoreRamWeigher
-import org.opendc.sdk.model.scheduler.FilterAllocationPolicy
-import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
-import org.opendc.sdk.model.scheduler.RamFilter
-import org.opendc.sdk.model.scheduler.RamWeigher
-import org.opendc.sdk.model.scheduler.SchedulerName
+import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
+import org.opendc.sdk.model.scheduler.CoreRamWeigherSpec
+import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.RamFilterSpec
+import org.opendc.sdk.model.scheduler.RamWeigherSpec
+import org.opendc.sdk.model.scheduler.SchedulerNameSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
-import org.opendc.sdk.model.scheduler.VCpuFilter
-import org.opendc.sdk.model.scheduler.VCpuWeigher
+import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.VCpuFilterSpec
+import org.opendc.sdk.model.scheduler.VCpuWeigherSpec
 import org.opendc.sdk.model.topology.DoubleThresholdPolicy
 import org.opendc.sdk.model.topology.EqualShare
 import org.opendc.sdk.model.topology.FixedShare
 import org.opendc.sdk.model.topology.PowerModelType
-import org.opendc.sdk.model.workload.ScalingPolicy
+import org.opendc.sdk.model.workload.ScalingPolicySpec
 import kotlin.test.assertEquals
 
 /**
@@ -94,7 +94,7 @@ class DslTest {
     fun `inline workload DSL equals constructor-built workload`() {
         val built =
             inlineWorkload {
-                scalingPolicy = ScalingPolicy.Perfect
+                scalingPolicy = ScalingPolicySpec.Perfect
                 task(
                     id = 0,
                     name = "t0",
@@ -123,10 +123,10 @@ class DslTest {
         val built =
             filterScheduler {
                 subsetSize = 3
-                filter(ComputeHostFilter)
-                filter(RamFilter(1.5))
-                weigher(CoreRamWeigher(2.0))
-                weigher(RamWeigher())
+                filter(ComputeHostFilterSpec)
+                filter(RamFilterSpec(1.5))
+                weigher(CoreRamWeigherSpec(2.0))
+                weigher(RamWeigherSpec())
             }
 
         assertEquals(expectedFilterPolicy(), built)
@@ -134,9 +134,9 @@ class DslTest {
 
     @Test
     fun `filter scheduler DSL without filters defaults to the compute filter`() {
-        val built = filterScheduler { weigher(RamWeigher()) }
+        val built = filterScheduler { weigher(RamWeigherSpec()) }
 
-        assertEquals(FilterAllocationPolicy(listOf(ComputeHostFilter), listOf(RamWeigher()), 1), built)
+        assertEquals(FilterAllocationPolicySpec(listOf(ComputeHostFilterSpec), listOf(RamWeigherSpec()), 1), built)
     }
 
     @Test
@@ -151,13 +151,13 @@ class DslTest {
                 forecastSize = 12
                 taskStopper = TaskStopperSpec(windowSize = 50)
                 memorize = false
-                filter(VCpuFilter(2.0))
-                weigher(VCpuWeigher())
+                filter(VCpuFilterSpec(2.0))
+                weigher(VCpuWeigherSpec())
             }
 
         val expected =
-            TimeShiftAllocationPolicy(
-                filters = listOf(VCpuFilter(2.0)), weighers = listOf(VCpuWeigher()), windowSize = 100, subsetSize = 2,
+            TimeShiftAllocationPolicySpec(
+                filters = listOf(VCpuFilterSpec(2.0)), weighers = listOf(VCpuWeigherSpec()), windowSize = 100, subsetSize = 2,
                 forecast = false, shortForecastThreshold = 0.1, longForecastThreshold = 0.5, forecastSize = 12,
                 taskStopper = TaskStopperSpec(windowSize = 50), memorize = false,
             )
@@ -166,8 +166,8 @@ class DslTest {
 
     @Test
     fun `prefab scheduler DSL equals constructor-built policy`() {
-        assertEquals(PrefabAllocationPolicy(SchedulerName.CoreMem), prefabScheduler(SchedulerName.CoreMem))
-        assertEquals(PrefabAllocationPolicy(SchedulerName.Mem), prefabScheduler())
+        assertEquals(PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem), prefabScheduler(SchedulerNameSpec.CoreMem))
+        assertEquals(PrefabAllocationPolicySpec(SchedulerNameSpec.Mem), prefabScheduler())
     }
 
     @Test
@@ -184,17 +184,17 @@ class DslTest {
                 workload(workload)
                 allocationPolicy(policy)
                 exportModel = ExportSpec(exportInterval = 15.minutes, printFrequency = 12)
-                failureModel = TraceBasedFailure(NamedReference("failure-trace"))
+                failureModel = TraceBasedFailureSpec(NamedReference("failure-trace"))
                 maxNumFailures = 5
                 runs = 3
                 initialSeed = 42
             }
 
         val expected =
-            Scenario(
+            ScenarioSpec(
                 topology = topology, workload = workload, allocationPolicy = policy,
                 exportModel = ExportSpec(exportInterval = 15.minutes, printFrequency = 12),
-                failureModel = TraceBasedFailure(NamedReference("failure-trace")),
+                failureModel = TraceBasedFailureSpec(NamedReference("failure-trace")),
                 maxNumFailures = 5, runs = 3, initialSeed = 42, id = 7, name = "baseline",
             )
         assertEquals(expected, built)
@@ -212,19 +212,23 @@ class DslTest {
                 initialSeed = 1
                 topology(topology)
                 workload(workload)
-                allocationPolicy(prefabScheduler(SchedulerName.Mem))
-                allocationPolicy(prefabScheduler(SchedulerName.CoreMem))
-                failureModel(NoFailure)
+                allocationPolicy(prefabScheduler(SchedulerNameSpec.Mem))
+                allocationPolicy(prefabScheduler(SchedulerNameSpec.CoreMem))
+                failureModel(NoFailureSpec)
                 exportModel(ExportSpec())
                 maxNumFailures(5)
                 maxNumFailures(10)
             }
 
         val expected =
-            Experiment(
+            ExperimentSpec(
                 topologies = setOf(topology), workloads = setOf(workload),
-                allocationPolicies = setOf(PrefabAllocationPolicy(SchedulerName.Mem), PrefabAllocationPolicy(SchedulerName.CoreMem)),
-                failureModels = setOf(NoFailure), maxNumFailures = setOf(5, 10), checkpointModels = setOf(null),
+                allocationPolicies =
+                    setOf(
+                        PrefabAllocationPolicySpec(SchedulerNameSpec.Mem),
+                        PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem),
+                    ),
+                failureModels = setOf(NoFailureSpec), maxNumFailures = setOf(5, 10), checkpointModels = setOf(null),
                 exportModels = setOf(ExportSpec()), runs = 5, initialSeed = 1, name = "sweep",
             )
         assertEquals(expected, built)
@@ -249,10 +253,10 @@ class DslTest {
         assertEquals(1.hours, 60.minutes)
     }
 
-    private fun expectedFilterPolicy(): FilterAllocationPolicy =
-        FilterAllocationPolicy(
-            filters = listOf(ComputeHostFilter, RamFilter(1.5)),
-            weighers = listOf(CoreRamWeigher(2.0), RamWeigher()),
+    private fun expectedFilterPolicy(): FilterAllocationPolicySpec =
+        FilterAllocationPolicySpec(
+            filters = listOf(ComputeHostFilterSpec, RamFilterSpec(1.5)),
+            weighers = listOf(CoreRamWeigherSpec(2.0), RamWeigherSpec()),
             subsetSize = 3,
         )
 }

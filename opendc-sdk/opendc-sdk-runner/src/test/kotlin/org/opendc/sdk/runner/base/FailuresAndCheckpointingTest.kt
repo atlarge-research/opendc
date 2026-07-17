@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
-import org.opendc.sdk.model.failure.TraceBasedFailure
+import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
@@ -63,7 +63,7 @@ class FailuresAndCheckpointingTest {
             )
 
         val failureModel =
-            TraceBasedFailure(
+            TraceBasedFailureSpec(
                 source = NamedReference("failureTraces/single_failure.parquet"),
                 repeat = false,
             )
@@ -104,7 +104,7 @@ class FailuresAndCheckpointingTest {
             )
 
         val failureModel =
-            TraceBasedFailure(
+            TraceBasedFailureSpec(
                 source = NamedReference("failureTraces/single_failure_2.parquet"),
                 repeat = false,
             )
@@ -148,7 +148,7 @@ class FailuresAndCheckpointingTest {
             )
 
         val failureModel =
-            TraceBasedFailure(
+            TraceBasedFailureSpec(
                 source = NamedReference("failureTraces/two_failures.parquet"),
                 repeat = false,
             )
@@ -194,7 +194,7 @@ class FailuresAndCheckpointingTest {
             )
 
         val failureModel =
-            TraceBasedFailure(
+            TraceBasedFailureSpec(
                 source = NamedReference("failureTraces/single_failure.parquet"),
                 repeat = true,
             )
@@ -254,7 +254,7 @@ class FailuresAndCheckpointingTest {
             )
 
         val failureModel =
-            TraceBasedFailure(
+            TraceBasedFailureSpec(
                 source = NamedReference("failureTraces/single_failure.parquet"),
                 repeat = false,
             )
@@ -317,7 +317,7 @@ class FailuresAndCheckpointingTest {
             )
 
         val failureModel =
-            TraceBasedFailure(
+            TraceBasedFailureSpec(
                 source = NamedReference("failureTraces/single_failure.parquet"),
                 repeat = false,
             )
@@ -379,7 +379,7 @@ class FailuresAndCheckpointingTest {
             )
 
         val failureModel =
-            TraceBasedFailure(
+            TraceBasedFailureSpec(
                 source = NamedReference("failureTraces/single_failure.parquet"),
                 repeat = false,
             )
@@ -436,7 +436,7 @@ class FailuresAndCheckpointingTest {
             )
 
         val failureModel =
-            TraceBasedFailure(
+            TraceBasedFailureSpec(
                 source = NamedReference("failureTraces/single_failure.parquet"),
                 repeat = false,
             )
@@ -487,7 +487,7 @@ class FailuresAndCheckpointingTest {
             )
 
         val failureModel =
-            TraceBasedFailure(
+            TraceBasedFailureSpec(
                 source = NamedReference("failureTraces/single_failure.parquet"),
                 repeat = false,
             )
@@ -538,7 +538,7 @@ class FailuresAndCheckpointingTest {
             )
 
         val failureModel =
-            TraceBasedFailure(
+            TraceBasedFailureSpec(
                 source = NamedReference("failureTraces/single_failure.parquet"),
                 repeat = true,
             )

@@ -31,7 +31,7 @@ import org.opendc.sdk.model.validation.ValidationIssue
  * Scores candidate hosts so the scheduler can rank them; the [multiplier] weights the score.
  */
 @Serializable
-public sealed interface HostWeigher : Validatable {
+public sealed interface HostWeigherSpec : Validatable {
     /** The weight applied to this weigher's contribution to the final host score. */
     public val multiplier: Double
 
@@ -46,7 +46,7 @@ public sealed interface HostWeigher : Validatable {
  */
 @Serializable
 @SerialName("ram")
-public data class RamWeigher(override val multiplier: Double = 1.0) : HostWeigher
+public data class RamWeigherSpec(override val multiplier: Double = 1.0) : HostWeigherSpec
 
 /**
  * Weighs hosts by the combination of their available cores and memory.
@@ -55,7 +55,7 @@ public data class RamWeigher(override val multiplier: Double = 1.0) : HostWeighe
  */
 @Serializable
 @SerialName("coreRam")
-public data class CoreRamWeigher(override val multiplier: Double = 1.0) : HostWeigher
+public data class CoreRamWeigherSpec(override val multiplier: Double = 1.0) : HostWeigherSpec
 
 /**
  * Weighs hosts by the number of task instances they already run.
@@ -64,7 +64,7 @@ public data class CoreRamWeigher(override val multiplier: Double = 1.0) : HostWe
  */
 @Serializable
 @SerialName("instanceCount")
-public data class InstanceCountWeigher(override val multiplier: Double = 1.0) : HostWeigher
+public data class InstanceCountWeigherSpec(override val multiplier: Double = 1.0) : HostWeigherSpec
 
 /**
  * Weighs hosts by their available per-core capacity.
@@ -73,7 +73,7 @@ public data class InstanceCountWeigher(override val multiplier: Double = 1.0) : 
  */
 @Serializable
 @SerialName("vcpuCapacity")
-public data class VCpuCapacityWeigher(override val multiplier: Double = 1.0) : HostWeigher
+public data class VCpuCapacityWeigherSpec(override val multiplier: Double = 1.0) : HostWeigherSpec
 
 /**
  * Weighs hosts by their available vCPUs.
@@ -82,7 +82,7 @@ public data class VCpuCapacityWeigher(override val multiplier: Double = 1.0) : H
  */
 @Serializable
 @SerialName("vcpu")
-public data class VCpuWeigher(override val multiplier: Double = 1.0) : HostWeigher
+public data class VCpuWeigherSpec(override val multiplier: Double = 1.0) : HostWeigherSpec
 
 /**
  * Weighs hosts by their available vGPUs.
@@ -91,4 +91,4 @@ public data class VCpuWeigher(override val multiplier: Double = 1.0) : HostWeigh
  */
 @Serializable
 @SerialName("vgpu")
-public data class VGpuWeigher(override val multiplier: Double = 1.0) : HostWeigher
+public data class VGpuWeigherSpec(override val multiplier: Double = 1.0) : HostWeigherSpec

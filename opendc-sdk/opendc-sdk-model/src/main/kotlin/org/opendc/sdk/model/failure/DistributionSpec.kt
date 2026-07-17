@@ -29,89 +29,89 @@ import org.opendc.sdk.model.validation.ValidationIssue
 
 /** A statistical distribution used to sample failure timings, durations, or intensities. */
 @Serializable
-public sealed interface Distribution : Validatable {
+public sealed interface DistributionSpec : Validatable {
     override fun validate(): List<ValidationIssue> = emptyList()
 }
 
 /** A degenerate distribution that always yields the same [value]. */
 @Serializable
 @SerialName("constant")
-public data class ConstantDistribution(
+public data class ConstantDistributionSpec(
     /** The fixed value produced by every sample. */
     public val value: Double,
-) : Distribution {
+) : DistributionSpec {
     override fun validate(): List<ValidationIssue> = if (value > 0.0) emptyList() else listOf(ValidationIssue("value", "must be > 0"))
 }
 
 /** An exponential distribution parameterized by its [mean]. */
 @Serializable
 @SerialName("exponential")
-public data class ExponentialDistribution(
+public data class ExponentialDistributionSpec(
     /** The mean of the distribution. */
     public val mean: Double,
-) : Distribution
+) : DistributionSpec
 
 /** A gamma distribution parameterized by [shape] and [scale]. */
 @Serializable
 @SerialName("gamma")
-public data class GammaDistribution(
+public data class GammaDistributionSpec(
     /** The shape parameter. */
     public val shape: Double,
     /** The scale parameter. */
     public val scale: Double,
-) : Distribution
+) : DistributionSpec
 
 /** A log-normal distribution parameterized by [scale] and [shape]. */
 @Serializable
 @SerialName("log-normal")
-public data class LogNormalDistribution(
+public data class LogNormalDistributionSpec(
     /** The scale parameter. */
     public val scale: Double,
     /** The shape parameter. */
     public val shape: Double,
-) : Distribution
+) : DistributionSpec
 
 /** A normal distribution parameterized by [mean] and standard deviation [std]. */
 @Serializable
 @SerialName("normal")
-public data class NormalDistribution(
+public data class NormalDistributionSpec(
     /** The mean of the distribution. */
     public val mean: Double,
     /** The standard deviation of the distribution. */
     public val std: Double,
-) : Distribution
+) : DistributionSpec
 
 /** A Pareto distribution parameterized by [scale] and [shape]. */
 @Serializable
 @SerialName("pareto")
-public data class ParetoDistribution(
+public data class ParetoDistributionSpec(
     /** The scale parameter. */
     public val scale: Double,
     /** The shape parameter. */
     public val shape: Double,
-) : Distribution
+) : DistributionSpec
 
 /** A uniform distribution over the range from [lower] to [upper]. */
 @Serializable
 @SerialName("uniform")
-public data class UniformDistribution(
+public data class UniformDistributionSpec(
     /** The inclusive upper bound. */
     public val upper: Double,
     /** The inclusive lower bound. */
     public val lower: Double,
-) : Distribution {
+) : DistributionSpec {
     override fun validate(): List<ValidationIssue> = if (upper > lower) emptyList() else listOf(ValidationIssue("upper", "must be > lower"))
 }
 
 /** A Weibull distribution parameterized by [alpha] and [beta]. */
 @Serializable
 @SerialName("weibull")
-public data class WeibullDistribution(
+public data class WeibullDistributionSpec(
     /** The scale parameter. */
     public val alpha: Double,
     /** The shape parameter. */
     public val beta: Double,
-) : Distribution {
+) : DistributionSpec {
     override fun validate(): List<ValidationIssue> =
         if (alpha > 0.0 && beta > 0.0) emptyList() else listOf(ValidationIssue("alpha", "alpha and beta must be > 0"))
 }

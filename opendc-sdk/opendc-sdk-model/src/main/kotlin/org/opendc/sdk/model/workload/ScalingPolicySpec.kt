@@ -20,26 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.export
+package org.opendc.sdk.model.workload
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/** Identifies a category of output produced by a simulation run. */
+/**
+ * Determines how a task reacts when its demanded resources exceed what is available.
+ */
 @Serializable
-public enum class OutputFile {
-    @SerialName("host")
-    HOST,
+public enum class ScalingPolicySpec {
+    /** The task keeps its planned duration; unmet demand is simply lost. */
+    NoDelay,
 
-    @SerialName("task")
-    TASK,
-
-    @SerialName("powerSource")
-    POWER_SOURCE,
-
-    @SerialName("battery")
-    BATTERY,
-
-    @SerialName("service")
-    SERVICE,
+    /** The task stretches its duration so that all planned work is eventually completed. */
+    Perfect,
 }

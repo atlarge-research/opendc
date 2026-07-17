@@ -30,18 +30,18 @@ import org.opendc.compute.failure.models.SampleBasedFailureModel
 import org.opendc.compute.failure.models.TraceBasedFailureModel
 import org.opendc.compute.failure.prefab.createFailureModelPrefab
 import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.sdk.model.failure.ConstantDistribution
-import org.opendc.sdk.model.failure.CustomFailure
-import org.opendc.sdk.model.failure.Distribution
-import org.opendc.sdk.model.failure.GammaDistribution
-import org.opendc.sdk.model.failure.LogNormalDistribution
-import org.opendc.sdk.model.failure.NoFailure
-import org.opendc.sdk.model.failure.NormalDistribution
-import org.opendc.sdk.model.failure.ParetoDistribution
-import org.opendc.sdk.model.failure.PrefabFailure
-import org.opendc.sdk.model.failure.TraceBasedFailure
-import org.opendc.sdk.model.failure.UniformDistribution
-import org.opendc.sdk.model.failure.WeibullDistribution
+import org.opendc.sdk.model.failure.ConstantDistributionSpec
+import org.opendc.sdk.model.failure.CustomFailureSpec
+import org.opendc.sdk.model.failure.DistributionSpec
+import org.opendc.sdk.model.failure.GammaDistributionSpec
+import org.opendc.sdk.model.failure.LogNormalDistributionSpec
+import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.failure.NormalDistributionSpec
+import org.opendc.sdk.model.failure.ParetoDistributionSpec
+import org.opendc.sdk.model.failure.PrefabFailureSpec
+import org.opendc.sdk.model.failure.TraceBasedFailureSpec
+import org.opendc.sdk.model.failure.UniformDistributionSpec
+import org.opendc.sdk.model.failure.WeibullDistributionSpec
 import org.opendc.sdk.model.resource.ResourceReference
 import java.nio.file.Path
 import java.time.InstantSource
@@ -55,8 +55,8 @@ import org.apache.commons.math3.distribution.ParetoDistribution as CmParetoDistr
 import org.apache.commons.math3.distribution.WeibullDistribution as CmWeibullDistribution
 import org.opendc.compute.failure.models.FailureModel as EngineFailureModel
 import org.opendc.compute.failure.prefab.FailurePrefab as EngineFailurePrefab
-import org.opendc.sdk.model.failure.ExponentialDistribution as SdkExponentialDistribution
-import org.opendc.sdk.model.failure.FailureModel as SdkFailureModel
+import org.opendc.sdk.model.failure.ExponentialDistributionSpec as SdkExponentialDistribution
+import org.opendc.sdk.model.failure.FailureModelSpec as SdkFailureModel
 
 /**
  * Converts an SDK [SdkFailureModel] into the engine failure model injected during replay, or null
@@ -70,10 +70,10 @@ internal fun SdkFailureModel.toEngine(
     resolve: (ResourceReference) -> Path,
 ): EngineFailureModel? =
     when (this) {
-        NoFailure -> null
-        is TraceBasedFailure -> TraceBasedFailureModel(context, clock, service, random, resolve(source).toString(), startPoint, repeat)
-        is PrefabFailure -> createFailureModelPrefab(context, clock, service, random, EngineFailurePrefab.valueOf(prefabName.name))
-        is CustomFailure -> {
+        NoFailureSpec -> null
+        is TraceBasedFailureSpec -> TraceBasedFailureModel(context, clock, service, random, resolve(source).toString(), startPoint, repeat)
+        is PrefabFailureSpec -> createFailureModelPrefab(context, clock, service, random, EngineFailurePrefab.valueOf(prefabName.name))
+        is CustomFailureSpec -> {
             val rng = Well19937c(random.nextLong())
             SampleBasedFailureModel(
                 context,
@@ -87,14 +87,14 @@ internal fun SdkFailureModel.toEngine(
         }
     }
 
-private fun Distribution.toSampler(rng: org.apache.commons.math3.random.RandomGenerator): RealDistribution =
+private fun DistributionSpec.toSampler(rng: org.apache.commons.math3.random.RandomGenerator): RealDistribution =
     when (this) {
-        is ConstantDistribution -> ConstantRealDistribution(value)
+        is ConstantDistributionSpec -> ConstantRealDistribution(value)
         is SdkExponentialDistribution -> CmExponentialDistribution(rng, mean)
-        is GammaDistribution -> CmGammaDistribution(rng, shape, scale)
-        is LogNormalDistribution -> CmLogNormalDistribution(rng, scale, shape)
-        is NormalDistribution -> CmNormalDistribution(rng, mean, std)
-        is ParetoDistribution -> CmParetoDistribution(rng, scale, shape)
-        is UniformDistribution -> UniformRealDistribution(rng, lower, upper)
-        is WeibullDistribution -> CmWeibullDistribution(rng, alpha, beta)
+        is GammaDistributionSpec -> CmGammaDistribution(rng, shape, scale)
+        is LogNormalDistributionSpec -> CmLogNormalDistribution(rng, scale, shape)
+        is NormalDistributionSpec -> CmNormalDistribution(rng, mean, std)
+        is ParetoDistributionSpec -> CmParetoDistribution(rng, scale, shape)
+        is UniformDistributionSpec -> UniformRealDistribution(rng, lower, upper)
+        is WeibullDistributionSpec -> CmWeibullDistribution(rng, alpha, beta)
     }

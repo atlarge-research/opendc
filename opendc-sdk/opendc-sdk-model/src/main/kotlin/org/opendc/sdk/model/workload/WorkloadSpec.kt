@@ -33,7 +33,7 @@ import org.opendc.sdk.model.validation.validateEach
  * The set of tasks submitted to the datacenter over the course of a simulation.
  */
 @Serializable
-public sealed interface Workload : Validatable {
+public sealed interface WorkloadSpec : Validatable {
     override fun validate(): List<ValidationIssue> = emptyList()
 }
 
@@ -48,13 +48,13 @@ public sealed interface Workload : Validatable {
  */
 @Serializable
 @SerialName("trace")
-public data class TraceWorkload(
+public data class TraceWorkloadSpec(
     public val source: ResourceReference,
     public val sampleFraction: Double = 1.0,
     public val submissionTime: String? = null,
-    public val scalingPolicy: ScalingPolicy = ScalingPolicy.NoDelay,
+    public val scalingPolicy: ScalingPolicySpec = ScalingPolicySpec.NoDelay,
     public val deferAll: Boolean = false,
-) : Workload {
+) : WorkloadSpec {
     override fun validate(): List<ValidationIssue> =
         buildList {
             if (sampleFraction <= 0.0) add(ValidationIssue("sampleFraction", "must be greater than zero"))
@@ -69,10 +69,10 @@ public data class TraceWorkload(
  */
 @Serializable
 @SerialName("inline")
-public data class InlineWorkload(
+public data class InlineWorkloadSpec(
     public val tasks: List<TaskSpec>,
-    public val scalingPolicy: ScalingPolicy = ScalingPolicy.NoDelay,
-) : Workload {
+    public val scalingPolicy: ScalingPolicySpec = ScalingPolicySpec.NoDelay,
+) : WorkloadSpec {
     override fun validate(): List<ValidationIssue> =
         buildList {
             if (tasks.isEmpty()) add(ValidationIssue("tasks", "must not be empty"))

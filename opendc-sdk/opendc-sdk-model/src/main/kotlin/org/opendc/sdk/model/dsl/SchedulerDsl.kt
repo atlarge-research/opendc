@@ -22,65 +22,66 @@
 
 package org.opendc.sdk.model.dsl
 
-import org.opendc.sdk.model.scheduler.ComputeHostFilter
-import org.opendc.sdk.model.scheduler.FilterAllocationPolicy
-import org.opendc.sdk.model.scheduler.HostFilter
-import org.opendc.sdk.model.scheduler.HostWeigher
-import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
-import org.opendc.sdk.model.scheduler.SchedulerName
+import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
+import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.HostFilterSpec
+import org.opendc.sdk.model.scheduler.HostWeigherSpec
+import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.SchedulerNameSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
+import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
 
 /**
  * Selects a named, prefabricated scheduler.
  *
  * @param name The prefabricated scheduler to use.
  */
-public fun prefabScheduler(name: SchedulerName = SchedulerName.Mem): PrefabAllocationPolicy = PrefabAllocationPolicy(name)
+public fun prefabScheduler(name: SchedulerNameSpec = SchedulerNameSpec.Mem): PrefabAllocationPolicySpec = PrefabAllocationPolicySpec(name)
 
 /**
  * Builds a filter-then-weigh scheduler.
  *
  * @param block Configures the pipeline through a [FilterSchedulerBuilder].
  */
-public fun filterScheduler(block: FilterSchedulerBuilder.() -> Unit): FilterAllocationPolicy = FilterSchedulerBuilder().apply(block).build()
+public fun filterScheduler(block: FilterSchedulerBuilder.() -> Unit): FilterAllocationPolicySpec =
+    FilterSchedulerBuilder().apply(block).build()
 
 /**
  * Builds a carbon-aware time-shifting scheduler.
  *
  * @param block Configures the scheduler through a [TimeShiftSchedulerBuilder].
  */
-public fun timeShiftScheduler(block: TimeShiftSchedulerBuilder.() -> Unit): TimeShiftAllocationPolicy =
+public fun timeShiftScheduler(block: TimeShiftSchedulerBuilder.() -> Unit): TimeShiftAllocationPolicySpec =
     TimeShiftSchedulerBuilder().apply(block).build()
 
-/** Collects the filters, weighers, and subset size of a [FilterAllocationPolicy]. */
+/** Collects the filters, weighers, and subset size of a [FilterAllocationPolicySpec]. */
 @SdkDsl
 public class FilterSchedulerBuilder {
-    private val filters = mutableListOf<HostFilter>()
-    private val weighers = mutableListOf<HostWeigher>()
+    private val filters = mutableListOf<HostFilterSpec>()
+    private val weighers = mutableListOf<HostWeigherSpec>()
 
     /** The size of the top-ranked subset sampled from for placement. */
     public var subsetSize: Int = 1
 
-    public fun filter(filter: HostFilter) {
+    public fun filter(filter: HostFilterSpec) {
         filters += filter
     }
 
-    public fun weigher(weigher: HostWeigher) {
+    public fun weigher(weigher: HostWeigherSpec) {
         weighers += weigher
     }
 
-    internal fun build(): FilterAllocationPolicy {
-        val resolvedFilters = filters.ifEmpty { listOf(ComputeHostFilter) }
-        return FilterAllocationPolicy(resolvedFilters, weighers.toList(), subsetSize)
+    internal fun build(): FilterAllocationPolicySpec {
+        val resolvedFilters = filters.ifEmpty { listOf(ComputeHostFilterSpec) }
+        return FilterAllocationPolicySpec(resolvedFilters, weighers.toList(), subsetSize)
     }
 }
 
-/** Collects the configuration of a [TimeShiftAllocationPolicy]. */
+/** Collects the configuration of a [TimeShiftAllocationPolicySpec]. */
 @SdkDsl
 public class TimeShiftSchedulerBuilder {
-    private val filters = mutableListOf<HostFilter>()
-    private val weighers = mutableListOf<HostWeigher>()
+    private val filters = mutableListOf<HostFilterSpec>()
+    private val weighers = mutableListOf<HostWeigherSpec>()
 
     /** The number of past samples considered by the carbon signal. */
     public var windowSize: Int = 168
@@ -106,17 +107,17 @@ public class TimeShiftSchedulerBuilder {
     /** Whether to memoize scheduling decisions across invocations. */
     public var memorize: Boolean = true
 
-    public fun filter(filter: HostFilter) {
+    public fun filter(filter: HostFilterSpec) {
         filters += filter
     }
 
-    public fun weigher(weigher: HostWeigher) {
+    public fun weigher(weigher: HostWeigherSpec) {
         weighers += weigher
     }
 
-    internal fun build(): TimeShiftAllocationPolicy {
-        val resolvedFilters = filters.ifEmpty { listOf(ComputeHostFilter) }
-        return TimeShiftAllocationPolicy(
+    internal fun build(): TimeShiftAllocationPolicySpec {
+        val resolvedFilters = filters.ifEmpty { listOf(ComputeHostFilterSpec) }
+        return TimeShiftAllocationPolicySpec(
             resolvedFilters, weighers.toList(), windowSize, subsetSize, forecast,
             shortForecastThreshold, longForecastThreshold, forecastSize, taskStopper, memorize,
         )

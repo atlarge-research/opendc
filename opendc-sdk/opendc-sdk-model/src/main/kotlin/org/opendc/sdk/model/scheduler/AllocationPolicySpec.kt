@@ -33,7 +33,7 @@ import org.opendc.sdk.model.validation.validateEach
  * Describes how tasks are placed onto hosts.
  */
 @Serializable
-public sealed interface AllocationPolicy : Validatable {
+public sealed interface AllocationPolicySpec : Validatable {
     override fun validate(): List<ValidationIssue> = emptyList()
 }
 
@@ -44,7 +44,7 @@ public sealed interface AllocationPolicy : Validatable {
  */
 @Serializable
 @SerialName("prefab")
-public data class PrefabAllocationPolicy(public val prefabName: SchedulerName = SchedulerName.Mem) : AllocationPolicy
+public data class PrefabAllocationPolicySpec(public val prefabName: SchedulerNameSpec = SchedulerNameSpec.Mem) : AllocationPolicySpec
 
 /**
  * Builds a scheduler from a filter-then-weigh pipeline.
@@ -55,11 +55,11 @@ public data class PrefabAllocationPolicy(public val prefabName: SchedulerName = 
  */
 @Serializable
 @SerialName("filter")
-public data class FilterAllocationPolicy(
-    public val filters: List<HostFilter> = listOf(ComputeHostFilter),
-    public val weighers: List<HostWeigher> = emptyList(),
+public data class FilterAllocationPolicySpec(
+    public val filters: List<HostFilterSpec> = listOf(ComputeHostFilterSpec),
+    public val weighers: List<HostWeigherSpec> = emptyList(),
     public val subsetSize: Int = 1,
-) : AllocationPolicy {
+) : AllocationPolicySpec {
     override fun validate(): List<ValidationIssue> =
         buildList {
             if (subsetSize <= 0) add(ValidationIssue("subsetSize", "must be > 0"))
@@ -84,9 +84,9 @@ public data class FilterAllocationPolicy(
  */
 @Serializable
 @SerialName("timeshift")
-public data class TimeShiftAllocationPolicy(
-    public val filters: List<HostFilter> = listOf(ComputeHostFilter),
-    public val weighers: List<HostWeigher> = emptyList(),
+public data class TimeShiftAllocationPolicySpec(
+    public val filters: List<HostFilterSpec> = listOf(ComputeHostFilterSpec),
+    public val weighers: List<HostWeigherSpec> = emptyList(),
     public val windowSize: Int = 168,
     public val subsetSize: Int = 1,
     public val forecast: Boolean = true,
@@ -95,7 +95,7 @@ public data class TimeShiftAllocationPolicy(
     public val forecastSize: Int = 24,
     public val taskStopper: TaskStopperSpec? = null,
     public val memorize: Boolean = true,
-) : AllocationPolicy {
+) : AllocationPolicySpec {
     override fun validate(): List<ValidationIssue> =
         buildList {
             if (subsetSize <= 0) add(ValidationIssue("subsetSize", "must be > 0"))

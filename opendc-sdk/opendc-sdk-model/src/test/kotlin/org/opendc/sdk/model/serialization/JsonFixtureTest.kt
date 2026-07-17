@@ -23,16 +23,16 @@
 package org.opendc.sdk.model.serialization
 
 import org.junit.jupiter.api.Test
-import org.opendc.sdk.model.experiment.Experiment
-import org.opendc.sdk.model.experiment.Scenario
-import org.opendc.sdk.model.failure.CustomFailure
-import org.opendc.sdk.model.failure.ExponentialDistribution
-import org.opendc.sdk.model.failure.LogNormalDistribution
-import org.opendc.sdk.model.failure.UniformDistribution
-import org.opendc.sdk.model.scheduler.FilterAllocationPolicy
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicy
-import org.opendc.sdk.model.workload.InlineWorkload
-import org.opendc.sdk.model.workload.TraceWorkload
+import org.opendc.sdk.model.experiment.ExperimentSpec
+import org.opendc.sdk.model.experiment.ScenarioSpec
+import org.opendc.sdk.model.failure.CustomFailureSpec
+import org.opendc.sdk.model.failure.ExponentialDistributionSpec
+import org.opendc.sdk.model.failure.LogNormalDistributionSpec
+import org.opendc.sdk.model.failure.UniformDistributionSpec
+import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.workload.InlineWorkloadSpec
+import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import java.io.InputStream
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -42,7 +42,7 @@ import kotlin.test.assertTrue
 /**
  * Verifies that the hand-written SDK JSON documents under `resources/scenarios` and
  * `resources/experiments` decode through [SdkJson] and pass model validation, and that the
- * jsonb (database) code path round-trips an [Experiment] purely in memory.
+ * jsonb (database) code path round-trips an [ExperimentSpec] purely in memory.
  */
 class JsonFixtureTest {
     @Test
@@ -50,7 +50,7 @@ class JsonFixtureTest {
         val scenario = decodeScenario("/scenarios/inline-topology-trace-workload.json")
 
         assertTrue(scenario.topology.clusters.isNotEmpty(), "expected an inline topology with clusters")
-        assertIs<TraceWorkload>(scenario.workload)
+        assertIs<TraceWorkloadSpec>(scenario.workload)
         assertEquals(emptyList(), scenario.validate())
     }
 
@@ -59,9 +59,9 @@ class JsonFixtureTest {
         val scenario = decodeScenario("/scenarios/inline-workload.json")
 
         assertTrue(scenario.topology.clusters.isNotEmpty(), "expected an inline topology with clusters")
-        val workload = assertIs<InlineWorkload>(scenario.workload)
+        val workload = assertIs<InlineWorkloadSpec>(scenario.workload)
         assertEquals(2, workload.tasks.size)
-        assertIs<FilterAllocationPolicy>(scenario.allocationPolicy)
+        assertIs<FilterAllocationPolicySpec>(scenario.allocationPolicy)
         assertTrue(scenario.validate().isEmpty(), "expected no validation issues")
     }
 
@@ -69,7 +69,7 @@ class JsonFixtureTest {
     fun `timeshift taskstopper experiment decodes and validates`() {
         val experiment = decodeExperiment("/experiments/timeshift-taskstopper.json")
 
-        val policy = assertIs<TimeShiftAllocationPolicy>(experiment.allocationPolicies.single())
+        val policy = assertIs<TimeShiftAllocationPolicySpec>(experiment.allocationPolicies.single())
         assertNotNull(policy.taskStopper, "expected an embedded task stopper")
         assertTrue(experiment.validate().isEmpty(), "expected no validation issues")
     }
@@ -78,10 +78,10 @@ class JsonFixtureTest {
     fun `custom-failure distributions experiment decodes and validates`() {
         val experiment = decodeExperiment("/experiments/custom-failure-distributions.json")
 
-        val failure = assertIs<CustomFailure>(experiment.failureModels.single())
-        assertIs<ExponentialDistribution>(failure.interArrival)
-        assertIs<LogNormalDistribution>(failure.duration)
-        assertIs<UniformDistribution>(failure.hostFraction)
+        val failure = assertIs<CustomFailureSpec>(experiment.failureModels.single())
+        assertIs<ExponentialDistributionSpec>(failure.interArrival)
+        assertIs<LogNormalDistributionSpec>(failure.duration)
+        assertIs<UniformDistributionSpec>(failure.hostFraction)
         assertTrue(experiment.validate().isEmpty(), "expected no validation issues")
     }
 
@@ -100,9 +100,9 @@ class JsonFixtureTest {
         }
     }
 
-    private fun decodeScenario(path: String): Scenario = resource(path).use { SdkJson.decodeScenario(it) }
+    private fun decodeScenario(path: String): ScenarioSpec = resource(path).use { SdkJson.decodeScenario(it) }
 
-    private fun decodeExperiment(path: String): Experiment = resource(path).use { SdkJson.decodeExperiment(it) }
+    private fun decodeExperiment(path: String): ExperimentSpec = resource(path).use { SdkJson.decodeExperiment(it) }
 
     private fun resource(path: String): InputStream = requireNotNull(javaClass.getResourceAsStream(path)) { "missing test resource $path" }
 }

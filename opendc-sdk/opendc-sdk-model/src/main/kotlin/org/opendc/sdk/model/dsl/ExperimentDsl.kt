@@ -23,37 +23,37 @@
 package org.opendc.sdk.model.dsl
 
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
-import org.opendc.sdk.model.experiment.Experiment
-import org.opendc.sdk.model.experiment.Scenario
+import org.opendc.sdk.model.experiment.ExperimentSpec
+import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.export.ExportSpec
-import org.opendc.sdk.model.failure.FailureModel
-import org.opendc.sdk.model.failure.NoFailure
-import org.opendc.sdk.model.scheduler.AllocationPolicy
-import org.opendc.sdk.model.scheduler.PrefabAllocationPolicy
+import org.opendc.sdk.model.failure.FailureModelSpec
+import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.scheduler.AllocationPolicySpec
+import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.topology.TopologySpec
-import org.opendc.sdk.model.workload.Workload
+import org.opendc.sdk.model.workload.WorkloadSpec
 
 /**
- * Builds an [Experiment] whose axes expand into the scenarios to run.
+ * Builds an [ExperimentSpec] whose axes expand into the scenarios to run.
  *
  * @param block Configures the experiment through an [ExperimentBuilder].
  */
-public fun experiment(block: ExperimentBuilder.() -> Unit): Experiment = ExperimentBuilder().apply(block).build()
+public fun experiment(block: ExperimentBuilder.() -> Unit): ExperimentSpec = ExperimentBuilder().apply(block).build()
 
 /**
- * Builds a single, fully-resolved [Scenario].
+ * Builds a single, fully-resolved [ScenarioSpec].
  *
  * @param block Configures the scenario through a [ScenarioBuilder].
  */
-public fun scenario(block: ScenarioBuilder.() -> Unit): Scenario = ScenarioBuilder().apply(block).build()
+public fun scenario(block: ScenarioBuilder.() -> Unit): ScenarioSpec = ScenarioBuilder().apply(block).build()
 
 /** Collects the candidate values of each experiment axis. */
 @SdkDsl
 public class ExperimentBuilder {
     private val topologies = mutableSetOf<TopologySpec>()
-    private val workloads = mutableSetOf<Workload>()
-    private val allocationPolicies = mutableSetOf<AllocationPolicy>()
-    private val failureModels = mutableSetOf<FailureModel>()
+    private val workloads = mutableSetOf<WorkloadSpec>()
+    private val allocationPolicies = mutableSetOf<AllocationPolicySpec>()
+    private val failureModels = mutableSetOf<FailureModelSpec>()
     private val exportModels = mutableSetOf<ExportSpec>()
     private val checkpointModels = mutableSetOf<CheckpointSpec?>()
     private val maxNumFailures = mutableSetOf<Int>()
@@ -75,7 +75,7 @@ public class ExperimentBuilder {
         topologies += TopologyBuilder().apply(block).build()
     }
 
-    public fun workload(workload: Workload) {
+    public fun workload(workload: WorkloadSpec) {
         workloads += workload
     }
 
@@ -83,11 +83,11 @@ public class ExperimentBuilder {
         workloads += InlineWorkloadBuilder().apply(block).build()
     }
 
-    public fun allocationPolicy(policy: AllocationPolicy) {
+    public fun allocationPolicy(policy: AllocationPolicySpec) {
         allocationPolicies += policy
     }
 
-    public fun failureModel(model: FailureModel) {
+    public fun failureModel(model: FailureModelSpec) {
         failureModels += model
     }
 
@@ -103,12 +103,12 @@ public class ExperimentBuilder {
         maxNumFailures += value
     }
 
-    internal fun build(): Experiment =
-        Experiment(
+    internal fun build(): ExperimentSpec =
+        ExperimentSpec(
             topologies = topologies.toSet(),
             workloads = workloads.toSet(),
-            allocationPolicies = allocationPolicies.ifEmpty { setOf(PrefabAllocationPolicy()) }.toSet(),
-            failureModels = failureModels.ifEmpty { setOf(NoFailure) }.toSet(),
+            allocationPolicies = allocationPolicies.ifEmpty { setOf(PrefabAllocationPolicySpec()) }.toSet(),
+            failureModels = failureModels.ifEmpty { setOf(NoFailureSpec) }.toSet(),
             maxNumFailures = maxNumFailures.ifEmpty { setOf(10) }.toSet(),
             checkpointModels = checkpointModels.ifEmpty { setOf(null) }.toSet(),
             exportModels = exportModels.ifEmpty { setOf(ExportSpec()) }.toSet(),
@@ -118,18 +118,18 @@ public class ExperimentBuilder {
         )
 }
 
-/** Collects the components of a single [Scenario]. */
+/** Collects the components of a single [ScenarioSpec]. */
 @SdkDsl
 public class ScenarioBuilder {
     private var topology: TopologySpec? = null
-    private var workload: Workload? = null
-    private var allocationPolicy: AllocationPolicy = PrefabAllocationPolicy()
+    private var workload: WorkloadSpec? = null
+    private var allocationPolicy: AllocationPolicySpec = PrefabAllocationPolicySpec()
 
     /** Controls which results are written and how often. */
     public var exportModel: ExportSpec = ExportSpec()
 
     /** The failure-injection model applied during the run. */
-    public var failureModel: FailureModel = NoFailure
+    public var failureModel: FailureModelSpec = NoFailureSpec
 
     /** Optional checkpointing configuration for tasks. */
     public var checkpointModel: CheckpointSpec? = null
@@ -157,7 +157,7 @@ public class ScenarioBuilder {
         this.topology = TopologyBuilder().apply(block).build()
     }
 
-    public fun workload(workload: Workload) {
+    public fun workload(workload: WorkloadSpec) {
         this.workload = workload
     }
 
@@ -165,14 +165,14 @@ public class ScenarioBuilder {
         this.workload = InlineWorkloadBuilder().apply(block).build()
     }
 
-    public fun allocationPolicy(policy: AllocationPolicy) {
+    public fun allocationPolicy(policy: AllocationPolicySpec) {
         this.allocationPolicy = policy
     }
 
-    internal fun build(): Scenario {
+    internal fun build(): ScenarioSpec {
         val resolvedTopology = topology ?: error("scenario requires a topology")
         val resolvedWorkload = workload ?: error("scenario requires a workload")
-        return Scenario(
+        return ScenarioSpec(
             resolvedTopology, resolvedWorkload, allocationPolicy, exportModel, failureModel,
             checkpointModel, maxNumFailures, runs, initialSeed, id, name,
         )

@@ -25,7 +25,7 @@ package org.opendc.cli.render
 import com.github.ajalt.mordant.table.table
 import com.github.ajalt.mordant.terminal.Terminal
 import org.opendc.cli.config.CliConfig
-import org.opendc.sdk.model.experiment.Experiment
+import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.experiment.expand
 import org.opendc.sdk.model.topology.HostSpec
 import org.opendc.sdk.model.topology.TopologySpec
@@ -61,7 +61,7 @@ internal data class TopologyView(
 ) {
     companion object {
         fun from(
-            experiment: Experiment,
+            experiment: ExperimentSpec,
             config: CliConfig,
         ): TopologyView =
             TopologyView(

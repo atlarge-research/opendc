@@ -20,18 +20,51 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.workload
+package org.opendc.sdk.model.failure
 
 import kotlinx.serialization.Serializable
 
 /**
- * Determines how a task reacts when its demanded resources exceed what is available.
+ * A named, built-in failure model derived from an empirical availability trace fitted to a
+ * statistical distribution. The prefix identifies the source dataset and the suffix the fitted
+ * distribution family (Exp, Wbl, LogN, Gam).
  */
 @Serializable
-public enum class ScalingPolicy {
-    /** The task keeps its planned duration; unmet demand is simply lost. */
-    NoDelay,
-
-    /** The task stretches its duration so that all planned work is eventually completed. */
-    Perfect,
+public enum class FailurePrefabSpec {
+    G5k06Exp,
+    G5k06Wbl,
+    G5k06LogN,
+    G5k06Gam,
+    Lanl05Exp,
+    Lanl05Wbl,
+    Lanl05LogN,
+    Lanl05Gam,
+    Ldns04Exp,
+    Ldns04Wbl,
+    Ldns04LogN,
+    Ldns04Gam,
+    Microsoft99Exp,
+    Microsoft99Wbl,
+    Microsoft99LogN,
+    Microsoft99Gam,
+    Nd07cpuExp,
+    Nd07cpuWbl,
+    Nd07cpuLogN,
+    Nd07cpuGam,
+    Overnet03Exp,
+    Overnet03Wbl,
+    Overnet03LogN,
+    Overnet03Gam,
+    Pl05Exp,
+    Pl05Wbl,
+    Pl05LogN,
+    Pl05Gam,
+    Skype06Exp,
+    Skype06Wbl,
+    Skype06LogN,
+    Skype06Gam,
+    Websites02Exp,
+    Websites02Wbl,
+    Websites02LogN,
+    Websites02Gam,
 }

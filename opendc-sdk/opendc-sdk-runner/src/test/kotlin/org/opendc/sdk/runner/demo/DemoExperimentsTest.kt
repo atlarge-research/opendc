@@ -22,21 +22,20 @@
 
 package org.opendc.sdk.runner.demo
 
-import kotlinx.serialization.decodeFromString
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.sdk.model.dsl.experiment
 import org.opendc.sdk.model.dsl.hours
-import org.opendc.sdk.model.experiment.Experiment
+import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.export.ExportSpec
-import org.opendc.sdk.model.failure.NoFailure
-import org.opendc.sdk.model.failure.TraceBasedFailure
+import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.serialization.SdkJson
 import org.opendc.sdk.model.topology.TopologySpec
-import org.opendc.sdk.model.workload.TraceWorkload
+import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import org.opendc.sdk.runner.OpenDC
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
 import org.opendc.sdk.runner.sink.CollectedMetrics
@@ -46,7 +45,7 @@ import kotlin.math.abs
 
 /**
  * The four `opendc-demos` experiments recreated (from their `_answers` topologies) as SDK
- * [Experiment]s and executed end-to-end. Topologies are loaded as SDK-model JSON from this module's
+ * [ExperimentSpec]s and executed end-to-end. Topologies are loaded as SDK-model JSON from this module's
  * own resources and every trace is a self-contained fixture — nothing depends on the ephemeral
  * `opendc-demos` directory. Each test asserts the concrete result that demonstrates the experiment's
  * pedagogical finding, computed from the strongly-typed metrics captured in memory.
@@ -154,9 +153,9 @@ class DemoExperimentsTest {
                     name = "4.failures"
                     topology(demoTopology("surfsara_linear_NL_279.json"))
                     workload(surfWeek)
-                    failureModel(NoFailure)
+                    failureModel(NoFailureSpec)
                     listOf("Facebook", "Instagram", "Netflix").forEach {
-                        failureModel(TraceBasedFailure(source = NamedReference("failure_traces/${it}_user_reported.parquet")))
+                        failureModel(TraceBasedFailureSpec(source = NamedReference("failure_traces/${it}_user_reported.parquet")))
                     }
                     exportModel(demoExport)
                 },
@@ -183,7 +182,7 @@ class DemoExperimentsTest {
         )
     }
 
-    private fun simulate(design: Experiment): List<ScenarioSummary> {
+    private fun simulate(design: ExperimentSpec): List<ScenarioSummary> {
         val report =
             OpenDC.builder()
                 .provisioner(FileSystemResourceProvisioner(demoResourcesRoot))
@@ -210,7 +209,7 @@ class DemoExperimentsTest {
         return SdkJson.json.decodeFromString(text)
     }
 
-    private val surfWeek = TraceWorkload(source = NamedReference("workload_traces/surf_week"))
+    private val surfWeek = TraceWorkloadSpec(source = NamedReference("workload_traces/surf_week"))
 
     private val demoExport = ExportSpec(exportInterval = 1.hours, printFrequency = null)
 

@@ -24,7 +24,7 @@ package org.opendc.sdk.runner.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.sdk.model.workload.ScalingPolicy
+import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
 import org.opendc.sdk.runner.base.harness.fragment
@@ -64,7 +64,7 @@ class FragmentScalingTest {
             )
         val topology = createTopology("single_1_2000.json")
 
-        val monitorPerfect = runTest(topology, workloadPerfect, scalingPolicy = ScalingPolicy.Perfect)
+        val monitorPerfect = runTest(topology, workloadPerfect, scalingPolicy = ScalingPolicySpec.Perfect)
         val monitorNoDelay = runTest(topology, workloadNoDelay)
 
         assertAll(
@@ -109,7 +109,7 @@ class FragmentScalingTest {
         val topology = createTopology("single_1_2000.json")
 
         val monitorNoDelay = runTest(topology, workloadNoDelay)
-        val monitorPerfect = runTest(topology, workloadPerfect, scalingPolicy = ScalingPolicy.Perfect)
+        val monitorPerfect = runTest(topology, workloadPerfect, scalingPolicy = ScalingPolicySpec.Perfect)
 
         assertAll(
             { assertEquals(600000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
@@ -153,7 +153,7 @@ class FragmentScalingTest {
         val topology = createTopology("single_1_2000.json")
 
         val monitorNoDelay = runTest(topology, workloadNoDelay)
-        val monitorPerfect = runTest(topology, workloadPerfect, scalingPolicy = ScalingPolicy.Perfect)
+        val monitorPerfect = runTest(topology, workloadPerfect, scalingPolicy = ScalingPolicySpec.Perfect)
 
         assertAll(
             { assertEquals(1800000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
@@ -219,7 +219,7 @@ class FragmentScalingTest {
         val topology = createTopology("single_2_2000.json")
 
         val monitorNoDelay = runTest(topology, workloadNoDelay)
-        val monitorPerfect = runTest(topology, workloadPerfect, scalingPolicy = ScalingPolicy.Perfect)
+        val monitorPerfect = runTest(topology, workloadPerfect, scalingPolicy = ScalingPolicySpec.Perfect)
 
         assertAll(
             { assertEquals(600000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },
@@ -279,7 +279,7 @@ class FragmentScalingTest {
         val topology = createTopology("single_2_2000.json")
 
 //        val monitorNoDelay = runTest(topology, workloadNoDelay)
-        val monitorPerfect = runTest(topology, workloadPerfect, scalingPolicy = ScalingPolicy.Perfect)
+        val monitorPerfect = runTest(topology, workloadPerfect, scalingPolicy = ScalingPolicySpec.Perfect)
 
 //        assertAll(
 //            { assertEquals(600000, monitorNoDelay.maxTimestamp) { "The workload took longer to finish than expected." } },

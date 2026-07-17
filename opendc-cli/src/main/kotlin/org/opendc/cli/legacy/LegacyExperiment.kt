@@ -29,7 +29,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
-import org.opendc.sdk.model.experiment.Experiment
+import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.serialization.SdkJson
 import java.io.File
 
@@ -40,7 +40,7 @@ import java.io.File
  * The old and the new documents describe the same experiment; they disagree about the names of things
  * and about a single unit. Rather than carry a second copy of the data model, the old document is
  * rewritten into the shape of the new one and handed to the SDK parser, so the result is an ordinary,
- * fully validated [Experiment].
+ * fully validated [ExperimentSpec].
  *
  * Two differences are worth knowing about:
  *  - The old format referenced its topologies by path. They are read and inlined here, which is why
@@ -52,14 +52,19 @@ import java.io.File
  *  - `outputFolder` has no counterpart in the SDK model and is dropped; `opendc run -o` decides where
  *    results are written.
  *
+ * The rewrite carries over only the keys it names, so an unknown key in the legacy document is dropped
+ * before the SDK ever sees it; [strict] therefore guards the *rewritten* document, catching a field
+ * this converter emits that the SDK model does not accept rather than stray keys in the input.
+ *
  * @throws LegacyFormatException if the document cannot be expressed in the SDK model.
  */
 internal fun readLegacyExperiment(
     file: File,
     baseDir: File,
-): Experiment {
+    strict: Boolean = false,
+): ExperimentSpec {
     val document = SdkJson.json.parseToJsonElement(file.readText()).asObject("the experiment")
-    return SdkJson.fromJsonElement(document.toSdkExperiment(baseDir))
+    return SdkJson.fromJsonElement(document.toSdkExperiment(baseDir), strict)
 }
 
 /** Signals a legacy document that cannot be expressed in the SDK model. */

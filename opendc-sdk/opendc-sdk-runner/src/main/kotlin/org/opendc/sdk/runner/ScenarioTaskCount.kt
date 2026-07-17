@@ -22,11 +22,11 @@
 
 package org.opendc.sdk.runner
 
-import org.opendc.sdk.model.experiment.Experiment
-import org.opendc.sdk.model.experiment.Scenario
+import org.opendc.sdk.model.experiment.ExperimentSpec
+import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.experiment.expand
 import org.opendc.sdk.model.resource.ResourceProvisioner
-import org.opendc.sdk.model.workload.Workload
+import org.opendc.sdk.model.workload.WorkloadSpec
 import org.opendc.sdk.runner.executor.ResourceScope
 import org.opendc.sdk.runner.factory.toServiceTasks
 
@@ -37,7 +37,7 @@ import org.opendc.sdk.runner.factory.toServiceTasks
  * @property taskCount The number of tasks in the scenario's resolved workload.
  */
 public data class ScenarioTaskCount(
-    public val scenario: Scenario,
+    public val scenario: ScenarioSpec,
     public val taskCount: Int,
 )
 
@@ -50,9 +50,9 @@ public data class ScenarioTaskCount(
  * first to fix a stable, accurate total before [OpenDC.simulate]. Resolving a trace reads it here
  * once, in addition to the per-run load.
  */
-public fun Experiment.planTaskCounts(resourceProvisioner: ResourceProvisioner): List<ScenarioTaskCount> {
-    val resolved = HashMap<Workload, Int>()
-    val scenarios: List<Scenario> = expand()
+public fun ExperimentSpec.planTaskCounts(resourceProvisioner: ResourceProvisioner): List<ScenarioTaskCount> {
+    val resolved = HashMap<WorkloadSpec, Int>()
+    val scenarios: List<ScenarioSpec> = expand()
 
     return scenarios.map {
         val count =
@@ -63,6 +63,10 @@ public fun Experiment.planTaskCounts(resourceProvisioner: ResourceProvisioner): 
     }
 }
 
-public fun Scenario.countTasks(resourceProvisioner: ResourceProvisioner): Int = ResourceScope(resourceProvisioner).use(::countTasks)
+public fun ScenarioSpec.countTasks(resourceProvisioner: ResourceProvisioner): Int = ResourceScope(resourceProvisioner).use(::countTasks)
 
-internal fun Scenario.countTasks(resourceScope: ResourceScope): Int = workload.toServiceTasks(checkpointModel, resourceScope::resolve).size
+internal fun ScenarioSpec.countTasks(resourceScope: ResourceScope): Int =
+    workload.toServiceTasks(
+        checkpointModel,
+        resourceScope::resolve,
+    ).size

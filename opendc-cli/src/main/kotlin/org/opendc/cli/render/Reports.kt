@@ -25,7 +25,7 @@ package org.opendc.cli.render
 import com.github.ajalt.mordant.table.table
 import com.github.ajalt.mordant.terminal.Terminal
 import org.opendc.cli.config.CliConfig
-import org.opendc.sdk.model.experiment.Scenario
+import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.runner.RunResult
 import org.opendc.sdk.runner.SimulationReport
 import java.nio.file.Path
@@ -107,7 +107,7 @@ internal fun renderOutputs(
 }
 
 /** Reduces a single run's in-memory metrics into a display [RunSummaryRow], or null when it has none. */
-private fun RunResult.toRow(scenario: Scenario): RunSummaryRow? =
+private fun RunResult.toRow(scenario: ScenarioSpec): RunSummaryRow? =
     metrics?.let { m ->
         RunSummaryRow(
             name = scenario.name.ifEmpty { "#${scenario.id}" },

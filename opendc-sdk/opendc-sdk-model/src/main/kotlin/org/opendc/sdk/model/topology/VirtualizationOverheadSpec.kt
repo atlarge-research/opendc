@@ -29,12 +29,12 @@ import kotlinx.serialization.Serializable
  * Models the performance penalty incurred when a resource is shared through virtualization.
  */
 @Serializable
-public sealed interface VirtualizationOverhead
+public sealed interface VirtualizationOverheadSpec
 
 /** No virtualization overhead is applied. */
 @Serializable
 @SerialName("none")
-public data object NoVirtualizationOverhead : VirtualizationOverhead
+public data object NoVirtualizationOverheadSpec : VirtualizationOverheadSpec
 
 /**
  * A fixed virtualization overhead.
@@ -43,11 +43,11 @@ public data object NoVirtualizationOverhead : VirtualizationOverhead
  */
 @Serializable
 @SerialName("constant")
-public data class ConstantVirtualizationOverhead(
+public data class ConstantVirtualizationOverheadSpec(
     public val percentageOverhead: Double? = null,
-) : VirtualizationOverhead
+) : VirtualizationOverheadSpec
 
 /** Virtualization overhead that scales with the number of consumers sharing the resource. */
 @Serializable
 @SerialName("shareBased")
-public data object ShareBasedVirtualizationOverhead : VirtualizationOverhead
+public data object ShareBasedVirtualizationOverheadSpec : VirtualizationOverheadSpec

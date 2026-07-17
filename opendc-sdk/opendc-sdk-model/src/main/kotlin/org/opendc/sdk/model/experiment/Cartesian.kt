@@ -23,13 +23,13 @@
 package org.opendc.sdk.model.experiment
 
 /**
- * Expands this experiment into its [Scenario]s by taking the mixed-radix cartesian product across every axis.
+ * Expands this experiment into its [ScenarioSpec]s by taking the mixed-radix cartesian product across every axis.
  *
  * Axes vary from least significant to most significant in the order
  * maxNumFailures, checkpointModels, failureModels, exportModels, allocationPolicies, workloads, topologies.
- * Each scenario receives its flattened index as both [Scenario.id] and [Scenario.name].
+ * Each scenario receives its flattened index as both [ScenarioSpec.id] and [ScenarioSpec.name].
  */
-public fun Experiment.expand(): List<Scenario> {
+public fun ExperimentSpec.expand(): List<ScenarioSpec> {
     val topologyList = topologies.toList()
     val workloadList = workloads.toList()
     val allocationList = allocationPolicies.toList()
@@ -51,7 +51,7 @@ public fun Experiment.expand(): List<Scenario> {
         val allocation = allocationList[rem % allocationList.size].also { rem /= allocationList.size }
         val workload = workloadList[rem % workloadList.size].also { rem /= workloadList.size }
         val topology = topologyList[rem % topologyList.size]
-        Scenario(
+        ScenarioSpec(
             topology = topology,
             workload = workload,
             allocationPolicy = allocation,
