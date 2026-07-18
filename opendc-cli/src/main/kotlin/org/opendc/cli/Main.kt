@@ -106,15 +106,9 @@ internal abstract class ExperimentCommand(
         get() = currentContext.findObject<ExperimentReadOptions>()?.strict == true
 
     /**
-     * The directory the experiment's relative paths resolve against, absent an explicit `--input-root`.
-     *
-     * A legacy experiment names its topologies and traces relative to the directory it is *run from*,
-     * because that is what the deprecated runner resolved against; an SDK experiment names its traces
-     * relative to the file itself. The topologies inlined by [loadExperiment] and the traces the runner
-     * provisions later must share this one root, or the two halves of the same experiment would be
-     * looked up in different places.
+     * The directory the experiment should be resolved at
      */
-    protected val defaultInputRoot: Path
+    protected val experimentBaseDirectory: Path
         get() =
             if (isLegacy) {
                 Path.of("").toAbsolutePath()
@@ -129,14 +123,17 @@ internal abstract class ExperimentCommand(
      * [root]; otherwise it is SDK-model JSON, which composes the files it names with `importFrom`
      * relative to itself and so needs no root.
      */
-    protected fun loadExperiment(root: Path = defaultInputRoot): ExperimentSpec =
+    protected fun loadExperiment(): ExperimentSpec =
         try {
             if (isLegacy) {
-                readLegacyExperiment(experimentFile, root.toFile(), isStrict)
+                readLegacyExperiment(experimentFile, experimentBaseDirectory.toFile(), isStrict)
             } else {
                 readExperiment(experimentFile, isStrict)
             }
         } catch (e: Exception) {
-            throw CliktError("Could not read experiment '${experimentFile.path}': ${e.message}")
+            throw CliktError(
+                "Could not read experiment '${experimentFile.path}': ${e.message}",
+                cause = e
+            )
         }
 }
