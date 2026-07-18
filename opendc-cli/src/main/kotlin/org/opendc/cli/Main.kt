@@ -133,7 +133,7 @@ internal abstract class ExperimentCommand(
         } catch (e: Exception) {
             throw CliktError(
                 "Could not read experiment '${experimentFile.path}': ${e.message}",
-                cause = e
+                cause = e,
             )
         }
 }

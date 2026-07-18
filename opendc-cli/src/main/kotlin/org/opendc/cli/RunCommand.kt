@@ -50,7 +50,7 @@ internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCo
     private val output by option(
         "--output",
         "-o",
-        help = "Directory for the Parquet results."
+        help = "Directory for the Parquet results.",
     )
         .path(canBeFile = false)
         .default(Path.of("output"))
@@ -65,12 +65,12 @@ internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCo
 
     private val noProgress by option(
         "--no-progress",
-        help = "Disable the live progress dashboard."
+        help = "Disable the live progress dashboard.",
     ).flag()
 
     private val experimentPath by option(
         "--experiment-path",
-        help = "Legacy support for the experiment path. Does nothing."
+        help = "Legacy support for the experiment path. Does nothing.",
     ).flag()
 
     private val noSummary by option(
