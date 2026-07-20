@@ -47,16 +47,13 @@ internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCo
     override fun help(context: Context): String =
         "Run an experiment: simulate every scenario and write the results to Parquet, showing a live progress dashboard."
 
-    private val output by option("--output", "-o", help = "Directory for the Parquet results.")
+    private val output by option(
+        "--output",
+        "-o",
+        help = "Directory for the Parquet results.",
+    )
         .path(canBeFile = false)
         .default(Path.of("output"))
-
-    private val inputRoot by option(
-        "--input-root",
-        help =
-            "Root for resolving named/relative topology, workload and trace references " +
-                "(default: the experiment file's directory, or the working directory under --legacy).",
-    ).path(canBeFile = false, mustExist = true)
 
     private val parallelism by option(
         "--parallelism",
@@ -66,7 +63,15 @@ internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCo
         .int()
         .default(1)
 
-    private val noProgress by option("--no-progress", help = "Disable the live progress dashboard.").flag()
+    private val noProgress by option(
+        "--no-progress",
+        help = "Disable the live progress dashboard.",
+    ).flag()
+
+    private val experimentPath by option(
+        "--experiment-path",
+        help = "Legacy support for the experiment path. Does nothing.",
+    ).flag()
 
     private val noSummary by option(
         "--no-summary",
@@ -79,10 +84,8 @@ internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCo
     )
 
     override fun run() {
-        // The topologies inlined while loading and the traces provisioned while running are resolved
-        // against the same root, so `--input-root` moves the whole experiment rather than half of it.
-        val root = inputRoot ?: defaultInputRoot
-        val experiment = loadExperiment(root)
+        val experiment = loadExperiment()
+
         if (!renderValidation(terminal, experimentFile.name, experiment.validate(), config, showSuccess = false)) {
             throw ProgramResult(1)
         }
@@ -90,7 +93,7 @@ internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCo
         val request =
             RunRequest(
                 experiment = experiment,
-                inputRoot = root,
+                inputRoot = experimentBaseDirectory,
                 output = output,
                 parallelism = parallelism,
                 wantSummary = !noSummary,
