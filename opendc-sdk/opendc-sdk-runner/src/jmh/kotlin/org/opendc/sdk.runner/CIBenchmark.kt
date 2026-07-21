@@ -22,10 +22,12 @@
 
 @file:Suppress("DEPRECATION")
 
-package org.opendc.cli
+package org.opendc.sdk.runner
 
-import com.github.ajalt.clikt.core.subcommands
-import com.github.ajalt.clikt.testing.test
+import org.opendc.sdk.runner.harness.createBenchmarkTask
+import org.opendc.sdk.runner.harness.createTopology
+import org.opendc.sdk.runner.harness.fragment
+import org.opendc.sdk.runner.harness.runBenchmark
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
@@ -44,12 +46,22 @@ import java.util.concurrent.TimeUnit
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 open class CIBenchmark : OpenDCBenchmark() {
-    private fun opendc() = OpendcCommand().subcommands(RunCommand(), ValidateCommand(), ShowCommand())
 
     @Benchmark
-    fun surfWeekBenchmark() {
-        opendc().test(arrayOf("--legacy", "run", "src/jmh/resources/experiments/workloadScaling/surf_week.json"))
-//        File("output").deleteRecursively()
+    fun testBenchmark() {
+        val workload =
+            listOf(
+                createBenchmarkTask(
+                    id = 0,
+                    fragments = listOf(fragment(10 * 60 * 1000, 1000.0)),
+                    submissionTime = "2022-01-01T00:00",
+                ),
+            )
+
+        println("Creating Topology")
+        val topology = createTopology("batteries/experiment1.json")
+        val monitor = runBenchmark(topology, workload)
+        println("DONE")
     }
 
 //    @Benchmark

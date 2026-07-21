@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.runner.base.harness
+package org.opendc.sdk.runner.harness
 
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.table.host.HostTableReader

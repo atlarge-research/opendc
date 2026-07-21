@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.runner.base.harness
+package org.opendc.sdk.runner.harness
 
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
@@ -65,7 +65,7 @@ private val provisioner = FileSystemResourceProvisioner(testResourcesRoot)
 
 /** Loads an SDK-model [TopologySpec] from `/topologies/<name>` on the test classpath. */
 internal fun createTopology(name: String): TopologySpec {
-    val text = checkNotNull(object {}.javaClass.getResourceAsStream("/topologies/$name")).use { it.readBytes().decodeToString() }
+    val text = checkNotNull(object {}.javaClass.getResourceAsStream("topologies/$name")).use { it.readBytes().decodeToString() }
     return SdkJson.json.decodeFromString(text)
 }
 
@@ -120,14 +120,14 @@ internal fun createBenchmarkTask(
  * and seed 0, returning the [BenchmarkComputeMonitor] that captured the run — the SDK-runner analogue of
  * the legacy `runTest`.
  */
-internal fun runTest(
+internal fun runBenchmark(
     topology: TopologySpec,
     workload: List<TaskSpec>,
     failureModel: FailureModelSpec = NoFailureSpec,
     allocationPolicy: AllocationPolicySpec = defaultPolicy,
     checkpointModel: CheckpointSpec? = null,
     scalingPolicy: ScalingPolicySpec = ScalingPolicySpec.NoDelay,
-): TestComputeMonitor {
+): BenchmarkComputeMonitor {
     val monitor = BenchmarkComputeMonitor()
     val scenario =
         ScenarioSpec(

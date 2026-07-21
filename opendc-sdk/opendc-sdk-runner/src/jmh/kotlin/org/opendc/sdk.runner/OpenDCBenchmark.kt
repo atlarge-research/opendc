@@ -20,125 +20,126 @@
  * SOFTWARE.
  */
 
-package org.opendc.cli
+package org.opendc.sdk.runner
 
-import jdk.jfr.consumer.RecordingFile
+import jdk.jfr.Configuration
+import jdk.jfr.Recording
+import org.openjdk.jmh.annotations.Level
+import org.openjdk.jmh.annotations.Setup
+import org.openjdk.jmh.annotations.TearDown
+import org.openjdk.jmh.infra.BenchmarkParams
+import org.openjdk.jmh.infra.IterationParams
+import org.openjdk.jmh.runner.IterationType
+import java.io.File
 import java.nio.file.Path
 import kotlin.math.sqrt
 
-private const val BYTES_PER_MB = 1024.0 * 1024.0
-
-/**
- * Distribution of a single memory signal over one JMH iteration.
- *
- * All values are megabytes.
- *
- * @property avgMb Mean across all samples.
- * @property peakMb Largest single sample.
- * @property stdMb Population standard deviation across all samples.
- * @property sampleCount Number of samples.
- * @property samplesMb Every sample, so callers can pool them into a histogram.
- */
-data class MemoryStats(
-    val avgMb: Double,
-    val peakMb: Double,
-    val stdMb: Double,
-    val sampleCount: Int,
-    val samplesMb: List<Double>,
-) {
-    companion object {
-        /**
-         * Build stats from raw byte samples, or `null` if there are none.
-         */
-        fun of(bytes: List<Long>): MemoryStats? {
-            if (bytes.isEmpty()) return null
-            val avg = bytes.average()
-            val peak = bytes.max().toDouble()
-            val std = sqrt(bytes.sumOf { (it - avg).let { d -> d * d } } / bytes.size)
-            return MemoryStats(
-                avgMb = avg / BYTES_PER_MB,
-                peakMb = peak / BYTES_PER_MB,
-                stdMb = std / BYTES_PER_MB,
-                sampleCount = bytes.size,
-                samplesMb = bytes.map { it / BYTES_PER_MB },
-            )
-        }
-    }
+/** Computes the population standard deviation of the receiver list. */
+private fun List<Double>.std(): Double {
+    val avg = average()
+    return sqrt(sumOf { (it - avg) * (it - avg) } / size)
 }
 
 /**
- * The two memory signals captured for one JMH iteration.
+ * Abstract base class for JMH benchmarks in OpenDC.
  *
- * @property heap Retained live set: `heapUsed` from `jdk.GCHeapSummary` events tagged `"After GC"`.
- *   Reflects the bytes the application's objects actually keep, and so tracks changes to object sizes
- *   directly. `null` if no GC completed during the iteration.
- * @property rss Process resident set: `size` from `jdk.ResidentSetSize` events. The RAM the JVM process
- *   holds from the OS as a whole (heap + metaspace + code cache + thread stacks + off-heap). Sticky — the
- *   JVM rarely returns memory — so it tracks the high-water mark rather than the current live set. `null`
- *   if the JDK emitted no such events.
+ * This base class provides:
+ *
+ * **JFR profiling** — a Java Flight Recorder session using the built-in `profile`
+ * configuration is started before every JMH iteration and stopped afterwards.
+ * The recording is written to `build/bench.jfr` and overwritten each iteration,
+ * so only the most-recent recording is kept on disk.
+ *
+ * **Heap statistics** — after each *measurement* iteration the JFR file is processed
+ * to get the average and peak heap usage. At the end of the trial, per-iteration [HeapStats]
+ * are aggregated (mean ± std-dev). The jmh task configuration in [build.gradle.kts](../build.gradle.kts)
+ * is set up to merge these heap stats into the final JSON report as a
+ * `heapMetric` field for each benchmark entry.
+ *
+ * ### Subclassing
+ * Concrete benchmark classes should:
+ * 1. Annotate the class with the desired JMH mode/time-unit annotations. See [CIBenchmark] as example.
+ * 2. Implement one or more `@Benchmark` methods.
+ * 3. Add any extra `@Setup` / `@TearDown` methods as needed; the lifecycle callbacks
+ *    defined here run at [Level.Iteration] and [Level.Trial] respectively.
+ *
+ * @see analyzeHeap
+ * @see HeapStats
  */
-data class IterationMemory(
-    val heap: MemoryStats?,
-    val rss: MemoryStats?,
-)
+abstract class OpenDCBenchmark {
+    /** Active JFR recording for the current iteration, or `null` between iterations. */
+    private var recording: Recording? = null
 
-/**
- * Parse a JFR recording into its per-iteration memory distributions.
- *
- * Heap samples are filtered to `"After GC"` `jdk.GCHeapSummary` events so that each value is the live set
- * *after* a collection, not the pre-GC occupancy (which includes all garbage allocated since the previous
- * GC and is therefore dominated by allocation rate rather than retained size).
- *
- * @param jfrPath Path to the `.jfr` recording to analyze.
- */
-fun analyzeMemory(jfrPath: Path): IterationMemory {
-    val heapBytes = mutableListOf<Long>()
-    val rssBytes = mutableListOf<Long>()
+    /** Destination path for the JFR file; overwritten on every iteration. */
+    private val jfrPath = Path.of("build/bench.jfr")
 
-    RecordingFile(jfrPath).use { recording ->
-        while (recording.hasMoreEvents()) {
-            val event = recording.readEvent()
-            when (event.eventType.name) {
-                "jdk.GCHeapSummary" ->
-                    if (event.getString("when") == "After GC") {
-                        heapBytes.add(event.getLong("heapUsed"))
-                    }
-                "jdk.ResidentSetSize" -> rssBytes.add(event.getLong("size"))
-            }
+    /** Accumulated heap statistics, one entry per completed measurement iteration. */
+    private val heapResults = mutableListOf<HeapStats>()
+
+    /**
+     * Starts a JFR recording before each iteration.
+     *
+     * Uses the JDK's built-in `profile` configuration, which captures GC heap
+     * summaries, CPU load, thread activity, and other standard events needed for
+     * heap analysis.
+     */
+    @Setup(Level.Iteration)
+    fun setupIteration() {
+        recording = Recording(Configuration.getConfiguration("profile"))
+        recording!!.setDestination(jfrPath)
+        recording!!.start()
+    }
+
+    /**
+     * Stops the JFR recording after each iteration and, for measurement iterations,
+     * parses the resulting file to extract [HeapStats].
+     *
+     * Warmup iterations are skipped so that only steady-state heap behaviour is
+     * included in the final CSV report.
+     *
+     * @param params JMH-injected iteration metadata; used to distinguish warmup
+     *   from measurement iterations via [IterationParams.type].
+     */
+    @TearDown(Level.Iteration)
+    fun tearDownIteration(params: IterationParams) {
+        recording?.stop()
+        recording = null
+        if (params.type == IterationType.MEASUREMENT) {
+            analyzeHeap(jfrPath)?.let { heapResults.add(it) }
         }
     }
 
-    return IterationMemory(MemoryStats.of(heapBytes), MemoryStats.of(rssBytes))
-}
+    /**
+     * Aggregates heap statistics across all measurement iterations and appends a
+     * summary row to `build/heap-stats.csv`.
+     *
+     * The CSV columns are:
+     * `benchmark, avg_heap_mb, std_avg_heap_mb, max_heap_mb, std_max_heap_mb`
+     *
+     * If no measurement iterations produced heap data (e.g., the JFR file was
+     * empty), the method returns without writing anything.
+     *
+     * @param params JMH-injected trial metadata; provides the fully-qualified
+     *   benchmark name used as the first CSV column.
+     */
+    @TearDown(Level.Trial)
+    fun tearDownTrial(params: BenchmarkParams) {
+        if (heapResults.isEmpty()) return
 
-/**
- * Standalone entry point for inspecting the heap statistics of an existing JFR file.
- *
- * Reads `build/bench.jfr` (the default output path used by [OpenDCBenchmark]) and
- * prints a human-readable summary to stdout. Useful for quickly inspecting the
- * recording from the most recently completed benchmark iteration without re-running
- * the full benchmark.
- *
- * Exits with an error if the file contains no `jdk.GCHeapSummary` events.
- */
-fun main() {
-    val path = Path.of("build/bench.jfr")
-    val memory = analyzeMemory(path)
+        val avgs = heapResults.map { it.avgMb }
+        val maxes = heapResults.map { it.maxMb }
 
-    fun report(
-        name: String,
-        stats: MemoryStats?,
-    ) {
-        if (stats == null) {
-            println("$name: no samples in $path")
-            return
-        }
-        println("$name from $path (${stats.sampleCount} samples):")
-        println("  Avg:  ${"%.2f".format(stats.avgMb)} MB")
-        println("  Peak: ${"%.2f".format(stats.peakMb)} MB")
-        println("  Std:  ${"%.2f".format(stats.stdMb)} MB")
+        val line =
+            "\"${params.benchmark}\"," +
+                "${"%.4f".format(avgs.average())}," +
+                "${"%.4f".format(avgs.std())}," +
+                "${"%.4f".format(maxes.average())}," +
+                "${"%.4f".format(maxes.std())}\n"
+
+        println(line)
+
+        val heapFile = File("build/heap-stats.csv")
+        heapFile.parentFile.mkdirs()
+        heapFile.appendText(line)
     }
-
-    report("Heap live-set (after GC)", memory.heap)
-    report("Process RSS", memory.rss)
 }
