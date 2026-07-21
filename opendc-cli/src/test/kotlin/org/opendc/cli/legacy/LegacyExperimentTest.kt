@@ -22,6 +22,12 @@
 
 package org.opendc.cli.legacy
 
+import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.testing.test
+import org.opendc.cli.OpendcCommand
+import org.opendc.cli.RunCommand
+import org.opendc.cli.ShowCommand
+import org.opendc.cli.ValidateCommand
 import org.opendc.common.units.DataRate
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
@@ -85,6 +91,14 @@ import kotlin.test.assertTrue
  * `opendc-sdk`.
  */
 class LegacyExperimentTest {
+    private fun opendc() = OpendcCommand().subcommands(RunCommand(), ValidateCommand(), ShowCommand())
+
+    @Test
+    fun testCli() {
+        opendc().test(arrayOf("run", "--legacy", "legacy/experiments/1.first_experiment_answers/simple_experiment.json"))
+    }
+
+
     /**
      * Demo 1 — the plainest old experiment there is. It is also the sharpest test of the units,
      * because every magnitude in it is a bare number: `2100` must still mean 2100 MHz, `100000` must
