@@ -21,63 +21,93 @@
  */
 
 package org.opendc.sdk.runner
-
 import jdk.jfr.consumer.RecordingFile
 import java.nio.file.Path
 import kotlin.math.sqrt
 
+private const val BYTES_PER_MB = 1024.0 * 1024.0
+
 /**
- * Heap usage statistics derived from a single JFR recording.
+ * Distribution of a single memory signal over one JMH iteration.
  *
- * All memory values are in megabytes and are computed from the `heapUsed` field
- * of `jdk.GCHeapSummary` events captured during one JMH iteration.
+ * All values are megabytes.
  *
- * @property avgMb Mean heap usage across all GC samples in the recording (MB).
- * @property maxMb Peak heap usage observed in any single GC sample (MB).
- * @property stdMb Population standard deviation of heap usage across all samples (MB).
- * @property sampleCount Number of `jdk.GCHeapSummary` events found in the recording.
+ * @property avgMb Mean across all samples.
+ * @property peakMb Largest single sample.
+ * @property stdMb Population standard deviation across all samples.
+ * @property sampleCount Number of samples.
+ * @property samplesMb Every sample, so callers can pool them into a histogram.
  */
-data class HeapStats(
+data class MemoryStats(
     val avgMb: Double,
-    val maxMb: Double,
+    val peakMb: Double,
     val stdMb: Double,
     val sampleCount: Int,
+    val samplesMb: List<Double>,
+) {
+    companion object {
+        /**
+         * Build stats from raw byte samples, or `null` if there are none.
+         */
+        fun of(bytes: List<Long>): MemoryStats? {
+            if (bytes.isEmpty()) return null
+            val avg = bytes.average()
+            val peak = bytes.max().toDouble()
+            val std = sqrt(bytes.sumOf { (it - avg).let { d -> d * d } } / bytes.size)
+            return MemoryStats(
+                avgMb = avg / BYTES_PER_MB,
+                peakMb = peak / BYTES_PER_MB,
+                stdMb = std / BYTES_PER_MB,
+                sampleCount = bytes.size,
+                samplesMb = bytes.map { it / BYTES_PER_MB },
+            )
+        }
+    }
+}
+
+/**
+ * The two memory signals captured for one JMH iteration.
+ *
+ * @property heap Retained live set: `heapUsed` from `jdk.GCHeapSummary` events tagged `"After GC"`.
+ *   Reflects the bytes the application's objects actually keep, and so tracks changes to object sizes
+ *   directly. `null` if no GC completed during the iteration.
+ * @property rss Process resident set: `size` from `jdk.ResidentSetSize` events. The RAM the JVM process
+ *   holds from the OS as a whole (heap + metaspace + code cache + thread stacks + off-heap). Sticky — the
+ *   JVM rarely returns memory — so it tracks the high-water mark rather than the current live set. `null`
+ *   if the JDK emitted no such events.
+ */
+data class IterationMemory(
+    val heap: MemoryStats?,
+    val rss: MemoryStats?,
 )
 
 /**
- * Parses a JFR recording file and computes heap usage statistics from its
- * `jdk.GCHeapSummary` events.
+ * Parse a JFR recording into its per-iteration memory distributions.
  *
- * Each `jdk.GCHeapSummary` event is emitted by the JVM after a GC cycle and
- * carries the `heapUsed` value (bytes). This function collects all such values,
- * then computes mean, peak, and standard deviation, converting the results from
- * bytes to megabytes.
+ * Heap samples are filtered to `"After GC"` `jdk.GCHeapSummary` events so that each value is the live set
+ * *after* a collection, not the pre-GC occupancy (which includes all garbage allocated since the previous
+ * GC and is therefore dominated by allocation rate rather than retained size).
  *
- * @param jfrPath Path to the `.jfr` recording file to analyze.
- * @return A [HeapStats] instance if at least one `jdk.GCHeapSummary` event was
- *   found, or `null` if the recording contained no such events (e.g., no GC
- *   occurred during the iteration).
+ * @param jfrPath Path to the `.jfr` recording to analyze.
  */
-fun analyzeHeap(jfrPath: Path): HeapStats? {
-    val samples = mutableListOf<Long>()
+fun analyzeMemory(jfrPath: Path): IterationMemory {
+    val heapBytes = mutableListOf<Long>()
+    val rssBytes = mutableListOf<Long>()
 
     RecordingFile(jfrPath).use { recording ->
         while (recording.hasMoreEvents()) {
             val event = recording.readEvent()
-            if (event.eventType.name == "jdk.GCHeapSummary") {
-                samples.add(event.getLong("heapUsed"))
+            when (event.eventType.name) {
+                "jdk.GCHeapSummary" ->
+                    if (event.getString("when") == "After GC") {
+                        heapBytes.add(event.getLong("heapUsed"))
+                    }
+                "jdk.ResidentSetSize" -> rssBytes.add(event.getLong("size"))
             }
         }
     }
 
-    if (samples.isEmpty()) return null
-
-    val avg = samples.average()
-    val max = samples.max().toDouble()
-    val std = sqrt(samples.sumOf { (it - avg).let { d -> d * d } } / samples.size)
-    val toMb = 1.0 / (1024.0 * 1024.0)
-
-    return HeapStats(avg * toMb, max * toMb, std * toMb, samples.size)
+    return IterationMemory(MemoryStats.of(heapBytes), MemoryStats.of(rssBytes))
 }
 
 /**
@@ -92,9 +122,22 @@ fun analyzeHeap(jfrPath: Path): HeapStats? {
  */
 fun main() {
     val path = Path.of("build/bench.jfr")
-    val stats = analyzeHeap(path) ?: error("No jdk.GCHeapSummary events found in $path")
-    println("Heap statistics from $path (${stats.sampleCount} GC samples):")
-    println("  Avg: ${"%.2f".format(stats.avgMb)} MB")
-    println("  Max: ${"%.2f".format(stats.maxMb)} MB")
-    println("  Std: ${"%.2f".format(stats.stdMb)} MB")
+    val memory = analyzeMemory(path)
+
+    fun report(
+        name: String,
+        stats: MemoryStats?,
+    ) {
+        if (stats == null) {
+            println("$name: no samples in $path")
+            return
+        }
+        println("$name from $path (${stats.sampleCount} samples):")
+        println("  Avg:  ${"%.2f".format(stats.avgMb)} MB")
+        println("  Peak: ${"%.2f".format(stats.peakMb)} MB")
+        println("  Std:  ${"%.2f".format(stats.stdMb)} MB")
+    }
+
+    report("Heap live-set (after GC)", memory.heap)
+    report("Process RSS", memory.rss)
 }

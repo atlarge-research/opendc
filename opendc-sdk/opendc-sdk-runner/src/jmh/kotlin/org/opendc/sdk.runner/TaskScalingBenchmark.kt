@@ -24,9 +24,13 @@
 
 package org.opendc.sdk.runner
 
-import org.opendc.sdk.runner.harness.createBenchmarkTask
+import org.opendc.common.units.DataSize
+import org.opendc.common.units.Frequency
+import org.opendc.common.units.TimeDelta
+import org.opendc.compute.topology.specs.ClusterSpec
+import org.opendc.sdk.model.workload.TaskFragmentSpec
+import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.runner.harness.createTopology
-import org.opendc.sdk.runner.harness.fragment
 import org.opendc.sdk.runner.harness.runBenchmark
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
@@ -37,6 +41,8 @@ import org.openjdk.jmh.annotations.OutputTimeUnit
 import org.openjdk.jmh.annotations.Scope
 import org.openjdk.jmh.annotations.State
 import org.openjdk.jmh.annotations.Warmup
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 
 @State(Scope.Thread)
@@ -45,18 +51,44 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 5, batchSize = 1)
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-open class CIBenchmark : OpenDCBenchmark() {
+open class TaskScalingBenchmark : OpenDCBenchmark() {
+
+    fun generateWorkload(numTasks: Int) : List<TaskSpec> {
+        val submissionTime = "2022-01-01T00:00:00"
+        val submitMs = LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli()
+        val taskDuration = 10 * 60 * 1000
+        val cpuUsage = 1000
+        val gpuUsage = 0.0
+
+        val workload = mutableListOf<TaskSpec>()
+        for (i in 0 until numTasks) {
+            workload.add(TaskSpec(
+                id = i,
+                name = "$i",
+                submissionTime = TimeDelta.ofMillis(submitMs),
+                duration = TimeDelta.ofMillis(taskDuration),
+                cpuCoreCount = 1,
+                cpuCapacity = Frequency.ofMHz(1000),
+                memory = DataSize.ofMiB(10000.0),
+                fragments = listOf(TaskFragmentSpec(
+                    TimeDelta.ofMillis(taskDuration),
+                    Frequency.ofMHz(cpuUsage),
+                    Frequency.ofMHz(gpuUsage)
+                )),
+            ))
+        }
+
+        return workload
+    }
+
+    fun generateTopology(numHosts: Int): List<ClusterSpec> {
+
+    }
+
 
     @Benchmark
     fun testBenchmark() {
-        val workload =
-            listOf(
-                createBenchmarkTask(
-                    id = 0,
-                    fragments = listOf(fragment(10 * 60 * 1000, 1000.0)),
-                    submissionTime = "2022-01-01T00:00",
-                ),
-            )
+        val workload = generateWorkload(5000)
 
         println("Creating Topology")
         val topology = createTopology("batteries/experiment1.json")

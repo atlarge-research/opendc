@@ -58,14 +58,21 @@ internal val defaultPolicy: AllocationPolicySpec =
         weighers = listOf(CoreRamWeigherSpec(1.0)),
     )
 
-/** The test-resources root, used to resolve trace references against the classpath. */
-internal val testResourcesRoot: Path by lazy { Path.of(object {}.javaClass.getResource("/topologies")!!.toURI()).parent }
+/**
+ * The benchmark-resources root, used to resolve trace references against the filesystem.
+ *
+ * JMH forks benchmark runs from the shadow jar built by [jmhJar](../../../../../../../build.gradle.kts),
+ * so resolving `/topologies` via the classloader yields a `jar:` URI that [Path.of] cannot open. The
+ * `jmh` Gradle task always runs with the module directory as its working directory, so resolve
+ * against the known on-disk resources directory instead.
+ */
+internal val testResourcesRoot: Path by lazy { Path.of("src/jmh/resources") }
 
 private val provisioner = FileSystemResourceProvisioner(testResourcesRoot)
 
 /** Loads an SDK-model [TopologySpec] from `/topologies/<name>` on the test classpath. */
 internal fun createTopology(name: String): TopologySpec {
-    val text = checkNotNull(object {}.javaClass.getResourceAsStream("topologies/$name")).use { it.readBytes().decodeToString() }
+    val text = checkNotNull(object {}.javaClass.getResourceAsStream("/topologies/$name")).use { it.readBytes().decodeToString() }
     return SdkJson.json.decodeFromString(text)
 }
 
