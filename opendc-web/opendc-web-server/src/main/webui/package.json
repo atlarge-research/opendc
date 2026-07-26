@@ -23,7 +23,7 @@
         "@patternfly/react-core": "^4.276.6",
         "@patternfly/react-icons": "^4.93.6",
         "@patternfly/react-table": "^4.112.39",
-        "@sentry/react": "^7.45.0",
+        "@sentry/react": "^10.68.0",
         "@sentry/tracing": "^7.45.0",
         "clsx": "^1.2.1",
         "immer": "^9.0.21",
