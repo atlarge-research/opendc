@@ -69,7 +69,6 @@ class SimHostTelemetryTest {
             )
 
         val task = mockk<ServiceTask>(relaxed = true)
-        io.mockk.every { task.name } returns "T01"
 
         // This should not throw even if the task is not on the host
         assertDoesNotThrow {

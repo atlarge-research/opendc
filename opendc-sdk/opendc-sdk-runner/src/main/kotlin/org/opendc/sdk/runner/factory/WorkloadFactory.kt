@@ -91,7 +91,6 @@ private fun TaskSpec.toServiceTask(
         )
     return ServiceTask(
         id,
-        name,
         submissionTime.toMsLong(),
         duration.toMsLong(),
         cpuCoreCount,
@@ -104,8 +103,8 @@ private fun TaskSpec.toServiceTask(
         workload,
         deferrable,
         deadline?.toMsLong() ?: -1L,
-        ArrayList(parents),
-        children,
+        if (parents.isEmpty()) null else parents.toIntArray(),
+        if (children.isEmpty()) null else children.toIntArray(),
     )
 }
 

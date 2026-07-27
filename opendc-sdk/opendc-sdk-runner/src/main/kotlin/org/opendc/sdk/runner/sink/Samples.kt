@@ -68,7 +68,6 @@ public data class TaskSample(
     public val timestamp: Long,
     public val timestampAbsolute: Long,
     public val taskId: Int,
-    public val taskName: String?,
     public val hostName: String?,
     public val state: String?,
     public val cpuLimit: Double,

@@ -23,9 +23,9 @@
 package org.opendc.compute.simulator.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.opendc.compute.api.TaskState;
 import org.opendc.compute.simulator.TaskWatcher;
@@ -43,37 +43,50 @@ public class ServiceTask {
 
     private ComputeService service;
     private final int id;
-    private final ArrayList<Integer> parents;
-    private final Set<Integer> children;
 
-    private final String name;
+    /**
+     * Ids of the parent tasks that must complete before this task may start.
+     * {@code null} means no (remaining) parents. Stored as a primitive array (instead of a
+     * boxed {@code List<Integer>}) to avoid per-element boxing and collection overhead, since
+     * a large fraction of tasks in a workload have no dependencies at all.
+     */
+    private int[] parents;
+
+    /**
+     * Ids of the child tasks that depend on this task. {@code null} means no children.
+     * Never mutated after construction, so unlike {@link #parents} this can stay {@code final}.
+     */
+    private final int[] children;
+
     private final boolean deferrable;
 
     private final long duration;
     private long deadline;
     public Workload workload;
 
-    private final int cpuCoreCount;
+    private final short cpuCoreCount;
     private final double cpuCapacity;
     private final double totalCPULoad;
     private final long memorySize;
 
-    private final int gpuCoreCount;
+    private final short gpuCoreCount;
     private final double gpuCapacity;
     private final long gpuMemorySize;
 
     private final List<TaskWatcher> watchers = new ArrayList<>(1);
-    private int stateOrdinal = TaskState.CREATED.ordinal();
+    private byte stateOrdinal = (byte) TaskState.CREATED.ordinal();
     private long submittedAt;
     private long scheduledAt;
     private long finishedAt;
     private SimHost host = null;
     private String hostName = null;
+    // TODO: This is currently needed because host gets deleted before the final exporting. When exporting has been updated, remove hostName.
+
 
     private SchedulingRequest request = null;
 
-    private int numFailures = 0;
-    private int numPauses = 0;
+    private short numFailures = 0;
+    private short numPauses = 0;
 
     private long schedulingDelay = 0;
 
@@ -93,16 +106,12 @@ public class ServiceTask {
         return id;
     }
 
-    public ArrayList<Integer> getParents() {
+    public int[] getParents() {
         return parents;
     }
 
-    public Set<Integer> getChildren() {
+    public int[] getChildren() {
         return children;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public boolean getDeferrable() {
@@ -184,7 +193,7 @@ public class ServiceTask {
             this.finishedAt = this.service.getClock().millis();
         }
 
-        this.stateOrdinal = newState.ordinal();
+        this.stateOrdinal = (byte) newState.ordinal();
     }
 
     public int getStateOrdinal() {
@@ -192,7 +201,7 @@ public class ServiceTask {
     }
 
     public void setStateOrdinal(int stateOrdinal) {
-        this.stateOrdinal = stateOrdinal;
+        this.stateOrdinal = (byte) stateOrdinal;
     }
 
     public long getSubmittedAt() {
@@ -251,7 +260,7 @@ public class ServiceTask {
     }
 
     public void setNumFailures(int numFailures) {
-        this.numFailures = numFailures;
+        this.numFailures = (short) numFailures;
     }
 
     public int getNumPauses() {
@@ -259,7 +268,7 @@ public class ServiceTask {
     }
 
     public void setNumPauses(int numPauses) {
-        this.numPauses = numPauses;
+        this.numPauses = (short) numPauses;
     }
 
     /// //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -268,7 +277,6 @@ public class ServiceTask {
 
     public ServiceTask(
             int id,
-            String name,
             long submissionTime,
             long duration,
             int cpuCoreCount,
@@ -281,34 +289,32 @@ public class ServiceTask {
             Workload workload,
             boolean deferrable,
             long deadline,
-            ArrayList<Integer> parents,
-            Set<Integer> children) {
+            int[] parents,
+            int[] children) {
         this.id = id;
-        this.name = name;
         this.submittedAt = submissionTime;
         this.duration = duration;
         this.workload = workload;
 
-        this.cpuCoreCount = cpuCoreCount;
+        this.cpuCoreCount = (short) cpuCoreCount;
         this.cpuCapacity = cpuCapacity;
         this.totalCPULoad = totalCPULoad;
         this.memorySize = memorySize;
 
-        this.gpuCoreCount = gpuCoreCount;
+        this.gpuCoreCount = (short) gpuCoreCount;
         this.gpuCapacity = gpuCapacity;
         this.gpuMemorySize = gpuMemorySize;
 
         this.deferrable = deferrable;
         this.deadline = deadline;
 
-        this.parents = parents;
-        this.children = children;
+        this.parents = (parents == null || parents.length == 0) ? null : parents;
+        this.children = (children == null || children.length == 0) ? null : children;
     }
 
     public ServiceTask copy() {
         return new ServiceTask(
                 this.id,
-                this.name,
                 this.submittedAt,
                 this.duration,
                 this.cpuCoreCount,
@@ -321,8 +327,8 @@ public class ServiceTask {
                 this.workload,
                 this.deferrable,
                 this.deadline,
-                this.parents == null ? null : new ArrayList<>(this.parents),
-                this.children == null ? null : Set.copyOf(this.children));
+                this.parents == null ? null : Arrays.copyOf(this.parents, this.parents.length),
+                this.children == null ? null : Arrays.copyOf(this.children, this.children.length));
     }
 
     public void start() {
@@ -388,7 +394,7 @@ public class ServiceTask {
     }
 
     public String toString() {
-        return "Task[uid=" + this.id + ",name=" + this.name + ",state=" + this.getState() + "]";
+        return "Task[uid=" + this.id + ",state=" + this.getState() + "]";
     }
 
     /**
@@ -413,27 +419,40 @@ public class ServiceTask {
     }
 
     public void removeFromParents(int completedTask) {
-        if (this.parents == null) {
+        int[] current = this.parents;
+        if (current == null) {
             return;
         }
 
-        this.parents.remove(Integer.valueOf(completedTask));
+        int idx = -1;
+        for (int i = 0; i < current.length; i++) {
+            if (current[i] == completedTask) {
+                idx = i;
+                break;
+            }
+        }
+
+        if (idx == -1) {
+            return;
+        }
+
+        if (current.length == 1) {
+            this.parents = null;
+            return;
+        }
+
+        int[] updated = new int[current.length - 1];
+        System.arraycopy(current, 0, updated, 0, idx);
+        System.arraycopy(current, idx + 1, updated, idx, current.length - idx - 1);
+        this.parents = updated;
     }
 
     public boolean hasChildren() {
-        if (children == null) {
-            return false;
-        }
-
-        return !children.isEmpty();
+        return children != null && children.length > 0;
     }
 
     public boolean hasParents() {
-        if (parents == null) {
-            return false;
-        }
-
-        return !parents.isEmpty();
+        return parents != null && parents.length > 0;
     }
 
     public long getSchedulingDelay() {

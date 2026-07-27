@@ -66,7 +66,6 @@ fun createTopology(name: String): List<ClusterSpec> {
 
 fun createTestTask(
     id: Int,
-    name: String = "",
     memCapacity: Long = 0L,
     submissionTime: String = "1970-01-01T00:00",
     duration: Long = 0L,
@@ -77,8 +76,8 @@ fun createTestTask(
     checkpointDuration: Long = 0L,
     checkpointIntervalScaling: Double = 1.0,
     scalingPolicy: ScalingPolicy = NoDelayScaling(),
-    parents: ArrayList<Int> = ArrayList<Int>(),
-    children: Set<Int> = emptySet(),
+    parents: IntArray = IntArray(0),
+    children: IntArray = IntArray(0),
 ): ServiceTask {
     var usedResources = arrayOf<ResourceType>()
     if (fragments.any { it.cpuUsage > 0.0 }) {
@@ -90,7 +89,6 @@ fun createTestTask(
 
     return ServiceTask(
         id,
-        name,
         LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli(),
         duration,
         cpuCoreCount,

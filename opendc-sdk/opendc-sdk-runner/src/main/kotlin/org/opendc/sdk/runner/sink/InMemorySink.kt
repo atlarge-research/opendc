@@ -113,7 +113,6 @@ private fun TaskTableReader.toSample(): TaskSample =
         timestamp.toEpochMilli(),
         timestampAbsolute.toEpochMilli(),
         taskInfo.id,
-        taskInfo.name,
         hostName,
         taskState?.toString(),
         cpuLimit,

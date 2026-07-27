@@ -94,7 +94,6 @@ public class TaskTableReaderImpl(
     override val taskInfo: TaskInfo =
         TaskInfo(
             task.id,
-            task.name,
             "vm",
             "x86",
             task.cpuCoreCount,
