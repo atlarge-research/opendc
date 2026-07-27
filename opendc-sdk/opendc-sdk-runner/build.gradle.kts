@@ -77,6 +77,16 @@ tasks.named("jmh") {
     }
 }
 
+tasks.test {
+    maxHeapSize = "10g"
+    jvmArgs(
+        "-Xlog:gc*:file=build/gc.log:time,uptime,level,tags:filecount=5,filesize=50m",
+        // optional but useful alongside gc logging:
+        "-XX:+HeapDumpOnOutOfMemoryError",
+        "-XX:HeapDumpPath=build/heapdump.hprof",
+    )
+}
+
 dependencies {
     api(project(":opendc-sdk:opendc-sdk-model"))
     api(project(":opendc-compute:opendc-compute-simulator"))

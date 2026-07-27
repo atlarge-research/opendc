@@ -134,6 +134,7 @@ private class ScenarioRun(
         startTime: Long,
         taskCount: Int,
     ): List<SinkSession> {
+        return listOf()
         val export = scenario.exportModel.toExportSettings(gpuCount)
         val context = RunContext(scenario, experimentName, scenarioId, seed, gpuCount, taskCount, export)
         val sessions = sinks.map { it.open(context) }

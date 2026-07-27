@@ -27,6 +27,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.generators.generateTopology
+import org.opendc.sdk.model.generators.generateWorkload
 import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
 import org.opendc.sdk.runner.base.harness.fragment
@@ -37,6 +39,17 @@ import org.opendc.sdk.runner.base.harness.runTest
  * driving the SDK runner and asserting the identical values.
  */
 class ScenarioRunnerTest {
+
+    @Test
+    fun newTest(){
+        val workload = generateWorkload(100_000)
+
+        val topology = generateTopology(100)
+        val monitor = runTest(topology, workload)
+
+        println(monitor)
+    }
+
     @Test
     fun testScenario1() {
         val workload = listOf(createTestTask(id = 0, fragments = listOf(fragment(10 * 60 * 1000, 1000.0)), cpuCoreCount = 1))
