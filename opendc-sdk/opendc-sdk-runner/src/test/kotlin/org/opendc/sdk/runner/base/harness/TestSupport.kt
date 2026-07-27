@@ -134,7 +134,7 @@ internal fun runTest(
             topology = topology,
             workload = InlineWorkloadSpec(workload, scalingPolicy),
             allocationPolicy = allocationPolicy,
-            exportModel = ExportSpec(exportInterval = TimeDelta.ofMin(1), printFrequency = null),
+            exportModel = ExportSpec(exportInterval = TimeDelta.ofHours(10), printFrequency = null),
             failureModel = failureModel,
             checkpointModel = checkpointModel,
         )

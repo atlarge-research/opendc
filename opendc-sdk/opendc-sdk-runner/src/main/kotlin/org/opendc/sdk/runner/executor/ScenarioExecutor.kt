@@ -97,6 +97,10 @@ private class ScenarioRun(
 
     suspend fun execute(): RunResult {
         val workload = scenario.workload.toServiceTasks(scenario.checkpointModel, resources::resolve)
+
+//        println("Loaded Service Tasks")
+//        Thread.sleep(10000)
+
         val startTime = workload.minOf { it.submittedAt }
         val clusters = scenario.topology.toClusterSpecs(resources::resolve)
 
@@ -134,7 +138,7 @@ private class ScenarioRun(
         startTime: Long,
         taskCount: Int,
     ): List<SinkSession> {
-        return listOf()
+//        return listOf()
         val export = scenario.exportModel.toExportSettings(gpuCount)
         val context = RunContext(scenario, experimentName, scenarioId, seed, gpuCount, taskCount, export)
         val sessions = sinks.map { it.open(context) }

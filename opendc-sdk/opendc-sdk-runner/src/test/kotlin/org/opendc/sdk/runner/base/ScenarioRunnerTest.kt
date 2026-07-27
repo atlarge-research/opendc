@@ -42,9 +42,9 @@ class ScenarioRunnerTest {
 
     @Test
     fun newTest(){
-        val workload = generateWorkload(100_000)
+        val workload = generateWorkload(1_000)
 
-        val topology = generateTopology(100)
+        val topology = generateTopology(10)
         val monitor = runTest(topology, workload)
 
         println(monitor)

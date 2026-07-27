@@ -78,6 +78,8 @@ internal suspend fun ComputeService.replay(
                     watcher.await()
                 }
             }
+            println("Submitted All Tasks")
+            Thread.sleep(10000)
         }
         yield()
     } finally {
@@ -103,6 +105,9 @@ internal class RunningTaskWatcher : TaskWatcher {
         task: ServiceTask,
         newState: TaskState,
     ) {
-        if (unlockStates.contains(newState)) mutex.unlock()
+        if (unlockStates.contains(newState))
+        {
+            mutex.unlock()
+        }
     }
 }

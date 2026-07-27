@@ -24,9 +24,9 @@ public fun generateWorkload(numTasks: Int) : List<TaskSpec> {
             TaskSpec(
                 id = i,
                 name = "$i",
-                submissionTime = TimeDelta.ofMillis(submitMs),
+                submissionTime = TimeDelta.ofMillis(submitMs) + (TimeDelta.ofHours(1)*i),
                 duration = taskDuration,
-                cpuCoreCount = 1,
+                cpuCoreCount = 16,
                 cpuCapacity = Frequency.ofMHz(1000),
                 memory = DataSize.ofMiB(10000.0),
                 fragments = fragments,
