@@ -78,8 +78,6 @@ internal suspend fun ComputeService.replay(
                     watcher.await()
                 }
             }
-            println("Submitted All Tasks")
-            Thread.sleep(10000)
         }
         yield()
     } finally {

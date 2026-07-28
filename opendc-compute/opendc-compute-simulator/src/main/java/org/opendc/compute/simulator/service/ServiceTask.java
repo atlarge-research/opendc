@@ -372,11 +372,11 @@ public class ServiceTask {
 
         this.workload = null;
 
+        this.setState(TaskState.DELETED);
+
         if (this.watcher != null) {
             this.unwatch(this.watcher);
         }
-
-        this.setState(TaskState.DELETED);
     }
 
     public boolean equals(Object o) {

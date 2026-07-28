@@ -40,17 +40,6 @@ import org.opendc.sdk.runner.base.harness.runTest
  * driving the SDK runner and asserting the identical values.
  */
 class ScenarioRunnerTest {
-
-    @Test
-    fun newTest(){
-        val workload = generateWorkload(1_000_000)
-
-        val topology = generateTopology(1000)
-        val monitor = runTest(topology, workload, exportInterval = TimeDelta.ofHours(10))
-
-        println(monitor)
-    }
-
     @Test
     fun testScenario1() {
         val workload = listOf(createTestTask(id = 0, fragments = listOf(fragment(10 * 60 * 1000, 1000.0)), cpuCoreCount = 1))
