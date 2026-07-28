@@ -93,17 +93,17 @@ private fun TaskSpec.toServiceTask(
         id,
         submissionTime.toMsLong(),
         duration.toMsLong(),
-        cpuCoreCount,
+        cpuCoreCount.toInt(),
         cpuCapacity.toMHz(),
         memory.toMiB().toLong(),
-        gpuCoreCount,
+        gpuCoreCount.toInt(),
         gpuCapacity.toMHz(),
         gpuMemory.toMiB().toLong(),
         workload,
         deferrable,
-        deadline?.toMsLong() ?: -1L,
-        if (parents.isEmpty()) null else parents.toIntArray(),
-        if (children.isEmpty()) null else children.toIntArray(),
+        deadline.toMsLong(),
+        if (parents.isEmpty()) null else parents,
+        if (children.isEmpty()) null else children,
     )
 }
 

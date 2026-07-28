@@ -108,7 +108,7 @@ class DslTest {
                 }
                 task(
                     id = 1, submissionTime = 2.minutes, duration = 20.minutes, cpuCoreCount = 8,
-                    cpuCapacity = 3.ghz, memory = 16.gib, deferrable = true, deadline = 60.minutes, parents = setOf(0),
+                    cpuCapacity = 3.ghz, memory = 16.gib, deferrable = true, deadline = 60.minutes, parents = intArrayOf(0),
                 ) {
                     fragment(duration = 20.minutes, cpuUsage = 3.ghz)
                 }

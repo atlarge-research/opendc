@@ -99,17 +99,16 @@ internal fun createTestTask(
         id = id,
         submissionTime = TimeDelta.ofMillis(submitMs),
         duration = TimeDelta.ofMillis(duration),
-        cpuCoreCount = cpuCoreCount,
+        cpuCoreCount = cpuCoreCount.toShort(),
         cpuCapacity = Frequency.ofMHz(fragments.maxOf { it.cpuUsage.toMHz() }),
         memory = DataSize.ofMiB(memCapacity),
         fragments = fragments,
-        gpuCoreCount = gpuCoreCount,
+        gpuCoreCount = gpuCoreCount.toShort(),
         gpuCapacity = Frequency.ofMHz(fragments.maxOfOrNull { it.gpuUsage.toMHz() } ?: 0.0),
         gpuMemory = DataSize.ofBytes(0),
         deferrable = false,
-        deadline = null,
-        parents = parents,
-        children = children,
+        parents = parents.toIntArray(),
+        children = children.toIntArray(),
     )
 }
 

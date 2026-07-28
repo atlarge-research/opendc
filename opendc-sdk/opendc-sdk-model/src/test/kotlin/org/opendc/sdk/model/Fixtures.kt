@@ -138,7 +138,7 @@ public val sampleLeafTask: TaskSpec =
         fragments = listOf(TaskFragmentSpec(duration = 20.minutes, cpuUsage = 3.ghz)),
         deferrable = true,
         deadline = 60.minutes,
-        parents = setOf(0),
+        parents = intArrayOf(0),
     )
 
 public val sampleWorkload: InlineWorkloadSpec = InlineWorkloadSpec(listOf(sampleRootTask, sampleLeafTask), ScalingPolicySpec.Perfect)
