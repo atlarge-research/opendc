@@ -97,7 +97,6 @@ class DslTest {
                 scalingPolicy = ScalingPolicySpec.Perfect
                 task(
                     id = 0,
-                    name = "t0",
                     submissionTime = 0.minutes,
                     duration = 10.minutes,
                     cpuCoreCount = 4,
@@ -108,7 +107,7 @@ class DslTest {
                     fragment(duration = 5.minutes, cpuUsage = 1.ghz, gpuUsage = 1.ghz, gpuMemory = 2.gib)
                 }
                 task(
-                    id = 1, name = "t1", submissionTime = 2.minutes, duration = 20.minutes, cpuCoreCount = 8,
+                    id = 1, submissionTime = 2.minutes, duration = 20.minutes, cpuCoreCount = 8,
                     cpuCapacity = 3.ghz, memory = 16.gib, deferrable = true, deadline = 60.minutes, parents = setOf(0),
                 ) {
                     fragment(duration = 20.minutes, cpuUsage = 3.ghz)

@@ -179,7 +179,6 @@ public class ComputeWorkloadLoader(
                 }
 
                 val builder = fragments.getValue(id) // Get all fragments related to this VM
-                val totalLoad = builder.totalLoad
 
                 entries.add(
                     ServiceTask(
@@ -188,7 +187,6 @@ public class ComputeWorkloadLoader(
                         duration,
                         cpuCoreCount,
                         cpuCapacity,
-                        totalLoad,
                         memUsage.roundToLong(),
                         gpuCoreCount,
                         gpuCapacity,
@@ -243,11 +241,6 @@ public class ComputeWorkloadLoader(
         taskId: Int,
     ) {
         /**
-         * The total load of the trace.
-         */
-        @JvmField var totalLoad: Double = 0.0
-
-        /**
          * The internal builder for the trace.
          */
         private val builder =
@@ -273,8 +266,6 @@ public class ComputeWorkloadLoader(
             gpuUsage: Double = 0.0,
             gpuMemoryUsage: Int = 0,
         ) {
-            totalLoad += ((cpuUsage * duration.toMillis()) + (gpuUsage * duration.toMillis())) / 1000 // avg MHz * duration = MFLOPs
-
             builder.add(duration.toMillis(), cpuUsage, gpuUsage, gpuMemoryUsage)
         }
 

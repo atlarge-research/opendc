@@ -25,6 +25,7 @@ package org.opendc.sdk.runner.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.SchedulerNameSpec
 import org.opendc.sdk.model.generators.generateTopology
@@ -42,10 +43,10 @@ class ScenarioRunnerTest {
 
     @Test
     fun newTest(){
-        val workload = generateWorkload(1_000)
+        val workload = generateWorkload(1_000_000)
 
-        val topology = generateTopology(10)
-        val monitor = runTest(topology, workload)
+        val topology = generateTopology(1000)
+        val monitor = runTest(topology, workload, exportInterval = TimeDelta.ofHours(10))
 
         println(monitor)
     }

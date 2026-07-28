@@ -85,7 +85,6 @@ internal fun fragment(
  */
 internal fun createTestTask(
     id: Int,
-    name: String = "",
     memCapacity: Long = 0L,
     submissionTime: String = "1970-01-01T00:00",
     duration: Long = 0L,
@@ -98,7 +97,6 @@ internal fun createTestTask(
     val submitMs = LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli()
     return TaskSpec(
         id = id,
-        name = name,
         submissionTime = TimeDelta.ofMillis(submitMs),
         duration = TimeDelta.ofMillis(duration),
         cpuCoreCount = cpuCoreCount,
@@ -127,6 +125,7 @@ internal fun runTest(
     allocationPolicy: AllocationPolicySpec = defaultPolicy,
     checkpointModel: CheckpointSpec? = null,
     scalingPolicy: ScalingPolicySpec = ScalingPolicySpec.NoDelay,
+    exportInterval: TimeDelta = TimeDelta.ofMin(1)
 ): TestComputeMonitor {
     val monitor = TestComputeMonitor()
     val scenario =
@@ -134,7 +133,7 @@ internal fun runTest(
             topology = topology,
             workload = InlineWorkloadSpec(workload, scalingPolicy),
             allocationPolicy = allocationPolicy,
-            exportModel = ExportSpec(exportInterval = TimeDelta.ofHours(10), printFrequency = null),
+            exportModel = ExportSpec(exportInterval = exportInterval, printFrequency = null),
             failureModel = failureModel,
             checkpointModel = checkpointModel,
         )

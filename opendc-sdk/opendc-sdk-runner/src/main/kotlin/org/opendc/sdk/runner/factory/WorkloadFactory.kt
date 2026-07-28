@@ -95,7 +95,6 @@ private fun TaskSpec.toServiceTask(
         duration.toMsLong(),
         cpuCoreCount,
         cpuCapacity.toMHz(),
-        totalLoad(),
         memory.toMiB().toLong(),
         gpuCoreCount,
         gpuCapacity.toMHz(),
@@ -107,8 +106,6 @@ private fun TaskSpec.toServiceTask(
         if (children.isEmpty()) null else children.toIntArray(),
     )
 }
-
-private fun TaskSpec.totalLoad(): Double = fragments.sumOf { it.cpuUsage.toMHz() * it.duration.toHours() }
 
 private fun ScalingPolicySpec.toEngine(): EngineScalingPolicy =
     when (this) {

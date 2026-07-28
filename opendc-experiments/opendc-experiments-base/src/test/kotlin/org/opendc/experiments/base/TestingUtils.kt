@@ -93,7 +93,6 @@ fun createTestTask(
         duration,
         cpuCoreCount,
         fragments.maxOf { it.cpuUsage },
-        1800000.0,
         memCapacity,
         gpuCoreCount,
         fragments.maxOfOrNull { it.gpuUsage } ?: 0.0,

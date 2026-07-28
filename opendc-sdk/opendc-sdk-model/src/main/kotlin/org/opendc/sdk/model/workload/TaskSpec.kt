@@ -51,7 +51,6 @@ import org.opendc.sdk.model.validation.ValidationIssue
 @Serializable
 public data class TaskSpec(
     public val id: Int,
-    public val name: String = "",
     public val submissionTime: TimeDelta,
     public val duration: TimeDelta,
     public val cpuCoreCount: Int,

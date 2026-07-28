@@ -23,7 +23,6 @@ public fun generateWorkload(numTasks: Int) : List<TaskSpec> {
         workload.add(
             TaskSpec(
                 id = i,
-                name = "$i",
                 submissionTime = TimeDelta.ofMillis(submitMs) + (TimeDelta.ofHours(1)*i),
                 duration = taskDuration,
                 cpuCoreCount = 16,

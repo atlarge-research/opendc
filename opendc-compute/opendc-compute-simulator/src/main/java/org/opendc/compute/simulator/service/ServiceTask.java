@@ -22,10 +22,8 @@
 
 package org.opendc.compute.simulator.service;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 import org.opendc.compute.api.TaskState;
 import org.opendc.compute.simulator.TaskWatcher;
@@ -66,22 +64,26 @@ public class ServiceTask {
 
     private final short cpuCoreCount;
     private final double cpuCapacity;
-    private final double totalCPULoad;
-    private final long memorySize;
+    private final int memorySize;
 
     private final short gpuCoreCount;
     private final double gpuCapacity;
-    private final long gpuMemorySize;
+    private final int gpuMemorySize;
 
-    private final List<TaskWatcher> watchers = new ArrayList<>(1);
+    /**
+     * A task only ever has a single watcher in practice, so this is stored directly instead of
+     * in a {@code List}, avoiding an extra {@code ArrayList} + backing array allocation per task.
+     */
+    private TaskWatcher watcher = null;
+
     private byte stateOrdinal = (byte) TaskState.CREATED.ordinal();
     private long submittedAt;
     private long scheduledAt;
     private long finishedAt;
     private SimHost host = null;
     private String hostName = null;
-    // TODO: This is currently needed because host gets deleted before the final exporting. When exporting has been updated, remove hostName.
-
+    // TODO: This is currently needed because host gets deleted before the final exporting. When exporting has been
+    // updated, remove hostName.
 
     private SchedulingRequest request = null;
 
@@ -146,10 +148,6 @@ public class ServiceTask {
         return cpuCapacity;
     }
 
-    public double getTotalCPULoad() {
-        return totalCPULoad;
-    }
-
     public long getMemorySize() {
         return memorySize;
     }
@@ -166,10 +164,6 @@ public class ServiceTask {
         return gpuMemorySize;
     }
 
-    public List<TaskWatcher> getWatchers() {
-        return watchers;
-    }
-
     @NotNull
     public TaskState getState() {
         return TaskState.getEntries().get(stateOrdinal);
@@ -180,7 +174,7 @@ public class ServiceTask {
             return;
         }
 
-        for (TaskWatcher watcher : watchers) {
+        if (watcher != null) {
             watcher.onStateChanged(this, newState);
         }
         if (newState == TaskState.FAILED) {
@@ -281,7 +275,6 @@ public class ServiceTask {
             long duration,
             int cpuCoreCount,
             double cpuCapacity,
-            double totalCPULoad,
             long memorySize,
             int gpuCoreCount,
             double gpuCapacity,
@@ -298,12 +291,11 @@ public class ServiceTask {
 
         this.cpuCoreCount = (short) cpuCoreCount;
         this.cpuCapacity = cpuCapacity;
-        this.totalCPULoad = totalCPULoad;
-        this.memorySize = memorySize;
+        this.memorySize = (int) memorySize;
 
         this.gpuCoreCount = (short) gpuCoreCount;
         this.gpuCapacity = gpuCapacity;
-        this.gpuMemorySize = gpuMemorySize;
+        this.gpuMemorySize = (int) gpuMemorySize;
 
         this.deferrable = deferrable;
         this.deadline = deadline;
@@ -319,7 +311,6 @@ public class ServiceTask {
                 this.duration,
                 this.cpuCoreCount,
                 this.cpuCapacity,
-                this.totalCPULoad,
                 this.memorySize,
                 this.gpuCoreCount,
                 this.gpuCapacity,
@@ -362,11 +353,13 @@ public class ServiceTask {
     }
 
     public void watch(@NotNull TaskWatcher watcher) {
-        watchers.add(watcher);
+        this.watcher = watcher;
     }
 
     public void unwatch(@NotNull TaskWatcher watcher) {
-        watchers.remove(watcher);
+        if (this.watcher == watcher) {
+            this.watcher = null;
+        }
     }
 
     public void delete() {
@@ -379,6 +372,10 @@ public class ServiceTask {
 
         this.workload = null;
 
+        if (this.watcher != null) {
+            this.unwatch(this.watcher);
+        }
+
         this.setState(TaskState.DELETED);
     }
 
@@ -390,7 +387,10 @@ public class ServiceTask {
     }
 
     public int hashCode() {
-        return Objects.hash(service, id);
+        // Deliberately not Objects.hash(service, id): that allocates a varargs array and boxes the id
+        // on every call, and tasks are used as HashMap keys on hot lookup paths. Ids are unique within
+        // a service, so they alone satisfy the equals/hashCode contract.
+        return id;
     }
 
     public String toString() {

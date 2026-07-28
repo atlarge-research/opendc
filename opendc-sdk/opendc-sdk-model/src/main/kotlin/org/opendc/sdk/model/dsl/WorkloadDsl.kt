@@ -62,7 +62,6 @@ public class InlineWorkloadBuilder {
 
     public fun task(
         id: Int,
-        name: String,
         submissionTime: TimeDelta,
         duration: TimeDelta,
         cpuCoreCount: Int,
@@ -80,7 +79,7 @@ public class InlineWorkloadBuilder {
         val fragments = TaskBuilder().apply(block).build()
         tasks +=
             TaskSpec(
-                id, name, submissionTime, duration, cpuCoreCount, cpuCapacity, memory, fragments,
+                id, submissionTime, duration, cpuCoreCount, cpuCapacity, memory, fragments,
                 gpuCoreCount, gpuCapacity, gpuMemory, deferrable, deadline, parents, children,
             )
     }
