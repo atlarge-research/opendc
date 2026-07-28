@@ -20,141 +20,20 @@
  * SOFTWARE.
  */
 
-@file:Suppress("DEPRECATION")
+package org.opendc.sdk.runner.harness
 
-package org.opendc.experiments.base
-
-import org.opendc.common.ResourceType
-import org.opendc.compute.simulator.provisioner.Provisioner
-import org.opendc.compute.simulator.provisioner.registerComputeMonitor
-import org.opendc.compute.simulator.provisioner.setupComputeService
-import org.opendc.compute.simulator.provisioner.setupHosts
-import org.opendc.compute.simulator.scheduler.ComputeScheduler
-import org.opendc.compute.simulator.scheduler.FilterScheduler
-import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
-import org.opendc.compute.simulator.scheduler.filters.RamFilter
-import org.opendc.compute.simulator.scheduler.filters.VCpuFilter
-import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
-import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
 import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
 import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
-import org.opendc.compute.topology.clusterTopology
-import org.opendc.compute.topology.specs.ClusterSpec
-import org.opendc.experiments.base.experiment.specs.FailureModelSpec
-import org.opendc.experiments.base.runner.replay
-import org.opendc.simulator.compute.workload.trace.TraceFragment
-import org.opendc.simulator.compute.workload.trace.TraceWorkload
-import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
-import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy
-import org.opendc.simulator.kotlin.runSimulation
-import java.time.Duration
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import kotlin.collections.ArrayList
 
 /**
- * Obtain the topology factory for the test.
+ * A [ComputeMonitor] that captures per-record telemetry into in-memory series, ported verbatim from
+ * the legacy `opendc-experiments-base` test suite so the ported assertions read against identical
+ * fields and values.
  */
-fun createTopology(name: String): List<ClusterSpec> {
-    val stream = checkNotNull(object {}.javaClass.getResourceAsStream("/topologies/$name"))
-    return stream.use { clusterTopology(stream) }
-}
-
-fun createTestTask(
-    id: Int,
-    memCapacity: Long = 0L,
-    submissionTime: String = "1970-01-01T00:00",
-    duration: Long = 0L,
-    cpuCoreCount: Int = 1,
-    gpuCoreCount: Int = 0,
-    fragments: ArrayList<TraceFragment>,
-    checkpointInterval: Long = 0L,
-    checkpointDuration: Long = 0L,
-    checkpointIntervalScaling: Double = 1.0,
-    scalingPolicy: ScalingPolicy = NoDelayScaling(),
-    parents: IntArray = IntArray(0),
-    children: IntArray = IntArray(0),
-): ServiceTask {
-    var usedResources = arrayOf<ResourceType>()
-    if (fragments.any { it.cpuUsage > 0.0 }) {
-        usedResources += ResourceType.CPU
-    }
-    if (fragments.any { it.gpuUsage > 0.0 }) {
-        usedResources += ResourceType.GPU
-    }
-
-    return ServiceTask(
-        id,
-        LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli(),
-        duration,
-        cpuCoreCount,
-        fragments.maxOf { it.cpuUsage },
-        memCapacity,
-        gpuCoreCount,
-        fragments.maxOfOrNull { it.gpuUsage } ?: 0.0,
-        0L,
-        TraceWorkload(
-            fragments,
-            checkpointInterval,
-            checkpointDuration,
-            checkpointIntervalScaling,
-            scalingPolicy,
-            id,
-            usedResources,
-        ),
-        false,
-        -1,
-        parents,
-        children,
-    )
-}
-
-fun runTest(
-    topology: List<ClusterSpec>,
-    workload: ArrayList<ServiceTask>,
-    failureModelSpec: FailureModelSpec? = null,
-    computeScheduler: ComputeScheduler =
-        FilterScheduler(
-            filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
-            weighers = listOf(CoreRamWeigher(multiplier = 1.0)),
-        ),
-): TestComputeMonitor {
-    val monitor = TestComputeMonitor()
-
-    runSimulation {
-        val seed = 0L
-        Provisioner(dispatcher, seed).use { provisioner ->
-
-            val startTimeLong = workload.minOf { it.submittedAt }
-            val startTime = Duration.ofMillis(startTimeLong)
-
-            provisioner.runSteps(
-                setupComputeService(serviceDomain = "compute.opendc.org", { computeScheduler }),
-                registerComputeMonitor(serviceDomain = "compute.opendc.org", monitor, exportInterval = Duration.ofMinutes(1), startTime),
-                setupHosts(serviceDomain = "compute.opendc.org", topology, startTimeLong),
-            )
-
-            val service = provisioner.registry.resolve("compute.opendc.org", ComputeService::class.java)!!
-            service.setTasksExpected(workload.size)
-            service.addMetricReader(provisioner.getMonitors())
-
-            val workloadCopy = ArrayList<ServiceTask>()
-            for (task in workload) {
-                workloadCopy.add(task.copy())
-            }
-
-            service.replay(timeSource, ArrayDeque(workloadCopy), failureModelSpec = failureModelSpec)
-        }
-    }
-
-    return monitor
-}
-
-class TestComputeMonitor : ComputeMonitor {
+class BenchmarkComputeMonitor : ComputeMonitor {
     var taskCpuDemands = mutableMapOf<Int, ArrayList<Double>>()
     var taskCpuSupplied = mutableMapOf<Int, ArrayList<Double>>()
     var taskGpuDemands = mutableMapOf<Int, ArrayList<Double?>?>()
@@ -226,7 +105,7 @@ class TestComputeMonitor : ComputeMonitor {
     override fun record(reader: HostTableReader) {
         val hostName: String = reader.hostInfo.name
 
-        if (!(hostName in hostCpuDemands)) {
+        if (hostName !in hostCpuDemands) {
             hostCpuIdleTimes[hostName] = ArrayList()
             hostCpuActiveTimes[hostName] = ArrayList()
             hostCpuStealTimes[hostName] = ArrayList()

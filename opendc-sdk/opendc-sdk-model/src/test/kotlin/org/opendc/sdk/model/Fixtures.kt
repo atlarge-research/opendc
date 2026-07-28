@@ -69,7 +69,6 @@ public val validTopology: TopologySpec = TopologySpec(listOf(ClusterSpec(hosts =
 public val validTask: TaskSpec =
     TaskSpec(
         id = 0,
-        name = "task",
         submissionTime = 0.minutes,
         duration = 10.minutes,
         cpuCoreCount = 1,
@@ -116,7 +115,6 @@ public val sampleTopology: TopologySpec = TopologySpec(listOf(sampleCluster))
 public val sampleRootTask: TaskSpec =
     TaskSpec(
         id = 0,
-        name = "t0",
         submissionTime = 0.minutes,
         duration = 10.minutes,
         cpuCoreCount = 4,
@@ -132,7 +130,6 @@ public val sampleRootTask: TaskSpec =
 public val sampleLeafTask: TaskSpec =
     TaskSpec(
         id = 1,
-        name = "t1",
         submissionTime = 2.minutes,
         duration = 20.minutes,
         cpuCoreCount = 8,
@@ -141,7 +138,7 @@ public val sampleLeafTask: TaskSpec =
         fragments = listOf(TaskFragmentSpec(duration = 20.minutes, cpuUsage = 3.ghz)),
         deferrable = true,
         deadline = 60.minutes,
-        parents = setOf(0),
+        parents = intArrayOf(0),
     )
 
 public val sampleWorkload: InlineWorkloadSpec = InlineWorkloadSpec(listOf(sampleRootTask, sampleLeafTask), ScalingPolicySpec.Perfect)

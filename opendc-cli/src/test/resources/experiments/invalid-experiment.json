@@ -26,7 +26,6 @@
             "tasks": [
                 {
                     "id": 0,
-                    "name": "task-0",
                     "submissionTime": "0 minutes",
                     "duration": "5 minutes",
                     "cpuCoreCount": 1,

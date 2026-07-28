@@ -27,7 +27,6 @@ package org.opendc.compute.simulator.telemetry.table.task
  */
 public data class TaskInfo(
     val id: Int,
-    val name: String?,
     val type: String,
     val arch: String,
     val cpuCount: Int,

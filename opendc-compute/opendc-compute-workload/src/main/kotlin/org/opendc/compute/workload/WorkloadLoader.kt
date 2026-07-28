@@ -23,8 +23,10 @@
 package org.opendc.compute.workload
 import mu.KotlinLogging
 import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import kotlin.random.Random
 
 public abstract class WorkloadLoader(private val submissionTime: String? = null) {
     private val logger = KotlinLogging.logger {}
@@ -65,19 +67,39 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
 
         val res = mutableListOf<ServiceTask>()
 
-        val totalLoad = workload.sumOf { it.totalCPULoad }
-        val desiredLoad = totalLoad * fraction
+        val loads = DoubleArray(workload.size) { workload[it].totalCpuLoad() }
+
+        val desiredLoad = loads.sum() * fraction
         var currentLoad = 0.0
 
         while (currentLoad < desiredLoad) {
-            val entry = workload.random()
-            res += entry
+            val index = Random.nextInt(workload.size)
+            res += workload[index]
 
-            currentLoad += entry.totalCPULoad
+            currentLoad += loads[index]
         }
 
         logger.info { "Sampled ${workload.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
 
         return res.sortedBy { it.submittedAt }
     }
+}
+
+/**
+ * The total CPU and GPU work of a task, in MFLOPs.
+ *
+ * This is derived from the workload fragments instead of being stored on the [ServiceTask], because
+ * sampling is the only thing that ever needs it and it runs once, here, before the simulation starts.
+ * Keeping it as a field would cost 8 bytes on every task for the entire run. The accumulation mirrors
+ * the one in ComputeWorkloadLoader's fragment builder, over the same fragments in the same order.
+ */
+private fun ServiceTask.totalCpuLoad(): Double {
+    val workload = this.workload as? TraceWorkload ?: return 0.0
+
+    var total = 0.0
+    for (fragment in workload.fragments) {
+        total += ((fragment.cpuUsage() * fragment.duration()) + (fragment.gpuUsage() * fragment.duration())) / 1000
+    }
+
+    return total
 }

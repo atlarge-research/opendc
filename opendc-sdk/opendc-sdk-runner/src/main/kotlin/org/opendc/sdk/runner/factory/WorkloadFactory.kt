@@ -91,25 +91,21 @@ private fun TaskSpec.toServiceTask(
         )
     return ServiceTask(
         id,
-        name,
         submissionTime.toMsLong(),
         duration.toMsLong(),
-        cpuCoreCount,
+        cpuCoreCount.toInt(),
         cpuCapacity.toMHz(),
-        totalLoad(),
         memory.toMiB().toLong(),
-        gpuCoreCount,
+        gpuCoreCount.toInt(),
         gpuCapacity.toMHz(),
         gpuMemory.toMiB().toLong(),
         workload,
         deferrable,
-        deadline?.toMsLong() ?: -1L,
-        ArrayList(parents),
-        children,
+        deadline.toMsLong(),
+        if (parents.isEmpty()) null else parents,
+        if (children.isEmpty()) null else children,
     )
 }
-
-private fun TaskSpec.totalLoad(): Double = fragments.sumOf { it.cpuUsage.toMHz() * it.duration.toHours() }
 
 private fun ScalingPolicySpec.toEngine(): EngineScalingPolicy =
     when (this) {

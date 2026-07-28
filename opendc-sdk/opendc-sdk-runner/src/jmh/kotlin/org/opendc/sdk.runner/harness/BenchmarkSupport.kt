@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.runner.base.harness
+package org.opendc.sdk.runner.harness
 
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
@@ -58,8 +58,15 @@ internal val defaultPolicy: AllocationPolicySpec =
         weighers = listOf(CoreRamWeigherSpec(1.0)),
     )
 
-/** The test-resources root, used to resolve trace references against the classpath. */
-internal val testResourcesRoot: Path by lazy { Path.of(object {}.javaClass.getResource("/topologies")!!.toURI()).parent }
+/**
+ * The benchmark-resources root, used to resolve trace references against the filesystem.
+ *
+ * JMH forks benchmark runs from the shadow jar built by [jmhJar](../../../../../../../build.gradle.kts),
+ * so resolving `/topologies` via the classloader yields a `jar:` URI that [Path.of] cannot open. The
+ * `jmh` Gradle task always runs with the module directory as its working directory, so resolve
+ * against the known on-disk resources directory instead.
+ */
+internal val testResourcesRoot: Path by lazy { Path.of("src/jmh/resources") }
 
 private val provisioner = FileSystemResourceProvisioner(testResourcesRoot)
 
@@ -83,8 +90,9 @@ internal fun fragment(
  * Builds an SDK [TaskSpec] reproducing the legacy `createTestTask`: per-core capacity is the peak
  * fragment usage, submission is parsed as a UTC instant, and memory is in MiB.
  */
-internal fun createTestTask(
+internal fun createBenchmarkTask(
     id: Int,
+    name: String = "",
     memCapacity: Long = 0L,
     submissionTime: String = "1970-01-01T00:00",
     duration: Long = 0L,
@@ -97,42 +105,43 @@ internal fun createTestTask(
     val submitMs = LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli()
     return TaskSpec(
         id = id,
+        name = name,
         submissionTime = TimeDelta.ofMillis(submitMs),
         duration = TimeDelta.ofMillis(duration),
-        cpuCoreCount = cpuCoreCount.toShort(),
+        cpuCoreCount = cpuCoreCount,
         cpuCapacity = Frequency.ofMHz(fragments.maxOf { it.cpuUsage.toMHz() }),
         memory = DataSize.ofMiB(memCapacity),
         fragments = fragments,
-        gpuCoreCount = gpuCoreCount.toShort(),
+        gpuCoreCount = gpuCoreCount,
         gpuCapacity = Frequency.ofMHz(fragments.maxOfOrNull { it.gpuUsage.toMHz() } ?: 0.0),
         gpuMemory = DataSize.ofBytes(0),
         deferrable = false,
-        parents = parents.toIntArray(),
-        children = children.toIntArray(),
+        deadline = null,
+        parents = parents,
+        children = children,
     )
 }
 
 /**
  * Runs [workload] against [topology] on a fresh simulated clock with a one-minute export interval
- * and seed 0, returning the [TestComputeMonitor] that captured the run — the SDK-runner analogue of
+ * and seed 0, returning the [BenchmarkComputeMonitor] that captured the run — the SDK-runner analogue of
  * the legacy `runTest`.
  */
-internal fun runTest(
+internal fun runBenchmark(
     topology: TopologySpec,
     workload: List<TaskSpec>,
     failureModel: FailureModelSpec = NoFailureSpec,
     allocationPolicy: AllocationPolicySpec = defaultPolicy,
     checkpointModel: CheckpointSpec? = null,
     scalingPolicy: ScalingPolicySpec = ScalingPolicySpec.NoDelay,
-    exportInterval: TimeDelta = TimeDelta.ofMin(1),
-): TestComputeMonitor {
-    val monitor = TestComputeMonitor()
+): BenchmarkComputeMonitor {
+    val monitor = BenchmarkComputeMonitor()
     val scenario =
         ScenarioSpec(
             topology = topology,
             workload = InlineWorkloadSpec(workload, scalingPolicy),
             allocationPolicy = allocationPolicy,
-            exportModel = ExportSpec(exportInterval = exportInterval, printFrequency = null),
+            exportModel = ExportSpec(exportInterval = TimeDelta.ofMin(1), printFrequency = null),
             failureModel = failureModel,
             checkpointModel = checkpointModel,
         )

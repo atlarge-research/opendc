@@ -37,7 +37,6 @@
             "tasks": [
                 {
                     "id": 0,
-                    "name": "task-0",
                     "submissionTime": "0 minutes",
                     "duration": "10 minutes",
                     "cpuCoreCount": 2,
@@ -50,7 +49,6 @@
                 },
                 {
                     "id": 1,
-                    "name": "task-1",
                     "submissionTime": "1 minutes",
                     "duration": "5 minutes",
                     "cpuCoreCount": 1,

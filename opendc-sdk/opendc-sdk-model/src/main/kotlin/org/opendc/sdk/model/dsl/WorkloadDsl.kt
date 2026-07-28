@@ -27,6 +27,7 @@ import org.opendc.common.units.Frequency
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
+import org.opendc.sdk.model.workload.NO_DEADLINE
 import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TaskFragmentSpec
 import org.opendc.sdk.model.workload.TaskSpec
@@ -62,25 +63,24 @@ public class InlineWorkloadBuilder {
 
     public fun task(
         id: Int,
-        name: String,
         submissionTime: TimeDelta,
         duration: TimeDelta,
-        cpuCoreCount: Int,
+        cpuCoreCount: Short,
         cpuCapacity: Frequency,
         memory: DataSize,
-        gpuCoreCount: Int = 0,
+        gpuCoreCount: Short = 0,
         gpuCapacity: Frequency = Frequency.ofMHz(0),
         gpuMemory: DataSize = DataSize.ofBytes(0),
         deferrable: Boolean = false,
-        deadline: TimeDelta? = null,
-        parents: Set<Int> = emptySet(),
-        children: Set<Int> = emptySet(),
+        deadline: TimeDelta = NO_DEADLINE,
+        parents: IntArray = IntArray(0),
+        children: IntArray = IntArray(0),
         block: TaskBuilder.() -> Unit,
     ) {
         val fragments = TaskBuilder().apply(block).build()
         tasks +=
             TaskSpec(
-                id, name, submissionTime, duration, cpuCoreCount, cpuCapacity, memory, fragments,
+                id, submissionTime, duration, cpuCoreCount, cpuCapacity, memory, fragments,
                 gpuCoreCount, gpuCapacity, gpuMemory, deferrable, deadline, parents, children,
             )
     }

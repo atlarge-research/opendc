@@ -43,7 +43,6 @@ import org.opendc.trace.conv.TASK_GPU_CAPACITY
 import org.opendc.trace.conv.TASK_GPU_COUNT
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.conv.TASK_MEM_CAPACITY
-import org.opendc.trace.conv.TASK_NAME
 import org.opendc.trace.conv.TASK_PARENTS
 import org.opendc.trace.conv.TASK_SUBMISSION_TIME
 import java.io.File
@@ -127,7 +126,6 @@ public class ComputeWorkloadLoader(
         val reader = checkNotNull(trace.getTable(TABLE_TASKS)).newReader()
 
         val idCol = reader.resolve(TASK_ID)
-        val idName = reader.resolve(TASK_NAME)
         val submissionTimeCol = reader.resolve(TASK_SUBMISSION_TIME)
         val durationCol = reader.resolve(TASK_DURATION)
         val cpuCountCol = reader.resolve(TASK_CPU_COUNT)
@@ -145,7 +143,6 @@ public class ComputeWorkloadLoader(
         return try {
             while (reader.nextRow()) {
                 val id = reader.getInt(idCol)
-                var name = reader.getString(idName)
 
                 if (!fragments.containsKey(id)) {
                     continue
@@ -168,20 +165,11 @@ public class ComputeWorkloadLoader(
                 val gpuCoreCount = reader.getInt(gpuCoreCountCol) // Default to 0 if not present
                 val gpuMemory = 0L // currently not implemented
 
-                var parents = reader.getSet(parentsCol, Int::class.java) // No dependencies in the trace
-                var children = reader.getSet(childrenCol, Int::class.java) // No dependencies in the trace
+                val parents = reader.getSet(parentsCol, Int::class.java) // No dependencies in the trace
+                val children = reader.getSet(childrenCol, Int::class.java) // No dependencies in the trace
 
-                var parentsOutput: ArrayList<Int>? = null
-
-                if (parents?.isEmpty() == true) {
-                    parentsOutput = null
-                } else {
-                    parentsOutput = ArrayList(parents!!)
-                }
-
-                if (children?.isEmpty() == true) {
-                    children = null
-                }
+                val parentsOutput: IntArray? = if (parents.isNullOrEmpty()) null else parents.toIntArray()
+                val childrenOutput: IntArray? = if (children.isNullOrEmpty()) null else children.toIntArray()
 
                 var deferrable = reader.getBoolean(deferrableCol)
                 var deadline = reader.getLong(deadlineCol)
@@ -191,17 +179,14 @@ public class ComputeWorkloadLoader(
                 }
 
                 val builder = fragments.getValue(id) // Get all fragments related to this VM
-                val totalLoad = builder.totalLoad
 
                 entries.add(
                     ServiceTask(
                         id,
-                        name,
                         submissionTime,
                         duration,
                         cpuCoreCount,
                         cpuCapacity,
-                        totalLoad,
                         memUsage.roundToLong(),
                         gpuCoreCount,
                         gpuCapacity,
@@ -210,7 +195,7 @@ public class ComputeWorkloadLoader(
                         deferrable,
                         deadline,
                         parentsOutput,
-                        children,
+                        childrenOutput,
                     ),
                 )
             }
@@ -256,11 +241,6 @@ public class ComputeWorkloadLoader(
         taskId: Int,
     ) {
         /**
-         * The total load of the trace.
-         */
-        @JvmField var totalLoad: Double = 0.0
-
-        /**
          * The internal builder for the trace.
          */
         private val builder =
@@ -286,8 +266,6 @@ public class ComputeWorkloadLoader(
             gpuUsage: Double = 0.0,
             gpuMemoryUsage: Int = 0,
         ) {
-            totalLoad += ((cpuUsage * duration.toMillis()) + (gpuUsage * duration.toMillis())) / 1000 // avg MHz * duration = MFLOPs
-
             builder.add(duration.toMillis(), cpuUsage, gpuUsage, gpuMemoryUsage)
         }
 

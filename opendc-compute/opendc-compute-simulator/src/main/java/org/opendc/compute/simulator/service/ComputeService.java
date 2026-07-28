@@ -168,7 +168,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                     || newState == TaskState.PAUSED
                     || newState == TaskState.TERMINATED
                     || newState == TaskState.FAILED) {
-                LOGGER.info("task {} {} {} finished", task.getId(), task.getName());
+                LOGGER.info("task {} finished", task.getId());
 
                 if (activeTasks.remove(task) != null) {
                     tasksActive--;

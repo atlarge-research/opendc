@@ -70,7 +70,6 @@ class OutputSinkTest {
         val task =
             TaskSpec(
                 id = 0,
-                name = "t0",
                 submissionTime = 0.ms,
                 duration = (10 * 60 * 1000).ms,
                 cpuCoreCount = 1,

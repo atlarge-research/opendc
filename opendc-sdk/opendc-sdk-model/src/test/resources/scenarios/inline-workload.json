@@ -24,7 +24,6 @@
         "tasks": [
             {
                 "id": 0,
-                "name": "web-0",
                 "submissionTime": "0 minutes",
                 "duration": "30 minutes",
                 "cpuCoreCount": 4,
@@ -43,7 +42,6 @@
             },
             {
                 "id": 1,
-                "name": "batch-1",
                 "submissionTime": "5 minutes",
                 "duration": "15 minutes",
                 "cpuCoreCount": 8,

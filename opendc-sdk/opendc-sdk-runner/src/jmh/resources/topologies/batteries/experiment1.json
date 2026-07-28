@@ -1,0 +1,39 @@
+{
+    "clusters": [
+        {
+            "name": "C01",
+            "hosts": [
+                {
+                    "name": "H01",
+                    "cpu": {
+                        "coreCount": 1,
+                        "coreSpeed": "2 GHz"
+                    },
+                    "memory": {
+                        "size": "140457600000 Bytes"
+                    },
+                    "cpuPowerModel": {
+                        "type": "linear",
+                        "power": "400 Watts",
+                        "idlePower": "100 Watts",
+                        "maxPower": "200 Watts"
+                    }
+                }
+            ],
+            "powerSource": {
+                "carbon": {
+                    "type": "named",
+                    "name": "carbonTraces/2022-01-01_single_100.parquet"
+                }
+            },
+            "battery": {
+                "capacity": 0.1,
+                "chargingSpeed": 1000,
+                "policy": {
+                    "type": "single",
+                    "carbonThreshold": 90
+                }
+            }
+        }
+    ]
+}

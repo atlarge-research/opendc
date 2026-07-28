@@ -65,7 +65,7 @@ class ExperimentImportsTest {
     fun `an experiment imports its workload from another file`() {
         val workload = load("experiments/imports/experiment.json").workloads.single()
 
-        assertEquals(listOf("task-0", "task-1"), (workload as InlineWorkloadSpec).tasks.map { it.name })
+        assertEquals(listOf(0, 1), (workload as InlineWorkloadSpec).tasks.map { it.id })
     }
 
     /**

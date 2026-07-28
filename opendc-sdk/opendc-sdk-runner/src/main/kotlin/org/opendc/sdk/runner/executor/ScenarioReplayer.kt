@@ -103,6 +103,8 @@ internal class RunningTaskWatcher : TaskWatcher {
         task: ServiceTask,
         newState: TaskState,
     ) {
-        if (unlockStates.contains(newState)) mutex.unlock()
+        if (unlockStates.contains(newState)) {
+            mutex.unlock()
+        }
     }
 }
