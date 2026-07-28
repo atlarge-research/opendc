@@ -98,7 +98,6 @@ class LegacyExperimentTest {
         opendc().test(arrayOf("run", "--legacy", "legacy/experiments/1.first_experiment_answers/simple_experiment.json"))
     }
 
-
     /**
      * Demo 1 — the plainest old experiment there is. It is also the sharpest test of the units,
      * because every magnitude in it is a bare number: `2100` must still mean 2100 MHz, `100000` must

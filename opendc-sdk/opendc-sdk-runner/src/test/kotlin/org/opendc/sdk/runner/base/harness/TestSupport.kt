@@ -124,7 +124,7 @@ internal fun runTest(
     allocationPolicy: AllocationPolicySpec = defaultPolicy,
     checkpointModel: CheckpointSpec? = null,
     scalingPolicy: ScalingPolicySpec = ScalingPolicySpec.NoDelay,
-    exportInterval: TimeDelta = TimeDelta.ofMin(1)
+    exportInterval: TimeDelta = TimeDelta.ofMin(1),
 ): TestComputeMonitor {
     val monitor = TestComputeMonitor()
     val scenario =

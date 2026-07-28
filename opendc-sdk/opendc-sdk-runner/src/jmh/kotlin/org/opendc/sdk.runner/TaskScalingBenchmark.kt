@@ -52,8 +52,7 @@ import java.util.concurrent.TimeUnit
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 open class TaskScalingBenchmark : OpenDCBenchmark() {
-
-    fun generateWorkload(numTasks: Int) : List<TaskSpec> {
+    fun generateWorkload(numTasks: Int): List<TaskSpec> {
         val submissionTime = "2022-01-01T00:00:00"
         val submitMs = LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli()
         val taskDuration = 10 * 60 * 1000
@@ -62,29 +61,32 @@ open class TaskScalingBenchmark : OpenDCBenchmark() {
 
         val workload = mutableListOf<TaskSpec>()
         for (i in 0 until numTasks) {
-            workload.add(TaskSpec(
-                id = i,
-                name = "$i",
-                submissionTime = TimeDelta.ofMillis(submitMs),
-                duration = TimeDelta.ofMillis(taskDuration),
-                cpuCoreCount = 1,
-                cpuCapacity = Frequency.ofMHz(1000),
-                memory = DataSize.ofMiB(10000.0),
-                fragments = listOf(TaskFragmentSpec(
-                    TimeDelta.ofMillis(taskDuration),
-                    Frequency.ofMHz(cpuUsage),
-                    Frequency.ofMHz(gpuUsage)
-                )),
-            ))
+            workload.add(
+                TaskSpec(
+                    id = i,
+                    name = "$i",
+                    submissionTime = TimeDelta.ofMillis(submitMs),
+                    duration = TimeDelta.ofMillis(taskDuration),
+                    cpuCoreCount = 1,
+                    cpuCapacity = Frequency.ofMHz(1000),
+                    memory = DataSize.ofMiB(10000.0),
+                    fragments =
+                        listOf(
+                            TaskFragmentSpec(
+                                TimeDelta.ofMillis(taskDuration),
+                                Frequency.ofMHz(cpuUsage),
+                                Frequency.ofMHz(gpuUsage),
+                            ),
+                        ),
+                ),
+            )
         }
 
         return workload
     }
 
     fun generateTopology(numHosts: Int): List<ClusterSpec> {
-
     }
-
 
     @Benchmark
     fun testBenchmark() {
