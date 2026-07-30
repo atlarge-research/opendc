@@ -28,7 +28,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
-import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReader
+import org.opendc.compute.simulator.telemetry.table.battery.BatterySample
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 
 /**
@@ -47,58 +47,58 @@ import org.opendc.trace.util.parquet.exporter.ExportColumn
  * ```
  */
 public object DfltBatteryExportColumns {
-    public val TIMESTAMP: ExportColumn<BatteryTableReader> =
+    public val TIMESTAMP: ExportColumn<BatterySample> =
         ExportColumn(
             field = Types.required(INT64).named("timestamp"),
         ) { it.timestamp.toEpochMilli() }
 
-    public val TIMESTAMP_ABS: ExportColumn<BatteryTableReader> =
+    public val TIMESTAMP_ABS: ExportColumn<BatterySample> =
         ExportColumn(
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
-    public val BATTERY_NAME: ExportColumn<BatteryTableReader> =
+    public val BATTERY_NAME: ExportColumn<BatterySample> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("battery_name"),
-        ) { Binary.fromString(it.batteryInfo.name) }
+        ) { Binary.fromString(it.batteryName) }
 
-    public val CLUSTER_NAME: ExportColumn<BatteryTableReader> =
+    public val CLUSTER_NAME: ExportColumn<BatterySample> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("cluster_name"),
-        ) { Binary.fromString(it.batteryInfo.clusterName) }
+        ) { Binary.fromString(it.clusterName) }
 
-    public val POWER_DRAW: ExportColumn<BatteryTableReader> =
+    public val POWER_DRAW: ExportColumn<BatterySample> =
         ExportColumn(
             field = Types.required(FLOAT).named("power_draw"),
         ) { it.powerDraw }
 
-    public val ENERGY_USAGE: ExportColumn<BatteryTableReader> =
+    public val ENERGY_USAGE: ExportColumn<BatterySample> =
         ExportColumn(
             field = Types.required(FLOAT).named("energy_usage"),
         ) { it.energyUsage }
 
-    public val EMBODIED_CARBON: ExportColumn<BatteryTableReader> =
+    public val EMBODIED_CARBON: ExportColumn<BatterySample> =
         ExportColumn(
             field = Types.required(FLOAT).named("embodied_carbon_emission"),
         ) { it.embodiedCarbonEmission }
 
-    public val CHARGE: ExportColumn<BatteryTableReader> =
+    public val CHARGE: ExportColumn<BatterySample> =
         ExportColumn(
             field = Types.required(FLOAT).named("charge"),
         ) { it.charge }
 
-    public val CAPACITY: ExportColumn<BatteryTableReader> =
+    public val CAPACITY: ExportColumn<BatterySample> =
         ExportColumn(
             field = Types.required(FLOAT).named("capacity"),
         ) { it.capacity }
 
-    public val BATTERY_STATE: ExportColumn<BatteryTableReader> =
+    public val BATTERY_STATE: ExportColumn<BatterySample> =
         ExportColumn(
             field =
                 Types.optional(BINARY)

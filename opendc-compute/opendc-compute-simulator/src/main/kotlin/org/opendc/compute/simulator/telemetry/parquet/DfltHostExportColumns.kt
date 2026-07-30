@@ -29,7 +29,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
-import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
+import org.opendc.compute.simulator.telemetry.table.host.HostSample
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 
 /**
@@ -48,128 +48,128 @@ import org.opendc.trace.util.parquet.exporter.ExportColumn
  * ```
  */
 public object DfltHostExportColumns {
-    public val TIMESTAMP: ExportColumn<HostTableReader> =
+    public val TIMESTAMP: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT64).named("timestamp"),
         ) { it.timestamp.toEpochMilli() }
 
-    public val TIMESTAMP_ABS: ExportColumn<HostTableReader> =
+    public val TIMESTAMP_ABS: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
-    public val HOST_NAME: ExportColumn<HostTableReader> =
+    public val HOST_NAME: ExportColumn<HostSample> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("host_name"),
-        ) { Binary.fromString(it.hostInfo.name) }
+        ) { Binary.fromString(it.hostName) }
 
-    public val CLUSTER_NAME: ExportColumn<HostTableReader> =
+    public val CLUSTER_NAME: ExportColumn<HostSample> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("cluster_name"),
-        ) { Binary.fromString(it.hostInfo.clusterName) }
+        ) { Binary.fromString(it.clusterName) }
 
-    public val CPU_COUNT: ExportColumn<HostTableReader> =
+    public val CPU_COUNT: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT32).named("core_count"),
-        ) { it.hostInfo.coreCount }
+        ) { it.coreCount }
 
-    public val MEM_CAPACITY: ExportColumn<HostTableReader> =
+    public val MEM_CAPACITY: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT64).named("mem_capacity"),
-        ) { it.hostInfo.memCapacity }
+        ) { it.memCapacity }
 
-    public val TASKS_TERMINATED: ExportColumn<HostTableReader> =
+    public val TASKS_TERMINATED: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT32).named("tasks_terminated"),
         ) { it.tasksTerminated }
 
-    public val TASKS_RUNNING: ExportColumn<HostTableReader> =
+    public val TASKS_RUNNING: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT32).named("tasks_running"),
         ) { it.tasksActive }
 
-    public val TASKS_ERROR: ExportColumn<HostTableReader> =
+    public val TASKS_ERROR: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT32).named("tasks_error"),
         ) { it.guestsError }
 
-    public val TASKS_INVALID: ExportColumn<HostTableReader> =
+    public val TASKS_INVALID: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT32).named("tasks_invalid"),
         ) { it.guestsInvalid }
 
-    public val CPU_CAPACITY: ExportColumn<HostTableReader> =
+    public val CPU_CAPACITY: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("cpu_capacity"),
         ) { it.cpuCapacity }
 
-    public val CPU_USAGE: ExportColumn<HostTableReader> =
+    public val CPU_USAGE: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("cpu_usage"),
         ) { it.cpuUsage }
 
-    public val CPU_DEMAND: ExportColumn<HostTableReader> =
+    public val CPU_DEMAND: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("cpu_demand"),
         ) { it.cpuDemand }
 
-    public val CPU_UTILIZATION: ExportColumn<HostTableReader> =
+    public val CPU_UTILIZATION: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("cpu_utilization"),
         ) { it.cpuUtilization }
 
-    public val CPU_TIME_ACTIVE: ExportColumn<HostTableReader> =
+    public val CPU_TIME_ACTIVE: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_active"),
         ) { it.cpuActiveTime }
 
-    public val CPU_TIME_IDLE: ExportColumn<HostTableReader> =
+    public val CPU_TIME_IDLE: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_idle"),
         ) { it.cpuIdleTime }
 
-    public val CPU_TIME_STEAL: ExportColumn<HostTableReader> =
+    public val CPU_TIME_STEAL: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_steal"),
         ) { it.cpuStealTime }
 
-    public val CPU_TIME_LOST: ExportColumn<HostTableReader> =
+    public val CPU_TIME_LOST: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_lost"),
         ) { it.cpuLostTime }
 
-    public val POWER_DRAW: ExportColumn<HostTableReader> =
+    public val POWER_DRAW: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("power_draw"),
         ) { it.powerDraw }
 
-    public val ENERGY_USAGE: ExportColumn<HostTableReader> =
+    public val ENERGY_USAGE: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("energy_usage"),
         ) { it.energyUsage }
 
-    public val EMBODIED_CARBON: ExportColumn<HostTableReader> =
+    public val EMBODIED_CARBON: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("embodied_carbon"),
         ) { it.embodiedCarbon }
 
-    public val UP_TIME: ExportColumn<HostTableReader> =
+    public val UP_TIME: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT64).named("uptime"),
         ) { it.uptime }
 
-    public val DOWN_TIME: ExportColumn<HostTableReader> =
+    public val DOWN_TIME: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT64).named("downtime"),
         ) { it.downtime }
 
-    public val BOOT_TIME: ExportColumn<HostTableReader> =
+    public val BOOT_TIME: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.optional(INT64).named("boot_time"),
         ) { it.bootTime?.toEpochMilli() }
@@ -177,9 +177,9 @@ public object DfltHostExportColumns {
     /**
      * Returns GPU-related export columns for the given number of GPUs.
      */
-    public fun gpuColumns(count: Int): Set<ExportColumn<HostTableReader>> =
+    public fun gpuColumns(count: Int): Set<ExportColumn<HostSample>> =
         (0 until count).flatMap { i ->
-            listOf<ExportColumn<HostTableReader>>(
+            listOf<ExportColumn<HostSample>>(
                 ExportColumn(
                     field = Types.optional(FLOAT).named("gpu_capacity_$i"),
                 ) { it.gpuCapacities.getOrNull(i) },

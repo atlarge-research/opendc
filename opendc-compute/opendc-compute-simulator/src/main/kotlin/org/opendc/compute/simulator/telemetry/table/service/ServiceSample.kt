@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 AtLarge Research
+ * Copyright (c) 2026 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,22 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.telemetry.table.powerSource
+package org.opendc.compute.simulator.telemetry.table.service
 
-public data class PowerSourceInfo(
-    val name: String,
-    val clusterName: String,
-    val arch: String,
-    val capacity: Double,
-)
+import org.opendc.trace.util.parquet.exporter.Exportable
+import java.time.Instant
+
+public data class ServiceSample(
+    // TODO: Why is this not a Long?
+    public val timestamp: Instant = Instant.MIN,
+    public val timestampAbsolute: Instant = Instant.MIN,
+    public val hostsUp: Int = -1,
+    public val hostsDown: Int = -1,
+    public val tasksTotal: Int = -1,
+    public val tasksPending: Int = -1,
+    public val tasksCompleted: Int = -1,
+    public val tasksActive: Int = -1,
+    public val tasksTerminated: Int = -1,
+    public val attemptsSuccess: Int = -1,
+    public val attemptsFailure: Int = -1,
+) : Exportable

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 AtLarge Research
+ * Copyright (c) 2026 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.telemetry.table.task
+package org.opendc.compute.simulator.telemetry.table.battery
 
-/**
- * Static information about a task exposed to the telemetry service.
- */
-public data class TaskInfo(
-    val id: Int,
-    val type: String,
-    val arch: String,
-    val cpuCount: Int,
-    val memCapacity: Long,
-    val gpuCount: Int,
-)
+import org.opendc.simulator.compute.power.batteries.BatteryState
+import org.opendc.trace.util.parquet.exporter.Exportable
+import java.time.Instant
+
+public data class BatterySample(
+    public val batteryName: String? = null,
+    public val clusterName: String? = null,
+    public val timestamp: Instant = Instant.MIN,
+    public val timestampAbsolute: Instant = Instant.MIN,
+    public val powerDraw: Double = 0.0,
+    public val energyUsage: Double = 0.0,
+    public val embodiedCarbonEmission: Double = 0.0,
+    public val charge: Double = 0.0,
+    public val capacity: Double = 0.0,
+    public val batteryState: BatteryState = BatteryState.IDLE,
+) : Exportable

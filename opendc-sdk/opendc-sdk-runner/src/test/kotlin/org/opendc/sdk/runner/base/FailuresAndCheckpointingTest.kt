@@ -74,12 +74,12 @@ class FailuresAndCheckpointingTest {
 
         assertAll(
             { assertEquals(20 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals(((15 * 30000) + (5 * 60000)).toLong(), monitor.hostCpuIdleTimes["H01"]?.sum()) { "Idle time incorrect" } },
-            { assertEquals((15 * 30000).toLong(), monitor.hostCpuActiveTimes["H01"]?.sum()) { "Active time incorrect" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(5)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(10)) { "Incorrect energy usage" } },
-            { assertEquals((15 * 60 * 150.0) + (5 * 60 * 100.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
+            { assertEquals(((15 * 30000) + (5 * 60000)).toLong(), monitor.hostCpuIdleTimes["H01"]?.last()) { "Idle time incorrect" } },
+            { assertEquals((15 * 30000).toLong(), monitor.hostCpuActiveTimes["H01"]?.last()) { "Active time incorrect" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect energy usage" } },
+            { assertEquals(100.0, monitor.hostPowerDraws["H01"]?.get(5)) { "Incorrect energy usage" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(10)) { "Incorrect energy usage" } },
+            { assertEquals((15 * 60 * 150.0) + (5 * 60 * 100.0), monitor.hostEnergyUsages["H01"]?.last()) { "Incorrect energy usage" } },
         )
     }
 
@@ -115,10 +115,10 @@ class FailuresAndCheckpointingTest {
 
         assertAll(
             { assertEquals(10 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals((10 * 30000).toLong(), monitor.hostCpuIdleTimes["H01"]?.sum()) { "Idle time incorrect" } },
-            { assertEquals((10 * 30000).toLong(), monitor.hostCpuActiveTimes["H01"]?.sum()) { "Active time incorrect" } },
+            { assertEquals((10 * 30000).toLong(), monitor.hostCpuIdleTimes["H01"]?.last()) { "Idle time incorrect" } },
+            { assertEquals((10 * 30000).toLong(), monitor.hostCpuActiveTimes["H01"]?.last()) { "Active time incorrect" } },
             { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect energy usage" } },
-            { assertEquals((600 * 150.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
+            { assertEquals((600 * 150.0), monitor.hostEnergyUsages["H01"]?.last()) { "Incorrect energy usage" } },
         )
     }
 
@@ -159,12 +159,12 @@ class FailuresAndCheckpointingTest {
 
         assertAll(
             { assertEquals(37 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals(((22 * 30000) + (15 * 60000)).toLong(), monitor.hostCpuIdleTimes["H01"]?.sum()) { "Idle time incorrect" } },
-            { assertEquals((22 * 30000).toLong(), monitor.hostCpuActiveTimes["H01"]?.sum()) { "Active time incorrect" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(5)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(10)) { "Incorrect energy usage" } },
-            { assertEquals((22 * 60 * 150.0) + (15 * 60 * 100.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
+            { assertEquals(((22 * 30000) + (15 * 60000)).toLong(), monitor.hostCpuIdleTimes["H01"]?.last()) { "Idle time incorrect" } },
+            { assertEquals((22 * 30000).toLong(), monitor.hostCpuActiveTimes["H01"]?.last()) { "Active time incorrect" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect energy usage" } },
+            { assertEquals(100.0, monitor.hostPowerDraws["H01"]?.get(5)) { "Incorrect energy usage" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(10)) { "Incorrect energy usage" } },
+            { assertEquals((22 * 60 * 150.0) + (15 * 60 * 100.0), monitor.hostEnergyUsages["H01"]?.last()) { "Incorrect energy usage" } },
         )
     }
 
@@ -205,29 +205,29 @@ class FailuresAndCheckpointingTest {
 
         assertAll(
             { assertEquals(95 * 60000, monitor.maxTimestamp) { "Total runtime incorrect" } },
-            { assertEquals(((50 * 60000) + (20 * 60000)).toLong(), monitor.hostCpuIdleTimes["H01"]?.sum()) { "Idle time incorrect" } },
-            { assertEquals((25 * 60000).toLong(), monitor.hostCpuActiveTimes["H01"]?.sum()) { "Active time incorrect" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(0)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(5)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(10)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(15)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(20)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(25)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(30)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(35)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(40)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(45)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(50)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(55)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(60)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(65)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(70)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(75)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(80)) { "Incorrect energy usage" } },
-            { assertEquals(6000.0, monitor.hostEnergyUsages["H01"]?.get(85)) { "Incorrect energy usage" } },
-            { assertEquals(9000.0, monitor.hostEnergyUsages["H01"]?.get(90)) { "Incorrect energy usage" } },
-            { assertEquals(0.0, monitor.hostEnergyUsages["H01"]?.get(95)) { "Incorrect energy usage" } },
-            { assertEquals((10 * 300 * 150.0) + (9 * 300 * 100.0), monitor.hostEnergyUsages["H01"]?.sum()) { "Incorrect energy usage" } },
+            { assertEquals(((50 * 60000) + (20 * 60000)).toLong(), monitor.hostCpuIdleTimes["H01"]?.last()) { "Idle time incorrect" } },
+            { assertEquals((25 * 60000).toLong(), monitor.hostCpuActiveTimes["H01"]?.last()) { "Active time incorrect" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(0)) { "Incorrect energy usage" } },
+            { assertEquals(100.0, monitor.hostPowerDraws["H01"]?.get(5)) { "Incorrect energy usage" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(10)) { "Incorrect energy usage" } },
+            { assertEquals(100.0, monitor.hostPowerDraws["H01"]?.get(15)) { "Incorrect energy usage" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(20)) { "Incorrect energy usage" } },
+            { assertEquals(100.0, monitor.hostPowerDraws["H01"]?.get(25)) { "Incorrect energy usage" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(30)) { "Incorrect energy usage" } },
+            { assertEquals(100.0, monitor.hostPowerDraws["H01"]?.get(35)) { "Incorrect energy usage" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(40)) { "Incorrect energy usage" } },
+            { assertEquals(100.0, monitor.hostPowerDraws["H01"]?.get(45)) { "Incorrect energy usage" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(50)) { "Incorrect energy usage" } },
+            { assertEquals(100.0, monitor.hostPowerDraws["H01"]?.get(55)) { "Incorrect energy usage" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(60)) { "Incorrect energy usage" } },
+            { assertEquals(100.0, monitor.hostPowerDraws["H01"]?.get(65)) { "Incorrect energy usage" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(70)) { "Incorrect energy usage" } },
+            { assertEquals(100.0, monitor.hostPowerDraws["H01"]?.get(75)) { "Incorrect energy usage" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(80)) { "Incorrect energy usage" } },
+            { assertEquals(100.0, monitor.hostPowerDraws["H01"]?.get(85)) { "Incorrect energy usage" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(90)) { "Incorrect energy usage" } },
+            { assertEquals(150.0, monitor.hostPowerDraws["H01"]?.get(95)) { "Incorrect energy usage" } },
+            { assertEquals((10 * 300 * 150.0) + (9 * 300 * 100.0), monitor.hostEnergyUsages["H01"]?.last()) { "Incorrect energy usage" } },
         )
     }
 
@@ -284,7 +284,7 @@ class FailuresAndCheckpointingTest {
             {
                 assertEquals(
                     (10 * 60 * 150.0) + (5 * 60 * 100.0) + (9 * 150.0) + (56 * 150.0),
-                    monitor.hostEnergyUsages["H01"]?.sum(),
+                    monitor.hostEnergyUsages["H01"]?.last(),
                 ) { "Incorrect energy usage" }
             },
         )
@@ -346,7 +346,7 @@ class FailuresAndCheckpointingTest {
             {
                 assertEquals(
                     (10 * 60 * 200.0) + (10 * 60 * 150.0) + (5 * 60 * 100.0) + (19 * 200.0) + (56 * 200.0),
-                    monitor.hostEnergyUsages["H01"]?.sum(),
+                    monitor.hostEnergyUsages["H01"]?.last(),
                 ) { "Incorrect energy usage" }
             },
         )
@@ -408,7 +408,7 @@ class FailuresAndCheckpointingTest {
             {
                 assertEquals(
                     (10 * 60 * 200.0) + (10 * 60 * 150.0) + (5 * 60 * 100.0) + (19 * 200.0) + (56 * 150.0),
-                    monitor.hostEnergyUsages["H01"]?.sum(),
+                    monitor.hostEnergyUsages["H01"]?.last(),
                 ) { "Incorrect energy usage" }
             },
         )
@@ -459,7 +459,7 @@ class FailuresAndCheckpointingTest {
         assertAll(
             { assertEquals((10 * 60000) + (5 * 60 * 1000) + (4 * 1000) + (14 * 1000), monitor.maxTimestamp) { "Total runtime incorrect" } },
             {
-                assertEquals((10 * 60 * 150.0) + (5 * 60 * 100.0) + (4 * 150.0) + (14 * 150.0), monitor.hostEnergyUsages["H01"]?.sum()) {
+                assertEquals((10 * 60 * 150.0) + (5 * 60 * 100.0) + (4 * 150.0) + (14 * 150.0), monitor.hostEnergyUsages["H01"]?.last()) {
                     "Incorrect energy usage"
                 }
             },
@@ -511,7 +511,7 @@ class FailuresAndCheckpointingTest {
             {
                 assertEquals(
                     (665 * 150.0) + (300 * 100.0),
-                    monitor.hostEnergyUsages["H01"]?.sum(),
+                    monitor.hostEnergyUsages["H01"]?.last(),
                 ) { "Incorrect energy usage" }
             },
         )
@@ -562,7 +562,7 @@ class FailuresAndCheckpointingTest {
             {
                 assertEquals(
                     (300 * 150.0) + (300 * 100.0) + (300 * 150.0) + (300 * 100.0) + (121 * 150.0),
-                    monitor.hostEnergyUsages["H01"]?.sum(),
+                    monitor.hostEnergyUsages["H01"]?.last(),
                 ) { "Incorrect energy usage" }
             },
         )

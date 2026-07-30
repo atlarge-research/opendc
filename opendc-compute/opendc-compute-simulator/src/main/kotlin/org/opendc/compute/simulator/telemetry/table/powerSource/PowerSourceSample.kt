@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 AtLarge Research
+ * Copyright (c) 2026 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.telemetry.table.battery
+package org.opendc.compute.simulator.telemetry.table.powerSource
 
-public data class BatteryInfo(
-    val name: String,
-    val clusterName: String,
-    val arch: String,
-    val capacity: Double,
-)
+import org.opendc.trace.util.parquet.exporter.Exportable
+import java.time.Instant
+
+public data class PowerSourceSample(
+    public val powerSourceName: String? = null,
+    public val clusterName: String? = null,
+    public val timestamp: Instant = Instant.MIN,
+    public val timestampAbsolute: Instant = Instant.MIN,
+    public val hostsConnected: Int = -1,
+    public val powerDraw: Double = -1.0,
+    public val energyUsage: Double = -1.0,
+    public val carbonIntensity: Double = -1.0,
+    public val carbonEmission: Double = -1.0,
+) : Exportable

@@ -25,7 +25,7 @@ package org.opendc.compute.simulator.telemetry.parquet
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
-import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
+import org.opendc.compute.simulator.telemetry.table.service.ServiceSample
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 
 /**
@@ -44,50 +44,60 @@ import org.opendc.trace.util.parquet.exporter.ExportColumn
  * ```
  */
 public object DfltServiceExportColumns {
-    public val TIMESTAMP: ExportColumn<ServiceTableReader> =
+    public val TIMESTAMP: ExportColumn<ServiceSample> =
         ExportColumn(
             field = Types.required(INT64).named("timestamp"),
         ) { it.timestamp.toEpochMilli() }
 
-    public val TIMESTAMP_ABS: ExportColumn<ServiceTableReader> =
+    public val TIMESTAMP_ABS: ExportColumn<ServiceSample> =
         ExportColumn(
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
-    public val HOSTS_UP: ExportColumn<ServiceTableReader> =
+    public val HOSTS_UP: ExportColumn<ServiceSample> =
         ExportColumn(
             field = Types.required(INT32).named("hosts_up"),
         ) { it.hostsUp }
 
-    public val HOSTS_DOWN: ExportColumn<ServiceTableReader> =
+    public val HOSTS_DOWN: ExportColumn<ServiceSample> =
         ExportColumn(
             field = Types.required(INT32).named("hosts_down"),
         ) { it.hostsDown }
 
-    public val TASKS_TOTAL: ExportColumn<ServiceTableReader> =
+    public val TASKS_TOTAL: ExportColumn<ServiceSample> =
         ExportColumn(
             field = Types.required(INT32).named("tasks_total"),
         ) { it.tasksTotal }
 
-    public val TASKS_PENDING: ExportColumn<ServiceTableReader> =
+    public val TASKS_PENDING: ExportColumn<ServiceSample> =
         ExportColumn(
             field = Types.required(INT32).named("tasks_pending"),
         ) { it.tasksPending }
 
-    public val TASKS_ACTIVE: ExportColumn<ServiceTableReader> =
+    public val TASKS_ACTIVE: ExportColumn<ServiceSample> =
         ExportColumn(
             field = Types.required(INT32).named("tasks_active"),
         ) { it.tasksActive }
 
-    public val TASKS_COMPLETED: ExportColumn<ServiceTableReader> =
+    public val TASKS_COMPLETED: ExportColumn<ServiceSample> =
         ExportColumn(
             field = Types.required(INT32).named("tasks_completed"),
         ) { it.tasksCompleted }
 
-    public val TASKS_TERMINATED: ExportColumn<ServiceTableReader> =
+    public val TASKS_TERMINATED: ExportColumn<ServiceSample> =
         ExportColumn(
             field = Types.required(INT32).named("tasks_terminated"),
         ) { it.tasksTerminated }
+
+    public val ATTEMPTS_SUCCESS: ExportColumn<ServiceSample> =
+        ExportColumn(
+            field = Types.required(INT32).named("attempts_success"),
+        ) { it.attemptsSuccess }
+
+    public val ATTEMPTS_FAILURE: ExportColumn<ServiceSample> =
+        ExportColumn(
+            field = Types.required(INT32).named("attempts_failure"),
+        ) { it.attemptsFailure }
 
     /**
      * The columns that are always included in the output file.
@@ -96,5 +106,23 @@ public object DfltServiceExportColumns {
         setOf(
             TIMESTAMP,
             TIMESTAMP_ABS,
+        )
+
+    /**
+     * All the columns whose backing value can be sampled from a [ServiceSample].
+     * Used as the default column selection so that samples are fully populated
+     * when no explicit selection is provided.
+     */
+    public val ALL_COLUMNS: Set<ExportColumn<ServiceSample>> =
+        setOf(
+            HOSTS_UP,
+            HOSTS_DOWN,
+            TASKS_TOTAL,
+            TASKS_PENDING,
+            TASKS_ACTIVE,
+            TASKS_COMPLETED,
+            TASKS_TERMINATED,
+            ATTEMPTS_SUCCESS,
+            ATTEMPTS_FAILURE,
         )
 }

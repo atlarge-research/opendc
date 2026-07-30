@@ -25,11 +25,11 @@ package org.opendc.sdk.runner.factory
 import org.opendc.compute.simulator.telemetry.OutputFiles
 import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 import org.opendc.compute.simulator.telemetry.parquet.withGpuColumns
-import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReader
-import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
-import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
-import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
-import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
+import org.opendc.compute.simulator.telemetry.table.battery.BatterySample
+import org.opendc.compute.simulator.telemetry.table.host.HostSample
+import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceSample
+import org.opendc.compute.simulator.telemetry.table.service.ServiceSample
+import org.opendc.compute.simulator.telemetry.table.task.TaskSample
 import org.opendc.sdk.model.export.AllColumns
 import org.opendc.sdk.model.export.ColumnSelection
 import org.opendc.sdk.model.export.ExportSpec
@@ -59,11 +59,11 @@ internal fun ExportSpec.toExportSettings(gpuCount: Int): ExportSettings =
 private fun ExportSpec.toComputeExportConfig(gpuCount: Int): ComputeExportConfig {
     ComputeExportConfig.loadDfltColumns()
     return ComputeExportConfig(
-        columns.host.resolve<HostTableReader>(),
-        columns.task.resolve<TaskTableReader>(),
-        columns.powerSource.resolve<PowerSourceTableReader>(),
-        columns.battery.resolve<BatteryTableReader>(),
-        columns.service.resolve<ServiceTableReader>(),
+        columns.batterySample.resolve<BatterySample>(),
+        columns.hostSample.resolve<HostSample>(),
+        columns.powerSourceSample.resolve<PowerSourceSample>(),
+        columns.serviceSample.resolve<ServiceSample>(),
+        columns.taskSample.resolve<TaskSample>(),
     ).withGpuColumns(gpuCount)
 }
 
@@ -82,9 +82,9 @@ private fun ExportSpec.toFilesToExport(): Map<OutputFiles, Boolean> {
 
 internal fun OutputFileSpec.toEngineOutputFiles(): OutputFiles =
     when (this) {
-        OutputFileSpec.HOST -> OutputFiles.HOST
-        OutputFileSpec.TASK -> OutputFiles.TASK
-        OutputFileSpec.POWER_SOURCE -> OutputFiles.POWER_SOURCE
         OutputFileSpec.BATTERY -> OutputFiles.BATTERY
+        OutputFileSpec.HOST -> OutputFiles.HOST
+        OutputFileSpec.POWER_SOURCE -> OutputFiles.POWER_SOURCE
         OutputFileSpec.SERVICE -> OutputFiles.SERVICE
+        OutputFileSpec.TASK -> OutputFiles.TASK
     }

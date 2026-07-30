@@ -60,6 +60,8 @@ dependencies {
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-failure")))
 
+    api(project(":opendc-compute:opendc-compute-simulator"))
+
     cliImplementation(libs.clikt)
 
     cliRuntimeOnly(libs.log4j.core)

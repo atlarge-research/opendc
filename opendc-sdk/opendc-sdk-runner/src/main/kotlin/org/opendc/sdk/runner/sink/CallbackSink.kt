@@ -24,11 +24,11 @@ package org.opendc.sdk.runner.sink
 
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.OutputFiles
-import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReader
-import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
-import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
-import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
-import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
+import org.opendc.compute.simulator.telemetry.table.battery.BatterySample as BatterySampleTmp
+import org.opendc.compute.simulator.telemetry.table.host.HostSample as HostSampleTmp
+import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceSample as PowerSourceSampleTmp
+import org.opendc.compute.simulator.telemetry.table.service.ServiceSample as ServiceSampleTmp
+import org.opendc.compute.simulator.telemetry.table.task.TaskSample as TaskSampleTmp
 
 /**
  * Streams each metric snapshot to per-table callbacks as it is produced, without retaining it.
@@ -38,34 +38,34 @@ import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
  * Readers are reused and reset after each callback, so copy any value you need to keep.
  */
 public class CallbackSink(
-    private val onHost: ((HostTableReader) -> Unit)? = null,
-    private val onTask: ((TaskTableReader) -> Unit)? = null,
-    private val onService: ((ServiceTableReader) -> Unit)? = null,
-    private val onPowerSource: ((PowerSourceTableReader) -> Unit)? = null,
-    private val onBattery: ((BatteryTableReader) -> Unit)? = null,
+    private val onHost: ((HostSampleTmp) -> Unit)? = null,
+    private val onTask: ((TaskSampleTmp) -> Unit)? = null,
+    private val onService: ((ServiceSampleTmp) -> Unit)? = null,
+    private val onPowerSource: ((PowerSourceSampleTmp) -> Unit)? = null,
+    private val onBattery: ((BatterySampleTmp) -> Unit)? = null,
 ) : OutputSink {
     override fun open(context: RunContext): SinkSession =
         object : SinkSession {
             override val monitor: ComputeMonitor =
                 object : ComputeMonitor {
-                    override fun record(reader: HostTableReader) {
+                    override fun record(reader: BatterySampleTmp) {
+                        onBattery?.invoke(reader)
+                    }
+
+                    override fun record(reader: HostSampleTmp) {
                         onHost?.invoke(reader)
                     }
 
-                    override fun record(reader: TaskTableReader) {
-                        onTask?.invoke(reader)
-                    }
-
-                    override fun record(reader: ServiceTableReader) {
-                        onService?.invoke(reader)
-                    }
-
-                    override fun record(reader: PowerSourceTableReader) {
+                    override fun record(reader: PowerSourceSampleTmp) {
                         onPowerSource?.invoke(reader)
                     }
 
-                    override fun record(reader: BatteryTableReader) {
-                        onBattery?.invoke(reader)
+                    override fun record(reader: ServiceSampleTmp) {
+                        onService?.invoke(reader)
+                    }
+
+                    override fun record(reader: TaskSampleTmp) {
+                        onTask?.invoke(reader)
                     }
                 }
 

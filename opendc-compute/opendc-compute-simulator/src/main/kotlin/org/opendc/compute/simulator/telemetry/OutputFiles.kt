@@ -27,18 +27,18 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 public enum class OutputFiles {
+    @SerialName("battery")
+    BATTERY,
+
     @SerialName("host")
     HOST,
-
-    @SerialName("task")
-    TASK,
 
     @SerialName("powerSource")
     POWER_SOURCE,
 
-    @SerialName("battery")
-    BATTERY,
-
     @SerialName("service")
     SERVICE,
+
+    @SerialName("task")
+    TASK,
 }
