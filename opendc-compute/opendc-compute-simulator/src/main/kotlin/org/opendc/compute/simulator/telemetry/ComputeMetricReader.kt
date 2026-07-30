@@ -29,17 +29,14 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.common.Dispatcher
 import org.opendc.common.asCoroutineDispatcher
-import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.simulator.service.ServiceTask
-import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReaderImpl
-import org.opendc.compute.simulator.telemetry.table.host.HostTableReaderImpl
-import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReaderImpl
-import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReaderImpl
-import org.opendc.compute.simulator.telemetry.table.task.TaskTableReaderImpl
-import org.opendc.simulator.compute.power.SimPowerSource
-import org.opendc.simulator.compute.power.batteries.SimBattery
+import org.opendc.compute.simulator.telemetry.table.battery.BatterySampler
+import org.opendc.compute.simulator.telemetry.table.host.HostSampler
+import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceSampler
+import org.opendc.compute.simulator.telemetry.table.service.ServiceSampler
+import org.opendc.compute.simulator.telemetry.table.task.TaskSampler
 import java.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A helper class to collect metrics from a [ComputeService] instance and automatically export the metrics every
@@ -70,36 +67,34 @@ public class ComputeMetricReader(
     private val scope = CoroutineScope(dispatcher.asCoroutineDispatcher())
     private val clock = dispatcher.timeSource
 
-    /**
-     * Aggregator for service metrics.
-     */
-    private val serviceTableReader =
-        ServiceTableReaderImpl(
+    private val batterySampler =
+        BatterySampler(
+            startTime,
+        )
+
+    private val hostSampler =
+        HostSampler(
+            startTime,
+        )
+
+    private val powerSourceSampler =
+        PowerSourceSampler(
+            startTime,
+        )
+
+    private val serviceSampler =
+        ServiceSampler(
+            service,
+            startTime,
+        )
+
+    private val taskSampler =
+        TaskSampler(
             service,
             startTime,
         )
 
     private var loggCounter = 0
-
-    /**
-     * Mapping from [SimHost] instances to [HostTableReaderImpl]
-     */
-    private val hostTableReaders = mutableMapOf<SimHost, HostTableReaderImpl>()
-
-    /**
-     * Mapping from [ServiceTask] instances to [TaskTableReaderImpl]
-     */
-    private val taskTableReaders = mutableMapOf<ServiceTask, TaskTableReaderImpl>()
-
-    /**
-     * Mapping from [SimPowerSource] instances to [PowerSourceTableReaderImpl]
-     */
-    private val powerSourceTableReaders = mutableMapOf<SimPowerSource, PowerSourceTableReaderImpl>()
-
-    /**
-     * Mapping from [SimPowerSource] instances to [PowerSourceTableReaderImpl]
-     */
-    private val batteryTableReaders = mutableMapOf<SimBattery, BatteryTableReaderImpl>()
 
     /**
      * The background job that is responsible for collecting the metrics every cycle.
@@ -109,7 +104,7 @@ public class ComputeMetricReader(
             val intervalMs = exportInterval.toMillis()
             try {
                 while (isActive) {
-                    delay(intervalMs)
+                    delay(intervalMs.milliseconds)
 
                     loggState()
                 }
@@ -125,87 +120,52 @@ public class ComputeMetricReader(
         try {
             val now = this.clock.instant()
 
+            if (toMonitor[OutputFiles.BATTERY] == true) {
+                for (battery in this.service.batteries) {
+                    val batterySample = this.batterySampler.sample(now, battery)
+                    this.monitor.record(batterySample)
+                }
+            }
+
             if (toMonitor[OutputFiles.HOST] == true) {
                 for (host in this.service.hosts) {
-                    val reader =
-                        this.hostTableReaders.computeIfAbsent(host) {
-                            HostTableReaderImpl(
-                                it,
-                                startTime,
-                            )
-                        }
-                    reader.record(now)
-                    this.monitor.record(reader.copy())
-                    reader.reset()
+                    val hostSample = this.hostSampler.sample(now, host)
+                    this.monitor.record(hostSample)
                 }
             }
-
-            if (toMonitor[OutputFiles.TASK] == true) {
-                for (task in this.service.tasks.values) {
-                    val reader =
-                        this.taskTableReaders.computeIfAbsent(task) {
-                            TaskTableReaderImpl(
-                                service,
-                                it,
-                                startTime,
-                            )
-                        }
-                    reader.record(now)
-                    this.monitor.record(reader.copy())
-                    reader.reset()
-                }
-            }
-
-            for (task in this.service.tasksToRemove) {
-                this.taskTableReaders.remove(task)
-                task.delete()
-            }
-            this.service.clearTasksToRemove()
 
             if (toMonitor[OutputFiles.POWER_SOURCE] == true) {
-                for (simPowerSource in this.service.powerSources) {
-                    val reader =
-                        this.powerSourceTableReaders.computeIfAbsent(simPowerSource) {
-                            PowerSourceTableReaderImpl(
-                                it,
-                                startTime,
-                            )
-                        }
-
-                    reader.record(now)
-                    this.monitor.record(reader.copy())
-                    reader.reset()
-                }
-            }
-
-            if (toMonitor[OutputFiles.BATTERY] == true) {
-                for (simBattery in this.service.batteries) {
-                    val reader =
-                        this.batteryTableReaders.computeIfAbsent(simBattery) {
-                            BatteryTableReaderImpl(
-                                it,
-                                startTime,
-                            )
-                        }
-
-                    reader.record(now)
-                    this.monitor.record(reader.copy())
-                    reader.reset()
+                for (powerSource in this.service.powerSources) {
+                    val powerSourceSample = this.powerSourceSampler.sample(now, powerSource)
+                    this.monitor.record(powerSourceSample)
                 }
             }
 
             if (toMonitor[OutputFiles.SERVICE] == true) {
-                this.serviceTableReader.record(now)
-                this.monitor.record(this.serviceTableReader.copy())
+                val serviceSample = this.serviceSampler.sample(now)
+                this.monitor.record(serviceSample)
             }
 
+            if (toMonitor[OutputFiles.TASK] == true) {
+                for (task in this.service.tasks.values) {
+                    val taskSample = this.taskSampler.sample(now, task)
+                    this.monitor.record(taskSample)
+                }
+            }
+
+            for (task in this.service.tasksToRemove) {
+                task.delete()
+            }
+            this.service.clearTasksToRemove()
+
             if (printFrequency != null && loggCounter % printFrequency == 0) {
+                // TODO: Fix this!
                 var loggString = "\n\t\t\t\t\tMetrics after ${now.toEpochMilli() / 1000 / 60 / 60} hours:\n"
-                loggString += "\t\t\t\t\t\tTasks Total: ${this.serviceTableReader.tasksTotal}\n"
-                loggString += "\t\t\t\t\t\tTasks Active: ${this.serviceTableReader.tasksActive}\n"
-                loggString += "\t\t\t\t\t\tTasks Pending: ${this.serviceTableReader.tasksPending}\n"
-                loggString += "\t\t\t\t\t\tTasks Completed: ${this.serviceTableReader.tasksCompleted}\n"
-                loggString += "\t\t\t\t\t\tTasks Terminated: ${this.serviceTableReader.tasksTerminated}\n"
+//                loggString += "\t\t\t\t\t\tTasks Total: ${this.serviceTableReader.tasksTotal}\n"
+//                loggString += "\t\t\t\t\t\tTasks Active: ${this.serviceTableReader.tasksActive}\n"
+//                loggString += "\t\t\t\t\t\tTasks Pending: ${this.serviceTableReader.tasksPending}\n"
+//                loggString += "\t\t\t\t\t\tTasks Completed: ${this.serviceTableReader.tasksCompleted}\n"
+//                loggString += "\t\t\t\t\t\tTasks Terminated: ${this.serviceTableReader.tasksTerminated}\n"
 
                 this.logger.warn { loggString }
             }

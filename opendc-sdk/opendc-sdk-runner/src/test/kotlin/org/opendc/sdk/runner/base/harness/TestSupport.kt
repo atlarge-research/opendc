@@ -82,6 +82,7 @@ internal fun fragment(
 /**
  * Builds an SDK [TaskSpec] reproducing the legacy `createTestTask`: per-core capacity is the peak
  * fragment usage, submission is parsed as a UTC instant, and memory is in MiB.
+ * TODO: rewrite this to use the dsl
  */
 internal fun createTestTask(
     id: Int,
@@ -127,6 +128,7 @@ internal fun runTest(
     exportInterval: TimeDelta = TimeDelta.ofMin(1),
 ): TestComputeMonitor {
     val monitor = TestComputeMonitor()
+//    val monitorSink = ParquetSink(Path.of("output"))
     val scenario =
         ScenarioSpec(
             topology = topology,
@@ -137,5 +139,6 @@ internal fun runTest(
             checkpointModel = checkpointModel,
         )
     runScenario(scenario, "", 0, 0L, listOf(MonitorSink(monitor)), provisioner)
+//    runScenario(scenario, "", 0, 0L, listOf(monitorSink), provisioner)
     return monitor
 }

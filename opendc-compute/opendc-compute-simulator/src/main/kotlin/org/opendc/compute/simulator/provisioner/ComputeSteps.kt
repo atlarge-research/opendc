@@ -70,7 +70,14 @@ public fun registerComputeMonitor(
         ),
     printFrequency: Int? = null,
 ): ProvisioningStep {
-    return ComputeMonitorProvisioningStep(serviceDomain, monitor, exportInterval, startTime, filesToExport, printFrequency)
+    return ComputeMonitorProvisioningStep(
+        serviceDomain,
+        monitor,
+        exportInterval,
+        startTime,
+        filesToExport,
+        printFrequency,
+    )
 }
 
 /**

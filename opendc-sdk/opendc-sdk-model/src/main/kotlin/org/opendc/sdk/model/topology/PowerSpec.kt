@@ -28,7 +28,10 @@ import org.opendc.common.units.Power
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 
-/** The functional shape relating utilization to power draw. */
+/** The functional shape relating utilization to power draw.
+ *
+ * TODO: update to use a sealed interface such as the [FailureModelSpec]
+ * */
 @Serializable
 public enum class PowerModelType {
     @SerialName("constant")

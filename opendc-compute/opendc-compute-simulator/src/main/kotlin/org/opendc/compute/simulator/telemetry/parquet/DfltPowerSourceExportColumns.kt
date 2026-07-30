@@ -28,7 +28,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
-import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
+import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 
 /**
@@ -47,48 +47,48 @@ import org.opendc.trace.util.parquet.exporter.ExportColumn
  * ```
  */
 public object DfltPowerSourceExportColumns {
-    public val TIMESTAMP: ExportColumn<PowerSourceTableReader> =
+    public val TIMESTAMP: ExportColumn<PowerSourceSample> =
         ExportColumn(
             field = Types.required(INT64).named("timestamp"),
         ) { it.timestamp.toEpochMilli() }
 
-    public val TIMESTAMP_ABS: ExportColumn<PowerSourceTableReader> =
+    public val TIMESTAMP_ABS: ExportColumn<PowerSourceSample> =
         ExportColumn(
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
-    public val SOURCE_NAME: ExportColumn<PowerSourceTableReader> =
+    public val SOURCE_NAME: ExportColumn<PowerSourceSample> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("source_name"),
-        ) { Binary.fromString(it.powerSourceInfo.name) }
+        ) { Binary.fromString(it.powerSourceName) }
 
-    public val CLUSTER_NAME: ExportColumn<PowerSourceTableReader> =
+    public val CLUSTER_NAME: ExportColumn<PowerSourceSample> =
         ExportColumn(
             field =
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("cluster_name"),
-        ) { Binary.fromString(it.powerSourceInfo.clusterName) }
+        ) { Binary.fromString(it.clusterName) }
 
-    public val POWER_DRAW: ExportColumn<PowerSourceTableReader> =
+    public val POWER_DRAW: ExportColumn<PowerSourceSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("power_draw"),
         ) { it.powerDraw }
 
-    public val ENERGY_USAGE: ExportColumn<PowerSourceTableReader> =
+    public val ENERGY_USAGE: ExportColumn<PowerSourceSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("energy_usage"),
         ) { it.energyUsage }
 
-    public val CARBON_INTENSITY: ExportColumn<PowerSourceTableReader> =
+    public val CARBON_INTENSITY: ExportColumn<PowerSourceSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("carbon_intensity"),
         ) { it.carbonIntensity }
 
-    public val CARBON_EMISSION: ExportColumn<PowerSourceTableReader> =
+    public val CARBON_EMISSION: ExportColumn<PowerSourceSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("carbon_emission"),
         ) { it.carbonEmission }

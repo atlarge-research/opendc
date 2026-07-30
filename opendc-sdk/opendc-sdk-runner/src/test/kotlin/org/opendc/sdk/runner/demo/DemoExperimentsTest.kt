@@ -195,8 +195,8 @@ class DemoExperimentsTest {
 
     /** The demo-relevant aggregates of one scenario's captured metrics. */
     private class ScenarioSummary(metrics: CollectedMetrics) {
-        val energy = metrics.powerSource.sumOf { it.energyUsage }
-        val carbon = metrics.powerSource.sumOf { it.carbonEmission }
+        val energy = metrics.powerSource.last().energyUsage
+        val carbon = metrics.powerSource.last().carbonEmission
         val tasksTotal = metrics.service.maxOf { it.tasksTotal }
         val tasksCompleted = metrics.service.maxOf { it.tasksCompleted }
         val tasksTerminated = metrics.service.maxOf { it.tasksTerminated }

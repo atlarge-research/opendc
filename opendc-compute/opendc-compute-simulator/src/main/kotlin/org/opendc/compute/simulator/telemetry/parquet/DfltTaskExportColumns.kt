@@ -29,7 +29,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
-import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
+import org.opendc.compute.simulator.telemetry.table.task.TaskSample
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 
 /**
@@ -48,24 +48,24 @@ import org.opendc.trace.util.parquet.exporter.ExportColumn
  * ```
  */
 public object DfltTaskExportColumns {
-    public val TIMESTAMP: ExportColumn<TaskTableReader> =
+    public val TIMESTAMP: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(INT64).named("timestamp"),
         ) { it.timestamp.toEpochMilli() }
 
-    public val TIMESTAMP_ABS: ExportColumn<TaskTableReader> =
+    public val TIMESTAMP_ABS: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(INT64).named("timestamp_absolute"),
         ) { it.timestampAbsolute.toEpochMilli() }
 
-    public val TASK_ID: ExportColumn<TaskTableReader> =
+    public val TASK_ID: ExportColumn<TaskSample> =
         ExportColumn(
             field =
                 Types.required(INT32)
                     .named("task_id"),
-        ) { it.taskInfo.id }
+        ) { it.taskId }
 
-    public val HOST_NAME: ExportColumn<TaskTableReader> =
+    public val HOST_NAME: ExportColumn<TaskSample> =
         ExportColumn(
             field =
                 Types.required(BINARY)
@@ -78,127 +78,127 @@ public object DfltTaskExportColumns {
             return@ExportColumn Binary.fromString(it.hostName)
         }
 
-    public val MEM_CAPACITY: ExportColumn<TaskTableReader> =
+    public val MEM_CAPACITY: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(INT64).named("mem_capacity"),
-        ) { it.taskInfo.memCapacity }
+        ) { it.memCapacity }
 
-    public val CPU_COUNT: ExportColumn<TaskTableReader> =
+    public val CPU_COUNT: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(INT32).named("cpu_count"),
-        ) { it.taskInfo.cpuCount }
+        ) { it.cpuCount }
 
-    public val CPU_LIMIT: ExportColumn<TaskTableReader> =
+    public val CPU_LIMIT: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("cpu_limit"),
         ) { it.cpuLimit }
 
-    public val CPU_USAGE: ExportColumn<TaskTableReader> =
+    public val CPU_USAGE: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("cpu_usage"),
         ) { it.cpuUsage }
 
-    public val CPU_DEMAND: ExportColumn<TaskTableReader> =
+    public val CPU_DEMAND: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("cpu_demand"),
         ) { it.cpuDemand }
 
-    public val CPU_TIME_ACTIVE: ExportColumn<TaskTableReader> =
+    public val CPU_TIME_ACTIVE: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_active"),
         ) { it.cpuActiveTime }
 
-    public val CPU_TIME_IDLE: ExportColumn<TaskTableReader> =
+    public val CPU_TIME_IDLE: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_idle"),
         ) { it.cpuIdleTime }
 
-    public val CPU_TIME_STEAL: ExportColumn<TaskTableReader> =
+    public val CPU_TIME_STEAL: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_steal"),
         ) { it.cpuStealTime }
 
-    public val CPU_TIME_LOST: ExportColumn<TaskTableReader> =
+    public val CPU_TIME_LOST: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_lost"),
         ) { it.cpuLostTime }
 
-    public val GPU_COUNT: ExportColumn<TaskTableReader> =
+    public val GPU_COUNT: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(INT32).named("gpu_count"),
-        ) { it.taskInfo.gpuCount }
+        ) { it.gpuCount }
 
-    public val GPU_LIMIT: ExportColumn<TaskTableReader> =
+    public val GPU_LIMIT: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(FLOAT).named("gpu_limit"),
         ) { it.gpuLimit }
 
-    public val GPU_USAGE: ExportColumn<TaskTableReader> =
+    public val GPU_USAGE: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(FLOAT).named("gpu_usage"),
         ) { it.gpuUsage }
 
-    public val GPU_DEMAND: ExportColumn<TaskTableReader> =
+    public val GPU_DEMAND: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(FLOAT).named("gpu_demand"),
         ) { it.gpuDemand }
 
-    public val GPU_TIME_ACTIVE: ExportColumn<TaskTableReader> =
+    public val GPU_TIME_ACTIVE: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(INT64).named("gpu_time_active"),
         ) { it.gpuActiveTime }
 
-    public val GPU_TIME_IDLE: ExportColumn<TaskTableReader> =
+    public val GPU_TIME_IDLE: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(INT64).named("gpu_time_idle"),
         ) { it.gpuIdleTime }
 
-    public val GPU_TIME_STEAL: ExportColumn<TaskTableReader> =
+    public val GPU_TIME_STEAL: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(INT64).named("gpu_time_steal"),
         ) { it.gpuStealTime }
 
-    public val GPU_TIME_LOST: ExportColumn<TaskTableReader> =
+    public val GPU_TIME_LOST: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(INT64).named("gpu_time_lost"),
         ) { it.gpuLostTime }
 
-    public val UP_TIME: ExportColumn<TaskTableReader> =
+    public val UP_TIME: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(INT64).named("uptime"),
         ) { it.uptime }
 
-    public val DOWN_TIME: ExportColumn<TaskTableReader> =
+    public val DOWN_TIME: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(INT64).named("downtime"),
         ) { it.downtime }
 
-    public val NUM_FAILURES: ExportColumn<TaskTableReader> =
+    public val NUM_FAILURES: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(INT64).named("num_failures"),
         ) { it.numFailures }
 
-    public val NUM_PAUSES: ExportColumn<TaskTableReader> =
+    public val NUM_PAUSES: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(INT64).named("num_pauses"),
         ) { it.numPauses }
 
-    public val SCHEDULE_TIME: ExportColumn<TaskTableReader> =
+    public val SCHEDULE_TIME: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(INT64).named("schedule_time"),
         ) { it.scheduleTime }
 
-    public val SUBMISSION_TIME: ExportColumn<TaskTableReader> =
+    public val SUBMISSION_TIME: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(INT64).named("submission_time"),
         ) { it.submissionTime }
 
-    public val FINISH_TIME: ExportColumn<TaskTableReader> =
+    public val FINISH_TIME: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(INT64).named("finish_time"),
         ) { it.finishTime }
 
-    public val TASK_STATE: ExportColumn<TaskTableReader> =
+    public val TASK_STATE: ExportColumn<TaskSample> =
         ExportColumn(
             field =
                 Types.optional(BINARY)
@@ -211,17 +211,17 @@ public object DfltTaskExportColumns {
             return@ExportColumn Binary.fromString(it.taskState!!.name)
         }
 
-    public val schedulingDelay: ExportColumn<TaskTableReader> =
+    public val schedulingDelay: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(INT64).named("scheduling_delay"),
         ) { it.schedulingDelay }
 
-    public val failureDelay: ExportColumn<TaskTableReader> =
+    public val failureDelay: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(INT64).named("failure_delay"),
         ) { it.failureDelay }
 
-    public val checkpointDelay: ExportColumn<TaskTableReader> =
+    public val checkpointDelay: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(INT64).named("checkpoint_delay"),
         ) { it.checkpointDelay }

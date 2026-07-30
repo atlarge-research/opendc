@@ -24,13 +24,13 @@ package org.opendc.sdk.runner.sink
 
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.OutputFiles
-import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReader
-import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
-import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
-import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
-import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
 import org.opendc.sdk.model.export.OutputFileSpec
 import org.opendc.sdk.runner.factory.toEngineOutputFiles
+import org.opendc.compute.simulator.telemetry.table.battery.BatterySample as BatterySampleTmp
+import org.opendc.compute.simulator.telemetry.table.host.HostSample as HostSampleTmp
+import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceSample as PowerSourceSampleTmp
+import org.opendc.compute.simulator.telemetry.table.service.ServiceSample as ServiceSampleTmp
+import org.opendc.compute.simulator.telemetry.table.task.TaskSample as TaskSampleTmp
 
 /**
  * Captures each run's metrics in memory as strongly-typed [CollectedMetrics], available on the
@@ -54,24 +54,24 @@ public class InMemorySink
 
             override val monitor: ComputeMonitor =
                 object : ComputeMonitor {
-                    override fun record(reader: HostTableReader) {
+                    override fun record(reader: BatterySampleTmp) {
+                        if (OutputFileSpec.BATTERY in captureTables) battery += reader.toSample()
+                    }
+
+                    override fun record(reader: HostSampleTmp) {
                         if (OutputFileSpec.HOST in captureTables) host += reader.toSample()
                     }
 
-                    override fun record(reader: TaskTableReader) {
-                        if (OutputFileSpec.TASK in captureTables) task += reader.toSample()
-                    }
-
-                    override fun record(reader: ServiceTableReader) {
-                        if (OutputFileSpec.SERVICE in captureTables) service += reader.toSample()
-                    }
-
-                    override fun record(reader: PowerSourceTableReader) {
+                    override fun record(reader: PowerSourceSampleTmp) {
                         if (OutputFileSpec.POWER_SOURCE in captureTables) powerSource += reader.toSample()
                     }
 
-                    override fun record(reader: BatteryTableReader) {
-                        if (OutputFileSpec.BATTERY in captureTables) battery += reader.toSample()
+                    override fun record(reader: ServiceSampleTmp) {
+                        if (OutputFileSpec.SERVICE in captureTables) service += reader.toSample()
+                    }
+
+                    override fun record(reader: TaskSampleTmp) {
+                        if (OutputFileSpec.TASK in captureTables) task += reader.toSample()
                     }
                 }
 
@@ -81,12 +81,12 @@ public class InMemorySink
         }
     }
 
-private fun HostTableReader.toSample(): HostSample =
+private fun HostSampleTmp.toSample(): HostSample =
     HostSample(
         timestamp.toEpochMilli(),
         timestampAbsolute.toEpochMilli(),
-        hostInfo.name,
-        hostInfo.clusterName,
+        hostName ?: "uknown-host",
+        clusterName ?: "uknown-cluster",
         tasksActive,
         tasksTerminated,
         cpuCapacity,
@@ -108,11 +108,11 @@ private fun HostTableReader.toSample(): HostSample =
         downtime,
     )
 
-private fun TaskTableReader.toSample(): TaskSample =
+private fun TaskSampleTmp.toSample(): TaskSample =
     TaskSample(
         timestamp.toEpochMilli(),
         timestampAbsolute.toEpochMilli(),
-        taskInfo.id,
+        taskId,
         hostName,
         taskState?.toString(),
         cpuLimit,
@@ -137,7 +137,7 @@ private fun TaskTableReader.toSample(): TaskSample =
         checkpointDelay,
     )
 
-private fun ServiceTableReader.toSample(): ServiceSample =
+private fun ServiceSampleTmp.toSample(): ServiceSample =
     ServiceSample(
         timestamp.toEpochMilli(),
         timestampAbsolute.toEpochMilli(),
@@ -152,7 +152,7 @@ private fun ServiceTableReader.toSample(): ServiceSample =
         attemptsFailure,
     )
 
-private fun PowerSourceTableReader.toSample(): PowerSourceSample =
+private fun PowerSourceSampleTmp.toSample(): PowerSourceSample =
     PowerSourceSample(
         timestamp.toEpochMilli(),
         timestampAbsolute.toEpochMilli(),
@@ -163,7 +163,7 @@ private fun PowerSourceTableReader.toSample(): PowerSourceSample =
         carbonEmission,
     )
 
-private fun BatteryTableReader.toSample(): BatterySample =
+private fun BatterySampleTmp.toSample(): BatterySample =
     BatterySample(
         timestamp.toEpochMilli(),
         timestampAbsolute.toEpochMilli(),

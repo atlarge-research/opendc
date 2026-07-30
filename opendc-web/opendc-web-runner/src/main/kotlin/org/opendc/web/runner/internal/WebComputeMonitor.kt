@@ -23,17 +23,15 @@
 package org.opendc.web.runner.internal
 
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
-import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
-import org.opendc.compute.simulator.telemetry.table.service.ServiceData
-import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
-import org.opendc.compute.simulator.telemetry.table.service.toServiceData
+import org.opendc.compute.simulator.telemetry.table.host.HostSample
+import org.opendc.compute.simulator.telemetry.table.service.ServiceSample
 import kotlin.math.roundToLong
 
 /**
  * A [ComputeMonitor] that tracks the aggregate metrics for each repeat.
  */
 internal class WebComputeMonitor : ComputeMonitor {
-    override fun record(reader: HostTableReader) {
+    override fun record(reader: HostSample) {
         val slices = reader.downtime / sliceLength
 
         hostAggregateMetrics =
@@ -47,13 +45,15 @@ internal class WebComputeMonitor : ComputeMonitor {
                 hostAggregateMetrics.totalFailureVmSlices + reader.tasksActive * slices,
             )
 
-        hostMetrics.compute(reader.hostInfo.name) { _, prev ->
-            HostMetrics(
-                reader.cpuUsage + (prev?.cpuUsage ?: 0.0),
-                reader.cpuDemand + (prev?.cpuDemand ?: 0.0),
-                reader.tasksActive + (prev?.instanceCount ?: 0),
-                1 + (prev?.count ?: 0),
-            )
+        reader.hostName?.let {
+            hostMetrics.compute(it) { _, prev ->
+                HostMetrics(
+                    reader.cpuUsage + (prev?.cpuUsage ?: 0.0),
+                    reader.cpuDemand + (prev?.cpuDemand ?: 0.0),
+                    reader.tasksActive + (prev?.instanceCount ?: 0),
+                    1 + (prev?.count ?: 0),
+                )
+            }
         }
     }
 
@@ -78,10 +78,10 @@ internal class WebComputeMonitor : ComputeMonitor {
         val count: Long,
     )
 
-    private lateinit var serviceData: ServiceData
+    private lateinit var serviceData: ServiceSample
 
-    override fun record(reader: ServiceTableReader) {
-        serviceData = reader.toServiceData()
+    override fun record(reader: ServiceSample) {
+        serviceData = reader
     }
 
     /**
@@ -107,7 +107,7 @@ internal class WebComputeMonitor : ComputeMonitor {
             serviceData.tasksTotal,
             serviceData.tasksPending,
             serviceData.tasksTotal - serviceData.tasksPending - serviceData.tasksActive,
-            serviceData.attemptsTerminated,
+            0,
         )
     }
 

@@ -24,11 +24,11 @@ package org.opendc.cli.progress
 
 import org.opendc.compute.simulator.telemetry.ComputeMonitor
 import org.opendc.compute.simulator.telemetry.OutputFiles
-import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
 import org.opendc.sdk.runner.sink.OutputSink
 import org.opendc.sdk.runner.sink.RunContext
 import org.opendc.sdk.runner.sink.SinkResult
 import org.opendc.sdk.runner.sink.SinkSession
+import org.opendc.compute.simulator.telemetry.table.service.ServiceSample as ServiceSampleTmp
 
 /**
  * A metric sink that feeds each run's task-completion counts into a shared [ExperimentProgress].
@@ -40,7 +40,7 @@ internal class ProgressSink(private val progress: ExperimentProgress) : OutputSi
         return object : SinkSession {
             override val monitor: ComputeMonitor =
                 object : ComputeMonitor {
-                    override fun record(reader: ServiceTableReader) {
+                    override fun record(reader: ServiceSampleTmp) {
                         progress.update(key, (reader.tasksCompleted + reader.tasksTerminated).toLong())
                     }
                 }

@@ -47,7 +47,7 @@ parquet, in-memory capture, and streaming can all observe the same run.
 | Sink | Purpose |
 |------|---------|
 | `ParquetSink` | Writes the canonical layout `<root>/<experiment>/raw-output/<id>/seed=<seed>/{host,task,powerSource,battery,service}.parquet`. Added by `builder().output(root)`. |
-| `InMemorySink` | Captures selected tables as strongly-typed `HostSample`/`TaskSample`/`ServiceSample`/`PowerSourceSample`/`BatterySample`, available on `RunResult.metrics`. |
+| `InMemorySink` | Captures selected tables as strongly-typed `HostSample`/`TaskSample`/`HostSample`/`PowerSourceSample`/`HostSample`, available on `RunResult.metrics`. |
 | `CallbackSink` | Streams each snapshot to per-table callbacks without retaining it — for progress or large sweeps. |
 | `MonitorSink` | Feeds a caller-supplied `ComputeMonitor` — the full-control escape hatch. |
 

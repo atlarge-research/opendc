@@ -22,11 +22,11 @@
 
 package org.opendc.compute.simulator.telemetry
 
-import org.opendc.compute.simulator.telemetry.table.battery.BatteryTableReader
-import org.opendc.compute.simulator.telemetry.table.host.HostTableReader
-import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceTableReader
-import org.opendc.compute.simulator.telemetry.table.service.ServiceTableReader
-import org.opendc.compute.simulator.telemetry.table.task.TaskTableReader
+import org.opendc.compute.simulator.telemetry.table.battery.BatterySample
+import org.opendc.compute.simulator.telemetry.table.host.HostSample
+import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceSample
+import org.opendc.compute.simulator.telemetry.table.service.ServiceSample
+import org.opendc.compute.simulator.telemetry.table.task.TaskSample
 
 /**
  * A monitor that tracks the metrics and events of the OpenDC Compute service.
@@ -35,25 +35,25 @@ public interface ComputeMonitor {
     /**
      * Record an entry with the specified [reader].
      */
-    public fun record(reader: TaskTableReader) {}
+    public fun record(reader: BatterySample) {}
 
     /**
      * Record an entry with the specified [reader].
      */
-    public fun record(reader: HostTableReader) {}
+    public fun record(reader: HostSample) {}
 
     /**
      * Record an entry with the specified [reader].
      */
-    public fun record(reader: PowerSourceTableReader) {}
+    public fun record(reader: PowerSourceSample) {}
 
     /**
      * Record an entry with the specified [reader].
      */
-    public fun record(reader: BatteryTableReader) {}
+    public fun record(reader: ServiceSample) {}
 
     /**
      * Record an entry with the specified [reader].
      */
-    public fun record(reader: ServiceTableReader) {}
+    public fun record(reader: TaskSample) {}
 }

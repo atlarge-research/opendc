@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2026 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,34 +22,32 @@
 
 package org.opendc.compute.simulator.telemetry.table.service
 
+import org.opendc.compute.simulator.service.ComputeService
+import java.time.Duration
 import java.time.Instant
 
-/**
- * A trace entry for the compute service.
- */
-public data class ServiceData(
-    val timestamp: Instant,
-    val hostsUp: Int,
-    val hostsDown: Int,
-    val tasksTotal: Int,
-    val tasksPending: Int,
-    val tasksActive: Int,
-    val attemptsSuccess: Int,
-    val attemptsTerminated: Int,
-)
+public class ServiceSampler(
+    private val service: ComputeService,
+    private val startTime: Duration = Duration.ofMillis(0),
+) {
+    public fun sample(now: Instant): ServiceSample {
+        val timestamp = now
+        val timestampAbsolute = now + startTime
 
-/**
- * Convert a [ServiceTableReader] into a persistent object.
- */
-public fun ServiceTableReader.toServiceData(): ServiceData {
-    return ServiceData(
-        timestamp,
-        hostsUp,
-        hostsDown,
-        tasksTotal,
-        tasksPending,
-        tasksActive,
-        attemptsSuccess,
-        attemptsFailure,
-    )
+        val stats = service.schedulerStats
+
+        return ServiceSample(
+            timestamp = timestamp,
+            timestampAbsolute = timestampAbsolute,
+            hostsUp = stats.hostsAvailable,
+            hostsDown = stats.hostsUnavailable,
+            tasksTotal = stats.tasksTotal,
+            tasksPending = stats.tasksPending,
+            tasksCompleted = stats.tasksCompleted,
+            tasksActive = stats.tasksActive,
+            tasksTerminated = stats.tasksTerminated,
+            attemptsSuccess = stats.attemptsSuccess.toInt(),
+            attemptsFailure = stats.attemptsFailure.toInt(),
+        )
+    }
 }

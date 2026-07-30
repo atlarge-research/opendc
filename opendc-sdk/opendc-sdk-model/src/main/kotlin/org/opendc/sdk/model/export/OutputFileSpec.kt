@@ -28,18 +28,18 @@ import kotlinx.serialization.Serializable
 /** Identifies a category of output produced by a simulation run. */
 @Serializable
 public enum class OutputFileSpec {
+    @SerialName("battery")
+    BATTERY,
+
     @SerialName("host")
     HOST,
-
-    @SerialName("task")
-    TASK,
 
     @SerialName("powerSource")
     POWER_SOURCE,
 
-    @SerialName("battery")
-    BATTERY,
-
     @SerialName("service")
     SERVICE,
+
+    @SerialName("task")
+    TASK,
 }
