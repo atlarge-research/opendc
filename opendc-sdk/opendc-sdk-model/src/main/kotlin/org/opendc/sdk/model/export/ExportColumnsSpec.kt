@@ -58,5 +58,5 @@ public data class ExportColumnsSpec(
     public val task: ColumnSelection = AllColumns,
     public val powerSource: ColumnSelection = AllColumns,
     public val battery: ColumnSelection = AllColumns,
-    public val service: ColumnSelection = AllColumns
+    public val service: ColumnSelection = AllColumns,
 )
