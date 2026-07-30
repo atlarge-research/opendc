@@ -59,11 +59,11 @@ internal fun ExportSpec.toExportSettings(gpuCount: Int): ExportSettings =
 private fun ExportSpec.toComputeExportConfig(gpuCount: Int): ComputeExportConfig {
     ComputeExportConfig.loadDfltColumns()
     return ComputeExportConfig(
-        columns.batterySample.resolve<BatterySample>(),
-        columns.hostSample.resolve<HostSample>(),
-        columns.powerSourceSample.resolve<PowerSourceSample>(),
-        columns.serviceSample.resolve<ServiceSample>(),
-        columns.taskSample.resolve<TaskSample>(),
+        columns.battery.resolve<BatterySample>(),
+        columns.host.resolve<HostSample>(),
+        columns.powerSource.resolve<PowerSourceSample>(),
+        columns.service.resolve<ServiceSample>(),
+        columns.task.resolve<TaskSample>(),
     ).withGpuColumns(gpuCount)
 }
 
