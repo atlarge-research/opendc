@@ -25,8 +25,8 @@ package org.opendc.experiments.base.experiment.specs
 import kotlinx.serialization.Serializable
 import org.opendc.common.logger.infoNewLine
 import org.opendc.common.logger.logger
-import org.opendc.compute.simulator.telemetry.OutputFiles
-import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
+import org.opendc.sdk.model.telemetry.OutputFileSpec
+import org.opendc.sdk.runner.telemetry.parquet.ComputeExportConfig
 import kotlin.getValue
 
 /**
@@ -45,17 +45,17 @@ public data class ExportModelSpec(
     val exportInterval: Long = 5 * 60,
     var printFrequency: Int? = 24,
     val computeExportConfig: ComputeExportConfig = ComputeExportConfig.ALL_COLUMNS,
-    val filesToExport: List<OutputFiles> = OutputFiles.entries.toList(),
+    val filesToExport: List<OutputFileSpec> = OutputFileSpec.entries.toList(),
 ) {
     /**
-     * Lookup that maps every [OutputFiles] entry to whether it should be exported.
+     * Lookup that maps every [OutputFileSpec] entry to whether it should be exported.
      *
      * This is a derived value computed from [filesToExport]: it is intentionally declared outside the
      * primary constructor so it is neither part of the (de)serialized experiment file nor settable by
      * the user. It exists only for the rest of the system to consume.
      */
-    public val filesToExportDict: Map<OutputFiles, Boolean> =
-        OutputFiles.entries.associateWith { it in filesToExport }
+    public val filesToExportDict: Map<OutputFileSpec, Boolean> =
+        OutputFileSpec.entries.associateWith { it in filesToExport }
 
     init {
         LOG.infoNewLine(computeExportConfig.fmt())

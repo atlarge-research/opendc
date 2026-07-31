@@ -22,12 +22,12 @@
 
 package org.opendc.cli.render
 
-import org.opendc.sdk.model.export.OutputFileSpec
 import org.opendc.sdk.model.serialization.SdkJson
+import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.runner.OpenDC
 import org.opendc.sdk.runner.SimulationReport
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
-import org.opendc.sdk.runner.sink.InMemorySink
+import org.opendc.sdk.runner.telemetry.sink.InMemorySink
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -29,7 +29,6 @@ import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.experiment.ScenarioSpec
-import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
 import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
@@ -46,6 +45,7 @@ import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.scheduler.VCpuWeigherSpec
+import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.DoubleThresholdPolicy
 import org.opendc.sdk.model.topology.EqualShare
 import org.opendc.sdk.model.topology.FixedShare

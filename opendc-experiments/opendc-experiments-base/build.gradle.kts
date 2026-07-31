@@ -84,6 +84,9 @@ dependencies {
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-failure")))
 
+    implementation(project(mapOf("path" to ":opendc-sdk:opendc-sdk-runner")))
+    implementation(project(mapOf("path" to ":opendc-sdk:opendc-sdk-model")))
+
     runtimeOnly(libs.log4j.core)
     runtimeOnly(libs.log4j.slf4j)
 }

@@ -27,8 +27,8 @@ package org.opendc.experiments.base.experiment
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import org.opendc.common.logger.logger
-import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 import org.opendc.experiments.base.experiment.specs.ExperimentSpec
+import org.opendc.sdk.runner.telemetry.parquet.ComputeExportConfig
 import java.io.File
 import java.io.InputStream
 import java.nio.file.Path

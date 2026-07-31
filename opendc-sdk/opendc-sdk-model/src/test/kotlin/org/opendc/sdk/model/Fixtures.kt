@@ -30,11 +30,11 @@ import org.opendc.sdk.model.dsl.minutes
 import org.opendc.sdk.model.dsl.watts
 import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.experiment.ScenarioSpec
-import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec

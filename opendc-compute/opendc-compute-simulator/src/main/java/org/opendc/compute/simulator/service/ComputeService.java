@@ -47,8 +47,7 @@ import org.opendc.compute.simulator.scheduler.ComputeScheduler;
 import org.opendc.compute.simulator.scheduler.SchedulingRequest;
 import org.opendc.compute.simulator.scheduler.SchedulingResult;
 import org.opendc.compute.simulator.scheduler.SchedulingResultType;
-import org.opendc.compute.simulator.telemetry.ComputeMetricReader;
-import org.opendc.compute.simulator.telemetry.SchedulerStats;
+import org.opendc.compute.simulator.telemetry.TaskListener;
 import org.opendc.simulator.compute.power.CarbonModel;
 import org.opendc.simulator.compute.power.CarbonReceiver;
 import org.opendc.simulator.compute.power.SimPowerSource;
@@ -128,7 +127,43 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     private final List<ServiceTask> tasksToRemove = new ArrayList<>();
 
-    private final List<ComputeMetricReader> metricReaders = new ArrayList<>();
+    private final List<TaskListener> taskListeners = new ArrayList<>();
+
+    public int getHostsAvailable() {
+        return this.availableHosts.size();
+    }
+
+    public int getHostsUnavailable() {
+        return this.hostToView.size() - this.availableHosts.size();
+    }
+
+    public long getAttemptsSuccess() {
+        return this.attemptsSuccess;
+    }
+
+    public long getAttemptsFailure() {
+        return this.attemptsFailure;
+    }
+
+    public int getTasksTotal() {
+        return this.tasksTotal;
+    }
+
+    public int getTasksPending() {
+        return this.tasksPending;
+    }
+
+    public int getTasksActive() {
+        return this.tasksActive;
+    }
+
+    public int getTasksCompleted() {
+        return this.tasksCompleted;
+    }
+
+    public int getTasksTerminated() {
+        return this.tasksTerminated;
+    }
 
     /**
      * A [HostListener] used to track the active tasks.
@@ -360,35 +395,20 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         return Collections.unmodifiableSet(this.batteries);
     }
 
-    public void addMetricReader(List<ComputeMetricReader> metricReaders) {
-        this.metricReaders.addAll(metricReaders);
-    }
-
     public void setTasksExpected(int numberOfTasks) {
         this.tasksExpected = numberOfTasks;
     }
 
-    public void setTaskToBeRemoved(ServiceTask task) {
-        this.tasksToRemove.add(task);
-        if ((this.tasksTerminated + this.tasksCompleted) == this.tasksExpected) {
-            this.metricReaders.forEach(ComputeMetricReader::loggState);
-        }
+    public void addTaskListener(TaskListener listener) {
+        this.taskListeners.add(listener);
     }
 
-    /**
-     * Collect the statistics about the scheduler component of this service.
-     */
-    public SchedulerStats getSchedulerStats() {
-        return new SchedulerStats(
-                availableHosts.size(),
-                hostToView.size() - availableHosts.size(),
-                attemptsSuccess,
-                attemptsFailure,
-                tasksTotal,
-                tasksPending,
-                tasksActive,
-                tasksCompleted,
-                tasksTerminated);
+    public void setTaskToBeRemoved(ServiceTask task) {
+        for (TaskListener listener : this.taskListeners) {
+            listener.onTaskDeletion(task);
+        }
+
+        task.delete();
     }
 
     @Override

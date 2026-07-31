@@ -25,10 +25,6 @@ package org.opendc.web.runner
 import mu.KotlinLogging
 import org.opendc.compute.failure.prefab.FailurePrefab
 import org.opendc.compute.failure.prefab.createFailureModelPrefab
-import org.opendc.compute.simulator.provisioner.Provisioner
-import org.opendc.compute.simulator.provisioner.registerComputeMonitor
-import org.opendc.compute.simulator.provisioner.setupComputeService
-import org.opendc.compute.simulator.provisioner.setupHosts
 import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
@@ -36,6 +32,10 @@ import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.PowerSourceSpec
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.experiments.base.runner.replay
+import org.opendc.sdk.runner.provision.Provisioner
+import org.opendc.sdk.runner.provision.registerComputeMonitor
+import org.opendc.sdk.runner.provision.setupComputeService
+import org.opendc.sdk.runner.provision.setupHosts
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
@@ -352,14 +352,14 @@ public class OpenDCRunner(
                     // Run workload trace
                     service.replay(timeSource, vms, seed = seed)
 
-                    val serviceMetrics = service.getSchedulerStats()
-                    logger.debug {
-                        "Scheduler " +
-                            "Success=${serviceMetrics.attemptsSuccess} " +
-                            "Failure=${serviceMetrics.attemptsFailure} " +
-                            "Pending=${serviceMetrics.tasksPending} " +
-                            "Active=${serviceMetrics.tasksActive}"
-                    }
+//                    val serviceMetrics = service.getSchedulerStats()
+//                    logger.debug {
+//                        "Scheduler " +
+//                            "Success=${serviceMetrics.attemptsSuccess} " +
+//                            "Failure=${serviceMetrics.attemptsFailure} " +
+//                            "Pending=${serviceMetrics.tasksPending} " +
+//                            "Active=${serviceMetrics.tasksActive}"
+//                    }
                 }
             }
     }

@@ -31,8 +31,8 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.json.Json
-import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
 import org.opendc.experiments.base.experiment.specs.ExperimentSpec
+import org.opendc.sdk.runner.telemetry.parquet.ComputeExportConfig
 import org.opendc.trace.util.parquet.exporter.ExportColumn
 import java.io.File
 

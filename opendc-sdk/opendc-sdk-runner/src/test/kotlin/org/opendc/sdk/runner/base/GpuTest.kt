@@ -229,42 +229,82 @@ class GpuTest {
             { assertEquals(10 * 60 * 1000, monitor.maxTimestamp) { "The expected runtime is exceeded" } },
             // CPU
             // task 0
-            { assertEquals(1000.0, monitor.taskCpuDemands[0]?.get(1)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuDemands[0]?.get(8)) { "The cpu demanded by task 0 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuSupplied[0]?.get(1)) { "The cpu used by task 0 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuSupplied[0]?.get(8)) { "The cpu used by task 0 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuDemands[0]?.get(0)) { "The cpu demanded by task 0 at t=0 is incorrect" } },
+            { assertEquals(0.0, monitor.taskCpuDemands[0]?.get(9)) { "The cpu demanded by task 0 at t=9 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied[0]?.get(0)) { "The cpu supplied to task 0 at t=0 is incorrect" } },
+            { assertEquals(0.0, monitor.taskCpuSupplied[0]?.get(9)) { "The cpu supplied by task 0 at t=9 is incorrect" } },
             // task 1
-            { assertEquals(1000.0, monitor.taskCpuDemands[1]?.get(1)) { "The cpu demanded by task 1 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuDemands[1]?.get(8)) { "The cpu demanded by task 1 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuSupplied[1]?.get(1)) { "The cpu used by task 1 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuSupplied[1]?.get(8)) { "The cpu used by task 1 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuDemands[1]?.get(0)) { "The cpu demanded by task 1 at t=0 is incorrect" } },
+            { assertEquals(0.0, monitor.taskCpuDemands[1]?.get(9)) { "The cpu demanded by task 1 at t=9 is incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied[1]?.get(0)) { "The cpu supplied to task 1 at t=0 is incorrect" } },
+            { assertEquals(0.0, monitor.taskCpuSupplied[1]?.get(9)) { "The cpu supplied to task 1 at t=9 is incorrect" } },
             // host
-            { assertEquals(2000.0, monitor.hostCpuDemands["DualGpuHost"]?.get(1)) { "The cpu demanded by the host is incorrect" } },
-            { assertEquals(2000.0, monitor.hostCpuDemands["DualGpuHost"]?.get(9)) { "The cpu demanded by the host is incorrect" } },
-            { assertEquals(2000.0, monitor.hostCpuSupplied["DualGpuHost"]?.get(1)) { "The cpu used by the host is incorrect" } },
-            { assertEquals(2000.0, monitor.hostCpuSupplied["DualGpuHost"]?.get(9)) { "The cpu used by the host is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuDemands["DualGpuHost"]?.get(0)) { "The cpu demanded by the host at t=0 is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuDemands["DualGpuHost"]?.get(9)) { "The cpu demanded by the host at t=9 is incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuSupplied["DualGpuHost"]?.get(0)) { "The cpu supplied by the host at t=0 is incorrect" } },
+            { assertEquals(0.0, monitor.hostCpuSupplied["DualGpuHost"]?.get(9)) { "The cpu supplied by the host at t=9 is incorrect" } },
             // GPU
             // task 0
-            { assertEquals(2000.0, monitor.taskGpuDemands[0]?.get(1)) { "The gpu demanded by task 0 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuDemands[0]?.get(8)) { "The gpu demanded by task 0 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuSupplied[0]?.get(1)) { "The gpu used by task 0 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuSupplied[0]?.get(8)) { "The gpu used by task 0 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuDemands[0]?.get(0)) { "The gpu demanded by task 0 at t=0 is incorrect" } },
+            { assertEquals(0.0, monitor.taskGpuDemands[0]?.get(9)) { "The gpu demanded by task 0 at t=9 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuSupplied[0]?.get(0)) { "The gpu used by task 0 at t=0 is incorrect" } },
+            { assertEquals(0.0, monitor.taskGpuSupplied[0]?.get(9)) { "The gpu used by task 0 at t=9 is incorrect" } },
             // task 1
-            { assertEquals(2000.0, monitor.taskGpuDemands[1]?.get(1)) { "The gpu demanded by task 1 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuDemands[1]?.get(8)) { "The gpu demanded by task 1 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuSupplied[1]?.get(1)) { "The gpu used by task 1 is incorrect" } },
-            { assertEquals(2000.0, monitor.taskGpuSupplied[1]?.get(8)) { "The gpu used by task 1 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuDemands[1]?.get(0)) { "The gpu demanded by task 1 at t=0 is incorrect" } },
+            { assertEquals(0.0, monitor.taskGpuDemands[1]?.get(9)) { "The gpu demanded by task 1 at t=9 is incorrect" } },
+            { assertEquals(2000.0, monitor.taskGpuSupplied[1]?.get(0)) { "The gpu used by task 1 at t=0 is incorrect" } },
+            { assertEquals(0.0, monitor.taskGpuSupplied[1]?.get(9)) { "The gpu used by task 1 at t=9 is incorrect" } },
             // host
             // GPU 0
-            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0)) { "The gpu demanded by the host is incorrect" } },
-            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(9)?.get(0)) { "The gpu demanded by the host is incorrect" } },
-            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(0)) { "The gpu used by the host is incorrect" } },
-            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(9)?.get(0)) { "The gpu used by the host is incorrect" } },
+            {
+                assertEquals(
+                    2000.0,
+                    monitor.hostGpuDemands["DualGpuHost"]?.get(0)?.get(0),
+                ) { "The gpu demanded by the GPU0 at t=0 is incorrect" }
+            },
+            {
+                assertEquals(
+                    0.0,
+                    monitor.hostGpuDemands["DualGpuHost"]?.get(9)?.get(0),
+                ) { "The gpu demanded by the GPU0 at t=9 is incorrect" }
+            },
+            {
+                assertEquals(
+                    2000.0,
+                    monitor.hostGpuSupplied["DualGpuHost"]?.get(0)?.get(0),
+                ) { "The gpu supplied by the GPU0 at t=0 is incorrect" }
+            },
+            {
+                assertEquals(
+                    0.0,
+                    monitor.hostGpuSupplied["DualGpuHost"]?.get(9)?.get(0),
+                ) { "The gpu supplied by the GPU0 at t=9 is incorrect" }
+            },
             // GPU 1
-            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(1)) { "The gpu demanded by the host is incorrect" } },
-            { assertEquals(2000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(9)?.get(1)) { "The gpu demanded by the host is incorrect" } },
-            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(1)?.get(1)) { "The gpu used by the host is incorrect" } },
-            { assertEquals(2000.0, monitor.hostGpuSupplied["DualGpuHost"]?.get(9)?.get(1)) { "The gpu used by the host is incorrect" } },
+            {
+                assertEquals(
+                    2000.0,
+                    monitor.hostGpuDemands["DualGpuHost"]?.get(0)?.get(1),
+                ) { "The gpu demanded by the GPU1 at t=0 is incorrect" }
+            },
+            {
+                assertEquals(
+                    0.0,
+                    monitor.hostGpuDemands["DualGpuHost"]?.get(9)?.get(1),
+                ) { "The gpu demanded by the GPU1 at t=9 is incorrect" }
+            },
+            {
+                assertEquals(
+                    2000.0,
+                    monitor.hostGpuSupplied["DualGpuHost"]?.get(0)?.get(1),
+                ) { "The gpu supplied by the GPU1 at t=0 is incorrect" }
+            },
+            {
+                assertEquals(
+                    0.0,
+                    monitor.hostGpuSupplied["DualGpuHost"]?.get(9)?.get(1),
+                ) { "The gpu supplied by the GPU1 at t=9 is incorrect" }
+            },
         )
     }
 

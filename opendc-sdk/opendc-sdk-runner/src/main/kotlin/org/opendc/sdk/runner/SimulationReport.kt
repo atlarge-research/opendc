@@ -23,9 +23,9 @@
 package org.opendc.sdk.runner
 
 import org.opendc.sdk.model.experiment.ScenarioSpec
-import org.opendc.sdk.runner.sink.CollectedMetrics
-import org.opendc.sdk.runner.sink.ParquetOutput
-import org.opendc.sdk.runner.sink.SinkResult
+import org.opendc.sdk.runner.telemetry.sink.CollectedMetrics
+import org.opendc.sdk.runner.telemetry.sink.ParquetOutput
+import org.opendc.sdk.runner.telemetry.sink.SinkResult
 import java.nio.file.Path
 
 /**
@@ -57,9 +57,9 @@ public data class RunResult(
     public val seed: Long,
     public val results: List<SinkResult>,
 ) {
-    /** The directory the parquet sink wrote to, if a [org.opendc.sdk.runner.sink.ParquetSink] was configured. */
+    /** The directory the parquet sink wrote to, if a [org.opendc.sdk.runner.telemetry.sink.ParquetSink] was configured. */
     public val outputPath: Path? get() = results.filterIsInstance<ParquetOutput>().firstOrNull()?.path
 
-    /** The metrics captured in memory, if an [org.opendc.sdk.runner.sink.InMemorySink] was configured. */
+    /** The metrics captured in memory, if an [org.opendc.sdk.runner.telemetry.sink.InMemorySink] was configured. */
     public val metrics: CollectedMetrics? get() = results.filterIsInstance<CollectedMetrics>().firstOrNull()
 }

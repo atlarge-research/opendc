@@ -22,9 +22,9 @@
 
 package org.opendc.web.runner.internal
 
-import org.opendc.compute.simulator.telemetry.ComputeMonitor
-import org.opendc.compute.simulator.telemetry.table.host.HostSample
-import org.opendc.compute.simulator.telemetry.table.service.ServiceSample
+import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.table.host.HostSample
+import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
 import kotlin.math.roundToLong
 
 /**
