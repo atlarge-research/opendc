@@ -35,9 +35,11 @@ import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.runner.factory.toEngine
 import java.nio.file.Path
 import java.time.InstantSource
+import java.util.Queue
 import java.util.Random
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
+import kotlin.time.Duration.Companion.milliseconds
 import org.opendc.sdk.model.failure.FailureModelSpec as SdkFailureModel
 
 /**
@@ -45,12 +47,15 @@ import org.opendc.sdk.model.failure.FailureModelSpec as SdkFailureModel
  * submission time, and injecting the failures described by [failureModel]. Blocks (in virtual time)
  * until every task reaches [TaskState.DELETED].
  *
+ * [trace] must already be ordered by submission time; tasks are [Queue.poll]ed off one at a time and
+ * dropped as they are submitted, so a large trace does not stay fully resident for the whole run.
+ *
  * A decoupled fork of the experiments-base replayer that sources failures from the SDK model
  * instead of experiment specs.
  */
 internal suspend fun ComputeService.replay(
     clock: InstantSource,
-    trace: List<ServiceTask>,
+    trace: Queue<ServiceTask>,
     failureModel: SdkFailureModel,
     seed: Long,
     resolve: (ResourceReference) -> Path,
@@ -62,12 +67,12 @@ internal suspend fun ComputeService.replay(
         coroutineScope {
             engineFailure?.start()
             var simulationOffset = Long.MIN_VALUE
-            for (task in trace.sortedBy { it.submittedAt }) {
+            for (task in generateSequence(trace::poll)) {
                 val now = clock.millis()
                 val start = task.submittedAt
                 if (simulationOffset == Long.MIN_VALUE) simulationOffset = start - now
                 if (!submitImmediately) {
-                    delay(max(0, start - now - simulationOffset))
+                    delay(max(0, start - now - simulationOffset).milliseconds)
                     task.deadline -= simulationOffset
                 }
                 launch {

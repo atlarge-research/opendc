@@ -115,7 +115,7 @@ internal fun createTestTask(
 
 /**
  * Runs [workload] against [topology] on a fresh simulated clock with a one-minute export interval
- * and seed 0, returning the [TestComputeMonitor] that captured the run — the SDK-runner analogue of
+ * and seed 0, returning the [TestMetricExporter] that captured the run — the SDK-runner analogue of
  * the legacy `runTest`.
  */
 internal fun runTest(
@@ -126,8 +126,8 @@ internal fun runTest(
     checkpointModel: CheckpointSpec? = null,
     scalingPolicy: ScalingPolicySpec = ScalingPolicySpec.NoDelay,
     exportInterval: TimeDelta = TimeDelta.ofMin(1),
-): TestComputeMonitor {
-    val monitor = TestComputeMonitor()
+): TestMetricExporter {
+    val monitor = TestMetricExporter()
 //    val monitorSink = ParquetSink(Path.of("output"))
     val scenario =
         ScenarioSpec(

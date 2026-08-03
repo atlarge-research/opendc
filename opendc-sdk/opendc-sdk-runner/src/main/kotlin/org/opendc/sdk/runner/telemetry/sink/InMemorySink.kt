@@ -23,7 +23,7 @@
 package org.opendc.sdk.runner.telemetry.sink
 
 import org.opendc.sdk.model.telemetry.OutputFileSpec
-import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.MetricExporter
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
@@ -50,25 +50,25 @@ public class InMemorySink
             private val powerSource = mutableListOf<PowerSourceSample>()
             private val battery = mutableListOf<BatterySample>()
 
-            override val monitor: ComputeMonitor =
-                object : ComputeMonitor {
-                    override fun record(reader: BatterySample) {
+            override val monitor: MetricExporter =
+                object : MetricExporter {
+                    override fun export(reader: BatterySample) {
                         if (OutputFileSpec.BATTERY in captureTables) battery += reader
                     }
 
-                    override fun record(reader: HostSample) {
+                    override fun export(reader: HostSample) {
                         if (OutputFileSpec.HOST in captureTables) host += reader
                     }
 
-                    override fun record(reader: PowerSourceSample) {
+                    override fun export(reader: PowerSourceSample) {
                         if (OutputFileSpec.POWER_SOURCE in captureTables) powerSource += reader
                     }
 
-                    override fun record(reader: ServiceSample) {
+                    override fun export(reader: ServiceSample) {
                         if (OutputFileSpec.SERVICE in captureTables) service += reader
                     }
 
-                    override fun record(reader: TaskSample) {
+                    override fun export(reader: TaskSample) {
                         if (OutputFileSpec.TASK in captureTables) task += reader
                     }
                 }

@@ -23,7 +23,7 @@
 package org.opendc.cli.progress
 
 import org.opendc.sdk.model.telemetry.OutputFileSpec
-import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.MetricExporter
 import org.opendc.sdk.runner.telemetry.sink.OutputSink
 import org.opendc.sdk.runner.telemetry.sink.RunContext
 import org.opendc.sdk.runner.telemetry.sink.SinkResult
@@ -38,9 +38,9 @@ internal class ProgressSink(private val progress: ExperimentProgress) : OutputSi
     override fun open(context: RunContext): SinkSession {
         val key = RunKey(context.scenarioId, context.seed)
         return object : SinkSession {
-            override val monitor: ComputeMonitor =
-                object : ComputeMonitor {
-                    override fun record(reader: ServiceSample) {
+            override val monitor: MetricExporter =
+                object : MetricExporter {
+                    override fun export(reader: ServiceSample) {
                         progress.update(key, (reader.tasksCompleted + reader.tasksTerminated).toLong())
                     }
                 }

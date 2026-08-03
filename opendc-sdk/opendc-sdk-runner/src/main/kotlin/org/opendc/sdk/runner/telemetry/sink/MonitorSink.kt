@@ -23,10 +23,10 @@
 package org.opendc.sdk.runner.telemetry.sink
 
 import org.opendc.sdk.model.telemetry.OutputFileSpec
-import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.MetricExporter
 
 /**
- * Feeds each run's metrics to a caller-supplied [ComputeMonitor] — the full-control escape hatch
+ * Feeds each run's metrics to a caller-supplied [MetricExporter] — the full-control escape hatch
  * for consumers with an existing monitor (e.g. the web module's reporting monitor).
  *
  * A fresh monitor is produced per run by [factory]; the fixed-instance secondary constructor is
@@ -39,17 +39,17 @@ public class MonitorSink
     @JvmOverloads
     constructor(
         private val tables: Set<OutputFileSpec> = OutputFileSpec.entries.toSet(),
-        private val factory: (RunContext) -> ComputeMonitor,
+        private val factory: (RunContext) -> MetricExporter,
     ) : OutputSink {
         public constructor(
-            monitor: ComputeMonitor,
+            monitor: MetricExporter,
             tables: Set<OutputFileSpec> = OutputFileSpec.entries.toSet(),
         ) : this(tables, { monitor })
 
         override fun open(context: RunContext): SinkSession {
             val runMonitor = factory(context)
             return object : SinkSession {
-                override val monitor: ComputeMonitor = runMonitor
+                override val monitor: MetricExporter = runMonitor
                 override val tables: Set<OutputFileSpec> = this@MonitorSink.tables
 
                 override fun result(): SinkResult? = null

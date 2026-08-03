@@ -23,7 +23,7 @@
 package org.opendc.sdk.runner.telemetry.parquet
 
 import org.opendc.sdk.model.telemetry.OutputFileSpec
-import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.MetricExporter
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
@@ -35,32 +35,32 @@ import org.opendc.trace.util.parquet.exporter.Exporter
 import java.io.File
 
 /**
- * A [ComputeMonitor] that logs the events to a Parquet file.
+ * A [MetricExporter] that logs the events to a Parquet file.
  */
-public class ParquetComputeMonitor(
+public class ParquetMetricExporter(
     private val batteryExporter: Exporter<BatterySample>?,
     private val hostExporter: Exporter<HostSample>?,
     private val powerSourceExporter: Exporter<PowerSourceSample>?,
     private val serviceExporter: Exporter<ServiceSample>?,
     private val taskExporter: Exporter<TaskSample>?,
-) : ComputeMonitor, AutoCloseable {
-    override fun record(reader: BatterySample) {
+) : MetricExporter, AutoCloseable {
+    override fun export(reader: BatterySample) {
         batteryExporter?.write(reader)
     }
 
-    override fun record(reader: HostSample) {
+    override fun export(reader: HostSample) {
         hostExporter?.write(reader)
     }
 
-    override fun record(reader: PowerSourceSample) {
+    override fun export(reader: PowerSourceSample) {
         powerSourceExporter?.write(reader)
     }
 
-    override fun record(reader: ServiceSample) {
+    override fun export(reader: ServiceSample) {
         serviceExporter?.write(reader)
     }
 
-    override fun record(reader: TaskSample) {
+    override fun export(reader: TaskSample) {
         taskExporter?.write(reader)
     }
 
@@ -86,7 +86,7 @@ public class ParquetComputeMonitor(
             bufferSize: Int,
             filesToExport: Map<OutputFileSpec, Boolean>,
             computeExportConfig: ComputeExportConfig,
-        ): ParquetComputeMonitor =
+        ): ParquetMetricExporter =
             invoke(
                 base = base,
                 partition = partition,
@@ -118,7 +118,7 @@ public class ParquetComputeMonitor(
             powerSourceExportColumns: Collection<ExportColumn<PowerSourceSample>>? = null,
             serviceExportColumns: Collection<ExportColumn<ServiceSample>>? = null,
             taskExportColumns: Collection<ExportColumn<TaskSample>>? = null,
-        ): ParquetComputeMonitor {
+        ): ParquetMetricExporter {
             // Loads the fields in case they need to be retrieved if optional params are omitted.
             ComputeExportConfig.loadDfltColumns()
 
@@ -177,7 +177,7 @@ public class ParquetComputeMonitor(
                     null
                 }
 
-            return ParquetComputeMonitor(
+            return ParquetMetricExporter(
                 batteryExporter = batteryExporter,
                 hostExporter = hostExporter,
                 powerSourceExporter = powerSourceExporter,

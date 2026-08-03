@@ -24,24 +24,24 @@ package org.opendc.sdk.runner.base.harness
 
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.TaskListener
-import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.MetricExporter
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
 
 /**
- * A [ComputeMonitor] that captures per-record telemetry into in-memory series, ported verbatim from
+ * A [MetricExporter] that captures per-record telemetry into in-memory series, ported verbatim from
  * the legacy `opendc-experiments-base` test suite so the ported assertions read against identical
  * fields and values.
  */
-class TestComputeMonitor : ComputeMonitor, TaskListener {
+class TestMetricExporter : MetricExporter, TaskListener {
     var taskCpuDemands = mutableMapOf<Int, ArrayList<Double>>()
     var taskCpuSupplied = mutableMapOf<Int, ArrayList<Double>>()
     var taskGpuDemands = mutableMapOf<Int, ArrayList<Double?>?>()
     var taskGpuSupplied = mutableMapOf<Int, ArrayList<Double?>?>()
 
-    override fun record(reader: TaskSample) {
+    override fun export(reader: TaskSample) {
         val taskName: Int = reader.taskId
 
         if (taskName in taskCpuDemands) {
@@ -73,7 +73,7 @@ class TestComputeMonitor : ComputeMonitor, TaskListener {
 
     var maxTimestamp = 0L
 
-    override fun record(reader: ServiceSample) {
+    override fun export(reader: ServiceSample) {
         attemptsSuccess = reader.attemptsSuccess
         attemptsFailure = reader.attemptsFailure
         attemptsError = 0
@@ -104,7 +104,7 @@ class TestComputeMonitor : ComputeMonitor, TaskListener {
     var hostPowerDraws = mutableMapOf<String, ArrayList<Double>>()
     var hostEnergyUsages = mutableMapOf<String, ArrayList<Double>>()
 
-    override fun record(reader: HostSample) {
+    override fun export(reader: HostSample) {
         val hostName: String = reader.hostName ?: "unknown-host"
 
         if (hostName !in hostCpuDemands) {
@@ -151,7 +151,7 @@ class TestComputeMonitor : ComputeMonitor, TaskListener {
     var carbonIntensities = ArrayList<Double>()
     var carbonEmissions = ArrayList<Double>()
 
-    override fun record(reader: PowerSourceSample) {
+    override fun export(reader: PowerSourceSample) {
         powerDraws.add(reader.powerDraw)
         energyUsages.add(reader.energyUsage)
 

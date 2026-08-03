@@ -29,31 +29,31 @@ import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
 
 /**
- * A monitor that tracks the metrics and events of the OpenDC Compute service.
+ * A monitor that exports Samples.
  */
-public interface ComputeMonitor {
+public interface MetricExporter {
     /**
      * Record an entry with the specified [reader].
      */
-    public fun record(reader: BatterySample) {}
+    public fun export(reader: BatterySample) {}
 
     /**
      * Record an entry with the specified [reader].
      */
-    public fun record(reader: HostSample) {}
+    public fun export(reader: HostSample) {}
 
     /**
      * Record an entry with the specified [reader].
      */
-    public fun record(reader: PowerSourceSample) {}
+    public fun export(reader: PowerSourceSample) {}
 
     /**
      * Record an entry with the specified [reader].
      */
-    public fun record(reader: ServiceSample) {}
+    public fun export(reader: ServiceSample) {}
 
     /**
      * Record an entry with the specified [reader].
      */
-    public fun record(reader: TaskSample) {}
+    public fun export(reader: TaskSample) {}
 }

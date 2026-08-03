@@ -53,7 +53,7 @@ import kotlin.time.Duration.Companion.milliseconds
 public class ComputeMetricReader(
     dispatcher: Dispatcher,
     private val service: ComputeService,
-    private val monitor: ComputeMonitor,
+    private val monitor: MetricExporter,
     private val exportInterval: Duration = Duration.ofMinutes(5),
     private val startTime: Duration = Duration.ofMillis(0),
     private val toMonitor: Map<OutputFileSpec, Boolean> =
@@ -129,40 +129,35 @@ public class ComputeMetricReader(
             if (toMonitor[OutputFileSpec.BATTERY] == true) {
                 for (battery in this.service.batteries) {
                     val batterySample = this.batterySampler.sample(now, battery)
-                    this.monitor.record(batterySample)
+                    this.monitor.export(batterySample)
                 }
             }
 
             if (toMonitor[OutputFileSpec.HOST] == true) {
                 for (host in this.service.hosts) {
                     val hostSample = this.hostSampler.sample(now, host)
-                    this.monitor.record(hostSample)
+                    this.monitor.export(hostSample)
                 }
             }
 
             if (toMonitor[OutputFileSpec.POWER_SOURCE] == true) {
                 for (powerSource in this.service.powerSources) {
                     val powerSourceSample = this.powerSourceSampler.sample(now, powerSource)
-                    this.monitor.record(powerSourceSample)
+                    this.monitor.export(powerSourceSample)
                 }
             }
 
             if (toMonitor[OutputFileSpec.SERVICE] == true) {
                 val serviceSample = this.serviceSampler.sample(now)
-                this.monitor.record(serviceSample)
+                this.monitor.export(serviceSample)
             }
 
             if (toMonitor[OutputFileSpec.TASK] == true) {
                 for (task in this.service.tasks.values) {
                     val taskSample = this.taskSampler.sample(now, task)
-                    this.monitor.record(taskSample)
+                    this.monitor.export(taskSample)
                 }
             }
-
-//            for (task in this.service.tasksToRemove) {
-//                task.delete()
-//            }
-//            this.service.clearTasksToRemove()
 
             if (printFrequency != null && loggCounter % printFrequency == 0) {
                 // TODO: Fix this!
@@ -192,6 +187,6 @@ public class ComputeMetricReader(
         val now = this.clock.instant()
 
         val taskSample = this.taskSampler.sample(now, task)
-        this.monitor.record(taskSample)
+        this.monitor.export(taskSample)
     }
 }

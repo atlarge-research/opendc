@@ -36,35 +36,46 @@ import org.opendc.simulator.compute.workload.trace.TraceFragment
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
 import org.opendc.simulator.compute.workload.trace.scaling.PerfectScaling
 import java.nio.file.Path
+import java.util.ArrayDeque
+import java.util.Queue
 import org.opendc.simulator.compute.workload.trace.TraceWorkload as EngineTraceWorkload
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy as EngineScalingPolicy
 
 /**
- * Materializes an SDK [WorkloadSpec] into the engine's list of [ServiceTask]s. Trace workloads are
- * loaded from the resource resolved by [resolve]; inline workloads are built in memory.
+ * Materializes an SDK [WorkloadSpec] into a submission-order queue of [ServiceTask]s. Trace workloads
+ * are loaded from the resource resolved by [resolve]; inline workloads are built in memory. Tasks are
+ * meant to be [Queue.poll]ed off as they are submitted, so the replayer never holds onto tasks it has
+ * already handed off.
  */
 internal fun WorkloadSpec.toServiceTasks(
     checkpoint: CheckpointSpec?,
     resolve: (ResourceReference) -> Path,
-): List<ServiceTask> =
+): Queue<ServiceTask> =
     when (this) {
         is TraceWorkloadSpec -> loadTrace(resolve(source), checkpoint)
-        is InlineWorkloadSpec -> tasks.map { it.toServiceTask(scalingPolicy.toEngine(), checkpoint) }
+        is InlineWorkloadSpec ->
+            ArrayDeque(
+                tasks
+                    .sortedBy { it.submissionTime.toMsLong() }
+                    .map { it.toServiceTask(scalingPolicy.toEngine(), checkpoint) },
+            )
     }
 
 private fun TraceWorkloadSpec.loadTrace(
     path: Path,
     checkpoint: CheckpointSpec?,
-): List<ServiceTask> =
-    ComputeWorkloadLoader(
-        path.toFile(),
-        submissionTime,
-        checkpoint.intervalMs(),
-        checkpoint.durationMs(),
-        checkpoint.scaling(),
-        scalingPolicy.toEngine(),
-        deferAll,
-    ).sampleByLoad(sampleFraction)
+): Queue<ServiceTask> =
+    ArrayDeque(
+        ComputeWorkloadLoader(
+            path.toFile(),
+            submissionTime,
+            checkpoint.intervalMs(),
+            checkpoint.durationMs(),
+            checkpoint.scaling(),
+            scalingPolicy.toEngine(),
+            deferAll,
+        ).sampleByLoad(sampleFraction),
+    )
 
 private fun TaskSpec.toServiceTask(
     scaling: EngineScalingPolicy,
