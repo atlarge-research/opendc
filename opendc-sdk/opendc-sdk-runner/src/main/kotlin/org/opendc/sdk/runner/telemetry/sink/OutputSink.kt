@@ -24,7 +24,7 @@ package org.opendc.sdk.runner.telemetry.sink
 
 import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.telemetry.OutputFileSpec
-import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.MetricExporter
 
 /**
  * A destination for the metrics produced by a simulation run.
@@ -42,12 +42,12 @@ public fun interface OutputSink {
 /**
  * The per-run state of an [OutputSink].
  *
- * @property monitor The [ComputeMonitor] fed the run's metric records.
+ * @property monitor The [MetricExporter] fed the run's metric records.
  * @property tables The metric tables this session needs recorded; the runner records the union
  *   across all sessions.
  */
 public interface SinkSession {
-    public val monitor: ComputeMonitor
+    public val monitor: MetricExporter
     public val tables: Set<OutputFileSpec>
     public val exportSpec: ExportSpec?
         get() = null

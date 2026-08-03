@@ -28,7 +28,7 @@ import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.sdk.model.telemetry.OutputFileSpec
-import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.MetricExporter
 import java.time.Duration
 
 /**
@@ -49,15 +49,15 @@ public fun setupComputeService(
 
 /**
  * Return a [ProvisioningStep] that installs a [ComputeMetricReader] to periodically collect the metrics of a
- * [ComputeService] and report them to a [ComputeMonitor].
+ * [ComputeService] and report them to a [MetricExporter].
  *
  * @param serviceDomain The service domain at which the [ComputeService] is located.
- * @param monitor The [ComputeMonitor] to install.
+ * @param monitor The [MetricExporter] to install.
  * @param exportInterval The interval between which to collect the metrics.
  */
 public fun registerComputeMonitor(
     serviceDomain: String,
-    monitor: ComputeMonitor,
+    monitor: MetricExporter,
     exportInterval: Duration = Duration.ofMinutes(5),
     startTime: Duration = Duration.ofMillis(0),
     filesToExport: Map<OutputFileSpec, Boolean> =

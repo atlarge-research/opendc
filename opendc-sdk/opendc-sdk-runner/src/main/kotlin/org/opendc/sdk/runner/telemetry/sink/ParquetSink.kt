@@ -23,8 +23,8 @@
 package org.opendc.sdk.runner.telemetry.sink
 
 import org.opendc.sdk.model.telemetry.OutputFileSpec
-import org.opendc.sdk.runner.telemetry.ComputeMonitor
-import org.opendc.sdk.runner.telemetry.parquet.ParquetComputeMonitor
+import org.opendc.sdk.runner.telemetry.MetricExporter
+import org.opendc.sdk.runner.telemetry.parquet.ParquetMetricExporter
 import java.nio.file.Path
 
 /**
@@ -47,7 +47,7 @@ public class ParquetSink
             val base = root.resolve(context.experimentName).resolve("raw-output").resolve(context.scenarioId.toString())
             val partition = "seed=${context.seed}"
             val parquetMonitor =
-                ParquetComputeMonitor(
+                ParquetMetricExporter(
                     base.toFile(),
                     partition,
                     bufferSize,
@@ -55,7 +55,7 @@ public class ParquetSink
                     export.config,
                 )
             return object : SinkSession {
-                override val monitor: ComputeMonitor = parquetMonitor
+                override val monitor: MetricExporter = parquetMonitor
                 override val tables: Set<OutputFileSpec> = export.filesToExport.filterValues { it }.keys
 
                 override fun result(): SinkResult = ParquetOutput(base.resolve(partition))

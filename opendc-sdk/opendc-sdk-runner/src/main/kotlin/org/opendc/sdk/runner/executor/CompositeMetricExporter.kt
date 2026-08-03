@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.runner.executor
 
-import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.MetricExporter
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
@@ -33,16 +33,16 @@ import org.opendc.sdk.runner.telemetry.table.task.TaskSample
  * Fans every metric record out to all [monitors] and closes any that are [AutoCloseable] when the
  * run ends. This is how parquet, in-memory and callback sinks observe a single run together.
  */
-internal class CompositeComputeMonitor(private val monitors: List<ComputeMonitor>) : ComputeMonitor, AutoCloseable {
-    override fun record(reader: BatterySample): Unit = monitors.forEach { it.record(reader) }
+internal class CompositeMetricExporter(private val monitors: List<MetricExporter>) : MetricExporter, AutoCloseable {
+    override fun export(reader: BatterySample): Unit = monitors.forEach { it.export(reader) }
 
-    override fun record(reader: HostSample): Unit = monitors.forEach { it.record(reader) }
+    override fun export(reader: HostSample): Unit = monitors.forEach { it.export(reader) }
 
-    override fun record(reader: PowerSourceSample): Unit = monitors.forEach { it.record(reader) }
+    override fun export(reader: PowerSourceSample): Unit = monitors.forEach { it.export(reader) }
 
-    override fun record(reader: ServiceSample): Unit = monitors.forEach { it.record(reader) }
+    override fun export(reader: ServiceSample): Unit = monitors.forEach { it.export(reader) }
 
-    override fun record(reader: TaskSample): Unit = monitors.forEach { it.record(reader) }
+    override fun export(reader: TaskSample): Unit = monitors.forEach { it.export(reader) }
 
     override fun close(): Unit = monitors.forEach { if (it is AutoCloseable) it.close() }
 }

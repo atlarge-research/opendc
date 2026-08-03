@@ -46,7 +46,7 @@ import org.opendc.web.proto.runner.Report
 import org.opendc.web.proto.runner.Scenario
 import org.opendc.web.proto.runner.Topology
 import org.opendc.web.runner.internal.ReportCollector
-import org.opendc.web.runner.internal.WebComputeMonitor
+import org.opendc.web.runner.internal.WebMetricExporter
 import java.io.File
 import java.io.IOException
 import java.time.Duration
@@ -285,9 +285,9 @@ public class OpenDCRunner(
         private val scenario: Scenario,
         private val repeat: Int,
         private val topologyHosts: List<HostSpec>,
-    ) : RecursiveTask<WebComputeMonitor.Results>() {
-        override fun compute(): WebComputeMonitor.Results {
-            val monitor = WebComputeMonitor()
+    ) : RecursiveTask<WebMetricExporter.Results>() {
+        override fun compute(): WebMetricExporter.Results {
+            val monitor = WebMetricExporter()
 
             // Schedule task that interrupts the simulation if it runs for too long.
             val currentThread = Thread.currentThread()
@@ -306,7 +306,7 @@ public class OpenDCRunner(
         /**
          * Run a single simulation of the scenario.
          */
-        private fun runSimulation(monitor: WebComputeMonitor) =
+        private fun runSimulation(monitor: WebMetricExporter) =
             runSimulation {
                 val serviceDomain = "compute.opendc.org"
                 val seed = repeat.toLong()

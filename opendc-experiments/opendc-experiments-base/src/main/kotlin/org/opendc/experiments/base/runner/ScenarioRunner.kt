@@ -39,7 +39,7 @@ import org.opendc.sdk.runner.provision.registerComputeMonitor
 import org.opendc.sdk.runner.provision.setupComputeService
 import org.opendc.sdk.runner.provision.setupHosts
 import org.opendc.sdk.runner.telemetry.parquet.ComputeExportConfig
-import org.opendc.sdk.runner.telemetry.parquet.ParquetComputeMonitor
+import org.opendc.sdk.runner.telemetry.parquet.ParquetMetricExporter
 import org.opendc.sdk.runner.telemetry.parquet.withGpuColumns
 import org.opendc.simulator.compute.power.CarbonModel
 import org.opendc.simulator.compute.power.CarbonReceiver
@@ -193,7 +193,7 @@ public fun initializeExportModel(
     provisioner.runStep(
         registerComputeMonitor(
             serviceDomain,
-            ParquetComputeMonitor(
+            ParquetMetricExporter(
                 File("${scenario.outputFolder}/raw-output/$index"),
                 "seed=$seed",
                 bufferSize = 4096,

@@ -95,6 +95,9 @@ private class ScenarioRun(
     suspend fun execute(): RunResult {
         val workload = scenario.workload.toServiceTasks(scenario.checkpointModel, resources::resolve)
 
+        println("Workload Loaded")
+        Thread.sleep(10_000)
+
         val startTime = workload.minOf { it.submittedAt }
         val clusters = scenario.topology.toClusterSpecs(resources::resolve)
 

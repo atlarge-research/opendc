@@ -23,7 +23,7 @@
 package org.opendc.sdk.runner.telemetry.sink
 
 import org.opendc.sdk.model.telemetry.OutputFileSpec
-import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.MetricExporter
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
@@ -46,25 +46,25 @@ public class CallbackSink(
 ) : OutputSink {
     override fun open(context: RunContext): SinkSession =
         object : SinkSession {
-            override val monitor: ComputeMonitor =
-                object : ComputeMonitor {
-                    override fun record(reader: BatterySample) {
+            override val monitor: MetricExporter =
+                object : MetricExporter {
+                    override fun export(reader: BatterySample) {
                         onBattery?.invoke(reader)
                     }
 
-                    override fun record(reader: HostSample) {
+                    override fun export(reader: HostSample) {
                         onHost?.invoke(reader)
                     }
 
-                    override fun record(reader: PowerSourceSample) {
+                    override fun export(reader: PowerSourceSample) {
                         onPowerSource?.invoke(reader)
                     }
 
-                    override fun record(reader: ServiceSample) {
+                    override fun export(reader: ServiceSample) {
                         onService?.invoke(reader)
                     }
 
-                    override fun record(reader: TaskSample) {
+                    override fun export(reader: TaskSample) {
                         onTask?.invoke(reader)
                     }
                 }

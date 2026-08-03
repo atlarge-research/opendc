@@ -25,16 +25,16 @@ package org.opendc.sdk.runner.provision
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.runner.telemetry.ComputeMetricReader
-import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.MetricExporter
 import java.time.Duration
 
 /**
  * A [ProvisioningStep] that provisions a [ComputeMetricReader] to periodically collect the metrics of a [ComputeService]
- * and report them to a [ComputeMonitor].
+ * and report them to a [MetricExporter].
  */
 public class ComputeMonitorProvisioningStep(
     private val serviceDomain: String,
-    private val monitor: ComputeMonitor,
+    private val monitor: MetricExporter,
     private val exportInterval: Duration,
     private val startTime: Duration = Duration.ofMillis(0),
     private val filesToExport: Map<OutputFileSpec, Boolean> =
