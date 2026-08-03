@@ -28,7 +28,6 @@ import org.opendc.common.units.TimeDelta
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.experiment.ScenarioSpec
-import org.opendc.sdk.model.export.ExportSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
 import org.opendc.sdk.model.scheduler.AllocationPolicySpec
@@ -38,6 +37,7 @@ import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.RamFilterSpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.serialization.SdkJson
+import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
 import org.opendc.sdk.model.workload.ScalingPolicySpec

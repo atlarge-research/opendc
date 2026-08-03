@@ -22,27 +22,27 @@
 
 package org.opendc.sdk.runner.executor
 
-import org.opendc.compute.simulator.telemetry.ComputeMonitor
-import org.opendc.compute.simulator.telemetry.table.battery.BatterySample as BatterySampleTmp
-import org.opendc.compute.simulator.telemetry.table.host.HostSample as HostSampleTmp
-import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceSample as PowerSourceSampleTmp
-import org.opendc.compute.simulator.telemetry.table.service.ServiceSample as ServiceSampleTmp
-import org.opendc.compute.simulator.telemetry.table.task.TaskSample as TaskSampleTmp
+import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
+import org.opendc.sdk.runner.telemetry.table.host.HostSample
+import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
+import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
+import org.opendc.sdk.runner.telemetry.table.task.TaskSample
 
 /**
  * Fans every metric record out to all [monitors] and closes any that are [AutoCloseable] when the
  * run ends. This is how parquet, in-memory and callback sinks observe a single run together.
  */
 internal class CompositeComputeMonitor(private val monitors: List<ComputeMonitor>) : ComputeMonitor, AutoCloseable {
-    override fun record(reader: BatterySampleTmp): Unit = monitors.forEach { it.record(reader) }
+    override fun record(reader: BatterySample): Unit = monitors.forEach { it.record(reader) }
 
-    override fun record(reader: HostSampleTmp): Unit = monitors.forEach { it.record(reader) }
+    override fun record(reader: HostSample): Unit = monitors.forEach { it.record(reader) }
 
-    override fun record(reader: PowerSourceSampleTmp): Unit = monitors.forEach { it.record(reader) }
+    override fun record(reader: PowerSourceSample): Unit = monitors.forEach { it.record(reader) }
 
-    override fun record(reader: ServiceSampleTmp): Unit = monitors.forEach { it.record(reader) }
+    override fun record(reader: ServiceSample): Unit = monitors.forEach { it.record(reader) }
 
-    override fun record(reader: TaskSampleTmp): Unit = monitors.forEach { it.record(reader) }
+    override fun record(reader: TaskSample): Unit = monitors.forEach { it.record(reader) }
 
     override fun close(): Unit = monitors.forEach { if (it is AutoCloseable) it.close() }
 }

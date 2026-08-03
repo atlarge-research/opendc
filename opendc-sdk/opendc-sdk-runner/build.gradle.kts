@@ -101,11 +101,9 @@ dependencies {
     implementation(project(":opendc-compute:opendc-compute-failure"))
     implementation(libs.commons.math3)
     implementation(libs.kotlinx.coroutines)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(project(":opendc-trace:opendc-trace-parquet"))
 
-    jmhImplementation(libs.kotlinx.serialization.json)
-
-    testImplementation(project(":opendc-trace:opendc-trace-parquet"))
-    testImplementation(libs.kotlinx.serialization.json)
     testRuntimeOnly(libs.log4j.core)
     testRuntimeOnly(libs.log4j.slf4j)
 }

@@ -26,21 +26,21 @@ package org.opendc.experiments.base.runner
 
 import me.tongfei.progressbar.ProgressBarBuilder
 import me.tongfei.progressbar.ProgressBarStyle
-import org.opendc.compute.simulator.provisioner.Provisioner
-import org.opendc.compute.simulator.provisioner.registerComputeMonitor
-import org.opendc.compute.simulator.provisioner.setupComputeService
-import org.opendc.compute.simulator.provisioner.setupHosts
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.simulator.telemetry.parquet.ComputeExportConfig
-import org.opendc.compute.simulator.telemetry.parquet.ParquetComputeMonitor
-import org.opendc.compute.simulator.telemetry.parquet.withGpuColumns
 import org.opendc.compute.topology.clusterTopology
 import org.opendc.experiments.base.experiment.Scenario
 import org.opendc.experiments.base.experiment.specs.allocation.TimeShiftAllocationPolicySpec
 import org.opendc.experiments.base.experiment.specs.allocation.createComputeScheduler
 import org.opendc.experiments.base.experiment.specs.allocation.createTaskStopper
 import org.opendc.experiments.base.experiment.specs.getWorkload
+import org.opendc.sdk.runner.provision.Provisioner
+import org.opendc.sdk.runner.provision.registerComputeMonitor
+import org.opendc.sdk.runner.provision.setupComputeService
+import org.opendc.sdk.runner.provision.setupHosts
+import org.opendc.sdk.runner.telemetry.parquet.ComputeExportConfig
+import org.opendc.sdk.runner.telemetry.parquet.ParquetComputeMonitor
+import org.opendc.sdk.runner.telemetry.parquet.withGpuColumns
 import org.opendc.simulator.compute.power.CarbonModel
 import org.opendc.simulator.compute.power.CarbonReceiver
 import org.opendc.simulator.kotlin.runSimulation
@@ -136,7 +136,6 @@ public fun runScenario(
 
             val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
             service.setTasksExpected(workload.size)
-            service.addMetricReader(provisioner.getMonitors())
 
             // TODO: Improve how the allocation policy and carbon model are created.
             var carbonModel: CarbonModel?

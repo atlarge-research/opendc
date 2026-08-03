@@ -22,13 +22,13 @@
 
 package org.opendc.cli.progress
 
-import org.opendc.compute.simulator.telemetry.ComputeMonitor
-import org.opendc.compute.simulator.telemetry.OutputFiles
-import org.opendc.sdk.runner.sink.OutputSink
-import org.opendc.sdk.runner.sink.RunContext
-import org.opendc.sdk.runner.sink.SinkResult
-import org.opendc.sdk.runner.sink.SinkSession
-import org.opendc.compute.simulator.telemetry.table.service.ServiceSample as ServiceSampleTmp
+import org.opendc.sdk.model.telemetry.OutputFileSpec
+import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.sink.OutputSink
+import org.opendc.sdk.runner.telemetry.sink.RunContext
+import org.opendc.sdk.runner.telemetry.sink.SinkResult
+import org.opendc.sdk.runner.telemetry.sink.SinkSession
+import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
 
 /**
  * A metric sink that feeds each run's task-completion counts into a shared [ExperimentProgress].
@@ -40,11 +40,11 @@ internal class ProgressSink(private val progress: ExperimentProgress) : OutputSi
         return object : SinkSession {
             override val monitor: ComputeMonitor =
                 object : ComputeMonitor {
-                    override fun record(reader: ServiceSampleTmp) {
+                    override fun record(reader: ServiceSample) {
                         progress.update(key, (reader.tasksCompleted + reader.tasksTerminated).toLong())
                     }
                 }
-            override val tables: Set<OutputFiles> = setOf(OutputFiles.SERVICE)
+            override val tables: Set<OutputFileSpec> = setOf(OutputFileSpec.SERVICE)
 
             override fun result(): SinkResult? = null
         }

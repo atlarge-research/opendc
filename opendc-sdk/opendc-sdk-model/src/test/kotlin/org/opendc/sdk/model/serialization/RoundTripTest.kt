@@ -35,12 +35,6 @@ import org.opendc.sdk.model.dsl.prefabScheduler
 import org.opendc.sdk.model.dsl.scenario
 import org.opendc.sdk.model.dsl.timeShiftScheduler
 import org.opendc.sdk.model.dsl.traceWorkload
-import org.opendc.sdk.model.export.AllColumns
-import org.opendc.sdk.model.export.ColumnSelection
-import org.opendc.sdk.model.export.ExportColumnsSpec
-import org.opendc.sdk.model.export.ExportSpec
-import org.opendc.sdk.model.export.OnlyColumns
-import org.opendc.sdk.model.export.OutputFileSpec
 import org.opendc.sdk.model.failure.ConstantDistributionSpec
 import org.opendc.sdk.model.failure.CustomFailureSpec
 import org.opendc.sdk.model.failure.DistributionSpec
@@ -80,6 +74,12 @@ import org.opendc.sdk.model.scheduler.VCpuCapacityFilterSpec
 import org.opendc.sdk.model.scheduler.VCpuCapacityWeigherSpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.scheduler.VCpuWeigherSpec
+import org.opendc.sdk.model.telemetry.AllColumns
+import org.opendc.sdk.model.telemetry.ColumnSelection
+import org.opendc.sdk.model.telemetry.ExportColumnsSpec
+import org.opendc.sdk.model.telemetry.ExportSpec
+import org.opendc.sdk.model.telemetry.OnlyColumns
+import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.model.topology.BatteryPolicy
 import org.opendc.sdk.model.topology.BestEffort
 import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec

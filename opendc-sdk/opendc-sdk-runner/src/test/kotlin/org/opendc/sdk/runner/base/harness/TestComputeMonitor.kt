@@ -22,18 +22,20 @@
 
 package org.opendc.sdk.runner.base.harness
 
-import org.opendc.compute.simulator.telemetry.ComputeMonitor
-import org.opendc.compute.simulator.telemetry.table.host.HostSample
-import org.opendc.compute.simulator.telemetry.table.powerSource.PowerSourceSample
-import org.opendc.compute.simulator.telemetry.table.service.ServiceSample
-import org.opendc.compute.simulator.telemetry.table.task.TaskSample
+import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.telemetry.TaskListener
+import org.opendc.sdk.runner.telemetry.ComputeMonitor
+import org.opendc.sdk.runner.telemetry.table.host.HostSample
+import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
+import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
+import org.opendc.sdk.runner.telemetry.table.task.TaskSample
 
 /**
  * A [ComputeMonitor] that captures per-record telemetry into in-memory series, ported verbatim from
  * the legacy `opendc-experiments-base` test suite so the ported assertions read against identical
  * fields and values.
  */
-class TestComputeMonitor : ComputeMonitor {
+class TestComputeMonitor : ComputeMonitor, TaskListener {
     var taskCpuDemands = mutableMapOf<Int, ArrayList<Double>>()
     var taskCpuSupplied = mutableMapOf<Int, ArrayList<Double>>()
     var taskGpuDemands = mutableMapOf<Int, ArrayList<Double?>?>()
@@ -155,5 +157,13 @@ class TestComputeMonitor : ComputeMonitor {
 
         carbonIntensities.add(reader.carbonIntensity)
         carbonEmissions.add(reader.carbonEmission)
+    }
+
+    override fun onTaskSubmission(task: ServiceTask?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onTaskDeletion(task: ServiceTask?) {
+//        this.record(task)
     }
 }

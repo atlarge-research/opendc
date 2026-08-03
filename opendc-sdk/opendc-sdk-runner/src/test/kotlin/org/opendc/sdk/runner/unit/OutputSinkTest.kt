@@ -34,21 +34,21 @@ import org.opendc.sdk.model.dsl.minutes
 import org.opendc.sdk.model.dsl.ms
 import org.opendc.sdk.model.dsl.topology
 import org.opendc.sdk.model.dsl.watts
-import org.opendc.sdk.model.export.ExportSpec
-import org.opendc.sdk.model.export.OutputFileSpec
+import org.opendc.sdk.model.telemetry.ExportSpec
+import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
 import org.opendc.sdk.model.workload.TaskFragmentSpec
 import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.runner.OpenDC
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
-import org.opendc.sdk.runner.sink.CallbackSink
-import org.opendc.sdk.runner.sink.InMemorySink
+import org.opendc.sdk.runner.telemetry.sink.CallbackSink
+import org.opendc.sdk.runner.telemetry.sink.InMemorySink
 import java.nio.file.Files
 
 /**
  * Validates the composable output-sink pattern: multiple sinks observe the same run (fan-out) and
- * an [InMemorySink] captures exactly the tables it was configured for (granular selection).
+ * an [org.opendc.sdk.telemetry.sink.InMemorySink] captures exactly the tables it was configured for (granular selection).
  */
 class OutputSinkTest {
     @Test

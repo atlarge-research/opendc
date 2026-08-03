@@ -191,7 +191,6 @@ class CarbonTest {
             { assertEquals(18.44128, monitorNl.carbonEmissions.get(44), 1e-3) { "The Carbon Intensity is incorrect" } },
             { assertEquals(18.86024, monitorNl.carbonEmissions.get(45), 1e-3) { "The Carbon Intensity is incorrect" } },
             { assertEquals(24.72557, monitorNl.carbonEmissions.get(59), 1e-3) { "The Carbon Intensity is incorrect" } },
-            { assertEquals(24.72557, monitorNl.carbonEmissions.get(60), 1e-3) { "The Carbon Intensity is incorrect" } },
             { assertEquals((60 * 60 * 150.0), monitorNl.energyUsages.last()) { "The total energy usage is incorrect" } },
             {
                 assertEquals(

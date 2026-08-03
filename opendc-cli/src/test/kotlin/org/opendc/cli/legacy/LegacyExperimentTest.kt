@@ -35,9 +35,6 @@ import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.experiment.ExperimentSpec
-import org.opendc.sdk.model.export.AllColumns
-import org.opendc.sdk.model.export.OnlyColumns
-import org.opendc.sdk.model.export.OutputFileSpec
 import org.opendc.sdk.model.failure.CustomFailureSpec
 import org.opendc.sdk.model.failure.ExponentialDistributionSpec
 import org.opendc.sdk.model.failure.FailurePrefabSpec
@@ -59,6 +56,9 @@ import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.VCpuCapacityWeigherSpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
+import org.opendc.sdk.model.telemetry.AllColumns
+import org.opendc.sdk.model.telemetry.OnlyColumns
+import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.model.topology.BestEffort
 import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.EqualShare
