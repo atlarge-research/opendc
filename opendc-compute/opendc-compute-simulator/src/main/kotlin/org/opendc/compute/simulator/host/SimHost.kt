@@ -236,6 +236,8 @@ public class SimHost(
      * `TaskState.RUNNING` state, their memory consumption is summed up.
      *
      * @return Total memory used by tasks currently in the RUNNING state, in bytes.
+     *
+     * TODO: Improve this function (this does not have to be calculated every time by looping but can be done dynamically)
      */
     private fun usedMemoryByRunningTasks(): Long {
         var usedMemory: Long = 0

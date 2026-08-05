@@ -97,7 +97,8 @@ private fun ServiceTask.totalCpuLoad(): Double {
     val workload = this.workload as? TraceWorkload ?: return 0.0
 
     var total = 0.0
-    for (fragment in workload.fragments) {
+    for (i in 0..workload.length - 1) {
+        val fragment = workload.getFragment(i)
         total += ((fragment.cpuUsage() * fragment.duration()) + (fragment.gpuUsage() * fragment.duration())) / 1000
     }
 

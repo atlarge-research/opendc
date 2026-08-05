@@ -218,6 +218,10 @@ public class ComputeWorkloadLoader(
     override fun load(): List<ServiceTask> {
         val trace = Trace.open(pathToFile, "workload")
         val fragments = parseFragments(trace)
+
+        println("LOADED Fragments")
+//        Thread.sleep(10_000)
+
         val vms = parseTasks(trace, fragments)
 
         return vms
@@ -232,6 +236,7 @@ public class ComputeWorkloadLoader(
 
     /**
      * A builder for a VM trace.
+     *
      */
     private class Builder(
         checkpointInterval: Long,
@@ -259,6 +264,8 @@ public class ComputeWorkloadLoader(
          * @param cpuUsage CPU usage of this fragment.
          * @param gpuUsage GPU usage of this fragment.
          * @param gpuMemoryUsage GPU memory usage of this fragment.
+         *
+         * TODO:
          */
         fun add(
             duration: Duration,
@@ -266,6 +273,9 @@ public class ComputeWorkloadLoader(
             gpuUsage: Double = 0.0,
             gpuMemoryUsage: Int = 0,
         ) {
+            if (duration == Duration.ofMillis(0)) {
+                return
+            }
             builder.add(duration.toMillis(), cpuUsage, gpuUsage, gpuMemoryUsage)
         }
 

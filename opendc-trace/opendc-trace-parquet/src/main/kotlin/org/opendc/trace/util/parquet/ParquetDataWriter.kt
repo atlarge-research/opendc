@@ -78,6 +78,8 @@ public abstract class ParquetDataWriter<in T>(
             val buf = mutableListOf<T>()
             var shouldStop = false
 
+            // TODO: look at the problem of queue contention.
+            // It seems that a lot of time is spend waiting to use the queue
             try {
                 while (!shouldStop) {
                     try {

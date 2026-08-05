@@ -162,11 +162,11 @@ public class ComputeMetricReader(
             if (printFrequency != null && loggCounter % printFrequency == 0) {
                 // TODO: Fix this!
                 var loggString = "\n\t\t\t\t\tMetrics after ${now.toEpochMilli() / 1000 / 60 / 60} hours:\n"
-//                loggString += "\t\t\t\t\t\tTasks Total: ${this.serviceTableReader.tasksTotal}\n"
-//                loggString += "\t\t\t\t\t\tTasks Active: ${this.serviceTableReader.tasksActive}\n"
-//                loggString += "\t\t\t\t\t\tTasks Pending: ${this.serviceTableReader.tasksPending}\n"
-//                loggString += "\t\t\t\t\t\tTasks Completed: ${this.serviceTableReader.tasksCompleted}\n"
-//                loggString += "\t\t\t\t\t\tTasks Terminated: ${this.serviceTableReader.tasksTerminated}\n"
+                loggString += "\t\t\t\t\t\tTasks Total: ${this.service.tasksTotal}\n"
+                loggString += "\t\t\t\t\t\tTasks Active: ${this.service.tasksActive}\n"
+                loggString += "\t\t\t\t\t\tTasks Pending: ${this.service.tasksPending}\n"
+                loggString += "\t\t\t\t\t\tTasks Completed: ${this.service.tasksCompleted}\n"
+                loggString += "\t\t\t\t\t\tTasks Terminated: ${this.service.tasksTerminated}\n"
 
                 this.logger.warn { loggString }
             }
