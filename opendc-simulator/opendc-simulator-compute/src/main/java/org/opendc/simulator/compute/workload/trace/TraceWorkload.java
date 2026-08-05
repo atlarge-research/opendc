@@ -22,11 +22,8 @@
 
 package org.opendc.simulator.compute.workload.trace;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 import org.opendc.common.ResourceType;
 import org.opendc.simulator.compute.machine.SimMachine;
@@ -36,7 +33,6 @@ import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
 import org.opendc.simulator.engine.graph.FlowSupplier;
 
 public class TraceWorkload implements Workload {
-    private final ArrayList<TraceFragment> fragments;
     private final long checkpointInterval;
     private final long checkpointDuration;
     private final double checkpointIntervalScaling;
@@ -44,10 +40,28 @@ public class TraceWorkload implements Workload {
     private final double maxGpuDemand;
     private final int maxGpuMemoryDemand;
     private final int taskId;
-    private final ResourceType[] resourceTypes;
+
+    public boolean[] getUsedResourceTypes() {
+        return usedResourceTypes;
+    }
+
+    private final boolean[] usedResourceTypes;
 
     public long checkpointDelay = 0;
     public long failureDelay = 0;
+
+    private final long[] durations;
+    private final double[] cpuUsages;
+    private final double[] gpuUsages;
+    private final int[] gpuMemoryUsages;
+
+    public int getLength() {
+        return length;
+    }
+
+    private final int length;
+
+    private int startingIndex = 0;
 
     public ScalingPolicy getScalingPolicy() {
         return scalingPolicy;
@@ -56,14 +70,25 @@ public class TraceWorkload implements Workload {
     private final ScalingPolicy scalingPolicy;
 
     public TraceWorkload(
-            ArrayList<TraceFragment> fragments,
+            long[] durations,
+            double[] cpuUsages,
+            double[] gpuUsages,
+            int[] gpuMemoryUsages,
+            double maxCpuDemand,
+            double maxGpuDemand,
             long checkpointInterval,
             long checkpointDuration,
             double checkpointIntervalScaling,
             ScalingPolicy scalingPolicy,
             int taskId,
-            ResourceType[] resourceTypes) {
-        this.fragments = fragments;
+            boolean[] usedResourceTypes) {
+        this.durations = durations;
+        this.cpuUsages = cpuUsages;
+        this.gpuUsages = gpuUsages;
+        this.gpuMemoryUsages = gpuMemoryUsages;
+
+        this.length = durations.length;
+
         this.checkpointInterval = checkpointInterval;
         this.checkpointDuration = checkpointDuration;
         this.checkpointIntervalScaling = checkpointIntervalScaling;
@@ -71,21 +96,55 @@ public class TraceWorkload implements Workload {
         this.taskId = taskId;
 
         // TODO: remove if we decide not to use it.
-        this.maxCpuDemand = fragments.stream()
-                .max(Comparator.comparing(TraceFragment::cpuUsage))
-                .get()
-                .getResourceUsage(ResourceType.CPU);
-        this.maxGpuDemand = fragments.stream()
-                .max(Comparator.comparing(TraceFragment::gpuUsage))
-                .get()
-                .getResourceUsage(ResourceType.GPU);
+        this.maxCpuDemand = maxCpuDemand;
+        this.maxGpuDemand = maxGpuDemand;
         this.maxGpuMemoryDemand = 0; // TODO: add GPU memory demand to the trace fragments
 
-        this.resourceTypes = resourceTypes;
+        this.usedResourceTypes = usedResourceTypes;
     }
 
-    public ArrayList<TraceFragment> getFragments() {
-        return fragments;
+    /**
+     * Build and return a [TraceFragment] at the given index
+     *
+     * @param index index of the fragment in the workload
+     * @return
+     */
+    public TraceFragment getFragment(int index) {
+        double gpuUsage = 0.0;
+        int gpuMemoryUsage = 0;
+
+        if (this.usedResourceTypes[ResourceType.GPU.ordinal()]) {
+            gpuUsage = this.gpuUsages[index];
+            gpuMemoryUsage = this.gpuMemoryUsages[index];
+        }
+
+        return new TraceFragment(this.durations[index], this.cpuUsages[index], gpuUsage, gpuMemoryUsage);
+    }
+
+    /**
+     * Check if the workload has a fragment at the given index
+     *
+     * @param index
+     * @return
+     */
+    public boolean hasFragmentAt(int index) {
+        return index < this.durations.length;
+    }
+
+    /**
+     * Update the values of the fragment at the given index
+     *
+     * @param index
+     * @param duration
+     * @param cpuUsage
+     * @param gpuUsage
+     * @param gpuMemoryUsage
+     */
+    public void updateFragment(int index, long duration, double cpuUsage, double gpuUsage, int gpuMemoryUsage) {
+        this.durations[index] = duration;
+        this.cpuUsages[index] = cpuUsage;
+        this.gpuUsages[index] = gpuUsage;
+        this.gpuMemoryUsages[index] = gpuMemoryUsage;
     }
 
     @Override
@@ -127,33 +186,13 @@ public class TraceWorkload implements Workload {
         return checkpointDelay;
     }
 
-    public void removeFragments(int numberOfFragments) {
-        if (numberOfFragments <= 0) {
-            return;
-        }
-
-        this.fragments.subList(0, numberOfFragments).clear();
-    }
-
-    public void addFirst(TraceFragment fragment) {
-        this.fragments.addFirst(fragment);
-    }
-
-    public ResourceType[] getResourceTypes() {
-        return Arrays.stream(resourceTypes).filter(Objects::nonNull).toArray(ResourceType[]::new);
-    }
-
     @Override
     public SimWorkload startWorkload(FlowSupplier supplier) {
         return new SimTraceWorkload(supplier, this);
-        //        ArrayList<FlowSupplier> flowSuppliers = new ArrayList<>();
-        //        flowSuppliers.add(supplier);
-        //        return new SimTraceWorkload(flowSuppliers, this);
     }
 
     @Override
     public SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion) {
-        //        return this.startWorkload(supplier);
         return new SimTraceWorkload(supplier, this);
     }
 
@@ -166,14 +205,32 @@ public class TraceWorkload implements Workload {
         return new Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, taskId);
     }
 
+    public int getStartingIndex() {
+        return startingIndex;
+    }
+
+    public void setStartingIndex(int startingIndex) {
+        this.startingIndex = startingIndex;
+    }
+
     public static final class Builder {
-        private final ArrayList<TraceFragment> fragments;
+        private static final int INITIAL_CAPACITY = 8;
+
         private final long checkpointInterval;
         private final long checkpointDuration;
         private final double checkpointIntervalScaling;
         private final ScalingPolicy scalingPolicy;
         private final int taskId;
-        private final ResourceType[] resourceTypes = new ResourceType[ResourceType.values().length];
+        private final boolean[] usedResourceTypes = new boolean[ResourceType.values().length];
+
+        private long[] durations;
+        private double[] cpuUsages;
+        private double[] gpuUsages;
+        private int[] gpuMemoryUsages;
+        private int size = 0;
+
+        private double maxCpuDemand = 0.0;
+        private double maxGpuDemand = 0.0;
 
         /**
          * Construct a new {@link Builder} instance.
@@ -184,14 +241,18 @@ public class TraceWorkload implements Workload {
                 double checkpointIntervalScaling,
                 ScalingPolicy scalingPolicy,
                 int taskId) {
-            this.fragments = new ArrayList<>();
             this.checkpointInterval = checkpointInterval;
             this.checkpointDuration = checkpointDuration;
             this.checkpointIntervalScaling = checkpointIntervalScaling;
             this.scalingPolicy = scalingPolicy;
             this.taskId = taskId;
 
-            this.resourceTypes[ResourceType.CPU.ordinal()] = ResourceType.CPU;
+            this.usedResourceTypes[ResourceType.CPU.ordinal()] = true;
+
+            this.durations = new long[INITIAL_CAPACITY];
+            this.cpuUsages = new double[INITIAL_CAPACITY];
+            this.gpuUsages = new double[INITIAL_CAPACITY];
+            this.gpuMemoryUsages = new int[INITIAL_CAPACITY];
         }
 
         /**
@@ -203,27 +264,69 @@ public class TraceWorkload implements Workload {
          * @param gpuMemoryUsage The GPU memory usage at this fragment.
          */
         public void add(long duration, double cpuUsage, double gpuUsage, int gpuMemoryUsage) {
-            if (cpuUsage > 0.0) {
-                this.resourceTypes[ResourceType.CPU.ordinal()] = ResourceType.CPU;
-            }
             if (gpuUsage > 0.0) {
-                this.resourceTypes[ResourceType.GPU.ordinal()] = ResourceType.GPU;
+                this.usedResourceTypes[ResourceType.GPU.ordinal()] = true;
             }
-            fragments.add(fragments.size(), new TraceFragment(duration, cpuUsage, gpuUsage, gpuMemoryUsage));
+
+            if (cpuUsage > maxCpuDemand) {
+                maxCpuDemand = cpuUsage;
+            }
+
+            if (gpuUsage > maxGpuDemand) {
+                maxGpuDemand = gpuUsage;
+            }
+
+            if (size == durations.length) {
+                grow();
+            }
+
+            durations[size] = duration;
+            cpuUsages[size] = cpuUsage;
+            gpuUsages[size] = gpuUsage;
+            gpuMemoryUsages[size] = gpuMemoryUsage;
+            size++;
+        }
+
+        /**
+         * Grow the backing arrays by 1.5x (the same growth factor {@code java.util.ArrayList} uses),
+         * avoiding the boxing overhead of storing fragments in {@code ArrayList<Long>}/{@code Double}/{@code Integer}.
+         */
+        private void grow() {
+            int newCapacity = durations.length + (durations.length >> 1);
+
+            durations = Arrays.copyOf(durations, newCapacity);
+            cpuUsages = Arrays.copyOf(cpuUsages, newCapacity);
+            gpuUsages = Arrays.copyOf(gpuUsages, newCapacity);
+            gpuMemoryUsages = Arrays.copyOf(gpuMemoryUsages, newCapacity);
         }
 
         /**
          * Build the {@link TraceWorkload} instance.
          */
         public TraceWorkload build() {
+            long[] duration_array = Arrays.copyOf(durations, size);
+            double[] cpuUsage_array = Arrays.copyOf(cpuUsages, size);
+
+            double[] gpuUsage_array = null;
+            int[] gpuMemoryUsage_array = null;
+            if (this.usedResourceTypes[ResourceType.GPU.ordinal()]) {
+                gpuUsage_array = Arrays.copyOf(gpuUsages, size);
+                gpuMemoryUsage_array = Arrays.copyOf(gpuMemoryUsages, size);
+            }
+
             return new TraceWorkload(
-                    this.fragments,
+                    duration_array,
+                    cpuUsage_array,
+                    gpuUsage_array,
+                    gpuMemoryUsage_array,
+                    maxCpuDemand,
+                    maxGpuDemand,
                     this.checkpointInterval,
                     this.checkpointDuration,
                     this.checkpointIntervalScaling,
                     this.scalingPolicy,
                     this.taskId,
-                    this.resourceTypes);
+                    this.usedResourceTypes);
         }
     }
 }

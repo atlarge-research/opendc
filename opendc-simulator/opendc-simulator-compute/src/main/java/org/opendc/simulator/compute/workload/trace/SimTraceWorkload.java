@@ -22,10 +22,8 @@
 
 package org.opendc.simulator.compute.workload.trace;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.opendc.common.ResourceType;
@@ -41,14 +39,17 @@ import org.slf4j.LoggerFactory;
 
 public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimTraceWorkload.class);
-    private LinkedList<TraceFragment> remainingFragments;
-    private int fragmentIndex;
 
+    // Cached so ordinal -> ResourceType lookups don't repeatedly clone the array via ResourceType.values()
+    private static final ResourceType[] RESOURCE_TYPES = ResourceType.values();
+
+    private TraceWorkload workload;
+    private int fragmentIndex;
     private TraceFragment currentFragment;
     private long startOfFragment;
 
-    // The resources used by this workload and the edges to the components
-    private final ArrayList<ResourceType> usedResourceTypes = new ArrayList<>();
+    // The ordinals of the ResourceTypes actually used by this workload's fragments, and the edges to the components
+    private final int[] usedResourceTypesOrdinals;
     private final FlowEdge[] machineResourceEdges = new FlowEdge[ResourceType.values().length];
 
     // the currently supplied resources
@@ -71,7 +72,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     private double totalRemainingWork = 0.0;
 
     private final long checkpointDuration;
-    private final TraceWorkload snapshot;
+    private boolean makingSnapshot = false;
 
     private final ScalingPolicy scalingPolicy;
     private final int taskId;
@@ -85,7 +86,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     }
 
     public TraceWorkload getSnapshot() {
-        return snapshot;
+        return this.workload;
     }
 
     @Override
@@ -104,11 +105,11 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     }
 
     public long getFailureDelay() {
-        return this.snapshot.failureDelay;
+        return this.workload.failureDelay;
     }
 
     public long getCheckpointDelay() {
-        return this.snapshot.checkpointDelay;
+        return this.workload.checkpointDelay;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,20 +119,20 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     public SimTraceWorkload(FlowSupplier supplier, TraceWorkload workload) {
         super(((FlowNode) supplier).getEngine());
 
-        this.snapshot = workload;
+        this.workload = workload;
         this.checkpointDuration = workload.checkpointDuration();
         this.scalingPolicy = workload.getScalingPolicy();
-        this.remainingFragments = new LinkedList<>(workload.getFragments());
-        this.fragmentIndex = 0;
         this.taskId = workload.getTaskId();
 
-        this.startOfFragment = this.clock.millis();
-
         new FlowEdge(this, supplier);
-        if (supplier instanceof VirtualMachine) {
-            // instead iterate over the resources in the fragment as required resources not provided by the VM
-            this.usedResourceTypes.addAll(Arrays.asList(workload.getResourceTypes()));
-        }
+
+        // The resources required are those used by the fragments, not those provided by the VM
+        this.usedResourceTypesOrdinals = trueIndices(workload.getUsedResourceTypes());
+
+        this.startOfFragment = this.clock.millis();
+        this.fragmentIndex = workload.getStartingIndex();
+        this.currentFragment = workload.getFragment(this.fragmentIndex);
+        this.startFragment(this.currentFragment);
     }
 
     // Needed if workload not started by VM
@@ -139,21 +140,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         // same engine for all suppliers
         super(((FlowNode) resourceSuppliers.getFirst()).getEngine());
 
-        this.snapshot = workload;
-        this.checkpointDuration = workload.checkpointDuration();
-        this.scalingPolicy = workload.getScalingPolicy();
-        this.remainingFragments = new LinkedList<>(workload.getFragments());
-        this.fragmentIndex = 0;
-        this.taskId = workload.getTaskId();
-
-        this.startOfFragment = this.clock.millis();
-
-        for (FlowSupplier supplier : resourceSuppliers) {
-            if (supplier.getSupplierResourceType() != ResourceType.AUXILIARY) {
-                new FlowEdge(this, supplier);
-                this.usedResourceTypes.add(supplier.getSupplierResourceType());
-            }
-        }
+        throw new UnsupportedOperationException(
+                "It is currently not possible to run a Task directly on a machine without going through a Virtual Machine");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -164,8 +152,8 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      * Check if all resources have finished their work for the current fragment
      */
     public boolean getAllResourcesFinished() {
-        for (ResourceType resourceType : this.usedResourceTypes) {
-            if (!this.resourceFinished[resourceType.ordinal()]) {
+        for (int ordinal : this.usedResourceTypesOrdinals) {
+            if (!this.resourceFinished[ordinal]) {
                 return false;
             }
         }
@@ -179,20 +167,17 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      * @param passedTime Time passed since the last update in milliseconds
      */
     private void updateRemainingWork(long passedTime) {
-        for (ResourceType resourceType : this.usedResourceTypes) {
+        for (int ordinal : this.usedResourceTypesOrdinals) {
             // The amount of work done since last update
             double finishedWork = this.scalingPolicy.getFinishedWork(
-                    this.resourcesDemand[resourceType.ordinal()],
-                    this.resourcesSupplied[resourceType.ordinal()],
-                    passedTime);
+                    this.resourcesDemand[ordinal], this.resourcesSupplied[ordinal], passedTime);
 
-            this.remainingWork[resourceType.ordinal()] =
-                    Math.max(0, this.remainingWork[resourceType.ordinal()] - finishedWork);
+            this.remainingWork[ordinal] = Math.max(0, this.remainingWork[ordinal] - finishedWork);
 
             this.totalRemainingWork -= finishedWork;
 
-            if (this.remainingWork[resourceType.ordinal()] <= 0) {
-                this.resourceFinished[resourceType.ordinal()] = true;
+            if (this.remainingWork[ordinal] <= 0) {
+                this.resourceFinished[ordinal] = true;
             }
         }
     }
@@ -201,11 +186,9 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      * Update the remaining time for each resource using the ScalingPolicy, remaining work and supplied resources
      */
     private void updateRemainingTime() {
-        for (ResourceType resourceType : this.usedResourceTypes) {
-            this.remainingTime[resourceType.ordinal()] = this.scalingPolicy.getRemainingDuration(
-                    this.resourcesDemand[resourceType.ordinal()],
-                    this.resourcesSupplied[resourceType.ordinal()],
-                    this.remainingWork[resourceType.ordinal()]);
+        for (int ordinal : this.usedResourceTypesOrdinals) {
+            this.remainingTime[ordinal] = this.scalingPolicy.getRemainingDuration(
+                    this.resourcesDemand[ordinal], this.resourcesSupplied[ordinal], this.remainingWork[ordinal]);
         }
     }
 
@@ -223,11 +206,11 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
         long timeUntilNextUpdate = Long.MAX_VALUE;
 
-        for (ResourceType resourceType : this.usedResourceTypes) {
-            long remainingTime = this.remainingTime[resourceType.ordinal()];
+        for (int ordinal : this.usedResourceTypesOrdinals) {
+            long remainingTime = this.remainingTime[ordinal];
 
             // The next update should happen when the fastest resource is done
-            if (!this.resourceFinished[resourceType.ordinal()] && remainingTime < timeUntilNextUpdate) {
+            if (!this.resourceFinished[ordinal] && remainingTime < timeUntilNextUpdate) {
                 timeUntilNextUpdate = remainingTime;
             }
         }
@@ -254,6 +237,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         this.startOfFragment = now;
 
         this.updateRemainingWork(passedTime);
+        this.updateRemainingTime();
 
         // If this.totalRemainingWork <= 0, the fragment has been completed across all resources
         if ((int) this.totalRemainingWork <= 0) {
@@ -266,10 +250,30 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             return this.onUpdate(now);
         }
 
-        this.pushNewDemands();
-        this.updateRemainingTime();
-
         return getNextUpdateTime(this.startOfFragment);
+    }
+
+    public void startFragment(TraceFragment fragment) {
+        this.currentFragment = fragment;
+
+        // Reset the remaining work for all resources
+        this.totalRemainingWork = 0.0;
+
+        // Set the remaining Work of each resource based on the given Fragment.
+        for (int ordinal : this.usedResourceTypesOrdinals) {
+            ResourceType resourceType = RESOURCE_TYPES[ordinal];
+            double demand = fragment.getResourceUsage(resourceType);
+
+            this.remainingWork[ordinal] = this.scalingPolicy.getRemainingWork(demand, fragment.duration());
+            this.totalRemainingWork += this.remainingWork[ordinal];
+            this.resourceFinished[ordinal] = false;
+
+            if (this.machineResourceEdges[ordinal] != null) {
+                this.pushOutgoingDemand(this.machineResourceEdges[ordinal], demand, resourceType);
+            }
+        }
+
+        this.updateRemainingTime();
     }
 
     /**
@@ -278,13 +282,20 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      * @return The next TraceFragment or null if there are no more fragments
      */
     public TraceFragment getNextFragment() {
-        if (this.remainingFragments.isEmpty()) {
+
+        // If the previous fragment was making a snapshot, set makingSnapshot to false.
+        // If the previous fragment was a normal fragment, increment fragment index.
+        if (this.makingSnapshot) {
+            this.makingSnapshot = false;
+        } else {
+            this.fragmentIndex++;
+        }
+
+        if (!this.workload.hasFragmentAt(this.fragmentIndex)) {
             return null;
         }
-        this.currentFragment = this.remainingFragments.pop();
-        this.fragmentIndex++;
 
-        return this.currentFragment;
+        return this.workload.getFragment(this.fragmentIndex);
     }
 
     /**
@@ -299,21 +310,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             return;
         }
 
-        // Reset the remaining work for all resources
-        this.totalRemainingWork = 0.0;
-
-        for (ResourceType resourceType : usedResourceTypes) {
-            double demand = nextFragment.getResourceUsage(resourceType);
-
-            this.remainingWork[resourceType.ordinal()] =
-                    this.scalingPolicy.getRemainingWork(demand, nextFragment.duration());
-            this.totalRemainingWork += this.remainingWork[resourceType.ordinal()];
-            this.resourceFinished[resourceType.ordinal()] = false;
-
-            if (this.machineResourceEdges[resourceType.ordinal()] != null) {
-                this.pushOutgoingDemand(this.machineResourceEdges[resourceType.ordinal()], demand, resourceType);
-            }
-        }
+        this.startFragment(nextFragment);
     }
 
     /**
@@ -330,16 +327,15 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     @Override
     public void stopWorkload() {
         // If the workload is stopped due to an error or failure, calculate the wasted time for bookkeeping.
-        if (this.totalRemainingWork > 0.0 || !this.remainingFragments.isEmpty()) {
+        if (this.totalRemainingWork > 0.0 || this.workload.hasFragmentAt(this.fragmentIndex + 1)) {
             // Failure
 
             this.updateRemainingWork(this.clock.millis() - this.startOfFragment);
 
             for (int i = 0; i < this.fragmentIndex; i++) {
-                this.snapshot.failureDelay +=
-                        this.snapshot.getFragments().get(i).duration();
+                this.workload.failureDelay += this.workload.getFragment(i).duration();
             }
-            this.snapshot.failureDelay -= (long) this.totalRemainingWork;
+            this.workload.failureDelay -= (long) this.totalRemainingWork;
         }
 
         // The workload has already been stopped
@@ -350,12 +346,12 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         // TODO: Maybe move this to the end
         this.closeNode();
 
-        for (ResourceType resourceType : this.usedResourceTypes) {
-            this.machineResourceEdges[resourceType.ordinal()] = null;
-            this.resourceFinished[resourceType.ordinal()] = true;
+        for (int ordinal : this.usedResourceTypesOrdinals) {
+            this.machineResourceEdges[ordinal] = null;
+            this.resourceFinished[ordinal] = true;
         }
 
-        this.remainingFragments = null;
+        this.workload = null;
         this.currentFragment = null;
     }
 
@@ -382,51 +378,49 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
      * @param now Current time in milliseconds
      */
     public void makeSnapshot(long now) {
+
+        // Update the remaining time and work
         long passedTime = getPassedTime(now);
         this.startOfFragment = now;
 
         this.updateRemainingWork(passedTime);
         this.updateRemainingTime();
 
+        // TODO: Does this line still do anything?
         long remainingDuration = Arrays.stream(this.remainingTime).max().orElseThrow();
 
         // If this is the end of the Task, don't make a snapshot
-        if (this.currentFragment == null || (remainingDuration <= 0 && remainingFragments.isEmpty())) {
+        if (this.currentFragment == null
+                || (remainingDuration <= 0 && !workload.hasFragmentAt(this.fragmentIndex + 1))) {
             return;
         }
 
-        // Remove all fragments up to and including the current fragment from the snapshot
-        // These fragments will have to be re-executed after a failure
-        this.snapshot.removeFragments(this.fragmentIndex);
+        // Update the starting index of the workload so it will not rerun the whole workload after a failure
+        this.workload.setStartingIndex(this.fragmentIndex);
 
-        // Create a new fragment with the same resource usage as the current fragment,
-        // but with the remaining duration. Put the adjusted fragment at the front of the
-        // remaining fragments and snapshot
-        if (remainingDuration > 0) {
-            TraceFragment adjustedFragment = new TraceFragment(
-                    remainingDuration,
-                    currentFragment.cpuUsage(),
-                    currentFragment.gpuUsage(),
-                    currentFragment.gpuMemoryUsage());
+        // Update the duration of the current fragment so only the remaining time has to be run.
+        this.workload.updateFragment(
+                this.fragmentIndex,
+                remainingDuration,
+                currentFragment.cpuUsage(),
+                currentFragment.gpuUsage(),
+                currentFragment.gpuMemoryUsage());
 
-            this.snapshot.addFirst(adjustedFragment);
-            this.remainingFragments.addFirst(adjustedFragment);
-        }
-
-        // Create a fragment for processing the snapshot process and add it to the front of the remaining fragments
+        // Add a checkpointing fragment
         TraceFragment snapshotFragment = new TraceFragment(
                 this.checkpointDuration,
-                this.snapshot.getMaxCpuDemand(),
-                this.snapshot.getMaxGpuDemand(),
-                this.snapshot.getMaxGpuMemoryDemand());
-        this.remainingFragments.addFirst(snapshotFragment);
+                this.workload.getMaxCpuDemand(),
+                this.workload.getMaxGpuDemand(),
+                this.workload.getMaxGpuMemoryDemand());
 
-        // Add the checkpoint duration for bookkeeping
-        this.snapshot.checkpointDelay += this.checkpointDuration;
+        // Add delay for bookkeeping
+        this.workload.checkpointDelay += this.checkpointDuration;
 
-        this.fragmentIndex = -1;
-        startNextFragment();
+        this.makingSnapshot = true;
+        this.startFragment(snapshotFragment);
 
+        // Update the index and start the checkpointing fragment
+        // TODO: see if this is still needed
         this.invalidate();
     }
 
@@ -463,7 +457,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     public void handleIncomingSupply(FlowEdge supplierEdge, double newSupply, ResourceType resourceType) {
 
         // for cases where equal share or fixed share is used and the resource is provided despite not being used
-        if (!this.usedResourceTypes.contains(resourceType)) {
+        if (!this.usesResourceType(resourceType)) {
             return;
         }
         if (this.resourcesSupplied[resourceType.ordinal()] == newSupply) {
@@ -487,21 +481,21 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     }
 
     /**
-     * Push new demands for all resource types to the Virtual Machine
+     * Determine whether the given resource type is used by this workload's fragments.
      */
-    private void pushNewDemands() {
-        for (ResourceType resourceType : this.usedResourceTypes) {
-            if (this.machineResourceEdges[resourceType.ordinal()] != null) {
-                this.pushOutgoingDemand(
-                        this.machineResourceEdges[resourceType.ordinal()],
-                        this.resourcesDemand[resourceType.ordinal()],
-                        resourceType);
+    private boolean usesResourceType(ResourceType resourceType) {
+        for (int ordinal : this.usedResourceTypesOrdinals) {
+            if (ordinal == resourceType.ordinal()) {
+                return true;
             }
         }
+        return false;
     }
 
     /**
-     * Push a new demand to the Virtual Machine
+     * Push a new CPU demand to the Virtual Machine
+     * This function does not specify the type of resources demanded and thus defaults to CPU
+     * TODO: Maybe delete this function because it creates confusion. It also does not have better performance
      *
      * @param supplierEdge edge to the VM on which this is running
      * @param newDemand The new demand that needs to be sent to the VM
@@ -598,5 +592,29 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
             }
         }
         return true;
+    }
+
+    /**
+     * Get the indices at which the given array is {@code true}.
+     *
+     * @param flags An array indexed by {@link ResourceType#ordinal()}.
+     * @return The ordinals for which {@code flags} is {@code true}.
+     */
+    private static int[] trueIndices(boolean[] flags) {
+        int count = 0;
+        for (boolean flag : flags) {
+            if (flag) {
+                count++;
+            }
+        }
+
+        int[] indices = new int[count];
+        int idx = 0;
+        for (int i = 0; i < flags.length; i++) {
+            if (flags[i]) {
+                indices[idx++] = i;
+            }
+        }
+        return indices;
     }
 }

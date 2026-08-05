@@ -85,14 +85,40 @@ private fun TaskSpec.toServiceTask(
         ArrayList(
             fragments.map { TraceFragment(it.duration.toMsLong(), it.cpuUsage.toMHz(), it.gpuUsage.toMHz(), it.gpuMemory.toMiB().toInt()) },
         )
-    val usedResources =
-        buildList {
-            if (fragments.any { it.cpuUsage.toMHz() > 0.0 }) add(ResourceType.CPU)
-            if (fragments.any { it.gpuUsage.toMHz() > 0.0 }) add(ResourceType.GPU)
-        }.toTypedArray()
+    val durationsArray = LongArray(fragments.size)
+    val cpuUsagesArray = DoubleArray(fragments.size)
+    val gpuUsagesArray = DoubleArray(fragments.size)
+    val gpuMemoryUsagesArray = IntArray(fragments.size)
+
+    var maxCpuUsage = 0.0
+    var maxGpuUsage = 0.0
+
+    val usedResources = BooleanArray(ResourceType.values().size)
+    usedResources[ResourceType.CPU.ordinal] = true
+
+    for ((i, fragment) in fragments.withIndex()) {
+        durationsArray[i] = fragment.duration.toMsLong()
+        cpuUsagesArray[i] = fragment.cpuUsage.toMHz()
+        gpuUsagesArray[i] = fragment.gpuUsage.toMHz()
+        gpuMemoryUsagesArray[i] = fragment.gpuMemory.toMiB().toInt()
+
+        if (fragment.cpuUsage.toMHz() > maxCpuUsage) {
+            maxCpuUsage = fragment.cpuUsage.toMHz()
+        }
+        if (fragment.gpuUsage.toMHz() > maxGpuUsage) {
+            usedResources[ResourceType.GPU.ordinal] = true
+            maxGpuUsage = fragment.gpuUsage.toMHz()
+        }
+    }
+
     val workload =
         EngineTraceWorkload(
-            engineFragments,
+            durationsArray,
+            cpuUsagesArray,
+            gpuUsagesArray,
+            gpuMemoryUsagesArray,
+            maxCpuUsage,
+            maxGpuUsage,
             checkpoint.intervalMs(),
             checkpoint.durationMs(),
             checkpoint.scaling(),
