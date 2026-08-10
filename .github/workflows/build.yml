@@ -22,23 +22,23 @@ jobs:
             java: 21
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v3
+        uses: gradle/actions/wrapper-validation@v6
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.x'
 
       - name: Install M3SA Python requirements
         run: pip install -r opendc-experiments/opendc-experiments-m3sa/src/main/python/requirements.txt
       - name: Build with Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v6
         with:
           arguments: build assembleDist codeCoverageReport
           # Only write to the cache for builds on the 'master' branch.
@@ -46,7 +46,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/master' }}
       - name: Publish report
         if: always()
-        uses: mikepenz/action-junit-report@v5
+        uses: mikepenz/action-junit-report@v6
         with:
           check_name: test (Java ${{ matrix.java }})
           report_paths: '**/build/test-results/test/TEST-*.xml'
@@ -54,7 +54,7 @@ jobs:
       - name: Upload reports
         if: always()
         continue-on-error: true # See https://github.com/actions/upload-artifact/issues/270
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: reports-${{ matrix.os }}-jdk${{ matrix.java }}
           path: |
@@ -63,14 +63,14 @@ jobs:
           retention-days: 5
       - name: Upload build
         continue-on-error: true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-${{ matrix.os }}-jdk${{ matrix.java }}
           path: |
             ./**/build/distributions/**/*.zip
           retention-days: 5
       - name: Upload code coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
@@ -80,12 +80,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Build Web Server
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           file: opendc-web/opendc-web-server/Dockerfile
       - name: Build Runner
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           file: opendc-web/opendc-web-runner/Dockerfile
