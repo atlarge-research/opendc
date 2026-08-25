@@ -196,12 +196,22 @@ public class TraceWorkload implements Workload {
         return new SimTraceWorkload(supplier, this);
     }
 
-    public static Builder builder(
+    public static EfficientBuilder efficientBuilder(
             long checkpointInterval,
             long checkpointDuration,
             double checkpointIntervalScaling,
             ScalingPolicy scalingPolicy,
-            int taskId) {
+            int taskId,
+            int numFragments) {
+        return new EfficientBuilder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, taskId, numFragments);
+    }
+
+    public static Builder builder(
+        long checkpointInterval,
+        long checkpointDuration,
+        double checkpointIntervalScaling,
+        ScalingPolicy scalingPolicy,
+        int taskId) {
         return new Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, taskId);
     }
 
@@ -327,6 +337,107 @@ public class TraceWorkload implements Workload {
                     this.scalingPolicy,
                     this.taskId,
                     this.usedResourceTypes);
+        }
+    }
+
+    public static final class EfficientBuilder {
+        private final long checkpointInterval;
+        private final long checkpointDuration;
+        private final double checkpointIntervalScaling;
+        private final ScalingPolicy scalingPolicy;
+        private final int taskId;
+        private final boolean[] usedResourceTypes = new boolean[ResourceType.values().length];
+
+        private final long[] durations;
+        private final double[] cpuUsages;
+        private double[] gpuUsages;
+        private int[] gpuMemoryUsages;
+
+        private final int numFragments;
+        private int size = 0;
+
+        private double maxCpuDemand = 0.0;
+        private double maxGpuDemand = 0.0;
+
+        /**
+         * Construct a new {@link Builder} instance.
+         */
+        private EfficientBuilder(
+            long checkpointInterval,
+            long checkpointDuration,
+            double checkpointIntervalScaling,
+            ScalingPolicy scalingPolicy,
+            int taskId,
+            int numFragments) {
+            this.checkpointInterval = checkpointInterval;
+            this.checkpointDuration = checkpointDuration;
+            this.checkpointIntervalScaling = checkpointIntervalScaling;
+            this.scalingPolicy = scalingPolicy;
+            this.taskId = taskId;
+
+            this.usedResourceTypes[ResourceType.CPU.ordinal()] = true;
+
+            this.numFragments = numFragments;
+            this.durations = new long[numFragments];
+            this.cpuUsages = new double[numFragments];
+            this.gpuUsages = new double[numFragments];
+            this.gpuMemoryUsages = new int[numFragments];
+        }
+
+        /**
+         * Add a fragment to the trace.
+         *
+         * @param duration The timestamp at which the fragment ends (in epoch millis).
+         * @param cpuUsage The CPU usage at this fragment.
+         * @param gpuUsage The GPU usage at this fragment.
+         * @param gpuMemoryUsage The GPU memory usage at this fragment.
+         */
+        public void add(long duration, double cpuUsage, double gpuUsage, int gpuMemoryUsage) {
+            if (gpuUsage > 0.0) {
+                this.usedResourceTypes[ResourceType.GPU.ordinal()] = true;
+            }
+
+            if (cpuUsage > maxCpuDemand) {
+                maxCpuDemand = cpuUsage;
+            }
+
+            if (gpuUsage > maxGpuDemand) {
+                maxGpuDemand = gpuUsage;
+            }
+
+            durations[size] = duration;
+            cpuUsages[size] = cpuUsage;
+            gpuUsages[size] = gpuUsage;
+            gpuMemoryUsages[size] = gpuMemoryUsage;
+            size++;
+        }
+
+        /**
+         * Build the {@link TraceWorkload} instance.
+         */
+        public TraceWorkload build() throws Exception {
+            if (size != numFragments) {
+                throw new Exception("The number of Fragments does not match the actual number of values");
+            }
+
+            if (!this.usedResourceTypes[ResourceType.GPU.ordinal()]) {
+                gpuUsages = null;
+                gpuMemoryUsages = null;
+            }
+
+            return new TraceWorkload(
+                durations,
+                cpuUsages,
+                gpuUsages,
+                gpuMemoryUsages,
+                maxCpuDemand,
+                maxGpuDemand,
+                this.checkpointInterval,
+                this.checkpointDuration,
+                this.checkpointIntervalScaling,
+                this.scalingPolicy,
+                this.taskId,
+                this.usedResourceTypes);
         }
     }
 }

@@ -88,6 +88,10 @@ internal class TaskWriteSupport : WriteSupport<TaskParquetSchema>() {
             consumer.endField("deadline", 7)
         }
 
+        consumer.startField("num_fragments", 8)
+        consumer.addInteger(record.numFragments)
+        consumer.endField("num_fragments", 8)
+
         consumer.endMessage()
     }
 }

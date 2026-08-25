@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload
+package org.opendc.sdk.model.workload.loader
 
 import mu.KotlinLogging
 import org.opendc.compute.simulator.service.ServiceTask
@@ -57,13 +57,13 @@ import kotlin.math.roundToLong
  */
 public class ComputeWorkloadLoader(
     private val pathToFile: File,
-    private val subMissionTime: String? = null,
+    private val submissionTime: String? = null,
     private val checkpointInterval: Long = 0L,
     private val checkpointDuration: Long = 0L,
     private val checkpointIntervalScaling: Double = 1.0,
     private val scalingPolicy: ScalingPolicy = NoDelayScaling(),
     private val deferAll: Boolean = false,
-) : WorkloadLoader(subMissionTime) {
+) : WorkloadLoader(submissionTime) {
     /**
      * The logger for this instance.
      */

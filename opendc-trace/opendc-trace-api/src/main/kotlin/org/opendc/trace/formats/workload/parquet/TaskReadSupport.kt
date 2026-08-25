@@ -40,6 +40,7 @@ import org.opendc.trace.conv.TASK_GPU_COUNT
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.conv.TASK_MEM_CAPACITY
 import org.opendc.trace.conv.TASK_NAME
+import org.opendc.trace.conv.TASK_NUM_FRAGMENTS
 import org.opendc.trace.conv.TASK_PARENTS
 import org.opendc.trace.conv.TASK_SUBMISSION_TIME
 
@@ -68,6 +69,7 @@ internal class TaskReadSupport(private val projection: List<String>?) : ReadSupp
             "children" to TASK_CHILDREN,
             "deferrable" to TASK_DEFERRABLE,
             "deadline" to TASK_DEADLINE,
+            "num_fragments" to TASK_NUM_FRAGMENTS
         )
 
     override fun init(context: InitContext): ReadContext {

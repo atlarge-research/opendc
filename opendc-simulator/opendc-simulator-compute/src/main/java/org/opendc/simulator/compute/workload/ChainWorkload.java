@@ -71,4 +71,15 @@ public record ChainWorkload(
     public SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion) {
         return new VirtualMachine(supplier, this, machine, completion);
     }
+
+    @Override
+    public int getLength() {
+        int length = 0;
+
+        for (Workload workload: this.workloads ) {
+            length += workload.getLength();
+        }
+
+        return length;
+    }
 }

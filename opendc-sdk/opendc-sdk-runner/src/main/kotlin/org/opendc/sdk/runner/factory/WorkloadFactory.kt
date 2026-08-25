@@ -24,14 +24,16 @@ package org.opendc.sdk.runner.factory
 
 import org.opendc.common.ResourceType
 import org.opendc.compute.simulator.service.ServiceTask
-import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.model.workload.EfficientTraceWorkloadSpec
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
 import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import org.opendc.sdk.model.workload.WorkloadSpec
+import org.opendc.sdk.model.workload.loader.ComputeWorkloadLoader
+import org.opendc.sdk.model.workload.loader.EfficientWorkloadLoader
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
 import org.opendc.simulator.compute.workload.trace.scaling.PerfectScaling
@@ -53,6 +55,7 @@ internal fun WorkloadSpec.toServiceTasks(
 ): Queue<ServiceTask> =
     when (this) {
         is TraceWorkloadSpec -> loadTrace(resolve(source), checkpoint)
+        is EfficientTraceWorkloadSpec -> loadTrace(resolve(source), checkpoint)
         is InlineWorkloadSpec ->
             ArrayDeque(
                 tasks
@@ -67,6 +70,22 @@ private fun TraceWorkloadSpec.loadTrace(
 ): Queue<ServiceTask> =
     ArrayDeque(
         ComputeWorkloadLoader(
+            path.toFile(),
+            submissionTime,
+            checkpoint.intervalMs(),
+            checkpoint.durationMs(),
+            checkpoint.scaling(),
+            scalingPolicy.toEngine(),
+            deferAll,
+        ).sampleByLoad(sampleFraction),
+    )
+
+private fun EfficientTraceWorkloadSpec.loadTrace(
+    path: Path,
+    checkpoint: CheckpointSpec?,
+): Queue<ServiceTask> =
+    ArrayDeque(
+        EfficientWorkloadLoader(
             path.toFile(),
             submissionTime,
             checkpoint.intervalMs(),

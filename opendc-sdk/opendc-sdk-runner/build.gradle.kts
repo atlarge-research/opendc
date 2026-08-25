@@ -96,7 +96,6 @@ dependencies {
     implementation(project(":opendc-simulator:opendc-simulator-compute"))
     implementation(project(":opendc-simulator:opendc-simulator-flow"))
     implementation(project(":opendc-compute:opendc-compute-topology"))
-    implementation(project(":opendc-compute:opendc-compute-workload"))
     implementation(project(":opendc-compute:opendc-compute-carbon"))
     implementation(project(":opendc-compute:opendc-compute-failure"))
     implementation(libs.commons.math3)

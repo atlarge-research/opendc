@@ -170,6 +170,8 @@ public final class SimCpu extends FlowNode implements FlowSupplier, FlowConsumer
      * @param now The timestamp at which to update the counter.
      */
     public void updateCounters(long now) {
+        // TODO: See if you can just return if now == lastUpdate
+
         long lastUpdate = this.lastCounterUpdate;
         this.lastCounterUpdate = now;
         long delta = now - lastUpdate;

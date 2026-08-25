@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload
+package org.opendc.sdk.model.workload.loader
 import mu.KotlinLogging
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
