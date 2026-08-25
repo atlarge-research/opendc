@@ -93,12 +93,7 @@ private class ScenarioRun(
     private val service: ComputeService get() = engine.resolve(ComputeService::class.java)
 
     suspend fun execute(): RunResult {
-        println("STARTING Scenario")
-
         val workload = scenario.workload.toServiceTasks(scenario.checkpointModel, resources::resolve)
-
-        println("LOADED WORKLOAD")
-//        Thread.sleep(10_000)
 
         val startTime = workload.minOf { it.submittedAt }
         val clusters = scenario.topology.toClusterSpecs(resources::resolve)

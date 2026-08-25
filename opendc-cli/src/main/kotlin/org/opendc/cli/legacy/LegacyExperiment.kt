@@ -32,6 +32,7 @@ import kotlinx.serialization.json.buildJsonObject
 import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.serialization.SdkJson
 import java.io.File
+import java.nio.file.Path
 
 /**
  * Reads an experiment written in the deprecated `opendc-experiments-base` JSON format, the format the
@@ -60,7 +61,7 @@ import java.io.File
  */
 internal fun readLegacyExperiment(
     file: File,
-    baseDir: File,
+    baseDir: File = Path.of("").toAbsolutePath().toFile(),
     strict: Boolean = false,
 ): ExperimentSpec {
     val document = SdkJson.json.parseToJsonElement(file.readText()).asObject("the experiment")

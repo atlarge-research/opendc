@@ -29,6 +29,7 @@ import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
 import java.io.File
+import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -45,7 +46,11 @@ class ExperimentImportsTest {
     /** The headline: a topology written in its own file, pulled into an experiment. */
     @Test
     fun `an experiment imports its topology from another file`() {
-        val experiment = load("experiments/imports/experiment.json")
+        val experiment =
+            load(
+                "experiments/imports/experiment.json",
+                Path.of("build/resources/test/experiments/imports"),
+            )
 
         val cluster = experiment.topologies.single().clusters.single()
         assertEquals("cluster", cluster.name)
@@ -63,7 +68,11 @@ class ExperimentImportsTest {
     /** Any object may be imported, not just a topology — here the workload is a file of its own. */
     @Test
     fun `an experiment imports its workload from another file`() {
-        val workload = load("experiments/imports/experiment.json").workloads.single()
+        val workload =
+            load(
+                "experiments/imports/experiment.json",
+                Path.of("build/resources/test/experiments/imports"),
+            ).workloads.single()
 
         assertEquals(listOf(0, 1), (workload as InlineWorkloadSpec).tasks.map { it.id })
     }
@@ -74,7 +83,11 @@ class ExperimentImportsTest {
      */
     @Test
     fun `a key written next to the import overrides the imported one`() {
-        val host = load("experiments/imports/experiment.json").topologies.single().clusters.single().hosts.single()
+        val host =
+            load(
+                "experiments/imports/experiment.json",
+                Path.of("build/resources/test/experiments/imports"),
+            ).topologies.single().clusters.single().hosts.single()
 
         assertEquals(4, host.count, "the topology's own count overrides the one in the imported host")
         assertEquals("big-host", host.name, "everything it does not override still comes from the import")
@@ -88,7 +101,11 @@ class ExperimentImportsTest {
     @Test
     fun `imports nest and resolve against the file that declares them`() {
         // Loading at all proves it: the host lives a directory deeper than the file that imports it.
-        val host = load("experiments/imports/experiment.json").topologies.single().clusters.single().hosts.single()
+        val host =
+            load(
+                "experiments/imports/experiment.json",
+                Path.of("build/resources/test/experiments/imports"),
+            ).topologies.single().clusters.single().hosts.single()
 
         assertEquals(8, host.cpu.coreCount)
     }
@@ -116,11 +133,14 @@ class ExperimentImportsTest {
         File(root, "a.json").writeText("""{ "importFrom": "b.json" }""")
         File(root, "b.json").writeText("""{ "importFrom": "a.json" }""")
 
-        val error = assertFailsWith<ImportException> { readExperiment(File(root, "a.json")) }
+        val error = assertFailsWith<ImportException> { readExperiment(File(root, "a.json"), root) }
         assertContains(error.message.orEmpty(), "imports itself")
     }
 
-    private fun load(resource: String): ExperimentSpec = readExperiment(resourceFile(resource))
+    private fun load(
+        resource: String,
+        rootPath: Path = Path.of(""),
+    ): ExperimentSpec = readExperiment(resourceFile(resource), rootPath.toFile())
 
     private fun resourceFile(name: String): File =
         File(checkNotNull(javaClass.classLoader.getResource(name)) { "missing fixture $name" }.toURI())
