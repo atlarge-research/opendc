@@ -29,6 +29,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.serialization.SdkJson
 import java.io.File
+import java.nio.file.Path
 
 /** The key that names the file an object takes the rest of its fields from. */
 private const val IMPORT_KEY = "importFrom"
@@ -63,11 +64,12 @@ private const val IMPORT_KEY = "importFrom"
  */
 internal fun readExperiment(
     file: File,
+    baseDir: File = Path.of("").toAbsolutePath().toFile(),
     strict: Boolean = false,
 ): ExperimentSpec {
     val start = file.canonicalFile
     val document = SdkJson.json.parseToJsonElement(start.readText()).asImportable(start)
-    return SdkJson.fromJsonElement(document.resolveImports(start.parentFile, listOf(start)), strict)
+    return SdkJson.fromJsonElement(document.resolveImports(baseDir, listOf(start)), strict)
 }
 
 /** Signals an `importFrom` that cannot be resolved. */

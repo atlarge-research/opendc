@@ -84,7 +84,18 @@ class CliTest {
     fun `run simulates an experiment that imports its topology and workload`() {
         val out = createTempDirectory("opendc-cli-imports")
         try {
-            val result = opendc().test(listOf("run", imports, "-o", out.toString(), "--no-progress"))
+            val result =
+                opendc().test(
+                    listOf(
+                        "--input-root",
+                        "build/resources/test/experiments/imports",
+                        "run",
+                        imports,
+                        "-o",
+                        out.toString(),
+                        "--no-progress",
+                    ),
+                )
             assertEquals(0, result.statusCode, result.output)
             val parquet = out.toFile().walkTopDown().filter { it.extension == "parquet" }.toList()
             assertTrue(parquet.isNotEmpty(), "expected parquet output under $out")
@@ -96,7 +107,15 @@ class CliTest {
     /** `show` renders the imported topology, proving the import is resolved before anything reads it. */
     @Test
     fun `show prints a topology pulled in with importFrom`() {
-        val result = opendc().test(listOf("show", imports))
+        val result =
+            opendc().test(
+                listOf(
+                    "--input-root",
+                    "build/resources/test/experiments/imports",
+                    "show",
+                    imports,
+                ),
+            )
         assertEquals(0, result.statusCode, result.output)
         assertContains(result.stdout, "big-host")
     }

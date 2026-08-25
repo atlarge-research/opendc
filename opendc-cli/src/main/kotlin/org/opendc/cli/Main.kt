@@ -34,6 +34,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
+import com.github.ajalt.clikt.parameters.types.path
 import com.github.ajalt.mordant.terminal.Terminal
 import org.opendc.cli.config.CliConfig
 import org.opendc.cli.config.toMordantTheme
@@ -68,10 +69,17 @@ internal class OpendcCommand : CliktCommand(name = "opendc") {
         help = "Reject experiment files that contain unknown keys instead of ignoring them.",
     ).flag()
 
+    private val inputRoot by option(
+        "--input-root",
+        help =
+            "Root for resolving named/relative topology, workload and trace references " +
+                "(default: the experiment file's directory, or the working directory under --legacy).",
+    ).path(canBeFile = false, mustExist = false)
+
     override fun help(context: Context): String = "Run, validate and inspect OpenDC datacenter simulations."
 
     override fun run() {
-        currentContext.obj = ExperimentReadOptions(legacy = legacy, strict = strict)
+        currentContext.obj = ExperimentReadOptions(legacy = legacy, strict = strict, inputRoot = inputRoot)
     }
 }
 
@@ -82,6 +90,7 @@ internal class OpendcCommand : CliktCommand(name = "opendc") {
 internal data class ExperimentReadOptions(
     val legacy: Boolean,
     val strict: Boolean,
+    val inputRoot: Path?,
 )
 
 /**
@@ -105,15 +114,19 @@ internal abstract class ExperimentCommand(
     protected val isStrict: Boolean
         get() = currentContext.findObject<ExperimentReadOptions>()?.strict == true
 
+    /** Whether the root command was asked to reject experiments that carry unknown keys. */
+    protected val inputRoot: Path?
+        get() = currentContext.findObject<ExperimentReadOptions>()?.inputRoot
+
     /**
      * The directory the experiment should be resolved at
      */
     protected val experimentBaseDirectory: Path
         get() =
-            if (isLegacy) {
-                Path.of("").toAbsolutePath()
+            if (inputRoot != null) {
+                inputRoot!!
             } else {
-                experimentFile.absoluteFile.parentFile.toPath()
+                Path.of("").toAbsolutePath()
             }
 
     /**
@@ -123,12 +136,12 @@ internal abstract class ExperimentCommand(
      * [root]; otherwise it is SDK-model JSON, which composes the files it names with `importFrom`
      * relative to itself and so needs no root.
      */
-    protected fun loadExperiment(): ExperimentSpec =
+    protected fun loadExperiment(rootPath: Path = experimentBaseDirectory): ExperimentSpec =
         try {
             if (isLegacy) {
-                readLegacyExperiment(experimentFile, experimentBaseDirectory.toFile(), isStrict)
+                readLegacyExperiment(experimentFile, rootPath.toFile(), isStrict)
             } else {
-                readExperiment(experimentFile, isStrict)
+                readExperiment(experimentFile, rootPath.toFile(), isStrict)
             }
         } catch (e: Exception) {
             throw CliktError(
