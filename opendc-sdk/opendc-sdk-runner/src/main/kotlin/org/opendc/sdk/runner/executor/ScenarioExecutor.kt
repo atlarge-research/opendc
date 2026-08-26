@@ -40,6 +40,9 @@ import org.opendc.sdk.runner.provision.ProvisioningContext
 import org.opendc.sdk.runner.provision.registerComputeMonitor
 import org.opendc.sdk.runner.provision.setupComputeService
 import org.opendc.sdk.runner.provision.setupHosts
+import org.opendc.sdk.runner.telemetry.sink.OutputSink
+import org.opendc.sdk.runner.telemetry.sink.RunContext
+import org.opendc.sdk.runner.telemetry.sink.SinkSession
 import org.opendc.simulator.compute.power.CarbonModel
 import org.opendc.simulator.compute.power.CarbonReceiver
 import org.opendc.simulator.kotlin.SimulationCoroutineScope
@@ -60,7 +63,7 @@ internal fun runScenario(
     experimentName: String,
     scenarioId: Int,
     seed: Long,
-    sinks: List<org.opendc.sdk.runner.telemetry.sink.OutputSink>,
+    sinks: List<OutputSink>,
     provisioner: ResourceProvisioner,
 ): RunResult {
     var result: RunResult? = null
@@ -87,7 +90,7 @@ private class ScenarioRun(
     private val experimentName: String,
     private val scenarioId: Int,
     private val seed: Long,
-    private val sinks: List<org.opendc.sdk.runner.telemetry.sink.OutputSink>,
+    private val sinks: List<OutputSink>,
 ) {
     private val clock: InstantSource get() = sim.timeSource
     private val service: ComputeService get() = engine.resolve(ComputeService::class.java)
@@ -131,10 +134,10 @@ private class ScenarioRun(
         gpuCount: Int,
         startTime: Long,
         taskCount: Int,
-    ): List<org.opendc.sdk.runner.telemetry.sink.SinkSession> {
+    ): List<SinkSession> {
         val export = scenario.exportModel.toExportSettings(gpuCount)
         val context =
-            _root_ide_package_.org.opendc.sdk.runner.telemetry.sink.RunContext(
+            RunContext(
                 scenario,
                 experimentName,
                 scenarioId,

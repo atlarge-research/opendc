@@ -30,8 +30,8 @@ import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.PowerSourceSpec
-import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.experiments.base.runner.replay
+import org.opendc.sdk.model.workload.loader.ComputeWorkloadLoader
 import org.opendc.sdk.runner.provision.Provisioner
 import org.opendc.sdk.runner.provision.registerComputeMonitor
 import org.opendc.sdk.runner.provision.setupComputeService

@@ -76,7 +76,7 @@ public record ChainWorkload(
     public int getLength() {
         int length = 0;
 
-        for (Workload workload: this.workloads ) {
+        for (Workload workload : this.workloads) {
             length += workload.getLength();
         }
 

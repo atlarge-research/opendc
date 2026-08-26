@@ -51,7 +51,7 @@ import java.util.concurrent.ForkJoinPool
  */
 public class OpenDC private constructor(
     private val provisioner: ResourceProvisioner,
-    private val sinks: List<org.opendc.sdk.runner.telemetry.sink.OutputSink>,
+    private val sinks: List<OutputSink>,
     private val parallelism: Int,
 ) {
     /** Expands [experiment] into scenarios and simulates each repetition of each. */
@@ -99,23 +99,23 @@ public class OpenDC private constructor(
     /** Assembles an [OpenDC] instance from a provisioner, output sinks and a parallelism level. */
     public class Builder {
         private var provisioner: ResourceProvisioner? = null
-        private val sinks = mutableListOf<org.opendc.sdk.runner.telemetry.sink.OutputSink>()
+        private val sinks = mutableListOf<OutputSink>()
         private var parallelism: Int = 1
 
         /** Sets the provisioner that resolves external trace references (required). */
         public fun provisioner(provisioner: ResourceProvisioner): Builder = apply { this.provisioner = provisioner }
 
-        /** Adds a [org.opendc.sdk.runner.telemetry.sink.ParquetSink] writing per-run parquet files under [root]. */
+        /** Adds a [ParquetSink] writing per-run parquet files under [root]. */
         public fun output(root: Path): Builder =
             apply {
                 sinks +=
-                    _root_ide_package_.org.opendc.sdk.runner.telemetry.sink.ParquetSink(
+                    ParquetSink(
                         root,
                     )
             }
 
         /** Adds an output [sink]; sinks compose and all observe every run. */
-        public fun sink(sink: org.opendc.sdk.runner.telemetry.sink.OutputSink): Builder = apply { sinks += sink }
+        public fun sink(sink: OutputSink): Builder = apply { sinks += sink }
 
         /** Sets how many runs execute concurrently (defaults to the available processor count). */
         public fun parallelism(threads: Int): Builder =

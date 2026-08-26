@@ -160,7 +160,7 @@ public class ComputeMetricReader(
             }
 
             if (printFrequency != null && loggCounter % printFrequency == 0) {
-                // TODO: Fix this!
+                // TODO: Fix this! This now prints 3 times
                 var loggString = "\n\t\t\t\t\tMetrics after ${now.toEpochMilli() / 1000 / 60 / 60} hours:\n"
                 loggString += "\t\t\t\t\t\tTasks Total: ${this.service.tasksTotal}\n"
                 loggString += "\t\t\t\t\t\tTasks Active: ${this.service.tasksActive}\n"

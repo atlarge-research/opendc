@@ -80,7 +80,11 @@ public class EfficientWorkloadLoader(
     /**
      * Read the fragments into memory.
      */
-    private fun getWorkload(fragmentReader: TableReader, taskId: Int, numFragments: Int): Workload {
+    private fun getWorkload(
+        fragmentReader: TableReader,
+        taskId: Int,
+        numFragments: Int,
+    ): Workload {
         val idCol = fragmentReader.resolve(TASK_ID)
         val durationCol = fragmentReader.resolve(FRAGMENT_DURATION)
         val usageCol = fragmentReader.resolve(FRAGMENT_CPU_USAGE)
@@ -92,7 +96,7 @@ public class EfficientWorkloadLoader(
             while (true) {
                 val fragmentId = fragmentReader.getInt(idCol)
                 if (fragmentId != taskId) {
-                    break;
+                    break
                 }
 
                 val durationMs = fragmentReader.getDuration(durationCol)!!
@@ -120,12 +124,10 @@ public class EfficientWorkloadLoader(
     /**
      * Read the metadata into a workload.
      */
-    private fun loadTrace(
-        trace: Trace,
-    ): List<ServiceTask> {
+    private fun loadTrace(trace: Trace): List<ServiceTask> {
         val taskReader = checkNotNull(trace.getTable(TABLE_TASKS)).newReader()
         val fragmentReader = checkNotNull(trace.getTable(TABLE_FRAGMENTS)).newReader()
-        fragmentReader.nextRow();
+        fragmentReader.nextRow()
 
         val taskIdCol = taskReader.resolve(TASK_ID)
         val submissionTimeCol = taskReader.resolve(TASK_SUBMISSION_TIME)
@@ -249,7 +251,7 @@ public class EfficientWorkloadLoader(
         checkpointIntervalScaling: Double,
         scalingPolicy: ScalingPolicy,
         taskId: Int,
-        numFragments: Int
+        numFragments: Int,
     ) {
         /**
          * The internal builder for the trace.
@@ -261,7 +263,7 @@ public class EfficientWorkloadLoader(
                 checkpointIntervalScaling,
                 scalingPolicy,
                 taskId,
-                numFragments
+                numFragments,
             )
 
         /**

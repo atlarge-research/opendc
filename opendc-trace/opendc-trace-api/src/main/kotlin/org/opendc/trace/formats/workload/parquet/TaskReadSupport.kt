@@ -69,7 +69,7 @@ internal class TaskReadSupport(private val projection: List<String>?) : ReadSupp
             "children" to TASK_CHILDREN,
             "deferrable" to TASK_DEFERRABLE,
             "deadline" to TASK_DEADLINE,
-            "num_fragments" to TASK_NUM_FRAGMENTS
+            "num_fragments" to TASK_NUM_FRAGMENTS,
         )
 
     override fun init(context: InitContext): ReadContext {

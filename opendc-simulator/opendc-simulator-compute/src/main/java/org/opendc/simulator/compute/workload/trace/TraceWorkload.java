@@ -203,15 +203,16 @@ public class TraceWorkload implements Workload {
             ScalingPolicy scalingPolicy,
             int taskId,
             int numFragments) {
-        return new EfficientBuilder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, taskId, numFragments);
+        return new EfficientBuilder(
+                checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, taskId, numFragments);
     }
 
     public static Builder builder(
-        long checkpointInterval,
-        long checkpointDuration,
-        double checkpointIntervalScaling,
-        ScalingPolicy scalingPolicy,
-        int taskId) {
+            long checkpointInterval,
+            long checkpointDuration,
+            double checkpointIntervalScaling,
+            ScalingPolicy scalingPolicy,
+            int taskId) {
         return new Builder(checkpointInterval, checkpointDuration, checkpointIntervalScaling, scalingPolicy, taskId);
     }
 
@@ -363,12 +364,12 @@ public class TraceWorkload implements Workload {
          * Construct a new {@link Builder} instance.
          */
         private EfficientBuilder(
-            long checkpointInterval,
-            long checkpointDuration,
-            double checkpointIntervalScaling,
-            ScalingPolicy scalingPolicy,
-            int taskId,
-            int numFragments) {
+                long checkpointInterval,
+                long checkpointDuration,
+                double checkpointIntervalScaling,
+                ScalingPolicy scalingPolicy,
+                int taskId,
+                int numFragments) {
             this.checkpointInterval = checkpointInterval;
             this.checkpointDuration = checkpointDuration;
             this.checkpointIntervalScaling = checkpointIntervalScaling;
@@ -426,18 +427,18 @@ public class TraceWorkload implements Workload {
             }
 
             return new TraceWorkload(
-                durations,
-                cpuUsages,
-                gpuUsages,
-                gpuMemoryUsages,
-                maxCpuDemand,
-                maxGpuDemand,
-                this.checkpointInterval,
-                this.checkpointDuration,
-                this.checkpointIntervalScaling,
-                this.scalingPolicy,
-                this.taskId,
-                this.usedResourceTypes);
+                    durations,
+                    cpuUsages,
+                    gpuUsages,
+                    gpuMemoryUsages,
+                    maxCpuDemand,
+                    maxGpuDemand,
+                    this.checkpointInterval,
+                    this.checkpointDuration,
+                    this.checkpointIntervalScaling,
+                    this.scalingPolicy,
+                    this.taskId,
+                    this.usedResourceTypes);
         }
     }
 }

@@ -31,10 +31,10 @@ import java.nio.file.Path
  * Provisions [ResourceReference]s through a [ResourceProvisioner] for the duration of a single run,
  * releasing every materialized resource in reverse order on [close].
  */
-internal class ResourceScope(private val provisioner: ResourceProvisioner) : AutoCloseable {
+public class ResourceScope(private val provisioner: ResourceProvisioner) : AutoCloseable {
     private val opened = mutableListOf<ProvisionedResource>()
 
-    fun resolve(reference: ResourceReference): Path {
+    public fun resolve(reference: ResourceReference): Path {
         val resource = provisioner.provision(reference)
         opened += resource
         return resource.path

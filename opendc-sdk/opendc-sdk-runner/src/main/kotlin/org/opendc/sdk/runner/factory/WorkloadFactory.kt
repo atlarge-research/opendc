@@ -49,7 +49,7 @@ import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy as Engi
  * meant to be [Queue.poll]ed off as they are submitted, so the replayer never holds onto tasks it has
  * already handed off.
  */
-internal fun WorkloadSpec.toServiceTasks(
+public fun WorkloadSpec.toServiceTasks(
     checkpoint: CheckpointSpec?,
     resolve: (ResourceReference) -> Path,
 ): Queue<ServiceTask> =
@@ -64,7 +64,7 @@ internal fun WorkloadSpec.toServiceTasks(
             )
     }
 
-private fun TraceWorkloadSpec.loadTrace(
+public fun TraceWorkloadSpec.loadTrace(
     path: Path,
     checkpoint: CheckpointSpec?,
 ): Queue<ServiceTask> =
@@ -80,7 +80,7 @@ private fun TraceWorkloadSpec.loadTrace(
         ).sampleByLoad(sampleFraction),
     )
 
-private fun EfficientTraceWorkloadSpec.loadTrace(
+public fun EfficientTraceWorkloadSpec.loadTrace(
     path: Path,
     checkpoint: CheckpointSpec?,
 ): Queue<ServiceTask> =
@@ -96,7 +96,7 @@ private fun EfficientTraceWorkloadSpec.loadTrace(
         ).sampleByLoad(sampleFraction),
     )
 
-private fun TaskSpec.toServiceTask(
+public fun TaskSpec.toServiceTask(
     scaling: EngineScalingPolicy,
     checkpoint: CheckpointSpec?,
 ): ServiceTask {
