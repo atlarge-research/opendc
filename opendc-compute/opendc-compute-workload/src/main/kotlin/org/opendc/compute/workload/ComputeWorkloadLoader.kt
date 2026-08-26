@@ -219,9 +219,6 @@ public class ComputeWorkloadLoader(
         val trace = Trace.open(pathToFile, "workload")
         val fragments = parseFragments(trace)
 
-        println("LOADED Fragments")
-//        Thread.sleep(10_000)
-
         val vms = parseTasks(trace, fragments)
 
         return vms

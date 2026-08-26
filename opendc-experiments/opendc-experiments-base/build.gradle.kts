@@ -105,36 +105,3 @@ val generateDocs by tasks.registering(JavaExec::class) {
         projectDir.resolve("src/main/kotlin/org/opendc/experiments/base/experiment/specs").absolutePath,
     )
 }
-
-val createScenarioApp by tasks.creating(CreateStartScripts::class) {
-    dependsOn(tasks.jar)
-
-    applicationName = "OpenDCExperimentRunner"
-    mainClass.set("org.opendc.experiments.base.runner.ExperimentCli")
-    classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
-    outputDir = layout.buildDirectory.dir("scripts").get().asFile
-}
-
-// Create custom Scenario distribution
-distributions {
-    main {
-        distributionBaseName.set("OpenDCExperimentRunner")
-
-        contents {
-            from("README.md")
-            from("LICENSE.txt")
-            from("../../LICENSE.txt") {
-                rename { "LICENSE-OpenDC.txt" }
-            }
-
-            into("bin") {
-                from(createScenarioApp)
-            }
-
-            into("lib") {
-                from(tasks.jar)
-                from(configurations["runtimeClasspath"])
-            }
-        }
-    }
-}
