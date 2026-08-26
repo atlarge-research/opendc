@@ -3,17 +3,8 @@ description = "Command-line interface for running OpenDC simulations"
 plugins {
     `kotlin-conventions`
     `testing-conventions`
-    application
     id("me.champeau.jmh")
-}
-
-group = "org.opendc"
-version = "3.0-SNAPSHOT"
-
-application {
-    applicationName = "opendc"
-    mainClass.set("org.opendc.cli.MainKt")
-    applicationDefaultJvmArgs = listOf("-XX:MaxRAMPercentage=90.0")
+    distribution
 }
 
 jmh {
@@ -65,4 +56,37 @@ dependencies {
     runtimeOnly(libs.log4j.slf4j)
 
     testImplementation(kotlin("test"))
+}
+
+val createScenarioApp by tasks.creating(CreateStartScripts::class) {
+    dependsOn(tasks.jar)
+
+    applicationName = "opendc"
+    mainClass.set("org.opendc.cli.MainKt")
+    defaultJvmOpts = listOf("-XX:MaxRAMPercentage=90.0")
+    classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
+    outputDir = layout.buildDirectory.dir("scenarioScripts").get().asFile
+}
+
+// Create custom Scenario distribution
+distributions {
+    main {
+        distributionBaseName.set("OpenDCExperimentRunner")
+
+        contents {
+            from("README.md")
+            from("../LICENSE.txt")
+
+            into("bin") {
+                from(createScenarioApp) {
+                    include("opendc", "opendc.bat")
+                }
+            }
+
+            into("lib") {
+                from(tasks.jar)
+                from(configurations["runtimeClasspath"])
+            }
+        }
+    }
 }
