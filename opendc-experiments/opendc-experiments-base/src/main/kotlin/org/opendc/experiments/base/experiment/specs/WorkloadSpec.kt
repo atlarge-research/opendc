@@ -26,8 +26,8 @@ package org.opendc.experiments.base.experiment.specs
 
 import kotlinx.serialization.Serializable
 import org.opendc.compute.simulator.service.ServiceTask
-import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.compute.workload.WorkloadLoader
+import org.opendc.sdk.model.workload.loader.ComputeWorkloadLoader
+import org.opendc.sdk.model.workload.loader.WorkloadLoader
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
 import org.opendc.simulator.compute.workload.trace.scaling.PerfectScaling
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy

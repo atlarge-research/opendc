@@ -93,3 +93,8 @@ public const val TASK_DEFERRABLE: String = "deferrable"
  * Deadline of the task.
  */
 public const val TASK_DEADLINE: String = "deadline"
+
+/**
+ * The number of fragments associated with this task
+ */
+public const val TASK_NUM_FRAGMENTS: String = "num_fragments"

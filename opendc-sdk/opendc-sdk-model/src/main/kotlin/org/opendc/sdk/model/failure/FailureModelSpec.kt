@@ -42,7 +42,7 @@ public data object NoFailureSpec : FailureModelSpec
 
 /** Failures replayed from an external availability trace. */
 @Serializable
-@SerialName("traceBased")
+@SerialName("trace")
 public data class TraceBasedFailureSpec(
     /** Reference to the trace supplying the failure events. */
     public val source: ResourceReference,

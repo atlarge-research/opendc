@@ -24,14 +24,16 @@ package org.opendc.sdk.runner.factory
 
 import org.opendc.common.ResourceType
 import org.opendc.compute.simulator.service.ServiceTask
-import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.model.workload.EfficientTraceWorkloadSpec
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
 import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import org.opendc.sdk.model.workload.WorkloadSpec
+import org.opendc.sdk.model.workload.loader.ComputeWorkloadLoader
+import org.opendc.sdk.model.workload.loader.EfficientWorkloadLoader
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
 import org.opendc.simulator.compute.workload.trace.scaling.PerfectScaling
@@ -47,12 +49,13 @@ import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy as Engi
  * meant to be [Queue.poll]ed off as they are submitted, so the replayer never holds onto tasks it has
  * already handed off.
  */
-internal fun WorkloadSpec.toServiceTasks(
+public fun WorkloadSpec.toServiceTasks(
     checkpoint: CheckpointSpec?,
     resolve: (ResourceReference) -> Path,
 ): Queue<ServiceTask> =
     when (this) {
         is TraceWorkloadSpec -> loadTrace(resolve(source), checkpoint)
+        is EfficientTraceWorkloadSpec -> loadTrace(resolve(source), checkpoint)
         is InlineWorkloadSpec ->
             ArrayDeque(
                 tasks
@@ -61,7 +64,7 @@ internal fun WorkloadSpec.toServiceTasks(
             )
     }
 
-private fun TraceWorkloadSpec.loadTrace(
+public fun TraceWorkloadSpec.loadTrace(
     path: Path,
     checkpoint: CheckpointSpec?,
 ): Queue<ServiceTask> =
@@ -77,7 +80,23 @@ private fun TraceWorkloadSpec.loadTrace(
         ).sampleByLoad(sampleFraction),
     )
 
-private fun TaskSpec.toServiceTask(
+public fun EfficientTraceWorkloadSpec.loadTrace(
+    path: Path,
+    checkpoint: CheckpointSpec?,
+): Queue<ServiceTask> =
+    ArrayDeque(
+        EfficientWorkloadLoader(
+            path.toFile(),
+            submissionTime,
+            checkpoint.intervalMs(),
+            checkpoint.durationMs(),
+            checkpoint.scaling(),
+            scalingPolicy.toEngine(),
+            deferAll,
+        ).sampleByLoad(sampleFraction),
+    )
+
+public fun TaskSpec.toServiceTask(
     scaling: EngineScalingPolicy,
     checkpoint: CheckpointSpec?,
 ): ServiceTask {

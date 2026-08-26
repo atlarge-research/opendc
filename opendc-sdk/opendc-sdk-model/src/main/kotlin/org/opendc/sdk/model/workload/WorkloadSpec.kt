@@ -62,6 +62,30 @@ public data class TraceWorkloadSpec(
 }
 
 /**
+ * A workload loaded from an external trace resource.
+ *
+ * @property source Handle to the trace data resolved at runtime.
+ * @property sampleFraction Fraction of the trace's tasks to sample.
+ * @property submissionTime Optional ISO-8601 local date-time used as the workload start.
+ * @property scalingPolicy How tasks react to resource contention.
+ * @property deferAll Whether every task should be treated as deferrable.
+ */
+@Serializable
+@SerialName("efficient-trace")
+public data class EfficientTraceWorkloadSpec(
+    public val source: ResourceReference,
+    public val sampleFraction: Double = 1.0,
+    public val submissionTime: String? = null,
+    public val scalingPolicy: ScalingPolicySpec = ScalingPolicySpec.NoDelay,
+    public val deferAll: Boolean = false,
+) : WorkloadSpec {
+    override fun validate(): List<ValidationIssue> =
+        buildList {
+            if (sampleFraction <= 0.0) add(ValidationIssue("sampleFraction", "must be greater than zero"))
+        }
+}
+
+/**
  * A workload defined directly as a list of tasks.
  *
  * @property tasks The tasks that make up the workload.

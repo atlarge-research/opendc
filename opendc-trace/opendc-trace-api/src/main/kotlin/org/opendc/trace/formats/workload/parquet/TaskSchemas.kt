@@ -232,4 +232,76 @@ private val TASK_SCHEMA_V3: MessageType =
         )
         .named("resource")
 
-public val TASK_SCHEMA: MessageType = TASK_SCHEMA_V3
+private val TASK_SCHEMA_V4: MessageType =
+    Types.buildMessage()
+        .addFields(
+            Types
+                .required(PrimitiveType.PrimitiveTypeName.INT32)
+                .named("id"),
+            Types
+                .optional(PrimitiveType.PrimitiveTypeName.BINARY)
+                .`as`(LogicalTypeAnnotation.stringType())
+                .named("name"),
+            Types
+                .required(PrimitiveType.PrimitiveTypeName.INT64)
+                .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                .named("submission_time"),
+            Types
+                .required(PrimitiveType.PrimitiveTypeName.INT64)
+                .named("duration"),
+            Types
+                .required(PrimitiveType.PrimitiveTypeName.INT32)
+                .named("cpu_count"),
+            Types
+                .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                .named("cpu_capacity"),
+            Types
+                .required(PrimitiveType.PrimitiveTypeName.INT64)
+                .named("mem_capacity"),
+            Types
+                .optional(PrimitiveType.PrimitiveTypeName.INT32)
+                .named("gpu_count"),
+            Types
+                .optional(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                .named("gpu_capacity"),
+            Types
+                .buildGroup(Type.Repetition.OPTIONAL)
+                .addField(
+                    Types.repeatedGroup()
+                        .addField(
+                            Types.optional(
+                                PrimitiveType.PrimitiveTypeName.INT32,
+                            )
+                                .named("element"),
+                        )
+                        .named("list"),
+                )
+                .`as`(LogicalTypeAnnotation.listType())
+                .named("parents"),
+            Types
+                .buildGroup(Type.Repetition.OPTIONAL)
+                .addField(
+                    Types.repeatedGroup()
+                        .addField(
+                            Types.optional(
+                                PrimitiveType.PrimitiveTypeName.INT32,
+                            )
+                                .named("element"),
+                        )
+                        .named("list"),
+                )
+                .`as`(LogicalTypeAnnotation.listType())
+                .named("children"),
+            Types
+                .optional(PrimitiveType.PrimitiveTypeName.BOOLEAN)
+                .named("deferrable"),
+            Types
+                .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                .named("deadline"),
+            Types
+                .optional(PrimitiveType.PrimitiveTypeName.INT32)
+                .named("num_fragments"),
+        )
+        .named("resource")
+
+public val TASK_SCHEMA: MessageType = TASK_SCHEMA_V4

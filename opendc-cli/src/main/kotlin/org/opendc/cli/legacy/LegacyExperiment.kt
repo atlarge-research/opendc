@@ -197,7 +197,7 @@ private fun JsonElement.toSdkFailureModel(): JsonObject {
         "no" -> NO_FAILURE
         "trace-based" ->
             buildJsonObject {
-                put("type", JsonPrimitive("traceBased"))
+                put("type", JsonPrimitive("trace"))
                 val path =
                     legacy.stringAt("pathToFile")
                         ?: throw LegacyFormatException("a trace-based failure model is missing its 'pathToFile'")

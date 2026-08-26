@@ -41,4 +41,5 @@ internal data class TaskParquetSchema(
     val children: Set<Int> = emptySet(),
     val deferrable: Boolean = false,
     val deadline: Long = -1,
+    val numFragments: Int = -1,
 )

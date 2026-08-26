@@ -35,6 +35,7 @@ import org.opendc.trace.conv.TASK_GPU_COUNT
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.conv.TASK_MEM_CAPACITY
 import org.opendc.trace.conv.TASK_NAME
+import org.opendc.trace.conv.TASK_NUM_FRAGMENTS
 import org.opendc.trace.conv.TASK_PARENTS
 import org.opendc.trace.conv.TASK_SUBMISSION_TIME
 import org.opendc.trace.formats.workload.parquet.TaskParquetSchema
@@ -63,6 +64,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSche
     private var localChildren = mutableSetOf<Int>()
     private var localDeferrable: Boolean = false
     private var localDeadline: Long = -1
+    private var localNumFragments: Int = -1
 
     override fun startRow() {
         localIsActive = true
@@ -79,6 +81,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSche
         localChildren.clear()
         localDeferrable = false
         localDeadline = -1L
+        localNumFragments = -1
     }
 
     override fun endRow() {
@@ -99,6 +102,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSche
                 localChildren,
                 localDeferrable,
                 localDeadline,
+                localNumFragments,
             ),
         )
     }
@@ -118,6 +122,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSche
             TASK_CHILDREN -> colChildren
             TASK_DEFERRABLE -> colNature
             TASK_DEADLINE -> colDeadline
+            TASK_NUM_FRAGMENTS -> colNumFragments
             else -> -1
         }
     }
@@ -141,6 +146,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSche
             colID -> localId = value
             colCpuCount -> localCpuCount = value
             colGpuCount -> localGpuCount = value
+            colNumFragments -> localNumFragments = value
             else -> throw IllegalArgumentException("Invalid column or type [index $index]")
         }
     }
@@ -255,4 +261,5 @@ internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSche
     private val colChildren = 10
     private val colNature = 11
     private val colDeadline = 12
+    private val colNumFragments = 13
 }

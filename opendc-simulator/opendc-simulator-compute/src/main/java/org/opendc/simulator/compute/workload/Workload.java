@@ -42,4 +42,6 @@ public interface Workload {
     SimWorkload startWorkload(FlowSupplier supplier);
 
     SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion);
+
+    int getLength();
 }
