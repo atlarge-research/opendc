@@ -8,4 +8,4 @@ updates:
     groups:
       github-actions:
         patterns:
-          - "*"  # Groups ALL github-actions updates into one PR
+          - "*"  # Groups ALL github-actions updates into one PR for easier merging
