@@ -20,11 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.power;
+package org.opendc.simulator.compute.carbon;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.opendc.simulator.compute.power.SimPowerSource;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowEdge;
 import org.opendc.simulator.engine.graph.FlowNode;
@@ -126,6 +128,9 @@ public class CarbonModel extends FlowNode {
     }
 
     public void addReceiver(CarbonReceiver receiver) {
+        if (receiver == null) {
+            return;
+        }
         this.receivers.add(receiver);
 
         receiver.setCarbonModel(this);

@@ -103,7 +103,7 @@ public class SimHost(
             gpuHostModels,
         )
 
-    private var simMachine: SimMachine? = null
+    public var simMachine: SimMachine? = null
 
     /**
      * The [GuestListener] that listens for guest events.
@@ -340,6 +340,8 @@ public class SimHost(
             bootTime,
             simMachine!!.psu.powerDraw,
             simMachine!!.psu.energyUsage,
+            simMachine!!.psu.carbonIntensity,
+            simMachine!!.psu.carbonEmission,
             embodiedCarbonRate * duration,
             terminated,
             running,

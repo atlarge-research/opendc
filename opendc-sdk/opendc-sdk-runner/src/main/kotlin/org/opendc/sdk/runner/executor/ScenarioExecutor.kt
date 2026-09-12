@@ -43,8 +43,8 @@ import org.opendc.sdk.runner.provision.setupHosts
 import org.opendc.sdk.runner.telemetry.sink.OutputSink
 import org.opendc.sdk.runner.telemetry.sink.RunContext
 import org.opendc.sdk.runner.telemetry.sink.SinkSession
-import org.opendc.simulator.compute.power.CarbonModel
-import org.opendc.simulator.compute.power.CarbonReceiver
+import org.opendc.simulator.compute.carbon.CarbonModel
+import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.kotlin.SimulationCoroutineScope
 import org.opendc.simulator.kotlin.runSimulation
 import java.time.Duration

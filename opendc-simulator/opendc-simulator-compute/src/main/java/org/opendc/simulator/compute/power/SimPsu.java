@@ -25,6 +25,8 @@ package org.opendc.simulator.compute.power;
 import java.util.List;
 import java.util.Map;
 import org.opendc.common.ResourceType;
+import org.opendc.simulator.compute.carbon.CarbonModel;
+import org.opendc.simulator.compute.carbon.CarbonReceiver;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowConsumer;
@@ -35,7 +37,7 @@ import org.opendc.simulator.engine.graph.FlowSupplier;
 /**
  * A {@link SimPsu} implementation that estimates the power consumption based on CPU usage.
  */
-public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer {
+public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer, CarbonReceiver {
     private long lastUpdate;
 
     private double incomingPowerDemand = 0.0;
@@ -43,6 +45,11 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
     private double incomingPowerSupply = 0.0;
     private double outgoingPowerSupply = 0.0;
     private double totalEnergyUsage = 0.0;
+
+    private double carbonIntensity = 0.0f;
+    private double totalCarbonEmission = 0.0f;
+
+    private CarbonModel carbonModel = null;
 
     private FlowEdge componentEdge;
     private FlowEdge powerSupplyEdge;
@@ -84,6 +91,14 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
     public double getEnergyUsage() {
         updateCounters();
         return totalEnergyUsage;
+    }
+
+    public double getCarbonIntensity() {
+        return carbonIntensity;
+    }
+
+    public double getCarbonEmission() {
+        return totalCarbonEmission;
     }
 
     @Override
@@ -128,10 +143,13 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
         long lastUpdate = this.lastUpdate;
         this.lastUpdate = now;
 
-        long duration = now - lastUpdate;
-        if (duration > 0) {
+        long passedTime = now - lastUpdate;
+        if (passedTime > 0) {
+            double energyUsage = (this.incomingPowerSupply * passedTime * 0.001);
+
             // Compute the energy usage of the psu
-            this.totalEnergyUsage += (this.incomingPowerSupply * duration * 0.001);
+            this.totalEnergyUsage += energyUsage;
+            this.totalCarbonEmission += this.carbonIntensity * (energyUsage / 3600000.0);
         }
     }
 
@@ -205,5 +223,23 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
     @Override
     public ResourceType getConsumerResourceType() {
         return ResourceType.POWER;
+    }
+
+    @Override
+    public void updateCarbonIntensity(double carbonIntensity) {
+        this.updateCounters();
+        this.carbonIntensity = carbonIntensity;
+    }
+
+    @Override
+    public void setCarbonModel(CarbonModel carbonModel) {
+        this.carbonModel = carbonModel;
+    }
+
+    @Override
+    public void removeCarbonModel(CarbonModel carbonModel) {
+        this.updateCounters();
+        this.carbonIntensity = 0.0f;
+        this.carbonModel = null;
     }
 }

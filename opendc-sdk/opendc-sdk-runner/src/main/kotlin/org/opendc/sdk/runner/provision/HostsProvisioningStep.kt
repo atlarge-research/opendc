@@ -29,7 +29,7 @@ import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.createSimBatteryPolicy
-import org.opendc.simulator.compute.power.CarbonModel
+import org.opendc.simulator.compute.carbon.CarbonModel
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
 import org.opendc.simulator.compute.power.batteries.SimBattery
@@ -60,11 +60,11 @@ public class HostsProvisioningStep(
 
         val engine = FlowEngine.create(ctx.dispatcher)
 
-        for (cluster in clusterSpecs) {
+        for ((name, hostSpecs, powerSourceSpec, batterySpec) in clusterSpecs) {
             // Create the Power Source to which hosts are connected
 
             // Create Power Source
-            val simPowerSource = SimPowerSource(engine, cluster.powerSource.totalPower.toDouble(), cluster.powerSource.name, cluster.name)
+            val simPowerSource = SimPowerSource(engine, powerSourceSpec.totalPower.toDouble(), powerSourceSpec.name, name)
             simPowerSources.add(simPowerSource)
             service.addPowerSource(simPowerSource)
 
@@ -72,11 +72,11 @@ public class HostsProvisioningStep(
                 FlowDistributorFactory.getFlowDistributor(
                     engine,
                     DistributionPolicy.MAX_MIN_FAIRNESS,
-                    cluster.hostSpecs.size,
+                    hostSpecs.size,
                     1,
                 )
 
-            val carbonFragments = getCarbonFragments(cluster.powerSource.carbonTracePath)
+            val carbonFragments = getCarbonFragments(powerSourceSpec.carbonTracePath)
 
             var carbonModel: CarbonModel? = null
             // Create Carbon Model
@@ -86,7 +86,7 @@ public class HostsProvisioningStep(
                 ctx.registry.register(serviceDomain, CarbonModel::class.java, carbonModel)
             }
 
-            if (cluster.battery != null) {
+            if (batterySpec != null) {
                 // Create Battery Distributor
                 val batteryDistributor =
                     FlowDistributorFactory.getFlowDistributor(
@@ -101,13 +101,13 @@ public class HostsProvisioningStep(
                 val battery =
                     SimBattery(
                         engine,
-                        cluster.battery!!.capacity,
-                        cluster.battery!!.chargingSpeed,
-                        cluster.battery!!.initialCharge,
-                        cluster.battery!!.name,
-                        cluster.name,
-                        cluster.battery!!.embodiedCarbon,
-                        cluster.battery!!.expectedLifetime,
+                        batterySpec.capacity,
+                        batterySpec.chargingSpeed,
+                        batterySpec.initialCharge,
+                        batterySpec.name,
+                        name,
+                        batterySpec.embodiedCarbon,
+                        batterySpec.expectedLifetime,
                     )
                 FlowEdge(battery, batteryDistributor)
 
@@ -116,7 +116,7 @@ public class HostsProvisioningStep(
 
                 val batteryPolicy =
                     createSimBatteryPolicy(
-                        cluster.battery!!.batteryPolicy,
+                        batterySpec.batteryPolicy,
                         engine,
                         battery,
                         batteryAggregator,
@@ -132,12 +132,12 @@ public class HostsProvisioningStep(
             }
 
             // Create hosts, they are connected to the powerMux when SimMachine is created
-            for (hostSpec in cluster.hostSpecs) {
+            for (hostSpec in hostSpecs) {
                 val simHost =
                     SimHost(
                         hostSpec.name,
                         hostSpec.type,
-                        cluster.name,
+                        name,
                         ctx.dispatcher.timeSource,
                         engine,
                         hostSpec.model,
@@ -147,6 +147,8 @@ public class HostsProvisioningStep(
                         hostSpec.expectedLifetime,
                         powerDistributor,
                     )
+
+                carbonModel?.addReceiver(simHost.simMachine?.psu)
 
                 require(simHosts.add(simHost)) { "Host with name ${hostSpec.name} already exists" }
                 service.addHost(simHost)

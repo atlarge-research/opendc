@@ -56,6 +56,8 @@ public data class HostSample(
     public val gpuPowerDraws: ArrayList<Double> = ArrayList(),
     public val powerDraw: Double = -1.0,
     public val energyUsage: Double = -1.0,
+    public val carbonIntensity: Double = -1.0,
+    public val carbonEmission: Double = -1.0,
     public val embodiedCarbon: Double = -1.0,
     public val uptime: Long = -1L,
     public val downtime: Long = -1L,

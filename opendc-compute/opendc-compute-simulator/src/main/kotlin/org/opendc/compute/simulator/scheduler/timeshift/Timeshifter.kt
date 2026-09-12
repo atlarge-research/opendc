@@ -22,8 +22,8 @@
 
 package org.opendc.compute.simulator.scheduler.timeshift
 
-import org.opendc.simulator.compute.power.CarbonModel
-import org.opendc.simulator.compute.power.CarbonReceiver
+import org.opendc.simulator.compute.carbon.CarbonModel
+import org.opendc.simulator.compute.carbon.CarbonReceiver
 import java.time.InstantSource
 import java.util.LinkedList
 import kotlin.math.roundToInt

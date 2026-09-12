@@ -26,8 +26,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.simulator.compute.power.CarbonModel
-import org.opendc.simulator.compute.power.CarbonReceiver
+import org.opendc.simulator.compute.carbon.CarbonModel
+import org.opendc.simulator.compute.carbon.CarbonReceiver
 import java.time.InstantSource
 import java.util.LinkedList
 import kotlin.coroutines.CoroutineContext
