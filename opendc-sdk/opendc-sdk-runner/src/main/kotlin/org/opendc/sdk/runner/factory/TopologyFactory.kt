@@ -165,15 +165,7 @@ private fun SdkVirtualizationOverhead.toEngine(): VirtualizationOverheadModelEnu
             }
     }
 
-private fun SdkBatteryPolicy.toSpec(): BatteryPolicyJSONSpec =
-    when (this) {
-        is SingleThresholdPolicy -> SingleBatteryPolicyJSONSpec(carbonThreshold)
-        is DoubleThresholdPolicy -> DoubleBatteryPolicyJSONSpec(lowerThreshold, upperThreshold)
-        is RunningMeanPolicy -> RunningMeanPolicyJSONSpec(startingThreshold, windowSize)
-        is RunningMeanPlusPolicy -> RunningMeanPlusPolicyJSONSpec(startingThreshold, windowSize)
-        is RunningMedianPolicy -> RunningMedianPolicyJSONSpec(startingThreshold, windowSize)
-        is RunningQuartilesPolicy -> RunningQuartilesPolicyJSONSpec(startingThreshold, windowSize)
-    }
+
 
 /** Per-conversion registry producing unique names and monotonic device ids. */
 private class TopologyNaming {

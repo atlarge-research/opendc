@@ -55,7 +55,6 @@ import java.time.InstantSource
  */
 public class SimHost(
     private val name: String,
-    private val type: String,
     private val clusterName: String,
     private val clock: InstantSource,
     private val engine: FlowEngine,
@@ -65,6 +64,7 @@ public class SimHost(
     private val embodiedCarbon: Double,
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
+    private val type: String = "Unknown"
 ) : AutoCloseable {
     /**
      * The event listeners registered with this host.

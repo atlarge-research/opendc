@@ -124,7 +124,7 @@ public data class BatterySpec(
     public val capacity: Double,
     public val chargingSpeed: Double,
     public val initialCharge: Double = 0.0,
-    public val policy: BatteryPolicy,
+    public val policy: BatteryPolicySpec,
     public val embodiedCarbon: Double = 0.0,
     public val expectedLifetime: Double = 0.0,
 )

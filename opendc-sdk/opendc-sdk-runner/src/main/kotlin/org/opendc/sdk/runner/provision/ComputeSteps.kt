@@ -25,10 +25,13 @@
 package org.opendc.sdk.runner.provision
 
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
-import org.opendc.compute.topology.specs.ClusterSpec
-import org.opendc.compute.topology.specs.HostSpec
+import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.compute.topology.specs.ClusterSpec as ClusterSpecOld
 import org.opendc.sdk.model.telemetry.OutputFileSpec
+import org.opendc.sdk.model.topology.ClusterSpec
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.runner.telemetry.MetricExporter
+import java.nio.file.Path
 import java.time.Duration
 
 /**
@@ -85,13 +88,28 @@ public fun registerComputeMonitor(
  * service.
  *
  * @param serviceDomain The domain name under which the compute service is registered.
- * @param specs A list of [HostSpec] objects describing the simulated hosts to provision.
- * @param optimize A flag to indicate that the CPU resources of the host should be merged into a single CPU resource.
+ * @param specs A list of [ClusterSpec] objects describing the simulated hosts to provision.
  */
 public fun setupHosts(
     serviceDomain: String,
-    specs: List<ClusterSpec>,
+    specs: List<ClusterSpecOld>,
     startTime: Long = 0L,
 ): ProvisioningStep {
     return HostsProvisioningStep(serviceDomain, specs, startTime)
+}
+
+/**
+ * Return a [ProvisioningStep] that sets up the specified list of hosts (based on [topologySpec]) for the specified compute
+ * service.
+ *
+ * @param serviceDomain The domain name under which the compute service is registered.
+ * @param topologySpec A list of [ClusterSpec] objects describing the simulated hosts to provision.
+ */
+public fun setupHostsNew(
+    serviceDomain: String,
+    topologySpec: TopologySpec,
+    startTime: Long = 0L,
+    resolve: (ResourceReference) -> Path
+): ProvisioningStep {
+    return HostsProvisioningStepNew(serviceDomain, topologySpec, startTime, resolve)
 }
