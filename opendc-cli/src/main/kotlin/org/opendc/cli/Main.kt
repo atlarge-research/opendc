@@ -25,6 +25,7 @@ package org.opendc.cli
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.core.PrintHelpMessage
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.obj
@@ -59,6 +60,11 @@ fun main(args: Array<String>) {
  * read, publishing that choice on the context every subcommand inherits.
  */
 internal class OpendcCommand : CliktCommand(name = "opendc") {
+    // Normally Clikt auto-prints the help overview and exits before `run()` is even called
+    // when no subcommand is given. We need `run()` to execute in that case too, so we can
+    // detect the deprecated `--experiment-path` invocation and report it specifically.
+    override val invokeWithoutSubcommand: Boolean = true
+
     private val legacy by option(
         "--legacy",
         help = "Read experiment files written in the deprecated opendc-experiments JSON format.",
@@ -76,9 +82,28 @@ internal class OpendcCommand : CliktCommand(name = "opendc") {
                 "(default: the experiment file's directory, or the working directory under --legacy).",
     ).path(canBeFile = false, mustExist = false)
 
+    private val legacyExperimentPath by option(
+        "--experiment-path",
+        help = "Deprecated. Use 'opendc run <path>' instead.",
+    ).path(canBeFile = true, mustExist = false)
+
     override fun help(context: Context): String = "Run, validate and inspect OpenDC datacenter simulations."
 
     override fun run() {
+        if (legacyExperimentPath != null) {
+            throw CliktError(
+                "It seems like you are using OpenDC2 input syntax.\n" +
+                    "To execute older experiments in OpenDC3 see [TBD].\n" +
+                    "To use OpenDC2, download it at https://github.com/atlarge-research/opendc/tree/OpenDC2-maintenance.",
+            )
+        }
+
+        // We only reach here without a subcommand because `invokeWithoutSubcommand` is set above;
+        // fall back to Clikt's normal "no subcommand given" behaviour of showing the overview.
+        if (currentContext.invokedSubcommand == null) {
+            throw PrintHelpMessage(currentContext, error = true)
+        }
+
         currentContext.obj = ExperimentReadOptions(legacy = legacy, strict = strict, inputRoot = inputRoot)
     }
 }

@@ -30,8 +30,8 @@ import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.PowerSourceSpec
-import org.opendc.experiments.base.runner.replay
 import org.opendc.sdk.model.workload.loader.ComputeWorkloadLoader
+import org.opendc.sdk.runner.executor.replay
 import org.opendc.sdk.runner.provision.Provisioner
 import org.opendc.sdk.runner.provision.registerComputeMonitor
 import org.opendc.sdk.runner.provision.setupComputeService
@@ -52,6 +52,7 @@ import java.io.IOException
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.ArrayDeque
 import java.util.Random
 import java.util.concurrent.Executors
 import java.util.concurrent.ForkJoinPool
@@ -349,8 +350,10 @@ public class OpenDCRunner(
                             null
                         }
 
+                    val vmsQueue = ArrayDeque(vms)
+
                     // Run workload trace
-                    service.replay(timeSource, vms, seed = seed)
+                    service.replay(timeSource, vmsQueue, seed = seed)
 
 //                    val serviceMetrics = service.getSchedulerStats()
 //                    logger.debug {
