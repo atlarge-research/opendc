@@ -93,6 +93,7 @@ import kotlin.test.assertTrue
 class LegacyExperimentTest {
     private fun opendc() = OpendcCommand().subcommands(RunCommand(), ValidateCommand(), ShowCommand())
 
+    // TODO: This one does not work I think
     @Test
     fun testCli() {
         opendc().test(arrayOf("run", "--legacy", "legacy/experiments/1.first_experiment_answers/simple_experiment.json"))

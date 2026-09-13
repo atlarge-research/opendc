@@ -40,7 +40,8 @@ import java.util.Random
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 import kotlin.time.Duration.Companion.milliseconds
-import org.opendc.sdk.model.failure.FailureModelSpec as SdkFailureModel
+import org.opendc.sdk.model.failure.FailureModelSpec
+import org.opendc.sdk.runner.provision.Provisioner
 
 /**
  * Submits [trace] to this [ComputeService] on the simulated [clock], honouring each task's
@@ -53,16 +54,16 @@ import org.opendc.sdk.model.failure.FailureModelSpec as SdkFailureModel
  * A decoupled fork of the experiments-base replayer that sources failures from the SDK model
  * instead of experiment specs.
  */
-internal suspend fun ComputeService.replay(
+public suspend fun ComputeService.replay(
     clock: InstantSource,
     trace: Queue<ServiceTask>,
-    failureModel: SdkFailureModel,
+    failureModel: FailureModelSpec? = null,
     seed: Long,
-    resolve: (ResourceReference) -> Path,
+    resolve: ((ResourceReference) -> Path)? = null,
     submitImmediately: Boolean = false,
 ) {
     val client = newClient()
-    val engineFailure = failureModel.toEngine(coroutineContext, clock, this, Random(seed), resolve)
+    val engineFailure = failureModel?.toEngine(coroutineContext, clock, this, Random(seed), resolve!!)
     try {
         coroutineScope {
             engineFailure?.start()
