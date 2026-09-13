@@ -33,17 +33,17 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Run CIBenchmark
-        run: >
-          ./gradlew :opendc-experiments:opendc-experiments-base:jmh
-          -PjmhIncludes=.*CIBenchmark.*
-
-      - name: Upload benchmark results
-        uses: actions/upload-artifact@v7
-        with:
-          name: benchmark-results
-          path: opendc-experiments/opendc-experiments-base/build/results/jmh/results.json
-          retention-days: 7
+#      - name: Run CIBenchmark
+#        run: >
+#          ./gradlew :opendc-experiments:opendc-experiments-base:jmh
+#          -PjmhIncludes=.*CIBenchmark.*
+#
+#      - name: Upload benchmark results
+#        uses: actions/upload-artifact@v7
+#        with:
+#          name: benchmark-results
+#          path: opendc-experiments/opendc-experiments-base/build/results/jmh/results.json
+#          retention-days: 7
 
       # Store the PR number so the comment workflow (which runs with write permissions)
       # knows which PR to comment on. Only needed for pull_request runs.

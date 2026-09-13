@@ -12,8 +12,8 @@ RUN ./gradlew --no-daemon :opendc-web:opendc-web-runner:installDist
 
 FROM eclipse-temurin:21-jdk-jammy
 COPY --from=0 /app/opendc-web/opendc-web-runner/build/install /opt/
-COPY --from=0 /app/opendc-experiments/opendc-experiments-base/src/test/resources/workloadTraces \
-    /opt/opendc/traces
+#COPY --from=0 /app/opendc-experiments/opendc-experiments-base/src/test/resources/workloadTraces \
+#    /opt/opendc/traces
 WORKDIR /opt/opendc
 CMD /opt/opendc-web-runner/bin/opendc-runner
 
