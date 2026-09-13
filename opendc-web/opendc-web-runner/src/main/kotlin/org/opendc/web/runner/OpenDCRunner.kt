@@ -27,7 +27,6 @@ import org.opendc.compute.failure.prefab.FailurePrefab
 import org.opendc.compute.failure.prefab.createFailureModelPrefab
 import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.compute.topology.specs.HostSpec
 import org.opendc.compute.topology.specs.PowerSourceSpec
@@ -54,7 +53,6 @@ import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.ArrayDeque
-import java.util.Queue
 import java.util.Random
 import java.util.concurrent.Executors
 import java.util.concurrent.ForkJoinPool
@@ -352,7 +350,7 @@ public class OpenDCRunner(
                             null
                         }
 
-                    val vmsQueue = ArrayDeque(vms);
+                    val vmsQueue = ArrayDeque(vms)
 
                     // Run workload trace
                     service.replay(timeSource, vmsQueue, seed = seed)

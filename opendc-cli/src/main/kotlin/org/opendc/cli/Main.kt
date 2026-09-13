@@ -93,8 +93,8 @@ internal class OpendcCommand : CliktCommand(name = "opendc") {
         if (legacyExperimentPath != null) {
             throw CliktError(
                 "It seems like you are using OpenDC2 input syntax.\n" +
-                "To execute older experiments in OpenDC3 see [TBD].\n" +
-                "To use OpenDC2, download it at https://github.com/atlarge-research/opendc/tree/OpenDC2-maintenance."
+                    "To execute older experiments in OpenDC3 see [TBD].\n" +
+                    "To use OpenDC2, download it at https://github.com/atlarge-research/opendc/tree/OpenDC2-maintenance.",
             )
         }
 

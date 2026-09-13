@@ -31,6 +31,7 @@ import org.opendc.compute.api.TaskState
 import org.opendc.compute.simulator.TaskWatcher
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.runner.factory.toEngine
 import java.nio.file.Path
@@ -40,8 +41,6 @@ import java.util.Random
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 import kotlin.time.Duration.Companion.milliseconds
-import org.opendc.sdk.model.failure.FailureModelSpec
-import org.opendc.sdk.runner.provision.Provisioner
 
 /**
  * Submits [trace] to this [ComputeService] on the simulated [clock], honouring each task's
