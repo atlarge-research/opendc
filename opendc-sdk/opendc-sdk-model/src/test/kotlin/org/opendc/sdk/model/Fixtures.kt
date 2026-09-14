@@ -38,14 +38,14 @@ import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec
-import org.opendc.sdk.model.topology.DoubleThresholdPolicy
-import org.opendc.sdk.model.topology.EqualShare
-import org.opendc.sdk.model.topology.FixedShare
+import org.opendc.sdk.model.topology.DoubleBatteryPolicySpec
+import org.opendc.sdk.model.topology.EqualSharePolicySpec
+import org.opendc.sdk.model.topology.FixedSharePolicySpec
 import org.opendc.sdk.model.topology.HostSpec
 import org.opendc.sdk.model.topology.MemorySpec
+import org.opendc.sdk.model.topology.PowerModelSpec
 import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.topology.PowerSourceSpec
-import org.opendc.sdk.model.topology.PowerSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
 import org.opendc.sdk.model.workload.ScalingPolicySpec
@@ -87,9 +87,9 @@ public val sampleHost: HostSpec =
         count = 4,
         cpu = CpuSpec(coreCount = 8, coreSpeed = 3.ghz, count = 2, vendor = "AMD", modelName = "EPYC", architecture = "Zen4"),
         memory = MemorySpec(size = 32.gib, speed = 3.ghz, vendor = "Samsung"),
-        cpuPowerModel = PowerSpec(PowerModelType.SQUARE, 500.watts, 100.watts, 350.watts),
-        cpuDistribution = FixedShare(0.5),
-        gpuDistribution = EqualShare,
+        cpuPowerModel = PowerModelSpec(PowerModelType.SQUARE, 500.watts, 100.watts, 350.watts),
+        cpuDistribution = FixedSharePolicySpec(0.5),
+        gpuDistribution = EqualSharePolicySpec,
     )
 
 public val sampleCluster: ClusterSpec =
@@ -104,7 +104,7 @@ public val sampleCluster: ClusterSpec =
                 capacity = 100.0,
                 chargingSpeed = 1000.0,
                 initialCharge = 20.0,
-                policy = DoubleThresholdPolicy(lowerThreshold = 100.0, upperThreshold = 300.0),
+                policy = DoubleBatteryPolicySpec(lowerThreshold = 100.0, upperThreshold = 300.0),
                 embodiedCarbon = 50.0,
                 expectedLifetime = 10.0,
             ),

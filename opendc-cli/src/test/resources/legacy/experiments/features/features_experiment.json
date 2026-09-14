@@ -122,8 +122,8 @@
     "checkpointModels": [
         null,
         {
-            "checkpointInterval": 3600000,
-            "checkpointDuration": 300000,
+            "checkpointInterval": "3600 s",
+            "checkpointDuration": "300 s",
             "checkpointIntervalScaling": 1.5
         }
     ],

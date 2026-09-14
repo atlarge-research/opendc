@@ -25,6 +25,8 @@ package org.opendc.simulator.compute.power;
 import java.util.List;
 import java.util.Map;
 import org.opendc.common.ResourceType;
+import org.opendc.simulator.compute.carbon.CarbonModel;
+import org.opendc.simulator.compute.carbon.CarbonReceiver;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.engine.engine.FlowEngine;
 import org.opendc.simulator.engine.graph.FlowEdge;
@@ -45,7 +47,6 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
     private double totalCarbonEmission = 0.0f;
 
     private FlowEdge distributorEdge;
-
     private final double capacity;
 
     private CarbonModel carbonModel = null;
@@ -209,6 +210,8 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
 
     @Override
     public void removeCarbonModel(CarbonModel carbonModel) {
+        this.updateCounters();
+        this.carbonIntensity = 0.0f;
         this.carbonModel = null;
     }
 

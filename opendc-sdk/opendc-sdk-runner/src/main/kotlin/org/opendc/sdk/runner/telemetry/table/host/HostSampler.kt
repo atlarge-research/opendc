@@ -67,6 +67,10 @@ public class HostSampler(
         // energy & carbon stats
         val powerDraw = hostSysStats.powerDraw
         val energyUsage = hostSysStats.energyUsage
+        val carbonIntensity = hostSysStats.carbonIntensity
+        val carbonEmission = hostSysStats.carbonEmission
+
+        // TODO: Determine if this metric still makes sense in this form
         val embodiedCarbon = hostSysStats.embodiedCarbon
         val uptime = hostSysStats.uptime.toMillis()
         val downtime = hostSysStats.downtime.toMillis()
@@ -102,6 +106,8 @@ public class HostSampler(
             gpuPowerDraws = gpuPowerDraws,
             powerDraw = powerDraw,
             energyUsage = energyUsage,
+            carbonIntensity = carbonIntensity,
+            carbonEmission = carbonEmission,
             embodiedCarbon = embodiedCarbon,
             uptime = uptime,
             downtime = downtime,

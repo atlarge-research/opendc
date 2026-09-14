@@ -55,7 +55,6 @@ import java.time.InstantSource
  */
 public class SimHost(
     private val name: String,
-    private val type: String,
     private val clusterName: String,
     private val clock: InstantSource,
     private val engine: FlowEngine,
@@ -65,6 +64,7 @@ public class SimHost(
     private val embodiedCarbon: Double,
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
+    private val type: String = "Unknown",
 ) : AutoCloseable {
     /**
      * The event listeners registered with this host.
@@ -103,7 +103,7 @@ public class SimHost(
             gpuHostModels,
         )
 
-    private var simMachine: SimMachine? = null
+    public var simMachine: SimMachine? = null
 
     /**
      * The [GuestListener] that listens for guest events.
@@ -340,6 +340,8 @@ public class SimHost(
             bootTime,
             simMachine!!.psu.powerDraw,
             simMachine!!.psu.energyUsage,
+            simMachine!!.psu.carbonIntensity,
+            simMachine!!.psu.carbonEmission,
             embodiedCarbonRate * duration,
             terminated,
             running,

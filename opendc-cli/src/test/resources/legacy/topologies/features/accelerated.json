@@ -9,24 +9,24 @@
                     "count": 2,
                     "cpu": {
                         "coreCount": 4,
-                        "coreSpeed": 2000,
+                        "coreSpeed": "2000 MHz",
                         "count": 2,
                         "vendor": "AMD",
                         "modelName": "EPYC 7502",
                         "arch": "Zen2"
                     },
                     "memory": {
-                        "memorySize": 140457600000,
-                        "memorySpeed": 3200,
+                        "memorySize": "100 GB",
+                        "memorySpeed": "3200 MHz",
                         "vendor": "Samsung",
                         "modelName": "M393A4K40BB1",
                         "arch": "DDR4"
                     },
                     "cpuPowerModel": {
                         "modelType": "linear",
-                        "power": 400.0,
-                        "idlePower": 100.0,
-                        "maxPower": 200.0
+                        "power": "400.0 W",
+                        "idlePower": "100.0 W",
+                        "maxPower": "200.0 W"
                     },
                     "cpuDistributionPolicy": {
                         "type": "MAX_MIN_FAIRNESS"
@@ -34,8 +34,8 @@
                     "gpu": {
                         "count": 4,
                         "coreCount": 5120,
-                        "coreSpeed": 5000,
-                        "memorySize": 30517578125,
+                        "coreSpeed": "5000 MHz",
+                        "memorySize": "32 GB",
                         "memoryBandwidth": "900 GBps",
                         "vendor": "NVIDIA",
                         "modelName": "Tesla V100",
@@ -47,42 +47,42 @@
                     },
                     "gpuPowerModel": {
                         "modelType": "sqrt",
-                        "power": 800.0,
-                        "idlePower": 300.0,
-                        "maxPower": 600.0
+                        "power": "800.0 W",
+                        "idlePower": "300.0 W",
+                        "maxPower": "600.0 W"
                     },
                     "gpuDistributionPolicy": {
                         "type": "BEST_EFFORT",
-                        "updateIntervalLength": 60000
+                        "updateInterval": "60000 s"
                     }
                 },
                 {
                     "name": "ShareBasedHost",
                     "cpu": {
                         "coreCount": 1,
-                        "coreSpeed": 2000
+                        "coreSpeed": "2000 MHz"
                     },
                     "memory": {
-                        "memorySize": 140457600000
+                        "memorySize": "100 GB"
                     },
                     "cpuPowerModel": {
                         "modelType": "linear",
-                        "power": 400.0,
-                        "idlePower": 100.0,
-                        "maxPower": 200.0
+                        "power": "400.0 W",
+                        "idlePower": "100.0 W",
+                        "maxPower": "200.0 W"
                     },
                     "gpu": {
                         "coreCount": 3,
-                        "coreSpeed": 1000,
+                        "coreSpeed": "1000 MHz",
                         "virtualizationOverHeadModel": {
                             "type": "SHARE_BASED"
                         }
                     },
                     "gpuPowerModel": {
                         "modelType": "cubic",
-                        "power": 800.0,
-                        "idlePower": 300.0,
-                        "maxPower": 600.0
+                        "power": "800.0 W",
+                        "idlePower": "300.0 W",
+                        "maxPower": "600.0 W"
                     },
                     "gpuDistributionPolicy": {
                         "type": "FIXED_SHARE",
@@ -93,20 +93,20 @@
                     "name": "UnsetOverheadHost",
                     "cpu": {
                         "coreCount": 1,
-                        "coreSpeed": 2000
+                        "coreSpeed": "2000 MHz"
                     },
                     "memory": {
-                        "memorySize": 140457600000
+                        "memorySize": "100 GB"
                     },
                     "cpuPowerModel": {
                         "modelType": "square",
-                        "power": 400.0,
-                        "idlePower": 100.0,
-                        "maxPower": 200.0
+                        "power": "400.0 W",
+                        "idlePower": "100.0 W",
+                        "maxPower": "200.0 W"
                     },
                     "gpu": {
                         "coreCount": 2,
-                        "coreSpeed": 1000,
+                        "coreSpeed": "1000 MHz",
                         "virtualizationOverHeadModel": {
                             "type": "CONSTANT",
                             "percentageOverhead": -1.0

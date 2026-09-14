@@ -37,6 +37,7 @@ public class FlowDistributorFactory {
         FIXED_SHARE,
         MAX_MIN_FAIRNESS;
 
+        // TODO: Why do we need this property structure?
         private final Map<String, Object> properties = new HashMap<>();
 
         public void setProperty(String key, Object value) {
@@ -62,7 +63,7 @@ public class FlowDistributorFactory {
         return switch (distributionPolicyType) {
             case BEST_EFFORT -> new BestEffortFlowDistributor(
                     flowEngine,
-                    distributionPolicyType.getProperty("updateIntervalLength", Long.class),
+                    distributionPolicyType.getProperty("updateInterval", Long.class),
                     maxConsumers,
                     maxSuppliers);
             case EQUAL_SHARE -> new EqualShareFlowDistributor(flowEngine, maxConsumers, maxSuppliers);

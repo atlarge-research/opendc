@@ -25,14 +25,13 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.NoVirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
 import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
 import org.opendc.sdk.runner.base.harness.fragment
 import org.opendc.sdk.runner.base.harness.runTest
-import org.opendc.sdk.runner.base.harness.toClusters
-import org.opendc.simulator.compute.virtualization.OverheadModels.ConstantVirtualizationOverhead
-import org.opendc.simulator.compute.virtualization.OverheadModels.NoVirtualizationOverHead
-import org.opendc.simulator.compute.virtualization.OverheadModels.ShareBasedVirtualizationOverhead
 
 class VirtualizationOverheadTests {
     /**
@@ -40,33 +39,33 @@ class VirtualizationOverheadTests {
      */
     @Test
     fun loadsVirtualizationOverheadModelCorrectly() {
-        val noModelTopology = createTopology("virtualizationOverhead/single_gpu_no_model.json").toClusters()
-        val noOverHeadTopology = createTopology("virtualizationOverhead/single_gpu_no_overhead.json").toClusters()
-        val constantOverHeadTopology = createTopology("virtualizationOverhead/single_gpu_constant_overhead.json").toClusters()
-        val customConstantOverHeadTopology = createTopology("virtualizationOverhead/single_gpu_custom_constant_overhead.json").toClusters()
-        val shareBasedOverheadTopology = createTopology("virtualizationOverhead/single_gpu_share_based_overhead.json").toClusters()
+        val noModelTopology = createTopology("virtualizationOverhead/single_gpu_no_model.json")
+        val noOverHeadTopology = createTopology("virtualizationOverhead/single_gpu_no_overhead.json")
+        val constantOverHeadTopology = createTopology("virtualizationOverhead/single_gpu_constant_overhead.json")
+        val customConstantOverHeadTopology = createTopology("virtualizationOverhead/single_gpu_custom_constant_overhead.json")
+        val shareBasedOverheadTopology = createTopology("virtualizationOverhead/single_gpu_share_based_overhead.json")
 
         assertAll(
             {
                 assertInstanceOf(
-                    NoVirtualizationOverHead::class.java,
-                    noModelTopology[0].hostSpecs[0].model.gpuModels[0].virtualizationOverheadModel,
+                    NoVirtualizationOverheadSpec::class.java,
+                    noModelTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead,
                     "Did not load default model correctly, when no model was given.",
                 )
             },
             // no overhead
             {
                 assertInstanceOf(
-                    NoVirtualizationOverHead::class.java,
-                    noOverHeadTopology[0].hostSpecs[0].model.gpuModels[0].virtualizationOverheadModel,
+                    NoVirtualizationOverheadSpec::class.java,
+                    noOverHeadTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead,
                     "Did not load no overhead model correctly.",
                 )
             },
             // default constant overhead
             {
                 assertInstanceOf(
-                    ConstantVirtualizationOverhead::class.java,
-                    constantOverHeadTopology[0].hostSpecs[0].model.gpuModels[0].virtualizationOverheadModel,
+                    ConstantVirtualizationOverheadSpec::class.java,
+                    constantOverHeadTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead,
                     "Did not load constant overhead model correctly.",
                 )
             },
@@ -74,8 +73,8 @@ class VirtualizationOverheadTests {
                 assertEquals(
                     0.05,
                     (
-                        constantOverHeadTopology[0].hostSpecs[0].model.gpuModels[0].virtualizationOverheadModel
-                            as ConstantVirtualizationOverhead
+                        constantOverHeadTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead
+                            as ConstantVirtualizationOverheadSpec
                     ).percentageOverhead,
                     "Constant overhead should have 5% overhead",
                 )
@@ -83,8 +82,8 @@ class VirtualizationOverheadTests {
             // custom constant overhead
             {
                 assertInstanceOf(
-                    ConstantVirtualizationOverhead::class.java,
-                    customConstantOverHeadTopology[0].hostSpecs[0].model.gpuModels[0].virtualizationOverheadModel,
+                    ConstantVirtualizationOverheadSpec::class.java,
+                    customConstantOverHeadTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead,
                     "Did not load constant overhead model correctly, when overhead factor was given.",
                 )
             },
@@ -92,8 +91,8 @@ class VirtualizationOverheadTests {
                 assertEquals(
                     0.25,
                     (
-                        customConstantOverHeadTopology[0].hostSpecs[0].model.gpuModels[0].virtualizationOverheadModel
-                            as ConstantVirtualizationOverhead
+                        customConstantOverHeadTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead
+                            as ConstantVirtualizationOverheadSpec
                     ).percentageOverhead,
                     "Custom constant overhead should have 25% overhead",
                 )
@@ -101,8 +100,8 @@ class VirtualizationOverheadTests {
             // share-based overhead
             {
                 assertInstanceOf(
-                    ShareBasedVirtualizationOverhead::class.java,
-                    shareBasedOverheadTopology[0].hostSpecs[0].model.gpuModels[0].virtualizationOverheadModel,
+                    ShareBasedVirtualizationOverheadSpec::class.java,
+                    shareBasedOverheadTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead,
                     "Did not load shared based overhead model correctly",
                 )
             },

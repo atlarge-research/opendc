@@ -24,8 +24,8 @@ package org.opendc.simulator.compute.power.batteries.policy;
 
 import java.util.List;
 import java.util.Map;
-import org.opendc.simulator.compute.power.CarbonModel;
-import org.opendc.simulator.compute.power.CarbonReceiver;
+import org.opendc.simulator.compute.carbon.CarbonModel;
+import org.opendc.simulator.compute.carbon.CarbonReceiver;
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator;
 import org.opendc.simulator.compute.power.batteries.BatteryState;
 import org.opendc.simulator.compute.power.batteries.PowerSourceType;

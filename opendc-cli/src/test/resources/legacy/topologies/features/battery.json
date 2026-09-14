@@ -7,16 +7,16 @@
                     "name": "MseHost",
                     "cpu": {
                         "coreCount": 8,
-                        "coreSpeed": 2100
+                        "coreSpeed": "2100 MHz"
                     },
                     "memory": {
-                        "memorySize": 100000
+                        "memorySize": "100 GB"
                     },
                     "cpuPowerModel": {
                         "modelType": "mse",
-                        "power": 400.0,
-                        "idlePower": 32.0,
-                        "maxPower": 180.0,
+                        "power": "400.0 W",
+                        "idlePower": "32.0 W",
+                        "maxPower": "180.0 W",
                         "calibrationFactor": 1.5
                     }
                 },
@@ -24,16 +24,16 @@
                     "name": "AsymptoticHost",
                     "cpu": {
                         "coreCount": 8,
-                        "coreSpeed": 2100
+                        "coreSpeed": "2100 MHz"
                     },
                     "memory": {
-                        "memorySize": 100000
+                        "memorySize": "100 GB"
                     },
                     "cpuPowerModel": {
                         "modelType": "asymptotic",
-                        "power": 400.0,
-                        "idlePower": 32.0,
-                        "maxPower": 180.0,
+                        "power": "400.0 W",
+                        "idlePower": "32.0 W",
+                        "maxPower": "180.0 W",
                         "asymUtil": 0.7,
                         "dvfs": false
                     }
@@ -42,22 +42,22 @@
                     "name": "ConstantHost",
                     "cpu": {
                         "coreCount": 8,
-                        "coreSpeed": 2100
+                        "coreSpeed": "2100 MHz"
                     },
                     "memory": {
-                        "memorySize": 100000
+                        "memorySize": "100 GB"
                     },
                     "cpuPowerModel": {
                         "modelType": "constant",
-                        "power": 350.0,
-                        "idlePower": 32.0,
-                        "maxPower": 180.0
+                        "power": "350.0 W",
+                        "idlePower": "32.0 W",
+                        "maxPower": "180.0 W"
                     }
                 }
             ],
             "powerSource": {
                 "name": "grid",
-                "maxPower": 50000,
+                "maxPower": "50000 W",
                 "carbonTracePath": "carbon_traces/NL_2021-2024.parquet"
             },
             "battery": {

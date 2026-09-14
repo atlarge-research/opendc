@@ -30,7 +30,7 @@ import org.opendc.compute.simulator.scheduler.filters.HostFilter
 import org.opendc.compute.simulator.scheduler.weights.HostWeigher
 import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
-import org.opendc.simulator.compute.power.CarbonModel
+import org.opendc.simulator.compute.carbon.CarbonModel
 import java.time.InstantSource
 import java.util.LinkedList
 import java.util.SplittableRandom

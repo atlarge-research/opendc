@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.power;
+package org.opendc.simulator.compute.carbon;
 
 /**
  * An object holding the carbon intensity during a specific time frame.

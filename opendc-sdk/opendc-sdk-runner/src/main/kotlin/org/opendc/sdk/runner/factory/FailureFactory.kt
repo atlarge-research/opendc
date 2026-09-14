@@ -33,6 +33,8 @@ import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.sdk.model.failure.ConstantDistributionSpec
 import org.opendc.sdk.model.failure.CustomFailureSpec
 import org.opendc.sdk.model.failure.DistributionSpec
+import org.opendc.sdk.model.failure.ExponentialDistributionSpec
+import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.GammaDistributionSpec
 import org.opendc.sdk.model.failure.LogNormalDistributionSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
@@ -55,14 +57,12 @@ import org.apache.commons.math3.distribution.ParetoDistribution as CmParetoDistr
 import org.apache.commons.math3.distribution.WeibullDistribution as CmWeibullDistribution
 import org.opendc.compute.failure.models.FailureModel as EngineFailureModel
 import org.opendc.compute.failure.prefab.FailurePrefab as EngineFailurePrefab
-import org.opendc.sdk.model.failure.ExponentialDistributionSpec as SdkExponentialDistribution
-import org.opendc.sdk.model.failure.FailureModelSpec as SdkFailureModel
 
 /**
- * Converts an SDK [SdkFailureModel] into the engine failure model injected during replay, or null
+ * Converts an SDK [FailureModelSpec] into the engine failure model injected during replay, or null
  * when no failures are configured. Trace references are materialized through [resolve].
  */
-internal fun SdkFailureModel.toEngine(
+internal fun FailureModelSpec.toEngine(
     context: CoroutineContext,
     clock: InstantSource,
     service: ComputeService,
@@ -90,7 +90,7 @@ internal fun SdkFailureModel.toEngine(
 private fun DistributionSpec.toSampler(rng: org.apache.commons.math3.random.RandomGenerator): RealDistribution =
     when (this) {
         is ConstantDistributionSpec -> ConstantRealDistribution(value)
-        is SdkExponentialDistribution -> CmExponentialDistribution(rng, mean)
+        is ExponentialDistributionSpec -> CmExponentialDistribution(rng, mean)
         is GammaDistributionSpec -> CmGammaDistribution(rng, shape, scale)
         is LogNormalDistributionSpec -> CmLogNormalDistribution(rng, scale, shape)
         is NormalDistributionSpec -> CmNormalDistribution(rng, mean, std)

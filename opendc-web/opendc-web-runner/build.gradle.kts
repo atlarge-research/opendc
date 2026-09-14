@@ -55,7 +55,6 @@ dependencies {
 
     implementation(libs.kotlin.logging)
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-failure")))
 
     implementation(project(mapOf("path" to ":opendc-sdk:opendc-sdk-runner")))

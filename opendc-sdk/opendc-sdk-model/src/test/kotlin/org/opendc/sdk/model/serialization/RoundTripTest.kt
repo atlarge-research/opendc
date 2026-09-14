@@ -80,22 +80,22 @@ import org.opendc.sdk.model.telemetry.ExportColumnsSpec
 import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.telemetry.OnlyColumns
 import org.opendc.sdk.model.telemetry.OutputFileSpec
-import org.opendc.sdk.model.topology.BatteryPolicy
-import org.opendc.sdk.model.topology.BestEffort
+import org.opendc.sdk.model.topology.BatteryPolicySpec
+import org.opendc.sdk.model.topology.BestEffortPolicySpec
 import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
-import org.opendc.sdk.model.topology.DistributionPolicy
-import org.opendc.sdk.model.topology.DoubleThresholdPolicy
-import org.opendc.sdk.model.topology.EqualShare
-import org.opendc.sdk.model.topology.FirstFit
-import org.opendc.sdk.model.topology.FixedShare
-import org.opendc.sdk.model.topology.MaxMinFairness
+import org.opendc.sdk.model.topology.DistributionPolicySpec
+import org.opendc.sdk.model.topology.DoubleBatteryPolicySpec
+import org.opendc.sdk.model.topology.EqualSharePolicySpec
+import org.opendc.sdk.model.topology.FirstFitPolicySpec
+import org.opendc.sdk.model.topology.FixedSharePolicySpec
+import org.opendc.sdk.model.topology.MaxMinFairnessPolicySpec
 import org.opendc.sdk.model.topology.NoVirtualizationOverheadSpec
-import org.opendc.sdk.model.topology.RunningMeanPlusPolicy
-import org.opendc.sdk.model.topology.RunningMeanPolicy
-import org.opendc.sdk.model.topology.RunningMedianPolicy
-import org.opendc.sdk.model.topology.RunningQuartilesPolicy
+import org.opendc.sdk.model.topology.RunningMeanPlusPolicySpec
+import org.opendc.sdk.model.topology.RunningMeanPolicySpec
+import org.opendc.sdk.model.topology.RunningMedianPolicySpec
+import org.opendc.sdk.model.topology.RunningQuartilesPolicySpec
 import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
-import org.opendc.sdk.model.topology.SingleThresholdPolicy
+import org.opendc.sdk.model.topology.SingleBatteryPolicySpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
 import org.opendc.sdk.model.workload.ScalingPolicySpec
@@ -304,32 +304,32 @@ class RoundTripTest {
 
     @TestFactory
     fun `battery policies round-trip`(): List<DynamicTest> {
-        val policies: List<BatteryPolicy> =
+        val policies: List<BatteryPolicySpec> =
             listOf(
-                SingleThresholdPolicy(carbonThreshold = 150.0),
-                DoubleThresholdPolicy(lowerThreshold = 100.0, upperThreshold = 300.0),
-                RunningMeanPolicy(startingThreshold = 200.0, windowSize = 24),
-                RunningMeanPlusPolicy(startingThreshold = 200.0, windowSize = 24),
-                RunningMedianPolicy(startingThreshold = 200.0, windowSize = 24),
-                RunningQuartilesPolicy(startingThreshold = 200.0, windowSize = 24),
+                SingleBatteryPolicySpec(carbonThreshold = 150.0),
+                DoubleBatteryPolicySpec(lowerThreshold = 100.0, upperThreshold = 300.0),
+                RunningMeanPolicySpec(startingThreshold = 200.0, windowSize = 24),
+                RunningMeanPlusPolicySpec(startingThreshold = 200.0, windowSize = 24),
+                RunningMedianPolicySpec(startingThreshold = 200.0, windowSize = 24),
+                RunningQuartilesPolicySpec(startingThreshold = 200.0, windowSize = 24),
             )
         return policies.map { policy ->
-            dynamicTest(policy.toString()) { assertEquals(policy, roundTrip<BatteryPolicy>(policy)) }
+            dynamicTest(policy.toString()) { assertEquals(policy, roundTrip<BatteryPolicySpec>(policy)) }
         }
     }
 
     @TestFactory
     fun `distribution policies round-trip`(): List<DynamicTest> {
-        val policies: List<DistributionPolicy> =
+        val policies: List<DistributionPolicySpec> =
             listOf(
-                MaxMinFairness,
-                BestEffort(updateIntervalMs = 2000),
-                EqualShare,
-                FirstFit,
-                FixedShare(shareRatio = 0.5),
+                MaxMinFairnessPolicySpec,
+                BestEffortPolicySpec(updateInterval = 2000L),
+                EqualSharePolicySpec,
+                FirstFitPolicySpec,
+                FixedSharePolicySpec(shareRatio = 0.5),
             )
         return policies.map { policy ->
-            dynamicTest(policy.toString()) { assertEquals(policy, roundTrip<DistributionPolicy>(policy)) }
+            dynamicTest(policy.toString()) { assertEquals(policy, roundTrip<DistributionPolicySpec>(policy)) }
         }
     }
 
@@ -374,8 +374,8 @@ class RoundTripTest {
         assertTrue(encode<FailureModelSpec>(NoFailureSpec).contains("\"type\": \"none\""))
         assertTrue(encode<DistributionSpec>(LogNormalDistributionSpec(1.0, 2.0)).contains("\"type\": \"log-normal\""))
         assertTrue(encode<WorkloadSpec>(TraceWorkloadSpec(NamedReference("t"))).contains("\"type\": \"trace\""))
-        assertTrue(encode<DistributionPolicy>(MaxMinFairness).contains("\"type\": \"maxMinFairness\""))
-        assertTrue(encode<BatteryPolicy>(SingleThresholdPolicy(100.0)).contains("\"type\": \"single\""))
+        assertTrue(encode<DistributionPolicySpec>(MaxMinFairnessPolicySpec).contains("\"type\": \"maxMinFairness\""))
+        assertTrue(encode<BatteryPolicySpec>(SingleBatteryPolicySpec(100.0)).contains("\"type\": \"single\""))
         assertTrue(encode<VirtualizationOverheadSpec>(ShareBasedVirtualizationOverheadSpec).contains("\"type\": \"shareBased\""))
         assertTrue(encode<ColumnSelection>(AllColumns).contains("\"type\": \"all\""))
     }

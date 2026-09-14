@@ -22,90 +22,7 @@
 
 package org.opendc.sdk.model.topology
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-
-/**
- * Decides when a battery charges from or discharges to the grid, typically driven by carbon intensity.
- */
-@Serializable
-public sealed interface BatteryPolicy
-
-/**
- * Switches behavior around a single carbon-intensity threshold.
- *
- * @property carbonThreshold The carbon intensity above which the battery discharges.
- */
-@Serializable
-@SerialName("single")
-public data class SingleThresholdPolicy(
-    public val carbonThreshold: Double,
-) : BatteryPolicy
-
-/**
- * Uses separate thresholds to charge and discharge, creating a hysteresis band.
- *
- * @property lowerThreshold The carbon intensity below which the battery charges.
- * @property upperThreshold The carbon intensity above which the battery discharges.
- */
-@Serializable
-@SerialName("double")
-public data class DoubleThresholdPolicy(
-    public val lowerThreshold: Double,
-    public val upperThreshold: Double,
-) : BatteryPolicy
-
-/**
- * Compares carbon intensity against a running mean over a sliding window.
- *
- * @property startingThreshold The initial threshold used before the window is populated.
- * @property windowSize The number of samples in the sliding window.
- */
-@Serializable
-@SerialName("runningMean")
-public data class RunningMeanPolicy(
-    public val startingThreshold: Double,
-    public val windowSize: Int,
-) : BatteryPolicy
-
-/**
- * Compares carbon intensity against a running mean plus its variability over a sliding window.
- *
- * @property startingThreshold The initial threshold used before the window is populated.
- * @property windowSize The number of samples in the sliding window.
- */
-@Serializable
-@SerialName("runningMeanPlus")
-public data class RunningMeanPlusPolicy(
-    public val startingThreshold: Double,
-    public val windowSize: Int,
-) : BatteryPolicy
-
-/**
- * Compares carbon intensity against a running median over a sliding window.
- *
- * @property startingThreshold The initial threshold used before the window is populated.
- * @property windowSize The number of samples in the sliding window.
- */
-@Serializable
-@SerialName("runningMedian")
-public data class RunningMedianPolicy(
-    public val startingThreshold: Double,
-    public val windowSize: Int,
-) : BatteryPolicy
-
-/**
- * Compares carbon intensity against running quartiles over a sliding window.
- *
- * @property startingThreshold The initial threshold used before the window is populated.
- * @property windowSize The number of samples in the sliding window.
- */
-@Serializable
-@SerialName("runningQuartiles")
-public data class RunningQuartilesPolicy(
-    public val startingThreshold: Double,
-    public val windowSize: Int,
-) : BatteryPolicy
 
 /**
  * An energy-storage unit attached to a cluster, charged and discharged according to its policy.
@@ -124,7 +41,7 @@ public data class BatterySpec(
     public val capacity: Double,
     public val chargingSpeed: Double,
     public val initialCharge: Double = 0.0,
-    public val policy: BatteryPolicy,
+    public val policy: BatteryPolicySpec,
     public val embodiedCarbon: Double = 0.0,
     public val expectedLifetime: Double = 0.0,
 )

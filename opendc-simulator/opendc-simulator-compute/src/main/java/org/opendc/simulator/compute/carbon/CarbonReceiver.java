@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2025 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,28 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.topology.specs
+package org.opendc.simulator.compute.carbon;
 
-import org.opendc.simulator.compute.models.MachineModel
-import org.opendc.simulator.compute.power.PowerModel
-import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
+public interface CarbonReceiver {
 
-/**
- * Description of a physical host that will be simulated by OpenDC and host the virtual machines.
- *
- * @param name The name of the host.
- * @param model The physical model of the machine.
- * @param cpuPowerModel The [cpuPowerModel] that determines the power draw based on cpu utilization
- */
-public data class HostSpec(
-    val name: String,
-    val type: String,
-    val clusterName: String,
-    val model: MachineModel,
-    val cpuPowerModel: PowerModel,
-    val gpuPowerModel: PowerModel?,
-    val embodiedCarbon: Double = 1000.0,
-    val expectedLifetime: Double = 5.0,
-    val cpuDistributionPolicy: DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
-    val gpuDistributionPolicy: DistributionPolicy = DistributionPolicy.MAX_MIN_FAIRNESS,
-)
+    public void updateCarbonIntensity(double carbonIntensity);
+
+    public void setCarbonModel(CarbonModel carbonModel);
+
+    public void removeCarbonModel(CarbonModel carbonModel);
+}

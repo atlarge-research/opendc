@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 AtLarge Research
+ * Copyright (c) 2026 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.topology.specs
+package org.opendc.sdk.runner.factory
 
-public data class BatterySpec(
-    val name: String,
-    val capacity: Double,
-    val chargingSpeed: Double,
-    val batteryPolicy: BatteryPolicyJSONSpec,
-    val initialCharge: Double,
-    val embodiedCarbon: Double = 1000.0,
-    val expectedLifetime: Double = 10.0,
-)
+import org.opendc.sdk.model.topology.BestEffortPolicySpec
+import org.opendc.sdk.model.topology.DistributionPolicySpec
+import org.opendc.sdk.model.topology.EqualSharePolicySpec
+import org.opendc.sdk.model.topology.FirstFitPolicySpec
+import org.opendc.sdk.model.topology.FixedSharePolicySpec
+import org.opendc.sdk.model.topology.MaxMinFairnessPolicySpec
+import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
+
+public fun DistributionPolicySpec.toEngine(): DistributionPolicy =
+    when (this) {
+        MaxMinFairnessPolicySpec -> DistributionPolicy.MAX_MIN_FAIRNESS
+        EqualSharePolicySpec -> DistributionPolicy.EQUAL_SHARE
+        FirstFitPolicySpec -> DistributionPolicy.FIRST_FIT
+        is BestEffortPolicySpec -> DistributionPolicy.BEST_EFFORT.apply { setProperty("updateInterval", updateInterval) }
+        is FixedSharePolicySpec -> DistributionPolicy.FIXED_SHARE.apply { setProperty("shareRatio", shareRatio) }
+    }

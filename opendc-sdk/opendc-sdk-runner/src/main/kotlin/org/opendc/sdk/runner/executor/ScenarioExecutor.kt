@@ -24,13 +24,13 @@ package org.opendc.sdk.runner.executor
 
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.resource.ResourceProvisioner
+import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
 import org.opendc.sdk.model.telemetry.OutputFileSpec
+import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.runner.RunResult
-import org.opendc.sdk.runner.factory.toClusterSpecs
 import org.opendc.sdk.runner.factory.toEngine
 import org.opendc.sdk.runner.factory.toExportSettings
 import org.opendc.sdk.runner.factory.toScheduler
@@ -43,10 +43,11 @@ import org.opendc.sdk.runner.provision.setupHosts
 import org.opendc.sdk.runner.telemetry.sink.OutputSink
 import org.opendc.sdk.runner.telemetry.sink.RunContext
 import org.opendc.sdk.runner.telemetry.sink.SinkSession
-import org.opendc.simulator.compute.power.CarbonModel
-import org.opendc.simulator.compute.power.CarbonReceiver
+import org.opendc.simulator.compute.carbon.CarbonModel
+import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.kotlin.SimulationCoroutineScope
 import org.opendc.simulator.kotlin.runSimulation
+import java.nio.file.Path
 import java.time.Duration
 import java.time.InstantSource
 import java.util.Random
@@ -98,29 +99,33 @@ private class ScenarioRun(
     suspend fun execute(): RunResult {
         val workload = scenario.workload.toServiceTasks(scenario.checkpointModel, resources::resolve)
 
+        // TODO: Link this properly
+        val numHosts = scenario.topology.clusters.flatMap { it.hosts }.sumOf { it.count }
         val startTime = workload.minOf { it.submittedAt }
-        val clusters = scenario.topology.toClusterSpecs(resources::resolve)
+        createService(scenario.topology, numHosts, startTime, resources::resolve)
 
-        provisionDatacenter(clusters, startTime)
-        val sessions = attachSinks(clusters.gpuCount(), startTime, workload.size)
+        // TODO: Why is GPUCount here referenced?
+        val sessions = attachSinks(scenario.topology.gpuCount(), startTime, workload.size)
+//        val sessions = attachSinks(20, startTime, workload.size)
         connectCarbonModel()
 
         service.replay(clock, workload, scenario.failureModel, seed, resources::resolve)
         return RunResult(seed, sessions.mapNotNull { it.result() })
     }
 
-    private fun provisionDatacenter(
-        clusters: List<ClusterSpec>,
+    private fun createService(
+        topology: TopologySpec,
+        numHosts: Int,
         startTime: Long,
+        resolve: (ResourceReference) -> Path,
     ) {
-        val numHosts = clusters.sumOf { it.hostSpecs.size }
         engine.runSteps(
             setupComputeService(
                 SERVICE_DOMAIN,
                 { it.createScheduler(numHosts) },
                 maxNumFailures = scenario.maxNumFailures,
             ),
-            setupHosts(SERVICE_DOMAIN, clusters, startTime),
+            setupHosts(SERVICE_DOMAIN, topology, startTime, resolve),
         )
     }
 
@@ -185,7 +190,7 @@ private class ScenarioRun(
     }
 }
 
-private fun List<ClusterSpec>.gpuCount(): Int = flatMap { it.hostSpecs }.maxOfOrNull { it.model.gpuModels.size } ?: 0
+private fun TopologySpec.gpuCount(): Int = clusters.flatMap { it.hosts }.maxOf { it.gpu?.count ?: 0 }
 
 private fun <T : Any> Provisioner.resolve(type: Class<T>): T = registry.resolve(SERVICE_DOMAIN, type)!!
 

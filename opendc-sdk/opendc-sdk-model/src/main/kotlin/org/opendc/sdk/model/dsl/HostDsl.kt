@@ -27,14 +27,14 @@ import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.sdk.model.topology.CpuSpec
-import org.opendc.sdk.model.topology.DistributionPolicy
+import org.opendc.sdk.model.topology.DistributionPolicySpec
 import org.opendc.sdk.model.topology.GpuSpec
 import org.opendc.sdk.model.topology.HostSpec
-import org.opendc.sdk.model.topology.MaxMinFairness
+import org.opendc.sdk.model.topology.MaxMinFairnessPolicySpec
 import org.opendc.sdk.model.topology.MemorySpec
 import org.opendc.sdk.model.topology.NoVirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.PowerModelSpec
 import org.opendc.sdk.model.topology.PowerModelType
-import org.opendc.sdk.model.topology.PowerSpec
 import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
 
 /** Builds a [HostSpec]; `cpu` and `memory` must be set before the enclosing block returns. */
@@ -43,14 +43,14 @@ public class HostBuilder(private val name: String, private val count: Int) {
     private var cpu: CpuSpec? = null
     private var memory: MemorySpec? = null
     private var gpu: GpuSpec? = null
-    private var cpuPowerModel: PowerSpec = PowerSpec.DEFAULT
-    private var gpuPowerModel: PowerSpec = PowerSpec.DEFAULT
+    private var cpuPowerModel: PowerModelSpec = PowerModelSpec.DEFAULT
+    private var gpuPowerModel: PowerModelSpec = PowerModelSpec.DEFAULT
 
     /** Policy distributing CPU capacity across tasks. */
-    public var cpuDistribution: DistributionPolicy = MaxMinFairness
+    public var cpuDistribution: DistributionPolicySpec = MaxMinFairnessPolicySpec
 
     /** Policy distributing GPU capacity across tasks. */
-    public var gpuDistribution: DistributionPolicy = MaxMinFairness
+    public var gpuDistribution: DistributionPolicySpec = MaxMinFairnessPolicySpec
 
     public fun cpu(
         coreCount: Int,
@@ -102,7 +102,7 @@ public class HostBuilder(private val name: String, private val count: Int) {
     }
 }
 
-/** Builds a [PowerSpec]; unset fields fall back to [PowerSpec.DEFAULT]. */
+/** Builds a [PowerModelSpec]; unset fields fall back to [PowerModelSpec.DEFAULT]. */
 @SdkDsl
 public class PowerModelBuilder {
     /** Shape of the utilization-to-power curve. */
@@ -126,5 +126,5 @@ public class PowerModelBuilder {
     /** Whether dynamic voltage and frequency scaling is modelled. */
     public var dvfs: Boolean = true
 
-    internal fun build(): PowerSpec = PowerSpec(type, maxPower, idlePower, power, calibrationFactor, asymUtil, dvfs)
+    internal fun build(): PowerModelSpec = PowerModelSpec(type, maxPower, idlePower, power, calibrationFactor, asymUtil, dvfs)
 }

@@ -47,10 +47,10 @@ public data class HostSpec(
     public val cpu: CpuSpec,
     public val memory: MemorySpec,
     public val gpu: GpuSpec? = null,
-    public val cpuPowerModel: PowerSpec = PowerSpec.DEFAULT,
-    public val gpuPowerModel: PowerSpec = PowerSpec.DEFAULT,
-    public val cpuDistribution: DistributionPolicy = MaxMinFairness,
-    public val gpuDistribution: DistributionPolicy = MaxMinFairness,
+    public val cpuPowerModel: PowerModelSpec = PowerModelSpec.DEFAULT,
+    public val gpuPowerModel: PowerModelSpec = PowerModelSpec.DEFAULT,
+    public val cpuDistribution: DistributionPolicySpec = MaxMinFairnessPolicySpec,
+    public val gpuDistribution: DistributionPolicySpec = MaxMinFairnessPolicySpec,
 ) : Validatable {
     override fun validate(): List<ValidationIssue> =
         buildList {

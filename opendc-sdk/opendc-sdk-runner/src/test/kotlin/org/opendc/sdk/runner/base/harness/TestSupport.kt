@@ -25,7 +25,6 @@ package org.opendc.sdk.runner.base.harness
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.TimeDelta
-import org.opendc.compute.topology.specs.ClusterSpec
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
@@ -44,7 +43,6 @@ import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TaskFragmentSpec
 import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.runner.executor.runScenario
-import org.opendc.sdk.runner.factory.toClusterSpecs
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
 import org.opendc.sdk.runner.telemetry.sink.MonitorSink
 import java.nio.file.Path
@@ -68,9 +66,6 @@ internal fun createTopology(name: String): TopologySpec {
     val text = checkNotNull(object {}.javaClass.getResourceAsStream("/topologies/$name")).use { it.readBytes().decodeToString() }
     return SdkJson.json.decodeFromString(text)
 }
-
-/** Converts a [TopologySpec] to engine [ClusterSpec]s for topology-parsing assertions. */
-internal fun TopologySpec.toClusters(): List<ClusterSpec> = toClusterSpecs { provisioner.provision(it).path }
 
 /** Builds an SDK [TaskFragmentSpec] with durations in milliseconds and usages in MHz. */
 internal fun fragment(

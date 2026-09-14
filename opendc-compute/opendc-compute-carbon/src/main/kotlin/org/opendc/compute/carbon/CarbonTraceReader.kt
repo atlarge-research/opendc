@@ -24,7 +24,7 @@
 
 package org.opendc.compute.carbon
 
-import org.opendc.simulator.compute.power.CarbonFragment
+import org.opendc.simulator.compute.carbon.CarbonFragment
 import java.io.File
 import javax.management.InvalidAttributeValueException
 
