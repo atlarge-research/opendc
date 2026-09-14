@@ -24,12 +24,14 @@ package org.opendc.sdk.runner.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.sdk.model.topology.BestEffortPolicySpec
+import org.opendc.sdk.model.topology.EqualSharePolicySpec
+import org.opendc.sdk.model.topology.FixedSharePolicySpec
+import org.opendc.sdk.model.topology.MaxMinFairnessPolicySpec
 import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
 import org.opendc.sdk.runner.base.harness.fragment
 import org.opendc.sdk.runner.base.harness.runTest
-import org.opendc.sdk.runner.base.harness.toClusters
-import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
 
 class DistributionPoliciesTest {
     /**
@@ -37,44 +39,37 @@ class DistributionPoliciesTest {
      */
     @Test
     fun distributionPoliciesTest() {
-        val maxMinFairnessGpuTopology = createTopology("DistributionPolicies/maxMinFairness/multi_gpu_host.json").toClusters()
-        val equalShareGpuTopology = createTopology("DistributionPolicies/equalShare/dual_core_gpu_host.json").toClusters()
-        val fixedShareGpuTopology = createTopology("DistributionPolicies/fixedShare/multi_gpu_host.json").toClusters()
-        val bestEffortGpuTopology = createTopology("DistributionPolicies/bestEffort/multi_gpu_host.json").toClusters()
+        val maxMinFairnessGpuTopology = createTopology("DistributionPolicies/maxMinFairness/multi_gpu_host.json")
+        val equalShareGpuTopology = createTopology("DistributionPolicies/equalShare/dual_core_gpu_host.json")
+        val fixedShareGpuTopology = createTopology("DistributionPolicies/fixedShare/multi_gpu_host.json")
+        val bestEffortGpuTopology = createTopology("DistributionPolicies/bestEffort/multi_gpu_host.json")
 
         assertAll(
             {
                 assertEquals(
-                    DistributionPolicy.MAX_MIN_FAIRNESS,
-                    maxMinFairnessGpuTopology[0].hostSpecs[0].gpuDistributionPolicy,
+                    MaxMinFairnessPolicySpec,
+                    maxMinFairnessGpuTopology.clusters[0].hosts[0].gpuDistribution,
                     "MaxMinFairnessDistributionPolicy should be used",
                 )
             },
             {
                 assertEquals(
-                    DistributionPolicy.EQUAL_SHARE,
-                    equalShareGpuTopology[0].hostSpecs[0].gpuDistributionPolicy,
+                    EqualSharePolicySpec,
+                    equalShareGpuTopology.clusters[0].hosts[0].gpuDistribution,
                     "EqualShareDistributionPolicy should be used",
                 )
             },
             {
                 assertEquals(
-                    DistributionPolicy.FIXED_SHARE,
-                    fixedShareGpuTopology[0].hostSpecs[0].gpuDistributionPolicy,
+                    FixedSharePolicySpec(0.5),
+                    fixedShareGpuTopology.clusters[0].hosts[0].gpuDistribution,
                     "FixedShareDistributionPolicy should be used",
                 )
             },
             {
                 assertEquals(
-                    0.5,
-                    fixedShareGpuTopology[0].hostSpecs[0].gpuDistributionPolicy.getProperty("shareRatio"),
-                    "FixedShareDistributionPolicy should have a share ratio of 0.5",
-                )
-            },
-            {
-                assertEquals(
-                    DistributionPolicy.BEST_EFFORT,
-                    bestEffortGpuTopology[0].hostSpecs[0].gpuDistributionPolicy,
+                    BestEffortPolicySpec(),
+                    bestEffortGpuTopology.clusters[0].hosts[0].gpuDistribution,
                     "BestEffortDistributionPolicy should be used",
                 )
             },
@@ -683,16 +678,16 @@ class DistributionPoliciesTest {
             { assertEquals(2000.0, monitor.taskGpuDemands[2]?.get(0), "Task 2 demand should be 2000.0") },
             // Task supplies at start
             { assertEquals(2000.0, monitor.taskGpuSupplied[0]?.get(0), "Task 0 supply at the start should be 2000.0") },
-            { assertEquals(2000.0, monitor.taskGpuSupplied[1]?.get(0), "Task 1 supply at the start  should be 0.0") },
-            { assertEquals(0.0, monitor.taskGpuSupplied[2]?.get(0), "Task 2 supply at the start  should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied[1]?.get(0), "Task 1 supply at the start  should be 2000.0") },
+            { assertEquals(0.0, monitor.taskGpuSupplied[2]?.get(0), "Task 2 supply at the start  should be 0.0") },
             // Task supplies second step
-            { assertEquals(0.0, monitor.taskGpuSupplied[0]?.get(1), "Task 0 supply at the second step should be 2000.0") },
-            { assertEquals(2000.0, monitor.taskGpuSupplied[1]?.get(1), "Task 1 supply at the second step should be 0.0") },
-            { assertEquals(2000.0, monitor.taskGpuSupplied[2]?.get(1), "Task 2 supply at the second step should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied[0]?.get(1), "Task 0 supply at the second step should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied[1]?.get(1), "Task 1 supply at the second step should be 2000.0") },
+            { assertEquals(0.0, monitor.taskGpuSupplied[2]?.get(1), "Task 2 supply at the second step should be 0.0") },
             // Task supplies third step
             { assertEquals(2000.0, monitor.taskGpuSupplied[0]?.get(2), "Task 0 supply at the third step should be 2000.0") },
-            { assertEquals(0.0, monitor.taskGpuSupplied[1]?.get(2), "Task 1 supply at the third step should be 0.0") },
-            { assertEquals(2000.0, monitor.taskGpuSupplied[2]?.get(2), "Task 2 supply at the third step should be 2000.0") },
+            { assertEquals(2000.0, monitor.taskGpuSupplied[1]?.get(2), "Task 1 supply at the third step should be 2000.0") },
+            { assertEquals(0.0, monitor.taskGpuSupplied[2]?.get(2), "Task 2 supply at the third step should be 0.0") },
             // Host
             // At start
             { assertEquals(3000.0, monitor.hostGpuDemands["DualGpuHost"]?.get(1)?.get(0), "GPU 0 demand at host should be 2000.0") },

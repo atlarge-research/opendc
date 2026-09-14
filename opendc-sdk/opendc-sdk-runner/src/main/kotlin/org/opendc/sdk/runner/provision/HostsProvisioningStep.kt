@@ -26,36 +26,53 @@ import org.opendc.common.ResourceType
 import org.opendc.compute.carbon.getCarbonFragments
 import org.opendc.compute.simulator.host.SimHost
 import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.topology.specs.BatteryJSONSpec
-import org.opendc.compute.topology.specs.ClusterSpec
-import org.opendc.compute.topology.specs.HostSpec
-import org.opendc.compute.topology.specs.PowerSourceSpec
-import org.opendc.compute.topology.specs.createSimBatteryPolicy
+import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.model.topology.BatterySpec
+import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.GpuSpec
+import org.opendc.sdk.model.topology.HostSpec
+import org.opendc.sdk.model.topology.NoVirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.PowerModelSpec
+import org.opendc.sdk.model.topology.PowerModelType
+import org.opendc.sdk.model.topology.PowerSourceSpec
+import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.TopologySpec
+import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.createSimBatteryPolicy
+import org.opendc.sdk.runner.factory.toEngine
 import org.opendc.simulator.compute.carbon.CarbonModel
+import org.opendc.simulator.compute.models.CpuModel
+import org.opendc.simulator.compute.models.GpuModel
+import org.opendc.simulator.compute.models.MachineModel
+import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
 import org.opendc.simulator.compute.power.batteries.SimBattery
+import org.opendc.simulator.compute.power.getPowerModel
+import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModelFactory.VirtualizationOverheadModelEnum
 import org.opendc.simulator.engine.engine.FlowEngine
 import org.opendc.simulator.engine.graph.FlowDistributor
 import org.opendc.simulator.engine.graph.FlowEdge
 import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory
 import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
+import java.nio.file.Path
 
 /**
  * A [ProvisioningStep] that provisions a list of hosts for a [ComputeService].
  *
  * @param serviceDomain The domain name under which the compute service is registered.
- * @param clusterSpecs A list of [HostSpec] objects describing the simulated hosts to provision.
+ * @param topologySpec A list of [HostSpec] objects describing the simulated hosts to provision.
  * @param startTime The absolute start time of the simulation. Used to determine the carbon trace offset.
  */
 public class HostsProvisioningStep(
     private val serviceDomain: String,
-    private val clusterSpecs: List<ClusterSpec>,
+    private val topologySpec: TopologySpec,
     private val startTime: Long = 0L,
+    private val resolve: (ResourceReference) -> Path,
 ) : ProvisioningStep {
-
     private val simHosts = mutableSetOf<SimHost>()
     private val simPowerSources = mutableListOf<SimPowerSource>()
+    private val naming = TopologyNaming()
 
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service =
@@ -65,38 +82,37 @@ public class HostsProvisioningStep(
 
         val engine = FlowEngine.create(ctx.dispatcher)
 
-        for ((clusterName, hostSpecs, powerSourceSpec, batterySpec) in clusterSpecs) {
-
-            // Create the Power Source to which hosts are connected
-            val (simPowerSource, powerDistributor) = this.createSimPowerSource(service, engine, powerSourceSpec, clusterName, hostSpecs.size)
-
-            // Create the carbonmodel if provided
-            val carbonModel: CarbonModel? = createCarbonModel(ctx, engine, powerSourceSpec, simPowerSource)
-
-            // Create a battery and connect it to the powerSource
-            this.addBattery(engine, service, batterySpec, simPowerSource, powerDistributor, clusterName, carbonModel)
-
-            // Create hosts, they are connected to the powerMux when SimMachine is created
-            for ((name, type, _, model, cpuPowerModel, gpuPowerModel, embodiedCarbon, expectedLifetime) in hostSpecs) {
-                val simHost =
-                    SimHost(
-                        name,
-                        type,
-                        clusterName,
-                        ctx.dispatcher.timeSource,
+        for ((clusterName, count, hostSpecs, powerSourceSpec, batterySpec) in topologySpec.clusters) {
+            repeat(count) {
+                val numHosts: Int = hostSpecs.sumOf { it.count }
+                // Create the Power Source to which hosts are connected
+                val (simPowerSource, powerDistributor) =
+                    this.createSimPowerSource(
+                        service,
                         engine,
-                        model,
-                        cpuPowerModel,
-                        gpuPowerModel,
-                        embodiedCarbon,
-                        expectedLifetime,
-                        powerDistributor,
+                        powerSourceSpec,
+                        clusterName,
+                        numHosts,
                     )
 
-                carbonModel?.addReceiver(simHost.simMachine?.psu)
+                // Create the carbonmodel if provided
+                val carbonModel: CarbonModel? = createCarbonModel(ctx, engine, powerSourceSpec, simPowerSource)
 
-                require(simHosts.add(simHost)) { "Host with name $name already exists" }
-                service.addHost(simHost)
+                // Create a battery and connect it to the powerSource
+                this.addBattery(
+                    engine,
+                    service,
+                    batterySpec,
+                    simPowerSource,
+                    powerDistributor,
+                    clusterName,
+                    carbonModel,
+                )
+
+                // Create hosts, they are connected to the powerMux when SimMachine is created
+                for (hostSpec in hostSpecs) {
+                    this.createHosts(ctx, engine, service, hostSpec, clusterName, powerDistributor, carbonModel)
+                }
             }
         }
 
@@ -123,7 +139,13 @@ public class HostsProvisioningStep(
         clusterName: String,
         numHosts: Int,
     ): PowerSourceFlows {
-        val simPowerSource = SimPowerSource(engine, powerSourceSpec.totalPower.toDouble(), powerSourceSpec.name, clusterName)
+        val simPowerSource =
+            SimPowerSource(
+                engine,
+                powerSourceSpec.maxPower.toWatts(),
+                naming.powerSource(powerSourceSpec.name),
+                clusterName,
+            )
         simPowerSources.add(simPowerSource)
         service.addPowerSource(simPowerSource)
 
@@ -142,9 +164,11 @@ public class HostsProvisioningStep(
         ctx: ProvisioningContext,
         engine: FlowEngine,
         powerSourceSpec: PowerSourceSpec,
-        simPowerSource: SimPowerSource
+        simPowerSource: SimPowerSource,
     ): CarbonModel? {
-        val carbonFragments = getCarbonFragments(powerSourceSpec.carbonTracePath)
+        val pathToFile = powerSourceSpec.carbon?.let { resolve(it).toString() }
+
+        val carbonFragments = getCarbonFragments(pathToFile)
         var carbonModel: CarbonModel? = null
         // Create Carbon Model
         if (carbonFragments != null) {
@@ -153,17 +177,17 @@ public class HostsProvisioningStep(
             ctx.registry.register(serviceDomain, CarbonModel::class.java, carbonModel)
         }
 
-        return carbonModel;
+        return carbonModel
     }
 
     private fun addBattery(
         engine: FlowEngine,
         service: ComputeService,
-        batterySpec: BatteryJSONSpec?,
+        batterySpec: BatterySpec?,
         simPowerSource: SimPowerSource,
         powerDistributor: FlowDistributor,
         clusterName: String,
-        carbonModel: CarbonModel?
+        carbonModel: CarbonModel?,
     ) {
         if (batterySpec == null) {
             FlowEdge(powerDistributor, simPowerSource, ResourceType.POWER)
@@ -199,7 +223,7 @@ public class HostsProvisioningStep(
 
         val batteryPolicy =
             createSimBatteryPolicy(
-                batterySpec.batteryPolicy,
+                batterySpec.policy,
                 engine,
                 battery,
                 batteryAggregator,
@@ -212,4 +236,135 @@ public class HostsProvisioningStep(
         service.addBattery(battery)
     }
 
+    private fun createHosts(
+        ctx: ProvisioningContext,
+        engine: FlowEngine,
+        service: ComputeService,
+        hostSpec: HostSpec,
+        clusterName: String,
+        powerDistributor: FlowDistributor,
+        carbonModel: CarbonModel?,
+    ) {
+        repeat(hostSpec.count) {
+            val cpus =
+                List(hostSpec.cpu.count) {
+                    CpuModel(
+                        naming.nextCpuId(),
+                        hostSpec.cpu.coreCount,
+                        hostSpec.cpu.coreSpeed.toMHz(),
+                        hostSpec.cpu.vendor,
+                        hostSpec.cpu.modelName,
+                        hostSpec.cpu.architecture,
+                    )
+                }
+            val memoryUnit =
+                MemoryUnit(
+                    hostSpec.memory.vendor,
+                    hostSpec.memory.modelName,
+                    hostSpec.memory.speed.toMHz(),
+                    hostSpec.memory.size.toMiB().toLong(),
+                )
+            val gpus = List(hostSpec.gpu?.count ?: 0) { hostSpec.gpu!!.toGpuModel(naming.nextGpuId()) }
+            val cpuPolicy = hostSpec.cpuDistribution.toEngine()
+            val gpuPolicy = hostSpec.gpuDistribution.toEngine()
+
+            val machineModel =
+                MachineModel(
+                    cpus,
+                    memoryUnit,
+                    gpus,
+                    cpuPolicy,
+                    gpuPolicy,
+                )
+
+            // TODO: Connect to spec
+            val embodiedCarbon = 1000.0
+            val expectedLifetime = 5.0
+
+            val simHost =
+                SimHost(
+                    naming.host(hostSpec.name),
+                    clusterName,
+                    ctx.dispatcher.timeSource,
+                    engine,
+                    machineModel = machineModel,
+                    hostSpec.cpuPowerModel.toEngine(),
+                    hostSpec.gpuPowerModel.toEngine(),
+                    embodiedCarbon,
+                    expectedLifetime,
+                    powerDistributor,
+                )
+
+            carbonModel?.addReceiver(simHost.simMachine?.psu)
+
+            require(simHosts.add(simHost)) { "Error when making Host $simHost" }
+            service.addHost(simHost)
+        }
+    }
+
+    private fun GpuSpec.toGpuModel(id: Int): GpuModel =
+        GpuModel(
+            id, coreCount, coreSpeed.toMHz(), memoryBandwidth.toKibps(), memory.toMiB().toLong(),
+            vendor, modelName, architecture, virtualizationOverhead.toEngine(),
+        )
+
+    private fun PowerModelSpec.toEngine() =
+        getPowerModel(type.modelType, power.toWatts(), maxPower.toWatts(), idlePower.toWatts(), calibrationFactor, asymUtil, dvfs)
+
+    private val PowerModelType.modelType: String
+        get() =
+            when (this) {
+                PowerModelType.CONSTANT -> "constant"
+                PowerModelType.LINEAR -> "linear"
+                PowerModelType.SQUARE -> "square"
+                PowerModelType.CUBIC -> "cubic"
+                PowerModelType.SQRT -> "sqrt"
+                PowerModelType.MSE -> "mse"
+                PowerModelType.ASYMPTOTIC -> "asymptotic"
+            }
+
+    private fun VirtualizationOverheadSpec.toEngine(): VirtualizationOverheadModelEnum =
+        when (this) {
+            NoVirtualizationOverheadSpec -> VirtualizationOverheadModelEnum.NONE
+            ShareBasedVirtualizationOverheadSpec -> VirtualizationOverheadModelEnum.SHARE_BASED
+            is ConstantVirtualizationOverheadSpec ->
+                VirtualizationOverheadModelEnum.CONSTANT.apply {
+                    setProperty("percentageOverhead", percentageOverhead ?: -1.0)
+                }
+        }
+
+    /** Per-conversion registry producing unique names and monotonic device ids. */
+    private class TopologyNaming {
+        private val clusters = HashMap<String, Int>()
+        private val hosts = HashMap<String, Int>()
+        private val powerSources = HashMap<String, Int>()
+        private val batteries = HashMap<String, Int>()
+        private var cpuId = 0
+        private var gpuId = 0
+
+        fun cluster(name: String): String = unique(name, clusters)
+
+        fun host(name: String): String = unique(name, hosts)
+
+        fun powerSource(name: String): String = unique(name, powerSources)
+
+        fun battery(name: String): String = unique(name, batteries)
+
+        fun nextCpuId(): Int = cpuId++
+
+        fun nextGpuId(): Int = gpuId++
+
+        private fun unique(
+            name: String,
+            seen: MutableMap<String, Int>,
+        ): String {
+            val count =
+                seen[name] ?: run {
+                    seen[name] = 0
+                    return name
+                }
+            seen[name] = count + 1
+            return "$name-$count"
+        }
+    }
 }

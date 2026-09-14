@@ -64,7 +64,7 @@ public class SimHost(
     private val embodiedCarbon: Double,
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
-    private val type: String = "Unknown"
+    private val type: String = "Unknown",
 ) : AutoCloseable {
     /**
      * The event listeners registered with this host.

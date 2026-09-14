@@ -59,13 +59,13 @@ import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.telemetry.AllColumns
 import org.opendc.sdk.model.telemetry.OnlyColumns
 import org.opendc.sdk.model.telemetry.OutputFileSpec
-import org.opendc.sdk.model.topology.BestEffort
+import org.opendc.sdk.model.topology.BestEffortPolicySpec
 import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
-import org.opendc.sdk.model.topology.EqualShare
-import org.opendc.sdk.model.topology.FixedShare
-import org.opendc.sdk.model.topology.MaxMinFairness
+import org.opendc.sdk.model.topology.EqualSharePolicySpec
+import org.opendc.sdk.model.topology.FixedSharePolicySpec
+import org.opendc.sdk.model.topology.MaxMinFairnessPolicySpec
 import org.opendc.sdk.model.topology.PowerModelType
-import org.opendc.sdk.model.topology.RunningMeanPolicy
+import org.opendc.sdk.model.topology.RunningMeanPolicySpec
 import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
 import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TraceWorkloadSpec
@@ -299,13 +299,13 @@ class LegacyExperimentTest {
         assertEquals(4, gpu.count)
         assertEquals(5120, gpu.coreCount)
         assertEquals(Frequency.ofMHz(5000), gpu.coreSpeed)
-        assertEquals(DataSize.ofMiB(30517578125), gpu.memory, "a bare GPU memorySize still counts MiB")
+        assertEquals(DataSize.ofGB(32), gpu.memory, "a bare GPU memorySize still counts MiB")
         assertEquals(DataRate.ofGBps(900), gpu.memoryBandwidth, "a spelled-out bandwidth is honoured as written")
         assertEquals("Volta", gpu.architecture)
         assertEquals(ConstantVirtualizationOverheadSpec(percentageOverhead = 0.05), gpu.virtualizationOverhead)
         assertEquals(PowerModelType.SQRT, constant.gpuPowerModel.type)
-        assertEquals(MaxMinFairness, constant.cpuDistribution)
-        assertEquals(BestEffort(updateIntervalMs = 60000), constant.gpuDistribution)
+        assertEquals(MaxMinFairnessPolicySpec, constant.cpuDistribution)
+        assertEquals(BestEffortPolicySpec(updateInterval = 1000), constant.gpuDistribution)
 
         // The CPU and memory keep the fields the two formats spell differently.
         assertEquals(2, constant.cpu.count)
@@ -314,11 +314,11 @@ class LegacyExperimentTest {
         assertEquals(Frequency.ofMHz(3200), constant.memory.speed)
 
         assertEquals(ShareBasedVirtualizationOverheadSpec, checkNotNull(shareBased.gpu).virtualizationOverhead)
-        assertEquals(FixedShare(shareRatio = 0.5), shareBased.gpuDistribution)
+        assertEquals(FixedSharePolicySpec(shareRatio = 0.5), shareBased.gpuDistribution)
 
         val unsetOverhead = checkNotNull(unset.gpu).virtualizationOverhead as ConstantVirtualizationOverheadSpec
         assertNull(unsetOverhead.percentageOverhead, "the legacy -1.0 sentinel meant 'unset'")
-        assertEquals(EqualShare, unset.gpuDistribution)
+        assertEquals(EqualSharePolicySpec, unset.gpuDistribution)
     }
 
     @Test
@@ -333,7 +333,7 @@ class LegacyExperimentTest {
         assertEquals(0.1, battery.capacity)
         assertEquals(1000.0, battery.chargingSpeed)
         assertEquals(0.05, battery.initialCharge)
-        assertEquals(RunningMeanPolicy(startingThreshold = 150.0, windowSize = 24), battery.policy)
+        assertEquals(RunningMeanPolicySpec(startingThreshold = 150.0, windowSize = 24), battery.policy)
         assertEquals(1200.0, battery.embodiedCarbon)
         assertEquals(10.0, battery.expectedLifetime)
 

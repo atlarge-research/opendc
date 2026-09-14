@@ -46,9 +46,9 @@ import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.scheduler.VCpuWeigherSpec
 import org.opendc.sdk.model.telemetry.ExportSpec
-import org.opendc.sdk.model.topology.DoubleThresholdPolicy
-import org.opendc.sdk.model.topology.EqualShare
-import org.opendc.sdk.model.topology.FixedShare
+import org.opendc.sdk.model.topology.DoubleBatteryPolicySpec
+import org.opendc.sdk.model.topology.EqualSharePolicySpec
+import org.opendc.sdk.model.topology.FixedSharePolicySpec
 import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.workload.ScalingPolicySpec
 import kotlin.test.assertEquals
@@ -66,8 +66,8 @@ class DslTest {
                     host(count = 4, name = "compute-host") {
                         cpu(coreCount = 8, coreSpeed = 3.ghz, count = 2, vendor = "AMD", modelName = "EPYC", architecture = "Zen4")
                         memory(size = 32.gib, speed = 3.ghz, vendor = "Samsung")
-                        cpuDistribution = FixedShare(0.5)
-                        gpuDistribution = EqualShare
+                        cpuDistribution = FixedSharePolicySpec(0.5)
+                        gpuDistribution = EqualSharePolicySpec
                         power {
                             type = PowerModelType.SQUARE
                             maxPower = 500.watts
@@ -78,7 +78,7 @@ class DslTest {
                     battery(
                         capacity = 100.0,
                         chargingSpeed = 1000.0,
-                        policy = DoubleThresholdPolicy(lowerThreshold = 100.0, upperThreshold = 300.0),
+                        policy = DoubleBatteryPolicySpec(lowerThreshold = 100.0, upperThreshold = 300.0),
                         name = "cell",
                         initialCharge = 20.0,
                         embodiedCarbon = 50.0,

@@ -38,7 +38,7 @@ import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec
 import org.opendc.sdk.model.topology.HostSpec
-import org.opendc.sdk.model.topology.PowerSpec
+import org.opendc.sdk.model.topology.PowerModelSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.validExperiment
 import org.opendc.sdk.model.validMemory
@@ -91,7 +91,7 @@ class ValidationTest {
 
     @Test
     fun `power model with maxPower below idlePower reports maxPower`() {
-        val model = PowerSpec(maxPower = Power.ofWatts(100), idlePower = Power.ofWatts(200))
+        val model = PowerModelSpec(maxPower = Power.ofWatts(100), idlePower = Power.ofWatts(200))
 
         val issues = assertDoesNotThrow { model.validate() }
 

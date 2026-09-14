@@ -22,7 +22,8 @@
                         "coreCount": 3,
                         "coreSpeed": "2 GHz",
                         "virtualizationOverhead": {
-                            "type": "constant"
+                            "type": "constant",
+                            "percentageOverhead": 0.05
                         }
                     },
                     "gpuPowerModel": {

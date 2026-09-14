@@ -29,33 +29,33 @@ import kotlinx.serialization.Serializable
  * Determines how a shared resource's capacity is distributed among competing consumers.
  */
 @Serializable
-public sealed interface DistributionPolicy
+public sealed interface DistributionPolicySpec
 
 /** Distributes capacity fairly, maximizing the minimum share across consumers. */
 @Serializable
 @SerialName("maxMinFairness")
-public data object MaxMinFairness : DistributionPolicy
+public data object MaxMinFairnessPolicySpec : DistributionPolicySpec
 
 /**
  * Distributes capacity opportunistically, refreshing shares on a fixed cadence.
  *
- * @property updateIntervalMs The interval, in milliseconds, between share recalculations.
+ * @property updateInterval The interval, in milliseconds, between share recalculations.
  */
 @Serializable
 @SerialName("bestEffort")
-public data class BestEffort(
-    public val updateIntervalMs: Long = 1000,
-) : DistributionPolicy
+public data class BestEffortPolicySpec(
+    public val updateInterval: Long = 1000L,
+) : DistributionPolicySpec
 
 /** Grants every consumer an identical share of the capacity. */
 @Serializable
 @SerialName("equalShare")
-public data object EqualShare : DistributionPolicy
+public data object EqualSharePolicySpec : DistributionPolicySpec
 
 /** Satisfies consumers in order, assigning each its full demand until capacity is exhausted. */
 @Serializable
 @SerialName("firstFit")
-public data object FirstFit : DistributionPolicy
+public data object FirstFitPolicySpec : DistributionPolicySpec
 
 /**
  * Grants each consumer a fixed fraction of the capacity.
@@ -64,6 +64,14 @@ public data object FirstFit : DistributionPolicy
  */
 @Serializable
 @SerialName("fixedShare")
-public data class FixedShare(
+public data class FixedSharePolicySpec(
     public val shareRatio: Double = 1.0,
-) : DistributionPolicy
+) : DistributionPolicySpec
+
+public enum class DistributionPolicy {
+    BEST_EFFORT,
+    EQUAL_SHARE,
+    FIRST_FIT,
+    FIXED_SHARE,
+    MAX_MIN_FAIRNESS,
+}

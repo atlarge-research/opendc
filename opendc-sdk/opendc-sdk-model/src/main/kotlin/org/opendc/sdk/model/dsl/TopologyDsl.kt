@@ -24,7 +24,7 @@ package org.opendc.sdk.model.dsl
 
 import org.opendc.common.units.Power
 import org.opendc.sdk.model.resource.ResourceReference
-import org.opendc.sdk.model.topology.BatteryPolicy
+import org.opendc.sdk.model.topology.BatteryPolicySpec
 import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.HostSpec
@@ -80,7 +80,7 @@ public class ClusterBuilder(private val name: String, private val count: Int) {
     public fun battery(
         capacity: Double,
         chargingSpeed: Double,
-        policy: BatteryPolicy,
+        policy: BatteryPolicySpec,
         name: String = "Battery",
         initialCharge: Double = 0.0,
         embodiedCarbon: Double = 0.0,

@@ -75,27 +75,26 @@ public final class MachineModel {
      * @param gpus The list of GPUs available to the image.
      */
     public MachineModel(
-        List<CpuModel> cpus,
-        MemoryUnit memory,
-        List<GpuModel> gpus,
-        DistributionPolicy cpuDistributionPolicy,
-        DistributionPolicy gpuDistributionPolicy) {
+            List<CpuModel> cpus,
+            MemoryUnit memory,
+            List<GpuModel> gpus,
+            DistributionPolicy cpuDistributionPolicy,
+            DistributionPolicy gpuDistributionPolicy) {
 
         this(
-            // Flattens the cpus
-            new CpuModel(
-                cpus.get(0).getId(),
-                cpus.get(0).getCoreCount() * cpus.size(), // merges multiple CPUs into one
-                cpus.get(0).getCoreSpeed(),
-                cpus.get(0).getVendor(),
-                cpus.get(0).getModelName(),
-                cpus.get(0).getArchitecture()),
-            memory,
-            gpus != null ? gpus : new ArrayList<>(),
-            cpuDistributionPolicy,
-            gpuDistributionPolicy);
+                // Flattens the cpus
+                new CpuModel(
+                        cpus.get(0).getId(),
+                        cpus.get(0).getCoreCount() * cpus.size(), // merges multiple CPUs into one
+                        cpus.get(0).getCoreSpeed(),
+                        cpus.get(0).getVendor(),
+                        cpus.get(0).getModelName(),
+                        cpus.get(0).getArchitecture()),
+                memory,
+                gpus != null ? gpus : new ArrayList<>(),
+                cpuDistributionPolicy,
+                gpuDistributionPolicy);
     }
-
 
     /**
      * Construct a {@link MachineModel} instance.
@@ -105,24 +104,20 @@ public final class MachineModel {
      * @param cpus The list of processing units available to the image.
      * @param memory The list of memory units available to the image.
      */
-    public MachineModel(
-        List<CpuModel> cpus,
-        MemoryUnit memory
-    ) {
+    public MachineModel(List<CpuModel> cpus, MemoryUnit memory) {
         this(
-            new CpuModel(
-                    cpus.get(0).getId(),
-                    cpus.get(0).getCoreCount() * cpus.size(),
-                    cpus.get(0).getCoreSpeed(),
-                    cpus.get(0).getVendor(),
-                    cpus.get(0).getModelName(),
-                    cpus.get(0).getArchitecture()),
-            memory,
-            null,
-            DistributionPolicy.MAX_MIN_FAIRNESS,
-            DistributionPolicy.MAX_MIN_FAIRNESS);
+                new CpuModel(
+                        cpus.get(0).getId(),
+                        cpus.get(0).getCoreCount() * cpus.size(),
+                        cpus.get(0).getCoreSpeed(),
+                        cpus.get(0).getVendor(),
+                        cpus.get(0).getModelName(),
+                        cpus.get(0).getArchitecture()),
+                memory,
+                null,
+                DistributionPolicy.MAX_MIN_FAIRNESS,
+                DistributionPolicy.MAX_MIN_FAIRNESS);
     }
-
 
     /**
      * Return the processing units of this machine.

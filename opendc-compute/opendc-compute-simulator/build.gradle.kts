@@ -37,7 +37,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
     api(libs.microprofile.config)
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-topology")))
     implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-carbon")))
 
     implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))

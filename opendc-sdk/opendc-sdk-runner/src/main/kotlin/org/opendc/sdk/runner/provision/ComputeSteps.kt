@@ -26,7 +26,6 @@ package org.opendc.sdk.runner.provision
 
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.sdk.model.resource.ResourceReference
-import org.opendc.compute.topology.specs.ClusterSpec as ClusterSpecOld
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.TopologySpec
@@ -84,32 +83,17 @@ public fun registerComputeMonitor(
 }
 
 /**
- * Return a [ProvisioningStep] that sets up the specified list of hosts (based on [specs]) for the specified compute
- * service.
- *
- * @param serviceDomain The domain name under which the compute service is registered.
- * @param specs A list of [ClusterSpec] objects describing the simulated hosts to provision.
- */
-public fun setupHosts(
-    serviceDomain: String,
-    specs: List<ClusterSpecOld>,
-    startTime: Long = 0L,
-): ProvisioningStep {
-    return HostsProvisioningStep(serviceDomain, specs, startTime)
-}
-
-/**
  * Return a [ProvisioningStep] that sets up the specified list of hosts (based on [topologySpec]) for the specified compute
  * service.
  *
  * @param serviceDomain The domain name under which the compute service is registered.
  * @param topologySpec A list of [ClusterSpec] objects describing the simulated hosts to provision.
  */
-public fun setupHostsNew(
+public fun setupHosts(
     serviceDomain: String,
     topologySpec: TopologySpec,
     startTime: Long = 0L,
-    resolve: (ResourceReference) -> Path
+    resolve: (ResourceReference) -> Path,
 ): ProvisioningStep {
-    return HostsProvisioningStepNew(serviceDomain, topologySpec, startTime, resolve)
+    return HostsProvisioningStep(serviceDomain, topologySpec, startTime, resolve)
 }
