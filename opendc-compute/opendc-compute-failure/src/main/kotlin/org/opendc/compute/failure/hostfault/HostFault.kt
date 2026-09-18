@@ -22,7 +22,7 @@
 
 package org.opendc.compute.failure.hostfault
 
-import org.opendc.compute.simulator.host.SimHost
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 
 /**

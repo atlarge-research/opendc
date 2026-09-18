@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.host;
+package org.opendc.compute.simulator.infrastructure;
 
 import java.util.List;
 

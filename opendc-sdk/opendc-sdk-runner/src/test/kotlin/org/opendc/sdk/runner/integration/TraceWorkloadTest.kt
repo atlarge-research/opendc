@@ -96,15 +96,17 @@ class TraceWorkloadTest {
 
     private fun datacenter(powerModel: PowerModelType): TopologySpec =
         topology {
-            cluster(name = "C01") {
-                host(count = 1, name = "H01") {
-                    cpu(coreCount = 64, coreSpeed = 2000.mhz)
-                    memory(size = 1024.gib)
-                    power {
-                        type = powerModel
-                        power = 400.watts
-                        idlePower = 100.watts
-                        maxPower = 200.watts
+            datacenter {
+                cluster(name = "C01") {
+                    host(count = 1, name = "H01") {
+                        cpu(coreCount = 64, coreSpeed = 2000.mhz)
+                        memory(size = 1024.gib)
+                        power {
+                            type = powerModel
+                            power = 400.watts
+                            idlePower = 100.watts
+                            maxPower = 200.watts
+                        }
                     }
                 }
                 powerSource(carbon = NamedReference("carbonTraces/2022-01-01_2022-12-31_NL.parquet"))

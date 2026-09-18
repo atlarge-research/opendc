@@ -52,9 +52,9 @@ class ExperimentImportsTest {
                 Path.of("build/resources/test/experiments/imports"),
             )
 
-        val cluster = experiment.topologies.single().clusters.single()
+        val cluster = experiment.topologies.single().datacenters!![0].clusters.single()
         assertEquals("cluster", cluster.name)
-        assertEquals(Power.ofWatts(10000), cluster.powerSource.maxPower)
+        assertEquals(Power.ofWatts(10000), experiment.topologies.single().datacenters!![0].powerSource.maxPower)
 
         val host = cluster.hosts.single()
         assertEquals(8, host.cpu.coreCount)
@@ -87,7 +87,7 @@ class ExperimentImportsTest {
             load(
                 "experiments/imports/experiment.json",
                 Path.of("build/resources/test/experiments/imports"),
-            ).topologies.single().clusters.single().hosts.single()
+            ).topologies.single().datacenters!!.single().clusters.single().hosts.single()
 
         assertEquals(4, host.count, "the topology's own count overrides the one in the imported host")
         assertEquals("big-host", host.name, "everything it does not override still comes from the import")
@@ -105,7 +105,7 @@ class ExperimentImportsTest {
             load(
                 "experiments/imports/experiment.json",
                 Path.of("build/resources/test/experiments/imports"),
-            ).topologies.single().clusters.single().hosts.single()
+            ).topologies.single().datacenters!!.single().clusters.single().hosts.single()
 
         assertEquals(8, host.cpu.coreCount)
     }

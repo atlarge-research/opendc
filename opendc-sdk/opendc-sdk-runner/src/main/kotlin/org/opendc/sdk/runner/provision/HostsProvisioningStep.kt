@@ -24,11 +24,13 @@ package org.opendc.sdk.runner.provision
 
 import org.opendc.common.ResourceType
 import org.opendc.compute.carbon.getCarbonFragments
-import org.opendc.compute.simulator.host.SimHost
+import org.opendc.compute.simulator.cluster.SimCluster
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.DataCenterSpec
 import org.opendc.sdk.model.topology.GpuSpec
 import org.opendc.sdk.model.topology.HostSpec
 import org.opendc.sdk.model.topology.NoVirtualizationOverheadSpec
@@ -45,6 +47,7 @@ import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
+import org.opendc.simulator.compute.power.ClusterDistributor
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
 import org.opendc.simulator.compute.power.batteries.SimBattery
@@ -82,38 +85,8 @@ public class HostsProvisioningStep(
 
         val engine = FlowEngine.create(ctx.dispatcher)
 
-        for ((clusterName, count, hostSpecs, powerSourceSpec, batterySpec) in topologySpec.clusters) {
-            repeat(count) {
-                val numHosts: Int = hostSpecs.sumOf { it.count }
-                // Create the Power Source to which hosts are connected
-                val (simPowerSource, powerDistributor) =
-                    this.createSimPowerSource(
-                        service,
-                        engine,
-                        powerSourceSpec,
-                        clusterName,
-                        numHosts,
-                    )
-
-                // Create the carbonmodel if provided
-                val carbonModel: CarbonModel? = createCarbonModel(ctx, engine, powerSourceSpec, simPowerSource)
-
-                // Create a battery and connect it to the powerSource
-                this.addBattery(
-                    engine,
-                    service,
-                    batterySpec,
-                    simPowerSource,
-                    powerDistributor,
-                    clusterName,
-                    carbonModel,
-                )
-
-                // Create hosts, they are connected to the powerMux when SimMachine is created
-                for (hostSpec in hostSpecs) {
-                    this.createHosts(ctx, engine, service, hostSpec, clusterName, powerDistributor, carbonModel)
-                }
-            }
+        for (dataCenterSpec in topologySpec.datacenters!!) {
+            this.createDataCenter(ctx, engine, service, dataCenterSpec)
         }
 
         return AutoCloseable {
@@ -123,6 +96,65 @@ public class HostsProvisioningStep(
 
             for (simPowerSource in simPowerSources) {
                 simPowerSource.close()
+            }
+        }
+    }
+
+    private fun createDataCenter(
+        ctx: ProvisioningContext,
+        engine: FlowEngine,
+        service: ComputeService,
+        dataCenterSpec: DataCenterSpec,
+    ) {
+        val (dcPowerSource, dcPowerDistributor) =
+            this.createSimPowerSource(
+                service,
+                engine,
+                dataCenterSpec.powerSource,
+                dataCenterSpec.name,
+                dataCenterSpec.clusters.size,
+            )
+
+        // Create the carbonmodel if provided
+        val carbonModel: CarbonModel? = createCarbonModel(ctx, engine, dataCenterSpec.powerSource, dcPowerSource)
+
+        // Create a battery and connect it to the powerSource
+        this.addBattery(
+            engine,
+            service,
+            dataCenterSpec.battery,
+            dcPowerSource,
+            dcPowerDistributor,
+            dataCenterSpec.name,
+            carbonModel,
+        )
+
+        for ((clusterName, count, hostSpecs) in dataCenterSpec.clusters) {
+            repeat(count) {
+                val numHosts: Int = hostSpecs.sumOf { it.count }
+                // Create the Power Source to which hosts are connected
+
+                val clusterPowerDistributor =
+                    ClusterDistributor(
+                        engine,
+                        numHosts,
+                        1,
+                    )
+
+                val simCluster =
+                    SimCluster(
+                        clusterName,
+                        dataCenterName = dataCenterSpec.name,
+                        engine.clock,
+                        clusterPowerDistributor,
+                    )
+
+                FlowEdge(clusterPowerDistributor, dcPowerDistributor, ResourceType.POWER)
+
+                // Create hosts, they are connected to the powerMux when SimMachine is created
+                for (hostSpec in hostSpecs) {
+                    this.createHosts(ctx, engine, service, hostSpec, simCluster, clusterPowerDistributor, carbonModel)
+                }
             }
         }
     }
@@ -241,7 +273,7 @@ public class HostsProvisioningStep(
         engine: FlowEngine,
         service: ComputeService,
         hostSpec: HostSpec,
-        clusterName: String,
+        simCluster: SimCluster,
         powerDistributor: FlowDistributor,
         carbonModel: CarbonModel?,
     ) {
@@ -284,7 +316,7 @@ public class HostsProvisioningStep(
             val simHost =
                 SimHost(
                     naming.host(hostSpec.name),
-                    clusterName,
+                    simCluster.getName(),
                     ctx.dispatcher.timeSource,
                     engine,
                     machineModel = machineModel,
@@ -299,6 +331,8 @@ public class HostsProvisioningStep(
 
             require(simHosts.add(simHost)) { "Error when making Host $simHost" }
             service.addHost(simHost)
+
+            simCluster.addHost(simHost)
         }
     }
 

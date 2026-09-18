@@ -109,7 +109,8 @@ class LegacyExperimentTest {
         val experiment = load("experiments/1.first_experiment_answers/simple_experiment.json")
 
         assertEquals("1.first_experiment", experiment.name)
-        val cluster = experiment.topologies.single().clusters.single()
+        val datacenter = experiment.topologies.single().datacenters!!.single()
+        val cluster = datacenter.clusters.single()
         val host = cluster.hosts.single()
 
         assertEquals(279, host.count)
@@ -119,7 +120,7 @@ class LegacyExperimentTest {
         assertEquals(PowerModelType.LINEAR, host.cpuPowerModel.type)
         assertEquals(Power.ofWatts(180), host.cpuPowerModel.maxPower, "a bare maxPower still counts Watts")
         assertEquals(Power.ofWatts(32), host.cpuPowerModel.idlePower)
-        assertEquals(NamedReference("carbon_traces/NL_2021-2024.parquet"), cluster.powerSource.carbon)
+        assertEquals(NamedReference("carbon_traces/NL_2021-2024.parquet"), datacenter.powerSource.carbon)
 
         val workload = experiment.workloads.single()
         assertEquals(TraceWorkloadSpec(source = NamedReference("workload_traces/surf_week")), workload)
@@ -143,13 +144,13 @@ class LegacyExperimentTest {
         val experiment = load("experiments/2.datacenter_location_answers/location_experiment.json")
 
         assertEquals(4, experiment.topologies.size)
-        val carbon = experiment.topologies.map { it.clusters.single().powerSource.carbon }
+        val carbon = experiment.topologies.map { it.datacenters!!.single().powerSource.carbon }
         assertEquals(
             listOf("AT", "AU", "BE", "NL").map { NamedReference("carbon_traces/${it}_2021-2024.parquet") }.toSet(),
             carbon.toSet(),
         )
         assertTrue(
-            experiment.topologies.all { it.clusters.single().hosts.single().cpuPowerModel.type == PowerModelType.SQRT },
+            experiment.topologies.all { it.datacenters!!.single().clusters.single().hosts.single().cpuPowerModel.type == PowerModelType.SQRT },
             "every location uses the sqrt power model",
         )
     }
@@ -161,7 +162,7 @@ class LegacyExperimentTest {
 
         assertEquals(
             setOf(100, 150, 200, 279),
-            experiment.topologies.map { it.clusters.single().hosts.single().count }.toSet(),
+            experiment.topologies.map { it.datacenters!!.single().clusters.single().hosts.single().count }.toSet(),
         )
     }
 
@@ -292,7 +293,7 @@ class LegacyExperimentTest {
 
     @Test
     fun `a GPU host carries over its accelerator, overhead and distribution policy`() {
-        val hosts = load(FEATURES).topologies.first { it.clusters.single().name == "GpuCluster" }.clusters.single().hosts
+        val hosts = load(FEATURES).topologies.first { it.datacenters!!.single().clusters.single().name == "GpuCluster" }.datacenters!!.single().clusters.single().hosts
         val (constant, shareBased, unset) = hosts
 
         val gpu = checkNotNull(constant.gpu)
@@ -323,11 +324,12 @@ class LegacyExperimentTest {
 
     @Test
     fun `a battery cluster carries over its power source, battery and power models`() {
-        val cluster = load(FEATURES).topologies.first { it.clusters.single().name == "BatteryCluster" }.clusters.single()
+        val datacenter = load(FEATURES).topologies.first { it.datacenters!!.single().clusters.single().name == "BatteryCluster" }.datacenters!!.single()
+        val cluster = datacenter.clusters.single()
 
-        assertEquals("grid", cluster.powerSource.name)
-        assertEquals(Power.ofWatts(50000), cluster.powerSource.maxPower)
-        assertEquals(NamedReference("carbon_traces/NL_2021-2024.parquet"), cluster.powerSource.carbon)
+        assertEquals("grid", datacenter.powerSource.name)
+        assertEquals(Power.ofWatts(50000), datacenter.powerSource.maxPower)
+        assertEquals(NamedReference("carbon_traces/NL_2021-2024.parquet"), datacenter.powerSource.carbon)
 
         val battery = checkNotNull(cluster.battery)
         assertEquals(0.1, battery.capacity)
@@ -354,7 +356,7 @@ class LegacyExperimentTest {
             readLegacyExperiment(File(legacyRoot, "experiments/1.first_experiment_answers/simple_experiment.json"), legacyRoot)
 
         // The experiment lives two directories below the root, yet its "topologies/..." path resolved.
-        assertEquals(1, experiment.topologies.single().clusters.size)
+        assertEquals(1, experiment.topologies.single().datacenters!!.single().clusters.size)
     }
 
     @Test

@@ -37,6 +37,7 @@ import org.opendc.sdk.model.scheduler.InstanceCountFilterSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec
+import org.opendc.sdk.model.topology.DataCenterSpec
 import org.opendc.sdk.model.topology.HostSpec
 import org.opendc.sdk.model.topology.PowerModelSpec
 import org.opendc.sdk.model.topology.TopologySpec
@@ -157,16 +158,20 @@ class ValidationTest {
         val topology =
             TopologySpec(
                 listOf(
-                    ClusterSpec(
-                        hosts = listOf(HostSpec(cpu = CpuSpec(coreCount = 0, coreSpeed = Frequency.ofGHz(3.0)), memory = validMemory)),
-                    ),
-                ),
+                    DataCenterSpec(
+                        listOf(
+                            ClusterSpec(
+                                hosts = listOf(HostSpec(cpu = CpuSpec(coreCount = 0, coreSpeed = Frequency.ofGHz(3.0)), memory = validMemory)),
+                            ),
+                        ),
+                    )
+                )
             )
 
         val issues = assertDoesNotThrow { topology.validate() }
 
-        assertContains(issues.paths(), "clusters[0].hosts[0].cpu.coreCount")
-        assertTrue(issues.any { it.path.contains("clusters[0].hosts[0].cpu") })
+        assertContains(issues.paths(), "datacenters[0].clusters[0].hosts[0].cpu.coreCount")
+        assertTrue(issues.any { it.path.contains("datacenters[0].clusters[0].hosts[0].cpu") })
     }
 
     private fun List<ValidationIssue>.paths(): List<String> = map { it.path }

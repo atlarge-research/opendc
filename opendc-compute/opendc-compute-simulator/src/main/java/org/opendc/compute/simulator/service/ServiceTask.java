@@ -27,7 +27,7 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.opendc.compute.api.TaskState;
 import org.opendc.compute.simulator.TaskWatcher;
-import org.opendc.compute.simulator.host.SimHost;
+import org.opendc.compute.simulator.infrastructure.SimHost;
 import org.opendc.compute.simulator.scheduler.SchedulingRequest;
 import org.opendc.simulator.compute.workload.Workload;
 import org.slf4j.Logger;

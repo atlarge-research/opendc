@@ -48,28 +48,28 @@ class DistributionPoliciesTest {
             {
                 assertEquals(
                     MaxMinFairnessPolicySpec,
-                    maxMinFairnessGpuTopology.clusters[0].hosts[0].gpuDistribution,
+                    maxMinFairnessGpuTopology.datacenters!![0].clusters[0].hosts[0].gpuDistribution,
                     "MaxMinFairnessDistributionPolicy should be used",
                 )
             },
             {
                 assertEquals(
                     EqualSharePolicySpec,
-                    equalShareGpuTopology.clusters[0].hosts[0].gpuDistribution,
+                    equalShareGpuTopology.datacenters!![0].clusters[0].hosts[0].gpuDistribution,
                     "EqualShareDistributionPolicy should be used",
                 )
             },
             {
                 assertEquals(
                     FixedSharePolicySpec(0.5),
-                    fixedShareGpuTopology.clusters[0].hosts[0].gpuDistribution,
+                    fixedShareGpuTopology.datacenters!![0].clusters[0].hosts[0].gpuDistribution,
                     "FixedShareDistributionPolicy should be used",
                 )
             },
             {
                 assertEquals(
                     BestEffortPolicySpec(),
-                    bestEffortGpuTopology.clusters[0].hosts[0].gpuDistribution,
+                    bestEffortGpuTopology.datacenters!![0].clusters[0].hosts[0].gpuDistribution,
                     "BestEffortDistributionPolicy should be used",
                 )
             },

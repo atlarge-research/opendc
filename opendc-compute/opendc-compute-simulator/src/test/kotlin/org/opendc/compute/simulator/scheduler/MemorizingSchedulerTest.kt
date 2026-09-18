@@ -29,8 +29,8 @@ import io.mockk.slot
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.simulator.host.HostModel
-import org.opendc.compute.simulator.host.HostState
+import org.opendc.compute.simulator.infrastructure.HostModel
+import org.opendc.compute.simulator.infrastructure.HostState
 import org.opendc.compute.simulator.scheduler.filters.RamFilter
 import org.opendc.compute.simulator.service.HostView
 

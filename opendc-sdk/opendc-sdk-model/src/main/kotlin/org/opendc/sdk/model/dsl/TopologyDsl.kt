@@ -27,6 +27,7 @@ import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.topology.BatteryPolicySpec
 import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.ClusterSpec
+import org.opendc.sdk.model.topology.DataCenterSpec
 import org.opendc.sdk.model.topology.HostSpec
 import org.opendc.sdk.model.topology.PowerSourceSpec
 import org.opendc.sdk.model.topology.TopologySpec
@@ -41,32 +42,32 @@ public fun topology(block: TopologyBuilder.() -> Unit): TopologySpec = TopologyB
 /** Collects the clusters composing a [TopologySpec]. */
 @SdkDsl
 public class TopologyBuilder {
-    private val clusters = mutableListOf<ClusterSpec>()
+    private val datacenters = mutableListOf<DataCenterSpec>()
 
-    public fun cluster(
-        name: String = "Cluster",
+    public fun datacenter(
+        name: String = "DataCenter",
         count: Int = 1,
-        block: ClusterBuilder.() -> Unit,
+        block: DataCenterBuilder.() -> Unit,
     ) {
-        clusters += ClusterBuilder(name, count).apply(block).build()
+        datacenters += DataCenterBuilder(name, count).apply(block).build()
     }
 
-    internal fun build(): TopologySpec = TopologySpec(clusters.toList())
+    internal fun build(): TopologySpec = TopologySpec(datacenters=datacenters)
 }
 
 /** Collects the hosts, power source, and optional battery of a [ClusterSpec]. */
 @SdkDsl
-public class ClusterBuilder(private val name: String, private val count: Int) {
-    private val hosts = mutableListOf<HostSpec>()
+public class DataCenterBuilder(private val name: String, private val count: Int) {
+    private val clusters = mutableListOf<ClusterSpec>()
     private var powerSource: PowerSourceSpec = PowerSourceSpec()
     private var battery: BatterySpec? = null
 
-    public fun host(
+    public fun cluster(
         count: Int = 1,
         name: String = "Host",
-        block: HostBuilder.() -> Unit,
+        block: ClusterBuilder.() -> Unit,
     ) {
-        hosts += HostBuilder(name, count).apply(block).build()
+        clusters += ClusterBuilder(name, count).apply(block).build()
     }
 
     public fun powerSource(
@@ -89,5 +90,22 @@ public class ClusterBuilder(private val name: String, private val count: Int) {
         battery = BatterySpec(name, capacity, chargingSpeed, initialCharge, policy, embodiedCarbon, expectedLifetime)
     }
 
-    internal fun build(): ClusterSpec = ClusterSpec(name, count, hosts.toList(), powerSource, battery)
+    internal fun build(): DataCenterSpec = DataCenterSpec(clusters.toList(), name, powerSource, battery)
+}
+
+
+/** Collects the hosts, power source, and optional battery of a [ClusterSpec]. */
+@SdkDsl
+public class ClusterBuilder(private val name: String, private val count: Int) {
+    private val hosts = mutableListOf<HostSpec>()
+
+    public fun host(
+        count: Int = 1,
+        name: String = "Host",
+        block: HostBuilder.() -> Unit,
+    ) {
+        hosts += HostBuilder(name, count).apply(block).build()
+    }
+
+    internal fun build(): ClusterSpec = ClusterSpec(name, count, hosts.toList())
 }

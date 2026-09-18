@@ -23,6 +23,7 @@
 package org.opendc.sdk.model.topology
 
 import kotlinx.serialization.Serializable
+import mu.KotlinLogging
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.validateEach
@@ -30,13 +31,43 @@ import org.opendc.sdk.model.validation.validateEach
 /**
  * The datacenter a scenario runs on, described as a list of clusters.
  *
- * @property clusters Clusters composing the datacenter.
+ * @property datacenters Datacenters to simulate.
  */
 @Serializable
-public data class TopologySpec(public val clusters: List<ClusterSpec>) : Validatable {
+public data class TopologySpec(
+    public var datacenters: List<DataCenterSpec>? = null,
+    public val clusters: List<ClusterSpec>? = null,
+) : Validatable {
+    init {
+        // If user is using the old topology file structure with only clusters, move the powerSourceSpec and BatterySpec
+        // into a DataCenter.
+        if (datacenters == null && clusters != null) {
+            logger.warn(
+                "You seem to use the old topology file structure using clusters instead of datacenters.\n" +
+                    "OpenDC will try to build a proper datacenter, but not all clusters can be converted fully.",
+            )
+
+            val powerSourceSpec = clusters[0].powerSource ?: PowerSourceSpec()
+            val batterySpec = clusters[0].battery
+
+            datacenters = listOf(DataCenterSpec(clusters = clusters, powerSource = powerSourceSpec, battery = batterySpec))
+        }
+    }
+
+    private companion object {
+        private val logger = KotlinLogging.logger {}
+    }
+
     override fun validate(): List<ValidationIssue> =
         buildList {
-            if (clusters.isEmpty()) add(ValidationIssue("clusters", "must not be empty"))
-            addAll(clusters.validateEach("clusters"))
+            if (datacenters == null) {
+                add(ValidationIssue("topology", "The topology file does not contain any datacenter or cluster specifications."))
+                return@buildList
+            }
+            if (datacenters!!.isEmpty()) {
+                add(ValidationIssue("datacenters", "must not be empty"))
+            } else {
+                addAll(datacenters!!.validateEach("datacenters"))
+            }
         }
 }

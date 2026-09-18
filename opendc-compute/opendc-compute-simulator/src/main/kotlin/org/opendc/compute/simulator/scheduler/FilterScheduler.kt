@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.scheduler
 
-import org.opendc.compute.simulator.host.HostState
+import org.opendc.compute.simulator.infrastructure.HostState
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
 import org.opendc.compute.simulator.scheduler.weights.HostWeigher
 import org.opendc.compute.simulator.service.HostView

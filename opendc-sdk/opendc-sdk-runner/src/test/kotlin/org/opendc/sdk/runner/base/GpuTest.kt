@@ -321,27 +321,29 @@ class GpuTest {
         architecture: String,
         gpuCount: Int,
     ) {
-        for (cluster in topology.clusters) {
-            for (host in cluster.hosts) {
-                assert(host.gpu?.count == gpuCount) { "GPU count should be $gpuCount, but is ${host.gpu?.count}" }
+        for (datacenter in topology.datacenters!!) {
+            for (cluster in datacenter.clusters) {
+                for (host in cluster.hosts) {
+                    assert(host.gpu?.count == gpuCount) { "GPU count should be $gpuCount, but is ${host.gpu?.count}" }
 
-                assert(host.gpu?.coreCount == coreCount) { "host.gpu Core count should be $coreCount, but is ${host.gpu?.coreCount}" }
-                assert(
-                    host.gpu?.coreSpeed == Frequency.ofMHz(coreSpeed),
-                ) { "host.gpu core speed should be $coreSpeed, but is ${host.gpu?.coreSpeed}" }
-                assert(
-                    host.gpu?.memory == DataSize.ofMiB(memorySize),
-                ) { "host.gpu memory size should be $memorySize, but is ${host.gpu?.memory}" }
-                assert(host.gpu?.memoryBandwidth == DataRate.ofKibps(memoryBandwidth)) {
-                    "host.gpu? memory bandwidth should be ${DataRate.ofKibps(memoryBandwidth)}, but is ${host.gpu?.memoryBandwidth}"
+                    assert(host.gpu?.coreCount == coreCount) { "host.gpu Core count should be $coreCount, but is ${host.gpu?.coreCount}" }
+                    assert(
+                        host.gpu?.coreSpeed == Frequency.ofMHz(coreSpeed),
+                    ) { "host.gpu core speed should be $coreSpeed, but is ${host.gpu?.coreSpeed}" }
+                    assert(
+                        host.gpu?.memory == DataSize.ofMiB(memorySize),
+                    ) { "host.gpu memory size should be $memorySize, but is ${host.gpu?.memory}" }
+                    assert(host.gpu?.memoryBandwidth == DataRate.ofKibps(memoryBandwidth)) {
+                        "host.gpu? memory bandwidth should be ${DataRate.ofKibps(memoryBandwidth)}, but is ${host.gpu?.memoryBandwidth}"
+                    }
+                    assert(host.gpu?.vendor.contentEquals(vendor)) { "host.gpu? vendor should be $vendor, but is ${host.gpu?.vendor}" }
+                    assert(
+                        host.gpu?.modelName.contentEquals(modelName),
+                    ) { "host.gpu? model name should be $modelName, but is ${host.gpu?.modelName}" }
+                    assert(
+                        host.gpu?.architecture.contentEquals(architecture),
+                    ) { "host.gpu? architecture should be $architecture, but is ${host.gpu?.architecture}" }
                 }
-                assert(host.gpu?.vendor.contentEquals(vendor)) { "host.gpu? vendor should be $vendor, but is ${host.gpu?.vendor}" }
-                assert(
-                    host.gpu?.modelName.contentEquals(modelName),
-                ) { "host.gpu? model name should be $modelName, but is ${host.gpu?.modelName}" }
-                assert(
-                    host.gpu?.architecture.contentEquals(architecture),
-                ) { "host.gpu? architecture should be $architecture, but is ${host.gpu?.architecture}" }
             }
         }
     }

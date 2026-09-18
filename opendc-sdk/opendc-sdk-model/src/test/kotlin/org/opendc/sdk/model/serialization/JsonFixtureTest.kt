@@ -49,7 +49,7 @@ class JsonFixtureTest {
     fun `inline-topology trace-workload scenario decodes and validates`() {
         val scenario = decodeScenario("/scenarios/inline-topology-trace-workload.json")
 
-        assertTrue(scenario.topology.clusters.isNotEmpty(), "expected an inline topology with clusters")
+        assertTrue(scenario.topology.datacenters!!.isNotEmpty(), "expected an inline topology with clusters")
         assertIs<TraceWorkloadSpec>(scenario.workload)
         assertEquals(emptyList(), scenario.validate())
     }
@@ -58,7 +58,7 @@ class JsonFixtureTest {
     fun `inline-workload scenario decodes and validates`() {
         val scenario = decodeScenario("/scenarios/inline-workload.json")
 
-        assertTrue(scenario.topology.clusters.isNotEmpty(), "expected an inline topology with clusters")
+        assertTrue(scenario.topology.datacenters!!.isNotEmpty(), "expected an inline topology with clusters")
         val workload = assertIs<InlineWorkloadSpec>(scenario.workload)
         assertEquals(2, workload.tasks.size)
         assertIs<FilterAllocationPolicySpec>(scenario.allocationPolicy)

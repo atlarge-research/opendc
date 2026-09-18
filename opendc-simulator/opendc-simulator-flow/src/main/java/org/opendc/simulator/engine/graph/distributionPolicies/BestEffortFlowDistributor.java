@@ -59,7 +59,7 @@ public class BestEffortFlowDistributor extends FlowDistributor {
      * Prioritizes already utilized suppliers when potential supply exceeds demand.
      */
     @Override
-    protected void updateOutgoingDemand() {
+    public void updateOutgoingDemand() {
 
         // If potential supply exceeds demand, prioritize already utilized suppliers
         if (this.capacity > this.totalIncomingDemand && this.totalIncomingDemand > 0) {

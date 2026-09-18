@@ -100,7 +100,7 @@ private class ScenarioRun(
         val workload = scenario.workload.toServiceTasks(scenario.checkpointModel, resources::resolve)
 
         // TODO: Link this properly
-        val numHosts = scenario.topology.clusters.flatMap { it.hosts }.sumOf { it.count }
+        val numHosts = scenario.topology.datacenters!!.flatMap { dc -> dc.clusters.flatMap { it.hosts } }.sumOf { it.count }
         val startTime = workload.minOf { it.submittedAt }
         createService(scenario.topology, numHosts, startTime, resources::resolve)
 
@@ -190,7 +190,7 @@ private class ScenarioRun(
     }
 }
 
-private fun TopologySpec.gpuCount(): Int = clusters.flatMap { it.hosts }.maxOf { it.gpu?.count ?: 0 }
+private fun TopologySpec.gpuCount(): Int = datacenters!!.flatMap { dc -> dc.clusters.flatMap { it.hosts } }.maxOf { it.gpu?.count ?: 0 }
 
 private fun <T : Any> Provisioner.resolve(type: Class<T>): T = registry.resolve(SERVICE_DOMAIN, type)!!
 

@@ -68,11 +68,6 @@ internal class RunCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCo
         help = "Disable the live progress dashboard.",
     ).flag()
 
-//    private val experimentPath by option(
-//        "--experiment-path",
-//        help = "Legacy support for the experiment path. Does nothing.",
-//    ).flag()
-
     private val noSummary by option(
         "--no-summary",
         help = "Skip the in-memory metrics summary (saves memory on very large sweeps).",

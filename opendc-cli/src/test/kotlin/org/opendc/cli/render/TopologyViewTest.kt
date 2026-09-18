@@ -47,7 +47,7 @@ class TopologyViewTest {
         assertTrue(view.entries.isNotEmpty())
 
         val entry = view.entries.first()
-        val expectedHosts = experiment.topologies.first().clusters.sumOf { c -> c.count * c.hosts.sumOf { it.count } }
+        val expectedHosts = experiment.topologies.first().datacenters!!.single().clusters.sumOf { c -> c.count * c.hosts.sumOf { it.count } }
         assertEquals(expectedHosts, entry.hostCount)
 
         val row = entry.rows.first()
