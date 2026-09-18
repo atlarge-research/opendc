@@ -31,6 +31,28 @@ public class ClusterDistributor extends MaxMinFairnessFlowDistributor {
 
     private double totalEnergyUsage = 0.0;
 
+    // TODO: Implement carbon related metrics
+    private double totalCarbonemission = 0.0;
+    private double carbonIntensity = 0.0;
+
+    public double getPowerDraw() {
+        return this.incomingSupplies[0];
+    }
+
+    public double getEnergyUsage() {
+        return totalEnergyUsage;
+    }
+
+    // TODO: Implement Carbon Intensity
+    public double getCarbonIntensity() {
+        return carbonIntensity;
+    }
+
+    // TODO: Implement Carbon Emission
+    public double getCarbonEmission() {
+        return totalCarbonemission;
+    }
+
     public ClusterDistributor(FlowEngine engine, int maxConsumers, int maxSuppliers) {
         super(engine, maxConsumers, maxSuppliers);
     }

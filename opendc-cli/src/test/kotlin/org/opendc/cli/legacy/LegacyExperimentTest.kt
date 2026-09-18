@@ -150,7 +150,9 @@ class LegacyExperimentTest {
             carbon.toSet(),
         )
         assertTrue(
-            experiment.topologies.all { it.datacenters!!.single().clusters.single().hosts.single().cpuPowerModel.type == PowerModelType.SQRT },
+            experiment.topologies.all {
+                it.datacenters!!.single().clusters.single().hosts.single().cpuPowerModel.type == PowerModelType.SQRT
+            },
             "every location uses the sqrt power model",
         )
     }
@@ -293,7 +295,10 @@ class LegacyExperimentTest {
 
     @Test
     fun `a GPU host carries over its accelerator, overhead and distribution policy`() {
-        val hosts = load(FEATURES).topologies.first { it.datacenters!!.single().clusters.single().name == "GpuCluster" }.datacenters!!.single().clusters.single().hosts
+        val hosts =
+            load(FEATURES).topologies.first {
+                it.datacenters!!.single().clusters.single().name == "GpuCluster"
+            }.datacenters!!.single().clusters.single().hosts
         val (constant, shareBased, unset) = hosts
 
         val gpu = checkNotNull(constant.gpu)
@@ -324,7 +329,10 @@ class LegacyExperimentTest {
 
     @Test
     fun `a battery cluster carries over its power source, battery and power models`() {
-        val datacenter = load(FEATURES).topologies.first { it.datacenters!!.single().clusters.single().name == "BatteryCluster" }.datacenters!!.single()
+        val datacenter =
+            load(FEATURES).topologies.first {
+                it.datacenters!!.single().clusters.single().name == "BatteryCluster"
+            }.datacenters!!.single()
         val cluster = datacenter.clusters.single()
 
         assertEquals("grid", datacenter.powerSource.name)

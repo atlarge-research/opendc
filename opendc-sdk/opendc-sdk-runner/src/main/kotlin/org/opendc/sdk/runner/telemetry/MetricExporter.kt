@@ -23,6 +23,8 @@
 package org.opendc.sdk.runner.telemetry
 
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
+import org.opendc.sdk.runner.telemetry.table.cluster.ClusterSample
+import org.opendc.sdk.runner.telemetry.table.datacenter.DataCenterSample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
@@ -36,6 +38,16 @@ public interface MetricExporter {
      * Record an entry with the specified [reader].
      */
     public fun export(reader: BatterySample) {}
+
+    /**
+     * Record an entry with the specified [reader].
+     */
+    public fun export(reader: ClusterSample) {}
+
+    /**
+     * Record an entry with the specified [reader].
+     */
+    public fun export(reader: DataCenterSample) {}
 
     /**
      * Record an entry with the specified [reader].

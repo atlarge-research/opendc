@@ -23,7 +23,8 @@
 package org.opendc.compute.simulator.cluster
 
 import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.simulator.engine.graph.FlowDistributor
+import org.opendc.compute.simulator.telemetry.ClusterSystemStats
+import org.opendc.simulator.compute.power.ClusterDistributor
 import java.time.InstantSource
 
 /**
@@ -37,7 +38,7 @@ public class SimCluster(
     private val name: String,
     private val dataCenterName: String,
     private val clock: InstantSource,
-    private val powerDistributor: FlowDistributor,
+    private val powerDistributor: ClusterDistributor,
 ) : AutoCloseable {
     private var lastReport = clock.millis()
 
@@ -69,13 +70,20 @@ public class SimCluster(
         hosts.remove(host)
     }
 
-    // TODO: Build
-//    public fun getSystemStats(): HostSystemStats {
-//        val now = clock.millis()
-//        val duration = now - lastReport
-//
-//        return HostSystemStats()
-//    }
+    public fun getSystemStats(): ClusterSystemStats {
+        val now = clock.millis()
+        this.lastReport = now
+        this.powerDistributor.updateCounters(now)
+
+        // TODO: Add support for embodied Carbon
+        return ClusterSystemStats(
+            this.powerDistributor.powerDraw,
+            this.powerDistributor.energyUsage,
+            this.powerDistributor.carbonIntensity,
+            this.powerDistributor.carbonEmission,
+            0.0,
+        )
+    }
 
     override fun hashCode(): Int = name.hashCode()
 

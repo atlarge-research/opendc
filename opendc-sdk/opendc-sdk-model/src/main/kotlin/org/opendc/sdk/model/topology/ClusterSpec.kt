@@ -43,7 +43,6 @@ public data class ClusterSpec(
     public val powerSource: PowerSourceSpec? = null,
     public val battery: BatterySpec? = null,
 ) : Validatable {
-
     override fun validate(): List<ValidationIssue> =
         buildList {
             if (hosts.isEmpty()) add(ValidationIssue("hosts", "must not be empty"))

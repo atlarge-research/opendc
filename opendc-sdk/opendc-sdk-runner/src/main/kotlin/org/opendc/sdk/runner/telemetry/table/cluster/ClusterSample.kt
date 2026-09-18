@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 AtLarge Research
+ * Copyright (c) 2026 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.telemetry
+package org.opendc.sdk.runner.telemetry.table.cluster
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import org.opendc.trace.util.parquet.exporter.Exportable
+import java.time.Instant
 
-/** Identifies a category of output produced by a simulation run. */
-@Serializable
-public enum class OutputFileSpec {
-    @SerialName("battery")
-    BATTERY,
-
-    @SerialName("cluster")
-    CLUSTER,
-
-    @SerialName("datacenter")
-    DATA_CENTER,
-
-    @SerialName("host")
-    HOST,
-
-    @SerialName("powerSource")
-    POWER_SOURCE,
-
-    @SerialName("service")
-    SERVICE,
-
-    @SerialName("task")
-    TASK,
-}
+public data class ClusterSample(
+    public val clusterName: String? = null,
+    public val dataCenterName: String? = null,
+    public val timestamp: Instant = Instant.MIN,
+    public val timestampAbsolute: Instant = Instant.MIN,
+    public val powerDraw: Double = -1.0,
+    public val energyUsage: Double = -1.0,
+    public val carbonIntensity: Double = -1.0,
+    public val carbonEmission: Double = -1.0,
+) : Exportable

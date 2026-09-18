@@ -20,34 +20,34 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.runner.telemetry.table.datacenter
+package org.opendc.sdk.runner.telemetry.table.cluster
 
-import org.opendc.compute.simulator.datacenter.SimDataCenter
+import org.opendc.compute.simulator.cluster.SimCluster
 import java.time.Duration
 import java.time.Instant
 
-public class DataCenterSampler(
+public class ClusterSampler(
     private val startTime: Duration = Duration.ofMillis(0),
 ) {
     public fun sample(
         now: Instant,
-        dataCenter: SimDataCenter,
-    ): DataCenterSample {
-        val dataCenterSystemStats = dataCenter.getSystemStats()
+        cluster: SimCluster,
+    ): ClusterSample {
+        val clusterSystemStats = cluster.getSystemStats()
 
         val timestampAbsolute = now + startTime
 
         // energy & carbon stats
-        val powerDraw = dataCenterSystemStats.powerDraw
-        val energyUsage = dataCenterSystemStats.energyUsage
-        val carbonIntensity = dataCenterSystemStats.carbonIntensity
-        val carbonEmission = dataCenterSystemStats.carbonEmission
+        val powerDraw = clusterSystemStats.powerDraw
+        val energyUsage = clusterSystemStats.energyUsage
+        val carbonIntensity = clusterSystemStats.carbonIntensity
+        val carbonEmission = clusterSystemStats.carbonEmission
 
         // TODO: Determine if this metric still makes sense in this form
-        val embodiedCarbon = dataCenterSystemStats.embodiedCarbon
+        val embodiedCarbon = clusterSystemStats.embodiedCarbon
 
-        return DataCenterSample(
-            dataCenterName = dataCenter.getName(),
+        return ClusterSample(
+            dataCenterName = cluster.getName(),
             timestamp = now,
             timestampAbsolute = timestampAbsolute,
             powerDraw = powerDraw,

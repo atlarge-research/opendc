@@ -25,6 +25,7 @@ package org.opendc.sdk.runner.provision
 import org.opendc.common.ResourceType
 import org.opendc.compute.carbon.getCarbonFragments
 import org.opendc.compute.simulator.cluster.SimCluster
+import org.opendc.compute.simulator.datacenter.SimDataCenter
 import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.sdk.model.resource.ResourceReference
@@ -129,6 +130,16 @@ public class HostsProvisioningStep(
             carbonModel,
         )
 
+        val simDataCenter =
+            SimDataCenter(
+                dataCenterSpec.name,
+                engine.clock,
+                dcPowerSource,
+                carbonModel,
+            )
+
+        service.addDataCenter(simDataCenter)
+
         for ((clusterName, count, hostSpecs) in dataCenterSpec.clusters) {
             repeat(count) {
                 val numHosts: Int = hostSpecs.sumOf { it.count }
@@ -148,6 +159,8 @@ public class HostsProvisioningStep(
                         engine.clock,
                         clusterPowerDistributor,
                     )
+
+                service.addCluster(simCluster)
 
                 FlowEdge(clusterPowerDistributor, dcPowerDistributor, ResourceType.POWER)
 

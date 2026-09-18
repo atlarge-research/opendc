@@ -36,11 +36,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class CartesianTest {
-    private fun topology(name: String): TopologySpec = TopologySpec(
-        listOf(DataCenterSpec(
-            listOf(ClusterSpec(name = name, hosts = listOf(validHost))
-            ))
-        ))
+    private fun topology(name: String): TopologySpec =
+        TopologySpec(
+            listOf(
+                DataCenterSpec(
+                    listOf(
+                        ClusterSpec(name = name, hosts = listOf(validHost)),
+                    ),
+                ),
+            ),
+        )
 
     private fun workload(name: String): WorkloadSpec = TraceWorkloadSpec(NamedReference(name))
 

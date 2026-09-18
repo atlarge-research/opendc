@@ -161,11 +161,14 @@ class ValidationTest {
                     DataCenterSpec(
                         listOf(
                             ClusterSpec(
-                                hosts = listOf(HostSpec(cpu = CpuSpec(coreCount = 0, coreSpeed = Frequency.ofGHz(3.0)), memory = validMemory)),
+                                hosts =
+                                    listOf(
+                                        HostSpec(cpu = CpuSpec(coreCount = 0, coreSpeed = Frequency.ofGHz(3.0)), memory = validMemory),
+                                    ),
                             ),
                         ),
-                    )
-                )
+                    ),
+                ),
             )
 
         val issues = assertDoesNotThrow { topology.validate() }

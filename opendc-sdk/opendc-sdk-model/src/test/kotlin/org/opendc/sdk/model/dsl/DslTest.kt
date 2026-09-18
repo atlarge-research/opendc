@@ -62,7 +62,7 @@ class DslTest {
     fun `topology DSL equals constructor-built topology`() {
         val built =
             topology {
-                datacenter (name = "DC-a") {
+                datacenter(name = "DC-a") {
                     cluster(name = "cluster-a", count = 2) {
                         host(count = 4, name = "compute-host") {
                             cpu(coreCount = 8, coreSpeed = 3.ghz, count = 2, vendor = "AMD", modelName = "EPYC", architecture = "Zen4")

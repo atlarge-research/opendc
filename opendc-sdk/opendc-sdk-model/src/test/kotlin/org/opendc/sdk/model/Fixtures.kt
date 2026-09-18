@@ -65,11 +65,16 @@ public val validCpu: CpuSpec = CpuSpec(coreCount = 8, coreSpeed = 3.ghz)
 
 public val validHost: HostSpec = HostSpec(cpu = validCpu, memory = validMemory)
 
-public val validTopology: TopologySpec = TopologySpec(
-    listOf(DataCenterSpec(
-        listOf(ClusterSpec(hosts = listOf(validHost))
-        ))
-    ))
+public val validTopology: TopologySpec =
+    TopologySpec(
+        listOf(
+            DataCenterSpec(
+                listOf(
+                    ClusterSpec(hosts = listOf(validHost)),
+                ),
+            ),
+        ),
+    )
 
 public val validTask: TaskSpec =
     TaskSpec(

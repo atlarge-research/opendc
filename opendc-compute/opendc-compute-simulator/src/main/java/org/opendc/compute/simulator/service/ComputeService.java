@@ -39,6 +39,8 @@ import org.jetbrains.annotations.Nullable;
 import org.opendc.common.Dispatcher;
 import org.opendc.common.util.Pacer;
 import org.opendc.compute.api.TaskState;
+import org.opendc.compute.simulator.cluster.SimCluster;
+import org.opendc.compute.simulator.datacenter.SimDataCenter;
 import org.opendc.compute.simulator.infrastructure.HostListener;
 import org.opendc.compute.simulator.infrastructure.HostModel;
 import org.opendc.compute.simulator.infrastructure.HostState;
@@ -93,6 +95,16 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      * The available hypervisors.
      */
     private final Set<HostView> availableHosts = new HashSet<>();
+
+    /**
+     * The available powerSources
+     */
+    private final Set<SimCluster> clusters = new HashSet<>();
+
+    /**
+     * The available powerSources
+     */
+    private final Set<SimDataCenter> dataCenters = new HashSet<>();
 
     /**
      * The available powerSources
@@ -301,6 +313,22 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         this.tasksToRemove.clear();
     }
 
+    public void addCluster(SimCluster cluster) {
+        this.clusters.add(cluster);
+    }
+
+    public void removeCluster(SimCluster cluster) {
+        this.clusters.remove(cluster);
+    }
+
+    public void addDataCenter(SimDataCenter dataCenter) {
+        this.dataCenters.add(dataCenter);
+    }
+
+    public void removeDataCenter(SimDataCenter dataCenter) {
+        this.dataCenters.remove(dataCenter);
+    }
+
     /**
      * Add a {@link SimHost} to the scheduling pool of the compute service.
      */
@@ -385,6 +413,14 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     public InstantSource getClock() {
         return this.clock;
+    }
+
+    public Set<SimCluster> getClusters() {
+        return Collections.unmodifiableSet(this.clusters);
+    }
+
+    public Set<SimDataCenter> getDataCenters() {
+        return Collections.unmodifiableSet(this.dataCenters);
     }
 
     public Set<SimPowerSource> getPowerSources() {

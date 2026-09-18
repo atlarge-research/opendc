@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.telemetry
+package org.opendc.compute.simulator.telemetry;
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-
-/** Identifies a category of output produced by a simulation run. */
-@Serializable
-public enum class OutputFileSpec {
-    @SerialName("battery")
-    BATTERY,
-
-    @SerialName("cluster")
-    CLUSTER,
-
-    @SerialName("datacenter")
-    DATA_CENTER,
-
-    @SerialName("host")
-    HOST,
-
-    @SerialName("powerSource")
-    POWER_SOURCE,
-
-    @SerialName("service")
-    SERVICE,
-
-    @SerialName("task")
-    TASK,
-}
+/**
+ * System-level statistics of a host.
+ *
+ * @param powerDraw Instantaneous power draw of the system (in W).
+ * @param energyUsage The cumulative energy usage of the system (in J).
+ */
+public record DataCenterSystemStats(
+        double powerDraw, double energyUsage, double carbonIntensity, double carbonEmission, double embodiedCarbon) {}
