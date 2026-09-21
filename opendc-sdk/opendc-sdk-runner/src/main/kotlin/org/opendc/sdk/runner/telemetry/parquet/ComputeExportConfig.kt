@@ -36,6 +36,8 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import org.opendc.common.logger.logger
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
+import org.opendc.sdk.runner.telemetry.table.cluster.ClusterSample
+import org.opendc.sdk.runner.telemetry.table.datacenter.DataCenterSample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
@@ -57,6 +59,8 @@ import org.opendc.trace.util.parquet.exporter.columnSerializer
 @Serializable(with = ComputeExportConfig.Companion.ComputeExportConfigSerializer::class)
 public data class ComputeExportConfig(
     public val batteryExportColumns: Set<ExportColumn<BatterySample>>,
+    public val clusterExportColumns: Set<ExportColumn<ClusterSample>>,
+    public val dataCenterExportColumns: Set<ExportColumn<DataCenterSample>>,
     public val hostExportColumns: Set<ExportColumn<HostSample>>,
     public val powerSourceExportColumns: Set<ExportColumn<PowerSourceSample>>,
     public val serviceExportColumns: Set<ExportColumn<ServiceSample>>,
@@ -64,12 +68,16 @@ public data class ComputeExportConfig(
 ) {
     public constructor(
         batteryExportColumns: Collection<ExportColumn<BatterySample>>,
+        clusterExportColumns: Collection<ExportColumn<ClusterSample>>,
+        dataCenterExportColumns: Collection<ExportColumn<DataCenterSample>>,
         hostExportColumns: Collection<ExportColumn<HostSample>>,
         powerSourceExportColumns: Collection<ExportColumn<PowerSourceSample>>,
         serviceExportColumns: Collection<ExportColumn<ServiceSample>>,
         taskExportColumns: Collection<ExportColumn<TaskSample>>,
     ) : this(
         batteryExportColumns.toSet() + DfltBatteryExportColumns.BASE_EXPORT_COLUMNS,
+        clusterExportColumns.toSet() + DfltClusterExportColumns.BASE_EXPORT_COLUMNS,
+        dataCenterExportColumns.toSet() + DfltDataCenterExportColumns.BASE_EXPORT_COLUMNS,
         hostExportColumns.toSet() + DfltHostExportColumns.BASE_EXPORT_COLUMNS,
         powerSourceExportColumns.toSet() + DfltPowerSourceExportColumns.BASE_EXPORT_COLUMNS,
         serviceExportColumns.toSet() + DfltServiceExportColumns.BASE_EXPORT_COLUMNS,
@@ -83,6 +91,8 @@ public data class ComputeExportConfig(
         """
         | === Compute Export Config ===
         | Battery Sample columns : ${batteryExportColumns.map { it.name }.toString().trim('[', ']')}
+        | Cluster Sample columns : ${clusterExportColumns.map { it.name }.toString().trim('[', ']')}
+        | DataCenter Sample columns : ${dataCenterExportColumns.map { it.name }.toString().trim('[', ']')}
         | Host Sample columns : ${hostExportColumns.map { it.name }.toString().trim('[', ']')}
         | PowerSource Sample columns : ${powerSourceExportColumns.map { it.name }.toString().trim('[', ']')}
         | Service Sample columns : ${serviceExportColumns.map { it.name }.toString().trim('[', ']')}
@@ -98,6 +108,8 @@ public data class ComputeExportConfig(
          */
         public fun loadDfltColumns() {
             DfltBatteryExportColumns
+            DfltClusterExportColumns
+            DfltDataCenterExportColumns
             DfltHostExportColumns
             DfltPowerSourceExportColumns
             DfltServiceExportColumns
@@ -113,6 +125,8 @@ public data class ComputeExportConfig(
             loadDfltColumns()
             ComputeExportConfig(
                 batteryExportColumns = ExportColumn.getAllLoadedColumns(),
+                clusterExportColumns = ExportColumn.getAllLoadedColumns(),
+                dataCenterExportColumns = ExportColumn.getAllLoadedColumns(),
                 hostExportColumns = ExportColumn.getAllLoadedColumns(),
                 powerSourceExportColumns = ExportColumn.getAllLoadedColumns(),
                 serviceExportColumns = ExportColumn.getAllLoadedColumns(),
@@ -131,6 +145,14 @@ public data class ComputeExportConfig(
                     element(
                         "batteryExportColumns",
                         ListSerializer(columnSerializer<BatterySample>()).descriptor,
+                    )
+                    element(
+                        "clusterExportColumns",
+                        ListSerializer(columnSerializer<ClusterSample>()).descriptor,
+                    )
+                    element(
+                        "dataCenterExportColumns",
+                        ListSerializer(columnSerializer<DataCenterSample>()).descriptor,
                     )
                     element(
                         "hostExportColumns",
@@ -162,6 +184,8 @@ public data class ComputeExportConfig(
                 val elem = jsonDec.decodeJsonElement().jsonObject
 
                 val batteryFields: List<ExportColumn<BatterySample>> = elem["batteryExportColumns"].toFieldList()
+                val clusterFields: List<ExportColumn<ClusterSample>> = elem["clusterExportColumns"].toFieldList()
+                val dataCenterFields: List<ExportColumn<DataCenterSample>> = elem["dataCenterExportColumns"].toFieldList()
                 val hostFields: List<ExportColumn<HostSample>> = elem["hostExportColumns"].toFieldList()
                 val powerSourceFields: List<ExportColumn<PowerSourceSample>> = elem["powerSourceExportColumns"].toFieldList()
                 val serviceFields: List<ExportColumn<ServiceSample>> = elem["serviceExportColumns"].toFieldList()
@@ -169,6 +193,8 @@ public data class ComputeExportConfig(
 
                 return ComputeExportConfig(
                     batteryExportColumns = batteryFields,
+                    clusterExportColumns = clusterFields,
+                    dataCenterExportColumns = dataCenterFields,
                     hostExportColumns = hostFields,
                     powerSourceExportColumns = powerSourceFields,
                     serviceExportColumns = serviceFields,
@@ -190,24 +216,36 @@ public data class ComputeExportConfig(
                     encodeSerializableElement(
                         descriptor,
                         1,
+                        ColListSerializer(columnSerializer<ClusterSample>()),
+                        value.clusterExportColumns.toList(),
+                    )
+                    encodeSerializableElement(
+                        descriptor,
+                        2,
+                        ColListSerializer(columnSerializer<DataCenterSample>()),
+                        value.dataCenterExportColumns.toList(),
+                    )
+                    encodeSerializableElement(
+                        descriptor,
+                        3,
                         ColListSerializer(columnSerializer<HostSample>()),
                         value.hostExportColumns.toList(),
                     )
                     encodeSerializableElement(
                         descriptor,
-                        2,
+                        4,
                         ColListSerializer(columnSerializer<PowerSourceSample>()),
                         value.powerSourceExportColumns.toList(),
                     )
                     encodeSerializableElement(
                         descriptor,
-                        3,
+                        5,
                         ColListSerializer(columnSerializer<ServiceSample>()),
                         value.serviceExportColumns.toList(),
                     )
                     encodeSerializableElement(
                         descriptor,
-                        4,
+                        6,
                         ColListSerializer(columnSerializer<TaskSample>()),
                         value.taskExportColumns.toList(),
                     )

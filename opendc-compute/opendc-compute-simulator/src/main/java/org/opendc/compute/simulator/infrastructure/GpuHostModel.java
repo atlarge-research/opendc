@@ -20,24 +20,14 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.host;
+package org.opendc.compute.simulator.infrastructure;
 
 /**
- * The state of a host.
+ * A model for a GPU in a host.
+ *
+ * @param gpuCoreCapacity The capacity of the GPU cores hz.
+ * @param gpuCoreCount    The number of GPU cores.
+ * @param GpuMemoryCapacity The capacity of the GPU memory in GB.
+ * @param GpuMemorySpeed   The speed of the GPU memory in GB/s.
  */
-public enum HostState {
-    /**
-     * The host is up and able to host guests.
-     */
-    UP,
-
-    /**
-     * The host is in a (forced) down state and unable to host any guests.
-     */
-    DOWN,
-
-    /**
-     * The host is in an error state and unable to host any guests.
-     */
-    ERROR
-}
+public record GpuHostModel(double gpuCoreCapacity, int gpuCoreCount, long GpuMemoryCapacity, double GpuMemorySpeed) {}

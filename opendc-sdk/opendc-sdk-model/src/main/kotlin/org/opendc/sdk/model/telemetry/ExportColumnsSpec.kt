@@ -54,9 +54,11 @@ public data class OnlyColumns(public val columns: Set<String>) : ColumnSelection
  */
 @Serializable
 public data class ExportColumnsSpec(
-    public val host: ColumnSelection = AllColumns,
-    public val task: ColumnSelection = AllColumns,
-    public val powerSource: ColumnSelection = AllColumns,
     public val battery: ColumnSelection = AllColumns,
+    public val cluster: ColumnSelection = AllColumns,
+    public val dataCenter: ColumnSelection = AllColumns,
+    public val host: ColumnSelection = AllColumns,
+    public val powerSource: ColumnSelection = AllColumns,
     public val service: ColumnSelection = AllColumns,
+    public val task: ColumnSelection = AllColumns,
 )

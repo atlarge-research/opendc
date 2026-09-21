@@ -108,26 +108,30 @@ private fun renderTopology(
     )
 }
 
+// TODO: improve this to align with the addition of datacenters.
 private fun TopologySpec.toEntry(
     index: Int,
     config: CliConfig,
 ): TopologyEntry =
     TopologyEntry(
         index = index,
-        hostCount = clusters.sumOf { c -> c.count * c.hosts.sumOf { it.count } },
+        hostCount = datacenters!!.flatMap { dc -> dc.clusters }.sumOf { c -> c.count * c.hosts.sumOf { it.count } },
         rows =
-            clusters.flatMap { cluster ->
-                val clusterLabel =
-                    if (cluster.count > 1) "${cluster.name} ${config.symbols.times}${cluster.count}" else cluster.name
-                cluster.hosts.map { host ->
-                    TopologyRow(
-                        cluster = clusterLabel,
-                        host = host.name,
-                        count = host.count,
-                        cpu = host.describeCpu(config),
-                        memory = host.memory.size.toString(),
-                        gpu = host.describeGpu(config),
-                    )
+            datacenters!!.flatMap {
+                    dc ->
+                dc.clusters.flatMap { cluster ->
+                    val clusterLabel =
+                        if (cluster.count > 1) "${cluster.name} ${config.symbols.times}${cluster.count}" else cluster.name
+                    cluster.hosts.map { host ->
+                        TopologyRow(
+                            cluster = clusterLabel,
+                            host = host.name,
+                            count = host.count,
+                            cpu = host.describeCpu(config),
+                            memory = host.memory.size.toString(),
+                            gpu = host.describeGpu(config),
+                        )
+                    }
                 }
             },
     )

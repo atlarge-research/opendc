@@ -55,14 +55,16 @@ class OutputSinkTest {
     fun `sinks compose and honour granular table selection`() {
         val datacenter =
             topology {
-                cluster(name = "C01") {
-                    host(name = "H01") {
-                        cpu(coreCount = 1, coreSpeed = 2000.mhz)
-                        memory(size = 1.gib)
-                        power {
-                            type = PowerModelType.LINEAR
-                            maxPower = 200.watts
-                            idlePower = 100.watts
+                datacenter {
+                    cluster(name = "C01") {
+                        host(name = "H01") {
+                            cpu(coreCount = 1, coreSpeed = 2000.mhz)
+                            memory(size = 1.gib)
+                            power {
+                                type = PowerModelType.LINEAR
+                                maxPower = 200.watts
+                                idlePower = 100.watts
+                            }
                         }
                     }
                 }

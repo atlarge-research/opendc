@@ -53,10 +53,6 @@ public class MaxMinFairnessFlowDistributor extends FlowDistributor {
             this.pushOutgoingDemand(this.supplierEdges[supplierIndex], demandPerSupplier);
         }
 
-        //        for (FlowEdge supplierEdge : this.supplierEdges.values()) {
-        //            this.pushOutgoingDemand(supplierEdge, this.totalIncomingDemand / this.numSuppliers);
-        //        }
-
         this.outgoingDemandUpdateNeeded = false;
     }
 

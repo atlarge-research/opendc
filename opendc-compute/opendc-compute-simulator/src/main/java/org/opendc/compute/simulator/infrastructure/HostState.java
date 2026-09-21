@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.cli
+package org.opendc.compute.simulator.infrastructure;
 
-import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.core.ProgramResult
-import com.github.ajalt.clikt.core.terminal
-import org.opendc.cli.config.CliConfig
-import org.opendc.cli.render.TopologyView
-import org.opendc.cli.render.renderTopologies
-import org.opendc.cli.render.renderValidation
+/**
+ * The state of a host.
+ */
+public enum HostState {
+    /**
+     * The host is up and able to host guests.
+     */
+    UP,
 
-/** `opendc show` — print every topology declared in an experiment file. */
-internal class ShowCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCommand("show", config) {
-    override fun help(context: Context): String = "Show the datacenter topologies declared in an experiment file."
+    /**
+     * The host is in a (forced) down state and unable to host any guests.
+     */
+    DOWN,
 
-    override fun run() {
-        val experiment = loadExperiment()
-
-        if (!renderValidation(terminal, experimentFile.name, experiment.validate(), config, showSuccess = false)) {
-            throw ProgramResult(1)
-        }
-
-        renderTopologies(terminal, TopologyView.from(experiment, config), config)
-    }
+    /**
+     * The host is in an error state and unable to host any guests.
+     */
+    ERROR
 }

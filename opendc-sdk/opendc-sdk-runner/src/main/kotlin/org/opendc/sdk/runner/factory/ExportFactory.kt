@@ -30,6 +30,8 @@ import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.runner.telemetry.parquet.ComputeExportConfig
 import org.opendc.sdk.runner.telemetry.parquet.withGpuColumns
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
+import org.opendc.sdk.runner.telemetry.table.cluster.ClusterSample
+import org.opendc.sdk.runner.telemetry.table.datacenter.DataCenterSample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
@@ -58,6 +60,8 @@ private fun ExportSpec.toComputeExportConfig(gpuCount: Int): ComputeExportConfig
     ComputeExportConfig.loadDfltColumns()
     return ComputeExportConfig(
         columns.battery.resolve<BatterySample>(),
+        columns.cluster.resolve<ClusterSample>(),
+        columns.dataCenter.resolve<DataCenterSample>(),
         columns.host.resolve<HostSample>(),
         columns.powerSource.resolve<PowerSourceSample>(),
         columns.service.resolve<ServiceSample>(),

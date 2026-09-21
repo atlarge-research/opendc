@@ -20,27 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.cli
+package org.opendc.sdk.runner.telemetry.table.datacenter
 
-import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.core.ProgramResult
-import com.github.ajalt.clikt.core.terminal
-import org.opendc.cli.config.CliConfig
-import org.opendc.cli.render.TopologyView
-import org.opendc.cli.render.renderTopologies
-import org.opendc.cli.render.renderValidation
+import org.opendc.trace.util.parquet.exporter.Exportable
+import java.time.Instant
 
-/** `opendc show` — print every topology declared in an experiment file. */
-internal class ShowCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCommand("show", config) {
-    override fun help(context: Context): String = "Show the datacenter topologies declared in an experiment file."
-
-    override fun run() {
-        val experiment = loadExperiment()
-
-        if (!renderValidation(terminal, experimentFile.name, experiment.validate(), config, showSuccess = false)) {
-            throw ProgramResult(1)
-        }
-
-        renderTopologies(terminal, TopologyView.from(experiment, config), config)
-    }
-}
+public data class DataCenterSample(
+    public val dataCenterName: String? = null,
+    public val timestamp: Instant = Instant.MIN,
+    public val timestampAbsolute: Instant = Instant.MIN,
+    public val powerDraw: Double = -1.0,
+    public val energyUsage: Double = -1.0,
+    public val carbonIntensity: Double = -1.0,
+    public val carbonEmission: Double = -1.0,
+) : Exportable

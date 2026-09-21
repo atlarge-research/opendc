@@ -27,6 +27,7 @@ import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.SchedulerNameSpec
 import org.opendc.sdk.model.topology.ClusterSpec
+import org.opendc.sdk.model.topology.DataCenterSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.validHost
 import org.opendc.sdk.model.workload.TraceWorkloadSpec
@@ -35,7 +36,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class CartesianTest {
-    private fun topology(name: String): TopologySpec = TopologySpec(listOf(ClusterSpec(name = name, hosts = listOf(validHost))))
+    private fun topology(name: String): TopologySpec =
+        TopologySpec(
+            listOf(
+                DataCenterSpec(
+                    listOf(
+                        ClusterSpec(name = name, hosts = listOf(validHost)),
+                    ),
+                ),
+            ),
+        )
 
     private fun workload(name: String): WorkloadSpec = TraceWorkloadSpec(NamedReference(name))
 

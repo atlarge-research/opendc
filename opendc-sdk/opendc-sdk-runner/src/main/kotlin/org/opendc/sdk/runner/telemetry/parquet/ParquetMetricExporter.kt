@@ -25,6 +25,8 @@ package org.opendc.sdk.runner.telemetry.parquet
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.runner.telemetry.MetricExporter
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
+import org.opendc.sdk.runner.telemetry.table.cluster.ClusterSample
+import org.opendc.sdk.runner.telemetry.table.datacenter.DataCenterSample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
@@ -39,6 +41,8 @@ import java.io.File
  */
 public class ParquetMetricExporter(
     private val batteryExporter: Exporter<BatterySample>?,
+    private val clusterExporter: Exporter<ClusterSample>?,
+    private val dataCenterExporter: Exporter<DataCenterSample>?,
     private val hostExporter: Exporter<HostSample>?,
     private val powerSourceExporter: Exporter<PowerSourceSample>?,
     private val serviceExporter: Exporter<ServiceSample>?,
@@ -46,6 +50,14 @@ public class ParquetMetricExporter(
 ) : MetricExporter, AutoCloseable {
     override fun export(reader: BatterySample) {
         batteryExporter?.write(reader)
+    }
+
+    override fun export(reader: ClusterSample) {
+        clusterExporter?.write(reader)
+    }
+
+    override fun export(reader: DataCenterSample) {
+        dataCenterExporter?.write(reader)
     }
 
     override fun export(reader: HostSample) {
@@ -66,6 +78,8 @@ public class ParquetMetricExporter(
 
     override fun close() {
         batteryExporter?.close()
+        clusterExporter?.close()
+        dataCenterExporter?.close()
         hostExporter?.close()
         powerSourceExporter?.close()
         serviceExporter?.close()
@@ -93,6 +107,8 @@ public class ParquetMetricExporter(
                 bufferSize = bufferSize,
                 filesToExport = filesToExport,
                 batteryExportColumns = computeExportConfig.batteryExportColumns,
+                clusterExportColumns = computeExportConfig.clusterExportColumns,
+                dataCenterExportColumns = computeExportConfig.dataCenterExportColumns,
                 hostExportColumns = computeExportConfig.hostExportColumns,
                 powerSourceExportColumns = computeExportConfig.powerSourceExportColumns,
                 serviceExportColumns = computeExportConfig.serviceExportColumns,
@@ -114,6 +130,8 @@ public class ParquetMetricExporter(
             bufferSize: Int,
             filesToExport: Map<OutputFileSpec, Boolean>,
             batteryExportColumns: Collection<ExportColumn<BatterySample>>? = null,
+            clusterExportColumns: Collection<ExportColumn<ClusterSample>>? = null,
+            dataCenterExportColumns: Collection<ExportColumn<DataCenterSample>>? = null,
             hostExportColumns: Collection<ExportColumn<HostSample>>? = null,
             powerSourceExportColumns: Collection<ExportColumn<PowerSourceSample>>? = null,
             serviceExportColumns: Collection<ExportColumn<ServiceSample>>? = null,
@@ -127,6 +145,28 @@ public class ParquetMetricExporter(
                     Exporter(
                         outputFile = File(base, "$partition/battery.parquet").also { it.parentFile.mkdirs() },
                         columns = batteryExportColumns ?: Exportable.getAllLoadedColumns(),
+                        bufferSize = bufferSize,
+                    )
+                } else {
+                    null
+                }
+
+            val clusterExporter =
+                if (filesToExport[OutputFileSpec.CLUSTER] == true) {
+                    Exporter(
+                        outputFile = File(base, "$partition/cluster.parquet").also { it.parentFile.mkdirs() },
+                        columns = clusterExportColumns ?: Exportable.getAllLoadedColumns(),
+                        bufferSize = bufferSize,
+                    )
+                } else {
+                    null
+                }
+
+            val dataCenterExporter =
+                if (filesToExport[OutputFileSpec.DATA_CENTER] == true) {
+                    Exporter(
+                        outputFile = File(base, "$partition/dataCenter.parquet").also { it.parentFile.mkdirs() },
+                        columns = dataCenterExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
                     )
                 } else {
@@ -179,6 +219,8 @@ public class ParquetMetricExporter(
 
             return ParquetMetricExporter(
                 batteryExporter = batteryExporter,
+                clusterExporter = clusterExporter,
+                dataCenterExporter = dataCenterExporter,
                 hostExporter = hostExporter,
                 powerSourceExporter = powerSourceExporter,
                 serviceExporter = serviceExporter,

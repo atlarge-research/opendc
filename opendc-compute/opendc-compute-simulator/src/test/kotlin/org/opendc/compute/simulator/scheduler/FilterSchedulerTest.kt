@@ -28,9 +28,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
-import org.opendc.compute.simulator.host.GpuHostModel
-import org.opendc.compute.simulator.host.HostModel
-import org.opendc.compute.simulator.host.HostState
+import org.opendc.compute.simulator.infrastructure.GpuHostModel
+import org.opendc.compute.simulator.infrastructure.HostModel
+import org.opendc.compute.simulator.infrastructure.HostState
 import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
 import org.opendc.compute.simulator.scheduler.filters.DifferentHostFilter
 import org.opendc.compute.simulator.scheduler.filters.InstanceCountFilter

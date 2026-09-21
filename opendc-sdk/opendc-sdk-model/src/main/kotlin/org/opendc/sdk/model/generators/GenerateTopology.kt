@@ -26,27 +26,33 @@ import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec
+import org.opendc.sdk.model.topology.DataCenterSpec
 import org.opendc.sdk.model.topology.HostSpec
 import org.opendc.sdk.model.topology.MemorySpec
 import org.opendc.sdk.model.topology.TopologySpec
 
 public fun generateTopology(numHosts: Int): TopologySpec {
     return TopologySpec(
-        clusters =
+        datacenters =
             listOf(
-                ClusterSpec(
-                    hosts =
+                DataCenterSpec(
+                    clusters =
                         listOf(
-                            HostSpec(
-                                count = numHosts,
-                                cpu =
-                                    CpuSpec(
-                                        coreCount = 16,
-                                        coreSpeed = Frequency.ofMHz(2100),
-                                    ),
-                                memory =
-                                    MemorySpec(
-                                        size = DataSize.ofMiB(10000.0),
+                            ClusterSpec(
+                                hosts =
+                                    listOf(
+                                        HostSpec(
+                                            count = numHosts,
+                                            cpu =
+                                                CpuSpec(
+                                                    coreCount = 16,
+                                                    coreSpeed = Frequency.ofMHz(2100),
+                                                ),
+                                            memory =
+                                                MemorySpec(
+                                                    size = DataSize.ofMiB(10000.0),
+                                                ),
+                                        ),
                                     ),
                             ),
                         ),

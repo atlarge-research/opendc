@@ -34,6 +34,8 @@ import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.TaskListener
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySampler
+import org.opendc.sdk.runner.telemetry.table.cluster.ClusterSampler
+import org.opendc.sdk.runner.telemetry.table.datacenter.DataCenterSampler
 import org.opendc.sdk.runner.telemetry.table.host.HostSampler
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSampler
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSampler
@@ -58,11 +60,13 @@ public class ComputeMetricReader(
     private val startTime: Duration = Duration.ofMillis(0),
     private val toMonitor: Map<OutputFileSpec, Boolean> =
         mapOf(
-            OutputFileSpec.HOST to true,
-            OutputFileSpec.TASK to true,
-            OutputFileSpec.POWER_SOURCE to true,
             OutputFileSpec.BATTERY to true,
+            OutputFileSpec.CLUSTER to true,
+            OutputFileSpec.DATA_CENTER to true,
+            OutputFileSpec.HOST to true,
+            OutputFileSpec.POWER_SOURCE to true,
             OutputFileSpec.SERVICE to true,
+            OutputFileSpec.TASK to true,
         ),
     private val printFrequency: Int? = null,
 ) : AutoCloseable, TaskListener {
@@ -72,6 +76,16 @@ public class ComputeMetricReader(
 
     private val batterySampler =
         BatterySampler(
+            startTime,
+        )
+
+    private val clusterSampler =
+        ClusterSampler(
+            startTime,
+        )
+
+    private val dataCenterSampler =
+        DataCenterSampler(
             startTime,
         )
 
@@ -125,6 +139,27 @@ public class ComputeMetricReader(
         loggCounter++
         try {
             val now = this.clock.instant()
+
+            if (toMonitor[OutputFileSpec.BATTERY] == true) {
+                for (battery in this.service.batteries) {
+                    val batterySample = this.batterySampler.sample(now, battery)
+                    this.monitor.export(batterySample)
+                }
+            }
+
+            if (toMonitor[OutputFileSpec.CLUSTER] == true) {
+                for (cluster in this.service.clusters) {
+                    val clusterSample = this.clusterSampler.sample(now, cluster)
+                    this.monitor.export(clusterSample)
+                }
+            }
+
+            if (toMonitor[OutputFileSpec.DATA_CENTER] == true) {
+                for (dataCenter in this.service.dataCenters) {
+                    val dataCenterSample = this.dataCenterSampler.sample(now, dataCenter)
+                    this.monitor.export(dataCenterSample)
+                }
+            }
 
             if (toMonitor[OutputFileSpec.BATTERY] == true) {
                 for (battery in this.service.batteries) {

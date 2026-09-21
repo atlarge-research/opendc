@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.service;
 
-import org.opendc.compute.simulator.host.SimHost;
+import org.opendc.compute.simulator.infrastructure.SimHost;
 
 /**
  * A view of a {@link SimHost} as seen from the {@link ComputeService}.

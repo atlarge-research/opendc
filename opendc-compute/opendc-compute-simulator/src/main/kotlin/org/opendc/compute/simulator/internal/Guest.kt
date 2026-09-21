@@ -24,7 +24,7 @@ package org.opendc.compute.simulator.internal
 
 import mu.KotlinLogging
 import org.opendc.compute.api.TaskState
-import org.opendc.compute.simulator.host.SimHost
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.GuestCpuStats
 import org.opendc.compute.simulator.telemetry.GuestGpuStats

@@ -31,6 +31,12 @@ public enum class OutputFileSpec {
     @SerialName("battery")
     BATTERY,
 
+    @SerialName("cluster")
+    CLUSTER,
+
+    @SerialName("datacenter")
+    DATA_CENTER,
+
     @SerialName("host")
     HOST,
 

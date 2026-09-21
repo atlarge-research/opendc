@@ -38,6 +38,7 @@ import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec
+import org.opendc.sdk.model.topology.DataCenterSpec
 import org.opendc.sdk.model.topology.DoubleBatteryPolicySpec
 import org.opendc.sdk.model.topology.EqualSharePolicySpec
 import org.opendc.sdk.model.topology.FixedSharePolicySpec
@@ -64,7 +65,16 @@ public val validCpu: CpuSpec = CpuSpec(coreCount = 8, coreSpeed = 3.ghz)
 
 public val validHost: HostSpec = HostSpec(cpu = validCpu, memory = validMemory)
 
-public val validTopology: TopologySpec = TopologySpec(listOf(ClusterSpec(hosts = listOf(validHost))))
+public val validTopology: TopologySpec =
+    TopologySpec(
+        listOf(
+            DataCenterSpec(
+                listOf(
+                    ClusterSpec(hosts = listOf(validHost)),
+                ),
+            ),
+        ),
+    )
 
 public val validTask: TaskSpec =
     TaskSpec(
@@ -97,6 +107,12 @@ public val sampleCluster: ClusterSpec =
         name = "cluster-a",
         count = 2,
         hosts = listOf(sampleHost),
+    )
+
+public val sampleDataCenter: DataCenterSpec =
+    DataCenterSpec(
+        name = "DC-a",
+        clusters = listOf(sampleCluster),
         powerSource = PowerSourceSpec(name = "grid", maxPower = 50.kwatts, carbon = NamedReference("carbon-trace")),
         battery =
             BatterySpec(
@@ -110,7 +126,7 @@ public val sampleCluster: ClusterSpec =
             ),
     )
 
-public val sampleTopology: TopologySpec = TopologySpec(listOf(sampleCluster))
+public val sampleTopology: TopologySpec = TopologySpec(listOf(sampleDataCenter))
 
 public val sampleRootTask: TaskSpec =
     TaskSpec(

@@ -49,7 +49,7 @@ class VirtualizationOverheadTests {
             {
                 assertInstanceOf(
                     NoVirtualizationOverheadSpec::class.java,
-                    noModelTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead,
+                    noModelTopology.datacenters!![0].clusters[0].hosts[0].gpu?.virtualizationOverhead,
                     "Did not load default model correctly, when no model was given.",
                 )
             },
@@ -57,7 +57,7 @@ class VirtualizationOverheadTests {
             {
                 assertInstanceOf(
                     NoVirtualizationOverheadSpec::class.java,
-                    noOverHeadTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead,
+                    noOverHeadTopology.datacenters!![0].clusters[0].hosts[0].gpu?.virtualizationOverhead,
                     "Did not load no overhead model correctly.",
                 )
             },
@@ -65,7 +65,7 @@ class VirtualizationOverheadTests {
             {
                 assertInstanceOf(
                     ConstantVirtualizationOverheadSpec::class.java,
-                    constantOverHeadTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead,
+                    constantOverHeadTopology.datacenters!![0].clusters[0].hosts[0].gpu?.virtualizationOverhead,
                     "Did not load constant overhead model correctly.",
                 )
             },
@@ -73,7 +73,7 @@ class VirtualizationOverheadTests {
                 assertEquals(
                     0.05,
                     (
-                        constantOverHeadTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead
+                        constantOverHeadTopology.datacenters!![0].clusters[0].hosts[0].gpu?.virtualizationOverhead
                             as ConstantVirtualizationOverheadSpec
                     ).percentageOverhead,
                     "Constant overhead should have 5% overhead",
@@ -83,7 +83,7 @@ class VirtualizationOverheadTests {
             {
                 assertInstanceOf(
                     ConstantVirtualizationOverheadSpec::class.java,
-                    customConstantOverHeadTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead,
+                    customConstantOverHeadTopology.datacenters!![0].clusters[0].hosts[0].gpu?.virtualizationOverhead,
                     "Did not load constant overhead model correctly, when overhead factor was given.",
                 )
             },
@@ -91,7 +91,7 @@ class VirtualizationOverheadTests {
                 assertEquals(
                     0.25,
                     (
-                        customConstantOverHeadTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead
+                        customConstantOverHeadTopology.datacenters!![0].clusters[0].hosts[0].gpu?.virtualizationOverhead
                             as ConstantVirtualizationOverheadSpec
                     ).percentageOverhead,
                     "Custom constant overhead should have 25% overhead",
@@ -101,7 +101,7 @@ class VirtualizationOverheadTests {
             {
                 assertInstanceOf(
                     ShareBasedVirtualizationOverheadSpec::class.java,
-                    shareBasedOverheadTopology.clusters[0].hosts[0].gpu?.virtualizationOverhead,
+                    shareBasedOverheadTopology.datacenters!![0].clusters[0].hosts[0].gpu?.virtualizationOverhead,
                     "Did not load shared based overhead model correctly",
                 )
             },

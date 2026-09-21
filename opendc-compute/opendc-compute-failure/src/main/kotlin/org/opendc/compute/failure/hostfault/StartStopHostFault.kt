@@ -23,7 +23,7 @@
 package org.opendc.compute.failure.hostfault
 
 import kotlinx.coroutines.delay
-import org.opendc.compute.simulator.host.SimHost
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 
 /**

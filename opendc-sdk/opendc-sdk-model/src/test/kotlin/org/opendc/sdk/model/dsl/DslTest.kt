@@ -62,16 +62,18 @@ class DslTest {
     fun `topology DSL equals constructor-built topology`() {
         val built =
             topology {
-                cluster(name = "cluster-a", count = 2) {
-                    host(count = 4, name = "compute-host") {
-                        cpu(coreCount = 8, coreSpeed = 3.ghz, count = 2, vendor = "AMD", modelName = "EPYC", architecture = "Zen4")
-                        memory(size = 32.gib, speed = 3.ghz, vendor = "Samsung")
-                        cpuDistribution = FixedSharePolicySpec(0.5)
-                        gpuDistribution = EqualSharePolicySpec
-                        power {
-                            type = PowerModelType.SQUARE
-                            maxPower = 500.watts
-                            idlePower = 100.watts
+                datacenter(name = "DC-a") {
+                    cluster(name = "cluster-a", count = 2) {
+                        host(count = 4, name = "compute-host") {
+                            cpu(coreCount = 8, coreSpeed = 3.ghz, count = 2, vendor = "AMD", modelName = "EPYC", architecture = "Zen4")
+                            memory(size = 32.gib, speed = 3.ghz, vendor = "Samsung")
+                            cpuDistribution = FixedSharePolicySpec(0.5)
+                            gpuDistribution = EqualSharePolicySpec
+                            power {
+                                type = PowerModelType.SQUARE
+                                maxPower = 500.watts
+                                idlePower = 100.watts
+                            }
                         }
                     }
                     powerSource(name = "grid", maxPower = 50.kwatts, carbon = NamedReference("carbon-trace"))

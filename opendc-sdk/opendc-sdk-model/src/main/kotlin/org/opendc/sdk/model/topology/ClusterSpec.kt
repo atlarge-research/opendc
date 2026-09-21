@@ -23,6 +23,7 @@
 package org.opendc.sdk.model.topology
 
 import kotlinx.serialization.Serializable
+import mu.KotlinLogging
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.validateEach
@@ -33,20 +34,33 @@ import org.opendc.sdk.model.validation.validateEach
  * @property name Human-readable identifier.
  * @property count Number of identical clusters to instantiate.
  * @property hosts Hosts contained in the cluster.
- * @property powerSource Power source feeding the cluster.
- * @property battery Optional battery buffering the power source.
  */
 @Serializable
 public data class ClusterSpec(
     public val name: String = "Cluster",
     public val count: Int = 1,
     public val hosts: List<HostSpec>,
-    public val powerSource: PowerSourceSpec = PowerSourceSpec(),
+    public val powerSource: PowerSourceSpec? = null,
     public val battery: BatterySpec? = null,
 ) : Validatable {
     override fun validate(): List<ValidationIssue> =
         buildList {
             if (hosts.isEmpty()) add(ValidationIssue("hosts", "must not be empty"))
             addAll(hosts.validateEach("hosts"))
+
+            if (powerSource != null) {
+                logger.warn(
+                    "The powerSource has been moved to the datacenter, instead of the cluster",
+                )
+            }
+            if (battery != null) {
+                logger.warn(
+                    "The battery has been moved to the datacenter, instead of the cluster",
+                )
+            }
         }
+
+    private companion object {
+        private val logger = KotlinLogging.logger {}
+    }
 }

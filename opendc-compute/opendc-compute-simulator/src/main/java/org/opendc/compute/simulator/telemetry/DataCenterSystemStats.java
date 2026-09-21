@@ -20,14 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.host;
+package org.opendc.compute.simulator.telemetry;
 
 /**
- * A model for a GPU in a host.
+ * System-level statistics of a host.
  *
- * @param gpuCoreCapacity The capacity of the GPU cores hz.
- * @param gpuCoreCount    The number of GPU cores.
- * @param GpuMemoryCapacity The capacity of the GPU memory in GB.
- * @param GpuMemorySpeed   The speed of the GPU memory in GB/s.
+ * @param powerDraw Instantaneous power draw of the system (in W).
+ * @param energyUsage The cumulative energy usage of the system (in J).
  */
-public record GpuHostModel(double gpuCoreCapacity, int gpuCoreCount, long GpuMemoryCapacity, double GpuMemorySpeed) {}
+public record DataCenterSystemStats(
+        double powerDraw, double energyUsage, double carbonIntensity, double carbonEmission, double embodiedCarbon) {}

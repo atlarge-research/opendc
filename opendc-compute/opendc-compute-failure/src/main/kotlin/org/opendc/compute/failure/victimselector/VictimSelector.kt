@@ -22,7 +22,7 @@
 
 package org.opendc.compute.failure.victimselector
 
-import org.opendc.compute.simulator.host.SimHost
+import org.opendc.compute.simulator.infrastructure.SimHost
 
 /**
  * Interface responsible for selecting the victim(s) for fault injection.

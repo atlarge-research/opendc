@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,26 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.checkpoints
+package org.opendc.compute.simulator.infrastructure;
 
-public data class CheckpointModel(
-    val checkpointWait: Long = 60 * 60 * 1000,
-    val checkpointTime: Long = 5 * 60 * 1000,
-)
+import java.util.List;
+
+/**
+ * Record describing the static machine properties of the host.
+ *
+ * @param cpuCapacity    The total CPU capacity of the host in MHz.
+ * @param coreCount      The number of logical processing cores available for this host.
+ * @param memoryCapacity The amount of memory available for this host in MB.
+ */
+public record HostModel(double cpuCapacity, int coreCount, long memoryCapacity, List<GpuHostModel> gpuHostModels) {
+    /**
+     * Create a new host model.
+     *
+     * @param cpuCapacity    The total CPU capacity of the host in MHz.
+     * @param coreCount      The number of logical processing cores available for this host.
+     * @param memoryCapacity The amount of memory available for this host in MB.
+     */
+    public HostModel(double cpuCapacity, int coreCount, long memoryCapacity) {
+        this(cpuCapacity, coreCount, memoryCapacity, null);
+    }
+}

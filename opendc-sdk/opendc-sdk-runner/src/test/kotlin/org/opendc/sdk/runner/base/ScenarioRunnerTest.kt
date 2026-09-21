@@ -46,15 +46,17 @@ import org.opendc.sdk.runner.base.harness.runTest
 class ScenarioRunnerTest {
     val topologySingle2000 =
         topology {
-            cluster(name = "CO1", count = 1) {
-                host(name = "H01", count = 1) {
-                    cpu(coreCount = 1, coreSpeed = 2.ghz, count = 1)
-                    memory(size = 140.gib)
-                    power {
-                        type = PowerModelType.LINEAR
-                        power = 400.watts
-                        maxPower = 200.watts
-                        idlePower = 100.watts
+            datacenter {
+                cluster(name = "CO1", count = 1) {
+                    host(name = "H01", count = 1) {
+                        cpu(coreCount = 1, coreSpeed = 2.ghz, count = 1)
+                        memory(size = 140.gib)
+                        power {
+                            type = PowerModelType.LINEAR
+                            power = 400.watts
+                            maxPower = 200.watts
+                            idlePower = 100.watts
+                        }
                     }
                 }
             }
@@ -62,15 +64,17 @@ class ScenarioRunnerTest {
 
     val topologyTwo2000 =
         topology {
-            cluster(name = "CO1", count = 1) {
-                host(name = "H01", count = 2) {
-                    cpu(coreCount = 1, coreSpeed = 2.ghz, count = 1)
-                    memory(size = 140.gib)
-                    power {
-                        type = PowerModelType.LINEAR
-                        power = 400.watts
-                        maxPower = 200.watts
-                        idlePower = 100.watts
+            datacenter {
+                cluster(name = "CO1", count = 1) {
+                    host(name = "H01", count = 2) {
+                        cpu(coreCount = 1, coreSpeed = 2.ghz, count = 1)
+                        memory(size = 140.gib)
+                        power {
+                            type = PowerModelType.LINEAR
+                            power = 400.watts
+                            maxPower = 200.watts
+                            idlePower = 100.watts
+                        }
                     }
                 }
             }

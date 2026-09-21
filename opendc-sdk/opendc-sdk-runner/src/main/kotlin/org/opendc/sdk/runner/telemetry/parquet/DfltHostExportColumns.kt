@@ -64,7 +64,7 @@ public object DfltHostExportColumns {
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("host_name"),
-        ) { Binary.fromString(it.hostName) }
+        ) { Binary.fromString(it.hostName ?: "missing") }
 
     public val CLUSTER_NAME: ExportColumn<HostSample> =
         ExportColumn(
@@ -72,7 +72,7 @@ public object DfltHostExportColumns {
                 Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("cluster_name"),
-        ) { Binary.fromString(it.clusterName) }
+        ) { Binary.fromString(it.clusterName ?: "missing") }
 
     public val CPU_COUNT: ExportColumn<HostSample> =
         ExportColumn(

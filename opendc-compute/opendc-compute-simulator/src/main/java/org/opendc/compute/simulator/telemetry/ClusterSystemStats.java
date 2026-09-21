@@ -20,26 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.host;
-
-import java.util.List;
+package org.opendc.compute.simulator.telemetry;
 
 /**
- * Record describing the static machine properties of the host.
+ * System-level statistics of a host.
  *
- * @param cpuCapacity    The total CPU capacity of the host in MHz.
- * @param coreCount      The number of logical processing cores available for this host.
- * @param memoryCapacity The amount of memory available for this host in MB.
+ * @param powerDraw Instantaneous power draw of the system (in W).
+ * @param energyUsage The cumulative energy usage of the system (in J).
  */
-public record HostModel(double cpuCapacity, int coreCount, long memoryCapacity, List<GpuHostModel> gpuHostModels) {
-    /**
-     * Create a new host model.
-     *
-     * @param cpuCapacity    The total CPU capacity of the host in MHz.
-     * @param coreCount      The number of logical processing cores available for this host.
-     * @param memoryCapacity The amount of memory available for this host in MB.
-     */
-    public HostModel(double cpuCapacity, int coreCount, long memoryCapacity) {
-        this(cpuCapacity, coreCount, memoryCapacity, null);
-    }
-}
+public record ClusterSystemStats(
+        double powerDraw, double energyUsage, double carbonIntensity, double carbonEmission, double embodiedCarbon) {}

@@ -20,27 +20,23 @@
  * SOFTWARE.
  */
 
-package org.opendc.cli
+package org.opendc.sdk.model.topology
 
-import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.core.ProgramResult
-import com.github.ajalt.clikt.core.terminal
-import org.opendc.cli.config.CliConfig
-import org.opendc.cli.render.TopologyView
-import org.opendc.cli.render.renderTopologies
-import org.opendc.cli.render.renderValidation
+import kotlinx.serialization.Serializable
+import org.opendc.sdk.model.validation.Validatable
+import org.opendc.sdk.model.validation.ValidationIssue
+import org.opendc.sdk.model.validation.validateEach
 
-/** `opendc show` — print every topology declared in an experiment file. */
-internal class ShowCommand(config: CliConfig = CliConfig.DEFAULTS) : ExperimentCommand("show", config) {
-    override fun help(context: Context): String = "Show the datacenter topologies declared in an experiment file."
-
-    override fun run() {
-        val experiment = loadExperiment()
-
-        if (!renderValidation(terminal, experimentFile.name, experiment.validate(), config, showSuccess = false)) {
-            throw ProgramResult(1)
+@Serializable
+public data class DataCenterSpec(
+    public val clusters: List<ClusterSpec>,
+    public val name: String = "DC",
+    public val powerSource: PowerSourceSpec = PowerSourceSpec(),
+    public val battery: BatterySpec? = null,
+) : Validatable {
+    override fun validate(): List<ValidationIssue> =
+        buildList {
+            if (clusters.isEmpty()) add(ValidationIssue("clusters", "must not be empty"))
+            addAll(clusters.validateEach("clusters"))
         }
-
-        renderTopologies(terminal, TopologyView.from(experiment, config), config)
-    }
 }

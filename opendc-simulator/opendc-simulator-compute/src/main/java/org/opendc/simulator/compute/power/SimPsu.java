@@ -140,6 +140,9 @@ public final class SimPsu extends FlowNode implements FlowSupplier, FlowConsumer
      * Calculate the energy usage up until <code>now</code>.
      */
     public void updateCounters(long now) {
+        if (now == this.lastUpdate) {
+            return;
+        }
         long lastUpdate = this.lastUpdate;
         this.lastUpdate = now;
 
