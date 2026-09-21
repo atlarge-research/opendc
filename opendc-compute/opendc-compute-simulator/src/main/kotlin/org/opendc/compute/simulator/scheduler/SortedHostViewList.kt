@@ -35,7 +35,7 @@ public class SortedHostViewList(
 
     private var noFilters = false
 
-    public val hosts: ArrayList<HostView> = ArrayList(capacity)
+    private val hosts: ArrayList<HostView> = ArrayList(capacity)
 
     public var cmp: Comparator<HostView>
 
@@ -67,6 +67,10 @@ public class SortedHostViewList(
         if (filters.size > 1) {
             otherFilters = filters.subList(1, filters.size)
         }
+    }
+
+    public fun getHosts(): List<HostView> {
+        return hosts
     }
 
     public fun addSorted(hostView: HostView) {

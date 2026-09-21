@@ -32,6 +32,7 @@ import org.opendc.trace.conv.TASK_DEFERRABLE
 import org.opendc.trace.conv.TASK_DURATION
 import org.opendc.trace.conv.TASK_GPU_CAPACITY
 import org.opendc.trace.conv.TASK_GPU_COUNT
+import org.opendc.trace.conv.TASK_HOST
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.conv.TASK_MEM_CAPACITY
 import org.opendc.trace.conv.TASK_NAME
@@ -65,6 +66,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSche
     private var localDeferrable: Boolean = false
     private var localDeadline: Long = -1
     private var localNumFragments: Int = -1
+    private var localHost: String? = null
 
     override fun startRow() {
         localIsActive = true
@@ -82,6 +84,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSche
         localDeferrable = false
         localDeadline = -1L
         localNumFragments = -1
+        localHost = null
     }
 
     override fun endRow() {
@@ -103,6 +106,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSche
                 localDeferrable,
                 localDeadline,
                 localNumFragments,
+                localHost
             ),
         )
     }
@@ -123,6 +127,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSche
             TASK_DEFERRABLE -> colNature
             TASK_DEADLINE -> colDeadline
             TASK_NUM_FRAGMENTS -> colNumFragments
+            TASK_HOST -> colHost
             else -> -1
         }
     }
@@ -190,6 +195,7 @@ internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSche
         check(localIsActive) { "No active row" }
         when (index) {
             colName -> localName = value
+            colHost -> localHost = value
             else -> throw IllegalArgumentException("Invalid column index $index")
         }
     }
@@ -262,4 +268,5 @@ internal class TaskTableWriter(private val writer: ParquetWriter<TaskParquetSche
     private val colNature = 11
     private val colDeadline = 12
     private val colNumFragments = 13
+    private val colHost = 14
 }

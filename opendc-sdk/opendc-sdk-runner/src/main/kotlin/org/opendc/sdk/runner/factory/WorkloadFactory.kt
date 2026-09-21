@@ -160,6 +160,7 @@ public fun TaskSpec.toServiceTask(
         deadline.toMsLong(),
         if (parents.isEmpty()) null else parents,
         if (children.isEmpty()) null else children,
+        null
     )
 }
 

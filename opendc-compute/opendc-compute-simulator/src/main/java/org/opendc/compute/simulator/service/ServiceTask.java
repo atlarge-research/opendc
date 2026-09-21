@@ -85,6 +85,16 @@ public class ServiceTask {
     // TODO: This is currently needed because host gets deleted before the final exporting. When exporting has been
     // updated, remove hostName.
 
+    public String getInitialHost() {
+        return initialHost;
+    }
+
+    public void setInitialHost(String initialHost) {
+        this.initialHost = initialHost;
+    }
+
+    private String initialHost;
+
     private SchedulingRequest request = null;
 
     private short numFailures = 0;
@@ -283,7 +293,8 @@ public class ServiceTask {
             boolean deferrable,
             long deadline,
             int[] parents,
-            int[] children) {
+            int[] children,
+            String initialHost) {
         this.id = id;
         this.submittedAt = submissionTime;
         this.duration = duration;
@@ -302,6 +313,8 @@ public class ServiceTask {
 
         this.parents = (parents == null || parents.length == 0) ? null : parents;
         this.children = (children == null || children.length == 0) ? null : children;
+
+        this.initialHost = initialHost;
     }
 
     public ServiceTask copy() {
@@ -319,7 +332,9 @@ public class ServiceTask {
                 this.deferrable,
                 this.deadline,
                 this.parents == null ? null : Arrays.copyOf(this.parents, this.parents.length),
-                this.children == null ? null : Arrays.copyOf(this.children, this.children.length));
+                this.children == null ? null : Arrays.copyOf(this.children, this.children.length),
+                this.initialHost
+        );
     }
 
     public void start() {

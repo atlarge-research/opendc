@@ -23,11 +23,13 @@
 package org.opendc.compute.simulator.scheduler
 
 import org.opendc.compute.simulator.infrastructure.HostState
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
 import org.opendc.compute.simulator.scheduler.weights.HostWeigher
 import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 import java.util.SplittableRandom
+import java.util.function.Supplier
 import java.util.random.RandomGenerator
 
 /**
@@ -139,6 +141,7 @@ public class FilterScheduler(
 
         val task = req.task
 
+
         val fittingHosts = usedHosts.getFittingHosts(task)
 
         for (emptyHosts in emptyHostMap.values) {
@@ -157,7 +160,7 @@ public class FilterScheduler(
         var maxWeight = Double.MIN_VALUE
         var maxIndex = 0
 
-        val hostView =
+        var hostView =
             if (weighers.isNotEmpty()) {
                 val results = weighers.map { it.getWeights(fittingHosts, task) }
 
@@ -188,6 +191,25 @@ public class FilterScheduler(
             }
 
         iter.remove()
+
+        if (task.getInitialHost() != null) {
+            val allHosts = ArrayList<HostView>()
+
+            for (host in usedHosts.getHosts()) {
+                allHosts.add(host)
+            }
+
+            for (hostTypeList in emptyHostMap.values) {
+                for (hostView in hostTypeList) {
+                    allHosts.add(hostView);
+                }
+            }
+            hostView = requireNotNull(allHosts.filter { hostView -> hostView.host.getName() == task.getInitialHost() }
+                .firstOrNull()
+            ) {
+                "No host called ${task.getInitialHost()} available"
+            }
+        }
 
         val hostType = hostView.host.getType()
 

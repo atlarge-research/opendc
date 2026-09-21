@@ -41,6 +41,7 @@ import org.opendc.trace.conv.TASK_DEFERRABLE
 import org.opendc.trace.conv.TASK_DURATION
 import org.opendc.trace.conv.TASK_GPU_CAPACITY
 import org.opendc.trace.conv.TASK_GPU_COUNT
+import org.opendc.trace.conv.TASK_HOST
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.conv.TASK_MEM_CAPACITY
 import org.opendc.trace.conv.TASK_PARENTS
@@ -138,6 +139,8 @@ public class ComputeWorkloadLoader(
         val deferrableCol = reader.resolve(TASK_DEFERRABLE)
         val deadlineCol = reader.resolve(TASK_DEADLINE)
 
+        val hostCol = reader.resolve(TASK_HOST)
+
         val entries = mutableListOf<ServiceTask>()
 
         return try {
@@ -178,6 +181,8 @@ public class ComputeWorkloadLoader(
                     deadline = submissionTime + (3 * duration)
                 }
 
+                val host = reader.getString(hostCol)
+
                 val builder = fragments.getValue(id) // Get all fragments related to this VM
 
                 entries.add(
@@ -196,6 +201,7 @@ public class ComputeWorkloadLoader(
                         deadline,
                         parentsOutput,
                         childrenOutput,
+                        host
                     ),
                 )
             }

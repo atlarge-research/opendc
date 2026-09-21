@@ -32,6 +32,7 @@ import org.opendc.trace.conv.TASK_DEFERRABLE
 import org.opendc.trace.conv.TASK_DURATION
 import org.opendc.trace.conv.TASK_GPU_CAPACITY
 import org.opendc.trace.conv.TASK_GPU_COUNT
+import org.opendc.trace.conv.TASK_HOST
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.conv.TASK_MEM_CAPACITY
 import org.opendc.trace.conv.TASK_NAME
@@ -80,6 +81,7 @@ internal class TaskTableReader(private val reader: LocalParquetReader<TaskParque
     private val colDeferrable = 11
     private val colDeadline = 12
     private val colNumFragments = 13
+    private val colHost = 14
 
     private val typeParents = TableColumnType.Set(TableColumnType.Int)
     private val typeChildren = TableColumnType.Set(TableColumnType.Int)
@@ -100,6 +102,7 @@ internal class TaskTableReader(private val reader: LocalParquetReader<TaskParque
             TASK_DEFERRABLE -> colDeferrable
             TASK_DEADLINE -> colDeadline
             TASK_NUM_FRAGMENTS -> colNumFragments
+            TASK_HOST -> colHost
             else -> -1
         }
     }
@@ -163,6 +166,7 @@ internal class TaskTableReader(private val reader: LocalParquetReader<TaskParque
 
         return when (index) {
             colName -> record.name
+            colHost -> record.host
             else -> throw IllegalArgumentException("Invalid column")
         }
     }

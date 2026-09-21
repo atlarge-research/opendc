@@ -66,6 +66,25 @@ public suspend fun ComputeService.replay(
     try {
         coroutineScope {
             engineFailure?.start()
+
+            while (true) {
+                val task = trace.peek()
+
+                if (task.initialHost == null) break
+
+                println("${task.id}, ${task.initialHost}")
+
+                trace.poll()
+
+                launch {
+                    val submitted = client.newTask(task)
+                    val watcher = RunningTaskWatcher()
+                    watcher.lock()
+                    submitted.watch(watcher)
+                    watcher.await()
+                }
+            }
+
             var simulationOffset = Long.MIN_VALUE
             for (task in generateSequence(trace::poll)) {
                 val now = clock.millis()

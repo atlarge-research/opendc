@@ -301,6 +301,10 @@ private val TASK_SCHEMA_V4: MessageType =
             Types
                 .optional(PrimitiveType.PrimitiveTypeName.INT32)
                 .named("num_fragments"),
+            Types
+                .optional(PrimitiveType.PrimitiveTypeName.BINARY)
+                .`as`(LogicalTypeAnnotation.stringType())
+                .named("host"),
         )
         .named("resource")
 

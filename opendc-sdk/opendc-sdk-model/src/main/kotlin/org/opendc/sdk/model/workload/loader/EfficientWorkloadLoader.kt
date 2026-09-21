@@ -43,6 +43,7 @@ import org.opendc.trace.conv.TASK_DEFERRABLE
 import org.opendc.trace.conv.TASK_DURATION
 import org.opendc.trace.conv.TASK_GPU_CAPACITY
 import org.opendc.trace.conv.TASK_GPU_COUNT
+import org.opendc.trace.conv.TASK_HOST
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.conv.TASK_MEM_CAPACITY
 import org.opendc.trace.conv.TASK_NUM_FRAGMENTS
@@ -193,6 +194,7 @@ public class EfficientWorkloadLoader(
                     continue
                 }
 
+                // TODO: add initialHost
                 trace.add(
                     ServiceTask(
                         id,
@@ -209,6 +211,7 @@ public class EfficientWorkloadLoader(
                         deadline,
                         parentsOutput,
                         childrenOutput,
+                        null
                     ),
                 )
             }

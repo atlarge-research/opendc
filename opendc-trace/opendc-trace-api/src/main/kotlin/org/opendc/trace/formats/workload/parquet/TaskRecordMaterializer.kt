@@ -51,6 +51,7 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
     private var localDeferrable: Boolean = false
     private var localDeadline = -1L
     private var localNumFragments = -1
+    private var localHost: String? = null
 
     /**
      * Root converter for the record.
@@ -141,6 +142,12 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
                                     localNumFragments = value
                                 }
                             }
+                        "host" ->
+                            object : PrimitiveConverter() {
+                                override fun addBinary(value: Binary) {
+                                    localHost = value.toStringUsingUTF8()
+                                }
+                            }
                         else -> error("Unknown column $type")
                     }
                 }
@@ -160,6 +167,7 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
                 localDeferrable = false
                 localDeadline = -1L
                 localNumFragments = -1
+                localHost = null
             }
 
             override fun end() {}
@@ -183,6 +191,7 @@ internal class TaskRecordMaterializer(schema: MessageType) : RecordMaterializer<
             localDeferrable,
             localDeadline,
             localNumFragments,
+            localHost,
         )
 
     override fun getRootConverter(): GroupConverter = root

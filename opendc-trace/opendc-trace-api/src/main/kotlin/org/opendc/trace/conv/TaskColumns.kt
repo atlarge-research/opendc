@@ -98,3 +98,8 @@ public const val TASK_DEADLINE: String = "deadline"
  * The number of fragments associated with this task
  */
 public const val TASK_NUM_FRAGMENTS: String = "num_fragments"
+
+/**
+ * The host on which the task is put at the start
+ */
+public const val TASK_HOST: String = "host"

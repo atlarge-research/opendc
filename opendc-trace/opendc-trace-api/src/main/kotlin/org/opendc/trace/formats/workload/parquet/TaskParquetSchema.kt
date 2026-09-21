@@ -42,4 +42,5 @@ internal data class TaskParquetSchema(
     val deferrable: Boolean = false,
     val deadline: Long = -1,
     val numFragments: Int = -1,
+    val host: String?
 )
