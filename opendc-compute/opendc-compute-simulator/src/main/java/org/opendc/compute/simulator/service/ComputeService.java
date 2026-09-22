@@ -64,6 +64,11 @@ import org.slf4j.LoggerFactory;
 public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(ComputeService.class);
 
+    // ==================================================================================
+    // Fields
+    // Internal state: infrastructure registries, task bookkeeping, and scheduling counters.
+    // ==================================================================================
+
     /**
      * The {@link InstantSource} representing the clock tracking the (simulation) time.
      */
@@ -97,12 +102,12 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private final Set<HostView> availableHosts = new HashSet<>();
 
     /**
-     * The available powerSources
+     * The available clusters
      */
     private final Set<SimCluster> clusters = new HashSet<>();
 
     /**
-     * The available powerSources
+     * The available dataCenters
      */
     private final Set<SimDataCenter> dataCenters = new HashSet<>();
 
@@ -112,7 +117,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private final Set<SimPowerSource> powerSources = new HashSet<>();
 
     /**
-     * The available powerSources
+     * The available batteries
      */
     private final Set<SimBattery> batteries = new HashSet<>();
 
@@ -140,6 +145,314 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private final List<ServiceTask> tasksToRemove = new ArrayList<>();
 
     private final List<TaskListener> taskListeners = new ArrayList<>();
+
+    private int maxCores = 0;
+    private long maxMemory = 0L;
+    private long attemptsSuccess = 0L;
+    private long attemptsFailure = 0L;
+    private int tasksExpected = 0; // Number of tasks expected from the input trace
+    private int tasksTotal = 0; // Number of tasks seen by the service
+    private int tasksPending = 0; // Number of tasks waiting to be scheduled
+    private int tasksActive = 0; // Number of tasks that are currently running
+    private int tasksTerminated = 0; // Number of tasks that were terminated due to too much failures
+    private int tasksCompleted = 0; // Number of tasks completed successfully
+
+    // ==================================================================================
+    // Construction
+    // How to obtain a ComputeService instance: the constructor, and the Builder that wraps it.
+    // ==================================================================================
+
+    /**
+     * Construct a {@link ComputeService} instance.
+     */
+    public ComputeService(Dispatcher dispatcher, ComputeScheduler scheduler, Duration quantum, int maxNumFailures) {
+        this.clock = dispatcher.getTimeSource();
+        this.scheduler = scheduler;
+        this.pacer = new Pacer(dispatcher, quantum.toMillis(), (time) -> doSchedule());
+        this.maxNumFailures = maxNumFailures;
+    }
+
+    /**
+     * Create a new {@link Builder} instance.
+     */
+    public static Builder builder(Dispatcher dispatcher, ComputeScheduler scheduler) {
+        return new Builder(dispatcher, scheduler);
+    }
+
+    /**
+     * Builder class for a {@link ComputeService}.
+     */
+    public static class Builder {
+        private final Dispatcher dispatcher;
+        private final ComputeScheduler computeScheduler;
+        private Duration quantum = Duration.ofMillis(1);
+        private int maxNumFailures = 10;
+
+        Builder(Dispatcher dispatcher, ComputeScheduler computeScheduler) {
+            this.dispatcher = dispatcher;
+            this.computeScheduler = computeScheduler;
+        }
+
+        /**
+         * Set the scheduling quantum of the service.
+         */
+        public Builder withQuantum(Duration quantum) {
+            this.quantum = quantum;
+            return this;
+        }
+
+        public Builder withMaxNumFailures(int maxNumFailures) {
+            this.maxNumFailures = maxNumFailures;
+            return this;
+        }
+
+        /**
+         * Build a {@link ComputeService}.
+         */
+        public ComputeService build() {
+            return new ComputeService(dispatcher, computeScheduler, quantum, maxNumFailures);
+        }
+    }
+
+    // ==================================================================================
+    // Lifecycle
+    // All functions related to changing the ComputeService state during its lifecycle
+    // ==================================================================================
+
+    @Override
+    public void close() {
+        if (isClosed) {
+            return;
+        }
+
+        isClosed = true;
+        pacer.cancel();
+    }
+
+    // ==================================================================================
+    // Task API
+    // Public surface for submitting, looking up, and rescheduling tasks.
+    // ==================================================================================
+
+    /**
+     * Submit a new {@link ServiceTask} to be scheduled by this service.
+     */
+    @NotNull
+    public ServiceTask newTask(ServiceTask task) {
+        if (isClosed) {
+            throw new IllegalStateException("Service is closed");
+        }
+
+        task.setService(this);
+
+        taskById.put(task.getId(), task);
+
+        tasksTotal++;
+
+        task.start();
+
+        return task;
+    }
+
+    /**
+     * Find the {@link ServiceTask} with the specified id, or {@code null} if no such task exists.
+     */
+    @Nullable
+    public ServiceTask findTask(int id) {
+        return taskById.get(id);
+    }
+
+    /**
+     * Reschedule the given {@link ServiceTask} with a new {@link Workload}.
+     */
+    public void rescheduleTask(@NotNull ServiceTask task, @NotNull Workload workload) {
+        ServiceTask internalTask = findTask(task.getId());
+
+        internalTask.setHost(null);
+
+        internalTask.setWorkload(workload);
+        internalTask.start();
+    }
+
+    /**
+     * Return the {@link ServiceTask}s hosted by this service.
+     */
+    public Map<Integer, ServiceTask> getTasks() {
+        return Collections.unmodifiableMap(taskById);
+    }
+
+    /**
+     * Return the {@link ServiceTask}s hosted by this service.
+     */
+    public List<ServiceTask> getTasksToRemove() {
+        return Collections.unmodifiableList(tasksToRemove);
+    }
+
+    public void clearTasksToRemove() {
+        this.tasksToRemove.clear();
+    }
+
+    public void setTaskToBeRemoved(ServiceTask task) {
+        for (TaskListener listener : this.taskListeners) {
+            listener.onTaskDeletion(task);
+        }
+
+        task.delete();
+    }
+
+    public void setTasksExpected(int numberOfTasks) {
+        this.tasksExpected = numberOfTasks;
+    }
+
+    public void addTaskListener(TaskListener listener) {
+        this.taskListeners.add(listener);
+    }
+
+    // ==================================================================================
+    // Host management
+    // Registering hosts with the scheduling pool and reacting to their availability.
+    // ==================================================================================
+
+    /**
+     * Add a {@link SimHost} to the scheduling pool of the compute service.
+     */
+    public void addHost(SimHost host) {
+        // Check if host is already known
+        if (hostToView.containsKey(host)) {
+            return;
+        }
+
+        HostView hv = new HostView(host);
+        HostModel model = host.getModel();
+
+        maxCores = Math.max(maxCores, model.coreCount());
+        maxMemory = Math.max(maxMemory, model.memoryCapacity());
+        hostToView.put(host, hv);
+
+        if (host.getState() == HostState.UP) {
+            availableHosts.add(hv);
+        }
+
+        scheduler.addHost(hv);
+        host.addListener(hostListener);
+    }
+
+    /**
+     * Remove a {@link SimHost} from the scheduling pool of the compute service.
+     */
+    public void removeHost(SimHost host) {
+        HostView view = hostToView.remove(host);
+        if (view != null) {
+            availableHosts.remove(view);
+            scheduler.removeHost(view);
+            host.removeListener(hostListener);
+        }
+    }
+
+    public void updateHost(SimHost host) {
+        HostView hv = hostToView.get(host);
+
+        this.scheduler.updateHost(hv);
+    }
+
+    public void failHost(HostView hv) {
+        this.scheduler.failHost(hv);
+    }
+
+    public void restartHost(HostView hv) {
+        this.scheduler.restartHost(hv);
+    }
+
+    /**
+     * Lookup the {@link SimHost} that currently hosts the specified {@link ServiceTask}.
+     */
+    public SimHost lookupHost(ServiceTask task) {
+        return task.getHost();
+    }
+
+    /**
+     * Return the {@link SimHost}s that are registered with this service.
+     */
+    public Set<SimHost> getHosts() {
+        return Collections.unmodifiableSet(hostToView.keySet());
+    }
+
+    // ==================================================================================
+    // Power & energy infrastructure
+    // Registering the clusters, data centers, power sources, and batteries backing the service.
+    // ==================================================================================
+
+    public void addCluster(SimCluster cluster) {
+        this.clusters.add(cluster);
+    }
+
+    public void removeCluster(SimCluster cluster) {
+        this.clusters.remove(cluster);
+    }
+
+    public void addDataCenter(SimDataCenter dataCenter) {
+        this.dataCenters.add(dataCenter);
+    }
+
+    public void removeDataCenter(SimDataCenter dataCenter) {
+        this.dataCenters.remove(dataCenter);
+    }
+
+    public void addPowerSource(SimPowerSource simPowerSource) {
+        // Check if host is already known
+        if (powerSources.contains(simPowerSource)) {
+            return;
+        }
+
+        powerSources.add(simPowerSource);
+    }
+
+    public void addBattery(SimBattery simBattery) {
+        // Check if host is already known
+        if (batteries.contains(simBattery)) {
+            return;
+        }
+
+        batteries.add(simBattery);
+    }
+
+    public Set<SimCluster> getClusters() {
+        return Collections.unmodifiableSet(this.clusters);
+    }
+
+    public Set<SimDataCenter> getDataCenters() {
+        return Collections.unmodifiableSet(this.dataCenters);
+    }
+
+    public Set<SimPowerSource> getPowerSources() {
+        return Collections.unmodifiableSet(this.powerSources);
+    }
+
+    public Set<SimBattery> getBatteries() {
+        return Collections.unmodifiableSet(this.batteries);
+    }
+
+    // ==================================================================================
+    // Carbon receiver
+    // Implementation of CarbonReceiver; carbon intensity itself is modeled per power source.
+    // ==================================================================================
+
+    @Override
+    public void updateCarbonIntensity(double newCarbonIntensity) {
+        requestSchedulingCycle();
+    }
+
+    // ComputeService does not hold a carbon model itself; carbon intensity is modeled per power source.
+    @Override
+    public void setCarbonModel(CarbonModel carbonModel) {}
+
+    @Override
+    public void removeCarbonModel(CarbonModel carbonModel) {}
+
+    // ==================================================================================
+    // Statistics
+    // Read-only counters exposing scheduling and task outcomes, for monitoring.
+    // ==================================================================================
 
     public int getHostsAvailable() {
         return this.availableHosts.size();
@@ -177,6 +490,15 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         return this.tasksTerminated;
     }
 
+    public InstantSource getClock() {
+        return this.clock;
+    }
+
+    // ==================================================================================
+    // Scheduling internals
+    // Package-private machinery that queues, selects, and deploys tasks onto hosts.
+    // ==================================================================================
+
     /**
      * A [HostListener] used to track the active tasks.
      */
@@ -190,10 +512,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             if (hv != null) {
                 if (newState == HostState.UP) {
                     availableHosts.add(hv);
-                    restartHosts(hv);
+                    restartHost(hv);
                 } else {
                     availableHosts.remove(hv);
-                    failHosts(hv);
+                    failHost(hv);
                 }
             }
 
@@ -256,236 +578,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             }
         }
     };
-
-    private int maxCores = 0;
-    private long maxMemory = 0L;
-    private long attemptsSuccess = 0L;
-    private long attemptsFailure = 0L;
-    private int tasksExpected = 0; // Number of tasks expected from the input trace
-    private int tasksTotal = 0; // Number of tasks seen by the service
-    private int tasksPending = 0; // Number of tasks waiting to be scheduled
-    private int tasksActive = 0; // Number of tasks that are currently running
-    private int tasksTerminated = 0; // Number of tasks that were terminated due to too much failures
-    private int tasksCompleted = 0; // Number of tasks completed successfully
-
-    /**
-     * Construct a {@link ComputeService} instance.
-     */
-    public ComputeService(Dispatcher dispatcher, ComputeScheduler scheduler, Duration quantum, int maxNumFailures) {
-        this.clock = dispatcher.getTimeSource();
-        this.scheduler = scheduler;
-        this.pacer = new Pacer(dispatcher, quantum.toMillis(), (time) -> doSchedule());
-        this.maxNumFailures = maxNumFailures;
-    }
-
-    /**
-     * Create a new {@link Builder} instance.
-     */
-    public static Builder builder(Dispatcher dispatcher, ComputeScheduler scheduler) {
-        return new Builder(dispatcher, scheduler);
-    }
-
-    /**
-     * Submit a new {@link ServiceTask} to be scheduled by this service.
-     */
-    @NotNull
-    public ServiceTask newTask(ServiceTask task) {
-        if (isClosed) {
-            throw new IllegalStateException("Service is closed");
-        }
-
-        task.setService(this);
-
-        taskById.put(task.getId(), task);
-
-        tasksTotal++;
-
-        task.start();
-
-        return task;
-    }
-
-    /**
-     * Find the {@link ServiceTask} with the specified id, or {@code null} if no such task exists.
-     */
-    @Nullable
-    public ServiceTask findTask(int id) {
-        return taskById.get(id);
-    }
-
-    /**
-     * Reschedule the given {@link ServiceTask} with a new {@link Workload}.
-     */
-    public void rescheduleTask(@NotNull ServiceTask task, @NotNull Workload workload) {
-        ServiceTask internalTask = findTask(task.getId());
-
-        internalTask.setHost(null);
-
-        internalTask.setWorkload(workload);
-        internalTask.start();
-    }
-
-    /**
-     * Return the {@link ServiceTask}s hosted by this service.
-     */
-    public Map<Integer, ServiceTask> getTasks() {
-        return taskById;
-    }
-
-    /**
-     * Return the {@link ServiceTask}s hosted by this service.
-     */
-    public List<ServiceTask> getTasksToRemove() {
-        return Collections.unmodifiableList(tasksToRemove);
-    }
-
-    public void clearTasksToRemove() {
-        this.tasksToRemove.clear();
-    }
-
-    public void addCluster(SimCluster cluster) {
-        this.clusters.add(cluster);
-    }
-
-    public void removeCluster(SimCluster cluster) {
-        this.clusters.remove(cluster);
-    }
-
-    public void addDataCenter(SimDataCenter dataCenter) {
-        this.dataCenters.add(dataCenter);
-    }
-
-    public void removeDataCenter(SimDataCenter dataCenter) {
-        this.dataCenters.remove(dataCenter);
-    }
-
-    /**
-     * Add a {@link SimHost} to the scheduling pool of the compute service.
-     */
-    public void addHost(SimHost host) {
-        // Check if host is already known
-        if (hostToView.containsKey(host)) {
-            return;
-        }
-
-        HostView hv = new HostView(host);
-        HostModel model = host.getModel();
-
-        maxCores = Math.max(maxCores, model.coreCount());
-        maxMemory = Math.max(maxMemory, model.memoryCapacity());
-        hostToView.put(host, hv);
-
-        if (host.getState() == HostState.UP) {
-            availableHosts.add(hv);
-        }
-
-        scheduler.addHost(hv);
-        host.addListener(hostListener);
-    }
-
-    public void updateHost(SimHost host) {
-        HostView hv = hostToView.get(host);
-
-        this.scheduler.updateHost(hv);
-    }
-
-    public void failHosts(HostView hv) {
-        this.scheduler.failHost(hv);
-    }
-
-    public void restartHosts(HostView hv) {
-        this.scheduler.restartHost(hv);
-    }
-
-    public void addPowerSource(SimPowerSource simPowerSource) {
-        // Check if host is already known
-        if (powerSources.contains(simPowerSource)) {
-            return;
-        }
-
-        powerSources.add(simPowerSource);
-    }
-
-    public void addBattery(SimBattery simBattery) {
-        // Check if host is already known
-        if (batteries.contains(simBattery)) {
-            return;
-        }
-
-        batteries.add(simBattery);
-    }
-
-    /**
-     * Remove a {@link SimHost} from the scheduling pool of the compute service.
-     */
-    public void removeHost(SimHost host) {
-        HostView view = hostToView.remove(host);
-        if (view != null) {
-            availableHosts.remove(view);
-            scheduler.removeHost(view);
-            host.removeListener(hostListener);
-        }
-    }
-
-    /**
-     * Lookup the {@link SimHost} that currently hosts the specified {@link ServiceTask}.
-     */
-    public SimHost lookupHost(ServiceTask task) {
-        return task.getHost();
-    }
-
-    /**
-     * Return the {@link SimHost}s that are registered with this service.
-     */
-    public Set<SimHost> getHosts() {
-        return Collections.unmodifiableSet(hostToView.keySet());
-    }
-
-    public InstantSource getClock() {
-        return this.clock;
-    }
-
-    public Set<SimCluster> getClusters() {
-        return Collections.unmodifiableSet(this.clusters);
-    }
-
-    public Set<SimDataCenter> getDataCenters() {
-        return Collections.unmodifiableSet(this.dataCenters);
-    }
-
-    public Set<SimPowerSource> getPowerSources() {
-        return Collections.unmodifiableSet(this.powerSources);
-    }
-
-    public Set<SimBattery> getBatteries() {
-        return Collections.unmodifiableSet(this.batteries);
-    }
-
-    public void setTasksExpected(int numberOfTasks) {
-        this.tasksExpected = numberOfTasks;
-    }
-
-    public void addTaskListener(TaskListener listener) {
-        this.taskListeners.add(listener);
-    }
-
-    public void setTaskToBeRemoved(ServiceTask task) {
-        for (TaskListener listener : this.taskListeners) {
-            listener.onTaskDeletion(task);
-        }
-
-        task.delete();
-    }
-
-    @Override
-    public void close() {
-        if (isClosed) {
-            return;
-        }
-
-        isClosed = true;
-        pacer.cancel();
-    }
 
     /**
      * Enqueue the specified [task] to be scheduled onto a host.
@@ -576,14 +668,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         taskById.remove(task.getId());
     }
 
-    public void updateCarbonIntensity(double newCarbonIntensity) {
-        requestSchedulingCycle();
-    }
-
-    public void setCarbonModel(CarbonModel carbonModel) {}
-
-    public void removeCarbonModel(CarbonModel carbonModel) {}
-
     /**
      * Indicate that a new scheduling cycle is needed due to a change to the service's state.
      */
@@ -661,49 +745,14 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
                 updateHost(host);
 
-                long new_scheduling_delay = clock.millis() - req.getSubmitTime() + task.getSchedulingDelay();
-                task.setSchedulingDelay(new_scheduling_delay);
+                long newSchedulingDelay = clock.millis() - req.getSubmitTime() + task.getSchedulingDelay();
+                task.setSchedulingDelay(newSchedulingDelay);
 
             } catch (Exception cause) {
                 LOGGER.error("Failed to deploy VM", cause);
                 scheduler.removeTask(task, hv);
                 attemptsFailure++;
             }
-        }
-    }
-
-    /**
-     * Builder class for a {@link ComputeService}.
-     */
-    public static class Builder {
-        private final Dispatcher dispatcher;
-        private final ComputeScheduler computeScheduler;
-        private Duration quantum = Duration.ofMillis(1);
-        private int maxNumFailures = 10;
-
-        Builder(Dispatcher dispatcher, ComputeScheduler computeScheduler) {
-            this.dispatcher = dispatcher;
-            this.computeScheduler = computeScheduler;
-        }
-
-        /**
-         * Set the scheduling quantum of the service.
-         */
-        public Builder withQuantum(Duration quantum) {
-            this.quantum = quantum;
-            return this;
-        }
-
-        public Builder withMaxNumFailures(int maxNumFailures) {
-            this.maxNumFailures = maxNumFailures;
-            return this;
-        }
-
-        /**
-         * Build a {@link ComputeService}.
-         */
-        public ComputeService build() {
-            return new ComputeService(dispatcher, computeScheduler, quantum, maxNumFailures);
         }
     }
 }
