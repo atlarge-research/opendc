@@ -49,11 +49,9 @@ public class TaskStopper(
     private var carbonModel: CarbonModel? = null
 
     private var service: ComputeService? = null
-    private var client: ComputeService.ComputeClient? = null
 
     public fun setService(service: ComputeService) {
         this.service = service
-        this.client = service.newClient()
     }
 
     private fun pauseTasks() {
@@ -69,7 +67,7 @@ public class TaskStopper(
             host.pauseAllTasks()
 
             for ((task, snapshot) in tasks.zip(snapshots)) {
-                client!!.rescheduleTask(task, snapshot)
+                service!!.rescheduleTask(task, snapshot)
             }
         }
     }

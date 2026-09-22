@@ -286,13 +286,43 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     /**
-     * Create a new {@link ComputeClient} to control the compute service.
+     * Submit a new {@link ServiceTask} to be scheduled by this service.
      */
-    public ComputeClient newClient() {
+    @NotNull
+    public ServiceTask newTask(ServiceTask task) {
         if (isClosed) {
             throw new IllegalStateException("Service is closed");
         }
-        return new ComputeClient(this);
+
+        task.setService(this);
+
+        taskById.put(task.getId(), task);
+
+        tasksTotal++;
+
+        task.start();
+
+        return task;
+    }
+
+    /**
+     * Find the {@link ServiceTask} with the specified id, or {@code null} if no such task exists.
+     */
+    @Nullable
+    public ServiceTask findTask(int id) {
+        return taskById.get(id);
+    }
+
+    /**
+     * Reschedule the given {@link ServiceTask} with a new {@link Workload}.
+     */
+    public void rescheduleTask(@NotNull ServiceTask task, @NotNull Workload workload) {
+        ServiceTask internalTask = findTask(task.getId());
+
+        internalTask.setHost(null);
+
+        internalTask.setWorkload(workload);
+        internalTask.start();
     }
 
     /**
@@ -674,70 +704,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
          */
         public ComputeService build() {
             return new ComputeService(dispatcher, computeScheduler, quantum, maxNumFailures);
-        }
-    }
-
-    /**
-     * Implementation of {@link ComputeClient} using a {@link ComputeService}.
-     */
-    public static class ComputeClient {
-        private final ComputeService service;
-        private boolean isClosed;
-
-        ComputeClient(ComputeService service) {
-            this.service = service;
-        }
-
-        /**
-         * Method to check if the client is still open and throw an exception if it is not.
-         */
-        private void checkOpen() {
-            if (isClosed) {
-                throw new IllegalStateException("Client is already closed");
-            }
-        }
-
-        @NotNull
-        public ServiceTask newTask(ServiceTask task) {
-
-            checkOpen();
-
-            final ComputeService service = this.service;
-
-            task.setService(service);
-
-            service.taskById.put(task.getId(), task);
-
-            service.tasksTotal++;
-
-            task.start();
-
-            return task;
-        }
-
-        @Nullable
-        public ServiceTask findTask(int id) {
-            checkOpen();
-            return service.taskById.get(id);
-        }
-
-        public void close() {
-            isClosed = true;
-        }
-
-        @Override
-        public String toString() {
-            return "ComputeService.Client";
-        }
-
-        @Nullable
-        public void rescheduleTask(@NotNull ServiceTask task, @NotNull Workload workload) {
-            ServiceTask internalTask = findTask(task.getId());
-
-            internalTask.setHost(null);
-
-            internalTask.setWorkload(workload);
-            internalTask.start();
         }
     }
 }

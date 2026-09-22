@@ -36,8 +36,6 @@ public class StartStopHostFault(
         victims: List<SimHost>,
         faultDuration: Long,
     ) {
-        val client: ComputeService.ComputeClient = service.newClient()
-
         for (host in victims) {
             val guests = host.getGuests()
 
@@ -46,7 +44,7 @@ public class StartStopHostFault(
             host.fail()
 
             for ((task, snapshot) in tasks.zip(snapshots)) {
-                client.rescheduleTask(task, snapshot)
+                service.rescheduleTask(task, snapshot)
             }
         }
 
