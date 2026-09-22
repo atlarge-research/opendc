@@ -226,7 +226,9 @@ public abstract class FlowNode {
         List<FlowEdge> consumerEdges = connectedEdges.get(FlowEdge.NodeType.CONSUMING);
         if (consumerEdges != null) {
             for (FlowEdge edge : consumerEdges) {
-                edge.close(FlowEdge.NodeType.CONSUMING);
+                if (edge != null) {
+                    edge.close(FlowEdge.NodeType.CONSUMING);
+                }
             }
         }
 
@@ -235,7 +237,9 @@ public abstract class FlowNode {
 
         if (supplierEdges != null) {
             for (FlowEdge edge : supplierEdges) {
-                edge.close(FlowEdge.NodeType.SUPPLYING);
+                if (edge != null) {
+                    edge.close(FlowEdge.NodeType.SUPPLYING);
+                }
             }
         }
 

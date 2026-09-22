@@ -141,18 +141,6 @@ public class Guest(
         listener.onStart(this)
     }
 
-//    /**
-//     * Stop the guest.
-//     */
-//    public fun stop() {
-//        when (state) {
-//            TaskState.RUNNING -> doStop(TaskState.COMPLETED)
-//            TaskState.FAILED -> state = TaskState.TERMINATED
-//            TaskState.COMPLETED, TaskState.PAUSED, TaskState.TERMINATED -> return
-//            else -> assert(false) { "Invalid state transition" }
-//        }
-//    }
-
     /**
      * Attempt to stop the task and put it into [target] state.
      */
@@ -181,18 +169,6 @@ public class Guest(
         }
         listener.onStop(this)
     }
-
-//    /**
-//     * Delete the guest.
-//     *
-//     * This operation will stop the guest if it is running on the host and remove all resources associated with the
-//     * guest.
-//     */
-//    public fun delete() {
-//        stop()
-//
-//        state = TaskState.FAILED
-//    }
 
     /**
      * Fail the guest if it is active.

@@ -192,9 +192,14 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 if (newState == HostState.UP) {
                     availableHosts.add(hv);
                     restartHosts(hv);
-                } else {
+                }
+                if (newState == HostState.ERROR){
                     availableHosts.remove(hv);
                     failHosts(hv);
+                }
+                if (newState == HostState.DOWN) {
+                    availableHosts.remove(hv);
+                    removeHost(hv.getHost());
                 }
             }
 
@@ -233,10 +238,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                     LOGGER.error("Unknown host {}", host);
                 }
 
-                host.delete(task);
-
-                updateHost(host);
-
                 if (newState == TaskState.COMPLETED) {
                     tasksCompleted++;
                     addCompletedTask(task);
@@ -251,6 +252,13 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 }
 
                 scheduler.removeTask(task, hv);
+
+                host.delete(task);
+                updateHost(host);
+
+                if (host.getHostState() == HostState.CLOSING) {
+                    host.cordonClose();
+                }
 
                 // Try to reschedule if needed
                 requestSchedulingCycle();
@@ -357,6 +365,9 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     public void updateHost(SimHost host) {
         HostView hv = hostToView.get(host);
 
+        if (hv == null) {
+            return;
+        }
         this.scheduler.updateHost(hv);
     }
 
@@ -396,6 +407,28 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             scheduler.removeHost(view);
             host.removeListener(hostListener);
         }
+
+        host.close();
+    }
+
+    public void cordonClose(SimHost host) {
+        HostView view = hostToView.get(host);
+        if (view != null) {
+            scheduler.removeHost(view);
+        }
+
+        host.cordonClose();
+    }
+
+    public void cordonClose(String hostName) {
+        Set<SimHost> allHosts = hostToView.keySet();
+
+        SimHost host = allHosts.stream().filter(
+            it -> it.getName().equals(hostName)
+        ).findFirst()
+            .orElseThrow(() -> new NoSuchElementException("No Host found with name: " + hostName));
+
+        cordonClose(host);
     }
 
     /**
@@ -570,7 +603,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     /**
      * Run a single scheduling iteration.
      */
-    private void doSchedule() {
+    public void doSchedule() {
         for (Iterator<SchedulingRequest> iterator = taskQueue.iterator();
                 iterator.hasNext();
                 iterator = taskQueue.iterator()) {
@@ -682,6 +715,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      * Implementation of {@link ComputeClient} using a {@link ComputeService}.
      */
     public static class ComputeClient {
+        public ComputeService getService() {
+            return service;
+        }
+
         private final ComputeService service;
         private boolean isClosed;
 

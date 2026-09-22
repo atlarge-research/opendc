@@ -61,6 +61,7 @@ public data class ExperimentSpec(
     public val runs: Int = 1,
     public val initialSeed: Int = 0,
     public val name: String = "",
+    public val cordonHosts: Set<List<String>> = setOf(listOf()),
 ) : Validatable {
     override fun validate(): List<ValidationIssue> =
         buildList {

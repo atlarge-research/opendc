@@ -26,6 +26,7 @@ import org.opendc.common.ResourceType
 import org.opendc.compute.api.TaskState
 import org.opendc.compute.simulator.internal.Guest
 import org.opendc.compute.simulator.internal.GuestListener
+import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.compute.simulator.telemetry.GuestCpuStats
 import org.opendc.compute.simulator.telemetry.GuestGpuStats
@@ -65,11 +66,14 @@ public class SimHost(
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
     private val type: String = "Unknown",
+
 ) : AutoCloseable {
     /**
      * The event listeners registered with this host.
      */
     private val hostListeners = mutableListOf<HostListener>()
+
+    private var isClosing = false
 
     /**
      * The virtual machines running on the hypervisor.
@@ -77,12 +81,15 @@ public class SimHost(
     private val taskToGuestMap = HashMap<ServiceTask, Guest>()
     private val guests = mutableSetOf<Guest>()
 
-    private var hostState: HostState = HostState.DOWN
+    public var hostState: HostState = HostState.DOWN
         set(value) {
-            if (value != field) {
-                hostListeners.forEach { it.onStateChanged(this, value) }
-            }
+            val is_changed = field != value
             field = value
+            if (is_changed) {
+                for (listener in hostListeners.toList()) {
+                    listener.onStateChanged(this, value)
+                }
+            }
         }
 
     private val gpuHostModels: List<GpuHostModel>? =
@@ -111,11 +118,15 @@ public class SimHost(
     private val guestListener =
         object : GuestListener {
             override fun onStart(guest: Guest) {
-                hostListeners.forEach { it.onStateChanged(this@SimHost, guest.task, guest.state) }
+                for (listener in hostListeners.toList()) {
+                    listener.onStateChanged(this@SimHost, guest.task, guest.state)
+                }
             }
 
             override fun onStop(guest: Guest) {
-                hostListeners.forEach { it.onStateChanged(this@SimHost, guest.task, guest.state) }
+                for (listener in hostListeners.toList()) {
+                    listener.onStateChanged(this@SimHost, guest.task, guest.state)
+                }
             }
         }
 
@@ -158,10 +169,32 @@ public class SimHost(
     }
 
     override fun close() {
+        if (this.hostState == HostState.DOWN) {
+            return
+        }
+
         reset(HostState.DOWN)
+
+        this.simMachine?.shutdown();
+    }
+
+    public fun cordonClose() {
+        if (this.hostState != HostState.CLOSING) {
+            this.hostState = HostState.CLOSING
+        }
+
+        if (this.guests.isEmpty()) {
+            this.close()
+        }
     }
 
     public fun fail() {
+        if (this.isClosing) {
+            close()
+            return
+        }
+
+
         reset(HostState.ERROR)
 
         // Fail the guest and delete them
@@ -290,11 +323,6 @@ public class SimHost(
         val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.id} at host $name" }
         guest.start()
     }
-
-//    public fun stop(task: ServiceTask) {
-//        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.id} at host $name" }
-//        guest.stop()
-//    }
 
     public fun delete(task: ServiceTask) {
         val guest = taskToGuestMap[task] ?: return

@@ -26,6 +26,7 @@ import org.opendc.common.ResourceType
 import org.opendc.compute.carbon.getCarbonFragments
 import org.opendc.compute.simulator.cluster.SimCluster
 import org.opendc.compute.simulator.datacenter.SimDataCenter
+import org.opendc.compute.simulator.infrastructure.HostState
 import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.sdk.model.resource.ResourceReference
@@ -92,7 +93,9 @@ public class HostsProvisioningStep(
 
         return AutoCloseable {
             for (simHost in simHosts) {
-                simHost.close()
+                if (simHost.hostState != HostState.DOWN) {
+                    simHost.close()
+                }
             }
 
             for (simPowerSource in simPowerSources) {

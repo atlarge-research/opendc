@@ -62,6 +62,7 @@ public data class ScenarioSpec(
     public val initialSeed: Int = 0,
     public val id: Int = -1,
     public val name: String = "",
+    public val cordonHostList: List<String> = listOf(),
 ) : Validatable {
     override fun validate(): List<ValidationIssue> =
         buildList {

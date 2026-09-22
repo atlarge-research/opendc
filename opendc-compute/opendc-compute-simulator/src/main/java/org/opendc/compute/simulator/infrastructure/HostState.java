@@ -31,6 +31,8 @@ public enum HostState {
      */
     UP,
 
+    CLOSING,
+
     /**
      * The host is in a (forced) down state and unable to host any guests.
      */

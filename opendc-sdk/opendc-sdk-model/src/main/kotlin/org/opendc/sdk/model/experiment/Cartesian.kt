@@ -37,10 +37,12 @@ public fun ExperimentSpec.expand(): List<ScenarioSpec> {
     val failureList = failureModels.toList()
     val checkpointList = checkpointModels.toList()
     val maxFailureList = maxNumFailures.toList()
+    val cordonHostLists = cordonHosts.toList()
 
     val total =
         topologyList.size * workloadList.size * allocationList.size *
-            exportList.size * failureList.size * checkpointList.size * maxFailureList.size
+            exportList.size * failureList.size * checkpointList.size *
+            maxFailureList.size * cordonHostLists.size
 
     return (0 until total).map { i ->
         var rem = i
@@ -50,7 +52,8 @@ public fun ExperimentSpec.expand(): List<ScenarioSpec> {
         val export = exportList[rem % exportList.size].also { rem /= exportList.size }
         val allocation = allocationList[rem % allocationList.size].also { rem /= allocationList.size }
         val workload = workloadList[rem % workloadList.size].also { rem /= workloadList.size }
-        val topology = topologyList[rem % topologyList.size]
+        val topology = topologyList[rem % topologyList.size].also { rem /= topologyList.size }
+        val cordonHostList = cordonHostLists.get(rem % cordonHostLists.size)
         ScenarioSpec(
             topology = topology,
             workload = workload,
@@ -63,6 +66,7 @@ public fun ExperimentSpec.expand(): List<ScenarioSpec> {
             initialSeed = initialSeed,
             id = i,
             name = i.toString(),
+            cordonHostList = cordonHostList,
         )
     }
 }

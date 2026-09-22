@@ -55,6 +55,8 @@ public class FilterScheduler(
      * The pool of hosts available to the scheduler.
      */
 
+    private val allHosts: ArrayList<HostView> = ArrayList(numHosts)
+
     private val failedHosts = mutableListOf<HostView>() // List of Hosts that are currently not available
     private val emptyHostMap = mutableMapOf<String, MutableList<HostView>>()
 
@@ -67,6 +69,8 @@ public class FilterScheduler(
     }
 
     override fun addHost(hostView: HostView) {
+        allHosts.add(hostView)
+
         val hostType = hostView.host.getType()
 
         if (emptyHostMap.containsKey(hostType)) {
@@ -79,6 +83,7 @@ public class FilterScheduler(
     // Remove host from the Available hosts list
     override fun removeHost(hostView: HostView) {
         val hostType = hostView.host.getType()
+        allHosts.remove(hostView)
 
         // remove from emptyHosts if present
         val removed = emptyHostMap[hostType]?.remove(hostView)
@@ -105,6 +110,10 @@ public class FilterScheduler(
 
     override fun updateHost(hostView: HostView) {
         if (hostView.host.getState() == HostState.ERROR) {
+            return
+        }
+
+        if (!allHosts.contains(hostView)) {
             return
         }
 

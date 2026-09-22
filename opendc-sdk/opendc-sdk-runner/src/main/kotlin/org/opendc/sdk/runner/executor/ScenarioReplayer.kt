@@ -60,6 +60,7 @@ public suspend fun ComputeService.replay(
     seed: Long,
     resolve: ((ResourceReference) -> Path)? = null,
     submitImmediately: Boolean = false,
+    cordonHostList: List<String> = listOf(),
 ) {
     val client = newClient()
     val engineFailure = failureModel?.toEngine(coroutineContext, clock, this, Random(seed), resolve!!)
@@ -68,6 +69,33 @@ public suspend fun ComputeService.replay(
             engineFailure?.start()
 
             var simulationOffset = Long.MIN_VALUE
+
+            while (trace.isNotEmpty()) {
+                val task = trace.peek()
+
+                val now = clock.millis()
+                val start = task.submittedAt
+                if (simulationOffset == Long.MIN_VALUE) simulationOffset = start - now
+
+                if (task.initialHost == null) {
+                    break
+                }
+                launch {
+                    val submitted = client.newTask(task)
+                    val watcher = RunningTaskWatcher()
+                    watcher.lock()
+                    submitted.watch(watcher)
+                    watcher.await()
+                }
+
+                trace.poll()
+            }
+
+            client.service.doSchedule()
+            for (cordonHost in cordonHostList) {
+                client.service.cordonClose(cordonHost)
+            }
+
             for (task in generateSequence(trace::poll)) {
                 val now = clock.millis()
                 val start = task.submittedAt

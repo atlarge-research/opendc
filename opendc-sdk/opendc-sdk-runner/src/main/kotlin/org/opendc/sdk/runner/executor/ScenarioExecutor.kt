@@ -109,7 +109,8 @@ private class ScenarioRun(
 //        val sessions = attachSinks(20, startTime, workload.size)
         connectCarbonModel()
 
-        service.replay(clock, workload, scenario.failureModel, seed, resources::resolve)
+        service.replay(clock, workload, scenario.failureModel, seed, resources::resolve,
+            cordonHostList = scenario.cordonHostList)
         return RunResult(seed, sessions.mapNotNull { it.result() })
     }
 
