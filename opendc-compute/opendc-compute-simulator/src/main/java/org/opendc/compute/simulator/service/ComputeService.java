@@ -545,11 +545,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
                 HostView hv = hostToView.get(host);
                 if (hv != null) {
-                    hv.provisionedCpuCores -= task.getCpuCoreCount();
-                    hv.availableCpuCores += task.getCpuCoreCount();
-                    hv.instanceCount--;
-                    hv.availableMemory += task.getMemorySize();
-                    hv.provisionedGpuCores -= task.getGpuCoreCount();
+                    hv.release(task);
                 } else {
                     LOGGER.error("Unknown host {}", host);
                 }
@@ -692,67 +688,78 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             if (result.getResultType() == SchedulingResultType.EMPTY) {
                 break;
             }
-            final HostView hv = result.getHost();
+
             final SchedulingRequest req = result.getReq();
             final ServiceTask task = req.getTask();
 
             if (result.getResultType() == SchedulingResultType.FAILURE) {
                 LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);
 
-                if (task.getMemorySize() > maxMemory || task.getCpuCoreCount() > maxCores) {
-                    // Remove the incoming image
-                    taskQueue.remove(req);
-                    tasksPending--;
-                    tasksTerminated++;
-
-                    LOGGER.warn("Failed to spawn {}: does not fit", task);
-
-                    task.setState(TaskState.TERMINATED);
-
-                    this.addTerminatedTask(task);
-
-                    this.setTaskToBeRemoved(task);
+                // Check if the task will every fit on any of the hosts.
+                // If not, terminate the host
+                if (task.getMemorySize() > this.maxMemory || task.getCpuCoreCount() > this.maxCores) {
+                    terminateOversizedTask(task, req);
                     continue;
                 } else {
-                    // VM fits, but we don't have enough capacity
                     break;
                 }
             }
 
-            SimHost host = hv.getHost();
+            deployTask(task, result.getHost(), req);
+        }
+    }
 
-            // Remove request from queue
-            tasksPending--;
+    /**
+     * Terminate a task that exceeds the capacity of every host, and remove it from the queue.
+     */
+    private void terminateOversizedTask(ServiceTask task, SchedulingRequest req) {
+        // Remove the incoming image
+        taskQueue.remove(req);
+        tasksPending--;
+        tasksTerminated++;
 
-            LOGGER.info("Assigned task {} to host {}", task, host);
+        LOGGER.warn("Failed to spawn {}: does not fit", task);
 
-            try {
-                task.setHost(host);
-                task.setScheduledAt(clock.millis());
+        task.setState(TaskState.TERMINATED);
 
-                host.spawn(task);
+        this.addTerminatedTask(task);
 
-                tasksActive++;
-                attemptsSuccess++;
+        this.setTaskToBeRemoved(task);
+    }
 
-                hv.instanceCount++;
-                hv.provisionedCpuCores += task.getCpuCoreCount();
-                hv.availableCpuCores -= task.getCpuCoreCount();
-                hv.availableMemory -= task.getMemorySize();
-                hv.provisionedGpuCores += task.getGpuCoreCount();
+    /**
+     * Deploy the given task onto the host selected for it.
+     */
+    private void deployTask(ServiceTask task, HostView hv, SchedulingRequest req) {
+        SimHost host = hv.getHost();
 
-                activeTasks.put(task, host);
+        // Remove request from queue
+        tasksPending--;
 
-                updateHost(host);
+        LOGGER.info("Assigned task {} to host {}", task, host);
 
-                long newSchedulingDelay = clock.millis() - req.getSubmitTime() + task.getSchedulingDelay();
-                task.setSchedulingDelay(newSchedulingDelay);
+        try {
+            task.setHost(host);
+            task.setScheduledAt(clock.millis());
 
-            } catch (Exception cause) {
-                LOGGER.error("Failed to deploy VM", cause);
-                scheduler.removeTask(task, hv);
-                attemptsFailure++;
-            }
+            host.spawn(task);
+
+            tasksActive++;
+            attemptsSuccess++;
+
+            hv.reserve(task);
+
+            activeTasks.put(task, host);
+
+            updateHost(host);
+
+            long newSchedulingDelay = clock.millis() - req.getSubmitTime() + task.getSchedulingDelay();
+            task.setSchedulingDelay(newSchedulingDelay);
+
+        } catch (Exception cause) {
+            LOGGER.error("Failed to deploy VM", cause);
+            scheduler.removeTask(task, hv);
+            attemptsFailure++;
         }
     }
 }

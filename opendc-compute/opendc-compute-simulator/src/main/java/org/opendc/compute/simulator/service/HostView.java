@@ -98,6 +98,28 @@ public class HostView {
         return provisionedGpuCores;
     }
 
+    /**
+     * Reserve this host's capacity for the given task.
+     */
+    void reserve(ServiceTask task) {
+        instanceCount++;
+        provisionedCpuCores += task.getCpuCoreCount();
+        availableCpuCores -= task.getCpuCoreCount();
+        availableMemory -= task.getMemorySize();
+        provisionedGpuCores += task.getGpuCoreCount();
+    }
+
+    /**
+     * Release the capacity previously reserved for the given task.
+     */
+    void release(ServiceTask task) {
+        instanceCount--;
+        provisionedCpuCores -= task.getCpuCoreCount();
+        availableCpuCores += task.getCpuCoreCount();
+        availableMemory += task.getMemorySize();
+        provisionedGpuCores -= task.getGpuCoreCount();
+    }
+
     @Override
     public String toString() {
         return "HostView[host=" + host + "]";
