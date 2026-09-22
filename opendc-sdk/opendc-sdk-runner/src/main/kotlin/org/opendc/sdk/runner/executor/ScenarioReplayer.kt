@@ -75,7 +75,7 @@ public suspend fun ComputeService.replay(
                     task.deadline -= simulationOffset
                 }
                 launch {
-                    val submitted = newTask(task)
+                    val submitted = submitTask(task)
                     val watcher = RunningTaskWatcher()
                     watcher.lock()
                     submitted.watch(watcher)

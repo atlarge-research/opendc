@@ -167,7 +167,6 @@ private class ScenarioRun(
             )
         }
 
-        service.setTasksExpected(taskCount)
         return sessions
     }
 

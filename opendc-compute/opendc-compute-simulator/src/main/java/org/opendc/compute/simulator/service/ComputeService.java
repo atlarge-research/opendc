@@ -131,18 +131,12 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     /**
      * The active tasks in the system.
      */
-    private final Map<ServiceTask, SimHost> activeTasks = new HashMap<>();
-
-    private final List<Integer> completedTasks = new ArrayList<>();
-
-    private final List<Integer> terminatedTasks = new ArrayList<>();
+    private final Set<ServiceTask> activeTasks = new HashSet<>();
 
     /**
      * The registered tasks for this compute service.
      */
     private final Map<Integer, ServiceTask> taskById = new HashMap<>();
-
-    private final List<ServiceTask> tasksToRemove = new ArrayList<>();
 
     private final List<TaskListener> taskListeners = new ArrayList<>();
 
@@ -150,10 +144,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private long maxMemory = 0L;
     private long attemptsSuccess = 0L;
     private long attemptsFailure = 0L;
-    private int tasksExpected = 0; // Number of tasks expected from the input trace
     private int tasksTotal = 0; // Number of tasks seen by the service
-    private int tasksPending = 0; // Number of tasks waiting to be scheduled
-    private int tasksActive = 0; // Number of tasks that are currently running
     private int tasksTerminated = 0; // Number of tasks that were terminated due to too much failures
     private int tasksCompleted = 0; // Number of tasks completed successfully
 
@@ -235,10 +226,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     // ==================================================================================
 
     /**
-     * Submit a new {@link ServiceTask} to be scheduled by this service.
+     * Submit a {@link ServiceTask} to be scheduled by this service.
      */
     @NotNull
-    public ServiceTask newTask(ServiceTask task) {
+    public ServiceTask submitTask(ServiceTask task) {
         if (isClosed) {
             throw new IllegalStateException("Service is closed");
         }
@@ -266,12 +257,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      * Reschedule the given {@link ServiceTask} with a new {@link Workload}.
      */
     public void rescheduleTask(@NotNull ServiceTask task, @NotNull Workload workload) {
-        ServiceTask internalTask = findTask(task.getId());
+        task.setHost(null);
 
-        internalTask.setHost(null);
-
-        internalTask.setWorkload(workload);
-        internalTask.start();
+        task.setWorkload(workload);
+        task.start();
     }
 
     /**
@@ -282,26 +271,14 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     /**
-     * Return the {@link ServiceTask}s hosted by this service.
+     * Notify the listeners that the given {@link ServiceTask} is done, and delete it.
      */
-    public List<ServiceTask> getTasksToRemove() {
-        return Collections.unmodifiableList(tasksToRemove);
-    }
-
-    public void clearTasksToRemove() {
-        this.tasksToRemove.clear();
-    }
-
-    public void setTaskToBeRemoved(ServiceTask task) {
+    public void deleteTask(ServiceTask task) {
         for (TaskListener listener : this.taskListeners) {
             listener.onTaskDeletion(task);
         }
 
         task.delete();
-    }
-
-    public void setTasksExpected(int numberOfTasks) {
-        this.tasksExpected = numberOfTasks;
     }
 
     public void addTaskListener(TaskListener listener) {
@@ -352,6 +329,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     public void updateHost(SimHost host) {
         HostView hv = hostToView.get(host);
 
+        if (hv == null) {
+            return;
+        }
+
         this.scheduler.updateHost(hv);
     }
 
@@ -361,13 +342,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
     public void restartHost(HostView hv) {
         this.scheduler.restartHost(hv);
-    }
-
-    /**
-     * Lookup the {@link SimHost} that currently hosts the specified {@link ServiceTask}.
-     */
-    public SimHost lookupHost(ServiceTask task) {
-        return task.getHost();
     }
 
     /**
@@ -475,11 +449,11 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     public int getTasksPending() {
-        return this.tasksPending;
+        return this.taskQueue.size();
     }
 
     public int getTasksActive() {
-        return this.tasksActive;
+        return this.activeTasks.size();
     }
 
     public int getTasksCompleted() {
@@ -539,9 +513,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                     || newState == TaskState.FAILED) {
                 LOGGER.info("task {} finished", task.getId());
 
-                if (activeTasks.remove(task) != null) {
-                    tasksActive--;
-                }
+                activeTasks.remove(task);
 
                 HostView hv = hostToView.get(host);
                 if (hv != null) {
@@ -564,7 +536,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 }
 
                 if (task.getState() == TaskState.COMPLETED || task.getState() == TaskState.TERMINATED) {
-                    setTaskToBeRemoved(task);
+                    deleteTask(task);
                 }
 
                 scheduler.removeTask(task, hv);
@@ -591,7 +563,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             tasksTerminated++;
             task.setState(TaskState.TERMINATED);
 
-            this.setTaskToBeRemoved(task);
+            this.deleteTask(task);
             return null;
         }
 
@@ -607,8 +579,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         // Add the request at the front or the back of the queue
         if (atFront) taskQueue.addFirst(request);
         else taskQueue.add(request);
-
-        tasksPending++;
 
         requestSchedulingCycle();
         return request;
@@ -630,7 +600,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 // If the child task has no more parents, it can be scheduled
                 if (!childTask.hasParents()) {
                     taskQueue.add(childRequest);
-                    tasksPending++;
                     blockedTasks.remove(childTaskId);
                 }
             }
@@ -652,15 +621,17 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
                 this.addTerminatedTask(childTask);
 
-                this.setTaskToBeRemoved(childTask);
+                this.deleteTask(childTask);
 
                 blockedTasks.remove(childTask.getId());
             }
         }
     }
 
-    void delete(ServiceTask task) {
-        completedTasks.remove(task);
+    /**
+     * Unregister a {@link ServiceTask} that has deleted itself.
+     */
+    void unregisterTask(ServiceTask task) {
         taskById.remove(task.getId());
     }
 
@@ -715,7 +686,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private void terminateOversizedTask(ServiceTask task, SchedulingRequest req) {
         // Remove the incoming image
         taskQueue.remove(req);
-        tasksPending--;
         tasksTerminated++;
 
         LOGGER.warn("Failed to spawn {}: does not fit", task);
@@ -724,7 +694,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
         this.addTerminatedTask(task);
 
-        this.setTaskToBeRemoved(task);
+        this.deleteTask(task);
     }
 
     /**
@@ -732,9 +702,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      */
     private void deployTask(ServiceTask task, HostView hv, SchedulingRequest req) {
         SimHost host = hv.getHost();
-
-        // Remove request from queue
-        tasksPending--;
 
         LOGGER.info("Assigned task {} to host {}", task, host);
 
@@ -744,12 +711,11 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
             host.spawn(task);
 
-            tasksActive++;
             attemptsSuccess++;
 
             hv.reserve(task);
 
-            activeTasks.put(task, host);
+            activeTasks.add(task);
 
             updateHost(host);
 
