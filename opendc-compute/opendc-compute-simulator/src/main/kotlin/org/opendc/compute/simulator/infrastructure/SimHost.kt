@@ -242,7 +242,7 @@ public class SimHost(
     // ==================================================================================
 
     public fun canFit(task: ServiceTask): Boolean {
-        val sufficientMemory = (model.memoryCapacity - this.availableMemory) >= task.memorySize
+        val sufficientMemory = (this.availableMemory) >= task.memorySize
         val enoughCpus = model.coreCount >= task.cpuCoreCount
         val canFit = simMachine.canFit(task.toMachineModel())
 
@@ -439,7 +439,7 @@ public class SimHost(
     /**
      * Reserve this host's capacity for the given task.
      */
-    private fun reserve(task: ServiceTask) {
+    public fun reserve(task: ServiceTask) {
         instanceCount++
         provisionedCpuCores += task.cpuCoreCount
         availableCpuCores -= task.cpuCoreCount
@@ -450,7 +450,7 @@ public class SimHost(
     /**
      * Release the capacity previously reserved for the given task.
      */
-    private fun release(task: ServiceTask) {
+    public fun release(task: ServiceTask) {
         instanceCount--
         provisionedCpuCores -= task.cpuCoreCount
         availableCpuCores += task.cpuCoreCount
