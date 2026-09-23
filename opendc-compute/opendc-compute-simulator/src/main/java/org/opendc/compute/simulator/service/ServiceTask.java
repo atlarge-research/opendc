@@ -368,7 +368,7 @@ public class ServiceTask {
         if (host != null) {
             host.delete(this);
         }
-        service.delete(this);
+        service.unregisterTask(this);
 
         this.workload = null;
 

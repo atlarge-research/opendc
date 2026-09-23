@@ -35,7 +35,7 @@ public class TaskSampler(
         now: Instant,
         task: ServiceTask,
     ): TaskSample {
-        val simHost = service.lookupHost(task)
+        val simHost = task.host
         val cpuStats = simHost?.getCpuStats(task)
         val sysStats = simHost?.getSystemStats(task)
         val gpuStats = simHost?.getGpuStats(task)

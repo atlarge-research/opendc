@@ -31,6 +31,12 @@ quarkusExtension {
     deploymentModule.set("opendc-web-quarkus-deployment")
 }
 
+// validateExtension reads the jars on the runtime classpath but does not depend on the tasks producing them, so in a
+// parallel build it may read a jar that is still being written (seen on Windows CI). Build the classpath first.
+tasks.named("validateExtension") {
+    dependsOn(configurations.runtimeClasspath)
+}
+
 dependencies {
     implementation(platform(libs.quarkus.bom))
 

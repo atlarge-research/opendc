@@ -64,6 +64,11 @@ import org.slf4j.LoggerFactory;
 public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(ComputeService.class);
 
+    // ==================================================================================
+    // Fields
+    // Internal state: infrastructure registries, task bookkeeping, and scheduling counters.
+    // ==================================================================================
+
     /**
      * The {@link InstantSource} representing the clock tracking the (simulation) time.
      */
@@ -97,12 +102,12 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private final Set<HostView> availableHosts = new HashSet<>();
 
     /**
-     * The available powerSources
+     * The available clusters
      */
     private final Set<SimCluster> clusters = new HashSet<>();
 
     /**
-     * The available powerSources
+     * The available dataCenters
      */
     private final Set<SimDataCenter> dataCenters = new HashSet<>();
 
@@ -112,7 +117,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private final Set<SimPowerSource> powerSources = new HashSet<>();
 
     /**
-     * The available powerSources
+     * The available batteries
      */
     private final Set<SimBattery> batteries = new HashSet<>();
 
@@ -126,147 +131,27 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     /**
      * The active tasks in the system.
      */
-    private final Map<ServiceTask, SimHost> activeTasks = new HashMap<>();
-
-    private final List<Integer> completedTasks = new ArrayList<>();
-
-    private final List<Integer> terminatedTasks = new ArrayList<>();
+    private final Set<ServiceTask> activeTasks = new HashSet<>();
 
     /**
      * The registered tasks for this compute service.
      */
     private final Map<Integer, ServiceTask> taskById = new HashMap<>();
 
-    private final List<ServiceTask> tasksToRemove = new ArrayList<>();
-
     private final List<TaskListener> taskListeners = new ArrayList<>();
-
-    public int getHostsAvailable() {
-        return this.availableHosts.size();
-    }
-
-    public int getHostsUnavailable() {
-        return this.hostToView.size() - this.availableHosts.size();
-    }
-
-    public long getAttemptsSuccess() {
-        return this.attemptsSuccess;
-    }
-
-    public long getAttemptsFailure() {
-        return this.attemptsFailure;
-    }
-
-    public int getTasksTotal() {
-        return this.tasksTotal;
-    }
-
-    public int getTasksPending() {
-        return this.tasksPending;
-    }
-
-    public int getTasksActive() {
-        return this.tasksActive;
-    }
-
-    public int getTasksCompleted() {
-        return this.tasksCompleted;
-    }
-
-    public int getTasksTerminated() {
-        return this.tasksTerminated;
-    }
-
-    /**
-     * A [HostListener] used to track the active tasks.
-     */
-    private final HostListener hostListener = new HostListener() {
-        @Override
-        public void onStateChanged(@NotNull SimHost host, @NotNull HostState newState) {
-            LOGGER.debug("Host {} state changed: {}", host, newState);
-
-            final HostView hv = hostToView.get(host);
-
-            if (hv != null) {
-                if (newState == HostState.UP) {
-                    availableHosts.add(hv);
-                    restartHosts(hv);
-                } else {
-                    availableHosts.remove(hv);
-                    failHosts(hv);
-                }
-            }
-
-            // Re-schedule on the new machine
-            requestSchedulingCycle();
-        }
-
-        @Override
-        public void onStateChanged(@NotNull SimHost host, @NotNull ServiceTask task, @NotNull TaskState newState) {
-            if (task.getHost() != host) {
-                // This can happen when a task is rescheduled and started on another machine, while being deleted from
-                // the old machine.
-                return;
-            }
-
-            task.setState(newState);
-
-            if (newState == TaskState.COMPLETED
-                    || newState == TaskState.PAUSED
-                    || newState == TaskState.TERMINATED
-                    || newState == TaskState.FAILED) {
-                LOGGER.info("task {} finished", task.getId());
-
-                if (activeTasks.remove(task) != null) {
-                    tasksActive--;
-                }
-
-                HostView hv = hostToView.get(host);
-                if (hv != null) {
-                    hv.provisionedCpuCores -= task.getCpuCoreCount();
-                    hv.availableCpuCores += task.getCpuCoreCount();
-                    hv.instanceCount--;
-                    hv.availableMemory += task.getMemorySize();
-                    hv.provisionedGpuCores -= task.getGpuCoreCount();
-                } else {
-                    LOGGER.error("Unknown host {}", host);
-                }
-
-                host.delete(task);
-
-                updateHost(host);
-
-                if (newState == TaskState.COMPLETED) {
-                    tasksCompleted++;
-                    addCompletedTask(task);
-                }
-                if (newState == TaskState.TERMINATED) {
-                    tasksTerminated++;
-                    addTerminatedTask(task);
-                }
-
-                if (task.getState() == TaskState.COMPLETED || task.getState() == TaskState.TERMINATED) {
-                    setTaskToBeRemoved(task);
-                }
-
-                scheduler.removeTask(task, hv);
-
-                // Try to reschedule if needed
-                requestSchedulingCycle();
-            }
-        }
-    };
 
     private int maxCores = 0;
     private long maxMemory = 0L;
     private long attemptsSuccess = 0L;
     private long attemptsFailure = 0L;
-    private int tasksExpected = 0; // Number of tasks expected from the input trace
     private int tasksTotal = 0; // Number of tasks seen by the service
-    private int tasksPending = 0; // Number of tasks waiting to be scheduled
-    private int tasksActive = 0; // Number of tasks that are currently running
     private int tasksTerminated = 0; // Number of tasks that were terminated due to too much failures
     private int tasksCompleted = 0; // Number of tasks completed successfully
+
+    // ==================================================================================
+    // Construction
+    // How to obtain a ComputeService instance: the constructor, and the Builder that wraps it.
+    // ==================================================================================
 
     /**
      * Construct a {@link ComputeService} instance.
@@ -283,363 +168,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      */
     public static Builder builder(Dispatcher dispatcher, ComputeScheduler scheduler) {
         return new Builder(dispatcher, scheduler);
-    }
-
-    /**
-     * Create a new {@link ComputeClient} to control the compute service.
-     */
-    public ComputeClient newClient() {
-        if (isClosed) {
-            throw new IllegalStateException("Service is closed");
-        }
-        return new ComputeClient(this);
-    }
-
-    /**
-     * Return the {@link ServiceTask}s hosted by this service.
-     */
-    public Map<Integer, ServiceTask> getTasks() {
-        return taskById;
-    }
-
-    /**
-     * Return the {@link ServiceTask}s hosted by this service.
-     */
-    public List<ServiceTask> getTasksToRemove() {
-        return Collections.unmodifiableList(tasksToRemove);
-    }
-
-    public void clearTasksToRemove() {
-        this.tasksToRemove.clear();
-    }
-
-    public void addCluster(SimCluster cluster) {
-        this.clusters.add(cluster);
-    }
-
-    public void removeCluster(SimCluster cluster) {
-        this.clusters.remove(cluster);
-    }
-
-    public void addDataCenter(SimDataCenter dataCenter) {
-        this.dataCenters.add(dataCenter);
-    }
-
-    public void removeDataCenter(SimDataCenter dataCenter) {
-        this.dataCenters.remove(dataCenter);
-    }
-
-    /**
-     * Add a {@link SimHost} to the scheduling pool of the compute service.
-     */
-    public void addHost(SimHost host) {
-        // Check if host is already known
-        if (hostToView.containsKey(host)) {
-            return;
-        }
-
-        HostView hv = new HostView(host);
-        HostModel model = host.getModel();
-
-        maxCores = Math.max(maxCores, model.coreCount());
-        maxMemory = Math.max(maxMemory, model.memoryCapacity());
-        hostToView.put(host, hv);
-
-        if (host.getState() == HostState.UP) {
-            availableHosts.add(hv);
-        }
-
-        scheduler.addHost(hv);
-        host.addListener(hostListener);
-    }
-
-    public void updateHost(SimHost host) {
-        HostView hv = hostToView.get(host);
-
-        this.scheduler.updateHost(hv);
-    }
-
-    public void failHosts(HostView hv) {
-        this.scheduler.failHost(hv);
-    }
-
-    public void restartHosts(HostView hv) {
-        this.scheduler.restartHost(hv);
-    }
-
-    public void addPowerSource(SimPowerSource simPowerSource) {
-        // Check if host is already known
-        if (powerSources.contains(simPowerSource)) {
-            return;
-        }
-
-        powerSources.add(simPowerSource);
-    }
-
-    public void addBattery(SimBattery simBattery) {
-        // Check if host is already known
-        if (batteries.contains(simBattery)) {
-            return;
-        }
-
-        batteries.add(simBattery);
-    }
-
-    /**
-     * Remove a {@link SimHost} from the scheduling pool of the compute service.
-     */
-    public void removeHost(SimHost host) {
-        HostView view = hostToView.remove(host);
-        if (view != null) {
-            availableHosts.remove(view);
-            scheduler.removeHost(view);
-            host.removeListener(hostListener);
-        }
-    }
-
-    /**
-     * Lookup the {@link SimHost} that currently hosts the specified {@link ServiceTask}.
-     */
-    public SimHost lookupHost(ServiceTask task) {
-        return task.getHost();
-    }
-
-    /**
-     * Return the {@link SimHost}s that are registered with this service.
-     */
-    public Set<SimHost> getHosts() {
-        return Collections.unmodifiableSet(hostToView.keySet());
-    }
-
-    public InstantSource getClock() {
-        return this.clock;
-    }
-
-    public Set<SimCluster> getClusters() {
-        return Collections.unmodifiableSet(this.clusters);
-    }
-
-    public Set<SimDataCenter> getDataCenters() {
-        return Collections.unmodifiableSet(this.dataCenters);
-    }
-
-    public Set<SimPowerSource> getPowerSources() {
-        return Collections.unmodifiableSet(this.powerSources);
-    }
-
-    public Set<SimBattery> getBatteries() {
-        return Collections.unmodifiableSet(this.batteries);
-    }
-
-    public void setTasksExpected(int numberOfTasks) {
-        this.tasksExpected = numberOfTasks;
-    }
-
-    public void addTaskListener(TaskListener listener) {
-        this.taskListeners.add(listener);
-    }
-
-    public void setTaskToBeRemoved(ServiceTask task) {
-        for (TaskListener listener : this.taskListeners) {
-            listener.onTaskDeletion(task);
-        }
-
-        task.delete();
-    }
-
-    @Override
-    public void close() {
-        if (isClosed) {
-            return;
-        }
-
-        isClosed = true;
-        pacer.cancel();
-    }
-
-    /**
-     * Enqueue the specified [task] to be scheduled onto a host.
-     */
-    SchedulingRequest schedule(ServiceTask task) {
-        return schedule(task, false);
-    }
-
-    SchedulingRequest schedule(ServiceTask task, boolean atFront) {
-        LOGGER.debug("Enqueueing task {} to be assigned to host", task.getId());
-
-        if (task.getNumFailures() >= maxNumFailures) {
-            LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
-
-            tasksTerminated++;
-            task.setState(TaskState.TERMINATED);
-
-            this.setTaskToBeRemoved(task);
-            return null;
-        }
-
-        long now = clock.millis();
-        SchedulingRequest request = new SchedulingRequest(task, now);
-
-        // If the task has parents, put in blocked tasks
-        if (task.hasParents()) {
-            blockedTasks.put(task.getId(), request);
-            return null;
-        }
-
-        // Add the request at the front or the back of the queue
-        if (atFront) taskQueue.addFirst(request);
-        else taskQueue.add(request);
-
-        tasksPending++;
-
-        requestSchedulingCycle();
-        return request;
-    }
-
-    void addCompletedTask(ServiceTask completedTask) {
-        int parentId = completedTask.getId();
-
-        if (!completedTask.hasChildren()) {
-            return;
-        }
-
-        for (int childTaskId : completedTask.getChildren()) {
-            SchedulingRequest childRequest = blockedTasks.get(childTaskId);
-            if (childRequest != null) {
-                ServiceTask childTask = childRequest.getTask();
-                childTask.removeFromParents(parentId);
-
-                // If the child task has no more parents, it can be scheduled
-                if (!childTask.hasParents()) {
-                    taskQueue.add(childRequest);
-                    tasksPending++;
-                    blockedTasks.remove(childTaskId);
-                }
-            }
-        }
-    }
-
-    void addTerminatedTask(ServiceTask task) {
-
-        if (!task.hasChildren()) {
-            return;
-        }
-
-        for (int childTaskId : task.getChildren()) {
-            SchedulingRequest request = blockedTasks.get(childTaskId);
-            if (request != null) {
-                ServiceTask childTask = request.getTask();
-
-                childTask.setState(TaskState.TERMINATED);
-
-                this.addTerminatedTask(childTask);
-
-                this.setTaskToBeRemoved(childTask);
-
-                blockedTasks.remove(childTask.getId());
-            }
-        }
-    }
-
-    void delete(ServiceTask task) {
-        completedTasks.remove(task);
-        taskById.remove(task.getId());
-    }
-
-    public void updateCarbonIntensity(double newCarbonIntensity) {
-        requestSchedulingCycle();
-    }
-
-    public void setCarbonModel(CarbonModel carbonModel) {}
-
-    public void removeCarbonModel(CarbonModel carbonModel) {}
-
-    /**
-     * Indicate that a new scheduling cycle is needed due to a change to the service's state.
-     */
-    private void requestSchedulingCycle() {
-        // Bail out in case the queue is empty.
-        if (taskQueue.isEmpty()) {
-            return;
-        }
-
-        pacer.enqueue();
-    }
-
-    /**
-     * Run a single scheduling iteration.
-     */
-    private void doSchedule() {
-        for (Iterator<SchedulingRequest> iterator = taskQueue.iterator();
-                iterator.hasNext();
-                iterator = taskQueue.iterator()) {
-
-            final SchedulingResult result = scheduler.select(iterator);
-            if (result.getResultType() == SchedulingResultType.EMPTY) {
-                break;
-            }
-            final HostView hv = result.getHost();
-            final SchedulingRequest req = result.getReq();
-            final ServiceTask task = req.getTask();
-
-            if (result.getResultType() == SchedulingResultType.FAILURE) {
-                LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);
-
-                if (task.getMemorySize() > maxMemory || task.getCpuCoreCount() > maxCores) {
-                    // Remove the incoming image
-                    taskQueue.remove(req);
-                    tasksPending--;
-                    tasksTerminated++;
-
-                    LOGGER.warn("Failed to spawn {}: does not fit", task);
-
-                    task.setState(TaskState.TERMINATED);
-
-                    this.addTerminatedTask(task);
-
-                    this.setTaskToBeRemoved(task);
-                    continue;
-                } else {
-                    // VM fits, but we don't have enough capacity
-                    break;
-                }
-            }
-
-            SimHost host = hv.getHost();
-
-            // Remove request from queue
-            tasksPending--;
-
-            LOGGER.info("Assigned task {} to host {}", task, host);
-
-            try {
-                task.setHost(host);
-                task.setScheduledAt(clock.millis());
-
-                host.spawn(task);
-
-                tasksActive++;
-                attemptsSuccess++;
-
-                hv.instanceCount++;
-                hv.provisionedCpuCores += task.getCpuCoreCount();
-                hv.availableCpuCores -= task.getCpuCoreCount();
-                hv.availableMemory -= task.getMemorySize();
-                hv.provisionedGpuCores += task.getGpuCoreCount();
-
-                activeTasks.put(task, host);
-
-                updateHost(host);
-
-                long new_scheduling_delay = clock.millis() - req.getSubmitTime() + task.getSchedulingDelay();
-                task.setSchedulingDelay(new_scheduling_delay);
-
-            } catch (Exception cause) {
-                LOGGER.error("Failed to deploy VM", cause);
-                scheduler.removeTask(task, hv);
-                attemptsFailure++;
-            }
-        }
     }
 
     /**
@@ -677,67 +205,527 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         }
     }
 
+    // ==================================================================================
+    // Lifecycle
+    // All functions related to changing the ComputeService state during its lifecycle
+    // ==================================================================================
+
+    @Override
+    public void close() {
+        if (isClosed) {
+            return;
+        }
+
+        isClosed = true;
+        pacer.cancel();
+    }
+
+    // ==================================================================================
+    // Task API
+    // Public surface for submitting, looking up, and rescheduling tasks.
+    // ==================================================================================
+
     /**
-     * Implementation of {@link ComputeClient} using a {@link ComputeService}.
+     * Submit a {@link ServiceTask} to be scheduled by this service.
      */
-    public static class ComputeClient {
-        private final ComputeService service;
-        private boolean isClosed;
-
-        ComputeClient(ComputeService service) {
-            this.service = service;
+    @NotNull
+    public ServiceTask submitTask(ServiceTask task) {
+        if (isClosed) {
+            throw new IllegalStateException("Service is closed");
         }
 
-        /**
-         * Method to check if the client is still open and throw an exception if it is not.
-         */
-        private void checkOpen() {
-            if (isClosed) {
-                throw new IllegalStateException("Client is already closed");
+        task.setService(this);
+
+        taskById.put(task.getId(), task);
+
+        tasksTotal++;
+
+        task.start();
+
+        return task;
+    }
+
+    /**
+     * Find the {@link ServiceTask} with the specified id, or {@code null} if no such task exists.
+     */
+    @Nullable
+    public ServiceTask findTask(int id) {
+        return taskById.get(id);
+    }
+
+    /**
+     * Reschedule the given {@link ServiceTask} with a new {@link Workload}.
+     */
+    public void rescheduleTask(@NotNull ServiceTask task, @NotNull Workload workload) {
+        task.setHost(null);
+
+        task.setWorkload(workload);
+        task.start();
+    }
+
+    /**
+     * Return the {@link ServiceTask}s hosted by this service.
+     */
+    public Map<Integer, ServiceTask> getTasks() {
+        return Collections.unmodifiableMap(taskById);
+    }
+
+    /**
+     * Notify the listeners that the given {@link ServiceTask} is done, and delete it.
+     */
+    public void deleteTask(ServiceTask task) {
+        for (TaskListener listener : this.taskListeners) {
+            listener.onTaskDeletion(task);
+        }
+
+        task.delete();
+    }
+
+    public void addTaskListener(TaskListener listener) {
+        this.taskListeners.add(listener);
+    }
+
+    // ==================================================================================
+    // Host management
+    // Registering hosts with the scheduling pool and reacting to their availability.
+    // ==================================================================================
+
+    /**
+     * Add a {@link SimHost} to the scheduling pool of the compute service.
+     */
+    public void addHost(SimHost host) {
+        // Check if host is already known
+        if (hostToView.containsKey(host)) {
+            return;
+        }
+
+        HostView hv = new HostView(host);
+        HostModel model = host.getModel();
+
+        maxCores = Math.max(maxCores, model.coreCount());
+        maxMemory = Math.max(maxMemory, model.memoryCapacity());
+        hostToView.put(host, hv);
+
+        if (host.getState() == HostState.UP) {
+            availableHosts.add(hv);
+        }
+
+        scheduler.addHost(hv);
+        host.addListener(hostListener);
+    }
+
+    /**
+     * Remove a {@link SimHost} from the scheduling pool of the compute service.
+     */
+    public void removeHost(SimHost host) {
+        HostView view = hostToView.remove(host);
+        if (view != null) {
+            availableHosts.remove(view);
+            scheduler.removeHost(view);
+            host.removeListener(hostListener);
+        }
+    }
+
+    public void updateHost(SimHost host) {
+        HostView hv = hostToView.get(host);
+
+        if (hv == null) {
+            return;
+        }
+
+        this.scheduler.updateHost(hv);
+    }
+
+    public void failHost(HostView hv) {
+        this.scheduler.failHost(hv);
+    }
+
+    public void restartHost(HostView hv) {
+        this.scheduler.restartHost(hv);
+    }
+
+    /**
+     * Return the {@link SimHost}s that are registered with this service.
+     */
+    public Set<SimHost> getHosts() {
+        return Collections.unmodifiableSet(hostToView.keySet());
+    }
+
+    // ==================================================================================
+    // Power & energy infrastructure
+    // Registering the clusters, data centers, power sources, and batteries backing the service.
+    // ==================================================================================
+
+    public void addCluster(SimCluster cluster) {
+        this.clusters.add(cluster);
+    }
+
+    public void removeCluster(SimCluster cluster) {
+        this.clusters.remove(cluster);
+    }
+
+    public void addDataCenter(SimDataCenter dataCenter) {
+        this.dataCenters.add(dataCenter);
+    }
+
+    public void removeDataCenter(SimDataCenter dataCenter) {
+        this.dataCenters.remove(dataCenter);
+    }
+
+    public void addPowerSource(SimPowerSource simPowerSource) {
+        // Check if host is already known
+        if (powerSources.contains(simPowerSource)) {
+            return;
+        }
+
+        powerSources.add(simPowerSource);
+    }
+
+    public void addBattery(SimBattery simBattery) {
+        // Check if host is already known
+        if (batteries.contains(simBattery)) {
+            return;
+        }
+
+        batteries.add(simBattery);
+    }
+
+    public Set<SimCluster> getClusters() {
+        return Collections.unmodifiableSet(this.clusters);
+    }
+
+    public Set<SimDataCenter> getDataCenters() {
+        return Collections.unmodifiableSet(this.dataCenters);
+    }
+
+    public Set<SimPowerSource> getPowerSources() {
+        return Collections.unmodifiableSet(this.powerSources);
+    }
+
+    public Set<SimBattery> getBatteries() {
+        return Collections.unmodifiableSet(this.batteries);
+    }
+
+    // ==================================================================================
+    // Carbon receiver
+    // Implementation of CarbonReceiver; carbon intensity itself is modeled per power source.
+    // ==================================================================================
+
+    @Override
+    public void updateCarbonIntensity(double newCarbonIntensity) {
+        requestSchedulingCycle();
+    }
+
+    // ComputeService does not hold a carbon model itself; carbon intensity is modeled per power source.
+    @Override
+    public void setCarbonModel(CarbonModel carbonModel) {}
+
+    @Override
+    public void removeCarbonModel(CarbonModel carbonModel) {}
+
+    // ==================================================================================
+    // Statistics
+    // Read-only counters exposing scheduling and task outcomes, for monitoring.
+    // ==================================================================================
+
+    public int getHostsAvailable() {
+        return this.availableHosts.size();
+    }
+
+    public int getHostsUnavailable() {
+        return this.hostToView.size() - this.availableHosts.size();
+    }
+
+    public long getAttemptsSuccess() {
+        return this.attemptsSuccess;
+    }
+
+    public long getAttemptsFailure() {
+        return this.attemptsFailure;
+    }
+
+    public int getTasksTotal() {
+        return this.tasksTotal;
+    }
+
+    public int getTasksPending() {
+        return this.taskQueue.size();
+    }
+
+    public int getTasksActive() {
+        return this.activeTasks.size();
+    }
+
+    public int getTasksCompleted() {
+        return this.tasksCompleted;
+    }
+
+    public int getTasksTerminated() {
+        return this.tasksTerminated;
+    }
+
+    public InstantSource getClock() {
+        return this.clock;
+    }
+
+    // ==================================================================================
+    // Scheduling internals
+    // Package-private machinery that queues, selects, and deploys tasks onto hosts.
+    // ==================================================================================
+
+    /**
+     * A [HostListener] used to track the active tasks.
+     */
+    private final HostListener hostListener = new HostListener() {
+        @Override
+        public void onStateChanged(@NotNull SimHost host, @NotNull HostState newState) {
+            LOGGER.debug("Host {} state changed: {}", host, newState);
+
+            final HostView hv = hostToView.get(host);
+
+            if (hv != null) {
+                if (newState == HostState.UP) {
+                    availableHosts.add(hv);
+                    restartHost(hv);
+                } else {
+                    availableHosts.remove(hv);
+                    failHost(hv);
+                }
             }
-        }
 
-        @NotNull
-        public ServiceTask newTask(ServiceTask task) {
-
-            checkOpen();
-
-            final ComputeService service = this.service;
-
-            task.setService(service);
-
-            service.taskById.put(task.getId(), task);
-
-            service.tasksTotal++;
-
-            task.start();
-
-            return task;
-        }
-
-        @Nullable
-        public ServiceTask findTask(int id) {
-            checkOpen();
-            return service.taskById.get(id);
-        }
-
-        public void close() {
-            isClosed = true;
+            // Re-schedule on the new machine
+            requestSchedulingCycle();
         }
 
         @Override
-        public String toString() {
-            return "ComputeService.Client";
+        public void onStateChanged(@NotNull SimHost host, @NotNull ServiceTask task, @NotNull TaskState newState) {
+            if (task.getHost() != host) {
+                // This can happen when a task is rescheduled and started on another machine, while being deleted from
+                // the old machine.
+                return;
+            }
+
+            task.setState(newState);
+
+            if (newState == TaskState.COMPLETED
+                    || newState == TaskState.PAUSED
+                    || newState == TaskState.TERMINATED
+                    || newState == TaskState.FAILED) {
+                LOGGER.info("task {} finished", task.getId());
+
+                activeTasks.remove(task);
+
+                HostView hv = hostToView.get(host);
+                if (hv != null) {
+                    hv.release(task);
+                } else {
+                    LOGGER.error("Unknown host {}", host);
+                }
+
+                host.delete(task);
+
+                updateHost(host);
+
+                if (newState == TaskState.COMPLETED) {
+                    tasksCompleted++;
+                    addCompletedTask(task);
+                }
+                if (newState == TaskState.TERMINATED) {
+                    tasksTerminated++;
+                    addTerminatedTask(task);
+                }
+
+                if (task.getState() == TaskState.COMPLETED || task.getState() == TaskState.TERMINATED) {
+                    deleteTask(task);
+                }
+
+                scheduler.removeTask(task, hv);
+
+                // Try to reschedule if needed
+                requestSchedulingCycle();
+            }
+        }
+    };
+
+    /**
+     * Enqueue the specified [task] to be scheduled onto a host.
+     */
+    SchedulingRequest schedule(ServiceTask task) {
+        return schedule(task, false);
+    }
+
+    SchedulingRequest schedule(ServiceTask task, boolean atFront) {
+        LOGGER.debug("Enqueueing task {} to be assigned to host", task.getId());
+
+        if (task.getNumFailures() >= maxNumFailures) {
+            LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
+
+            tasksTerminated++;
+            task.setState(TaskState.TERMINATED);
+
+            this.deleteTask(task);
+            return null;
         }
 
-        @Nullable
-        public void rescheduleTask(@NotNull ServiceTask task, @NotNull Workload workload) {
-            ServiceTask internalTask = findTask(task.getId());
+        long now = clock.millis();
+        SchedulingRequest request = new SchedulingRequest(task, now);
 
-            internalTask.setHost(null);
+        // If the task has parents, put in blocked tasks
+        if (task.hasParents()) {
+            blockedTasks.put(task.getId(), request);
+            return null;
+        }
 
-            internalTask.setWorkload(workload);
-            internalTask.start();
+        // Add the request at the front or the back of the queue
+        if (atFront) taskQueue.addFirst(request);
+        else taskQueue.add(request);
+
+        requestSchedulingCycle();
+        return request;
+    }
+
+    void addCompletedTask(ServiceTask completedTask) {
+        int parentId = completedTask.getId();
+
+        if (!completedTask.hasChildren()) {
+            return;
+        }
+
+        for (int childTaskId : completedTask.getChildren()) {
+            SchedulingRequest childRequest = blockedTasks.get(childTaskId);
+            if (childRequest != null) {
+                ServiceTask childTask = childRequest.getTask();
+                childTask.removeFromParents(parentId);
+
+                // If the child task has no more parents, it can be scheduled
+                if (!childTask.hasParents()) {
+                    taskQueue.add(childRequest);
+                    blockedTasks.remove(childTaskId);
+                }
+            }
+        }
+    }
+
+    void addTerminatedTask(ServiceTask task) {
+
+        if (!task.hasChildren()) {
+            return;
+        }
+
+        for (int childTaskId : task.getChildren()) {
+            SchedulingRequest request = blockedTasks.get(childTaskId);
+            if (request != null) {
+                ServiceTask childTask = request.getTask();
+
+                childTask.setState(TaskState.TERMINATED);
+
+                this.addTerminatedTask(childTask);
+
+                this.deleteTask(childTask);
+
+                blockedTasks.remove(childTask.getId());
+            }
+        }
+    }
+
+    /**
+     * Unregister a {@link ServiceTask} that has deleted itself.
+     */
+    void unregisterTask(ServiceTask task) {
+        taskById.remove(task.getId());
+    }
+
+    /**
+     * Indicate that a new scheduling cycle is needed due to a change to the service's state.
+     */
+    private void requestSchedulingCycle() {
+        // Bail out in case the queue is empty.
+        if (taskQueue.isEmpty()) {
+            return;
+        }
+
+        pacer.enqueue();
+    }
+
+    /**
+     * Run a single scheduling iteration.
+     */
+    private void doSchedule() {
+        for (Iterator<SchedulingRequest> iterator = taskQueue.iterator();
+                iterator.hasNext();
+                iterator = taskQueue.iterator()) {
+
+            final SchedulingResult result = scheduler.select(iterator);
+            if (result.getResultType() == SchedulingResultType.EMPTY) {
+                break;
+            }
+
+            final SchedulingRequest req = result.getReq();
+            final ServiceTask task = req.getTask();
+
+            if (result.getResultType() == SchedulingResultType.FAILURE) {
+                LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);
+
+                // Check if the task will every fit on any of the hosts.
+                // If not, terminate the host
+                if (task.getMemorySize() > this.maxMemory || task.getCpuCoreCount() > this.maxCores) {
+                    terminateOversizedTask(task, req);
+                    continue;
+                } else {
+                    break;
+                }
+            }
+
+            deployTask(task, result.getHost(), req);
+        }
+    }
+
+    /**
+     * Terminate a task that exceeds the capacity of every host, and remove it from the queue.
+     */
+    private void terminateOversizedTask(ServiceTask task, SchedulingRequest req) {
+        // Remove the incoming image
+        taskQueue.remove(req);
+        tasksTerminated++;
+
+        LOGGER.warn("Failed to spawn {}: does not fit", task);
+
+        task.setState(TaskState.TERMINATED);
+
+        this.addTerminatedTask(task);
+
+        this.deleteTask(task);
+    }
+
+    /**
+     * Deploy the given task onto the host selected for it.
+     */
+    private void deployTask(ServiceTask task, HostView hv, SchedulingRequest req) {
+        SimHost host = hv.getHost();
+
+        LOGGER.info("Assigned task {} to host {}", task, host);
+
+        try {
+            task.setHost(host);
+            task.setScheduledAt(clock.millis());
+
+            host.spawn(task);
+
+            attemptsSuccess++;
+
+            hv.reserve(task);
+
+            activeTasks.add(task);
+
+            updateHost(host);
+
+            long newSchedulingDelay = clock.millis() - req.getSubmitTime() + task.getSchedulingDelay();
+            task.setSchedulingDelay(newSchedulingDelay);
+
+        } catch (Exception cause) {
+            LOGGER.error("Failed to deploy VM", cause);
+            scheduler.removeTask(task, hv);
+            attemptsFailure++;
         }
     }
 }

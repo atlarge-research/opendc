@@ -61,7 +61,6 @@ public suspend fun ComputeService.replay(
     resolve: ((ResourceReference) -> Path)? = null,
     submitImmediately: Boolean = false,
 ) {
-    val client = newClient()
     val engineFailure = failureModel?.toEngine(coroutineContext, clock, this, Random(seed), resolve!!)
     try {
         coroutineScope {
@@ -76,7 +75,7 @@ public suspend fun ComputeService.replay(
                     task.deadline -= simulationOffset
                 }
                 launch {
-                    val submitted = client.newTask(task)
+                    val submitted = submitTask(task)
                     val watcher = RunningTaskWatcher()
                     watcher.lock()
                     submitted.watch(watcher)
@@ -87,7 +86,6 @@ public suspend fun ComputeService.replay(
         yield()
     } finally {
         engineFailure?.close()
-        client.close()
     }
 }
 
