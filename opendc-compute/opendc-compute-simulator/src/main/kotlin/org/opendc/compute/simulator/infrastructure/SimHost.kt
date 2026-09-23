@@ -205,7 +205,7 @@ public class SimHost(
 
         // Fail the guest and delete them
         // This weird loop is the only way I have been able to make it work.
-        while (guests.size > 0) {
+        while (guests.isNotEmpty()) {
             val guest = guests.first()
             guest.fail()
             this.delete(guest.task)
@@ -242,7 +242,7 @@ public class SimHost(
     // ==================================================================================
 
     public fun canFit(task: ServiceTask): Boolean {
-        val sufficientMemory = (model.memoryCapacity - this.usedMemoryByRunningTasks()) >= task.memorySize
+        val sufficientMemory = (model.memoryCapacity - this.availableMemory) >= task.memorySize
         val enoughCpus = model.coreCount >= task.cpuCoreCount
         val canFit = simMachine.canFit(task.toMachineModel())
 
@@ -456,26 +456,6 @@ public class SimHost(
         availableCpuCores += task.cpuCoreCount
         availableMemory += task.memorySize
         provisionedGpuCores -= task.gpuCoreCount
-    }
-
-    /**
-     * Calculates the total memory used by the currently running tasks on the host.
-     *
-     * Iterates through the tasks mapped to guests in `taskToGuestMap`. For tasks that are in the
-     * `TaskState.RUNNING` state, their memory consumption is summed up.
-     *
-     * @return Total memory used by tasks currently in the RUNNING state, in bytes.
-     *
-     * TODO: Improve this function (this does not have to be calculated every time by looping but can be done dynamically)
-     */
-    private fun usedMemoryByRunningTasks(): Long {
-        var usedMemory: Long = 0
-        for (vm in this.taskToGuestMap) {
-            if (vm.value.state == TaskState.RUNNING) {
-                usedMemory += vm.key.memorySize
-            }
-        }
-        return usedMemory
     }
 
     /**
