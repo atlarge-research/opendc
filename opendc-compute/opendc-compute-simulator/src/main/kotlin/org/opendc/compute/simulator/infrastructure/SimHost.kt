@@ -219,7 +219,7 @@ public class SimHost(
     }
 
     public fun pauseAllTasks() {
-        while (guests.size > 0) {
+        while (guests.isNotEmpty()) {
             val guest = guests.first()
             guest.pause()
             this.delete(guest.task)
