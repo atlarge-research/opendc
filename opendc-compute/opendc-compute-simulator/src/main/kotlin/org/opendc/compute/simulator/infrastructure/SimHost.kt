@@ -44,18 +44,26 @@ import java.time.Instant
 import java.time.InstantSource
 
 /**
- * A [SimHost] implementation that simulates virtual machines on a physical machine.
+ * A simulated physical host that runs [ServiceTask]s as [Guest]s on a [SimMachine].
  *
- * @param name The name of the host.
+ * Besides simulating the machine, the host keeps the bookkeeping used by the
+ * [org.opendc.compute.simulator.service.ComputeService] and its schedulers to place tasks.
+ *
+ * @param name The (unique) name of the host.
+ * @param clusterName The name of the cluster the host belongs to.
  * @param clock The (virtual) clock used to track time.
- * @param machineModel The static model of the host
- * @param cpuPowerModel The power model of the host
- * @param powerDistributor The power distributor to which the host is connected
- * @constructor Create empty Sim host
+ * @param engine The flow engine the machine of this host runs on.
+ * @param machineModel The static model of the host.
+ * @param cpuPowerModel The power model of the CPU.
+ * @param gpuPowerModel The power model of the GPUs, if any.
+ * @param embodiedCarbon The embodied carbon of the host.
+ * @param expectedLifetime The expected lifetime of the host in years.
+ * @param powerDistributor The power distributor to which the host is connected.
+ * @param type The type of the host, used by the schedulers to group hosts.
  */
 public class SimHost(
-    private val name: String,
-    private val clusterName: String,
+    public val name: String,
+    public val clusterName: String,
     private val clock: InstantSource,
     private val engine: FlowEngine,
     private val machineModel: MachineModel,
@@ -64,26 +72,12 @@ public class SimHost(
     private val embodiedCarbon: Double,
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
-    private val type: String = "Unknown",
+    public val type: String = "Unknown",
 ) : AutoCloseable {
-    /**
-     * The event listeners registered with this host.
-     */
-    private val hostListeners = mutableListOf<HostListener>()
-
-    /**
-     * The virtual machines running on the hypervisor.
-     */
-    private val taskToGuestMap = HashMap<ServiceTask, Guest>()
-    private val guests = mutableSetOf<Guest>()
-
-    private var hostState: HostState = HostState.DOWN
-        set(value) {
-            if (value != field) {
-                hostListeners.forEach { it.onStateChanged(this, value) }
-            }
-            field = value
-        }
+    // ==================================================================================
+    // Fields
+    // Identity & configuration, state, guests, scheduler bookkeeping, and telemetry bookkeeping.
+    // ==================================================================================
 
     private val gpuHostModels: List<GpuHostModel>? =
         machineModel.gpuModels?.map { gpumodel ->
@@ -95,7 +89,10 @@ public class SimHost(
             )
         }
 
-    private val model: HostModel =
+    /**
+     * The model of the host as seen by the schedulers.
+     */
+    public val model: HostModel =
         HostModel(
             machineModel.cpuModel.totalCapacity,
             machineModel.cpuModel.coreCount,
@@ -103,58 +100,100 @@ public class SimHost(
             gpuHostModels,
         )
 
-    public var simMachine: SimMachine? = null
+    /**
+     * The event listeners registered with this host.
+     */
+    private val hostListeners = mutableListOf<HostListener>()
 
     /**
-     * The [GuestListener] that listens for guest events.
+     * The state of the host. Registered [HostListener]s are notified of every change.
      */
-    private val guestListener =
-        object : GuestListener {
-            override fun onStart(guest: Guest) {
-                hostListeners.forEach { it.onStateChanged(this@SimHost, guest.task, guest.state) }
+    public var state: HostState = HostState.DOWN
+        private set(value) {
+            if (value != field) {
+                hostListeners.forEach { it.onStateChanged(this, value) }
             }
-
-            override fun onStop(guest: Guest) {
-                hostListeners.forEach { it.onStateChanged(this@SimHost, guest.task, guest.state) }
-            }
+            field = value
         }
+
+    /**
+     * The machine that runs the guests of this host.
+     */
+    public val simMachine: SimMachine
+
+    /**
+     * The virtual machines running on the hypervisor.
+     */
+    private val taskToGuestMap = HashMap<ServiceTask, Guest>()
+    private val guests = mutableSetOf<Guest>()
+
+    /**
+     * Capacity reserved by the tasks spawned on this host, used by the schedulers.
+     * Updated in [spawn] and [delete].
+     */
+    public var instanceCount: Int = 0
+        private set
+    public var availableMemory: Long = model.memoryCapacity
+        private set
+    public var provisionedCpuCores: Int = 0
+        private set
+    public var availableCpuCores: Int = model.coreCount
+        private set
+    public var provisionedGpuCores: Int = 0
+        private set
+
+    /**
+     * Scheduler bookkeeping
+     * Use by schedulers which use a priority queue data structure
+     * to keep track of the order of hosts to scheduler tasks on.
+     * [org.opendc.compute.simulator.scheduler.MemorizingScheduler] for example.
+     * MemorizingScheduler has an array of lists
+     * The 0th index of the array has a list of hosts with 0 tasks,
+     * 1st index of the array has hosts with 1 task, and so on.
+     * The priorityIndex points to the index of this the list this host
+     * belongs to in the array.
+     * The listIndex is the position of this host in the list.
+     */
+    public var priorityIndex: Int = 0
+    public var listIndex: Int = 0
 
     private var lastReport = clock.millis()
     private var totalUptime = 0L
     private var totalDowntime = 0L
     private var bootTime: Instant? = null
-    private val cpuLimit = machineModel.cpuModel.totalCapacity
+    private val embodiedCarbonRate: Double =
+        (embodiedCarbon * 1000) / (expectedLifetime * 365.0 * 24.0 * 60.0 * 60.0 * 1000.0)
 
-    private var embodiedCarbonRate: Double = 0.0
+    // ==================================================================================
+    // Construction
+    // ==================================================================================
 
     init {
         launch()
+
+        simMachine =
+            SimMachine(
+                engine,
+                machineModel,
+                powerDistributor,
+                cpuPowerModel,
+                gpuPowerModel,
+            ) { cause ->
+                state = if (cause != null) HostState.ERROR else HostState.DOWN
+            }
     }
+
+    // ==================================================================================
+    // Lifecycle
+    // Booting, failing, recovering, and shutting down the host.
+    // ==================================================================================
 
     /**
      * Launch the hypervisor.
      */
     private fun launch() {
-        this.embodiedCarbonRate =
-            (this.embodiedCarbon * 1000) / (this.expectedLifetime * 365.0 * 24.0 * 60.0 * 60.0 * 1000.0)
-
-        bootTime = this.clock.instant()
-        hostState = HostState.UP
-
-        if (this.simMachine != null) {
-            return
-        }
-
-        this.simMachine =
-            SimMachine(
-                this.engine,
-                this.machineModel,
-                this.powerDistributor,
-                this.cpuPowerModel,
-                this.gpuPowerModel,
-            ) { cause ->
-                hostState = if (cause != null) HostState.ERROR else HostState.DOWN
-            }
+        bootTime = clock.instant()
+        state = HostState.UP
     }
 
     override fun close() {
@@ -173,18 +212,18 @@ public class SimHost(
         }
     }
 
+    public fun recover() {
+        updateUptime()
+
+        launch()
+    }
+
     public fun pauseAllTasks() {
         while (guests.size > 0) {
             val guest = guests.first()
             guest.pause()
             this.delete(guest.task)
         }
-    }
-
-    public fun recover() {
-        updateUptime()
-
-        launch()
     }
 
     /**
@@ -194,65 +233,18 @@ public class SimHost(
         updateUptime()
 
         // Stop the hypervisor
-        hostState = state
+        this.state = state
     }
 
-    public fun getName(): String {
-        return name
-    }
-
-    public fun getType(): String {
-        return type
-    }
-
-    public fun getClusterName(): String {
-        return clusterName
-    }
-
-    public fun getModel(): HostModel {
-        return model
-    }
-
-    public fun getState(): HostState {
-        return hostState
-    }
-
-    public fun getInstances(): Set<ServiceTask> {
-        return taskToGuestMap.keys
-    }
-
-    public fun isEmpty(): Boolean {
-        return guests.isEmpty()
-    }
-
-    public fun getGuests(): List<Guest> {
-        return this.guests.toList()
-    }
-
-    /**
-     * Calculates the total memory used by the currently running tasks on the host.
-     *
-     * Iterates through the tasks mapped to guests in `taskToGuestMap`. For tasks that are in the
-     * `TaskState.RUNNING` state, their memory consumption is summed up.
-     *
-     * @return Total memory used by tasks currently in the RUNNING state, in bytes.
-     *
-     * TODO: Improve this function (this does not have to be calculated every time by looping but can be done dynamically)
-     */
-    private fun usedMemoryByRunningTasks(): Long {
-        var usedMemory: Long = 0
-        for (vm in this.taskToGuestMap) {
-            if (vm.value.state == TaskState.RUNNING) {
-                usedMemory += vm.key.memorySize
-            }
-        }
-        return usedMemory
-    }
+    // ==================================================================================
+    // Task placement
+    // Checking whether tasks fit, and spawning and deleting the guests that run them.
+    // ==================================================================================
 
     public fun canFit(task: ServiceTask): Boolean {
         val sufficientMemory = (model.memoryCapacity - this.usedMemoryByRunningTasks()) >= task.memorySize
         val enoughCpus = model.coreCount >= task.cpuCoreCount
-        val canFit = simMachine!!.canFit(task.toMachineModel())
+        val canFit = simMachine.canFit(task.toMachineModel())
 
         return sufficientMemory && enoughCpus && canFit
     }
@@ -263,8 +255,6 @@ public class SimHost(
      * @param task
      */
     public fun spawn(task: ServiceTask) {
-        assert(simMachine != null) { "Tried start task $task while no SimMachine is active" }
-
         require(canFit(task)) { "Task does not fit" }
 
         val newGuest =
@@ -273,28 +263,17 @@ public class SimHost(
                 this,
                 guestListener,
                 task,
-                simMachine!!,
+                simMachine,
             )
 
         guests.add(newGuest)
-        newGuest.start()
-
         taskToGuestMap.computeIfAbsent(task) { newGuest }
-    }
 
-    public fun contains(task: ServiceTask): Boolean {
-        return task in taskToGuestMap
-    }
+        // Reserve before starting, so a guest that stops immediately is released in [delete]
+        reserve(task)
 
-    public fun start(task: ServiceTask) {
-        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.id} at host $name" }
-        guest.start()
+        newGuest.start()
     }
-
-//    public fun stop(task: ServiceTask) {
-//        val guest = requireNotNull(taskToGuestMap[task]) { "Unknown task ${task.id} at host $name" }
-//        guest.stop()
-//    }
 
     public fun delete(task: ServiceTask) {
         val guest = taskToGuestMap[task] ?: return
@@ -302,7 +281,26 @@ public class SimHost(
         taskToGuestMap.remove(task)
         guests.remove(guest)
         task.host = null
+
+        release(task)
     }
+
+    public fun isEmpty(): Boolean {
+        return guests.isEmpty()
+    }
+
+    public fun getInstances(): Set<ServiceTask> {
+        return taskToGuestMap.keys
+    }
+
+    public fun getGuests(): List<Guest> {
+        return this.guests.toList()
+    }
+
+    // ==================================================================================
+    // Listeners
+    // Forwarding host and guest events to the registered HostListeners.
+    // ==================================================================================
 
     public fun addListener(listener: HostListener) {
         hostListeners.add(listener)
@@ -312,24 +310,40 @@ public class SimHost(
         hostListeners.remove(listener)
     }
 
+    /**
+     * The [GuestListener] that listens for guest events.
+     */
+    private val guestListener =
+        object : GuestListener {
+            override fun onStart(guest: Guest) {
+                hostListeners.forEach { it.onStateChanged(this@SimHost, guest.task, guest.state) }
+            }
+
+            override fun onStop(guest: Guest) {
+                hostListeners.forEach { it.onStateChanged(this@SimHost, guest.task, guest.state) }
+            }
+        }
+
+    // ==================================================================================
+    // Telemetry
+    // Statistics of the host and of the guests running on it, for the metric exporters.
+    // ==================================================================================
+
     public fun getSystemStats(): HostSystemStats {
         val now = clock.millis()
         val duration = now - lastReport
         updateUptime()
-        this.simMachine!!.psu.updateCounters()
+        simMachine.psu.updateCounters()
 
-        val terminated = 0
         var running = 0
         var failed = 0
         var invalid = 0
-        var completed = 0
 
         for (guest in guests) {
             when (guest.state) {
                 TaskState.RUNNING -> running++
                 TaskState.FAILED, TaskState.TERMINATED -> failed++
-                TaskState.COMPLETED -> completed++
-                TaskState.PAUSED -> {}
+                TaskState.COMPLETED, TaskState.PAUSED -> {}
                 else -> invalid++
             }
         }
@@ -338,12 +352,13 @@ public class SimHost(
             Duration.ofMillis(totalUptime),
             Duration.ofMillis(totalDowntime),
             bootTime,
-            simMachine!!.psu.powerDraw,
-            simMachine!!.psu.energyUsage,
-            simMachine!!.psu.carbonIntensity,
-            simMachine!!.psu.carbonEmission,
+            simMachine.psu.powerDraw,
+            simMachine.psu.energyUsage,
+            simMachine.psu.carbonIntensity,
+            simMachine.psu.carbonEmission,
             embodiedCarbonRate * duration,
-            terminated,
+            // Terminated guests are deleted from the host, so they are never counted here
+            0,
             running,
             failed,
             invalid,
@@ -356,9 +371,9 @@ public class SimHost(
     }
 
     public fun getCpuStats(): HostCpuStats {
-        simMachine!!.cpu.updateCounters(this.clock.millis())
+        simMachine.cpu.updateCounters(this.clock.millis())
 
-        val counters = simMachine!!.performanceCounters
+        val counters = simMachine.performanceCounters
 
         return HostCpuStats(
             counters.activeTime,
@@ -368,7 +383,7 @@ public class SimHost(
             counters.capacity,
             counters.demand,
             counters.supply,
-            counters.supply / cpuLimit,
+            counters.supply / model.cpuCapacity,
         )
     }
 
@@ -379,9 +394,9 @@ public class SimHost(
 
     public fun getGpuStats(): List<HostGpuStats> {
         val gpuStats = mutableListOf<HostGpuStats>()
-        for (gpu in simMachine!!.gpus) {
+        for (gpu in simMachine.gpus) {
             gpu.updateCounters(this.clock.millis())
-            val counters = simMachine!!.getGpuPerformanceCounters(gpu.id)
+            val counters = simMachine.getGpuPerformanceCounters(gpu.id)
 
             gpuStats.add(
                 HostGpuStats(
@@ -405,6 +420,10 @@ public class SimHost(
         return guest.getGpuStats()
     }
 
+    // ==================================================================================
+    // Object overrides
+    // ==================================================================================
+
     override fun hashCode(): Int = name.hashCode()
 
     override fun equals(other: Any?): Boolean {
@@ -413,16 +432,62 @@ public class SimHost(
 
     override fun toString(): String = "SimHost[uid=$name,name=$name,model=$model]"
 
+    // ==================================================================================
+    // Internals
+    // ==================================================================================
+
+    /**
+     * Reserve this host's capacity for the given task.
+     */
+    private fun reserve(task: ServiceTask) {
+        instanceCount++
+        provisionedCpuCores += task.cpuCoreCount
+        availableCpuCores -= task.cpuCoreCount
+        availableMemory -= task.memorySize
+        provisionedGpuCores += task.gpuCoreCount
+    }
+
+    /**
+     * Release the capacity previously reserved for the given task.
+     */
+    private fun release(task: ServiceTask) {
+        instanceCount--
+        provisionedCpuCores -= task.cpuCoreCount
+        availableCpuCores += task.cpuCoreCount
+        availableMemory += task.memorySize
+        provisionedGpuCores -= task.gpuCoreCount
+    }
+
+    /**
+     * Calculates the total memory used by the currently running tasks on the host.
+     *
+     * Iterates through the tasks mapped to guests in `taskToGuestMap`. For tasks that are in the
+     * `TaskState.RUNNING` state, their memory consumption is summed up.
+     *
+     * @return Total memory used by tasks currently in the RUNNING state, in bytes.
+     *
+     * TODO: Improve this function (this does not have to be calculated every time by looping but can be done dynamically)
+     */
+    private fun usedMemoryByRunningTasks(): Long {
+        var usedMemory: Long = 0
+        for (vm in this.taskToGuestMap) {
+            if (vm.value.state == TaskState.RUNNING) {
+                usedMemory += vm.key.memorySize
+            }
+        }
+        return usedMemory
+    }
+
     /**
      * Convert flavor to machine model.
      */
     private fun ServiceTask.toMachineModel(): MachineModel {
         return MachineModel(
-            simMachine!!.machineModel.cpuModel,
+            simMachine.machineModel.cpuModel,
             MemoryUnit("Generic", "Generic", 3200.0, this.memorySize),
-            simMachine!!.machineModel.gpuModels,
-            simMachine!!.machineModel.cpuDistributionStrategy,
-            simMachine!!.machineModel.gpuDistributionStrategy,
+            simMachine.machineModel.gpuModels,
+            simMachine.machineModel.cpuDistributionStrategy,
+            simMachine.machineModel.gpuDistributionStrategy,
         )
     }
 
@@ -434,9 +499,9 @@ public class SimHost(
         val duration = now - lastReport
         lastReport = now
 
-        if (hostState == HostState.UP) {
+        if (state == HostState.UP) {
             totalUptime += duration
-        } else if (hostState == HostState.ERROR) {
+        } else if (state == HostState.ERROR) {
             // Only increment downtime if the machine is in a failure state
             totalDowntime += duration
         }

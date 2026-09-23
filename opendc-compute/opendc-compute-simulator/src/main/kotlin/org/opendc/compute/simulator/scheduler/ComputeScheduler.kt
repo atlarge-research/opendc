@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.scheduler
 
-import org.opendc.compute.simulator.service.HostView
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
@@ -32,20 +32,20 @@ public interface ComputeScheduler {
     /**
      * Register the specified [host] to be used for scheduling.
      */
-    public fun addHost(host: HostView)
+    public fun addHost(host: SimHost)
 
     /**
      * Remove the specified [host] to be removed from the scheduling pool.
      */
-    public fun removeHost(host: HostView)
+    public fun removeHost(host: SimHost)
 
-    public fun failHost(host: HostView) {}
+    public fun failHost(host: SimHost) {}
 
-    public fun restartHost(host: HostView) {}
+    public fun restartHost(host: SimHost) {}
 
-    public fun updateHost(host: HostView)
+    public fun updateHost(host: SimHost)
 
-    public fun setHostEmpty(hostView: HostView)
+    public fun setHostEmpty(host: SimHost)
 
     /**
      * Select a host for the specified [iter].
@@ -62,7 +62,7 @@ public interface ComputeScheduler {
      */
     public fun removeTask(
         task: ServiceTask,
-        host: HostView?,
+        host: SimHost?,
     )
 }
 
@@ -85,6 +85,6 @@ public enum class SchedulingResultType {
 
 public data class SchedulingResult(
     val resultType: SchedulingResultType,
-    val host: HostView? = null,
+    val host: SimHost? = null,
     val req: SchedulingRequest? = null,
 )

@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.scheduler.filters
 
-import org.opendc.compute.simulator.service.HostView
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
@@ -30,12 +30,12 @@ import org.opendc.compute.simulator.service.ServiceTask
  */
 public class SameHostFilter : HostFilter {
     override fun test(
-        host: HostView,
+        host: SimHost,
         task: ServiceTask,
     ): Boolean {
         @Suppress("UNCHECKED_CAST")
 //        val affinityIDs = task.meta["scheduler_hint:same_host"] as? Set<Int> ?: return true
-//        return host.host.getInstances().any { it.id in affinityIDs }
+//        return host.getInstances().any { it.id in affinityIDs }
         return true
     }
 }

@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.scheduler.filters
 
-import org.opendc.compute.simulator.service.HostView
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
@@ -32,11 +32,11 @@ import org.opendc.compute.simulator.service.ServiceTask
  */
 public class VGpuFilter(private val allocationRatio: Double) : HostFilter {
     override fun test(
-        host: HostView,
+        host: SimHost,
         task: ServiceTask,
     ): Boolean {
         val requested = task.gpuCoreCount
-        val totalCores = host.host.getModel().gpuHostModels()?.sumOf { it.gpuCoreCount() } ?: 0
+        val totalCores = host.model.gpuHostModels()?.sumOf { it.gpuCoreCount() } ?: 0
         val limit = totalCores * allocationRatio
 
         // Do not allow an instance to overcommit against itself, only against other instances

@@ -31,8 +31,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.simulator.infrastructure.HostModel
 import org.opendc.compute.simulator.infrastructure.HostState
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.scheduler.filters.RamFilter
-import org.opendc.compute.simulator.service.HostView
 
 internal class MemorizingSchedulerTest {
     @Test
@@ -57,11 +57,11 @@ internal class MemorizingSchedulerTest {
                 filters = emptyList(),
             )
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.DOWN
+        val hostA = mockHost()
+        every { hostA.state } returns HostState.DOWN
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
+        val hostB = mockHost()
+        every { hostB.state } returns HostState.UP
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
@@ -87,14 +87,14 @@ internal class MemorizingSchedulerTest {
                 maxTimesSkipped = 3,
             )
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostA = mockHost()
+        every { hostA.state } returns HostState.UP
+        every { hostA.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostA.availableMemory } returns 512
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostB = mockHost()
+        every { hostB.state } returns HostState.UP
+        every { hostB.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostB.availableMemory } returns 512
 
         scheduler.addHost(hostA)
@@ -121,9 +121,9 @@ internal class MemorizingSchedulerTest {
                 filters = listOf(RamFilter(1.5)),
             )
 
-        val host = mockk<HostView>()
-        every { host.host.getState() } returns HostState.UP
-        every { host.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val host = mockHost()
+        every { host.state } returns HostState.UP
+        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { host.availableMemory } returns 2048
 
         scheduler.addHost(host)
@@ -138,5 +138,20 @@ internal class MemorizingSchedulerTest {
         req.timesSkipped = 0
 
         assertEquals(SchedulingResultType.EMPTY, scheduler.select(mutableListOf(req).iterator()).resultType)
+    }
+
+    /**
+     * Mock a [SimHost] whose scheduler bookkeeping ([SimHost.priorityIndex] and [SimHost.listIndex]) behaves like
+     * regular properties, as the [MemorizingScheduler] reads and writes them.
+     */
+    private fun mockHost(): SimHost {
+        val host = mockk<SimHost>()
+        var priorityIndex = 0
+        var listIndex = 0
+        every { host.priorityIndex } answers { priorityIndex }
+        every { host.priorityIndex = any() } answers { priorityIndex = firstArg() }
+        every { host.listIndex } answers { listIndex }
+        every { host.listIndex = any() } answers { listIndex = firstArg() }
+        return host
     }
 }

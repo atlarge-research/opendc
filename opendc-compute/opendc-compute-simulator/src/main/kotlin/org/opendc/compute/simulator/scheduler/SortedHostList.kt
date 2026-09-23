@@ -22,11 +22,11 @@
 
 package org.opendc.compute.simulator.scheduler
 
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
-import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 
-public class SortedHostViewList(
+public class SortedHostList(
     public val capacity: Int,
     public val filters: List<HostFilter>,
 ) {
@@ -35,9 +35,9 @@ public class SortedHostViewList(
 
     private var noFilters = false
 
-    public val hosts: ArrayList<HostView> = ArrayList(capacity)
+    public val hosts: ArrayList<SimHost> = ArrayList(capacity)
 
-    public var cmp: Comparator<HostView>
+    public var cmp: Comparator<SimHost>
 
     init {
         cmp = compareBy { filters[0].score(it) as Comparable<*>? }
@@ -52,13 +52,13 @@ public class SortedHostViewList(
             firstFilter =
                 object : HostFilter {
                     override fun test(
-                        host: HostView,
+                        host: SimHost,
                         task: ServiceTask,
                     ): Boolean {
                         return true
                     }
 
-                    override fun score(host: HostView): Double {
+                    override fun score(host: SimHost): Double {
                         return 0.0
                     }
                 }
@@ -69,23 +69,23 @@ public class SortedHostViewList(
         }
     }
 
-    public fun addSorted(hostView: HostView) {
+    public fun addSorted(host: SimHost) {
         if (noFilters) {
-            hosts.add(hostView)
+            hosts.add(host)
             return
         }
 
-        val index = hosts.binarySearch(hostView, cmp)
+        val index = hosts.binarySearch(host, cmp)
         val insertIndex = if (index < 0) -index - 1 else index
-        hosts.add(insertIndex, hostView)
+        hosts.add(insertIndex, host)
     }
 
-    public fun updateHost(hostView: HostView) {
+    public fun updateHost(host: SimHost) {
         // TODO: See if we can improve this by using binary search to find the index
-        hosts.remove(hostView)
+        hosts.remove(host)
 
         // TODO: See if we can move this instead of removing and adding
-        addSorted(hostView)
+        addSorted(host)
     }
 
     public fun findIndex(task: ServiceTask): Int {
@@ -104,11 +104,11 @@ public class SortedHostViewList(
         return lowIndex
     }
 
-    public fun remove(hostView: HostView) {
-        hosts.remove(hostView)
+    public fun remove(host: SimHost) {
+        hosts.remove(host)
     }
 
-    public fun getFittingHosts(task: ServiceTask): MutableList<HostView> {
+    public fun getFittingHosts(task: ServiceTask): MutableList<SimHost> {
         if (filters.isEmpty()) {
             return hosts
         }

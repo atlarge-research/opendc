@@ -74,9 +74,7 @@ class SimHostMemoryTest {
                 powerDistributor = distributor,
             )
 
-        // Use reflection to set simMachine if needed, but SimHost.launch() sets it.
-        // Actually SimHost has it as private var simMachine: SimMachine? = null
-        // Let's try to trigger launch or just use reflection for testing private state.
+        // SimHost creates its own SimMachine on construction; replace it with the mock through reflection.
         val simMachineField = host.javaClass.getDeclaredField("simMachine")
         simMachineField.isAccessible = true
         simMachineField.set(host, simMachine)

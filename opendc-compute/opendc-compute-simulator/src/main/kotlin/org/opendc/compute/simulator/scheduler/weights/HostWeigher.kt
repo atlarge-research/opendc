@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.scheduler.weights
 
-import org.opendc.compute.simulator.service.HostView
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
@@ -38,7 +38,7 @@ public interface HostWeigher {
      * Obtain the weight of the specified [host] when scheduling the specified [ServiceTask].
      */
     public fun getWeight(
-        host: HostView,
+        host: SimHost,
         task: ServiceTask,
     ): Double
 
@@ -46,7 +46,7 @@ public interface HostWeigher {
      * Obtain the weights for [hosts] when scheduling the specified [task].
      */
     public fun getWeights(
-        hosts: List<HostView>,
+        hosts: List<SimHost>,
         task: ServiceTask,
     ): Result {
         val weights = DoubleArray(hosts.size)

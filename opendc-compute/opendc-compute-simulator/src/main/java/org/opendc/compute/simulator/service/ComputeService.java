@@ -92,14 +92,14 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     private boolean isClosed;
 
     /**
-     * A mapping from host to host view.
+     * The hosts registered with this service.
      */
-    private final Map<SimHost, HostView> hostToView = new HashMap<>();
+    private final Set<SimHost> hosts = new HashSet<>();
 
     /**
      * The available hypervisors.
      */
-    private final Set<HostView> availableHosts = new HashSet<>();
+    private final Set<SimHost> availableHosts = new HashSet<>();
 
     /**
      * The available clusters
@@ -295,22 +295,21 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      */
     public void addHost(SimHost host) {
         // Check if host is already known
-        if (hostToView.containsKey(host)) {
+        if (hosts.contains(host)) {
             return;
         }
 
-        HostView hv = new HostView(host);
         HostModel model = host.getModel();
 
         maxCores = Math.max(maxCores, model.coreCount());
         maxMemory = Math.max(maxMemory, model.memoryCapacity());
-        hostToView.put(host, hv);
+        hosts.add(host);
 
         if (host.getState() == HostState.UP) {
-            availableHosts.add(hv);
+            availableHosts.add(host);
         }
 
-        scheduler.addHost(hv);
+        scheduler.addHost(host);
         host.addListener(hostListener);
     }
 
@@ -318,37 +317,34 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      * Remove a {@link SimHost} from the scheduling pool of the compute service.
      */
     public void removeHost(SimHost host) {
-        HostView view = hostToView.remove(host);
-        if (view != null) {
-            availableHosts.remove(view);
-            scheduler.removeHost(view);
+        if (hosts.remove(host)) {
+            availableHosts.remove(host);
+            scheduler.removeHost(host);
             host.removeListener(hostListener);
         }
     }
 
     public void updateHost(SimHost host) {
-        HostView hv = hostToView.get(host);
-
-        if (hv == null) {
+        if (!hosts.contains(host)) {
             return;
         }
 
-        this.scheduler.updateHost(hv);
+        this.scheduler.updateHost(host);
     }
 
-    public void failHost(HostView hv) {
-        this.scheduler.failHost(hv);
+    public void failHost(SimHost host) {
+        this.scheduler.failHost(host);
     }
 
-    public void restartHost(HostView hv) {
-        this.scheduler.restartHost(hv);
+    public void restartHost(SimHost host) {
+        this.scheduler.restartHost(host);
     }
 
     /**
      * Return the {@link SimHost}s that are registered with this service.
      */
     public Set<SimHost> getHosts() {
-        return Collections.unmodifiableSet(hostToView.keySet());
+        return Collections.unmodifiableSet(hosts);
     }
 
     // ==================================================================================
@@ -433,7 +429,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     public int getHostsUnavailable() {
-        return this.hostToView.size() - this.availableHosts.size();
+        return this.hosts.size() - this.availableHosts.size();
     }
 
     public long getAttemptsSuccess() {
@@ -481,15 +477,13 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         public void onStateChanged(@NotNull SimHost host, @NotNull HostState newState) {
             LOGGER.debug("Host {} state changed: {}", host, newState);
 
-            final HostView hv = hostToView.get(host);
-
-            if (hv != null) {
+            if (hosts.contains(host)) {
                 if (newState == HostState.UP) {
-                    availableHosts.add(hv);
-                    restartHost(hv);
+                    availableHosts.add(host);
+                    restartHost(host);
                 } else {
-                    availableHosts.remove(hv);
-                    failHost(hv);
+                    availableHosts.remove(host);
+                    failHost(host);
                 }
             }
 
@@ -515,13 +509,12 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
                 activeTasks.remove(task);
 
-                HostView hv = hostToView.get(host);
-                if (hv != null) {
-                    hv.release(task);
-                } else {
+                final boolean isKnownHost = hosts.contains(host);
+                if (!isKnownHost) {
                     LOGGER.error("Unknown host {}", host);
                 }
 
+                // Deleting the task also releases the capacity it reserved on the host
                 host.delete(task);
 
                 updateHost(host);
@@ -539,7 +532,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                     deleteTask(task);
                 }
 
-                scheduler.removeTask(task, hv);
+                scheduler.removeTask(task, isKnownHost ? host : null);
 
                 // Try to reschedule if needed
                 requestSchedulingCycle();
@@ -700,9 +693,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     /**
      * Deploy the given task onto the host selected for it.
      */
-    private void deployTask(ServiceTask task, HostView hv, SchedulingRequest req) {
-        SimHost host = hv.getHost();
-
+    private void deployTask(ServiceTask task, SimHost host, SchedulingRequest req) {
         LOGGER.info("Assigned task {} to host {}", task, host);
 
         try {
@@ -713,8 +704,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
             attemptsSuccess++;
 
-            hv.reserve(task);
-
             activeTasks.add(task);
 
             updateHost(host);
@@ -724,7 +713,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
         } catch (Exception cause) {
             LOGGER.error("Failed to deploy VM", cause);
-            scheduler.removeTask(task, hv);
+            scheduler.removeTask(task, host);
             attemptsFailure++;
         }
     }

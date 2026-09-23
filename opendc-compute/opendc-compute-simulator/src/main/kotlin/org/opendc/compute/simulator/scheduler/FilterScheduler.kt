@@ -23,9 +23,9 @@
 package org.opendc.compute.simulator.scheduler
 
 import org.opendc.compute.simulator.infrastructure.HostState
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
 import org.opendc.compute.simulator.scheduler.weights.HostWeigher
-import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
@@ -53,74 +53,74 @@ public class FilterScheduler(
      * The pool of hosts available to the scheduler.
      */
 
-    private val failedHosts = mutableListOf<HostView>() // List of Hosts that are currently not available
-    private val emptyHostMap = mutableMapOf<String, MutableList<HostView>>()
+    private val failedHosts = mutableListOf<SimHost>() // List of Hosts that are currently not available
+    private val emptyHostMap = mutableMapOf<String, MutableList<SimHost>>()
 
     private val weights = DoubleArray(numHosts)
 
-    private val usedHosts = SortedHostViewList(numHosts, filters)
+    private val usedHosts = SortedHostList(numHosts, filters)
 
     init {
         require(subsetSize >= 1) { "Subset size must be one or greater" }
     }
 
-    override fun addHost(hostView: HostView) {
-        val hostType = hostView.host.getType()
+    override fun addHost(host: SimHost) {
+        val hostType = host.type
 
         if (emptyHostMap.containsKey(hostType)) {
-            emptyHostMap[hostType]?.add(hostView)
+            emptyHostMap[hostType]?.add(host)
         } else {
-            emptyHostMap[hostType] = mutableListOf(hostView)
+            emptyHostMap[hostType] = mutableListOf(host)
         }
     }
 
     // Remove host from the Available hosts list
-    override fun removeHost(hostView: HostView) {
-        val hostType = hostView.host.getType()
+    override fun removeHost(host: SimHost) {
+        val hostType = host.type
 
         // remove from emptyHosts if present
-        val removed = emptyHostMap[hostType]?.remove(hostView)
+        val removed = emptyHostMap[hostType]?.remove(host)
         if (removed != null && removed) {
             return
         }
 
         // If the hosts was being used, remove it from there
-        usedHosts.remove(hostView)
+        usedHosts.remove(host)
     }
 
     // Remove a failed host from available hosts, and add it to the failed hosts.
-    override fun failHost(hostView: HostView) {
-        removeHost(hostView)
-        failedHosts.add(hostView)
+    override fun failHost(host: SimHost) {
+        removeHost(host)
+        failedHosts.add(host)
     }
 
-    override fun restartHost(hostView: HostView) {
-        val removed = failedHosts.remove(hostView)
+    override fun restartHost(host: SimHost) {
+        val removed = failedHosts.remove(host)
         if (removed) {
-            addHost(hostView)
+            addHost(host)
         }
     }
 
-    override fun updateHost(hostView: HostView) {
-        if (hostView.host.getState() == HostState.ERROR) {
+    override fun updateHost(host: SimHost) {
+        if (host.state == HostState.ERROR) {
             return
         }
 
-        if (hostView.host.isEmpty()) {
-            setHostEmpty(hostView)
+        if (host.isEmpty()) {
+            setHostEmpty(host)
         } else {
-            usedHosts.updateHost(hostView)
+            usedHosts.updateHost(host)
         }
     }
 
-    override fun setHostEmpty(hostView: HostView) {
-        val hostType = hostView.host.getType()
+    override fun setHostEmpty(host: SimHost) {
+        val hostType = host.type
 
-        usedHosts.remove(hostView)
+        usedHosts.remove(host)
         if (emptyHostMap.containsKey(hostType)) {
-            emptyHostMap[hostType]?.add(hostView)
+            emptyHostMap[hostType]?.add(host)
         } else {
-            emptyHostMap[hostType] = mutableListOf(hostView)
+            emptyHostMap[hostType] = mutableListOf(host)
         }
     }
 
@@ -157,7 +157,7 @@ public class FilterScheduler(
         var maxWeight = Double.MIN_VALUE
         var maxIndex = 0
 
-        val hostView =
+        val host =
             if (weighers.isNotEmpty()) {
                 val results = weighers.map { it.getWeights(fittingHosts, task) }
 
@@ -189,19 +189,19 @@ public class FilterScheduler(
 
         iter.remove()
 
-        val hostType = hostView.host.getType()
+        val hostType = host.type
 
-        if (hostView.host.isEmpty()) {
-            emptyHostMap[hostType]?.remove(hostView)
-            usedHosts.addSorted(hostView)
+        if (host.isEmpty()) {
+            emptyHostMap[hostType]?.remove(host)
+            usedHosts.addSorted(host)
         }
 
-        return SchedulingResult(SchedulingResultType.SUCCESS, hostView, req)
+        return SchedulingResult(SchedulingResultType.SUCCESS, host, req)
     }
 
     override fun removeTask(
         task: ServiceTask,
-        host: HostView?,
+        host: SimHost?,
     ) {
     }
 }

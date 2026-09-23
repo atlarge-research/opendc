@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.scheduler.weights
 
-import org.opendc.compute.simulator.service.HostView
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
@@ -30,7 +30,7 @@ import org.opendc.compute.simulator.service.ServiceTask
  */
 public class InstanceCountWeigher(override val multiplier: Double = 1.0) : HostWeigher {
     override fun getWeight(
-        host: HostView,
+        host: SimHost,
         task: ServiceTask,
     ): Double {
         return host.instanceCount.toDouble()

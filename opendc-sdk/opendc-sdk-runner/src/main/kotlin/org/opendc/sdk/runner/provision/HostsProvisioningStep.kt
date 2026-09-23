@@ -340,7 +340,7 @@ public class HostsProvisioningStep(
                     powerDistributor,
                 )
 
-            carbonModel?.addReceiver(simHost.simMachine?.psu)
+            carbonModel?.addReceiver(simHost.simMachine.psu)
 
             require(simHosts.add(simHost)) { "Error when making Host $simHost" }
             service.addHost(simHost)

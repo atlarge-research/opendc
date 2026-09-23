@@ -22,8 +22,8 @@
 
 package org.opendc.compute.simulator.scheduler
 
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
-import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 
 /*
@@ -37,11 +37,11 @@ public class MemorizingScheduler(
 ) : ComputeScheduler {
     // We assume that there will be max 100 tasks per host.
     // The index of a host list is the number of tasks on that host.
-    private val hostsQueue = List(100, { mutableListOf<HostView>() })
+    private val hostsQueue = List(100, { mutableListOf<SimHost>() })
     private var minAvailableHost = 0
     private var numHosts = 0
 
-    override fun addHost(host: HostView) {
+    override fun addHost(host: SimHost) {
         val zeroQueue = hostsQueue[0]
         zeroQueue.add(host)
         host.priorityIndex = 0
@@ -50,7 +50,7 @@ public class MemorizingScheduler(
         minAvailableHost = 0
     }
 
-    override fun removeHost(host: HostView) {
+    override fun removeHost(host: SimHost) {
         val priorityIdx = host.priorityIndex
         val listIdx = host.listIndex
         val chosenList = hostsQueue[priorityIdx]
@@ -73,11 +73,11 @@ public class MemorizingScheduler(
         numHosts--
     }
 
-    override fun updateHost(hostView: HostView) {
+    override fun updateHost(host: SimHost) {
         // No-op
     }
 
-    override fun setHostEmpty(hostView: HostView) {
+    override fun setHostEmpty(host: SimHost) {
         // No-op
     }
 
@@ -93,8 +93,8 @@ public class MemorizingScheduler(
         val maxIters = 10000
         var numIters = 0
 
-        var chosenList: MutableList<HostView>? = null
-        var chosenHost: HostView? = null
+        var chosenList: MutableList<SimHost>? = null
+        var chosenHost: SimHost? = null
 
         var result: SchedulingResult? = null
         taskloop@ for (req in iter) {
@@ -152,7 +152,7 @@ public class MemorizingScheduler(
 
     override fun removeTask(
         task: ServiceTask,
-        host: HostView?,
+        host: SimHost?,
     ) {
         if (host == null) return
 
