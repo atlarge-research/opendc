@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.scheduler.filters
 
-import org.opendc.compute.simulator.service.HostView
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
@@ -34,13 +34,13 @@ public class VCpuFilter(private val allocationRatio: Double = 1.0) : HostFilter 
     private val isSimple = allocationRatio == 1.0
 
     override fun test(
-        host: HostView,
+        host: SimHost,
         task: ServiceTask,
     ): Boolean {
         if (isSimple) return host.availableCpuCores >= task.cpuCoreCount
 
         val requested = task.cpuCoreCount
-        val totalCores = host.host.getModel().coreCount
+        val totalCores = host.model.coreCount
 
         // Do not allow an instance to overcommit against itself, only against other instances
         if (requested > totalCores) {
@@ -53,11 +53,11 @@ public class VCpuFilter(private val allocationRatio: Double = 1.0) : HostFilter 
         return availableCores >= requested
     }
 
-    override fun score(host: HostView): Double {
+    override fun score(host: SimHost): Double {
         return if (isSimple) {
             host.availableCpuCores.toDouble()
         } else {
-            host.host.getModel().coreCount * allocationRatio
+            host.model.coreCount * allocationRatio
         }
     }
 }

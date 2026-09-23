@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.scheduler.filters
 
-import org.opendc.compute.simulator.service.HostView
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
@@ -34,14 +34,14 @@ public class RamFilter(private val allocationRatio: Double = 1.0) : HostFilter {
     private val isSimple = allocationRatio == 1.0
 
     override fun test(
-        host: HostView,
+        host: SimHost,
         task: ServiceTask,
     ): Boolean {
         if (isSimple) return host.availableMemory >= task.memorySize
 
         val requestedMemory = task.memorySize
         val availableMemory = host.availableMemory
-        val memoryCapacity = host.host.getModel().memoryCapacity
+        val memoryCapacity = host.model.memoryCapacity
 
         // Do not allow an instance to overcommit against itself, only against
         // other instances.
@@ -57,11 +57,11 @@ public class RamFilter(private val allocationRatio: Double = 1.0) : HostFilter {
         return result
     }
 
-    override fun score(host: HostView): Double {
+    override fun score(host: SimHost): Double {
         return if (isSimple) {
             return host.availableMemory.toDouble()
         } else {
-            host.host.getModel().memoryCapacity * allocationRatio
+            host.model.memoryCapacity * allocationRatio
         }
     }
 }

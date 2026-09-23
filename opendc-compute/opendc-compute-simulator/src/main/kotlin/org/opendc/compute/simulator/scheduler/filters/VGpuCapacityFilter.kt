@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.scheduler.filters
 
-import org.opendc.compute.simulator.service.HostView
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 import kotlin.collections.maxOfOrNull
 
@@ -32,12 +32,12 @@ import kotlin.collections.maxOfOrNull
  */
 public class VGpuCapacityFilter : HostFilter {
     override fun test(
-        host: HostView,
+        host: SimHost,
         task: ServiceTask,
     ): Boolean {
         val requiredCapacity = task.gpuCapacity
-        val availableCapacity = (host.host.getModel().gpuHostModels().maxOfOrNull { it.gpuCoreCapacity() } ?: 0).toDouble()
-        val availableCores = (host.host.getModel().gpuHostModels().maxOfOrNull { it -> it.gpuCoreCount } ?: -1).toDouble()
+        val availableCapacity = (host.model.gpuHostModels().maxOfOrNull { it.gpuCoreCapacity() } ?: 0).toDouble()
+        val availableCores = (host.model.gpuHostModels().maxOfOrNull { it -> it.gpuCoreCount } ?: -1).toDouble()
         val availableRatio = availableCapacity / availableCores
 
         return availableRatio >= (requiredCapacity / task.gpuCoreCount)

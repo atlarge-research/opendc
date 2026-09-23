@@ -77,10 +77,10 @@ public class HostSampler(
         val bootTime = hostSysStats.bootTime + startTime
 
         return HostSample(
-            hostName = host.getName(),
-            clusterName = host.getClusterName(),
-            coreCount = host.getModel().coreCount,
-            memCapacity = host.getModel().memoryCapacity,
+            hostName = host.name,
+            clusterName = host.clusterName,
+            coreCount = host.model.coreCount,
+            memCapacity = host.model.memoryCapacity,
             timestamp = timestamp,
             timestampAbsolute = timestampAbsolute,
             tasksTerminated = tasksTerminated,

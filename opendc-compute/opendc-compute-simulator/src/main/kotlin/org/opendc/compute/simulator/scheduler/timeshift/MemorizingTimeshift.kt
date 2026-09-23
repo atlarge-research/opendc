@@ -22,12 +22,12 @@
 
 package org.opendc.compute.simulator.scheduler.timeshift
 
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.scheduler.SchedulingRequest
 import org.opendc.compute.simulator.scheduler.SchedulingResult
 import org.opendc.compute.simulator.scheduler.SchedulingResultType
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
-import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.simulator.compute.carbon.CarbonModel
 import java.time.InstantSource
@@ -45,7 +45,7 @@ public class MemorizingTimeshift(
 ) : ComputeScheduler, Timeshifter {
     // We assume that there will be max 200 tasks per host.
     // The index of a host list is the number of tasks on that host.
-    private val hostsQueue = List(100) { mutableListOf<HostView>() }
+    private val hostsQueue = List(100) { mutableListOf<SimHost>() }
     private var minAvailableHost = 0
     private var numHosts = 0
 
@@ -55,7 +55,7 @@ public class MemorizingTimeshift(
     override var longLowCarbon: Boolean = false // Low carbon regime for long tasks (>= hours)
     override var carbonMod: CarbonModel? = null
 
-    override fun addHost(host: HostView) {
+    override fun addHost(host: SimHost) {
         val zeroQueue = hostsQueue[0]
         zeroQueue.add(host)
         host.priorityIndex = 0
@@ -64,7 +64,7 @@ public class MemorizingTimeshift(
         minAvailableHost = 0
     }
 
-    override fun removeHost(host: HostView) {
+    override fun removeHost(host: SimHost) {
         val priorityIdx = host.priorityIndex
         val listIdx = host.listIndex
         val chosenList = hostsQueue[priorityIdx]
@@ -87,11 +87,11 @@ public class MemorizingTimeshift(
         numHosts--
     }
 
-    override fun updateHost(hostView: HostView) {
+    override fun updateHost(host: SimHost) {
         // No-op
     }
 
-    override fun setHostEmpty(hostView: HostView) {
+    override fun setHostEmpty(host: SimHost) {
         // No-op
     }
 
@@ -103,8 +103,8 @@ public class MemorizingTimeshift(
         val maxIters = 10000
         var numIters = 0
 
-        var chosenList: MutableList<HostView>? = null
-        var chosenHost: HostView? = null
+        var chosenList: MutableList<SimHost>? = null
+        var chosenHost: SimHost? = null
 
         var result: SchedulingResult? = null
         taskloop@ for (req in iter) {
@@ -191,7 +191,7 @@ public class MemorizingTimeshift(
 
     override fun removeTask(
         task: ServiceTask,
-        host: HostView?,
+        host: SimHost?,
     ) {
         if (host == null) return
 

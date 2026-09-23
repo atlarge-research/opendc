@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.scheduler.filters
 
-import org.opendc.compute.simulator.service.HostView
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
@@ -31,13 +31,13 @@ import org.opendc.compute.simulator.service.ServiceTask
  */
 public class VCpuCapacityFilter : HostFilter {
     override fun test(
-        host: HostView,
+        host: SimHost,
         task: ServiceTask,
     ): Boolean {
         val requiredCapacity = task.cpuCapacity
-        val availableCapacity = host.host.getModel().cpuCapacity
+        val availableCapacity = host.model.cpuCapacity
 
-        return (availableCapacity / host.host.getModel().coreCount) >=
+        return (availableCapacity / host.model.coreCount) >=
             (requiredCapacity / task.cpuCoreCount)
     }
 }

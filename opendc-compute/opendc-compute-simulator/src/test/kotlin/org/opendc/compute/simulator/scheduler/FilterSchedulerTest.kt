@@ -31,6 +31,7 @@ import org.junit.jupiter.api.assertThrows
 import org.opendc.compute.simulator.infrastructure.GpuHostModel
 import org.opendc.compute.simulator.infrastructure.HostModel
 import org.opendc.compute.simulator.infrastructure.HostState
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
 import org.opendc.compute.simulator.scheduler.filters.DifferentHostFilter
 import org.opendc.compute.simulator.scheduler.filters.InstanceCountFilter
@@ -43,7 +44,6 @@ import org.opendc.compute.simulator.scheduler.filters.VGpuFilter
 import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.simulator.scheduler.weights.RamWeigher
 import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher
-import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 import java.util.Random
 
@@ -94,15 +94,15 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.DOWN
-        every { hostA.host.getType() } returns "A"
-        every { hostA.host.isEmpty() } returns true
+        val hostA = mockk<SimHost>()
+        every { hostA.state } returns HostState.DOWN
+        every { hostA.type } returns "A"
+        every { hostA.isEmpty() } returns true
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getType() } returns "B"
-        every { hostB.host.isEmpty() } returns true
+        val hostB = mockk<SimHost>()
+        every { hostB.state } returns HostState.UP
+        every { hostB.type } returns "B"
+        every { hostB.isEmpty() } returns true
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
@@ -129,15 +129,15 @@ internal class FilterSchedulerTest {
 //                random = Random(1),
 //            )
 //
-//        val hostA = mockk<HostView>()
-//        every { hostA.host.getState() } returns HostState.DOWN
-//        every { hostA.host.getType() } returns "A"
-//        every { hostA.host.isEmpty() } returns true
+//        val hostA = mockk<SimHost>()
+//        every { hostA.state } returns HostState.DOWN
+//        every { hostA.type } returns "A"
+//        every { hostA.isEmpty() } returns true
 //
-//        val hostB = mockk<HostView>()
-//        every { hostB.host.getState() } returns HostState.UP
-//        every { hostB.host.getType() } returns "B"
-//        every { hostB.host.isEmpty() } returns true
+//        val hostB = mockk<SimHost>()
+//        every { hostB.state } returns HostState.UP
+//        every { hostB.type } returns "B"
+//        every { hostB.isEmpty() } returns true
 //
 //        scheduler.addHost(hostA)
 //        scheduler.addHost(hostB)
@@ -162,10 +162,10 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val host = mockk<HostView>()
-        every { host.host.getState() } returns HostState.DOWN
-        every { host.host.getType() } returns "A"
-        every { host.host.isEmpty() } returns true
+        val host = mockk<SimHost>()
+        every { host.state } returns HostState.DOWN
+        every { host.type } returns "A"
+        every { host.isEmpty() } returns true
 
         scheduler.addHost(host)
 
@@ -185,10 +185,10 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val host = mockk<HostView>()
-        every { host.host.getState() } returns HostState.UP
-        every { host.host.getType() } returns "A"
-        every { host.host.isEmpty() } returns true
+        val host = mockk<SimHost>()
+        every { host.state } returns HostState.UP
+        every { host.type } returns "A"
+        every { host.isEmpty() } returns true
 
         scheduler.addHost(host)
 
@@ -208,19 +208,19 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostA = mockk<SimHost>()
+        every { hostA.state } returns HostState.UP
+        every { hostA.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostA.availableMemory } returns 512
-        every { hostA.host.getType() } returns "A"
-        every { hostA.host.isEmpty() } returns true
+        every { hostA.type } returns "A"
+        every { hostA.isEmpty() } returns true
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostB = mockk<SimHost>()
+        every { hostB.state } returns HostState.UP
+        every { hostB.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostB.availableMemory } returns 2048
-        every { hostB.host.getType() } returns "B"
-        every { hostB.host.isEmpty() } returns true
+        every { hostB.type } returns "B"
+        every { hostB.isEmpty() } returns true
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
@@ -241,12 +241,12 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val host = mockk<HostView>()
-        every { host.host.getState() } returns HostState.UP
-        every { host.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val host = mockk<SimHost>()
+        every { host.state } returns HostState.UP
+        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { host.availableMemory } returns 2048
-        every { host.host.getType() } returns "A"
-        every { host.host.isEmpty() } returns true
+        every { host.type } returns "A"
+        every { host.isEmpty() } returns true
 
         scheduler.addHost(host)
 
@@ -266,21 +266,21 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostA = mockk<SimHost>()
+        every { hostA.state } returns HostState.UP
+        every { hostA.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostA.provisionedCpuCores } returns 3
         every { hostA.availableCpuCores } returns 1
-        every { hostA.host.getType() } returns "A"
-        every { hostA.host.isEmpty() } returns true
+        every { hostA.type } returns "A"
+        every { hostA.isEmpty() } returns true
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostB = mockk<SimHost>()
+        every { hostB.state } returns HostState.UP
+        every { hostB.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostB.provisionedCpuCores } returns 0
         every { hostB.availableCpuCores } returns 4
-        every { hostB.host.getType() } returns "B"
-        every { hostB.host.isEmpty() } returns true
+        every { hostB.type } returns "B"
+        every { hostB.isEmpty() } returns true
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
@@ -301,12 +301,12 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val host = mockk<HostView>()
-        every { host.host.getState() } returns HostState.UP
-        every { host.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val host = mockk<SimHost>()
+        every { host.state } returns HostState.UP
+        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { host.provisionedCpuCores } returns 0
-        every { host.host.getType() } returns "A"
-        every { host.host.isEmpty() } returns true
+        every { host.type } returns "A"
+        every { host.isEmpty() } returns true
 
         scheduler.addHost(host)
 
@@ -326,20 +326,20 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(8 * 2600.0, 8, 2048)
+        val hostA = mockk<SimHost>()
+        every { hostA.state } returns HostState.UP
+        every { hostA.model } returns HostModel(8 * 2600.0, 8, 2048)
         every { hostA.availableMemory } returns 512
-        every { hostA.host.getType() } returns "A"
-        every { hostA.host.isEmpty() } returns true
+        every { hostA.type } returns "A"
+        every { hostA.isEmpty() } returns true
         scheduler.addHost(hostA)
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns HostModel(4 * 3200.0, 4, 2048)
+        val hostB = mockk<SimHost>()
+        every { hostB.state } returns HostState.UP
+        every { hostB.model } returns HostModel(4 * 3200.0, 4, 2048)
         every { hostB.availableMemory } returns 512
-        every { hostB.host.getType() } returns "B"
-        every { hostB.host.isEmpty() } returns true
+        every { hostB.type } returns "B"
+        every { hostB.isEmpty() } returns true
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
@@ -359,19 +359,19 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostA = mockk<SimHost>()
+        every { hostA.state } returns HostState.UP
+        every { hostA.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostA.instanceCount } returns 2
-        every { hostA.host.getType() } returns "A"
-        every { hostA.host.isEmpty() } returns true
+        every { hostA.type } returns "A"
+        every { hostA.isEmpty() } returns true
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostB = mockk<SimHost>()
+        every { hostB.state } returns HostState.UP
+        every { hostB.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostB.instanceCount } returns 0
-        every { hostB.host.getType() } returns "B"
-        every { hostB.host.isEmpty() } returns true
+        every { hostB.type } returns "B"
+        every { hostB.isEmpty() } returns true
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
@@ -401,21 +401,21 @@ internal class FilterSchedulerTest {
         every { taskA.id } returns Random().nextInt(1, Int.MAX_VALUE)
         every { reqA.task } returns taskA
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostA.host.getInstances() } returns emptySet()
+        val hostA = mockk<SimHost>()
+        every { hostA.state } returns HostState.UP
+        every { hostA.model } returns HostModel(4 * 2600.0, 4, 2048)
+        every { hostA.getInstances() } returns emptySet()
         every { hostA.provisionedCpuCores } returns 3
-        every { hostA.host.getType() } returns "A"
-        every { hostA.host.isEmpty() } returns true
+        every { hostA.type } returns "A"
+        every { hostA.isEmpty() } returns true
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostB.host.getInstances() } returns setOf(reqA.task)
+        val hostB = mockk<SimHost>()
+        every { hostB.state } returns HostState.UP
+        every { hostB.model } returns HostModel(4 * 2600.0, 4, 2048)
+        every { hostB.getInstances() } returns setOf(reqA.task)
         every { hostB.provisionedCpuCores } returns 0
-        every { hostB.host.getType() } returns "B"
-        every { hostB.host.isEmpty() } returns true
+        every { hostB.type } returns "B"
+        every { hostB.isEmpty() } returns true
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
@@ -450,21 +450,21 @@ internal class FilterSchedulerTest {
         every { taskA.id } returns Random().nextInt(1, Int.MAX_VALUE)
         every { reqA.task } returns taskA
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostA.host.getInstances() } returns setOf(reqA.task)
+        val hostA = mockk<SimHost>()
+        every { hostA.state } returns HostState.UP
+        every { hostA.model } returns HostModel(4 * 2600.0, 4, 2048)
+        every { hostA.getInstances() } returns setOf(reqA.task)
         every { hostA.provisionedCpuCores } returns 3
-        every { hostA.host.getType() } returns "A"
-        every { hostA.host.isEmpty() } returns true
+        every { hostA.type } returns "A"
+        every { hostA.isEmpty() } returns true
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostB.host.getInstances() } returns emptySet()
+        val hostB = mockk<SimHost>()
+        every { hostB.state } returns HostState.UP
+        every { hostB.model } returns HostModel(4 * 2600.0, 4, 2048)
+        every { hostB.getInstances() } returns emptySet()
         every { hostB.provisionedCpuCores } returns 0
-        every { hostB.host.getType() } returns "B"
-        every { hostB.host.isEmpty() } returns true
+        every { hostB.type } returns "B"
+        every { hostB.isEmpty() } returns true
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
@@ -489,9 +489,9 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns
+        val hostA = mockk<SimHost>()
+        every { hostA.state } returns HostState.UP
+        every { hostA.model } returns
             HostModel(
                 0.0,
                 0,
@@ -501,13 +501,13 @@ internal class FilterSchedulerTest {
                 ),
             )
         every { hostA.provisionedGpuCores } returns 0
-        every { hostA.host.getType() } returns "A"
-        every { hostA.host.isEmpty() } returns true
+        every { hostA.type } returns "A"
+        every { hostA.isEmpty() } returns true
         scheduler.addHost(hostA)
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns
+        val hostB = mockk<SimHost>()
+        every { hostB.state } returns HostState.UP
+        every { hostB.model } returns
             HostModel(
                 0.0,
                 0,
@@ -518,8 +518,8 @@ internal class FilterSchedulerTest {
                 ),
             )
         every { hostB.provisionedGpuCores } returns 0
-        every { hostB.host.getType() } returns "B"
-        every { hostB.host.isEmpty() } returns true
+        every { hostB.type } returns "B"
+        every { hostB.isEmpty() } returns true
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
@@ -539,9 +539,9 @@ internal class FilterSchedulerTest {
                 weighers = emptyList(),
             )
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns
+        val hostA = mockk<SimHost>()
+        every { hostA.state } returns HostState.UP
+        every { hostA.model } returns
             HostModel(
                 0.0,
                 0,
@@ -551,13 +551,13 @@ internal class FilterSchedulerTest {
                 ),
             )
         every { hostA.availableMemory } returns 512
-        every { hostA.host.getType() } returns "A"
-        every { hostA.host.isEmpty() } returns true
+        every { hostA.type } returns "A"
+        every { hostA.isEmpty() } returns true
         scheduler.addHost(hostA)
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns
+        val hostB = mockk<SimHost>()
+        every { hostB.state } returns HostState.UP
+        every { hostB.model } returns
             HostModel(
                 0.0,
                 0,
@@ -568,8 +568,8 @@ internal class FilterSchedulerTest {
                 ),
             )
         every { hostB.availableMemory } returns 512
-        every { hostB.host.getType() } returns "B"
-        every { hostB.host.isEmpty() } returns true
+        every { hostB.type } returns "B"
+        every { hostB.isEmpty() } returns true
         scheduler.addHost(hostB)
 
         val req = mockk<SchedulingRequest>()
@@ -589,21 +589,21 @@ internal class FilterSchedulerTest {
                 weighers = listOf(RamWeigher(1.5)),
             )
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostA = mockk<SimHost>()
+        every { hostA.state } returns HostState.UP
+        every { hostA.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostA.availableMemory } returns 1024
         every { hostA.availableCpuCores } returns 4
-        every { hostA.host.getType() } returns "A"
-        every { hostA.host.isEmpty() } returns true
+        every { hostA.type } returns "A"
+        every { hostA.isEmpty() } returns true
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostB = mockk<SimHost>()
+        every { hostB.state } returns HostState.UP
+        every { hostB.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostB.availableMemory } returns 512
         every { hostB.availableCpuCores } returns 4
-        every { hostB.host.getType() } returns "B"
-        every { hostB.host.isEmpty() } returns true
+        every { hostB.type } returns "B"
+        every { hostB.isEmpty() } returns true
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
@@ -624,21 +624,21 @@ internal class FilterSchedulerTest {
                 weighers = listOf(CoreRamWeigher(1.5)),
             )
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(12 * 2600.0, 12, 2048)
+        val hostA = mockk<SimHost>()
+        every { hostA.state } returns HostState.UP
+        every { hostA.model } returns HostModel(12 * 2600.0, 12, 2048)
         every { hostA.availableMemory } returns 1024
         every { hostA.availableCpuCores } returns 12
-        every { hostA.host.getType() } returns "A"
-        every { hostA.host.isEmpty() } returns true
+        every { hostA.type } returns "A"
+        every { hostA.isEmpty() } returns true
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostB = mockk<SimHost>()
+        every { hostB.state } returns HostState.UP
+        every { hostB.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostB.availableMemory } returns 512
         every { hostB.availableCpuCores } returns 4
-        every { hostB.host.getType() } returns "B"
-        every { hostB.host.isEmpty() } returns true
+        every { hostB.type } returns "B"
+        every { hostB.isEmpty() } returns true
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)
@@ -659,21 +659,21 @@ internal class FilterSchedulerTest {
                 weighers = listOf(VCpuWeigher(16.0)),
             )
 
-        val hostA = mockk<HostView>()
-        every { hostA.host.getState() } returns HostState.UP
-        every { hostA.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostA = mockk<SimHost>()
+        every { hostA.state } returns HostState.UP
+        every { hostA.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostA.provisionedCpuCores } returns 2
         every { hostA.availableCpuCores } returns 4
-        every { hostA.host.getType() } returns "A"
-        every { hostA.host.isEmpty() } returns true
+        every { hostA.type } returns "A"
+        every { hostA.isEmpty() } returns true
 
-        val hostB = mockk<HostView>()
-        every { hostB.host.getState() } returns HostState.UP
-        every { hostB.host.getModel() } returns HostModel(4 * 2600.0, 4, 2048)
+        val hostB = mockk<SimHost>()
+        every { hostB.state } returns HostState.UP
+        every { hostB.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { hostB.provisionedCpuCores } returns 0
         every { hostB.availableCpuCores } returns 4
-        every { hostB.host.getType() } returns "B"
-        every { hostB.host.isEmpty() } returns true
+        every { hostB.type } returns "B"
+        every { hostB.isEmpty() } returns true
 
         scheduler.addHost(hostA)
         scheduler.addHost(hostB)

@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.scheduler.weights
 
-import org.opendc.compute.simulator.service.HostView
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.service.ServiceTask
 
 /**
@@ -36,7 +36,7 @@ public class VGpuWeigher(private val allocationRatio: Double, override val multi
     }
 
     override fun getWeight(
-        host: HostView,
+        host: SimHost,
         task: ServiceTask,
     ): Double {
         return allocationRatio - host.provisionedGpuCores

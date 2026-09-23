@@ -22,13 +22,13 @@
 
 package org.opendc.compute.simulator.scheduler.timeshift
 
+import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.scheduler.SchedulingRequest
 import org.opendc.compute.simulator.scheduler.SchedulingResult
 import org.opendc.compute.simulator.scheduler.SchedulingResultType
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
 import org.opendc.compute.simulator.scheduler.weights.HostWeigher
-import org.opendc.compute.simulator.service.HostView
 import org.opendc.compute.simulator.service.ServiceTask
 import org.opendc.simulator.compute.carbon.CarbonModel
 import java.time.InstantSource
@@ -52,7 +52,7 @@ public class TimeshiftScheduler(
     /**
      * The pool of hosts available to the scheduler.
      */
-    private val hosts = mutableListOf<HostView>()
+    private val hosts = mutableListOf<SimHost>()
 
     init {
         require(subsetSize >= 1) { "Subset size must be one or greater" }
@@ -64,19 +64,19 @@ public class TimeshiftScheduler(
     override var longLowCarbon: Boolean = false // Low carbon regime for long tasks (>= hours)
     override var carbonMod: CarbonModel? = null
 
-    override fun addHost(host: HostView) {
+    override fun addHost(host: SimHost) {
         hosts.add(host)
     }
 
-    override fun removeHost(host: HostView) {
+    override fun removeHost(host: SimHost) {
         hosts.remove(host)
     }
 
-    override fun updateHost(hostView: HostView) {
+    override fun updateHost(host: SimHost) {
         // No-op
     }
 
-    override fun setHostEmpty(hostView: HostView) {
+    override fun setHostEmpty(host: SimHost) {
         // No-op
     }
 
@@ -162,6 +162,6 @@ public class TimeshiftScheduler(
 
     override fun removeTask(
         task: ServiceTask,
-        host: HostView?,
+        host: SimHost?,
     ) {}
 }
