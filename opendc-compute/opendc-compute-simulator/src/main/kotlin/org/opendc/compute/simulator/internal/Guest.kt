@@ -111,18 +111,19 @@ public class Guest(
 //                NoDelayScaling(),
 //            )
 
-        if (task.workload is ChainWorkload) {
+        val workload = checkNotNull(task.workload) { "Task ${task.id} has no workload" }
+        if (workload is ChainWorkload) {
             virtualMachine =
-                simMachine.startWorkload(task.workload as ChainWorkload) { cause ->
+                simMachine.startWorkload(workload) { cause ->
                     onStop(if (cause != null) TaskState.FAILED else TaskState.COMPLETED)
                 }
         } else {
             val newChainWorkload =
                 ChainWorkload(
-                    ArrayList(listOf(task.workload)),
-                    task.workload.checkpointInterval(),
-                    task.workload.checkpointDuration(),
-                    task.workload.checkpointIntervalScaling(),
+                    ArrayList(listOf(workload)),
+                    workload.checkpointInterval(),
+                    workload.checkpointDuration(),
+                    workload.checkpointIntervalScaling(),
                 )
 
             virtualMachine =

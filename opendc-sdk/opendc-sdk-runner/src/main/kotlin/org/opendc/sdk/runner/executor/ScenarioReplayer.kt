@@ -61,6 +61,7 @@ public suspend fun ComputeService.replay(
     resolve: ((ResourceReference) -> Path)? = null,
     submitImmediately: Boolean = false,
 ) {
+    println("Starting replay")
     val engineFailure = failureModel?.toEngine(coroutineContext, clock, this, Random(seed), resolve!!)
     try {
         coroutineScope {

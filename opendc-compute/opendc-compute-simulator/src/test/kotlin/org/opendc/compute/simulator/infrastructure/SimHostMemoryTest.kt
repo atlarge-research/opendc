@@ -81,15 +81,15 @@ class SimHostMemoryTest {
         simMachineField.set(host, simMachine)
 
         val task1 = mockk<ServiceTask>(relaxed = true)
-        every { task1.memorySize } returns 512L
+        every { task1.memorySize } returns 512
         every { task1.cpuCoreCount } returns 1
 
         val task2 = mockk<ServiceTask>(relaxed = true)
-        every { task2.memorySize } returns 512L
+        every { task2.memorySize } returns 512
         every { task2.cpuCoreCount } returns 1
 
         val task3 = mockk<ServiceTask>(relaxed = true)
-        every { task3.memorySize } returns 256L
+        every { task3.memorySize } returns 256
         every { task3.cpuCoreCount } returns 1
 
         // Initially can fit task1 and task2 (512 + 512 = 1024)
