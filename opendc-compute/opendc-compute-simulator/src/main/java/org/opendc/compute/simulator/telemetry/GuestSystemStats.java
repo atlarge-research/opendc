@@ -23,13 +23,11 @@
 package org.opendc.compute.simulator.telemetry;
 
 import java.time.Duration;
-import java.time.Instant;
 
 /**
- * System-level statistics of a guest.
+ * System-level statistics of a task running on a host.
  *
- * @param uptime The cumulative uptime of the guest since last boot (in ms).
- * @param downtime The cumulative downtime of the guest since last boot (in ms).
- * @param bootTime The time at which the guest booted.
+ * @param uptime The time the task has been running on its current host (in ms).
+ * @param downtime The time the task has been down on its current host (in ms).
  */
-public record GuestSystemStats(Duration uptime, Duration downtime, Instant bootTime) {}
+public record GuestSystemStats(Duration uptime, Duration downtime) {}
