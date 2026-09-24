@@ -556,6 +556,8 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             tasksTerminated++;
             task.setState(TaskState.TERMINATED);
 
+            this.addTerminatedTask(task);
+
             this.deleteTask(task);
             return null;
         }
@@ -610,6 +612,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             if (request != null) {
                 ServiceTask childTask = request.getTask();
 
+                tasksTerminated++;
                 childTask.setState(TaskState.TERMINATED);
 
                 this.addTerminatedTask(childTask);
