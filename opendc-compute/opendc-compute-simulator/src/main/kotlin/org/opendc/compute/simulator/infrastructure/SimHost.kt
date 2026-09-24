@@ -464,7 +464,7 @@ public class SimHost(
     private fun ServiceTask.toMachineModel(): MachineModel {
         return MachineModel(
             simMachine.machineModel.cpuModel,
-            MemoryUnit("Generic", "Generic", 3200.0, this.memorySize),
+            MemoryUnit("Generic", "Generic", 3200.0, this.memorySize.toLong()),
             simMachine.machineModel.gpuModels,
             simMachine.machineModel.cpuDistributionStrategy,
             simMachine.machineModel.gpuDistributionStrategy,

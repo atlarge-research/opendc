@@ -106,7 +106,6 @@ private class ScenarioRun(
 
         // TODO: Why is GPUCount here referenced?
         val sessions = attachSinks(scenario.topology.gpuCount(), startTime, workload.size)
-//        val sessions = attachSinks(20, startTime, workload.size)
         connectCarbonModel()
 
         service.replay(clock, workload, scenario.failureModel, seed, resources::resolve)

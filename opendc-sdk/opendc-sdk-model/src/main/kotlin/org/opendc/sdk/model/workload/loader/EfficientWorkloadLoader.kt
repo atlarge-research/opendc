@@ -52,7 +52,7 @@ import java.io.File
 import java.lang.ref.SoftReference
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.math.roundToLong
+import kotlin.math.roundToInt
 
 /**
  * A helper class for loading compute workload traces into memory.
@@ -164,7 +164,7 @@ public class EfficientWorkloadLoader(
                         taskReader.getDouble(gpuCapacityCol) // Default to 0 if not present
                     }
                 val gpuCoreCount = taskReader.getInt(gpuCoreCountCol) // Default to 0 if not present
-                val gpuMemory = 0L // currently not implemented
+                val gpuMemory = 0 // currently not implemented
 
                 val parents = taskReader.getSet(parentsCol, Int::class.java) // No dependencies in the trace
                 val children = taskReader.getSet(childrenCol, Int::class.java) // No dependencies in the trace
@@ -200,7 +200,7 @@ public class EfficientWorkloadLoader(
                         duration,
                         cpuCoreCount,
                         cpuCapacity,
-                        memUsage.roundToLong(),
+                        memUsage.roundToInt(),
                         gpuCoreCount,
                         gpuCapacity,
                         gpuMemory,
