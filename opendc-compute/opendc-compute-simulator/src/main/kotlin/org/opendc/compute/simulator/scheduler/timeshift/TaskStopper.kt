@@ -56,14 +56,13 @@ public class TaskStopper(
 
     private fun pauseTasks() {
         for (host in service!!.hosts) {
-            val guests = host.getGuests()
+            val tasks = host.getInstances().toList()
 
             val snapshots =
-                guests.map {
+                tasks.map {
                     it.virtualMachine!!.makeSnapshot(clock.millis())
                     it.virtualMachine!!.snapshot
                 }
-            val tasks = guests.map { it.task }
             host.pauseAllTasks()
 
             for ((task, snapshot) in tasks.zip(snapshots)) {

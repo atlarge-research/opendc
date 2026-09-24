@@ -37,10 +37,9 @@ public class StartStopHostFault(
         faultDuration: Long,
     ) {
         for (host in victims) {
-            val guests = host.getGuests()
+            val tasks = host.getInstances().toList()
 
-            val snapshots = guests.map { it.virtualMachine!!.snapshot }
-            val tasks = guests.map { it.task }
+            val snapshots = tasks.map { it.virtualMachine!!.snapshot }
             host.fail()
 
             for ((task, snapshot) in tasks.zip(snapshots)) {
