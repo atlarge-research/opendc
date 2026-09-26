@@ -53,7 +53,7 @@ public fun createMicrosoft99Exp(
         random,
         ExponentialDistribution(rng, 67.01),
         ExponentialDistribution(rng, 16.49),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -72,7 +72,7 @@ public fun createMicrosoft99Wbl(
         random,
         WeibullDistribution(rng, 0.55, 35.30),
         WeibullDistribution(rng, 0.60, 9.34),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -91,7 +91,7 @@ public fun createMicrosoft99LogN(
         random,
         LogNormalDistribution(rng, 2.62, 1.84),
         LogNormalDistribution(rng, 1.42, 1.54),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -110,6 +110,6 @@ public fun createMicrosoft99Gam(
         random,
         GammaDistribution(rng, 0.41, 162.19),
         GammaDistribution(rng, 0.46, 35.52),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }

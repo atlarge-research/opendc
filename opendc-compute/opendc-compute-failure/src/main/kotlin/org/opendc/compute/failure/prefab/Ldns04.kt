@@ -53,7 +53,7 @@ public fun createLdns04Exp(
         random,
         ExponentialDistribution(rng, 141.06),
         ExponentialDistribution(rng, 8.61),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -72,7 +72,7 @@ public fun createLdns04Wbl(
         random,
         WeibullDistribution(rng, 0.51, 79.30),
         WeibullDistribution(rng, 0.63, 5.62),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -91,7 +91,7 @@ public fun createLdns04LogN(
         random,
         LogNormalDistribution(rng, 3.25, 2.33),
         LogNormalDistribution(rng, 0.91, 1.64),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -110,6 +110,6 @@ public fun createLdns04Gam(
         random,
         GammaDistribution(rng, 0.39, 362.43),
         GammaDistribution(rng, 0.51, 16.87),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }

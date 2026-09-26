@@ -53,7 +53,7 @@ public fun createG5k06Exp(
         random,
         ExponentialDistribution(rng, 32.41),
         ExponentialDistribution(rng, 7.41),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -72,7 +72,7 @@ public fun createG5k06Wbl(
         random,
         WeibullDistribution(rng, 0.48, 14.37),
         WeibullDistribution(rng, 0.35, 0.47),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -91,7 +91,7 @@ public fun createG5k06LogN(
         random,
         LogNormalDistribution(rng, 1.51, 2.42),
         LogNormalDistribution(rng, -2.0, 2.2),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -110,6 +110,6 @@ public fun createG5k06Gam(
         random,
         GammaDistribution(rng, 0.34, 94.35),
         GammaDistribution(rng, 0.19, 39.92),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }

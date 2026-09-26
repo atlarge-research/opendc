@@ -53,7 +53,7 @@ public fun createLanl05Exp(
         random,
         ExponentialDistribution(rng, 1779.99),
         ExponentialDistribution(rng, 5.92),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -72,7 +72,7 @@ public fun createLanl05Wbl(
         random,
         WeibullDistribution(rng, 0.48, 816.60),
         WeibullDistribution(rng, 0.58, 2.18),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -91,7 +91,7 @@ public fun createLanl05LogN(
         random,
         LogNormalDistribution(rng, 5.56, 2.39),
         LogNormalDistribution(rng, 0.05, 1.42),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -110,6 +110,6 @@ public fun createLanl05Gam(
         random,
         GammaDistribution(rng, 0.35, 5102.71),
         GammaDistribution(rng, 0.38, 15.44),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }

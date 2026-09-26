@@ -53,7 +53,7 @@ public fun createSkype06Exp(
         random,
         ExponentialDistribution(rng, 16.27),
         ExponentialDistribution(rng, 14.31),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -72,7 +72,7 @@ public fun createSkype06Wbl(
         random,
         WeibullDistribution(rng, 0.64, 10.86),
         WeibullDistribution(rng, 0.63, 9.48),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -91,7 +91,7 @@ public fun createSkype06LogN(
         random,
         LogNormalDistribution(rng, 1.60, 1.57),
         LogNormalDistribution(rng, 1.40, 1.73),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -110,6 +110,6 @@ public fun createSkype06Gam(
         random,
         GammaDistribution(rng, 0.53, 30.79),
         GammaDistribution(rng, 0.50, 28.53),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }

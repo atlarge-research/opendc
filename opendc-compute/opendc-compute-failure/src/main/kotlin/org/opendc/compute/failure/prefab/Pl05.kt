@@ -53,7 +53,7 @@ public fun createPl05Exp(
         random,
         ExponentialDistribution(rng, 159.49),
         ExponentialDistribution(rng, 49.61),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -72,7 +72,7 @@ public fun createPl05Wbl(
         random,
         WeibullDistribution(rng, 0.33, 19.35),
         WeibullDistribution(rng, 0.36, 5.59),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -91,7 +91,7 @@ public fun createPl05LogN(
         random,
         LogNormalDistribution(rng, 1.44, 2.86),
         LogNormalDistribution(rng, 0.40, 2.45),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -110,6 +110,6 @@ public fun createPl05Gam(
         random,
         GammaDistribution(rng, 0.20, 788.03),
         GammaDistribution(rng, 0.21, 237.65),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }

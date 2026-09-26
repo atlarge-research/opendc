@@ -143,8 +143,12 @@ public class TraceWorkload implements Workload {
     public void updateFragment(int index, long duration, double cpuUsage, double gpuUsage, int gpuMemoryUsage) {
         this.durations[index] = duration;
         this.cpuUsages[index] = cpuUsage;
-        this.gpuUsages[index] = gpuUsage;
-        this.gpuMemoryUsages[index] = gpuMemoryUsage;
+
+        // The GPU arrays are null for workloads that do not use a GPU
+        if (this.usedResourceTypes[ResourceType.GPU.ordinal()]) {
+            this.gpuUsages[index] = gpuUsage;
+            this.gpuMemoryUsages[index] = gpuMemoryUsage;
+        }
     }
 
     @Override

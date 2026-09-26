@@ -53,7 +53,7 @@ public fun createWebsites02Exp(
         random,
         ExponentialDistribution(rng, 11.85),
         ExponentialDistribution(rng, 1.18),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -72,7 +72,7 @@ public fun createWebsites02Wbl(
         random,
         WeibullDistribution(rng, 0.46, 3.68),
         WeibullDistribution(rng, 0.65, 0.61),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -91,7 +91,7 @@ public fun createWebsites02LogN(
         random,
         LogNormalDistribution(rng, 0.23, 2.02),
         LogNormalDistribution(rng, -1.12, 1.13),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -110,6 +110,6 @@ public fun createWebsites02Gam(
         random,
         GammaDistribution(rng, 0.31, 38.67),
         GammaDistribution(rng, 0.50, 2.37),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
