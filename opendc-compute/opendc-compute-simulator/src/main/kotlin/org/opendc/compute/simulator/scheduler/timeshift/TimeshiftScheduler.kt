@@ -29,7 +29,7 @@ import org.opendc.compute.simulator.scheduler.SchedulingResult
 import org.opendc.compute.simulator.scheduler.SchedulingResultType
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
 import org.opendc.compute.simulator.scheduler.weights.HostWeigher
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import org.opendc.simulator.compute.carbon.CarbonModel
 import java.time.InstantSource
 import java.util.LinkedList
@@ -161,7 +161,7 @@ public class TimeshiftScheduler(
     }
 
     override fun removeTask(
-        task: ServiceTask,
+        task: SimTask,
         host: SimHost?,
     ) {}
 }

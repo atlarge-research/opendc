@@ -27,7 +27,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.MachineModel
@@ -78,15 +78,15 @@ class SimHostMemoryTest {
         simMachineField.isAccessible = true
         simMachineField.set(host, simMachine)
 
-        val task1 = mockk<ServiceTask>(relaxed = true)
+        val task1 = mockk<SimTask>(relaxed = true)
         every { task1.memorySize } returns 512
         every { task1.cpuCoreCount } returns 1
 
-        val task2 = mockk<ServiceTask>(relaxed = true)
+        val task2 = mockk<SimTask>(relaxed = true)
         every { task2.memorySize } returns 512
         every { task2.cpuCoreCount } returns 1
 
-        val task3 = mockk<ServiceTask>(relaxed = true)
+        val task3 = mockk<SimTask>(relaxed = true)
         every { task3.memorySize } returns 256
         every { task3.cpuCoreCount } returns 1
 

@@ -23,7 +23,7 @@
 package org.opendc.compute.simulator.scheduler.weights
 
 import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 /**
  * An interface used by the [FilterScheduler] to weigh the pool of host for a scheduling request.
@@ -35,11 +35,11 @@ public interface HostWeigher {
     public val multiplier: Double
 
     /**
-     * Obtain the weight of the specified [host] when scheduling the specified [ServiceTask].
+     * Obtain the weight of the specified [host] when scheduling the specified [SimTask].
      */
     public fun getWeight(
         host: SimHost,
-        task: ServiceTask,
+        task: SimTask,
     ): Double
 
     /**
@@ -47,7 +47,7 @@ public interface HostWeigher {
      */
     public fun getWeights(
         hosts: List<SimHost>,
-        task: ServiceTask,
+        task: SimTask,
     ): Result {
         val weights = DoubleArray(hosts.size)
         var min = Double.MAX_VALUE

@@ -34,7 +34,7 @@ import org.opendc.sdk.runner.RunResult
 import org.opendc.sdk.runner.factory.toEngine
 import org.opendc.sdk.runner.factory.toExportSettings
 import org.opendc.sdk.runner.factory.toScheduler
-import org.opendc.sdk.runner.factory.toServiceTasks
+import org.opendc.sdk.runner.factory.toSimTasks
 import org.opendc.sdk.runner.provision.Provisioner
 import org.opendc.sdk.runner.provision.ProvisioningContext
 import org.opendc.sdk.runner.provision.registerComputeMonitor
@@ -97,7 +97,7 @@ private class ScenarioRun(
     private val service: ComputeService get() = engine.resolve(ComputeService::class.java)
 
     suspend fun execute(): RunResult {
-        val workload = scenario.workload.toServiceTasks(scenario.checkpointModel, resources::resolve)
+        val workload = scenario.workload.toSimTasks(scenario.checkpointModel, resources::resolve)
 
         // TODO: Link this properly
         val numHosts = scenario.topology.datacenters!!.flatMap { dc -> dc.clusters.flatMap { it.hosts } }.sumOf { it.count }

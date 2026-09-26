@@ -25,7 +25,7 @@ package org.opendc.sdk.runner.workload
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.workload.EfficientTraceWorkloadSpec
@@ -85,7 +85,7 @@ class WorkloadLoaderTest {
      * Verify that [tasks] is sorted by submission time, as the replayer relies on this ordering.
      */
     private fun assertOrderedBySubmission(
-        tasks: List<ServiceTask>,
+        tasks: List<SimTask>,
         label: String,
     ) {
         for (i in 1 until tasks.size) {
@@ -100,8 +100,8 @@ class WorkloadLoaderTest {
      * Verify that every parameter of [task] and its workload fragments match [other].
      */
     private fun assertTasksMatch(
-        task: ServiceTask,
-        other: ServiceTask,
+        task: SimTask,
+        other: SimTask,
     ) {
         val id = task.id
         assertEquals(task.submittedAt, other.submittedAt, "submittedAt mismatch for task $id")

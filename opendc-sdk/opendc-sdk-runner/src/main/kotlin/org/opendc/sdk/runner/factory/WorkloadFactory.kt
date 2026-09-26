@@ -23,7 +23,7 @@
 package org.opendc.sdk.runner.factory
 
 import org.opendc.common.ResourceType
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.workload.EfficientTraceWorkloadSpec
@@ -44,15 +44,15 @@ import org.opendc.simulator.compute.workload.trace.TraceWorkload as EngineTraceW
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy as EngineScalingPolicy
 
 /**
- * Materializes an SDK [WorkloadSpec] into a submission-order queue of [ServiceTask]s. Trace workloads
+ * Materializes an SDK [WorkloadSpec] into a submission-order queue of [SimTask]s. Trace workloads
  * are loaded from the resource resolved by [resolve]; inline workloads are built in memory. Tasks are
  * meant to be [Queue.poll]ed off as they are submitted, so the replayer never holds onto tasks it has
  * already handed off.
  */
-public fun WorkloadSpec.toServiceTasks(
+public fun WorkloadSpec.toSimTasks(
     checkpoint: CheckpointSpec?,
     resolve: (ResourceReference) -> Path,
-): Queue<ServiceTask> =
+): Queue<SimTask> =
     when (this) {
         is TraceWorkloadSpec -> loadTrace(resolve(source), checkpoint)
         is EfficientTraceWorkloadSpec -> loadTrace(resolve(source), checkpoint)
@@ -60,14 +60,14 @@ public fun WorkloadSpec.toServiceTasks(
             ArrayDeque(
                 tasks
                     .sortedBy { it.submissionTime.toMsLong() }
-                    .map { it.toServiceTask(scalingPolicy.toEngine(), checkpoint) },
+                    .map { it.toSimTask(scalingPolicy.toEngine(), checkpoint) },
             )
     }
 
 public fun TraceWorkloadSpec.loadTrace(
     path: Path,
     checkpoint: CheckpointSpec?,
-): Queue<ServiceTask> =
+): Queue<SimTask> =
     ArrayDeque(
         ComputeWorkloadLoader(
             path.toFile(),
@@ -83,7 +83,7 @@ public fun TraceWorkloadSpec.loadTrace(
 public fun EfficientTraceWorkloadSpec.loadTrace(
     path: Path,
     checkpoint: CheckpointSpec?,
-): Queue<ServiceTask> =
+): Queue<SimTask> =
     ArrayDeque(
         EfficientWorkloadLoader(
             path.toFile(),
@@ -96,10 +96,10 @@ public fun EfficientTraceWorkloadSpec.loadTrace(
         ).sampleByLoad(sampleFraction),
     )
 
-public fun TaskSpec.toServiceTask(
+public fun TaskSpec.toSimTask(
     scaling: EngineScalingPolicy,
     checkpoint: CheckpointSpec?,
-): ServiceTask {
+): SimTask {
     val engineFragments =
         ArrayList(
             fragments.map { TraceFragment(it.duration.toMsLong(), it.cpuUsage.toMHz(), it.gpuUsage.toMHz(), it.gpuMemory.toMiB().toInt()) },
@@ -145,7 +145,7 @@ public fun TaskSpec.toServiceTask(
             id,
             usedResources,
         )
-    return ServiceTask(
+    return SimTask(
         id,
         submissionTime.toMsLong(),
         duration.toMsLong(),

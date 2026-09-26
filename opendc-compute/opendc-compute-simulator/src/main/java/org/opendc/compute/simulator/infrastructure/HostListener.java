@@ -23,7 +23,7 @@
 package org.opendc.compute.simulator.infrastructure;
 
 import org.opendc.compute.api.TaskState;
-import org.opendc.compute.simulator.service.ServiceTask;
+import org.opendc.compute.simulator.service.SimTask;
 
 /**
  * Listener interface for events originating from a {@link SimHost}.
@@ -32,7 +32,7 @@ public interface HostListener {
     /**
      * This method is invoked when the state of <code>task</code> on <code>host</code> changes.
      */
-    default void onStateChanged(SimHost host, ServiceTask task, TaskState newState) {}
+    default void onStateChanged(SimHost host, SimTask task, TaskState newState) {}
 
     /**
      * This method is invoked when the state of a {@link SimHost} has changed.

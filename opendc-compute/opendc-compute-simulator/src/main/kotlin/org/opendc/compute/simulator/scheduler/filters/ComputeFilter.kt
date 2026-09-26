@@ -24,7 +24,7 @@ package org.opendc.compute.simulator.scheduler.filters
 
 import org.opendc.compute.simulator.infrastructure.HostState
 import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 /**
  * A [HostFilter] that filters on active hosts.
@@ -32,7 +32,7 @@ import org.opendc.compute.simulator.service.ServiceTask
 public class ComputeFilter : HostFilter {
     override fun test(
         host: SimHost,
-        task: ServiceTask,
+        task: SimTask,
     ): Boolean {
         val result = host.state == HostState.UP
         return result

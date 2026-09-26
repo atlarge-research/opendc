@@ -23,7 +23,7 @@
 package org.opendc.sdk.model.workload.loader
 
 import mu.KotlinLogging
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import org.opendc.simulator.compute.workload.Workload
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
@@ -75,7 +75,7 @@ public class EfficientWorkloadLoader(
     /**
      * The cache of workloads.
      */
-    private val cache = ConcurrentHashMap<File, SoftReference<List<ServiceTask>>>()
+    private val cache = ConcurrentHashMap<File, SoftReference<List<SimTask>>>()
 
     /**
      * Read the fragments into memory.
@@ -124,7 +124,7 @@ public class EfficientWorkloadLoader(
     /**
      * Read the metadata into a workload.
      */
-    private fun loadTrace(trace: Trace): List<ServiceTask> {
+    private fun loadTrace(trace: Trace): List<SimTask> {
         val taskReader = checkNotNull(trace.getTable(TABLE_TASKS)).newReader()
         val fragmentReader = checkNotNull(trace.getTable(TABLE_FRAGMENTS)).newReader()
         fragmentReader.nextRow()
@@ -143,7 +143,7 @@ public class EfficientWorkloadLoader(
         val deadlineCol = taskReader.resolve(TASK_DEADLINE)
         val numFragmentsCol = taskReader.resolve(TASK_NUM_FRAGMENTS)
 
-        val trace = mutableListOf<ServiceTask>()
+        val trace = mutableListOf<SimTask>()
 
         return try {
             while (taskReader.nextRow()) {
@@ -194,7 +194,7 @@ public class EfficientWorkloadLoader(
                 }
 
                 trace.add(
-                    ServiceTask(
+                    SimTask(
                         id,
                         submissionTime,
                         duration,
@@ -226,7 +226,7 @@ public class EfficientWorkloadLoader(
     /**
      * Load the trace at the specified [pathToFile].
      */
-    override fun load(): List<ServiceTask> {
+    override fun load(): List<SimTask> {
         val trace = Trace.open(pathToFile, "workload")
 
         println("LOADED Fragments")

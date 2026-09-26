@@ -24,7 +24,7 @@ package org.opendc.compute.simulator.infrastructure
 
 import org.opendc.common.ResourceType
 import org.opendc.compute.api.TaskState
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import org.opendc.compute.simulator.telemetry.GuestCpuStats
 import org.opendc.compute.simulator.telemetry.GuestGpuStats
 import org.opendc.compute.simulator.telemetry.GuestSystemStats
@@ -42,7 +42,7 @@ import java.time.Instant
 import java.time.InstantSource
 
 /**
- * A simulated physical host that runs [ServiceTask]s on a [SimMachine].
+ * A simulated physical host that runs [SimTask]s on a [SimMachine].
  *
  * Besides simulating the machine, the host keeps the bookkeeping used by the
  * [org.opendc.compute.simulator.service.ComputeService] and its schedulers to place tasks.
@@ -122,7 +122,7 @@ public class SimHost(
     /**
      * The tasks placed on this host, in the order they were spawned.
      */
-    private val tasks = LinkedHashSet<ServiceTask>()
+    private val tasks = LinkedHashSet<SimTask>()
 
     /**
      * Capacity reserved by the tasks spawned on this host, used by the schedulers.
@@ -238,7 +238,7 @@ public class SimHost(
     // Checking whether tasks fit, and spawning and deleting them.
     // ==================================================================================
 
-    public fun canFit(task: ServiceTask): Boolean {
+    public fun canFit(task: SimTask): Boolean {
         val sufficientMemory = (this.availableMemory) >= task.memorySize
         val enoughCpus = model.coreCount >= task.cpuCoreCount
         val canFit = simMachine.canFit(task.toMachineModel())
@@ -249,7 +249,7 @@ public class SimHost(
     /**
      * Place [task] on this host and start running it on the machine.
      */
-    public fun spawn(task: ServiceTask) {
+    public fun spawn(task: SimTask) {
         require(canFit(task)) { "Task does not fit" }
 
         tasks.add(task)
@@ -260,7 +260,7 @@ public class SimHost(
         task.startRun(this)
     }
 
-    public fun delete(task: ServiceTask) {
+    public fun delete(task: SimTask) {
         if (!tasks.remove(task)) {
             return
         }
@@ -279,7 +279,7 @@ public class SimHost(
     /**
      * The tasks placed on this host, in the order they were spawned.
      */
-    public fun getInstances(): Set<ServiceTask> {
+    public fun getInstances(): Set<SimTask> {
         return tasks
     }
 
@@ -299,7 +299,7 @@ public class SimHost(
     /**
      * Notify the listeners that the state of [task], which runs on this host, has changed.
      */
-    internal fun onTaskStateChanged(task: ServiceTask) {
+    internal fun onTaskStateChanged(task: SimTask) {
         hostListeners.forEach { it.onStateChanged(this, task, task.state) }
     }
 
@@ -344,7 +344,7 @@ public class SimHost(
         )
     }
 
-    public fun getSystemStats(task: ServiceTask): GuestSystemStats? {
+    public fun getSystemStats(task: SimTask): GuestSystemStats? {
         if (task !in tasks) {
             return null
         }
@@ -371,7 +371,7 @@ public class SimHost(
         )
     }
 
-    public fun getCpuStats(task: ServiceTask): GuestCpuStats? {
+    public fun getCpuStats(task: SimTask): GuestCpuStats? {
         if (task !in tasks) {
             return null
         }
@@ -415,7 +415,7 @@ public class SimHost(
         return gpuStats
     }
 
-    public fun getGpuStats(task: ServiceTask): GuestGpuStats? {
+    public fun getGpuStats(task: SimTask): GuestGpuStats? {
         if (task !in tasks) {
             return null
         }
@@ -456,7 +456,7 @@ public class SimHost(
     /**
      * Reserve this host's capacity for the given task.
      */
-    public fun reserve(task: ServiceTask) {
+    public fun reserve(task: SimTask) {
         instanceCount++
         provisionedCpuCores += task.cpuCoreCount
         availableCpuCores -= task.cpuCoreCount
@@ -467,7 +467,7 @@ public class SimHost(
     /**
      * Release the capacity previously reserved for the given task.
      */
-    public fun release(task: ServiceTask) {
+    public fun release(task: SimTask) {
         instanceCount--
         provisionedCpuCores -= task.cpuCoreCount
         availableCpuCores += task.cpuCoreCount
@@ -478,7 +478,7 @@ public class SimHost(
     /**
      * Convert flavor to machine model.
      */
-    private fun ServiceTask.toMachineModel(): MachineModel {
+    private fun SimTask.toMachineModel(): MachineModel {
         return MachineModel(
             simMachine.machineModel.cpuModel,
             MemoryUnit("Generic", "Generic", 3200.0, this.memorySize.toLong()),

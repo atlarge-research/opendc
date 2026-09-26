@@ -23,7 +23,7 @@
 package org.opendc.compute.simulator.scheduler.filters
 
 import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 /**
  * A [HostFilter] that filters hosts based on the number of instances on the host.
@@ -33,7 +33,7 @@ import org.opendc.compute.simulator.service.ServiceTask
 public class InstanceCountFilter(private val limit: Int) : HostFilter {
     override fun test(
         host: SimHost,
-        task: ServiceTask,
+        task: SimTask,
     ): Boolean {
         return host.instanceCount < limit
     }

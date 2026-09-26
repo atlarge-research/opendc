@@ -25,7 +25,7 @@ package org.opendc.compute.simulator.infrastructure
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
@@ -68,7 +68,7 @@ class SimHostTelemetryTest {
                 powerDistributor = distributor,
             )
 
-        val task = mockk<ServiceTask>(relaxed = true)
+        val task = mockk<SimTask>(relaxed = true)
 
         // This should not throw even if the task is not on the host
         assertDoesNotThrow {

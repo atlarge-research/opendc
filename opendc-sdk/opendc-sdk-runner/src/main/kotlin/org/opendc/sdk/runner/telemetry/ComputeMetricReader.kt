@@ -30,7 +30,7 @@ import mu.KotlinLogging
 import org.opendc.common.Dispatcher
 import org.opendc.common.asCoroutineDispatcher
 import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import org.opendc.compute.simulator.telemetry.TaskListener
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySampler
@@ -214,11 +214,11 @@ public class ComputeMetricReader(
         job.cancel()
     }
 
-    override fun onTaskSubmission(task: ServiceTask) {
+    override fun onTaskSubmission(task: SimTask) {
         TODO("Not yet implemented")
     }
 
-    override fun onTaskDeletion(task: ServiceTask) {
+    override fun onTaskDeletion(task: SimTask) {
         val now = this.clock.instant()
 
         val taskSample = this.taskSampler.sample(now, task)
