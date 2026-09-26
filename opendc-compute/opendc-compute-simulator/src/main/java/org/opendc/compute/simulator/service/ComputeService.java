@@ -257,10 +257,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
      * Reschedule the given {@link SimTask} with a new {@link Workload}.
      */
     public void rescheduleTask(@NotNull SimTask task, @NotNull Workload workload) {
-        task.setHost(null);
-
-        task.setWorkload(workload);
-        task.start();
+        task.reschedule(workload);
     }
 
     /**
@@ -499,8 +496,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 return;
             }
 
-            task.setState(newState);
-
             if (newState == TaskState.COMPLETED
                     || newState == TaskState.PAUSED
                     || newState == TaskState.TERMINATED
@@ -554,7 +549,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             LOGGER.warn("task {} has been terminated because it failed {} times", task, task.getNumFailures());
 
             tasksTerminated++;
-            task.setState(TaskState.TERMINATED);
+            task.terminate();
 
             this.addTerminatedTask(task);
 
@@ -613,7 +608,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
                 SimTask childTask = request.getTask();
 
                 tasksTerminated++;
-                childTask.setState(TaskState.TERMINATED);
+                childTask.terminate();
 
                 this.addTerminatedTask(childTask);
 
@@ -686,7 +681,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
 
         LOGGER.warn("Failed to spawn {}: does not fit", task);
 
-        task.setState(TaskState.TERMINATED);
+        task.terminate();
 
         this.addTerminatedTask(task);
 
@@ -700,8 +695,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         LOGGER.info("Assigned task {} to host {}", task, host);
 
         try {
-            task.setHost(host);
-            task.setScheduledAt(clock.millis());
+            task.onScheduled(host, req.getSubmitTime());
 
             host.spawn(task);
 
@@ -710,10 +704,6 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             activeTasks.add(task);
 
             updateHost(host);
-
-            long newSchedulingDelay = clock.millis() - req.getSubmitTime() + task.getSchedulingDelay();
-            task.setSchedulingDelay(newSchedulingDelay);
-
         } catch (Exception cause) {
             LOGGER.error("Failed to deploy VM", cause);
             scheduler.removeTask(task, host);
