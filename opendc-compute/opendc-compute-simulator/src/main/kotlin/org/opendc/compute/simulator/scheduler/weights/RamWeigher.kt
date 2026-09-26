@@ -23,7 +23,7 @@
 package org.opendc.compute.simulator.scheduler.weights
 
 import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 /**
  * A [HostWeigher] that weighs the hosts based on the available RAM (memory) on the host.
@@ -34,7 +34,7 @@ import org.opendc.compute.simulator.service.ServiceTask
 public class RamWeigher(override val multiplier: Double = 1.0) : HostWeigher {
     override fun getWeight(
         host: SimHost,
-        task: ServiceTask,
+        task: SimTask,
     ): Double {
         return host.availableMemory.toDouble()
     }

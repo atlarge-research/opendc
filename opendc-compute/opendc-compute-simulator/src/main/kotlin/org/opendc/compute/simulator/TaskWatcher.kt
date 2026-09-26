@@ -23,20 +23,20 @@
 package org.opendc.compute.simulator
 
 import org.opendc.compute.api.TaskState
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 /**
- * An interface used to watch the state of [ServiceTask] instances.
+ * An interface used to watch the state of [SimTask] instances.
  */
 public interface TaskWatcher {
     /**
-     * This method is invoked when the state of a [ServiceTask] changes.
+     * This method is invoked when the state of a [SimTask] changes.
      *
      * @param task The task whose state has changed.
      * @param newState The new state of the task.
      */
     public fun onStateChanged(
-        task: ServiceTask,
+        task: SimTask,
         newState: TaskState,
     ) {}
 }

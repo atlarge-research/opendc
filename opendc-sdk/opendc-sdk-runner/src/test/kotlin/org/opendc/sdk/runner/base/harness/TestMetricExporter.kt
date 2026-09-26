@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.runner.base.harness
 
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import org.opendc.compute.simulator.telemetry.TaskListener
 import org.opendc.sdk.runner.telemetry.MetricExporter
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
@@ -159,11 +159,11 @@ class TestMetricExporter : MetricExporter, TaskListener {
         carbonEmissions.add(reader.carbonEmission)
     }
 
-    override fun onTaskSubmission(task: ServiceTask?) {
+    override fun onTaskSubmission(task: SimTask?) {
         TODO("Not yet implemented")
     }
 
-    override fun onTaskDeletion(task: ServiceTask?) {
+    override fun onTaskDeletion(task: SimTask?) {
 //        this.record(task)
     }
 }

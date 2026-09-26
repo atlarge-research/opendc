@@ -23,10 +23,10 @@
 package org.opendc.compute.simulator.scheduler.filters
 
 import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 /**
- * A [HostFilter] that filters hosts based on the vCPU requirements of a [ServiceTask] and the available vCPUs on the host.
+ * A [HostFilter] that filters hosts based on the vCPU requirements of a [SimTask] and the available vCPUs on the host.
  *
  * @param allocationRatio Virtual CPU to physical CPU allocation ratio.
  */
@@ -35,7 +35,7 @@ public class VCpuFilter(private val allocationRatio: Double = 1.0) : HostFilter 
 
     override fun test(
         host: SimHost,
-        task: ServiceTask,
+        task: SimTask,
     ): Boolean {
         if (isSimple) return host.availableCpuCores >= task.cpuCoreCount
 

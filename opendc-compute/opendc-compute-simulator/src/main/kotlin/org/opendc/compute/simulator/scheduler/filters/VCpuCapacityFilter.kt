@@ -23,16 +23,16 @@
 package org.opendc.compute.simulator.scheduler.filters
 
 import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 /**
- * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [ServiceTask] and the available
+ * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [SimTask] and the available
  * capacity on the host.
  */
 public class VCpuCapacityFilter : HostFilter {
     override fun test(
         host: SimHost,
-        task: ServiceTask,
+        task: SimTask,
     ): Boolean {
         val requiredCapacity = task.cpuCapacity
         val availableCapacity = host.model.cpuCapacity

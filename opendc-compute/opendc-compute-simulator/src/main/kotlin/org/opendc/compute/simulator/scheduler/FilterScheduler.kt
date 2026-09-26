@@ -26,13 +26,13 @@ import org.opendc.compute.simulator.infrastructure.HostState
 import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
 import org.opendc.compute.simulator.scheduler.weights.HostWeigher
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
 
 /**
  * A [ComputeScheduler] implementation that uses filtering and weighing passes to select
- * the host to schedule a [ServiceTask] on.
+ * the host to schedule a [SimTask] on.
  *
  * This implementation is based on the filter scheduler from OpenStack Nova.
  * See: https://docs.openstack.org/nova/latest/user/filter-scheduler.html
@@ -200,7 +200,7 @@ public class FilterScheduler(
     }
 
     override fun removeTask(
-        task: ServiceTask,
+        task: SimTask,
         host: SimHost?,
     ) {
     }

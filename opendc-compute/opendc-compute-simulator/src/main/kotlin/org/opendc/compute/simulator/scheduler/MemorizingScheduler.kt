@@ -24,7 +24,7 @@ package org.opendc.compute.simulator.scheduler
 
 import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 /*
 This scheduler records the number of tasks scheduled on each host.
@@ -151,7 +151,7 @@ public class MemorizingScheduler(
     }
 
     override fun removeTask(
-        task: ServiceTask,
+        task: SimTask,
         host: SimHost?,
     ) {
         if (host == null) return

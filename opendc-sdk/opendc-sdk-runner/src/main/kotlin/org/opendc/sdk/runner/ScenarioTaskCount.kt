@@ -66,7 +66,7 @@ public fun ScenarioSpec.countTasks(resourceProvisioner: ResourceProvisioner): In
 
 internal fun ScenarioSpec.countTasks(resourceScope: ResourceScope): Int = 0
 
-//    workload.toServiceTasks(
+//    workload.toSimTasks(
 //        checkpointModel,
 //        resourceScope::resolve,
 //    ).size

@@ -23,7 +23,7 @@
 package org.opendc.compute.simulator.scheduler.filters
 
 import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 /**
  * A [HostFilter] that ensures an instance is scheduled on the same host as all other instances in a set of instances.
@@ -31,7 +31,7 @@ import org.opendc.compute.simulator.service.ServiceTask
 public class SameHostFilter : HostFilter {
     override fun test(
         host: SimHost,
-        task: ServiceTask,
+        task: SimTask,
     ): Boolean {
         @Suppress("UNCHECKED_CAST")
 //        val affinityIDs = task.meta["scheduler_hint:same_host"] as? Set<Int> ?: return true

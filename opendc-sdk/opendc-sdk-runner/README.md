@@ -61,7 +61,7 @@ The runner owns the entire SDK-model → engine translation and never depends on
 
 - **Topology** → `List<ClusterSpec>` (CPU/GPU/memory models, power models, distribution policies,
   virtualization overhead, power source, battery), fed to the reused `setupHosts` provisioning step.
-- **Workload** → `List<ServiceTask>` (trace workloads via `ComputeWorkloadLoader`; inline workloads
+- **Workload** → `List<SimTask>` (trace workloads via `ComputeWorkloadLoader`; inline workloads
   built directly).
 - **AllocationPolicy** → `ComputeScheduler` (prefab, filter, or time-shift, with filters/weighers).
 - **FailureModel** → the engine failure model injected during replay.

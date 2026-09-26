@@ -23,7 +23,7 @@
 package org.opendc.compute.simulator.scheduler.filters
 
 import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 /**
  * A [HostFilter] that ensures an instance is scheduled on a different host from a set of instances.
@@ -31,7 +31,7 @@ import org.opendc.compute.simulator.service.ServiceTask
 public class DifferentHostFilter : HostFilter {
     override fun test(
         host: SimHost,
-        task: ServiceTask,
+        task: SimTask,
     ): Boolean {
         @Suppress("UNCHECKED_CAST")
         return true // TODO: re-enable different_host filter

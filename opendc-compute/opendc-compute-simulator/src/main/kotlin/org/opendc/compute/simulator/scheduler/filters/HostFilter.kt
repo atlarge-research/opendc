@@ -23,7 +23,7 @@
 package org.opendc.compute.simulator.scheduler.filters
 
 import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 /**
  * A filter used by the [FilterScheduler] to filter hosts.
@@ -35,10 +35,10 @@ public fun interface HostFilter {
      */
     public fun test(
         host: SimHost,
-        task: ServiceTask,
+        task: SimTask,
     ): Boolean
 
     public fun score(host: SimHost): Number = 0.0
 
-    public fun requiredScore(task: ServiceTask): Number = 0.0
+    public fun requiredScore(task: SimTask): Number = 0.0
 }

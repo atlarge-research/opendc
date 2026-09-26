@@ -38,7 +38,7 @@ import org.opendc.simulator.compute.workload.Workload
  * arrays instead of lists, and narrow types behind wider public properties. Avoid nullable primitives (`Long?`,
  * `Int?`) and `List<Int>` here, as they box every value.
  */
-public class ServiceTask(
+public class SimTask(
     public val id: Int,
     submissionTime: Long,
     public val duration: Long,
@@ -149,8 +149,8 @@ public class ServiceTask(
     public var virtualMachine: VirtualMachine? = null
         internal set
 
-    public fun copy(): ServiceTask =
-        ServiceTask(
+    public fun copy(): SimTask =
+        SimTask(
             id,
             submittedAt,
             duration,
@@ -304,7 +304,7 @@ public class ServiceTask(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || javaClass != other.javaClass) return false
-        other as ServiceTask
+        other as SimTask
         return service == other.service && id == other.id
     }
 

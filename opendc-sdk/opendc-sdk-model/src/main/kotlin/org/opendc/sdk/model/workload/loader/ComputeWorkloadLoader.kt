@@ -23,7 +23,7 @@
 package org.opendc.sdk.model.workload.loader
 
 import mu.KotlinLogging
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy
@@ -72,7 +72,7 @@ public class ComputeWorkloadLoader(
     /**
      * The cache of workloads.
      */
-    private val cache = ConcurrentHashMap<File, SoftReference<List<ServiceTask>>>()
+    private val cache = ConcurrentHashMap<File, SoftReference<List<SimTask>>>()
 
     /**
      * Read the fragments into memory.
@@ -122,7 +122,7 @@ public class ComputeWorkloadLoader(
     private fun parseTasks(
         trace: Trace,
         fragments: Map<Int, Builder>,
-    ): List<ServiceTask> {
+    ): List<SimTask> {
         val reader = checkNotNull(trace.getTable(TABLE_TASKS)).newReader()
 
         val idCol = reader.resolve(TASK_ID)
@@ -138,7 +138,7 @@ public class ComputeWorkloadLoader(
         val deferrableCol = reader.resolve(TASK_DEFERRABLE)
         val deadlineCol = reader.resolve(TASK_DEADLINE)
 
-        val entries = mutableListOf<ServiceTask>()
+        val entries = mutableListOf<SimTask>()
 
         return try {
             while (reader.nextRow()) {
@@ -181,7 +181,7 @@ public class ComputeWorkloadLoader(
                 val builder = fragments.getValue(id) // Get all fragments related to this VM
 
                 entries.add(
-                    ServiceTask(
+                    SimTask(
                         id,
                         submissionTime,
                         duration,
@@ -215,7 +215,7 @@ public class ComputeWorkloadLoader(
     /**
      * Load the trace at the specified [pathToFile].
      */
-    override fun load(): List<ServiceTask> {
+    override fun load(): List<SimTask> {
         val trace = Trace.open(pathToFile, "workload")
         val fragments = parseFragments(trace)
 

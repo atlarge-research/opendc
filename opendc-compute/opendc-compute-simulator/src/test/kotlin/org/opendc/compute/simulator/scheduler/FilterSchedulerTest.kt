@@ -44,7 +44,7 @@ import org.opendc.compute.simulator.scheduler.filters.VGpuFilter
 import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.simulator.scheduler.weights.RamWeigher
 import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import java.util.Random
 
 /**
@@ -397,7 +397,7 @@ internal class FilterSchedulerTest {
         every { reqA.task.cpuCoreCount } returns 2
         every { reqA.task.memorySize } returns 1024
         every { reqA.isCancelled } returns false
-        val taskA = mockk<ServiceTask>()
+        val taskA = mockk<SimTask>()
         every { taskA.id } returns Random().nextInt(1, Int.MAX_VALUE)
         every { reqA.task } returns taskA
 
@@ -446,7 +446,7 @@ internal class FilterSchedulerTest {
         every { reqA.task.cpuCoreCount } returns 2
         every { reqA.task.memorySize } returns 1024
         every { reqA.isCancelled } returns false
-        val taskA = mockk<ServiceTask>()
+        val taskA = mockk<SimTask>()
         every { taskA.id } returns Random().nextInt(1, Int.MAX_VALUE)
         every { reqA.task } returns taskA
 

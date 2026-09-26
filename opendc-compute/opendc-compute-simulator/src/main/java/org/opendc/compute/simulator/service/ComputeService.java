@@ -131,12 +131,12 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     /**
      * The active tasks in the system.
      */
-    private final Set<ServiceTask> activeTasks = new HashSet<>();
+    private final Set<SimTask> activeTasks = new HashSet<>();
 
     /**
      * The registered tasks for this compute service.
      */
-    private final Map<Integer, ServiceTask> taskById = new HashMap<>();
+    private final Map<Integer, SimTask> taskById = new HashMap<>();
 
     private final List<TaskListener> taskListeners = new ArrayList<>();
 
@@ -226,10 +226,10 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     // ==================================================================================
 
     /**
-     * Submit a {@link ServiceTask} to be scheduled by this service.
+     * Submit a {@link SimTask} to be scheduled by this service.
      */
     @NotNull
-    public ServiceTask submitTask(ServiceTask task) {
+    public SimTask submitTask(SimTask task) {
         if (isClosed) {
             throw new IllegalStateException("Service is closed");
         }
@@ -246,17 +246,17 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     /**
-     * Find the {@link ServiceTask} with the specified id, or {@code null} if no such task exists.
+     * Find the {@link SimTask} with the specified id, or {@code null} if no such task exists.
      */
     @Nullable
-    public ServiceTask findTask(int id) {
+    public SimTask findTask(int id) {
         return taskById.get(id);
     }
 
     /**
-     * Reschedule the given {@link ServiceTask} with a new {@link Workload}.
+     * Reschedule the given {@link SimTask} with a new {@link Workload}.
      */
-    public void rescheduleTask(@NotNull ServiceTask task, @NotNull Workload workload) {
+    public void rescheduleTask(@NotNull SimTask task, @NotNull Workload workload) {
         task.setHost(null);
 
         task.setWorkload(workload);
@@ -264,16 +264,16 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     /**
-     * Return the {@link ServiceTask}s hosted by this service.
+     * Return the {@link SimTask}s hosted by this service.
      */
-    public Map<Integer, ServiceTask> getTasks() {
+    public Map<Integer, SimTask> getTasks() {
         return Collections.unmodifiableMap(taskById);
     }
 
     /**
-     * Notify the listeners that the given {@link ServiceTask} is done, and delete it.
+     * Notify the listeners that the given {@link SimTask} is done, and delete it.
      */
-    public void deleteTask(ServiceTask task) {
+    public void deleteTask(SimTask task) {
         for (TaskListener listener : this.taskListeners) {
             listener.onTaskDeletion(task);
         }
@@ -492,7 +492,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         }
 
         @Override
-        public void onStateChanged(@NotNull SimHost host, @NotNull ServiceTask task, @NotNull TaskState newState) {
+        public void onStateChanged(@NotNull SimHost host, @NotNull SimTask task, @NotNull TaskState newState) {
             if (task.getHost() != host) {
                 // This can happen when a task is rescheduled and started on another machine, while being deleted from
                 // the old machine.
@@ -543,11 +543,11 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     /**
      * Enqueue the specified [task] to be scheduled onto a host.
      */
-    SchedulingRequest schedule(ServiceTask task) {
+    SchedulingRequest schedule(SimTask task) {
         return schedule(task, false);
     }
 
-    SchedulingRequest schedule(ServiceTask task, boolean atFront) {
+    SchedulingRequest schedule(SimTask task, boolean atFront) {
         LOGGER.debug("Enqueueing task {} to be assigned to host", task.getId());
 
         if (task.getNumFailures() >= maxNumFailures) {
@@ -579,7 +579,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         return request;
     }
 
-    void addCompletedTask(ServiceTask completedTask) {
+    void addCompletedTask(SimTask completedTask) {
         int parentId = completedTask.getId();
 
         if (!completedTask.hasChildren()) {
@@ -589,7 +589,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         for (int childTaskId : completedTask.getChildren()) {
             SchedulingRequest childRequest = blockedTasks.get(childTaskId);
             if (childRequest != null) {
-                ServiceTask childTask = childRequest.getTask();
+                SimTask childTask = childRequest.getTask();
                 childTask.removeFromParents(parentId);
 
                 // If the child task has no more parents, it can be scheduled
@@ -601,7 +601,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         }
     }
 
-    void addTerminatedTask(ServiceTask task) {
+    void addTerminatedTask(SimTask task) {
 
         if (!task.hasChildren()) {
             return;
@@ -610,7 +610,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
         for (int childTaskId : task.getChildren()) {
             SchedulingRequest request = blockedTasks.get(childTaskId);
             if (request != null) {
-                ServiceTask childTask = request.getTask();
+                SimTask childTask = request.getTask();
 
                 tasksTerminated++;
                 childTask.setState(TaskState.TERMINATED);
@@ -625,9 +625,9 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     }
 
     /**
-     * Unregister a {@link ServiceTask} that has deleted itself.
+     * Unregister a {@link SimTask} that has deleted itself.
      */
-    void unregisterTask(ServiceTask task) {
+    void unregisterTask(SimTask task) {
         taskById.remove(task.getId());
     }
 
@@ -657,7 +657,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
             }
 
             final SchedulingRequest req = result.getReq();
-            final ServiceTask task = req.getTask();
+            final SimTask task = req.getTask();
 
             if (result.getResultType() == SchedulingResultType.FAILURE) {
                 LOGGER.trace("Task {} selected for scheduling but no capacity available for it at the moment", task);
@@ -679,7 +679,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     /**
      * Terminate a task that exceeds the capacity of every host, and remove it from the queue.
      */
-    private void terminateOversizedTask(ServiceTask task, SchedulingRequest req) {
+    private void terminateOversizedTask(SimTask task, SchedulingRequest req) {
         // Remove the incoming image
         taskQueue.remove(req);
         tasksTerminated++;
@@ -696,7 +696,7 @@ public final class ComputeService implements AutoCloseable, CarbonReceiver {
     /**
      * Deploy the given task onto the host selected for it.
      */
-    private void deployTask(ServiceTask task, SimHost host, SchedulingRequest req) {
+    private void deployTask(SimTask task, SimHost host, SchedulingRequest req) {
         LOGGER.info("Assigned task {} to host {}", task, host);
 
         try {

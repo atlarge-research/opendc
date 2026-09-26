@@ -23,10 +23,10 @@
 package org.opendc.compute.simulator.scheduler
 
 import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 /**
- * A generic scheduler interface used by the [ComputeService] to select hosts to place [ServiceTask]s on.
+ * A generic scheduler interface used by the [ComputeService] to select hosts to place [SimTask]s on.
  */
 public interface ComputeScheduler {
     /**
@@ -61,16 +61,16 @@ public interface ComputeScheduler {
      * Could be due to completion or failure.
      */
     public fun removeTask(
-        task: ServiceTask,
+        task: SimTask,
         host: SimHost?,
     )
 }
 
 /**
- * A request to schedule a [ServiceTask] onto one of the [SimHost]s.
+ * A request to schedule a [SimTask] onto one of the [SimHost]s.
  */
 public data class SchedulingRequest internal constructor(
-    public val task: ServiceTask,
+    public val task: SimTask,
     public val submitTime: Long,
 ) {
     public var isCancelled: Boolean = false

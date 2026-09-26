@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.model.workload.loader
 import mu.KotlinLogging
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -31,7 +31,7 @@ import kotlin.random.Random
 public abstract class WorkloadLoader(private val submissionTime: String? = null) {
     private val logger = KotlinLogging.logger {}
 
-    public fun reScheduleTasks(workload: List<ServiceTask>) {
+    public fun reScheduleTasks(workload: List<SimTask>) {
         if (submissionTime == null) {
             return
         }
@@ -47,12 +47,12 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
         }
     }
 
-    public abstract fun load(): List<ServiceTask>
+    public abstract fun load(): List<SimTask>
 
     /**
      * Load the workload at sample tasks until a fraction of the workload is loaded
      */
-    public fun sampleByLoad(fraction: Double): List<ServiceTask> {
+    public fun sampleByLoad(fraction: Double): List<SimTask> {
         val workload = this.load()
 
         reScheduleTasks(workload)
@@ -65,7 +65,7 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
             throw Error("The fraction of tasks to load cannot be 0.0 or lower")
         }
 
-        val res = mutableListOf<ServiceTask>()
+        val res = mutableListOf<SimTask>()
 
         val loads = DoubleArray(workload.size) { workload[it].totalCpuLoad() }
 
@@ -88,12 +88,12 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
 /**
  * The total CPU and GPU work of a task, in MFLOPs.
  *
- * This is derived from the workload fragments instead of being stored on the [ServiceTask], because
+ * This is derived from the workload fragments instead of being stored on the [SimTask], because
  * sampling is the only thing that ever needs it and it runs once, here, before the simulation starts.
  * Keeping it as a field would cost 8 bytes on every task for the entire run. The accumulation mirrors
  * the one in ComputeWorkloadLoader's fragment builder, over the same fragments in the same order.
  */
-private fun ServiceTask.totalCpuLoad(): Double {
+private fun SimTask.totalCpuLoad(): Double {
     val workload = this.workload as? TraceWorkload ?: return 0.0
 
     var total = 0.0

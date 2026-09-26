@@ -23,7 +23,7 @@
 package org.opendc.sdk.runner.telemetry.table.task
 
 import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import java.time.Duration
 import java.time.Instant
 
@@ -33,7 +33,7 @@ public class TaskSampler(
 ) {
     public fun sample(
         now: Instant,
-        task: ServiceTask,
+        task: SimTask,
     ): TaskSample {
         val simHost = task.host
         val cpuStats = simHost?.getCpuStats(task)

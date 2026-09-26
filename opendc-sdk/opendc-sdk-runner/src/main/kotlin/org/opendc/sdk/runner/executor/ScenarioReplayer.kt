@@ -30,7 +30,7 @@ import kotlinx.coroutines.yield
 import org.opendc.compute.api.TaskState
 import org.opendc.compute.simulator.TaskWatcher
 import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.runner.factory.toEngine
@@ -55,7 +55,7 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 public suspend fun ComputeService.replay(
     clock: InstantSource,
-    trace: Queue<ServiceTask>,
+    trace: Queue<SimTask>,
     failureModel: FailureModelSpec? = null,
     seed: Long,
     resolve: ((ResourceReference) -> Path)? = null,
@@ -104,7 +104,7 @@ internal class RunningTaskWatcher : TaskWatcher {
     }
 
     override fun onStateChanged(
-        task: ServiceTask,
+        task: SimTask,
         newState: TaskState,
     ) {
         if (unlockStates.contains(newState)) {

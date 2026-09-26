@@ -22,10 +22,10 @@
 
 package org.opendc.compute.simulator.telemetry;
 
-import org.opendc.compute.simulator.service.ServiceTask;
+import org.opendc.compute.simulator.service.SimTask;
 
 public interface TaskListener {
-    public void onTaskSubmission(ServiceTask task);
+    public void onTaskSubmission(SimTask task);
 
-    public void onTaskDeletion(ServiceTask task);
+    public void onTaskDeletion(SimTask task);
 }

@@ -24,7 +24,7 @@ package org.opendc.compute.simulator.scheduler
 
 import org.opendc.compute.simulator.infrastructure.SimHost
 import org.opendc.compute.simulator.scheduler.filters.HostFilter
-import org.opendc.compute.simulator.service.ServiceTask
+import org.opendc.compute.simulator.service.SimTask
 
 public class SortedHostList(
     public val capacity: Int,
@@ -53,7 +53,7 @@ public class SortedHostList(
                 object : HostFilter {
                     override fun test(
                         host: SimHost,
-                        task: ServiceTask,
+                        task: SimTask,
                     ): Boolean {
                         return true
                     }
@@ -88,7 +88,7 @@ public class SortedHostList(
         addSorted(host)
     }
 
-    public fun findIndex(task: ServiceTask): Int {
+    public fun findIndex(task: SimTask): Int {
         // lower_bound on firstFilter.score
         var lowIndex = 0
         var highIndex = this.hosts.size
@@ -108,7 +108,7 @@ public class SortedHostList(
         hosts.remove(host)
     }
 
-    public fun getFittingHosts(task: ServiceTask): MutableList<SimHost> {
+    public fun getFittingHosts(task: SimTask): MutableList<SimHost> {
         if (filters.isEmpty()) {
             return hosts
         }
