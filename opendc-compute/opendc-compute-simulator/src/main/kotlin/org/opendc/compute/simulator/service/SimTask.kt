@@ -50,13 +50,24 @@ public class SimTask(
     gpuCoreCount: Int,
     public val gpuCapacity: Double,
     public val gpuMemorySize: Int,
-    public var workload: Workload?,
+    workload: Workload?,
     public val deferrable: Boolean,
     public var deadline: Long,
     parents: IntArray?,
     children: IntArray?,
 ) {
-    public var service: ComputeService? = null
+    // ==================================================================================
+    // Fields
+    // Specification, dependencies, state, placement, and statistics of the task.
+    // ==================================================================================
+
+    // The core counts are stored as Shorts but exposed as Ints. The public properties have no backing field, so they
+    // do not add to the size of a task.
+    private val _cpuCoreCount: Short = cpuCoreCount.toShort()
+    public val cpuCoreCount: Int get() = _cpuCoreCount.toInt()
+
+    private val _gpuCoreCount: Short = gpuCoreCount.toShort()
+    public val gpuCoreCount: Int get() = _gpuCoreCount.toInt()
 
     /**
      * Ids of the parent tasks that must complete before this task may start.
@@ -73,13 +84,24 @@ public class SimTask(
      */
     public val children: IntArray? = if (children == null || children.isEmpty()) null else children
 
-    // The core counts are stored as Shorts but exposed as Ints. The public properties have no backing field, so they
-    // do not add to the size of a task.
-    private val _cpuCoreCount: Short = cpuCoreCount.toShort()
-    public val cpuCoreCount: Int get() = _cpuCoreCount.toInt()
+    /**
+     * The service this task is submitted to. Set by [ComputeService.submitTask].
+     */
+    public var service: ComputeService? = null
+        // Keep the plain JVM name, so ComputeService (Java) can call setService() without name mangling.
+        @JvmName("setService")
+        internal set
 
-    private val _gpuCoreCount: Short = gpuCoreCount.toShort()
-    public val gpuCoreCount: Int get() = _gpuCoreCount.toInt()
+    /**
+     * The workload of the task. Replaced by a snapshot when the task is rescheduled, and cleared when it is deleted.
+     */
+    public var workload: Workload? = workload
+        private set
+
+    /**
+     * The scheduling request of this task, while it waits in the queue of the [service].
+     */
+    private var request: SchedulingRequest? = null
 
     /**
      * A task only ever has a single watcher in practice, so this is stored directly instead of
@@ -87,10 +109,11 @@ public class SimTask(
      */
     private var watcher: TaskWatcher? = null
 
+    /**
+     * The state of the task. Every change is reported to the [watcher], and failures and pauses are counted.
+     */
     public var state: TaskState = TaskState.CREATED
-        // Keep the plain JVM name, so ComputeService (Java) can call setState() without name mangling.
-        @JvmName("setState")
-        internal set(newState) {
+        private set(newState) {
             if (field == newState) {
                 return
             }
@@ -109,12 +132,11 @@ public class SimTask(
             field = newState
         }
 
-    public var submittedAt: Long = submissionTime
-    public var scheduledAt: Long = 0
-    public var finishedAt: Long = 0
-
+    /**
+     * The host this task is placed on, or `null` when the task is not placed on a host.
+     */
     public var host: SimHost? = null
-        set(newHost) {
+        internal set(newHost) {
             field = newHost
             if (newHost != null) {
                 hostName = newHost.name
@@ -124,24 +146,7 @@ public class SimTask(
     // TODO: This is currently needed because host gets deleted before the final exporting. When exporting has been
     // updated, remove hostName.
     public var hostName: String? = null
-
-    public var request: SchedulingRequest? = null
-
-    private var _numFailures: Short = 0
-    public var numFailures: Int
-        get() = _numFailures.toInt()
-        set(value) {
-            _numFailures = value.toShort()
-        }
-
-    private var _numPauses: Short = 0
-    public var numPauses: Int
-        get() = _numPauses.toInt()
-        set(value) {
-            _numPauses = value.toShort()
-        }
-
-    public var schedulingDelay: Long = 0
+        private set
 
     /**
      * The virtual machine running this task on its [host], or `null` when the task is not running on a host.
@@ -149,68 +154,98 @@ public class SimTask(
     public var virtualMachine: VirtualMachine? = null
         internal set
 
-    public fun copy(): SimTask =
-        SimTask(
-            id,
-            submittedAt,
-            duration,
-            cpuCoreCount,
-            cpuCapacity,
-            memorySize,
-            gpuCoreCount,
-            gpuCapacity,
-            0,
-            workload,
-            deferrable,
-            deadline,
-            parents?.copyOf(),
-            children?.copyOf(),
-        )
+    // The submission time is shifted by the workload loaders, so unlike the other statistics it can be set from outside.
+    public var submittedAt: Long = submissionTime
+    public var scheduledAt: Long = 0
+        private set
+    public var finishedAt: Long = 0
+        private set
+    public var schedulingDelay: Long = 0
+        private set
 
-    public fun start() {
+    private var _numFailures: Short = 0
+    public val numFailures: Int get() = _numFailures.toInt()
+
+    private var _numPauses: Short = 0
+    public val numPauses: Int get() = _numPauses.toInt()
+
+    // ==================================================================================
+    // Lifecycle
+    // Scheduling, rescheduling, terminating, and deleting the task. Driven by the ComputeService.
+    // ==================================================================================
+
+    /**
+     * Put the task in the scheduling queue of the [service]. Called when the task is submitted, and when it is
+     * rescheduled after a pause or failure.
+     */
+    @JvmName("start")
+    internal fun start() {
         when (state) {
             TaskState.PROVISIONING -> {
-                LOGGER.debug { "User tried to start task but request is already pending: doing nothing" }
-                LOGGER.debug { "User tried to start task but task is already running" }
+                LOGGER.debug { "Tried to start task $id, but it is already waiting to be scheduled" }
             }
             TaskState.RUNNING -> {
-                LOGGER.debug { "User tried to start task but task is already running" }
+                LOGGER.debug { "Tried to start task $id, but it is already running" }
             }
             TaskState.COMPLETED, TaskState.TERMINATED -> {
-                LOGGER.warn { "User tried to start deleted task" }
-                throw IllegalStateException("Task is deleted")
+                LOGGER.warn { "Tried to start task $id, but it has already finished" }
+                throw IllegalStateException("Task $id has already finished")
             }
             TaskState.CREATED -> {
-                LOGGER.info { "User requested to start task $id" }
+                LOGGER.info { "Scheduling task $id" }
                 state = TaskState.PROVISIONING
                 assert(request == null) { "Scheduling request already active" }
                 request = service!!.schedule(this)
             }
-            TaskState.PAUSED -> {
-                LOGGER.info { "User requested to start task after pause $id" }
+            TaskState.PAUSED, TaskState.FAILED -> {
+                LOGGER.info { "Rescheduling task $id after it was ${state.name.lowercase()}" }
                 state = TaskState.PROVISIONING
-                request = service!!.schedule(this, false)
-            }
-            TaskState.FAILED -> {
-                LOGGER.info { "User requested to start task after failure $id" }
-                state = TaskState.PROVISIONING
-                request = service!!.schedule(this, false)
+                request = service!!.schedule(this)
             }
             else -> {}
         }
     }
 
-    public fun watch(watcher: TaskWatcher) {
-        this.watcher = watcher
+    /**
+     * Reschedule the task, continuing from [workload]. Called by [ComputeService.rescheduleTask].
+     */
+    @JvmName("reschedule")
+    internal fun reschedule(workload: Workload) {
+        host = null
+        this.workload = workload
+        start()
     }
 
-    public fun unwatch(watcher: TaskWatcher) {
-        if (this.watcher === watcher) {
-            this.watcher = null
-        }
+    /**
+     * Place the task on [host], right before it is spawned there. [queuedAt] is the time the task entered the
+     * scheduling queue, which is added to the [schedulingDelay].
+     */
+    @JvmName("onScheduled")
+    internal fun onScheduled(
+        host: SimHost,
+        queuedAt: Long,
+    ) {
+        val now = service!!.clock.millis()
+
+        this.host = host
+        scheduledAt = now
+        schedulingDelay += now - queuedAt
     }
 
-    public fun delete() {
+    /**
+     * Terminate the task, because it failed too often or does not fit on any host, or because one of its parents
+     * was terminated.
+     */
+    @JvmName("terminate")
+    internal fun terminate() {
+        state = TaskState.TERMINATED
+    }
+
+    /**
+     * Remove the task from its host and from the [service]. Called by [ComputeService.deleteTask].
+     */
+    @JvmName("delete")
+    internal fun delete() {
         cancelProvisioningRequest()
         host?.delete(this)
         service!!.unregisterTask(this)
@@ -222,8 +257,11 @@ public class SimTask(
         watcher = null
     }
 
+    // ==================================================================================
+    // Runs
     // A run is one execution of this task on a host: it starts in SimHost.spawn and ends when the workload stops, or
     // when the task is removed from the host. A task can have several runs, for example after a host failure.
+    // ==================================================================================
 
     /**
      * Start running this task on the machine of [host]. Called by [SimHost.spawn].
@@ -301,30 +339,20 @@ public class SimTask(
         host.onTaskStateChanged(this)
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || javaClass != other.javaClass) return false
-        other as SimTask
-        return service == other.service && id == other.id
-    }
+    // ==================================================================================
+    // Dependencies
+    // Tracking the parent tasks that must complete before this task can be scheduled.
+    // ==================================================================================
 
-    // Deliberately not Objects.hash(service, id): that allocates a varargs array and boxes the id
-    // on every call, and tasks are used as HashMap keys on hot lookup paths. Ids are unique within
-    // a service, so they alone satisfy the equals/hashCode contract.
-    override fun hashCode(): Int = id
+    public fun hasParents(): Boolean = parents?.isNotEmpty() == true
 
-    override fun toString(): String = "Task[uid=$id,state=$state]"
+    public fun hasChildren(): Boolean = children != null && children.isNotEmpty()
 
     /**
-     * Cancel the provisioning request if active.
+     * Remove [completedTask] from the parents of this task, as it no longer has to wait for it.
      */
-    private fun cancelProvisioningRequest() {
-        val request = this.request ?: return
-        this.request = null
-        request.isCancelled = true
-    }
-
-    public fun removeFromParents(completedTask: Int) {
+    @JvmName("removeFromParents")
+    internal fun removeFromParents(completedTask: Int) {
         val current = parents ?: return
 
         val idx = current.indexOf(completedTask)
@@ -343,9 +371,45 @@ public class SimTask(
         parents = updated
     }
 
-    public fun hasChildren(): Boolean = children != null && children.isNotEmpty()
+    // ==================================================================================
+    // Watchers
+    // Notifying an external TaskWatcher of state changes.
+    // ==================================================================================
 
-    public fun hasParents(): Boolean = parents?.isNotEmpty() == true
+    public fun watch(watcher: TaskWatcher) {
+        this.watcher = watcher
+    }
+
+    // ==================================================================================
+    // Object overrides
+    // ==================================================================================
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        other as SimTask
+        return service == other.service && id == other.id
+    }
+
+    // Deliberately not Objects.hash(service, id): that allocates a varargs array and boxes the id
+    // on every call, and tasks are used as HashMap keys on hot lookup paths. Ids are unique within
+    // a service, so they alone satisfy the equals/hashCode contract.
+    override fun hashCode(): Int = id
+
+    override fun toString(): String = "Task[uid=$id,state=$state]"
+
+    // ==================================================================================
+    // Internals
+    // ==================================================================================
+
+    /**
+     * Cancel the provisioning request if active.
+     */
+    private fun cancelProvisioningRequest() {
+        val request = this.request ?: return
+        this.request = null
+        request.isCancelled = true
+    }
 
     private companion object {
         @JvmStatic
