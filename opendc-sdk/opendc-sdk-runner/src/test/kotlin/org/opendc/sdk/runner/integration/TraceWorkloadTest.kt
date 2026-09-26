@@ -22,15 +22,27 @@
 
 package org.opendc.sdk.runner.integration
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
+import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.dsl.experiment
 import org.opendc.sdk.model.dsl.gib
 import org.opendc.sdk.model.dsl.hours
 import org.opendc.sdk.model.dsl.mhz
+import org.opendc.sdk.model.dsl.scenario
+import org.opendc.sdk.model.dsl.timeShiftScheduler
 import org.opendc.sdk.model.dsl.topology
 import org.opendc.sdk.model.dsl.watts
+import org.opendc.sdk.model.experiment.ScenarioSpec
+import org.opendc.sdk.model.failure.FailureModelSpec
+import org.opendc.sdk.model.failure.FailurePrefabSpec
+import org.opendc.sdk.model.failure.PrefabFailureSpec
+import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
+import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.topology.TopologySpec
@@ -80,6 +92,102 @@ class TraceWorkloadTest {
         )
     }
 
+    /**
+     * Checkpointing snapshots the running tasks. The CPU-only trace has no GPU arrays, which the snapshot must handle.
+     */
+    @Test
+    fun `checkpoints a CPU-only trace workload`() {
+        val metrics =
+            simulate(
+                scenario {
+                    topology(datacenter(PowerModelType.LINEAR))
+                    workload(traceWorkload("bitbrains-small"))
+                    exportModel = ExportSpec(exportInterval = 1.hours, printFrequency = null)
+                    checkpointModel = CheckpointSpec()
+                },
+            )
+
+        val lastTaskSamples = metrics.task.groupBy { it.taskId }.values.map { it.last() }
+        assertAll(
+            { assertEquals(50, metrics.service.last().tasksCompleted) { "all tasks should complete" } },
+            { assert(lastTaskSamples.sumOf { it.checkpointDelay } > 0) { "expected checkpoints to be made" } },
+        )
+    }
+
+    /**
+     * The task stopper pauses the running tasks when the carbon intensity is high, and reschedules them from a snapshot.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = ["bitbrains-small", "small_gpu"])
+    fun `task stopper pauses a trace workload`(trace: String) {
+        val metrics =
+            simulate(
+                scenario {
+                    topology(datacenter(PowerModelType.LINEAR, gpu = trace == "small_gpu"))
+                    workload(traceWorkload(trace, deferAll = true))
+                    allocationPolicy(timeShiftScheduler { taskStopper = TaskStopperSpec(forecast = false) })
+                    exportModel = ExportSpec(exportInterval = 1.hours, printFrequency = null)
+                },
+            )
+
+        val lastService = metrics.service.last()
+        val lastTaskSamples = metrics.task.groupBy { it.taskId }.values.map { it.last() }
+        assertAll(
+            { assertEquals(lastService.tasksTotal, lastService.tasksCompleted) { "all tasks should complete" } },
+            { assert(lastTaskSamples.sumOf { it.numPauses } > 0) { "expected tasks to be paused" } },
+        )
+    }
+
+    /**
+     * Two runs with the same seed should produce the same failures, and thus the same results.
+     */
+    @Test
+    fun `failures are reproducible for a fixed seed`() {
+        val failureModels =
+            listOf(
+                PrefabFailureSpec(FailurePrefabSpec.G5k06Exp),
+                TraceBasedFailureSpec(source = NamedReference("demo/failure_traces/Facebook_user_reported.parquet")),
+            )
+
+        assertAll(
+            failureModels.map { failureModel ->
+                {
+                    val first = simulateWithFailures(failureModel)
+                    val second = simulateWithFailures(failureModel)
+                    assert(first.task.sumOf { it.numFailures } > 0) { "expected failures with $failureModel" }
+                    assertEquals(first.service, second.service) { "service metrics differ between runs with $failureModel" }
+                    assertEquals(first.task, second.task) { "task metrics differ between runs with $failureModel" }
+                }
+            },
+        )
+    }
+
+    private fun simulateWithFailures(failureModel: FailureModelSpec): CollectedMetrics =
+        simulate(
+            scenario {
+                topology(datacenter(PowerModelType.LINEAR, hostCount = 10))
+                workload(traceWorkload("bitbrains-small"))
+                exportModel = ExportSpec(exportInterval = 1.hours, printFrequency = null)
+                this.failureModel = failureModel
+            },
+        )
+
+    private fun traceWorkload(
+        trace: String,
+        deferAll: Boolean = false,
+    ): TraceWorkloadSpec =
+        TraceWorkloadSpec(source = NamedReference("workloadTraces/$trace"), submissionTime = "2022-02-01T00:00:00", deferAll = deferAll)
+
+    private fun simulate(scenario: ScenarioSpec): CollectedMetrics {
+        val report =
+            OpenDC.builder()
+                .provisioner(FileSystemResourceProvisioner(testResourcesRoot))
+                .sink(InMemorySink())
+                .build()
+                .simulate(scenario)
+        return requireNotNull(report.runs.single().metrics)
+    }
+
     private fun assertRunProducedOutput(
         outputPath: Path?,
         metrics: CollectedMetrics?,
@@ -94,13 +202,18 @@ class TraceWorkloadTest {
         assert(captured.powerSource.sumOf { it.energyUsage } > 0.0) { "expected non-zero energy usage" }
     }
 
-    private fun datacenter(powerModel: PowerModelType): TopologySpec =
+    private fun datacenter(
+        powerModel: PowerModelType,
+        hostCount: Int = 1,
+        gpu: Boolean = false,
+    ): TopologySpec =
         topology {
             datacenter {
                 cluster(name = "C01") {
-                    host(count = 1, name = "H01") {
+                    host(count = hostCount, name = "H01") {
                         cpu(coreCount = 64, coreSpeed = 2000.mhz)
                         memory(size = 1024.gib)
+                        if (gpu) gpu(coreCount = 2, coreSpeed = 2000.mhz)
                         power {
                             type = powerModel
                             power = 400.watts

@@ -53,7 +53,7 @@ public fun createNd07cpuExp(
         random,
         ExponentialDistribution(rng, 13.73),
         ExponentialDistribution(rng, 4.25),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -72,7 +72,7 @@ public fun createNd07cpuWbl(
         random,
         WeibullDistribution(rng, 0.45, 4.16),
         WeibullDistribution(rng, 0.51, 0.74),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -91,7 +91,7 @@ public fun createNd07cpuLogN(
         random,
         LogNormalDistribution(rng, 0.30, 2.20),
         LogNormalDistribution(rng, -1.02, 1.27),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -110,6 +110,6 @@ public fun createNd07cpuGam(
         random,
         GammaDistribution(rng, 0.30, 46.16),
         GammaDistribution(rng, 0.28, 15.07),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }

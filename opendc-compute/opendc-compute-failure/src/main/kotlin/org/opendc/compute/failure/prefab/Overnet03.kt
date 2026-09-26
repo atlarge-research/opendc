@@ -53,7 +53,7 @@ public fun createOvernet03Exp(
         random,
         ExponentialDistribution(rng, 2.29),
         ExponentialDistribution(rng, 12.00),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -72,7 +72,7 @@ public fun createOvernet03Wbl(
         random,
         WeibullDistribution(rng, 0.85, 2.04),
         WeibullDistribution(rng, 0.44, 2.98),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -91,7 +91,7 @@ public fun createOvernet03LogN(
         random,
         LogNormalDistribution(rng, 0.19, 0.98),
         LogNormalDistribution(rng, 0.08, 1.80),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }
 
@@ -110,6 +110,6 @@ public fun createOvernet03Gam(
         random,
         GammaDistribution(rng, 0.91, 2.53),
         GammaDistribution(rng, 0.29, 41.64),
-        UniformRealDistribution(0.0, 1.0),
+        UniformRealDistribution(rng, 0.0, 1.0),
     )
 }

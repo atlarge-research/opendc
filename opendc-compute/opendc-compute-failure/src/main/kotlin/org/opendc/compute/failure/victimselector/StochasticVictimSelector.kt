@@ -76,7 +76,7 @@ public class StochasticVictimSelector(
         val intensity = min(1.0, max(0.0, failureIntensity))
         val numberOfHosts = (hosts.size * intensity).roundToInt()
 
-        return hosts.asSequence().shuffled().take(numberOfHosts).toList()
+        return select(hosts, numberOfHosts)
     }
 
     override fun toString(): String = "StochasticVictimSelector"
