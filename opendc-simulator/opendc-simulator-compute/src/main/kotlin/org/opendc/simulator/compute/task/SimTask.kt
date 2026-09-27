@@ -20,13 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.service
+package org.opendc.simulator.compute.task
 
 import mu.KotlinLogging
-import org.opendc.compute.api.TaskState
 import org.opendc.simulator.compute.TaskWatcher
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.scheduler.SchedulingRequest
+import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.compute.workload.ChainWorkload
 import org.opendc.simulator.compute.workload.VirtualMachine
 import org.opendc.simulator.compute.workload.Workload

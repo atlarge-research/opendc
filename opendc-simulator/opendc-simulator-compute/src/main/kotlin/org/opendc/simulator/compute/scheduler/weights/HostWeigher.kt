@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.scheduler.weights
 
 import org.opendc.simulator.compute.infrastructure.SimHost
-import org.opendc.simulator.compute.service.SimTask
+import org.opendc.simulator.compute.task.SimTask
 
 /**
  * An interface used by the [FilterScheduler] to weigh the pool of host for a scheduling request.

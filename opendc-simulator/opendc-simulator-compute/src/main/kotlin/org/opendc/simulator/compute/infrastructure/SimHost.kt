@@ -23,12 +23,12 @@
 package org.opendc.simulator.compute.infrastructure
 
 import org.opendc.common.ResourceType
-import org.opendc.compute.api.TaskState
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.PowerModel
-import org.opendc.simulator.compute.service.SimTask
+import org.opendc.simulator.compute.task.SimTask
+import org.opendc.simulator.compute.task.TaskState
 import org.opendc.simulator.compute.telemetry.GuestCpuStats
 import org.opendc.simulator.compute.telemetry.GuestGpuStats
 import org.opendc.simulator.compute.telemetry.GuestSystemStats

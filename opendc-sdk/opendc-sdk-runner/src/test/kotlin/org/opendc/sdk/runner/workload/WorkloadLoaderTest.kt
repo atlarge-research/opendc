@@ -32,7 +32,7 @@ import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import org.opendc.sdk.runner.executor.ResourceScope
 import org.opendc.sdk.runner.factory.loadTrace
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
-import org.opendc.simulator.compute.service.SimTask
+import org.opendc.simulator.compute.task.SimTask
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import java.nio.file.Path
 

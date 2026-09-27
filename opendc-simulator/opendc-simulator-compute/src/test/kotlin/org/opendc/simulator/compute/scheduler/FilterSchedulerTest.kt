@@ -44,7 +44,7 @@ import org.opendc.simulator.compute.scheduler.filters.VGpuFilter
 import org.opendc.simulator.compute.scheduler.weights.CoreRamWeigher
 import org.opendc.simulator.compute.scheduler.weights.RamWeigher
 import org.opendc.simulator.compute.scheduler.weights.VCpuWeigher
-import org.opendc.simulator.compute.service.SimTask
+import org.opendc.simulator.compute.task.SimTask
 import java.util.Random
 
 /**

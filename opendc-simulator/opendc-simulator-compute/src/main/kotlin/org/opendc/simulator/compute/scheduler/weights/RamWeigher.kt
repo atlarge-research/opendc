@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.scheduler.weights
 
 import org.opendc.simulator.compute.infrastructure.SimHost
-import org.opendc.simulator.compute.service.SimTask
+import org.opendc.simulator.compute.task.SimTask
 
 /**
  * A [HostWeigher] that weighs the hosts based on the available RAM (memory) on the host.

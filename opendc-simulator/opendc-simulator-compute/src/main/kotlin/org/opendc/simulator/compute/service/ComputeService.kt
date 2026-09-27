@@ -25,7 +25,6 @@ package org.opendc.simulator.compute.service
 import mu.KotlinLogging
 import org.opendc.common.Dispatcher
 import org.opendc.common.util.Pacer
-import org.opendc.compute.api.TaskState
 import org.opendc.simulator.compute.carbon.CarbonModel
 import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.compute.cluster.SimCluster
@@ -38,6 +37,8 @@ import org.opendc.simulator.compute.power.batteries.SimBattery
 import org.opendc.simulator.compute.scheduler.ComputeScheduler
 import org.opendc.simulator.compute.scheduler.SchedulingRequest
 import org.opendc.simulator.compute.scheduler.SchedulingResultType
+import org.opendc.simulator.compute.task.SimTask
+import org.opendc.simulator.compute.task.TaskState
 import org.opendc.simulator.compute.telemetry.TaskListener
 import org.opendc.simulator.compute.workload.Workload
 import java.time.Duration

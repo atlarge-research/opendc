@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.scheduler.filters
 
 import org.opendc.simulator.compute.infrastructure.SimHost
-import org.opendc.simulator.compute.service.SimTask
+import org.opendc.simulator.compute.task.SimTask
 
 /**
  * A [HostFilter] that ensures an instance is scheduled on the same host as all other instances in a set of instances.

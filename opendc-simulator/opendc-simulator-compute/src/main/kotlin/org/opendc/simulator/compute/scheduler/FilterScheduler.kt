@@ -26,7 +26,7 @@ import org.opendc.simulator.compute.infrastructure.HostState
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.scheduler.filters.HostFilter
 import org.opendc.simulator.compute.scheduler.weights.HostWeigher
-import org.opendc.simulator.compute.service.SimTask
+import org.opendc.simulator.compute.task.SimTask
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
 

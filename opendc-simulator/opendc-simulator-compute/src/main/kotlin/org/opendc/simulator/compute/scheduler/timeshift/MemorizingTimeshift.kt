@@ -29,7 +29,7 @@ import org.opendc.simulator.compute.scheduler.SchedulingRequest
 import org.opendc.simulator.compute.scheduler.SchedulingResult
 import org.opendc.simulator.compute.scheduler.SchedulingResultType
 import org.opendc.simulator.compute.scheduler.filters.HostFilter
-import org.opendc.simulator.compute.service.SimTask
+import org.opendc.simulator.compute.task.SimTask
 import java.time.InstantSource
 import java.util.LinkedList
 

@@ -22,8 +22,8 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.compute.api.TaskState
-import org.opendc.simulator.compute.service.SimTask
+import org.opendc.simulator.compute.task.SimTask
+import org.opendc.simulator.compute.task.TaskState
 
 /**
  * An interface used to watch the state of [SimTask] instances.

@@ -22,8 +22,8 @@
 
 package org.opendc.simulator.compute.infrastructure;
 
-import org.opendc.compute.api.TaskState;
-import org.opendc.simulator.compute.service.SimTask;
+import org.opendc.simulator.compute.task.SimTask;
+import org.opendc.simulator.compute.task.TaskState;
 
 /**
  * Listener interface for events originating from a {@link SimHost}.

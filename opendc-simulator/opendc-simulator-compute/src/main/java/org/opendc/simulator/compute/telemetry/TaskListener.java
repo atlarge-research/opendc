@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute.telemetry;
 
-import org.opendc.simulator.compute.service.SimTask;
+import org.opendc.simulator.compute.task.SimTask;
 
 public interface TaskListener {
     public void onTaskSubmission(SimTask task);

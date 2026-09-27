@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.scheduler.filters
 
 import org.opendc.simulator.compute.infrastructure.SimHost
-import org.opendc.simulator.compute.service.SimTask
+import org.opendc.simulator.compute.task.SimTask
 
 /**
  * A [HostFilter] that filters hosts based on the vCPU requirements of a [SimTask] and the available vCPUs on the host.

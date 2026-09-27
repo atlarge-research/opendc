@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.api
+package org.opendc.simulator.compute.task
 
 /**
  * An enumeration describing the possible states of a task.
