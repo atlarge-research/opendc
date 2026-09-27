@@ -89,18 +89,18 @@ tasks.test {
 
 dependencies {
     api(project(":opendc-sdk:opendc-sdk-model"))
-    api(project(":opendc-compute:opendc-compute-simulator"))
+    api(project(":opendc-simulator:opendc-simulator-compute"))
+    api(project(":opendc-trace:opendc-trace-parquet"))
 
     implementation(project(":opendc-common"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))
-    implementation(project(":opendc-simulator:opendc-simulator-compute"))
     implementation(project(":opendc-simulator:opendc-simulator-flow"))
     implementation(project(":opendc-compute:opendc-compute-carbon"))
     implementation(project(":opendc-compute:opendc-compute-failure"))
     implementation(libs.commons.math3)
+    implementation(libs.microprofile.config)
     implementation(libs.kotlinx.coroutines)
     implementation(libs.kotlinx.serialization.json)
-    implementation(project(":opendc-trace:opendc-trace-parquet"))
 
     testRuntimeOnly(libs.log4j.core)
     testRuntimeOnly(libs.log4j.slf4j)
