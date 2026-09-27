@@ -22,8 +22,8 @@
 
 package org.opendc.sdk.runner.provision
 
-import org.opendc.compute.simulator.scheduler.ComputeScheduler
-import org.opendc.compute.simulator.service.ComputeService
+import org.opendc.simulator.compute.scheduler.ComputeScheduler
+import org.opendc.simulator.compute.service.ComputeService
 import java.time.Duration
 
 /**

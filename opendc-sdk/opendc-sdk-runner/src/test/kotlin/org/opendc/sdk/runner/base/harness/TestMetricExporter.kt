@@ -22,13 +22,13 @@
 
 package org.opendc.sdk.runner.base.harness
 
-import org.opendc.compute.simulator.service.SimTask
-import org.opendc.compute.simulator.telemetry.TaskListener
 import org.opendc.sdk.runner.telemetry.MetricExporter
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
+import org.opendc.simulator.compute.service.SimTask
+import org.opendc.simulator.compute.telemetry.TaskListener
 
 /**
  * A [MetricExporter] that captures per-record telemetry into in-memory series, ported verbatim from

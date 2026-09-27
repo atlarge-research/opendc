@@ -28,12 +28,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.yield
 import org.opendc.compute.api.TaskState
-import org.opendc.compute.simulator.TaskWatcher
-import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.simulator.service.SimTask
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.runner.factory.toEngine
+import org.opendc.simulator.compute.TaskWatcher
+import org.opendc.simulator.compute.service.ComputeService
+import org.opendc.simulator.compute.service.SimTask
 import java.nio.file.Path
 import java.time.InstantSource
 import java.util.Queue

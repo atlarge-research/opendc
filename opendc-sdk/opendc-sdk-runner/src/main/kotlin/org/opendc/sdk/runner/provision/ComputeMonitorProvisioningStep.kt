@@ -22,10 +22,10 @@
 
 package org.opendc.sdk.runner.provision
 
-import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.runner.telemetry.ComputeMetricReader
 import org.opendc.sdk.runner.telemetry.MetricExporter
+import org.opendc.simulator.compute.service.ComputeService
 import java.time.Duration
 
 /**

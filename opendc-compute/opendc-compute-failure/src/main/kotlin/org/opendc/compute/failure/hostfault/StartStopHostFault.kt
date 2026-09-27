@@ -23,8 +23,8 @@
 package org.opendc.compute.failure.hostfault
 
 import kotlinx.coroutines.delay
-import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ComputeService
+import org.opendc.simulator.compute.infrastructure.SimHost
+import org.opendc.simulator.compute.service.ComputeService
 
 /**
  * A type of [HostFault] where the hosts are stopped and recover after a given amount of time.

@@ -24,10 +24,6 @@ package org.opendc.sdk.runner.provision
 
 import org.opendc.common.ResourceType
 import org.opendc.compute.carbon.getCarbonFragments
-import org.opendc.compute.simulator.cluster.SimCluster
-import org.opendc.compute.simulator.datacenter.SimDataCenter
-import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
@@ -44,6 +40,9 @@ import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.createSimBatteryPolicy
 import org.opendc.sdk.runner.factory.toEngine
 import org.opendc.simulator.compute.carbon.CarbonModel
+import org.opendc.simulator.compute.cluster.SimCluster
+import org.opendc.simulator.compute.datacenter.SimDataCenter
+import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuModel
 import org.opendc.simulator.compute.models.MachineModel
@@ -53,6 +52,7 @@ import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
 import org.opendc.simulator.compute.power.batteries.SimBattery
 import org.opendc.simulator.compute.power.getPowerModel
+import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModelFactory.VirtualizationOverheadModelEnum
 import org.opendc.simulator.engine.engine.FlowEngine
 import org.opendc.simulator.engine.graph.FlowDistributor

@@ -29,8 +29,8 @@ import kotlinx.coroutines.launch
 import org.opendc.compute.failure.hostfault.HostFault
 import org.opendc.compute.failure.hostfault.StartStopHostFault
 import org.opendc.compute.failure.victimselector.StochasticVictimSelector
-import org.opendc.compute.simulator.infrastructure.SimHost
-import org.opendc.compute.simulator.service.ComputeService
+import org.opendc.simulator.compute.infrastructure.SimHost
+import org.opendc.simulator.compute.service.ComputeService
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext

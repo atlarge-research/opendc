@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.runner.telemetry.table.datacenter
 
-import org.opendc.compute.simulator.datacenter.SimDataCenter
+import org.opendc.simulator.compute.datacenter.SimDataCenter
 import java.time.Duration
 import java.time.Instant
 

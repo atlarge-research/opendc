@@ -22,8 +22,6 @@
 
 package org.opendc.sdk.runner.executor
 
-import org.opendc.compute.simulator.scheduler.ComputeScheduler
-import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.resource.ResourceProvisioner
 import org.opendc.sdk.model.resource.ResourceReference
@@ -45,6 +43,8 @@ import org.opendc.sdk.runner.telemetry.sink.RunContext
 import org.opendc.sdk.runner.telemetry.sink.SinkSession
 import org.opendc.simulator.compute.carbon.CarbonModel
 import org.opendc.simulator.compute.carbon.CarbonReceiver
+import org.opendc.simulator.compute.scheduler.ComputeScheduler
+import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.kotlin.SimulationCoroutineScope
 import org.opendc.simulator.kotlin.runSimulation
 import java.nio.file.Path

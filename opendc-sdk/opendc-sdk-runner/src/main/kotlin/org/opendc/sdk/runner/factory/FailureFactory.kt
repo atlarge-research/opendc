@@ -29,7 +29,6 @@ import org.apache.commons.math3.random.Well19937c
 import org.opendc.compute.failure.models.SampleBasedFailureModel
 import org.opendc.compute.failure.models.TraceBasedFailureModel
 import org.opendc.compute.failure.prefab.createFailureModelPrefab
-import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.sdk.model.failure.ConstantDistributionSpec
 import org.opendc.sdk.model.failure.CustomFailureSpec
 import org.opendc.sdk.model.failure.DistributionSpec
@@ -45,6 +44,7 @@ import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.failure.UniformDistributionSpec
 import org.opendc.sdk.model.failure.WeibullDistributionSpec
 import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.simulator.compute.service.ComputeService
 import java.nio.file.Path
 import java.time.InstantSource
 import java.util.random.RandomGenerator

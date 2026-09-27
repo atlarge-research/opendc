@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.runner.telemetry.table.host
 
-import org.opendc.compute.simulator.infrastructure.SimHost
+import org.opendc.simulator.compute.infrastructure.SimHost
 import java.time.Duration
 import java.time.Instant
 

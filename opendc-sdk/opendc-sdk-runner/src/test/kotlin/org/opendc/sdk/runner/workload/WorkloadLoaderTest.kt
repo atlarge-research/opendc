@@ -25,7 +25,6 @@ package org.opendc.sdk.runner.workload
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.opendc.compute.simulator.service.SimTask
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.workload.EfficientTraceWorkloadSpec
@@ -33,6 +32,7 @@ import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import org.opendc.sdk.runner.executor.ResourceScope
 import org.opendc.sdk.runner.factory.loadTrace
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
+import org.opendc.simulator.compute.service.SimTask
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import java.nio.file.Path
 

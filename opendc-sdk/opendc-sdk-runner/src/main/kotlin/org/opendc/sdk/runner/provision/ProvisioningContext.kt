@@ -23,7 +23,7 @@
 package org.opendc.sdk.runner.provision
 
 import org.opendc.common.Dispatcher
-import org.opendc.compute.simulator.ServiceRegistry
+import org.opendc.simulator.compute.ServiceRegistry
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
 

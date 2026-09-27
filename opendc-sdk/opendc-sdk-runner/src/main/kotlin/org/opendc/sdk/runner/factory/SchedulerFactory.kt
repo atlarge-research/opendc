@@ -22,12 +22,6 @@
 
 package org.opendc.sdk.runner.factory
 
-import org.opendc.compute.simulator.scheduler.ComputeScheduler
-import org.opendc.compute.simulator.scheduler.FilterScheduler
-import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
-import org.opendc.compute.simulator.scheduler.filters.ComputeFilter
-import org.opendc.compute.simulator.scheduler.timeshift.MemorizingTimeshift
-import org.opendc.compute.simulator.scheduler.timeshift.TimeshiftScheduler
 import org.opendc.sdk.model.scheduler.AllocationPolicySpec
 import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
 import org.opendc.sdk.model.scheduler.CoreRamWeigherSpec
@@ -48,26 +42,32 @@ import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.scheduler.VCpuWeigherSpec
 import org.opendc.sdk.model.scheduler.VGpuFilterSpec
 import org.opendc.sdk.model.scheduler.VGpuWeigherSpec
+import org.opendc.simulator.compute.scheduler.ComputeScheduler
+import org.opendc.simulator.compute.scheduler.FilterScheduler
+import org.opendc.simulator.compute.scheduler.createPrefabComputeScheduler
+import org.opendc.simulator.compute.scheduler.filters.ComputeFilter
+import org.opendc.simulator.compute.scheduler.timeshift.MemorizingTimeshift
+import org.opendc.simulator.compute.scheduler.timeshift.TimeshiftScheduler
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
-import org.opendc.compute.simulator.scheduler.filters.DifferentHostFilter as EngineDifferentHostFilter
-import org.opendc.compute.simulator.scheduler.filters.HostFilter as EngineHostFilter
-import org.opendc.compute.simulator.scheduler.filters.InstanceCountFilter as EngineInstanceCountFilter
-import org.opendc.compute.simulator.scheduler.filters.RamFilter as EngineRamFilter
-import org.opendc.compute.simulator.scheduler.filters.SameHostFilter as EngineSameHostFilter
-import org.opendc.compute.simulator.scheduler.filters.VCpuCapacityFilter as EngineVCpuCapacityFilter
-import org.opendc.compute.simulator.scheduler.filters.VCpuFilter as EngineVCpuFilter
-import org.opendc.compute.simulator.scheduler.filters.VGpuFilter as EngineVGpuFilter
-import org.opendc.compute.simulator.scheduler.timeshift.TaskStopper as EngineTaskStopper
-import org.opendc.compute.simulator.scheduler.weights.CoreRamWeigher as EngineCoreRamWeigher
-import org.opendc.compute.simulator.scheduler.weights.HostWeigher as EngineHostWeigher
-import org.opendc.compute.simulator.scheduler.weights.InstanceCountWeigher as EngineInstanceCountWeigher
-import org.opendc.compute.simulator.scheduler.weights.RamWeigher as EngineRamWeigher
-import org.opendc.compute.simulator.scheduler.weights.VCpuCapacityWeigher as EngineVCpuCapacityWeigher
-import org.opendc.compute.simulator.scheduler.weights.VCpuWeigher as EngineVCpuWeigher
-import org.opendc.compute.simulator.scheduler.weights.VGpuWeigher as EngineVGpuWeigher
 import org.opendc.sdk.model.scheduler.TaskStopperSpec as SdkTaskStopper
+import org.opendc.simulator.compute.scheduler.filters.DifferentHostFilter as EngineDifferentHostFilter
+import org.opendc.simulator.compute.scheduler.filters.HostFilter as EngineHostFilter
+import org.opendc.simulator.compute.scheduler.filters.InstanceCountFilter as EngineInstanceCountFilter
+import org.opendc.simulator.compute.scheduler.filters.RamFilter as EngineRamFilter
+import org.opendc.simulator.compute.scheduler.filters.SameHostFilter as EngineSameHostFilter
+import org.opendc.simulator.compute.scheduler.filters.VCpuCapacityFilter as EngineVCpuCapacityFilter
+import org.opendc.simulator.compute.scheduler.filters.VCpuFilter as EngineVCpuFilter
+import org.opendc.simulator.compute.scheduler.filters.VGpuFilter as EngineVGpuFilter
+import org.opendc.simulator.compute.scheduler.timeshift.TaskStopper as EngineTaskStopper
+import org.opendc.simulator.compute.scheduler.weights.CoreRamWeigher as EngineCoreRamWeigher
+import org.opendc.simulator.compute.scheduler.weights.HostWeigher as EngineHostWeigher
+import org.opendc.simulator.compute.scheduler.weights.InstanceCountWeigher as EngineInstanceCountWeigher
+import org.opendc.simulator.compute.scheduler.weights.RamWeigher as EngineRamWeigher
+import org.opendc.simulator.compute.scheduler.weights.VCpuCapacityWeigher as EngineVCpuCapacityWeigher
+import org.opendc.simulator.compute.scheduler.weights.VCpuWeigher as EngineVCpuWeigher
+import org.opendc.simulator.compute.scheduler.weights.VGpuWeigher as EngineVGpuWeigher
 
 /**
  * Converts an SDK [AllocationPolicySpec] into an engine [ComputeScheduler], seeded by [seeder] and

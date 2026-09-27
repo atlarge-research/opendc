@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.model.workload.loader
 import mu.KotlinLogging
-import org.opendc.compute.simulator.service.SimTask
+import org.opendc.simulator.compute.service.SimTask
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import java.time.LocalDateTime
 import java.time.ZoneOffset

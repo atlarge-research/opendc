@@ -23,7 +23,7 @@
 package org.opendc.compute.failure.models
 
 import kotlinx.coroutines.delay
-import org.opendc.compute.simulator.service.ComputeService
+import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.FAILURE_DURATION
 import org.opendc.trace.conv.FAILURE_INTENSITY
