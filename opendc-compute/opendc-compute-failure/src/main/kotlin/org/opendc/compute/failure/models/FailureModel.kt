@@ -52,7 +52,7 @@ public abstract class FailureModel(
     // TODO: could at some point be extended to different types of victim selectors
     protected val victimSelector: StochasticVictimSelector = StochasticVictimSelector(random)
 
-    protected val hosts: Set<SimHost> = service.hosts.map { it as SimHost }.toSet()
+    protected val hosts: Set<SimHost> = service.hosts.toSet()
 
     /**
      * The [Job] that awaits the nearest fault in the system.

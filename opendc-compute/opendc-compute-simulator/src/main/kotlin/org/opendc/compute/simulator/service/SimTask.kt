@@ -88,8 +88,6 @@ public class SimTask(
      * The service this task is submitted to. Set by [ComputeService.submitTask].
      */
     public var service: ComputeService? = null
-        // Keep the plain JVM name, so ComputeService (Java) can call setService() without name mangling.
-        @JvmName("setService")
         internal set
 
     /**
@@ -178,7 +176,6 @@ public class SimTask(
      * Put the task in the scheduling queue of the [service]. Called when the task is submitted, and when it is
      * rescheduled after a pause or failure.
      */
-    @JvmName("start")
     internal fun start() {
         when (state) {
             TaskState.PROVISIONING -> {
@@ -209,7 +206,6 @@ public class SimTask(
     /**
      * Reschedule the task, continuing from [workload]. Called by [ComputeService.rescheduleTask].
      */
-    @JvmName("reschedule")
     internal fun reschedule(workload: Workload) {
         host = null
         this.workload = workload
@@ -220,7 +216,6 @@ public class SimTask(
      * Place the task on [host], right before it is spawned there. [queuedAt] is the time the task entered the
      * scheduling queue, which is added to the [schedulingDelay].
      */
-    @JvmName("onScheduled")
     internal fun onScheduled(
         host: SimHost,
         queuedAt: Long,
@@ -236,7 +231,6 @@ public class SimTask(
      * Terminate the task, because it failed too often or does not fit on any host, or because one of its parents
      * was terminated.
      */
-    @JvmName("terminate")
     internal fun terminate() {
         state = TaskState.TERMINATED
     }
@@ -244,7 +238,6 @@ public class SimTask(
     /**
      * Remove the task from its host and from the [service]. Called by [ComputeService.deleteTask].
      */
-    @JvmName("delete")
     internal fun delete() {
         cancelProvisioningRequest()
         host?.delete(this)
@@ -351,7 +344,6 @@ public class SimTask(
     /**
      * Remove [completedTask] from the parents of this task, as it no longer has to wait for it.
      */
-    @JvmName("removeFromParents")
     internal fun removeFromParents(completedTask: Int) {
         val current = parents ?: return
 
