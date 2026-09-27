@@ -43,7 +43,7 @@ import java.time.Duration
 public fun setupComputeService(
     serviceDomain: String,
     scheduler: (ProvisioningContext) -> ComputeScheduler,
-    schedulingQuantum: Duration = Duration.ofSeconds(1),
+    schedulingQuantum: Duration = Duration.ofMillis(1),
     maxNumFailures: Int = 10,
 ): ProvisioningStep {
     return ComputeServiceProvisioningStep(serviceDomain, scheduler, schedulingQuantum, maxNumFailures)

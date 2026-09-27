@@ -41,10 +41,12 @@ public class ComputeServiceProvisioningStep(
 ) : ProvisioningStep {
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service =
-            ComputeService.builder(ctx.dispatcher, scheduler(ctx))
-                .withQuantum(schedulingQuantum)
-                .withMaxNumFailures(maxNumFailures)
-                .build()
+            ComputeService(
+                ctx.dispatcher,
+                scheduler(ctx),
+                quantum = schedulingQuantum,
+                maxNumFailures = maxNumFailures,
+            )
         ctx.registry.register(serviceDomain, ComputeService::class.java, service)
 
         return AutoCloseable { service.close() }
