@@ -22,8 +22,8 @@
 
 package org.opendc.sdk.runner.telemetry.table.task
 
-import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.simulator.service.SimTask
+import org.opendc.simulator.compute.service.ComputeService
+import org.opendc.simulator.compute.task.SimTask
 import java.time.Duration
 import java.time.Instant
 

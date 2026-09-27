@@ -1,0 +1,207 @@
+/*
+ * Copyright (c) 2021 AtLarge Research
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package org.opendc.simulator.compute.scheduler
+
+import org.opendc.simulator.compute.infrastructure.HostState
+import org.opendc.simulator.compute.infrastructure.SimHost
+import org.opendc.simulator.compute.scheduler.filters.HostFilter
+import org.opendc.simulator.compute.scheduler.weights.HostWeigher
+import org.opendc.simulator.compute.task.SimTask
+import java.util.SplittableRandom
+import java.util.random.RandomGenerator
+
+/**
+ * A [ComputeScheduler] implementation that uses filtering and weighing passes to select
+ * the host to schedule a [SimTask] on.
+ *
+ * This implementation is based on the filter scheduler from OpenStack Nova.
+ * See: https://docs.openstack.org/nova/latest/user/filter-scheduler.html
+ *
+ * @param filters The list of filters to apply when searching for an appropriate host.
+ * @param weighers The list of weighers to apply when searching for an appropriate host.
+ * @param subsetSize The size of the subset of best hosts from which a target is randomly chosen.
+ * @param random A [RandomGenerator] instance for selecting
+ */
+public class FilterScheduler(
+    private val filters: List<HostFilter>,
+    private val weighers: List<HostWeigher>,
+    private val subsetSize: Int = 1,
+    private val random: RandomGenerator = SplittableRandom(0),
+    numHosts: Int = 1000,
+) : ComputeScheduler {
+    /**
+     * The pool of hosts available to the scheduler.
+     */
+
+    private val failedHosts = mutableListOf<SimHost>() // List of Hosts that are currently not available
+    private val emptyHostMap = mutableMapOf<String, MutableList<SimHost>>()
+
+    private val weights = DoubleArray(numHosts)
+
+    private val usedHosts = SortedHostList(numHosts, filters)
+
+    init {
+        require(subsetSize >= 1) { "Subset size must be one or greater" }
+    }
+
+    override fun addHost(host: SimHost) {
+        val hostType = host.type
+
+        if (emptyHostMap.containsKey(hostType)) {
+            emptyHostMap[hostType]?.add(host)
+        } else {
+            emptyHostMap[hostType] = mutableListOf(host)
+        }
+    }
+
+    // Remove host from the Available hosts list
+    override fun removeHost(host: SimHost) {
+        val hostType = host.type
+
+        // remove from emptyHosts if present
+        val removed = emptyHostMap[hostType]?.remove(host)
+        if (removed != null && removed) {
+            return
+        }
+
+        // If the hosts was being used, remove it from there
+        usedHosts.remove(host)
+    }
+
+    // Remove a failed host from available hosts, and add it to the failed hosts.
+    override fun failHost(host: SimHost) {
+        removeHost(host)
+        failedHosts.add(host)
+    }
+
+    override fun restartHost(host: SimHost) {
+        val removed = failedHosts.remove(host)
+        if (removed) {
+            addHost(host)
+        }
+    }
+
+    override fun updateHost(host: SimHost) {
+        if (host.state == HostState.ERROR) {
+            return
+        }
+
+        if (host.isEmpty()) {
+            setHostEmpty(host)
+        } else {
+            usedHosts.updateHost(host)
+        }
+    }
+
+    override fun setHostEmpty(host: SimHost) {
+        val hostType = host.type
+
+        usedHosts.remove(host)
+        if (emptyHostMap.containsKey(hostType)) {
+            emptyHostMap[hostType]?.add(host)
+        } else {
+            emptyHostMap[hostType] = mutableListOf(host)
+        }
+    }
+
+    override fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult {
+        var req = iter.next()
+
+        while (req.isCancelled) {
+            iter.remove()
+            if (iter.hasNext()) {
+                req = iter.next()
+            } else {
+                // No tasks in queue
+                return SchedulingResult(SchedulingResultType.EMPTY)
+            }
+        }
+
+        val task = req.task
+
+        val fittingHosts = usedHosts.getFittingHosts(task)
+
+        for (emptyHosts in emptyHostMap.values) {
+            if (!emptyHosts.isEmpty()) {
+                val host = emptyHosts.first()
+                if (filters.all { filter -> filter.test(host, req.task) }) {
+                    fittingHosts.add(host)
+                }
+            }
+        }
+
+        if (fittingHosts.isEmpty()) {
+            return SchedulingResult(SchedulingResultType.FAILURE, null, req)
+        }
+
+        var maxWeight = Double.MIN_VALUE
+        var maxIndex = 0
+
+        val host =
+            if (weighers.isNotEmpty()) {
+                val results = weighers.map { it.getWeights(fittingHosts, task) }
+
+                for (result in results) {
+                    val min = result.min
+                    val range = (result.max - min)
+
+                    // Skip result if all weights are the same
+                    if (range == 0.0) {
+                        continue
+                    }
+
+                    val multiplier = result.multiplier
+                    val factor = multiplier / range
+
+                    for ((i, weight) in result.weights.withIndex()) {
+                        this.weights[i] += factor * (weight - min)
+                        if (this.weights[i] > maxWeight) {
+                            maxIndex = i
+                            maxWeight = weight
+                        }
+                    }
+                }
+
+                fittingHosts[maxIndex]
+            } else {
+                fittingHosts.first()
+            }
+
+        iter.remove()
+
+        val hostType = host.type
+
+        if (host.isEmpty()) {
+            emptyHostMap[hostType]?.remove(host)
+            usedHosts.addSorted(host)
+        }
+
+        return SchedulingResult(SchedulingResultType.SUCCESS, host, req)
+    }
+
+    override fun removeTask(
+        task: SimTask,
+        host: SimHost?,
+    ) {
+    }
+}

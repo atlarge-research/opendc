@@ -24,12 +24,12 @@
 
 package org.opendc.sdk.runner.provision
 
-import org.opendc.compute.simulator.scheduler.ComputeScheduler
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.runner.telemetry.MetricExporter
+import org.opendc.simulator.compute.scheduler.ComputeScheduler
 import java.nio.file.Path
 import java.time.Duration
 

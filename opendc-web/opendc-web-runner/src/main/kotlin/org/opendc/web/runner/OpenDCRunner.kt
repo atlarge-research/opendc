@@ -28,8 +28,6 @@ import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.compute.failure.prefab.FailurePrefab
 import org.opendc.compute.failure.prefab.createFailureModelPrefab
-import org.opendc.compute.simulator.scheduler.createPrefabComputeScheduler
-import org.opendc.compute.simulator.service.ComputeService
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec
 import org.opendc.sdk.model.topology.HostSpec
@@ -48,6 +46,8 @@ import org.opendc.sdk.runner.provision.setupHosts
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.PowerModels
+import org.opendc.simulator.compute.scheduler.createPrefabComputeScheduler
+import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.web.proto.runner.Job
 import org.opendc.web.proto.runner.Report

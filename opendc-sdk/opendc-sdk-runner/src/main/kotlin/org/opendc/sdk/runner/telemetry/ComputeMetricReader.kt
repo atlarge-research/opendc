@@ -29,9 +29,6 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.common.Dispatcher
 import org.opendc.common.asCoroutineDispatcher
-import org.opendc.compute.simulator.service.ComputeService
-import org.opendc.compute.simulator.service.SimTask
-import org.opendc.compute.simulator.telemetry.TaskListener
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySampler
 import org.opendc.sdk.runner.telemetry.table.cluster.ClusterSampler
@@ -40,6 +37,9 @@ import org.opendc.sdk.runner.telemetry.table.host.HostSampler
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSampler
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSampler
 import org.opendc.sdk.runner.telemetry.table.task.TaskSampler
+import org.opendc.simulator.compute.service.ComputeService
+import org.opendc.simulator.compute.task.SimTask
+import org.opendc.simulator.compute.telemetry.TaskListener
 import java.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 

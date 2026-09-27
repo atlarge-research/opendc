@@ -60,7 +60,7 @@ dependencies {
     implementation(project(mapOf("path" to ":opendc-sdk:opendc-sdk-runner")))
     implementation(project(mapOf("path" to ":opendc-sdk:opendc-sdk-model")))
 
-    api(project(":opendc-compute:opendc-compute-simulator"))
+    api(project(":opendc-simulator:opendc-simulator-compute"))
 
     cliImplementation(libs.clikt)
 

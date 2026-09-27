@@ -23,8 +23,8 @@
 package org.opendc.sdk.runner.provision
 
 import org.opendc.common.Dispatcher
-import org.opendc.compute.simulator.ServiceRegistry
 import org.opendc.sdk.runner.telemetry.ComputeMetricReader
+import org.opendc.simulator.compute.ServiceRegistry
 import java.util.ArrayDeque
 import java.util.SplittableRandom
 

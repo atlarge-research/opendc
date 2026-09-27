@@ -43,7 +43,7 @@ class RingBufferAppenderTest {
 
     private fun event(message: String): LogEvent =
         Log4jLogEvent.newBuilder()
-            .setLoggerName("org.opendc.compute.simulator.Guest")
+            .setLoggerName("org.opendc.simulator.compute.Guest")
             .setLevel(Level.INFO)
             .setMessage(SimpleMessage(message))
             .build()
