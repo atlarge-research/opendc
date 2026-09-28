@@ -71,8 +71,6 @@ public class SampleBasedFailureModel(
             val durationSample = max(0.0, durationSampler.sample())
             val faultDuration = (durationSample * 3.6e6).toLong()
             fault.apply(victims, faultDuration)
-
-            break
         }
     }
 }

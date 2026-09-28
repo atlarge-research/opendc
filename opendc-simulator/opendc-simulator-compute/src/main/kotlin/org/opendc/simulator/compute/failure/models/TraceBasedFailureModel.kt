@@ -47,6 +47,11 @@ public class TraceBasedFailureModel(
     private val repeat: Boolean = true,
 ) : FailureModel(context, clock, service, random) {
     override suspend fun runInjector() {
+        // Repeating an empty list would loop forever without suspending, stalling the simulation
+        if (failures.isEmpty()) {
+            return
+        }
+
         do {
             for (failure in failures) {
                 delay(failure.failureInterval)
