@@ -103,13 +103,13 @@ public data class UniformDistributionSpec(
     override fun validate(): List<ValidationIssue> = if (upper > lower) emptyList() else listOf(ValidationIssue("upper", "must be > lower"))
 }
 
-/** A Weibull distribution parameterized by [alpha] and [beta]. */
+/** A Weibull distribution parameterized by shape [alpha] and scale [beta]. */
 @Serializable
 @SerialName("weibull")
 public data class WeibullDistributionSpec(
-    /** The scale parameter. */
-    public val alpha: Double,
     /** The shape parameter. */
+    public val alpha: Double,
+    /** The scale parameter. */
     public val beta: Double,
 ) : DistributionSpec {
     override fun validate(): List<ValidationIssue> =

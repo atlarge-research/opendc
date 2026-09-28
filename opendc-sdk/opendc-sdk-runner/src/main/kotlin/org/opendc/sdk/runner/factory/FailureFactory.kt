@@ -28,7 +28,6 @@ import org.apache.commons.math3.distribution.UniformRealDistribution
 import org.apache.commons.math3.random.Well19937c
 import org.opendc.compute.failure.models.SampleBasedFailureModel
 import org.opendc.compute.failure.models.TraceBasedFailureModel
-import org.opendc.compute.failure.prefab.createFailureModelPrefab
 import org.opendc.sdk.model.failure.ConstantDistributionSpec
 import org.opendc.sdk.model.failure.CustomFailureSpec
 import org.opendc.sdk.model.failure.DistributionSpec
@@ -56,7 +55,6 @@ import org.apache.commons.math3.distribution.NormalDistribution as CmNormalDistr
 import org.apache.commons.math3.distribution.ParetoDistribution as CmParetoDistribution
 import org.apache.commons.math3.distribution.WeibullDistribution as CmWeibullDistribution
 import org.opendc.compute.failure.models.FailureModel as EngineFailureModel
-import org.opendc.compute.failure.prefab.FailurePrefab as EngineFailurePrefab
 
 /**
  * Converts an SDK [FailureModelSpec] into the engine failure model injected during replay, or null
@@ -72,20 +70,27 @@ internal fun FailureModelSpec.toEngine(
     when (this) {
         NoFailureSpec -> null
         is TraceBasedFailureSpec -> TraceBasedFailureModel(context, clock, service, random, resolve(source).toString(), startPoint, repeat)
-        is PrefabFailureSpec -> createFailureModelPrefab(context, clock, service, random, EngineFailurePrefab.valueOf(prefabName.name))
-        is CustomFailureSpec -> {
-            val rng = Well19937c(random.nextLong())
-            SampleBasedFailureModel(
-                context,
-                clock,
-                service,
-                random,
-                interArrival.toSampler(rng),
-                duration.toSampler(rng),
-                hostFraction.toSampler(rng),
-            )
-        }
+        is PrefabFailureSpec -> prefabName.toCustomSpec().toSampleBasedModel(context, clock, service, random)
+        is CustomFailureSpec -> toSampleBasedModel(context, clock, service, random)
     }
+
+private fun CustomFailureSpec.toSampleBasedModel(
+    context: CoroutineContext,
+    clock: InstantSource,
+    service: ComputeService,
+    random: RandomGenerator,
+): SampleBasedFailureModel {
+    val rng = Well19937c(random.nextLong())
+    return SampleBasedFailureModel(
+        context,
+        clock,
+        service,
+        random,
+        interArrival.toSampler(rng),
+        duration.toSampler(rng),
+        hostFraction.toSampler(rng),
+    )
+}
 
 private fun DistributionSpec.toSampler(rng: org.apache.commons.math3.random.RandomGenerator): RealDistribution =
     when (this) {

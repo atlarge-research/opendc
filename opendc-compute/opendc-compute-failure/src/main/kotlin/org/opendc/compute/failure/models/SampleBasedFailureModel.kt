@@ -31,6 +31,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToLong
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Sample based failure model
@@ -62,7 +63,7 @@ public class SampleBasedFailureModel(
                 return
             }
 
-            delay(intervalDuration)
+            delay(intervalDuration.milliseconds)
 
             val numberOfHosts = min(1.0, max(0.0, nohSampler.sample()))
             val victims = victimSelector.select(hosts, numberOfHosts)
