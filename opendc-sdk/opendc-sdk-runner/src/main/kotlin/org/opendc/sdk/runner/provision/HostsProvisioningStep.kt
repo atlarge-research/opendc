@@ -23,7 +23,7 @@
 package org.opendc.sdk.runner.provision
 
 import org.opendc.common.ResourceType
-import org.opendc.compute.carbon.getCarbonFragments
+import org.opendc.sdk.model.carbon.loader.CarbonTraceLoader
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
@@ -211,9 +211,7 @@ public class HostsProvisioningStep(
         powerSourceSpec: PowerSourceSpec,
         simPowerSource: SimPowerSource,
     ): CarbonModel? {
-        val pathToFile = powerSourceSpec.carbon?.let { resolve(it).toString() }
-
-        val carbonFragments = getCarbonFragments(pathToFile)
+        val carbonFragments = powerSourceSpec.carbon?.let { CarbonTraceLoader(resolve(it).toFile()).load() }
         var carbonModel: CarbonModel? = null
         // Create Carbon Model
         if (carbonFragments != null) {

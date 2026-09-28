@@ -41,7 +41,6 @@ nmcpSettings {
 
 
 include(":opendc-common")
-include(":opendc-compute:opendc-compute-carbon")
 include(":opendc-compute:opendc-compute-failure")
 include(":opendc-workflow:opendc-workflow-api")
 include(":opendc-workflow:opendc-workflow-service")
