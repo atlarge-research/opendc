@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.model.failure.loader
 
-import org.opendc.simulator.compute.failure.models.Failure
+import org.opendc.simulator.failure.models.Failure
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.FAILURE_DURATION
 import org.opendc.trace.conv.FAILURE_INTENSITY

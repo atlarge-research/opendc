@@ -20,28 +20,39 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.failure.victimselector
+package org.opendc.simulator.failure.hostfault
 
+import kotlinx.coroutines.delay
 import org.opendc.simulator.compute.infrastructure.SimHost
+import org.opendc.simulator.compute.service.ComputeService
 
 /**
- * Interface responsible for selecting the victim(s) for fault injection.
+ * A type of [HostFault] where the hosts are stopped and recover after a given amount of time.
  */
-public interface VictimSelector {
-    /**
-     * Select the hosts from [hosts] where a fault will be injected.
-     */
-    public fun select(
-        hosts: Set<SimHost>,
-        numberOfHosts: Int,
-    ): List<SimHost>
+public class StartStopHostFault(
+    private val service: ComputeService,
+) : HostFault(service) {
+    override suspend fun apply(
+        victims: List<SimHost>,
+        faultDuration: Long,
+    ) {
+        for (host in victims) {
+            val tasks = host.getInstances().toList()
 
-    public fun select(numberOfHosts: Int): List<SimHost>
+            val snapshots = tasks.map { it.virtualMachine!!.snapshot }
+            host.fail()
 
-    public fun select(failureIntensity: Double): List<SimHost>
+            for ((task, snapshot) in tasks.zip(snapshots)) {
+                service.rescheduleTask(task, snapshot)
+            }
+        }
 
-    public fun select(
-        hosts: Set<SimHost>,
-        failureIntensity: Double,
-    ): List<SimHost>
+        delay(faultDuration)
+
+        for (host in victims) {
+            host.recover()
+        }
+    }
+
+    override fun toString(): String = "StartStopHostFault"
 }

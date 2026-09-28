@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.failure.models
+package org.opendc.simulator.failure.models
 
 /**
  * A definition of a Failure

@@ -20,17 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.failure.models
+package org.opendc.simulator.failure.models
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.opendc.simulator.compute.failure.hostfault.HostFault
-import org.opendc.simulator.compute.failure.hostfault.StartStopHostFault
-import org.opendc.simulator.compute.failure.victimselector.StochasticVictimSelector
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.service.ComputeService
+import org.opendc.simulator.failure.hostfault.HostFault
+import org.opendc.simulator.failure.hostfault.StartStopHostFault
+import org.opendc.simulator.failure.victimselector.StochasticVictimSelector
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext

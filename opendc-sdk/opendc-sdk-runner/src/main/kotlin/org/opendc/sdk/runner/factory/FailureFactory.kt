@@ -42,9 +42,9 @@ import org.opendc.sdk.model.failure.UniformDistributionSpec
 import org.opendc.sdk.model.failure.WeibullDistributionSpec
 import org.opendc.sdk.model.failure.loader.FailureTraceLoader
 import org.opendc.sdk.model.resource.ResourceReference
-import org.opendc.simulator.compute.failure.models.SampleBasedFailureModel
-import org.opendc.simulator.compute.failure.models.TraceBasedFailureModel
 import org.opendc.simulator.compute.service.ComputeService
+import org.opendc.simulator.failure.models.SampleBasedFailureModel
+import org.opendc.simulator.failure.models.TraceBasedFailureModel
 import java.nio.file.Path
 import java.time.InstantSource
 import java.util.random.RandomGenerator
@@ -55,7 +55,7 @@ import org.apache.commons.math3.distribution.LogNormalDistribution as CmLogNorma
 import org.apache.commons.math3.distribution.NormalDistribution as CmNormalDistribution
 import org.apache.commons.math3.distribution.ParetoDistribution as CmParetoDistribution
 import org.apache.commons.math3.distribution.WeibullDistribution as CmWeibullDistribution
-import org.opendc.simulator.compute.failure.models.FailureModel as EngineFailureModel
+import org.opendc.simulator.failure.models.FailureModel as EngineFailureModel
 
 /**
  * Converts an SDK [FailureModelSpec] into the engine failure model injected during replay, or null

@@ -27,7 +27,7 @@ import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.io.api.RecordConsumer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import org.opendc.simulator.compute.failure.models.Failure
+import org.opendc.simulator.failure.models.Failure
 import org.opendc.trace.formats.failure.parquet.FAILURE_SCHEMA
 import org.opendc.trace.util.parquet.LocalParquetWriter
 import java.io.File
