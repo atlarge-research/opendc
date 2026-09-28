@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.failure.hostfault
+package org.opendc.simulator.compute.failure.hostfault
 
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.service.ComputeService

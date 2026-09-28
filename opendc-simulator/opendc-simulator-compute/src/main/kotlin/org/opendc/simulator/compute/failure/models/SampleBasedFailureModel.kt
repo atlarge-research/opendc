@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.failure.models
+package org.opendc.simulator.compute.failure.models
 
 import kotlinx.coroutines.delay
 import org.apache.commons.math3.distribution.RealDistribution

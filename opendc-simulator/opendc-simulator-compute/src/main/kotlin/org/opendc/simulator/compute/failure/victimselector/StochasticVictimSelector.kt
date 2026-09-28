@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.failure.victimselector
+package org.opendc.simulator.compute.failure.victimselector
 
 import org.opendc.simulator.compute.infrastructure.SimHost
 import java.util.SplittableRandom

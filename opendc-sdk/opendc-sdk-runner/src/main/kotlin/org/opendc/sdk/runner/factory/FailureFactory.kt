@@ -26,8 +26,6 @@ import org.apache.commons.math3.distribution.ConstantRealDistribution
 import org.apache.commons.math3.distribution.RealDistribution
 import org.apache.commons.math3.distribution.UniformRealDistribution
 import org.apache.commons.math3.random.Well19937c
-import org.opendc.compute.failure.models.SampleBasedFailureModel
-import org.opendc.compute.failure.models.TraceBasedFailureModel
 import org.opendc.sdk.model.failure.ConstantDistributionSpec
 import org.opendc.sdk.model.failure.CustomFailureSpec
 import org.opendc.sdk.model.failure.DistributionSpec
@@ -43,6 +41,8 @@ import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.failure.UniformDistributionSpec
 import org.opendc.sdk.model.failure.WeibullDistributionSpec
 import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.simulator.compute.failure.models.SampleBasedFailureModel
+import org.opendc.simulator.compute.failure.models.TraceBasedFailureModel
 import org.opendc.simulator.compute.service.ComputeService
 import java.nio.file.Path
 import java.time.InstantSource
@@ -54,7 +54,7 @@ import org.apache.commons.math3.distribution.LogNormalDistribution as CmLogNorma
 import org.apache.commons.math3.distribution.NormalDistribution as CmNormalDistribution
 import org.apache.commons.math3.distribution.ParetoDistribution as CmParetoDistribution
 import org.apache.commons.math3.distribution.WeibullDistribution as CmWeibullDistribution
-import org.opendc.compute.failure.models.FailureModel as EngineFailureModel
+import org.opendc.simulator.compute.failure.models.FailureModel as EngineFailureModel
 
 /**
  * Converts an SDK [FailureModelSpec] into the engine failure model injected during replay, or null

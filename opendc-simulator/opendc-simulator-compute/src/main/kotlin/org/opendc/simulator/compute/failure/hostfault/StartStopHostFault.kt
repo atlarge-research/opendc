@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.failure.hostfault
+package org.opendc.simulator.compute.failure.hostfault
 
 import kotlinx.coroutines.delay
 import org.opendc.simulator.compute.infrastructure.SimHost
