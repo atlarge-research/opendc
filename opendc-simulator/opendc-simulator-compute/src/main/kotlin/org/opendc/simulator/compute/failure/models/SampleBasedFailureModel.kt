@@ -40,8 +40,8 @@ import kotlin.time.Duration.Companion.milliseconds
  * @property clock
  * @property service
  * @property random
- * @property iatSampler A distribution from which the time until the next fault is sampled in ms
- * @property durationSampler A distribution from which the duration of a fault is sampled in s
+ * @property iatSampler A distribution from which the time until the next fault is sampled in hours
+ * @property durationSampler A distribution from which the duration of a fault is sampled in hours, rounded up to at least 1 ms
  * @property nohSampler A distribution from which the number of hosts that fault is sampled.
  */
 public class SampleBasedFailureModel(
@@ -68,8 +68,9 @@ public class SampleBasedFailureModel(
             val numberOfHosts = min(1.0, max(0.0, nohSampler.sample()))
             val victims = victimSelector.select(hosts, numberOfHosts)
 
+            // Round up to at least 1 ms so every failure advances the simulation clock, even when its interval is 0
             val durationSample = max(0.0, durationSampler.sample())
-            val faultDuration = (durationSample * 3.6e6).toLong()
+            val faultDuration = max(1L, (durationSample * 3.6e6).toLong())
             fault.apply(victims, faultDuration)
         }
     }

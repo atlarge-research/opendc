@@ -25,10 +25,11 @@ package org.opendc.simulator.compute.failure.models
 /**
  * A definition of a Failure
  *
- * @property failureInterval The time between this and the previous failure in ms
- * @property failureDuration The Duration of the failure in ms
- * @property failureIntensity The ratio of hosts affected by the failure
+ * @property failureInterval The time between the end of the previous failure and the start of this one in ms, at least 0
+ * @property failureDuration The Duration of the failure in ms, greater than 0
+ * @property failureIntensity The ratio of hosts affected by the failure, in the range (0.0, 1.0]
  * @constructor Create empty Failure
+ * @throws IllegalArgumentException if one of the properties is out of range
  */
 public data class Failure(
     val failureInterval: Long,
@@ -36,8 +37,11 @@ public data class Failure(
     val failureIntensity: Double,
 ) {
     init {
-        require(failureInterval >= 0.0) { "A failure cannot start at a negative time" }
-        require(failureDuration >= 0.0) { "A failure can not have a duration of 0 or less" }
-        require(failureIntensity > 0.0 && failureIntensity <= 1.0) { "The intensity of a failure has to be in the range (0.0, 1.0]" }
+        require(failureInterval >= 0) { "A failure cannot start at a negative time, but its interval was $failureInterval ms" }
+        // A positive duration ensures every failure advances the simulation clock, even when its interval is 0
+        require(failureDuration > 0) { "A failure must have a duration greater than 0, but its duration was $failureDuration ms" }
+        require(failureIntensity > 0.0 && failureIntensity <= 1.0) {
+            "The intensity of a failure has to be in the range (0.0, 1.0], but it was $failureIntensity"
+        }
     }
 }

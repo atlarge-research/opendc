@@ -90,6 +90,16 @@ class FailureTraceLoaderTest {
     }
 
     @Test
+    fun `an invalid failure is rejected with its row and trace`() {
+        val trace = writeEntries(listOf(Entry(1_000, 100, 0.1), Entry(2_000, 0, 0.2)))
+
+        val error = assertFailsWith<IllegalArgumentException> { FailureTraceLoader(trace).load() }
+
+        assertContains(error.message.orEmpty(), "row 1 of $trace")
+        assertContains(error.message.orEmpty(), "duration greater than 0")
+    }
+
+    @Test
     fun `a missing trace is rejected`() {
         val loader = FailureTraceLoader(tempDir.resolve("missing.parquet").toFile())
 
@@ -101,20 +111,31 @@ class FailureTraceLoaderTest {
     /**
      * Write a failure trace with the given [failures], in the given order.
      */
-    private fun writeTrace(failures: List<Failure>): File {
+    private fun writeTrace(failures: List<Failure>): File =
+        writeEntries(failures.map { Entry(it.failureInterval, it.failureDuration, it.failureIntensity) })
+
+    /**
+     * Write a failure trace with the given raw [entries], in the given order, without validating them.
+     */
+    private fun writeEntries(entries: List<Entry>): File {
         val path = tempDir.resolve("failures.parquet")
 
         LocalParquetWriter.builder(path, FailureWriteSupport()).build().use { writer ->
-            failures.forEach { writer.write(it) }
+            entries.forEach { writer.write(it) }
         }
 
         return path.toFile()
     }
 
     /**
-     * Writes [Failure]s using the schema the failure trace reader expects.
+     * A row of a failure trace.
      */
-    private class FailureWriteSupport : WriteSupport<Failure>() {
+    private data class Entry(val interval: Long, val duration: Long, val intensity: Double)
+
+    /**
+     * Writes [Entry]s using the schema the failure trace reader expects.
+     */
+    private class FailureWriteSupport : WriteSupport<Entry>() {
         private lateinit var recordConsumer: RecordConsumer
 
         override fun init(configuration: Configuration): WriteContext = WriteContext(FAILURE_SCHEMA, emptyMap())
@@ -123,16 +144,16 @@ class FailureTraceLoaderTest {
             this.recordConsumer = recordConsumer
         }
 
-        override fun write(record: Failure) {
+        override fun write(record: Entry) {
             recordConsumer.startMessage()
             recordConsumer.startField("failure_interval", 0)
-            recordConsumer.addLong(record.failureInterval)
+            recordConsumer.addLong(record.interval)
             recordConsumer.endField("failure_interval", 0)
             recordConsumer.startField("failure_duration", 1)
-            recordConsumer.addLong(record.failureDuration)
+            recordConsumer.addLong(record.duration)
             recordConsumer.endField("failure_duration", 1)
             recordConsumer.startField("failure_intensity", 2)
-            recordConsumer.addDouble(record.failureIntensity)
+            recordConsumer.addDouble(record.intensity)
             recordConsumer.endField("failure_intensity", 2)
             recordConsumer.endMessage()
         }

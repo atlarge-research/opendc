@@ -36,6 +36,8 @@ import java.io.File
 public class FailureTraceLoader(private val pathToFile: File) {
     /**
      * Read the entries of the trace into [Failure]s, in trace order.
+     *
+     * @throws IllegalArgumentException if an entry is not a valid [Failure]
      */
     private fun parseFailures(trace: Trace): List<Failure> {
         val reader = checkNotNull(trace.getTable(TABLE_FAILURES)).newReader()
@@ -52,7 +54,14 @@ public class FailureTraceLoader(private val pathToFile: File) {
                 val failureDuration = reader.getLong(failureDurationCol)
                 val failureIntensity = reader.getDouble(failureIntensityCol)
 
-                failures.add(Failure(failureInterval, failureDuration, failureIntensity))
+                val failure =
+                    try {
+                        Failure(failureInterval, failureDuration, failureIntensity)
+                    } catch (e: IllegalArgumentException) {
+                        throw IllegalArgumentException("Invalid failure in row ${failures.size} of $pathToFile: ${e.message}", e)
+                    }
+
+                failures.add(failure)
             }
         } finally {
             reader.close()
