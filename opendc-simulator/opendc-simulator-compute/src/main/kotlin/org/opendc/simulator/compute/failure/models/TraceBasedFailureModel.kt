@@ -24,62 +24,31 @@ package org.opendc.simulator.compute.failure.models
 
 import kotlinx.coroutines.delay
 import org.opendc.simulator.compute.service.ComputeService
-import org.opendc.trace.Trace
-import org.opendc.trace.conv.FAILURE_DURATION
-import org.opendc.trace.conv.FAILURE_INTENSITY
-import org.opendc.trace.conv.FAILURE_INTERVAL
-import org.opendc.trace.conv.TABLE_FAILURES
-import java.io.File
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.times
 
 /**
- * A definition of a Failure
- *
- * @property failureInterval The time between this and the previous failure in ms
- * @property failureDuration The Duration of the failure in ms
- * @property failureIntensity The ratio of hosts affected by the failure
- * @constructor Create empty Failure
- */
-public data class Failure(
-    val failureInterval: Long,
-    val failureDuration: Long,
-    val failureIntensity: Double,
-) {
-    init {
-        require(failureInterval >= 0.0) { "A failure cannot start at a negative time" }
-        require(failureDuration >= 0.0) { "A failure can not have a duration of 0 or less" }
-        require(failureIntensity > 0.0 && failureIntensity <= 1.0) { "The intensity of a failure has to be in the range (0.0, 1.0]" }
-    }
-}
-
-/**
- * A [FailureModel] based on a provided parquet file
- * The file provides a list of [Failure] objects
- *
+ * A [FailureModel] that injects a predefined list of [Failure]s, for example loaded from a failure trace.
  *
  * @param context
  * @param clock
  * @param service
  * @param random
- * @param pathToTrace The path to the parquet file as a [String]
+ * @param failures The failures to inject, in order.
+ * @param repeat Whether [failures] is replayed from the beginning once exhausted.
  */
 public class TraceBasedFailureModel(
     context: CoroutineContext,
     clock: InstantSource,
     service: ComputeService,
     random: RandomGenerator,
-    pathToTrace: String,
-    startPoint: Double,
+    private val failures: List<Failure>,
     private val repeat: Boolean = true,
 ) : FailureModel(context, clock, service, random) {
-    private val failureList = loadTrace(pathToTrace, startPoint)
-
     override suspend fun runInjector() {
         do {
-            for (failure in failureList) {
+            for (failure in failures) {
                 delay(failure.failureInterval)
 
                 val victims = victimSelector.select(hosts, failure.failureIntensity)
@@ -87,43 +56,5 @@ public class TraceBasedFailureModel(
                 fault.apply(victims, failure.failureDuration)
             }
         } while (repeat)
-    }
-
-    /**
-     * Load a list [Failure] objects from the provided [pathToFile]
-     *
-     * @param pathToFile
-     */
-    private fun loadTrace(
-        pathToFile: String,
-        startPoint: Double,
-    ): List<Failure> {
-        val trace = Trace.open(File(pathToFile), "failure")
-
-        val reader = checkNotNull(trace.getTable(TABLE_FAILURES)).newReader()
-
-        val failureStartTimeCol = reader.resolve(FAILURE_INTERVAL)
-        val failureDurationCol = reader.resolve(FAILURE_DURATION)
-        val failureIntensityCol = reader.resolve(FAILURE_INTENSITY)
-
-        val entries = mutableListOf<Failure>()
-
-        try {
-            while (reader.nextRow()) {
-                val failureStartTime = reader.getLong(failureStartTimeCol)
-                val failureDuration = reader.getLong(failureDurationCol)
-                val failureIntensity = reader.getDouble(failureIntensityCol)
-
-                entries.add(Failure(failureStartTime, failureDuration, failureIntensity))
-            }
-
-            val startIndex: Int = (entries.size * startPoint).toInt()
-            return entries.subList(startIndex, entries.size) + entries.subList(0, startIndex)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            throw e
-        } finally {
-            reader.close()
-        }
     }
 }

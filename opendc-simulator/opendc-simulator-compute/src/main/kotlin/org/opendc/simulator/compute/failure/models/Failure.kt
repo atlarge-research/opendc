@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2024 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,24 @@
  * SOFTWARE.
  */
 
-description = "Library for simulating computing workloads, hosts, and the compute service"
+package org.opendc.simulator.compute.failure.models
 
-plugins {
-    `kotlin-library-conventions`
-    `benchmark-conventions`
-}
-
-dependencies {
-    api(projects.opendcSimulator.opendcSimulatorFlow)
-    api(libs.commons.math3)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcCommon)
-    implementation(libs.kotlin.logging)
-
-    testImplementation(libs.slf4j.simple)
+/**
+ * A definition of a Failure
+ *
+ * @property failureInterval The time between this and the previous failure in ms
+ * @property failureDuration The Duration of the failure in ms
+ * @property failureIntensity The ratio of hosts affected by the failure
+ * @constructor Create empty Failure
+ */
+public data class Failure(
+    val failureInterval: Long,
+    val failureDuration: Long,
+    val failureIntensity: Double,
+) {
+    init {
+        require(failureInterval >= 0.0) { "A failure cannot start at a negative time" }
+        require(failureDuration >= 0.0) { "A failure can not have a duration of 0 or less" }
+        require(failureIntensity > 0.0 && failureIntensity <= 1.0) { "The intensity of a failure has to be in the range (0.0, 1.0]" }
+    }
 }

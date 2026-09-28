@@ -40,6 +40,7 @@ import org.opendc.sdk.model.failure.PrefabFailureSpec
 import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.failure.UniformDistributionSpec
 import org.opendc.sdk.model.failure.WeibullDistributionSpec
+import org.opendc.sdk.model.failure.loader.FailureTraceLoader
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.simulator.compute.failure.models.SampleBasedFailureModel
 import org.opendc.simulator.compute.failure.models.TraceBasedFailureModel
@@ -58,7 +59,8 @@ import org.opendc.simulator.compute.failure.models.FailureModel as EngineFailure
 
 /**
  * Converts an SDK [FailureModelSpec] into the engine failure model injected during replay, or null
- * when no failures are configured. Trace references are materialized through [resolve].
+ * when no failures are configured. Trace references are materialized through [resolve] and loaded
+ * with [FailureTraceLoader].
  */
 internal fun FailureModelSpec.toEngine(
     context: CoroutineContext,
@@ -69,7 +71,10 @@ internal fun FailureModelSpec.toEngine(
 ): EngineFailureModel? =
     when (this) {
         NoFailureSpec -> null
-        is TraceBasedFailureSpec -> TraceBasedFailureModel(context, clock, service, random, resolve(source).toString(), startPoint, repeat)
+        is TraceBasedFailureSpec -> {
+            val failures = FailureTraceLoader(resolve(source).toFile()).load(startPoint)
+            TraceBasedFailureModel(context, clock, service, random, failures, repeat)
+        }
         is PrefabFailureSpec -> prefabName.toCustomSpec().toSampleBasedModel(context, clock, service, random)
         is CustomFailureSpec -> toSampleBasedModel(context, clock, service, random)
     }
