@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2026 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +20,13 @@
  * SOFTWARE.
  */
 
-description = "Library for simulating computing workloads, hosts, and the compute service"
+description = "Library for injecting failures into simulated compute infrastructure"
 
 plugins {
     `kotlin-library-conventions`
-    `benchmark-conventions`
 }
 
 dependencies {
-    api(projects.opendcSimulator.opendcSimulatorFlow)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcCommon)
-    implementation(libs.kotlin.logging)
-
-    testImplementation(libs.slf4j.simple)
+    api(projects.opendcSimulator.opendcSimulatorCompute)
+    api(libs.commons.math3)
 }

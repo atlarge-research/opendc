@@ -95,6 +95,7 @@ dependencies {
     implementation(project(":opendc-common"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))
     implementation(project(":opendc-simulator:opendc-simulator-flow"))
+    implementation(project(":opendc-simulator:opendc-simulator-failure"))
     implementation(libs.commons.math3)
     implementation(libs.microprofile.config)
     implementation(libs.kotlinx.coroutines)
