@@ -32,8 +32,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.jsonArray
-import org.opendc.common.logger.errAndNull
-import org.opendc.common.logger.logger
+import mu.KotlinLogging
 
 /**
  * Returns a serializer for [ExportColumn] of [T] based on [ExportColumn.name]. Export columns can be
@@ -99,7 +98,8 @@ public class ColListSerializer<T : Exportable>(
             try {
                 Json.decodeFromJsonElement(columnSerializer, it)
             } catch (_: Exception) {
-                LOG.errAndNull("no match found for column $it, ignoring...")
+                LOG.error("no match found for column $it, ignoring...")
+                null
             }
         } ?: let {
             val strValue = decoder.decodeString().trim('"')
@@ -115,6 +115,6 @@ public class ColListSerializer<T : Exportable>(
     }
 
     private companion object {
-        val LOG by logger()
+        val LOG = KotlinLogging.logger {}
     }
 }

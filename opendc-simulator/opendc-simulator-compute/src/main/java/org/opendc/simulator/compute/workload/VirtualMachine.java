@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import org.opendc.common.ResourceType;
+import org.opendc.simulator.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
 import org.opendc.simulator.compute.machine.PerformanceCounters;
 import org.opendc.simulator.compute.machine.SimMachine;

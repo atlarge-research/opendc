@@ -25,13 +25,13 @@ package org.opendc.trace.util.parquet.exporter
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import mu.KotlinLogging
 import org.apache.parquet.schema.LogicalTypeAnnotation
 import org.apache.parquet.schema.PrimitiveType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.DOUBLE
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.Type
-import org.opendc.common.logger.logger
 import org.slf4j.Logger
 import kotlin.reflect.KClass
 
@@ -97,7 +97,7 @@ public class ExportColumn<T : Exportable>
 
         public companion object {
             @PublishedApi
-            internal val LOG: Logger by logger()
+            internal val LOG: Logger = KotlinLogging.logger {}
 
             /**
              * Reified constructor, needed to store [T] class without providing it as parameter.

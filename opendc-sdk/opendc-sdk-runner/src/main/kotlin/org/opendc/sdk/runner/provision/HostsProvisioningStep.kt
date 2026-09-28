@@ -22,7 +22,6 @@
 
 package org.opendc.sdk.runner.provision
 
-import org.opendc.common.ResourceType
 import org.opendc.sdk.model.carbon.loader.CarbonTraceLoader
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.topology.BatterySpec
@@ -39,6 +38,7 @@ import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.createSimBatteryPolicy
 import org.opendc.sdk.runner.factory.toEngine
+import org.opendc.simulator.ResourceType
 import org.opendc.simulator.compute.carbon.CarbonModel
 import org.opendc.simulator.compute.cluster.SimCluster
 import org.opendc.simulator.compute.datacenter.SimDataCenter

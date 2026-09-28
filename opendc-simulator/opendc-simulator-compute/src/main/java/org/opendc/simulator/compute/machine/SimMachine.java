@@ -28,7 +28,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.function.Consumer;
 import org.jetbrains.annotations.Nullable;
-import org.opendc.common.ResourceType;
+import org.opendc.simulator.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
 import org.opendc.simulator.compute.cpu.SimCpu;
 import org.opendc.simulator.compute.gpu.SimGpu;

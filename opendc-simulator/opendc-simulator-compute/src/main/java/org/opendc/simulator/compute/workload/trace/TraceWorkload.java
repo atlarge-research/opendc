@@ -25,7 +25,7 @@ package org.opendc.simulator.compute.workload.trace;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import org.opendc.common.ResourceType;
+import org.opendc.simulator.ResourceType;
 import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;

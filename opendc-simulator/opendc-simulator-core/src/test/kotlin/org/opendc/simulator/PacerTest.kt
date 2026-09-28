@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.common.util
+package org.opendc.simulator
 
 import kotlinx.coroutines.delay
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow

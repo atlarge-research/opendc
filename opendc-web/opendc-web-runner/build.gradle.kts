@@ -54,6 +54,8 @@ dependencies {
     implementation(projects.opendcTrace.opendcTraceApi)
 
     implementation(libs.kotlin.logging)
+    // ReportCollector attaches a Log4j appender to capture simulation warnings
+    implementation(libs.log4j.core)
 
     implementation(project(mapOf("path" to ":opendc-sdk:opendc-sdk-runner")))
     implementation(project(mapOf("path" to ":opendc-sdk:opendc-sdk-model")))

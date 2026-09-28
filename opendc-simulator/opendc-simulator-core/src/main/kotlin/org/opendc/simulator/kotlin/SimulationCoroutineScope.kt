@@ -24,8 +24,8 @@ package org.opendc.simulator.kotlin
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import org.opendc.common.asCoroutineDispatcher
 import org.opendc.simulator.SimulationDispatcher
+import org.opendc.simulator.asCoroutineDispatcher
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext

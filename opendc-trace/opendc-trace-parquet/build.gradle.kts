@@ -32,7 +32,6 @@ dependencies {
     // Needed for ParquetDataWriter
     implementation(libs.kotlin.logging)
 
-    implementation(projects.opendcCommon)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
@@ -62,6 +61,4 @@ dependencies {
     runtimeOnly(libs.hadoop.mapreduce.client.core) {
         isTransitive = false
     }
-
-    testRuntimeOnly(libs.slf4j.simple)
 }

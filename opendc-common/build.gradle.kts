@@ -21,7 +21,7 @@
  */
 
 group = "org.opendc"
-description = "Common functionality used across OpenDC modules"
+description = "Units and logging shared across OpenDC modules"
 
 // Build configuration
 plugins {
@@ -32,13 +32,7 @@ plugins {
 val serializationVersion = "1.6.0"
 
 dependencies {
-    api(libs.kotlinx.coroutines)
-    implementation(libs.kotlin.logging)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
 
-    api(libs.log4j.core)
-    api(libs.log4j.slf4j)
     api(libs.kotlin.logging)
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
 }
