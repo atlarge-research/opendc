@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,14 @@
  * SOFTWARE.
  */
 
-package org.opendc.common;
+package org.opendc.simulator;
 
-public enum ResourceType {
-    CPU,
-    GPU,
-    POWER,
-    // Combined category for non-compute physical and virtual resources
-    AUXILIARY
+/**
+ * A handle returned by a {@link Dispatcher} representing a scheduled task.
+ */
+public interface DispatcherHandle {
+    /**
+     * Attempt to cancel execution of the task.
+     */
+    void cancel();
 }

@@ -43,3 +43,27 @@ dependencies {
     testImplementation(versionCatalog["mockk"])
     testRuntimeOnly(versionCatalog["junit.jupiter.engine"])
 }
+
+// Tests log through Log4j with one shared config. Quarkus modules are left out: they log through
+// JBoss LogManager, and a second SLF4J provider on the classpath conflicts with it.
+afterEvaluate {
+    if (!plugins.hasPlugin("io.quarkus") && !plugins.hasPlugin("io.quarkus.extension")) {
+        val versionCatalog = project.defaultVersionCatalog
+
+        dependencies {
+            testRuntimeOnly(versionCatalog["log4j.core"])
+            testRuntimeOnly(versionCatalog["log4j.slf4j"])
+        }
+
+        tasks.test {
+            val log4jConfig = rootProject.file("gradle/log4j2-test.xml")
+            inputs.file(log4jConfig).withPropertyName("log4jConfig").withPathSensitivity(PathSensitivity.NONE)
+            // Passed through an argument provider so the absolute path stays out of the build cache key
+            jvmArgumentProviders.add(
+                object : CommandLineArgumentProvider {
+                    override fun asArguments() = listOf("-Dlog4j2.configurationFile=${log4jConfig.absolutePath}")
+                },
+            )
+        }
+    }
+}

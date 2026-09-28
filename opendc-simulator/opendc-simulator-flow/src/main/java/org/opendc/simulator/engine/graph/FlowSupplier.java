@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.engine.graph;
 
-import org.opendc.common.ResourceType;
+import org.opendc.simulator.ResourceType;
 
 public interface FlowSupplier {
 

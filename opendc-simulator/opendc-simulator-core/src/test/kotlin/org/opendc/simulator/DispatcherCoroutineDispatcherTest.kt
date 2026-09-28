@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.common
+package org.opendc.simulator
 
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay

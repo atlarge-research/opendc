@@ -20,11 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.common.util;
+package org.opendc.simulator;
 
 import java.util.function.LongConsumer;
-import org.opendc.common.Dispatcher;
-import org.opendc.common.DispatcherHandle;
 
 /**
  * Helper class to pace the incoming scheduling requests.

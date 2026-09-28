@@ -102,6 +102,4 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     testImplementation(project(":opendc-trace:opendc-trace-api"))
-    testRuntimeOnly(libs.log4j.core)
-    testRuntimeOnly(libs.log4j.slf4j)
 }

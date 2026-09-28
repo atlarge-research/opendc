@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.common;
+package org.opendc.simulator;
 
 /**
  * Interface to expose the {@link Dispatcher} instance used by a class.

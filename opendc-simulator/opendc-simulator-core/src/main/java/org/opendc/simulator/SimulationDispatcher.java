@@ -24,8 +24,6 @@ package org.opendc.simulator;
 
 import java.time.Instant;
 import java.time.InstantSource;
-import org.opendc.common.Dispatcher;
-import org.opendc.common.DispatcherHandle;
 
 /**
  * A {@link Dispatcher} used by simulations to manage execution of (future) tasks, providing a controllable (virtual)

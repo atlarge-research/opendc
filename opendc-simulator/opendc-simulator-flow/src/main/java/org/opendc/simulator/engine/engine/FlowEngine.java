@@ -26,7 +26,7 @@ import java.time.Clock;
 import java.time.InstantSource;
 import java.util.LinkedList;
 import kotlin.coroutines.CoroutineContext;
-import org.opendc.common.Dispatcher;
+import org.opendc.simulator.Dispatcher;
 import org.opendc.simulator.engine.graph.FlowNode;
 
 /**
