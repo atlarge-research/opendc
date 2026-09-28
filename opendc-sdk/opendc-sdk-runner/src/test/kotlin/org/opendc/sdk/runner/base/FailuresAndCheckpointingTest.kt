@@ -21,22 +21,35 @@
  */
 
 package org.opendc.sdk.runner.base
+import org.apache.hadoop.conf.Configuration
+import org.apache.parquet.hadoop.api.WriteSupport
+import org.apache.parquet.io.api.RecordConsumer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.io.TempDir
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.failure.ConstantDistributionSpec
+import org.opendc.sdk.model.failure.CustomFailureSpec
 import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
+import org.opendc.sdk.model.resource.UriReference
 import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
 import org.opendc.sdk.runner.base.harness.fragment
 import org.opendc.sdk.runner.base.harness.runTest
+import org.opendc.trace.formats.failure.parquet.FAILURE_SCHEMA
+import org.opendc.trace.util.parquet.LocalParquetWriter
+import java.nio.file.Path
 
 /**
  * An integration test suite for the Scenario experiments.
  */
 class FailuresAndCheckpointingTest {
+    @TempDir
+    lateinit var tempDir: Path
+
     /**
      * Failure test 1: Single Task, Single Failure
      * In this test, a single task is scheduled that is interrupted by a failure after 5 min.
@@ -233,6 +246,108 @@ class FailuresAndCheckpointingTest {
                 }
             },
         )
+    }
+
+    /**
+     * Failure test 5: Sample based failures keep being injected
+     * In this test, a failure of 7.5 min is injected every 15 min, so failures occur at 15-22.5 min and 37.5-45 min.
+     * The first task finishes at 10 min, before the first failure.
+     * The second task is submitted at 30 min and is interrupted by the second failure after 7.5 min.
+     * Because there is no checkpointing, the full task has to be rerun after the host recovers at 45 min.
+     *
+     * This means the final runtime is 55 minutes, of which 27.5 minutes are spent running a task.
+     */
+    @Test
+    fun testFailures5() {
+        val workload =
+            listOf(
+                createTestTask(
+                    id = 0,
+                    fragments =
+                        listOf(
+                            fragment(10 * 60 * 1000, 1000.0),
+                        ),
+                    cpuCoreCount = 1,
+                ),
+                createTestTask(
+                    id = 1,
+                    submissionTime = "1970-01-01T00:30",
+                    fragments =
+                        listOf(
+                            fragment(10 * 60 * 1000, 1000.0),
+                        ),
+                    cpuCoreCount = 1,
+                ),
+            )
+
+        // Distributions are sampled in hours
+        val failureModel =
+            CustomFailureSpec(
+                interArrival = ConstantDistributionSpec(0.25),
+                duration = ConstantDistributionSpec(0.125),
+                hostFraction = ConstantDistributionSpec(1.0),
+            )
+
+        val topology = createTopology("single_1_2000.json")
+
+        val monitor = runTest(topology, workload, failureModel)
+
+        assertAll(
+            { assertEquals(55 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
+            { assertEquals((55 * 60000 - 55 * 15000).toLong(), monitor.hostCpuIdleTimes["H01"]?.last()) { "Idle time incorrect" } },
+            { assertEquals((55 * 15000).toLong(), monitor.hostCpuActiveTimes["H01"]?.last()) { "Active time incorrect" } },
+        )
+    }
+
+    /**
+     * Failure test 6: Empty repeated failure trace
+     * In this test, a single task is scheduled with a failure trace that contains no failures and is repeated.
+     * Replaying the empty trace should not inject any failures, nor stop the simulation from progressing.
+     */
+    @Test
+    fun testFailures6() {
+        val workload =
+            listOf(
+                createTestTask(
+                    id = 0,
+                    fragments =
+                        listOf(
+                            fragment(10 * 60 * 1000, 1000.0),
+                        ),
+                    cpuCoreCount = 1,
+                ),
+            )
+
+        val emptyTrace = tempDir.resolve("no_failures.parquet")
+        LocalParquetWriter.builder(emptyTrace, EmptyFailureTraceWriteSupport()).build().close()
+
+        val failureModel =
+            TraceBasedFailureSpec(
+                source = UriReference(emptyTrace.toUri().toString()),
+                repeat = true,
+            )
+
+        val topology = createTopology("single_1_2000.json")
+
+        val monitor = runTest(topology, workload, failureModel)
+
+        assertAll(
+            { assertEquals(10 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },
+            { assertEquals((10 * 30000).toLong(), monitor.hostCpuActiveTimes["H01"]?.last()) { "Active time incorrect" } },
+        )
+    }
+
+    /**
+     * Writes a failure trace without any entries.
+     */
+    private class EmptyFailureTraceWriteSupport : WriteSupport<Unit>() {
+        override fun init(configuration: Configuration): WriteContext = WriteContext(FAILURE_SCHEMA, emptyMap())
+
+        override fun prepareForWrite(recordConsumer: RecordConsumer) {}
+
+        override fun write(record: Unit) {
+            error("An empty failure trace has no records")
+        }
     }
 
     /**

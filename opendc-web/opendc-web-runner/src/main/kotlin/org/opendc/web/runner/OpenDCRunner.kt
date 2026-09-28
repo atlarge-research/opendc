@@ -26,8 +26,6 @@ import mu.KotlinLogging
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
-import org.opendc.compute.failure.prefab.FailurePrefab
-import org.opendc.compute.failure.prefab.createFailureModelPrefab
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec
 import org.opendc.sdk.model.topology.HostSpec
@@ -357,14 +355,6 @@ public class OpenDCRunner(
                     )
 
                     val service = provisioner.registry.resolve(serviceDomain, ComputeService::class.java)!!
-
-                    val phenomena = scenario.phenomena
-                    val failureModel =
-                        if (phenomena.failures) {
-                            createFailureModelPrefab(coroutineContext, timeSource, service, Random(seed), FailurePrefab.G5k06Exp)
-                        } else {
-                            null
-                        }
 
                     val vmsQueue = ArrayDeque(vms)
 

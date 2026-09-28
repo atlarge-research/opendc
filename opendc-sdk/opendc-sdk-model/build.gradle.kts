@@ -17,4 +17,5 @@ dependencies {
 
     implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))
     implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-compute")))
+    implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-failure")))
 }

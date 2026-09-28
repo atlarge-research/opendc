@@ -95,12 +95,13 @@ dependencies {
     implementation(project(":opendc-common"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))
     implementation(project(":opendc-simulator:opendc-simulator-flow"))
-    implementation(project(":opendc-compute:opendc-compute-failure"))
+    implementation(project(":opendc-simulator:opendc-simulator-failure"))
     implementation(libs.commons.math3)
     implementation(libs.microprofile.config)
     implementation(libs.kotlinx.coroutines)
     implementation(libs.kotlinx.serialization.json)
 
+    testImplementation(project(":opendc-trace:opendc-trace-api"))
     testRuntimeOnly(libs.log4j.core)
     testRuntimeOnly(libs.log4j.slf4j)
 }

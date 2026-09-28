@@ -41,7 +41,6 @@ nmcpSettings {
 
 
 include(":opendc-common")
-include(":opendc-compute:opendc-compute-failure")
 include(":opendc-workflow:opendc-workflow-api")
 include(":opendc-workflow:opendc-workflow-service")
 include(":opendc-faas:opendc-faas-api")
@@ -57,6 +56,7 @@ include(":opendc-web:opendc-web-quarkus-deployment")
 include(":opendc-simulator:opendc-simulator-core")
 include(":opendc-simulator:opendc-simulator-flow")
 include(":opendc-simulator:opendc-simulator-compute")
+include(":opendc-simulator:opendc-simulator-failure")
 include(":opendc-trace:opendc-trace-api")
 include(":opendc-trace:opendc-trace-calcite")
 include(":opendc-trace:opendc-trace-parquet")

@@ -54,7 +54,6 @@ dependencies {
     implementation(projects.opendcTrace.opendcTraceApi)
 
     implementation(libs.kotlin.logging)
-    implementation(project(mapOf("path" to ":opendc-compute:opendc-compute-failure")))
 
     implementation(project(mapOf("path" to ":opendc-sdk:opendc-sdk-runner")))
     implementation(project(mapOf("path" to ":opendc-sdk:opendc-sdk-model")))
