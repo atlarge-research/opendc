@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.carbon
+package org.opendc.sdk.model.carbon.loader
 
 import org.opendc.simulator.compute.carbon.CarbonFragment
 import org.opendc.trace.Trace
@@ -28,30 +28,22 @@ import org.opendc.trace.conv.CARBON_INTENSITY
 import org.opendc.trace.conv.CARBON_TIMESTAMP
 import org.opendc.trace.conv.TABLE_CARBON
 import java.io.File
-import java.lang.ref.SoftReference
 import java.time.Instant
-import java.util.concurrent.ConcurrentHashMap
 
 /**
- * A helper class for loading compute workload traces into memory.
- *
+ * A helper class for loading carbon intensity traces into memory.
  */
-public class CarbonTraceLoader {
+public class CarbonTraceLoader(private val pathToFile: File) {
     /**
-     * The cache of workloads.
-     */
-    private val cache = ConcurrentHashMap<String, SoftReference<List<CarbonFragment>>>()
-
-    private val builder = CarbonFragmentNewBuilder()
-
-    /**
-     * Read the metadata into a workload.
+     * Read the carbon intensity entries of the trace into fragments.
      */
     private fun parseCarbon(trace: Trace): List<CarbonFragment> {
         val reader = checkNotNull(trace.getTable(TABLE_CARBON)).newReader()
 
         val startTimeCol = reader.resolve(CARBON_TIMESTAMP)
         val carbonIntensityCol = reader.resolve(CARBON_INTENSITY)
+
+        val builder = CarbonFragmentBuilder()
 
         try {
             while (reader.nextRow()) {
@@ -60,49 +52,43 @@ public class CarbonTraceLoader {
 
                 builder.add(startTime, carbonIntensity)
             }
-
-            // Make sure the virtual machines are ordered by start time
-            builder.fixReportTimes()
-
-            return builder.fragments
-        } catch (e: Exception) {
-            e.printStackTrace()
-            throw e
         } finally {
             reader.close()
         }
+
+        check(builder.fragments.isNotEmpty()) { "The carbon trace at $pathToFile contains no entries" }
+
+        // Make sure the fragments are ordered by start time and cover the whole timeline
+        builder.fixReportTimes()
+
+        return builder.fragments
     }
 
     /**
-     * Load the Carbon Trace at the given path.
+     * Load the carbon trace into a list of [CarbonFragment]s, ordered by start time.
      */
-    public fun get(pathToFile: File): List<CarbonFragment> {
+    public fun load(): List<CarbonFragment> {
+        require(pathToFile.exists()) { "The carbon trace cannot be found at $pathToFile" }
+
         val trace = Trace.open(pathToFile, "carbon")
 
         return parseCarbon(trace)
     }
 
     /**
-     * Clear the workload cache.
+     * A builder for the fragments of a carbon trace.
      */
-    public fun reset() {
-        cache.clear()
-    }
-
-    /**
-     * A builder for a VM trace.
-     */
-    private class CarbonFragmentNewBuilder {
+    private class CarbonFragmentBuilder {
         /**
-         * The total load of the trace.
+         * The fragments of the trace.
          */
         val fragments: MutableList<CarbonFragment> = mutableListOf()
 
         /**
          * Add a fragment to the trace.
          *
-         * @param startTime Timestamp at which the fragment starts (in epoch millis).
-         * @param carbonIntensity The carbon intensity during this fragment
+         * @param startTime Timestamp at which the fragment starts.
+         * @param carbonIntensity The carbon intensity during this fragment.
          */
         fun add(
             startTime: Instant,
@@ -117,15 +103,19 @@ public class CarbonTraceLoader {
             )
         }
 
+        /**
+         * Sort the fragments by start time and let each fragment last until the next one starts.
+         * The first fragment is extended back to [Long.MIN_VALUE], so every timestamp is covered.
+         */
         fun fixReportTimes() {
             fragments.sortBy { it.startTime }
 
-            // For each report, set the end time to the start time of the next report
+            // For each fragment, set the end time to the start time of the next fragment
             for (i in 0..fragments.size - 2) {
                 fragments[i].endTime = fragments[i + 1].startTime
             }
 
-            // Set the start time of each report to the minimum value
+            // Extend the first fragment back to the minimum value
             fragments[0].startTime = Long.MIN_VALUE
         }
     }
