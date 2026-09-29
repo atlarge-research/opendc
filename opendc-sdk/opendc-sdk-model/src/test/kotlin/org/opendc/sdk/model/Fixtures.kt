@@ -33,7 +33,7 @@ import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
-import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.ClusterSpec
@@ -163,7 +163,7 @@ public val sampleScenario: ScenarioSpec =
     ScenarioSpec(
         topology = sampleTopology,
         workload = sampleWorkload,
-        allocationPolicy = PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem),
+        allocationPolicy = PrefabAllocationPolicySpec(SchedulerPrefabSpec.CoreMem),
         exportModel = ExportSpec(exportInterval = 10.minutes),
         failureModel = NoFailureSpec,
         checkpointModel = CheckpointModelSpec(),
@@ -180,8 +180,8 @@ public val sampleExperiment: ExperimentSpec =
         workloads = setOf(sampleWorkload),
         allocationPolicies =
             setOf(
-                PrefabAllocationPolicySpec(SchedulerNameSpec.Mem),
-                PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem),
+                PrefabAllocationPolicySpec(SchedulerPrefabSpec.Mem),
+                PrefabAllocationPolicySpec(SchedulerPrefabSpec.CoreMem),
             ),
         failureModels = setOf(NoFailureSpec),
         maxNumFailures = setOf(5, 10),

@@ -29,11 +29,13 @@ import java.time.InstantSource
 /**
  * A [SimCluster] implementation that simulates virtual machines on a physical machine.
  *
- * @param name The name of the host.
+ * @param id Identifies the cluster: clusters are equal when their ids are, so ids must be unique within a simulation.
+ * @param name The name of the cluster.
  * @param clock The (virtual) clock used to track time.
  * @constructor Create empty Sim host
  */
 public class SimCluster(
+    public val id: Int,
     private val name: String,
     private val dataCenterName: String,
     private val clock: InstantSource,
@@ -84,13 +86,11 @@ public class SimCluster(
         )
     }
 
-    override fun hashCode(): Int = name.hashCode()
+    override fun hashCode(): Int = id
 
-    override fun equals(other: Any?): Boolean {
-        return other is SimCluster && name == other.name
-    }
+    override fun equals(other: Any?): Boolean = other is SimCluster && id == other.id
 
-    override fun toString(): String = "SimHost[uid=$name,name=$name]"
+    override fun toString(): String = "SimCluster[id=$id,name=$name]"
 
     override fun close() {
         TODO("Not yet implemented")

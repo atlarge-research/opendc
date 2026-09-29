@@ -46,10 +46,9 @@ public class TopologyBuilder {
 
     public fun datacenter(
         name: String = "DataCenter",
-        count: Int = 1,
         block: DataCenterBuilder.() -> Unit,
     ) {
-        datacenters += DataCenterBuilder(name, count).apply(block).build()
+        datacenters += DataCenterBuilder(name).apply(block).build()
     }
 
     internal fun build(): TopologySpec = TopologySpec(datacenters = datacenters)
@@ -57,7 +56,7 @@ public class TopologyBuilder {
 
 /** Collects the hosts, power source, and optional battery of a [ClusterSpec]. */
 @SdkDsl
-public class DataCenterBuilder(private val name: String, private val count: Int) {
+public class DataCenterBuilder(private val name: String) {
     private val clusters = mutableListOf<ClusterSpec>()
     private var powerSource: PowerSourceSpec = PowerSourceSpec()
     private var battery: BatterySpec? = null

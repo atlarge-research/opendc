@@ -23,8 +23,6 @@
 package org.opendc.simulator.compute.service
 
 import mu.KotlinLogging
-import org.opendc.simulator.Dispatcher
-import org.opendc.simulator.Pacer
 import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.compute.infrastructure.SimCluster
@@ -41,6 +39,8 @@ import org.opendc.simulator.compute.task.SimTask
 import org.opendc.simulator.compute.task.TaskState
 import org.opendc.simulator.compute.telemetry.TaskListener
 import org.opendc.simulator.compute.workload.Workload
+import org.opendc.simulator.core.Dispatcher
+import org.opendc.simulator.core.Pacer
 import java.time.Duration
 import java.time.InstantSource
 import java.util.ArrayDeque
@@ -380,7 +380,7 @@ public class ComputeService(
                 task: SimTask,
                 newState: TaskState,
             ) {
-                // Identity comparison on purpose: SimHost.equals compares by name.
+                // Identity comparison on purpose: SimHost.equals compares by id.
                 if (task.host !== host) {
                     // This can happen when a task is rescheduled and started on another machine, while being deleted from
                     // the old machine.
@@ -418,8 +418,6 @@ public class ComputeService(
                     if (task.state == TaskState.COMPLETED || task.state == TaskState.TERMINATED) {
                         deleteTask(task)
                     }
-
-                    scheduler.removeTask(task, if (isKnownHost) host else null)
 
                     // Try to reschedule if needed
                     requestSchedulingCycle()
@@ -596,7 +594,6 @@ public class ComputeService(
             updateHost(host)
         } catch (cause: Exception) {
             LOGGER.error(cause) { "Failed to deploy VM" }
-            scheduler.removeTask(task, host)
             attemptsFailure++
         }
     }

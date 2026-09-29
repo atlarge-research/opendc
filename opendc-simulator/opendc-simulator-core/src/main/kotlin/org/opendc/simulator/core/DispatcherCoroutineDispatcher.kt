@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator
+package org.opendc.simulator.core
 
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher

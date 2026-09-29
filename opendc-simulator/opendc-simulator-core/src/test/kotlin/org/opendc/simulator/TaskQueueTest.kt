@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.opendc.simulator.core.TaskQueue
 
 /**
  * Test suite for the [TaskQueue] class.

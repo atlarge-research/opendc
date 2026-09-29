@@ -48,12 +48,13 @@ import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
 import org.opendc.sdk.model.scheduler.CoreRamWeigherSpec
 import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.InstanceCountFilterSpec
+import org.opendc.sdk.model.scheduler.InstanceCountWeigherSpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.RamFilterSpec
 import org.opendc.sdk.model.scheduler.RamWeigherSpec
-import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.TimeshiftSpec
 import org.opendc.sdk.model.scheduler.VCpuCapacityWeigherSpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.telemetry.AllColumns
@@ -221,7 +222,7 @@ class LegacyExperimentTest {
     fun `prefab, filter and timeshift allocation policies carry over`() {
         val policies = load(FEATURES).allocationPolicies
 
-        assertContains(policies, PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem))
+        assertContains(policies, PrefabAllocationPolicySpec(SchedulerPrefabSpec.CoreMem))
         assertContains(
             policies,
             FilterAllocationPolicySpec(
@@ -233,16 +234,34 @@ class LegacyExperimentTest {
                         InstanceCountFilterSpec(limit = 8),
                     ),
                 weighers = listOf(CoreRamWeigherSpec(multiplier = 1.0), VCpuCapacityWeigherSpec(multiplier = -1.0)),
-                subsetSize = 2,
             ),
         )
         assertContains(
             policies,
-            TimeShiftAllocationPolicySpec(
+            FilterAllocationPolicySpec(
                 filters = listOf(ComputeHostFilterSpec),
                 weighers = listOf(RamWeigherSpec(multiplier = 1.0)),
-                memorize = false,
-                taskStopper = TaskStopperSpec(windowSize = 168, forecast = true, forecastThreshold = 0.6, forecastSize = 24),
+                timeshift =
+                    TimeshiftSpec(
+                        taskStopper = TaskStopperSpec(windowSize = 168, forecast = true, forecastThreshold = 0.6, forecastSize = 24),
+                    ),
+            ),
+        )
+
+        // Memorizing policies placed each task on the host running the fewest tasks; timeshift policies did so by default
+        assertContains(
+            policies,
+            FilterAllocationPolicySpec(
+                filters = listOf(RamFilterSpec(allocationRatio = 1.0)),
+                weighers = listOf(InstanceCountWeigherSpec(multiplier = -1.0)),
+            ),
+        )
+        assertContains(
+            policies,
+            FilterAllocationPolicySpec(
+                filters = listOf(VCpuFilterSpec(allocationRatio = 1.0)),
+                weighers = listOf(InstanceCountWeigherSpec(multiplier = -1.0)),
+                timeshift = TimeshiftSpec(),
             ),
         )
     }

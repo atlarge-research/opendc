@@ -37,8 +37,4 @@ public fun interface HostFilter {
         host: SimHost,
         task: SimTask,
     ): Boolean
-
-    public fun score(host: SimHost): Number = 0.0
-
-    public fun requiredScore(task: SimTask): Number = 0.0
 }

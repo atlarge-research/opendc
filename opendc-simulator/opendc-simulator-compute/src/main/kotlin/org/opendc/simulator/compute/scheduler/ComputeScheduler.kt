@@ -26,44 +26,46 @@ import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.task.SimTask
 
 /**
- * A generic scheduler interface used by the [ComputeService] to select hosts to place [SimTask]s on.
+ * Decides which [SimHost] each [SimTask] is placed on, for the [org.opendc.simulator.compute.service.ComputeService].
+ *
+ * The service tells the scheduler about every host and every change to one, so the scheduler can keep its own
+ * bookkeeping, and asks it to select a host for the tasks in its queue.
  */
 public interface ComputeScheduler {
     /**
-     * Register the specified [host] to be used for scheduling.
+     * Add [host] to the hosts tasks are placed on.
      */
     public fun addHost(host: SimHost)
 
     /**
-     * Remove the specified [host] to be removed from the scheduling pool.
+     * Remove [host] from the hosts tasks are placed on.
      */
     public fun removeHost(host: SimHost)
 
-    public fun failHost(host: SimHost) {}
+    /**
+     * [host] failed: place no tasks on it until it is restarted.
+     */
+    public fun failHost(host: SimHost)
 
-    public fun restartHost(host: SimHost) {}
+    /**
+     * [host] is available again after a failure.
+     */
+    public fun restartHost(host: SimHost)
 
+    /**
+     * The resources in use on [host] changed, because a task was placed on it or left it.
+     */
     public fun updateHost(host: SimHost)
 
-    public fun setHostEmpty(host: SimHost)
-
     /**
-     * Select a host for the specified [iter].
-     * We implicity assume that the task has been scheduled onto the host.
+     * Select a host for one of the requests in [iter], which walks the queue of the service in order. The scheduler
+     * removes the requests it places, and the cancelled requests it comes across, through [iter].
      *
-     * @param iter The server to select a host for.
-     * @return The host to schedule the server on or `null` if no server is available.
+     * @return [SchedulingResultType.SUCCESS] with the request and the host to place it on;
+     *   [SchedulingResultType.FAILURE] with the request that cannot be placed now; or [SchedulingResultType.EMPTY] when
+     *   no request should be placed now.
      */
     public fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult
-
-    /**
-     * Inform the scheduler that a [task] has been removed from the [host].
-     * Could be due to completion or failure.
-     */
-    public fun removeTask(
-        task: SimTask,
-        host: SimHost?,
-    )
 }
 
 /**
@@ -74,7 +76,6 @@ public data class SchedulingRequest internal constructor(
     public val submitTime: Long,
 ) {
     public var isCancelled: Boolean = false
-    public var timesSkipped: Int = 0
 }
 
 public enum class SchedulingResultType {

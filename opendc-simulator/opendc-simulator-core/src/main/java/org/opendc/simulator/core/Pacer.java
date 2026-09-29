@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator;
+package org.opendc.simulator.core;
 
 import java.util.function.LongConsumer;
 

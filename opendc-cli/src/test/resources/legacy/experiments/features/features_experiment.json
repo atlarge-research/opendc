@@ -84,6 +84,37 @@
                 "forecastThreshold": 0.6,
                 "forecastSize": 24
             }
+        },
+        {
+            "type": "filter",
+            "filters": [
+                {
+                    "type": "Ram",
+                    "allocationRatio": 1.0
+                }
+            ],
+            "weighers": [
+                {
+                    "type": "Ram",
+                    "multiplier": 1.0
+                }
+            ],
+            "memorize": true
+        },
+        {
+            "type": "timeshift",
+            "filters": [
+                {
+                    "type": "VCpu",
+                    "allocationRatio": 1.0
+                }
+            ],
+            "weighers": [
+                {
+                    "type": "Ram",
+                    "multiplier": 1.0
+                }
+            ]
         }
     ],
     "failureModels": [

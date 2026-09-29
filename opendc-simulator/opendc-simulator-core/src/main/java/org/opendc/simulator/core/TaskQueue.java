@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator;
+package org.opendc.simulator.core;
 
 import java.util.Arrays;
 
@@ -31,7 +31,7 @@ import java.util.Arrays;
  * This class uses a specialized priority queue (as opposed to a generic {@link java.util.PriorityQueue}), which reduces
  * unnecessary allocations in the simulator's hot path.
  */
-final class TaskQueue {
+public final class TaskQueue {
     /**
      * The deadlines of the pending tasks.
      */

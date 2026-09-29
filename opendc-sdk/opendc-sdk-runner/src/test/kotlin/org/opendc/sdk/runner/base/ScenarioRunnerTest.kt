@@ -32,7 +32,7 @@ import org.opendc.sdk.model.dsl.watts
 import org.opendc.sdk.model.generators.generateTopology
 import org.opendc.sdk.model.generators.generateWorkload
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
-import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
@@ -91,6 +91,32 @@ class ScenarioRunnerTest {
     }
 
     @Test
+    fun testRepeatedClustersGetUniqueNames() {
+        val topology =
+            topology {
+                datacenter(name = "DC1") {
+                    cluster(name = "C01", count = 2) {
+                        host(name = "H01") {
+                            cpu(coreCount = 1, coreSpeed = 2.ghz, count = 1)
+                            memory(size = 140.gib)
+                            power {
+                                type = PowerModelType.LINEAR
+                                power = 400.watts
+                                maxPower = 200.watts
+                                idlePower = 100.watts
+                            }
+                        }
+                    }
+                }
+            }
+        val workload = listOf(createTestTask(id = 0, fragments = listOf(fragment(10 * 60 * 1000, 1000.0)), cpuCoreCount = 1))
+
+        val monitor = runTest(topology, workload)
+
+        assertEquals(setOf("C01" to "DC1", "C01-0" to "DC1"), monitor.clusters)
+    }
+
+    @Test
     fun testScenario1() {
         val workload = listOf(createTestTask(id = 0, fragments = listOf(fragment(10 * 60 * 1000, 1000.0)), cpuCoreCount = 1))
         val topology = topologySingle2000
@@ -116,7 +142,7 @@ class ScenarioRunnerTest {
             )
         val topology = topologySingle2000
 
-        val monitor = runTest(topology, workload, allocationPolicy = PrefabAllocationPolicySpec(SchedulerNameSpec.TaskNumMemorizing))
+        val monitor = runTest(topology, workload, allocationPolicy = PrefabAllocationPolicySpec(SchedulerPrefabSpec.TaskNumMemorizing))
 
         assertAll(
             { assertEquals(15 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },

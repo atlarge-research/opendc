@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2026 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,26 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator;
+package org.opendc.simulator.compute.scheduler.filters
+
+import org.opendc.simulator.compute.infrastructure.SimHost
+import org.opendc.simulator.compute.task.SimTask
 
 /**
- * Interface to expose the {@link Dispatcher} instance used by a class.
+ * A [HostFilter] that only passes hosts with enough room of some kind, such as free cores or free memory, measured as
+ * a single number. The [org.opendc.simulator.compute.scheduler.FilterScheduler] uses this to rule out hosts, and whole
+ * blocks of hosts, without testing them.
+ *
+ * [test] may do more checks than the threshold, but it may only pass when [available] is at least [required].
  */
-public interface DispatcherProvider {
+public interface ThresholdFilter : HostFilter {
     /**
-     * Return the {@link Dispatcher} associated with this class.
+     * How much room [host] has. This may only change when the resources in use on the host change.
      */
-    Dispatcher getDispatcher();
+    public fun available(host: SimHost): Double
+
+    /**
+     * How much room [task] needs.
+     */
+    public fun required(task: SimTask): Double
 }

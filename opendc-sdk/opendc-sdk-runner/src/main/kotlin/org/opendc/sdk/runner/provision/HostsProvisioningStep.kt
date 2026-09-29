@@ -38,7 +38,6 @@ import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.createBatteryPolicy
 import org.opendc.sdk.runner.factory.toEngine
-import org.opendc.simulator.ResourceType
 import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.cluster.ClusterDistributor
 import org.opendc.simulator.compute.infrastructure.SimCluster
@@ -46,6 +45,7 @@ import org.opendc.simulator.compute.infrastructure.SimDataCenter
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuModel
+import org.opendc.simulator.compute.models.HostModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.PowerSourceNode
@@ -54,6 +54,7 @@ import org.opendc.simulator.compute.power.batteries.BatteryNode
 import org.opendc.simulator.compute.power.getPowerModel
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModelFactory.VirtualizationOverheadModelEnum
+import org.opendc.simulator.core.ResourceType
 import org.opendc.simulator.flow.engine.FlowEngine
 import org.opendc.simulator.flow.graph.FlowDistributor
 import org.opendc.simulator.flow.graph.FlowEdge
@@ -77,6 +78,9 @@ public class HostsProvisioningStep(
     private val simHosts = mutableSetOf<SimHost>()
     private val powerSources = mutableListOf<PowerSourceNode>()
     private val naming = TopologyNaming()
+
+    /** Gives hosts with an equal model the same [SimHost.modelId]. */
+    private val modelIds = HashMap<HostModel, Int>()
 
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
         val service =
@@ -113,7 +117,7 @@ public class HostsProvisioningStep(
                 engine,
                 dataCenterSpec.powerSource,
                 dataCenterSpec.name,
-                dataCenterSpec.clusters.size,
+                dataCenterSpec.clusters.sumOf { it.count },
             )
 
         // Create the carbon node if provided
@@ -132,6 +136,7 @@ public class HostsProvisioningStep(
 
         val simDataCenter =
             SimDataCenter(
+                naming.nextDataCenterId(),
                 dataCenterSpec.name,
                 engine.clock,
                 dcPowerSource,
@@ -154,7 +159,8 @@ public class HostsProvisioningStep(
 
                 val simCluster =
                     SimCluster(
-                        clusterName,
+                        naming.nextClusterId(),
+                        naming.cluster(clusterName),
                         dataCenterName = dataCenterSpec.name,
                         engine.clock,
                         clusterPowerDistributor,
@@ -326,6 +332,7 @@ public class HostsProvisioningStep(
 
             val simHost =
                 SimHost(
+                    naming.nextHostId(),
                     naming.host(hostSpec.name),
                     simCluster.getName(),
                     ctx.dispatcher.timeSource,
@@ -337,6 +344,8 @@ public class HostsProvisioningStep(
                     expectedLifetime,
                     powerDistributor,
                 )
+
+            simHost.modelId = modelIds.getOrPut(simHost.model) { modelIds.size }
 
             carbonNode?.addReceiver(simHost.simMachine.psu)
 
@@ -378,12 +387,15 @@ public class HostsProvisioningStep(
                 }
         }
 
-    /** Per-conversion registry producing unique names and monotonic device ids. */
+    /** Per-conversion registry producing unique names and monotonic data center, cluster, host and device ids. */
     private class TopologyNaming {
         private val clusters = HashMap<String, Int>()
         private val hosts = HashMap<String, Int>()
         private val powerSources = HashMap<String, Int>()
         private val batteries = HashMap<String, Int>()
+        private var dataCenterId = 0
+        private var clusterId = 0
+        private var hostId = 0
         private var cpuId = 0
         private var gpuId = 0
 
@@ -394,6 +406,12 @@ public class HostsProvisioningStep(
         fun powerSource(name: String): String = unique(name, powerSources)
 
         fun battery(name: String): String = unique(name, batteries)
+
+        fun nextDataCenterId(): Int = dataCenterId++
+
+        fun nextClusterId(): Int = clusterId++
+
+        fun nextHostId(): Int = hostId++
 
         fun nextCpuId(): Int = cpuId++
 

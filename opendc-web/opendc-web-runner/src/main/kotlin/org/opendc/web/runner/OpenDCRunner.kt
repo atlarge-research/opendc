@@ -26,6 +26,7 @@ import mu.KotlinLogging
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
+import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec
 import org.opendc.sdk.model.topology.HostSpec
@@ -36,6 +37,7 @@ import org.opendc.sdk.model.topology.PowerSourceSpec
 import org.opendc.sdk.model.workload.loader.ComputeWorkloadLoader
 import org.opendc.sdk.runner.executor.ResourceScope
 import org.opendc.sdk.runner.executor.replay
+import org.opendc.sdk.runner.factory.toScheduler
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
 import org.opendc.sdk.runner.provision.Provisioner
 import org.opendc.sdk.runner.provision.registerComputeMonitor
@@ -44,7 +46,6 @@ import org.opendc.sdk.runner.provision.setupHosts
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.PowerModels
-import org.opendc.simulator.compute.scheduler.createPrefabComputeScheduler
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.kotlin.runSimulation
 import org.opendc.web.proto.runner.Job
@@ -343,7 +344,11 @@ public class OpenDCRunner(
                     provisioner.runSteps(
                         setupComputeService(
                             serviceDomain,
-                            { createPrefabComputeScheduler(scenario.schedulerName, Random(it.seeder.nextLong()), timeSource) },
+                            {
+                                schedulerPrefab(scenario.schedulerName)
+                                    .policy
+                                    .toScheduler(Random(it.seeder.nextLong()), timeSource, numHosts = 1000)
+                            },
                         ),
                         registerComputeMonitor(serviceDomain, monitor),
                         setupHosts(
@@ -472,3 +477,11 @@ public class OpenDCRunner(
             }
     }
 }
+
+/** Looks up the [SchedulerPrefabSpec] named [name], ignoring case and surrounding whitespace. */
+private fun schedulerPrefab(name: String): SchedulerPrefabSpec =
+    SchedulerPrefabSpec.entries.find { it.name.equals(name.trim(), ignoreCase = true) }
+        ?: throw IllegalArgumentException(
+            "Invalid scheduler name: '$name'. Valid scheduler names are: " +
+                "${SchedulerPrefabSpec.entries.joinToString()} (case-insensitive)",
+        )

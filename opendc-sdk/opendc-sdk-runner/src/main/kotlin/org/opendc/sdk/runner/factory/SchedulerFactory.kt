@@ -35,7 +35,7 @@ import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.RamFilterSpec
 import org.opendc.sdk.model.scheduler.RamWeigherSpec
 import org.opendc.sdk.model.scheduler.SameHostFilterSpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.TimeshiftSpec
 import org.opendc.sdk.model.scheduler.VCpuCapacityFilterSpec
 import org.opendc.sdk.model.scheduler.VCpuCapacityWeigherSpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
@@ -44,10 +44,8 @@ import org.opendc.sdk.model.scheduler.VGpuFilterSpec
 import org.opendc.sdk.model.scheduler.VGpuWeigherSpec
 import org.opendc.simulator.compute.scheduler.ComputeScheduler
 import org.opendc.simulator.compute.scheduler.FilterScheduler
-import org.opendc.simulator.compute.scheduler.createPrefabComputeScheduler
 import org.opendc.simulator.compute.scheduler.filters.ComputeFilter
-import org.opendc.simulator.compute.scheduler.timeshift.MemorizingTimeshift
-import org.opendc.simulator.compute.scheduler.timeshift.TimeshiftScheduler
+import org.opendc.simulator.compute.scheduler.timeshift.CarbonTimeshifter
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
@@ -71,47 +69,29 @@ import org.opendc.simulator.compute.scheduler.weights.VGpuWeigher as EngineVGpuW
 
 /**
  * Converts an SDK [AllocationPolicySpec] into an engine [ComputeScheduler], seeded by [seeder] and
- * clocked by [clock]. [numHosts] sizes the scheduler's internal host bookkeeping.
+ * clocked by [clock]. [numHosts] sizes the scheduler's internal host bookkeeping. A prefab is built
+ * from the [org.opendc.sdk.model.scheduler.SchedulerPrefabSpec.policy] it stands for.
  */
-internal fun AllocationPolicySpec.toScheduler(
+public fun AllocationPolicySpec.toScheduler(
     seeder: RandomGenerator,
     clock: InstantSource,
     numHosts: Int,
 ): ComputeScheduler =
     when (this) {
-        is PrefabAllocationPolicySpec -> createPrefabComputeScheduler(prefabName.name, seeder, clock, numHosts)
+        is PrefabAllocationPolicySpec -> prefabName.policy.toScheduler(seeder, clock, numHosts)
         is FilterAllocationPolicySpec ->
-            FilterScheduler(filters.map { it.toEngine() }, weighers.map { it.toEngine() }, subsetSize, seeder, numHosts)
-        is TimeShiftAllocationPolicySpec -> toTimeshiftScheduler(seeder, clock)
+            FilterScheduler(filters.map { it.toEngine() }, weighers.map { it.toEngine() }, numHosts, timeshift?.toEngine(clock))
     }
 
-/** Builds the engine [EngineTaskStopper] carried by a time-shifting policy, or null when absent. */
+/** Builds the engine [EngineTaskStopper] carried by timeshift settings, or null when absent. */
 internal fun SdkTaskStopper?.toEngine(
     context: CoroutineContext,
     clock: InstantSource,
 ): EngineTaskStopper? = this?.let { EngineTaskStopper(clock, context, it.forecast, it.forecastThreshold, it.forecastSize, it.windowSize) }
 
-private fun TimeShiftAllocationPolicySpec.toTimeshiftScheduler(
-    seeder: RandomGenerator,
-    clock: InstantSource,
-): ComputeScheduler {
-    val engineFilters = filters.map { it.toEngine() }
-    if (memorize) {
-        return MemorizingTimeshift(engineFilters, windowSize, clock, forecast, shortForecastThreshold, longForecastThreshold, forecastSize)
-    }
-    return TimeshiftScheduler(
-        engineFilters,
-        weighers.map { it.toEngine() },
-        windowSize,
-        clock,
-        subsetSize,
-        forecast,
-        shortForecastThreshold,
-        longForecastThreshold,
-        forecastSize,
-        seeder,
-    )
-}
+/** Builds the engine [CarbonTimeshifter] for these settings. */
+private fun TimeshiftSpec.toEngine(clock: InstantSource): CarbonTimeshifter =
+    CarbonTimeshifter(clock, windowSize, forecast, shortForecastThreshold, longForecastThreshold, forecastSize)
 
 private fun HostFilterSpec.toEngine(): EngineHostFilter =
     when (this) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,14 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.scheduler
-
-import kotlinx.serialization.Serializable
+package org.opendc.simulator.core;
 
 /**
- * Identifies a prefabricated task scheduler by name.
+ * Interface to expose the {@link Dispatcher} instance used by a class.
  */
-@Serializable
-public enum class SchedulerNameSpec {
-    Mem,
-    MemInv,
-    CoreMem,
-    CoreMemInv,
-    ActiveServers,
-    ActiveServersInv,
-    ProvisionedCores,
-    ProvisionedCoresInv,
-    Random,
-    TaskNumMemorizing,
-    Timeshift,
-    ProvisionedCpuGpuCores,
-    ProvisionedCpuGpuCoresInv,
-    GpuTaskMemorizing,
+public interface DispatcherProvider {
+    /**
+     * Return the {@link Dispatcher} associated with this class.
+     */
+    Dispatcher getDispatcher();
 }

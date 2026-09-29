@@ -30,7 +30,7 @@ import org.opendc.simulator.compute.task.SimTask
  *
  * @param allocationRatio Virtual RAM to physical RAM allocation ratio.
  */
-public class RamFilter(private val allocationRatio: Double = 1.0) : HostFilter {
+public class RamFilter(private val allocationRatio: Double = 1.0) : ThresholdFilter {
     private val isSimple = allocationRatio == 1.0
 
     override fun test(
@@ -57,11 +57,12 @@ public class RamFilter(private val allocationRatio: Double = 1.0) : HostFilter {
         return result
     }
 
-    override fun score(host: SimHost): Double {
-        return if (isSimple) {
-            return host.availableMemory.toDouble()
-        } else {
-            host.model.memoryCapacity * allocationRatio
-        }
+    override fun available(host: SimHost): Double {
+        if (isSimple) return host.availableMemory.toDouble()
+
+        val memoryCapacity = host.model.memoryCapacity
+        return memoryCapacity * allocationRatio - (memoryCapacity - host.availableMemory)
     }
+
+    override fun required(task: SimTask): Double = task.memorySize.toDouble()
 }

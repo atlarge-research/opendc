@@ -81,7 +81,6 @@
                 "type": "coreRam",
                 "multiplier": 1.0
             }
-        ],
-        "subsetSize": 1
+        ]
     }
 }

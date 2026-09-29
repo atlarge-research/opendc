@@ -35,11 +35,11 @@ import org.opendc.sdk.runner.telemetry.table.host.HostSampler
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSampler
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSampler
 import org.opendc.sdk.runner.telemetry.table.task.TaskSampler
-import org.opendc.simulator.Dispatcher
-import org.opendc.simulator.asCoroutineDispatcher
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.compute.task.SimTask
 import org.opendc.simulator.compute.telemetry.TaskListener
+import org.opendc.simulator.core.Dispatcher
+import org.opendc.simulator.core.asCoroutineDispatcher
 import java.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 

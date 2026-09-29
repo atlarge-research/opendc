@@ -20,13 +20,14 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator
-
-import kotlinx.coroutines.CoroutineDispatcher
+package org.opendc.simulator.core;
 
 /**
- * Convert a [Dispatcher] to a [CoroutineDispatcher].
+ * A handle returned by a {@link Dispatcher} representing a scheduled task.
  */
-public fun Dispatcher.asCoroutineDispatcher(): CoroutineDispatcher {
-    return DispatcherCoroutineDispatcher(this)
+public interface DispatcherHandle {
+    /**
+     * Attempt to cancel execution of the task.
+     */
+    void cancel();
 }

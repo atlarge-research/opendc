@@ -47,7 +47,8 @@ public class ClusterSampler(
         val embodiedCarbon = clusterSystemStats.embodiedCarbon
 
         return ClusterSample(
-            dataCenterName = cluster.getName(),
+            clusterName = cluster.getName(),
+            dataCenterName = cluster.getDataCenterName(),
             timestamp = now,
             timestampAbsolute = timestampAbsolute,
             powerDraw = powerDraw,

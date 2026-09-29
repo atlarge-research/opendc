@@ -30,7 +30,7 @@ import org.opendc.simulator.compute.task.SimTask
  *
  * @param allocationRatio Virtual GPU to physical GPU allocation ratio.
  */
-public class VGpuFilter(private val allocationRatio: Double) : HostFilter {
+public class VGpuFilter(private val allocationRatio: Double) : ThresholdFilter {
     override fun test(
         host: SimHost,
         task: SimTask,
@@ -47,4 +47,11 @@ public class VGpuFilter(private val allocationRatio: Double) : HostFilter {
         val availableCores = limit - host.provisionedGpuCores
         return availableCores >= requested
     }
+
+    override fun available(host: SimHost): Double {
+        val totalCores = host.model.gpuHostModels()?.sumOf { it.gpuCoreCount() } ?: 0
+        return totalCores * allocationRatio - host.provisionedGpuCores
+    }
+
+    override fun required(task: SimTask): Double = task.gpuCoreCount.toDouble()
 }

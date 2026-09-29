@@ -28,7 +28,7 @@ import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
 import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.RamFilterSpec
-import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.scheduler.VCpuWeigherSpec
 import org.opendc.sdk.model.scheduler.VGpuFilterSpec
@@ -37,8 +37,25 @@ import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
 import org.opendc.sdk.runner.base.harness.fragment
 import org.opendc.sdk.runner.base.harness.runTest
+import org.opendc.sdk.runner.factory.toScheduler
+import org.opendc.simulator.compute.scheduler.FilterScheduler
+import java.time.Instant
+import java.time.InstantSource
+import java.util.SplittableRandom
 
 class SchedulerTest {
+    @Test
+    fun testPrefabsBuildFilterSchedulers() {
+        for (prefab in SchedulerPrefabSpec.entries) {
+            val scheduler = PrefabAllocationPolicySpec(prefab).toScheduler(SplittableRandom(0), InstantSource.fixed(Instant.EPOCH), 10)
+
+            assertEquals(FilterScheduler::class, scheduler::class) { "Wrong scheduler for $prefab" }
+            assertEquals(prefab == SchedulerPrefabSpec.Timeshift, (scheduler as FilterScheduler).timeshifter != null) {
+                "Wrong timeshifter for $prefab"
+            }
+        }
+    }
+
     @Test
     fun testSimulator4Memorizing() {
         val workload =
@@ -64,7 +81,7 @@ class SchedulerTest {
 
         val topology = createTopology("single_1_2000.json")
 
-        val monitor = runTest(topology, workload, allocationPolicy = PrefabAllocationPolicySpec(SchedulerNameSpec.TaskNumMemorizing))
+        val monitor = runTest(topology, workload, allocationPolicy = PrefabAllocationPolicySpec(SchedulerPrefabSpec.TaskNumMemorizing))
 
         assertAll(
             { assertEquals(25 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },

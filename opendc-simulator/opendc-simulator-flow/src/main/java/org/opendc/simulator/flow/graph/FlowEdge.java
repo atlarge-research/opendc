@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.flow.graph;
 
-import org.opendc.simulator.ResourceType;
+import org.opendc.simulator.core.ResourceType;
 
 /**
  * An edge that connects two FlowStages.

@@ -25,14 +25,15 @@ package org.opendc.simulator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.opendc.simulator.core.SimulationDispatcher
 import java.time.Instant
 
 /**
- * Test suite for the [SimulationDispatcher] class.
+ * Test suite for the [org.opendc.simulator.core.SimulationDispatcher] class.
  */
 class SimulationDispatcherTest {
     /**
-     * Test the basic functionality of [SimulationDispatcher.runCurrent].
+     * Test the basic functionality of [org.opendc.simulator.core.SimulationDispatcher.runCurrent].
      */
     @Test
     fun testRunCurrent() {

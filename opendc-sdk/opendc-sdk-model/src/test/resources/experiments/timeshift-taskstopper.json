@@ -64,7 +64,7 @@
     ],
     "allocationPolicies": [
         {
-            "type": "timeshift",
+            "type": "filter",
             "filters": [
                 {
                     "type": "compute"
@@ -76,19 +76,19 @@
                     "multiplier": 1.0
                 }
             ],
-            "windowSize": 168,
-            "subsetSize": 1,
-            "forecast": true,
-            "shortForecastThreshold": 0.2,
-            "longForecastThreshold": 0.35,
-            "forecastSize": 24,
-            "taskStopper": {
+            "timeshift": {
                 "windowSize": 168,
                 "forecast": true,
-                "forecastThreshold": 0.6,
-                "forecastSize": 24
-            },
-            "memorize": true
+                "shortForecastThreshold": 0.2,
+                "longForecastThreshold": 0.35,
+                "forecastSize": 24,
+                "taskStopper": {
+                    "windowSize": 168,
+                    "forecast": true,
+                    "forecastThreshold": 0.6,
+                    "forecastSize": 24
+                }
+            }
         }
     ],
     "runs": 2,

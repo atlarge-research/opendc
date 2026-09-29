@@ -23,7 +23,7 @@
 package org.opendc.simulator.kotlin
 
 import kotlinx.coroutines.CoroutineDispatcher
-import org.opendc.simulator.SimulationDispatcher
+import org.opendc.simulator.core.SimulationDispatcher
 import java.time.InstantSource
 
 /**

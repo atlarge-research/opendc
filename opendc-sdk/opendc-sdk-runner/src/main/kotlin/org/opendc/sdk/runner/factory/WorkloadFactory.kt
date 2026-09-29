@@ -32,11 +32,11 @@ import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import org.opendc.sdk.model.workload.WorkloadSpec
 import org.opendc.sdk.model.workload.loader.ComputeWorkloadLoader
 import org.opendc.sdk.model.workload.loader.EfficientWorkloadLoader
-import org.opendc.simulator.ResourceType
 import org.opendc.simulator.compute.task.SimTask
 import org.opendc.simulator.compute.workload.trace.TraceFragment
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
 import org.opendc.simulator.compute.workload.trace.scaling.PerfectScaling
+import org.opendc.simulator.core.ResourceType
 import java.nio.file.Path
 import java.util.ArrayDeque
 import java.util.Queue

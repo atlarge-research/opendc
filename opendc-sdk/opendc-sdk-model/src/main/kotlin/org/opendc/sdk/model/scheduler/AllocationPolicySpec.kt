@@ -44,67 +44,27 @@ public sealed interface AllocationPolicySpec : Validatable {
  */
 @Serializable
 @SerialName("prefab")
-public data class PrefabAllocationPolicySpec(public val prefabName: SchedulerNameSpec = SchedulerNameSpec.Mem) : AllocationPolicySpec
+public data class PrefabAllocationPolicySpec(public val prefabName: SchedulerPrefabSpec = SchedulerPrefabSpec.Mem) : AllocationPolicySpec
 
 /**
  * Builds a scheduler from a filter-then-weigh pipeline.
  *
  * @property filters The eligibility predicates applied to candidate hosts.
- * @property weighers The scorers used to rank the remaining candidates.
- * @property subsetSize The size of the top-ranked subset sampled from for placement.
+ * @property weighers The scorers used to rank the remaining candidates; each task is placed on the best-ranked host.
+ * @property timeshift Delays deferrable tasks while the carbon intensity is high, or null to place every task right
+ *   away.
  */
 @Serializable
 @SerialName("filter")
 public data class FilterAllocationPolicySpec(
     public val filters: List<HostFilterSpec> = listOf(ComputeHostFilterSpec),
     public val weighers: List<HostWeigherSpec> = emptyList(),
-    public val subsetSize: Int = 1,
+    public val timeshift: TimeshiftSpec? = null,
 ) : AllocationPolicySpec {
     override fun validate(): List<ValidationIssue> =
         buildList {
-            if (subsetSize <= 0) add(ValidationIssue("subsetSize", "must be > 0"))
             addAll(filters.validateEach("filters"))
             addAll(weighers.validateEach("weighers"))
-        }
-}
-
-/**
- * A filter-and-weigh scheduler that defers tasks based on a (forecasted) carbon signal.
- *
- * @property filters The eligibility predicates applied to candidate hosts.
- * @property weighers The scorers used to rank the remaining candidates.
- * @property windowSize The number of past samples considered by the carbon signal.
- * @property subsetSize The size of the top-ranked subset sampled from for placement.
- * @property forecast Whether to base decisions on forecasted rather than historical values.
- * @property shortForecastThreshold The normalized threshold for the short forecast horizon.
- * @property longForecastThreshold The normalized threshold for the long forecast horizon.
- * @property forecastSize The number of future samples to forecast.
- * @property taskStopper The optional policy controlling when deferrable tasks are paused.
- * @property memorize Whether to memoize scheduling decisions across invocations.
- */
-@Serializable
-@SerialName("timeshift")
-public data class TimeShiftAllocationPolicySpec(
-    public val filters: List<HostFilterSpec> = listOf(ComputeHostFilterSpec),
-    public val weighers: List<HostWeigherSpec> = emptyList(),
-    public val windowSize: Int = 168,
-    public val subsetSize: Int = 1,
-    public val forecast: Boolean = true,
-    public val shortForecastThreshold: Double = 0.2,
-    public val longForecastThreshold: Double = 0.35,
-    public val forecastSize: Int = 24,
-    public val taskStopper: TaskStopperSpec? = null,
-    public val memorize: Boolean = true,
-) : AllocationPolicySpec {
-    override fun validate(): List<ValidationIssue> =
-        buildList {
-            if (subsetSize <= 0) add(ValidationIssue("subsetSize", "must be > 0"))
-            if (windowSize <= 0) add(ValidationIssue("windowSize", "must be > 0"))
-            if (forecastSize <= 0) add(ValidationIssue("forecastSize", "must be > 0"))
-            if (shortForecastThreshold !in 0.0..1.0) add(ValidationIssue("shortForecastThreshold", "must be in 0.0..1.0"))
-            if (longForecastThreshold !in 0.0..1.0) add(ValidationIssue("longForecastThreshold", "must be in 0.0..1.0"))
-            addAll(filters.validateEach("filters"))
-            addAll(weighers.validateEach("weighers"))
-            addAll(taskStopper?.validate().orEmpty().prefixed("taskStopper"))
+            addAll(timeshift?.validate().orEmpty().prefixed("timeshift"))
         }
 }

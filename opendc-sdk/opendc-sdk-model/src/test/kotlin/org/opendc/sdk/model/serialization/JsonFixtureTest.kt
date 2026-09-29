@@ -30,7 +30,6 @@ import org.opendc.sdk.model.failure.ExponentialDistributionSpec
 import org.opendc.sdk.model.failure.LogNormalDistributionSpec
 import org.opendc.sdk.model.failure.UniformDistributionSpec
 import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
 import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import java.io.InputStream
@@ -69,8 +68,8 @@ class JsonFixtureTest {
     fun `timeshift taskstopper experiment decodes and validates`() {
         val experiment = decodeExperiment("/experiments/timeshift-taskstopper.json")
 
-        val policy = assertIs<TimeShiftAllocationPolicySpec>(experiment.allocationPolicies.single())
-        assertNotNull(policy.taskStopper, "expected an embedded task stopper")
+        val policy = assertIs<FilterAllocationPolicySpec>(experiment.allocationPolicies.single())
+        assertNotNull(policy.timeshift?.taskStopper, "expected an embedded task stopper")
         assertTrue(experiment.validate().isEmpty(), "expected no validation issues")
     }
 

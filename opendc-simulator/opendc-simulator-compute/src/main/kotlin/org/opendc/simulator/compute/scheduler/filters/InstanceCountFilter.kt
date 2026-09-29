@@ -30,13 +30,17 @@ import org.opendc.simulator.compute.task.SimTask
  *
  * @param limit The maximum number of instances on the host.
  */
-public class InstanceCountFilter(private val limit: Int) : HostFilter {
+public class InstanceCountFilter(private val limit: Int) : ThresholdFilter {
     override fun test(
         host: SimHost,
         task: SimTask,
     ): Boolean {
         return host.instanceCount < limit
     }
+
+    override fun available(host: SimHost): Double = (limit - host.instanceCount).toDouble()
+
+    override fun required(task: SimTask): Double = 1.0
 
     override fun toString(): String = "InstanceCountFilter[limit=$limit]"
 }

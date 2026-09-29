@@ -60,8 +60,8 @@ class SimHostMemoryTest {
 
         val host =
             SimHost(
+                id = 0,
                 name = "H01",
-                type = "host",
                 clusterName = "C01",
                 clock = clock,
                 engine = engine,

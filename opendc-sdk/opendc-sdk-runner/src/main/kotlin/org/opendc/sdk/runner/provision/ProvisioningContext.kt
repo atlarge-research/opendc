@@ -22,8 +22,8 @@
 
 package org.opendc.sdk.runner.provision
 
-import org.opendc.simulator.Dispatcher
 import org.opendc.simulator.compute.ServiceRegistry
+import org.opendc.simulator.core.Dispatcher
 import java.util.SplittableRandom
 import java.util.random.RandomGenerator
 

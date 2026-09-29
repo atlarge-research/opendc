@@ -40,9 +40,9 @@ import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.RamFilterSpec
 import org.opendc.sdk.model.scheduler.RamWeigherSpec
-import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.TimeshiftSpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.scheduler.VCpuWeigherSpec
 import org.opendc.sdk.model.telemetry.ExportSpec
@@ -123,7 +123,6 @@ class DslTest {
     fun `filter scheduler DSL equals constructor-built policy`() {
         val built =
             filterScheduler {
-                subsetSize = 3
                 filter(ComputeHostFilterSpec)
                 filter(RamFilterSpec(1.5))
                 weigher(CoreRamWeigherSpec(2.0))
@@ -137,38 +136,51 @@ class DslTest {
     fun `filter scheduler DSL without filters defaults to the compute filter`() {
         val built = filterScheduler { weigher(RamWeigherSpec()) }
 
-        assertEquals(FilterAllocationPolicySpec(listOf(ComputeHostFilterSpec), listOf(RamWeigherSpec()), 1), built)
+        assertEquals(FilterAllocationPolicySpec(listOf(ComputeHostFilterSpec), listOf(RamWeigherSpec())), built)
     }
 
     @Test
-    fun `time-shift scheduler DSL equals constructor-built policy`() {
+    fun `timeshift DSL equals constructor-built policy`() {
         val built =
-            timeShiftScheduler {
-                windowSize = 100
-                subsetSize = 2
-                forecast = false
-                shortForecastThreshold = 0.1
-                longForecastThreshold = 0.5
-                forecastSize = 12
-                taskStopper = TaskStopperSpec(windowSize = 50)
-                memorize = false
+            filterScheduler {
                 filter(VCpuFilterSpec(2.0))
                 weigher(VCpuWeigherSpec())
+                timeshift {
+                    windowSize = 100
+                    forecast = false
+                    shortForecastThreshold = 0.1
+                    longForecastThreshold = 0.5
+                    forecastSize = 12
+                    taskStopper = TaskStopperSpec(windowSize = 50)
+                }
             }
 
         val expected =
-            TimeShiftAllocationPolicySpec(
-                filters = listOf(VCpuFilterSpec(2.0)), weighers = listOf(VCpuWeigherSpec()), windowSize = 100, subsetSize = 2,
-                forecast = false, shortForecastThreshold = 0.1, longForecastThreshold = 0.5, forecastSize = 12,
-                taskStopper = TaskStopperSpec(windowSize = 50), memorize = false,
+            FilterAllocationPolicySpec(
+                filters = listOf(VCpuFilterSpec(2.0)),
+                weighers = listOf(VCpuWeigherSpec()),
+                timeshift =
+                    TimeshiftSpec(
+                        windowSize = 100,
+                        forecast = false,
+                        shortForecastThreshold = 0.1,
+                        longForecastThreshold = 0.5,
+                        forecastSize = 12,
+                        taskStopper = TaskStopperSpec(windowSize = 50),
+                    ),
             )
         assertEquals(expected, built)
     }
 
     @Test
+    fun `timeshift DSL without settings uses the defaults`() {
+        assertEquals(FilterAllocationPolicySpec(timeshift = TimeshiftSpec()), filterScheduler { timeshift() })
+    }
+
+    @Test
     fun `prefab scheduler DSL equals constructor-built policy`() {
-        assertEquals(PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem), prefabScheduler(SchedulerNameSpec.CoreMem))
-        assertEquals(PrefabAllocationPolicySpec(SchedulerNameSpec.Mem), prefabScheduler())
+        assertEquals(PrefabAllocationPolicySpec(SchedulerPrefabSpec.CoreMem), prefabScheduler(SchedulerPrefabSpec.CoreMem))
+        assertEquals(PrefabAllocationPolicySpec(SchedulerPrefabSpec.Mem), prefabScheduler())
     }
 
     @Test
@@ -213,8 +225,8 @@ class DslTest {
                 initialSeed = 1
                 topology(topology)
                 workload(workload)
-                allocationPolicy(prefabScheduler(SchedulerNameSpec.Mem))
-                allocationPolicy(prefabScheduler(SchedulerNameSpec.CoreMem))
+                allocationPolicy(prefabScheduler(SchedulerPrefabSpec.Mem))
+                allocationPolicy(prefabScheduler(SchedulerPrefabSpec.CoreMem))
                 failureModel(NoFailureSpec)
                 exportModel(ExportSpec())
                 maxNumFailures(5)
@@ -226,8 +238,8 @@ class DslTest {
                 topologies = setOf(topology), workloads = setOf(workload),
                 allocationPolicies =
                     setOf(
-                        PrefabAllocationPolicySpec(SchedulerNameSpec.Mem),
-                        PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem),
+                        PrefabAllocationPolicySpec(SchedulerPrefabSpec.Mem),
+                        PrefabAllocationPolicySpec(SchedulerPrefabSpec.CoreMem),
                     ),
                 failureModels = setOf(NoFailureSpec), maxNumFailures = setOf(5, 10), checkpointModels = setOf(null),
                 exportModels = setOf(ExportSpec()), runs = 5, initialSeed = 1, name = "sweep",
@@ -258,6 +270,5 @@ class DslTest {
         FilterAllocationPolicySpec(
             filters = listOf(ComputeHostFilterSpec, RamFilterSpec(1.5)),
             weighers = listOf(CoreRamWeigherSpec(2.0), RamWeigherSpec()),
-            subsetSize = 3,
         )
 }
