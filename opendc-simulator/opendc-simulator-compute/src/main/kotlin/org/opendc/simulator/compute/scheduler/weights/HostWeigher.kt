@@ -50,8 +50,8 @@ public interface HostWeigher {
         task: SimTask,
     ): Result {
         val weights = DoubleArray(hosts.size)
-        var min = Double.MAX_VALUE
-        var max = Double.MIN_VALUE
+        var min = Double.POSITIVE_INFINITY
+        var max = Double.NEGATIVE_INFINITY
 
         for ((i, host) in hosts.withIndex()) {
             val weight = getWeight(host, task)

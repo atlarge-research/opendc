@@ -30,11 +30,14 @@ import java.time.InstantSource
 /**
  * A [SimDataCenter] implementation that simulates virtual machines on a physical machine.
  *
- * @param name The name of the host.
+ * @param id Identifies the data center: data centers are equal when their ids are, so ids must be unique within a
+ * simulation.
+ * @param name The name of the data center.
  * @param clock The (virtual) clock used to track time.
  * @constructor Create empty Sim host
  */
 public class SimDataCenter(
+    public val id: Int,
     private val name: String,
     private val clock: InstantSource,
     private val powerSource: PowerSourceNode,
@@ -90,13 +93,11 @@ public class SimDataCenter(
         )
     }
 
-    override fun hashCode(): Int = name.hashCode()
+    override fun hashCode(): Int = id
 
-    override fun equals(other: Any?): Boolean {
-        return other is SimDataCenter && name == other.name
-    }
+    override fun equals(other: Any?): Boolean = other is SimDataCenter && id == other.id
 
-    override fun toString(): String = "SimHost[uid=$name,name=$name]"
+    override fun toString(): String = "SimDataCenter[id=$id,name=$name]"
 
     override fun close() {
         TODO("Not yet implemented")

@@ -51,6 +51,7 @@ import java.time.InstantSource
  * Besides simulating the machine, the host keeps the bookkeeping used by the
  * [org.opendc.simulator.compute.service.ComputeService] and its schedulers to place tasks.
  *
+ * @param id Identifies the host: hosts are equal when their ids are, so ids must be unique within a simulation.
  * @param name The (unique) name of the host.
  * @param clusterName The name of the cluster the host belongs to.
  * @param clock The (virtual) clock used to track time.
@@ -61,9 +62,9 @@ import java.time.InstantSource
  * @param embodiedCarbon The embodied carbon of the host.
  * @param expectedLifetime The expected lifetime of the host in years.
  * @param powerDistributor The power distributor to which the host is connected.
- * @param type The type of the host, used by the schedulers to group hosts.
  */
 public class SimHost(
+    public val id: Int,
     public val name: String,
     public val clusterName: String,
     private val clock: InstantSource,
@@ -74,7 +75,6 @@ public class SimHost(
     private val embodiedCarbon: Double,
     private val expectedLifetime: Double,
     private val powerDistributor: FlowDistributor,
-    public val type: String = "Unknown",
 ) : AutoCloseable {
     // ==================================================================================
     // Fields
@@ -157,6 +157,13 @@ public class SimHost(
      */
     public var priorityIndex: Int = 0
     public var listIndex: Int = 0
+
+    /**
+     * Identifies the [model] of this host: hosts with an equal model get the same id, so schedulers can group identical
+     * hosts by comparing a number instead of the model. Assigned by whoever creates the hosts, before they are added
+     * to a scheduler; -1 until then. The model of a host does not change during a simulation.
+     */
+    public var modelId: Int = -1
 
     private var lastReport = clock.millis()
     private var totalUptime = 0L
@@ -445,13 +452,11 @@ public class SimHost(
     // Object overrides
     // ==================================================================================
 
-    override fun hashCode(): Int = name.hashCode()
+    override fun hashCode(): Int = id
 
-    override fun equals(other: Any?): Boolean {
-        return other is SimHost && name == other.name
-    }
+    override fun equals(other: Any?): Boolean = other is SimHost && id == other.id
 
-    override fun toString(): String = "SimHost[uid=$name,name=$name,model=$model]"
+    override fun toString(): String = "SimHost[id=$id,name=$name,model=$model]"
 
     // ==================================================================================
     // Internals

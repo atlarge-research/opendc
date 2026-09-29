@@ -380,7 +380,7 @@ public class ComputeService(
                 task: SimTask,
                 newState: TaskState,
             ) {
-                // Identity comparison on purpose: SimHost.equals compares by name.
+                // Identity comparison on purpose: SimHost.equals compares by id.
                 if (task.host !== host) {
                     // This can happen when a task is rescheduled and started on another machine, while being deleted from
                     // the old machine.

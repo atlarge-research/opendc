@@ -23,6 +23,7 @@
 package org.opendc.sdk.runner.base.harness
 
 import org.opendc.sdk.runner.telemetry.MetricExporter
+import org.opendc.sdk.runner.telemetry.table.cluster.ClusterSample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
@@ -103,6 +104,13 @@ class TestMetricExporter : MetricExporter, TaskListener {
 
     var hostPowerDraws = mutableMapOf<String, ArrayList<Double>>()
     var hostEnergyUsages = mutableMapOf<String, ArrayList<Double>>()
+
+    /** The cluster name and data center name of every exported cluster sample. */
+    val clusters = mutableSetOf<Pair<String?, String?>>()
+
+    override fun export(reader: ClusterSample) {
+        clusters.add(reader.clusterName to reader.dataCenterName)
+    }
 
     override fun export(reader: HostSample) {
         val hostName: String = reader.hostName ?: "unknown-host"

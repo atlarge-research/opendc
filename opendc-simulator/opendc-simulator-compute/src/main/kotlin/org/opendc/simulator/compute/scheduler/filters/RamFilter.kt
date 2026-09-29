@@ -33,6 +33,9 @@ import org.opendc.simulator.compute.task.SimTask
 public class RamFilter(private val allocationRatio: Double = 1.0) : HostFilter {
     private val isSimple = allocationRatio == 1.0
 
+    /** Without overcommitting, a host passes exactly when its available memory is large enough. */
+    override val isSortable: Boolean = isSimple
+
     override fun test(
         host: SimHost,
         task: SimTask,
@@ -57,11 +60,5 @@ public class RamFilter(private val allocationRatio: Double = 1.0) : HostFilter {
         return result
     }
 
-    override fun score(host: SimHost): Double {
-        return if (isSimple) {
-            return host.availableMemory.toDouble()
-        } else {
-            host.model.memoryCapacity * allocationRatio
-        }
-    }
+    override fun score(host: SimHost): Double = host.availableMemory.toDouble()
 }
