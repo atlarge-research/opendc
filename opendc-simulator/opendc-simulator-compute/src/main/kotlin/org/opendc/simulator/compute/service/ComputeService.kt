@@ -23,8 +23,8 @@
 package org.opendc.simulator.compute.service
 
 import mu.KotlinLogging
-import org.opendc.simulator.Dispatcher
-import org.opendc.simulator.Pacer
+import org.opendc.simulator.core.Dispatcher
+import org.opendc.simulator.core.Pacer
 import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.compute.infrastructure.SimCluster

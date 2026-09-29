@@ -24,7 +24,7 @@ package org.opendc.simulator.compute.power;
 
 import java.util.List;
 import java.util.Map;
-import org.opendc.simulator.ResourceType;
+import org.opendc.simulator.core.ResourceType;
 import org.opendc.simulator.compute.carbon.CarbonNode;
 import org.opendc.simulator.compute.carbon.CarbonReceiver;
 import org.opendc.simulator.compute.cpu.CpuNode;

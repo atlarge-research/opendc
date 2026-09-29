@@ -29,9 +29,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.opendc.simulator.DispatcherProvider
-import org.opendc.simulator.SimulationDispatcher
-import org.opendc.simulator.asCoroutineDispatcher
+import org.opendc.simulator.core.DispatcherProvider
+import org.opendc.simulator.core.SimulationDispatcher
+import org.opendc.simulator.core.asCoroutineDispatcher
 import java.time.InstantSource
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext

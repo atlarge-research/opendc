@@ -30,10 +30,11 @@ import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.opendc.simulator.core.asCoroutineDispatcher
 import org.opendc.simulator.kotlin.runSimulation
 
 /**
- * Test suite for [DispatcherCoroutineDispatcher].
+ * Test suite for [org.opendc.simulator.core.DispatcherCoroutineDispatcher].
  */
 class DispatcherCoroutineDispatcherTest {
     /**

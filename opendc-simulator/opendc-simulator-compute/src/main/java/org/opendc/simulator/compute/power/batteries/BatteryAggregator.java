@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import org.opendc.simulator.ResourceType;
+import org.opendc.simulator.core.ResourceType;
 import org.opendc.simulator.flow.engine.FlowEngine;
 import org.opendc.simulator.flow.graph.FlowConsumer;
 import org.opendc.simulator.flow.graph.FlowDistributor;

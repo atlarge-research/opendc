@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator;
+package org.opendc.simulator.core
 
-public enum ResourceType {
-    CPU,
-    GPU,
-    POWER,
-    // Combined category for non-compute physical and virtual resources
-    AUXILIARY
+import kotlinx.coroutines.CoroutineDispatcher
+
+/**
+ * Convert a [Dispatcher] to a [CoroutineDispatcher].
+ */
+public fun Dispatcher.asCoroutineDispatcher(): CoroutineDispatcher {
+    return DispatcherCoroutineDispatcher(this)
 }

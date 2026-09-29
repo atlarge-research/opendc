@@ -38,7 +38,7 @@ import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.createBatteryPolicy
 import org.opendc.sdk.runner.factory.toEngine
-import org.opendc.simulator.ResourceType
+import org.opendc.simulator.core.ResourceType
 import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.cluster.ClusterDistributor
 import org.opendc.simulator.compute.infrastructure.SimCluster

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator;
+package org.opendc.simulator.core;
 
 import java.time.Instant;
 import java.time.InstantSource;

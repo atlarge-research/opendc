@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute.infrastructure
 
-import org.opendc.simulator.ResourceType
+import org.opendc.simulator.core.ResourceType
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.GpuHostModel
 import org.opendc.simulator.compute.models.HostListener

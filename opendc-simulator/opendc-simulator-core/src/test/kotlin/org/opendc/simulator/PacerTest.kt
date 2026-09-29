@@ -28,10 +28,11 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.opendc.simulator.core.Pacer
 import org.opendc.simulator.kotlin.runSimulation
 
 /**
- * Test suite for the [Pacer] class.
+ * Test suite for the [org.opendc.simulator.core.Pacer] class.
  */
 class PacerTest {
     @Test

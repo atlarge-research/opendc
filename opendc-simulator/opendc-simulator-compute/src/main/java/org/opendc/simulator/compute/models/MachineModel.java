@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.jetbrains.annotations.Nullable;
-import org.opendc.simulator.ResourceType;
+import org.opendc.simulator.core.ResourceType;
 import org.opendc.simulator.flow.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy;
 
 /**

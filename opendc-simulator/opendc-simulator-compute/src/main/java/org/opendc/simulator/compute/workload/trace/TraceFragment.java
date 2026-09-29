@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute.workload.trace;
 
-import org.opendc.simulator.ResourceType;
+import org.opendc.simulator.core.ResourceType;
 
 public record TraceFragment(long duration, double cpuUsage, double gpuUsage, int gpuMemoryUsage) {
 

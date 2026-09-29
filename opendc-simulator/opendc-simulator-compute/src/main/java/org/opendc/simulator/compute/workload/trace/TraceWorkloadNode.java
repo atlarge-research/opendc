@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opendc.simulator.ResourceType;
+import org.opendc.simulator.core.ResourceType;
 import org.opendc.simulator.compute.workload.VirtualMachineNode;
 import org.opendc.simulator.compute.workload.WorkloadNode;
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
