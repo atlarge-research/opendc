@@ -76,7 +76,6 @@
                     "multiplier": 1.0
                 }
             ],
-            "memorize": true,
             "timeshift": {
                 "windowSize": 168,
                 "forecast": true,

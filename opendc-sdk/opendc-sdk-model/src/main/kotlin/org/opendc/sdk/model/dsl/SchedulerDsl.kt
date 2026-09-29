@@ -53,9 +53,6 @@ public class FilterSchedulerBuilder {
     private val filters = mutableListOf<HostFilterSpec>()
     private val weighers = mutableListOf<HostWeigherSpec>()
 
-    /** Whether to place each task on an eligible host running the fewest tasks, ignoring the weighers. */
-    public var memorize: Boolean = false
-
     private var timeshift: TimeshiftSpec? = null
 
     public fun filter(filter: HostFilterSpec) {
@@ -73,7 +70,7 @@ public class FilterSchedulerBuilder {
 
     internal fun build(): FilterAllocationPolicySpec {
         val resolvedFilters = filters.ifEmpty { listOf(ComputeHostFilterSpec) }
-        return FilterAllocationPolicySpec(resolvedFilters, weighers.toList(), memorize, timeshift)
+        return FilterAllocationPolicySpec(resolvedFilters, weighers.toList(), timeshift)
     }
 }
 

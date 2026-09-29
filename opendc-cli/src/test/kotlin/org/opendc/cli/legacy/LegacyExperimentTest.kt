@@ -48,6 +48,7 @@ import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
 import org.opendc.sdk.model.scheduler.CoreRamWeigherSpec
 import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.InstanceCountFilterSpec
+import org.opendc.sdk.model.scheduler.InstanceCountWeigherSpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.RamFilterSpec
 import org.opendc.sdk.model.scheduler.RamWeigherSpec
@@ -240,11 +241,27 @@ class LegacyExperimentTest {
             FilterAllocationPolicySpec(
                 filters = listOf(ComputeHostFilterSpec),
                 weighers = listOf(RamWeigherSpec(multiplier = 1.0)),
-                memorize = false,
                 timeshift =
                     TimeshiftSpec(
                         taskStopper = TaskStopperSpec(windowSize = 168, forecast = true, forecastThreshold = 0.6, forecastSize = 24),
                     ),
+            ),
+        )
+
+        // Memorizing policies placed each task on the host running the fewest tasks; timeshift policies did so by default
+        assertContains(
+            policies,
+            FilterAllocationPolicySpec(
+                filters = listOf(RamFilterSpec(allocationRatio = 1.0)),
+                weighers = listOf(InstanceCountWeigherSpec(multiplier = -1.0)),
+            ),
+        )
+        assertContains(
+            policies,
+            FilterAllocationPolicySpec(
+                filters = listOf(VCpuFilterSpec(allocationRatio = 1.0)),
+                weighers = listOf(InstanceCountWeigherSpec(multiplier = -1.0)),
+                timeshift = TimeshiftSpec(),
             ),
         )
     }

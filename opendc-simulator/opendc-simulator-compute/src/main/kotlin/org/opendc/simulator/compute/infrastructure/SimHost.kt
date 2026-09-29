@@ -144,21 +144,6 @@ public class SimHost(
         private set
 
     /**
-     * Scheduler bookkeeping
-     * Use by schedulers which use a priority queue data structure
-     * to keep track of the order of hosts to scheduler tasks on.
-     * [org.opendc.simulator.compute.scheduler.MemorizingScheduler] for example.
-     * MemorizingScheduler has an array of lists
-     * The 0th index of the array has a list of hosts with 0 tasks,
-     * 1st index of the array has hosts with 1 task, and so on.
-     * The priorityIndex points to the index of this the list this host
-     * belongs to in the array.
-     * The listIndex is the position of this host in the list.
-     */
-    public var priorityIndex: Int = 0
-    public var listIndex: Int = 0
-
-    /**
      * Identifies the [model] of this host: hosts with an equal model get the same id, so schedulers can group identical
      * hosts by comparing a number instead of the model. Assigned by whoever creates the hosts, before they are added
      * to a scheduler; -1 until then. The model of a host does not change during a simulation.

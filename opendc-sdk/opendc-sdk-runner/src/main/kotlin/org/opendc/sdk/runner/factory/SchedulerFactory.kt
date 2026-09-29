@@ -44,10 +44,8 @@ import org.opendc.sdk.model.scheduler.VGpuFilterSpec
 import org.opendc.sdk.model.scheduler.VGpuWeigherSpec
 import org.opendc.simulator.compute.scheduler.ComputeScheduler
 import org.opendc.simulator.compute.scheduler.FilterScheduler
-import org.opendc.simulator.compute.scheduler.MemorizingScheduler
 import org.opendc.simulator.compute.scheduler.filters.ComputeFilter
 import org.opendc.simulator.compute.scheduler.timeshift.CarbonTimeshifter
-import org.opendc.simulator.compute.scheduler.timeshift.MemorizingTimeshift
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
@@ -81,15 +79,8 @@ public fun AllocationPolicySpec.toScheduler(
 ): ComputeScheduler =
     when (this) {
         is PrefabAllocationPolicySpec -> prefabName.policy.toScheduler(seeder, clock, numHosts)
-        is FilterAllocationPolicySpec -> {
-            val engineFilters = filters.map { it.toEngine() }
-            val timeshifter = timeshift?.toEngine(clock)
-            when {
-                memorize && timeshifter != null -> MemorizingTimeshift(engineFilters, timeshifter)
-                memorize -> MemorizingScheduler(engineFilters)
-                else -> FilterScheduler(engineFilters, weighers.map { it.toEngine() }, numHosts, timeshifter)
-            }
-        }
+        is FilterAllocationPolicySpec ->
+            FilterScheduler(filters.map { it.toEngine() }, weighers.map { it.toEngine() }, numHosts, timeshift?.toEngine(clock))
     }
 
 /** Builds the engine [EngineTaskStopper] carried by timeshift settings, or null when absent. */

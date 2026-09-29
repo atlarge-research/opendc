@@ -39,24 +39,20 @@ import org.opendc.sdk.runner.base.harness.fragment
 import org.opendc.sdk.runner.base.harness.runTest
 import org.opendc.sdk.runner.factory.toScheduler
 import org.opendc.simulator.compute.scheduler.FilterScheduler
-import org.opendc.simulator.compute.scheduler.MemorizingScheduler
 import java.time.Instant
 import java.time.InstantSource
 import java.util.SplittableRandom
 
 class SchedulerTest {
     @Test
-    fun testPrefabsBuildTheirEngineScheduler() {
-        val expected =
-            mapOf(
-                SchedulerPrefabSpec.TaskNumMemorizing to MemorizingScheduler::class,
-                SchedulerPrefabSpec.GpuTaskMemorizing to MemorizingScheduler::class,
-            )
-
+    fun testPrefabsBuildFilterSchedulers() {
         for (prefab in SchedulerPrefabSpec.entries) {
             val scheduler = PrefabAllocationPolicySpec(prefab).toScheduler(SplittableRandom(0), InstantSource.fixed(Instant.EPOCH), 10)
 
-            assertEquals(expected[prefab] ?: FilterScheduler::class, scheduler::class) { "Wrong scheduler for $prefab" }
+            assertEquals(FilterScheduler::class, scheduler::class) { "Wrong scheduler for $prefab" }
+            assertEquals(prefab == SchedulerPrefabSpec.Timeshift, (scheduler as FilterScheduler).timeshifter != null) {
+                "Wrong timeshifter for $prefab"
+            }
         }
     }
 

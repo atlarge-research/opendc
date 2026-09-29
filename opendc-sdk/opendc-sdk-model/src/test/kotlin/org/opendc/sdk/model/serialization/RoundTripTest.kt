@@ -209,7 +209,6 @@ class RoundTripTest {
                 FilterAllocationPolicySpec(
                     filters = listOf(ComputeHostFilterSpec),
                     weighers = listOf(VCpuWeigherSpec(1.0)),
-                    memorize = true,
                     timeshift = TimeshiftSpec(taskStopper = TaskStopperSpec()),
                 ),
             )

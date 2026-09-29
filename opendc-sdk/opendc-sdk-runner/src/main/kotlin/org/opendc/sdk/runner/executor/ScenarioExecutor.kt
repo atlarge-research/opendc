@@ -48,7 +48,6 @@ import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.compute.scheduler.ComputeScheduler
 import org.opendc.simulator.compute.scheduler.FilterScheduler
-import org.opendc.simulator.compute.scheduler.timeshift.MemorizingTimeshift
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.kotlin.SimulationCoroutineScope
 import org.opendc.simulator.kotlin.runSimulation
@@ -177,12 +176,7 @@ private class ScenarioRun(
     /** Connects a carbon-intensity trace, if the topology declares one, to every carbon-aware component. */
     private suspend fun connectCarbonNode() {
         val carbon = engine.resolveOrNull(CarbonNode::class.java) ?: return
-        val timeshifter =
-            when (val scheduler = engine.resolve(ComputeScheduler::class.java)) {
-                is FilterScheduler -> scheduler.timeshifter
-                is MemorizingTimeshift -> scheduler.timeshifter
-                else -> null
-            }
+        val timeshifter = (engine.resolve(ComputeScheduler::class.java) as? FilterScheduler)?.timeshifter
         if (timeshifter is CarbonReceiver) {
             carbon.addReceiver(timeshifter)
             // A change in carbon intensity can release delayed tasks, so it starts a scheduling cycle

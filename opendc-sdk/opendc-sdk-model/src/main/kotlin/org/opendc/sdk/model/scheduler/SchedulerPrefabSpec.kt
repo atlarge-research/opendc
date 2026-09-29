@@ -87,10 +87,12 @@ public enum class SchedulerPrefabSpec(
             listOf(VCpuWeigherSpec(-1.0)),
         ),
     ),
+
+    /** Places each task on a fitting host running the fewest tasks. */
     TaskNumMemorizing(
         FilterAllocationPolicySpec(
             cpuRamFilters,
-            memorize = true,
+            listOf(InstanceCountWeigherSpec(-1.0)),
         ),
     ),
     Timeshift(
@@ -112,10 +114,12 @@ public enum class SchedulerPrefabSpec(
             listOf(VCpuWeigherSpec(-1.0), VGpuWeigherSpec(-1.0)),
         ),
     ),
+
+    /** Places each task on a fitting host running the fewest tasks. */
     GpuTaskMemorizing(
         FilterAllocationPolicySpec(
             cpuGpuRamFilters,
-            memorize = true,
+            listOf(InstanceCountWeigherSpec(-1.0)),
         ),
     ),
 }

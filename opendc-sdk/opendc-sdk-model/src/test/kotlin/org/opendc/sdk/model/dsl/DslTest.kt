@@ -140,13 +140,6 @@ class DslTest {
     }
 
     @Test
-    fun `filter scheduler DSL passes memorize through`() {
-        val built = filterScheduler { memorize = true }
-
-        assertEquals(FilterAllocationPolicySpec(listOf(ComputeHostFilterSpec), memorize = true), built)
-    }
-
-    @Test
     fun `timeshift DSL equals constructor-built policy`() {
         val built =
             filterScheduler {

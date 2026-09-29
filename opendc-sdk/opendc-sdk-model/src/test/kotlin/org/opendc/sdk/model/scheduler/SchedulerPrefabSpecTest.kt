@@ -40,10 +40,11 @@ class SchedulerPrefabSpecTest {
     }
 
     @Test
-    fun `only the memorizing prefabs memorize`() {
-        val memorizing = SchedulerPrefabSpec.entries.filter { (it.policy as? FilterAllocationPolicySpec)?.memorize == true }
-
-        assertEquals(listOf(SchedulerPrefabSpec.TaskNumMemorizing, SchedulerPrefabSpec.GpuTaskMemorizing), memorizing)
+    fun `memorizing prefabs place tasks on the host with the fewest tasks`() {
+        for (prefab in listOf(SchedulerPrefabSpec.TaskNumMemorizing, SchedulerPrefabSpec.GpuTaskMemorizing)) {
+            val policy = prefab.policy as FilterAllocationPolicySpec
+            assertEquals(listOf(InstanceCountWeigherSpec(-1.0)), policy.weighers, "$prefab weighers")
+        }
     }
 
     @Test
@@ -62,7 +63,10 @@ class SchedulerPrefabSpecTest {
             FilterAllocationPolicySpec(cpuGpuRam, listOf(VCpuWeigherSpec(-1.0), VGpuWeigherSpec(-1.0))),
             SchedulerPrefabSpec.ProvisionedCpuGpuCoresInv.policy,
         )
-        assertEquals(FilterAllocationPolicySpec(cpuGpuRam, memorize = true), SchedulerPrefabSpec.GpuTaskMemorizing.policy)
+        assertEquals(
+            FilterAllocationPolicySpec(cpuGpuRam, listOf(InstanceCountWeigherSpec(-1.0))),
+            SchedulerPrefabSpec.GpuTaskMemorizing.policy,
+        )
     }
 
     @Test

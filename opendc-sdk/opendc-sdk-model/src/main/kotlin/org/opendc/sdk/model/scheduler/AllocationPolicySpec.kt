@@ -51,8 +51,6 @@ public data class PrefabAllocationPolicySpec(public val prefabName: SchedulerPre
  *
  * @property filters The eligibility predicates applied to candidate hosts.
  * @property weighers The scorers used to rank the remaining candidates; each task is placed on the best-ranked host.
- * @property memorize Whether to place each task on an eligible host running the fewest tasks
- *   instead; [weighers] are then ignored.
  * @property timeshift Delays deferrable tasks while the carbon intensity is high, or null to place every task right
  *   away.
  */
@@ -61,7 +59,6 @@ public data class PrefabAllocationPolicySpec(public val prefabName: SchedulerPre
 public data class FilterAllocationPolicySpec(
     public val filters: List<HostFilterSpec> = listOf(ComputeHostFilterSpec),
     public val weighers: List<HostWeigherSpec> = emptyList(),
-    public val memorize: Boolean = false,
     public val timeshift: TimeshiftSpec? = null,
 ) : AllocationPolicySpec {
     override fun validate(): List<ValidationIssue> =
