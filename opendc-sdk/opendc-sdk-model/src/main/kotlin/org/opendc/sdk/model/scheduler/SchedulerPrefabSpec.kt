@@ -87,13 +87,6 @@ public enum class SchedulerPrefabSpec(
             listOf(VCpuWeigherSpec(-1.0)),
         ),
     ),
-    Random(
-        FilterAllocationPolicySpec(
-            cpuRamFilters,
-            weighers = emptyList(),
-            subsetSize = Int.MAX_VALUE,
-        ),
-    ),
     TaskNumMemorizing(
         FilterAllocationPolicySpec(
             cpuRamFilters,

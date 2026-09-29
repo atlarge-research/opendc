@@ -30,11 +30,8 @@ import org.opendc.simulator.compute.task.SimTask
  *
  * @param allocationRatio Virtual CPU to physical CPU allocation ratio.
  */
-public class VCpuFilter(private val allocationRatio: Double = 1.0) : HostFilter {
+public class VCpuFilter(private val allocationRatio: Double = 1.0) : ThresholdFilter {
     private val isSimple = allocationRatio == 1.0
-
-    /** Without overcommitting, a host passes exactly when it has enough available cores. */
-    override val isSortable: Boolean = isSimple
 
     override fun test(
         host: SimHost,
@@ -56,5 +53,11 @@ public class VCpuFilter(private val allocationRatio: Double = 1.0) : HostFilter 
         return availableCores >= requested
     }
 
-    override fun score(host: SimHost): Double = host.availableCpuCores.toDouble()
+    override fun available(host: SimHost): Double {
+        if (isSimple) return host.availableCpuCores.toDouble()
+
+        return host.model.coreCount * allocationRatio - host.provisionedCpuCores
+    }
+
+    override fun required(task: SimTask): Double = task.cpuCoreCount.toDouble()
 }

@@ -25,14 +25,17 @@ package org.opendc.simulator.compute.scheduler
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.compute.infrastructure.SimHost
+import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuHostModel
 import org.opendc.simulator.compute.models.HostModel
 import org.opendc.simulator.compute.models.HostState
+import org.opendc.simulator.compute.models.MachineModel
+import org.opendc.simulator.compute.models.MemoryUnit
+import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.compute.scheduler.filters.ComputeFilter
 import org.opendc.simulator.compute.scheduler.filters.DifferentHostFilter
 import org.opendc.simulator.compute.scheduler.filters.HostFilter
@@ -44,36 +47,22 @@ import org.opendc.simulator.compute.scheduler.filters.VCpuFilter
 import org.opendc.simulator.compute.scheduler.filters.VGpuCapacityFilter
 import org.opendc.simulator.compute.scheduler.filters.VGpuFilter
 import org.opendc.simulator.compute.scheduler.weights.CoreRamWeigher
+import org.opendc.simulator.compute.scheduler.weights.HostWeigher
 import org.opendc.simulator.compute.scheduler.weights.InstanceCountWeigher
 import org.opendc.simulator.compute.scheduler.weights.RamWeigher
 import org.opendc.simulator.compute.scheduler.weights.VCpuWeigher
 import org.opendc.simulator.compute.task.SimTask
+import org.opendc.simulator.flow.engine.FlowEngine
+import org.opendc.simulator.flow.graph.FlowDistributor
+import org.opendc.simulator.flow.graph.distributionPolicies.FlowDistributorFactory
+import java.time.Instant
+import java.time.InstantSource
 import java.util.Random
-import java.util.SplittableRandom
 
 /**
  * Test suite for the [FilterScheduler].
  */
 internal class FilterSchedulerTest {
-    @Test
-    fun testInvalidSubsetSize() {
-        assertThrows<IllegalArgumentException> {
-            FilterScheduler(
-                filters = emptyList(),
-                weighers = emptyList(),
-                subsetSize = 0,
-            )
-        }
-
-        assertThrows<IllegalArgumentException> {
-            FilterScheduler(
-                filters = emptyList(),
-                weighers = emptyList(),
-                subsetSize = -2,
-            )
-        }
-    }
-
     @Test
     fun testNoHosts() {
         val scheduler =
@@ -651,6 +640,8 @@ internal class FilterSchedulerTest {
         val large = mockHost(cores = 8)
         every { small.name } returns "small"
         every { large.name } returns "large"
+        every { small.id } returns 0
+        every { large.id } returns 1
         every { small.modelId } returns 0
         every { large.modelId } returns 0
 
@@ -668,20 +659,6 @@ internal class FilterSchedulerTest {
 
         assertEquals(SchedulingResultType.FAILURE, scheduler.select(mutableListOf(mockRequest()).iterator()).resultType)
         assertEquals(1, tests)
-    }
-
-    @Test
-    fun testSortableFilterNarrowsUsedHosts() {
-        val tested = mutableListOf<SimHost>()
-        val recordingFilter = HostFilter { host, _ -> tested.add(host) }
-        val scheduler = FilterScheduler(filters = listOf(recordingFilter, VCpuFilter(1.0)), weighers = emptyList())
-
-        val hosts = (0..7).map { mockHost(cores = 8, availableCores = it, instances = 1) }
-        hosts.shuffled(Random(0)).forEach { scheduler.addHost(it.withIds()) }
-
-        // The hosts are sorted on their available cores, so only the two with 6 or more are tested by the other filter
-        assertEquals(hosts[6], scheduler.select(mutableListOf(mockRequest(cores = 6)).iterator()).host)
-        assertEquals(setOf(hosts[6], hosts[7]), tested.toSet())
     }
 
     @Test
@@ -723,6 +700,8 @@ internal class FilterSchedulerTest {
 
         every { hostA.availableMemory } returns 1024
         every { hostB.availableMemory } returns 512
+        scheduler.updateHost(hostA)
+        scheduler.updateHost(hostB)
 
         assertEquals(hostA, scheduler.select(mutableListOf(mockRequest()).iterator()).host)
     }
@@ -747,7 +726,7 @@ internal class FilterSchedulerTest {
     }
 
     @Test
-    fun testMoreCandidatesThanExpectedHosts() {
+    fun testMoreHostsThanExpected() {
         val scheduler = FilterScheduler(filters = emptyList(), weighers = listOf(RamWeigher(1.0)), numHosts = 1)
 
         val hosts = (1..40).map { mockHost(availableMemory = it * 10L, instances = 1) }
@@ -758,47 +737,231 @@ internal class FilterSchedulerTest {
     }
 
     @Test
-    fun testSubsetChoosesAmongBestHosts() {
-        val scheduler =
-            FilterScheduler(
-                filters = emptyList(),
-                weighers = listOf(RamWeigher(1.0)),
-                subsetSize = 2,
-                random = SplittableRandom(0),
-            )
+    fun testSelectStopsAtFirstFittingHost() {
+        val tested = mutableListOf<SimHost>()
+        val recordingFilter = HostFilter { host, _ -> tested.add(host) && host.availableMemory < 3000 }
+        val scheduler = FilterScheduler(filters = listOf(recordingFilter), weighers = listOf(RamWeigher(1.0)))
 
-        val hostA = mockHost(availableMemory = 3000, instances = 1)
-        val hostB = mockHost(availableMemory = 2000, instances = 1)
-        val hostC = mockHost(availableMemory = 1000, instances = 1)
-        scheduler.addHost(hostC.withIds())
-        scheduler.addHost(hostB.withIds())
-        scheduler.addHost(hostA.withIds())
+        val hosts = listOf(1000L, 3000L, 2000L).map { mockHost(availableMemory = it, instances = 1) }
+        hosts.forEach { scheduler.addHost(it.withIds()) }
 
-        val chosen = List(100) { scheduler.select(mutableListOf(mockRequest()).iterator()).host }
-
-        assertEquals(setOf(hostA, hostB), chosen.toSet())
+        // The host with the most memory is rejected, the second best is taken and the third is never tested
+        assertEquals(hosts[2], scheduler.select(mutableListOf(mockRequest()).iterator()).host)
+        assertEquals(listOf(hosts[1], hosts[2]), tested)
     }
 
     @Test
-    fun testRandomChoiceCountsEveryEmptyHost() {
-        // One used host and three identical empty hosts: a uniform choice picks the used host a quarter of the time
-        val usedHostChosen =
-            (0L until 400L).count { seed ->
-                val scheduler =
-                    FilterScheduler(
-                        filters = emptyList(),
-                        weighers = emptyList(),
-                        subsetSize = Int.MAX_VALUE,
-                        random = SplittableRandom(seed),
-                    )
-                val usedHost = mockHost(availableCores = 2, instances = 1)
-                scheduler.addHost(usedHost.withIds())
-                repeat(3) { scheduler.addHost(mockHost().withIds()) }
+    fun testWideningRangeRanksHostsAgain() {
+        val scheduler =
+            FilterScheduler(
+                filters = emptyList(),
+                weighers = listOf(RamWeigher(1.0), InstanceCountWeigher(-1.0)),
+            )
 
-                scheduler.select(mutableListOf(mockRequest()).iterator()).host === usedHost
+        val hostA = mockHost(memory = 4096, availableMemory = 1000, instances = 2)
+        val hostB = mockHost(memory = 4096, availableMemory = 900, instances = 1)
+        val hostC = mockHost(memory = 4096, availableMemory = 800, instances = 1)
+        listOf(hostA, hostB, hostC).forEach { scheduler.addHost(it.withIds()) }
+        every { hostB.instanceCount } returns 0
+        scheduler.updateHost(hostB)
+
+        // Memory ranges over 200 and instances over 2: B scores 0.5, A scores 1 - 1 = 0
+        assertEquals(hostB, scheduler.select(mutableListOf(mockRequest()).iterator()).host)
+
+        // A host with many instances widens the instance range to 10, so instances weigh less: A scores 1 - 0.2 = 0.8
+        scheduler.addHost(mockHost(memory = 4096, availableMemory = 850, instances = 10).withIds())
+
+        assertEquals(hostA, scheduler.select(mutableListOf(mockRequest()).iterator()).host)
+    }
+
+    @Test
+    fun testEmptyHostsTakeTurnsStandingInForTheirGroup() {
+        val scheduler = FilterScheduler(filters = emptyList(), weighers = listOf(RamWeigher(1.0)))
+
+        val first = mockHost()
+        val second = mockHost()
+        scheduler.addHost(first.withIds())
+        scheduler.addHost(second.withIds())
+        assertEquals(first, scheduler.select(mutableListOf(mockRequest()).iterator()).host)
+
+        // Once the first host runs a task, the second stands in for the empty hosts and has more memory
+        every { first.isEmpty() } returns false
+        every { first.availableMemory } returns 1024
+        scheduler.updateHost(first)
+        assertEquals(second, scheduler.select(mutableListOf(mockRequest()).iterator()).host)
+
+        // When the first host is empty again, it takes over because its id is lower
+        every { first.isEmpty() } returns true
+        every { first.availableMemory } returns 2048
+        scheduler.updateHost(first)
+        assertEquals(first, scheduler.select(mutableListOf(mockRequest()).iterator()).host)
+    }
+
+    @Test
+    fun testFailedHostIsNotSelected() {
+        val scheduler = FilterScheduler(filters = emptyList(), weighers = listOf(RamWeigher(1.0)))
+
+        val best = mockHost(availableMemory = 2000, instances = 1)
+        val other = mockHost(availableMemory = 1000, instances = 1)
+        scheduler.addHost(best.withIds())
+        scheduler.addHost(other.withIds())
+
+        every { best.state } returns HostState.ERROR
+        scheduler.failHost(best)
+        assertEquals(other, scheduler.select(mutableListOf(mockRequest()).iterator()).host)
+
+        every { best.state } returns HostState.UP
+        scheduler.restartHost(best)
+        assertEquals(best, scheduler.select(mutableListOf(mockRequest()).iterator()).host)
+    }
+
+    @Test
+    fun testMatchesReferenceWithTwoWeighers() {
+        checkAgainstReference(listOf(RamWeigher(1.0), InstanceCountWeigher(-0.5)), seed = 1)
+    }
+
+    @Test
+    fun testMatchesReferenceWithNegativeWeigher() {
+        checkAgainstReference(listOf(CoreRamWeigher(-1.0)), seed = 2)
+    }
+
+    @Test
+    fun testMatchesReferenceWithoutWeighers() {
+        checkAgainstReference(emptyList(), seed = 3)
+    }
+
+    /** Real hosts with a mocked engine; tasks are placed and removed the way [SimHost.spawn] and [SimHost.delete] do. */
+    private val tasksField = SimHost::class.java.getDeclaredField("tasks").apply { isAccessible = true }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun SimHost.tasks(): MutableSet<SimTask> = tasksField.get(this) as MutableSet<SimTask>
+
+    private fun realHost(
+        id: Int,
+        modelId: Int,
+        cores: Int,
+        memory: Long,
+    ): SimHost {
+        val machine =
+            MachineModel(
+                CpuModel(0, cores, 2600.0, "vendor", "model", "arch"),
+                MemoryUnit("vendor", "model", 3200.0, memory),
+                null,
+                FlowDistributorFactory.DistributionPolicy.MAX_MIN_FAIRNESS,
+                FlowDistributorFactory.DistributionPolicy.MAX_MIN_FAIRNESS,
+            )
+        val host =
+            SimHost(
+                id,
+                "H$id",
+                "C01",
+                InstantSource.fixed(Instant.EPOCH),
+                mockk<FlowEngine>(relaxed = true),
+                machine,
+                mockk<PowerModel>(relaxed = true),
+                null,
+                0.0,
+                1.0,
+                mockk<FlowDistributor>(relaxed = true),
+            )
+        host.modelId = modelId
+        return host
+    }
+
+    /**
+     * Places and finishes random tasks and fails and restarts random hosts, checking every selection against a naive
+     * reference: test every available host, score each with the weight ranges seen so far, and take the highest score,
+     * the lowest id on a tie.
+     */
+    private fun checkAgainstReference(
+        weighers: List<HostWeigher>,
+        seed: Long,
+    ) {
+        val filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0), InstanceCountFilter(6))
+        // Small blocks, so the ranking has many of them and they are split, merged and skipped
+        val scheduler = FilterScheduler(filters, weighers, numHosts = 200, blockSize = 8)
+        val random = Random(seed)
+
+        val models = listOf(8 to 16_384L, 16 to 32_768L, 32 to 65_536L)
+        val hosts =
+            List(200) {
+                val (cores, memory) = models[it % 3]
+                realHost(it, it % 3, cores, memory)
             }
 
-        assertTrue(usedHostChosen in 60..140) { "Used host chosen $usedHostChosen out of 400 times" }
+        val min = DoubleArray(weighers.size) { Double.POSITIVE_INFINITY }
+        val max = DoubleArray(weighers.size) { Double.NEGATIVE_INFINITY }
+
+        fun observe(host: SimHost) {
+            for ((i, weigher) in weighers.withIndex()) {
+                min[i] = minOf(min[i], weigher.getWeight(host))
+                max[i] = maxOf(max[i], weigher.getWeight(host))
+            }
+        }
+
+        fun score(host: SimHost): Double {
+            var score = 0.0
+            for ((i, weigher) in weighers.withIndex()) {
+                val range = max[i] - min[i]
+                val factor = if (range > 0.0) weigher.multiplier / range else 0.0
+                score += factor * (weigher.getWeight(host) - min[i])
+            }
+            return score
+        }
+
+        hosts.forEach {
+            scheduler.addHost(it)
+            observe(it)
+        }
+
+        repeat(3000) { step ->
+            val roll = random.nextInt(100)
+            val host = hosts[random.nextInt(hosts.size)]
+            when {
+                roll < 60 -> {
+                    val cores = 1 + random.nextInt(8)
+                    // Up to 24 GiB, so memory rather than cores sometimes decides
+                    val memory = 512 * (1 + random.nextInt(48))
+                    val task = SimTask(step, 0L, 1000L, cores, cores * 2600.0, memory, 0, 0.0, 0, null, false, Long.MAX_VALUE, null, null)
+
+                    val expected =
+                        hosts
+                            .filter { candidate -> filters.all { it.test(candidate, task) } }
+                            .sortedWith(compareByDescending<SimHost> { score(it) }.thenBy { it.id })
+                            .firstOrNull()
+                    val actual = scheduler.select(mutableListOf(SchedulingRequest(task, 0L)).iterator()).host
+                    assertEquals(expected, actual) { "Different host chosen at step $step" }
+
+                    if (actual != null) {
+                        actual.tasks().add(task)
+                        actual.reserve(task)
+                        scheduler.updateHost(actual)
+                        observe(actual)
+                    }
+                }
+                roll < 90 && host.state == HostState.UP && !host.isEmpty() -> {
+                    val task = host.tasks().first()
+                    host.tasks().remove(task)
+                    host.release(task)
+                    scheduler.updateHost(host)
+                    observe(host)
+                }
+                roll < 95 && host.state == HostState.UP -> {
+                    // As a failing host does: it leaves the pool, then its tasks are removed
+                    val tasks = host.tasks().toList()
+                    host.tasks().clear()
+                    host.fail()
+                    scheduler.failHost(host)
+                    tasks.forEach { host.release(it) }
+                    scheduler.updateHost(host)
+                }
+                roll >= 95 && host.state == HostState.ERROR -> {
+                    host.recover()
+                    scheduler.restartHost(host)
+                    observe(host)
+                }
+            }
+        }
     }
 
     /** Model ids handed out by [withIds]. */

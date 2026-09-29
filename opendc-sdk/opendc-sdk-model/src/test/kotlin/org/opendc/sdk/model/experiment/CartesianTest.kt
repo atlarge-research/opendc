@@ -55,7 +55,8 @@ class CartesianTest {
     fun `expand yields the product of the varying axis sizes`() {
         val topologies = setOf(topology("t0"), topology("t1"))
         val workloads = setOf(workload("w0"), workload("w1"))
-        val policies = setOf(policy(SchedulerPrefabSpec.Mem), policy(SchedulerPrefabSpec.CoreMem), policy(SchedulerPrefabSpec.Random))
+        val policies =
+            setOf(policy(SchedulerPrefabSpec.Mem), policy(SchedulerPrefabSpec.CoreMem), policy(SchedulerPrefabSpec.ActiveServers))
 
         val experiment =
             ExperimentSpec(
@@ -74,7 +75,8 @@ class CartesianTest {
     fun `expand produces every combination exactly once`() {
         val topologies = setOf(topology("t0"), topology("t1"))
         val workloads = setOf(workload("w0"), workload("w1"))
-        val policies = setOf(policy(SchedulerPrefabSpec.Mem), policy(SchedulerPrefabSpec.CoreMem), policy(SchedulerPrefabSpec.Random))
+        val policies =
+            setOf(policy(SchedulerPrefabSpec.Mem), policy(SchedulerPrefabSpec.CoreMem), policy(SchedulerPrefabSpec.ActiveServers))
 
         val experiment =
             ExperimentSpec(
@@ -124,7 +126,7 @@ class CartesianTest {
                     setOf(
                         policy(SchedulerPrefabSpec.Mem),
                         policy(SchedulerPrefabSpec.CoreMem),
-                        policy(SchedulerPrefabSpec.Random),
+                        policy(SchedulerPrefabSpec.ActiveServers),
                     ),
             )
 
@@ -138,7 +140,8 @@ class CartesianTest {
     fun `expand scales the product when an additional axis varies`() {
         val topologies = setOf(topology("t0"), topology("t1"))
         val workloads = setOf(workload("w0"), workload("w1"))
-        val policies = setOf(policy(SchedulerPrefabSpec.Mem), policy(SchedulerPrefabSpec.CoreMem), policy(SchedulerPrefabSpec.Random))
+        val policies =
+            setOf(policy(SchedulerPrefabSpec.Mem), policy(SchedulerPrefabSpec.CoreMem), policy(SchedulerPrefabSpec.ActiveServers))
         val maxFailures = setOf(5, 10)
 
         val experiment =

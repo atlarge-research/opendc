@@ -114,7 +114,7 @@ public class TimeshiftScheduler(
 
             val subset =
                 if (weighers.isNotEmpty()) {
-                    val filterResults = weighers.map { it.getWeights(filteredHosts, task) }
+                    val filterResults = weighers.map { it.getWeights(filteredHosts) }
                     val weights = DoubleArray(filteredHosts.size)
 
                     for (fr in filterResults) {

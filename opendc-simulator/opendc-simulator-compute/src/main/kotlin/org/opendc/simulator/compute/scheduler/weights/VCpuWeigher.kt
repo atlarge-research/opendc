@@ -23,7 +23,6 @@
 package org.opendc.simulator.compute.scheduler.weights
 
 import org.opendc.simulator.compute.infrastructure.SimHost
-import org.opendc.simulator.compute.task.SimTask
 
 /**
  * A [HostWeigher] that weighs the hosts based on the remaining number of vCPUs available.
@@ -35,10 +34,7 @@ public class VCpuWeigher(private val allocationRatio: Double, override val multi
         require(allocationRatio > 0.0) { "Allocation ratio must be greater than zero" }
     }
 
-    override fun getWeight(
-        host: SimHost,
-        task: SimTask,
-    ): Double {
+    override fun getWeight(host: SimHost): Double {
         return allocationRatio - host.provisionedCpuCores
     }
 

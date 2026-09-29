@@ -123,7 +123,6 @@ class DslTest {
     fun `filter scheduler DSL equals constructor-built policy`() {
         val built =
             filterScheduler {
-                subsetSize = 3
                 filter(ComputeHostFilterSpec)
                 filter(RamFilterSpec(1.5))
                 weigher(CoreRamWeigherSpec(2.0))
@@ -137,7 +136,7 @@ class DslTest {
     fun `filter scheduler DSL without filters defaults to the compute filter`() {
         val built = filterScheduler { weigher(RamWeigherSpec()) }
 
-        assertEquals(FilterAllocationPolicySpec(listOf(ComputeHostFilterSpec), listOf(RamWeigherSpec()), 1), built)
+        assertEquals(FilterAllocationPolicySpec(listOf(ComputeHostFilterSpec), listOf(RamWeigherSpec())), built)
     }
 
     @Test
@@ -265,6 +264,5 @@ class DslTest {
         FilterAllocationPolicySpec(
             filters = listOf(ComputeHostFilterSpec, RamFilterSpec(1.5)),
             weighers = listOf(CoreRamWeigherSpec(2.0), RamWeigherSpec()),
-            subsetSize = 3,
         )
 }

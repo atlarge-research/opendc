@@ -85,7 +85,7 @@ public fun AllocationPolicySpec.toScheduler(
             if (memorize) {
                 MemorizingScheduler(filters.map { it.toEngine() })
             } else {
-                FilterScheduler(filters.map { it.toEngine() }, weighers.map { it.toEngine() }, subsetSize, seeder, numHosts)
+                FilterScheduler(filters.map { it.toEngine() }, weighers.map { it.toEngine() }, numHosts)
             }
         is TimeShiftAllocationPolicySpec -> toTimeshiftScheduler(seeder, clock)
     }

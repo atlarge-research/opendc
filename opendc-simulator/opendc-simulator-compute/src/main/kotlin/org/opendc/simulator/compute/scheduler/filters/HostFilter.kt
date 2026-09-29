@@ -37,16 +37,4 @@ public fun interface HostFilter {
         host: SimHost,
         task: SimTask,
     ): Boolean
-
-    /**
-     * Whether [test] depends only on [score], passing exactly the hosts whose score is high enough. The
-     * [FilterScheduler] keeps its hosts sorted on the score of the first such filter, so it can find the passing
-     * hosts by binary search instead of testing every host.
-     */
-    public val isSortable: Boolean get() = false
-
-    /**
-     * The value [test] depends on, if this filter [isSortable].
-     */
-    public fun score(host: SimHost): Double = 0.0
 }

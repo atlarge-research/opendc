@@ -32,7 +32,6 @@ import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.failure.UniformDistributionSpec
 import org.opendc.sdk.model.failure.WeibullDistributionSpec
 import org.opendc.sdk.model.resource.NamedReference
-import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.InstanceCountFilterSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.topology.ClusterSpec
@@ -61,15 +60,6 @@ class ValidationTest {
         val issues = assertDoesNotThrow { workload.validate() }
 
         assertEquals("must be greater than zero", issues.messageAt("sampleFraction"))
-    }
-
-    @Test
-    fun `filter allocation policy with zero subsetSize reports subsetSize`() {
-        val policy = FilterAllocationPolicySpec(subsetSize = 0)
-
-        val issues = assertDoesNotThrow { policy.validate() }
-
-        assertContains(issues.paths(), "subsetSize")
     }
 
     @Test

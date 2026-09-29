@@ -47,7 +47,6 @@ public final class SchedulerResource {
                 "ActiveServersInv",
                 "ProvisionedCores",
                 "ProvisionedCoresInv",
-                "Random",
                 "TaskNumMemorizing",
                 "Timeshift",
                 "ProvisionedCpuGpuCores",

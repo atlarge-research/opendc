@@ -29,15 +29,15 @@ import org.opendc.simulator.compute.task.SimTask
  * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [SimTask] and the available
  * capacity on the host.
  */
-public class VCpuCapacityFilter : HostFilter {
+public class VCpuCapacityFilter : ThresholdFilter {
     override fun test(
         host: SimHost,
         task: SimTask,
     ): Boolean {
-        val requiredCapacity = task.cpuCapacity
-        val availableCapacity = host.model.cpuCapacity
-
-        return (availableCapacity / host.model.coreCount) >=
-            (requiredCapacity / task.cpuCoreCount)
+        return available(host) >= required(task)
     }
+
+    override fun available(host: SimHost): Double = host.model.cpuCapacity / host.model.coreCount
+
+    override fun required(task: SimTask): Double = task.cpuCapacity / task.cpuCoreCount
 }

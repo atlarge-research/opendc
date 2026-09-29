@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2026 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,26 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.scheduler.weights
+package org.opendc.simulator.compute.scheduler.filters
 
 import org.opendc.simulator.compute.infrastructure.SimHost
+import org.opendc.simulator.compute.task.SimTask
 
 /**
- * A [HostWeigher] that weighs the hosts based on the capacity of their largest GPU.
+ * A [HostFilter] that only passes hosts with enough room of some kind, such as free cores or free memory, measured as
+ * a single number. The [org.opendc.simulator.compute.scheduler.FilterScheduler] uses this to rule out hosts, and whole
+ * blocks of hosts, without testing them.
+ *
+ * [test] may do more checks than the threshold, but it may only pass when [available] is at least [required].
  */
-public class VGpuCapacityWeigher(override val multiplier: Double = 1.0) : HostWeigher {
-    override fun getWeight(host: SimHost): Double {
-        return host.model.gpuHostModels.maxOfOrNull { it.gpuCoreCapacity } ?: 0.0
-    }
+public interface ThresholdFilter : HostFilter {
+    /**
+     * How much room [host] has. This may only change when the resources in use on the host change.
+     */
+    public fun available(host: SimHost): Double
 
-    override fun toString(): String = "VGpuWeigher"
+    /**
+     * How much room [task] needs.
+     */
+    public fun required(task: SimTask): Double
 }

@@ -23,19 +23,13 @@
 package org.opendc.simulator.compute.scheduler.weights
 
 import org.opendc.simulator.compute.infrastructure.SimHost
-import org.opendc.simulator.compute.task.SimTask
 
 /**
- * A [HostWeigher] that weighs the hosts based on the difference required vCPU capacity and the available CPU capacity.
+ * A [HostWeigher] that weighs the hosts based on their CPU capacity.
  */
 public class VCpuCapacityWeigher(override val multiplier: Double = 1.0) : HostWeigher {
-    override fun getWeight(
-        host: SimHost,
-        task: SimTask,
-    ): Double {
-        val model = host.model
-        val requiredCapacity = task.cpuCapacity
-        return model.cpuCapacity - requiredCapacity / task.cpuCoreCount
+    override fun getWeight(host: SimHost): Double {
+        return host.model.cpuCapacity
     }
 
     override fun toString(): String = "VCpuWeigher"

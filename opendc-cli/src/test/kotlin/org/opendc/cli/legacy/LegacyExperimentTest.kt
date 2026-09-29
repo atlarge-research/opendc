@@ -233,7 +233,6 @@ class LegacyExperimentTest {
                         InstanceCountFilterSpec(limit = 8),
                     ),
                 weighers = listOf(CoreRamWeigherSpec(multiplier = 1.0), VCpuCapacityWeigherSpec(multiplier = -1.0)),
-                subsetSize = 2,
             ),
         )
         assertContains(

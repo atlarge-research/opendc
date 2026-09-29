@@ -28,9 +28,7 @@ import org.opendc.simulator.compute.models.HostState
 import org.opendc.simulator.compute.scheduler.filters.HostFilter
 import org.opendc.simulator.compute.scheduler.weights.HostWeigher
 import org.opendc.simulator.compute.task.SimTask
-import java.util.SplittableRandom
-import java.util.random.RandomGenerator
-import kotlin.math.min
+import java.util.TreeSet
 
 /**
  * A [ComputeScheduler] implementation that uses filtering and weighing passes to select
@@ -39,28 +37,54 @@ import kotlin.math.min
  * This implementation is based on the filter scheduler from OpenStack Nova.
  * See: https://docs.openstack.org/nova/latest/user/filter-scheduler.html
  *
- * Hosts running tasks are kept in a [SortedHostList], so the ones that pass the filters are found by binary search.
+ * The hosts are kept ranked by their score, the sum of their scaled weights. To place a task, the scheduler walks the
+ * ranking from the highest score down and picks the first host that passes every filter; ties go to the lowest
+ * [SimHost.id].
+ *
+ * Each weigher's weights are scaled to between 0 and its multiplier, using the lowest and highest weight the weigher
+ * has given any host so far. That range only grows: when a weight falls outside it, every score is recomputed and the
+ * hosts are ranked again. Otherwise a change to a host only moves that host.
+ *
+ * The ranking is split into blocks that record the most room (free cores, free memory, ...) any of their hosts has
+ * for each [org.opendc.simulator.compute.scheduler.filters.ThresholdFilter], so the walk skips blocks in which no host
+ * can fit the task (see [HostRanking]).
+ *
  * Empty hosts are grouped by [SimHost.modelId]: empty hosts with the same model look the same to every filter and
- * weigher, so only one host per group is tested and weighed.
+ * weigher, so only the lowest-id host of each group is ranked, standing in for the whole group.
  *
  * @param filters The list of filters to apply when searching for an appropriate host.
  * @param weighers The list of weighers to apply when searching for an appropriate host.
- * @param subsetSize The number of best-weighed hosts from which a target is randomly chosen.
- * @param random A [RandomGenerator] instance for choosing from the best-weighed hosts.
  * @param numHosts The expected number of hosts.
+ * @param blockSize The number of hosts a block of the ranking aims for.
  */
-public class FilterScheduler(
+public class FilterScheduler internal constructor(
     private val filters: List<HostFilter>,
     private val weighers: List<HostWeigher>,
-    private val subsetSize: Int = 1,
-    private val random: RandomGenerator = SplittableRandom(0),
-    numHosts: Int = 1000,
+    numHosts: Int,
+    blockSize: Int,
 ) : ComputeScheduler {
-    /** Hosts running at least one task. */
-    private val usedHosts = SortedHostList(numHosts, filters)
+    public constructor(
+        filters: List<HostFilter>,
+        weighers: List<HostWeigher>,
+        numHosts: Int = 1000,
+    ) : this(filters, weighers, numHosts, DEFAULT_BLOCK_SIZE)
 
-    /** Hosts without tasks, grouped by model: the group of a model is at the index of its [SimHost.modelId]. */
-    private val emptyHosts = ArrayList<LinkedHashSet<SimHost>>()
+    /**
+     * The hosts [select] chooses from, from the highest score to the lowest: every used host, and the first host of every
+     * group of empty hosts.
+     */
+    private val ranking = HostRanking(filters, blockSize, numHosts)
+
+    /** The weights of every host ever ranked, at the index of its [SimHost.id]. */
+    private var weightsOf = arrayOfNulls<DoubleArray>(numHosts)
+
+    /** The lowest and highest weight each weigher has given a host, and the factor that scales its weights. */
+    private val minWeights = DoubleArray(weighers.size) { Double.POSITIVE_INFINITY }
+    private val maxWeights = DoubleArray(weighers.size) { Double.NEGATIVE_INFINITY }
+    private val factors = DoubleArray(weighers.size)
+
+    /** Hosts without tasks, grouped by model and ordered by id: the group of a model is at the index of its [SimHost.modelId]. */
+    private val emptyHosts = ArrayList<TreeSet<SimHost>>()
 
     /** The model of each group, to check that hosts sharing a model id have the same model. */
     private val groupModels = ArrayList<HostModel?>()
@@ -68,23 +92,13 @@ public class FilterScheduler(
     /** Hosts that are currently not available. */
     private val failedHosts = HashSet<SimHost>()
 
-    /** The hosts that pass the filters for the task being scheduled: fitting used hosts first, then one host per empty group. */
-    private val candidates = HostBuffer(numHosts)
-
-    /** The number of [candidates] that are used hosts; each candidate after them stands for its empty-host group. */
-    private var usedCandidates = 0
-
-    init {
-        require(subsetSize >= 1) { "Subset size must be one or greater" }
-    }
-
     override fun addHost(host: SimHost) {
         checkModelId(host)
 
         if (host.isEmpty()) {
-            emptyHosts[host.modelId].add(host)
+            addEmpty(host)
         } else {
-            usedHosts.put(host)
+            rank(host)
         }
     }
 
@@ -94,7 +108,7 @@ public class FilterScheduler(
         require(id >= 0) { "Host ${host.name} has no model id" }
 
         while (emptyHosts.size <= id) {
-            emptyHosts.add(LinkedHashSet())
+            emptyHosts.add(TreeSet(compareBy(SimHost::id)))
             groupModels.add(null)
         }
 
@@ -108,8 +122,8 @@ public class FilterScheduler(
 
     // Remove host from the Available hosts list
     override fun removeHost(host: SimHost) {
-        emptyHosts[host.modelId].remove(host)
-        usedHosts.remove(host)
+        removeEmpty(host, keepRanked = false)
+        unrank(host)
         failedHosts.remove(host)
     }
 
@@ -133,34 +147,23 @@ public class FilterScheduler(
         if (host.isEmpty()) {
             setHostEmpty(host)
         } else {
-            emptyHosts[host.modelId].remove(host)
-            usedHosts.put(host)
+            // A host that just got its first task leaves its group, but stays ranked on its own weights
+            removeEmpty(host, keepRanked = true)
+            rank(host)
         }
     }
 
     override fun setHostEmpty(host: SimHost) {
-        usedHosts.remove(host)
-        emptyHosts[host.modelId].add(host)
+        addEmpty(host)
     }
 
     override fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult {
         val req = nextRequest(iter) ?: return SchedulingResult(SchedulingResultType.EMPTY)
         val task = req.task
 
-        collectCandidates(task)
-        if (candidates.isEmpty()) {
-            return SchedulingResult(SchedulingResultType.FAILURE, null, req)
-        }
-
-        val host = if (subsetSize == 1) candidates[bestCandidate(task)] else chooseFromSubset(task)
+        val host = ranking.firstFit(task) ?: return SchedulingResult(SchedulingResultType.FAILURE, null, req)
 
         iter.remove()
-
-        if (host.isEmpty()) {
-            emptyHosts[host.modelId].remove(host)
-            usedHosts.put(host)
-        }
-
         return SchedulingResult(SchedulingResultType.SUCCESS, host, req)
     }
 
@@ -176,88 +179,102 @@ public class FilterScheduler(
         return null
     }
 
-    private fun collectCandidates(task: SimTask) {
-        candidates.clear()
+    /** Add [host] to its group of empty hosts. Only the first host of a group is ranked. */
+    private fun addEmpty(host: SimHost) {
+        val group = emptyHosts[host.modelId]
+        val previous = group.firstOrNull()
+        group.add(host)
 
-        usedHosts.addFittingHosts(task, candidates)
-        usedCandidates = candidates.size
-
-        for (group in emptyHosts) {
-            if (group.isEmpty()) {
-                continue
+        if (group.first() === host) {
+            if (previous != null && previous !== host) {
+                unrank(previous)
             }
-
-            val host = group.first()
-            if (filters.all { it.test(host, task) }) {
-                candidates.add(host)
-            }
+            rank(host)
+        } else {
+            unrank(host)
         }
     }
-
-    /** The number of hosts candidate [i] stands for: one for a used host, the group size for an empty host. */
-    private fun multiplicity(i: Int): Int = if (i < usedCandidates) 1 else emptyHosts[candidates[i].modelId].size
 
     /**
-     * The combined weight of every candidate. Each weigher's weights are scaled to between 0 and its multiplier, so
-     * weighers with different units can be summed.
+     * Remove [host] from its group of empty hosts. If it was the first host of the group, the next one is ranked in its
+     * place, and [host] only stays ranked if [keepRanked].
      */
-    private fun weigh(task: SimTask): DoubleArray {
-        val scores = DoubleArray(candidates.size)
-        for (weigher in weighers) {
-            val result = weigher.getWeights(candidates, task)
-            val range = result.max - result.min
+    private fun removeEmpty(
+        host: SimHost,
+        keepRanked: Boolean,
+    ) {
+        val group = emptyHosts[host.modelId]
+        val wasFirst = group.isNotEmpty() && group.first() === host
+        if (!group.remove(host)) {
+            return
+        }
 
-            // Skip result if all weights are the same
-            if (range == 0.0) {
-                continue
+        if (wasFirst) {
+            if (!keepRanked) {
+                unrank(host)
             }
-
-            val factor = result.multiplier / range
-            for (i in scores.indices) {
-                scores[i] += factor * (result.weights[i] - result.min)
+            if (group.isNotEmpty()) {
+                rank(group.first())
             }
         }
-        return scores
     }
 
-    /** The index of the highest-weighed candidate; the first one on a tie. */
-    private fun bestCandidate(task: SimTask): Int {
-        if (weighers.isEmpty()) {
-            return 0
-        }
+    /** Rank [host] on its current weights and resources, or move it there if it is already ranked. */
+    private fun rank(host: SimHost) {
+        val weights = weightsOf(host)
 
-        val scores = weigh(task)
-        var best = 0
-        for (i in 1 until scores.size) {
-            if (scores[i] > scores[best]) {
-                best = i
+        var widened = false
+        for (i in weighers.indices) {
+            val weight = weighers[i].getWeight(host)
+            weights[i] = weight
+            if (weight < minWeights[i]) {
+                minWeights[i] = weight
+                widened = true
+            }
+            if (weight > maxWeights[i]) {
+                maxWeights[i] = weight
+                widened = true
             }
         }
-        return best
+
+        if (widened) {
+            rescale()
+        }
+
+        ranking.put(host, score(weights))
     }
 
-    /** Choose uniformly among the [subsetSize] highest-weighed hosts, counting every host of an empty group. */
-    private fun chooseFromSubset(task: SimTask): SimHost {
-        val total = candidates.indices.sumOf { multiplicity(it) }
-        val subset = min(subsetSize, total)
+    private fun unrank(host: SimHost) {
+        ranking.remove(host)
+    }
 
-        // When every host is in the subset, their order does not matter
-        val order =
-            if (weighers.isEmpty() || subset == total) {
-                candidates.indices
-            } else {
-                val scores = weigh(task)
-                candidates.indices.sortedByDescending { scores[it] }
-            }
-
-        var slot = random.nextInt(subset)
-        for (i in order) {
-            slot -= multiplicity(i)
-            if (slot < 0) {
-                return candidates[i]
-            }
+    /** Recompute the factors from the weight ranges, and with them the score and position of every ranked host. */
+    private fun rescale() {
+        for (i in weighers.indices) {
+            val range = maxWeights[i] - minWeights[i]
+            factors[i] = if (range > 0.0) weighers[i].multiplier / range else 0.0
         }
-        error("Chose slot outside the $subset hosts of the subset")
+
+        ranking.rescore { score(weightsOf[it.id]!!) }
+    }
+
+    /** The sum of [weights], each scaled to between 0 and the multiplier of its weigher. */
+    private fun score(weights: DoubleArray): Double {
+        var score = 0.0
+        for (i in factors.indices) {
+            score += factors[i] * (weights[i] - minWeights[i])
+        }
+        return score
+    }
+
+    /** The array holding the weights of [host]. */
+    private fun weightsOf(host: SimHost): DoubleArray {
+        val id = host.id
+        require(id >= 0) { "Host ${host.name} has a negative id $id" }
+        if (id >= weightsOf.size) {
+            weightsOf = weightsOf.copyOf(maxOf(id + 1, weightsOf.size * 2))
+        }
+        return weightsOf[id] ?: DoubleArray(weighers.size).also { weightsOf[id] = it }
     }
 
     override fun removeTask(
@@ -265,43 +282,8 @@ public class FilterScheduler(
         host: SimHost?,
     ) {
     }
-}
 
-/**
- * An append-only list of hosts that clears in constant time. [ArrayList.clear] writes null to every slot, which costs a
- * pass over all candidates on every selection. Leaving the old references in place is harmless, because hosts live for
- * the whole simulation.
- */
-private class HostBuffer(capacity: Int) : AbstractMutableList<SimHost>(), RandomAccess {
-    private var hosts = arrayOfNulls<SimHost>(maxOf(capacity, 16))
-
-    override var size: Int = 0
-        private set
-
-    override fun get(index: Int): SimHost {
-        if (index >= size) throw IndexOutOfBoundsException("Index $index out of bounds for size $size")
-        return hosts[index]!!
+    private companion object {
+        const val DEFAULT_BLOCK_SIZE = 64
     }
-
-    override fun add(
-        index: Int,
-        element: SimHost,
-    ) {
-        if (index != size) throw UnsupportedOperationException("Hosts can only be appended")
-        if (size == hosts.size) {
-            hosts = hosts.copyOf(size * 2)
-        }
-        hosts[size++] = element
-    }
-
-    override fun clear() {
-        size = 0
-    }
-
-    override fun set(
-        index: Int,
-        element: SimHost,
-    ): SimHost = throw UnsupportedOperationException("Hosts can only be appended")
-
-    override fun removeAt(index: Int): SimHost = throw UnsupportedOperationException("Hosts can only be appended")
 }

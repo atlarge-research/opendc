@@ -152,9 +152,16 @@ private fun JsonObject.toSdkAllocationPolicy(): JsonObject =
                 put("type", JsonPrimitive(type))
                 keep(
                     this@toSdkAllocationPolicy,
-                    "subsetSize", "windowSize", "forecast", "shortForecastThreshold",
-                    "longForecastThreshold", "forecastSize", "taskStopper", "memorize",
+                    "windowSize",
+                    "forecast",
+                    "shortForecastThreshold",
+                    "longForecastThreshold",
+                    "forecastSize",
+                    "taskStopper",
+                    "memorize",
                 )
+                // Filter policies always place a task on the best host; only timeshift policies still choose from a subset
+                if (type == "timeshift") keep(this@toSdkAllocationPolicy, "subsetSize")
                 optionalArrayAt("filters")?.let { put("filters", it.toSdkHostFilters()) }
                 optionalArrayAt("weighers")?.let { put("weighers", it.toSdkHostWeighers()) }
             }

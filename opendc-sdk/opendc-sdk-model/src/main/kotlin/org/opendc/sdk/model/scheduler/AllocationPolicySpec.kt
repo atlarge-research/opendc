@@ -50,22 +50,19 @@ public data class PrefabAllocationPolicySpec(public val prefabName: SchedulerPre
  * Builds a scheduler from a filter-then-weigh pipeline.
  *
  * @property filters The eligibility predicates applied to candidate hosts.
- * @property weighers The scorers used to rank the remaining candidates.
- * @property subsetSize The size of the top-ranked subset sampled from for placement.
+ * @property weighers The scorers used to rank the remaining candidates; each task is placed on the best-ranked host.
  * @property memorize Whether to place each task on an eligible host running the fewest tasks
- *   instead; [weighers] and [subsetSize] are then ignored.
+ *   instead; [weighers] are then ignored.
  */
 @Serializable
 @SerialName("filter")
 public data class FilterAllocationPolicySpec(
     public val filters: List<HostFilterSpec> = listOf(ComputeHostFilterSpec),
     public val weighers: List<HostWeigherSpec> = emptyList(),
-    public val subsetSize: Int = 1,
     public val memorize: Boolean = false,
 ) : AllocationPolicySpec {
     override fun validate(): List<ValidationIssue> =
         buildList {
-            if (subsetSize <= 0) add(ValidationIssue("subsetSize", "must be > 0"))
             addAll(filters.validateEach("filters"))
             addAll(weighers.validateEach("weighers"))
         }

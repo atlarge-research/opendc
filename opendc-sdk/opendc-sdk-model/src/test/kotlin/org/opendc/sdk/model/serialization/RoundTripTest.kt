@@ -134,7 +134,6 @@ class RoundTripTest {
                 allocationPolicy(prefabScheduler(SchedulerPrefabSpec.CoreMem))
                 allocationPolicy(
                     filterScheduler {
-                        subsetSize = 2
                         filter(ComputeHostFilterSpec)
                         filter(RamFilterSpec(1.5))
                         weigher(RamWeigherSpec(2.0))
@@ -203,11 +202,10 @@ class RoundTripTest {
     fun `allocation policies round-trip`(): List<DynamicTest> {
         val policies: List<AllocationPolicySpec> =
             listOf(
-                PrefabAllocationPolicySpec(SchedulerPrefabSpec.Random),
+                PrefabAllocationPolicySpec(SchedulerPrefabSpec.ActiveServers),
                 FilterAllocationPolicySpec(
                     filters = listOf(ComputeHostFilterSpec, RamFilterSpec(1.5)),
                     weighers = listOf(RamWeigherSpec(1.0), CoreRamWeigherSpec(2.0)),
-                    subsetSize = 3,
                 ),
                 TimeShiftAllocationPolicySpec(
                     filters = listOf(ComputeHostFilterSpec),

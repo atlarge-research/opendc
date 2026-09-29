@@ -104,7 +104,7 @@ val exp =
 
         // Two allocation-policy candidates -> the experiment expands to two scenarios.
         allocationPolicy(prefabScheduler(SchedulerName.Mem))
-        allocationPolicy(filterScheduler { subsetSize = 2 })
+        allocationPolicy(filterScheduler { weigher(RamWeigherSpec()) })
     }
 
 val scenarios = exp.expand()
@@ -153,7 +153,7 @@ workload(traceWorkload(source = NamedReference("bitbrains"), sampleFraction = 0.
   ],
   "allocationPolicies": [
     { "type": "prefab", "scheduler": "Mem" },
-    { "type": "filter", "subsetSize": 2 }
+    { "type": "filter", "weighers": [{ "type": "ram" }] }
   ]
 }
 ```
