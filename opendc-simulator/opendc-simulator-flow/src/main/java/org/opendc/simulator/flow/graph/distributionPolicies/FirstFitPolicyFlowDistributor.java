@@ -20,11 +20,11 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine.graph.distributionPolicies;
+package org.opendc.simulator.flow.graph.distributionPolicies;
 
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.FlowDistributor;
-import org.opendc.simulator.engine.graph.FlowEdge;
+import org.opendc.simulator.flow.engine.FlowEngine;
+import org.opendc.simulator.flow.graph.FlowDistributor;
+import org.opendc.simulator.flow.graph.FlowEdge;
 
 /**
  * A {@link FlowDistributor} that implements the First Fit policy for distributing flow.

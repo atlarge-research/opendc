@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.memory;
 
 import org.opendc.simulator.compute.models.MemoryUnit;
-import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.flow.engine.FlowEngine;
 
 /**
  * The [SimMemory] implementation for a machine.

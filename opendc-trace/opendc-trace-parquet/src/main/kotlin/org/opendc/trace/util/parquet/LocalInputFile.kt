@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.util.parquet
+package org.opendc.trace.parquet
 
 import org.apache.parquet.io.InputFile
 import org.apache.parquet.io.SeekableInputStream

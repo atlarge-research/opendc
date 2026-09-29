@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine.engine;
+package org.opendc.simulator.flow.engine;
 
 import java.util.Arrays;
 

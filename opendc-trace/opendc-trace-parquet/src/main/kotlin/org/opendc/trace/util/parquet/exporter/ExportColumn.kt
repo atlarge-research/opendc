@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.util.parquet.exporter
+package org.opendc.trace.parquet.exporter
 
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex

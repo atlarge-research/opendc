@@ -40,7 +40,7 @@ import org.opendc.sdk.runner.base.harness.createTopology
 import org.opendc.sdk.runner.base.harness.fragment
 import org.opendc.sdk.runner.base.harness.runTest
 import org.opendc.trace.formats.failure.parquet.FAILURE_SCHEMA
-import org.opendc.trace.util.parquet.LocalParquetWriter
+import org.opendc.trace.parquet.LocalParquetWriter
 import java.nio.file.Path
 
 /**

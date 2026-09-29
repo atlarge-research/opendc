@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine.graph;
+package org.opendc.simulator.flow.graph;
 
 import org.opendc.simulator.ResourceType;
 

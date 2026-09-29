@@ -20,14 +20,14 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine.engine;
+package org.opendc.simulator.flow.engine;
 
 import java.time.Clock;
 import java.time.InstantSource;
 import java.util.LinkedList;
 import kotlin.coroutines.CoroutineContext;
 import org.opendc.simulator.Dispatcher;
-import org.opendc.simulator.engine.graph.FlowNode;
+import org.opendc.simulator.flow.graph.FlowNode;
 
 /**
  * A {@link FlowEngine} simulates a generic flow network.

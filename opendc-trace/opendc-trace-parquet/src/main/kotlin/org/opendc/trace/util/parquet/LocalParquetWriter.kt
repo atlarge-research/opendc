@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.util.parquet
+package org.opendc.trace.parquet
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.ParquetWriter

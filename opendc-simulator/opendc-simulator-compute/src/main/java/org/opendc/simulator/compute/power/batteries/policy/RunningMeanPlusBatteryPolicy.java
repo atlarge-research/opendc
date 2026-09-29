@@ -26,7 +26,7 @@ import java.util.LinkedList;
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator;
 import org.opendc.simulator.compute.power.batteries.BatteryState;
 import org.opendc.simulator.compute.power.batteries.SimBattery;
-import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.flow.engine.FlowEngine;
 
 /**
  * An improved version of {@link RunningMeanBatteryPolicy}.

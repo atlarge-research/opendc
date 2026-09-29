@@ -20,10 +20,10 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine.engine;
+package org.opendc.simulator.flow.engine;
 
 import java.util.Arrays;
-import org.opendc.simulator.engine.graph.FlowNode;
+import org.opendc.simulator.flow.graph.FlowNode;
 
 /**
  * A specialized priority queue for future event of {@link FlowNode}s sorted on time.

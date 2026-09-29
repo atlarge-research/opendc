@@ -30,9 +30,9 @@ import org.opendc.simulator.compute.power.batteries.BatteryAggregator;
 import org.opendc.simulator.compute.power.batteries.BatteryState;
 import org.opendc.simulator.compute.power.batteries.PowerSourceType;
 import org.opendc.simulator.compute.power.batteries.SimBattery;
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.FlowNode;
+import org.opendc.simulator.flow.engine.FlowEngine;
+import org.opendc.simulator.flow.graph.FlowEdge;
+import org.opendc.simulator.flow.graph.FlowNode;
 
 /**
  * An abstract class representing a battery policy.

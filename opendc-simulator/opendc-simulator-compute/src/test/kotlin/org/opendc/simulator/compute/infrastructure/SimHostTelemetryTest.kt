@@ -30,9 +30,9 @@ import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.compute.task.SimTask
-import org.opendc.simulator.engine.engine.FlowEngine
-import org.opendc.simulator.engine.graph.FlowDistributor
-import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory
+import org.opendc.simulator.flow.engine.FlowEngine
+import org.opendc.simulator.flow.graph.FlowDistributor
+import org.opendc.simulator.flow.graph.distributionPolicies.FlowDistributorFactory
 import java.time.InstantSource
 
 class SimHostTelemetryTest {

@@ -20,13 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine.graph;
+package org.opendc.simulator.flow.graph;
 
 import java.time.InstantSource;
 import java.util.List;
 import java.util.Map;
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.engine.FlowEventQueue;
+import org.opendc.simulator.flow.engine.FlowEngine;
+import org.opendc.simulator.flow.engine.FlowEventQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

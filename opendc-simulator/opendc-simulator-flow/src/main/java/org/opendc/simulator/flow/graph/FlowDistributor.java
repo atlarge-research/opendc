@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine.graph;
+package org.opendc.simulator.flow.graph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,8 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.opendc.simulator.ResourceType;
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory;
+import org.opendc.simulator.flow.engine.FlowEngine;
+import org.opendc.simulator.flow.graph.distributionPolicies.FlowDistributorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

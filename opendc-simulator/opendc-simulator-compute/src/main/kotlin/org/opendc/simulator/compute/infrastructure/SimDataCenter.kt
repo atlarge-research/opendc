@@ -20,11 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.datacenter
+package org.opendc.simulator.compute.infrastructure
 
 import org.opendc.simulator.compute.carbon.CarbonModel
-import org.opendc.simulator.compute.cluster.SimCluster
-import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.telemetry.DataCenterSystemStats
 import java.time.InstantSource

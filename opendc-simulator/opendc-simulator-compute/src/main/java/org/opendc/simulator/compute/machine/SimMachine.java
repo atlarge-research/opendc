@@ -40,14 +40,14 @@ import org.opendc.simulator.compute.power.SimPsu;
 import org.opendc.simulator.compute.workload.ChainWorkload;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.VirtualMachine;
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.FlowConsumer;
-import org.opendc.simulator.engine.graph.FlowDistributor;
-import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.FlowNode;
-import org.opendc.simulator.engine.graph.FlowSupplier;
-import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory;
-import org.opendc.simulator.engine.graph.distributionPolicies.MaxMinFairnessFlowDistributor;
+import org.opendc.simulator.flow.engine.FlowEngine;
+import org.opendc.simulator.flow.graph.FlowConsumer;
+import org.opendc.simulator.flow.graph.FlowDistributor;
+import org.opendc.simulator.flow.graph.FlowEdge;
+import org.opendc.simulator.flow.graph.FlowNode;
+import org.opendc.simulator.flow.graph.FlowSupplier;
+import org.opendc.simulator.flow.graph.distributionPolicies.FlowDistributorFactory;
+import org.opendc.simulator.flow.graph.distributionPolicies.MaxMinFairnessFlowDistributor;
 
 /**
  * A machine that is able to execute {@link SimWorkload} objects.

@@ -32,11 +32,11 @@ import org.opendc.simulator.compute.machine.PerformanceCounters;
 import org.opendc.simulator.compute.models.GpuModel;
 import org.opendc.simulator.compute.power.PowerModel;
 import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModel;
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.FlowConsumer;
-import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.FlowNode;
-import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.opendc.simulator.flow.engine.FlowEngine;
+import org.opendc.simulator.flow.graph.FlowConsumer;
+import org.opendc.simulator.flow.graph.FlowEdge;
+import org.opendc.simulator.flow.graph.FlowNode;
+import org.opendc.simulator.flow.graph.FlowSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

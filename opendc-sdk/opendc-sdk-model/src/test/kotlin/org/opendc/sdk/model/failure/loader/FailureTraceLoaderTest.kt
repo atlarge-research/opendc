@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.opendc.simulator.failure.models.Failure
 import org.opendc.trace.formats.failure.parquet.FAILURE_SCHEMA
-import org.opendc.trace.util.parquet.LocalParquetWriter
+import org.opendc.trace.parquet.LocalParquetWriter
 import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertContains

@@ -27,10 +27,10 @@ import org.opendc.simulator.Dispatcher
 import org.opendc.simulator.Pacer
 import org.opendc.simulator.compute.carbon.CarbonModel
 import org.opendc.simulator.compute.carbon.CarbonReceiver
-import org.opendc.simulator.compute.cluster.SimCluster
-import org.opendc.simulator.compute.datacenter.SimDataCenter
 import org.opendc.simulator.compute.infrastructure.HostListener
 import org.opendc.simulator.compute.infrastructure.HostState
+import org.opendc.simulator.compute.infrastructure.SimCluster
+import org.opendc.simulator.compute.infrastructure.SimDataCenter
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.power.SimPowerSource
 import org.opendc.simulator.compute.power.batteries.SimBattery

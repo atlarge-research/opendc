@@ -26,9 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.opendc.simulator.compute.power.SimPowerSource;
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.FlowNode;
+import org.opendc.simulator.flow.engine.FlowEngine;
+import org.opendc.simulator.flow.graph.FlowEdge;
+import org.opendc.simulator.flow.graph.FlowNode;
 
 /**
  * CarbonModel used to provide the Carbon Intensity of a {@link SimPowerSource}

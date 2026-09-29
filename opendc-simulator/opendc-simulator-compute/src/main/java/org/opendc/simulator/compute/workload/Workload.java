@@ -25,7 +25,7 @@ package org.opendc.simulator.compute.workload;
 import java.util.List;
 import java.util.function.Consumer;
 import org.opendc.simulator.compute.machine.SimMachine;
-import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.opendc.simulator.flow.graph.FlowSupplier;
 
 public interface Workload {
 

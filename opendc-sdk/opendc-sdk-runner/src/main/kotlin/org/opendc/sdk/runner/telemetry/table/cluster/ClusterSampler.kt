@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.runner.telemetry.table.cluster
 
-import org.opendc.simulator.compute.cluster.SimCluster
+import org.opendc.simulator.compute.infrastructure.SimCluster
 import java.time.Duration
 import java.time.Instant
 

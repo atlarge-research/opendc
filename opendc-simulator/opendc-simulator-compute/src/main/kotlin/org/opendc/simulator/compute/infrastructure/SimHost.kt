@@ -35,8 +35,8 @@ import org.opendc.simulator.compute.telemetry.GuestSystemStats
 import org.opendc.simulator.compute.telemetry.HostCpuStats
 import org.opendc.simulator.compute.telemetry.HostGpuStats
 import org.opendc.simulator.compute.telemetry.HostSystemStats
-import org.opendc.simulator.engine.engine.FlowEngine
-import org.opendc.simulator.engine.graph.FlowDistributor
+import org.opendc.simulator.flow.engine.FlowEngine
+import org.opendc.simulator.flow.graph.FlowDistributor
 import java.time.Duration
 import java.time.Instant
 import java.time.InstantSource

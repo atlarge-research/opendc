@@ -20,12 +20,12 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine.engine;
+package org.opendc.simulator.flow.engine;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashMap;
-import org.opendc.simulator.engine.graph.FlowNode;
+import org.opendc.simulator.flow.graph.FlowNode;
 
 /**
  * A specialized {@link ArrayDeque} implementation that contains the {@link FlowNode}s

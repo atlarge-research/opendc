@@ -28,7 +28,7 @@ import org.opendc.sdk.model.topology.EqualSharePolicySpec
 import org.opendc.sdk.model.topology.FirstFitPolicySpec
 import org.opendc.sdk.model.topology.FixedSharePolicySpec
 import org.opendc.sdk.model.topology.MaxMinFairnessPolicySpec
-import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
+import org.opendc.simulator.flow.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
 
 public fun DistributionPolicySpec.toEngine(): DistributionPolicy =
     when (this) {

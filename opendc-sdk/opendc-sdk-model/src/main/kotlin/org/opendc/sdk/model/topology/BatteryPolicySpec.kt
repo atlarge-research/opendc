@@ -31,7 +31,7 @@ import org.opendc.simulator.compute.power.batteries.policy.DoubleThresholdBatter
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanPlusBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.SingleThresholdBatteryPolicy
-import org.opendc.simulator.engine.engine.FlowEngine
+import org.opendc.simulator.flow.engine.FlowEngine
 
 @Serializable
 public sealed interface BatteryPolicySpec

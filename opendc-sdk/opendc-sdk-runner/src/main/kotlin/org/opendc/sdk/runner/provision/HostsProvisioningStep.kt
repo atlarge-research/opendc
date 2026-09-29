@@ -40,8 +40,8 @@ import org.opendc.sdk.model.topology.createSimBatteryPolicy
 import org.opendc.sdk.runner.factory.toEngine
 import org.opendc.simulator.ResourceType
 import org.opendc.simulator.compute.carbon.CarbonModel
-import org.opendc.simulator.compute.cluster.SimCluster
-import org.opendc.simulator.compute.datacenter.SimDataCenter
+import org.opendc.simulator.compute.infrastructure.SimCluster
+import org.opendc.simulator.compute.infrastructure.SimDataCenter
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuModel
@@ -54,11 +54,11 @@ import org.opendc.simulator.compute.power.batteries.SimBattery
 import org.opendc.simulator.compute.power.getPowerModel
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModelFactory.VirtualizationOverheadModelEnum
-import org.opendc.simulator.engine.engine.FlowEngine
-import org.opendc.simulator.engine.graph.FlowDistributor
-import org.opendc.simulator.engine.graph.FlowEdge
-import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory
-import org.opendc.simulator.engine.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
+import org.opendc.simulator.flow.engine.FlowEngine
+import org.opendc.simulator.flow.graph.FlowDistributor
+import org.opendc.simulator.flow.graph.FlowEdge
+import org.opendc.simulator.flow.graph.distributionPolicies.FlowDistributorFactory
+import org.opendc.simulator.flow.graph.distributionPolicies.FlowDistributorFactory.DistributionPolicy
 import java.nio.file.Path
 
 /**

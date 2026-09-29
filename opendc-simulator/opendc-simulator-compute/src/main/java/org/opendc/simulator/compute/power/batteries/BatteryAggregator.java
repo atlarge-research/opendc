@@ -27,12 +27,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.opendc.simulator.ResourceType;
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.FlowConsumer;
-import org.opendc.simulator.engine.graph.FlowDistributor;
-import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.FlowNode;
-import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.opendc.simulator.flow.engine.FlowEngine;
+import org.opendc.simulator.flow.graph.FlowConsumer;
+import org.opendc.simulator.flow.graph.FlowDistributor;
+import org.opendc.simulator.flow.graph.FlowEdge;
+import org.opendc.simulator.flow.graph.FlowNode;
+import org.opendc.simulator.flow.graph.FlowSupplier;
 
 public class BatteryAggregator extends FlowNode implements FlowConsumer, FlowSupplier {
 

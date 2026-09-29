@@ -30,8 +30,8 @@ package org.opendc.simulator.compute.workload;
 import java.util.List;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
-import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.FlowNode;
+import org.opendc.simulator.flow.graph.FlowEdge;
+import org.opendc.simulator.flow.graph.FlowNode;
 
 public class CheckpointModel extends FlowNode {
     private SimWorkload simWorkload;

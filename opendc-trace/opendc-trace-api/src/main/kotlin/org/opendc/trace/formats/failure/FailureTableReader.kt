@@ -27,7 +27,7 @@ import org.opendc.trace.conv.FAILURE_DURATION
 import org.opendc.trace.conv.FAILURE_INTENSITY
 import org.opendc.trace.conv.FAILURE_INTERVAL
 import org.opendc.trace.formats.failure.parquet.FailureFragment
-import org.opendc.trace.util.parquet.LocalParquetReader
+import org.opendc.trace.parquet.LocalParquetReader
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID

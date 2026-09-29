@@ -20,13 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.engine.graph.distributionPolicies;
+package org.opendc.simulator.flow.graph.distributionPolicies;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.FlowDistributor;
+import org.opendc.simulator.flow.engine.FlowEngine;
+import org.opendc.simulator.flow.graph.FlowDistributor;
 
 public class FlowDistributorFactory {
 

@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.runner.telemetry.table.powerSource
 
-import org.opendc.trace.util.parquet.exporter.Exportable
+import org.opendc.trace.parquet.exporter.Exportable
 import java.time.Instant
 
 public data class PowerSourceSample(

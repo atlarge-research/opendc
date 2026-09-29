@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.util.parquet.exporter
+package org.opendc.trace.parquet.exporter
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.api.WriteSupport
@@ -34,7 +34,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Type
 import org.apache.parquet.schema.Types
-import org.opendc.trace.util.parquet.ParquetDataWriter
+import org.opendc.trace.parquet.ParquetDataWriter
 import java.io.File
 
 public class Exporter<T : Exportable>

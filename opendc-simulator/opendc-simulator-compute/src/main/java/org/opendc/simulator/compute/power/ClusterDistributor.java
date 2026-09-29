@@ -22,9 +22,9 @@
 
 package org.opendc.simulator.compute.power;
 
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.distributionPolicies.MaxMinFairnessFlowDistributor;
+import org.opendc.simulator.flow.engine.FlowEngine;
+import org.opendc.simulator.flow.graph.FlowEdge;
+import org.opendc.simulator.flow.graph.distributionPolicies.MaxMinFairnessFlowDistributor;
 
 public class ClusterDistributor extends MaxMinFairnessFlowDistributor {
     private long lastUpdate;

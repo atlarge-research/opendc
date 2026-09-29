@@ -30,7 +30,7 @@ import org.opendc.simulator.compute.machine.SimMachine;
 import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
-import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.opendc.simulator.flow.graph.FlowSupplier;
 
 public class TraceWorkload implements Workload {
     private final long checkpointInterval;
