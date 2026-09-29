@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.compute.scheduler.timeshift
 
-import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.scheduler.ComputeScheduler
 import org.opendc.simulator.compute.scheduler.SchedulingRequest
@@ -30,30 +29,20 @@ import org.opendc.simulator.compute.scheduler.SchedulingResult
 import org.opendc.simulator.compute.scheduler.SchedulingResultType
 import org.opendc.simulator.compute.scheduler.filters.HostFilter
 import org.opendc.simulator.compute.task.SimTask
-import java.time.InstantSource
-import java.util.LinkedList
 
+/**
+ * A [org.opendc.simulator.compute.scheduler.MemorizingScheduler] that skips the tasks its [timeshifter] delays.
+ */
 public class MemorizingTimeshift(
     private val filters: List<HostFilter>,
-    override val windowSize: Int,
-    override val clock: InstantSource,
-    override val forecast: Boolean = true,
-    override val shortForecastThreshold: Double = 0.2,
-    override val longForecastThreshold: Double = 0.35,
-    override val forecastSize: Int = 24,
+    public val timeshifter: Timeshifter,
     public val maxTimesSkipped: Int = 7,
-) : ComputeScheduler, Timeshifter {
+) : ComputeScheduler {
     // We assume that there will be max 200 tasks per host.
     // The index of a host list is the number of tasks on that host.
     private val hostsQueue = List(100) { mutableListOf<SimHost>() }
     private var minAvailableHost = 0
     private var numHosts = 0
-
-    override val pastCarbonIntensities: LinkedList<Double> = LinkedList<Double>()
-    override var carbonRunningSum: Double = 0.0
-    override var shortLowCarbon: Boolean = false // Low carbon regime for short tasks (< 2 hours)
-    override var longLowCarbon: Boolean = false // Low carbon regime for long tasks (>= hours)
-    override var connectedCarbonNode: CarbonNode? = null
 
     override fun addHost(host: SimHost) {
         val zeroQueue = hostsQueue[0]
@@ -118,33 +107,8 @@ public class MemorizingTimeshift(
                 return SchedulingResult(SchedulingResultType.EMPTY)
             }
 
-            val task = req.task
-
-            /**
-             If we are not in a low carbon regime, delay tasks.
-             Only delay tasks if they are deferrable and it doesn't violate the deadline.
-             Separate delay thresholds for short and long tasks.
-             */
-            if (task.deferrable) {
-                val durInHours = task.duration / (1000.0 * 60.0 * 60.0)
-                if ((durInHours < 2 && !shortLowCarbon) ||
-                    (durInHours >= 2 && !longLowCarbon)
-                ) {
-                    val currentTime = clock.millis()
-                    val estimatedCompletion = currentTime + task.duration
-                    val deadline = task.deadline
-                    if (estimatedCompletion <= deadline) {
-                        // No need to schedule this task in a high carbon intensity period
-                        continue
-                    }
-//                    val currentTime = clock.instant()
-//                    val estimatedCompletion = currentTime.plus(task.duration)
-//                    val deadline = Instant.ofEpochMilli(task.deadline)
-//                    if (estimatedCompletion.isBefore(deadline)) {
-//                        // No need to schedule this task in a high carbon intensity period
-//                        continue
-//                    }
-                }
+            if (timeshifter.shouldDelay(req.task)) {
+                continue
             }
 
             for (chosenListIndex in minAvailableHost until hostsQueue.size) {

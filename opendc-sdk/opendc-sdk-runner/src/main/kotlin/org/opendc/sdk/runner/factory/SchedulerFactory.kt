@@ -35,7 +35,7 @@ import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.RamFilterSpec
 import org.opendc.sdk.model.scheduler.RamWeigherSpec
 import org.opendc.sdk.model.scheduler.SameHostFilterSpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.TimeshiftSpec
 import org.opendc.sdk.model.scheduler.VCpuCapacityFilterSpec
 import org.opendc.sdk.model.scheduler.VCpuCapacityWeigherSpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
@@ -46,8 +46,8 @@ import org.opendc.simulator.compute.scheduler.ComputeScheduler
 import org.opendc.simulator.compute.scheduler.FilterScheduler
 import org.opendc.simulator.compute.scheduler.MemorizingScheduler
 import org.opendc.simulator.compute.scheduler.filters.ComputeFilter
+import org.opendc.simulator.compute.scheduler.timeshift.CarbonTimeshifter
 import org.opendc.simulator.compute.scheduler.timeshift.MemorizingTimeshift
-import org.opendc.simulator.compute.scheduler.timeshift.TimeshiftScheduler
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
@@ -81,42 +81,26 @@ public fun AllocationPolicySpec.toScheduler(
 ): ComputeScheduler =
     when (this) {
         is PrefabAllocationPolicySpec -> prefabName.policy.toScheduler(seeder, clock, numHosts)
-        is FilterAllocationPolicySpec ->
-            if (memorize) {
-                MemorizingScheduler(filters.map { it.toEngine() })
-            } else {
-                FilterScheduler(filters.map { it.toEngine() }, weighers.map { it.toEngine() }, numHosts)
+        is FilterAllocationPolicySpec -> {
+            val engineFilters = filters.map { it.toEngine() }
+            val timeshifter = timeshift?.toEngine(clock)
+            when {
+                memorize && timeshifter != null -> MemorizingTimeshift(engineFilters, timeshifter)
+                memorize -> MemorizingScheduler(engineFilters)
+                else -> FilterScheduler(engineFilters, weighers.map { it.toEngine() }, numHosts, timeshifter)
             }
-        is TimeShiftAllocationPolicySpec -> toTimeshiftScheduler(seeder, clock)
+        }
     }
 
-/** Builds the engine [EngineTaskStopper] carried by a time-shifting policy, or null when absent. */
+/** Builds the engine [EngineTaskStopper] carried by timeshift settings, or null when absent. */
 internal fun SdkTaskStopper?.toEngine(
     context: CoroutineContext,
     clock: InstantSource,
 ): EngineTaskStopper? = this?.let { EngineTaskStopper(clock, context, it.forecast, it.forecastThreshold, it.forecastSize, it.windowSize) }
 
-private fun TimeShiftAllocationPolicySpec.toTimeshiftScheduler(
-    seeder: RandomGenerator,
-    clock: InstantSource,
-): ComputeScheduler {
-    val engineFilters = filters.map { it.toEngine() }
-    if (memorize) {
-        return MemorizingTimeshift(engineFilters, windowSize, clock, forecast, shortForecastThreshold, longForecastThreshold, forecastSize)
-    }
-    return TimeshiftScheduler(
-        engineFilters,
-        weighers.map { it.toEngine() },
-        windowSize,
-        clock,
-        subsetSize,
-        forecast,
-        shortForecastThreshold,
-        longForecastThreshold,
-        forecastSize,
-        seeder,
-    )
-}
+/** Builds the engine [CarbonTimeshifter] for these settings. */
+private fun TimeshiftSpec.toEngine(clock: InstantSource): CarbonTimeshifter =
+    CarbonTimeshifter(clock, windowSize, forecast, shortForecastThreshold, longForecastThreshold, forecastSize)
 
 private fun HostFilterSpec.toEngine(): EngineHostFilter =
     when (this) {

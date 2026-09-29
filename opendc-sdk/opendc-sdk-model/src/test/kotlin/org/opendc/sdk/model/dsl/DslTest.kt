@@ -42,7 +42,7 @@ import org.opendc.sdk.model.scheduler.RamFilterSpec
 import org.opendc.sdk.model.scheduler.RamWeigherSpec
 import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.TimeshiftSpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.scheduler.VCpuWeigherSpec
 import org.opendc.sdk.model.telemetry.ExportSpec
@@ -147,28 +147,41 @@ class DslTest {
     }
 
     @Test
-    fun `time-shift scheduler DSL equals constructor-built policy`() {
+    fun `timeshift DSL equals constructor-built policy`() {
         val built =
-            timeShiftScheduler {
-                windowSize = 100
-                subsetSize = 2
-                forecast = false
-                shortForecastThreshold = 0.1
-                longForecastThreshold = 0.5
-                forecastSize = 12
-                taskStopper = TaskStopperSpec(windowSize = 50)
-                memorize = false
+            filterScheduler {
                 filter(VCpuFilterSpec(2.0))
                 weigher(VCpuWeigherSpec())
+                timeshift {
+                    windowSize = 100
+                    forecast = false
+                    shortForecastThreshold = 0.1
+                    longForecastThreshold = 0.5
+                    forecastSize = 12
+                    taskStopper = TaskStopperSpec(windowSize = 50)
+                }
             }
 
         val expected =
-            TimeShiftAllocationPolicySpec(
-                filters = listOf(VCpuFilterSpec(2.0)), weighers = listOf(VCpuWeigherSpec()), windowSize = 100, subsetSize = 2,
-                forecast = false, shortForecastThreshold = 0.1, longForecastThreshold = 0.5, forecastSize = 12,
-                taskStopper = TaskStopperSpec(windowSize = 50), memorize = false,
+            FilterAllocationPolicySpec(
+                filters = listOf(VCpuFilterSpec(2.0)),
+                weighers = listOf(VCpuWeigherSpec()),
+                timeshift =
+                    TimeshiftSpec(
+                        windowSize = 100,
+                        forecast = false,
+                        shortForecastThreshold = 0.1,
+                        longForecastThreshold = 0.5,
+                        forecastSize = 12,
+                        taskStopper = TaskStopperSpec(windowSize = 50),
+                    ),
             )
         assertEquals(expected, built)
+    }
+
+    @Test
+    fun `timeshift DSL without settings uses the defaults`() {
+        assertEquals(FilterAllocationPolicySpec(timeshift = TimeshiftSpec()), filterScheduler { timeshift() })
     }
 
     @Test

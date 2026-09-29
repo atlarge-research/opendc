@@ -29,7 +29,7 @@ import org.opendc.sdk.model.scheduler.HostWeigherSpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.TimeshiftSpec
 
 /**
  * Selects a named, prefabricated scheduler.
@@ -47,14 +47,6 @@ public fun prefabScheduler(name: SchedulerPrefabSpec = SchedulerPrefabSpec.Mem):
 public fun filterScheduler(block: FilterSchedulerBuilder.() -> Unit): FilterAllocationPolicySpec =
     FilterSchedulerBuilder().apply(block).build()
 
-/**
- * Builds a carbon-aware time-shifting scheduler.
- *
- * @param block Configures the scheduler through a [TimeShiftSchedulerBuilder].
- */
-public fun timeShiftScheduler(block: TimeShiftSchedulerBuilder.() -> Unit): TimeShiftAllocationPolicySpec =
-    TimeShiftSchedulerBuilder().apply(block).build()
-
 /** Collects the configuration of a [FilterAllocationPolicySpec]. */
 @SdkDsl
 public class FilterSchedulerBuilder {
@@ -64,63 +56,48 @@ public class FilterSchedulerBuilder {
     /** Whether to place each task on an eligible host running the fewest tasks, ignoring the weighers. */
     public var memorize: Boolean = false
 
+    private var timeshift: TimeshiftSpec? = null
+
     public fun filter(filter: HostFilterSpec) {
         filters += filter
     }
 
     public fun weigher(weigher: HostWeigherSpec) {
         weighers += weigher
+    }
+
+    /** Delay deferrable tasks while the carbon intensity is high. */
+    public fun timeshift(block: TimeshiftBuilder.() -> Unit = {}) {
+        timeshift = TimeshiftBuilder().apply(block).build()
     }
 
     internal fun build(): FilterAllocationPolicySpec {
         val resolvedFilters = filters.ifEmpty { listOf(ComputeHostFilterSpec) }
-        return FilterAllocationPolicySpec(resolvedFilters, weighers.toList(), memorize)
+        return FilterAllocationPolicySpec(resolvedFilters, weighers.toList(), memorize, timeshift)
     }
 }
 
-/** Collects the configuration of a [TimeShiftAllocationPolicySpec]. */
+/** Collects the configuration of a [TimeshiftSpec]. */
 @SdkDsl
-public class TimeShiftSchedulerBuilder {
-    private val filters = mutableListOf<HostFilterSpec>()
-    private val weighers = mutableListOf<HostWeigherSpec>()
-
-    /** The number of past samples considered by the carbon signal. */
+public class TimeshiftBuilder {
+    /** The number of past intensities in the moving average. */
     public var windowSize: Int = 168
 
-    /** The size of the top-ranked subset sampled from for placement. */
-    public var subsetSize: Int = 1
-
-    /** Whether to base decisions on forecasted rather than historical values. */
+    /** Whether to compare against the forecast instead of the moving average. */
     public var forecast: Boolean = true
 
-    /** The normalized threshold for the short forecast horizon. */
+    /** The forecast quantile below which the intensity is low for short tasks. */
     public var shortForecastThreshold: Double = 0.2
 
-    /** The normalized threshold for the long forecast horizon. */
+    /** The forecast quantile below which the intensity is low for long tasks. */
     public var longForecastThreshold: Double = 0.35
 
-    /** The number of future samples to forecast. */
+    /** The number of forecasted intensities to compare against. */
     public var forecastSize: Int = 24
 
-    /** The optional policy controlling when deferrable tasks are paused. */
+    /** The optional policy that pauses running tasks while the carbon intensity is high. */
     public var taskStopper: TaskStopperSpec? = null
 
-    /** Whether to memoize scheduling decisions across invocations. */
-    public var memorize: Boolean = true
-
-    public fun filter(filter: HostFilterSpec) {
-        filters += filter
-    }
-
-    public fun weigher(weigher: HostWeigherSpec) {
-        weighers += weigher
-    }
-
-    internal fun build(): TimeShiftAllocationPolicySpec {
-        val resolvedFilters = filters.ifEmpty { listOf(ComputeHostFilterSpec) }
-        return TimeShiftAllocationPolicySpec(
-            resolvedFilters, weighers.toList(), windowSize, subsetSize, forecast,
-            shortForecastThreshold, longForecastThreshold, forecastSize, taskStopper, memorize,
-        )
-    }
+    internal fun build(): TimeshiftSpec =
+        TimeshiftSpec(windowSize, forecast, shortForecastThreshold, longForecastThreshold, forecastSize, taskStopper)
 }

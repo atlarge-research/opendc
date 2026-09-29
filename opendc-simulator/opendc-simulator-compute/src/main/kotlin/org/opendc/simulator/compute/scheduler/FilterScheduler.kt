@@ -26,6 +26,7 @@ import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.models.HostModel
 import org.opendc.simulator.compute.models.HostState
 import org.opendc.simulator.compute.scheduler.filters.HostFilter
+import org.opendc.simulator.compute.scheduler.timeshift.Timeshifter
 import org.opendc.simulator.compute.scheduler.weights.HostWeigher
 import org.opendc.simulator.compute.task.SimTask
 import java.util.TreeSet
@@ -52,22 +53,28 @@ import java.util.TreeSet
  * Empty hosts are grouped by [SimHost.modelId]: empty hosts with the same model look the same to every filter and
  * weigher, so only the lowest-id host of each group is ranked, standing in for the whole group.
  *
+ * With a [timeshifter], the scheduler skips the tasks it delays and places the first task in the queue that may start
+ * now. Delayed tasks stay queued and are considered again in later scheduling cycles.
+ *
  * @param filters The list of filters to apply when searching for an appropriate host.
  * @param weighers The list of weighers to apply when searching for an appropriate host.
  * @param numHosts The expected number of hosts.
  * @param blockSize The number of hosts a block of the ranking aims for.
+ * @param timeshifter Decides which tasks wait instead of being placed now, or null to place every task right away.
  */
 public class FilterScheduler internal constructor(
     private val filters: List<HostFilter>,
     private val weighers: List<HostWeigher>,
     numHosts: Int,
     blockSize: Int,
+    public val timeshifter: Timeshifter? = null,
 ) : ComputeScheduler {
     public constructor(
         filters: List<HostFilter>,
         weighers: List<HostWeigher>,
         numHosts: Int = 1000,
-    ) : this(filters, weighers, numHosts, DEFAULT_BLOCK_SIZE)
+        timeshifter: Timeshifter? = null,
+    ) : this(filters, weighers, numHosts, DEFAULT_BLOCK_SIZE, timeshifter)
 
     /**
      * The hosts [select] chooses from, from the highest score to the lowest: every used host, and the first host of every
@@ -158,25 +165,25 @@ public class FilterScheduler internal constructor(
     }
 
     override fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult {
-        val req = nextRequest(iter) ?: return SchedulingResult(SchedulingResultType.EMPTY)
-        val task = req.task
-
-        val host = ranking.firstFit(task) ?: return SchedulingResult(SchedulingResultType.FAILURE, null, req)
-
-        iter.remove()
-        return SchedulingResult(SchedulingResultType.SUCCESS, host, req)
-    }
-
-    /** Skip and remove cancelled requests, returning the first request still to schedule. */
-    private fun nextRequest(iter: MutableIterator<SchedulingRequest>): SchedulingRequest? {
         while (iter.hasNext()) {
             val req = iter.next()
-            if (!req.isCancelled) {
-                return req
+            if (req.isCancelled) {
+                iter.remove()
+                continue
             }
+
+            // A delayed task stays in the queue; the next task gets its chance
+            if (timeshifter?.shouldDelay(req.task) == true) {
+                continue
+            }
+
+            val host = ranking.firstFit(req.task) ?: return SchedulingResult(SchedulingResultType.FAILURE, null, req)
+
             iter.remove()
+            return SchedulingResult(SchedulingResultType.SUCCESS, host, req)
         }
-        return null
+
+        return SchedulingResult(SchedulingResultType.EMPTY)
     }
 
     /** Add [host] to its group of empty hosts. Only the first host of a group is ranked. */

@@ -816,6 +816,51 @@ internal class FilterSchedulerTest {
     }
 
     @Test
+    fun testDelayedTaskStaysQueuedWhileNextTaskIsPlaced() {
+        val scheduler = FilterScheduler(filters = emptyList(), weighers = emptyList(), timeshifter = { it.deferrable })
+        val host = mockHost()
+        scheduler.addHost(host.withIds())
+
+        val delayed = mockRequest()
+        every { delayed.task.deferrable } returns true
+        val next = mockRequest()
+        every { next.task.deferrable } returns false
+        val queue = mutableListOf(delayed, next)
+
+        val result = scheduler.select(queue.iterator())
+
+        assertEquals(next, result.req)
+        assertEquals(host, result.host)
+        assertEquals(listOf(delayed), queue)
+    }
+
+    @Test
+    fun testOnlyDelayedTasksLeaveNothingToSchedule() {
+        val scheduler = FilterScheduler(filters = emptyList(), weighers = emptyList(), timeshifter = { true })
+        scheduler.addHost(mockHost().withIds())
+
+        val queue = mutableListOf(mockRequest(), mockRequest())
+
+        assertEquals(SchedulingResultType.EMPTY, scheduler.select(queue.iterator()).resultType)
+        assertEquals(2, queue.size)
+    }
+
+    @Test
+    fun testFirstTaskThatMayStartDecidesFailure() {
+        val scheduler = FilterScheduler(filters = emptyList(), weighers = emptyList(), timeshifter = { it.deferrable })
+
+        val delayed = mockRequest()
+        every { delayed.task.deferrable } returns true
+        val next = mockRequest()
+        every { next.task.deferrable } returns false
+
+        val result = scheduler.select(mutableListOf(delayed, next).iterator())
+
+        assertEquals(SchedulingResultType.FAILURE, result.resultType)
+        assertEquals(next, result.req)
+    }
+
+    @Test
     fun testMatchesReferenceWithTwoWeighers() {
         checkAgainstReference(listOf(RamWeigher(1.0), InstanceCountWeigher(-0.5)), seed = 1)
     }

@@ -55,7 +55,7 @@ class SchedulerPrefabSpecTest {
         assertEquals(FilterAllocationPolicySpec(cpuRam, listOf(InstanceCountWeigherSpec(-1.0))), SchedulerPrefabSpec.ActiveServers.policy)
         assertEquals(FilterAllocationPolicySpec(cpuRam, listOf(RamWeigherSpec(-1.0))), SchedulerPrefabSpec.MemInv.policy)
         assertEquals(
-            TimeShiftAllocationPolicySpec(cpuRam, listOf(RamWeigherSpec(1.0)), windowSize = 168, memorize = false),
+            FilterAllocationPolicySpec(cpuRam, listOf(RamWeigherSpec(1.0)), timeshift = TimeshiftSpec()),
             SchedulerPrefabSpec.Timeshift.policy,
         )
         assertEquals(

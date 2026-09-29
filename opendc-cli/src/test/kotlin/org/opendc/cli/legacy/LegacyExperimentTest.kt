@@ -53,7 +53,7 @@ import org.opendc.sdk.model.scheduler.RamFilterSpec
 import org.opendc.sdk.model.scheduler.RamWeigherSpec
 import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.TimeshiftSpec
 import org.opendc.sdk.model.scheduler.VCpuCapacityWeigherSpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.telemetry.AllColumns
@@ -237,11 +237,14 @@ class LegacyExperimentTest {
         )
         assertContains(
             policies,
-            TimeShiftAllocationPolicySpec(
+            FilterAllocationPolicySpec(
                 filters = listOf(ComputeHostFilterSpec),
                 weighers = listOf(RamWeigherSpec(multiplier = 1.0)),
                 memorize = false,
-                taskStopper = TaskStopperSpec(windowSize = 168, forecast = true, forecastThreshold = 0.6, forecastSize = 24),
+                timeshift =
+                    TimeshiftSpec(
+                        taskStopper = TaskStopperSpec(windowSize = 168, forecast = true, forecastThreshold = 0.6, forecastSize = 24),
+                    ),
             ),
         )
     }

@@ -33,7 +33,6 @@ import org.opendc.sdk.model.dsl.filterScheduler
 import org.opendc.sdk.model.dsl.minutes
 import org.opendc.sdk.model.dsl.prefabScheduler
 import org.opendc.sdk.model.dsl.scenario
-import org.opendc.sdk.model.dsl.timeShiftScheduler
 import org.opendc.sdk.model.dsl.traceWorkload
 import org.opendc.sdk.model.failure.ConstantDistributionSpec
 import org.opendc.sdk.model.failure.CustomFailureSpec
@@ -69,7 +68,7 @@ import org.opendc.sdk.model.scheduler.RamWeigherSpec
 import org.opendc.sdk.model.scheduler.SameHostFilterSpec
 import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.TimeshiftSpec
 import org.opendc.sdk.model.scheduler.VCpuCapacityFilterSpec
 import org.opendc.sdk.model.scheduler.VCpuCapacityWeigherSpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
@@ -164,18 +163,18 @@ class RoundTripTest {
                 topology(sampleTopology)
                 workload(sampleWorkload)
                 allocationPolicy(
-                    timeShiftScheduler {
-                        windowSize = 200
-                        subsetSize = 3
-                        forecast = false
-                        shortForecastThreshold = 0.25
-                        longForecastThreshold = 0.4
-                        forecastSize = 12
-                        memorize = false
-                        taskStopper = TaskStopperSpec(windowSize = 100, forecast = false, forecastThreshold = 0.5, forecastSize = 6)
+                    filterScheduler {
                         filter(ComputeHostFilterSpec)
                         filter(VCpuFilterSpec(2.0))
                         weigher(CoreRamWeigherSpec(1.5))
+                        timeshift {
+                            windowSize = 200
+                            forecast = false
+                            shortForecastThreshold = 0.25
+                            longForecastThreshold = 0.4
+                            forecastSize = 12
+                            taskStopper = TaskStopperSpec(windowSize = 100, forecast = false, forecastThreshold = 0.5, forecastSize = 6)
+                        }
                     },
                 )
                 exportModel =
@@ -207,10 +206,11 @@ class RoundTripTest {
                     filters = listOf(ComputeHostFilterSpec, RamFilterSpec(1.5)),
                     weighers = listOf(RamWeigherSpec(1.0), CoreRamWeigherSpec(2.0)),
                 ),
-                TimeShiftAllocationPolicySpec(
+                FilterAllocationPolicySpec(
                     filters = listOf(ComputeHostFilterSpec),
                     weighers = listOf(VCpuWeigherSpec(1.0)),
-                    taskStopper = TaskStopperSpec(),
+                    memorize = true,
+                    timeshift = TimeshiftSpec(taskStopper = TaskStopperSpec()),
                 ),
             )
         return policies.map { policy ->

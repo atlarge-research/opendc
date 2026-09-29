@@ -94,11 +94,10 @@ public enum class SchedulerPrefabSpec(
         ),
     ),
     Timeshift(
-        TimeShiftAllocationPolicySpec(
+        FilterAllocationPolicySpec(
             cpuRamFilters,
             listOf(RamWeigherSpec(1.0)),
-            windowSize = 168,
-            memorize = false,
+            timeshift = TimeshiftSpec(),
         ),
     ),
     ProvisionedCpuGpuCores(

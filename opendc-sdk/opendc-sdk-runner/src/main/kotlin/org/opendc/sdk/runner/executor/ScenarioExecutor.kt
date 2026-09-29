@@ -25,7 +25,10 @@ package org.opendc.sdk.runner.executor
 import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.resource.ResourceProvisioner
 import org.opendc.sdk.model.resource.ResourceReference
-import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.AllocationPolicySpec
+import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.TimeshiftSpec
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.runner.RunResult
@@ -44,6 +47,8 @@ import org.opendc.sdk.runner.telemetry.sink.SinkSession
 import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.compute.scheduler.ComputeScheduler
+import org.opendc.simulator.compute.scheduler.FilterScheduler
+import org.opendc.simulator.compute.scheduler.timeshift.MemorizingTimeshift
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.kotlin.SimulationCoroutineScope
 import org.opendc.simulator.kotlin.runSimulation
@@ -172,21 +177,33 @@ private class ScenarioRun(
     /** Connects a carbon-intensity trace, if the topology declares one, to every carbon-aware component. */
     private suspend fun connectCarbonNode() {
         val carbon = engine.resolveOrNull(CarbonNode::class.java) ?: return
-        val scheduler = engine.resolve(ComputeScheduler::class.java)
-        if (scheduler is CarbonReceiver) {
-            carbon.addReceiver(scheduler)
+        val timeshifter =
+            when (val scheduler = engine.resolve(ComputeScheduler::class.java)) {
+                is FilterScheduler -> scheduler.timeshifter
+                is MemorizingTimeshift -> scheduler.timeshifter
+                else -> null
+            }
+        if (timeshifter is CarbonReceiver) {
+            carbon.addReceiver(timeshifter)
+            // A change in carbon intensity can release delayed tasks, so it starts a scheduling cycle
             carbon.addReceiver(service)
         }
         connectTaskStopper(carbon)
     }
 
     private suspend fun connectTaskStopper(carbon: CarbonNode) {
-        val policy = scenario.allocationPolicy as? TimeShiftAllocationPolicySpec ?: return
-        val taskStopper = policy.taskStopper.toEngine(coroutineContext, clock) ?: return
+        val taskStopper = scenario.allocationPolicy.timeshift()?.taskStopper.toEngine(coroutineContext, clock) ?: return
         taskStopper.setService(service)
         carbon.addReceiver(taskStopper)
     }
 }
+
+/** The timeshift settings of this policy, looking through prefabs. */
+private fun AllocationPolicySpec.timeshift(): TimeshiftSpec? =
+    when (this) {
+        is PrefabAllocationPolicySpec -> prefabName.policy.timeshift()
+        is FilterAllocationPolicySpec -> timeshift
+    }
 
 private fun TopologySpec.gpuCount(): Int = datacenters!!.flatMap { dc -> dc.clusters.flatMap { it.hosts } }.maxOf { it.gpu?.count ?: 0 }
 

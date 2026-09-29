@@ -40,7 +40,6 @@ import org.opendc.sdk.runner.base.harness.runTest
 import org.opendc.sdk.runner.factory.toScheduler
 import org.opendc.simulator.compute.scheduler.FilterScheduler
 import org.opendc.simulator.compute.scheduler.MemorizingScheduler
-import org.opendc.simulator.compute.scheduler.timeshift.TimeshiftScheduler
 import java.time.Instant
 import java.time.InstantSource
 import java.util.SplittableRandom
@@ -52,7 +51,6 @@ class SchedulerTest {
             mapOf(
                 SchedulerPrefabSpec.TaskNumMemorizing to MemorizingScheduler::class,
                 SchedulerPrefabSpec.GpuTaskMemorizing to MemorizingScheduler::class,
-                SchedulerPrefabSpec.Timeshift to TimeshiftScheduler::class,
             )
 
         for (prefab in SchedulerPrefabSpec.entries) {

@@ -138,7 +138,9 @@ private val HOST_WEIGHERS =
  * Scheduler names, the task stopper and the timeshift thresholds are spelled identically in both
  * formats; only the policy's own key for the prefab name and the filter and weigher discriminators
  * differ. A prefab policy without a `policyName` keeps falling back to the default scheduler, exactly
- * as it did before.
+ * as it did before. A timeshift policy becomes a filter policy with timeshift settings; it memorized
+ * by default, so it keeps doing so unless it said otherwise. Subsets no longer exist, so `subsetSize`
+ * is dropped.
  */
 private fun JsonObject.toSdkAllocationPolicy(): JsonObject =
     when (val type = tag("an allocation policy")) {
@@ -147,23 +149,33 @@ private fun JsonObject.toSdkAllocationPolicy(): JsonObject =
                 put("type", JsonPrimitive("prefab"))
                 rename(this@toSdkAllocationPolicy, from = "policyName", to = "prefabName")
             }
-        "filter", "timeshift" ->
+        "filter" ->
             buildJsonObject {
-                put("type", JsonPrimitive(type))
-                keep(
-                    this@toSdkAllocationPolicy,
-                    "windowSize",
-                    "forecast",
-                    "shortForecastThreshold",
-                    "longForecastThreshold",
-                    "forecastSize",
-                    "taskStopper",
-                    "memorize",
-                )
-                // Filter policies always place a task on the best host; only timeshift policies still choose from a subset
-                if (type == "timeshift") keep(this@toSdkAllocationPolicy, "subsetSize")
+                put("type", JsonPrimitive("filter"))
+                keep(this@toSdkAllocationPolicy, "memorize")
                 optionalArrayAt("filters")?.let { put("filters", it.toSdkHostFilters()) }
                 optionalArrayAt("weighers")?.let { put("weighers", it.toSdkHostWeighers()) }
+            }
+        "timeshift" ->
+            buildJsonObject {
+                put("type", JsonPrimitive("filter"))
+                put("memorize", this@toSdkAllocationPolicy["memorize"] ?: JsonPrimitive(true))
+                optionalArrayAt("filters")?.let { put("filters", it.toSdkHostFilters()) }
+                optionalArrayAt("weighers")?.let { put("weighers", it.toSdkHostWeighers()) }
+                put(
+                    "timeshift",
+                    buildJsonObject {
+                        keep(
+                            this@toSdkAllocationPolicy,
+                            "windowSize",
+                            "forecast",
+                            "shortForecastThreshold",
+                            "longForecastThreshold",
+                            "forecastSize",
+                            "taskStopper",
+                        )
+                    },
+                )
             }
         else ->
             throw LegacyFormatException(

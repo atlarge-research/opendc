@@ -29,11 +29,11 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.dsl.experiment
+import org.opendc.sdk.model.dsl.filterScheduler
 import org.opendc.sdk.model.dsl.gib
 import org.opendc.sdk.model.dsl.hours
 import org.opendc.sdk.model.dsl.mhz
 import org.opendc.sdk.model.dsl.scenario
-import org.opendc.sdk.model.dsl.timeShiftScheduler
 import org.opendc.sdk.model.dsl.topology
 import org.opendc.sdk.model.dsl.watts
 import org.opendc.sdk.model.experiment.ScenarioSpec
@@ -125,7 +125,7 @@ class TraceWorkloadTest {
                 scenario {
                     topology(datacenter(PowerModelType.LINEAR, gpu = trace == "small_gpu"))
                     workload(traceWorkload(trace, deferAll = true))
-                    allocationPolicy(timeShiftScheduler { taskStopper = TaskStopperSpec(forecast = false) })
+                    allocationPolicy(filterScheduler { timeshift { taskStopper = TaskStopperSpec(forecast = false) } })
                     exportModel = ExportSpec(exportInterval = 1.hours, printFrequency = null)
                 },
             )
