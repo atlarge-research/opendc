@@ -25,7 +25,7 @@ package org.opendc.sdk.model.experiment
 import org.junit.jupiter.api.Test
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
-import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.DataCenterSpec
 import org.opendc.sdk.model.topology.TopologySpec
@@ -49,13 +49,13 @@ class CartesianTest {
 
     private fun workload(name: String): WorkloadSpec = TraceWorkloadSpec(NamedReference(name))
 
-    private fun policy(scheduler: SchedulerNameSpec): PrefabAllocationPolicySpec = PrefabAllocationPolicySpec(scheduler)
+    private fun policy(scheduler: SchedulerPrefabSpec): PrefabAllocationPolicySpec = PrefabAllocationPolicySpec(scheduler)
 
     @Test
     fun `expand yields the product of the varying axis sizes`() {
         val topologies = setOf(topology("t0"), topology("t1"))
         val workloads = setOf(workload("w0"), workload("w1"))
-        val policies = setOf(policy(SchedulerNameSpec.Mem), policy(SchedulerNameSpec.CoreMem), policy(SchedulerNameSpec.Random))
+        val policies = setOf(policy(SchedulerPrefabSpec.Mem), policy(SchedulerPrefabSpec.CoreMem), policy(SchedulerPrefabSpec.Random))
 
         val experiment =
             ExperimentSpec(
@@ -74,7 +74,7 @@ class CartesianTest {
     fun `expand produces every combination exactly once`() {
         val topologies = setOf(topology("t0"), topology("t1"))
         val workloads = setOf(workload("w0"), workload("w1"))
-        val policies = setOf(policy(SchedulerNameSpec.Mem), policy(SchedulerNameSpec.CoreMem), policy(SchedulerNameSpec.Random))
+        val policies = setOf(policy(SchedulerPrefabSpec.Mem), policy(SchedulerPrefabSpec.CoreMem), policy(SchedulerPrefabSpec.Random))
 
         val experiment =
             ExperimentSpec(
@@ -103,7 +103,7 @@ class CartesianTest {
             ExperimentSpec(
                 topologies = setOf(topology("t0"), topology("t1")),
                 workloads = setOf(workload("w0"), workload("w1")),
-                allocationPolicies = setOf(policy(SchedulerNameSpec.Mem), policy(SchedulerNameSpec.CoreMem)),
+                allocationPolicies = setOf(policy(SchedulerPrefabSpec.Mem), policy(SchedulerPrefabSpec.CoreMem)),
                 runs = 7,
                 initialSeed = 42,
             )
@@ -122,9 +122,9 @@ class CartesianTest {
                 workloads = setOf(workload("w0"), workload("w1")),
                 allocationPolicies =
                     setOf(
-                        policy(SchedulerNameSpec.Mem),
-                        policy(SchedulerNameSpec.CoreMem),
-                        policy(SchedulerNameSpec.Random),
+                        policy(SchedulerPrefabSpec.Mem),
+                        policy(SchedulerPrefabSpec.CoreMem),
+                        policy(SchedulerPrefabSpec.Random),
                     ),
             )
 
@@ -138,7 +138,7 @@ class CartesianTest {
     fun `expand scales the product when an additional axis varies`() {
         val topologies = setOf(topology("t0"), topology("t1"))
         val workloads = setOf(workload("w0"), workload("w1"))
-        val policies = setOf(policy(SchedulerNameSpec.Mem), policy(SchedulerNameSpec.CoreMem), policy(SchedulerNameSpec.Random))
+        val policies = setOf(policy(SchedulerPrefabSpec.Mem), policy(SchedulerPrefabSpec.CoreMem), policy(SchedulerPrefabSpec.Random))
         val maxFailures = setOf(5, 10)
 
         val experiment =

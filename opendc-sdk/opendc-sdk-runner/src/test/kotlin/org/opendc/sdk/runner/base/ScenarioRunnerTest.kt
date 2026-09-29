@@ -32,7 +32,7 @@ import org.opendc.sdk.model.dsl.watts
 import org.opendc.sdk.model.generators.generateTopology
 import org.opendc.sdk.model.generators.generateWorkload
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
-import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
@@ -116,7 +116,7 @@ class ScenarioRunnerTest {
             )
         val topology = topologySingle2000
 
-        val monitor = runTest(topology, workload, allocationPolicy = PrefabAllocationPolicySpec(SchedulerNameSpec.TaskNumMemorizing))
+        val monitor = runTest(topology, workload, allocationPolicy = PrefabAllocationPolicySpec(SchedulerPrefabSpec.TaskNumMemorizing))
 
         assertAll(
             { assertEquals(15 * 60 * 1000, monitor.maxTimestamp) { "Total runtime incorrect" } },

@@ -44,7 +44,7 @@ public sealed interface AllocationPolicySpec : Validatable {
  */
 @Serializable
 @SerialName("prefab")
-public data class PrefabAllocationPolicySpec(public val prefabName: SchedulerNameSpec = SchedulerNameSpec.Mem) : AllocationPolicySpec
+public data class PrefabAllocationPolicySpec(public val prefabName: SchedulerPrefabSpec = SchedulerPrefabSpec.Mem) : AllocationPolicySpec
 
 /**
  * Builds a scheduler from a filter-then-weigh pipeline.
@@ -52,6 +52,8 @@ public data class PrefabAllocationPolicySpec(public val prefabName: SchedulerNam
  * @property filters The eligibility predicates applied to candidate hosts.
  * @property weighers The scorers used to rank the remaining candidates.
  * @property subsetSize The size of the top-ranked subset sampled from for placement.
+ * @property memorize Whether to place each task on an eligible host running the fewest tasks
+ *   instead; [weighers] and [subsetSize] are then ignored.
  */
 @Serializable
 @SerialName("filter")
@@ -59,6 +61,7 @@ public data class FilterAllocationPolicySpec(
     public val filters: List<HostFilterSpec> = listOf(ComputeHostFilterSpec),
     public val weighers: List<HostWeigherSpec> = emptyList(),
     public val subsetSize: Int = 1,
+    public val memorize: Boolean = false,
 ) : AllocationPolicySpec {
     override fun validate(): List<ValidationIssue> =
         buildList {

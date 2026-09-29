@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.compute.infrastructure
 
-import org.opendc.simulator.core.ResourceType
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.GpuHostModel
 import org.opendc.simulator.compute.models.HostListener
@@ -39,6 +38,7 @@ import org.opendc.simulator.compute.telemetry.GuestSystemStats
 import org.opendc.simulator.compute.telemetry.HostCpuStats
 import org.opendc.simulator.compute.telemetry.HostGpuStats
 import org.opendc.simulator.compute.telemetry.HostSystemStats
+import org.opendc.simulator.core.ResourceType
 import org.opendc.simulator.flow.engine.FlowEngine
 import org.opendc.simulator.flow.graph.FlowDistributor
 import java.time.Duration

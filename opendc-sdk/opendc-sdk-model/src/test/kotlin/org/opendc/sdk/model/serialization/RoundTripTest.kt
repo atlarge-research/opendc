@@ -67,7 +67,7 @@ import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.RamFilterSpec
 import org.opendc.sdk.model.scheduler.RamWeigherSpec
 import org.opendc.sdk.model.scheduler.SameHostFilterSpec
-import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.VCpuCapacityFilterSpec
@@ -131,7 +131,7 @@ class RoundTripTest {
                     ),
                 )
                 workload(sampleWorkload)
-                allocationPolicy(prefabScheduler(SchedulerNameSpec.CoreMem))
+                allocationPolicy(prefabScheduler(SchedulerPrefabSpec.CoreMem))
                 allocationPolicy(
                     filterScheduler {
                         subsetSize = 2
@@ -203,7 +203,7 @@ class RoundTripTest {
     fun `allocation policies round-trip`(): List<DynamicTest> {
         val policies: List<AllocationPolicySpec> =
             listOf(
-                PrefabAllocationPolicySpec(SchedulerNameSpec.Random),
+                PrefabAllocationPolicySpec(SchedulerPrefabSpec.Random),
                 FilterAllocationPolicySpec(
                     filters = listOf(ComputeHostFilterSpec, RamFilterSpec(1.5)),
                     weighers = listOf(RamWeigherSpec(1.0), CoreRamWeigherSpec(2.0)),

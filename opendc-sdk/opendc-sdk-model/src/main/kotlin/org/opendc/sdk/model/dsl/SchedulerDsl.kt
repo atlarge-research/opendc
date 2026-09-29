@@ -27,7 +27,7 @@ import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.HostFilterSpec
 import org.opendc.sdk.model.scheduler.HostWeigherSpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
-import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
 
@@ -36,7 +36,8 @@ import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
  *
  * @param name The prefabricated scheduler to use.
  */
-public fun prefabScheduler(name: SchedulerNameSpec = SchedulerNameSpec.Mem): PrefabAllocationPolicySpec = PrefabAllocationPolicySpec(name)
+public fun prefabScheduler(name: SchedulerPrefabSpec = SchedulerPrefabSpec.Mem): PrefabAllocationPolicySpec =
+    PrefabAllocationPolicySpec(name)
 
 /**
  * Builds a filter-then-weigh scheduler.
@@ -54,7 +55,7 @@ public fun filterScheduler(block: FilterSchedulerBuilder.() -> Unit): FilterAllo
 public fun timeShiftScheduler(block: TimeShiftSchedulerBuilder.() -> Unit): TimeShiftAllocationPolicySpec =
     TimeShiftSchedulerBuilder().apply(block).build()
 
-/** Collects the filters, weighers, and subset size of a [FilterAllocationPolicySpec]. */
+/** Collects the configuration of a [FilterAllocationPolicySpec]. */
 @SdkDsl
 public class FilterSchedulerBuilder {
     private val filters = mutableListOf<HostFilterSpec>()
@@ -62,6 +63,9 @@ public class FilterSchedulerBuilder {
 
     /** The size of the top-ranked subset sampled from for placement. */
     public var subsetSize: Int = 1
+
+    /** Whether to place each task on an eligible host running the fewest tasks, ignoring the weighers. */
+    public var memorize: Boolean = false
 
     public fun filter(filter: HostFilterSpec) {
         filters += filter
@@ -73,7 +77,7 @@ public class FilterSchedulerBuilder {
 
     internal fun build(): FilterAllocationPolicySpec {
         val resolvedFilters = filters.ifEmpty { listOf(ComputeHostFilterSpec) }
-        return FilterAllocationPolicySpec(resolvedFilters, weighers.toList(), subsetSize)
+        return FilterAllocationPolicySpec(resolvedFilters, weighers.toList(), subsetSize, memorize)
     }
 }
 

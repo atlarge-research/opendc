@@ -44,7 +44,7 @@ import org.opendc.sdk.model.scheduler.VGpuFilterSpec
 import org.opendc.sdk.model.scheduler.VGpuWeigherSpec
 import org.opendc.simulator.compute.scheduler.ComputeScheduler
 import org.opendc.simulator.compute.scheduler.FilterScheduler
-import org.opendc.simulator.compute.scheduler.createPrefabComputeScheduler
+import org.opendc.simulator.compute.scheduler.MemorizingScheduler
 import org.opendc.simulator.compute.scheduler.filters.ComputeFilter
 import org.opendc.simulator.compute.scheduler.timeshift.MemorizingTimeshift
 import org.opendc.simulator.compute.scheduler.timeshift.TimeshiftScheduler
@@ -71,17 +71,22 @@ import org.opendc.simulator.compute.scheduler.weights.VGpuWeigher as EngineVGpuW
 
 /**
  * Converts an SDK [AllocationPolicySpec] into an engine [ComputeScheduler], seeded by [seeder] and
- * clocked by [clock]. [numHosts] sizes the scheduler's internal host bookkeeping.
+ * clocked by [clock]. [numHosts] sizes the scheduler's internal host bookkeeping. A prefab is built
+ * from the [org.opendc.sdk.model.scheduler.SchedulerPrefabSpec.policy] it stands for.
  */
-internal fun AllocationPolicySpec.toScheduler(
+public fun AllocationPolicySpec.toScheduler(
     seeder: RandomGenerator,
     clock: InstantSource,
     numHosts: Int,
 ): ComputeScheduler =
     when (this) {
-        is PrefabAllocationPolicySpec -> createPrefabComputeScheduler(prefabName.name, seeder, clock, numHosts)
+        is PrefabAllocationPolicySpec -> prefabName.policy.toScheduler(seeder, clock, numHosts)
         is FilterAllocationPolicySpec ->
-            FilterScheduler(filters.map { it.toEngine() }, weighers.map { it.toEngine() }, subsetSize, seeder, numHosts)
+            if (memorize) {
+                MemorizingScheduler(filters.map { it.toEngine() })
+            } else {
+                FilterScheduler(filters.map { it.toEngine() }, weighers.map { it.toEngine() }, subsetSize, seeder, numHosts)
+            }
         is TimeShiftAllocationPolicySpec -> toTimeshiftScheduler(seeder, clock)
     }
 

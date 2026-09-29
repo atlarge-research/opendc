@@ -40,7 +40,7 @@ import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.RamFilterSpec
 import org.opendc.sdk.model.scheduler.RamWeigherSpec
-import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
@@ -141,6 +141,13 @@ class DslTest {
     }
 
     @Test
+    fun `filter scheduler DSL passes memorize through`() {
+        val built = filterScheduler { memorize = true }
+
+        assertEquals(FilterAllocationPolicySpec(listOf(ComputeHostFilterSpec), memorize = true), built)
+    }
+
+    @Test
     fun `time-shift scheduler DSL equals constructor-built policy`() {
         val built =
             timeShiftScheduler {
@@ -167,8 +174,8 @@ class DslTest {
 
     @Test
     fun `prefab scheduler DSL equals constructor-built policy`() {
-        assertEquals(PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem), prefabScheduler(SchedulerNameSpec.CoreMem))
-        assertEquals(PrefabAllocationPolicySpec(SchedulerNameSpec.Mem), prefabScheduler())
+        assertEquals(PrefabAllocationPolicySpec(SchedulerPrefabSpec.CoreMem), prefabScheduler(SchedulerPrefabSpec.CoreMem))
+        assertEquals(PrefabAllocationPolicySpec(SchedulerPrefabSpec.Mem), prefabScheduler())
     }
 
     @Test
@@ -213,8 +220,8 @@ class DslTest {
                 initialSeed = 1
                 topology(topology)
                 workload(workload)
-                allocationPolicy(prefabScheduler(SchedulerNameSpec.Mem))
-                allocationPolicy(prefabScheduler(SchedulerNameSpec.CoreMem))
+                allocationPolicy(prefabScheduler(SchedulerPrefabSpec.Mem))
+                allocationPolicy(prefabScheduler(SchedulerPrefabSpec.CoreMem))
                 failureModel(NoFailureSpec)
                 exportModel(ExportSpec())
                 maxNumFailures(5)
@@ -226,8 +233,8 @@ class DslTest {
                 topologies = setOf(topology), workloads = setOf(workload),
                 allocationPolicies =
                     setOf(
-                        PrefabAllocationPolicySpec(SchedulerNameSpec.Mem),
-                        PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem),
+                        PrefabAllocationPolicySpec(SchedulerPrefabSpec.Mem),
+                        PrefabAllocationPolicySpec(SchedulerPrefabSpec.CoreMem),
                     ),
                 failureModels = setOf(NoFailureSpec), maxNumFailures = setOf(5, 10), checkpointModels = setOf(null),
                 exportModels = setOf(ExportSpec()), runs = 5, initialSeed = 1, name = "sweep",

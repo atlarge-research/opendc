@@ -51,7 +51,7 @@ import org.opendc.sdk.model.scheduler.InstanceCountFilterSpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.RamFilterSpec
 import org.opendc.sdk.model.scheduler.RamWeigherSpec
-import org.opendc.sdk.model.scheduler.SchedulerNameSpec
+import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.scheduler.TimeShiftAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.VCpuCapacityWeigherSpec
@@ -221,7 +221,7 @@ class LegacyExperimentTest {
     fun `prefab, filter and timeshift allocation policies carry over`() {
         val policies = load(FEATURES).allocationPolicies
 
-        assertContains(policies, PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem))
+        assertContains(policies, PrefabAllocationPolicySpec(SchedulerPrefabSpec.CoreMem))
         assertContains(
             policies,
             FilterAllocationPolicySpec(

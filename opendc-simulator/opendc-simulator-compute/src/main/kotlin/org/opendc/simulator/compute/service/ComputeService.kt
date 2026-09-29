@@ -23,8 +23,6 @@
 package org.opendc.simulator.compute.service
 
 import mu.KotlinLogging
-import org.opendc.simulator.core.Dispatcher
-import org.opendc.simulator.core.Pacer
 import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.compute.infrastructure.SimCluster
@@ -41,6 +39,8 @@ import org.opendc.simulator.compute.task.SimTask
 import org.opendc.simulator.compute.task.TaskState
 import org.opendc.simulator.compute.telemetry.TaskListener
 import org.opendc.simulator.compute.workload.Workload
+import org.opendc.simulator.core.Dispatcher
+import org.opendc.simulator.core.Pacer
 import java.time.Duration
 import java.time.InstantSource
 import java.util.ArrayDeque
