@@ -40,6 +40,7 @@ import org.opendc.sdk.model.topology.createBatteryPolicy
 import org.opendc.sdk.runner.factory.toEngine
 import org.opendc.simulator.ResourceType
 import org.opendc.simulator.compute.carbon.CarbonNode
+import org.opendc.simulator.compute.cluster.ClusterDistributor
 import org.opendc.simulator.compute.infrastructure.SimCluster
 import org.opendc.simulator.compute.infrastructure.SimDataCenter
 import org.opendc.simulator.compute.infrastructure.SimHost
@@ -47,7 +48,6 @@ import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
-import org.opendc.simulator.compute.cluster.ClusterDistributor
 import org.opendc.simulator.compute.power.PowerSourceNode
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
 import org.opendc.simulator.compute.power.batteries.BatteryNode
