@@ -24,9 +24,9 @@ package org.opendc.simulator.compute.power.batteries.policy;
 
 import java.util.LinkedList;
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator;
+import org.opendc.simulator.compute.power.batteries.BatteryNode;
 import org.opendc.simulator.compute.power.batteries.BatteryState;
-import org.opendc.simulator.compute.power.batteries.SimBattery;
-import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.flow.engine.FlowEngine;
 
 /**
  * An improved version of {@link RunningMeanBatteryPolicy}.
@@ -44,12 +44,12 @@ public class RunningMeanPlusBatteryPolicy extends BatteryPolicy {
     /**
      *
      * @param engine     The {@link FlowEngine} this stage belongs to.
-     * @param battery        The {@link SimBattery} to control.
+     * @param battery        The {@link BatteryNode} to control.
      * @param aggregator    The {@link BatteryAggregator} to use.
      */
     public RunningMeanPlusBatteryPolicy(
             FlowEngine engine,
-            SimBattery battery,
+            BatteryNode battery,
             BatteryAggregator aggregator,
             double startingThreshold,
             int windowSize) {

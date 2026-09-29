@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import org.opendc.simulator.compute.machine.SimMachine;
-import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.opendc.simulator.flow.graph.FlowSupplier;
 
 public record ChainWorkload(
         ArrayList<Workload> workloads,
@@ -63,13 +63,13 @@ public record ChainWorkload(
     }
 
     @Override
-    public SimWorkload startWorkload(FlowSupplier supplier) {
-        return new VirtualMachine(supplier, this);
+    public WorkloadNode startWorkload(FlowSupplier supplier) {
+        return new VirtualMachineNode(supplier, this);
     }
 
     @Override
-    public SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion) {
-        return new VirtualMachine(supplier, this, machine, completion);
+    public WorkloadNode startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion) {
+        return new VirtualMachineNode(supplier, this, machine, completion);
     }
 
     @Override

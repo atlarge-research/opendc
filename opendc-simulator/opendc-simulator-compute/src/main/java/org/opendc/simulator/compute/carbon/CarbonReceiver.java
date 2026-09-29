@@ -26,7 +26,7 @@ public interface CarbonReceiver {
 
     public void updateCarbonIntensity(double carbonIntensity);
 
-    public void setCarbonModel(CarbonModel carbonModel);
+    public void setCarbonNode(CarbonNode carbonNode);
 
-    public void removeCarbonModel(CarbonModel carbonModel);
+    public void removeCarbonNode(CarbonNode carbonNode);
 }

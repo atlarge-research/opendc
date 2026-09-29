@@ -24,23 +24,23 @@ package org.opendc.simulator.compute.power.batteries.policy;
 
 import java.util.List;
 import java.util.Map;
-import org.opendc.simulator.compute.carbon.CarbonModel;
+import org.opendc.simulator.compute.carbon.CarbonNode;
 import org.opendc.simulator.compute.carbon.CarbonReceiver;
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator;
+import org.opendc.simulator.compute.power.batteries.BatteryNode;
 import org.opendc.simulator.compute.power.batteries.BatteryState;
 import org.opendc.simulator.compute.power.batteries.PowerSourceType;
-import org.opendc.simulator.compute.power.batteries.SimBattery;
-import org.opendc.simulator.engine.engine.FlowEngine;
-import org.opendc.simulator.engine.graph.FlowEdge;
-import org.opendc.simulator.engine.graph.FlowNode;
+import org.opendc.simulator.flow.engine.FlowEngine;
+import org.opendc.simulator.flow.graph.FlowEdge;
+import org.opendc.simulator.flow.graph.FlowNode;
 
 /**
  * An abstract class representing a battery policy.
- * A battery policy is used by a {@link SimBattery} to determine when to charge or discharge the battery.
+ * A battery policy is used by a {@link BatteryNode} to determine when to charge or discharge the battery.
  */
 public abstract class BatteryPolicy extends FlowNode implements CarbonReceiver {
 
-    protected final SimBattery battery;
+    protected final BatteryNode battery;
     protected final BatteryAggregator aggregator;
 
     protected double carbonIntensity; // The current carbon Intensity of the grid
@@ -52,7 +52,7 @@ public abstract class BatteryPolicy extends FlowNode implements CarbonReceiver {
      *
      * @param engine The {@link FlowEngine} this node belongs to.
      */
-    public BatteryPolicy(FlowEngine engine, SimBattery battery, BatteryAggregator aggregator) {
+    public BatteryPolicy(FlowEngine engine, BatteryNode battery, BatteryAggregator aggregator) {
         super(engine);
 
         this.battery = battery;
@@ -111,10 +111,10 @@ public abstract class BatteryPolicy extends FlowNode implements CarbonReceiver {
     }
 
     @Override
-    public void setCarbonModel(CarbonModel carbonModel) {}
+    public void setCarbonNode(CarbonNode carbonNode) {}
 
     @Override
-    public void removeCarbonModel(CarbonModel carbonModel) {
+    public void removeCarbonNode(CarbonNode carbonNode) {
         this.close();
     }
 

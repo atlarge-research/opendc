@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.runner.telemetry.table.battery
 
-import org.opendc.simulator.compute.power.batteries.SimBattery
+import org.opendc.simulator.compute.power.batteries.BatteryNode
 import java.time.Duration
 import java.time.Instant
 
@@ -31,7 +31,7 @@ public class BatterySampler(
 ) {
     public fun sample(
         now: Instant,
-        battery: SimBattery,
+        battery: BatteryNode,
     ): BatterySample {
         val timestamp = now
         val timestampAbsolute = now + startTime

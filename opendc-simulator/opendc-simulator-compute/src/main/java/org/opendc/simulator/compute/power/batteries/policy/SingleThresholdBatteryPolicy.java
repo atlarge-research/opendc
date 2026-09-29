@@ -23,9 +23,9 @@
 package org.opendc.simulator.compute.power.batteries.policy;
 
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator;
+import org.opendc.simulator.compute.power.batteries.BatteryNode;
 import org.opendc.simulator.compute.power.batteries.BatteryState;
-import org.opendc.simulator.compute.power.batteries.SimBattery;
-import org.opendc.simulator.engine.engine.FlowEngine;
+import org.opendc.simulator.flow.engine.FlowEngine;
 
 /**
  * A battery policy that uses a single threshold to determine if a better should be charging or discharging.
@@ -39,12 +39,12 @@ public class SingleThresholdBatteryPolicy extends BatteryPolicy {
 
     /**
      * @param engine     The {@link FlowEngine} this node belongs to.
-     * @param battery        The {@link SimBattery} to control.
+     * @param battery        The {@link BatteryNode} to control.
      * @param aggregator    The {@link BatteryAggregator} to use.
      * @param carbonThreshold The carbon intensity threshold to trigger charging or discharging.
      */
     public SingleThresholdBatteryPolicy(
-            FlowEngine engine, SimBattery battery, BatteryAggregator aggregator, double carbonThreshold) {
+            FlowEngine engine, BatteryNode battery, BatteryAggregator aggregator, double carbonThreshold) {
         super(engine, battery, aggregator);
 
         this.carbonThreshold = carbonThreshold;

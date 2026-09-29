@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.dsl.experiment
 import org.opendc.sdk.model.dsl.gib
 import org.opendc.sdk.model.dsl.hours
@@ -103,7 +103,7 @@ class TraceWorkloadTest {
                     topology(datacenter(PowerModelType.LINEAR))
                     workload(traceWorkload("bitbrains-small"))
                     exportModel = ExportSpec(exportInterval = 1.hours, printFrequency = null)
-                    checkpointModel = CheckpointSpec()
+                    checkpointModel = CheckpointModelSpec()
                 },
             )
 

@@ -26,7 +26,7 @@ import org.opendc.trace.TableReader
 import org.opendc.trace.conv.CARBON_INTENSITY
 import org.opendc.trace.conv.CARBON_TIMESTAMP
 import org.opendc.trace.formats.carbon.parquet.CarbonFragment
-import org.opendc.trace.util.parquet.LocalParquetReader
+import org.opendc.trace.parquet.LocalParquetReader
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID

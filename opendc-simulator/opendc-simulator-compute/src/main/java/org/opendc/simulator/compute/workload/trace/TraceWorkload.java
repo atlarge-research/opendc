@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.function.Consumer;
 import org.opendc.simulator.ResourceType;
 import org.opendc.simulator.compute.machine.SimMachine;
-import org.opendc.simulator.compute.workload.SimWorkload;
 import org.opendc.simulator.compute.workload.Workload;
+import org.opendc.simulator.compute.workload.WorkloadNode;
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
-import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.opendc.simulator.flow.graph.FlowSupplier;
 
 public class TraceWorkload implements Workload {
     private final long checkpointInterval;
@@ -191,13 +191,13 @@ public class TraceWorkload implements Workload {
     }
 
     @Override
-    public SimWorkload startWorkload(FlowSupplier supplier) {
-        return new SimTraceWorkload(supplier, this);
+    public WorkloadNode startWorkload(FlowSupplier supplier) {
+        return new TraceWorkloadNode(supplier, this);
     }
 
     @Override
-    public SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion) {
-        return new SimTraceWorkload(supplier, this);
+    public WorkloadNode startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion) {
+        return new TraceWorkloadNode(supplier, this);
     }
 
     public static EfficientBuilder efficientBuilder(

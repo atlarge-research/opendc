@@ -49,10 +49,10 @@ import org.opendc.trace.formats.workload.parquet.FragmentReadSupport
 import org.opendc.trace.formats.workload.parquet.FragmentWriteSupport
 import org.opendc.trace.formats.workload.parquet.TaskReadSupport
 import org.opendc.trace.formats.workload.parquet.TaskWriteSupport
+import org.opendc.trace.parquet.LocalParquetReader
+import org.opendc.trace.parquet.LocalParquetWriter
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
-import org.opendc.trace.util.parquet.LocalParquetReader
-import org.opendc.trace.util.parquet.LocalParquetWriter
 import java.nio.file.Files
 import java.nio.file.Path
 

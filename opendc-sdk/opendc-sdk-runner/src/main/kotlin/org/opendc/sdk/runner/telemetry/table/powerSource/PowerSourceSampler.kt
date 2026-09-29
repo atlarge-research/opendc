@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.runner.telemetry.table.powerSource
 
-import org.opendc.simulator.compute.power.SimPowerSource
+import org.opendc.simulator.compute.power.PowerSourceNode
 import java.time.Duration
 import java.time.Instant
 
@@ -31,7 +31,7 @@ public class PowerSourceSampler(
 ) {
     public fun sample(
         now: Instant,
-        powerSource: SimPowerSource,
+        powerSource: PowerSourceNode,
     ): PowerSourceSample {
         val timestamp = now
         val timestampAbsolute = now + startTime

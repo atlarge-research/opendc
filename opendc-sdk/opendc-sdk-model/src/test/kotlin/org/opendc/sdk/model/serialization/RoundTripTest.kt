@@ -27,7 +27,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
-import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.dsl.experiment
 import org.opendc.sdk.model.dsl.filterScheduler
 import org.opendc.sdk.model.dsl.minutes
@@ -143,7 +143,7 @@ class RoundTripTest {
                 failureModel(PrefabFailureSpec(FailurePrefabSpec.G5k06Exp))
                 failureModel(NoFailureSpec)
                 exportModel(ExportSpec())
-                checkpointModel(CheckpointSpec())
+                checkpointModel(CheckpointModelSpec())
                 checkpointModel(null)
                 maxNumFailures(5)
                 maxNumFailures(10)
@@ -192,7 +192,7 @@ class RoundTripTest {
                         duration = ConstantDistributionSpec(value = 300.0),
                         hostFraction = UniformDistributionSpec(upper = 0.5, lower = 0.1),
                     )
-                checkpointModel = CheckpointSpec()
+                checkpointModel = CheckpointModelSpec()
             }
 
         val text = SdkJson.encodeToString(builtScenario)

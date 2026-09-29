@@ -39,8 +39,8 @@ import org.opendc.trace.conv.TASK_NUM_FRAGMENTS
 import org.opendc.trace.conv.TASK_PARENTS
 import org.opendc.trace.conv.TASK_SUBMISSION_TIME
 import org.opendc.trace.formats.workload.parquet.TaskParquetSchema
+import org.opendc.trace.parquet.LocalParquetReader
 import org.opendc.trace.util.convertTo
-import org.opendc.trace.util.parquet.LocalParquetReader
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID

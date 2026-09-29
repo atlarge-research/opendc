@@ -28,7 +28,7 @@ import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.scheduler.SchedulingRequest
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.compute.workload.ChainWorkload
-import org.opendc.simulator.compute.workload.VirtualMachine
+import org.opendc.simulator.compute.workload.VirtualMachineNode
 import org.opendc.simulator.compute.workload.Workload
 
 /**
@@ -149,7 +149,7 @@ public class SimTask(
     /**
      * The virtual machine running this task on its [host], or `null` when the task is not running on a host.
      */
-    public var virtualMachine: VirtualMachine? = null
+    public var virtualMachine: VirtualMachineNode? = null
         internal set
 
     // The submission time is shifted by the workload loaders, so unlike the other statistics it can be set from outside.
@@ -277,7 +277,7 @@ public class SimTask(
 
         // The machine calls the callback once, when the workload stops. This can happen before startWorkload returns,
         // in which case vm is still null and the run must not be recorded afterwards.
-        var vm: VirtualMachine? = null
+        var vm: VirtualMachineNode? = null
         var stopped = false
         vm =
             host.simMachine.startWorkload(chainWorkload) { cause ->

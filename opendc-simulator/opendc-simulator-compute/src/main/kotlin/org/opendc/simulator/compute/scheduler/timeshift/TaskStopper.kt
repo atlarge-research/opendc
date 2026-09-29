@@ -25,7 +25,7 @@ package org.opendc.simulator.compute.scheduler.timeshift
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.opendc.simulator.compute.carbon.CarbonModel
+import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.compute.service.ComputeService
 import java.time.InstantSource
@@ -46,7 +46,7 @@ public class TaskStopper(
     private val pastCarbonIntensities = LinkedList<Double>()
     private var carbonRunningSum = 0.0
     private var isHighCarbon = false
-    private var carbonModel: CarbonModel? = null
+    private var carbonNode: CarbonNode? = null
 
     private var service: ComputeService? = null
 
@@ -75,7 +75,7 @@ public class TaskStopper(
         if (!forecast) {
             isHighCarbon = noForecastUpdateCarbonIntensity(newCarbonIntensity)
         } else {
-            val forecast = carbonModel!!.getForecast(forecastSize)
+            val forecast = carbonNode!!.getForecast(forecastSize)
 
             val localForecastSize = forecast.size
             val quantileIndex = (localForecastSize * forecastThreshold).roundToInt()
@@ -104,9 +104,9 @@ public class TaskStopper(
         return isHighCarbon
     }
 
-    override fun setCarbonModel(carbonModel: CarbonModel?) {
-        this.carbonModel = carbonModel
+    override fun setCarbonNode(carbonNode: CarbonNode?) {
+        this.carbonNode = carbonNode
     }
 
-    override fun removeCarbonModel(carbonModel: CarbonModel?) {}
+    override fun removeCarbonNode(carbonNode: CarbonNode?) {}
 }

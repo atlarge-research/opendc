@@ -28,7 +28,7 @@ import org.opendc.trace.conv.FRAGMENT_DURATION
 import org.opendc.trace.conv.FRAGMENT_GPU_USAGE
 import org.opendc.trace.conv.TASK_ID
 import org.opendc.trace.formats.workload.parquet.FragmentParquetSchema
-import org.opendc.trace.util.parquet.LocalParquetReader
+import org.opendc.trace.parquet.LocalParquetReader
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID

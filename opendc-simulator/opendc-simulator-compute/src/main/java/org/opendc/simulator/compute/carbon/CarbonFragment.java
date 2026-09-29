@@ -24,7 +24,7 @@ package org.opendc.simulator.compute.carbon;
 
 /**
  * An object holding the carbon intensity during a specific time frame.
- * Used by {@link CarbonModel}.
+ * Used by {@link CarbonNode}.
  */
 public class CarbonFragment {
     private long startTime;

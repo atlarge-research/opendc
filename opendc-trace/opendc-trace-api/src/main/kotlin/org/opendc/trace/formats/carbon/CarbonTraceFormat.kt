@@ -30,9 +30,9 @@ import org.opendc.trace.conv.CARBON_INTENSITY
 import org.opendc.trace.conv.CARBON_TIMESTAMP
 import org.opendc.trace.conv.TABLE_CARBON
 import org.opendc.trace.formats.carbon.parquet.CarbonReadSupport
+import org.opendc.trace.parquet.LocalParquetReader
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
-import org.opendc.trace.util.parquet.LocalParquetReader
 import java.nio.file.Path
 
 /**

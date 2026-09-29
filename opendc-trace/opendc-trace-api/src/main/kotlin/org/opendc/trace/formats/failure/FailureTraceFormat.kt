@@ -31,9 +31,9 @@ import org.opendc.trace.conv.FAILURE_INTENSITY
 import org.opendc.trace.conv.FAILURE_INTERVAL
 import org.opendc.trace.conv.TABLE_FAILURES
 import org.opendc.trace.formats.failure.parquet.FailureReadSupport
+import org.opendc.trace.parquet.LocalParquetReader
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
-import org.opendc.trace.util.parquet.LocalParquetReader
 import java.nio.file.Path
 
 /**

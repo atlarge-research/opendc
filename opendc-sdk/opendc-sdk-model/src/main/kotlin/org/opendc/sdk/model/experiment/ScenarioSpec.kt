@@ -23,7 +23,7 @@
 package org.opendc.sdk.model.experiment
 
 import kotlinx.serialization.Serializable
-import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
 import org.opendc.sdk.model.scheduler.AllocationPolicySpec
@@ -56,7 +56,7 @@ public data class ScenarioSpec(
     public val allocationPolicy: AllocationPolicySpec,
     public val exportModel: ExportSpec = ExportSpec(),
     public val failureModel: FailureModelSpec = NoFailureSpec,
-    public val checkpointModel: CheckpointSpec? = null,
+    public val checkpointModel: CheckpointModelSpec? = null,
     public val maxNumFailures: Int = 10,
     public val runs: Int = 1,
     public val initialSeed: Int = 0,

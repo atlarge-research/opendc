@@ -25,7 +25,7 @@ package org.opendc.sdk.runner.workload
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.workload.EfficientTraceWorkloadSpec
 import org.opendc.sdk.model.workload.TraceWorkloadSpec
@@ -57,13 +57,13 @@ class WorkloadLoaderTest {
                 sampleFraction = 1.0,
             )
 
-        val checkpointSpec = CheckpointSpec()
+        val checkpointModelSpec = CheckpointModelSpec()
 
         val resourcePath = resourceScope.resolve(workloadSpec.source)
-        val workload = workloadSpec.loadTrace(resourcePath, checkpointSpec).toList()
+        val workload = workloadSpec.loadTrace(resourcePath, checkpointModelSpec).toList()
 
         val efficientResourcePath = resourceScope.resolve(efficientWorkloadSpec.source)
-        val efficientWorkload = efficientWorkloadSpec.loadTrace(efficientResourcePath, checkpointSpec).toList()
+        val efficientWorkload = efficientWorkloadSpec.loadTrace(efficientResourcePath, checkpointModelSpec).toList()
 
         assertTrue(workload.isNotEmpty(), "The workload should not be empty")
         assertEquals(workload.size, efficientWorkload.size, "The two loaders should return the same number of tasks")

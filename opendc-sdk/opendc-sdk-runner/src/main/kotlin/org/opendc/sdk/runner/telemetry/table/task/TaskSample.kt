@@ -23,7 +23,7 @@
 package org.opendc.sdk.runner.telemetry.table.task
 
 import org.opendc.simulator.compute.task.TaskState
-import org.opendc.trace.util.parquet.exporter.Exportable
+import org.opendc.trace.parquet.exporter.Exportable
 import java.time.Instant
 
 public data class TaskSample(

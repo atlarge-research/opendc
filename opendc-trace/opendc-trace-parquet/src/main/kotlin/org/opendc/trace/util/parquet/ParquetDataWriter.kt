@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.util.parquet
+package org.opendc.trace.parquet
 
 import mu.KotlinLogging
 import org.apache.parquet.column.ParquetProperties

@@ -42,10 +42,10 @@ import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
-import org.opendc.trace.util.parquet.exporter.ColListSerializer
-import org.opendc.trace.util.parquet.exporter.ExportColumn
-import org.opendc.trace.util.parquet.exporter.Exportable
-import org.opendc.trace.util.parquet.exporter.columnSerializer
+import org.opendc.trace.parquet.exporter.ColListSerializer
+import org.opendc.trace.parquet.exporter.ExportColumn
+import org.opendc.trace.parquet.exporter.Exportable
+import org.opendc.trace.parquet.exporter.columnSerializer
 
 /**
  * Aggregates the necessary settings to personalize the output

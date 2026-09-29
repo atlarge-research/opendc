@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.model.dsl
 
-import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
@@ -55,7 +55,7 @@ public class ExperimentBuilder {
     private val allocationPolicies = mutableSetOf<AllocationPolicySpec>()
     private val failureModels = mutableSetOf<FailureModelSpec>()
     private val exportModels = mutableSetOf<ExportSpec>()
-    private val checkpointModels = mutableSetOf<CheckpointSpec?>()
+    private val checkpointModels = mutableSetOf<CheckpointModelSpec?>()
     private val maxNumFailures = mutableSetOf<Int>()
 
     /** The number of independent repetitions per scenario. */
@@ -95,7 +95,7 @@ public class ExperimentBuilder {
         exportModels += model
     }
 
-    public fun checkpointModel(model: CheckpointSpec?) {
+    public fun checkpointModel(model: CheckpointModelSpec?) {
         checkpointModels += model
     }
 
@@ -132,7 +132,7 @@ public class ScenarioBuilder {
     public var failureModel: FailureModelSpec = NoFailureSpec
 
     /** Optional checkpointing configuration for tasks. */
-    public var checkpointModel: CheckpointSpec? = null
+    public var checkpointModel: CheckpointModelSpec? = null
 
     /** The maximum number of failures a task may survive before it is terminated. */
     public var maxNumFailures: Int = 10

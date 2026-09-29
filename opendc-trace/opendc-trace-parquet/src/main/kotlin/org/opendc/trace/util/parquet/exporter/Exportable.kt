@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.util.parquet.exporter
+package org.opendc.trace.parquet.exporter
 
 /**
  * Classes that implement this interface can be exported

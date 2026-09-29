@@ -26,7 +26,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
-import org.opendc.trace.util.parquet.exporter.ExportColumn
+import org.opendc.trace.parquet.exporter.ExportColumn
 
 /**
  * This object wraps the [ExportColumn]s to solves ambiguity for field

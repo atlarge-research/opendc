@@ -25,8 +25,12 @@ package org.opendc.simulator.compute.workload;
 import java.util.List;
 import java.util.function.Consumer;
 import org.opendc.simulator.compute.machine.SimMachine;
-import org.opendc.simulator.engine.graph.FlowSupplier;
+import org.opendc.simulator.flow.graph.FlowSupplier;
 
+/**
+ * A static definition of a workload.
+ * This workload is not being simulated and is the base of a {@link WorkloadNode}.
+ */
 public interface Workload {
 
     long checkpointInterval();
@@ -39,9 +43,9 @@ public interface Workload {
 
     long checkpointDelay();
 
-    SimWorkload startWorkload(FlowSupplier supplier);
+    WorkloadNode startWorkload(FlowSupplier supplier);
 
-    SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion);
+    WorkloadNode startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion);
 
     int getLength();
 }

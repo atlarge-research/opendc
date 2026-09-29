@@ -33,7 +33,7 @@ import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
-import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.failure.CustomFailureSpec
 import org.opendc.sdk.model.failure.ExponentialDistributionSpec
@@ -279,7 +279,7 @@ class LegacyExperimentTest {
         assertContains(checkpoints, null)
         assertContains(
             checkpoints,
-            CheckpointSpec(interval = TimeDelta.ofHours(1), duration = TimeDelta.ofMin(5), intervalScaling = 1.5),
+            CheckpointModelSpec(interval = TimeDelta.ofHours(1), duration = TimeDelta.ofMin(5), intervalScaling = 1.5),
         )
     }
 
