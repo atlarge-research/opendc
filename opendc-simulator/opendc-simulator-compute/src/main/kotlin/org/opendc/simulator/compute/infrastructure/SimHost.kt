@@ -24,6 +24,10 @@ package org.opendc.simulator.compute.infrastructure
 
 import org.opendc.simulator.ResourceType
 import org.opendc.simulator.compute.machine.SimMachine
+import org.opendc.simulator.compute.models.GpuHostModel
+import org.opendc.simulator.compute.models.HostListener
+import org.opendc.simulator.compute.models.HostModel
+import org.opendc.simulator.compute.models.HostState
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.PowerModel

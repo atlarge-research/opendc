@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.infrastructure;
+package org.opendc.simulator.compute.models;
 
 /**
  * A model for a GPU in a host.

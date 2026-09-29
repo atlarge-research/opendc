@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute.scheduler.filters
 
-import org.opendc.simulator.compute.infrastructure.HostState
+import org.opendc.simulator.compute.models.HostState
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.task.SimTask
 

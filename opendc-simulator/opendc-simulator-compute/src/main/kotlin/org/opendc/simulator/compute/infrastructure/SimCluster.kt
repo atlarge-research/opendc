@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute.infrastructure
 
-import org.opendc.simulator.compute.power.ClusterDistributor
+import org.opendc.simulator.compute.cluster.ClusterDistributor
 import org.opendc.simulator.compute.telemetry.ClusterSystemStats
 import java.time.InstantSource
 

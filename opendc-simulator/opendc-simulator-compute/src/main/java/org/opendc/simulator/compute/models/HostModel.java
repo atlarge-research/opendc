@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.infrastructure;
+package org.opendc.simulator.compute.models;
 
 import java.util.List;
 

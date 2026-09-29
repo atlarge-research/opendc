@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.infrastructure;
-
-import org.opendc.simulator.compute.task.SimTask;
-import org.opendc.simulator.compute.task.TaskState;
+package org.opendc.simulator.compute.models;
 
 /**
- * Listener interface for events originating from a {@link SimHost}.
+ * The state of a host.
  */
-public interface HostListener {
+public enum HostState {
     /**
-     * This method is invoked when the state of <code>task</code> on <code>host</code> changes.
+     * The host is up and able to host guests.
      */
-    default void onStateChanged(SimHost host, SimTask task, TaskState newState) {}
+    UP,
 
     /**
-     * This method is invoked when the state of a {@link SimHost} has changed.
+     * The host is in a (forced) down state and unable to host any guests.
      */
-    default void onStateChanged(SimHost host, HostState newState) {}
+    DOWN,
+
+    /**
+     * The host is in an error state and unable to host any guests.
+     */
+    ERROR
 }

@@ -27,8 +27,8 @@ import org.opendc.simulator.Dispatcher
 import org.opendc.simulator.Pacer
 import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.carbon.CarbonReceiver
-import org.opendc.simulator.compute.infrastructure.HostListener
-import org.opendc.simulator.compute.infrastructure.HostState
+import org.opendc.simulator.compute.models.HostListener
+import org.opendc.simulator.compute.models.HostState
 import org.opendc.simulator.compute.infrastructure.SimCluster
 import org.opendc.simulator.compute.infrastructure.SimDataCenter
 import org.opendc.simulator.compute.infrastructure.SimHost

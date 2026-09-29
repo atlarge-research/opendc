@@ -22,17 +22,15 @@
 
 package org.opendc.simulator.compute.workload;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// CheckPoint Model
-// TODO: Move this to a separate file
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 import java.util.List;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.opendc.simulator.flow.graph.FlowEdge;
 import org.opendc.simulator.flow.graph.FlowNode;
 
+/**
+ * An interval based model that periodically triggers the connected WorkloadNode to make a snapshot.
+ */
 public class CheckpointNode extends FlowNode {
     private WorkloadNode workload;
     private long checkpointInterval;

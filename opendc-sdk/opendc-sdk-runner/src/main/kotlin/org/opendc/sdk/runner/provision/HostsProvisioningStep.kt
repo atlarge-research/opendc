@@ -47,7 +47,7 @@ import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
-import org.opendc.simulator.compute.power.ClusterDistributor
+import org.opendc.simulator.compute.cluster.ClusterDistributor
 import org.opendc.simulator.compute.power.PowerSourceNode
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
 import org.opendc.simulator.compute.power.batteries.BatteryNode
