@@ -419,8 +419,6 @@ public class ComputeService(
                         deleteTask(task)
                     }
 
-                    scheduler.removeTask(task, if (isKnownHost) host else null)
-
                     // Try to reschedule if needed
                     requestSchedulingCycle()
                 }
@@ -596,7 +594,6 @@ public class ComputeService(
             updateHost(host)
         } catch (cause: Exception) {
             LOGGER.error(cause) { "Failed to deploy VM" }
-            scheduler.removeTask(task, host)
             attemptsFailure++
         }
     }

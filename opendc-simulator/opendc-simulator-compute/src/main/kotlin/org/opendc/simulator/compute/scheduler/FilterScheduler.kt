@@ -152,16 +152,12 @@ public class FilterScheduler internal constructor(
         }
 
         if (host.isEmpty()) {
-            setHostEmpty(host)
+            addEmpty(host)
         } else {
             // A host that just got its first task leaves its group, but stays ranked on its own weights
             removeEmpty(host, keepRanked = true)
             rank(host)
         }
-    }
-
-    override fun setHostEmpty(host: SimHost) {
-        addEmpty(host)
     }
 
     override fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult {
@@ -282,12 +278,6 @@ public class FilterScheduler internal constructor(
             weightsOf = weightsOf.copyOf(maxOf(id + 1, weightsOf.size * 2))
         }
         return weightsOf[id] ?: DoubleArray(weighers.size).also { weightsOf[id] = it }
-    }
-
-    override fun removeTask(
-        task: SimTask,
-        host: SimHost?,
-    ) {
     }
 
     private companion object {
