@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute.scheduler.timeshift
 
-import org.opendc.simulator.compute.carbon.CarbonModel
+import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.scheduler.ComputeScheduler
 import org.opendc.simulator.compute.scheduler.SchedulingRequest
@@ -62,7 +62,7 @@ public class TimeshiftScheduler(
     override var carbonRunningSum: Double = 0.0
     override var shortLowCarbon: Boolean = false // Low carbon regime for short tasks (< 2 hours)
     override var longLowCarbon: Boolean = false // Low carbon regime for long tasks (>= hours)
-    override var carbonMod: CarbonModel? = null
+    override var connectedCarbonNode: CarbonNode? = null
 
     override fun addHost(host: SimHost) {
         hosts.add(host)

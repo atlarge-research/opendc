@@ -25,46 +25,48 @@ package org.opendc.simulator.compute.power;
 import java.util.List;
 import java.util.Map;
 import org.opendc.simulator.ResourceType;
-import org.opendc.simulator.compute.carbon.CarbonModel;
+import org.opendc.simulator.compute.carbon.CarbonNode;
 import org.opendc.simulator.compute.carbon.CarbonReceiver;
-import org.opendc.simulator.compute.cpu.SimCpu;
+import org.opendc.simulator.compute.cpu.CpuNode;
 import org.opendc.simulator.flow.engine.FlowEngine;
+import org.opendc.simulator.flow.graph.FlowConsumer;
 import org.opendc.simulator.flow.graph.FlowEdge;
 import org.opendc.simulator.flow.graph.FlowNode;
 import org.opendc.simulator.flow.graph.FlowSupplier;
 
 /**
- * A {@link SimPsu} implementation that estimates the power consumption based on CPU usage.
+ * A {@link PsuNode} implementation that estimates the power consumption based on CPU usage.
  */
-public final class SimPowerSource extends FlowNode implements FlowSupplier, CarbonReceiver {
+public final class PsuNode extends FlowNode implements FlowSupplier, FlowConsumer, CarbonReceiver {
     private long lastUpdate;
 
-    private double powerDemand = 0.0f;
-    private double powerSupplied = 0.0f;
-    private double totalEnergyUsage = 0.0f;
+    private double incomingPowerDemand = 0.0;
+    private double outgoingPowerDemand = 0.0;
+    private double incomingPowerSupply = 0.0;
+    private double outgoingPowerSupply = 0.0;
+    private double totalEnergyUsage = 0.0;
 
     private double carbonIntensity = 0.0f;
     private double totalCarbonEmission = 0.0f;
 
-    private FlowEdge distributorEdge;
-    private final double capacity;
+    private CarbonNode carbonNode = null;
 
-    private CarbonModel carbonModel = null;
+    private FlowEdge componentEdge;
+    private FlowEdge powerSupplyEdge;
 
-    private final String name;
-    private final String clusterName;
+    private double capacity = Long.MAX_VALUE;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Determine whether the InPort is connected to a {@link SimCpu}.
+     * Determine whether the InPort is connected to a {@link CpuNode}.
      *
      * @return <code>true</code> if the InPort is connected to an OutPort, <code>false</code> otherwise.
      */
     public boolean isConnected() {
-        return distributorEdge != null;
+        return componentEdge != null;
     }
 
     /**
@@ -72,30 +74,31 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
      * <p>
      * This method provides access to the power consumption of the machine before PSU losses are applied.
      */
-    public double getPowerDemand() {
-        return this.powerDemand;
+    public double getIncomingPowerDemand() {
+        return this.incomingPowerDemand;
     }
 
     /**
      * Return the instantaneous power usage of the machine (in W) measured at the InPort of the power supply.
      */
     public double getPowerDraw() {
-        return this.powerSupplied;
-    }
-
-    public double getCarbonIntensity() {
-        return this.carbonIntensity;
+        return this.incomingPowerSupply;
     }
 
     /**
      * Return the cumulated energy usage of the machine (in J) measured at the InPort of the powers supply.
      */
     public double getEnergyUsage() {
+        updateCounters();
         return totalEnergyUsage;
     }
 
+    public double getCarbonIntensity() {
+        return carbonIntensity;
+    }
+
     public double getCarbonEmission() {
-        return this.totalCarbonEmission;
+        return totalCarbonEmission;
     }
 
     @Override
@@ -103,35 +106,14 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
         return this.capacity;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getClusterName() {
-        return clusterName;
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimPowerSource(FlowEngine engine, double max_capacity, String name, String clusterName) {
+    public PsuNode(FlowEngine engine) {
         super(engine);
 
-        this.capacity = max_capacity;
-
         lastUpdate = this.clock.millis();
-
-        this.name = name;
-        this.clusterName = clusterName;
-    }
-
-    public void close() {
-        if (this.carbonModel != null) {
-            this.carbonModel.close();
-        }
-
-        this.closeNode();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,6 +122,13 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
 
     @Override
     public long onUpdate(long now) {
+        updateCounters();
+        double powerSupply = this.incomingPowerSupply;
+
+        if (powerSupply != this.incomingPowerDemand) {
+            this.pushOutgoingSupply(this.componentEdge, powerSupply);
+        }
+
         return Long.MAX_VALUE;
     }
 
@@ -151,14 +140,17 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
      * Calculate the energy usage up until <code>now</code>.
      */
     public void updateCounters(long now) {
+        if (now == this.lastUpdate) {
+            return;
+        }
         long lastUpdate = this.lastUpdate;
         this.lastUpdate = now;
 
         long passedTime = now - lastUpdate;
         if (passedTime > 0) {
-            double energyUsage = (this.powerSupplied * passedTime * 0.001);
+            double energyUsage = (this.incomingPowerSupply * passedTime * 0.001);
 
-            // Compute the energy usage of the machine
+            // Compute the energy usage of the psu
             this.totalEnergyUsage += energyUsage;
             this.totalCarbonEmission += this.carbonIntensity * (energyUsage / 3600000.0);
         }
@@ -169,61 +161,88 @@ public final class SimPowerSource extends FlowNode implements FlowSupplier, Carb
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void handleIncomingDemand(FlowEdge consumerEdge, double newPowerDemand) {
-        this.powerDemand = newPowerDemand;
-
-        double powerSupply = this.powerDemand;
-
-        if (powerSupply != this.powerSupplied) {
-            this.pushOutgoingSupply(this.distributorEdge, powerSupply);
-        }
+    public void pushOutgoingDemand(FlowEdge supplierEdge, double newDemand) {
+        this.outgoingPowerDemand = newDemand;
+        powerSupplyEdge.pushDemand(newDemand);
     }
 
     @Override
     public void pushOutgoingSupply(FlowEdge consumerEdge, double newSupply) {
-        updateCounters();
+        this.outgoingPowerSupply = newSupply;
+        componentEdge.pushSupply(newSupply);
+    }
 
-        this.powerSupplied = newSupply;
-        consumerEdge.pushSupply(newSupply);
+    @Override
+    public void handleIncomingDemand(FlowEdge consumerEdge, double newPowerDemand) {
+        updateCounters();
+        this.incomingPowerDemand = newPowerDemand;
+
+        pushOutgoingDemand(this.powerSupplyEdge, newPowerDemand);
+    }
+
+    @Override
+    public void handleIncomingSupply(FlowEdge supplierEdge, double newPowerSupply) {
+        updateCounters();
+        this.incomingPowerSupply = newPowerSupply;
+
+        pushOutgoingSupply(this.componentEdge, newPowerSupply);
     }
 
     @Override
     public void addConsumerEdge(FlowEdge consumerEdge) {
-        this.distributorEdge = consumerEdge;
+        this.componentEdge = consumerEdge;
+    }
+
+    @Override
+    public void addSupplierEdge(FlowEdge supplierEdge) {
+        this.powerSupplyEdge = supplierEdge;
     }
 
     @Override
     public void removeConsumerEdge(FlowEdge consumerEdge) {
-        this.distributorEdge = null;
+        this.componentEdge = null;
     }
 
-    // Update the carbon intensity of the power source
+    @Override
+    public void removeSupplierEdge(FlowEdge supplierEdge) {
+        this.powerSupplyEdge = null;
+    }
+
+    @Override
+    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
+        List<FlowEdge> supplyingEdges = componentEdge != null ? List.of(componentEdge) : List.of();
+        List<FlowEdge> consumingEdges = powerSupplyEdge != null ? List.of(powerSupplyEdge) : List.of();
+
+        return Map.of(
+                FlowEdge.NodeType.SUPPLYING, supplyingEdges,
+                FlowEdge.NodeType.CONSUMING, consumingEdges);
+    }
+
+    @Override
+    public ResourceType getSupplierResourceType() {
+        return ResourceType.POWER;
+    }
+
+    @Override
+    public ResourceType getConsumerResourceType() {
+        return ResourceType.POWER;
+    }
+
+    @Override
     public void updateCarbonIntensity(double carbonIntensity) {
         this.updateCounters();
         this.carbonIntensity = carbonIntensity;
     }
 
     @Override
-    public void setCarbonModel(CarbonModel carbonModel) {
-        this.carbonModel = carbonModel;
+    public void setCarbonNode(CarbonNode carbonNode) {
+        this.carbonNode = carbonNode;
     }
 
     @Override
-    public void removeCarbonModel(CarbonModel carbonModel) {
+    public void removeCarbonNode(CarbonNode carbonNode) {
         this.updateCounters();
         this.carbonIntensity = 0.0f;
-        this.carbonModel = null;
-    }
-
-    @Override
-    public Map<FlowEdge.NodeType, List<FlowEdge>> getConnectedEdges() {
-        List<FlowEdge> supplierEdges = this.distributorEdge != null ? List.of(this.distributorEdge) : List.of();
-
-        return Map.of(FlowEdge.NodeType.SUPPLYING, supplierEdges);
-    }
-
-    @Override
-    public ResourceType getSupplierResourceType() {
-        return ResourceType.POWER;
+        this.carbonNode = null;
     }
 }

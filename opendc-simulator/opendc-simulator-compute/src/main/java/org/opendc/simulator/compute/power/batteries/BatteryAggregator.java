@@ -57,7 +57,7 @@ public class BatteryAggregator extends FlowNode implements FlowConsumer, FlowSup
      *
      * @param engine The {@link FlowEngine} this node belongs to.
      */
-    public BatteryAggregator(FlowEngine engine, SimBattery battery, FlowDistributor powerSourceDistributor) {
+    public BatteryAggregator(FlowEngine engine, BatteryNode battery, FlowDistributor powerSourceDistributor) {
         super(engine);
 
         this.powerSourceEdge = new FlowEdge(this, powerSourceDistributor);

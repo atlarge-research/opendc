@@ -30,16 +30,16 @@ import java.util.function.Consumer;
 import org.jetbrains.annotations.Nullable;
 import org.opendc.simulator.ResourceType;
 import org.opendc.simulator.compute.ComputeResource;
-import org.opendc.simulator.compute.cpu.SimCpu;
-import org.opendc.simulator.compute.gpu.SimGpu;
+import org.opendc.simulator.compute.cpu.CpuNode;
+import org.opendc.simulator.compute.gpu.GpuNode;
 import org.opendc.simulator.compute.memory.Memory;
 import org.opendc.simulator.compute.models.GpuModel;
 import org.opendc.simulator.compute.models.MachineModel;
 import org.opendc.simulator.compute.power.PowerModel;
-import org.opendc.simulator.compute.power.SimPsu;
+import org.opendc.simulator.compute.power.PsuNode;
 import org.opendc.simulator.compute.workload.ChainWorkload;
-import org.opendc.simulator.compute.workload.SimWorkload;
-import org.opendc.simulator.compute.workload.VirtualMachine;
+import org.opendc.simulator.compute.workload.VirtualMachineNode;
+import org.opendc.simulator.compute.workload.WorkloadNode;
 import org.opendc.simulator.flow.engine.FlowEngine;
 import org.opendc.simulator.flow.graph.FlowConsumer;
 import org.opendc.simulator.flow.graph.FlowDistributor;
@@ -50,7 +50,7 @@ import org.opendc.simulator.flow.graph.distributionPolicies.FlowDistributorFacto
 import org.opendc.simulator.flow.graph.distributionPolicies.MaxMinFairnessFlowDistributor;
 
 /**
- * A machine that is able to execute {@link SimWorkload} objects.
+ * A machine that is able to execute {@link WorkloadNode} objects.
  */
 public class SimMachine {
     private final MachineModel machineModel;
@@ -58,7 +58,7 @@ public class SimMachine {
 
     private final InstantSource clock;
 
-    private SimPsu psu;
+    private PsuNode psu;
     private Memory memory;
 
     private final FlowDistributor[] distributors = new FlowDistributor[ResourceType.values().length];
@@ -130,35 +130,35 @@ public class SimMachine {
         return clock;
     }
 
-    public SimCpu getCpu() {
-        return (SimCpu) this.computeResources.get(ResourceType.CPU).getFirst();
+    public CpuNode getCpu() {
+        return (CpuNode) this.computeResources.get(ResourceType.CPU).getFirst();
     }
 
     public Memory getMemory() {
         return memory;
     }
 
-    public SimPsu getPsu() {
+    public PsuNode getPsu() {
         return psu;
     }
 
-    public ArrayList<SimGpu> getGpus() {
-        ArrayList<SimGpu> gpus = new ArrayList<>();
+    public ArrayList<GpuNode> getGpus() {
+        ArrayList<GpuNode> gpus = new ArrayList<>();
         if (!this.computeResources.containsKey(ResourceType.GPU)) {
             return gpus;
         }
         for (ComputeResource gpu : this.computeResources.get(ResourceType.GPU)) {
-            if (gpu instanceof SimGpu) {
-                gpus.add((SimGpu) gpu);
+            if (gpu instanceof GpuNode) {
+                gpus.add((GpuNode) gpu);
             }
         }
         return gpus;
     }
 
-    public SimGpu getGpu(int gpuId) {
+    public GpuNode getGpu(int gpuId) {
         for (ComputeResource gpu : this.computeResources.get(ResourceType.GPU)) {
             if (gpu.getId() == gpuId) {
-                return (SimGpu) gpu;
+                return (GpuNode) gpu;
             }
         }
         throw new RuntimeException("No such gpu id: " + gpuId);
@@ -211,7 +211,7 @@ public class SimMachine {
                 this.machineModel.getGpuModels().size() * 100);
 
         // Create the psu and cpu and connect them
-        this.psu = new SimPsu(engine);
+        this.psu = new PsuNode(engine);
         new FlowEdge(this.psu, powerDistributor);
         this.distributors[ResourceType.POWER.ordinal()] = new MaxMinFairnessFlowDistributor(
                 engine, 1 + this.machineModel.getGpuModels().size(), 1); // Maybe First fit
@@ -219,7 +219,7 @@ public class SimMachine {
 
         this.computeResources.put(
                 ResourceType.CPU,
-                new ArrayList<>(List.of(new SimCpu(engine, this.machineModel.getCpuModel(), cpuPowerModel, 0))));
+                new ArrayList<>(List.of(new CpuNode(engine, this.machineModel.getCpuModel(), cpuPowerModel, 0))));
 
         // Connect the CPU to the PSU
         new FlowEdge(
@@ -252,7 +252,7 @@ public class SimMachine {
 
             for (GpuModel gpuModel : machineModel.getGpuModels()) {
                 // create a new GPU
-                SimGpu gpu = new SimGpu(
+                GpuNode gpu = new GpuNode(
                         engine, gpuModel, gpuPowerModel, gpuModel.getId(), gpuModel.getVirtualizationOverheadModel());
                 gpus.add(gpu);
                 // Connect the GPU to the distributor
@@ -323,13 +323,13 @@ public class SimMachine {
      * @param workload The workload that needs to be executed
      * @param completion The completion callback that needs to be called when the workload is done
      */
-    public VirtualMachine startWorkload(ChainWorkload workload, Consumer<Exception> completion) {
+    public VirtualMachineNode startWorkload(ChainWorkload workload, Consumer<Exception> completion) {
 
         ArrayList<FlowSupplier> distributors = new ArrayList<>();
         for (ResourceType resourceType : this.availableResourceTypes) {
             distributors.add(this.distributors[resourceType.ordinal()]);
         }
 
-        return (VirtualMachine) workload.startWorkload(distributors, this, completion);
+        return (VirtualMachineNode) workload.startWorkload(distributors, this, completion);
     }
 }

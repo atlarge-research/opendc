@@ -22,8 +22,8 @@
 
 package org.opendc.simulator.compute.infrastructure
 
-import org.opendc.simulator.compute.carbon.CarbonModel
-import org.opendc.simulator.compute.power.SimPowerSource
+import org.opendc.simulator.compute.carbon.CarbonNode
+import org.opendc.simulator.compute.power.PowerSourceNode
 import org.opendc.simulator.compute.telemetry.DataCenterSystemStats
 import java.time.InstantSource
 
@@ -37,8 +37,8 @@ import java.time.InstantSource
 public class SimDataCenter(
     private val name: String,
     private val clock: InstantSource,
-    private val powerSource: SimPowerSource,
-    private val carbonModel: CarbonModel?,
+    private val powerSource: PowerSourceNode,
+    private val carbonNode: CarbonNode?,
 ) : AutoCloseable {
     private var lastReport = clock.millis()
 

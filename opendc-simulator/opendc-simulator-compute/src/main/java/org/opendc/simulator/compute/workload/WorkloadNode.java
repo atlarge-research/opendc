@@ -31,15 +31,15 @@ import org.opendc.simulator.flow.graph.FlowNode;
  *
  * <p>
  * Workloads are stateful objects that may be paused and resumed at a later moment. As such, be careful when using the
- * same {@link SimWorkload} from multiple contexts.
+ * same {@link WorkloadNode} from multiple contexts.
  */
-public abstract class SimWorkload extends FlowNode implements FlowConsumer {
+public abstract class WorkloadNode extends FlowNode implements FlowConsumer {
     /**
      * Construct a new {@link FlowNode} instance.
      *
      * @param engine The {@link FlowEngine} this stage belongs to.
      */
-    public SimWorkload(FlowEngine engine) {
+    public WorkloadNode(FlowEngine engine) {
         super(engine);
     }
 
@@ -55,7 +55,7 @@ public abstract class SimWorkload extends FlowNode implements FlowConsumer {
 
     public abstract Workload getSnapshot();
 
-    public abstract void createCheckpointModel();
+    public abstract void createCheckpointNode();
 
     public abstract long getCheckpointInterval();
 

@@ -40,14 +40,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A {@link VirtualMachine} that composes multiple {@link SimWorkload}s.
+ * A {@link VirtualMachineNode} that composes multiple {@link WorkloadNode}s.
  */
-public final class VirtualMachine extends SimWorkload implements FlowSupplier {
-    private static final Logger LOGGER = LoggerFactory.getLogger(VirtualMachine.class);
+public final class VirtualMachineNode extends WorkloadNode implements FlowSupplier {
+    private static final Logger LOGGER = LoggerFactory.getLogger(VirtualMachineNode.class);
     private final LinkedList<Workload> workloads;
     private int workloadIndex;
 
-    private SimWorkload activeWorkload;
+    private WorkloadNode activeWorkload;
 
     private FlowEdge workloadEdge;
 
@@ -64,7 +64,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     private final long checkpointInterval;
     private final long checkpointDuration;
     private final double checkpointIntervalScaling;
-    private CheckpointModel checkpointModel;
+    private CheckpointNode checkpointNode;
 
     private final ChainWorkload snapshot;
 
@@ -77,7 +77,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
 
     @Override
     public double getCapacity() {
-        throw new UnsupportedOperationException("getCapacity() is not supported for VirtualMachine");
+        throw new UnsupportedOperationException("getCapacity() is not supported for VirtualMachineNode");
     }
 
     @Override
@@ -120,7 +120,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    VirtualMachine(FlowSupplier supplier, ChainWorkload workload) {
+    VirtualMachineNode(FlowSupplier supplier, ChainWorkload workload) {
         super(((FlowNode) supplier).getEngine());
 
         this.snapshot = workload;
@@ -135,7 +135,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         this.lastUpdate = clock.millis();
 
         if (checkpointInterval > 0) {
-            this.createCheckpointModel();
+            this.createCheckpointNode();
         }
 
         this.workloadIndex = -1;
@@ -143,7 +143,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         this.onStart();
     }
 
-    VirtualMachine(
+    VirtualMachineNode(
             List<FlowSupplier> suppliers, ChainWorkload workload, SimMachine machine, Consumer<Exception> completion) {
         super(((FlowNode) suppliers.getFirst()).getEngine());
 
@@ -178,7 +178,7 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
         this.lastUpdate = clock.millis();
 
         if (checkpointInterval > 0) {
-            this.createCheckpointModel();
+            this.createCheckpointNode();
         }
 
         this.workloadIndex = -1;
@@ -197,9 +197,9 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
             return;
         }
 
-        // Create and start a checkpoint model if initiated
+        // Create and start a checkpoint node if initiated
         if (checkpointInterval > 0) {
-            this.checkpointModel.start();
+            this.checkpointNode.start();
         }
 
         this.activeWorkload = this.getNextWorkload().startWorkload(this);
@@ -249,9 +249,9 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
             this.stopWorkloadCause = cause;
         }
 
-        if (this.checkpointModel != null) {
-            this.checkpointModel.close();
-            this.checkpointModel = null;
+        if (this.checkpointNode != null) {
+            this.checkpointNode.close();
+            this.checkpointNode = null;
         }
 
         if (this.activeWorkload != null) {
@@ -271,8 +271,8 @@ public final class VirtualMachine extends SimWorkload implements FlowSupplier {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void createCheckpointModel() {
-        this.checkpointModel = new CheckpointModel(this);
+    public void createCheckpointNode() {
+        this.checkpointNode = new CheckpointNode(this);
     }
 
     @Override

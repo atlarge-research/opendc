@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute.scheduler.timeshift
 
-import org.opendc.simulator.compute.carbon.CarbonModel
+import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.carbon.CarbonReceiver
 import java.time.InstantSource
 import java.util.LinkedList
@@ -40,7 +40,7 @@ public interface Timeshifter : CarbonReceiver {
     public var carbonRunningSum: Double
     public var shortLowCarbon: Boolean // Low carbon regime for short tasks (< 2 hours)
     public var longLowCarbon: Boolean // Low carbon regime for long tasks (>= hours)
-    public var carbonMod: CarbonModel?
+    public var connectedCarbonNode: CarbonNode?
 
     /**
      Compare current carbon intensity to the chosen quantile from the [forecastSize]
@@ -52,7 +52,7 @@ public interface Timeshifter : CarbonReceiver {
             return
         }
 
-        val forecast = carbonMod!!.getForecast(forecastSize)
+        val forecast = connectedCarbonNode!!.getForecast(forecastSize)
         val localForecastSize = forecast.size
 
         val shortQuantileIndex = (localForecastSize * shortForecastThreshold).roundToInt()
@@ -88,9 +88,9 @@ public interface Timeshifter : CarbonReceiver {
         longLowCarbon = (newCarbonIntensity < thresholdCarbonIntensity)
     }
 
-    override fun setCarbonModel(carbonModel: CarbonModel?) {
-        this.carbonMod = carbonModel
+    override fun setCarbonNode(carbonNode: CarbonNode?) {
+        this.connectedCarbonNode = carbonNode
     }
 
-    override fun removeCarbonModel(carbonModel: CarbonModel?) {}
+    override fun removeCarbonNode(carbonNode: CarbonNode?) {}
 }

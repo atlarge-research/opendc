@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.opendc.simulator.ResourceType;
-import org.opendc.simulator.compute.workload.SimWorkload;
-import org.opendc.simulator.compute.workload.VirtualMachine;
+import org.opendc.simulator.compute.workload.VirtualMachineNode;
+import org.opendc.simulator.compute.workload.WorkloadNode;
 import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy;
 import org.opendc.simulator.flow.graph.FlowConsumer;
 import org.opendc.simulator.flow.graph.FlowEdge;
@@ -37,8 +37,8 @@ import org.opendc.simulator.flow.graph.FlowSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimTraceWorkload.class);
+public class TraceWorkloadNode extends WorkloadNode implements FlowConsumer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TraceWorkloadNode.class);
 
     // Cached so ordinal -> ResourceType lookups don't repeatedly clone the array via ResourceType.values()
     private static final ResourceType[] RESOURCE_TYPES = ResourceType.values();
@@ -116,7 +116,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SimTraceWorkload(FlowSupplier supplier, TraceWorkload workload) {
+    public TraceWorkloadNode(FlowSupplier supplier, TraceWorkload workload) {
         super(((FlowNode) supplier).getEngine());
 
         this.workload = workload;
@@ -136,7 +136,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     }
 
     // Needed if workload not started by VM
-    public SimTraceWorkload(List<FlowSupplier> resourceSuppliers, TraceWorkload workload) {
+    public TraceWorkloadNode(List<FlowSupplier> resourceSuppliers, TraceWorkload workload) {
         // same engine for all suppliers
         super(((FlowNode) resourceSuppliers.getFirst()).getEngine());
 
@@ -360,10 +360,10 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * SimTraceWorkload does not make a checkpoint, checkpointing is handled by SimChainWorkload
+     * TraceWorkloadNode does not make a checkpoint, checkpointing is handled by SimChainWorkload
      */
     @Override
-    public void createCheckpointModel() {}
+    public void createCheckpointNode() {}
 
     /**
      * Create a snapshot of the current state of the workload
@@ -540,7 +540,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
         }
 
         this.machineResourceEdges[incommingResourceType.ordinal()] = supplierEdge;
-        if (supplierEdge.getSupplier() instanceof VirtualMachine vm) {
+        if (supplierEdge.getSupplier() instanceof VirtualMachineNode vm) {
             for (ResourceType resourceType : vm.getUsedResourceTypes()) {
                 if (resourceType == incommingResourceType || resourceType == ResourceType.AUXILIARY) {
                     continue;
@@ -555,7 +555,7 @@ public class SimTraceWorkload extends SimWorkload implements FlowConsumer {
 
     /**
      * Handle the removal of the connection to the Virtual Machine
-     * When the connection to the Virtual Machine is removed, the SimTraceWorkload is removed
+     * When the connection to the Virtual Machine is removed, the TraceWorkloadNode is removed
      *
      * @param supplierEdge edge to the VM on which this is running
      */

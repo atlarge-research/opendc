@@ -25,7 +25,7 @@ package org.opendc.sdk.model.topology
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
-import org.opendc.simulator.compute.power.batteries.SimBattery
+import org.opendc.simulator.compute.power.batteries.BatteryNode
 import org.opendc.simulator.compute.power.batteries.policy.BatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.DoubleThresholdBatteryPolicy
 import org.opendc.simulator.compute.power.batteries.policy.RunningMeanBatteryPolicy
@@ -77,10 +77,10 @@ public data class RunningQuartilesPolicySpec(
     val windowSize: Int,
 ) : BatteryPolicySpec
 
-public fun createSimBatteryPolicy(
+public fun createBatteryPolicy(
     batterySpec: BatteryPolicySpec,
     engine: FlowEngine,
-    battery: SimBattery,
+    battery: BatteryNode,
     batteryAggregator: BatteryAggregator,
 ): BatteryPolicy {
     return when (batterySpec) {

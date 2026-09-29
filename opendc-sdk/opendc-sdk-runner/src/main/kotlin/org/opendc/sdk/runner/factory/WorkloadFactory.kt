@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.runner.factory
 
-import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.workload.EfficientTraceWorkloadSpec
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
@@ -50,7 +50,7 @@ import org.opendc.simulator.compute.workload.trace.scaling.ScalingPolicy as Engi
  * already handed off.
  */
 public fun WorkloadSpec.toSimTasks(
-    checkpoint: CheckpointSpec?,
+    checkpoint: CheckpointModelSpec?,
     resolve: (ResourceReference) -> Path,
 ): Queue<SimTask> =
     when (this) {
@@ -66,7 +66,7 @@ public fun WorkloadSpec.toSimTasks(
 
 public fun TraceWorkloadSpec.loadTrace(
     path: Path,
-    checkpoint: CheckpointSpec?,
+    checkpoint: CheckpointModelSpec?,
 ): Queue<SimTask> =
     ArrayDeque(
         ComputeWorkloadLoader(
@@ -82,7 +82,7 @@ public fun TraceWorkloadSpec.loadTrace(
 
 public fun EfficientTraceWorkloadSpec.loadTrace(
     path: Path,
-    checkpoint: CheckpointSpec?,
+    checkpoint: CheckpointModelSpec?,
 ): Queue<SimTask> =
     ArrayDeque(
         EfficientWorkloadLoader(
@@ -98,7 +98,7 @@ public fun EfficientTraceWorkloadSpec.loadTrace(
 
 public fun TaskSpec.toSimTask(
     scaling: EngineScalingPolicy,
-    checkpoint: CheckpointSpec?,
+    checkpoint: CheckpointModelSpec?,
 ): SimTask {
     val engineFragments =
         ArrayList(
@@ -169,8 +169,8 @@ private fun ScalingPolicySpec.toEngine(): EngineScalingPolicy =
         ScalingPolicySpec.Perfect -> PerfectScaling()
     }
 
-private fun CheckpointSpec?.intervalMs(): Long = this?.interval?.toMsLong() ?: 0L
+private fun CheckpointModelSpec?.intervalMs(): Long = this?.interval?.toMsLong() ?: 0L
 
-private fun CheckpointSpec?.durationMs(): Long = this?.duration?.toMsLong() ?: 0L
+private fun CheckpointModelSpec?.durationMs(): Long = this?.duration?.toMsLong() ?: 0L
 
-private fun CheckpointSpec?.scaling(): Double = this?.intervalScaling ?: 1.0
+private fun CheckpointModelSpec?.scaling(): Double = this?.intervalScaling ?: 1.0

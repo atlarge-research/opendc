@@ -39,9 +39,9 @@ public interface Workload {
 
     long checkpointDelay();
 
-    SimWorkload startWorkload(FlowSupplier supplier);
+    WorkloadNode startWorkload(FlowSupplier supplier);
 
-    SimWorkload startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion);
+    WorkloadNode startWorkload(List<FlowSupplier> supplier, SimMachine machine, Consumer<Exception> completion);
 
     int getLength();
 }

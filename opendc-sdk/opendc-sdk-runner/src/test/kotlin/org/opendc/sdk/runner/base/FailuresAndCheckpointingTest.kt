@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.io.TempDir
 import org.opendc.common.units.TimeDelta
-import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.failure.ConstantDistributionSpec
 import org.opendc.sdk.model.failure.CustomFailureSpec
 import org.opendc.sdk.model.failure.TraceBasedFailureSpec
@@ -386,7 +386,7 @@ class FailuresAndCheckpointingTest {
                 workload,
                 failureModel,
                 checkpointModel =
-                    CheckpointSpec(
+                    CheckpointModelSpec(
                         interval = TimeDelta.ofMillis(60 * 1000L),
                         duration = TimeDelta.ofMillis(1000L),
                     ),
@@ -449,7 +449,7 @@ class FailuresAndCheckpointingTest {
                 workload,
                 failureModel,
                 checkpointModel =
-                    CheckpointSpec(
+                    CheckpointModelSpec(
                         interval = TimeDelta.ofMillis(60 * 1000L),
                         duration = TimeDelta.ofMillis(1000L),
                     ),
@@ -511,7 +511,7 @@ class FailuresAndCheckpointingTest {
                 workload,
                 failureModel,
                 checkpointModel =
-                    CheckpointSpec(
+                    CheckpointModelSpec(
                         interval = TimeDelta.ofMillis(60 * 1000L),
                         duration = TimeDelta.ofMillis(1000L),
                     ),
@@ -568,7 +568,7 @@ class FailuresAndCheckpointingTest {
                 workload,
                 failureModel,
                 checkpointModel =
-                    CheckpointSpec(
+                    CheckpointModelSpec(
                         interval = TimeDelta.ofMillis(60 * 1000L),
                         duration = TimeDelta.ofMillis(1000L),
                         intervalScaling = 1.5,
@@ -619,7 +619,7 @@ class FailuresAndCheckpointingTest {
                 workload,
                 failureModel,
                 checkpointModel =
-                    CheckpointSpec(
+                    CheckpointModelSpec(
                         interval = TimeDelta.ofMillis(60 * 1000L),
                         duration = TimeDelta.ofMillis(1000L),
                     ),
@@ -670,7 +670,7 @@ class FailuresAndCheckpointingTest {
                 workload,
                 failureModel,
                 checkpointModel =
-                    CheckpointSpec(
+                    CheckpointModelSpec(
                         interval = TimeDelta.ofMillis(60 * 1000L),
                         duration = TimeDelta.ofMillis(1000L),
                     ),

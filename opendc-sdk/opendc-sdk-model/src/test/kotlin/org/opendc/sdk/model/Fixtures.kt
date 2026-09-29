@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.model
 
-import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.dsl.ghz
 import org.opendc.sdk.model.dsl.gib
 import org.opendc.sdk.model.dsl.kwatts
@@ -166,7 +166,7 @@ public val sampleScenario: ScenarioSpec =
         allocationPolicy = PrefabAllocationPolicySpec(SchedulerNameSpec.CoreMem),
         exportModel = ExportSpec(exportInterval = 10.minutes),
         failureModel = NoFailureSpec,
-        checkpointModel = CheckpointSpec(),
+        checkpointModel = CheckpointModelSpec(),
         maxNumFailures = 5,
         runs = 3,
         initialSeed = 42,

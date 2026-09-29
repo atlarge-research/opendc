@@ -36,10 +36,10 @@ import org.opendc.sdk.model.topology.PowerSourceSpec
 import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
-import org.opendc.sdk.model.topology.createSimBatteryPolicy
+import org.opendc.sdk.model.topology.createBatteryPolicy
 import org.opendc.sdk.runner.factory.toEngine
 import org.opendc.simulator.ResourceType
-import org.opendc.simulator.compute.carbon.CarbonModel
+import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.infrastructure.SimCluster
 import org.opendc.simulator.compute.infrastructure.SimDataCenter
 import org.opendc.simulator.compute.infrastructure.SimHost
@@ -48,9 +48,9 @@ import org.opendc.simulator.compute.models.GpuModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
 import org.opendc.simulator.compute.power.ClusterDistributor
-import org.opendc.simulator.compute.power.SimPowerSource
+import org.opendc.simulator.compute.power.PowerSourceNode
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
-import org.opendc.simulator.compute.power.batteries.SimBattery
+import org.opendc.simulator.compute.power.batteries.BatteryNode
 import org.opendc.simulator.compute.power.getPowerModel
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModelFactory.VirtualizationOverheadModelEnum
@@ -75,7 +75,7 @@ public class HostsProvisioningStep(
     private val resolve: (ResourceReference) -> Path,
 ) : ProvisioningStep {
     private val simHosts = mutableSetOf<SimHost>()
-    private val simPowerSources = mutableListOf<SimPowerSource>()
+    private val powerSources = mutableListOf<PowerSourceNode>()
     private val naming = TopologyNaming()
 
     override fun apply(ctx: ProvisioningContext): AutoCloseable {
@@ -95,8 +95,8 @@ public class HostsProvisioningStep(
                 simHost.close()
             }
 
-            for (simPowerSource in simPowerSources) {
-                simPowerSource.close()
+            for (powerSource in powerSources) {
+                powerSource.close()
             }
         }
     }
@@ -108,7 +108,7 @@ public class HostsProvisioningStep(
         dataCenterSpec: DataCenterSpec,
     ) {
         val (dcPowerSource, dcPowerDistributor) =
-            this.createSimPowerSource(
+            this.createPowerSource(
                 service,
                 engine,
                 dataCenterSpec.powerSource,
@@ -116,8 +116,8 @@ public class HostsProvisioningStep(
                 dataCenterSpec.clusters.size,
             )
 
-        // Create the carbonmodel if provided
-        val carbonModel: CarbonModel? = createCarbonModel(ctx, engine, dataCenterSpec.powerSource, dcPowerSource)
+        // Create the carbon node if provided
+        val carbonNode: CarbonNode? = createCarbonNode(ctx, engine, dataCenterSpec.powerSource, dcPowerSource)
 
         // Create a battery and connect it to the powerSource
         this.addBattery(
@@ -127,7 +127,7 @@ public class HostsProvisioningStep(
             dcPowerSource,
             dcPowerDistributor,
             dataCenterSpec.name,
-            carbonModel,
+            carbonNode,
         )
 
         val simDataCenter =
@@ -135,7 +135,7 @@ public class HostsProvisioningStep(
                 dataCenterSpec.name,
                 engine.clock,
                 dcPowerSource,
-                carbonModel,
+                carbonNode,
             )
 
         service.addDataCenter(simDataCenter)
@@ -166,33 +166,33 @@ public class HostsProvisioningStep(
 
                 // Create hosts, they are connected to the powerMux when SimMachine is created
                 for (hostSpec in hostSpecs) {
-                    this.createHosts(ctx, engine, service, hostSpec, simCluster, clusterPowerDistributor, carbonModel)
+                    this.createHosts(ctx, engine, service, hostSpec, simCluster, clusterPowerDistributor, carbonNode)
                 }
             }
         }
     }
 
     private data class PowerSourceFlows(
-        val simPowerSource: SimPowerSource,
+        val powerSource: PowerSourceNode,
         val powerDistributor: FlowDistributor,
     )
 
-    private fun createSimPowerSource(
+    private fun createPowerSource(
         service: ComputeService,
         engine: FlowEngine,
         powerSourceSpec: PowerSourceSpec,
         clusterName: String,
         numHosts: Int,
     ): PowerSourceFlows {
-        val simPowerSource =
-            SimPowerSource(
+        val powerSource =
+            PowerSourceNode(
                 engine,
                 powerSourceSpec.maxPower.toWatts(),
                 naming.powerSource(powerSourceSpec.name),
                 clusterName,
             )
-        simPowerSources.add(simPowerSource)
-        service.addPowerSource(simPowerSource)
+        powerSources.add(powerSource)
+        service.addPowerSource(powerSource)
 
         val powerDistributor =
             FlowDistributorFactory.getFlowDistributor(
@@ -202,38 +202,38 @@ public class HostsProvisioningStep(
                 1,
             )
 
-        return PowerSourceFlows(simPowerSource, powerDistributor)
+        return PowerSourceFlows(powerSource, powerDistributor)
     }
 
-    private fun createCarbonModel(
+    private fun createCarbonNode(
         ctx: ProvisioningContext,
         engine: FlowEngine,
         powerSourceSpec: PowerSourceSpec,
-        simPowerSource: SimPowerSource,
-    ): CarbonModel? {
+        powerSource: PowerSourceNode,
+    ): CarbonNode? {
         val carbonFragments = powerSourceSpec.carbon?.let { CarbonTraceLoader(resolve(it).toFile()).load() }
-        var carbonModel: CarbonModel? = null
-        // Create Carbon Model
+        var carbonNode: CarbonNode? = null
+        // Create Carbon Node
         if (carbonFragments != null) {
-            carbonModel = CarbonModel(engine, carbonFragments, startTime)
-            carbonModel.addReceiver(simPowerSource)
-            ctx.registry.register(serviceDomain, CarbonModel::class.java, carbonModel)
+            carbonNode = CarbonNode(engine, carbonFragments, startTime)
+            carbonNode.addReceiver(powerSource)
+            ctx.registry.register(serviceDomain, CarbonNode::class.java, carbonNode)
         }
 
-        return carbonModel
+        return carbonNode
     }
 
     private fun addBattery(
         engine: FlowEngine,
         service: ComputeService,
         batterySpec: BatterySpec?,
-        simPowerSource: SimPowerSource,
+        powerSource: PowerSourceNode,
         powerDistributor: FlowDistributor,
         clusterName: String,
-        carbonModel: CarbonModel?,
+        carbonNode: CarbonNode?,
     ) {
         if (batterySpec == null) {
-            FlowEdge(powerDistributor, simPowerSource, ResourceType.POWER)
+            FlowEdge(powerDistributor, powerSource, ResourceType.POWER)
             return
         }
 
@@ -245,11 +245,11 @@ public class HostsProvisioningStep(
                 2,
                 1,
             )
-        FlowEdge(batteryDistributor, simPowerSource)
+        FlowEdge(batteryDistributor, powerSource)
 
         // Create Battery
         val battery =
-            SimBattery(
+            BatteryNode(
                 engine,
                 batterySpec.capacity,
                 batterySpec.chargingSpeed,
@@ -265,14 +265,14 @@ public class HostsProvisioningStep(
         val batteryAggregator = BatteryAggregator(engine, battery, batteryDistributor)
 
         val batteryPolicy =
-            createSimBatteryPolicy(
+            createBatteryPolicy(
                 batterySpec.policy,
                 engine,
                 battery,
                 batteryAggregator,
             )
 
-        carbonModel?.addReceiver(batteryPolicy)
+        carbonNode?.addReceiver(batteryPolicy)
 
         FlowEdge(powerDistributor, batteryAggregator, ResourceType.POWER)
 
@@ -286,7 +286,7 @@ public class HostsProvisioningStep(
         hostSpec: HostSpec,
         simCluster: SimCluster,
         powerDistributor: FlowDistributor,
-        carbonModel: CarbonModel?,
+        carbonNode: CarbonNode?,
     ) {
         repeat(hostSpec.count) {
             val cpus =
@@ -338,7 +338,7 @@ public class HostsProvisioningStep(
                     powerDistributor,
                 )
 
-            carbonModel?.addReceiver(simHost.simMachine.psu)
+            carbonNode?.addReceiver(simHost.simMachine.psu)
 
             require(simHosts.add(simHost)) { "Error when making Host $simHost" }
             service.addHost(simHost)

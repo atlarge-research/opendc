@@ -25,7 +25,7 @@ package org.opendc.sdk.runner.base.harness
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.TimeDelta
-import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
@@ -118,7 +118,7 @@ internal fun runTest(
     workload: List<TaskSpec>,
     failureModel: FailureModelSpec = NoFailureSpec,
     allocationPolicy: AllocationPolicySpec = defaultPolicy,
-    checkpointModel: CheckpointSpec? = null,
+    checkpointModel: CheckpointModelSpec? = null,
     scalingPolicy: ScalingPolicySpec = ScalingPolicySpec.NoDelay,
     exportInterval: TimeDelta = TimeDelta.ofMin(1),
 ): TestMetricExporter {

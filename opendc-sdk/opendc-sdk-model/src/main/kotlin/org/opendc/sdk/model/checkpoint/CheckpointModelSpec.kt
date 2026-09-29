@@ -35,7 +35,7 @@ import org.opendc.sdk.model.validation.ValidationIssue
  * @property intervalScaling Multiplier applied to [interval] after each checkpoint.
  */
 @Serializable
-public data class CheckpointSpec(
+public data class CheckpointModelSpec(
     public val interval: TimeDelta = TimeDelta.ofHours(1),
     public val duration: TimeDelta = TimeDelta.ofMin(5),
     public val intervalScaling: Double = 1.0,

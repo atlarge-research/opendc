@@ -27,7 +27,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
-import org.opendc.sdk.model.checkpoint.CheckpointSpec
+import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.failure.UniformDistributionSpec
 import org.opendc.sdk.model.failure.WeibullDistributionSpec
@@ -130,7 +130,7 @@ class ValidationTest {
 
     @Test
     fun `checkpoint model with non-positive interval reports interval`() {
-        val model = CheckpointSpec(interval = TimeDelta.zero)
+        val model = CheckpointModelSpec(interval = TimeDelta.zero)
 
         val issues = assertDoesNotThrow { model.validate() }
 

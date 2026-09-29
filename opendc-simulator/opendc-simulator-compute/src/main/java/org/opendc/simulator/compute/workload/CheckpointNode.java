@@ -33,28 +33,28 @@ import org.jetbrains.annotations.NotNull;
 import org.opendc.simulator.flow.graph.FlowEdge;
 import org.opendc.simulator.flow.graph.FlowNode;
 
-public class CheckpointModel extends FlowNode {
-    private SimWorkload simWorkload;
+public class CheckpointNode extends FlowNode {
+    private WorkloadNode workload;
     private long checkpointInterval;
     private final long checkpointDuration;
     private final double checkpointIntervalScaling;
 
     private long startOfInterval;
 
-    public CheckpointModel(@NotNull SimWorkload simWorkload) {
-        super(simWorkload.getEngine());
+    public CheckpointNode(@NotNull WorkloadNode workload) {
+        super(workload.getEngine());
 
-        this.checkpointInterval = simWorkload.getCheckpointInterval();
-        this.checkpointDuration = simWorkload.getCheckpointDuration();
-        this.checkpointIntervalScaling = simWorkload.getCheckpointIntervalScaling();
-        this.simWorkload = simWorkload;
+        this.checkpointInterval = workload.getCheckpointInterval();
+        this.checkpointDuration = workload.getCheckpointDuration();
+        this.checkpointIntervalScaling = workload.getCheckpointIntervalScaling();
+        this.workload = workload;
 
         this.startOfInterval = this.clock.millis();
     }
 
     @Override
     public long onUpdate(long now) {
-        if (this.simWorkload == null) {
+        if (this.workload == null) {
             return Long.MAX_VALUE;
         }
 
@@ -66,7 +66,7 @@ public class CheckpointModel extends FlowNode {
             return now + remainingTime;
         }
 
-        simWorkload.makeSnapshot(now);
+        workload.makeSnapshot(now);
 
         // start new fragment
         this.startOfInterval = now;
@@ -84,7 +84,7 @@ public class CheckpointModel extends FlowNode {
     public void close() {
         this.closeNode();
 
-        this.simWorkload = null;
+        this.workload = null;
     }
 
     @Override

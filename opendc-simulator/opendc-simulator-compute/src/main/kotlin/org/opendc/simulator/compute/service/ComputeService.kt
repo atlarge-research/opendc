@@ -25,15 +25,15 @@ package org.opendc.simulator.compute.service
 import mu.KotlinLogging
 import org.opendc.simulator.Dispatcher
 import org.opendc.simulator.Pacer
-import org.opendc.simulator.compute.carbon.CarbonModel
+import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.compute.infrastructure.HostListener
 import org.opendc.simulator.compute.infrastructure.HostState
 import org.opendc.simulator.compute.infrastructure.SimCluster
 import org.opendc.simulator.compute.infrastructure.SimDataCenter
 import org.opendc.simulator.compute.infrastructure.SimHost
-import org.opendc.simulator.compute.power.SimPowerSource
-import org.opendc.simulator.compute.power.batteries.SimBattery
+import org.opendc.simulator.compute.power.PowerSourceNode
+import org.opendc.simulator.compute.power.batteries.BatteryNode
 import org.opendc.simulator.compute.scheduler.ComputeScheduler
 import org.opendc.simulator.compute.scheduler.SchedulingRequest
 import org.opendc.simulator.compute.scheduler.SchedulingResultType
@@ -103,12 +103,12 @@ public class ComputeService(
     /**
      * The available powerSources
      */
-    private val _powerSources = HashSet<SimPowerSource>()
+    private val _powerSources = HashSet<PowerSourceNode>()
 
     /**
      * The available batteries
      */
-    private val _batteries = HashSet<SimBattery>()
+    private val _batteries = HashSet<BatteryNode>()
 
     /**
      * The tasks that should be launched by the service.
@@ -284,21 +284,21 @@ public class ComputeService(
         _dataCenters.remove(dataCenter)
     }
 
-    public fun addPowerSource(simPowerSource: SimPowerSource) {
-        _powerSources.add(simPowerSource)
+    public fun addPowerSource(powerSource: PowerSourceNode) {
+        _powerSources.add(powerSource)
     }
 
-    public fun addBattery(simBattery: SimBattery) {
-        _batteries.add(simBattery)
+    public fun addBattery(battery: BatteryNode) {
+        _batteries.add(battery)
     }
 
     public val clusters: Set<SimCluster> = Collections.unmodifiableSet(_clusters)
 
     public val dataCenters: Set<SimDataCenter> = Collections.unmodifiableSet(_dataCenters)
 
-    public val powerSources: Set<SimPowerSource> = Collections.unmodifiableSet(_powerSources)
+    public val powerSources: Set<PowerSourceNode> = Collections.unmodifiableSet(_powerSources)
 
-    public val batteries: Set<SimBattery> = Collections.unmodifiableSet(_batteries)
+    public val batteries: Set<BatteryNode> = Collections.unmodifiableSet(_batteries)
 
     // ==================================================================================
     // Carbon receiver
@@ -309,10 +309,10 @@ public class ComputeService(
         requestSchedulingCycle()
     }
 
-    // ComputeService does not hold a carbon model itself; carbon intensity is modeled per power source.
-    override fun setCarbonModel(carbonModel: CarbonModel?) {}
+    // ComputeService does not hold a carbon node itself; carbon intensity is modeled per power source.
+    override fun setCarbonNode(carbonNode: CarbonNode?) {}
 
-    override fun removeCarbonModel(carbonModel: CarbonModel?) {}
+    override fun removeCarbonNode(carbonNode: CarbonNode?) {}
 
     // ==================================================================================
     // Statistics

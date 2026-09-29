@@ -32,7 +32,7 @@ import org.opendc.simulator.flow.graph.FlowEdge;
 import org.opendc.simulator.flow.graph.FlowNode;
 import org.opendc.simulator.flow.graph.FlowSupplier;
 
-public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
+public class BatteryNode extends FlowNode implements FlowConsumer, FlowSupplier {
 
     private final double capacity;
     private final double chargingSpeed;
@@ -121,7 +121,7 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
     }
 
     /**
-     * Construct a new {@link SimBattery} instance.
+     * Construct a new {@link BatteryNode} instance.
      *
      * @param engine The {@link FlowEngine} instance this battery is part of.
      * @param capacity The capacity of the battery in kWh.
@@ -132,7 +132,7 @@ public class SimBattery extends FlowNode implements FlowConsumer, FlowSupplier {
      * @param totalEmbodiedCarbon The total embodied carbon used to manufacture the battery in kg.
      * @param expectedLifeTime The expected lifetime of the battery in years.
      */
-    public SimBattery(
+    public BatteryNode(
             FlowEngine engine,
             double capacity,
             double chargingSpeed,

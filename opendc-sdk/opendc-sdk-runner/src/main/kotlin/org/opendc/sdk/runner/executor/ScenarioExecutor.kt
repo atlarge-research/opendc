@@ -41,7 +41,7 @@ import org.opendc.sdk.runner.provision.setupHosts
 import org.opendc.sdk.runner.telemetry.sink.OutputSink
 import org.opendc.sdk.runner.telemetry.sink.RunContext
 import org.opendc.sdk.runner.telemetry.sink.SinkSession
-import org.opendc.simulator.compute.carbon.CarbonModel
+import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.compute.scheduler.ComputeScheduler
 import org.opendc.simulator.compute.service.ComputeService
@@ -106,7 +106,7 @@ private class ScenarioRun(
 
         // TODO: Why is GPUCount here referenced?
         val sessions = attachSinks(scenario.topology.gpuCount(), startTime, workload.size)
-        connectCarbonModel()
+        connectCarbonNode()
 
         service.replay(clock, workload, scenario.failureModel, seed, resources::resolve)
         return RunResult(seed, sessions.mapNotNull { it.result() })
@@ -170,8 +170,8 @@ private class ScenarioRun(
     }
 
     /** Connects a carbon-intensity trace, if the topology declares one, to every carbon-aware component. */
-    private suspend fun connectCarbonModel() {
-        val carbon = engine.resolveOrNull(CarbonModel::class.java) ?: return
+    private suspend fun connectCarbonNode() {
+        val carbon = engine.resolveOrNull(CarbonNode::class.java) ?: return
         val scheduler = engine.resolve(ComputeScheduler::class.java)
         if (scheduler is CarbonReceiver) {
             carbon.addReceiver(scheduler)
@@ -180,7 +180,7 @@ private class ScenarioRun(
         connectTaskStopper(carbon)
     }
 
-    private suspend fun connectTaskStopper(carbon: CarbonModel) {
+    private suspend fun connectTaskStopper(carbon: CarbonNode) {
         val policy = scenario.allocationPolicy as? TimeShiftAllocationPolicySpec ?: return
         val taskStopper = policy.taskStopper.toEngine(coroutineContext, clock) ?: return
         taskStopper.setService(service)
