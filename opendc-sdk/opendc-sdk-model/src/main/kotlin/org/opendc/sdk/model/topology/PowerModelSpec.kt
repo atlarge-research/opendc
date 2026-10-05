@@ -28,64 +28,114 @@ import org.opendc.common.units.Power
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 
-/** The functional shape relating utilization to power draw.
- *
- * TODO: update to use a sealed interface such as the [FailureModelSpec]
- * */
+/** Describes how a component's power draw relates to its utilization. */
 @Serializable
-public enum class PowerModelType {
-    @SerialName("constant")
-    CONSTANT,
-
-    @SerialName("linear")
-    LINEAR,
-
-    @SerialName("square")
-    SQUARE,
-
-    @SerialName("cubic")
-    CUBIC,
-
-    @SerialName("sqrt")
-    SQRT,
-
-    @SerialName("mse")
-    MSE,
-
-    @SerialName("asymptotic")
-    ASYMPTOTIC,
-}
-
-/**
- * A power-consumption model for a component.
- *
- * @property type Shape of the utilization-to-power curve.
- * @property maxPower Power draw at full utilization.
- * @property idlePower Power draw at zero utilization.
- * @property power Reference power used by [PowerModelType.CONSTANT].
- * @property calibrationFactor Multiplier applied to the modelled power draw, used by [PowerModelType.MSE].
- * @property asymUtil Asymptotic utilization parameter, used by [PowerModelType.ASYMPTOTIC].
- * @property dvfs Whether dynamic voltage and frequency scaling is modelled, used by [PowerModelType.ASYMPTOTIC].
- */
-@Serializable
-public data class PowerModelSpec(
-    public val type: PowerModelType = PowerModelType.LINEAR,
-    public val maxPower: Power,
-    public val idlePower: Power,
-    public val power: Power = Power.ofWatts(400),
-    public val calibrationFactor: Double = 1.0,
-    public val asymUtil: Double = 0.0,
-    public val dvfs: Boolean = true,
-) : Validatable {
-    override fun validate(): List<ValidationIssue> =
-        buildList {
-            if (maxPower < idlePower) add(ValidationIssue("maxPower", "must be >= idlePower"))
-            if (calibrationFactor <= 0.0) add(ValidationIssue("calibrationFactor", "must be > 0"))
-        }
+public sealed interface PowerModelSpec : Validatable {
+    override fun validate(): List<ValidationIssue> = emptyList()
 
     public companion object {
         /** A sensible default power model. */
-        public val DEFAULT: PowerModelSpec =
-            PowerModelSpec(PowerModelType.LINEAR, Power.ofWatts(400), Power.ofWatts(200), Power.ofWatts(350))
+        public val DEFAULT: PowerModelSpec = LinearPowerModelSpec(maxPower = Power.ofWatts(400), idlePower = Power.ofWatts(200))
     }
+}
+
+/**
+ * A component that draws the same power regardless of its utilization.
+ *
+ * @property power Power draw at every utilization level.
+ */
+@Serializable
+@SerialName("constant")
+public data class ConstantPowerModelSpec(
+    public val power: Power,
+) : PowerModelSpec
+
+/**
+ * A power model whose draw rises from [idlePower] at zero utilization to [maxPower] at full utilization;
+ * its subtypes differ only in the shape of the curve between the two.
+ */
+@Serializable
+public sealed interface MaxIdlePowerModelSpec : PowerModelSpec {
+    /** Power draw at full utilization. */
+    public val maxPower: Power
+
+    /** Power draw at zero utilization. */
+    public val idlePower: Power
+
+    override fun validate(): List<ValidationIssue> =
+        if (maxPower < idlePower) listOf(ValidationIssue("maxPower", "must be >= idlePower")) else emptyList()
+}
+
+/** Power draw grows linearly with utilization. */
+@Serializable
+@SerialName("linear")
+public data class LinearPowerModelSpec(
+    override val maxPower: Power,
+    override val idlePower: Power,
+) : MaxIdlePowerModelSpec
+
+/** Power draw grows with the square of utilization. */
+@Serializable
+@SerialName("square")
+public data class SquarePowerModelSpec(
+    override val maxPower: Power,
+    override val idlePower: Power,
+) : MaxIdlePowerModelSpec
+
+/** Power draw grows with the cube of utilization. */
+@Serializable
+@SerialName("cubic")
+public data class CubicPowerModelSpec(
+    override val maxPower: Power,
+    override val idlePower: Power,
+) : MaxIdlePowerModelSpec
+
+/** Power draw grows with the square root of utilization. */
+@Serializable
+@SerialName("sqrt")
+public data class SqrtPowerModelSpec(
+    override val maxPower: Power,
+    override val idlePower: Power,
+) : MaxIdlePowerModelSpec
+
+/**
+ * Power draw fitted to measurements by minimizing the mean squared error, after Fan et al., "Power
+ * provisioning for a warehouse-sized computer" (ISCA 2007).
+ *
+ * @property calibrationFactor Exponent tuned to minimize the error against measured power draw.
+ */
+@Serializable
+@SerialName("mse")
+public data class MsePowerModelSpec(
+    override val maxPower: Power,
+    override val idlePower: Power,
+    public val calibrationFactor: Double,
+) : MaxIdlePowerModelSpec {
+    override fun validate(): List<ValidationIssue> =
+        buildList {
+            addAll(super.validate())
+            if (calibrationFactor <= 0.0) add(ValidationIssue("calibrationFactor", "must be > 0"))
+        }
+}
+
+/**
+ * Power draw that approaches linear growth beyond [asymUtil], adapted from GreenCloud.
+ *
+ * @property asymUtil Utilization at which power draw becomes close to linear in the offered load,
+ *  typically in [0.2, 0.5].
+ * @property dvfs Whether dynamic voltage and frequency scaling is modelled.
+ */
+@Serializable
+@SerialName("asymptotic")
+public data class AsymptoticPowerModelSpec(
+    override val maxPower: Power,
+    override val idlePower: Power,
+    public val asymUtil: Double,
+    public val dvfs: Boolean = true,
+) : MaxIdlePowerModelSpec {
+    override fun validate(): List<ValidationIssue> =
+        buildList {
+            addAll(super.validate())
+            if (asymUtil <= 0.0) add(ValidationIssue("asymUtil", "must be > 0"))
+        }
 }

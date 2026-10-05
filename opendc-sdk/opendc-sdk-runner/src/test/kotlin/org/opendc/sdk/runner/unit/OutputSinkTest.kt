@@ -36,7 +36,7 @@ import org.opendc.sdk.model.dsl.topology
 import org.opendc.sdk.model.dsl.watts
 import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.telemetry.OutputFileSpec
-import org.opendc.sdk.model.topology.PowerModelType
+import org.opendc.sdk.model.topology.LinearPowerModelSpec
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
 import org.opendc.sdk.model.workload.TaskFragmentSpec
 import org.opendc.sdk.model.workload.TaskSpec
@@ -60,11 +60,7 @@ class OutputSinkTest {
                         host(name = "H01") {
                             cpu(coreCount = 1, coreSpeed = 2000.mhz)
                             memory(size = 1.gib)
-                            power {
-                                type = PowerModelType.LINEAR
-                                maxPower = 200.watts
-                                idlePower = 100.watts
-                            }
+                            cpuPowerModel = LinearPowerModelSpec(maxPower = 200.watts, idlePower = 100.watts)
                         }
                     }
                 }

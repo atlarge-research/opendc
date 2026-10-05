@@ -49,7 +49,7 @@ import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.DoubleBatteryPolicySpec
 import org.opendc.sdk.model.topology.EqualSharePolicySpec
 import org.opendc.sdk.model.topology.FixedSharePolicySpec
-import org.opendc.sdk.model.topology.PowerModelType
+import org.opendc.sdk.model.topology.SquarePowerModelSpec
 import org.opendc.sdk.model.workload.ScalingPolicySpec
 import kotlin.test.assertEquals
 
@@ -69,11 +69,7 @@ class DslTest {
                             memory(size = 32.gib, speed = 3.ghz, vendor = "Samsung")
                             cpuDistribution = FixedSharePolicySpec(0.5)
                             gpuDistribution = EqualSharePolicySpec
-                            power {
-                                type = PowerModelType.SQUARE
-                                maxPower = 500.watts
-                                idlePower = 100.watts
-                            }
+                            cpuPowerModel = SquarePowerModelSpec(maxPower = 500.watts, idlePower = 100.watts)
                         }
                     }
                     powerSource(name = "grid", maxPower = 50.kwatts, carbon = NamedReference("carbon-trace"))

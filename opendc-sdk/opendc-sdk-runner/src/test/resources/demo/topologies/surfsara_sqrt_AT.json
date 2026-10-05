@@ -15,7 +15,6 @@
                     },
                     "cpuPowerModel": {
                         "type": "sqrt",
-                        "power": "400 Watts",
                         "idlePower": "32 Watts",
                         "maxPower": "180 Watts"
                     }

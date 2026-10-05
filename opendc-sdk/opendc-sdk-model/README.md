@@ -68,6 +68,7 @@ The model is one shape with three front doors. All three produce the same `Exper
 ```kotlin
 import org.opendc.sdk.model.dsl.*
 import org.opendc.sdk.model.scheduler.SchedulerName
+import org.opendc.sdk.model.topology.LinearPowerModelSpec
 
 val exp =
     experiment {
@@ -79,10 +80,7 @@ val exp =
                 host(count = 4) {
                     cpu(coreCount = 32, coreSpeed = 3.2.ghz)
                     memory(size = 128.gib)
-                    power {
-                        maxPower = 400.watts
-                        idlePower = 120.watts
-                    }
+                    cpuPowerModel = LinearPowerModelSpec(maxPower = 400.watts, idlePower = 120.watts)
                 }
                 powerSource(maxPower = 10.kwatts)
             }

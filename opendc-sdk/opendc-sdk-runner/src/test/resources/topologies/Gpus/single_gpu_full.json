@@ -14,7 +14,6 @@
                     },
                     "cpuPowerModel": {
                         "type": "linear",
-                        "power": "400 Watts",
                         "idlePower": "100 Watts",
                         "maxPower": "200 Watts"
                     },
@@ -32,7 +31,6 @@
                     },
                     "gpuPowerModel": {
                         "type": "linear",
-                        "power": "800 Watts",
                         "idlePower": "300 Watts",
                         "maxPower": "600 Watts"
                     }

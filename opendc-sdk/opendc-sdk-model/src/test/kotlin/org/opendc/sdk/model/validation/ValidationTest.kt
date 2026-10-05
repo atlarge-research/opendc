@@ -34,11 +34,13 @@ import org.opendc.sdk.model.failure.WeibullDistributionSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.scheduler.InstanceCountFilterSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
+import org.opendc.sdk.model.topology.AsymptoticPowerModelSpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec
 import org.opendc.sdk.model.topology.DataCenterSpec
 import org.opendc.sdk.model.topology.HostSpec
-import org.opendc.sdk.model.topology.PowerModelSpec
+import org.opendc.sdk.model.topology.LinearPowerModelSpec
+import org.opendc.sdk.model.topology.MsePowerModelSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.validExperiment
 import org.opendc.sdk.model.validMemory
@@ -82,11 +84,30 @@ class ValidationTest {
 
     @Test
     fun `power model with maxPower below idlePower reports maxPower`() {
-        val model = PowerModelSpec(maxPower = Power.ofWatts(100), idlePower = Power.ofWatts(200))
+        val model = LinearPowerModelSpec(maxPower = Power.ofWatts(100), idlePower = Power.ofWatts(200))
 
         val issues = assertDoesNotThrow { model.validate() }
 
         assertEquals("must be >= idlePower", issues.messageAt("maxPower"))
+    }
+
+    @Test
+    fun `mse power model reports both a non-positive calibrationFactor and maxPower below idlePower`() {
+        val model = MsePowerModelSpec(maxPower = Power.ofWatts(100), idlePower = Power.ofWatts(200), calibrationFactor = 0.0)
+
+        val issues = assertDoesNotThrow { model.validate() }
+
+        assertEquals("must be >= idlePower", issues.messageAt("maxPower"))
+        assertEquals("must be > 0", issues.messageAt("calibrationFactor"))
+    }
+
+    @Test
+    fun `asymptotic power model with non-positive asymUtil reports asymUtil`() {
+        val model = AsymptoticPowerModelSpec(maxPower = Power.ofWatts(400), idlePower = Power.ofWatts(200), asymUtil = 0.0)
+
+        val issues = assertDoesNotThrow { model.validate() }
+
+        assertEquals("must be > 0", issues.messageAt("asymUtil"))
     }
 
     @Test

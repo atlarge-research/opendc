@@ -24,16 +24,22 @@ package org.opendc.sdk.runner.provision
 
 import org.opendc.sdk.model.carbon.loader.CarbonTraceLoader
 import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.model.topology.AsymptoticPowerModelSpec
 import org.opendc.sdk.model.topology.BatterySpec
+import org.opendc.sdk.model.topology.ConstantPowerModelSpec
 import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.CubicPowerModelSpec
 import org.opendc.sdk.model.topology.DataCenterSpec
 import org.opendc.sdk.model.topology.GpuSpec
 import org.opendc.sdk.model.topology.HostSpec
+import org.opendc.sdk.model.topology.LinearPowerModelSpec
+import org.opendc.sdk.model.topology.MsePowerModelSpec
 import org.opendc.sdk.model.topology.NoVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.PowerModelSpec
-import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.topology.PowerSourceSpec
 import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.SqrtPowerModelSpec
+import org.opendc.sdk.model.topology.SquarePowerModelSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.createBatteryPolicy
@@ -48,10 +54,11 @@ import org.opendc.simulator.compute.models.GpuModel
 import org.opendc.simulator.compute.models.HostModel
 import org.opendc.simulator.compute.models.MachineModel
 import org.opendc.simulator.compute.models.MemoryUnit
+import org.opendc.simulator.compute.power.PowerModel
+import org.opendc.simulator.compute.power.PowerModels
 import org.opendc.simulator.compute.power.PowerSourceNode
 import org.opendc.simulator.compute.power.batteries.BatteryAggregator
 import org.opendc.simulator.compute.power.batteries.BatteryNode
-import org.opendc.simulator.compute.power.getPowerModel
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.compute.virtualization.VirtualizationOverheadModelFactory.VirtualizationOverheadModelEnum
 import org.opendc.simulator.core.ResourceType
@@ -362,20 +369,16 @@ public class HostsProvisioningStep(
             vendor, modelName, architecture, virtualizationOverhead.toEngine(),
         )
 
-    private fun PowerModelSpec.toEngine() =
-        getPowerModel(type.modelType, power.toWatts(), maxPower.toWatts(), idlePower.toWatts(), calibrationFactor, asymUtil, dvfs)
-
-    private val PowerModelType.modelType: String
-        get() =
-            when (this) {
-                PowerModelType.CONSTANT -> "constant"
-                PowerModelType.LINEAR -> "linear"
-                PowerModelType.SQUARE -> "square"
-                PowerModelType.CUBIC -> "cubic"
-                PowerModelType.SQRT -> "sqrt"
-                PowerModelType.MSE -> "mse"
-                PowerModelType.ASYMPTOTIC -> "asymptotic"
-            }
+    private fun PowerModelSpec.toEngine(): PowerModel =
+        when (this) {
+            is ConstantPowerModelSpec -> PowerModels.constant(power.toWatts())
+            is LinearPowerModelSpec -> PowerModels.linear(maxPower.toWatts(), idlePower.toWatts())
+            is SquarePowerModelSpec -> PowerModels.square(maxPower.toWatts(), idlePower.toWatts())
+            is CubicPowerModelSpec -> PowerModels.cubic(maxPower.toWatts(), idlePower.toWatts())
+            is SqrtPowerModelSpec -> PowerModels.sqrt(maxPower.toWatts(), idlePower.toWatts())
+            is MsePowerModelSpec -> PowerModels.mse(maxPower.toWatts(), idlePower.toWatts(), calibrationFactor)
+            is AsymptoticPowerModelSpec -> PowerModels.asymptotic(maxPower.toWatts(), idlePower.toWatts(), asymUtil, dvfs)
+        }
 
     private fun VirtualizationOverheadSpec.toEngine(): VirtualizationOverheadModelEnum =
         when (this) {

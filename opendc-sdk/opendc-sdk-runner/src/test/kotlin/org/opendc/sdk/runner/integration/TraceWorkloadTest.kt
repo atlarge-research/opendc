@@ -44,7 +44,9 @@ import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.telemetry.ExportSpec
-import org.opendc.sdk.model.topology.PowerModelType
+import org.opendc.sdk.model.topology.LinearPowerModelSpec
+import org.opendc.sdk.model.topology.PowerModelSpec
+import org.opendc.sdk.model.topology.SqrtPowerModelSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import org.opendc.sdk.runner.OpenDC
@@ -67,8 +69,8 @@ class TraceWorkloadTest {
         val design =
             experiment {
                 name = "trace-integration"
-                topology(datacenter(PowerModelType.LINEAR))
-                topology(datacenter(PowerModelType.SQRT))
+                topology(datacenter())
+                topology(datacenter(SqrtPowerModelSpec(maxPower = 200.watts, idlePower = 100.watts)))
                 workload(
                     TraceWorkloadSpec(source = NamedReference("workloadTraces/bitbrains-small"), submissionTime = "2022-02-01T00:00:00"),
                 )
@@ -100,7 +102,7 @@ class TraceWorkloadTest {
         val metrics =
             simulate(
                 scenario {
-                    topology(datacenter(PowerModelType.LINEAR))
+                    topology(datacenter())
                     workload(traceWorkload("bitbrains-small"))
                     exportModel = ExportSpec(exportInterval = 1.hours, printFrequency = null)
                     checkpointModel = CheckpointModelSpec()
@@ -123,7 +125,7 @@ class TraceWorkloadTest {
         val metrics =
             simulate(
                 scenario {
-                    topology(datacenter(PowerModelType.LINEAR, gpu = trace == "small_gpu"))
+                    topology(datacenter(gpu = trace == "small_gpu"))
                     workload(traceWorkload(trace, deferAll = true))
                     allocationPolicy(filterScheduler { timeshift { taskStopper = TaskStopperSpec(forecast = false) } })
                     exportModel = ExportSpec(exportInterval = 1.hours, printFrequency = null)
@@ -165,7 +167,7 @@ class TraceWorkloadTest {
     private fun simulateWithFailures(failureModel: FailureModelSpec): CollectedMetrics =
         simulate(
             scenario {
-                topology(datacenter(PowerModelType.LINEAR, hostCount = 10))
+                topology(datacenter(hostCount = 10))
                 workload(traceWorkload("bitbrains-small"))
                 exportModel = ExportSpec(exportInterval = 1.hours, printFrequency = null)
                 this.failureModel = failureModel
@@ -203,7 +205,7 @@ class TraceWorkloadTest {
     }
 
     private fun datacenter(
-        powerModel: PowerModelType,
+        cpuPowerModel: PowerModelSpec = LinearPowerModelSpec(maxPower = 200.watts, idlePower = 100.watts),
         hostCount: Int = 1,
         gpu: Boolean = false,
     ): TopologySpec =
@@ -214,12 +216,7 @@ class TraceWorkloadTest {
                         cpu(coreCount = 64, coreSpeed = 2000.mhz)
                         memory(size = 1024.gib)
                         if (gpu) gpu(coreCount = 2, coreSpeed = 2000.mhz)
-                        power {
-                            type = powerModel
-                            power = 400.watts
-                            idlePower = 100.watts
-                            maxPower = 200.watts
-                        }
+                        this.cpuPowerModel = cpuPowerModel
                     }
                 }
                 powerSource(carbon = NamedReference("carbonTraces/2022-01-01_2022-12-31_NL.parquet"))

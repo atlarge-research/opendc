@@ -44,9 +44,8 @@ import org.opendc.sdk.model.topology.EqualSharePolicySpec
 import org.opendc.sdk.model.topology.FixedSharePolicySpec
 import org.opendc.sdk.model.topology.HostSpec
 import org.opendc.sdk.model.topology.MemorySpec
-import org.opendc.sdk.model.topology.PowerModelSpec
-import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.topology.PowerSourceSpec
+import org.opendc.sdk.model.topology.SquarePowerModelSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
 import org.opendc.sdk.model.workload.ScalingPolicySpec
@@ -97,7 +96,7 @@ public val sampleHost: HostSpec =
         count = 4,
         cpu = CpuSpec(coreCount = 8, coreSpeed = 3.ghz, count = 2, vendor = "AMD", modelName = "EPYC", architecture = "Zen4"),
         memory = MemorySpec(size = 32.gib, speed = 3.ghz, vendor = "Samsung"),
-        cpuPowerModel = PowerModelSpec(PowerModelType.SQUARE, 500.watts, 100.watts, 350.watts),
+        cpuPowerModel = SquarePowerModelSpec(maxPower = 500.watts, idlePower = 100.watts),
         cpuDistribution = FixedSharePolicySpec(0.5),
         gpuDistribution = EqualSharePolicySpec,
     )
