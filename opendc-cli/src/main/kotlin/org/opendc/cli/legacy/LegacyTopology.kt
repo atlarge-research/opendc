@@ -102,24 +102,45 @@ private fun JsonObject.toSdkVirtualizationOverhead(): JsonObject =
             ?.let { put("percentageOverhead", it) }
     }
 
-/**
- * The legacy `modelType` values are spelled exactly like the SDK's [org.opendc.sdk.model.topology.PowerModelType]
- * serial names, so only the key is translated. The membership check exists to name the offending
- * value instead of failing with a serializer error further downstream.
- */
-private val POWER_MODELS = setOf("constant", "linear", "square", "cubic", "sqrt", "mse", "asymptotic")
+/** The fields each power model reads, keyed by its `modelType`, which both formats spell alike. */
+private val POWER_MODELS =
+    listOf("maxPower", "idlePower").let { maxIdle ->
+        mapOf(
+            "constant" to listOf("power"),
+            "linear" to maxIdle,
+            "square" to maxIdle,
+            "cubic" to maxIdle,
+            "sqrt" to maxIdle,
+            "mse" to maxIdle + "calibrationFactor",
+            "asymptotic" to maxIdle + listOf("asymUtil", "dvfs"),
+        )
+    }
 
+/** The legacy defaults of the fields the SDK requires but the legacy format did not. */
+private val POWER_MODEL_DEFAULTS =
+    mapOf(
+        "power" to JsonPrimitive(400),
+        "calibrationFactor" to JsonPrimitive(1.0),
+        "asymUtil" to JsonPrimitive(0.0),
+    )
+
+/**
+ * The legacy format gave every power model the same fields, whether its `modelType` read them or not,
+ * so only the fields of its own SDK type are carried over. A field the legacy format defaulted but the SDK requires
+ * is written out with its legacy default.
+ */
 private fun JsonObject.toSdkPowerModel(): JsonObject =
     buildJsonObject {
         val modelType =
             stringAt("modelType") ?: throw LegacyFormatException("a power model is missing its 'modelType'")
-        if (modelType !in POWER_MODELS) {
-            throw LegacyFormatException(
-                "unknown power model '$modelType' (expected one of ${POWER_MODELS.joinToString(", ")})",
+        val fields =
+            POWER_MODELS[modelType] ?: throw LegacyFormatException(
+                "unknown power model '$modelType' (expected one of ${POWER_MODELS.keys.joinToString(", ")})",
             )
-        }
         put("type", JsonPrimitive(modelType))
-        keep(this@toSdkPowerModel, "power", "maxPower", "idlePower", "calibrationFactor", "asymUtil", "dvfs")
+        for (field in fields) {
+            (this@toSdkPowerModel[field] ?: POWER_MODEL_DEFAULTS[field])?.let { put(field, it) }
+        }
     }
 
 private fun JsonObject.toSdkPowerSource(): JsonObject =

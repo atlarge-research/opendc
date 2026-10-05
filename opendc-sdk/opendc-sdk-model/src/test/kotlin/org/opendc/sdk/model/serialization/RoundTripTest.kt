@@ -27,6 +27,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
+import org.opendc.common.units.Power
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.dsl.experiment
 import org.opendc.sdk.model.dsl.filterScheduler
@@ -79,22 +80,30 @@ import org.opendc.sdk.model.telemetry.ExportColumnsSpec
 import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.telemetry.OnlyColumns
 import org.opendc.sdk.model.telemetry.OutputFileSpec
+import org.opendc.sdk.model.topology.AsymptoticPowerModelSpec
 import org.opendc.sdk.model.topology.BatteryPolicySpec
 import org.opendc.sdk.model.topology.BestEffortPolicySpec
+import org.opendc.sdk.model.topology.ConstantPowerModelSpec
 import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.CubicPowerModelSpec
 import org.opendc.sdk.model.topology.DistributionPolicySpec
 import org.opendc.sdk.model.topology.DoubleBatteryPolicySpec
 import org.opendc.sdk.model.topology.EqualSharePolicySpec
 import org.opendc.sdk.model.topology.FirstFitPolicySpec
 import org.opendc.sdk.model.topology.FixedSharePolicySpec
+import org.opendc.sdk.model.topology.LinearPowerModelSpec
 import org.opendc.sdk.model.topology.MaxMinFairnessPolicySpec
+import org.opendc.sdk.model.topology.MsePowerModelSpec
 import org.opendc.sdk.model.topology.NoVirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.PowerModelSpec
 import org.opendc.sdk.model.topology.RunningMeanPlusPolicySpec
 import org.opendc.sdk.model.topology.RunningMeanPolicySpec
 import org.opendc.sdk.model.topology.RunningMedianPolicySpec
 import org.opendc.sdk.model.topology.RunningQuartilesPolicySpec
 import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.SingleBatteryPolicySpec
+import org.opendc.sdk.model.topology.SqrtPowerModelSpec
+import org.opendc.sdk.model.topology.SquarePowerModelSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
 import org.opendc.sdk.model.workload.ScalingPolicySpec
@@ -331,6 +340,23 @@ class RoundTripTest {
     }
 
     @TestFactory
+    fun `power models round-trip`(): List<DynamicTest> {
+        val models: List<PowerModelSpec> =
+            listOf(
+                ConstantPowerModelSpec(power = Power.ofWatts(350)),
+                LinearPowerModelSpec(maxPower = Power.ofWatts(400), idlePower = Power.ofWatts(200)),
+                SquarePowerModelSpec(maxPower = Power.ofWatts(400), idlePower = Power.ofWatts(200)),
+                CubicPowerModelSpec(maxPower = Power.ofWatts(400), idlePower = Power.ofWatts(200)),
+                SqrtPowerModelSpec(maxPower = Power.ofWatts(400), idlePower = Power.ofWatts(200)),
+                MsePowerModelSpec(maxPower = Power.ofWatts(400), idlePower = Power.ofWatts(200), calibrationFactor = 1.5),
+                AsymptoticPowerModelSpec(maxPower = Power.ofWatts(400), idlePower = Power.ofWatts(200), asymUtil = 0.3, dvfs = false),
+            )
+        return models.map { model ->
+            dynamicTest(model.toString()) { assertEquals(model, roundTrip<PowerModelSpec>(model)) }
+        }
+    }
+
+    @TestFactory
     fun `virtualization overheads round-trip`(): List<DynamicTest> {
         val overheads: List<VirtualizationOverheadSpec> =
             listOf(
@@ -374,6 +400,7 @@ class RoundTripTest {
         assertTrue(encode<DistributionPolicySpec>(MaxMinFairnessPolicySpec).contains("\"type\": \"maxMinFairness\""))
         assertTrue(encode<BatteryPolicySpec>(SingleBatteryPolicySpec(100.0)).contains("\"type\": \"single\""))
         assertTrue(encode<VirtualizationOverheadSpec>(ShareBasedVirtualizationOverheadSpec).contains("\"type\": \"shareBased\""))
+        assertTrue(encode<PowerModelSpec>(SqrtPowerModelSpec(Power.ofWatts(400), Power.ofWatts(200))).contains("\"type\": \"sqrt\""))
         assertTrue(encode<ColumnSelection>(AllColumns).contains("\"type\": \"all\""))
     }
 

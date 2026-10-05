@@ -25,7 +25,6 @@ package org.opendc.sdk.model.dsl
 import org.opendc.common.units.DataRate
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
-import org.opendc.common.units.Power
 import org.opendc.sdk.model.topology.CpuSpec
 import org.opendc.sdk.model.topology.DistributionPolicySpec
 import org.opendc.sdk.model.topology.GpuSpec
@@ -34,7 +33,6 @@ import org.opendc.sdk.model.topology.MaxMinFairnessPolicySpec
 import org.opendc.sdk.model.topology.MemorySpec
 import org.opendc.sdk.model.topology.NoVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.PowerModelSpec
-import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
 
 /** Builds a [HostSpec]; `cpu` and `memory` must be set before the enclosing block returns. */
@@ -43,8 +41,12 @@ public class HostBuilder(private val name: String, private val count: Int) {
     private var cpu: CpuSpec? = null
     private var memory: MemorySpec? = null
     private var gpu: GpuSpec? = null
-    private var cpuPowerModel: PowerModelSpec = PowerModelSpec.DEFAULT
-    private var gpuPowerModel: PowerModelSpec = PowerModelSpec.DEFAULT
+
+    /** Power model for the CPU. */
+    public var cpuPowerModel: PowerModelSpec = PowerModelSpec.DEFAULT
+
+    /** Power model for the GPU. */
+    public var gpuPowerModel: PowerModelSpec = PowerModelSpec.DEFAULT
 
     /** Policy distributing CPU capacity across tasks. */
     public var cpuDistribution: DistributionPolicySpec = MaxMinFairnessPolicySpec
@@ -87,44 +89,9 @@ public class HostBuilder(private val name: String, private val count: Int) {
         gpu = GpuSpec(coreCount, coreSpeed, count, memory, memoryBandwidth, vendor, modelName, architecture, virtualizationOverhead)
     }
 
-    public fun power(block: PowerModelBuilder.() -> Unit) {
-        cpuPowerModel = PowerModelBuilder().apply(block).build()
-    }
-
-    public fun gpuPower(block: PowerModelBuilder.() -> Unit) {
-        gpuPowerModel = PowerModelBuilder().apply(block).build()
-    }
-
     internal fun build(): HostSpec {
         val resolvedCpu = cpu ?: error("host '$name' requires a cpu")
         val resolvedMemory = memory ?: error("host '$name' requires memory")
         return HostSpec(name, count, resolvedCpu, resolvedMemory, gpu, cpuPowerModel, gpuPowerModel, cpuDistribution, gpuDistribution)
     }
-}
-
-/** Builds a [PowerModelSpec]; unset fields fall back to [PowerModelSpec.DEFAULT]. */
-@SdkDsl
-public class PowerModelBuilder {
-    /** Shape of the utilization-to-power curve. */
-    public var type: PowerModelType = PowerModelType.LINEAR
-
-    /** Power draw at full utilization. */
-    public var maxPower: Power = Power.ofWatts(400)
-
-    /** Power draw at zero utilization. */
-    public var idlePower: Power = Power.ofWatts(200)
-
-    /** Reference power used by some model types. */
-    public var power: Power = Power.ofWatts(350)
-
-    /** Multiplier applied to the modelled power draw. */
-    public var calibrationFactor: Double = 1.0
-
-    /** Asymptotic utilization parameter for non-linear models. */
-    public var asymUtil: Double = 0.0
-
-    /** Whether dynamic voltage and frequency scaling is modelled. */
-    public var dvfs: Boolean = true
-
-    internal fun build(): PowerModelSpec = PowerModelSpec(type, maxPower, idlePower, power, calibrationFactor, asymUtil, dvfs)
 }

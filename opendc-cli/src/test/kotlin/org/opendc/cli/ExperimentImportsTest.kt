@@ -26,7 +26,7 @@ import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.sdk.model.experiment.ExperimentSpec
-import org.opendc.sdk.model.topology.PowerModelType
+import org.opendc.sdk.model.topology.LinearPowerModelSpec
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
 import java.io.File
 import java.nio.file.Path
@@ -60,7 +60,7 @@ class ExperimentImportsTest {
         assertEquals(8, host.cpu.coreCount)
         assertEquals(Frequency.ofGHz(3.0), host.cpu.coreSpeed)
         assertEquals(DataSize.ofGiB(16), host.memory.size)
-        assertEquals(PowerModelType.LINEAR, host.cpuPowerModel.type)
+        assertEquals(LinearPowerModelSpec(maxPower = Power.ofWatts(300), idlePower = Power.ofWatts(80)), host.cpuPowerModel)
 
         assertEquals(emptyList(), experiment.validate())
     }

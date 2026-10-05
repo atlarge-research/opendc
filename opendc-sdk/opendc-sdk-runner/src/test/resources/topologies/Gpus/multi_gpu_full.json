@@ -14,7 +14,6 @@
                     },
                     "cpuPowerModel": {
                         "type": "linear",
-                        "power": "400 Watts",
                         "idlePower": "100 Watts",
                         "maxPower": "200 Watts"
                     },

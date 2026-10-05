@@ -30,9 +30,8 @@ import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.topology.ClusterSpec
 import org.opendc.sdk.model.topology.CpuSpec
 import org.opendc.sdk.model.topology.HostSpec
+import org.opendc.sdk.model.topology.LinearPowerModelSpec
 import org.opendc.sdk.model.topology.MemorySpec
-import org.opendc.sdk.model.topology.PowerModelSpec
-import org.opendc.sdk.model.topology.PowerModelType
 import org.opendc.sdk.model.topology.PowerSourceSpec
 import org.opendc.sdk.model.workload.loader.ComputeWorkloadLoader
 import org.opendc.sdk.runner.executor.ResourceScope
@@ -440,8 +439,7 @@ public class OpenDCRunner(
                 val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
                 val cpuPowerModel = PowerModels.linear(2 * energyConsumptionW, energyConsumptionW * 0.5)
                 val cpuPowerSpec =
-                    PowerModelSpec(
-                        PowerModelType.LINEAR,
+                    LinearPowerModelSpec(
                         maxPower = Power.ofWatts(2 * energyConsumptionW),
                         idlePower = Power.ofWatts(energyConsumptionW * 0.5),
                     )

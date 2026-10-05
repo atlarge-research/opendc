@@ -24,6 +24,8 @@ package org.opendc.cli.legacy
 
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.testing.test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.io.TempDir
 import org.opendc.cli.OpendcCommand
 import org.opendc.cli.RunCommand
 import org.opendc.cli.ShowCommand
@@ -60,14 +62,18 @@ import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.telemetry.AllColumns
 import org.opendc.sdk.model.telemetry.OnlyColumns
 import org.opendc.sdk.model.telemetry.OutputFileSpec
+import org.opendc.sdk.model.topology.AsymptoticPowerModelSpec
 import org.opendc.sdk.model.topology.BestEffortPolicySpec
+import org.opendc.sdk.model.topology.ConstantPowerModelSpec
 import org.opendc.sdk.model.topology.ConstantVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.EqualSharePolicySpec
 import org.opendc.sdk.model.topology.FixedSharePolicySpec
+import org.opendc.sdk.model.topology.LinearPowerModelSpec
 import org.opendc.sdk.model.topology.MaxMinFairnessPolicySpec
-import org.opendc.sdk.model.topology.PowerModelType
+import org.opendc.sdk.model.topology.MsePowerModelSpec
 import org.opendc.sdk.model.topology.RunningMeanPolicySpec
 import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
+import org.opendc.sdk.model.topology.SqrtPowerModelSpec
 import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import java.io.File
@@ -118,9 +124,11 @@ class LegacyExperimentTest {
         assertEquals(16, host.cpu.coreCount)
         assertEquals(Frequency.ofMHz(2100), host.cpu.coreSpeed, "a bare coreSpeed still counts MHz")
         assertEquals(DataSize.ofMiB(100000), host.memory.size, "a bare memorySize still counts MiB")
-        assertEquals(PowerModelType.LINEAR, host.cpuPowerModel.type)
-        assertEquals(Power.ofWatts(180), host.cpuPowerModel.maxPower, "a bare maxPower still counts Watts")
-        assertEquals(Power.ofWatts(32), host.cpuPowerModel.idlePower)
+        assertEquals(
+            LinearPowerModelSpec(maxPower = Power.ofWatts(180), idlePower = Power.ofWatts(32)),
+            host.cpuPowerModel,
+            "a bare maxPower still counts Watts",
+        )
         assertEquals(NamedReference("carbon_traces/NL_2021-2024.parquet"), datacenter.powerSource.carbon)
 
         val workload = experiment.workloads.single()
@@ -152,7 +160,7 @@ class LegacyExperimentTest {
         )
         assertTrue(
             experiment.topologies.all {
-                it.datacenters!!.single().clusters.single().hosts.single().cpuPowerModel.type == PowerModelType.SQRT
+                it.datacenters!!.single().clusters.single().hosts.single().cpuPowerModel is SqrtPowerModelSpec
             },
             "every location uses the sqrt power model",
         )
@@ -328,7 +336,7 @@ class LegacyExperimentTest {
         assertEquals(DataRate.ofGBps(900), gpu.memoryBandwidth, "a spelled-out bandwidth is honoured as written")
         assertEquals("Volta", gpu.architecture)
         assertEquals(ConstantVirtualizationOverheadSpec(percentageOverhead = 0.05), gpu.virtualizationOverhead)
-        assertEquals(PowerModelType.SQRT, constant.gpuPowerModel.type)
+        assertEquals(SqrtPowerModelSpec(maxPower = Power.ofWatts(600), idlePower = Power.ofWatts(300)), constant.gpuPowerModel)
         assertEquals(MaxMinFairnessPolicySpec, constant.cpuDistribution)
         assertEquals(BestEffortPolicySpec(updateInterval = 1000), constant.gpuDistribution)
 
@@ -367,13 +375,43 @@ class LegacyExperimentTest {
         assertEquals(10.0, battery.expectedLifetime)
 
         val (mse, asymptotic, constant) = cluster.hosts
-        assertEquals(PowerModelType.MSE, mse.cpuPowerModel.type)
-        assertEquals(1.5, mse.cpuPowerModel.calibrationFactor)
-        assertEquals(PowerModelType.ASYMPTOTIC, asymptotic.cpuPowerModel.type)
-        assertEquals(0.7, asymptotic.cpuPowerModel.asymUtil)
-        assertEquals(false, asymptotic.cpuPowerModel.dvfs)
-        assertEquals(PowerModelType.CONSTANT, constant.cpuPowerModel.type)
-        assertEquals(Power.ofWatts(350), constant.cpuPowerModel.power)
+        assertEquals(MsePowerModelSpec(Power.ofWatts(180), Power.ofWatts(32), calibrationFactor = 1.5), mse.cpuPowerModel)
+        assertEquals(
+            AsymptoticPowerModelSpec(Power.ofWatts(180), Power.ofWatts(32), asymUtil = 0.7, dvfs = false),
+            asymptotic.cpuPowerModel,
+        )
+        assertEquals(ConstantPowerModelSpec(Power.ofWatts(350)), constant.cpuPowerModel)
+    }
+
+    /** The legacy format gave every power model every field; only the ones its type reads may reach the SDK. */
+    @Test
+    fun `a power model carries over only the fields its type reads`() {
+        assertDoesNotThrow { readLegacyExperiment(File(legacyRoot, FEATURES), legacyRoot, strict = true) }
+    }
+
+    @Test
+    fun `a power model field the legacy format defaulted gets its legacy default`(
+        @TempDir dir: File,
+    ) {
+        File(dir, "topology.json").writeText(
+            """
+            {"clusters": [{"name": "C01", "hosts": [{
+                "name": "H01",
+                "cpu": {"coreCount": 1, "coreSpeed": 1000},
+                "memory": {"memorySize": 1000},
+                "cpuPowerModel": {"modelType": "constant", "maxPower": 200, "idlePower": 100},
+                "gpuPowerModel": {"modelType": "mse", "maxPower": 200, "idlePower": 100}
+            }]}]}
+            """.trimIndent(),
+        )
+        File(dir, "experiment.json").writeText("""{"topologies": [{"pathToFile": "topology.json"}], "workloads": []}""")
+
+        val host =
+            readLegacyExperiment(File(dir, "experiment.json"), dir)
+                .topologies.single().datacenters!!.single().clusters.single().hosts.single()
+
+        assertEquals(ConstantPowerModelSpec(Power.ofWatts(400)), host.cpuPowerModel)
+        assertEquals(MsePowerModelSpec(Power.ofWatts(200), Power.ofWatts(100), calibrationFactor = 1.0), host.gpuPowerModel)
     }
 
     /** A topology is read relative to the given root, not to wherever the experiment file happens to sit. */
