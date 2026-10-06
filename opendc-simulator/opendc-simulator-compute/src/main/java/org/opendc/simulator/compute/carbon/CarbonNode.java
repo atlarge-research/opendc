@@ -92,10 +92,6 @@ public class CarbonNode extends FlowNode {
      * Traverse the fragments to find the fragment that matches the given absoluteTime
      */
     private void findCorrectFragment(long absoluteTime) {
-        if (this.fragment_index == 35063) {
-            System.out.print("Break");
-        }
-
         // Traverse to the previous fragment, until you reach the correct fragment
         while (absoluteTime < this.current_fragment.getStartTime()) {
             this.current_fragment = fragments.get(--this.fragment_index);

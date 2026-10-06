@@ -45,20 +45,18 @@ internal class WebMetricExporter : MetricExporter {
                 hostAggregateMetrics.totalFailureVmSlices + reader.tasksActive * slices,
             )
 
-        reader.hostName?.let {
-            hostMetrics.compute(it) { _, prev ->
-                HostMetrics(
-                    reader.cpuUsage + (prev?.cpuUsage ?: 0.0),
-                    reader.cpuDemand + (prev?.cpuDemand ?: 0.0),
-                    reader.tasksActive + (prev?.instanceCount ?: 0),
-                    1 + (prev?.count ?: 0),
-                )
-            }
+        hostMetrics.compute(reader.hostId) { _, prev ->
+            HostMetrics(
+                reader.cpuUsage + (prev?.cpuUsage ?: 0.0),
+                reader.cpuDemand + (prev?.cpuDemand ?: 0.0),
+                reader.tasksActive + (prev?.instanceCount ?: 0),
+                1 + (prev?.count ?: 0),
+            )
         }
     }
 
     private var hostAggregateMetrics: AggregateHostMetrics = AggregateHostMetrics()
-    private val hostMetrics: MutableMap<String, HostMetrics> = mutableMapOf()
+    private val hostMetrics: MutableMap<Int, HostMetrics> = mutableMapOf()
     private val sliceLength: Long = 5 * 60L
 
     private data class AggregateHostMetrics(

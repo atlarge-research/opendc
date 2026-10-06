@@ -22,9 +22,6 @@
 
 package org.opendc.sdk.runner.telemetry.parquet
 
-import org.apache.parquet.io.api.Binary
-import org.apache.parquet.schema.LogicalTypeAnnotation
-import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
@@ -53,36 +50,10 @@ public object DfltHostExportColumns {
             field = Types.required(INT64).named("timestamp"),
         ) { it.timestamp.toEpochMilli() }
 
-    public val TIMESTAMP_ABS: ExportColumn<HostSample> =
+    public val HOST_ID: ExportColumn<HostSample> =
         ExportColumn(
-            field = Types.required(INT64).named("timestamp_absolute"),
-        ) { it.timestampAbsolute.toEpochMilli() }
-
-    public val HOST_NAME: ExportColumn<HostSample> =
-        ExportColumn(
-            field =
-                Types.required(BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("host_name"),
-        ) { Binary.fromString(it.hostName ?: "missing") }
-
-    public val CLUSTER_NAME: ExportColumn<HostSample> =
-        ExportColumn(
-            field =
-                Types.required(BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("cluster_name"),
-        ) { Binary.fromString(it.clusterName ?: "missing") }
-
-    public val CPU_COUNT: ExportColumn<HostSample> =
-        ExportColumn(
-            field = Types.required(INT32).named("core_count"),
-        ) { it.coreCount }
-
-    public val MEM_CAPACITY: ExportColumn<HostSample> =
-        ExportColumn(
-            field = Types.required(INT64).named("mem_capacity"),
-        ) { it.memCapacity }
+            field = Types.required(INT32).named("host_id"),
+        ) { it.hostId }
 
     public val TASKS_TERMINATED: ExportColumn<HostSample> =
         ExportColumn(
@@ -103,11 +74,6 @@ public object DfltHostExportColumns {
         ExportColumn(
             field = Types.required(INT32).named("tasks_invalid"),
         ) { it.guestsInvalid }
-
-    public val CPU_CAPACITY: ExportColumn<HostSample> =
-        ExportColumn(
-            field = Types.required(FLOAT).named("cpu_capacity"),
-        ) { it.cpuCapacity }
 
     public val CPU_USAGE: ExportColumn<HostSample> =
         ExportColumn(
@@ -191,9 +157,6 @@ public object DfltHostExportColumns {
         (0 until count).flatMap { i ->
             listOf<ExportColumn<HostSample>>(
                 ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_capacity_$i"),
-                ) { it.gpuCapacities.getOrNull(i) },
-                ExportColumn(
                     field = Types.optional(FLOAT).named("gpu_usage_$i"),
                 ) { it.gpuUsages.getOrNull(i) },
                 ExportColumn(
@@ -225,9 +188,7 @@ public object DfltHostExportColumns {
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
-            HOST_NAME,
-            CLUSTER_NAME,
+            HOST_ID,
             TIMESTAMP,
-            TIMESTAMP_ABS,
         )
 }

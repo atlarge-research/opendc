@@ -23,18 +23,14 @@
 package org.opendc.sdk.runner.telemetry.table.battery
 
 import org.opendc.simulator.compute.power.batteries.BatteryNode
-import java.time.Duration
 import java.time.Instant
 
-public class BatterySampler(
-    private val startTime: Duration = Duration.ofMillis(0),
-) {
+public class BatterySampler {
     public fun sample(
         now: Instant,
         battery: BatteryNode,
     ): BatterySample {
         val timestamp = now
-        val timestampAbsolute = now + startTime
 
         battery.updateCounters()
         val powerDraw = battery.outgoingSupply
@@ -42,19 +38,15 @@ public class BatterySampler(
         val embodiedCarbonEmission = battery.embodiedCarbonEmission
 
         val charge = battery.charge
-        val capacity = battery.capacity
         val batteryState = battery.batteryState
 
         return BatterySample(
-            batteryName = battery.name,
-            clusterName = battery.clusterName,
+            batteryId = battery.id,
             timestamp = timestamp,
-            timestampAbsolute = timestampAbsolute,
             powerDraw = powerDraw,
             energyUsage = energyUsage,
             embodiedCarbonEmission = embodiedCarbonEmission,
             charge = charge,
-            capacity = capacity,
             batteryState = batteryState,
         )
     }

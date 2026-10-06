@@ -27,14 +27,11 @@ import org.opendc.trace.parquet.exporter.Exportable
 import java.time.Instant
 
 public data class BatterySample(
-    public val batteryName: String? = null,
-    public val clusterName: String? = null,
+    public val batteryId: Int = -1,
     public val timestamp: Instant = Instant.MIN,
-    public val timestampAbsolute: Instant = Instant.MIN,
     public val powerDraw: Double = 0.0,
     public val energyUsage: Double = 0.0,
     public val embodiedCarbonEmission: Double = 0.0,
     public val charge: Double = 0.0,
-    public val capacity: Double = 0.0,
     public val batteryState: BatteryState = BatteryState.IDLE,
 ) : Exportable

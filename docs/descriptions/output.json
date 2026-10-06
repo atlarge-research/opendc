@@ -1,8 +1,13 @@
 {
   "task.timestamp": "Simulation time of the sample, in milliseconds since the start of the simulation.",
-  "task.timestamp_absolute": "Wall-clock time of the sample, in milliseconds since the Unix epoch.",
   "task.task_id": "Identifier of the task within the simulation.",
   "task.task_name": "Name of the task as given in the workload trace.",
   "host.timestamp": "Simulation time of the sample, in milliseconds since the start of the simulation.",
-  "service.timestamp": "Simulation time of the sample, in milliseconds since the start of the simulation."
+  "host.host_id": "Identifier of the host within the run; `meta/host.parquet` maps it to the host's name and cluster.",
+  "task.host_id": "Identifier of the host the task last ran on, or null if it has not been placed yet.",
+  "powerSource.power_source_id": "Identifier of the power source within the run; `meta/powerSource.parquet` maps it to its name and data center.",
+  "battery.battery_id": "Identifier of the battery within the run; `meta/battery.parquet` maps it to its name and data center.",
+  "service.timestamp": "Simulation time of the sample, in milliseconds since the start of the simulation.",
+  "task.schedule_time": "Last time the task was placed on a host, or null if it has never been placed.",
+  "task.finish_time": "Last time the task completed, failed or was terminated, or null if none of these happened yet."
 }

@@ -23,20 +23,16 @@
 package org.opendc.sdk.runner.telemetry.table.service
 
 import org.opendc.simulator.compute.service.ComputeService
-import java.time.Duration
 import java.time.Instant
 
 public class ServiceSampler(
     private val service: ComputeService,
-    private val startTime: Duration = Duration.ofMillis(0),
 ) {
     public fun sample(now: Instant): ServiceSample {
         val timestamp = now
-        val timestampAbsolute = now + startTime
 
         return ServiceSample(
             timestamp = timestamp,
-            timestampAbsolute = timestampAbsolute,
             hostsUp = service.hostsAvailable,
             hostsDown = service.hostsUnavailable,
             tasksTotal = service.tasksTotal,

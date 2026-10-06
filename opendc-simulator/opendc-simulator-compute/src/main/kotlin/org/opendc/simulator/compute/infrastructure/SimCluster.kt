@@ -31,13 +31,14 @@ import java.time.InstantSource
  *
  * @param id Identifies the cluster: clusters are equal when their ids are, so ids must be unique within a simulation.
  * @param name The name of the cluster.
+ * @param dataCenterId The id of the data center the cluster belongs to.
  * @param clock The (virtual) clock used to track time.
  * @constructor Create empty Sim host
  */
 public class SimCluster(
     public val id: Int,
     private val name: String,
-    private val dataCenterName: String,
+    public val dataCenterId: Int,
     private val clock: InstantSource,
     private val powerDistributor: ClusterDistributor,
 ) : AutoCloseable {
@@ -57,10 +58,6 @@ public class SimCluster(
 
     public fun getName(): String {
         return name
-    }
-
-    public fun getDataCenterName(): String {
-        return dataCenterName
     }
 
     public fun addHost(host: SimHost) {

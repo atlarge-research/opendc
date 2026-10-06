@@ -53,11 +53,6 @@ public object DfltTaskExportColumns {
             field = Types.required(INT64).named("timestamp"),
         ) { it.timestamp.toEpochMilli() }
 
-    public val TIMESTAMP_ABS: ExportColumn<TaskSample> =
-        ExportColumn(
-            field = Types.required(INT64).named("timestamp_absolute"),
-        ) { it.timestampAbsolute.toEpochMilli() }
-
     public val TASK_ID: ExportColumn<TaskSample> =
         ExportColumn(
             field =
@@ -65,28 +60,10 @@ public object DfltTaskExportColumns {
                     .named("task_id"),
         ) { it.taskId }
 
-    public val HOST_NAME: ExportColumn<TaskSample> =
+    public val HOST_ID: ExportColumn<TaskSample> =
         ExportColumn(
-            field =
-                Types.required(BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("host_name"),
-        ) {
-            if (it.hostName == null) {
-                return@ExportColumn Binary.fromString("")
-            }
-            return@ExportColumn Binary.fromString(it.hostName)
-        }
-
-    public val MEM_CAPACITY: ExportColumn<TaskSample> =
-        ExportColumn(
-            field = Types.required(INT64).named("mem_capacity"),
-        ) { it.memCapacity }
-
-    public val CPU_COUNT: ExportColumn<TaskSample> =
-        ExportColumn(
-            field = Types.required(INT32).named("cpu_count"),
-        ) { it.cpuCount }
+            field = Types.optional(INT32).named("host_id"),
+        ) { it.hostId }
 
     public val CPU_LIMIT: ExportColumn<TaskSample> =
         ExportColumn(
@@ -122,11 +99,6 @@ public object DfltTaskExportColumns {
         ExportColumn(
             field = Types.required(INT64).named("cpu_time_lost"),
         ) { it.cpuLostTime }
-
-    public val GPU_COUNT: ExportColumn<TaskSample> =
-        ExportColumn(
-            field = Types.optional(INT32).named("gpu_count"),
-        ) { it.gpuCount }
 
     public val GPU_LIMIT: ExportColumn<TaskSample> =
         ExportColumn(
@@ -188,11 +160,6 @@ public object DfltTaskExportColumns {
             field = Types.optional(INT64).named("schedule_time"),
         ) { it.scheduleTime }
 
-    public val SUBMISSION_TIME: ExportColumn<TaskSample> =
-        ExportColumn(
-            field = Types.optional(INT64).named("submission_time"),
-        ) { it.submissionTime }
-
     public val FINISH_TIME: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.optional(INT64).named("finish_time"),
@@ -233,6 +200,5 @@ public object DfltTaskExportColumns {
         setOf(
             TASK_ID,
             TIMESTAMP,
-            TIMESTAMP_ABS,
         )
 }

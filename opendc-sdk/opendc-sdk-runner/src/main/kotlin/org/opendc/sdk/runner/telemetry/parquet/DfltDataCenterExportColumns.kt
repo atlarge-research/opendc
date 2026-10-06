@@ -22,10 +22,8 @@
 
 package org.opendc.sdk.runner.telemetry.parquet
 
-import org.apache.parquet.io.api.Binary
-import org.apache.parquet.schema.LogicalTypeAnnotation
-import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
 import org.opendc.sdk.runner.telemetry.table.datacenter.DataCenterSample
@@ -52,18 +50,10 @@ public object DfltDataCenterExportColumns {
             field = Types.required(INT64).named("timestamp"),
         ) { it.timestamp.toEpochMilli() }
 
-    public val TIMESTAMP_ABS: ExportColumn<DataCenterSample> =
+    public val DATA_CENTER_ID: ExportColumn<DataCenterSample> =
         ExportColumn(
-            field = Types.required(INT64).named("timestamp_absolute"),
-        ) { it.timestampAbsolute.toEpochMilli() }
-
-    public val DATA_CENTER_NAME: ExportColumn<DataCenterSample> =
-        ExportColumn(
-            field =
-                Types.required(BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("data_center_name"),
-        ) { Binary.fromString(it.dataCenterName ?: "missing") }
+            field = Types.required(INT32).named("data_center_id"),
+        ) { it.dataCenterId }
 
     public val POWER_DRAW: ExportColumn<DataCenterSample> =
         ExportColumn(
@@ -90,8 +80,7 @@ public object DfltDataCenterExportColumns {
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
-            DATA_CENTER_NAME,
+            DATA_CENTER_ID,
             TIMESTAMP,
-            TIMESTAMP_ABS,
         )
 }

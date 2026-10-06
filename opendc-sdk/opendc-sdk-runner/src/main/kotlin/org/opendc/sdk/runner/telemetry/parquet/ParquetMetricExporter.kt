@@ -30,7 +30,10 @@ import org.opendc.sdk.runner.telemetry.table.datacenter.DataCenterSample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
+import org.opendc.sdk.runner.telemetry.table.simulation.SimulationMeta
+import org.opendc.sdk.runner.telemetry.table.task.TaskMeta
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
+import org.opendc.sdk.runner.telemetry.table.topology.TopologyMeta
 import org.opendc.trace.parquet.exporter.ExportColumn
 import org.opendc.trace.parquet.exporter.Exportable
 import org.opendc.trace.parquet.exporter.Exporter
@@ -38,6 +41,9 @@ import java.io.File
 
 /**
  * A [MetricExporter] that logs the events to a Parquet file.
+ *
+ * @param taskMetaExporter The exporter of the static attributes of the tasks, or `null` to not write them.
+ * @param metaDirectory The directory to write the simulation and topology meta files to, or `null` to not write them.
  */
 public class ParquetMetricExporter(
     private val batteryExporter: Exporter<BatterySample>?,
@@ -47,6 +53,8 @@ public class ParquetMetricExporter(
     private val powerSourceExporter: Exporter<PowerSourceSample>?,
     private val serviceExporter: Exporter<ServiceSample>?,
     private val taskExporter: Exporter<TaskSample>?,
+    private val taskMetaExporter: Exporter<TaskMeta>? = null,
+    private val metaDirectory: File? = null,
 ) : MetricExporter, AutoCloseable {
     override fun export(reader: BatterySample) {
         batteryExporter?.write(reader)
@@ -76,6 +84,38 @@ public class ParquetMetricExporter(
         taskExporter?.write(reader)
     }
 
+    override fun export(meta: SimulationMeta) {
+        val directory = metaDirectory ?: return
+        directory.mkdirs()
+
+        writeMeta(File(directory, "simulation.parquet"), MetaColumns.SIMULATION, listOf(meta))
+    }
+
+    override fun export(meta: TopologyMeta) {
+        val directory = metaDirectory ?: return
+        directory.mkdirs()
+
+        val gpuCount = meta.hosts.maxOfOrNull { it.gpuCapacities.size } ?: 0
+
+        writeMeta(File(directory, "dataCenter.parquet"), MetaColumns.DATA_CENTER, meta.dataCenters)
+        writeMeta(File(directory, "cluster.parquet"), MetaColumns.CLUSTER, meta.clusters)
+        writeMeta(File(directory, "host.parquet"), MetaColumns.host(gpuCount), meta.hosts)
+        writeMeta(File(directory, "powerSource.parquet"), MetaColumns.POWER_SOURCE, meta.powerSources)
+        writeMeta(File(directory, "battery.parquet"), MetaColumns.BATTERY, meta.batteries)
+    }
+
+    override fun export(meta: TaskMeta) {
+        taskMetaExporter?.write(meta)
+    }
+
+    private inline fun <reified T : Exportable> writeMeta(
+        file: File,
+        columns: List<ExportColumn<T>>,
+        rows: List<T>,
+    ) {
+        Exporter(outputFile = file, columns = columns).use { exporter -> rows.forEach(exporter::write) }
+    }
+
     override fun close() {
         batteryExporter?.close()
         clusterExporter?.close()
@@ -84,6 +124,7 @@ public class ParquetMetricExporter(
         powerSourceExporter?.close()
         serviceExporter?.close()
         taskExporter?.close()
+        taskMetaExporter?.close()
     }
 
     public companion object {
@@ -217,6 +258,17 @@ public class ParquetMetricExporter(
                     null
                 }
 
+            val taskMetaExporter =
+                if (filesToExport[OutputFileSpec.TASK] == true) {
+                    Exporter(
+                        outputFile = File(base, "$partition/meta/task.parquet").also { it.parentFile.mkdirs() },
+                        columns = MetaColumns.TASK,
+                        bufferSize = bufferSize,
+                    )
+                } else {
+                    null
+                }
+
             return ParquetMetricExporter(
                 batteryExporter = batteryExporter,
                 clusterExporter = clusterExporter,
@@ -225,6 +277,8 @@ public class ParquetMetricExporter(
                 powerSourceExporter = powerSourceExporter,
                 serviceExporter = serviceExporter,
                 taskExporter = taskExporter,
+                taskMetaExporter = taskMetaExporter,
+                metaDirectory = File(base, "$partition/meta"),
             )
         }
     }

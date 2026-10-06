@@ -34,7 +34,10 @@ import org.opendc.sdk.runner.telemetry.table.datacenter.DataCenterSampler
 import org.opendc.sdk.runner.telemetry.table.host.HostSampler
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSampler
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSampler
+import org.opendc.sdk.runner.telemetry.table.simulation.SimulationMeta
+import org.opendc.sdk.runner.telemetry.table.task.TaskMeta
 import org.opendc.sdk.runner.telemetry.table.task.TaskSampler
+import org.opendc.sdk.runner.telemetry.table.topology.TopologyMeta
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.compute.task.SimTask
 import org.opendc.simulator.compute.telemetry.TaskListener
@@ -51,6 +54,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * @param service The [ComputeService] to monitor.
  * @param monitor The monitor to export the metrics to.
  * @param exportInterval The export interval.
+ * @param startTime The absolute time the simulation starts at. Every exported time is relative to it.
  */
 public class ComputeMetricReader(
     dispatcher: Dispatcher,
@@ -75,50 +79,51 @@ public class ComputeMetricReader(
     private val clock = dispatcher.timeSource
 
     private val batterySampler =
-        BatterySampler(
-            startTime,
-        )
+        BatterySampler()
 
     private val clusterSampler =
-        ClusterSampler(
-            startTime,
-        )
+        ClusterSampler()
 
     private val dataCenterSampler =
-        DataCenterSampler(
-            startTime,
-        )
+        DataCenterSampler()
 
     private val hostSampler =
-        HostSampler(
-            startTime,
-        )
+        HostSampler()
 
     private val powerSourceSampler =
-        PowerSourceSampler(
-            startTime,
-        )
+        PowerSourceSampler()
 
     private val serviceSampler =
         ServiceSampler(
             service,
-            startTime,
         )
 
     private val taskSampler =
         TaskSampler(
             service,
-            startTime,
         )
 
     private var loggCounter = 0
+
+    init {
+        // Registered here rather than in the job, which only starts once the simulation runs: a task deleted before
+        // that would otherwise never have its final sample exported.
+        service.addTaskListener(this)
+    }
 
     /**
      * The background job that is responsible for collecting the metrics every cycle.
      */
     private val job =
         scope.launch {
-            service.addTaskListener(this@ComputeMetricReader)
+            // Exported when the simulation starts rather than on construction, as the reader may be provisioned before
+            // the hosts it reports on.
+            try {
+                monitor.export(SimulationMeta(startTime.toMillis()))
+                monitor.export(TopologyMeta.of(service))
+            } catch (cause: Throwable) {
+                logger.warn(cause) { "Exporter threw an Exception" }
+            }
 
             val intervalMs = exportInterval.toMillis()
             try {
@@ -129,6 +134,7 @@ public class ComputeMetricReader(
                 }
             } finally {
                 loggState()
+                exportRemainingTaskMeta()
                 if (monitor is AutoCloseable) {
                     monitor.close()
                 }
@@ -210,6 +216,24 @@ public class ComputeMetricReader(
         }
     }
 
+    /**
+     * Export the static attributes of the tasks still in the service at the end of the run. Every other task had them
+     * exported when it was deleted, so each task is exported exactly once.
+     */
+    private fun exportRemainingTaskMeta() {
+        if (toMonitor[OutputFileSpec.TASK] != true) {
+            return
+        }
+
+        try {
+            for (task in service.tasks.values) {
+                monitor.export(TaskMeta.of(task, startTime))
+            }
+        } catch (cause: Throwable) {
+            logger.warn(cause) { "Exporter threw an Exception" }
+        }
+    }
+
     override fun close() {
         job.cancel()
     }
@@ -219,9 +243,16 @@ public class ComputeMetricReader(
     }
 
     override fun onTaskDeletion(task: SimTask) {
+        if (toMonitor[OutputFileSpec.TASK] != true) {
+            return
+        }
+
         val now = this.clock.instant()
 
         val taskSample = this.taskSampler.sample(now, task)
         this.monitor.export(taskSample)
+
+        // The task leaves the service, so this is the last moment to export its static attributes
+        this.monitor.export(TaskMeta.of(task, startTime))
     }
 }

@@ -25,19 +25,14 @@ package org.opendc.sdk.runner.telemetry.table.host
 import org.opendc.trace.parquet.exporter.Exportable
 import java.time.Instant
 
+// TODO: Host State is not present in HostSample
 public data class HostSample(
-    public val hostName: String? = null,
-    public val clusterName: String? = null,
-    // TODO: update this metric, unclear what it does
-    public val coreCount: Int = -1,
-    public val memCapacity: Long = -1L,
+    public val hostId: Int = -1,
     public val timestamp: Instant = Instant.MIN,
-    public val timestampAbsolute: Instant = Instant.MIN,
     public val tasksTerminated: Int = -1,
     public val tasksActive: Int = -1,
     public val guestsError: Int = -1,
     public val guestsInvalid: Int = -1,
-    public val cpuCapacity: Double = -1.0,
     public val cpuUsage: Double = -1.0,
     public val cpuDemand: Double = -1.0,
     public val cpuUtilization: Double = -1.0,
@@ -45,7 +40,6 @@ public data class HostSample(
     public val cpuIdleTime: Long = -1L,
     public val cpuStealTime: Long = -1L,
     public val cpuLostTime: Long = -1L,
-    public var gpuCapacities: ArrayList<Double> = ArrayList(),
     public var gpuUsages: ArrayList<Double> = ArrayList(),
     public var gpuDemands: ArrayList<Double> = ArrayList(),
     public var gpuUtilizations: ArrayList<Double> = ArrayList(),

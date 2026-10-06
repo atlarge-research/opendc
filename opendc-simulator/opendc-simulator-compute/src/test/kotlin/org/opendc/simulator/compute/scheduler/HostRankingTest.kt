@@ -82,7 +82,7 @@ internal class HostRankingTest {
                 FlowDistributorFactory.DistributionPolicy.MAX_MIN_FAIRNESS,
                 FlowDistributorFactory.DistributionPolicy.MAX_MIN_FAIRNESS,
             )
-        return SimHost(id, "H$id", "C01", InstantSource.fixed(Instant.EPOCH), engine, machine, powerModel, null, 0.0, 1.0, distributor)
+        return SimHost(id, "H$id", 0, InstantSource.fixed(Instant.EPOCH), engine, machine, powerModel, null, 0.0, 1.0, distributor)
     }
 
     @Test

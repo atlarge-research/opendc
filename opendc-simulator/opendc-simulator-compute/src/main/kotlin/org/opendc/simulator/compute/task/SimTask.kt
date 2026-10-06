@@ -147,13 +147,13 @@ public class SimTask(
         internal set(newHost) {
             field = newHost
             if (newHost != null) {
-                hostName = newHost.name
+                hostId = newHost.id
             }
         }
 
     // TODO: This is currently needed because host gets deleted before the final exporting. When exporting has been
-    // updated, remove hostName.
-    public var hostName: String? = null
+    // updated, remove hostId.
+    public var hostId: Int? = null
         private set
 
     /**
@@ -164,10 +164,19 @@ public class SimTask(
 
     // The submission time is shifted by the workload loaders, so unlike the other statistics it can be set from outside.
     public var submittedAt: Timestamp = submissionTime
-    public var scheduledAt: Timestamp = Timestamp.zero
+
+    /**
+     * The last time the task was placed on a host, or `null` if it has never been placed.
+     */
+    public var scheduledAt: Timestamp? = null
         private set
-    public var finishedAt: Timestamp = Timestamp.zero
+
+    /**
+     * The last time the task completed, failed or was terminated, or `null` if none of these happened yet.
+     */
+    public var finishedAt: Timestamp? = null
         private set
+
     public var schedulingDelay: TimeDelta = TimeDelta.zero
         private set
 

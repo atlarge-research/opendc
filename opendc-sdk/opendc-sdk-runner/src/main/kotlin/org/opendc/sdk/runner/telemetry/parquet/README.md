@@ -48,7 +48,7 @@ Each `ExportColumn` has a `Regex`, used for deserialization. If no custom regex 
 {
 	...
 	"computeExportConfig": {
-		"hostExportColumns": ["timestamp", "timestamp_absolute", "invalid-entry1", "guests_invalid"],
+		"hostExportColumns": ["timestamp", "host_id", "invalid-entry1", "guests_invalid"],
 		"taskExportColumns": ["invalid-entry2"],
 		"serviceExportColumns": ["timestamp", "tasks_active", "tasks_pending"]
 	},
@@ -62,8 +62,8 @@ Each `ExportColumn` has a `Regex`, used for deserialization. If no custom regex 
 10:51:56.564 [WARN] ComputeExportConfig - deserialized list of export columns for exportable TaskTableReader produced empty list, falling back to all loaded columns
 10:51:56.584 [INFO] ScenariosSpec - 
 | === Compute Export Config ===
-| Host columns    : timestamp, timestamp_absolute, guests_invalid
-| Task columns  : timestamp, timestamp_absolute, task_id, task_name, cpu_count, mem_capacity, cpu_limit, cpu_time_active, cpu_time_idle, cpu_time_steal, cpu_time_lost, uptime, downtime, provision_time, boot_time, boot_time_absolute
+| Host columns    : timestamp, host_id, guests_invalid
+| Task columns  : timestamp, task_id, task_name, cpu_count, mem_capacity, cpu_limit, cpu_time_active, cpu_time_idle, cpu_time_steal, cpu_time_lost, uptime, downtime, provision_time, boot_time, boot_time_absolute
 | Service columns : timestamp, tasks_active, tasks_pending
 
 ```

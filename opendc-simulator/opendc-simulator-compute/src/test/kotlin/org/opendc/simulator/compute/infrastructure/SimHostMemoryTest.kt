@@ -63,7 +63,7 @@ class SimHostMemoryTest {
             SimHost(
                 id = 0,
                 name = "H01",
-                clusterName = "C01",
+                clusterId = 0,
                 clock = clock,
                 engine = engine,
                 machineModel = machineModel,

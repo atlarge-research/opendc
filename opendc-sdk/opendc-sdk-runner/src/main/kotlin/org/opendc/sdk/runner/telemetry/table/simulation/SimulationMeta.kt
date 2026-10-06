@@ -20,16 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.runner.telemetry.table.cluster
+package org.opendc.sdk.runner.telemetry.table.simulation
 
 import org.opendc.trace.parquet.exporter.Exportable
-import java.time.Instant
 
-public data class ClusterSample(
-    public val clusterId: Int = -1,
-    public val timestamp: Instant = Instant.MIN,
-    public val powerDraw: Double = -1.0,
-    public val energyUsage: Double = -1.0,
-    public val carbonIntensity: Double = -1.0,
-    public val carbonEmission: Double = -1.0,
+/**
+ * The run-level attributes of a simulation. Every time in the samples and the other meta files is relative to the start
+ * of the simulation, so adding [startTime] to it gives the absolute time.
+ *
+ * @property startTime The absolute time the simulation starts at, in milliseconds since the Unix epoch.
+ */
+public data class SimulationMeta(
+    public val startTime: Long,
 ) : Exportable

@@ -49,11 +49,6 @@ public object DfltServiceExportColumns {
             field = Types.required(INT64).named("timestamp"),
         ) { it.timestamp.toEpochMilli() }
 
-    public val TIMESTAMP_ABS: ExportColumn<ServiceSample> =
-        ExportColumn(
-            field = Types.required(INT64).named("timestamp_absolute"),
-        ) { it.timestampAbsolute.toEpochMilli() }
-
     public val HOSTS_UP: ExportColumn<ServiceSample> =
         ExportColumn(
             field = Types.required(INT32).named("hosts_up"),
@@ -105,7 +100,6 @@ public object DfltServiceExportColumns {
     internal val BASE_EXPORT_COLUMNS =
         setOf(
             TIMESTAMP,
-            TIMESTAMP_ABS,
         )
 
     /**

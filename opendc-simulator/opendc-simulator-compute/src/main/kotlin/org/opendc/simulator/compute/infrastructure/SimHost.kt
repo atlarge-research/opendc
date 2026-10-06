@@ -54,7 +54,7 @@ import java.time.InstantSource
  *
  * @param id Identifies the host: hosts are equal when their ids are, so ids must be unique within a simulation.
  * @param name The (unique) name of the host.
- * @param clusterName The name of the cluster the host belongs to.
+ * @param clusterId The id of the cluster the host belongs to.
  * @param clock The (virtual) clock used to track time.
  * @param engine The flow engine the machine of this host runs on.
  * @param machineModel The static model of the host.
@@ -67,7 +67,7 @@ import java.time.InstantSource
 public class SimHost(
     public val id: Int,
     public val name: String,
-    public val clusterName: String,
+    public val clusterId: Int,
     private val clock: InstantSource,
     private val engine: FlowEngine,
     private val machineModel: MachineModel,
@@ -348,7 +348,8 @@ public class SimHost(
 
         // A task runs from the moment it is placed on this host, which is when the ComputeService sets scheduledAt.
         // Tasks that fail or pause are removed from the host right away, so a task on this host has no downtime.
-        return GuestSystemStats(Duration.ofMillis(clock.millis() - task.scheduledAt.toEpochMs().toLong()), Duration.ZERO)
+        val scheduledAt = checkNotNull(task.scheduledAt) { "Task ${task.id} is on host $name without having been scheduled" }
+        return GuestSystemStats(Duration.ofMillis(clock.millis() - scheduledAt.toEpochMs().toLong()), Duration.ZERO)
     }
 
     public fun getCpuStats(): HostCpuStats {

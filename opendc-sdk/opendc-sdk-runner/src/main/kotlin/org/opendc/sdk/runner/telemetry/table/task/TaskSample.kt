@@ -28,17 +28,12 @@ import java.time.Instant
 
 public data class TaskSample(
     public val taskId: Int = -1,
-    public val memCapacity: Long = -1L,
-    public val cpuCount: Int = -1,
-    public val gpuCount: Int = -1,
-    public val hostName: String? = null,
+    public val hostId: Int? = null,
     public val timestamp: Instant = Instant.MIN,
-    public val timestampAbsolute: Instant = Instant.MIN,
     public val uptime: Long = -1L,
     public val downtime: Long = -1L,
     public val numFailures: Int = -1,
     public val numPauses: Int = -1,
-    public val submissionTime: Long? = null,
     public val scheduleTime: Long? = null,
     public val finishTime: Long? = null,
     public val schedulingDelay: Long = -1L,

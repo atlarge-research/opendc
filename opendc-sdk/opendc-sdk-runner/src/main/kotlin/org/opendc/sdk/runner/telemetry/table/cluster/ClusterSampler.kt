@@ -23,19 +23,14 @@
 package org.opendc.sdk.runner.telemetry.table.cluster
 
 import org.opendc.simulator.compute.infrastructure.SimCluster
-import java.time.Duration
 import java.time.Instant
 
-public class ClusterSampler(
-    private val startTime: Duration = Duration.ofMillis(0),
-) {
+public class ClusterSampler {
     public fun sample(
         now: Instant,
         cluster: SimCluster,
     ): ClusterSample {
         val clusterSystemStats = cluster.getSystemStats()
-
-        val timestampAbsolute = now + startTime
 
         // energy & carbon stats
         val powerDraw = clusterSystemStats.powerDraw
@@ -47,10 +42,8 @@ public class ClusterSampler(
         val embodiedCarbon = clusterSystemStats.embodiedCarbon
 
         return ClusterSample(
-            clusterName = cluster.getName(),
-            dataCenterName = cluster.getDataCenterName(),
+            clusterId = cluster.id,
             timestamp = now,
-            timestampAbsolute = timestampAbsolute,
             powerDraw = powerDraw,
             energyUsage = energyUsage,
             carbonIntensity = carbonIntensity,

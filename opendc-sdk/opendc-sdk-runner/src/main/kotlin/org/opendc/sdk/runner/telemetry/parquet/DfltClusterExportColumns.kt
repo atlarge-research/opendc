@@ -22,10 +22,8 @@
 
 package org.opendc.sdk.runner.telemetry.parquet
 
-import org.apache.parquet.io.api.Binary
-import org.apache.parquet.schema.LogicalTypeAnnotation
-import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
 import org.opendc.sdk.runner.telemetry.table.cluster.ClusterSample
@@ -52,26 +50,10 @@ public object DfltClusterExportColumns {
             field = Types.required(INT64).named("timestamp"),
         ) { it.timestamp.toEpochMilli() }
 
-    public val TIMESTAMP_ABS: ExportColumn<ClusterSample> =
+    public val CLUSTER_ID: ExportColumn<ClusterSample> =
         ExportColumn(
-            field = Types.required(INT64).named("timestamp_absolute"),
-        ) { it.timestampAbsolute.toEpochMilli() }
-
-    public val CLUSTER_NAME: ExportColumn<ClusterSample> =
-        ExportColumn(
-            field =
-                Types.required(BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("cluster_name"),
-        ) { Binary.fromString(it.clusterName ?: "missing") }
-
-    public val DATA_CENTER_NAME: ExportColumn<ClusterSample> =
-        ExportColumn(
-            field =
-                Types.required(BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("data_center_name"),
-        ) { Binary.fromString(it.dataCenterName ?: "missing") }
+            field = Types.required(INT32).named("cluster_id"),
+        ) { it.clusterId }
 
     public val POWER_DRAW: ExportColumn<ClusterSample> =
         ExportColumn(
@@ -98,8 +80,7 @@ public object DfltClusterExportColumns {
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
-            CLUSTER_NAME,
+            CLUSTER_ID,
             TIMESTAMP,
-            TIMESTAMP_ABS,
         )
 }

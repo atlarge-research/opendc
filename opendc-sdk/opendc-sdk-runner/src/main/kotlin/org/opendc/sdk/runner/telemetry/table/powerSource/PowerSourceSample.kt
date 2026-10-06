@@ -26,10 +26,8 @@ import org.opendc.trace.parquet.exporter.Exportable
 import java.time.Instant
 
 public data class PowerSourceSample(
-    public val powerSourceName: String? = null,
-    public val clusterName: String? = null,
+    public val powerSourceId: Int = -1,
     public val timestamp: Instant = Instant.MIN,
-    public val timestampAbsolute: Instant = Instant.MIN,
     public val hostsConnected: Int = -1,
     public val powerDraw: Double = -1.0,
     public val energyUsage: Double = -1.0,
