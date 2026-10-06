@@ -163,6 +163,7 @@ public class HostsProvisioningStep(
                         numHosts,
                         1,
                     )
+                clusterPowerDistributor.setDebugLabel("cluster-power")
 
                 val simCluster =
                     SimCluster(
@@ -214,6 +215,7 @@ public class HostsProvisioningStep(
                 numHosts,
                 1,
             )
+        powerDistributor.setDebugLabel("dc-power")
 
         return PowerSourceFlows(powerSource, powerDistributor)
     }
@@ -258,15 +260,16 @@ public class HostsProvisioningStep(
                 2,
                 1,
             )
+        batteryDistributor.setDebugLabel("dc-battery")
         FlowEdge(batteryDistributor, powerSource)
 
         // Create Battery
         val battery =
             BatteryNode(
                 engine,
-                batterySpec.capacity,
-                batterySpec.chargingSpeed,
-                batterySpec.initialCharge,
+                batterySpec.capacity.toKWh(),
+                batterySpec.chargingSpeed.toWatts(),
+                batterySpec.initialCharge.toKWh(),
                 batterySpec.name,
                 clusterName,
                 batterySpec.embodiedCarbon,

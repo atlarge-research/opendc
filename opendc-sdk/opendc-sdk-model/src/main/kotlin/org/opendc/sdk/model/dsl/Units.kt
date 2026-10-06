@@ -24,6 +24,7 @@ package org.opendc.sdk.model.dsl
 
 import org.opendc.common.units.DataRate
 import org.opendc.common.units.DataSize
+import org.opendc.common.units.Energy
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
@@ -48,6 +49,9 @@ public val Number.watts: Power get() = Power.ofWatts(this)
 
 /** This number as a [Power] in kilowatts. */
 public val Number.kwatts: Power get() = Power.ofKWatts(this)
+
+/** This number as an [Energy] in kilowatt-hours. */
+public val Number.kwh: Energy get() = Energy.ofKWh(this)
 
 /** This number as a [DataRate] in gigabytes per second. */
 public val Number.gbps: DataRate get() = DataRate.ofGBps(this)

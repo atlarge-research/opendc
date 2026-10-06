@@ -200,6 +200,10 @@ public value class Energy private constructor(
 
         private val JOULES = Regex("\\s*(?:j|(?:joule|Joule)(?:|s))")
 
+        // A watt-hour is a product, so the hour follows the watt directly ("kWh") or after a hyphen ("watts-hour").
+        // The per-spellings ("kW/h") are still accepted, as they were the only ones that parsed before.
+        private val WATT_HOUR = Regex("\\s*(?:-|p|per|/)?\\s*?")
+
         // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Serializer
         // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -225,9 +229,9 @@ public value class Energy private constructor(
                 )
                 ofJoule(it.toDouble())
             },
-            serializerFun = { this.encodeString(it.toString()) },
-            ifMatches("$NUM_GROUP$WATTS$PER$HOUR", IGNORE_CASE) { ofWh(json.decNumFromStr(groupValues[1])) },
-            ifMatches("$NUM_GROUP$KILO$WATTS$PER$HOUR", IGNORE_CASE) { ofKWh(json.decNumFromStr(groupValues[1])) },
+            serializerFun = { this.encodeString("${it.toJoule().toExactString()} J") },
+            ifMatches("$NUM_GROUP$WATTS$WATT_HOUR$HOUR", IGNORE_CASE) { ofWh(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KILO$WATTS$WATT_HOUR$HOUR", IGNORE_CASE) { ofKWh(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$JOULES", IGNORE_CASE) { ofJoule(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$KILO$JOULES", IGNORE_CASE) { ofKJoule(json.decNumFromStr(groupValues[1])) },
         )

@@ -39,5 +39,5 @@ public class VCpuCapacityFilter : ThresholdFilter {
 
     override fun available(host: SimHost): Double = host.model.cpuCapacity / host.model.coreCount
 
-    override fun required(task: SimTask): Double = task.cpuCapacity / task.cpuCoreCount
+    override fun required(task: SimTask): Double = task.cpuCapacity.toMHz() / task.cpuCoreCount
 }

@@ -30,8 +30,10 @@ import org.opendc.sdk.model.validation.ValidationIssue
 /**
  * Configuration for periodic checkpointing of running tasks.
  *
- * @property interval Wall-clock time between consecutive checkpoints.
- * @property duration Time it takes to write a single checkpoint.
+ * @property interval Wall-clock time between consecutive checkpoints. The default unit is millisecond: a bare number
+ *   such as `1000` means 1000 ms.
+ * @property duration Time it takes to write a single checkpoint. The default unit is millisecond: a bare number such
+ *   as `1000` means 1000 ms.
  * @property intervalScaling Multiplier applied to [interval] after each checkpoint.
  */
 @Serializable

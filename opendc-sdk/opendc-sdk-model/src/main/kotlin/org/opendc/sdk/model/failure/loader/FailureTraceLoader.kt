@@ -22,6 +22,7 @@
 
 package org.opendc.sdk.model.failure.loader
 
+import org.opendc.common.units.TimeDelta
 import org.opendc.simulator.failure.models.Failure
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.FAILURE_DURATION
@@ -56,7 +57,7 @@ public class FailureTraceLoader(private val pathToFile: File) {
 
                 val failure =
                     try {
-                        Failure(failureInterval, failureDuration, failureIntensity)
+                        Failure(TimeDelta.ofMillis(failureInterval), TimeDelta.ofMillis(failureDuration), failureIntensity)
                     } catch (e: IllegalArgumentException) {
                         throw IllegalArgumentException("Invalid failure in row ${failures.size} of $pathToFile: ${e.message}", e)
                     }

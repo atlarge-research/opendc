@@ -215,6 +215,7 @@ public class SimMachine {
         new FlowEdge(this.psu, powerDistributor);
         this.distributors[ResourceType.POWER.ordinal()] = new MaxMinFairnessFlowDistributor(
                 engine, 1 + this.machineModel.getGpuModels().size(), 1); // Maybe First fit
+        this.distributors[ResourceType.POWER.ordinal()].setDebugLabel("host-power");
         new FlowEdge(this.distributors[ResourceType.POWER.ordinal()], this.psu);
 
         this.computeResources.put(
@@ -232,6 +233,7 @@ public class SimMachine {
         // Create a FlowDistributor and add the cpu as supplier
         this.distributors[ResourceType.CPU.ordinal()] = FlowDistributorFactory.getFlowDistributor(
                 engine, this.machineModel.getCpuDistributionStrategy(), maxTasks, 1);
+        this.distributors[ResourceType.CPU.ordinal()].setDebugLabel("host-cpu");
         new FlowEdge(
                 this.distributors[ResourceType.CPU.ordinal()],
                 (FlowSupplier) this.computeResources.get(ResourceType.CPU).getFirst(),
@@ -248,6 +250,7 @@ public class SimMachine {
                     this.machineModel.getGpuDistributionStrategy(),
                     maxTasks,
                     this.machineModel.getGpuModels().size());
+            this.distributors[ResourceType.GPU.ordinal()].setDebugLabel("host-gpu");
             ArrayList<ComputeResource> gpus = new ArrayList<>();
 
             for (GpuModel gpuModel : machineModel.getGpuModels()) {

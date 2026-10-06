@@ -45,7 +45,8 @@ import org.opendc.common.logger.logger
  * // or
  * "value": "3"
  * ```
- * @param[serializerFun] function invoked when [T] needs to be serialized.
+ * @param[serializerFun] function invoked when [T] needs to be serialized. It should write the value in the unit it is
+ * stored in, using [toExactString], so that it reads back as exactly the same value.
  *
  * @param[conditions] conditions used during the deserialization process.
  * If the condition returns [T] then it is considered as the result of the deserialization.
@@ -214,3 +215,9 @@ internal open class OnlyString<T : Any>(tSerial: KSerializer<T>) : JsonTransform
  * ```
  */
 internal fun Json.decNumFromStr(str: String): Number = decodeFromString<Double>(str)
+
+/**
+ * This number as the shortest decimal that reads back as exactly the same [Double], written without an exponent
+ * (`140457600000` instead of `1.404576E11`) so that the unit regexes can parse it.
+ */
+internal fun Double.toExactString(): String = if (isFinite()) toBigDecimal().stripTrailingZeros().toPlainString() else toString()

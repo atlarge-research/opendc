@@ -149,10 +149,15 @@ private fun JsonObject.toSdkPowerSource(): JsonObject =
         stringAt("carbonTracePath")?.let { put("carbon", namedReference(it)) }
     }
 
-/** Battery policies already share their discriminators and their fields, so they are copied verbatim. */
+/**
+ * Battery policies already share their discriminators and their fields, so they are copied verbatim. The legacy
+ * capacity and charge count kWh, while a bare number in an SDK `Energy` counts Joule, so their unit is spelled out.
+ */
 private fun JsonObject.toSdkBattery(): JsonObject =
     buildJsonObject {
-        keep(this@toSdkBattery, "name", "capacity", "chargingSpeed", "initialCharge", "embodiedCarbon", "expectedLifetime")
+        keep(this@toSdkBattery, "name", "embodiedCarbon", "expectedLifetime")
+        keepIn(this@toSdkBattery, "kWh", "capacity", "initialCharge")
+        keepIn(this@toSdkBattery, "W", "chargingSpeed")
         rename(this@toSdkBattery, from = "batteryPolicy", to = "policy")
     }
 

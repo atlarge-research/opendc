@@ -31,7 +31,8 @@ import org.opendc.sdk.model.validation.ValidationIssue
  * A CPU specification for a host.
  *
  * @property coreCount Number of cores per CPU package.
- * @property coreSpeed Clock speed of a single core.
+ * @property coreSpeed Clock speed of a single core. The default unit is MHz: a bare number such as `2100`
+ *   means 2100 MHz.
  * @property count Number of identical CPU packages on the host.
  * @property vendor Hardware vendor name.
  * @property modelName Commercial model name.

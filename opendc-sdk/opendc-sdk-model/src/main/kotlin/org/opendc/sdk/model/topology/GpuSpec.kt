@@ -31,10 +31,14 @@ import org.opendc.common.units.Frequency
  * A GPU specification for a host.
  *
  * @property coreCount Number of cores per GPU package.
- * @property coreSpeed Clock speed of a single core.
+ * @property coreSpeed Clock speed of a single core. The default unit is MHz: a bare number such as `2100`
+ *   means 2100 MHz.
  * @property count Number of identical GPU packages on the host.
- * @property memory Onboard GPU memory; a negative value denotes "unspecified".
- * @property memoryBandwidth Memory bandwidth; a negative value denotes "unspecified".
+ * @property memory Onboard GPU memory; a negative value denotes "unspecified". The default unit is MiB: a bare number
+ *   such as `1024` means 1024 MiB.
+ * @property memoryBandwidth Memory bandwidth; a negative value denotes "unspecified". The default unit is
+ *   Kibps (kibibits per second): a bare number such as `1024` means 1024 Kibps, so write `"900 GBps"` for
+ *   gigabytes per second.
  * @property vendor Hardware vendor name.
  * @property modelName Commercial model name.
  * @property architecture Micro-architecture identifier.

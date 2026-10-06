@@ -27,6 +27,8 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.opendc.common.units.DataSize
+import org.opendc.common.units.Frequency
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.models.GpuHostModel
 import org.opendc.simulator.compute.models.HostModel
@@ -74,15 +76,15 @@ internal class ThresholdFilterTest {
         }
         every { host.provisionedCpuCores } answers { state.provisionedCores }
         every { host.availableCpuCores } answers { state.cores - state.provisionedCores }
-        every { host.availableMemory } answers { state.freeMemory }
+        every { host.availableMemory } answers { DataSize.ofMiB(state.freeMemory) }
         every { host.instanceCount } answers { state.instances }
         every { host.provisionedGpuCores } answers { state.provisionedGpuCores }
 
         val task = mockk<SimTask>()
         every { task.cpuCoreCount } answers { state.taskCores }
-        every { task.memorySize } answers { state.taskMemory }
+        every { task.memorySize } answers { DataSize.ofMiB(state.taskMemory) }
         every { task.gpuCoreCount } answers { state.taskGpuCores }
-        every { task.cpuCapacity } answers { state.taskCores * state.taskCoreSpeed }
+        every { task.cpuCapacity } answers { Frequency.ofMHz(state.taskCores * state.taskCoreSpeed) }
 
         var passed = 0
         repeat(500) {

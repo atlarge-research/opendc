@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.compute.scheduler.timeshift
 
+import org.opendc.common.units.TimeDelta
+import org.opendc.common.units.Timestamp
 import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.compute.task.SimTask
@@ -68,8 +70,8 @@ public class CarbonTimeshifter(
             return false
         }
 
-        val lowCarbon = if (task.duration < SHORT_TASK_MILLIS) shortLowCarbon else longLowCarbon
-        return !lowCarbon && clock.millis() + task.duration < task.deadline
+        val lowCarbon = if (task.duration < SHORT_TASK_DURATION) shortLowCarbon else longLowCarbon
+        return !lowCarbon && Timestamp.ofEpochMs(clock.millis()) + task.duration < task.deadline
     }
 
     override fun updateCarbonIntensity(newCarbonIntensity: Double) {
@@ -109,6 +111,6 @@ public class CarbonTimeshifter(
 
     private companion object {
         /** Tasks shorter than this follow the short regime. */
-        const val SHORT_TASK_MILLIS = 2 * 60 * 60 * 1000L
+        val SHORT_TASK_DURATION = TimeDelta.ofHours(2)
     }
 }

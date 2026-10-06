@@ -26,35 +26,38 @@ import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+import org.opendc.common.units.TimeDelta
 
 /**
  * Verifies that a [Failure] only accepts values that let it advance the simulation clock.
  */
 class FailureTest {
+    private val Int.ms: TimeDelta get() = TimeDelta.ofMillis(this)
+
     @Test
     fun `a failure may start immediately`() {
-        assertDoesNotThrow { Failure(failureInterval = 0, failureDuration = 1, failureIntensity = 1.0) }
+        assertDoesNotThrow { Failure(failureInterval = 0.ms, failureDuration = 1.ms, failureIntensity = 1.0) }
     }
 
     @Test
     fun `a failure cannot start at a negative time`() {
-        assertThrows<IllegalArgumentException> { Failure(failureInterval = -1, failureDuration = 1, failureIntensity = 1.0) }
+        assertThrows<IllegalArgumentException> { Failure(failureInterval = -1.ms, failureDuration = 1.ms, failureIntensity = 1.0) }
     }
 
     @Test
     fun `a failure must have a positive duration`() {
         assertAll(
-            { assertThrows<IllegalArgumentException> { Failure(failureInterval = 1, failureDuration = 0, failureIntensity = 1.0) } },
-            { assertThrows<IllegalArgumentException> { Failure(failureInterval = 1, failureDuration = -1, failureIntensity = 1.0) } },
+            { assertThrows<IllegalArgumentException> { Failure(failureInterval = 1.ms, failureDuration = 0.ms, failureIntensity = 1.0) } },
+            { assertThrows<IllegalArgumentException> { Failure(failureInterval = 1.ms, failureDuration = -1.ms, failureIntensity = 1.0) } },
         )
     }
 
     @Test
     fun `a failure must have an intensity above 0 and at most 1`() {
         assertAll(
-            { assertThrows<IllegalArgumentException> { Failure(failureInterval = 1, failureDuration = 1, failureIntensity = 0.0) } },
-            { assertThrows<IllegalArgumentException> { Failure(failureInterval = 1, failureDuration = 1, failureIntensity = 1.5) } },
-            { assertDoesNotThrow { Failure(failureInterval = 1, failureDuration = 1, failureIntensity = 1.0) } },
+            { assertThrows<IllegalArgumentException> { Failure(failureInterval = 1.ms, failureDuration = 1.ms, failureIntensity = 0.0) } },
+            { assertThrows<IllegalArgumentException> { Failure(failureInterval = 1.ms, failureDuration = 1.ms, failureIntensity = 1.5) } },
+            { assertDoesNotThrow { Failure(failureInterval = 1.ms, failureDuration = 1.ms, failureIntensity = 1.0) } },
         )
     }
 }

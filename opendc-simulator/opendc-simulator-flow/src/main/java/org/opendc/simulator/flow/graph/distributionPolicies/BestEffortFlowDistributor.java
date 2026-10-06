@@ -249,6 +249,8 @@ public class BestEffortFlowDistributor extends FlowDistributor {
      */
     @Override
     public long onUpdate(long now) {
+        this.debugHit();
+
         long nextUpdate = Long.MAX_VALUE;
 
         boolean updateNeeded = false;

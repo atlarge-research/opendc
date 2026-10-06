@@ -29,6 +29,7 @@ plugins {
 
 dependencies {
     api(projects.opendcSimulator.opendcSimulatorFlow)
+    api(projects.opendcCommon)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(libs.kotlin.logging)
 }

@@ -32,6 +32,7 @@ import org.opendc.cli.ShowCommand
 import org.opendc.cli.ValidateCommand
 import org.opendc.common.units.DataRate
 import org.opendc.common.units.DataSize
+import org.opendc.common.units.Energy
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
@@ -338,7 +339,7 @@ class LegacyExperimentTest {
         assertEquals(ConstantVirtualizationOverheadSpec(percentageOverhead = 0.05), gpu.virtualizationOverhead)
         assertEquals(SqrtPowerModelSpec(maxPower = Power.ofWatts(600), idlePower = Power.ofWatts(300)), constant.gpuPowerModel)
         assertEquals(MaxMinFairnessPolicySpec, constant.cpuDistribution)
-        assertEquals(BestEffortPolicySpec(updateInterval = 1000), constant.gpuDistribution)
+        assertEquals(BestEffortPolicySpec(updateInterval = TimeDelta.ofMillis(1000)), constant.gpuDistribution)
 
         // The CPU and memory keep the fields the two formats spell differently.
         assertEquals(2, constant.cpu.count)
@@ -367,9 +368,9 @@ class LegacyExperimentTest {
         assertEquals(NamedReference("carbon_traces/NL_2021-2024.parquet"), datacenter.powerSource.carbon)
 
         val battery = checkNotNull(cluster.battery)
-        assertEquals(0.1, battery.capacity)
-        assertEquals(1000.0, battery.chargingSpeed)
-        assertEquals(0.05, battery.initialCharge)
+        assertEquals(Energy.ofKWh(0.1), battery.capacity)
+        assertEquals(Power.ofWatts(1000), battery.chargingSpeed)
+        assertEquals(Energy.ofKWh(0.05), battery.initialCharge)
         assertEquals(RunningMeanPolicySpec(startingThreshold = 150.0, windowSize = 24), battery.policy)
         assertEquals(1200.0, battery.embodiedCarbon)
         assertEquals(10.0, battery.expectedLifetime)

@@ -24,6 +24,7 @@ package org.opendc.simulator.failure.models
 
 import kotlinx.coroutines.delay
 import org.apache.commons.math3.distribution.RealDistribution
+import org.opendc.common.units.TimeDelta
 import org.opendc.simulator.compute.service.ComputeService
 import java.time.InstantSource
 import java.util.random.RandomGenerator
@@ -71,7 +72,7 @@ public class SampleBasedFailureModel(
             // Round up to at least 1 ms so every failure advances the simulation clock, even when its interval is 0
             val durationSample = max(0.0, durationSampler.sample())
             val faultDuration = max(1L, (durationSample * 3.6e6).toLong())
-            fault.apply(victims, faultDuration)
+            fault.apply(victims, TimeDelta.ofMillis(faultDuration))
         }
     }
 }

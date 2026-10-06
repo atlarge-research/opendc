@@ -29,8 +29,9 @@ import org.opendc.common.units.Frequency
 /**
  * A memory (RAM) specification for a host.
  *
- * @property size Total memory capacity.
- * @property speed Memory clock speed; a negative value denotes "unspecified".
+ * @property size Total memory capacity. The default unit is MiB: a bare number such as `1024` means 1024 MiB.
+ * @property speed Memory clock speed; a negative value denotes "unspecified". The default unit is MHz: a bare number
+ *   such as `2100` means 2100 MHz.
  * @property vendor Hardware vendor name.
  * @property modelName Commercial model name.
  * @property architecture Memory technology identifier.

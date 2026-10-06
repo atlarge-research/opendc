@@ -260,7 +260,11 @@ public value class Timestamp private constructor(
                 )
                 ofEpochMs(it.toDouble())
             },
-            serializerFun = { this.encodeString(it.toString()) },
+            // Whole milliseconds are written as an instant, which reads back exactly; any other value as its exact epoch ms.
+            serializerFun = {
+                val ms = it.toEpochMs()
+                this.encodeString(if (ms == ms.toLong().toDouble()) Instant.ofEpochMilli(ms.toLong()).toString() else ms.toExactString())
+            },
             ifNoExc { ofInstant(Instant.parse(this)) },
             ifNoExc {
                 val duration = Duration.parse(this)

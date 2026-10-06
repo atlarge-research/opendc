@@ -223,7 +223,7 @@ public value class Frequency private constructor(
                 LOG.warn("deserialization of number with no unit of measure, assuming it is in MHz...")
                 ofMHz(it.toDouble())
             },
-            serializerFun = { this.encodeString(it.toString()) },
+            serializerFun = { this.encodeString("${it.toMHz().toExactString()} MHz") },
             ifMatches("$NUM_GROUP$HERTZ", IGNORE_CASE) { ofHz(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$KILO$HERTZ", IGNORE_CASE) { ofKHz(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$MEGA$HERTZ", IGNORE_CASE) { ofMHz(json.decNumFromStr(groupValues[1])) },

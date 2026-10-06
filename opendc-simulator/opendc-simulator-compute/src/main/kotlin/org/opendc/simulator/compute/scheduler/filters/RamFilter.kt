@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute.scheduler.filters
 
+import org.opendc.common.units.DataSize
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.task.SimTask
 
@@ -41,7 +42,7 @@ public class RamFilter(private val allocationRatio: Double = 1.0) : ThresholdFil
 
         val requestedMemory = task.memorySize
         val availableMemory = host.availableMemory
-        val memoryCapacity = host.model.memoryCapacity
+        val memoryCapacity = DataSize.ofMiB(host.model.memoryCapacity)
 
         // Do not allow an instance to overcommit against itself, only against
         // other instances.
@@ -58,11 +59,11 @@ public class RamFilter(private val allocationRatio: Double = 1.0) : ThresholdFil
     }
 
     override fun available(host: SimHost): Double {
-        if (isSimple) return host.availableMemory.toDouble()
+        if (isSimple) return host.availableMemory.toMiB()
 
-        val memoryCapacity = host.model.memoryCapacity
-        return memoryCapacity * allocationRatio - (memoryCapacity - host.availableMemory)
+        val memoryCapacity = DataSize.ofMiB(host.model.memoryCapacity)
+        return (memoryCapacity * allocationRatio - (memoryCapacity - host.availableMemory)).toMiB()
     }
 
-    override fun required(task: SimTask): Double = task.memorySize.toDouble()
+    override fun required(task: SimTask): Double = task.memorySize.toMiB()
 }

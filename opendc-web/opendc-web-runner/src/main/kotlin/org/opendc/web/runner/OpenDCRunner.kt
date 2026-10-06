@@ -336,7 +336,7 @@ public class OpenDCRunner(
                     val traceLoader = ComputeWorkloadLoader(traceSpecificPath)
 
                     val vms = traceLoader.sampleByLoad(scenario.workload.samplingFraction)
-                    val startTime = vms.minOf { it.submittedAt }
+                    val startTime = vms.minOf { it.submittedAt }.toEpochMs().toLong()
 
                     logger.debug { "Using scheduler: '${scenario.schedulerName}' for scenario ${scenario.id}" }
 

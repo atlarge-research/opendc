@@ -23,6 +23,10 @@
 package org.opendc.sdk.model.workload.loader
 
 import mu.KotlinLogging
+import org.opendc.common.units.DataSize
+import org.opendc.common.units.Frequency
+import org.opendc.common.units.TimeDelta
+import org.opendc.common.units.Timestamp
 import org.opendc.simulator.compute.task.SimTask
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import org.opendc.simulator.compute.workload.trace.scaling.NoDelayScaling
@@ -58,8 +62,8 @@ import kotlin.math.roundToInt
 public class ComputeWorkloadLoader(
     private val pathToFile: File,
     private val submissionTime: String? = null,
-    private val checkpointInterval: Long = 0L,
-    private val checkpointDuration: Long = 0L,
+    private val checkpointInterval: TimeDelta = TimeDelta.zero,
+    private val checkpointDuration: TimeDelta = TimeDelta.zero,
     private val checkpointIntervalScaling: Double = 1.0,
     private val scalingPolicy: ScalingPolicy = NoDelayScaling(),
     private val deferAll: Boolean = false,
@@ -152,7 +156,7 @@ public class ComputeWorkloadLoader(
                 val duration = reader.getLong(durationCol)
                 val cpuCoreCount = reader.getInt(cpuCountCol)
                 val cpuCapacity = reader.getDouble(cpuCapacityCol)
-                val memUsage = reader.getDouble(memCol) / 1000.0 // Convert from KB to MB
+                val memUsage = reader.getDouble(memCol)
                 val gpuCapacity =
                     if (reader.getDouble(
                             gpuCapacityCol,
@@ -183,17 +187,17 @@ public class ComputeWorkloadLoader(
                 entries.add(
                     SimTask(
                         id,
-                        submissionTime,
-                        duration,
+                        Timestamp.ofEpochMs(submissionTime),
+                        TimeDelta.ofMillis(duration),
                         cpuCoreCount,
-                        cpuCapacity,
-                        memUsage.roundToInt(),
+                        Frequency.ofMHz(cpuCapacity),
+                        DataSize.ofMiB(memUsage.roundToInt()),
                         gpuCoreCount,
-                        gpuCapacity,
-                        gpuMemory,
+                        Frequency.ofMHz(gpuCapacity),
+                        DataSize.ofMiB(gpuMemory),
                         builder.build(),
                         deferrable,
-                        deadline,
+                        Timestamp.ofEpochMs(deadline),
                         parentsOutput,
                         childrenOutput,
                     ),
@@ -236,8 +240,8 @@ public class ComputeWorkloadLoader(
      *
      */
     private class Builder(
-        checkpointInterval: Long,
-        checkpointDuration: Long,
+        checkpointInterval: TimeDelta,
+        checkpointDuration: TimeDelta,
         checkpointIntervalScaling: Double,
         scalingPolicy: ScalingPolicy,
         taskId: Int,
@@ -247,8 +251,8 @@ public class ComputeWorkloadLoader(
          */
         private val builder =
             TraceWorkload.builder(
-                checkpointInterval,
-                checkpointDuration,
+                checkpointInterval.toMsLong(),
+                checkpointDuration.toMsLong(),
                 checkpointIntervalScaling,
                 scalingPolicy,
                 taskId,

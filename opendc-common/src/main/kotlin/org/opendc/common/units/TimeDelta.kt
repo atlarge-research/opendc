@@ -234,7 +234,7 @@ public value class TimeDelta private constructor(
                 )
                 ofMillis(it.toDouble())
             },
-            serializerFun = { this.encodeString(it.toString()) },
+            serializerFun = { this.encodeString("${it.toMs().toExactString()} ms") },
             ifMatches("$NUM_GROUP$NANO$SEC(?:|s)\\s*", IGNORE_CASE) { ofNanos(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$MICRO$SEC(?:|s)\\s*", IGNORE_CASE) { ofMicros(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$MILLI$SEC(?:|s)\\s*", IGNORE_CASE) { ofMillis(json.decNumFromStr(groupValues[1])) },

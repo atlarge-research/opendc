@@ -22,6 +22,7 @@
 
 package org.opendc.sdk.model.workload.loader
 import mu.KotlinLogging
+import org.opendc.common.units.Timestamp
 import org.opendc.simulator.compute.task.SimTask
 import org.opendc.simulator.compute.workload.trace.TraceWorkload
 import java.time.LocalDateTime
@@ -39,11 +40,11 @@ public abstract class WorkloadLoader(private val submissionTime: String? = null)
         val workloadSubmissionTime = workload.minOf({ it.submittedAt })
         val submissionTimeLong = LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli()
 
-        val timeShift = submissionTimeLong - workloadSubmissionTime
+        val timeShift = Timestamp.ofEpochMs(submissionTimeLong) timeDelta workloadSubmissionTime
 
         for (task in workload) {
             task.submittedAt += timeShift
-            task.deadline = if (task.deadline == -1L) -1L else task.deadline + timeShift
+            task.deadline = if (task.deadline == SimTask.NO_DEADLINE) SimTask.NO_DEADLINE else task.deadline + timeShift
         }
     }
 

@@ -280,7 +280,7 @@ public value class DataRate private constructor(
                 )
                 ofKibps(it.toDouble())
             },
-            serializerFun = { this.encodeString(it.toString()) },
+            serializerFun = { this.encodeString("${it.tobps().toExactString()} bps") },
             ifMatches("$NUM_GROUP$BITS$PER$SEC") { ofbps(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$BYTES$PER$SEC") { ofBps(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$KIBI$BITS$PER$SEC") { ofKibps(json.decNumFromStr(groupValues[1])) },

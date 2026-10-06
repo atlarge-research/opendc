@@ -210,7 +210,7 @@ public value class Power private constructor(
                 )
                 ofWatts(it.toDouble())
             },
-            serializerFun = { this.encodeString(it.toString()) },
+            serializerFun = { this.encodeString("${it.toWatts().toExactString()} W") },
             ifMatches("$NUM_GROUP$WATTS", IGNORE_CASE) { ofWatts(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$KILO$WATTS", IGNORE_CASE) { ofKWatts(json.decNumFromStr(groupValues[1])) },
         )

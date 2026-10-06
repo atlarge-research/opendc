@@ -24,9 +24,12 @@ package org.opendc.simulator.flow.graph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.LongSummaryStatistics;
 import java.util.Map;
+import java.util.TreeMap;
 import org.opendc.simulator.core.ResourceType;
 import org.opendc.simulator.flow.engine.FlowEngine;
 import org.opendc.simulator.flow.graph.distributionPolicies.FlowDistributorFactory;
@@ -83,8 +86,51 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
 
     protected boolean overloaded = false;
 
+    // --- Debug profiling (temporary) ---
+    // Every distributor registers itself; call debugHit() on the line to count, and the hit counts are
+    // printed per label on JVM shutdown (or call printDebugStats() yourself).
+    private static final List<FlowDistributor> DEBUG_ALL = Collections.synchronizedList(new ArrayList<>());
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(FlowDistributor::printDebugStats));
+    }
+
+    private String debugLabel = getClass().getSimpleName();
+    private long debugHits;
+
+    public void setDebugLabel(String label) {
+        this.debugLabel = label;
+    }
+
+    public String getDebugLabel() {
+        return this.debugLabel;
+    }
+
+    protected final void debugHit() {
+        this.debugHits++;
+    }
+
+    public static void printDebugStats() {
+        Map<String, LongSummaryStatistics> byLabel = new TreeMap<>();
+        synchronized (DEBUG_ALL) {
+            if (DEBUG_ALL.isEmpty()) {
+                return;
+            }
+            for (FlowDistributor d : DEBUG_ALL) {
+                byLabel.computeIfAbsent(d.debugLabel, k -> new LongSummaryStatistics())
+                        .accept(d.debugHits);
+            }
+        }
+        System.out.println("FlowDistributor hits per label:");
+        byLabel.forEach((label, s) -> System.out.printf(
+                "  %-16s instances=%-8d total=%-14d avg=%-12.1f max=%d%n",
+                label, s.getCount(), s.getSum(), s.getAverage(), s.getMax()));
+    }
+    // --- End debug profiling ---
+
     public FlowDistributor(FlowEngine engine, int maxConsumers, int maxSuppliers) {
         super(engine);
+        DEBUG_ALL.add(this);
 
         this.maxConsumers = maxConsumers;
         this.maxSuppliers = 4;
@@ -126,6 +172,11 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
     }
 
     public long onUpdate(long now) {
+        this.debugHit();
+
+        if (this.debugLabel.equals("host-cpu")) {
+            int x = 0;
+        }
 
         // Check if current supply is different from total demand
         if (this.outgoingDemandUpdateNeeded) {

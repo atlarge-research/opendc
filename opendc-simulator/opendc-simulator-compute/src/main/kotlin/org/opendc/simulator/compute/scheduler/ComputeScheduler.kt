@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute.scheduler
 
+import org.opendc.common.units.Timestamp
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.task.SimTask
 
@@ -73,7 +74,7 @@ public interface ComputeScheduler {
  */
 public data class SchedulingRequest internal constructor(
     public val task: SimTask,
-    public val submitTime: Long,
+    public val submitTime: Timestamp,
 ) {
     public var isCancelled: Boolean = false
 }

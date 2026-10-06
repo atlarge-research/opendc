@@ -74,11 +74,11 @@ class DslTest {
                     }
                     powerSource(name = "grid", maxPower = 50.kwatts, carbon = NamedReference("carbon-trace"))
                     battery(
-                        capacity = 100.0,
-                        chargingSpeed = 1000.0,
+                        capacity = 100.kwh,
+                        chargingSpeed = 1000.watts,
                         policy = DoubleBatteryPolicySpec(lowerThreshold = 100.0, upperThreshold = 300.0),
                         name = "cell",
-                        initialCharge = 20.0,
+                        initialCharge = 20.kwh,
                         embodiedCarbon = 50.0,
                         expectedLifetime = 10.0,
                     )
