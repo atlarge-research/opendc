@@ -28,7 +28,6 @@ import java.time.Instant
 public data class ServiceSample(
     // TODO: Why is this not a Long?
     public val timestamp: Instant = Instant.MIN,
-    public val timestampAbsolute: Instant = Instant.MIN,
     public val hostsUp: Int = -1,
     public val hostsDown: Int = -1,
     public val tasksTotal: Int = -1,

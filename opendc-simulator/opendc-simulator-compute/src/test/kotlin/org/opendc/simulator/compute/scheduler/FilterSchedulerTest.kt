@@ -903,7 +903,7 @@ internal class FilterSchedulerTest {
             SimHost(
                 id,
                 "H$id",
-                "C01",
+                0,
                 InstantSource.fixed(Instant.EPOCH),
                 mockk<FlowEngine>(relaxed = true),
                 machine,

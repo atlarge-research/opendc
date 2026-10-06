@@ -118,12 +118,14 @@ public class HostsProvisioningStep(
         service: ComputeService,
         dataCenterSpec: DataCenterSpec,
     ) {
+        val dataCenterId = naming.nextDataCenterId()
+
         val (dcPowerSource, dcPowerDistributor) =
             this.createPowerSource(
                 service,
                 engine,
                 dataCenterSpec.powerSource,
-                dataCenterSpec.name,
+                dataCenterId,
                 dataCenterSpec.clusters.sumOf { it.count },
             )
 
@@ -137,13 +139,13 @@ public class HostsProvisioningStep(
             dataCenterSpec.battery,
             dcPowerSource,
             dcPowerDistributor,
-            dataCenterSpec.name,
+            dataCenterId,
             carbonNode,
         )
 
         val simDataCenter =
             SimDataCenter(
-                naming.nextDataCenterId(),
+                dataCenterId,
                 dataCenterSpec.name,
                 engine.clock,
                 dcPowerSource,
@@ -168,7 +170,7 @@ public class HostsProvisioningStep(
                     SimCluster(
                         naming.nextClusterId(),
                         naming.cluster(clusterName),
-                        dataCenterName = dataCenterSpec.name,
+                        dataCenterId,
                         engine.clock,
                         clusterPowerDistributor,
                     )
@@ -194,15 +196,16 @@ public class HostsProvisioningStep(
         service: ComputeService,
         engine: FlowEngine,
         powerSourceSpec: PowerSourceSpec,
-        clusterName: String,
+        dataCenterId: Int,
         numHosts: Int,
     ): PowerSourceFlows {
         val powerSource =
             PowerSourceNode(
                 engine,
                 powerSourceSpec.maxPower.toWatts(),
+                naming.nextPowerSourceId(),
                 naming.powerSource(powerSourceSpec.name),
-                clusterName,
+                dataCenterId,
             )
         powerSources.add(powerSource)
         service.addPowerSource(powerSource)
@@ -241,7 +244,7 @@ public class HostsProvisioningStep(
         batterySpec: BatterySpec?,
         powerSource: PowerSourceNode,
         powerDistributor: FlowDistributor,
-        clusterName: String,
+        dataCenterId: Int,
         carbonNode: CarbonNode?,
     ) {
         if (batterySpec == null) {
@@ -266,8 +269,9 @@ public class HostsProvisioningStep(
                 batterySpec.capacity.toKWh(),
                 batterySpec.chargingSpeed.toWatts(),
                 batterySpec.initialCharge.toKWh(),
+                naming.nextBatteryId(),
                 batterySpec.name,
-                clusterName,
+                dataCenterId,
                 batterySpec.embodiedCarbon,
                 batterySpec.expectedLifetime,
             )
@@ -340,7 +344,7 @@ public class HostsProvisioningStep(
                 SimHost(
                     naming.nextHostId(),
                     naming.host(hostSpec.name),
-                    simCluster.getName(),
+                    simCluster.id,
                     ctx.dispatcher.timeSource,
                     engine,
                     machineModel = machineModel,
@@ -389,7 +393,10 @@ public class HostsProvisioningStep(
                 }
         }
 
-    /** Per-conversion registry producing unique names and monotonic data center, cluster, host and device ids. */
+    /**
+     * Per-conversion registry producing unique names and monotonic data center, cluster, host, power source, battery
+     * and device ids.
+     */
     private class TopologyNaming {
         private val clusters = HashMap<String, Int>()
         private val hosts = HashMap<String, Int>()
@@ -398,6 +405,8 @@ public class HostsProvisioningStep(
         private var dataCenterId = 0
         private var clusterId = 0
         private var hostId = 0
+        private var powerSourceId = 0
+        private var batteryId = 0
         private var cpuId = 0
         private var gpuId = 0
 
@@ -414,6 +423,10 @@ public class HostsProvisioningStep(
         fun nextClusterId(): Int = clusterId++
 
         fun nextHostId(): Int = hostId++
+
+        fun nextPowerSourceId(): Int = powerSourceId++
+
+        fun nextBatteryId(): Int = batteryId++
 
         fun nextCpuId(): Int = cpuId++
 

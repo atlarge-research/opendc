@@ -28,7 +28,10 @@ import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
+import org.opendc.sdk.runner.telemetry.table.simulation.SimulationMeta
+import org.opendc.sdk.runner.telemetry.table.task.TaskMeta
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
+import org.opendc.sdk.runner.telemetry.table.topology.TopologyMeta
 
 /**
  * Streams each metric snapshot to per-table callbacks as it is produced, without retaining it.
@@ -36,6 +39,10 @@ import org.opendc.sdk.runner.telemetry.table.task.TaskSample
  * an external system on large sweeps where holding every sample in memory is undesirable.
  *
  * Readers are reused and reset after each callback, so copy any value you need to keep.
+ *
+ * [onSimulation] receives the start of the simulation once, before any sample; every time is relative to it.
+ * [onTopology] receives the topology of the run once, before any sample, to map the ids in the samples to names and
+ * static attributes. [onTaskMeta] receives the static attributes of each task once.
  */
 public class CallbackSink(
     private val onHost: ((HostSample) -> Unit)? = null,
@@ -43,6 +50,9 @@ public class CallbackSink(
     private val onService: ((ServiceSample) -> Unit)? = null,
     private val onPowerSource: ((PowerSourceSample) -> Unit)? = null,
     private val onBattery: ((BatterySample) -> Unit)? = null,
+    private val onTopology: ((TopologyMeta) -> Unit)? = null,
+    private val onTaskMeta: ((TaskMeta) -> Unit)? = null,
+    private val onSimulation: ((SimulationMeta) -> Unit)? = null,
 ) : OutputSink {
     override fun open(context: RunContext): SinkSession =
         object : SinkSession {
@@ -67,12 +77,24 @@ public class CallbackSink(
                     override fun export(reader: TaskSample) {
                         onTask?.invoke(reader)
                     }
+
+                    override fun export(meta: SimulationMeta) {
+                        onSimulation?.invoke(meta)
+                    }
+
+                    override fun export(meta: TopologyMeta) {
+                        onTopology?.invoke(meta)
+                    }
+
+                    override fun export(meta: TaskMeta) {
+                        onTaskMeta?.invoke(meta)
+                    }
                 }
 
             override val tables: Set<OutputFileSpec> =
                 buildSet {
                     if (onHost != null) add(OutputFileSpec.HOST)
-                    if (onTask != null) add(OutputFileSpec.TASK)
+                    if (onTask != null || onTaskMeta != null) add(OutputFileSpec.TASK)
                     if (onService != null) add(OutputFileSpec.SERVICE)
                     if (onPowerSource != null) add(OutputFileSpec.POWER_SOURCE)
                     if (onBattery != null) add(OutputFileSpec.BATTERY)

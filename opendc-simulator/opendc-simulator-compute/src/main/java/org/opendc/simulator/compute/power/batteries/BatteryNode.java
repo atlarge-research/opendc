@@ -50,8 +50,9 @@ public class BatteryNode extends FlowNode implements FlowConsumer, FlowSupplier 
     private double outgoingDemand;
     private double outgoingSupply;
 
+    private final int id;
     private final String name;
-    private final String clusterName;
+    private final int dataCenterId;
     private final Double embodiedCarbonRate; // The rate of carbon emissions per millisecond
     private Double embodiedCarbonEmission = 0.0;
 
@@ -59,12 +60,16 @@ public class BatteryNode extends FlowNode implements FlowConsumer, FlowSupplier 
         return embodiedCarbonEmission;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public String getName() {
         return name;
     }
 
-    public String getClusterName() {
-        return clusterName;
+    public int getDataCenterId() {
+        return dataCenterId;
     }
 
     public double getTotalEnergyUsage() {
@@ -127,8 +132,9 @@ public class BatteryNode extends FlowNode implements FlowConsumer, FlowSupplier 
      * @param capacity The capacity of the battery in kWh.
      * @param chargingSpeed The charging speed of the battery in J.
      * @param initialCharge The initial charge of the battery in kWh.
+     * @param id The id of the battery, unique within a simulation.
      * @param name The name of the battery.
-     * @param clusterName The name of the cluster the battery is part of.
+     * @param dataCenterId The id of the data center the battery is part of.
      * @param totalEmbodiedCarbon The total embodied carbon used to manufacture the battery in kg.
      * @param expectedLifeTime The expected lifetime of the battery in years.
      */
@@ -137,8 +143,9 @@ public class BatteryNode extends FlowNode implements FlowConsumer, FlowSupplier 
             double capacity,
             double chargingSpeed,
             double initialCharge,
+            int id,
             String name,
-            String clusterName,
+            int dataCenterId,
             Double totalEmbodiedCarbon,
             Double expectedLifeTime) {
 
@@ -147,8 +154,9 @@ public class BatteryNode extends FlowNode implements FlowConsumer, FlowSupplier 
         this.chargingSpeed = chargingSpeed;
 
         this.charge = initialCharge * 3600000;
+        this.id = id;
         this.name = name;
-        this.clusterName = clusterName;
+        this.dataCenterId = dataCenterId;
 
         // TODO: maybe change this to days instead of years?
         this.embodiedCarbonRate =

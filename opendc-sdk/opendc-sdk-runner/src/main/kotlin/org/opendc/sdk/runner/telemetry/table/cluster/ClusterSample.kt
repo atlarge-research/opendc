@@ -26,10 +26,8 @@ import org.opendc.trace.parquet.exporter.Exportable
 import java.time.Instant
 
 public data class ClusterSample(
-    public val clusterName: String? = null,
-    public val dataCenterName: String? = null,
+    public val clusterId: Int = -1,
     public val timestamp: Instant = Instant.MIN,
-    public val timestampAbsolute: Instant = Instant.MIN,
     public val powerDraw: Double = -1.0,
     public val energyUsage: Double = -1.0,
     public val carbonIntensity: Double = -1.0,

@@ -28,7 +28,10 @@ import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
+import org.opendc.sdk.runner.telemetry.table.simulation.SimulationMeta
+import org.opendc.sdk.runner.telemetry.table.task.TaskMeta
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
+import org.opendc.sdk.runner.telemetry.table.topology.TopologyMeta
 
 /**
  * Captures each run's metrics in memory as strongly-typed [CollectedMetrics], available on the
@@ -49,6 +52,9 @@ public class InMemorySink
             private val service = mutableListOf<ServiceSample>()
             private val powerSource = mutableListOf<PowerSourceSample>()
             private val battery = mutableListOf<BatterySample>()
+            private var simulation: SimulationMeta? = null
+            private var topology: TopologyMeta? = null
+            private val taskMeta = mutableListOf<TaskMeta>()
 
             override val monitor: MetricExporter =
                 object : MetricExporter {
@@ -71,10 +77,22 @@ public class InMemorySink
                     override fun export(reader: TaskSample) {
                         if (OutputFileSpec.TASK in captureTables) task += reader
                     }
+
+                    override fun export(meta: SimulationMeta) {
+                        simulation = meta
+                    }
+
+                    override fun export(meta: TopologyMeta) {
+                        topology = meta
+                    }
+
+                    override fun export(meta: TaskMeta) {
+                        if (OutputFileSpec.TASK in captureTables) taskMeta += meta
+                    }
                 }
 
             override val tables: Set<OutputFileSpec> = captureTables
 
-            override fun result(): SinkResult = CollectedMetrics(host, task, service, powerSource, battery)
+            override fun result(): SinkResult = CollectedMetrics(host, task, service, powerSource, battery, topology, taskMeta, simulation)
         }
     }

@@ -26,13 +26,19 @@ import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
+import org.opendc.sdk.runner.telemetry.table.simulation.SimulationMeta
+import org.opendc.sdk.runner.telemetry.table.task.TaskMeta
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
+import org.opendc.sdk.runner.telemetry.table.topology.TopologyMeta
 
 /**
  * The metrics captured in memory by an [InMemorySink], as strongly-typed samples per table.
  *
  * Each list holds one immutable sample per recorded metric snapshot (one per host/task/etc. per
- * export tick). A table not selected for capture is an empty list.
+ * export tick). A table not selected for capture is an empty list. Every time is relative to the start of the
+ * simulation in [simulation], which is `null` when the run exported none. The [topology] maps the ids in the samples to
+ * names, parents and static attributes, and is `null` when the run exported none. [taskMeta] holds the static
+ * attributes of each task, captured with the task table.
  */
 public data class CollectedMetrics(
     public val host: List<HostSample> = emptyList(),
@@ -40,4 +46,7 @@ public data class CollectedMetrics(
     public val service: List<ServiceSample> = emptyList(),
     public val powerSource: List<PowerSourceSample> = emptyList(),
     public val battery: List<BatterySample> = emptyList(),
+    public val topology: TopologyMeta? = null,
+    public val taskMeta: List<TaskMeta> = emptyList(),
+    public val simulation: SimulationMeta? = null,
 ) : SinkResult

@@ -22,10 +22,8 @@
 
 package org.opendc.sdk.runner.telemetry.parquet
 
-import org.apache.parquet.io.api.Binary
-import org.apache.parquet.schema.LogicalTypeAnnotation
-import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
@@ -52,26 +50,10 @@ public object DfltPowerSourceExportColumns {
             field = Types.required(INT64).named("timestamp"),
         ) { it.timestamp.toEpochMilli() }
 
-    public val TIMESTAMP_ABS: ExportColumn<PowerSourceSample> =
+    public val POWER_SOURCE_ID: ExportColumn<PowerSourceSample> =
         ExportColumn(
-            field = Types.required(INT64).named("timestamp_absolute"),
-        ) { it.timestampAbsolute.toEpochMilli() }
-
-    public val SOURCE_NAME: ExportColumn<PowerSourceSample> =
-        ExportColumn(
-            field =
-                Types.required(BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("source_name"),
-        ) { Binary.fromString(it.powerSourceName) }
-
-    public val CLUSTER_NAME: ExportColumn<PowerSourceSample> =
-        ExportColumn(
-            field =
-                Types.required(BINARY)
-                    .`as`(LogicalTypeAnnotation.stringType())
-                    .named("cluster_name"),
-        ) { Binary.fromString(it.clusterName) }
+            field = Types.required(INT32).named("power_source_id"),
+        ) { it.powerSourceId }
 
     public val POWER_DRAW: ExportColumn<PowerSourceSample> =
         ExportColumn(
@@ -98,9 +80,7 @@ public object DfltPowerSourceExportColumns {
      */
     internal val BASE_EXPORT_COLUMNS =
         setOf(
-            SOURCE_NAME,
-            CLUSTER_NAME,
+            POWER_SOURCE_ID,
             TIMESTAMP,
-            TIMESTAMP_ABS,
         )
 }

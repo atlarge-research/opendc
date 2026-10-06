@@ -8,14 +8,13 @@
 
 Each simulation run writes one Parquet file per output type under `output/raw-output/<scenarioId>/seed=<seed>/`. The columns of each file are listed below. Which files and columns are written is controlled by the `exportModels` axis of the experiment.
 
+All times (`timestamp`, `boot_time`, `schedule_time`, `finish_time` and `submission_time`) are in milliseconds since the start of the simulation. The absolute start time is in [`meta/simulation.parquet`](#meta); add it to a time to get milliseconds since the Unix epoch.
+
 ## `host.parquet` { #host }
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `boot_time` | INT64 |  |
-| `cluster_name` | BINARY |  |
-| `core_count` | INT32 |  |
-| `cpu_capacity` | FLOAT |  |
 | `cpu_demand` | FLOAT |  |
 | `cpu_time_active` | INT64 |  |
 | `cpu_time_idle` | INT64 |  |
@@ -26,15 +25,13 @@ Each simulation run writes one Parquet file per output type under `output/raw-ou
 | `downtime` | INT64 |  |
 | `embodied_carbon` | FLOAT |  |
 | `energy_usage` | FLOAT |  |
-| `host_name` | BINARY |  |
-| `mem_capacity` | INT64 |  |
+| `host_id` | INT32 | Identifier of the host within the run; `meta/host.parquet` maps it to the host's name and cluster. |
 | `power_draw` | FLOAT |  |
 | `tasks_error` | INT32 |  |
 | `tasks_invalid` | INT32 |  |
 | `tasks_running` | INT32 |  |
 | `tasks_terminated` | INT32 |  |
 | `timestamp` | INT64 | Simulation time of the sample, in milliseconds since the start of the simulation. |
-| `timestamp_absolute` | INT64 |  |
 | `uptime` | INT64 |  |
 
 ## `task.parquet` { #task }
@@ -42,7 +39,6 @@ Each simulation run writes one Parquet file per output type under `output/raw-ou
 | Column | Type | Description |
 |--------|------|-------------|
 | `checkpoint_delay` | INT64 |  |
-| `cpu_count` | INT32 |  |
 | `cpu_demand` | FLOAT |  |
 | `cpu_limit` | FLOAT |  |
 | `cpu_time_active` | INT64 |  |
@@ -52,8 +48,7 @@ Each simulation run writes one Parquet file per output type under `output/raw-ou
 | `cpu_usage` | FLOAT |  |
 | `downtime` | INT64 |  |
 | `failure_delay` | INT64 |  |
-| `finish_time` | INT64 |  |
-| `gpu_count` | INT32 |  |
+| `finish_time` | INT64 | Last time the task completed, failed or was terminated, or null if none of these happened yet. |
 | `gpu_demand` | FLOAT |  |
 | `gpu_limit` | FLOAT |  |
 | `gpu_time_active` | INT64 |  |
@@ -61,18 +56,15 @@ Each simulation run writes one Parquet file per output type under `output/raw-ou
 | `gpu_time_lost` | INT64 |  |
 | `gpu_time_steal` | INT64 |  |
 | `gpu_usage` | FLOAT |  |
-| `host_name` | BINARY |  |
-| `mem_capacity` | INT64 |  |
+| `host_id` | INT32 | Identifier of the host the task last ran on, or null if it has not been placed yet. |
 | `num_failures` | INT64 |  |
 | `num_pauses` | INT64 |  |
-| `schedule_time` | INT64 |  |
+| `schedule_time` | INT64 | Last time the task was placed on a host, or null if it has never been placed. |
 | `scheduling_delay` | INT64 |  |
-| `submission_time` | INT64 |  |
 | `task_id` | INT32 | Identifier of the task within the simulation. |
 | `task_name` | BINARY | Name of the task as given in the workload trace. |
 | `task_state` | BINARY |  |
 | `timestamp` | INT64 | Simulation time of the sample, in milliseconds since the start of the simulation. |
-| `timestamp_absolute` | INT64 | Wall-clock time of the sample, in milliseconds since the Unix epoch. |
 | `uptime` | INT64 |  |
 
 ## `powerSource.parquet` { #powerSource }
@@ -81,27 +73,22 @@ Each simulation run writes one Parquet file per output type under `output/raw-ou
 |--------|------|-------------|
 | `carbon_emission` | FLOAT |  |
 | `carbon_intensity` | FLOAT |  |
-| `cluster_name` | BINARY |  |
 | `energy_usage` | FLOAT |  |
 | `power_draw` | FLOAT |  |
-| `source_name` | BINARY |  |
-| `timestamp` | INT64 |  |
-| `timestamp_absolute` | INT64 |  |
+| `power_source_id` | INT32 | Identifier of the power source within the run; `meta/powerSource.parquet` maps it to its name and data center. |
+| `timestamp` | INT64 | Simulation time of the sample, in milliseconds since the start of the simulation. |
 
 ## `battery.parquet` { #battery }
 
 | Column | Type | Description |
 |--------|------|-------------|
-| `battery_name` | BINARY |  |
+| `battery_id` | INT32 | Identifier of the battery within the run; `meta/battery.parquet` maps it to its name and data center. |
 | `battery_state` | BINARY |  |
-| `capacity` | FLOAT |  |
 | `charge` | FLOAT |  |
-| `cluster_name` | BINARY |  |
 | `embodied_carbon_emission` | FLOAT |  |
 | `energy_usage` | FLOAT |  |
 | `power_draw` | FLOAT |  |
-| `timestamp` | INT64 |  |
-| `timestamp_absolute` | INT64 |  |
+| `timestamp` | INT64 | Simulation time of the sample, in milliseconds since the start of the simulation. |
 
 ## `service.parquet` { #service }
 
@@ -115,5 +102,24 @@ Each simulation run writes one Parquet file per output type under `output/raw-ou
 | `tasks_terminated` | INT32 |  |
 | `tasks_total` | INT32 |  |
 | `timestamp` | INT64 | Simulation time of the sample, in milliseconds since the start of the simulation. |
-| `timestamp_absolute` | INT64 |  |
 
+## Meta files { #meta }
+
+The samples identify hosts, clusters, data centers, power sources, batteries and tasks by an integer id and only hold
+what changes during the run. Each run also writes a `meta/` directory next to its sample files that maps those ids to
+names and static attributes, and tells which entity is part of which. Join a sample file with the meta file of the same
+name on its id column, e.g. `host.parquet` with `meta/host.parquet` on `host_id`. Ids are assigned in topology order and
+are only meaningful within the run they belong to.
+
+| File | Columns |
+|------|---------|
+| `meta/simulation.parquet` | `start_time` INT64 (milliseconds since the Unix epoch): the absolute time the simulation starts at |
+| `meta/dataCenter.parquet` | `data_center_id` INT32, `data_center_name` BINARY |
+| `meta/cluster.parquet` | `cluster_id` INT32, `cluster_name` BINARY, `data_center_id` INT32 |
+| `meta/host.parquet` | `host_id` INT32, `host_name` BINARY, `cluster_id` INT32, `core_count` INT32, `cpu_capacity` FLOAT (MHz), `mem_capacity` INT64 (MiB), `gpu_capacity_<i>` FLOAT (MHz, one per GPU) |
+| `meta/powerSource.parquet` | `power_source_id` INT32, `power_source_name` BINARY, `data_center_id` INT32 |
+| `meta/battery.parquet` | `battery_id` INT32, `battery_name` BINARY, `data_center_id` INT32, `capacity` FLOAT (J) |
+| `meta/task.parquet` | `task_id` INT32, `cpu_count` INT32, `mem_capacity` INT64 (MiB), `gpu_count` INT32, `submission_time` INT64 (relative to the start of the simulation) |
+
+The simulation and topology files are always written. `meta/task.parquet` is written with `task.parquet` and holds one row per task
+that was submitted to the service.

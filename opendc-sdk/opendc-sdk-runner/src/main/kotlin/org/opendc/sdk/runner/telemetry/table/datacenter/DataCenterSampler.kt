@@ -23,19 +23,14 @@
 package org.opendc.sdk.runner.telemetry.table.datacenter
 
 import org.opendc.simulator.compute.infrastructure.SimDataCenter
-import java.time.Duration
 import java.time.Instant
 
-public class DataCenterSampler(
-    private val startTime: Duration = Duration.ofMillis(0),
-) {
+public class DataCenterSampler {
     public fun sample(
         now: Instant,
         dataCenter: SimDataCenter,
     ): DataCenterSample {
         val dataCenterSystemStats = dataCenter.getSystemStats()
-
-        val timestampAbsolute = now + startTime
 
         // energy & carbon stats
         val powerDraw = dataCenterSystemStats.powerDraw
@@ -47,9 +42,8 @@ public class DataCenterSampler(
         val embodiedCarbon = dataCenterSystemStats.embodiedCarbon
 
         return DataCenterSample(
-            dataCenterName = dataCenter.getName(),
+            dataCenterId = dataCenter.id,
             timestamp = now,
-            timestampAbsolute = timestampAbsolute,
             powerDraw = powerDraw,
             energyUsage = energyUsage,
             carbonIntensity = carbonIntensity,

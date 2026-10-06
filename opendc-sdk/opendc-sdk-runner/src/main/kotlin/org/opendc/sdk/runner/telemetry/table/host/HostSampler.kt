@@ -23,12 +23,9 @@
 package org.opendc.sdk.runner.telemetry.table.host
 
 import org.opendc.simulator.compute.infrastructure.SimHost
-import java.time.Duration
 import java.time.Instant
 
-public class HostSampler(
-    private val startTime: Duration = Duration.ofMillis(0),
-) {
+public class HostSampler {
     public fun sample(
         now: Instant,
         host: SimHost,
@@ -38,13 +35,11 @@ public class HostSampler(
         val hostGpuStats = host.getGpuStats()
 
         val timestamp = now
-        val timestampAbsolute = now + startTime
 
         val tasksTerminated = hostSysStats.guestsTerminated
         val tasksActive = hostSysStats.guestsRunning
         val guestsError = hostSysStats.guestsError
         val guestsInvalid = hostSysStats.guestsInvalid
-        val cpuCapacity = hostCpuStats.capacity
         val cpuDemand = hostCpuStats.demand
         val cpuUsage = hostCpuStats.usage
         val cpuUtilization = hostCpuStats.utilization
@@ -54,7 +49,6 @@ public class HostSampler(
         val cpuLostTime = hostCpuStats.lostTime
 
         // GPU stats
-        val gpuCapacities = hostGpuStats.map { it.capacity } as ArrayList<Double>
         val gpuDemands = hostGpuStats.map { it.demand } as ArrayList<Double>
         val gpuUsages = hostGpuStats.map { it.usage } as ArrayList<Double>
         val gpuUtilizations = hostGpuStats.map { it.utilization } as ArrayList<Double>
@@ -74,20 +68,15 @@ public class HostSampler(
         val embodiedCarbon = hostSysStats.embodiedCarbon
         val uptime = hostSysStats.uptime.toMillis()
         val downtime = hostSysStats.downtime.toMillis()
-        val bootTime = hostSysStats.bootTime + startTime
+        val bootTime = hostSysStats.bootTime
 
         return HostSample(
-            hostName = host.name,
-            clusterName = host.clusterName,
-            coreCount = host.model.coreCount,
-            memCapacity = host.model.memoryCapacity,
+            hostId = host.id,
             timestamp = timestamp,
-            timestampAbsolute = timestampAbsolute,
             tasksTerminated = tasksTerminated,
             tasksActive = tasksActive,
             guestsError = guestsError,
             guestsInvalid = guestsInvalid,
-            cpuCapacity = cpuCapacity,
             cpuDemand = cpuDemand,
             cpuUsage = cpuUsage,
             cpuUtilization = cpuUtilization,
@@ -95,7 +84,6 @@ public class HostSampler(
             cpuIdleTime = cpuIdleTime,
             cpuStealTime = cpuStealTime,
             cpuLostTime = cpuLostTime,
-            gpuCapacities = gpuCapacities,
             gpuDemands = gpuDemands,
             gpuUsages = gpuUsages,
             gpuUtilizations = gpuUtilizations,

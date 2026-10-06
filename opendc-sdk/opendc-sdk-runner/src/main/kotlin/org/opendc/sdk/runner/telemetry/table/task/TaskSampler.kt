@@ -24,12 +24,10 @@ package org.opendc.sdk.runner.telemetry.table.task
 
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.compute.task.SimTask
-import java.time.Duration
 import java.time.Instant
 
 public class TaskSampler(
     private val service: ComputeService,
-    private val startTime: Duration = Duration.ofMillis(0),
 ) {
     public fun sample(
         now: Instant,
@@ -40,10 +38,9 @@ public class TaskSampler(
         val sysStats = simHost?.getSystemStats(task)
         val gpuStats = simHost?.getGpuStats(task)
 
-        val hostName = task.hostName
+        val hostId = task.hostId
 
         val timestamp = now
-        val timestampAbsolute = now + startTime
 
         // TODO: This metric currently doesn't function well. It will round to the sample rate.
         val uptime = sysStats?.uptime?.toMillis() ?: 0L
@@ -51,9 +48,8 @@ public class TaskSampler(
 
         val numFailures = task.numFailures
         val numPauses = task.numPauses
-        val submissionTime = task.submittedAt.toEpochMs().toLong()
-        val scheduleTime = task.scheduledAt.toEpochMs().toLong()
-        val finishTime = task.finishedAt.toEpochMs().toLong()
+        val scheduleTime = task.scheduledAt?.toEpochMs()?.toLong()
+        val finishTime = task.finishedAt?.toEpochMs()?.toLong()
 
         val schedulingDelay = task.schedulingDelay.toMsLong()
         val workload = checkNotNull(task.workload) { "Task ${task.id} has no workload" }
@@ -90,17 +86,12 @@ public class TaskSampler(
 
         return TaskSample(
             taskId = task.id,
-            memCapacity = task.memorySize.toMiB().toLong(),
-            cpuCount = task.cpuCoreCount,
-            gpuCount = task.gpuCoreCount,
-            hostName = hostName,
+            hostId = hostId,
             timestamp = timestamp,
-            timestampAbsolute = timestampAbsolute,
             uptime = uptime,
             downtime = downtime,
             numFailures = numFailures,
             numPauses = numPauses,
-            submissionTime = submissionTime,
             scheduleTime = scheduleTime,
             finishTime = finishTime,
             schedulingDelay = schedulingDelay,

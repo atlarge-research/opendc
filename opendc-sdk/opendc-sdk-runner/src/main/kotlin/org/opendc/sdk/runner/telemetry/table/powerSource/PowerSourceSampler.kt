@@ -23,18 +23,14 @@
 package org.opendc.sdk.runner.telemetry.table.powerSource
 
 import org.opendc.simulator.compute.power.PowerSourceNode
-import java.time.Duration
 import java.time.Instant
 
-public class PowerSourceSampler(
-    private val startTime: Duration = Duration.ofMillis(0),
-) {
+public class PowerSourceSampler {
     public fun sample(
         now: Instant,
         powerSource: PowerSourceNode,
     ): PowerSourceSample {
         val timestamp = now
-        val timestampAbsolute = now + startTime
 
         // TODO: either implement this properly or remove
         val hostsConnected = 0
@@ -46,10 +42,8 @@ public class PowerSourceSampler(
         val carbonEmission = powerSource.carbonEmission
 
         return PowerSourceSample(
-            powerSourceName = powerSource.name,
-            clusterName = powerSource.clusterName,
+            powerSourceId = powerSource.id,
             timestamp = timestamp,
-            timestampAbsolute = timestampAbsolute,
             hostsConnected = hostsConnected,
             powerDraw = powerDraw,
             energyUsage = energyUsage,

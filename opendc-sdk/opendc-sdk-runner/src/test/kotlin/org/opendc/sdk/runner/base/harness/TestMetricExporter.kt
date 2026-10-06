@@ -23,11 +23,11 @@
 package org.opendc.sdk.runner.base.harness
 
 import org.opendc.sdk.runner.telemetry.MetricExporter
-import org.opendc.sdk.runner.telemetry.table.cluster.ClusterSample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
+import org.opendc.sdk.runner.telemetry.table.topology.TopologyMeta
 import org.opendc.simulator.compute.task.SimTask
 import org.opendc.simulator.compute.telemetry.TaskListener
 
@@ -70,7 +70,6 @@ class TestMetricExporter : MetricExporter, TaskListener {
     var tasksCompleted = 0
 
     var timestamps = ArrayList<Long>()
-    var absoluteTimestamps = ArrayList<Long>()
 
     var maxTimestamp = 0L
 
@@ -84,7 +83,6 @@ class TestMetricExporter : MetricExporter, TaskListener {
         tasksCompleted = reader.tasksCompleted
 
         timestamps.add(reader.timestamp.toEpochMilli())
-        absoluteTimestamps.add(reader.timestampAbsolute.toEpochMilli())
         maxTimestamp = reader.timestamp.toEpochMilli()
     }
 
@@ -105,15 +103,21 @@ class TestMetricExporter : MetricExporter, TaskListener {
     var hostPowerDraws = mutableMapOf<String, ArrayList<Double>>()
     var hostEnergyUsages = mutableMapOf<String, ArrayList<Double>>()
 
-    /** The cluster name and data center name of every exported cluster sample. */
+    /** The name of every host, by id, so the host series stay keyed by name. */
+    private val hostNames = mutableMapOf<Int, String>()
+
+    /** The cluster name and data center name of every cluster in the topology. */
     val clusters = mutableSetOf<Pair<String?, String?>>()
 
-    override fun export(reader: ClusterSample) {
-        clusters.add(reader.clusterName to reader.dataCenterName)
+    override fun export(meta: TopologyMeta) {
+        meta.hosts.associateTo(hostNames) { it.hostId to it.hostName }
+
+        val dataCenterNames = meta.dataCenters.associate { it.dataCenterId to it.dataCenterName }
+        meta.clusters.mapTo(clusters) { it.clusterName to dataCenterNames[it.dataCenterId] }
     }
 
     override fun export(reader: HostSample) {
-        val hostName: String = reader.hostName ?: "unknown-host"
+        val hostName: String = hostNames[reader.hostId] ?: "unknown-host"
 
         if (hostName !in hostCpuDemands) {
             hostCpuIdleTimes[hostName] = ArrayList()

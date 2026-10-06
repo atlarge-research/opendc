@@ -51,8 +51,9 @@ public final class PowerSourceNode extends FlowNode implements FlowSupplier, Car
 
     private CarbonNode carbonNode = null;
 
+    private final int id;
     private final String name;
-    private final String clusterName;
+    private final int dataCenterId;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Basic Getters and Setters
@@ -103,27 +104,32 @@ public final class PowerSourceNode extends FlowNode implements FlowSupplier, Car
         return this.capacity;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public String getName() {
         return name;
     }
 
-    public String getClusterName() {
-        return clusterName;
+    public int getDataCenterId() {
+        return dataCenterId;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Constructors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public PowerSourceNode(FlowEngine engine, double max_capacity, String name, String clusterName) {
+    public PowerSourceNode(FlowEngine engine, double max_capacity, int id, String name, int dataCenterId) {
         super(engine);
 
         this.capacity = max_capacity;
 
         lastUpdate = this.clock.millis();
 
+        this.id = id;
         this.name = name;
-        this.clusterName = clusterName;
+        this.dataCenterId = dataCenterId;
     }
 
     public void close() {

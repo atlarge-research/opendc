@@ -30,6 +30,8 @@ import java.nio.file.Path
 /**
  * Writes each run's metrics to Parquet files, reproducing the canonical OpenDC layout
  * `<root>/<experiment>/raw-output/<scenarioId>/seed=<seed>/{host,task,powerSource,battery,service}.parquet`.
+ * The samples identify hosts, clusters, data centers, power sources, batteries and tasks by id; the files in `meta/`
+ * map those ids to names and static attributes, and tell which entity is part of which.
  *
  * Which tables and columns are written is governed by the scenario's export model.
  *
