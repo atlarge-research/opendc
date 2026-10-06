@@ -316,7 +316,7 @@ public value class DataSize private constructor(
                 )
                 ofMiB(it.toDouble())
             },
-            serializerFun = { this.encodeString(it.toString()) },
+            serializerFun = { this.encodeString("${it.toMiB().toExactString()} MiB") },
             ifMatches("$NUM_GROUP$BITS") { ofBits(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$BYTES") { ofBytes(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$KIBI$BITS") { ofKib(json.decNumFromStr(groupValues[1])) },

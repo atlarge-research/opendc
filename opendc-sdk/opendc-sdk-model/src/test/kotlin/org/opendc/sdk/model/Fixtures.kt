@@ -26,6 +26,7 @@ import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.dsl.ghz
 import org.opendc.sdk.model.dsl.gib
 import org.opendc.sdk.model.dsl.kwatts
+import org.opendc.sdk.model.dsl.kwh
 import org.opendc.sdk.model.dsl.minutes
 import org.opendc.sdk.model.dsl.watts
 import org.opendc.sdk.model.experiment.ExperimentSpec
@@ -116,9 +117,9 @@ public val sampleDataCenter: DataCenterSpec =
         battery =
             BatterySpec(
                 name = "cell",
-                capacity = 100.0,
-                chargingSpeed = 1000.0,
-                initialCharge = 20.0,
+                capacity = 100.kwh,
+                chargingSpeed = 1000.watts,
+                initialCharge = 20.kwh,
                 policy = DoubleBatteryPolicySpec(lowerThreshold = 100.0, upperThreshold = 300.0),
                 embodiedCarbon = 50.0,
                 expectedLifetime = 10.0,

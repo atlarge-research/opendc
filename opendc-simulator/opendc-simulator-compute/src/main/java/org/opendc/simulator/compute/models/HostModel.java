@@ -25,6 +25,7 @@ package org.opendc.simulator.compute.models;
 import java.util.List;
 
 /**
+ * TODO: does this have to be a java object? Can it be removed now that SimHost is in simulator.compute?
  * Record describing the static machine properties of the host.
  *
  * @param cpuCapacity    The total CPU capacity of the host in MHz.

@@ -54,7 +54,7 @@ public class TraceBasedFailureModel(
 
         do {
             for (failure in failures) {
-                delay(failure.failureInterval)
+                delay(failure.failureInterval.toMsLong())
 
                 val victims = victimSelector.select(hosts, failure.failureIntensity)
 

@@ -23,6 +23,10 @@
 package org.opendc.simulator.compute.task
 
 import mu.KotlinLogging
+import org.opendc.common.units.DataSize
+import org.opendc.common.units.Frequency
+import org.opendc.common.units.TimeDelta
+import org.opendc.common.units.Timestamp
 import org.opendc.simulator.compute.TaskWatcher
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.scheduler.SchedulingRequest
@@ -40,19 +44,17 @@ import org.opendc.simulator.compute.workload.Workload
  */
 public class SimTask(
     public val id: Int,
-    submissionTime: Long,
-    public val duration: Long,
+    submissionTime: Timestamp,
+    public val duration: TimeDelta,
     cpuCoreCount: Int,
-    public val cpuCapacity: Double,
-    // memorySize and gpuMemorySize (in MB) are Ints instead of Longs to save space, as there can be millions of tasks.
-    // An Int can still hold up to ~2 petabytes, which should be enough for any task.
-    public val memorySize: Int,
+    public val cpuCapacity: Frequency,
+    memorySize: DataSize,
     gpuCoreCount: Int,
-    public val gpuCapacity: Double,
-    public val gpuMemorySize: Int,
+    public val gpuCapacity: Frequency,
+    gpuMemorySize: DataSize,
     workload: Workload?,
     public val deferrable: Boolean,
-    public var deadline: Long,
+    public var deadline: Timestamp,
     parents: IntArray?,
     children: IntArray?,
 ) {
@@ -68,6 +70,14 @@ public class SimTask(
 
     private val _gpuCoreCount: Short = gpuCoreCount.toShort()
     public val gpuCoreCount: Int get() = _gpuCoreCount.toInt()
+
+    // The memory sizes are stored as Ints (in MiB) instead of DataSizes, which hold a Double, to save space. An Int can
+    // still hold up to ~2 petabytes, which should be enough for any task.
+    private val _memorySize: Int = memorySize.toMiB().toInt()
+    public val memorySize: DataSize get() = DataSize.ofMiB(_memorySize)
+
+    private val _gpuMemorySize: Int = gpuMemorySize.toMiB().toInt()
+    public val gpuMemorySize: DataSize get() = DataSize.ofMiB(_gpuMemorySize)
 
     /**
      * Ids of the parent tasks that must complete before this task may start.
@@ -124,7 +134,7 @@ public class SimTask(
             }
 
             if (newState == TaskState.COMPLETED || newState == TaskState.FAILED || newState == TaskState.TERMINATED) {
-                finishedAt = service!!.clock.millis()
+                finishedAt = Timestamp.ofEpochMs(service!!.clock.millis())
             }
 
             field = newState
@@ -153,12 +163,12 @@ public class SimTask(
         internal set
 
     // The submission time is shifted by the workload loaders, so unlike the other statistics it can be set from outside.
-    public var submittedAt: Long = submissionTime
-    public var scheduledAt: Long = 0
+    public var submittedAt: Timestamp = submissionTime
+    public var scheduledAt: Timestamp = Timestamp.zero
         private set
-    public var finishedAt: Long = 0
+    public var finishedAt: Timestamp = Timestamp.zero
         private set
-    public var schedulingDelay: Long = 0
+    public var schedulingDelay: TimeDelta = TimeDelta.zero
         private set
 
     private var _numFailures: Short = 0
@@ -218,13 +228,13 @@ public class SimTask(
      */
     internal fun onScheduled(
         host: SimHost,
-        queuedAt: Long,
+        queuedAt: Timestamp,
     ) {
-        val now = service!!.clock.millis()
+        val now = Timestamp.ofEpochMs(service!!.clock.millis())
 
         this.host = host
         scheduledAt = now
-        schedulingDelay += now - queuedAt
+        schedulingDelay += now timeDelta queuedAt
     }
 
     /**
@@ -403,8 +413,14 @@ public class SimTask(
         request.isCancelled = true
     }
 
-    private companion object {
+    public companion object {
         @JvmStatic
         private val LOGGER = KotlinLogging.logger {}
+
+        /**
+         * Sentinel [deadline] meaning the task has no deadline. Used instead of a nullable [Timestamp] so the field
+         * stays an unboxed primitive.
+         */
+        public val NO_DEADLINE: Timestamp = Timestamp.ofEpochMs(-1)
     }
 }

@@ -32,7 +32,7 @@ import org.opendc.simulator.compute.infrastructure.SimHost
  */
 public class RamWeigher(override val multiplier: Double = 1.0) : HostWeigher {
     override fun getWeight(host: SimHost): Double {
-        return host.availableMemory.toDouble()
+        return host.availableMemory.toMiB()
     }
 
     override fun toString(): String = "RamWeigher"

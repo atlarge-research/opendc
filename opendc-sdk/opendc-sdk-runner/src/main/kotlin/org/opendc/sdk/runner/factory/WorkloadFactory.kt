@@ -22,10 +22,13 @@
 
 package org.opendc.sdk.runner.factory
 
+import org.opendc.common.units.TimeDelta
+import org.opendc.common.units.Timestamp
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.workload.EfficientTraceWorkloadSpec
 import org.opendc.sdk.model.workload.InlineWorkloadSpec
+import org.opendc.sdk.model.workload.NO_DEADLINE
 import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.model.workload.TraceWorkloadSpec
@@ -72,8 +75,8 @@ public fun TraceWorkloadSpec.loadTrace(
         ComputeWorkloadLoader(
             path.toFile(),
             submissionTime,
-            checkpoint.intervalMs(),
-            checkpoint.durationMs(),
+            checkpoint.interval(),
+            checkpoint.duration(),
             checkpoint.scaling(),
             scalingPolicy.toEngine(),
             deferAll,
@@ -88,8 +91,8 @@ public fun EfficientTraceWorkloadSpec.loadTrace(
         EfficientWorkloadLoader(
             path.toFile(),
             submissionTime,
-            checkpoint.intervalMs(),
-            checkpoint.durationMs(),
+            checkpoint.interval(),
+            checkpoint.duration(),
             checkpoint.scaling(),
             scalingPolicy.toEngine(),
             deferAll,
@@ -138,8 +141,8 @@ public fun TaskSpec.toSimTask(
             gpuMemoryUsagesArray,
             maxCpuUsage,
             maxGpuUsage,
-            checkpoint.intervalMs(),
-            checkpoint.durationMs(),
+            checkpoint.interval().toMsLong(),
+            checkpoint.duration().toMsLong(),
             checkpoint.scaling(),
             scaling,
             id,
@@ -147,17 +150,17 @@ public fun TaskSpec.toSimTask(
         )
     return SimTask(
         id,
-        submissionTime.toMsLong(),
-        duration.toMsLong(),
+        Timestamp.ofEpochMs(submissionTime.toMs()),
+        duration,
         cpuCoreCount.toInt(),
-        cpuCapacity.toMHz(),
-        memory.toMiB().toInt(),
+        cpuCapacity,
+        memory,
         gpuCoreCount.toInt(),
-        gpuCapacity.toMHz(),
-        gpuMemory.toMiB().toInt(),
+        gpuCapacity,
+        gpuMemory,
         workload,
         deferrable,
-        deadline.toMsLong(),
+        if (deadline == NO_DEADLINE) SimTask.NO_DEADLINE else Timestamp.ofEpochMs(deadline.toMs()),
         if (parents.isEmpty()) null else parents,
         if (children.isEmpty()) null else children,
     )
@@ -169,8 +172,8 @@ private fun ScalingPolicySpec.toEngine(): EngineScalingPolicy =
         ScalingPolicySpec.Perfect -> PerfectScaling()
     }
 
-private fun CheckpointModelSpec?.intervalMs(): Long = this?.interval?.toMsLong() ?: 0L
+private fun CheckpointModelSpec?.interval(): TimeDelta = this?.interval ?: TimeDelta.zero
 
-private fun CheckpointModelSpec?.durationMs(): Long = this?.duration?.toMsLong() ?: 0L
+private fun CheckpointModelSpec?.duration(): TimeDelta = this?.duration ?: TimeDelta.zero
 
 private fun CheckpointModelSpec?.scaling(): Double = this?.intervalScaling ?: 1.0

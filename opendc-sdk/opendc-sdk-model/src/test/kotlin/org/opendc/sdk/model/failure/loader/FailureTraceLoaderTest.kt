@@ -27,6 +27,7 @@ import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.io.api.RecordConsumer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.opendc.common.units.TimeDelta
 import org.opendc.simulator.failure.models.Failure
 import org.opendc.trace.formats.failure.parquet.FAILURE_SCHEMA
 import org.opendc.trace.parquet.LocalParquetWriter
@@ -46,10 +47,10 @@ class FailureTraceLoaderTest {
 
     private val failures =
         listOf(
-            Failure(1_000, 100, 0.1),
-            Failure(2_000, 200, 0.2),
-            Failure(3_000, 300, 0.3),
-            Failure(4_000, 400, 0.4),
+            Failure(TimeDelta.ofMillis(1_000), TimeDelta.ofMillis(100), 0.1),
+            Failure(TimeDelta.ofMillis(2_000), TimeDelta.ofMillis(200), 0.2),
+            Failure(TimeDelta.ofMillis(3_000), TimeDelta.ofMillis(300), 0.3),
+            Failure(TimeDelta.ofMillis(4_000), TimeDelta.ofMillis(400), 0.4),
         )
 
     @Test
@@ -112,7 +113,7 @@ class FailureTraceLoaderTest {
      * Write a failure trace with the given [failures], in the given order.
      */
     private fun writeTrace(failures: List<Failure>): File =
-        writeEntries(failures.map { Entry(it.failureInterval, it.failureDuration, it.failureIntensity) })
+        writeEntries(failures.map { Entry(it.failureInterval.toMsLong(), it.failureDuration.toMsLong(), it.failureIntensity) })
 
     /**
      * Write a failure trace with the given raw [entries], in the given order, without validating them.

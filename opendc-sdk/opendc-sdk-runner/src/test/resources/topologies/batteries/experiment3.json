@@ -26,8 +26,8 @@
                 }
             },
             "battery": {
-                "capacity": 0.02,
-                "chargingSpeed": 1000,
+                "capacity": "0.02 kWh",
+                "chargingSpeed": "1000 W",
                 "policy": {
                     "type": "single",
                     "carbonThreshold": 100

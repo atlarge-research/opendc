@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.failure.hostfault
 
+import org.opendc.common.units.TimeDelta
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.service.ComputeService
 
@@ -36,6 +37,6 @@ public abstract class HostFault(
      */
     public abstract suspend fun apply(
         victims: List<SimHost>,
-        faultDuration: Long,
+        faultDuration: TimeDelta,
     )
 }

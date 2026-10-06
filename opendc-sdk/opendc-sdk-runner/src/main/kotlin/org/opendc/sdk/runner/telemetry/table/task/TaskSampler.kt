@@ -51,11 +51,11 @@ public class TaskSampler(
 
         val numFailures = task.numFailures
         val numPauses = task.numPauses
-        val submissionTime = task.submittedAt
-        val scheduleTime = task.scheduledAt
-        val finishTime = task.finishedAt
+        val submissionTime = task.submittedAt.toEpochMs().toLong()
+        val scheduleTime = task.scheduledAt.toEpochMs().toLong()
+        val finishTime = task.finishedAt.toEpochMs().toLong()
 
-        val schedulingDelay = task.schedulingDelay
+        val schedulingDelay = task.schedulingDelay.toMsLong()
         val workload = checkNotNull(task.workload) { "Task ${task.id} has no workload" }
         val failureDelay = workload.failureDelay()
         val checkpointDelay = workload.checkpointDelay()
@@ -90,7 +90,7 @@ public class TaskSampler(
 
         return TaskSample(
             taskId = task.id,
-            memCapacity = task.memorySize.toLong(),
+            memCapacity = task.memorySize.toMiB().toLong(),
             cpuCount = task.cpuCoreCount,
             gpuCount = task.gpuCoreCount,
             hostName = hostName,

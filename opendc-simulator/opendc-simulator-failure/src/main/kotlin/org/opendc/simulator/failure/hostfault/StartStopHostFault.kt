@@ -23,6 +23,7 @@
 package org.opendc.simulator.failure.hostfault
 
 import kotlinx.coroutines.delay
+import org.opendc.common.units.TimeDelta
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.service.ComputeService
 
@@ -34,7 +35,7 @@ public class StartStopHostFault(
 ) : HostFault(service) {
     override suspend fun apply(
         victims: List<SimHost>,
-        faultDuration: Long,
+        faultDuration: TimeDelta,
     ) {
         for (host in victims) {
             val tasks = host.getInstances().toList()
@@ -47,7 +48,7 @@ public class StartStopHostFault(
             }
         }
 
-        delay(faultDuration)
+        delay(faultDuration.toMsLong())
 
         for (host in victims) {
             host.recover()

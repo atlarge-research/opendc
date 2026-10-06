@@ -30,10 +30,14 @@ import org.opendc.common.units.TimeDelta
 /**
  * A contiguous slice of a task's execution during which the resource demand is constant.
  *
- * @property duration How long this slice lasts.
- * @property cpuUsage The CPU demand held constant over the slice.
- * @property gpuUsage The GPU compute demand held constant over the slice.
- * @property gpuMemory The GPU memory demand held constant over the slice.
+ * @property duration How long this slice lasts. The default unit is millisecond: a bare number such as `1000`
+ *   means 1000 ms.
+ * @property cpuUsage The CPU demand held constant over the slice. The default unit is MHz: a bare number such as
+ *   `2100` means 2100 MHz.
+ * @property gpuUsage The GPU compute demand held constant over the slice. The default unit is MHz: a bare number such
+ *   as `2100` means 2100 MHz.
+ * @property gpuMemory The GPU memory demand held constant over the slice. The default unit is MiB: a bare number such
+ *   as `1024` means 1024 MiB.
  */
 @Serializable
 public data class TaskFragmentSpec(

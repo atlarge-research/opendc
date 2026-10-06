@@ -42,7 +42,8 @@ public sealed interface PowerModelSpec : Validatable {
 /**
  * A component that draws the same power regardless of its utilization.
  *
- * @property power Power draw at every utilization level.
+ * @property power Power draw at every utilization level. The default unit is Watt: a bare number such as
+ *   `400` means 400 W.
  */
 @Serializable
 @SerialName("constant")
@@ -56,10 +57,10 @@ public data class ConstantPowerModelSpec(
  */
 @Serializable
 public sealed interface MaxIdlePowerModelSpec : PowerModelSpec {
-    /** Power draw at full utilization. */
+    /** Power draw at full utilization. The default unit is Watt: a bare number such as `400` means 400 W. */
     public val maxPower: Power
 
-    /** Power draw at zero utilization. */
+    /** Power draw at zero utilization. The default unit is Watt: a bare number such as `200` means 200 W. */
     public val idlePower: Power
 
     override fun validate(): List<ValidationIssue> =

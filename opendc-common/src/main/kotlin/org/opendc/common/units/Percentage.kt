@@ -231,7 +231,20 @@ public value class Percentage(
                 )
                 ofRatio(it.toDouble())
             },
-            serializerFun = { this.encodeString(it.toString()) },
+            // Written as a percentage when that reads back exactly, and as the exact ratio otherwise. Both ways of turning the
+            // ratio into a percentage can add rounding noise (0.07 * 100 is 7.000000000000001, while 33.3% is stored as the
+            // ratio 0.33299999999999996), so the shortest one that reads back exactly is written.
+            serializerFun = {
+                val ratio = it.toRatio()
+                val candidates =
+                    if (ratio.isFinite()) {
+                        listOf((ratio * 100).toExactString(), ratio.toBigDecimal().movePointRight(2).stripTrailingZeros().toPlainString())
+                    } else {
+                        emptyList()
+                    }
+                val percentage = candidates.filter { p -> ofPercentage(p.toDouble()) == it }.minByOrNull { p -> p.length }
+                this.encodeString(if (percentage != null) "$percentage%" else ratio.toExactString())
+            },
             ifMatches("$NUM_GROUP$PERCENTAGE", IGNORE_CASE) { ofPercentage(json.decNumFromStr(groupValues[1])) },
         )
     }

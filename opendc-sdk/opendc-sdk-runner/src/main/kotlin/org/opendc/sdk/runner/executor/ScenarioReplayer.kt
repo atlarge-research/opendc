@@ -27,6 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.yield
+import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.runner.factory.toEngine
@@ -69,11 +70,13 @@ public suspend fun ComputeService.replay(
             var simulationOffset = Long.MIN_VALUE
             for (task in generateSequence(trace::poll)) {
                 val now = clock.millis()
-                val start = task.submittedAt
+                val start = task.submittedAt.toEpochMs().toLong()
                 if (simulationOffset == Long.MIN_VALUE) simulationOffset = start - now
                 if (!submitImmediately) {
                     delay(max(0, start - now - simulationOffset).milliseconds)
-                    task.deadline -= simulationOffset
+                    if (task.deadline != SimTask.NO_DEADLINE) {
+                        task.deadline -= TimeDelta.ofMillis(simulationOffset)
+                    }
                 }
                 launch {
                     val submitted = submitTask(task)

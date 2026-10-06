@@ -370,6 +370,24 @@ internal fun JsonObjectBuilder.keep(
     for (key in keys) source[key]?.let { put(key, it) }
 }
 
+/**
+ * Carries the bare numbers at [keys] over from [source] with [unit] spelled out, skipping the ones it does not
+ * declare. Used where a legacy number counted a different unit than a bare number means to its SDK unit type.
+ */
+internal fun JsonObjectBuilder.keepIn(
+    source: JsonObject,
+    unit: String,
+    vararg keys: String,
+) {
+    for (key in keys) {
+        val value = source[key] ?: continue
+        val number =
+            (value as? JsonPrimitive)?.takeUnless { it.isString }?.content
+                ?: throw LegacyFormatException("'$key' must be a number")
+        put(key, JsonPrimitive("$number $unit"))
+    }
+}
+
 /** Carries `source[from]` over under its SDK name [to], skipping it when [from] is absent. */
 internal fun JsonObjectBuilder.rename(
     source: JsonObject,

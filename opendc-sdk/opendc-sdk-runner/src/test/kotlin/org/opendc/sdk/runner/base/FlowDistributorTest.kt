@@ -37,6 +37,34 @@ import org.opendc.sdk.runner.base.harness.runTest
  */
 class FlowDistributorTest {
     @Test
+    fun testFlowDistributorTest() {
+        val workload =
+            listOf(
+                createTestTask(
+                    id = 0,
+                    fragments =
+                        listOf(
+                            fragment(10 * 60 * 1000, 1000.0),
+                            fragment(10 * 60 * 1000, 1500.0),
+                        ),
+                    cpuCoreCount = 1,
+                ),
+                createTestTask(
+                    id = 1,
+                    fragments =
+                        listOf(
+                            fragment(10 * 60 * 1000, 500.0),
+                        ),
+                    cpuCoreCount = 1,
+                    submissionTime = "1970-01-01T00:10",
+                ),
+            )
+        val topology = createTopology("single_1_2000.json")
+
+        val monitor = runTest(topology, workload)
+    }
+
+    @Test
     fun testFlowDistributor1() {
         val workload =
             listOf(

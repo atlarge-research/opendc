@@ -23,14 +23,18 @@
 package org.opendc.sdk.model.topology
 
 import kotlinx.serialization.Serializable
+import org.opendc.common.units.Energy
+import org.opendc.common.units.Power
 
 /**
  * An energy-storage unit attached to a cluster, charged and discharged according to its policy.
  *
  * @property name A human-readable identifier for the battery.
- * @property capacity The storage capacity, in kWh.
- * @property chargingSpeed The charging rate, in W.
- * @property initialCharge The charge present at the start of the simulation, in kWh.
+ * @property capacity The storage capacity. The default unit is Joule: a bare number such as `100` means 100 J, so
+ *   write `"100 kWh"` for kilowatt-hours.
+ * @property chargingSpeed The charging rate. The default unit is Watt: a bare number such as `1000` means 1000 W.
+ * @property initialCharge The charge present at the start of the simulation. The default unit is Joule: a bare number
+ *   such as `20` means 20 J, so write `"20 kWh"` for kilowatt-hours.
  * @property policy The policy governing charging and discharging.
  * @property embodiedCarbon The carbon emitted during manufacturing, in kgCO2.
  * @property expectedLifetime The expected operational lifetime, in years.
@@ -38,9 +42,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 public data class BatterySpec(
     public val name: String = "Battery",
-    public val capacity: Double,
-    public val chargingSpeed: Double,
-    public val initialCharge: Double = 0.0,
+    public val capacity: Energy,
+    public val chargingSpeed: Power,
+    public val initialCharge: Energy = Energy.zero,
     public val policy: BatteryPolicySpec,
     public val embodiedCarbon: Double = 0.0,
     public val expectedLifetime: Double = 0.0,

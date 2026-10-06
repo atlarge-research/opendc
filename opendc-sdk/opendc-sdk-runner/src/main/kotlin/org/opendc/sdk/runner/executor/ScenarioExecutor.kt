@@ -105,7 +105,7 @@ private class ScenarioRun(
 
         // TODO: Link this properly
         val numHosts = scenario.topology.datacenters!!.flatMap { dc -> dc.clusters.flatMap { it.hosts } }.sumOf { it.count }
-        val startTime = workload.minOf { it.submittedAt }
+        val startTime = workload.minOf { it.submittedAt }.toEpochMs().toLong()
         createService(scenario.topology, numHosts, startTime, resources::resolve)
 
         // TODO: Why is GPUCount here referenced?

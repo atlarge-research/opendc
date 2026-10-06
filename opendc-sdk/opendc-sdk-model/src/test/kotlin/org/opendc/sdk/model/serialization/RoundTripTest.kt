@@ -32,6 +32,7 @@ import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.dsl.experiment
 import org.opendc.sdk.model.dsl.filterScheduler
 import org.opendc.sdk.model.dsl.minutes
+import org.opendc.sdk.model.dsl.ms
 import org.opendc.sdk.model.dsl.prefabScheduler
 import org.opendc.sdk.model.dsl.scenario
 import org.opendc.sdk.model.dsl.traceWorkload
@@ -329,7 +330,7 @@ class RoundTripTest {
         val policies: List<DistributionPolicySpec> =
             listOf(
                 MaxMinFairnessPolicySpec,
-                BestEffortPolicySpec(updateInterval = 2000L),
+                BestEffortPolicySpec(updateInterval = 2000.ms),
                 EqualSharePolicySpec,
                 FirstFitPolicySpec,
                 FixedSharePolicySpec(shareRatio = 0.5),

@@ -33,7 +33,7 @@ import org.opendc.simulator.compute.infrastructure.SimHost
  */
 public class CoreRamWeigher(override val multiplier: Double = 1.0) : HostWeigher {
     override fun getWeight(host: SimHost): Double {
-        return host.availableMemory.toDouble() / host.model.coreCount
+        return host.availableMemory.toMiB() / host.model.coreCount
     }
 
     override fun toString(): String = "CoreRamWeigher"

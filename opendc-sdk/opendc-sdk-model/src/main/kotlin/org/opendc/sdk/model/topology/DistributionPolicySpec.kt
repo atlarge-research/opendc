@@ -24,6 +24,7 @@ package org.opendc.sdk.model.topology
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.opendc.common.units.TimeDelta
 
 /**
  * Determines how a shared resource's capacity is distributed among competing consumers.
@@ -39,12 +40,13 @@ public data object MaxMinFairnessPolicySpec : DistributionPolicySpec
 /**
  * Distributes capacity opportunistically, refreshing shares on a fixed cadence.
  *
- * @property updateInterval The interval, in milliseconds, between share recalculations.
+ * @property updateInterval The interval between share recalculations. The default unit is millisecond: a bare number
+ *   such as `1000` means 1000 ms, and `"1 s"` is the same interval.
  */
 @Serializable
 @SerialName("bestEffort")
 public data class BestEffortPolicySpec(
-    public val updateInterval: Long = 1000L,
+    public val updateInterval: TimeDelta = TimeDelta.ofMillis(1000),
 ) : DistributionPolicySpec
 
 /** Grants every consumer an identical share of the capacity. */

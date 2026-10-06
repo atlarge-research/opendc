@@ -27,6 +27,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.opendc.common.units.DataSize
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.MachineModel
@@ -79,15 +80,15 @@ class SimHostMemoryTest {
         simMachineField.set(host, simMachine)
 
         val task1 = mockk<SimTask>(relaxed = true)
-        every { task1.memorySize } returns 512
+        every { task1.memorySize } returns DataSize.ofMiB(512)
         every { task1.cpuCoreCount } returns 1
 
         val task2 = mockk<SimTask>(relaxed = true)
-        every { task2.memorySize } returns 512
+        every { task2.memorySize } returns DataSize.ofMiB(512)
         every { task2.cpuCoreCount } returns 1
 
         val task3 = mockk<SimTask>(relaxed = true)
-        every { task3.memorySize } returns 256
+        every { task3.memorySize } returns DataSize.ofMiB(256)
         every { task3.cpuCoreCount } returns 1
 
         // Initially can fit task1 and task2 (512 + 512 = 1024)

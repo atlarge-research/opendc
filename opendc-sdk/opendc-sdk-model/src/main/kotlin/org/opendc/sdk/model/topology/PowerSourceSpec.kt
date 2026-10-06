@@ -30,7 +30,8 @@ import org.opendc.sdk.model.resource.ResourceReference
  * A power source feeding a cluster.
  *
  * @property name Human-readable identifier.
- * @property maxPower Maximum power the source can deliver.
+ * @property maxPower Maximum power the source can deliver. The default unit is Watt: a bare number such as
+ *   `400` means 400 W.
  * @property carbon Optional reference to a carbon-intensity trace.
  */
 @Serializable

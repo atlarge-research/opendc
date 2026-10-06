@@ -496,9 +496,9 @@ public annotation class NonInlinableUnit
 
 @RequiresOptIn(
     message =
-        "This operation is not intended for this unit, but it needs to be define. " +
+        "This operation is not intended for this unit, but it needs to be defined. " +
             "Invoking this method will result in an exception. ",
-    level = RequiresOptIn.Level.WARNING,
+    level = RequiresOptIn.Level.ERROR,
 )
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.CONSTRUCTOR)

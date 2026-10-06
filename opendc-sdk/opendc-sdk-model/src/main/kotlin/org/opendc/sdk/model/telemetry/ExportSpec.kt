@@ -30,7 +30,8 @@ import org.opendc.sdk.model.validation.ValidationIssue
 /**
  * Configuration controlling how simulation results are exported.
  *
- * @property exportInterval Wall-clock time between consecutive metric snapshots.
+ * @property exportInterval Wall-clock time between consecutive metric snapshots. The default unit is millisecond: a
+ *   bare number such as `1000` means 1000 ms.
  * @property printFrequency Number of snapshots between progress prints, or `null` to disable printing.
  * @property columns Per-output-file column selections.
  * @property filesToExport Output files to produce.

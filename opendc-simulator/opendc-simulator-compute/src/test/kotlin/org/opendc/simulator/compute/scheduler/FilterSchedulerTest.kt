@@ -28,6 +28,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+import org.opendc.common.units.DataSize
+import org.opendc.common.units.Frequency
+import org.opendc.common.units.TimeDelta
+import org.opendc.common.units.Timestamp
 import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.models.CpuModel
 import org.opendc.simulator.compute.models.GpuHostModel
@@ -73,7 +77,7 @@ internal class FilterSchedulerTest {
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 2
-        every { req.task.memorySize } returns 1024
+        every { req.task.memorySize } returns DataSize.ofMiB(1024)
         every { req.isCancelled } returns false
 
         assertEquals(SchedulingResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
@@ -102,7 +106,7 @@ internal class FilterSchedulerTest {
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 2
-        every { req.task.memorySize } returns 1024
+        every { req.task.memorySize } returns DataSize.ofMiB(1024)
         every { req.isCancelled } returns false
 
         // Make sure we get the first host both times
@@ -129,7 +133,7 @@ internal class FilterSchedulerTest {
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 2
-        every { req.task.memorySize } returns 1024
+        every { req.task.memorySize } returns DataSize.ofMiB(1024)
         every { req.isCancelled } returns false
 
         assertEquals(SchedulingResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
@@ -152,7 +156,7 @@ internal class FilterSchedulerTest {
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 2
-        every { req.task.memorySize } returns 1024
+        every { req.task.memorySize } returns DataSize.ofMiB(1024)
         every { req.isCancelled } returns false
 
         assertEquals(host, scheduler.select(mutableListOf(req).iterator()).host)
@@ -169,13 +173,13 @@ internal class FilterSchedulerTest {
         val hostA = mockk<SimHost>()
         every { hostA.state } returns HostState.UP
         every { hostA.model } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostA.availableMemory } returns 512
+        every { hostA.availableMemory } returns DataSize.ofMiB(512)
         every { hostA.isEmpty() } returns false
 
         val hostB = mockk<SimHost>()
         every { hostB.state } returns HostState.UP
         every { hostB.model } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostB.availableMemory } returns 2048
+        every { hostB.availableMemory } returns DataSize.ofMiB(2048)
         every { hostB.isEmpty() } returns true
 
         scheduler.addHost(hostA.withIds())
@@ -183,7 +187,7 @@ internal class FilterSchedulerTest {
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 2
-        every { req.task.memorySize } returns 1024
+        every { req.task.memorySize } returns DataSize.ofMiB(1024)
         every { req.isCancelled } returns false
 
         assertEquals(hostB, scheduler.select(mutableListOf(req).iterator()).host)
@@ -200,14 +204,14 @@ internal class FilterSchedulerTest {
         val host = mockk<SimHost>()
         every { host.state } returns HostState.UP
         every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
-        every { host.availableMemory } returns 2048
+        every { host.availableMemory } returns DataSize.ofMiB(2048)
         every { host.isEmpty() } returns true
 
         scheduler.addHost(host.withIds())
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 2
-        every { req.task.memorySize } returns 2300
+        every { req.task.memorySize } returns DataSize.ofMiB(2300)
         every { req.isCancelled } returns false
 
         assertEquals(SchedulingResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
@@ -240,7 +244,7 @@ internal class FilterSchedulerTest {
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 2
-        every { req.task.memorySize } returns 1024
+        every { req.task.memorySize } returns DataSize.ofMiB(1024)
         every { req.isCancelled } returns false
 
         assertEquals(hostB, scheduler.select(mutableListOf(req).iterator()).host)
@@ -264,7 +268,7 @@ internal class FilterSchedulerTest {
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 8
-        every { req.task.memorySize } returns 1024
+        every { req.task.memorySize } returns DataSize.ofMiB(1024)
         every { req.isCancelled } returns false
 
         assertEquals(SchedulingResultType.FAILURE, scheduler.select(mutableListOf(req).iterator()).resultType)
@@ -281,21 +285,21 @@ internal class FilterSchedulerTest {
         val hostA = mockk<SimHost>()
         every { hostA.state } returns HostState.UP
         every { hostA.model } returns HostModel(8 * 2600.0, 8, 2048)
-        every { hostA.availableMemory } returns 512
+        every { hostA.availableMemory } returns DataSize.ofMiB(512)
         every { hostA.isEmpty() } returns true
         scheduler.addHost(hostA.withIds())
 
         val hostB = mockk<SimHost>()
         every { hostB.state } returns HostState.UP
         every { hostB.model } returns HostModel(4 * 3200.0, 4, 2048)
-        every { hostB.availableMemory } returns 512
+        every { hostB.availableMemory } returns DataSize.ofMiB(512)
         every { hostB.isEmpty() } returns true
         scheduler.addHost(hostB.withIds())
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 2
-        every { req.task.memorySize } returns 1024
-        every { req.task.cpuCapacity } returns 2 * 3200.0
+        every { req.task.memorySize } returns DataSize.ofMiB(1024)
+        every { req.task.cpuCapacity } returns Frequency.ofMHz(2 * 3200.0)
         every { req.isCancelled } returns false
 
         assertEquals(hostB, scheduler.select(mutableListOf(req).iterator()).host)
@@ -326,7 +330,7 @@ internal class FilterSchedulerTest {
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 2
-        every { req.task.memorySize } returns 1024
+        every { req.task.memorySize } returns DataSize.ofMiB(1024)
         every { req.isCancelled } returns false
 
         assertEquals(hostB, scheduler.select(mutableListOf(req).iterator()).host)
@@ -343,7 +347,7 @@ internal class FilterSchedulerTest {
 
         val reqA = mockk<SchedulingRequest>()
         every { reqA.task.cpuCoreCount } returns 2
-        every { reqA.task.memorySize } returns 1024
+        every { reqA.task.memorySize } returns DataSize.ofMiB(1024)
         every { reqA.isCancelled } returns false
         val taskA = mockk<SimTask>()
         every { taskA.id } returns Random().nextInt(1, Int.MAX_VALUE)
@@ -368,8 +372,8 @@ internal class FilterSchedulerTest {
 
         val reqB = mockk<SchedulingRequest>()
         every { reqB.task.cpuCoreCount } returns 2
-        every { reqB.task.memorySize } returns 1024
-        every { reqB.task.cpuCapacity } returns 0.0
+        every { reqB.task.memorySize } returns DataSize.ofMiB(1024)
+        every { reqB.task.cpuCapacity } returns Frequency.ofMHz(0.0)
         every { reqB.isCancelled } returns false
 
         assertEquals(hostA, scheduler.select(mutableListOf(reqB).iterator()).host)
@@ -390,7 +394,7 @@ internal class FilterSchedulerTest {
 
         val reqA = mockk<SchedulingRequest>()
         every { reqA.task.cpuCoreCount } returns 2
-        every { reqA.task.memorySize } returns 1024
+        every { reqA.task.memorySize } returns DataSize.ofMiB(1024)
         every { reqA.isCancelled } returns false
         val taskA = mockk<SimTask>()
         every { taskA.id } returns Random().nextInt(1, Int.MAX_VALUE)
@@ -415,7 +419,7 @@ internal class FilterSchedulerTest {
 
         val reqB = mockk<SchedulingRequest>()
         every { reqB.task.cpuCoreCount } returns 2
-        every { reqB.task.memorySize } returns 1024
+        every { reqB.task.memorySize } returns DataSize.ofMiB(1024)
         every { reqB.isCancelled } returns false
 
         assertEquals(hostA, scheduler.select(mutableListOf(reqB).iterator()).host)
@@ -466,7 +470,7 @@ internal class FilterSchedulerTest {
 
         val req = mockk<SchedulingRequest>()
         every { req.task.gpuCoreCount } returns 9
-        every { req.task.gpuCapacity } returns 9 * 3200.0
+        every { req.task.gpuCapacity } returns Frequency.ofMHz(9 * 3200.0)
         every { req.isCancelled } returns false
 
         // filter selects hostB because hostA does not have enough GPU capacity
@@ -492,7 +496,7 @@ internal class FilterSchedulerTest {
                     GpuHostModel(8 * 2600.0, 8, 0L, 0.0),
                 ),
             )
-        every { hostA.availableMemory } returns 512
+        every { hostA.availableMemory } returns DataSize.ofMiB(512)
         every { hostA.isEmpty() } returns true
         scheduler.addHost(hostA.withIds())
 
@@ -508,13 +512,13 @@ internal class FilterSchedulerTest {
                     GpuHostModel(8 * 3200.0, 8, 0L, 0.0),
                 ),
             )
-        every { hostB.availableMemory } returns 512
+        every { hostB.availableMemory } returns DataSize.ofMiB(512)
         every { hostB.isEmpty() } returns true
         scheduler.addHost(hostB.withIds())
 
         val req = mockk<SchedulingRequest>()
         every { req.task.gpuCoreCount } returns 8
-        every { req.task.gpuCapacity } returns 8 * 3200.0
+        every { req.task.gpuCapacity } returns Frequency.ofMHz(8 * 3200.0)
         every { req.isCancelled } returns false
 
         // filter selects hostB because hostA does not have enough GPU capacity
@@ -532,14 +536,14 @@ internal class FilterSchedulerTest {
         val hostA = mockk<SimHost>()
         every { hostA.state } returns HostState.UP
         every { hostA.model } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostA.availableMemory } returns 1024
+        every { hostA.availableMemory } returns DataSize.ofMiB(1024)
         every { hostA.availableCpuCores } returns 4
         every { hostA.isEmpty() } returns false
 
         val hostB = mockk<SimHost>()
         every { hostB.state } returns HostState.UP
         every { hostB.model } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostB.availableMemory } returns 512
+        every { hostB.availableMemory } returns DataSize.ofMiB(512)
         every { hostB.availableCpuCores } returns 4
         every { hostB.isEmpty() } returns false
 
@@ -548,7 +552,7 @@ internal class FilterSchedulerTest {
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 2
-        every { req.task.memorySize } returns 1024
+        every { req.task.memorySize } returns DataSize.ofMiB(1024)
         every { req.isCancelled } returns false
 
         assertEquals(hostA, scheduler.select(mutableListOf(req).iterator()).host)
@@ -565,14 +569,14 @@ internal class FilterSchedulerTest {
         val hostA = mockk<SimHost>()
         every { hostA.state } returns HostState.UP
         every { hostA.model } returns HostModel(12 * 2600.0, 12, 2048)
-        every { hostA.availableMemory } returns 1024
+        every { hostA.availableMemory } returns DataSize.ofMiB(1024)
         every { hostA.availableCpuCores } returns 12
         every { hostA.isEmpty() } returns true
 
         val hostB = mockk<SimHost>()
         every { hostB.state } returns HostState.UP
         every { hostB.model } returns HostModel(4 * 2600.0, 4, 2048)
-        every { hostB.availableMemory } returns 512
+        every { hostB.availableMemory } returns DataSize.ofMiB(512)
         every { hostB.availableCpuCores } returns 4
         every { hostB.isEmpty() } returns true
 
@@ -581,7 +585,7 @@ internal class FilterSchedulerTest {
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 2
-        every { req.task.memorySize } returns 1024
+        every { req.task.memorySize } returns DataSize.ofMiB(1024)
         every { req.isCancelled } returns false
 
         assertEquals(hostB, scheduler.select(mutableListOf(req).iterator()).host)
@@ -614,7 +618,7 @@ internal class FilterSchedulerTest {
 
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns 2
-        every { req.task.memorySize } returns 1024
+        every { req.task.memorySize } returns DataSize.ofMiB(1024)
         every { req.isCancelled } returns false
 
         assertEquals(hostB, scheduler.select(mutableListOf(req).iterator()).host)
@@ -698,8 +702,8 @@ internal class FilterSchedulerTest {
         assertEquals(hostB, scheduler.select(mutableListOf(mockRequest()).iterator()).host)
         assertEquals(hostB, scheduler.select(mutableListOf(mockRequest()).iterator()).host)
 
-        every { hostA.availableMemory } returns 1024
-        every { hostB.availableMemory } returns 512
+        every { hostA.availableMemory } returns DataSize.ofMiB(1024)
+        every { hostB.availableMemory } returns DataSize.ofMiB(512)
         scheduler.updateHost(hostA)
         scheduler.updateHost(hostB)
 
@@ -739,7 +743,7 @@ internal class FilterSchedulerTest {
     @Test
     fun testSelectStopsAtFirstFittingHost() {
         val tested = mutableListOf<SimHost>()
-        val recordingFilter = HostFilter { host, _ -> tested.add(host) && host.availableMemory < 3000 }
+        val recordingFilter = HostFilter { host, _ -> tested.add(host) && host.availableMemory < DataSize.ofMiB(3000) }
         val scheduler = FilterScheduler(filters = listOf(recordingFilter), weighers = listOf(RamWeigher(1.0)))
 
         val hosts = listOf(1000L, 3000L, 2000L).map { mockHost(availableMemory = it, instances = 1) }
@@ -786,13 +790,13 @@ internal class FilterSchedulerTest {
 
         // Once the first host runs a task, the second stands in for the empty hosts and has more memory
         every { first.isEmpty() } returns false
-        every { first.availableMemory } returns 1024
+        every { first.availableMemory } returns DataSize.ofMiB(1024)
         scheduler.updateHost(first)
         assertEquals(second, scheduler.select(mutableListOf(mockRequest()).iterator()).host)
 
         // When the first host is empty again, it takes over because its id is lower
         every { first.isEmpty() } returns true
-        every { first.availableMemory } returns 2048
+        every { first.availableMemory } returns DataSize.ofMiB(2048)
         scheduler.updateHost(first)
         assertEquals(first, scheduler.select(mutableListOf(mockRequest()).iterator()).host)
     }
@@ -967,14 +971,30 @@ internal class FilterSchedulerTest {
                     val cores = 1 + random.nextInt(8)
                     // Up to 24 GiB, so memory rather than cores sometimes decides
                     val memory = 512 * (1 + random.nextInt(48))
-                    val task = SimTask(step, 0L, 1000L, cores, cores * 2600.0, memory, 0, 0.0, 0, null, false, Long.MAX_VALUE, null, null)
+                    val task =
+                        SimTask(
+                            step,
+                            Timestamp.zero,
+                            TimeDelta.ofMillis(1000),
+                            cores,
+                            Frequency.ofMHz(cores * 2600.0),
+                            DataSize.ofMiB(memory),
+                            0,
+                            Frequency.zero,
+                            DataSize.zero,
+                            null,
+                            false,
+                            Timestamp.ofEpochMs(Long.MAX_VALUE),
+                            null,
+                            null,
+                        )
 
                     val expected =
                         hosts
                             .filter { candidate -> filters.all { it.test(candidate, task) } }
                             .sortedWith(compareByDescending<SimHost> { score(it) }.thenBy { it.id })
                             .firstOrNull()
-                    val actual = scheduler.select(mutableListOf(SchedulingRequest(task, 0L)).iterator()).host
+                    val actual = scheduler.select(mutableListOf(SchedulingRequest(task, Timestamp.zero)).iterator()).host
                     assertEquals(expected, actual) { "Different host chosen at step $step" }
 
                     if (actual != null) {
@@ -1033,7 +1053,7 @@ internal class FilterSchedulerTest {
         every { host.model } returns HostModel(cores * 2600.0, cores, memory)
         every { host.availableCpuCores } returns availableCores
         every { host.provisionedCpuCores } returns cores - availableCores
-        every { host.availableMemory } returns availableMemory
+        every { host.availableMemory } returns DataSize.ofMiB(availableMemory)
         every { host.instanceCount } returns instances
         every { host.isEmpty() } returns (instances == 0)
         return host
@@ -1045,7 +1065,7 @@ internal class FilterSchedulerTest {
     ): SchedulingRequest {
         val req = mockk<SchedulingRequest>()
         every { req.task.cpuCoreCount } returns cores
-        every { req.task.memorySize } returns memory
+        every { req.task.memorySize } returns DataSize.ofMiB(memory)
         every { req.isCancelled } returns false
         return req
     }

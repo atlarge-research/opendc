@@ -35,7 +35,7 @@ public class VGpuCapacityFilter : HostFilter {
         host: SimHost,
         task: SimTask,
     ): Boolean {
-        val requiredCapacity = task.gpuCapacity
+        val requiredCapacity = task.gpuCapacity.toMHz()
         val availableCapacity = (host.model.gpuHostModels().maxOfOrNull { it.gpuCoreCapacity() } ?: 0).toDouble()
         val availableCores = (host.model.gpuHostModels().maxOfOrNull { it -> it.gpuCoreCount } ?: -1).toDouble()
         val availableRatio = availableCapacity / availableCores

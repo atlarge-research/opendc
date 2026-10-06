@@ -214,7 +214,6 @@ public class HostsProvisioningStep(
                 numHosts,
                 1,
             )
-
         return PowerSourceFlows(powerSource, powerDistributor)
     }
 
@@ -264,9 +263,9 @@ public class HostsProvisioningStep(
         val battery =
             BatteryNode(
                 engine,
-                batterySpec.capacity,
-                batterySpec.chargingSpeed,
-                batterySpec.initialCharge,
+                batterySpec.capacity.toKWh(),
+                batterySpec.chargingSpeed.toWatts(),
+                batterySpec.initialCharge.toKWh(),
                 batterySpec.name,
                 clusterName,
                 batterySpec.embodiedCarbon,

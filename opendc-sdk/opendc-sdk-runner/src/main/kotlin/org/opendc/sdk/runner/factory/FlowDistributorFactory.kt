@@ -35,6 +35,6 @@ public fun DistributionPolicySpec.toEngine(): DistributionPolicy =
         MaxMinFairnessPolicySpec -> DistributionPolicy.MAX_MIN_FAIRNESS
         EqualSharePolicySpec -> DistributionPolicy.EQUAL_SHARE
         FirstFitPolicySpec -> DistributionPolicy.FIRST_FIT
-        is BestEffortPolicySpec -> DistributionPolicy.BEST_EFFORT.apply { setProperty("updateInterval", updateInterval) }
+        is BestEffortPolicySpec -> DistributionPolicy.BEST_EFFORT.apply { setProperty("updateInterval", updateInterval.toMsLong()) }
         is FixedSharePolicySpec -> DistributionPolicy.FIXED_SHARE.apply { setProperty("shareRatio", shareRatio) }
     }

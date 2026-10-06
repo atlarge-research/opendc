@@ -41,17 +41,24 @@ public val NO_DEADLINE: TimeDelta = TimeDelta.ofMillis(-1)
  * A schedulable unit of work with its resource requirements and execution profile.
  *
  * @property id Unique identifier of the task within its workload.
- * @property submissionTime Offset from the workload start at which the task is submitted.
- * @property duration Total wall-clock duration of the task.
+ * @property submissionTime Offset from the workload start at which the task is submitted. The default unit is
+ *   millisecond: a bare number such as `1000` means 1000 ms.
+ * @property duration Total wall-clock duration of the task. The default unit is millisecond: a bare number such as
+ *   `1000` means 1000 ms.
  * @property cpuCoreCount Number of CPU cores the task requires.
- * @property cpuCapacity Per-core CPU capacity the task requires.
- * @property memory Amount of main memory the task requires.
+ * @property cpuCapacity Per-core CPU capacity the task requires. The default unit is MHz: a bare number such as
+ *   `2100` means 2100 MHz.
+ * @property memory Amount of main memory the task requires. The default unit is MiB: a bare number such as `1024`
+ *   means 1024 MiB.
  * @property fragments Ordered execution slices describing the task's resource demand over time.
  * @property gpuCoreCount Number of GPU cores the task requires.
- * @property gpuCapacity Per-core GPU capacity the task requires.
- * @property gpuMemory Amount of GPU memory the task requires.
+ * @property gpuCapacity Per-core GPU capacity the task requires. The default unit is MHz: a bare number such as
+ *   `2100` means 2100 MHz.
+ * @property gpuMemory Amount of GPU memory the task requires. The default unit is MiB: a bare number such as `1024`
+ *   means 1024 MiB.
  * @property deferrable Whether the task may be postponed by a time-shifting scheduler.
- * @property deadline Latest completion time, as an offset from the workload start, or [NO_DEADLINE] if none.
+ * @property deadline Latest completion time, as an offset from the workload start, or [NO_DEADLINE] if none. The
+ *   default unit is millisecond: a bare number such as `1000` means 1000 ms.
  * @property parents Identifiers of tasks that must complete before this task may start.
  * @property children Identifiers of tasks that depend on this task.
  */

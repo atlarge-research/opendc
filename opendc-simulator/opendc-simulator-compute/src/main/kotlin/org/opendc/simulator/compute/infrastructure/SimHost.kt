@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute.infrastructure
 
+import org.opendc.common.units.DataSize
 import org.opendc.simulator.compute.machine.SimMachine
 import org.opendc.simulator.compute.models.GpuHostModel
 import org.opendc.simulator.compute.models.HostListener
@@ -134,7 +135,7 @@ public class SimHost(
      */
     public var instanceCount: Int = 0
         private set
-    public var availableMemory: Long = model.memoryCapacity
+    public var availableMemory: DataSize = DataSize.ofMiB(model.memoryCapacity)
         private set
     public var provisionedCpuCores: Int = 0
         private set
@@ -235,7 +236,7 @@ public class SimHost(
     // ==================================================================================
 
     public fun canFit(task: SimTask): Boolean {
-        val sufficientMemory = (this.availableMemory) >= task.memorySize
+        val sufficientMemory = availableMemory >= task.memorySize
         val enoughCpus = model.coreCount >= task.cpuCoreCount
         val canFit = simMachine.canFit(task.toMachineModel())
 
@@ -347,7 +348,7 @@ public class SimHost(
 
         // A task runs from the moment it is placed on this host, which is when the ComputeService sets scheduledAt.
         // Tasks that fail or pause are removed from the host right away, so a task on this host has no downtime.
-        return GuestSystemStats(Duration.ofMillis(clock.millis() - task.scheduledAt), Duration.ZERO)
+        return GuestSystemStats(Duration.ofMillis(clock.millis() - task.scheduledAt.toEpochMs().toLong()), Duration.ZERO)
     }
 
     public fun getCpuStats(): HostCpuStats {
@@ -475,7 +476,7 @@ public class SimHost(
     private fun SimTask.toMachineModel(): MachineModel {
         return MachineModel(
             simMachine.machineModel.cpuModel,
-            MemoryUnit("Generic", "Generic", 3200.0, this.memorySize.toLong()),
+            MemoryUnit("Generic", "Generic", 3200.0, this.memorySize.toMiB().toLong()),
             simMachine.machineModel.gpuModels,
             simMachine.machineModel.cpuDistributionStrategy,
             simMachine.machineModel.gpuDistributionStrategy,

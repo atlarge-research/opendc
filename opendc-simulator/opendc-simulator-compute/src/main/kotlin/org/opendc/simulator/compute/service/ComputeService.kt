@@ -23,6 +23,8 @@
 package org.opendc.simulator.compute.service
 
 import mu.KotlinLogging
+import org.opendc.common.units.DataSize
+import org.opendc.common.units.Timestamp
 import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.carbon.CarbonReceiver
 import org.opendc.simulator.compute.infrastructure.SimCluster
@@ -130,7 +132,7 @@ public class ComputeService(
     private val taskListeners = ArrayList<TaskListener>()
 
     private var maxCores = 0
-    private var maxMemory = 0L
+    private var maxMemory = DataSize.zero
 
     // ==================================================================================
     // Lifecycle
@@ -220,7 +222,7 @@ public class ComputeService(
         val model = host.model
 
         maxCores = maxOf(maxCores, model.coreCount)
-        maxMemory = maxOf(maxMemory, model.memoryCapacity)
+        maxMemory = maxOf(maxMemory, DataSize.ofMiB(model.memoryCapacity))
         _hosts.add(host)
 
         if (host.state == HostState.UP) {
@@ -448,7 +450,7 @@ public class ComputeService(
         }
 
         val now = clock.millis()
-        val request = SchedulingRequest(task, now)
+        val request = SchedulingRequest(task, Timestamp.ofEpochMs(now))
 
         // If the task has parents, put in blocked tasks
         if (task.hasParents()) {

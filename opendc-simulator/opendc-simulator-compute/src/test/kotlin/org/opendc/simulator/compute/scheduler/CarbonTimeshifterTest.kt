@@ -27,6 +27,8 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.opendc.common.units.TimeDelta
+import org.opendc.common.units.Timestamp
 import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.scheduler.timeshift.CarbonTimeshifter
 import org.opendc.simulator.compute.task.SimTask
@@ -45,8 +47,8 @@ internal class CarbonTimeshifterTest {
     ): SimTask {
         val task = mockk<SimTask>()
         every { task.deferrable } returns deferrable
-        every { task.duration } returns duration
-        every { task.deadline } returns deadline
+        every { task.duration } returns TimeDelta.ofMillis(duration)
+        every { task.deadline } returns Timestamp.ofEpochMs(deadline)
         return task
     }
 
