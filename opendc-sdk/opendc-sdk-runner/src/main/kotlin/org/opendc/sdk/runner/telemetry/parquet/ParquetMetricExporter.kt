@@ -116,15 +116,38 @@ public class ParquetMetricExporter(
         Exporter(outputFile = file, columns = columns).use { exporter -> rows.forEach(exporter::write) }
     }
 
+    /**
+     * Close the exporters, and throw the first failure of one of them. Every exporter is closed, also after one fails, so
+     * that no writer threads or part files are left behind.
+     */
     override fun close() {
-        batteryExporter?.close()
-        clusterExporter?.close()
-        dataCenterExporter?.close()
-        hostExporter?.close()
-        powerSourceExporter?.close()
-        serviceExporter?.close()
-        taskExporter?.close()
-        taskMetaExporter?.close()
+        val exporters =
+            listOfNotNull(
+                batteryExporter,
+                clusterExporter,
+                dataCenterExporter,
+                hostExporter,
+                powerSourceExporter,
+                serviceExporter,
+                taskExporter,
+                taskMetaExporter,
+            )
+
+        var failure: Throwable? = null
+        for (exporter in exporters) {
+            try {
+                exporter.close()
+            } catch (cause: Throwable) {
+                val first = failure
+                if (first == null) {
+                    failure = cause
+                } else {
+                    first.addSuppressed(cause)
+                }
+            }
+        }
+
+        failure?.let { throw it }
     }
 
     public companion object {

@@ -47,9 +47,10 @@ private const val BATCH_SIZE = 256
  * A writer that writes data in Parquet format.
  *
  * The records are written on separate threads, to which they are handed in batches. With more than one writer thread,
- * the batches are handed to the threads in turn, each thread writes its batches to a part file of its own, and the part
- * files are merged into the output file when the writer is closed, so the rows of one part precede those of the next.
- * [write] and [close] must be called from a single thread.
+ * the batches are handed to the threads in turn, each thread writes its batches to a part file of its own in a hidden
+ * directory next to the output file, and the part files are merged into the output file when the writer is closed, so
+ * the rows of one part precede those of the next. [write] and [close] must be called from a single thread, and [close]
+ * throws if a writer thread failed.
  *
  * @param path The path to the file to write the data to.
  * @param writeSupport Creates the [WriteSupport] that converts the records to Parquet format, once per writer thread.
@@ -89,10 +90,9 @@ public abstract class ParquetDataWriter<in T>(
     private var isClosed = false
 
     /**
-     * The files written by the writer threads: the output file for a single thread, and otherwise a part file per thread,
-     * next to the output file.
+     * The files written by the writer threads: the output file for a single thread, and otherwise a part file per thread.
      */
-    private val files = if (writerThreads == 1) listOf(path) else List(writerThreads) { path.resolveSibling(".${path.name}.part-$it") }
+    private val files = if (writerThreads == 1) listOf(path) else createPartFiles(writerThreads)
 
     /**
      * The writer threads, one per file, which share the buffer.
@@ -131,7 +131,9 @@ public abstract class ParquetDataWriter<in T>(
     }
 
     /**
-     * Signal the writer to stop.
+     * Signal the writer to stop, and wait for the writer threads to finish.
+     *
+     * @throws IllegalStateException if a writer thread failed, in which case the output file is incomplete or missing.
      */
     override fun close() {
         if (isClosed) {
@@ -151,6 +153,19 @@ public abstract class ParquetDataWriter<in T>(
         if (shards.size > 1) {
             mergeParts()
         }
+
+        exception?.let { throw IllegalStateException("Writer thread failed", it) }
+    }
+
+    /**
+     * Create the part files of [count] writer threads, in a hidden directory next to the output file that is emptied
+     * first, as a run that was aborted may have left it behind.
+     */
+    private fun createPartFiles(count: Int): List<File> {
+        val directory = path.resolveSibling(".${path.name}.parts")
+        directory.deleteRecursively()
+        directory.mkdirs()
+        return List(count) { File(directory, "part-$it.parquet") }
     }
 
     /**
@@ -195,7 +210,7 @@ public abstract class ParquetDataWriter<in T>(
             logger.error(e) { "Failure in merging the parts of $path" }
             exception = e
         } finally {
-            files.forEach { it.delete() }
+            files.first().parentFile.deleteRecursively()
         }
     }
 
@@ -214,7 +229,8 @@ public abstract class ParquetDataWriter<in T>(
          * The thread that is responsible for writing the Parquet records.
          */
         private val writerThread =
-            thread(name = "${this@ParquetDataWriter}-${file.name}") {
+            // A daemon thread, so that a run that is aborted before the writer is closed does not keep the process alive
+            thread(isDaemon = true, name = "${this@ParquetDataWriter}-${file.name}") {
                 try {
                     val builder =
                         LocalParquetWriter.builder(file.toPath(), writeSupport())

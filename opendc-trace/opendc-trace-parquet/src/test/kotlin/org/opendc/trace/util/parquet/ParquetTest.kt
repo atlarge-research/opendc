@@ -238,7 +238,7 @@ internal class ParquetTest {
             }
         }
 
-        writer.close()
+        assertThrows<IllegalStateException>("closing a failed writer reports the failure") { writer.close() }
     }
 
     /**
@@ -255,7 +255,7 @@ internal class ParquetTest {
             }
         }
 
-        writer.close()
+        assertThrows<IllegalStateException>("closing a failed writer reports the failure") { writer.close() }
     }
 
     /**
@@ -294,17 +294,35 @@ internal class ParquetTest {
                 writer.write(i)
             }
         }
-        writer.close()
+        assertThrows<IllegalStateException>("closing a failed writer reports the failure") { writer.close() }
 
         assertEquals(emptyList<Path>(), partFiles())
     }
 
-    private fun partFiles(): List<Path> =
-        Files.list(path.parent).use { files ->
-            files.filter {
-                it.fileName.toString().startsWith(".${path.fileName}.part-")
-            }.toList()
+    private fun partFiles(): List<Path> {
+        val directory = path.resolveSibling(".${path.fileName}.parts")
+        return if (Files.exists(directory)) listOf(directory) else emptyList()
+    }
+
+    /**
+     * Test whether reading a directory skips hidden files, such as the part files of an aborted writer.
+     */
+    @Test
+    fun testReadDirectorySkipsHiddenFiles() {
+        val directory = Files.createTempDirectory("opendc-parquet-dir")
+        try {
+            LocalParquetWriter.builder(directory.resolve("data.parquet"), writeSupport).build().use { writer ->
+                repeat(3) { writer.write(it) }
+            }
+            Files.writeString(directory.resolve(".data.parquet.parts"), "not parquet")
+
+            val records = LocalParquetReader(directory, readSupport).use { reader -> generateSequence { reader.read() }.toList() }
+
+            assertEquals(listOf(0, 1, 2), records)
+        } finally {
+            directory.toFile().deleteRecursively()
         }
+    }
 
     private fun readRecords(): List<Int> =
         LocalParquetReader(

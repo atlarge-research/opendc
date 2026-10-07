@@ -22,9 +22,9 @@
 
 package org.opendc.sdk.runner.telemetry
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.sdk.model.telemetry.OutputFileSpec
@@ -57,7 +57,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * @param startTime The absolute time the simulation starts at. Every exported time is relative to it.
  */
 public class ComputeMetricReader(
-    dispatcher: Dispatcher,
+    private val dispatcher: Dispatcher,
     private val service: ComputeService,
     private val monitor: MetricExporter,
     private val exportInterval: Duration = Duration.ofMinutes(5),
@@ -105,6 +105,11 @@ public class ComputeMetricReader(
 
     private var loggCounter = 0
 
+    /**
+     * The failure that stopped the export, after which the run fails.
+     */
+    private var failure: Throwable? = null
+
     init {
         // Registered here rather than in the job, which only starts once the simulation runs: a task deleted before
         // that would otherwise never have its final sample exported.
@@ -116,96 +121,99 @@ public class ComputeMetricReader(
      */
     private val job =
         scope.launch {
-            // Exported when the simulation starts rather than on construction, as the reader may be provisioned before
-            // the hosts it reports on.
             try {
+                // Exported when the simulation starts rather than on construction, as the reader may be provisioned
+                // before the hosts it reports on.
                 monitor.export(SimulationMeta(startTime.toMillis()))
                 monitor.export(TopologyMeta.of(service))
+
+                val intervalMs = exportInterval.toMillis()
+                try {
+                    while (true) {
+                        delay(intervalMs.milliseconds)
+
+                        loggState()
+                    }
+                } catch (cause: CancellationException) {
+                    // The run ended, so the final samples are taken, unless the reader stopped because exporting failed
+                    if (failure == null) {
+                        loggState()
+                        exportRemainingTaskMeta()
+                        if (monitor is AutoCloseable) {
+                            monitor.close()
+                        }
+                    }
+                    throw cause
+                }
+            } catch (cause: CancellationException) {
+                throw cause
             } catch (cause: Throwable) {
-                logger.warn(cause) { "Exporter threw an Exception" }
-            }
-
-            val intervalMs = exportInterval.toMillis()
-            try {
-                while (isActive) {
-                    delay(intervalMs.milliseconds)
-
-                    loggState()
-                }
-            } finally {
-                loggState()
-                exportRemainingTaskMeta()
-                if (monitor is AutoCloseable) {
-                    monitor.close()
-                }
+                failRun(cause)
             }
         }
 
     public fun loggState() {
         loggCounter++
-        try {
-            val now = this.clock.instant()
 
-            if (toMonitor[OutputFileSpec.BATTERY] == true) {
-                for (battery in this.service.batteries) {
-                    val batterySample = this.batterySampler.sample(now, battery)
-                    this.monitor.export(batterySample)
-                }
+        val now = this.clock.instant()
+
+        if (toMonitor[OutputFileSpec.BATTERY] == true) {
+            for (battery in this.service.batteries) {
+                val batterySample = this.batterySampler.sample(now, battery)
+                this.monitor.export(batterySample)
             }
+        }
 
-            if (toMonitor[OutputFileSpec.CLUSTER] == true) {
-                for (cluster in this.service.clusters) {
-                    val clusterSample = this.clusterSampler.sample(now, cluster)
-                    this.monitor.export(clusterSample)
-                }
+        if (toMonitor[OutputFileSpec.CLUSTER] == true) {
+            for (cluster in this.service.clusters) {
+                val clusterSample = this.clusterSampler.sample(now, cluster)
+                this.monitor.export(clusterSample)
             }
+        }
 
-            if (toMonitor[OutputFileSpec.DATA_CENTER] == true) {
-                for (dataCenter in this.service.dataCenters) {
-                    val dataCenterSample = this.dataCenterSampler.sample(now, dataCenter)
-                    this.monitor.export(dataCenterSample)
-                }
+        if (toMonitor[OutputFileSpec.DATA_CENTER] == true) {
+            for (dataCenter in this.service.dataCenters) {
+                val dataCenterSample = this.dataCenterSampler.sample(now, dataCenter)
+                this.monitor.export(dataCenterSample)
             }
+        }
 
-            if (toMonitor[OutputFileSpec.HOST] == true) {
-                for (host in this.service.hosts) {
-                    val hostSample = this.hostSampler.sample(now, host)
-                    this.monitor.export(hostSample)
-                }
+        if (toMonitor[OutputFileSpec.HOST] == true) {
+            for (host in this.service.hosts) {
+                val hostSample = this.hostSampler.sample(now, host)
+                this.monitor.export(hostSample)
             }
+        }
 
-            if (toMonitor[OutputFileSpec.POWER_SOURCE] == true) {
-                for (powerSource in this.service.powerSources) {
-                    val powerSourceSample = this.powerSourceSampler.sample(now, powerSource)
-                    this.monitor.export(powerSourceSample)
-                }
+        if (toMonitor[OutputFileSpec.POWER_SOURCE] == true) {
+            for (powerSource in this.service.powerSources) {
+                val powerSourceSample = this.powerSourceSampler.sample(now, powerSource)
+                this.monitor.export(powerSourceSample)
             }
+        }
 
-            if (toMonitor[OutputFileSpec.SERVICE] == true) {
-                val serviceSample = this.serviceSampler.sample(now)
-                this.monitor.export(serviceSample)
+        if (toMonitor[OutputFileSpec.SERVICE] == true) {
+            val serviceSample = this.serviceSampler.sample(now)
+            this.monitor.export(serviceSample)
+        }
+
+        if (toMonitor[OutputFileSpec.TASK] == true) {
+            for (task in this.service.tasks.values) {
+                val taskSample = this.taskSampler.sample(now, task)
+                this.monitor.export(taskSample)
             }
+        }
 
-            if (toMonitor[OutputFileSpec.TASK] == true) {
-                for (task in this.service.tasks.values) {
-                    val taskSample = this.taskSampler.sample(now, task)
-                    this.monitor.export(taskSample)
-                }
-            }
+        if (printFrequency != null && loggCounter % printFrequency == 0) {
+            // TODO: Fix this! This now prints 3 times
+            var loggString = "\n\t\t\t\t\tMetrics after ${now.toEpochMilli() / 1000 / 60 / 60} hours:\n"
+            loggString += "\t\t\t\t\t\tTasks Total: ${this.service.tasksTotal}\n"
+            loggString += "\t\t\t\t\t\tTasks Active: ${this.service.tasksActive}\n"
+            loggString += "\t\t\t\t\t\tTasks Pending: ${this.service.tasksPending}\n"
+            loggString += "\t\t\t\t\t\tTasks Completed: ${this.service.tasksCompleted}\n"
+            loggString += "\t\t\t\t\t\tTasks Terminated: ${this.service.tasksTerminated}\n"
 
-            if (printFrequency != null && loggCounter % printFrequency == 0) {
-                // TODO: Fix this! This now prints 3 times
-                var loggString = "\n\t\t\t\t\tMetrics after ${now.toEpochMilli() / 1000 / 60 / 60} hours:\n"
-                loggString += "\t\t\t\t\t\tTasks Total: ${this.service.tasksTotal}\n"
-                loggString += "\t\t\t\t\t\tTasks Active: ${this.service.tasksActive}\n"
-                loggString += "\t\t\t\t\t\tTasks Pending: ${this.service.tasksPending}\n"
-                loggString += "\t\t\t\t\t\tTasks Completed: ${this.service.tasksCompleted}\n"
-                loggString += "\t\t\t\t\t\tTasks Terminated: ${this.service.tasksTerminated}\n"
-
-                this.logger.warn { loggString }
-            }
-        } catch (cause: Throwable) {
-            this.logger.warn(cause) { "Exporter threw an Exception" }
+            this.logger.warn { loggString }
         }
     }
 
@@ -218,13 +226,37 @@ public class ComputeMetricReader(
             return
         }
 
-        try {
-            for (task in service.tasks.values) {
-                monitor.export(TaskMeta.of(task, startTime))
-            }
-        } catch (cause: Throwable) {
-            logger.warn(cause) { "Exporter threw an Exception" }
+        for (task in service.tasks.values) {
+            monitor.export(TaskMeta.of(task, startTime))
         }
+    }
+
+    /**
+     * Fail the run, as its metrics cannot all be exported. The reader stops, and the [monitor] is closed first, so that
+     * it leaves no writer threads or partial files behind.
+     */
+    private fun failRun(cause: Throwable) {
+        if (failure != null) {
+            return
+        }
+
+        failure = cause
+        job.cancel()
+
+        if (monitor is AutoCloseable) {
+            try {
+                monitor.close()
+            } catch (e: Throwable) {
+                // The monitor may report the failure that caused this one again
+                if (e !== cause) {
+                    cause.addSuppressed(e)
+                }
+            }
+        }
+
+        // An exception thrown by a coroutine does not reach the simulation, but one thrown by a task of its dispatcher
+        // stops it, and with it the run
+        dispatcher.schedule { throw IllegalStateException("Exporting the metrics of the run failed", cause) }
     }
 
     override fun close() {
@@ -236,16 +268,20 @@ public class ComputeMetricReader(
     }
 
     override fun onTaskDeletion(task: SimTask) {
-        if (toMonitor[OutputFileSpec.TASK] != true) {
+        if (toMonitor[OutputFileSpec.TASK] != true || failure != null) {
             return
         }
 
-        val now = this.clock.instant()
+        try {
+            val now = this.clock.instant()
 
-        val taskSample = this.taskSampler.sample(now, task)
-        this.monitor.export(taskSample)
+            val taskSample = this.taskSampler.sample(now, task)
+            this.monitor.export(taskSample)
 
-        // The task leaves the service, so this is the last moment to export its static attributes
-        this.monitor.export(TaskMeta.of(task, startTime))
+            // The task leaves the service, so this is the last moment to export its static attributes
+            this.monitor.export(TaskMeta.of(task, startTime))
+        } catch (cause: Throwable) {
+            failRun(cause)
+        }
     }
 }
