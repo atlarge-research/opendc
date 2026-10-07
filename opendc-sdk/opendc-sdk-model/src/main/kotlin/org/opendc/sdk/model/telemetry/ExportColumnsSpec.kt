@@ -29,13 +29,15 @@ import kotlinx.serialization.Serializable
 @Serializable
 public sealed interface ColumnSelection
 
-/** Writes every available column. */
+/** Writes every available column. GPU columns are only written if the topology has GPUs. */
 @Serializable
 @SerialName("all")
 public data object AllColumns : ColumnSelection
 
 /**
- * Writes only the named columns.
+ * Writes only the named columns. A GPU column is written if it is named, also if the topology has no GPUs, with a
+ * warning.
+ * For hosts, a GPU metric is named without the GPU index, e.g. `gpu_usage` for the `gpu_usage_<i>` column of every GPU.
  *
  * @property columns Names of the columns to keep.
  */

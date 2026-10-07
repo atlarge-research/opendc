@@ -22,13 +22,15 @@
 
 package org.opendc.sdk.runner.factory
 
+import mu.KotlinLogging
 import org.opendc.sdk.model.telemetry.AllColumns
 import org.opendc.sdk.model.telemetry.ColumnSelection
 import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.telemetry.OnlyColumns
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.runner.telemetry.parquet.ComputeExportConfig
-import org.opendc.sdk.runner.telemetry.parquet.withGpuColumns
+import org.opendc.sdk.runner.telemetry.parquet.DfltHostExportColumns
+import org.opendc.sdk.runner.telemetry.parquet.DfltTaskExportColumns
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
 import org.opendc.sdk.runner.telemetry.table.cluster.ClusterSample
 import org.opendc.sdk.runner.telemetry.table.datacenter.DataCenterSample
@@ -40,6 +42,8 @@ import org.opendc.trace.parquet.exporter.ExportColumn
 import org.opendc.trace.parquet.exporter.Exportable
 import java.time.Duration
 
+private val logger = KotlinLogging.logger {}
+
 public data class ExportSettings(
     val config: ComputeExportConfig,
     val filesToExport: Map<OutputFileSpec, Boolean>,
@@ -47,7 +51,10 @@ public data class ExportSettings(
     val printFrequency: Int?,
 )
 
-/** Derives the engine export settings from this [ExportSpec], adding GPU columns for [gpuCount] GPUs. */
+/**
+ * Derives the engine export settings from this [ExportSpec] for a topology whose hosts have at most [gpuCount] GPUs. The
+ * columns are derived per simulation, as the GPU columns depend on its topology.
+ */
 internal fun ExportSpec.toExportSettings(gpuCount: Int): ExportSettings =
     ExportSettings(
         config = toComputeExportConfig(gpuCount),
@@ -62,11 +69,63 @@ private fun ExportSpec.toComputeExportConfig(gpuCount: Int): ComputeExportConfig
         columns.battery.resolve<BatterySample>(),
         columns.cluster.resolve<ClusterSample>(),
         columns.dataCenter.resolve<DataCenterSample>(),
-        columns.host.resolve<HostSample>(),
+        hostColumns(columns.host, gpuCount),
         columns.powerSource.resolve<PowerSourceSample>(),
         columns.service.resolve<ServiceSample>(),
-        columns.task.resolve<TaskSample>(),
-    ).withGpuColumns(gpuCount)
+        taskColumns(columns.task, gpuCount),
+    )
+}
+
+/**
+ * The host columns. The per-GPU columns are generated for [gpuCount] GPUs, the most of any host, so in a topology that
+ * mixes hosts with and without GPUs every host has them. A selection that names a GPU metric, such as `gpu_usage`, gets
+ * its columns even if the topology has no GPUs, for one GPU.
+ */
+private fun hostColumns(
+    selection: ColumnSelection,
+    gpuCount: Int,
+): List<ExportColumn<HostSample>> {
+    val gpuMetrics =
+        when (selection) {
+            AllColumns -> DfltHostExportColumns.GPU_METRICS
+            is OnlyColumns -> DfltHostExportColumns.GPU_METRICS.filter { it in selection.columns }
+        }
+
+    var count = gpuCount
+    if (selection is OnlyColumns && gpuMetrics.isNotEmpty() && gpuCount == 0) {
+        warnNoGpus("host", gpuMetrics)
+        count = 1
+    }
+
+    return selection.resolve<HostSample>() + DfltHostExportColumns.gpuColumns(count, gpuMetrics)
+}
+
+/**
+ * The task columns. The GPU columns are left out by default if the topology has no GPUs, but are kept if selected.
+ */
+private fun taskColumns(
+    selection: ColumnSelection,
+    gpuCount: Int,
+): List<ExportColumn<TaskSample>> {
+    val columns = selection.resolve<TaskSample>()
+    val gpuColumns = columns.filter { it in DfltTaskExportColumns.GPU_COLUMNS }
+    if (gpuCount > 0 || gpuColumns.isEmpty()) {
+        return columns
+    }
+
+    if (selection == AllColumns) {
+        return columns - gpuColumns.toSet()
+    }
+
+    warnNoGpus("task", gpuColumns.map { it.name })
+    return columns
+}
+
+private fun warnNoGpus(
+    table: String,
+    columns: List<String>,
+) {
+    logger.warn { "The topology has no GPUs, but the selected $table columns $columns are exported anyway" }
 }
 
 private inline fun <reified T : Exportable> ColumnSelection.resolve(): List<ExportColumn<T>> {

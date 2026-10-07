@@ -167,13 +167,6 @@ public class ComputeMetricReader(
                 }
             }
 
-            if (toMonitor[OutputFileSpec.BATTERY] == true) {
-                for (battery in this.service.batteries) {
-                    val batterySample = this.batterySampler.sample(now, battery)
-                    this.monitor.export(batterySample)
-                }
-            }
-
             if (toMonitor[OutputFileSpec.HOST] == true) {
                 for (host in this.service.hosts) {
                     val hostSample = this.hostSampler.sample(now, host)

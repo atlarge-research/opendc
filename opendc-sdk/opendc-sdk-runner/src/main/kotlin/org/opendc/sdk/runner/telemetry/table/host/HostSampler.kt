@@ -73,6 +73,7 @@ public class HostSampler {
         return HostSample(
             hostId = host.id,
             timestamp = timestamp,
+            hostState = host.state,
             tasksTerminated = tasksTerminated,
             tasksActive = tasksActive,
             guestsError = guestsError,

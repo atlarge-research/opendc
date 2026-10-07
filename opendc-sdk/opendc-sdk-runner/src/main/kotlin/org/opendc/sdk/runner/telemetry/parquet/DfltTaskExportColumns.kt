@@ -30,6 +30,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
+import org.opendc.simulator.compute.task.TaskState
 import org.opendc.trace.parquet.exporter.ExportColumn
 
 /**
@@ -102,37 +103,37 @@ public object DfltTaskExportColumns {
 
     public val GPU_LIMIT: ExportColumn<TaskSample> =
         ExportColumn(
-            field = Types.optional(FLOAT).named("gpu_limit"),
+            field = Types.required(FLOAT).named("gpu_limit"),
         ) { it.gpuLimit }
 
     public val GPU_USAGE: ExportColumn<TaskSample> =
         ExportColumn(
-            field = Types.optional(FLOAT).named("gpu_usage"),
+            field = Types.required(FLOAT).named("gpu_usage"),
         ) { it.gpuUsage }
 
     public val GPU_DEMAND: ExportColumn<TaskSample> =
         ExportColumn(
-            field = Types.optional(FLOAT).named("gpu_demand"),
+            field = Types.required(FLOAT).named("gpu_demand"),
         ) { it.gpuDemand }
 
     public val GPU_TIME_ACTIVE: ExportColumn<TaskSample> =
         ExportColumn(
-            field = Types.optional(INT64).named("gpu_time_active"),
+            field = Types.required(INT64).named("gpu_time_active"),
         ) { it.gpuActiveTime }
 
     public val GPU_TIME_IDLE: ExportColumn<TaskSample> =
         ExportColumn(
-            field = Types.optional(INT64).named("gpu_time_idle"),
+            field = Types.required(INT64).named("gpu_time_idle"),
         ) { it.gpuIdleTime }
 
     public val GPU_TIME_STEAL: ExportColumn<TaskSample> =
         ExportColumn(
-            field = Types.optional(INT64).named("gpu_time_steal"),
+            field = Types.required(INT64).named("gpu_time_steal"),
         ) { it.gpuStealTime }
 
     public val GPU_TIME_LOST: ExportColumn<TaskSample> =
         ExportColumn(
-            field = Types.optional(INT64).named("gpu_time_lost"),
+            field = Types.required(INT64).named("gpu_time_lost"),
         ) { it.gpuLostTime }
 
     public val UP_TIME: ExportColumn<TaskSample> =
@@ -165,33 +166,47 @@ public object DfltTaskExportColumns {
             field = Types.optional(INT64).named("finish_time"),
         ) { it.finishTime }
 
+    /**
+     * The names of the task states, indexed by ordinal, so that exporting a state does not allocate.
+     */
+    private val TASK_STATE_NAMES = TaskState.entries.map { Binary.fromString(it.name) }
+
     public val TASK_STATE: ExportColumn<TaskSample> =
         ExportColumn(
             field =
-                Types.optional(BINARY)
+                Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("task_state"),
-        ) {
-            if (it.taskState == null) {
-                return@ExportColumn Binary.fromString("")
-            }
-            return@ExportColumn Binary.fromString(it.taskState!!.name)
-        }
+        ) { TASK_STATE_NAMES[it.taskState.ordinal] }
 
     public val schedulingDelay: ExportColumn<TaskSample> =
         ExportColumn(
-            field = Types.optional(INT64).named("scheduling_delay"),
+            field = Types.required(INT64).named("scheduling_delay"),
         ) { it.schedulingDelay }
 
     public val failureDelay: ExportColumn<TaskSample> =
         ExportColumn(
-            field = Types.optional(INT64).named("failure_delay"),
+            field = Types.required(INT64).named("failure_delay"),
         ) { it.failureDelay }
 
     public val checkpointDelay: ExportColumn<TaskSample> =
         ExportColumn(
-            field = Types.optional(INT64).named("checkpoint_delay"),
+            field = Types.required(INT64).named("checkpoint_delay"),
         ) { it.checkpointDelay }
+
+    /**
+     * The GPU columns, which are only exported by default if the topology has GPUs.
+     */
+    internal val GPU_COLUMNS =
+        setOf(
+            GPU_LIMIT,
+            GPU_USAGE,
+            GPU_DEMAND,
+            GPU_TIME_ACTIVE,
+            GPU_TIME_IDLE,
+            GPU_TIME_STEAL,
+            GPU_TIME_LOST,
+        )
 
     /**
      * The columns that are always included in the output file.

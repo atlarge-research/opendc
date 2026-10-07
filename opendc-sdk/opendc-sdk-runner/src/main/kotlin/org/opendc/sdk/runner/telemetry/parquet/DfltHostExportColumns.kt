@@ -22,11 +22,16 @@
 
 package org.opendc.sdk.runner.telemetry.parquet
 
+import org.apache.parquet.io.api.Binary
+import org.apache.parquet.schema.LogicalTypeAnnotation
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
+import org.opendc.simulator.compute.models.HostState
 import org.opendc.trace.parquet.exporter.ExportColumn
 
 /**
@@ -54,6 +59,19 @@ public object DfltHostExportColumns {
         ExportColumn(
             field = Types.required(INT32).named("host_id"),
         ) { it.hostId }
+
+    /**
+     * The names of the host states, indexed by ordinal, so that exporting a state does not allocate.
+     */
+    private val HOST_STATE_NAMES = HostState.entries.map { Binary.fromString(it.name) }
+
+    public val HOST_STATE: ExportColumn<HostSample> =
+        ExportColumn(
+            field =
+                Types.required(BINARY)
+                    .`as`(LogicalTypeAnnotation.stringType())
+                    .named("host_state"),
+        ) { HOST_STATE_NAMES[it.hostState.ordinal] }
 
     public val TASKS_TERMINATED: ExportColumn<HostSample> =
         ExportColumn(
@@ -151,37 +169,43 @@ public object DfltHostExportColumns {
         ) { it.bootTime?.toEpochMilli() }
 
     /**
-     * Returns GPU-related export columns for the given number of GPUs.
+     * A metric that is exported once per GPU of a host.
      */
-    public fun gpuColumns(count: Int): Set<ExportColumn<HostSample>> =
+    private class GpuMetric(val name: String, val type: PrimitiveTypeName, val value: (HostSample, Int) -> Any?)
+
+    private val GPU_METRIC_DEFINITIONS =
+        listOf(
+            GpuMetric("gpu_usage", FLOAT) { sample, i -> sample.gpuUsages.getOrNull(i) },
+            GpuMetric("gpu_demand", FLOAT) { sample, i -> sample.gpuDemands.getOrNull(i) },
+            GpuMetric("gpu_utilization", FLOAT) { sample, i -> sample.gpuUtilizations.getOrNull(i) },
+            GpuMetric("gpu_time_active", INT64) { sample, i -> sample.gpuActiveTimes.getOrNull(i) },
+            GpuMetric("gpu_time_idle", INT64) { sample, i -> sample.gpuIdleTimes.getOrNull(i) },
+            GpuMetric("gpu_time_steal", INT64) { sample, i -> sample.gpuStealTimes.getOrNull(i) },
+            GpuMetric("gpu_time_lost", INT64) { sample, i -> sample.gpuLostTimes.getOrNull(i) },
+            GpuMetric("gpu_power_draw", FLOAT) { sample, i -> sample.gpuPowerDraws.getOrNull(i) },
+        )
+
+    /**
+     * The names of the metrics that are exported once per GPU. The column of a metric for GPU `i` is named
+     * `<metric>_<i>`, e.g. `gpu_usage_0`.
+     */
+    public val GPU_METRICS: List<String> = GPU_METRIC_DEFINITIONS.map { it.name }
+
+    /**
+     * Returns the columns of the given GPU [metrics] for each of [count] GPUs. The columns are generated for the topology
+     * of a single simulation, so they are not registered.
+     */
+    public fun gpuColumns(
+        count: Int,
+        metrics: Collection<String> = GPU_METRICS,
+    ): List<ExportColumn<HostSample>> =
         (0 until count).flatMap { i ->
-            listOf<ExportColumn<HostSample>>(
-                ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_usage_$i"),
-                ) { it.gpuUsages.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_demand_$i"),
-                ) { it.gpuDemands.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_utilization_$i"),
-                ) { it.gpuUtilizations.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(INT64).named("gpu_time_active_$i"),
-                ) { it.gpuActiveTimes.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(INT64).named("gpu_time_idle_$i"),
-                ) { it.gpuIdleTimes.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(INT64).named("gpu_time_steal_$i"),
-                ) { it.gpuStealTimes.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(INT64).named("gpu_time_lost_$i"),
-                ) { it.gpuLostTimes.getOrNull(i) },
-                ExportColumn(
-                    field = Types.optional(FLOAT).named("gpu_power_draw_$i"),
-                ) { it.gpuPowerDraws.getOrNull(i) },
-            )
-        }.toSet()
+            GPU_METRIC_DEFINITIONS.filter { it.name in metrics }.map { metric ->
+                ExportColumn<HostSample>(field = Types.optional(metric.type).named("${metric.name}_$i"), register = false) {
+                    metric.value(it, i)
+                }
+            }
+        }
 
     /**
      * The columns that are always included in the output file.

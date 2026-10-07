@@ -4,6 +4,7 @@
   "task.task_name": "Name of the task as given in the workload trace.",
   "host.timestamp": "Simulation time of the sample, in milliseconds since the start of the simulation.",
   "host.host_id": "Identifier of the host within the run; `meta/host.parquet` maps it to the host's name and cluster.",
+  "host.host_state": "State of the host: `UP`, `DOWN` or `ERROR`.",
   "task.host_id": "Identifier of the host the task last ran on, or null if it has not been placed yet.",
   "powerSource.power_source_id": "Identifier of the power source within the run; `meta/powerSource.parquet` maps it to its name and data center.",
   "battery.battery_id": "Identifier of the battery within the run; `meta/battery.parquet` maps it to its name and data center.",

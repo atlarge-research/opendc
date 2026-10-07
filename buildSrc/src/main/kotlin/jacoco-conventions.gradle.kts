@@ -34,3 +34,10 @@ tasks.jacocoTestReport {
         html.required.set(true)
     }
 }
+
+tasks.withType<Test>().configureEach {
+    configure<JacocoTaskExtension> {
+        // Coverage is only reported for OpenDC's own classes, so instrumenting dependencies only slows the tests down
+        includes = listOf("org.opendc.*")
+    }
+}

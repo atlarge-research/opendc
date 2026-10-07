@@ -30,6 +30,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 import org.apache.parquet.schema.Types
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
+import org.opendc.simulator.compute.power.batteries.BatteryState
 import org.opendc.trace.parquet.exporter.ExportColumn
 
 /**
@@ -78,13 +79,18 @@ public object DfltBatteryExportColumns {
             field = Types.required(FLOAT).named("charge"),
         ) { it.charge }
 
+    /**
+     * The names of the battery states, indexed by ordinal, so that exporting a state does not allocate.
+     */
+    private val BATTERY_STATE_NAMES = BatteryState.entries.map { Binary.fromString(it.name) }
+
     public val BATTERY_STATE: ExportColumn<BatterySample> =
         ExportColumn(
             field =
-                Types.optional(BINARY)
+                Types.required(BINARY)
                     .`as`(LogicalTypeAnnotation.stringType())
                     .named("battery_state"),
-        ) { Binary.fromString(it.batteryState.name) }
+        ) { BATTERY_STATE_NAMES[it.batteryState.ordinal] }
 
     /**
      * The columns that are always included in the output file.
