@@ -134,6 +134,7 @@ public class ParquetMetricExporter(
          * @param[base]         parent pathname for output file.
          * @param[partition]    child pathname for output file.
          * @param[bufferSize]   size of the buffer used by the writer thread.
+         * @param[writerThreads] the number of threads that write each of the task and host files.
          */
         public operator fun invoke(
             base: File,
@@ -141,6 +142,7 @@ public class ParquetMetricExporter(
             bufferSize: Int,
             filesToExport: Map<OutputFileSpec, Boolean>,
             computeExportConfig: ComputeExportConfig,
+            writerThreads: Int = 1,
         ): ParquetMetricExporter =
             invoke(
                 base = base,
@@ -154,6 +156,7 @@ public class ParquetMetricExporter(
                 powerSourceExportColumns = computeExportConfig.powerSourceExportColumns,
                 serviceExportColumns = computeExportConfig.serviceExportColumns,
                 taskExportColumns = computeExportConfig.taskExportColumns,
+                writerThreads = writerThreads,
             )
 
         /**
@@ -164,6 +167,8 @@ public class ParquetMetricExporter(
          * @param[base]         parent pathname for output file.
          * @param[partition]    child pathname for output file.
          * @param[bufferSize]   size of the buffer used by the writer thread.
+         * @param[writerThreads] the number of threads that write each of the task and host files, which grow with the
+         * size of the simulation. The other files are written by a single thread.
          */
         public operator fun invoke(
             base: File,
@@ -177,6 +182,7 @@ public class ParquetMetricExporter(
             powerSourceExportColumns: Collection<ExportColumn<PowerSourceSample>>? = null,
             serviceExportColumns: Collection<ExportColumn<ServiceSample>>? = null,
             taskExportColumns: Collection<ExportColumn<TaskSample>>? = null,
+            writerThreads: Int = 1,
         ): ParquetMetricExporter {
             // Loads the fields in case they need to be retrieved if optional params are omitted.
             ComputeExportConfig.loadDfltColumns()
@@ -220,6 +226,7 @@ public class ParquetMetricExporter(
                         outputFile = File(base, "$partition/host.parquet").also { it.parentFile.mkdirs() },
                         columns = hostExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
+                        writerThreads = writerThreads,
                     )
                 } else {
                     null
@@ -253,6 +260,7 @@ public class ParquetMetricExporter(
                         outputFile = File(base, "$partition/task.parquet").also { it.parentFile.mkdirs() },
                         columns = taskExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
+                        writerThreads = writerThreads,
                     )
                 } else {
                     null

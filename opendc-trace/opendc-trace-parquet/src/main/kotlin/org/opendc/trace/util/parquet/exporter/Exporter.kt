@@ -43,12 +43,14 @@ public class Exporter<T : Exportable>
     @PublishedApi
     internal constructor(
         outputFile: File,
-        writeSupp: WriteSupport<T>,
+        writeSupp: () -> WriteSupport<T>,
         bufferSize: Int,
+        writerThreads: Int,
     ) : ParquetDataWriter<T>(
             path = outputFile,
             writeSupport = writeSupp,
             bufferSize = bufferSize,
+            writerThreads = writerThreads,
         ) {
         public companion object {
             /**
@@ -56,36 +58,65 @@ public class Exporter<T : Exportable>
              * @param[outputFile]   the output file where the [Exportable]s will be written.
              * @param[columns]       the columns that will be included in the output parquet file.
              * @param[schemaName]   the name of the schema of the output parquet file.
+             * @param[bufferSize]   the maximum number of records waiting to be written.
+             * @param[writerThreads] the number of threads that write the records.
              */
             public inline operator fun <reified T : Exportable> invoke(
                 outputFile: File,
                 vararg columns: ExportColumn<T> = emptyArray(),
                 schemaName: String? = null,
                 bufferSize: Int = 4096,
-            ): Exporter<T> =
-                Exporter(
+                writerThreads: Int = 1,
+            ): Exporter<T> {
+                val columnSet = checkColumns(columns.toSet())
+                val name = schemaName ?: T::class.simpleName ?: "unknown"
+                return Exporter(
                     outputFile = outputFile,
-                    writeSupp = writeSuppFor(columns.toSet(), schemaName = schemaName ?: T::class.simpleName ?: "unknown"),
+                    writeSupp = { writeSuppFor(columnSet, schemaName = name) },
                     bufferSize = bufferSize,
+                    writerThreads = writerThreads,
                 )
+            }
 
             /**
              * Reified constructor that allows to use the runtime [Class.getSimpleName] name of [T] as the schema name.
              * @param[outputFile]   the output file where the [Exportable]s will be written.
              * @param[columns]       the columns that will be included in the output parquet file.
              * @param[schemaName]   the name of the schema of the output parquet file.
+             * @param[bufferSize]   the maximum number of records waiting to be written.
+             * @param[writerThreads] the number of threads that write the records.
              */
             public inline operator fun <reified T : Exportable> invoke(
                 outputFile: File,
                 columns: Collection<ExportColumn<T>> = emptySet(),
                 schemaName: String? = null,
                 bufferSize: Int = 4096,
-            ): Exporter<T> =
-                Exporter(
+                writerThreads: Int = 1,
+            ): Exporter<T> {
+                val columnSet = checkColumns(columns.toSet())
+                val name = schemaName ?: T::class.simpleName ?: "unknown"
+                return Exporter(
                     outputFile = outputFile,
-                    writeSupp = writeSuppFor(columns.toSet(), schemaName = schemaName ?: T::class.simpleName ?: "unknown"),
+                    writeSupp = { writeSuppFor(columnSet, schemaName = name) },
                     bufferSize = bufferSize,
+                    writerThreads = writerThreads,
                 )
+            }
+
+            /**
+             * Check that the exporter can write [columns], when it is created rather than when its writer threads start.
+             *
+             * @return [columns].
+             */
+            @PublishedApi
+            internal fun <T : Exportable> checkColumns(columns: Set<ExportColumn<T>>): Set<ExportColumn<T>> {
+                for (column in columns) {
+                    require(column.primitiveTypeName in SUPPORTED_TYPES) {
+                        "Parquet primitive type '${column.primitiveTypeName}' of column ${column.name} is not supported"
+                    }
+                }
+                return columns
+            }
 
             /**
              * @return an anonymous [WriteSupport] for [T] with only the columns included in [columns].
@@ -156,12 +187,9 @@ private class ColumnWriter<T : Exportable>(column: ExportColumn<T>, val index: I
     val type: PrimitiveTypeName = column.primitiveTypeName
     val isOptional: Boolean = column.field.isRepetition(Type.Repetition.OPTIONAL)
     val getValue: (T) -> Any? = column.getValue
-
-    init {
-        require(type in SUPPORTED_TYPES) { "Parquet primitive type '$type' of column $name is not supported" }
-    }
-
-    private companion object {
-        val SUPPORTED_TYPES = setOf(INT32, INT64, FLOAT, DOUBLE, BINARY, BOOLEAN)
-    }
 }
+
+/**
+ * The Parquet primitive types the [Exporter] can write.
+ */
+private val SUPPORTED_TYPES = setOf(INT32, INT64, FLOAT, DOUBLE, BINARY, BOOLEAN)

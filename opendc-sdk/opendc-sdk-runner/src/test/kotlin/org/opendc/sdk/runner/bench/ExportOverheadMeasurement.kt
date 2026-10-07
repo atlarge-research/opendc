@@ -25,6 +25,7 @@ package org.opendc.sdk.runner.bench
 import jdk.jfr.Configuration
 import jdk.jfr.Recording
 import org.apache.parquet.hadoop.ParquetFileReader
+import org.apache.parquet.hadoop.ParquetFileWriter
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 import org.opendc.sdk.model.dsl.mhz
@@ -55,6 +56,7 @@ import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
 import org.opendc.sdk.runner.telemetry.table.task.TaskMeta
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
 import org.opendc.trace.parquet.LocalInputFile
+import org.opendc.trace.parquet.LocalOutputFile
 import org.opendc.trace.parquet.exporter.ExportColumn
 import java.io.File
 import java.lang.management.ManagementFactory
@@ -72,7 +74,8 @@ import kotlin.io.path.walk
  * Run with `OPENDC_EXPORT_BENCH=<mode>`, and optionally `OPENDC_BENCH_TRACE` (default `borg_day`), `OPENDC_BENCH_ROOT`
  * (default `traces/` at the repository root, which is ignored by Git), `OPENDC_BENCH_JFR=1` and `OPENDC_BENCH_TASK_GPU=1`,
  * which selects every task column, so that the task GPU columns are written although the topology has no GPUs (variant
- * `task-gpu`, the columns before they were left out for topologies without GPUs). Results are appended to
+ * `task-gpu`, the columns before they were left out for topologies without GPUs) and `OPENDC_BENCH_WRITER_THREADS`, the
+ * number of threads writing each of the task and host files (variant `threads=<n>`). Results are appended to
  * `build/export-bench.csv`. Setting `OPENDC_EXPORT_BENCH` also disables the JaCoCo agent on the test task.
  *
  * In `parquet` mode, how each column was encoded and how large it is is written to `build/export-bench-columns-<trace>.csv`.
@@ -88,6 +91,7 @@ class ExportOverheadMeasurement {
         val root = System.getenv("OPENDC_BENCH_ROOT")?.let { Path.of(it) } ?: repositoryRoot().resolve("traces")
         val jfr = System.getenv("OPENDC_BENCH_JFR") == "1"
         val taskGpu = System.getenv("OPENDC_BENCH_TASK_GPU") == "1"
+        val writerThreads = System.getenv("OPENDC_BENCH_WRITER_THREADS")?.toInt() ?: 1
 
         val scenario =
             scenario {
@@ -112,7 +116,7 @@ class ExportOverheadMeasurement {
             when (mode) {
                 "none" -> emptyList()
                 "discard" -> listOf(discard)
-                else -> listOf(ParquetSink(output))
+                else -> listOf(ParquetSink(output, writerThreads = writerThreads))
             }
 
         val threads = ManagementFactory.getThreadMXBean()
@@ -152,7 +156,8 @@ class ExportOverheadMeasurement {
             listOf(
                 trace, mode, wallMs, simCpuMs, wallMs - simCpuMs, processCpuMs, gcPauseMs, gcCount,
                 discard.taskCount, discard.rows, discard.taskRows, outputBytes, allowedCpus(),
-                if (taskGpu) "task-gpu" else "default",
+                listOfNotNull(if (taskGpu) "task-gpu" else "default", "threads=$writerThreads".takeIf { writerThreads > 1 })
+                    .joinToString(";"),
             ).joinToString(",")
 
         val results = File("build/export-bench.csv")
@@ -166,7 +171,9 @@ class ExportOverheadMeasurement {
         println(line)
 
         if (mode == "parquet") {
-            writeColumnBreakdown(trace, output.resolve("export-bench/raw-output/0/seed=0"))
+            val runDirectory = output.resolve("export-bench/raw-output/0/seed=0")
+            writeColumnBreakdown(trace, runDirectory)
+            measureMerge(trace, writerThreads, runDirectory)
         }
 
         if (mode == "discard") {
@@ -208,6 +215,40 @@ class ExportOverheadMeasurement {
             }
         }
         File("build/export-bench-columns-$trace.csv").writeText(lines.joinToString("\n", postfix = "\n"))
+    }
+
+    /**
+     * Time copying every row group of the task and host files into a new file, which is the work of merging the part
+     * files of several writer threads, both to a file next to the output (in `/tmp`) and to a file on the disk of the
+     * repository (in `build/`). The results are appended to `build/export-bench-merge.csv`.
+     */
+    private fun measureMerge(
+        trace: String,
+        writerThreads: Int,
+        runDirectory: Path,
+    ) {
+        val results = File("build/export-bench-merge.csv")
+        if (!results.exists()) {
+            results.writeText("trace,writer_threads,file,bytes,tmp_ms,disk_ms\n")
+        }
+
+        for (name in listOf("task.parquet", "host.parquet")) {
+            val source = runDirectory.resolve(name)
+            val times =
+                listOf(runDirectory.resolve(".merge-check.parquet"), Path.of("build/merge-check.parquet")).map { target ->
+                    val start = System.nanoTime()
+                    val metadata = ParquetFileReader.open(LocalInputFile(source)).use { it.footer.fileMetaData }
+                    val writer =
+                        ParquetFileWriter(LocalOutputFile(target), metadata.schema, ParquetFileWriter.Mode.OVERWRITE, 128L shl 20, 0)
+                    writer.start()
+                    writer.appendFile(LocalInputFile(source))
+                    writer.end(metadata.keyValueMetaData)
+                    val ms = (System.nanoTime() - start) / 1_000_000
+                    Files.delete(target)
+                    ms
+                }
+            results.appendText("$trace,$writerThreads,$name,${Files.size(source)},${times[0]},${times[1]}\n")
+        }
     }
 
     /**

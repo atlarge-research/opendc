@@ -37,12 +37,16 @@ import java.nio.file.Path
  *
  * @property root The output root directory.
  * @property bufferSize The writer's buffer size in records.
+ * @property writerThreads The number of threads that write each of the task and host files. More threads shorten a
+ * large simulation when cores are idle, but use more memory and do not help when the cores are busy running
+ * simulations in parallel.
  */
 public class ParquetSink
     @JvmOverloads
     constructor(
         private val root: Path,
         private val bufferSize: Int = 4096,
+        private val writerThreads: Int = 1,
     ) : OutputSink {
         override fun open(context: RunContext): SinkSession {
             val export = context.export
@@ -55,6 +59,7 @@ public class ParquetSink
                     bufferSize,
                     export.filesToExport,
                     export.config,
+                    writerThreads,
                 )
             return object : SinkSession {
                 override val monitor: MetricExporter = parquetMonitor

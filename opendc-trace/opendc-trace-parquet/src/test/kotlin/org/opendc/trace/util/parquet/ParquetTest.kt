@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
@@ -59,7 +60,12 @@ internal class ParquetTest {
                     .named("field"),
             )
             .named("test")
-    private val writeSupport =
+    private val writeSupport = createWriteSupport()
+
+    /**
+     * A [WriteSupport] holds the record consumer of its writer, so every writer needs its own.
+     */
+    private fun createWriteSupport() =
         object : WriteSupport<Int>() {
             lateinit var recordConsumer: RecordConsumer
 
@@ -82,7 +88,7 @@ internal class ParquetTest {
             }
         }
 
-    private val failingWriteSupport =
+    private fun createFailingWriteSupport() =
         object : WriteSupport<Int>() {
             override fun init(configuration: Configuration): WriteContext {
                 return WriteContext(schema, emptyMap())
@@ -189,7 +195,7 @@ internal class ParquetTest {
     @Timeout(10)
     fun testDataWriter() {
         val n = 10_000
-        val writer = object : ParquetDataWriter<Int>(path.toFile(), writeSupport, bufferSize = 16) {}
+        val writer = object : ParquetDataWriter<Int>(path.toFile(), ::createWriteSupport, bufferSize = 16) {}
 
         writer.use {
             repeat(n) { i ->
@@ -207,7 +213,7 @@ internal class ParquetTest {
     @Timeout(10)
     fun testDataWriterPartialBatch() {
         val n = 100
-        val writer = object : ParquetDataWriter<Int>(path.toFile(), writeSupport) {}
+        val writer = object : ParquetDataWriter<Int>(path.toFile(), ::createWriteSupport) {}
 
         writer.use {
             repeat(n) { i ->
@@ -224,7 +230,7 @@ internal class ParquetTest {
     @Test
     @Timeout(10)
     fun testDataWriterFailure() {
-        val writer = object : ParquetDataWriter<Int>(path.toFile(), failingWriteSupport, bufferSize = 1) {}
+        val writer = object : ParquetDataWriter<Int>(path.toFile(), ::createFailingWriteSupport, bufferSize = 1) {}
 
         assertThrows<IllegalStateException> {
             repeat(1000) { i ->
@@ -241,7 +247,7 @@ internal class ParquetTest {
     @Test
     @Timeout(10)
     fun testDataWriterCreationFailure() {
-        val writer = object : ParquetDataWriter<Int>(path.resolve("missing/file.parquet").toFile(), writeSupport, bufferSize = 1) {}
+        val writer = object : ParquetDataWriter<Int>(path.resolve("missing/file.parquet").toFile(), ::createWriteSupport, bufferSize = 1) {}
 
         assertThrows<IllegalStateException> {
             repeat(1000) { i ->
@@ -251,6 +257,54 @@ internal class ParquetTest {
 
         writer.close()
     }
+
+    /**
+     * Test whether a data writer with several writer threads writes every record to the output file and removes its
+     * part files.
+     */
+    @Test
+    @Timeout(10)
+    fun testDataWriterThreads() {
+        val n = 10_007
+        val writer = object : ParquetDataWriter<Int>(path.toFile(), ::createWriteSupport, bufferSize = 64, writerThreads = 3) {}
+
+        writer.use {
+            repeat(n) { i ->
+                writer.write(i)
+            }
+        }
+
+        assertAll(
+            { assertEquals((0 until n).toList(), readRecords().sorted()) },
+            { assertEquals(emptyList<Path>(), partFiles()) },
+        )
+    }
+
+    /**
+     * Test whether a failing writer thread of a data writer with several threads fails the writes, and whether the part
+     * files are removed.
+     */
+    @Test
+    @Timeout(10)
+    fun testDataWriterThreadsFailure() {
+        val writer = object : ParquetDataWriter<Int>(path.toFile(), ::createFailingWriteSupport, bufferSize = 2, writerThreads = 2) {}
+
+        assertThrows<IllegalStateException> {
+            repeat(1000) { i ->
+                writer.write(i)
+            }
+        }
+        writer.close()
+
+        assertEquals(emptyList<Path>(), partFiles())
+    }
+
+    private fun partFiles(): List<Path> =
+        Files.list(path.parent).use { files ->
+            files.filter {
+                it.fileName.toString().startsWith(".${path.fileName}.part-")
+            }.toList()
+        }
 
     private fun readRecords(): List<Int> =
         LocalParquetReader(

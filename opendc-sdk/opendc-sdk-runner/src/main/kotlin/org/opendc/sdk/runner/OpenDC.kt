@@ -105,13 +105,18 @@ public class OpenDC private constructor(
         /** Sets the provisioner that resolves external trace references (required). */
         public fun provisioner(provisioner: ResourceProvisioner): Builder = apply { this.provisioner = provisioner }
 
-        /** Adds a [ParquetSink] writing per-run parquet files under [root]. */
-        public fun output(root: Path): Builder =
+        /**
+         * Adds a [ParquetSink] writing per-run parquet files under [root], with [writerThreads] threads writing each of
+         * the task and host files.
+         */
+        @JvmOverloads
+        public fun output(
+            root: Path,
+            writerThreads: Int = 1,
+        ): Builder =
             apply {
-                sinks +=
-                    ParquetSink(
-                        root,
-                    )
+                require(writerThreads >= 1) { "writerThreads must be at least 1" }
+                sinks += ParquetSink(root, writerThreads = writerThreads)
             }
 
         /** Adds an output [sink]; sinks compose and all observe every run. */
