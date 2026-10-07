@@ -130,6 +130,12 @@ public class SimHost(
     private val tasks = LinkedHashSet<SimTask>()
 
     /**
+     * The number of [tasks] in each [TaskState], indexed by ordinal. It is kept up to date as tasks are spawned, deleted
+     * and change state, so that the statistics do not have to visit every task at every sample.
+     */
+    private val taskStateCounts = IntArray(TaskState.entries.size)
+
+    /**
      * Capacity reserved by the tasks spawned on this host, used by the schedulers.
      * Updated in [spawn] and [delete].
      */
@@ -249,7 +255,9 @@ public class SimHost(
     public fun spawn(task: SimTask) {
         require(canFit(task)) { "Task does not fit" }
 
-        tasks.add(task)
+        if (tasks.add(task)) {
+            taskStateCounts[task.state.ordinal]++
+        }
 
         // Reserve before starting, so a task that stops immediately is released in [delete]
         reserve(task)
@@ -261,6 +269,7 @@ public class SimHost(
         if (!tasks.remove(task)) {
             return
         }
+        taskStateCounts[task.state.ordinal]--
 
         task.host = null
         // Detach the machine, so a callback from it that arrives later is ignored by the task
@@ -294,6 +303,31 @@ public class SimHost(
     }
 
     /**
+     * Count the change of the state of [task] from [oldState], if it is on this host. Called by [SimTask] at every change
+     * of its state.
+     */
+    internal fun onTaskStateCountChanged(
+        task: SimTask,
+        oldState: TaskState,
+    ) {
+        if (task in tasks) {
+            taskStateCounts[oldState.ordinal]--
+            taskStateCounts[task.state.ordinal]++
+        }
+    }
+
+    /**
+     * Count the [tasks] in each state by visiting them, to check [taskStateCounts].
+     */
+    private fun countTaskStates(): IntArray {
+        val counts = IntArray(TaskState.entries.size)
+        for (task in tasks) {
+            counts[task.state.ordinal]++
+        }
+        return counts
+    }
+
+    /**
      * Notify the listeners that the state of [task], which runs on this host, has changed.
      */
     internal fun onTaskStateChanged(task: SimTask) {
@@ -311,18 +345,15 @@ public class SimHost(
         updateUptime()
         simMachine.psu.updateCounters()
 
-        var running = 0
-        var failed = 0
-        var invalid = 0
-
-        for (task in tasks) {
-            when (task.state) {
-                TaskState.RUNNING -> running++
-                TaskState.FAILED, TaskState.TERMINATED -> failed++
-                TaskState.COMPLETED, TaskState.PAUSED -> {}
-                else -> invalid++
-            }
+        if (CHECK_TASK_STATE_COUNTS) {
+            check(taskStateCounts.contentEquals(countTaskStates())) { "The task state counts of host $name are out of date" }
         }
+
+        val counts = taskStateCounts
+        val running = counts[TaskState.RUNNING.ordinal]
+        val failed = counts[TaskState.FAILED.ordinal] + counts[TaskState.TERMINATED.ordinal]
+        // The tasks in any other state than these are invalid on a host
+        val invalid = tasks.size - running - failed - counts[TaskState.COMPLETED.ordinal] - counts[TaskState.PAUSED.ordinal]
 
         return HostSystemStats(
             Duration.ofMillis(totalUptime),
@@ -507,3 +538,9 @@ public class SimHost(
         }
     }
 }
+
+/**
+ * Whether the task state counts of the hosts are checked against counting the tasks, at every sample. This happens when
+ * assertions are enabled, as in the tests.
+ */
+private val CHECK_TASK_STATE_COUNTS = SimHost::class.java.desiredAssertionStatus()
