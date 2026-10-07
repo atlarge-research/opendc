@@ -341,8 +341,15 @@ public class SimHost(
         )
     }
 
+    /**
+     * Whether [task] is running on this host. This is cheaper than looking it up in [tasks], which the exporters do for
+     * every task at every sample: a task on this host has it as its host and has a virtual machine, and [delete] clears
+     * both.
+     */
+    private fun hasTask(task: SimTask): Boolean = task.host === this && task.virtualMachine != null
+
     public fun getSystemStats(task: SimTask): GuestSystemStats? {
-        if (task !in tasks) {
+        if (!hasTask(task)) {
             return null
         }
 
@@ -370,7 +377,7 @@ public class SimHost(
     }
 
     public fun getCpuStats(task: SimTask): GuestCpuStats? {
-        if (task !in tasks) {
+        if (!hasTask(task)) {
             return null
         }
 
@@ -414,13 +421,13 @@ public class SimHost(
     }
 
     public fun getGpuStats(task: SimTask): GuestGpuStats? {
-        if (task !in tasks) {
+        if (!hasTask(task)) {
             return null
         }
 
         val virtualMachine = task.virtualMachine!!
-        virtualMachine.updateCounters(clock.millis())
         val counters = virtualMachine.gpuPerformanceCounters ?: return null
+        virtualMachine.updateCounters(clock.millis())
         val gpuLimit = simMachine.gpus?.firstOrNull()?.gpuModel?.totalCoreCapacity ?: 0.0
 
         return GuestGpuStats(
