@@ -24,8 +24,10 @@ package org.opendc.trace.parquet.exporter
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.api.WriteSupport
+import org.apache.parquet.io.api.Binary
 import org.apache.parquet.io.api.RecordConsumer
 import org.apache.parquet.schema.MessageType
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BOOLEAN
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.DOUBLE
@@ -102,52 +104,64 @@ public class Exporter<T : Exportable>
                             .addFields(*columns.map { it.field }.toTypedArray())
                             .named(schemaName)
 
+                    /**
+                     * The columns in schema order, with what is needed to write their values looked up once.
+                     */
+                    private val writers = columns.mapIndexed { index, column -> ColumnWriter(column, index) }.toTypedArray()
+
                     override fun init(configuration: Configuration): WriteContext = WriteContext(schema, emptyMap())
 
                     override fun prepareForWrite(recordConsumer: RecordConsumer) {
                         cons = recordConsumer
                     }
 
-                    override fun write(record: T) =
-                        with(cons) {
-                            startMessage()
+                    override fun write(record: T) {
+                        val cons = cons
+                        cons.startMessage()
 
-                            columns.forEachIndexed { idx, column ->
-                                fun <T> Any.castedOrThrow(): T {
-                                    @Suppress("UNCHECKED_CAST")
-                                    return (this as? T) ?: throw TypeCastException(
-                                        "attempt to add value of type ${this::class} to export " +
-                                            "field $column which requires a different type",
-                                    )
-                                }
-                                val valueToAdd: Any =
-                                    column.getValue(
-                                        record,
-                                    ) ?: let {
-                                        if (column.field.isRepetition(Type.Repetition.OPTIONAL)) {
-                                            return@forEachIndexed
-                                        } else {
-                                            throw RuntimeException("trying to insert null value in required column $column")
-                                        }
-                                    }
-
-                                startField(column.name, idx)
-                                when (column.primitiveTypeName) {
-                                    INT32 -> addInteger(valueToAdd.castedOrThrow())
-                                    INT64 -> addLong(valueToAdd.castedOrThrow())
-                                    DOUBLE -> addDouble(valueToAdd.castedOrThrow())
-                                    BINARY -> addBinary(valueToAdd.castedOrThrow())
-                                    FLOAT -> addFloat(valueToAdd.castedOrThrow())
-                                    BOOLEAN -> addBoolean(valueToAdd.castedOrThrow())
-                                    else -> throw RuntimeException(
-                                        "parquet primitive type name '${column.primitiveTypeName} is not supported",
-                                    )
-                                }
-                                endField(column.name, idx)
+                        for (writer in writers) {
+                            val value = writer.getValue(record)
+                            if (value == null) {
+                                check(writer.isOptional) { "trying to insert null value in required column ${writer.name}" }
+                                continue
                             }
 
-                            cons.endMessage()
+                            cons.startField(writer.name, writer.index)
+                            // Numbers are converted, e.g. a Double to the Float of a FLOAT column
+                            when (writer.type) {
+                                INT32 -> cons.addInteger((value as Number).toInt())
+                                INT64 -> cons.addLong((value as Number).toLong())
+                                FLOAT -> cons.addFloat((value as Number).toFloat())
+                                DOUBLE -> cons.addDouble((value as Number).toDouble())
+                                BINARY -> cons.addBinary(value as Binary)
+                                BOOLEAN -> cons.addBoolean(value as Boolean)
+                                else -> error("Parquet primitive type '${writer.type}' is not supported")
+                            }
+                            cons.endField(writer.name, writer.index)
                         }
+
+                        cons.endMessage()
+                    }
                 }
         }
     }
+
+/**
+ * A column of an [Exporter], with what is needed to write one of its values looked up once rather than per value.
+ *
+ * @param index The index of the column in the schema.
+ */
+private class ColumnWriter<T : Exportable>(column: ExportColumn<T>, val index: Int) {
+    val name: String = column.name
+    val type: PrimitiveTypeName = column.primitiveTypeName
+    val isOptional: Boolean = column.field.isRepetition(Type.Repetition.OPTIONAL)
+    val getValue: (T) -> Any? = column.getValue
+
+    init {
+        require(type in SUPPORTED_TYPES) { "Parquet primitive type '$type' of column $name is not supported" }
+    }
+
+    private companion object {
+        val SUPPORTED_TYPES = setOf(INT32, INT64, FLOAT, DOUBLE, BINARY, BOOLEAN)
+    }
+}
