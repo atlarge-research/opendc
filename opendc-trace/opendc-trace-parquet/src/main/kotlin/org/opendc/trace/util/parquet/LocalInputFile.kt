@@ -69,6 +69,19 @@ public class LocalInputFile(private val path: Path) : InputFile {
                 }
             }
 
+            // Without this, InputStream reads a range one byte at a time, which costs a system call per byte when Parquet
+            // copies the row groups of a file
+            override fun read(
+                bytes: ByteArray,
+                off: Int,
+                len: Int,
+            ): Int {
+                if (len == 0) {
+                    return 0
+                }
+                return channel.read(ByteBuffer.wrap(bytes, off, len))
+            }
+
             override fun getPos(): Long {
                 return channel.position()
             }
