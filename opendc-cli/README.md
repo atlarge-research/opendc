@@ -129,6 +129,9 @@ dashboard. Common options:
 ```
 -o, --output <dir>        Directory for the Parquet results (default: output).
 -p, --parallelism <n>     Number of runs to simulate concurrently (default: 1).
+    --writer-threads <n>  Threads writing each of the task and host files of a run (default: 1).
+                          More speed up one large run on an otherwise idle machine; keep 1 when
+                          running many runs in parallel.
     --no-progress         Disable the live dashboard (use for CI or piped output).
     --no-summary          Skip the in-memory metrics summary on very large sweeps.
 ```

@@ -48,7 +48,7 @@ internal class LocalBackend : SimulationBackend {
             request.experiment.planTaskCounts(provisioner).sumOf { it.taskCount.toLong() * it.scenario.runs }
         val progressState = ExperimentProgress(totalTasks)
 
-        val openDc = OpenDC.builder().provisioner(provisioner).output(request.output)
+        val openDc = OpenDC.builder().provisioner(provisioner).output(request.output, request.writerThreads)
         request.parallelism?.let { openDc.parallelism(it) }
         if (request.wantSummary) openDc.sink(InMemorySink(setOf(HOST, SERVICE, POWER_SOURCE)))
         openDc.sink(ProgressSink(progressState))
