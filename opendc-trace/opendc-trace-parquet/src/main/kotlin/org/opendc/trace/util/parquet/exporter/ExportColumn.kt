@@ -69,6 +69,11 @@ import kotlin.reflect.KClass
  * @param[exportableClass]
  * The [KClass] of the [Exportable]. Used for intuitive lof messages. This class
  * can be instantiated with inline constructor [Companion.invoke] without providing this parameter.
+ *
+ * @param[register]
+ * Whether the column is added to the columns that can be deserialized and that are returned by [getAllLoadedColumns].
+ * Columns that are generated for a single simulation, such as one per GPU of its topology, are not registered, so that
+ * they do not end up in the output of other simulations.
  */
 public class ExportColumn<T : Exportable>
     @PublishedApi
@@ -77,6 +82,7 @@ public class ExportColumn<T : Exportable>
         @PublishedApi internal val regex: Regex,
         @PublishedApi internal val exportableClass: KClass<T>,
         internal val getValue: (T) -> Any?,
+        register: Boolean = true,
     ) {
         /**
          * The name of the column (e.g. "timestamp").
@@ -89,8 +95,10 @@ public class ExportColumn<T : Exportable>
         public val primitiveTypeName: PrimitiveTypeName by lazy { field.asPrimitiveType().primitiveTypeName }
 
         init {
-            // Adds the column among those that can be deserialized.
-            addField(this)
+            if (register) {
+                // Adds the column among those that can be deserialized.
+                addField(this)
+            }
         }
 
         override fun toString(): String = "[ExportColumn: name=$name, exportable=${exportableClass.simpleName}]"
@@ -105,6 +113,7 @@ public class ExportColumn<T : Exportable>
             public inline operator fun <reified T : Exportable> invoke(
                 field: Type,
                 regex: Regex = Regex("\\s*(?:${field.name}|${field.name.replace('_', ' ')})\\s*", RegexOption.IGNORE_CASE),
+                register: Boolean = true,
                 noinline getValue: (T) -> Any?,
             ): ExportColumn<T> =
                 ExportColumn(
@@ -112,6 +121,7 @@ public class ExportColumn<T : Exportable>
                     getValue = getValue,
                     exportableClass = T::class,
                     regex = regex,
+                    register = register,
                 )
 
             /**

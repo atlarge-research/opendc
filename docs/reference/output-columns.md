@@ -26,6 +26,7 @@ All times (`timestamp`, `boot_time`, `schedule_time`, `finish_time` and `submiss
 | `embodied_carbon` | FLOAT |  |
 | `energy_usage` | FLOAT |  |
 | `host_id` | INT32 | Identifier of the host within the run; `meta/host.parquet` maps it to the host's name and cluster. |
+| `host_state` | BINARY | State of the host: `UP`, `DOWN` or `ERROR`. |
 | `power_draw` | FLOAT |  |
 | `tasks_error` | INT32 |  |
 | `tasks_invalid` | INT32 |  |

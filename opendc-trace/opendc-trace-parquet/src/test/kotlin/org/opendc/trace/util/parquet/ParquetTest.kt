@@ -39,6 +39,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
@@ -78,6 +79,19 @@ internal class ParquetTest {
                 consumer.addInteger(record)
                 consumer.endField("field", 0)
                 consumer.endMessage()
+            }
+        }
+
+    private val failingWriteSupport =
+        object : WriteSupport<Int>() {
+            override fun init(configuration: Configuration): WriteContext {
+                return WriteContext(schema, emptyMap())
+            }
+
+            override fun prepareForWrite(recordConsumer: RecordConsumer) {}
+
+            override fun write(record: Int) {
+                throw IllegalArgumentException("Test failure")
             }
         }
 
@@ -167,6 +181,82 @@ internal class ParquetTest {
             LocalParquetReader(path, readSupport)
         }
     }
+
+    /**
+     * Test whether the data writer writes every record before closing the file.
+     */
+    @Test
+    @Timeout(10)
+    fun testDataWriter() {
+        val n = 10_000
+        val writer = object : ParquetDataWriter<Int>(path.toFile(), writeSupport, bufferSize = 16) {}
+
+        writer.use {
+            repeat(n) { i ->
+                writer.write(i)
+            }
+        }
+
+        assertEquals((0 until n).toList(), readRecords())
+    }
+
+    /**
+     * Test whether the data writer writes the records of a batch that is not full yet when it is closed.
+     */
+    @Test
+    @Timeout(10)
+    fun testDataWriterPartialBatch() {
+        val n = 100
+        val writer = object : ParquetDataWriter<Int>(path.toFile(), writeSupport) {}
+
+        writer.use {
+            repeat(n) { i ->
+                writer.write(i)
+            }
+        }
+
+        assertEquals((0 until n).toList(), readRecords())
+    }
+
+    /**
+     * Test whether a failing writer thread fails the writes instead of blocking them.
+     */
+    @Test
+    @Timeout(10)
+    fun testDataWriterFailure() {
+        val writer = object : ParquetDataWriter<Int>(path.toFile(), failingWriteSupport, bufferSize = 1) {}
+
+        assertThrows<IllegalStateException> {
+            repeat(1000) { i ->
+                writer.write(i)
+            }
+        }
+
+        writer.close()
+    }
+
+    /**
+     * Test whether a writer thread that cannot create the file fails the writes instead of blocking them.
+     */
+    @Test
+    @Timeout(10)
+    fun testDataWriterCreationFailure() {
+        val writer = object : ParquetDataWriter<Int>(path.resolve("missing/file.parquet").toFile(), writeSupport, bufferSize = 1) {}
+
+        assertThrows<IllegalStateException> {
+            repeat(1000) { i ->
+                writer.write(i)
+            }
+        }
+
+        writer.close()
+    }
+
+    private fun readRecords(): List<Int> =
+        LocalParquetReader(
+            path,
+            readSupport,
+        ).use { reader -> generateSequence { reader.read() }.toList() }
 
     private class TestRecordMaterializer : RecordMaterializer<Int>() {
         private var current: Int = 0

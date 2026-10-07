@@ -22,13 +22,14 @@
 
 package org.opendc.sdk.runner.telemetry.table.host
 
+import org.opendc.simulator.compute.models.HostState
 import org.opendc.trace.parquet.exporter.Exportable
 import java.time.Instant
 
-// TODO: Host State is not present in HostSample
 public data class HostSample(
     public val hostId: Int = -1,
     public val timestamp: Instant = Instant.MIN,
+    public val hostState: HostState = HostState.DOWN,
     public val tasksTerminated: Int = -1,
     public val tasksActive: Int = -1,
     public val guestsError: Int = -1,
