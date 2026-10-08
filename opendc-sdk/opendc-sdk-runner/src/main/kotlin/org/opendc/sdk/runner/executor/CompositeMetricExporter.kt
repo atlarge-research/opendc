@@ -44,5 +44,7 @@ internal class CompositeMetricExporter(private val monitors: List<MetricExporter
 
     override fun export(reader: TaskSample): Unit = monitors.forEach { it.export(reader) }
 
+    override fun exportStateChange(reader: TaskSample): Unit = monitors.forEach { it.exportStateChange(reader) }
+
     override fun close(): Unit = monitors.forEach { if (it is AutoCloseable) it.close() }
 }

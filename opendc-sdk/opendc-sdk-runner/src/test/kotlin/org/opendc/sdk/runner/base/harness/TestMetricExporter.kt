@@ -29,6 +29,7 @@ import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
 import org.opendc.sdk.runner.telemetry.table.topology.TopologyMeta
 import org.opendc.simulator.compute.task.SimTask
+import org.opendc.simulator.compute.task.TaskState
 import org.opendc.simulator.compute.telemetry.TaskListener
 
 /**
@@ -41,6 +42,16 @@ class TestMetricExporter : MetricExporter, TaskListener {
     var taskCpuSupplied = mutableMapOf<Int, ArrayList<Double>>()
     var taskGpuDemands = mutableMapOf<Int, ArrayList<Double?>?>()
     var taskGpuSupplied = mutableMapOf<Int, ArrayList<Double?>?>()
+
+    /**
+     * Record the samples of a task at the changes of its state only when it finishes, so that the values of a task are
+     * recorded once per export interval while it runs, and once at its end.
+     */
+    override fun exportStateChange(reader: TaskSample) {
+        if (reader.taskState == TaskState.COMPLETED || reader.taskState == TaskState.TERMINATED) {
+            export(reader)
+        }
+    }
 
     override fun export(reader: TaskSample) {
         val taskName: Int = reader.taskId

@@ -37,6 +37,10 @@ All times (`timestamp`, `boot_time`, `schedule_time`, `finish_time` and `submiss
 
 ## `task.parquet` { #task }
 
+A task is sampled at every change of its state, and at every export interval while it runs. A task that does not run, such as one waiting to be scheduled, has no rows between the changes of its state: its state holds until its next row. The values of a row written at a change of state are those at that moment. A task that just started to run has no resource values yet, and the usage and demand of a task that does not run are 0.
+
+Several changes can happen at the same moment, such as a task failing, waiting to be scheduled again and starting on another host. Each gets its own row, with the same `timestamp`. The rows of a task are written in the order of its changes, also when several threads write the file, so read the file in its order to keep the order within a moment: sorting by `task_id` and `timestamp` alone does not keep it, and neither do tools that read a file in parallel, such as some query engines.
+
 | Column | Type | Description |
 |--------|------|-------------|
 | `checkpoint_delay` | INT64 |  |
@@ -64,7 +68,7 @@ All times (`timestamp`, `boot_time`, `schedule_time`, `finish_time` and `submiss
 | `scheduling_delay` | INT64 |  |
 | `task_id` | INT32 | Identifier of the task within the simulation. |
 | `task_name` | BINARY | Name of the task as given in the workload trace. |
-| `task_state` | BINARY |  |
+| `task_state` | BINARY | State of the task: `PROVISIONING`, `RUNNING`, `PAUSED`, `FAILED`, `COMPLETED` or `TERMINATED`. |
 | `timestamp` | INT64 | Simulation time of the sample, in milliseconds since the start of the simulation. |
 | `uptime` | INT64 |  |
 

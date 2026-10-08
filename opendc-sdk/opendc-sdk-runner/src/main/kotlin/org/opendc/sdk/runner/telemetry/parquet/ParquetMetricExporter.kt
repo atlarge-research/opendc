@@ -250,6 +250,8 @@ public class ParquetMetricExporter(
                         columns = hostExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
                         writerThreads = writerThreads,
+                        // The samples of a host are written by the same thread, so that they stay in order
+                        shardKey = { it.hostId },
                     )
                 } else {
                     null
@@ -284,6 +286,8 @@ public class ParquetMetricExporter(
                         columns = taskExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
                         writerThreads = writerThreads,
+                        // The samples of a task are written by the same thread, so that they stay in order
+                        shardKey = { it.taskId },
                     )
                 } else {
                     null

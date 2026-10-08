@@ -24,6 +24,7 @@ package org.opendc.sdk.runner.telemetry.table.task
 
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.compute.task.SimTask
+import org.opendc.simulator.compute.task.TaskState
 import java.time.Instant
 
 public class TaskSampler(
@@ -58,9 +59,13 @@ public class TaskSampler(
 
         val taskState = task.state
 
+        // A task that does not run uses and demands nothing. The machine of a run that just ended still reports its last
+        // usage and demand, so these are only taken from it while the task runs.
+        val isRunning = taskState == TaskState.RUNNING
+
         val cpuLimit = cpuStats?.capacity ?: 0.0
-        val cpuDemand = cpuStats?.demand ?: 0.0
-        val cpuUsage = cpuStats?.usage ?: 0.0
+        val cpuDemand = if (isRunning) cpuStats?.demand ?: 0.0 else 0.0
+        val cpuUsage = if (isRunning) cpuStats?.usage ?: 0.0 else 0.0
         val cpuActiveTime = cpuStats?.activeTime ?: 0L
         val cpuIdleTime = cpuStats?.idleTime ?: 0L
         val cpuStealTime = cpuStats?.stealTime ?: 0L
@@ -76,8 +81,10 @@ public class TaskSampler(
 
         if (gpuStats != null) {
             gpuLimit = gpuStats.capacity
-            gpuUsage = gpuStats.usage
-            gpuDemand = gpuStats.demand
+            if (isRunning) {
+                gpuUsage = gpuStats.usage
+                gpuDemand = gpuStats.demand
+            }
             gpuActiveTime = gpuStats.activeTime
             gpuIdleTime = gpuStats.idleTime
             gpuStealTime = gpuStats.stealTime

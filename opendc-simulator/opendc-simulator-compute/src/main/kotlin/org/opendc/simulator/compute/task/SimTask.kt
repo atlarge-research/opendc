@@ -118,8 +118,8 @@ public class SimTask(
     private var watcher: TaskWatcher? = null
 
     /**
-     * The state of the task. Every change is reported to the [watcher] and to the [host], and failures and pauses are
-     * counted.
+     * The state of the task. Every change is reported to the [watcher] before it is applied, and to the [host] and the
+     * watchers of the [service] after, and failures and pauses are counted.
      */
     public var state: TaskState = TaskState.CREATED
         private set(newState) {
@@ -141,6 +141,7 @@ public class SimTask(
             val oldState = field
             field = newState
             host?.onTaskStateCountChanged(this, oldState)
+            service?.onTaskStateChanged(this)
         }
 
     /**

@@ -68,9 +68,17 @@ public interface MetricExporter {
     public fun export(reader: ServiceSample) {}
 
     /**
-     * Record an entry with the specified [reader].
+     * Record an entry with the specified [reader], taken at an export interval while the task runs.
      */
     public fun export(reader: TaskSample) {}
+
+    /**
+     * Record an entry with the specified [reader], taken at a change of the state of the task. By default it is recorded
+     * like the entries taken at an export interval.
+     */
+    public fun exportStateChange(reader: TaskSample) {
+        export(reader)
+    }
 
     /**
      * Export the run-level attributes of the simulation, such as the absolute time it starts at. Every exported time is

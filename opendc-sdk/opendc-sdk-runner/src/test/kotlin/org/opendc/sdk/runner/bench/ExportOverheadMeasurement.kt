@@ -177,7 +177,9 @@ class ExportOverheadMeasurement {
         }
 
         if (mode == "discard") {
-            File("build/export-bench-states.txt").appendText("$trace ${discard.taskStates}\n")
+            File("build/export-bench-states.txt").appendText(
+                "$trace ${discard.taskStates} tasks_in_service_per_sample=${discard.tasksInService}\n",
+            )
         }
     }
 
@@ -287,6 +289,10 @@ class ExportOverheadMeasurement {
         var taskRows = 0L
         val taskStates = sortedMapOf<String, Long>()
 
+        // The task rows if every task in the service were sampled at every export interval, as before tasks were only
+        // sampled at the changes of their state and while they run
+        var tasksInService = 0L
+
         override fun open(context: RunContext): SinkSession {
             taskCount = context.taskCount
             return object : SinkSession {
@@ -314,6 +320,7 @@ class ExportOverheadMeasurement {
 
                         override fun export(reader: ServiceSample) {
                             rows++
+                            tasksInService += reader.tasksPending + reader.tasksActive
                         }
 
                         override fun export(reader: TaskSample) {

@@ -733,13 +733,21 @@ class FlowDistributorTest {
             { assertEquals(0.0, monitor.taskCpuDemands[0]?.get(9)) { "The cpu demanded by task 0 at t=0 is incorrect" } },
             { assertEquals(1000.0, monitor.taskCpuSupplied[0]?.get(0)) { "The cpu supplied to task 0 at t=0 is incorrect" } },
             { assertEquals(0.0, monitor.taskCpuSupplied[0]?.get(9)) { "The cpu supplied to task 0 at t=0 is incorrect" } },
-            // task 1
-            { assertEquals(0.0, monitor.taskCpuDemands[1]?.get(1)) { "The cpu demanded by task 1 at t=1 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuDemands[1]?.get(10)) { "The cpu demanded by task 1 at t=10 is incorrect" } },
-            { assertEquals(0.0, monitor.taskCpuDemands[1]?.get(19)) { "The cpu demanded by task 1 at t=19 is incorrect" } },
-            { assertEquals(0.0, monitor.taskCpuSupplied[1]?.get(1)) { "The cpu supplied to task 1 at t=1 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskCpuSupplied[1]?.get(10)) { "The cpu supplied to task 1 at t=10 is incorrect" } },
-            { assertEquals(0.0, monitor.taskCpuSupplied[1]?.get(19)) { "The cpu supplied to task 1 at t=9 is incorrect" } },
+            // task 1, which waits for task 0 and is only sampled while it runs and when it completes
+            {
+                assertEquals(
+                    listOf(1000.0),
+                    monitor.taskCpuDemands[1]?.dropLast(1)?.distinct(),
+                ) { "The cpu demand of task 1 is incorrect" }
+            },
+            { assertEquals(0.0, monitor.taskCpuDemands[1]?.last()) { "The cpu demanded by task 1 when it completes is incorrect" } },
+            {
+                assertEquals(
+                    listOf(1000.0),
+                    monitor.taskCpuSupplied[1]?.dropLast(1)?.distinct(),
+                ) { "The cpu supply of task 1 is incorrect" }
+            },
+            { assertEquals(0.0, monitor.taskCpuSupplied[1]?.last()) { "The cpu supplied to task 1 when it completes is incorrect" } },
             // host
             { assertEquals(1000.0, monitor.hostCpuDemands["H01"]?.get(1)) { "The cpu demanded by the host at t=1 is incorrect" } },
             { assertEquals(1000.0, monitor.hostCpuDemands["H01"]?.get(10)) { "The cpu demanded by the host at t=10 is incorrect" } },
@@ -751,13 +759,21 @@ class FlowDistributorTest {
             { assertEquals(0.0, monitor.taskGpuDemands[0]?.get(9)) { "The gpu demanded by task 0 is incorrect" } },
             { assertEquals(1000.0, monitor.taskGpuSupplied[0]?.get(0)) { "The gpu supplied to task 0 is incorrect" } },
             { assertEquals(0.0, monitor.taskGpuSupplied[0]?.get(9)) { "The gpu supplied to task 0 is incorrect" } },
-            // task 1
-            { assertEquals(0.0, monitor.taskGpuDemands[1]?.get(0)) { "The gpu demanded by task 1 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskGpuDemands[1]?.get(10)) { "The gpu demanded by task 1 is incorrect" } },
-            { assertEquals(0.0, monitor.taskGpuDemands[1]?.get(19)) { "The gpu supplied to task 1 is incorrect" } },
-            { assertEquals(0.0, monitor.taskGpuSupplied[1]?.get(0)) { "The gpu supplied to task 1 is incorrect" } },
-            { assertEquals(1000.0, monitor.taskGpuSupplied[1]?.get(10)) { "The gpu supplied to task 1 is incorrect" } },
-            { assertEquals(0.0, monitor.taskGpuSupplied[1]?.get(19)) { "The gpu supplied to task 1 is incorrect" } },
+            // task 1, which waits for task 0 and is only sampled while it runs and when it completes
+            {
+                assertEquals(
+                    listOf(1000.0),
+                    monitor.taskGpuDemands[1]?.dropLast(1)?.distinct(),
+                ) { "The gpu demand of task 1 is incorrect" }
+            },
+            { assertEquals(0.0, monitor.taskGpuDemands[1]?.last()) { "The gpu demanded by task 1 when it completes is incorrect" } },
+            {
+                assertEquals(
+                    listOf(1000.0),
+                    monitor.taskGpuSupplied[1]?.dropLast(1)?.distinct(),
+                ) { "The gpu supply of task 1 is incorrect" }
+            },
+            { assertEquals(0.0, monitor.taskGpuSupplied[1]?.last()) { "The gpu supplied to task 1 when it completes is incorrect" } },
             // host
             { assertEquals(1000.0, monitor.hostGpuDemands["H01"]?.get(1)?.get(0)) { "The gpu demanded by the host is incorrect" } },
             { assertEquals(1000.0, monitor.hostGpuDemands["H01"]?.get(10)?.get(0)) { "The gpu demanded by the host is incorrect" } },
