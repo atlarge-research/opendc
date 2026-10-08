@@ -36,7 +36,6 @@ public class HostSampler {
 
         val timestamp = now
 
-        val tasksTerminated = hostSysStats.guestsTerminated
         val tasksActive = hostSysStats.guestsRunning
         val guestsError = hostSysStats.guestsError
         val guestsInvalid = hostSysStats.guestsInvalid
@@ -74,7 +73,6 @@ public class HostSampler {
             hostId = host.id,
             timestamp = timestamp,
             hostState = host.state,
-            tasksTerminated = tasksTerminated,
             tasksActive = tasksActive,
             guestsError = guestsError,
             guestsInvalid = guestsInvalid,

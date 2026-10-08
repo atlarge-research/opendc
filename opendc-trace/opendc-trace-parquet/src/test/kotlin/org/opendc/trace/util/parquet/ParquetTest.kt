@@ -37,6 +37,7 @@ import org.apache.parquet.schema.Type
 import org.apache.parquet.schema.Types
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -277,6 +278,36 @@ internal class ParquetTest {
         assertAll(
             { assertEquals((0 until n).toList(), readRecords().sorted()) },
             { assertEquals(emptyList<Path>(), partFiles()) },
+        )
+    }
+
+    /**
+     * Test whether a data writer with several threads that routes the records by key writes the records of every key in
+     * the order they were written.
+     */
+    @Test
+    @Timeout(10)
+    fun testDataWriterThreadsByKey() {
+        val n = 10_007
+        val writer =
+            object : ParquetDataWriter<Int>(
+                path.toFile(),
+                ::createWriteSupport,
+                bufferSize = 64,
+                writerThreads = 3,
+                shardKey = { it % 7 },
+            ) {}
+
+        writer.use {
+            repeat(n) { i ->
+                writer.write(i)
+            }
+        }
+
+        val records = readRecords()
+        assertAll(
+            { assertEquals((0 until n).toList(), records.sorted()) },
+            { assertTrue((0 until 7).all { key -> records.filter { it % 7 == key }.let { it == it.sorted() } }) },
         )
     }
 

@@ -41,6 +41,7 @@ import org.opendc.sdk.runner.telemetry.table.task.TaskSample
 import org.opendc.trace.parquet.exporter.ExportColumn
 import org.opendc.trace.parquet.exporter.Exportable
 import java.time.Duration
+import java.util.concurrent.ConcurrentHashMap
 
 private val logger = KotlinLogging.logger {}
 
@@ -66,12 +67,12 @@ internal fun ExportSpec.toExportSettings(gpuCount: Int): ExportSettings =
 private fun ExportSpec.toComputeExportConfig(gpuCount: Int): ComputeExportConfig {
     ComputeExportConfig.loadDfltColumns()
     return ComputeExportConfig(
-        columns.battery.resolve<BatterySample>(),
-        columns.cluster.resolve<ClusterSample>(),
-        columns.dataCenter.resolve<DataCenterSample>(),
+        columns.battery.resolve<BatterySample>("battery"),
+        columns.cluster.resolve<ClusterSample>("cluster"),
+        columns.dataCenter.resolve<DataCenterSample>("dataCenter"),
         hostColumns(columns.host, gpuCount),
-        columns.powerSource.resolve<PowerSourceSample>(),
-        columns.service.resolve<ServiceSample>(),
+        columns.powerSource.resolve<PowerSourceSample>("powerSource"),
+        columns.service.resolve<ServiceSample>("service"),
         taskColumns(columns.task, gpuCount),
     )
 }
@@ -97,7 +98,7 @@ private fun hostColumns(
         count = 1
     }
 
-    return selection.resolve<HostSample>() + DfltHostExportColumns.gpuColumns(count, gpuMetrics)
+    return selection.resolve<HostSample>("host", DfltHostExportColumns.GPU_METRICS) + DfltHostExportColumns.gpuColumns(count, gpuMetrics)
 }
 
 /**
@@ -107,7 +108,7 @@ private fun taskColumns(
     selection: ColumnSelection,
     gpuCount: Int,
 ): List<ExportColumn<TaskSample>> {
-    val columns = selection.resolve<TaskSample>()
+    val columns = selection.resolve<TaskSample>("task")
     val gpuColumns = columns.filter { it in DfltTaskExportColumns.GPU_COLUMNS }
     if (gpuCount > 0 || gpuColumns.isEmpty()) {
         return columns
@@ -128,11 +129,44 @@ private fun warnNoGpus(
     logger.warn { "The topology has no GPUs, but the selected $table columns $columns are exported anyway" }
 }
 
-private inline fun <reified T : Exportable> ColumnSelection.resolve(): List<ExportColumn<T>> {
+/**
+ * The columns of this selection for the [table], whose columns can also be selected by the names in [otherNames]. A
+ * selected name that is not a column of the table is ignored with a warning.
+ */
+private inline fun <reified T : Exportable> ColumnSelection.resolve(
+    table: String,
+    otherNames: Collection<String> = emptyList(),
+): List<ExportColumn<T>> {
     val all = ExportColumn.getAllLoadedColumns<T>()
     return when (this) {
         AllColumns -> all
-        is OnlyColumns -> all.filter { it.name in columns }
+        is OnlyColumns -> {
+            warnUnknownColumns(table, columns, all.map { it.name } + otherNames)
+            all.filter { it.name in columns }
+        }
+    }
+}
+
+/**
+ * The warnings about unknown columns that have been logged, so that each is logged once rather than for every run.
+ */
+private val loggedUnknownColumns: MutableSet<String> = ConcurrentHashMap.newKeySet()
+
+private fun warnUnknownColumns(
+    table: String,
+    selected: Set<String>,
+    known: Collection<String>,
+) {
+    val unknown = selected - known.toSet()
+    if (unknown.isEmpty()) {
+        return
+    }
+
+    val message =
+        "The export model selects unknown $table columns ${unknown.sorted()}, which are not exported. " +
+            "The $table columns are ${known.distinct().sorted()}"
+    if (loggedUnknownColumns.add(message)) {
+        logger.warn { message }
     }
 }
 

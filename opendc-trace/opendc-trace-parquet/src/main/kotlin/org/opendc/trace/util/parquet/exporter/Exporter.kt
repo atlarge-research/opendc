@@ -46,11 +46,13 @@ public class Exporter<T : Exportable>
         writeSupp: () -> WriteSupport<T>,
         bufferSize: Int,
         writerThreads: Int,
+        shardKey: ((T) -> Int)?,
     ) : ParquetDataWriter<T>(
             path = outputFile,
             writeSupport = writeSupp,
             bufferSize = bufferSize,
             writerThreads = writerThreads,
+            shardKey = shardKey,
         ) {
         public companion object {
             /**
@@ -60,6 +62,8 @@ public class Exporter<T : Exportable>
              * @param[schemaName]   the name of the schema of the output parquet file.
              * @param[bufferSize]   the maximum number of records waiting to be written.
              * @param[writerThreads] the number of threads that write the records.
+             * @param[shardKey]     the key of a record that determines its writer thread, so that the records with the
+             * same key are written in order, or `null` to hand the records to the threads in batches in turn.
              */
             public inline operator fun <reified T : Exportable> invoke(
                 outputFile: File,
@@ -67,6 +71,7 @@ public class Exporter<T : Exportable>
                 schemaName: String? = null,
                 bufferSize: Int = 4096,
                 writerThreads: Int = 1,
+                noinline shardKey: ((T) -> Int)? = null,
             ): Exporter<T> {
                 val columnSet = checkColumns(columns.toSet())
                 val name = schemaName ?: T::class.simpleName ?: "unknown"
@@ -75,6 +80,7 @@ public class Exporter<T : Exportable>
                     writeSupp = { writeSuppFor(columnSet, schemaName = name) },
                     bufferSize = bufferSize,
                     writerThreads = writerThreads,
+                    shardKey = shardKey,
                 )
             }
 
@@ -85,6 +91,8 @@ public class Exporter<T : Exportable>
              * @param[schemaName]   the name of the schema of the output parquet file.
              * @param[bufferSize]   the maximum number of records waiting to be written.
              * @param[writerThreads] the number of threads that write the records.
+             * @param[shardKey]     the key of a record that determines its writer thread, so that the records with the
+             * same key are written in order, or `null` to hand the records to the threads in batches in turn.
              */
             public inline operator fun <reified T : Exportable> invoke(
                 outputFile: File,
@@ -92,6 +100,7 @@ public class Exporter<T : Exportable>
                 schemaName: String? = null,
                 bufferSize: Int = 4096,
                 writerThreads: Int = 1,
+                noinline shardKey: ((T) -> Int)? = null,
             ): Exporter<T> {
                 val columnSet = checkColumns(columns.toSet())
                 val name = schemaName ?: T::class.simpleName ?: "unknown"
@@ -100,6 +109,7 @@ public class Exporter<T : Exportable>
                     writeSupp = { writeSuppFor(columnSet, schemaName = name) },
                     bufferSize = bufferSize,
                     writerThreads = writerThreads,
+                    shardKey = shardKey,
                 )
             }
 

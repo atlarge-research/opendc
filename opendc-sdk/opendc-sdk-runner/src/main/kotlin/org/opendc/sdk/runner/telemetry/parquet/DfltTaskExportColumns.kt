@@ -66,11 +66,6 @@ public object DfltTaskExportColumns {
             field = Types.optional(INT32).named("host_id"),
         ) { it.hostId }
 
-    public val CPU_LIMIT: ExportColumn<TaskSample> =
-        ExportColumn(
-            field = Types.required(FLOAT).named("cpu_limit"),
-        ) { it.cpuLimit }
-
     public val CPU_USAGE: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("cpu_usage"),
@@ -101,11 +96,6 @@ public object DfltTaskExportColumns {
             field = Types.required(INT64).named("cpu_time_lost"),
         ) { it.cpuLostTime }
 
-    public val GPU_LIMIT: ExportColumn<TaskSample> =
-        ExportColumn(
-            field = Types.required(FLOAT).named("gpu_limit"),
-        ) { it.gpuLimit }
-
     public val GPU_USAGE: ExportColumn<TaskSample> =
         ExportColumn(
             field = Types.required(FLOAT).named("gpu_usage"),
@@ -135,16 +125,6 @@ public object DfltTaskExportColumns {
         ExportColumn(
             field = Types.required(INT64).named("gpu_time_lost"),
         ) { it.gpuLostTime }
-
-    public val UP_TIME: ExportColumn<TaskSample> =
-        ExportColumn(
-            field = Types.required(INT64).named("uptime"),
-        ) { it.uptime }
-
-    public val DOWN_TIME: ExportColumn<TaskSample> =
-        ExportColumn(
-            field = Types.required(INT64).named("downtime"),
-        ) { it.downtime }
 
     public val NUM_FAILURES: ExportColumn<TaskSample> =
         ExportColumn(
@@ -199,7 +179,6 @@ public object DfltTaskExportColumns {
      */
     internal val GPU_COLUMNS =
         setOf(
-            GPU_LIMIT,
             GPU_USAGE,
             GPU_DEMAND,
             GPU_TIME_ACTIVE,

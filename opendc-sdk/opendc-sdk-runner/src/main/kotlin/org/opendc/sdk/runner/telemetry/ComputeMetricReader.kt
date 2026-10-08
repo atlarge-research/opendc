@@ -38,8 +38,10 @@ import org.opendc.sdk.runner.telemetry.table.simulation.SimulationMeta
 import org.opendc.sdk.runner.telemetry.table.task.TaskMeta
 import org.opendc.sdk.runner.telemetry.table.task.TaskSampler
 import org.opendc.sdk.runner.telemetry.table.topology.TopologyMeta
+import org.opendc.simulator.compute.TaskWatcher
 import org.opendc.simulator.compute.service.ComputeService
 import org.opendc.simulator.compute.task.SimTask
+import org.opendc.simulator.compute.task.TaskState
 import org.opendc.simulator.compute.telemetry.TaskListener
 import org.opendc.simulator.core.Dispatcher
 import org.opendc.simulator.core.asCoroutineDispatcher
@@ -49,6 +51,9 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * A helper class to collect metrics from a [ComputeService] instance and automatically export the metrics every
  * export interval.
+ *
+ * A task is sampled at every change of its state, with the values at that moment, and every export interval while it
+ * runs. A task that does not run, such as one waiting to be scheduled, is only sampled when its state changes.
  *
  * @param dispatcher A [Dispatcher] for scheduling the future events.
  * @param service The [ComputeService] to monitor.
@@ -73,7 +78,7 @@ public class ComputeMetricReader(
             OutputFileSpec.TASK to true,
         ),
     private val printFrequency: Int? = null,
-) : AutoCloseable, TaskListener {
+) : AutoCloseable, TaskListener, TaskWatcher {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(dispatcher.asCoroutineDispatcher())
     private val clock = dispatcher.timeSource
@@ -110,10 +115,16 @@ public class ComputeMetricReader(
      */
     private var failure: Throwable? = null
 
+    /**
+     * A flag to indicate that the [monitor] has been closed, after which nothing is exported.
+     */
+    private var isMonitorClosed = false
+
     init {
-        // Registered here rather than in the job, which only starts once the simulation runs: a task deleted before
-        // that would otherwise never have its final sample exported.
+        // Registered here rather than in the job, which only starts once the simulation runs: the tasks submitted or
+        // deleted before that would otherwise miss their samples.
         service.addTaskListener(this)
+        service.addTaskWatcher(this)
     }
 
     /**
@@ -139,6 +150,7 @@ public class ComputeMetricReader(
                     if (failure == null) {
                         loggState()
                         exportRemainingTaskMeta()
+                        isMonitorClosed = true
                         if (monitor is AutoCloseable) {
                             monitor.close()
                         }
@@ -198,9 +210,15 @@ public class ComputeMetricReader(
         }
 
         if (toMonitor[OutputFileSpec.TASK] == true) {
-            for (task in this.service.tasks.values) {
-                val taskSample = this.taskSampler.sample(now, task)
-                this.monitor.export(taskSample)
+            // Only the tasks on the hosts are visited, as the service can hold many tasks that wait to be scheduled,
+            // which are sampled when their state changes
+            for (host in this.service.hosts) {
+                for (task in host.getInstances()) {
+                    if (task.state == TaskState.RUNNING) {
+                        val taskSample = this.taskSampler.sample(now, task)
+                        this.monitor.export(taskSample)
+                    }
+                }
             }
         }
 
@@ -241,6 +259,7 @@ public class ComputeMetricReader(
         }
 
         failure = cause
+        isMonitorClosed = true
         job.cancel()
 
         if (monitor is AutoCloseable) {
@@ -264,20 +283,35 @@ public class ComputeMetricReader(
     }
 
     override fun onTaskSubmission(task: SimTask) {
-        TODO("Not yet implemented")
+        // The submission of a task is sampled as the first change of its state
     }
 
-    override fun onTaskDeletion(task: SimTask) {
-        if (toMonitor[OutputFileSpec.TASK] != true || failure != null) {
+    /**
+     * Sample [task] at a change of its state, with the values at this moment. A task that just started to run has no
+     * resource values yet, and the deletion of a task is not sampled, as it has left its host and the service by then:
+     * the change before it, such as its completion, is its last sample.
+     */
+    override fun onStateChanged(
+        task: SimTask,
+        newState: TaskState,
+    ) {
+        if (toMonitor[OutputFileSpec.TASK] != true || isMonitorClosed || newState == TaskState.DELETED) {
             return
         }
 
         try {
-            val now = this.clock.instant()
+            this.monitor.exportStateChange(this.taskSampler.sample(this.clock.instant(), task))
+        } catch (cause: Throwable) {
+            failRun(cause)
+        }
+    }
 
-            val taskSample = this.taskSampler.sample(now, task)
-            this.monitor.export(taskSample)
+    override fun onTaskDeletion(task: SimTask) {
+        if (toMonitor[OutputFileSpec.TASK] != true || isMonitorClosed) {
+            return
+        }
 
+        try {
             // The task leaves the service, so this is the last moment to export its static attributes
             this.monitor.export(TaskMeta.of(task, startTime))
         } catch (cause: Throwable) {

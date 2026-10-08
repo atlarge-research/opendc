@@ -47,21 +47,25 @@ private const val BATCH_SIZE = 256
  * A writer that writes data in Parquet format.
  *
  * The records are written on separate threads, to which they are handed in batches. With more than one writer thread,
- * the batches are handed to the threads in turn, each thread writes its batches to a part file of its own in a hidden
- * directory next to the output file, and the part files are merged into the output file when the writer is closed, so
- * the rows of one part precede those of the next. [write] and [close] must be called from a single thread, and [close]
- * throws if a writer thread failed.
+ * each thread writes the batches it is handed to a part file of its own in a hidden directory next to the output file,
+ * and the part files are merged into the output file when the writer is closed, so the rows of one part precede those
+ * of the next. The records are routed to the threads by their [shardKey], so that the records with the same key are
+ * written in order, or without one, the batches are handed to the threads in turn. [write] and [close] must be called
+ * from a single thread, and [close] throws if a writer thread failed.
  *
  * @param path The path to the file to write the data to.
  * @param writeSupport Creates the [WriteSupport] that converts the records to Parquet format, once per writer thread.
  * @param bufferSize The maximum number of records waiting to be written.
  * @param writerThreads The number of threads that write the records.
+ * @param shardKey The key of a record that determines its writer thread, or `null` to hand the batches to the threads
+ * in turn.
  */
 public abstract class ParquetDataWriter<in T>(
     private val path: File,
     private val writeSupport: () -> WriteSupport<T>,
     bufferSize: Int = 4096,
     writerThreads: Int = 1,
+    private val shardKey: ((T) -> Int)? = null,
 ) : AutoCloseable {
     init {
         require(bufferSize > 0) { "Buffer size must be positive" }
@@ -100,12 +104,18 @@ public abstract class ParquetDataWriter<in T>(
     private val shards = files.map { Shard(it, max(1, bufferSize / batchSize / writerThreads)) }
 
     /**
-     * The records written since the last batch was handed to a writer thread.
+     * Whether the records are routed to the writer threads by their [shardKey].
      */
-    private var batch = ArrayList<Any?>(batchSize)
+    private val isRoutedByKey = shardKey != null && shards.size > 1
 
     /**
-     * The index of the writer thread the next batch is handed to.
+     * The records written since the last batch was handed to a writer thread: a batch per thread when the records are
+     * routed by their key, and otherwise a single batch.
+     */
+    private val batches = Array(if (isRoutedByKey) shards.size else 1) { ArrayList<Any?>(batchSize) }
+
+    /**
+     * The index of the writer thread the next batch is handed to, when the records are not routed by their key.
      */
     private var nextShard = 0
 
@@ -124,8 +134,10 @@ public abstract class ParquetDataWriter<in T>(
     public fun write(data: T) {
         check(!isClosed) { "Writer is closed" }
 
+        val index = if (isRoutedByKey) Math.floorMod(shardKey!!(data), shards.size) else 0
+        val batch = batches[index]
         batch.add(data)
-        if (exception != null || (batch.size >= batchSize && !offerBatch())) {
+        if (exception != null || (batch.size >= batchSize && !offerBatch(index))) {
             throw IllegalStateException("Writer thread failed", exception)
         }
     }
@@ -142,8 +154,10 @@ public abstract class ParquetDataWriter<in T>(
 
         isClosed = true
 
-        if (batch.isNotEmpty()) {
-            offerBatch()
+        for (index in batches.indices) {
+            if (batches[index].isNotEmpty()) {
+                offerBatch(index)
+            }
         }
 
         for (shard in shards) {
@@ -169,16 +183,20 @@ public abstract class ParquetDataWriter<in T>(
     }
 
     /**
-     * Hand the current batch to the next writer thread, and start a new one.
+     * Hand the batch at [index] to its writer thread, and start a new one.
      *
      * @return `false` if the writer thread stopped before the batch could be handed over.
      */
-    private fun offerBatch(): Boolean {
-        val full = batch
-        batch = ArrayList(batchSize)
+    private fun offerBatch(index: Int): Boolean {
+        val full = batches[index]
+        batches[index] = ArrayList(batchSize)
 
-        val shard = shards[nextShard]
-        nextShard = (nextShard + 1) % shards.size
+        val shard =
+            if (isRoutedByKey) {
+                shards[index]
+            } else {
+                shards[nextShard].also { nextShard = (nextShard + 1) % shards.size }
+            }
         return shard.offer(full)
     }
 
@@ -236,6 +254,9 @@ public abstract class ParquetDataWriter<in T>(
                         LocalParquetWriter.builder(file.toPath(), writeSupport())
                             .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
                             .withCompressionCodec(CompressionCodecName.ZSTD)
+                            // Floating-point values that are not dictionary encoded are split into a stream per byte,
+                            // as the bytes of similar values compress much better together
+                            .withByteStreamSplitEncoding(true)
                             .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
 
                     buildWriter(builder).use { writer ->

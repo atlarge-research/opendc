@@ -30,7 +30,6 @@ public data class HostSample(
     public val hostId: Int = -1,
     public val timestamp: Instant = Instant.MIN,
     public val hostState: HostState = HostState.DOWN,
-    public val tasksTerminated: Int = -1,
     public val tasksActive: Int = -1,
     public val guestsError: Int = -1,
     public val guestsInvalid: Int = -1,
@@ -56,5 +55,5 @@ public data class HostSample(
     public val embodiedCarbon: Double = -1.0,
     public val uptime: Long = -1L,
     public val downtime: Long = -1L,
-    public val bootTime: Instant = Instant.MIN,
+    public val bootTime: Instant? = null,
 ) : Exportable
