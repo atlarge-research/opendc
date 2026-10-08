@@ -254,6 +254,9 @@ public abstract class ParquetDataWriter<in T>(
                         LocalParquetWriter.builder(file.toPath(), writeSupport())
                             .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
                             .withCompressionCodec(CompressionCodecName.ZSTD)
+                            // Floating-point values that are not dictionary encoded are split into a stream per byte,
+                            // as the bytes of similar values compress much better together
+                            .withByteStreamSplitEncoding(true)
                             .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
 
                     buildWriter(builder).use { writer ->
