@@ -73,11 +73,6 @@ public object DfltHostExportColumns {
                     .named("host_state"),
         ) { HOST_STATE_NAMES[it.hostState.ordinal] }
 
-    public val TASKS_TERMINATED: ExportColumn<HostSample> =
-        ExportColumn(
-            field = Types.required(INT32).named("tasks_terminated"),
-        ) { it.tasksTerminated }
-
     public val TASKS_RUNNING: ExportColumn<HostSample> =
         ExportColumn(
             field = Types.required(INT32).named("tasks_running"),

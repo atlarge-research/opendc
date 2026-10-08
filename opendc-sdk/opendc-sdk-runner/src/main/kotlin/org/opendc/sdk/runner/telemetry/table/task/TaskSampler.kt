@@ -36,16 +36,11 @@ public class TaskSampler(
     ): TaskSample {
         val simHost = task.host
         val cpuStats = simHost?.getCpuStats(task)
-        val sysStats = simHost?.getSystemStats(task)
         val gpuStats = simHost?.getGpuStats(task)
 
         val hostId = task.hostId
 
         val timestamp = now
-
-        // TODO: This metric currently doesn't function well. It will round to the sample rate.
-        val uptime = sysStats?.uptime?.toMillis() ?: 0L
-        val downtime = sysStats?.downtime?.toMillis() ?: 0L
 
         val numFailures = task.numFailures
         val numPauses = task.numPauses
@@ -63,7 +58,6 @@ public class TaskSampler(
         // usage and demand, so these are only taken from it while the task runs.
         val isRunning = taskState == TaskState.RUNNING
 
-        val cpuLimit = cpuStats?.capacity ?: 0.0
         val cpuDemand = if (isRunning) cpuStats?.demand ?: 0.0 else 0.0
         val cpuUsage = if (isRunning) cpuStats?.usage ?: 0.0 else 0.0
         val cpuActiveTime = cpuStats?.activeTime ?: 0L
@@ -71,7 +65,6 @@ public class TaskSampler(
         val cpuStealTime = cpuStats?.stealTime ?: 0L
         val cpuLostTime = cpuStats?.lostTime ?: 0L
 
-        var gpuLimit = 0.0
         var gpuUsage = 0.0
         var gpuDemand = 0.0
         var gpuActiveTime = 0L
@@ -80,7 +73,6 @@ public class TaskSampler(
         var gpuLostTime = 0L
 
         if (gpuStats != null) {
-            gpuLimit = gpuStats.capacity
             if (isRunning) {
                 gpuUsage = gpuStats.usage
                 gpuDemand = gpuStats.demand
@@ -95,8 +87,6 @@ public class TaskSampler(
             taskId = task.id,
             hostId = hostId,
             timestamp = timestamp,
-            uptime = uptime,
-            downtime = downtime,
             numFailures = numFailures,
             numPauses = numPauses,
             scheduleTime = scheduleTime,
@@ -105,14 +95,12 @@ public class TaskSampler(
             failureDelay = failureDelay,
             checkpointDelay = checkpointDelay,
             taskState = taskState,
-            cpuLimit = cpuLimit,
             cpuUsage = cpuUsage,
             cpuDemand = cpuDemand,
             cpuActiveTime = cpuActiveTime,
             cpuIdleTime = cpuIdleTime,
             cpuStealTime = cpuStealTime,
             cpuLostTime = cpuLostTime,
-            gpuLimit = gpuLimit,
             gpuUsage = gpuUsage,
             gpuDemand = gpuDemand,
             gpuActiveTime = gpuActiveTime,

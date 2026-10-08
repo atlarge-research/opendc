@@ -31,7 +31,6 @@ All times (`timestamp`, `boot_time`, `schedule_time`, `finish_time` and `submiss
 | `tasks_error` | INT32 |  |
 | `tasks_invalid` | INT32 |  |
 | `tasks_running` | INT32 |  |
-| `tasks_terminated` | INT32 |  |
 | `timestamp` | INT64 | Simulation time of the sample, in milliseconds since the start of the simulation. |
 | `uptime` | INT64 |  |
 
@@ -45,17 +44,14 @@ Several changes can happen at the same moment, such as a task failing, waiting t
 |--------|------|-------------|
 | `checkpoint_delay` | INT64 |  |
 | `cpu_demand` | FLOAT |  |
-| `cpu_limit` | FLOAT |  |
 | `cpu_time_active` | INT64 |  |
 | `cpu_time_idle` | INT64 |  |
 | `cpu_time_lost` | INT64 |  |
 | `cpu_time_steal` | INT64 |  |
 | `cpu_usage` | FLOAT |  |
-| `downtime` | INT64 |  |
 | `failure_delay` | INT64 |  |
 | `finish_time` | INT64 | Last time the task completed, failed or was terminated, or null if none of these happened yet. |
 | `gpu_demand` | FLOAT |  |
-| `gpu_limit` | FLOAT |  |
 | `gpu_time_active` | INT64 |  |
 | `gpu_time_idle` | INT64 |  |
 | `gpu_time_lost` | INT64 |  |
@@ -70,7 +66,6 @@ Several changes can happen at the same moment, such as a task failing, waiting t
 | `task_name` | BINARY | Name of the task as given in the workload trace. |
 | `task_state` | BINARY | State of the task: `PROVISIONING`, `RUNNING`, `PAUSED`, `FAILED`, `COMPLETED` or `TERMINATED`. |
 | `timestamp` | INT64 | Simulation time of the sample, in milliseconds since the start of the simulation. |
-| `uptime` | INT64 |  |
 
 ## `powerSource.parquet` { #powerSource }
 
