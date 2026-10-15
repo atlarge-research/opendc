@@ -60,7 +60,7 @@ public val Number.gbps: DataRate get() = DataRate.ofGBps(this)
 public val Number.kibps: DataRate get() = DataRate.ofKibps(this)
 
 /** This number as a [TimeDelta] in milliseconds. */
-public val Number.ms: TimeDelta get() = TimeDelta.ofMillis(this)
+public val Number.ms: TimeDelta get() = TimeDelta.ofMs(this)
 
 /** This number as a [TimeDelta] in seconds. */
 public val Number.seconds: TimeDelta get() = TimeDelta.ofSec(this)

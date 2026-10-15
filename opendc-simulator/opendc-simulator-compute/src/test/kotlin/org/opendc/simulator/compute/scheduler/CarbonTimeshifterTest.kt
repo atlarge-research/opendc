@@ -47,7 +47,7 @@ internal class CarbonTimeshifterTest {
     ): SimTask {
         val task = mockk<SimTask>()
         every { task.deferrable } returns deferrable
-        every { task.duration } returns TimeDelta.ofMillis(duration)
+        every { task.duration } returns TimeDelta.ofMs(duration)
         every { task.deadline } returns Timestamp.ofEpochMs(deadline)
         return task
     }

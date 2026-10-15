@@ -57,7 +57,7 @@ public class FailureTraceLoader(private val pathToFile: File) {
 
                 val failure =
                     try {
-                        Failure(TimeDelta.ofMillis(failureInterval), TimeDelta.ofMillis(failureDuration), failureIntensity)
+                        Failure(TimeDelta.ofMs(failureInterval), TimeDelta.ofMs(failureDuration), failureIntensity)
                     } catch (e: IllegalArgumentException) {
                         throw IllegalArgumentException("Invalid failure in row ${failures.size} of $pathToFile: ${e.message}", e)
                     }

@@ -75,7 +75,7 @@ public suspend fun ComputeService.replay(
                 if (!submitImmediately) {
                     delay(max(0, start - now - simulationOffset).milliseconds)
                     if (task.deadline != SimTask.NO_DEADLINE) {
-                        task.deadline -= TimeDelta.ofMillis(simulationOffset)
+                        task.deadline -= TimeDelta.ofMs(simulationOffset)
                     }
                 }
                 launch {

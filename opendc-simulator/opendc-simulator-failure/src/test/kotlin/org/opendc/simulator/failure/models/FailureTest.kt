@@ -32,7 +32,7 @@ import org.opendc.common.units.TimeDelta
  * Verifies that a [Failure] only accepts values that let it advance the simulation clock.
  */
 class FailureTest {
-    private val Int.ms: TimeDelta get() = TimeDelta.ofMillis(this)
+    private val Int.ms: TimeDelta get() = TimeDelta.ofMs(this)
 
     @Test
     fun `a failure may start immediately`() {

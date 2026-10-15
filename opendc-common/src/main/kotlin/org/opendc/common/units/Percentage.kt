@@ -26,6 +26,7 @@ package org.opendc.common.units
 
 import kotlinx.serialization.Serializable
 import org.opendc.common.annotations.InternalUse
+import org.opendc.common.logger.logger
 import org.opendc.common.utils.DFLT_MIN_EPS
 import org.opendc.common.utils.approx
 import org.opendc.common.utils.approxLarger
@@ -45,7 +46,8 @@ import kotlin.text.RegexOption.IGNORE_CASE
 
 @JvmInline
 @Serializable(with = Percentage.Companion.PercentageSerializer::class)
-public value class Percentage(
+public value class Percentage private constructor(
+    // As a ratio (50% is 0.5).
     override val value: Double,
 ) : Unit<Percentage> {
     override fun toString(): String = fmtValue()
@@ -59,7 +61,7 @@ public value class Percentage(
      *
      * @see[Unit.fmtValue]
      */
-    override fun fmtValue(fmt: String): String = "${toPercentageValue().fmt(fmt)}%"
+    override fun fmtValue(fmt: String): String = "${toPercentage().fmt(fmt)}%"
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Conversions to Double
@@ -73,7 +75,7 @@ public value class Percentage(
     /**
      * @return the value as percentage (50.6% -> 50.6)
      */
-    public fun toPercentageValue(): Double = value * 1e2
+    public fun toPercentage(): Double = value * 1e2
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Operation Override (to avoid boxing of value classes in byte code)
@@ -87,7 +89,7 @@ public value class Percentage(
 
     public override operator fun div(scalar: Number): Percentage = Percentage(value / scalar.toDouble())
 
-    public override operator fun div(other: Percentage): Percentage = Percentage.ofRatio(value / other.value)
+    public override operator fun div(other: Percentage): Percentage = Percentage(value / other.value)
 
     public override operator fun times(scalar: Number): Percentage = Percentage(value * scalar.toDouble())
 
@@ -184,9 +186,28 @@ public value class Percentage(
 
         public operator fun Number.times(unit: Percentage): Percentage = unit * this
 
+        private val LOG by logger()
+
+        /**
+         * @return the percentage that [ratio] represents (e.g., 0.5 -> 50%).
+         *
+         * A ratio above 1 is allowed (1.2 is 120%), but logs a warning, as `ofRatio(50)` is most likely meant as
+         * `ofPercentage(50)`.
+         */
         @JvmStatic
         @JvmName("ofRatio")
-        public fun ofRatio(ratio: Double): Percentage = Percentage(ratio)
+        public fun ofRatio(ratio: Number): Percentage {
+            val r = ratio.toDouble()
+            if (r > 1.0) {
+                LOG.warn("ratio $r is above 1, so it is read as ${r * 100}%. If $r% was meant, use ofPercentage($r) instead")
+            }
+            return Percentage(r)
+        }
+
+        /**
+         * [ofRatio] without the warning, for ratios computed between two values, which are often above 1.
+         */
+        internal fun ofRatioUnchecked(ratio: Double): Percentage = Percentage(ratio)
 
         @JvmStatic
         @JvmName("ofPercentage")
@@ -229,7 +250,7 @@ public value class Percentage(
                     "deserialization of number with no unit of measure, assuming it is a ratio." +
                         "Keep in mind that you can also specify the value as '${it.toDouble() * 100}%'",
                 )
-                ofRatio(it.toDouble())
+                ofRatioUnchecked(it.toDouble())
             },
             // Written as a percentage when that reads back exactly, and as the exact ratio otherwise. Both ways of turning the
             // ratio into a percentage can add rounding noise (0.07 * 100 is 7.000000000000001, while 33.3% is stored as the

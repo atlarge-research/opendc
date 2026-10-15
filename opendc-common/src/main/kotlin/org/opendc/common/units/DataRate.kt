@@ -51,7 +51,7 @@ public value class DataRate private constructor(
     public override fun fmtValue(fmt: String): String =
         when (abs()) {
             in zero..ofBps(100) -> "${String.format(fmt, tobps())} bps"
-            in ofbps(100)..ofKbps(100) -> "${String.format(fmt, toKbps())} Kbps"
+            in ofbps(100)..ofKbps(100) -> "${String.format(fmt, toKbps())} kbps"
             in ofKbps(100)..ofMbps(100) -> "${String.format(fmt, toMbps())} Mbps"
             else -> "${String.format(fmt, toGbps())} Gbps"
         }
@@ -61,6 +61,8 @@ public value class DataRate private constructor(
     // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public fun tobps(): Double = value
+
+    public fun toBps(): Double = value / 8
 
     public fun toKibps(): Double = value / 1024
 
@@ -98,7 +100,7 @@ public value class DataRate private constructor(
 
     public override operator fun div(scalar: Number): DataRate = DataRate(value / scalar.toDouble())
 
-    public override operator fun div(other: DataRate): Percentage = Percentage.ofRatio(value / other.value)
+    public override operator fun div(other: DataRate): Percentage = Percentage.ofRatioUnchecked(value / other.value)
 
     public override operator fun times(scalar: Number): DataRate = DataRate(value * scalar.toDouble())
 

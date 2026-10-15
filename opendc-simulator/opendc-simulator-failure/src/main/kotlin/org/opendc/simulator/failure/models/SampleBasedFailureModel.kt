@@ -72,7 +72,7 @@ public class SampleBasedFailureModel(
             // Round up to at least 1 ms so every failure advances the simulation clock, even when its interval is 0
             val durationSample = max(0.0, durationSampler.sample())
             val faultDuration = max(1L, (durationSample * 3.6e6).toLong())
-            fault.apply(victims, TimeDelta.ofMillis(faultDuration))
+            fault.apply(victims, TimeDelta.ofMs(faultDuration))
         }
     }
 }

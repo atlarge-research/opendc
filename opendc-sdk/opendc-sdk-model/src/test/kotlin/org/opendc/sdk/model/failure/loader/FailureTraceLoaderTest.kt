@@ -47,10 +47,10 @@ class FailureTraceLoaderTest {
 
     private val failures =
         listOf(
-            Failure(TimeDelta.ofMillis(1_000), TimeDelta.ofMillis(100), 0.1),
-            Failure(TimeDelta.ofMillis(2_000), TimeDelta.ofMillis(200), 0.2),
-            Failure(TimeDelta.ofMillis(3_000), TimeDelta.ofMillis(300), 0.3),
-            Failure(TimeDelta.ofMillis(4_000), TimeDelta.ofMillis(400), 0.4),
+            Failure(TimeDelta.ofMs(1_000), TimeDelta.ofMs(100), 0.1),
+            Failure(TimeDelta.ofMs(2_000), TimeDelta.ofMs(200), 0.2),
+            Failure(TimeDelta.ofMs(3_000), TimeDelta.ofMs(300), 0.3),
+            Failure(TimeDelta.ofMs(4_000), TimeDelta.ofMs(400), 0.4),
         )
 
     @Test

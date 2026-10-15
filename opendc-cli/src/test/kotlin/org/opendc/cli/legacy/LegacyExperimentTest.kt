@@ -339,7 +339,7 @@ class LegacyExperimentTest {
         assertEquals(ConstantVirtualizationOverheadSpec(percentageOverhead = 0.05), gpu.virtualizationOverhead)
         assertEquals(SqrtPowerModelSpec(maxPower = Power.ofWatts(600), idlePower = Power.ofWatts(300)), constant.gpuPowerModel)
         assertEquals(MaxMinFairnessPolicySpec, constant.cpuDistribution)
-        assertEquals(BestEffortPolicySpec(updateInterval = TimeDelta.ofMillis(1000)), constant.gpuDistribution)
+        assertEquals(BestEffortPolicySpec(updateInterval = TimeDelta.ofMs(1000)), constant.gpuDistribution)
 
         // The CPU and memory keep the fields the two formats spell differently.
         assertEquals(2, constant.cpu.count)

@@ -44,7 +44,7 @@ public fun generateWorkload(numTasks: Int): List<TaskSpec> {
         workload.add(
             TaskSpec(
                 id = i,
-                submissionTime = TimeDelta.ofMillis(submitMs) + (TimeDelta.ofHours(1) * i),
+                submissionTime = TimeDelta.ofMs(submitMs) + (TimeDelta.ofHours(1) * i),
                 duration = taskDuration,
                 cpuCoreCount = 16,
                 cpuCapacity = Frequency.ofMHz(1000),

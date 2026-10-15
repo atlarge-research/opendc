@@ -69,6 +69,10 @@ public value class TimeDelta private constructor(
 
     public fun toHours(): Double = toMin() / 60
 
+    public fun toDays(): Double = toHours() / 24
+
+    public fun toWeeks(): Double = toDays() / 7
+
     // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Operation Override (to avoid boxing of value classes in byte code)
     // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,7 +85,7 @@ public value class TimeDelta private constructor(
 
     public override operator fun div(scalar: Number): TimeDelta = TimeDelta(value / scalar.toDouble())
 
-    public override operator fun div(other: TimeDelta): Percentage = Percentage.ofRatio(value / other.value)
+    public override operator fun div(other: TimeDelta): Percentage = Percentage.ofRatioUnchecked(value / other.value)
 
     public override operator fun times(scalar: Number): TimeDelta = TimeDelta(value * scalar.toDouble())
 
@@ -181,16 +185,16 @@ public value class TimeDelta private constructor(
         public operator fun Number.times(unit: TimeDelta): TimeDelta = unit * this
 
         @JvmStatic
-        @JvmName("ofNanos")
-        public fun ofNanos(nanos: Number): TimeDelta = TimeDelta(nanos.toDouble() / 1e6)
+        @JvmName("ofNs")
+        public fun ofNs(ns: Number): TimeDelta = TimeDelta(ns.toDouble() / 1e6)
 
         @JvmStatic
         @JvmName("ofMicros")
         public fun ofMicros(micros: Number): TimeDelta = TimeDelta(micros.toDouble() / 1e3)
 
         @JvmStatic
-        @JvmName("ofMillis")
-        public fun ofMillis(ms: Number): TimeDelta = TimeDelta(ms.toDouble())
+        @JvmName("ofMs")
+        public fun ofMs(ms: Number): TimeDelta = TimeDelta(ms.toDouble())
 
         @JvmStatic
         @JvmName("ofSec")
@@ -203,6 +207,14 @@ public value class TimeDelta private constructor(
         @JvmStatic
         @JvmName("ofHours")
         public fun ofHours(hours: Number): TimeDelta = TimeDelta(hours.toDouble() * 60 * 60 * 1000.0)
+
+        @JvmStatic
+        @JvmName("ofDays")
+        public fun ofDays(days: Number): TimeDelta = TimeDelta(days.toDouble() * 24 * 60 * 60 * 1000.0)
+
+        @JvmStatic
+        @JvmName("ofWeeks")
+        public fun ofWeeks(weeks: Number): TimeDelta = TimeDelta(weeks.toDouble() * 7 * 24 * 60 * 60 * 1000.0)
 
         @JvmStatic
         @JvmName("ofDuration")
@@ -232,21 +244,23 @@ public value class TimeDelta private constructor(
                     "deserialization of number with no unit of measure, assuming it is in milliseconds." +
                         "Keep in mind that you can also specify the value as '$it ms'",
                 )
-                ofMillis(it.toDouble())
+                ofMs(it.toDouble())
             },
             serializerFun = { this.encodeString("${it.toMs().toExactString()} ms") },
-            ifMatches("$NUM_GROUP$NANO$SEC(?:|s)\\s*", IGNORE_CASE) { ofNanos(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$NANO$SEC(?:|s)\\s*", IGNORE_CASE) { ofNs(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$MICRO$SEC(?:|s)\\s*", IGNORE_CASE) { ofMicros(json.decNumFromStr(groupValues[1])) },
-            ifMatches("$NUM_GROUP$MILLI$SEC(?:|s)\\s*", IGNORE_CASE) { ofMillis(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$MILLI$SEC(?:|s)\\s*", IGNORE_CASE) { ofMs(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$SEC(?:|s)\\s*", IGNORE_CASE) { ofSec(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$MIN(?:|s)\\s*") { ofMin(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$HOUR(?:|s)\\s*") { ofHours(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$DAY(?:|s)\\s*") { ofDays(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$WEEK(?:|s)\\s*") { ofWeeks(json.decNumFromStr(groupValues[1])) },
             ifNoExc { ofDuration(Duration.parse(this)) },
             ifNoExc {
                 val instant = Instant.parse(this)
                 LOG.warn("`TimeDelta` value was expected but `Instant` string representation found. Converting to `TimeDelta` since Epoch")
 
-                ofMillis(instant.toEpochMilli())
+                ofMs(instant.toEpochMilli())
             },
         )
 
@@ -263,8 +277,8 @@ public value class TimeDelta private constructor(
                     null
                 }
 
-            return tryNoThrow { ofNanos(this.toNanos()) }
-                ?: tryNoThrow { ofMillis(this.toMillis()) }
+            return tryNoThrow { ofNs(this.toNanos()) }
+                ?: tryNoThrow { ofMs(this.toMillis()) }
                 ?: tryNoThrow { ofSec(this.toSeconds()) }
                 ?: tryNoThrow { ofMin(this.toMinutes()) }
                 ?: tryNoThrow { ofHours(this.toHours()) }
