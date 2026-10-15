@@ -53,7 +53,7 @@ public value class Frequency private constructor(
     override fun fmtValue(fmt: String): String =
         when (abs()) {
             in zero..ofHz(500) -> "${toHz().fmt(fmt)} Hz"
-            in ofHz(500)..ofKHz(500) -> "${toKHz().fmt(fmt)} KHz"
+            in ofHz(500)..ofKHz(500) -> "${toKHz().fmt(fmt)} kHz"
             in ofKHz(500)..ofMHz(500) -> "${toMHz().fmt(fmt)} MHz"
             else -> "${toGHz().fmt(fmt)} GHz"
         }
@@ -82,7 +82,7 @@ public value class Frequency private constructor(
 
     public override operator fun div(scalar: Number): Frequency = Frequency(value / scalar.toDouble())
 
-    public override operator fun div(other: Frequency): Percentage = Percentage.ofRatio(value / other.value)
+    public override operator fun div(other: Frequency): Percentage = Percentage.ofRatioUnchecked(value / other.value)
 
     public override operator fun times(scalar: Number): Frequency = Frequency(value * scalar.toDouble())
 
@@ -215,6 +215,7 @@ public value class Frequency private constructor(
          * "frequency": "1000 Hz"
          * "frequency": "  10    GHz   "
          * "frequency": "2megahertz"
+         * "frequency": "2400 mhz" // error: a lower-case "m" means milli, write "2400 MHz"
          * // etc.
          * ```
          */
@@ -226,8 +227,9 @@ public value class Frequency private constructor(
             serializerFun = { this.encodeString("${it.toMHz().toExactString()} MHz") },
             ifMatches("$NUM_GROUP$HERTZ", IGNORE_CASE) { ofHz(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$KILO$HERTZ", IGNORE_CASE) { ofKHz(json.decNumFromStr(groupValues[1])) },
-            ifMatches("$NUM_GROUP$MEGA$HERTZ", IGNORE_CASE) { ofMHz(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$UPPER_MEGA$HERTZ", IGNORE_CASE) { ofMHz(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$GIGA$HERTZ", IGNORE_CASE) { ofGHz(json.decNumFromStr(groupValues[1])) },
+            rejectMilli("$HERTZ", example = "1 MHz"),
         )
     }
 }

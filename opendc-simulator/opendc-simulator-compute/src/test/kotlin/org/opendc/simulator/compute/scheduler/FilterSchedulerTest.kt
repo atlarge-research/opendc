@@ -975,7 +975,7 @@ internal class FilterSchedulerTest {
                         SimTask(
                             step,
                             Timestamp.zero,
-                            TimeDelta.ofMillis(1000),
+                            TimeDelta.ofMs(1000),
                             cores,
                             Frequency.ofMHz(cores * 2600.0),
                             DataSize.ofMiB(memory),

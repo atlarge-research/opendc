@@ -139,12 +139,12 @@ public fun Double.approxSmaller(
 ): Boolean = (this - other) < -epsilon
 
 /**
- * Infix version of [approxLarger].
- * @see[approxLarger]
+ * Infix version of [approxSmaller].
+ * @see[approxSmaller]
  */
 @JvmSynthetic
 @JvmName("approxSmaller, jvm name to avoid same jvm signature (not invokable from java)")
-public infix fun Double.approxSmaller(other: Double): Boolean = this.approxLarger(other, epsilon = DFLT_EPS_MULTIPLIER)
+public infix fun Double.approxSmaller(other: Double): Boolean = this.approxSmaller(other, epsilon = DFLT_EPS_MULTIPLIER)
 
 /**
  * Compares [this] with [other] using threshold comparison method with epsilon = [epsilon].
@@ -168,7 +168,7 @@ public fun Double.approxSmallerOrEq(
  */
 @JvmSynthetic
 @JvmName("approxSmallerOrEq, jvm name to avoid same jvm signature (not invokable from java)")
-public infix fun Double.approxSmallerOrEq(other: Double): Boolean = approxSmallerOrEq(other, DFLT_EPS_MULTIPLIER)
+public infix fun Double.approxSmallerOrEq(other: Double): Boolean = this.approxSmallerOrEq(other, epsilon = DFLT_EPS_MULTIPLIER)
 
 /**
  * @return the result of [block] if [this] is NaN, [this] otherwise.

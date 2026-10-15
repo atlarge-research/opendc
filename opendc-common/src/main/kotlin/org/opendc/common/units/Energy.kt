@@ -50,11 +50,16 @@ public value class Energy private constructor(
 ) : Unit<Energy> {
     override fun toString(): String = fmtValue()
 
+    /**
+     * Joules below a kilojoule, kilojoules below a kilowatt-hour, and watt-hours from there on, as energy use is
+     * usually reported in kWh and MWh rather than MJ and GJ.
+     */
     override fun fmtValue(fmt: String): String =
-        if (value <= 1000.0) {
-            "${toJoule().fmt(fmt)} Joule"
-        } else {
-            "${toKJoule().fmt(fmt)} KJoule"
+        when (abs()) {
+            in zero..<ofKJoule(1) -> "${toJoule().fmt(fmt)} J"
+            in ofKJoule(1)..<ofKWh(1) -> "${toKJoule().fmt(fmt)} kJ"
+            in ofKWh(1)..<ofMWh(1) -> "${toKWh().fmt(fmt)} kWh"
+            else -> "${toMWh().fmt(fmt)} MWh"
         }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,9 +70,15 @@ public value class Energy private constructor(
 
     public fun toKJoule(): Double = value / 1000
 
+    public fun toMJoule(): Double = toKJoule() / 1000
+
+    public fun toGJoule(): Double = toMJoule() / 1000
+
     public fun toWh(): Double = value / 3600
 
     public fun toKWh(): Double = toWh() / 1000
+
+    public fun toMWh(): Double = toKWh() / 1000
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Operation Override (to avoid boxing of value classes in byte code)
@@ -81,7 +92,7 @@ public value class Energy private constructor(
 
     public override operator fun div(scalar: Number): Energy = Energy(value / scalar.toDouble())
 
-    public override operator fun div(other: Energy): Percentage = Percentage.ofRatio(value / other.value)
+    public override operator fun div(other: Energy): Percentage = Percentage.ofRatioUnchecked(value / other.value)
 
     public override operator fun times(scalar: Number): Energy = Energy(value * scalar.toDouble())
 
@@ -180,7 +191,7 @@ public value class Energy private constructor(
 
         @JvmStatic override val min: Energy = Energy(Double.MIN_VALUE)
 
-        public operator fun Number.times(unit: Frequency): Frequency = unit * this
+        public operator fun Number.times(unit: Energy): Energy = unit * this
 
         @JvmStatic
         @JvmName("ofJoule")
@@ -191,12 +202,24 @@ public value class Energy private constructor(
         public fun ofKJoule(kJoule: Number): Energy = ofJoule(kJoule.toDouble() * 1000)
 
         @JvmStatic
+        @JvmName("ofMJoule")
+        public fun ofMJoule(mJoule: Number): Energy = ofKJoule(mJoule.toDouble() * 1000)
+
+        @JvmStatic
+        @JvmName("ofGJoule")
+        public fun ofGJoule(gJoule: Number): Energy = ofMJoule(gJoule.toDouble() * 1000)
+
+        @JvmStatic
         @JvmName("ofWh")
         public fun ofWh(wh: Number): Energy = ofJoule(wh.toDouble() * 3600)
 
         @JvmStatic
         @JvmName("ofKWh")
         public fun ofKWh(kWh: Number): Energy = ofWh(kWh.toDouble() * 1000.0)
+
+        @JvmStatic
+        @JvmName("ofMWh")
+        public fun ofMWh(mWh: Number): Energy = ofWh(mWh.toDouble() * 1000.0 * 1000.0)
 
         private val JOULES = Regex("\\s*(?:j|(?:joule|Joule)(?:|s))")
 
@@ -217,7 +240,10 @@ public value class Energy private constructor(
          * // e.g.
          * "energy": "1 KWh"
          * "energy": "  3    watts-hour  "
+         * "energy": "2 megawatt-hours"
          * "energy": "10.5 Joules"
+         * "energy": "2 GJ"
+         * "energy": "1 mWh" // error: a lower-case "m" means milli, write "1 MWh" for a megawatt-hour
          * // etc.
          * ```
          */
@@ -230,10 +256,15 @@ public value class Energy private constructor(
                 ofJoule(it.toDouble())
             },
             serializerFun = { this.encodeString("${it.toJoule().toExactString()} J") },
-            ifMatches("$NUM_GROUP$WATTS$WATT_HOUR$HOUR", IGNORE_CASE) { ofWh(json.decNumFromStr(groupValues[1])) },
-            ifMatches("$NUM_GROUP$KILO$WATTS$WATT_HOUR$HOUR", IGNORE_CASE) { ofKWh(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$WATTS$WATT_HOUR$HOUR(?:|s)", IGNORE_CASE) { ofWh(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$KILO$WATTS$WATT_HOUR$HOUR(?:|s)", IGNORE_CASE) { ofKWh(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$UPPER_MEGA$WATTS$WATT_HOUR$HOUR(?:|s)", IGNORE_CASE) { ofMWh(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$JOULES", IGNORE_CASE) { ofJoule(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$KILO$JOULES", IGNORE_CASE) { ofKJoule(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$UPPER_MEGA$JOULES", IGNORE_CASE) { ofMJoule(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$GIGA$JOULES", IGNORE_CASE) { ofGJoule(json.decNumFromStr(groupValues[1])) },
+            rejectMilli("$WATTS$WATT_HOUR$HOUR(?:|s)", example = "1 MWh"),
+            rejectMilli("$JOULES", example = "1 MJ"),
         )
     }
 }

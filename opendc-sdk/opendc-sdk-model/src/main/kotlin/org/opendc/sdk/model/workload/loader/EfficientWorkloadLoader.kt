@@ -201,7 +201,7 @@ public class EfficientWorkloadLoader(
                     SimTask(
                         id,
                         Timestamp.ofEpochMs(submissionTime),
-                        TimeDelta.ofMillis(duration),
+                        TimeDelta.ofMs(duration),
                         cpuCoreCount,
                         Frequency.ofMHz(cpuCapacity),
                         DataSize.ofMiB(memUsage.roundToInt()),

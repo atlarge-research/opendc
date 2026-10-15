@@ -35,7 +35,7 @@ private val EMPTY_INT_ARRAY = IntArray(0)
  * Sentinel [TaskSpec.deadline] meaning the task has no deadline. Used instead of a nullable
  * [TimeDelta] so the field stays an unboxed primitive.
  */
-public val NO_DEADLINE: TimeDelta = TimeDelta.ofMillis(-1)
+public val NO_DEADLINE: TimeDelta = TimeDelta.ofMs(-1)
 
 /**
  * A schedulable unit of work with its resource requirements and execution profile.

@@ -283,8 +283,8 @@ class BatteryTest {
                 failureModel = failureModel,
                 checkpointModel =
                     CheckpointModelSpec(
-                        interval = TimeDelta.ofMillis(60 * 1000L),
-                        duration = TimeDelta.ofMillis(1000L),
+                        interval = TimeDelta.ofMs(60 * 1000L),
+                        duration = TimeDelta.ofMs(1000L),
                     ),
             )
 

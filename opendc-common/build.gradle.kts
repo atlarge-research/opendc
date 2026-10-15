@@ -35,4 +35,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
 
     api(libs.kotlin.logging)
+
+    testImplementation(kotlin("test"))
 }

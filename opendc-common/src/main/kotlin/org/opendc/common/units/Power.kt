@@ -51,10 +51,10 @@ public value class Power private constructor(
     override fun toString(): String = fmtValue()
 
     override fun fmtValue(fmt: String): String =
-        if (value >= 1000.0) {
-            "${toKWatts().fmt(fmt)} KWatts"
-        } else {
-            "${toWatts().fmt(fmt)} Watts"
+        when (abs()) {
+            in zero..<ofKWatts(1) -> "${toWatts().fmt(fmt)} W"
+            in ofKWatts(1)..<ofMWatts(1) -> "${toKWatts().fmt(fmt)} kW"
+            else -> "${toMWatts().fmt(fmt)} MW"
         }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,6 +64,8 @@ public value class Power private constructor(
     public fun toWatts(): Double = value
 
     public fun toKWatts(): Double = value / 1000.0
+
+    public fun toMWatts(): Double = toKWatts() / 1000.0
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Operation Override (to avoid boxing of value classes in byte code)
@@ -77,7 +79,7 @@ public value class Power private constructor(
 
     public override operator fun div(scalar: Number): Power = Power(value / scalar.toDouble())
 
-    public override operator fun div(other: Power): Percentage = Percentage.ofRatio(value / other.value)
+    public override operator fun div(other: Power): Percentage = Percentage.ofRatioUnchecked(value / other.value)
 
     public override operator fun times(scalar: Number): Power = Power(value * scalar.toDouble())
 
@@ -186,6 +188,10 @@ public value class Power private constructor(
         @JvmName("ofKWatts")
         public fun ofKWatts(kWatts: Number): Power = Power(kWatts.toDouble() * 1000.0)
 
+        @JvmStatic
+        @JvmName("ofMWatts")
+        public fun ofMWatts(mWatts: Number): Power = Power(mWatts.toDouble() * 1000.0 * 1000.0)
+
         // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Serializer
         // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,6 +205,7 @@ public value class Power private constructor(
          * // e.g.
          * "power-draw": "4 watts"
          * "power-draw": "  1    KWatt   "
+         * "power-draw": "1 mW" // error: a lower-case "m" means milli, write "1 MW" for a megawatt
          * // etc.
          * ```
          */
@@ -213,6 +220,8 @@ public value class Power private constructor(
             serializerFun = { this.encodeString("${it.toWatts().toExactString()} W") },
             ifMatches("$NUM_GROUP$WATTS", IGNORE_CASE) { ofWatts(json.decNumFromStr(groupValues[1])) },
             ifMatches("$NUM_GROUP$KILO$WATTS", IGNORE_CASE) { ofKWatts(json.decNumFromStr(groupValues[1])) },
+            ifMatches("$NUM_GROUP$UPPER_MEGA$WATTS", IGNORE_CASE) { ofMWatts(json.decNumFromStr(groupValues[1])) },
+            rejectMilli("$WATTS", example = "1 MW"),
         )
     }
 }

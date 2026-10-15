@@ -51,7 +51,7 @@ public value class DataSize private constructor(
 
     override fun fmtValue(fmt: String): String =
         when (abs()) {
-            in zero..ofBytes(100) -> "${toBytes().fmt(fmt)} Bytes"
+            in zero..ofBytes(100) -> "${toBytes().fmt(fmt)} B"
             in ofBytes(100)..ofKiB(100) -> "${toKiB().fmt(fmt)} KiB"
             in ofKiB(100)..ofMiB(100) -> "${toMiB().fmt(fmt)} MiB"
             else -> "${toGiB().fmt(fmt)} GiB"
@@ -113,7 +113,7 @@ public value class DataSize private constructor(
 
     public override operator fun div(scalar: Number): DataSize = DataSize(value / scalar.toDouble())
 
-    public override operator fun div(other: DataSize): Percentage = Percentage.ofRatio(value / other.value)
+    public override operator fun div(other: DataSize): Percentage = Percentage.ofRatioUnchecked(value / other.value)
 
     public override operator fun times(scalar: Number): DataSize = DataSize(value * scalar.toDouble())
 
@@ -197,7 +197,7 @@ public value class DataSize private constructor(
     // Unit Specific Operations
     // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public operator fun div(timeDelta: TimeDelta): DataRate = DataRate.ofKBps(this.toKiB() / timeDelta.toSec())
+    public operator fun div(timeDelta: TimeDelta): DataRate = DataRate.ofKiBps(this.toKiB() / timeDelta.toSec())
 
     public operator fun div(duration: Duration): DataRate = this / duration.toTimeDelta()
 
