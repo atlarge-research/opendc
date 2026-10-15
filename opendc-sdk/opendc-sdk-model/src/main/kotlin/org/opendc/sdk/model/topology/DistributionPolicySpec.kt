@@ -46,7 +46,7 @@ public data object MaxMinFairnessPolicySpec : DistributionPolicySpec
 @Serializable
 @SerialName("bestEffort")
 public data class BestEffortPolicySpec(
-    public val updateInterval: TimeDelta = TimeDelta.ofMillis(1000),
+    public val updateInterval: TimeDelta = TimeDelta.ofMs(1000),
 ) : DistributionPolicySpec
 
 /** Grants every consumer an identical share of the capacity. */

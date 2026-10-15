@@ -62,7 +62,7 @@ internal open class UnitSerializer<T : Unit<T>>(
             override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("unit-serializer", PrimitiveKind.STRING)
 
             override fun deserialize(decoder: Decoder): T {
-                val strField = decoder.decodeString()
+                val strField = decoder.decodeString().trim()
                 try {
                     // If the field is a number.
                     return ifNumber(json.decodeFromString<Double>(strField))
@@ -126,6 +126,25 @@ internal open class UnitSerializer<T : Unit<T>>(
                 }
             }
 
+        /**
+         * @return a condition that rejects a milli prefix in front of [unit] (e.g. "1 mW"), for units without a milli
+         * scale. Such a value is almost always mega written with a lower-case "m", so it fails with a hint to write it
+         * as [example] instead of being guessed.
+         */
+        fun <T> rejectMilli(
+            unit: String,
+            example: String,
+        ): String.() -> T? =
+            {
+                if (Regex("$NUM_GROUP$LOWER_MILLI$unit", RegexOption.IGNORE_CASE).matches(this)) {
+                    throw IllegalArgumentException(
+                        "unable to parse unit of measure \"$this\": a lower-case \"m\" means milli, which is not supported " +
+                            "here. Write \"M\" for mega, e.g. \"$example\"",
+                    )
+                }
+                null
+            }
+
         // Constants that are used by multiple serializers to build consistent
         // (and easy to change) regexes for deserialization.
         // There is no guarantee that they are used with `IGNORE_CASE` option.
@@ -154,8 +173,17 @@ internal open class UnitSerializer<T : Unit<T>>(
         @JvmStatic
         protected val KIBI = Regex("\\s*(?:Ki|Kibi|ki|kibi)\\s?")
 
+        // Also accepts a lower-case "m", which only suits units without a milli scale (data sizes and rates).
         @JvmStatic
         protected val MEGA = Regex("\\s*(?:M|Mega|m|mega)\\s*?")
+
+        // Upper-case "M" only, also in patterns that ignore case, as a lower-case "m" means milli.
+        @JvmStatic
+        protected val UPPER_MEGA = Regex("\\s*(?-i:M|Mega|mega)\\s*?")
+
+        // Lower-case "m" only, also in patterns that ignore case, as an upper-case "M" means mega.
+        @JvmStatic
+        protected val LOWER_MILLI = Regex("\\s*(?-i:m|milli|Milli)\\s*?")
 
         @JvmStatic
         protected val MEBI = Regex("\\s*(?:Mi|Mebi|mi|mebi)\\s*?")
@@ -173,7 +201,7 @@ internal open class UnitSerializer<T : Unit<T>>(
         protected val TEBI = Regex("\\s*(?:Ti|Tebi|ti|tebi)\\s*?")
 
         @JvmStatic
-        protected val WATTS = Regex("\\s*(?:w|watts|W|Watts)\\s*?")
+        protected val WATTS = Regex("\\s*(?:w|W|(?:watt|Watt)(?:|s))\\s*?")
 
         @JvmStatic
         protected val PER = Regex("\\s*(?:p|per|/)\\s*?")
@@ -186,6 +214,12 @@ internal open class UnitSerializer<T : Unit<T>>(
 
         @JvmStatic
         protected val HOUR = Regex("\\s*(?:h|hour|Hour)\\s*?")
+
+        @JvmStatic
+        protected val DAY = Regex("\\s*(?:d|day|Day)\\s*?")
+
+        @JvmStatic
+        protected val WEEK = Regex("\\s*(?:w|week|Week)\\s*?")
     }
 }
 

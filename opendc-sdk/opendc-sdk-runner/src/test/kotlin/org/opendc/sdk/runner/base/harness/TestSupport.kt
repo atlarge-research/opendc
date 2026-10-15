@@ -72,7 +72,7 @@ internal fun fragment(
     duration: Long,
     cpuUsage: Double,
     gpuUsage: Double = 0.0,
-): TaskFragmentSpec = TaskFragmentSpec(TimeDelta.ofMillis(duration), Frequency.ofMHz(cpuUsage), Frequency.ofMHz(gpuUsage))
+): TaskFragmentSpec = TaskFragmentSpec(TimeDelta.ofMs(duration), Frequency.ofMHz(cpuUsage), Frequency.ofMHz(gpuUsage))
 
 /**
  * Builds an SDK [TaskSpec] reproducing the legacy `createTestTask`: per-core capacity is the peak
@@ -93,8 +93,8 @@ internal fun createTestTask(
     val submitMs = LocalDateTime.parse(submissionTime).toInstant(ZoneOffset.UTC).toEpochMilli()
     return TaskSpec(
         id = id,
-        submissionTime = TimeDelta.ofMillis(submitMs),
-        duration = TimeDelta.ofMillis(duration),
+        submissionTime = TimeDelta.ofMs(submitMs),
+        duration = TimeDelta.ofMs(duration),
         cpuCoreCount = cpuCoreCount.toShort(),
         cpuCapacity = Frequency.ofMHz(fragments.maxOf { it.cpuUsage.toMHz() }),
         memory = DataSize.ofMiB(memCapacity),
