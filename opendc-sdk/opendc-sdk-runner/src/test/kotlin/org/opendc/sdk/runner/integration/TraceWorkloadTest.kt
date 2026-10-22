@@ -36,13 +36,14 @@ import org.opendc.sdk.model.dsl.mhz
 import org.opendc.sdk.model.dsl.scenario
 import org.opendc.sdk.model.dsl.topology
 import org.opendc.sdk.model.dsl.watts
-import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.FailurePrefabSpec
 import org.opendc.sdk.model.failure.PrefabFailureSpec
 import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
+import org.opendc.sdk.model.scenario.ScenarioSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
+import org.opendc.sdk.model.serialization.SdkJson
 import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.LinearPowerModelSpec
 import org.opendc.sdk.model.topology.PowerModelSpec
@@ -56,6 +57,7 @@ import org.opendc.sdk.runner.telemetry.sink.InMemorySink
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
+import kotlin.io.path.readText
 
 /**
  * End-to-end integration test of the trace-workload path against self-contained trace fixtures
@@ -91,6 +93,9 @@ class TraceWorkloadTest {
             { assert(report.scenarios.size == 2) { "expected 2 scenarios, got ${report.scenarios.size}" } },
             { assert(runs.size == 2) { "expected 2 runs, got ${runs.size}" } },
             *runs.map { run -> { assertRunProducedOutput(run.outputPath, run.metrics) } }.toTypedArray(),
+            *report.scenarios
+                .flatMap { result -> result.runs.map { run -> { assertScenarioExported(run.outputPath, result.scenario) } } }
+                .toTypedArray(),
         )
     }
 
@@ -202,6 +207,15 @@ class TraceWorkloadTest {
         assert(captured.host.isNotEmpty()) { "no host samples captured" }
         assert(captured.service.isNotEmpty()) { "no service samples captured" }
         assert(captured.powerSource.sumOf { it.energyUsage } > 0.0) { "expected non-zero energy usage" }
+    }
+
+    /** The run's `meta/scenario.json` holds the spec of the [scenario] that produced it. */
+    private fun assertScenarioExported(
+        outputPath: Path?,
+        scenario: ScenarioSpec,
+    ) {
+        val file = requireNotNull(outputPath) { "run produced no parquet output" }.resolve("meta/trackr.json")
+        assertEquals(scenario, SdkJson.decodeScenario(file.readText()))
     }
 
     private fun datacenter(

@@ -45,7 +45,7 @@ internal class LocalBackend : SimulationBackend {
     override fun prepare(request: RunRequest): SimulationSession {
         val provisioner = FileSystemResourceProvisioner(request.inputRoot)
         val totalTasks =
-            request.experiment.planTaskCounts(provisioner).sumOf { it.taskCount.toLong() * it.scenario.runs }
+            request.experiment.planTaskCounts(provisioner).sumOf { it.taskCount.toLong() * request.experiment.runs }
         val progressState = ExperimentProgress(totalTasks)
 
         val openDc = OpenDC.builder().provisioner(provisioner).output(request.output, request.writerThreads)
@@ -58,7 +58,7 @@ internal class LocalBackend : SimulationBackend {
             SimulationOverview(
                 name = request.experiment.name.ifEmpty { "(unnamed)" },
                 scenarios = scenarios.size,
-                runs = scenarios.sumOf { it.runs },
+                runs = scenarios.sumOf { request.experiment.runs },
                 topologies = request.experiment.topologies.size,
                 workloads = request.experiment.workloads.size,
                 policies = request.experiment.allocationPolicies.size,

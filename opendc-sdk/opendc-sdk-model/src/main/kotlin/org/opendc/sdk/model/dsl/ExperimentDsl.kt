@@ -24,9 +24,9 @@ package org.opendc.sdk.model.dsl
 
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.experiment.ExperimentSpec
-import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.scenario.ScenarioSpec
 import org.opendc.sdk.model.scheduler.AllocationPolicySpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.telemetry.ExportSpec
@@ -62,7 +62,7 @@ public class ExperimentBuilder {
     public var runs: Int = 1
 
     /** The seed used to derive per-run random seeds. */
-    public var initialSeed: Int = 0
+    public var initialSeed: Long = 0L
 
     /** A human-readable name for the experiment. */
     public var name: String = ""
@@ -141,13 +141,13 @@ public class ScenarioBuilder {
     public var runs: Int = 1
 
     /** The seed used to derive per-run random seeds. */
-    public var initialSeed: Int = 0
+    public var seed: Long = 0
 
     /** A stable numeric identifier for the scenario. */
     public var id: Int = -1
 
     /** A human-readable name for the scenario. */
-    public var name: String = ""
+    public var experimentName: String = ""
 
     public fun topology(topology: TopologySpec) {
         this.topology = topology
@@ -174,7 +174,7 @@ public class ScenarioBuilder {
         val resolvedWorkload = workload ?: error("scenario requires a workload")
         return ScenarioSpec(
             resolvedTopology, resolvedWorkload, allocationPolicy, exportModel, failureModel,
-            checkpointModel, maxNumFailures, runs, initialSeed, id, name,
+            checkpointModel, maxNumFailures, seed, id, experimentName,
         )
     }
 }

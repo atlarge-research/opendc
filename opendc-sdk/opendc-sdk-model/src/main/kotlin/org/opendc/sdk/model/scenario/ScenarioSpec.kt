@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.sdk.model.experiment
+package org.opendc.sdk.model.scenario
 
 import kotlinx.serialization.Serializable
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
@@ -58,14 +58,13 @@ public data class ScenarioSpec(
     public val failureModel: FailureModelSpec = NoFailureSpec,
     public val checkpointModel: CheckpointModelSpec? = null,
     public val maxNumFailures: Int = 10,
-    public val runs: Int = 1,
-    public val initialSeed: Int = 0,
+    public val seed: Long = 0,
     public val id: Int = -1,
-    public val name: String = "",
+    public val experimentName: String = "",
+    public val name: String = "0",
 ) : Validatable {
     override fun validate(): List<ValidationIssue> =
         buildList {
-            if (runs <= 0) add(ValidationIssue("runs", "must be > 0"))
             if (maxNumFailures < 1) add(ValidationIssue("maxNumFailures", "must be >= 1"))
             addAll(topology.validate().prefixed("topology"))
             addAll(workload.validate().prefixed("workload"))

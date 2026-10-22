@@ -26,9 +26,9 @@ import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
-import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.scenario.ScenarioSpec
 import org.opendc.sdk.model.scheduler.AllocationPolicySpec
 import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
 import org.opendc.sdk.model.scheduler.CoreRamWeigherSpec
@@ -133,7 +133,7 @@ internal fun runTest(
             failureModel = failureModel,
             checkpointModel = checkpointModel,
         )
-    runScenario(scenario, "", 0, 0L, listOf(MonitorSink(monitor)), provisioner)
+    runScenario(scenario, "", listOf(MonitorSink(monitor)), provisioner)
 //    runScenario(scenario, "", 0, 0L, listOf(monitorSink), provisioner)
     return monitor
 }

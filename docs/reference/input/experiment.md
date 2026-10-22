@@ -16,7 +16,7 @@ Specification of an experiments. The experiment defines what should be simulated
 |-------|------|----------|-------------|
 | `name` | String | no | Human-readable name of the experiment. When left empty a unique name is generated automatically. Used as a prefix for output folders. |
 | `outputFolder` | String | no | Directory that raw output is written to, under `<outputFolder>/raw-output/`. Default output folder is "output". |
-| `initialSeed` | Int | no | Seed used to initialize the random generators. Successive runs of a scenario increment from this value. Default value is 0. |
+| `seed` | Int | no | Seed used to initialize the random generators. Successive runs of a scenario increment from this value. Default value is 0. |
 | `runs` | Int | no | Number of runs (seeds) executed per scenario. Must be greater than 0. Default value is 1. |
 | `topologies` | Set&lt;[TopologyPathSpec](#topologypathspec)&gt; | **yes** | Datacenter topologies to simulate, each referenced by a path to a topology JSON file. |
 | `workloads` | Set&lt;[WorkloadSpec](workload.md#workloadspec)&gt; | **yes** | Workload traces to replay against the topologies. |

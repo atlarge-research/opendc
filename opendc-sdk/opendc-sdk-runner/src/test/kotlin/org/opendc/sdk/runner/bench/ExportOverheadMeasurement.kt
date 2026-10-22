@@ -140,7 +140,7 @@ class ExportOverheadMeasurement {
         val simCpuBefore = threads.currentThreadCpuTime
         val wallBefore = System.nanoTime()
 
-        runScenario(scenario, "export-bench", 0, 0L, sinks, FileSystemResourceProvisioner(root))
+        runScenario(scenario, "export-bench", sinks, FileSystemResourceProvisioner(root))
 
         val wallMs = (System.nanoTime() - wallBefore) / 1_000_000
         val simCpuMs = (threads.currentThreadCpuTime - simCpuBefore) / 1_000_000

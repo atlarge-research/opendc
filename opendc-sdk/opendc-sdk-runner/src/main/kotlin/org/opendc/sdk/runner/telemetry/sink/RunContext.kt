@@ -22,7 +22,7 @@
 
 package org.opendc.sdk.runner.telemetry.sink
 
-import org.opendc.sdk.model.experiment.ScenarioSpec
+import org.opendc.sdk.model.scenario.ScenarioSpec
 import org.opendc.sdk.runner.factory.ExportSettings
 
 /**

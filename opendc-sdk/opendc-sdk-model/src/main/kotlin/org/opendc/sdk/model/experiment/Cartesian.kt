@@ -22,6 +22,8 @@
 
 package org.opendc.sdk.model.experiment
 
+import org.opendc.sdk.model.scenario.ScenarioSpec
+
 /**
  * Expands this experiment into its [ScenarioSpec]s by taking the mixed-radix cartesian product across every axis.
  *
@@ -42,8 +44,10 @@ public fun ExperimentSpec.expand(): List<ScenarioSpec> {
         topologyList.size * workloadList.size * allocationList.size *
             exportList.size * failureList.size * checkpointList.size * maxFailureList.size
 
-    return (0 until total).map { i ->
-        var rem = i
+    val res: MutableList<ScenarioSpec> = mutableListOf()
+
+    for (scenarioID in 0..<total) {
+        var rem = scenarioID
         val maxFailures = maxFailureList[rem % maxFailureList.size].also { rem /= maxFailureList.size }
         val checkpoint = checkpointList[rem % checkpointList.size].also { rem /= checkpointList.size }
         val failure = failureList[rem % failureList.size].also { rem /= failureList.size }
@@ -51,18 +55,24 @@ public fun ExperimentSpec.expand(): List<ScenarioSpec> {
         val allocation = allocationList[rem % allocationList.size].also { rem /= allocationList.size }
         val workload = workloadList[rem % workloadList.size].also { rem /= workloadList.size }
         val topology = topologyList[rem % topologyList.size]
-        ScenarioSpec(
-            topology = topology,
-            workload = workload,
-            allocationPolicy = allocation,
-            exportModel = export,
-            failureModel = failure,
-            checkpointModel = checkpoint,
-            maxNumFailures = maxFailures,
-            runs = runs,
-            initialSeed = initialSeed,
-            id = i,
-            name = i.toString(),
-        )
+
+        for (seedOffset in 0..<runs) {
+            res.add(
+                ScenarioSpec(
+                    topology = topology,
+                    workload = workload,
+                    allocationPolicy = allocation,
+                    exportModel = export,
+                    failureModel = failure,
+                    checkpointModel = checkpoint,
+                    maxNumFailures = maxFailures,
+                    seed = initialSeed + seedOffset,
+                    id = scenarioID,
+                    name = scenarioID.toString(),
+                ),
+            )
+        }
     }
+
+    return res
 }

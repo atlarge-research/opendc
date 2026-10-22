@@ -23,9 +23,9 @@
 package org.opendc.sdk.runner
 
 import org.opendc.sdk.model.experiment.ExperimentSpec
-import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.experiment.expand
 import org.opendc.sdk.model.resource.ResourceProvisioner
+import org.opendc.sdk.model.scenario.ScenarioSpec
 import org.opendc.sdk.runner.executor.runScenario
 import org.opendc.sdk.runner.telemetry.sink.OutputSink
 import org.opendc.sdk.runner.telemetry.sink.ParquetSink
@@ -58,28 +58,28 @@ public class OpenDC private constructor(
     public fun simulate(experiment: ExperimentSpec): SimulationReport = run(experiment.name, experiment.expand())
 
     /** Simulates a single fully-resolved [scenario]. */
-    public fun simulate(scenario: ScenarioSpec): SimulationReport = run(scenario.name, listOf(scenario))
+    public fun simulate(scenario: ScenarioSpec): SimulationReport = run(scenario.experimentName, listOf(scenario))
 
     private fun run(
         experimentName: String,
         scenarios: List<ScenarioSpec>,
     ): SimulationReport {
-        val work = scenarios.flatMap { scenario -> scenario.seeds().map { seed -> scenario to seed } }
-        val completed = execute(experimentName, work)
+//        val work = scenarios.flatMap { scenario -> scenario.seeds().map { seed -> scenario to seed } }
+        val completed = execute(experimentName, scenarios)
         return SimulationReport(scenarios.map { it.collectRuns(completed) })
     }
 
     private fun execute(
         experimentName: String,
-        work: List<Pair<ScenarioSpec, Long>>,
+        work: List<ScenarioSpec>,
     ): List<Pair<ScenarioSpec, RunResult>> {
         val pool = ForkJoinPool(parallelism)
         try {
             return pool.submit(
                 Callable {
                     work.parallelStream()
-                        .map { (scenario, seed) ->
-                            scenario to runScenario(scenario, experimentName, scenario.id, seed, sinks, provisioner)
+                        .map { scenario ->
+                            scenario to runScenario(scenario, experimentName, sinks, provisioner)
                         }
                         .toList()
                 },
@@ -90,8 +90,6 @@ public class OpenDC private constructor(
             pool.shutdown()
         }
     }
-
-    private fun ScenarioSpec.seeds(): List<Long> = (0 until runs).map { initialSeed.toLong() + it }
 
     private fun ScenarioSpec.collectRuns(completed: List<Pair<ScenarioSpec, RunResult>>): ScenarioResult =
         ScenarioResult(this, completed.filter { it.first === this }.map { it.second }.sortedBy { it.seed })
