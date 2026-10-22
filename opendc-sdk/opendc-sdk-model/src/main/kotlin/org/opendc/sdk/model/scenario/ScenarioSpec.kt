@@ -61,7 +61,7 @@ public data class ScenarioSpec(
     public val seed: Long = 0,
     public val id: Int = -1,
     public val experimentName: String = "",
-    public val name: String = "0"
+    public val name: String = "0",
 ) : Validatable {
     override fun validate(): List<ValidationIssue> =
         buildList {

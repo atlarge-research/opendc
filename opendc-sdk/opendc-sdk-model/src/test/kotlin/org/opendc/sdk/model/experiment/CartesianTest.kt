@@ -33,7 +33,6 @@ import org.opendc.sdk.model.validHost
 import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import org.opendc.sdk.model.workload.WorkloadSpec
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class CartesianTest {
     private fun topology(name: String): TopologySpec =
