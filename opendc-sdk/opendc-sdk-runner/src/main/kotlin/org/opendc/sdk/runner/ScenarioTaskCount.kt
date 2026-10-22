@@ -23,9 +23,9 @@
 package org.opendc.sdk.runner
 
 import org.opendc.sdk.model.experiment.ExperimentSpec
-import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.experiment.expand
 import org.opendc.sdk.model.resource.ResourceProvisioner
+import org.opendc.sdk.model.scenario.ScenarioSpec
 import org.opendc.sdk.model.workload.WorkloadSpec
 import org.opendc.sdk.runner.executor.ResourceScope
 

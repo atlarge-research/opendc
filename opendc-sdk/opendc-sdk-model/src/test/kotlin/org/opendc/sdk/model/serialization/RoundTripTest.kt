@@ -166,9 +166,9 @@ class RoundTripTest {
         val builtScenario =
             scenario {
                 id = 7
-                name = "s-7"
+                experimentName = "s-7"
                 runs = 2
-                initialSeed = 9
+                seed = 9
                 maxNumFailures = 3
                 topology(sampleTopology)
                 workload(sampleWorkload)

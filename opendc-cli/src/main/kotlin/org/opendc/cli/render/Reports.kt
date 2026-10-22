@@ -25,7 +25,7 @@ package org.opendc.cli.render
 import com.github.ajalt.mordant.table.table
 import com.github.ajalt.mordant.terminal.Terminal
 import org.opendc.cli.config.CliConfig
-import org.opendc.sdk.model.experiment.ScenarioSpec
+import org.opendc.sdk.model.scenario.ScenarioSpec
 import org.opendc.sdk.runner.RunResult
 import org.opendc.sdk.runner.SimulationReport
 import java.nio.file.Path
@@ -110,7 +110,7 @@ internal fun renderOutputs(
 private fun RunResult.toRow(scenario: ScenarioSpec): RunSummaryRow? =
     metrics?.let { m ->
         RunSummaryRow(
-            name = scenario.name.ifEmpty { "#${scenario.id}" },
+            name = scenario.experimentName.ifEmpty { "#${scenario.id}" },
             seed = seed,
             tasksTotal = m.service.maxOfOrNull { it.tasksTotal } ?: 0,
             tasksCompleted = m.service.maxOfOrNull { it.tasksCompleted } ?: 0,

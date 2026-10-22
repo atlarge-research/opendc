@@ -28,12 +28,12 @@ import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.experiment.ExperimentSpec
-import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
 import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
 import org.opendc.sdk.model.sampleTopology
 import org.opendc.sdk.model.sampleWorkload
+import org.opendc.sdk.model.scenario.ScenarioSpec
 import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
 import org.opendc.sdk.model.scheduler.CoreRamWeigherSpec
 import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
@@ -188,7 +188,7 @@ class DslTest {
         val built =
             scenario {
                 id = 7
-                name = "baseline"
+                experimentName = "baseline"
                 topology(topology)
                 workload(workload)
                 allocationPolicy(policy)
@@ -196,7 +196,7 @@ class DslTest {
                 failureModel = TraceBasedFailureSpec(NamedReference("failure-trace"))
                 maxNumFailures = 5
                 runs = 3
-                initialSeed = 42
+                seed = 42
             }
 
         val expected =
@@ -204,7 +204,7 @@ class DslTest {
                 topology = topology, workload = workload, allocationPolicy = policy,
                 exportModel = ExportSpec(exportInterval = 15.minutes, printFrequency = 12),
                 failureModel = TraceBasedFailureSpec(NamedReference("failure-trace")),
-                maxNumFailures = 5, runs = 3, initialSeed = 42, id = 7, name = "baseline",
+                maxNumFailures = 5, seed = 42, id = 7, experimentName = "baseline",
             )
         assertEquals(expected, built)
     }

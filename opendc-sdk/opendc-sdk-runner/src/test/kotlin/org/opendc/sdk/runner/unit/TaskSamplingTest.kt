@@ -35,10 +35,10 @@ import org.opendc.sdk.model.dsl.minutes
 import org.opendc.sdk.model.dsl.ms
 import org.opendc.sdk.model.dsl.scenario
 import org.opendc.sdk.model.dsl.topology
-import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.failure.FailurePrefabSpec
 import org.opendc.sdk.model.failure.PrefabFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
+import org.opendc.sdk.model.scenario.ScenarioSpec
 import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.InlineWorkloadSpec

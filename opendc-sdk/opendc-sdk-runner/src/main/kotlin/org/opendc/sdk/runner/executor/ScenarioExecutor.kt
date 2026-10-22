@@ -22,9 +22,9 @@
 
 package org.opendc.sdk.runner.executor
 
-import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.resource.ResourceProvisioner
 import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.model.scenario.ScenarioSpec
 import org.opendc.sdk.model.scheduler.AllocationPolicySpec
 import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
@@ -66,17 +66,15 @@ private const val SERVICE_DOMAIN = "compute.opendc.org"
 internal fun runScenario(
     scenario: ScenarioSpec,
     experimentName: String,
-    scenarioId: Int,
-    seed: Long,
     sinks: List<OutputSink>,
     provisioner: ResourceProvisioner,
 ): RunResult {
     var result: RunResult? = null
     runSimulation {
         ResourceScope(provisioner).use { resources ->
-            Provisioner(dispatcher, seed).use { engine ->
+            Provisioner(dispatcher, scenario.seed).use { engine ->
                 result =
-                    ScenarioRun(this, engine, resources, scenario, experimentName, scenarioId, seed, sinks).execute()
+                    ScenarioRun(this, engine, resources, scenario, experimentName, scenario.id, scenario.seed, sinks).execute()
             }
         }
     }

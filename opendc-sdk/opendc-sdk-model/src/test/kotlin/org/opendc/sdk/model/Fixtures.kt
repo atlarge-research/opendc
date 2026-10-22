@@ -30,9 +30,9 @@ import org.opendc.sdk.model.dsl.kwh
 import org.opendc.sdk.model.dsl.minutes
 import org.opendc.sdk.model.dsl.watts
 import org.opendc.sdk.model.experiment.ExperimentSpec
-import org.opendc.sdk.model.experiment.ScenarioSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
 import org.opendc.sdk.model.resource.NamedReference
+import org.opendc.sdk.model.scenario.ScenarioSpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
 import org.opendc.sdk.model.telemetry.ExportSpec
@@ -168,10 +168,9 @@ public val sampleScenario: ScenarioSpec =
         failureModel = NoFailureSpec,
         checkpointModel = CheckpointModelSpec(),
         maxNumFailures = 5,
-        runs = 3,
-        initialSeed = 42,
+        seed = 42,
         id = 0,
-        name = "sample",
+        experimentName = "sample",
     )
 
 public val sampleExperiment: ExperimentSpec =

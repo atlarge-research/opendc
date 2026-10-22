@@ -44,7 +44,7 @@ class ProgressTest {
         val experiment = file.inputStream().use { SdkJson.decodeExperiment(it) }
         val provisioner = FileSystemResourceProvisioner(Path.of("."))
 
-        val totalTasks = experiment.planTaskCounts(provisioner).sumOf { it.taskCount.toLong() * it.scenario.runs }
+        val totalTasks = experiment.planTaskCounts(provisioner).sumOf { it.taskCount.toLong() * experiment.runs }
         val progress = ExperimentProgress(totalTasks)
 
         OpenDC.builder()

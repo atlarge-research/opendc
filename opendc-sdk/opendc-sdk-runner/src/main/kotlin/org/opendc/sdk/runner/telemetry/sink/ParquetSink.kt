@@ -22,16 +22,19 @@
 
 package org.opendc.sdk.runner.telemetry.sink
 
+import org.opendc.sdk.model.serialization.SdkJson
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.runner.telemetry.MetricExporter
 import org.opendc.sdk.runner.telemetry.parquet.ParquetMetricExporter
+import java.nio.file.Files
 import java.nio.file.Path
 
 /**
  * Writes each run's metrics to Parquet files, reproducing the canonical OpenDC layout
  * `<root>/<experiment>/raw-output/<scenarioId>/seed=<seed>/{host,task,powerSource,battery,service}.parquet`.
  * The samples identify hosts, clusters, data centers, power sources, batteries and tasks by id; the files in `meta/`
- * map those ids to names and static attributes, and tell which entity is part of which.
+ * map those ids to names and static attributes, and tell which entity is part of which. `meta/scenario.json` holds
+ * the spec of the scenario that produced the run.
  *
  * Which tables and columns are written is governed by the scenario's export model.
  *
@@ -52,6 +55,8 @@ public class ParquetSink
             val export = context.export
             val base = root.resolve(context.experimentName).resolve("raw-output").resolve(context.scenarioId.toString())
             val partition = "seed=${context.seed}"
+            val meta = Files.createDirectories(base.resolve(partition).resolve("meta"))
+            Files.writeString(meta.resolve("trackr.json"), SdkJson.encodeToString(context.scenario))
             val parquetMonitor =
                 ParquetMetricExporter(
                     base.toFile(),

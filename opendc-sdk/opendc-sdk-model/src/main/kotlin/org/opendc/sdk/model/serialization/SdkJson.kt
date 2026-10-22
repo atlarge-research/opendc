@@ -28,7 +28,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import org.opendc.sdk.model.experiment.ExperimentSpec
-import org.opendc.sdk.model.experiment.ScenarioSpec
+import org.opendc.sdk.model.scenario.ScenarioSpec
 import java.io.InputStream
 
 /**

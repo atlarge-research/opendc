@@ -100,23 +100,6 @@ class CartesianTest {
     }
 
     @Test
-    fun `expand propagates runs and initialSeed to every scenario`() {
-        val experiment =
-            ExperimentSpec(
-                topologies = setOf(topology("t0"), topology("t1")),
-                workloads = setOf(workload("w0"), workload("w1")),
-                allocationPolicies = setOf(policy(SchedulerPrefabSpec.Mem), policy(SchedulerPrefabSpec.CoreMem)),
-                runs = 7,
-                initialSeed = 42,
-            )
-
-        val scenarios = experiment.expand()
-
-        assertTrue(scenarios.all { it.runs == 7 })
-        assertTrue(scenarios.all { it.initialSeed == 42 })
-    }
-
-    @Test
     fun `expand assigns sequential ids and matching names from zero`() {
         val experiment =
             ExperimentSpec(
