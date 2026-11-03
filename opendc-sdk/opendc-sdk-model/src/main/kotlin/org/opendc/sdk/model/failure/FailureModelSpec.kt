@@ -24,10 +24,12 @@ package org.opendc.sdk.model.failure
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.prefixed
+import org.opendc.sdk.model.validation.validateEach
 
 /** Describes how host failures are injected into a simulation. */
 @Serializable
@@ -52,10 +54,49 @@ public data class TraceBasedFailureSpec(
     public val repeat: Boolean = true,
 ) : FailureModelSpec {
     override fun validate(): List<ValidationIssue> =
-        if (startPoint >= 0.0 && startPoint < 1.0) {
+        if (startPoint in 0.0..<1.0) {
             emptyList()
         } else {
             listOf(ValidationIssue("startPoint", "must be in [0.0, 1.0)"))
+        }
+}
+
+/** Failures replayed from a trace that is given inline, instead of read from a file. */
+@Serializable
+@SerialName("inline-trace")
+public data class InlineTraceBasedFailureSpec(
+    /** The failures of the trace, in the order in which they occur. */
+    public val failures: List<FailureSpec>,
+    /** Relative position in the trace at which replay starts, in the range [0.0, 1.0). */
+    public val startPoint: Double = 0.0,
+    /** Whether the trace is replayed from the beginning once exhausted. */
+    public val repeat: Boolean = true,
+) : FailureModelSpec {
+    override fun validate(): List<ValidationIssue> =
+        buildList {
+            if (startPoint !in 0.0..<1.0) add(ValidationIssue("startPoint", "must be in [0.0, 1.0)"))
+            addAll(failures.validateEach("failures"))
+        }
+}
+
+/**
+ * A single failure of an [InlineTraceBasedFailureSpec], the equivalent of one row of a failure trace.
+ *
+ * @property interval The time between the end of the previous failure and the start of this one.
+ * @property duration How long the failure lasts.
+ * @property intensity The fraction of hosts affected by the failure, in the range (0.0, 1.0].
+ */
+@Serializable
+public data class FailureSpec(
+    public val interval: TimeDelta,
+    public val duration: TimeDelta,
+    public val intensity: Double,
+) : Validatable {
+    override fun validate(): List<ValidationIssue> =
+        buildList {
+            if (interval.value < 0.0) add(ValidationIssue("interval", "must be at least zero"))
+            if (duration.value <= 0.0) add(ValidationIssue("duration", "must be greater than zero"))
+            if (intensity <= 0.0 || intensity > 1.0) add(ValidationIssue("intensity", "must be in (0.0, 1.0]"))
         }
 }
 

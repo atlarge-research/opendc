@@ -42,7 +42,9 @@ import org.opendc.sdk.model.failure.DistributionSpec
 import org.opendc.sdk.model.failure.ExponentialDistributionSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.FailurePrefabSpec
+import org.opendc.sdk.model.failure.FailureSpec
 import org.opendc.sdk.model.failure.GammaDistributionSpec
+import org.opendc.sdk.model.failure.InlineTraceBasedFailureSpec
 import org.opendc.sdk.model.failure.LogNormalDistributionSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
 import org.opendc.sdk.model.failure.NormalDistributionSpec
@@ -265,6 +267,11 @@ class RoundTripTest {
             listOf(
                 NoFailureSpec,
                 TraceBasedFailureSpec(source = NamedReference("availability"), startPoint = 0.25, repeat = false),
+                InlineTraceBasedFailureSpec(
+                    failures = listOf(FailureSpec(5.minutes, 5.minutes, 1.0), FailureSpec(7.minutes, 10.minutes, 0.5)),
+                    startPoint = 0.5,
+                    repeat = false,
+                ),
                 PrefabFailureSpec(FailurePrefabSpec.Lanl05Wbl),
                 CustomFailureSpec(
                     interArrival = ExponentialDistributionSpec(3600.0),

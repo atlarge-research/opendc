@@ -78,12 +78,19 @@ public class FailureTraceLoader(private val pathToFile: File) {
      * The failures before it are moved to the end of the list.
      */
     public fun load(startPoint: Double = 0.0): List<Failure> {
-        require(startPoint >= 0.0 && startPoint < 1.0) { "The start point must be in [0.0, 1.0), but was $startPoint" }
         require(pathToFile.exists()) { "The failure trace cannot be found at $pathToFile" }
 
-        val failures = parseFailures(Trace.open(pathToFile, "failure"))
-
-        val startIndex = (failures.size * startPoint).toInt()
-        return failures.subList(startIndex, failures.size) + failures.subList(0, startIndex)
+        return parseFailures(Trace.open(pathToFile, "failure")).startingAt(startPoint)
     }
+}
+
+/**
+ * Rotate the failures so that they begin at [startPoint], a relative position in the range [0.0, 1.0).
+ * The failures before it are moved to the end of the list.
+ */
+public fun List<Failure>.startingAt(startPoint: Double): List<Failure> {
+    require(startPoint in 0.0..<1.0) { "The start point must be in [0.0, 1.0), but was $startPoint" }
+
+    val startIndex = (size * startPoint).toInt()
+    return subList(startIndex, size) + subList(0, startIndex)
 }

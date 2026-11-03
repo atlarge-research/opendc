@@ -326,16 +326,20 @@ public class TraceWorkloadNode extends WorkloadNode implements FlowConsumer {
      */
     @Override
     public void stopWorkload() {
-        // If the workload is stopped due to an error or failure, calculate the wasted time for bookkeeping.
+        long now = this.clock.millis();
+
+        // Time spent working on the current fragment
+        long passedTime = now - this.startOfFragment;
+
+        // update Remaining Work
+        this.updateRemainingWork(passedTime);
+
+        // If the workload is stopped while it still has work left, it is because of a Failure.
         if (this.totalRemainingWork > 0.0 || this.workload.hasFragmentAt(this.fragmentIndex + 1)) {
-            // Failure
-
-            this.updateRemainingWork(this.clock.millis() - this.startOfFragment);
-
-            for (int i = 0; i < this.fragmentIndex; i++) {
+            for (int i = this.workload.getStartingIndex(); i < this.fragmentIndex; i++) {
                 this.workload.failureDelay += this.workload.getFragment(i).duration();
             }
-            this.workload.failureDelay -= (long) this.totalRemainingWork;
+            this.workload.failureDelay += passedTime;
         }
 
         // The workload has already been stopped
