@@ -26,8 +26,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
-import org.opendc.sdk.model.failure.TraceBasedFailureSpec
-import org.opendc.sdk.model.resource.NamedReference
+import org.opendc.sdk.model.failure.FailureSpec
+import org.opendc.sdk.model.failure.InlineTraceBasedFailureSpec
 import org.opendc.sdk.runner.base.harness.createTestTask
 import org.opendc.sdk.runner.base.harness.createTopology
 import org.opendc.sdk.runner.base.harness.fragment
@@ -234,9 +234,10 @@ class BatteryTest {
                 ),
             )
 
+        // The host fails after 5 min, for 5 min
         val failureModel =
-            TraceBasedFailureSpec(
-                source = NamedReference("failureTraces/single_failure.parquet"),
+            InlineTraceBasedFailureSpec(
+                failures = listOf(FailureSpec(TimeDelta.ofMin(5), TimeDelta.ofMin(5), 1.0)),
                 repeat = false,
             )
 
@@ -269,9 +270,10 @@ class BatteryTest {
                 ),
             )
 
+        // The host fails after 5 min, for 5 min
         val failureModel =
-            TraceBasedFailureSpec(
-                source = NamedReference("failureTraces/single_failure.parquet"),
+            InlineTraceBasedFailureSpec(
+                failures = listOf(FailureSpec(TimeDelta.ofMin(5), TimeDelta.ofMin(5), 1.0)),
                 repeat = false,
             )
 

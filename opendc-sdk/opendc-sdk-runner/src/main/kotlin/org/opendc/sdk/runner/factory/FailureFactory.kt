@@ -32,6 +32,7 @@ import org.opendc.sdk.model.failure.DistributionSpec
 import org.opendc.sdk.model.failure.ExponentialDistributionSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.GammaDistributionSpec
+import org.opendc.sdk.model.failure.InlineTraceBasedFailureSpec
 import org.opendc.sdk.model.failure.LogNormalDistributionSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
 import org.opendc.sdk.model.failure.NormalDistributionSpec
@@ -41,8 +42,10 @@ import org.opendc.sdk.model.failure.TraceBasedFailureSpec
 import org.opendc.sdk.model.failure.UniformDistributionSpec
 import org.opendc.sdk.model.failure.WeibullDistributionSpec
 import org.opendc.sdk.model.failure.loader.FailureTraceLoader
+import org.opendc.sdk.model.failure.loader.startingAt
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.simulator.compute.service.ComputeService
+import org.opendc.simulator.failure.models.Failure
 import org.opendc.simulator.failure.models.SampleBasedFailureModel
 import org.opendc.simulator.failure.models.TraceBasedFailureModel
 import java.nio.file.Path
@@ -74,6 +77,10 @@ internal fun FailureModelSpec.toEngine(
         is TraceBasedFailureSpec -> {
             val failures = FailureTraceLoader(resolve(source).toFile()).load(startPoint)
             TraceBasedFailureModel(context, clock, service, random, failures, repeat)
+        }
+        is InlineTraceBasedFailureSpec -> {
+            val engineFailures = failures.map { Failure(it.interval, it.duration, it.intensity) }
+            TraceBasedFailureModel(context, clock, service, random, engineFailures.startingAt(startPoint), repeat)
         }
         is PrefabFailureSpec -> prefabName.toCustomSpec().toSampleBasedModel(context, clock, service, random)
         is CustomFailureSpec -> toSampleBasedModel(context, clock, service, random)

@@ -43,6 +43,10 @@ class TestMetricExporter : MetricExporter, TaskListener {
     var taskGpuDemands = mutableMapOf<Int, ArrayList<Double?>?>()
     var taskGpuSupplied = mutableMapOf<Int, ArrayList<Double?>?>()
 
+    var taskSchedulingDelay = mutableMapOf<Int, ArrayList<Long>>()
+    var taskFailureDelay = mutableMapOf<Int, ArrayList<Long>>()
+    var taskCheckpointDelay = mutableMapOf<Int, ArrayList<Long>>()
+
     /**
      * Record the samples of a task at the changes of its state only when it finishes, so that the values of a task are
      * recorded once per export interval while it runs, and once at its end.
@@ -59,9 +63,16 @@ class TestMetricExporter : MetricExporter, TaskListener {
         if (taskName in taskCpuDemands) {
             taskCpuDemands[taskName]?.add(reader.cpuDemand)
             taskCpuSupplied[taskName]?.add(reader.cpuUsage)
+
+            taskSchedulingDelay[taskName]?.add(reader.schedulingDelay)
+            taskFailureDelay[taskName]?.add(reader.failureDelay)
+            taskCheckpointDelay[taskName]?.add(reader.checkpointDelay)
         } else {
             taskCpuDemands[taskName] = arrayListOf(reader.cpuDemand)
             taskCpuSupplied[taskName] = arrayListOf(reader.cpuUsage)
+            taskSchedulingDelay[taskName] = arrayListOf(reader.schedulingDelay)
+            taskFailureDelay[taskName] = arrayListOf(reader.failureDelay)
+            taskCheckpointDelay[taskName] = arrayListOf(reader.checkpointDelay)
         }
         if (taskName in taskGpuDemands) {
             taskGpuDemands[taskName]?.add(reader.gpuDemand)
