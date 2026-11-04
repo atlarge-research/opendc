@@ -23,13 +23,13 @@
 package org.opendc.sdk.runner.base
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
-import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.failure.ConstantDistributionSpec
@@ -41,60 +41,36 @@ import org.opendc.sdk.model.topology.CpuSpec
 import org.opendc.sdk.model.topology.DataCenterSpec
 import org.opendc.sdk.model.topology.GpuSpec
 import org.opendc.sdk.model.topology.HostSpec
-import org.opendc.sdk.model.topology.LinearPowerModelSpec
 import org.opendc.sdk.model.topology.MemorySpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TaskSpec
-import org.opendc.sdk.runner.base.harness.TestMetricExporter
+import org.opendc.sdk.runner.base.harness.FULL_LOAD_POWER
+import org.opendc.sdk.runner.base.harness.HALF_LOAD_POWER
+import org.opendc.sdk.runner.base.harness.HOST
+import org.opendc.sdk.runner.base.harness.IDLE_POWER
+import org.opendc.sdk.runner.base.harness.MINUTE
+import org.opendc.sdk.runner.base.harness.SECOND
+import org.opendc.sdk.runner.base.harness.assertDelays
+import org.opendc.sdk.runner.base.harness.checkpointEveryMinute
 import org.opendc.sdk.runner.base.harness.createTestTask
+import org.opendc.sdk.runner.base.harness.energy
 import org.opendc.sdk.runner.base.harness.fragment
 import org.opendc.sdk.runner.base.harness.runTest
+import org.opendc.sdk.runner.base.harness.singleClusterTopology
+import org.opendc.sdk.runner.base.harness.singleFailure
 
 /**
  * Integration tests for host failures and task checkpointing.
  *
- * Every test runs on a single host with one 2 GHz core (`single_1_2000.json`). A task cannot move to another host when
- * its host fails, so it waits until the host recovers, which is reported as scheduling delay.
+ * Every test runs on a single host with one 2 GHz core ([singleClusterTopology]). A task cannot move to another host
+ * when its host fails, so it waits until the host recovers, which is reported as scheduling delay.
  */
 class FailuresAndCheckpointingTest {
-    private val topology =
-        TopologySpec(
-            datacenters =
-                listOf(
-                    DataCenterSpec(
-                        clusters =
-                            listOf(
-                                ClusterSpec(
-                                    name = "C01",
-                                    hosts =
-                                        listOf(
-                                            HostSpec(
-                                                name = "H01",
-                                                cpu = CpuSpec(coreCount = 1, coreSpeed = Frequency.ofGHz(2)),
-                                                memory = MemorySpec(size = DataSize.ofGB(128)),
-                                                cpuPowerModel =
-                                                    LinearPowerModelSpec(
-                                                        idlePower = Power.ofWatts(100.0),
-                                                        maxPower = Power.ofWatts(200.0),
-                                                    ),
-                                            ),
-                                        ),
-                                ),
-                            ),
-                    ),
-                ),
-        )
-
-    /** The host fails after 5 min, for 5 min. */
-    private val singleFailure =
-        InlineTraceBasedFailureSpec(listOf(FailureSpec(TimeDelta.ofMin(5), TimeDelta.ofMin(5), 1.0)), repeat = false)
+    private val topology = singleClusterTopology()
 
     /** The host fails after every 5 min of uptime, for 5 min. */
     private val repeatedFailures = singleFailure.copy(repeat = true)
-
-    /** Makes a 1 s snapshot after every minute of work. */
-    private val checkpointEveryMinute = CheckpointModelSpec(interval = TimeDelta.ofMin(1), duration = TimeDelta.ofSec(1))
 
     /**
      * A single 10 min task runs with a failure trace whose first failure occurs after 500 min.
@@ -128,6 +104,7 @@ class FailuresAndCheckpointingTest {
      *
      * TODO: OpenDC does not return the correct values. This will be solved later, and has been marked as a bug
      */
+    @Test @Disabled
     fun `a failure at the moment the task finishes has no effect`() {
         val failureModel = InlineTraceBasedFailureSpec(listOf(FailureSpec(TimeDelta.ofMin(10), TimeDelta.ofMin(5), 1.0)), repeat = false)
 
@@ -480,6 +457,7 @@ class FailuresAndCheckpointingTest {
      *
      * TODO: OpenDC does not return the correct values. This will be solved later, and has been marked as a bug
      */
+    @Test @Disabled
     fun `a failure during a snapshot falls back to the previous snapshot`() {
         val checkpointModel = CheckpointModelSpec(interval = TimeDelta.ofMin(1), duration = TimeDelta.ofSec(50))
 
@@ -756,44 +734,4 @@ class FailuresAndCheckpointingTest {
         id: Int = 0,
         submissionTime: String = "1970-01-01T00:00",
     ): TaskSpec = createTestTask(id = id, submissionTime = submissionTime, fragments = listOf(fragment(10 * MINUTE, 1000.0)))
-
-    /** The energy in J used when drawing [power] W for [time] ms. */
-    private fun energy(
-        power: Double,
-        time: Long,
-    ): Double = power * time / SECOND
-
-    /** Asserts the delays in ms that task [taskId] reported in its last sample. */
-    private fun assertDelays(
-        monitor: TestMetricExporter,
-        taskId: Int,
-        scheduling: Long,
-        failure: Long,
-        checkpoint: Long,
-    ) {
-        assertAll(
-            "Delays of task $taskId",
-            { assertEquals(scheduling, monitor.taskSchedulingDelay.getValue(taskId).last()) { "Scheduling delay incorrect" } },
-            { assertEquals(failure, monitor.taskFailureDelay.getValue(taskId).last()) { "Failure delay incorrect" } },
-            { assertEquals(checkpoint, monitor.taskCheckpointDelay.getValue(taskId).last()) { "Checkpoint delay incorrect" } },
-        )
-    }
-
-    private companion object {
-        /** All times in these tests are in milliseconds. */
-        const val SECOND = 1_000L
-        const val MINUTE = 60 * SECOND
-
-        /** The only host in `single_1_2000.json`. */
-        const val HOST = "H01"
-
-        /** The power draw of [HOST] when idle, which includes while it is failed. Its linear power model goes from 100 to 200 W. */
-        const val IDLE_POWER = 100.0
-
-        /** The power draw of [HOST] when running at 1000 MHz, half of its capacity. */
-        const val HALF_LOAD_POWER = 150.0
-
-        /** The power draw of [HOST] when running at 2000 MHz, its full capacity. */
-        const val FULL_LOAD_POWER = 200.0
-    }
 }
