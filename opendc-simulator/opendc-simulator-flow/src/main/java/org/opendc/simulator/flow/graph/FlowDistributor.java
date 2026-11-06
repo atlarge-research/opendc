@@ -84,7 +84,7 @@ public abstract class FlowDistributor extends FlowNode implements FlowSupplier, 
         super(engine);
 
         this.maxConsumers = maxConsumers;
-        this.maxSuppliers = 4;
+        this.maxSuppliers = maxSuppliers;
 
         this.availableConsumerIndices = new ArrayList<>(this.maxConsumers);
         this.usedConsumerIndices = new ArrayList<>(this.maxConsumers);

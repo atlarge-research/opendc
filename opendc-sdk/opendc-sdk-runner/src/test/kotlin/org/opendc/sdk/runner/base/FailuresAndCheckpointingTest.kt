@@ -25,6 +25,8 @@ package org.opendc.sdk.runner.base
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
@@ -214,11 +216,15 @@ class FailuresAndCheckpointingTest {
     }
 
     /**
-     * Like `a single failure restarts the task from scratch`, but the task uses a GPU next to the CPU, both at 1000 MHz.
-     * The work lost at the failure should be counted once, not once for every resource the task uses.
+     * Like `a single failure restarts the task from scratch`, but the task also uses the GPUs of the host, at 1000 MHz
+     * per GPU. The work lost at the failure should be counted once, not once for every resource the task uses.
+     *
+     * When the host recovers, it is rebuilt with all its GPUs, so the restarted task again gets 1000 MHz from every GPU.
+     * This is tested with a single GPU, and with more than four GPUs.
      */
-    @Test
-    fun `a failure restarts a task that uses both CPU and GPU from scratch`() {
+    @ParameterizedTest(name = "{0} GPUs")
+    @ValueSource(ints = [1, 5])
+    fun `a failure restarts a task that uses both CPU and GPU from scratch`(gpuCount: Int) {
         val gpuTopology =
             TopologySpec(
                 datacenters =
@@ -234,7 +240,7 @@ class FailuresAndCheckpointingTest {
                                                     name = HOST,
                                                     cpu = CpuSpec(coreCount = 1, coreSpeed = Frequency.ofGHz(2)),
                                                     memory = MemorySpec(size = DataSize.ofGB(128)),
-                                                    gpu = GpuSpec(coreCount = 1, coreSpeed = Frequency.ofGHz(2)),
+                                                    gpu = GpuSpec(coreCount = 1, coreSpeed = Frequency.ofGHz(2), count = gpuCount),
                                                 ),
                                             ),
                                     ),
@@ -242,7 +248,8 @@ class FailuresAndCheckpointingTest {
                         ),
                     ),
             )
-        val workload = listOf(createTestTask(id = 0, fragments = listOf(fragment(10 * MINUTE, 1000.0, 1000.0)), gpuCoreCount = 1))
+        val workload =
+            listOf(createTestTask(id = 0, fragments = listOf(fragment(10 * MINUTE, 1000.0, gpuCount * 1000.0)), gpuCoreCount = 1))
 
         val monitor = runTest(gpuTopology, workload, singleFailure)
 
@@ -250,9 +257,13 @@ class FailuresAndCheckpointingTest {
         val expectedFailureDelay = 5 * MINUTE
 
         val runtime = 10 * MINUTE + expectedFailureDelay + expectedSchedulingDelay
+        val gpuSupplies = List(gpuCount) { 1000.0 }
 
         assertAll(
             { assertEquals(runtime, monitor.maxTimestamp) { "Total runtime incorrect" } },
+            // The task runs on all GPUs before the failure (sample 0), and again after it restarts at min 10 (sample 10)
+            { assertEquals(gpuSupplies, monitor.hostGpuSupplied.getValue(HOST)[0]) { "GPU supplies at sample 0 incorrect" } },
+            { assertEquals(gpuSupplies, monitor.hostGpuSupplied.getValue(HOST)[10]) { "GPU supplies at sample 10 incorrect" } },
             { assertDelays(monitor, taskId = 0, scheduling = expectedSchedulingDelay, failure = expectedFailureDelay, checkpoint = 0) },
         )
     }

@@ -40,8 +40,8 @@ import org.opendc.simulator.compute.telemetry.TaskListener
 class TestMetricExporter : MetricExporter, TaskListener {
     var taskCpuDemands = mutableMapOf<Int, ArrayList<Double>>()
     var taskCpuSupplied = mutableMapOf<Int, ArrayList<Double>>()
-    var taskGpuDemands = mutableMapOf<Int, ArrayList<Double?>?>()
-    var taskGpuSupplied = mutableMapOf<Int, ArrayList<Double?>?>()
+    var taskGpuDemands = mutableMapOf<Int, ArrayList<Double>>()
+    var taskGpuSupplied = mutableMapOf<Int, ArrayList<Double>>()
 
     var taskSchedulingDelay = mutableMapOf<Int, ArrayList<Long>>()
     var taskFailureDelay = mutableMapOf<Int, ArrayList<Long>>()
