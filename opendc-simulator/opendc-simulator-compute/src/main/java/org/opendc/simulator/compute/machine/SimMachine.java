@@ -210,8 +210,6 @@ public class SimMachine {
                 this.machineModel.getCpuModel().getCoreCount(),
                 this.machineModel.getGpuModels().size() * 100);
 
-        List<GpuModel> gpuModels = this.machineModel.getGpuModels();
-
         // Create the psu and cpu and connect them
         this.psu = new PsuNode(engine);
         new FlowEdge(this.psu, powerDistributor);
