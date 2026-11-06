@@ -23,11 +23,13 @@
 package org.opendc.sdk.runner.base.harness
 
 import org.opendc.sdk.runner.telemetry.MetricExporter
+import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
 import org.opendc.sdk.runner.telemetry.table.task.TaskSample
 import org.opendc.sdk.runner.telemetry.table.topology.TopologyMeta
+import org.opendc.simulator.compute.power.batteries.BatteryState
 import org.opendc.simulator.compute.task.SimTask
 import org.opendc.simulator.compute.task.TaskState
 import org.opendc.simulator.compute.telemetry.TaskListener
@@ -191,6 +193,30 @@ class TestMetricExporter : MetricExporter, TaskListener {
 
         carbonIntensities.add(reader.carbonIntensity)
         carbonEmissions.add(reader.carbonEmission)
+    }
+
+    /**
+     * The series of the batteries. Like the power source series, these are not split per battery, so they assume a
+     * topology with at most one battery.
+     *
+     * - [batteryPowerDraws]: the power in W that the battery supplies to the hosts, which is 0 while it charges.
+     * - [batteryEnergyUsages]: the total energy in J that the battery has supplied to the hosts.
+     * - [batteryEmbodiedCarbonEmissions]: the total embodied carbon in g that the battery has emitted.
+     * - [batteryCharges]: the energy in J stored in the battery.
+     * - [batteryStates]: whether the battery charges, discharges, or does neither.
+     */
+    var batteryPowerDraws = ArrayList<Double>()
+    var batteryEnergyUsages = ArrayList<Double>()
+    var batteryEmbodiedCarbonEmissions = ArrayList<Double>()
+    var batteryCharges = ArrayList<Double>()
+    var batteryStates = ArrayList<BatteryState>()
+
+    override fun export(reader: BatterySample) {
+        batteryPowerDraws.add(reader.powerDraw)
+        batteryEnergyUsages.add(reader.energyUsage)
+        batteryEmbodiedCarbonEmissions.add(reader.embodiedCarbonEmission)
+        batteryCharges.add(reader.charge)
+        batteryStates.add(reader.batteryState)
     }
 
     override fun onTaskSubmission(task: SimTask?) {

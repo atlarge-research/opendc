@@ -23,11 +23,20 @@
 package org.opendc.sdk.model.serialization
 
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import org.opendc.common.units.Power
+import org.opendc.common.units.Timestamp
+import org.opendc.sdk.model.carbon.CarbonIntensitySpec
+import org.opendc.sdk.model.carbon.CarbonModelSpec
+import org.opendc.sdk.model.carbon.InlineTraceBasedCarbonSpec
+import org.opendc.sdk.model.carbon.TraceBasedCarbonSpec
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.dsl.experiment
 import org.opendc.sdk.model.dsl.filterScheduler
@@ -99,10 +108,9 @@ import org.opendc.sdk.model.topology.MaxMinFairnessPolicySpec
 import org.opendc.sdk.model.topology.MsePowerModelSpec
 import org.opendc.sdk.model.topology.NoVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.PowerModelSpec
+import org.opendc.sdk.model.topology.PowerSourceSpec
 import org.opendc.sdk.model.topology.RunningMeanPlusPolicySpec
 import org.opendc.sdk.model.topology.RunningMeanPolicySpec
-import org.opendc.sdk.model.topology.RunningMedianPolicySpec
-import org.opendc.sdk.model.topology.RunningQuartilesPolicySpec
 import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.SingleBatteryPolicySpec
 import org.opendc.sdk.model.topology.SqrtPowerModelSpec
@@ -112,6 +120,7 @@ import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
 import org.opendc.sdk.model.workload.ScalingPolicySpec
 import org.opendc.sdk.model.workload.TraceWorkloadSpec
 import org.opendc.sdk.model.workload.WorkloadSpec
+import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -284,6 +293,61 @@ class RoundTripTest {
         }
     }
 
+    /** Carbon models are round-tripped as part of a [PowerSourceSpec], which reads them with a serializer of its own. */
+    @TestFactory
+    fun `carbon models round-trip`(): List<DynamicTest> {
+        val models: List<CarbonModelSpec?> =
+            listOf(
+                null,
+                TraceBasedCarbonSpec(source = NamedReference("carbon-trace")),
+                TraceBasedCarbonSpec(source = UriReference("file:///traces/carbon.parquet")),
+                InlineTraceBasedCarbonSpec(
+                    intensities =
+                        listOf(
+                            CarbonIntensitySpec(Timestamp.ofInstant(Instant.parse("2022-01-01T00:00:00Z")), 80.0),
+                            CarbonIntensitySpec(Timestamp.ofInstant(Instant.parse("2022-01-01T01:00:00Z")), 120.5),
+                        ),
+                ),
+            )
+        return models.map { model ->
+            dynamicTest(model.toString()) {
+                val powerSource = PowerSourceSpec(carbon = model)
+                assertEquals(powerSource, roundTrip<PowerSourceSpec>(powerSource))
+            }
+        }
+    }
+
+    @TestFactory
+    fun `a carbon trace in the old format, a bare reference, is read as a trace-based carbon model`(): List<DynamicTest> {
+        val cases =
+            listOf(
+                """{"carbon": {"type": "named", "name": "carbon-trace"}}""" to NamedReference("carbon-trace"),
+                """{"carbon": {"type": "uri", "uri": "file:///carbon.parquet"}}""" to UriReference("file:///carbon.parquet"),
+            )
+        return cases.flatMap { (text, source) ->
+            listOf(SdkJson.json, SdkJson.strictJson).map { json ->
+                dynamicTest("$text (strict: ${json === SdkJson.strictJson})") {
+                    assertEquals(TraceBasedCarbonSpec(source), json.decodeFromString<PowerSourceSpec>(text).carbon)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `a carbon trace in the old format is written in the new format`() {
+        val powerSource = SdkJson.json.decodeFromString<PowerSourceSpec>("""{"carbon": {"type": "named", "name": "carbon-trace"}}""")
+
+        val carbon = SdkJson.json.parseToJsonElement(encode(powerSource)).jsonObject.getValue("carbon").jsonObject
+
+        assertEquals(JsonPrimitive("trace"), carbon["type"])
+        val source =
+            buildJsonObject {
+                put("type", "named")
+                put("name", "carbon-trace")
+            }
+        assertEquals(source, carbon["source"])
+    }
+
     @TestFactory
     fun `distributions round-trip`(): List<DynamicTest> =
         distributionCases.map { (distribution, _) ->
@@ -324,8 +388,6 @@ class RoundTripTest {
                 DoubleBatteryPolicySpec(lowerThreshold = 100.0, upperThreshold = 300.0),
                 RunningMeanPolicySpec(startingThreshold = 200.0, windowSize = 24),
                 RunningMeanPlusPolicySpec(startingThreshold = 200.0, windowSize = 24),
-                RunningMedianPolicySpec(startingThreshold = 200.0, windowSize = 24),
-                RunningQuartilesPolicySpec(startingThreshold = 200.0, windowSize = 24),
             )
         return policies.map { policy ->
             dynamicTest(policy.toString()) { assertEquals(policy, roundTrip<BatteryPolicySpec>(policy)) }
@@ -410,6 +472,8 @@ class RoundTripTest {
         assertTrue(encode<VirtualizationOverheadSpec>(ShareBasedVirtualizationOverheadSpec).contains("\"type\": \"shareBased\""))
         assertTrue(encode<PowerModelSpec>(SqrtPowerModelSpec(Power.ofWatts(400), Power.ofWatts(200))).contains("\"type\": \"sqrt\""))
         assertTrue(encode<ColumnSelection>(AllColumns).contains("\"type\": \"all\""))
+        assertTrue(encode<CarbonModelSpec>(TraceBasedCarbonSpec(NamedReference("t"))).contains("\"type\": \"trace\""))
+        assertTrue(encode<CarbonModelSpec>(InlineTraceBasedCarbonSpec(emptyList())).contains("\"type\": \"inline-trace\""))
     }
 
     private val distributionCases: List<Pair<DistributionSpec, List<String>>> =

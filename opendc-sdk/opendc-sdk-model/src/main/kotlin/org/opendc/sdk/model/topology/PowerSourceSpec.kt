@@ -24,7 +24,11 @@ package org.opendc.sdk.model.topology
 
 import kotlinx.serialization.Serializable
 import org.opendc.common.units.Power
-import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.model.carbon.CarbonModelSpec
+import org.opendc.sdk.model.carbon.CarbonModelSpecSerializer
+import org.opendc.sdk.model.validation.Validatable
+import org.opendc.sdk.model.validation.ValidationIssue
+import org.opendc.sdk.model.validation.prefixed
 
 /**
  * A power source feeding a cluster.
@@ -32,11 +36,14 @@ import org.opendc.sdk.model.resource.ResourceReference
  * @property name Human-readable identifier.
  * @property maxPower Maximum power the source can deliver. The default unit is Watt: a bare number such as
  *   `400` means 400 W.
- * @property carbon Optional reference to a carbon-intensity trace.
+ * @property carbon The carbon intensity of the energy the source delivers, if any.
  */
 @Serializable
 public data class PowerSourceSpec(
     public val name: String = "PowerSource",
     public val maxPower: Power = Power.ofWatts(Long.MAX_VALUE.toDouble()),
-    public val carbon: ResourceReference? = null,
-)
+    @Serializable(with = CarbonModelSpecSerializer::class)
+    public val carbon: CarbonModelSpec? = null,
+) : Validatable {
+    override fun validate(): List<ValidationIssue> = carbon?.validate()?.prefixed("carbon").orEmpty()
+}

@@ -22,7 +22,6 @@
 
 package org.opendc.sdk.runner.provision
 
-import org.opendc.sdk.model.carbon.loader.CarbonTraceLoader
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.topology.AsymptoticPowerModelSpec
 import org.opendc.sdk.model.topology.BatterySpec
@@ -44,6 +43,7 @@ import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.topology.VirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.createBatteryPolicy
 import org.opendc.sdk.runner.factory.toEngine
+import org.opendc.sdk.runner.factory.toFragments
 import org.opendc.simulator.compute.carbon.CarbonNode
 import org.opendc.simulator.compute.cluster.ClusterDistributor
 import org.opendc.simulator.compute.infrastructure.SimCluster
@@ -226,7 +226,7 @@ public class HostsProvisioningStep(
         powerSourceSpec: PowerSourceSpec,
         powerSource: PowerSourceNode,
     ): CarbonNode? {
-        val carbonFragments = powerSourceSpec.carbon?.let { CarbonTraceLoader(resolve(it).toFile()).load() }
+        val carbonFragments = powerSourceSpec.carbon?.toFragments(resolve)
         var carbonNode: CarbonNode? = null
         // Create Carbon Node
         if (carbonFragments != null) {

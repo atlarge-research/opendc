@@ -21,8 +21,11 @@
             ],
             "powerSource": {
                 "carbon": {
-                    "type": "named",
-                    "name": "carbonTraces/2022-01-01_2022-12-31_DE.parquet"
+                    "type": "trace",
+                    "source": {
+                        "type": "named",
+                        "name": "carbonTraces/2022-01-01_2022-12-31_DE.parquet"
+                    }
                 }
             }
         }

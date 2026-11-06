@@ -31,8 +31,11 @@
                         "name": "grid",
                         "maxPower": "50 kWatts",
                         "carbon": {
-                            "type": "named",
-                            "name": "de-carbon-2022"
+                            "type": "trace",
+                            "source": {
+                                "type": "named",
+                                "name": "de-carbon-2022"
+                            }
                         }
                     },
                     "battery": {
