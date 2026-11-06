@@ -22,6 +22,7 @@
 
 package org.opendc.sdk.model
 
+import org.opendc.sdk.model.carbon.TraceBasedCarbonSpec
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.dsl.ghz
 import org.opendc.sdk.model.dsl.gib
@@ -113,7 +114,7 @@ public val sampleDataCenter: DataCenterSpec =
     DataCenterSpec(
         name = "DC-a",
         clusters = listOf(sampleCluster),
-        powerSource = PowerSourceSpec(name = "grid", maxPower = 50.kwatts, carbon = NamedReference("carbon-trace")),
+        powerSource = PowerSourceSpec(name = "grid", maxPower = 50.kwatts, carbon = TraceBasedCarbonSpec(NamedReference("carbon-trace"))),
         battery =
             BatterySpec(
                 name = "cell",

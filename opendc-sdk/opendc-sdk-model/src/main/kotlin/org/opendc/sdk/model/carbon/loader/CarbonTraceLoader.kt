@@ -22,13 +22,14 @@
 
 package org.opendc.sdk.model.carbon.loader
 
+import org.opendc.common.units.Timestamp
+import org.opendc.sdk.model.carbon.CarbonIntensitySpec
 import org.opendc.simulator.compute.carbon.CarbonFragment
 import org.opendc.trace.Trace
 import org.opendc.trace.conv.CARBON_INTENSITY
 import org.opendc.trace.conv.CARBON_TIMESTAMP
 import org.opendc.trace.conv.TABLE_CARBON
 import java.io.File
-import java.time.Instant
 
 /**
  * A helper class for loading carbon intensity traces into memory.
@@ -43,25 +44,22 @@ public class CarbonTraceLoader(private val pathToFile: File) {
         val startTimeCol = reader.resolve(CARBON_TIMESTAMP)
         val carbonIntensityCol = reader.resolve(CARBON_INTENSITY)
 
-        val builder = CarbonFragmentBuilder()
+        val intensities = mutableListOf<CarbonIntensitySpec>()
 
         try {
             while (reader.nextRow()) {
                 val startTime = reader.getInstant(startTimeCol)!!
                 val carbonIntensity = reader.getDouble(carbonIntensityCol)
 
-                builder.add(startTime, carbonIntensity)
+                intensities.add(CarbonIntensitySpec(Timestamp.ofInstant(startTime), carbonIntensity))
             }
         } finally {
             reader.close()
         }
 
-        check(builder.fragments.isNotEmpty()) { "The carbon trace at $pathToFile contains no entries" }
+        check(intensities.isNotEmpty()) { "The carbon trace at $pathToFile contains no entries" }
 
-        // Make sure the fragments are ordered by start time and cover the whole timeline
-        builder.fixReportTimes()
-
-        return builder.fragments
+        return intensities.toCarbonFragments()
     }
 
     /**
@@ -74,49 +72,20 @@ public class CarbonTraceLoader(private val pathToFile: File) {
 
         return parseCarbon(trace)
     }
+}
 
-    /**
-     * A builder for the fragments of a carbon trace.
-     */
-    private class CarbonFragmentBuilder {
-        /**
-         * The fragments of the trace.
-         */
-        val fragments: MutableList<CarbonFragment> = mutableListOf()
+/**
+ * Turn the entries of a carbon trace into [CarbonFragment]s, ordered by start time, that together cover the whole
+ * timeline. Each fragment lasts until the next one starts. The first fragment is extended back to [Long.MIN_VALUE], and
+ * the last one lasts until [Long.MAX_VALUE].
+ */
+public fun List<CarbonIntensitySpec>.toCarbonFragments(): List<CarbonFragment> {
+    require(isNotEmpty()) { "A carbon trace needs at least one entry" }
 
-        /**
-         * Add a fragment to the trace.
-         *
-         * @param startTime Timestamp at which the fragment starts.
-         * @param carbonIntensity The carbon intensity during this fragment.
-         */
-        fun add(
-            startTime: Instant,
-            carbonIntensity: Double,
-        ) {
-            fragments.add(
-                CarbonFragment(
-                    startTime.toEpochMilli(),
-                    Long.MAX_VALUE,
-                    carbonIntensity,
-                ),
-            )
-        }
-
-        /**
-         * Sort the fragments by start time and let each fragment last until the next one starts.
-         * The first fragment is extended back to [Long.MIN_VALUE], so every timestamp is covered.
-         */
-        fun fixReportTimes() {
-            fragments.sortBy { it.startTime }
-
-            // For each fragment, set the end time to the start time of the next fragment
-            for (i in 0..fragments.size - 2) {
-                fragments[i].endTime = fragments[i + 1].startTime
-            }
-
-            // Extend the first fragment back to the minimum value
-            fragments[0].startTime = Long.MIN_VALUE
-        }
+    val sorted = sortedBy { it.timestamp.toEpochMs() }
+    return sorted.mapIndexed { i, entry ->
+        val startTime = if (i == 0) Long.MIN_VALUE else entry.timestamp.toEpochMs().toLong()
+        val endTime = sorted.getOrNull(i + 1)?.timestamp?.toEpochMs()?.toLong() ?: Long.MAX_VALUE
+        CarbonFragment(startTime, endTime, entry.carbonIntensity)
     }
 }

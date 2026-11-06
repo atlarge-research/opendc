@@ -146,7 +146,15 @@ private fun JsonObject.toSdkPowerModel(): JsonObject =
 private fun JsonObject.toSdkPowerSource(): JsonObject =
     buildJsonObject {
         keep(this@toSdkPowerSource, "name", "maxPower")
-        stringAt("carbonTracePath")?.let { put("carbon", namedReference(it)) }
+        stringAt("carbonTracePath")?.let {
+            put(
+                "carbon",
+                buildJsonObject {
+                    put("type", JsonPrimitive("trace"))
+                    put("source", namedReference(it))
+                },
+            )
+        }
     }
 
 /**

@@ -36,6 +36,7 @@ import org.opendc.common.units.Energy
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
+import org.opendc.sdk.model.carbon.TraceBasedCarbonSpec
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.failure.CustomFailureSpec
@@ -130,7 +131,7 @@ class LegacyExperimentTest {
             host.cpuPowerModel,
             "a bare maxPower still counts Watts",
         )
-        assertEquals(NamedReference("carbon_traces/NL_2021-2024.parquet"), datacenter.powerSource.carbon)
+        assertEquals(TraceBasedCarbonSpec(NamedReference("carbon_traces/NL_2021-2024.parquet")), datacenter.powerSource.carbon)
 
         val workload = experiment.workloads.single()
         assertEquals(TraceWorkloadSpec(source = NamedReference("workload_traces/surf_week")), workload)
@@ -156,7 +157,7 @@ class LegacyExperimentTest {
         assertEquals(4, experiment.topologies.size)
         val carbon = experiment.topologies.map { it.datacenters!!.single().powerSource.carbon }
         assertEquals(
-            listOf("AT", "AU", "BE", "NL").map { NamedReference("carbon_traces/${it}_2021-2024.parquet") }.toSet(),
+            listOf("AT", "AU", "BE", "NL").map { TraceBasedCarbonSpec(NamedReference("carbon_traces/${it}_2021-2024.parquet")) }.toSet(),
             carbon.toSet(),
         )
         assertTrue(
@@ -365,7 +366,7 @@ class LegacyExperimentTest {
 
         assertEquals("grid", datacenter.powerSource.name)
         assertEquals(Power.ofWatts(50000), datacenter.powerSource.maxPower)
-        assertEquals(NamedReference("carbon_traces/NL_2021-2024.parquet"), datacenter.powerSource.carbon)
+        assertEquals(TraceBasedCarbonSpec(NamedReference("carbon_traces/NL_2021-2024.parquet")), datacenter.powerSource.carbon)
 
         val battery = checkNotNull(cluster.battery)
         assertEquals(Energy.ofKWh(0.1), battery.capacity)

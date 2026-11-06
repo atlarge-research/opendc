@@ -27,6 +27,8 @@ import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.io.api.RecordConsumer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.opendc.common.units.Timestamp
+import org.opendc.sdk.model.carbon.CarbonIntensitySpec
 import org.opendc.simulator.compute.carbon.CarbonFragment
 import org.opendc.trace.formats.carbon.parquet.CARBON_SCHEMA
 import org.opendc.trace.parquet.LocalParquetWriter
@@ -97,6 +99,23 @@ class CarbonTraceLoaderTest {
         val error = assertFailsWith<IllegalStateException> { loader.load() }
 
         assertContains(error.message.orEmpty(), "contains no entries")
+    }
+
+    @Test
+    fun `inline carbon intensities become the same fragments as a trace with the same entries`() {
+        val entries = arrayOf(hour(2) to 120.0, hour(0) to 80.0, hour(1) to 100.0)
+        val intensities = entries.map { (time, intensity) -> CarbonIntensitySpec(Timestamp.ofEpochMs(time), intensity) }
+
+        val fragments = intensities.toCarbonFragments()
+
+        assertEquals(CarbonTraceLoader(writeTrace(*entries)).load().summary(), fragments.summary())
+    }
+
+    @Test
+    fun `no inline carbon intensities are rejected`() {
+        val error = assertFailsWith<IllegalArgumentException> { emptyList<CarbonIntensitySpec>().toCarbonFragments() }
+
+        assertContains(error.message.orEmpty(), "at least one entry")
     }
 
     /**

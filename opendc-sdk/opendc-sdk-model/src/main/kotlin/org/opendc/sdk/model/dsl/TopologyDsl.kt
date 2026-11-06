@@ -24,6 +24,8 @@ package org.opendc.sdk.model.dsl
 
 import org.opendc.common.units.Energy
 import org.opendc.common.units.Power
+import org.opendc.sdk.model.carbon.CarbonModelSpec
+import org.opendc.sdk.model.carbon.TraceBasedCarbonSpec
 import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.topology.BatteryPolicySpec
 import org.opendc.sdk.model.topology.BatterySpec
@@ -73,9 +75,18 @@ public class DataCenterBuilder(private val name: String) {
     public fun powerSource(
         name: String = "PowerSource",
         maxPower: Power = Power.ofWatts(Long.MAX_VALUE.toDouble()),
-        carbon: ResourceReference? = null,
+        carbon: CarbonModelSpec? = null,
     ) {
         powerSource = PowerSourceSpec(name, maxPower, carbon)
+    }
+
+    /** A power source whose carbon intensity is read from the carbon trace [carbon]. */
+    public fun powerSource(
+        name: String = "PowerSource",
+        maxPower: Power = Power.ofWatts(Long.MAX_VALUE.toDouble()),
+        carbon: ResourceReference,
+    ) {
+        powerSource(name, maxPower, TraceBasedCarbonSpec(carbon))
     }
 
     public fun battery(

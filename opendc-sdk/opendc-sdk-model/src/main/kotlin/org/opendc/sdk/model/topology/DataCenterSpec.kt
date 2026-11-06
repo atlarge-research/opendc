@@ -25,6 +25,7 @@ package org.opendc.sdk.model.topology
 import kotlinx.serialization.Serializable
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
+import org.opendc.sdk.model.validation.prefixed
 import org.opendc.sdk.model.validation.validateEach
 
 @Serializable
@@ -38,5 +39,6 @@ public data class DataCenterSpec(
         buildList {
             if (clusters.isEmpty()) add(ValidationIssue("clusters", "must not be empty"))
             addAll(clusters.validateEach("clusters"))
+            addAll(powerSource.validate().prefixed("powerSource"))
         }
 }

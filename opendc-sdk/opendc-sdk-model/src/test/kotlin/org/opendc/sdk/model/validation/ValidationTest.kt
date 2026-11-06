@@ -27,6 +27,9 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
+import org.opendc.common.units.Timestamp
+import org.opendc.sdk.model.carbon.CarbonIntensitySpec
+import org.opendc.sdk.model.carbon.InlineTraceBasedCarbonSpec
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.experiment.ExperimentSpec
 import org.opendc.sdk.model.failure.UniformDistributionSpec
@@ -41,11 +44,13 @@ import org.opendc.sdk.model.topology.DataCenterSpec
 import org.opendc.sdk.model.topology.HostSpec
 import org.opendc.sdk.model.topology.LinearPowerModelSpec
 import org.opendc.sdk.model.topology.MsePowerModelSpec
+import org.opendc.sdk.model.topology.PowerSourceSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.validExperiment
 import org.opendc.sdk.model.validMemory
 import org.opendc.sdk.model.validTask
 import org.opendc.sdk.model.workload.TraceWorkloadSpec
+import java.time.Instant
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -155,6 +160,45 @@ class ValidationTest {
         val issues = assertDoesNotThrow { task.validate() }
 
         assertEquals(listOf("cpuCoreCount"), issues.paths())
+    }
+
+    @Test
+    fun `inline carbon trace without intensities reports intensities`() {
+        val carbon = InlineTraceBasedCarbonSpec(intensities = emptyList())
+
+        val issues = assertDoesNotThrow { carbon.validate() }
+
+        assertEquals("must not be empty", issues.messageAt("intensities"))
+    }
+
+    @Test
+    fun `inline carbon trace reports a repeated timestamp and a negative carbon intensity`() {
+        val timestamp = Timestamp.ofInstant(Instant.parse("2022-01-01T00:00:00Z"))
+        val carbon =
+            InlineTraceBasedCarbonSpec(intensities = listOf(CarbonIntensitySpec(timestamp, 80.0), CarbonIntensitySpec(timestamp, -1.0)))
+
+        val issues = assertDoesNotThrow { carbon.validate() }
+
+        assertEquals("must not contain two carbon intensities with the same timestamp", issues.messageAt("intensities"))
+        assertEquals("must be at least zero", issues.messageAt("intensities[1].carbonIntensity"))
+    }
+
+    @Test
+    fun `issues of the carbon model are prefixed with the power source of the datacenter`() {
+        val datacenter =
+            DataCenterSpec(
+                clusters =
+                    listOf(
+                        ClusterSpec(
+                            hosts = listOf(HostSpec(cpu = CpuSpec(coreCount = 1, coreSpeed = Frequency.ofGHz(3.0)), memory = validMemory)),
+                        ),
+                    ),
+                powerSource = PowerSourceSpec(carbon = InlineTraceBasedCarbonSpec(intensities = emptyList())),
+            )
+
+        val issues = assertDoesNotThrow { datacenter.validate() }
+
+        assertEquals(listOf("powerSource.carbon.intensities"), issues.paths())
     }
 
     @Test

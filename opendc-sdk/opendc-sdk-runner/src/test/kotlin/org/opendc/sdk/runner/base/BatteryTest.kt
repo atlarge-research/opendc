@@ -26,14 +26,15 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.io.TempDir
 import org.opendc.common.units.Energy
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
+import org.opendc.common.units.Timestamp
+import org.opendc.sdk.model.carbon.CarbonIntensitySpec
+import org.opendc.sdk.model.carbon.CarbonModelSpec
+import org.opendc.sdk.model.carbon.InlineTraceBasedCarbonSpec
 import org.opendc.sdk.model.failure.FailureSpec
 import org.opendc.sdk.model.failure.InlineTraceBasedFailureSpec
-import org.opendc.sdk.model.resource.NamedReference
-import org.opendc.sdk.model.resource.ResourceReference
 import org.opendc.sdk.model.topology.BatteryPolicySpec
 import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.DoubleBatteryPolicySpec
@@ -57,15 +58,13 @@ import org.opendc.sdk.runner.base.harness.fragment
 import org.opendc.sdk.runner.base.harness.runTest
 import org.opendc.sdk.runner.base.harness.singleClusterTopology
 import org.opendc.sdk.runner.base.harness.singleFailure
-import org.opendc.sdk.runner.base.harness.writeCarbonTrace
 import org.opendc.simulator.compute.power.batteries.BatteryState
-import java.nio.file.Path
 
 /**
  * Integration tests for batteries.
  *
- * Every test runs on a single host with one 2 GHz core ([singleClusterTopology]), unless stated otherwise, with a carbon
- * trace that starts on 2022-01-01.
+ * Every test runs on a single host with one 2 GHz core ([singleClusterTopology]), unless stated otherwise, with an
+ * inline carbon trace ([carbonTrace]).
  * A battery charges from the grid while the carbon intensity is below its threshold, and powers the host while the
  * carbon intensity is above its threshold.
  * Power draws and energy usages are measured at the power source, so they show what is drawn from the grid, unless they
@@ -73,9 +72,6 @@ import java.nio.file.Path
  * in J.
  */
 class BatteryTest {
-    @TempDir
-    lateinit var tempDir: Path
-
     /** A battery that never charges, because the constant carbon intensity (100) stays above its threshold (90). */
     private val neverChargingTopology = topology(CONSTANT_CARBON, battery(LARGE_BATTERY, SingleBatteryPolicySpec(carbonThreshold = 90.0)))
 
@@ -98,12 +94,11 @@ class BatteryTest {
         InlineTraceBasedFailureSpec(listOf(FailureSpec(TimeDelta.ofMin(12), TimeDelta.ofMin(5), 1.0)), repeat = false)
 
     /**
-     * The tests in this file assume the contents of the carbon traces they use, which are binary files.
-     * This test checks those assumptions: [CONSTANT_CARBON] is 100 throughout, and [LOW_THEN_HIGH_CARBON] is 80 for the
-     * first 10 min and 120 afterwards.
+     * The tests in this file use inline carbon traces. This test checks that the power source follows them:
+     * [CONSTANT_CARBON] is 100 throughout, and [LOW_THEN_HIGH_CARBON] is 80 for the first 10 min and 120 afterwards.
      */
     @Test
-    fun `the carbon traces have the intensities that the tests assume`() {
+    fun `the power source follows the carbon intensities of an inline carbon trace`() {
         val monitorConstant = runTest(topology(CONSTANT_CARBON), listOf(task(20 * MINUTE)))
         val monitorLowThenHigh = runTest(topology(LOW_THEN_HIGH_CARBON), listOf(task(20 * MINUTE)))
 
@@ -477,15 +472,10 @@ class BatteryTest {
      */
     @Test @Disabled
     fun `a running mean plus battery keeps charging when the carbon intensity dips`() {
-        val carbonTrace =
-            writeCarbonTrace(
-                tempDir.resolve("carbon.parquet"),
-                TRACE_START,
-                listOf(0 * MINUTE to 100.0, 2 * MINUTE to 105.0, 4 * MINUTE to 102.0),
-            )
+        val carbon = carbonTrace(0 * MINUTE to 100.0, 2 * MINUTE to 105.0, 4 * MINUTE to 102.0)
         val battery = battery(LARGE_BATTERY, RunningMeanPlusPolicySpec(startingThreshold = 120.0, windowSize = 10))
 
-        val monitor = runTest(topology(carbonTrace, battery), listOf(task(10 * MINUTE)))
+        val monitor = runTest(topology(carbon, battery), listOf(task(10 * MINUTE)))
 
         val chargingTime = 6 * MINUTE
         val energyUsage = energy(CHARGING_POWER, chargingTime) + energy(HALF_LOAD_POWER, 10 * MINUTE)
@@ -852,12 +842,12 @@ class BatteryTest {
         )
     }
 
-    /** A topology with [hostCount] hosts, whose power source follows [carbonTrace], with an optional [battery]. */
+    /** A topology with [hostCount] hosts, whose power source follows [carbon], with an optional [battery]. */
     private fun topology(
-        carbonTrace: ResourceReference,
+        carbon: CarbonModelSpec,
         battery: BatterySpec? = null,
         hostCount: Int = 1,
-    ): TopologySpec = singleClusterTopology(hostCount = hostCount, powerSource = PowerSourceSpec(carbon = carbonTrace), battery = battery)
+    ): TopologySpec = singleClusterTopology(hostCount = hostCount, powerSource = PowerSourceSpec(carbon = carbon), battery = battery)
 
     /** A battery of [capacity] that charges at [CHARGING_POWER] and starts with [initialCharge]. */
     private fun battery(
@@ -869,12 +859,12 @@ class BatteryTest {
 
     /**
      * A single-core task that runs at 1000 MHz, half of the host's capacity, for [duration] ms.
-     * It is submitted at [TRACE_START], so the simulation starts at the start of the carbon traces.
+     * It is submitted at the Unix epoch, the default of [createTestTask], so the simulation starts at the Unix epoch.
      */
     private fun task(
         duration: Long,
         id: Int = 0,
-    ): TaskSpec = createTestTask(id = id, submissionTime = TRACE_START, fragments = listOf(fragment(duration, 1000.0)))
+    ): TaskSpec = createTestTask(id = id, fragments = listOf(fragment(duration, 1000.0)))
 
     /** Asserts the state, the charge in J, and the power draw in W of the battery at each of [samples]. */
     private fun assertBattery(
@@ -899,19 +889,23 @@ class BatteryTest {
     ): Double = energyUsage / 3_600_000 * intensity
 
     private companion object {
-        /** A carbon trace with a carbon intensity of [CONSTANT_INTENSITY] throughout. */
-        val CONSTANT_CARBON = NamedReference("carbonTraces/2022-01-01_single_100.parquet")
-
-        /** A carbon trace with a carbon intensity of [LOW_INTENSITY] for the first 10 min, and [HIGH_INTENSITY] after. */
-        val LOW_THEN_HIGH_CARBON = NamedReference("carbonTraces/2022-01-01_two_80_120.parquet")
-
         /** The carbon intensities in gCO2/kWh of the carbon traces. */
         const val CONSTANT_INTENSITY = 100.0
         const val LOW_INTENSITY = 80.0
         const val HIGH_INTENSITY = 120.0
 
-        /** The start of the carbon traces. */
-        const val TRACE_START = "2022-01-01T00:00"
+        /** A carbon trace with a carbon intensity of [CONSTANT_INTENSITY] throughout. */
+        val CONSTANT_CARBON = carbonTrace(0L to CONSTANT_INTENSITY)
+
+        /** A carbon trace with a carbon intensity of [LOW_INTENSITY] for the first 10 min, and [HIGH_INTENSITY] after. */
+        val LOW_THEN_HIGH_CARBON = carbonTrace(0L to LOW_INTENSITY, 10 * MINUTE to HIGH_INTENSITY)
+
+        /**
+         * An inline carbon trace in which the carbon intensity changes at the given times. The simulation starts at the
+         * Unix epoch (see [task]), so the times are both in ms after the start of the simulation and in ms since the epoch.
+         */
+        fun carbonTrace(vararg intensities: Pair<Long, Double>): InlineTraceBasedCarbonSpec =
+            InlineTraceBasedCarbonSpec(intensities.map { (time, intensity) -> CarbonIntensitySpec(Timestamp.ofEpochMs(time), intensity) })
 
         /** The power in W with which a battery charges. */
         const val CHARGING_POWER = 1000.0
