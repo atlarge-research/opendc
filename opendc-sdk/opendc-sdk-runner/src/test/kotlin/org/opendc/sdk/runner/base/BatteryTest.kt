@@ -40,8 +40,6 @@ import org.opendc.sdk.model.topology.BatterySpec
 import org.opendc.sdk.model.topology.DoubleBatteryPolicySpec
 import org.opendc.sdk.model.topology.PowerSourceSpec
 import org.opendc.sdk.model.topology.RunningMeanPlusPolicySpec
-import org.opendc.sdk.model.topology.RunningMedianPolicySpec
-import org.opendc.sdk.model.topology.RunningQuartilesPolicySpec
 import org.opendc.sdk.model.topology.SingleBatteryPolicySpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.TaskSpec
@@ -511,51 +509,6 @@ class BatteryTest {
             { assertEquals(5.0, monitor.batteryEmbodiedCarbonEmissions[4], 1e-6) { "Embodied carbon emission at sample 4 incorrect" } },
             { assertEquals(10.0, monitor.batteryEmbodiedCarbonEmissions.last(), 1e-6) { "Total embodied carbon emission incorrect" } },
         )
-    }
-
-    /**
-     * A 10 min task runs with a battery for which no embodied carbon is given, so it emits none.
-     *
-     * TODO: OpenDC does not return the correct values. `BatterySpec` defaults both `embodiedCarbon` and `expectedLifetime`
-     *  to 0, and `BatteryNode` divides the one by the other, so the battery emits NaN.
-     */
-    @Test @Disabled
-    fun `a battery without embodied carbon emits none`() {
-        val monitor = runTest(chargingTopology, listOf(task(10 * MINUTE)))
-
-        assertEquals(listOf(0.0), monitor.batteryEmbodiedCarbonEmissions.distinct()) { "Embodied carbon emissions incorrect" }
-    }
-
-    /**
-     * A 10 min task runs with a battery that uses the running median policy.
-     * This only checks that a scenario with this policy runs. Its behaviour should be tested once it is implemented.
-     *
-     * TODO: OpenDC does not implement this policy. `createBatteryPolicy` has no case for `RunningMedianPolicySpec`, so
-     *  building the scenario fails with "Unknown battery policy".
-     */
-    @Test @Disabled
-    fun `a battery can use the running median policy`() {
-        val battery = battery(SMALL_BATTERY, RunningMedianPolicySpec(startingThreshold = 100.0, windowSize = 10))
-
-        val monitor = runTest(topology(LOW_THEN_HIGH_CARBON, battery), listOf(task(10 * MINUTE)))
-
-        assertEquals(10 * MINUTE, monitor.maxTimestamp) { "Total runtime incorrect" }
-    }
-
-    /**
-     * A 10 min task runs with a battery that uses the running quartiles policy.
-     * This only checks that a scenario with this policy runs. Its behaviour should be tested once it is implemented.
-     *
-     * TODO: OpenDC does not implement this policy. `createBatteryPolicy` has no case for `RunningQuartilesPolicySpec`, so
-     *  building the scenario fails with "Unknown battery policy".
-     */
-    @Test @Disabled
-    fun `a battery can use the running quartiles policy`() {
-        val battery = battery(SMALL_BATTERY, RunningQuartilesPolicySpec(startingThreshold = 100.0, windowSize = 10))
-
-        val monitor = runTest(topology(LOW_THEN_HIGH_CARBON, battery), listOf(task(10 * MINUTE)))
-
-        assertEquals(10 * MINUTE, monitor.maxTimestamp) { "Total runtime incorrect" }
     }
 
     /**

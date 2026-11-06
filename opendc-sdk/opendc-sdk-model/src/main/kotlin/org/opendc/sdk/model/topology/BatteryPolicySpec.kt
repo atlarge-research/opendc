@@ -63,20 +63,6 @@ public data class RunningMeanPlusPolicySpec(
     val windowSize: Int,
 ) : BatteryPolicySpec
 
-@Serializable
-@SerialName("runningMedian")
-public data class RunningMedianPolicySpec(
-    val startingThreshold: Double,
-    val windowSize: Int,
-) : BatteryPolicySpec
-
-@Serializable
-@SerialName("runningQuartiles")
-public data class RunningQuartilesPolicySpec(
-    val startingThreshold: Double,
-    val windowSize: Int,
-) : BatteryPolicySpec
-
 public fun createBatteryPolicy(
     batterySpec: BatteryPolicySpec,
     engine: FlowEngine,
