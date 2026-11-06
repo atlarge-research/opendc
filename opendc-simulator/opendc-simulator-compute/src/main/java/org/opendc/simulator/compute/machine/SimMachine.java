@@ -211,11 +211,6 @@ public class SimMachine {
                 this.machineModel.getGpuModels().size() * 100);
 
         List<GpuModel> gpuModels = this.machineModel.getGpuModels();
-        if (!gpuModels.isEmpty()) {
-            System.out.println("Has GPUs");
-            System.out.println(gpuModels);
-            System.out.println(this.machineModel.getGpuModels());
-        }
 
         // Create the psu and cpu and connect them
         this.psu = new PsuNode(engine);
