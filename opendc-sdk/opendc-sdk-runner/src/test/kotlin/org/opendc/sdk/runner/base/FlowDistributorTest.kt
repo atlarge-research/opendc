@@ -22,8 +22,14 @@
 
 package org.opendc.sdk.runner.base
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.sdk.model.scheduler.ComputeHostFilterSpec
+import org.opendc.sdk.model.scheduler.CoreRamWeigherSpec
+import org.opendc.sdk.model.scheduler.FilterAllocationPolicySpec
+import org.opendc.sdk.model.scheduler.RamFilterSpec
+import org.opendc.sdk.model.scheduler.VCpuFilterSpec
 import org.opendc.sdk.model.workload.TaskFragmentSpec
 import org.opendc.sdk.model.workload.TaskSpec
 import org.opendc.sdk.runner.base.harness.createTestTask
@@ -841,6 +847,41 @@ class FlowDistributorTest {
             { assertEquals(0.0, monitor.hostGpuDemands["H01"]?.get(10)?.get(0)) { "The gpu demanded by the host is incorrect" } },
             { assertEquals(1000.0, monitor.hostGpuSupplied["H01"]?.get(1)?.get(0)) { "The gpu supplied to the host is incorrect" } },
             { assertEquals(0.0, monitor.hostGpuSupplied["H01"]?.get(10)?.get(0)) { "The gpu supplied to the host is incorrect" } },
+        )
+    }
+
+    /**
+     * Two single-core tasks that each demand 1000 MHz run at the same time on a host with one 2 GHz core and no GPUs,
+     * which a scheduler that over-commits CPUs by a factor 2 allows. Together they use the full core, so both get their
+     * demand and finish after 10 min.
+     *
+     * TODO: `SimMachine` gives the CPU distributor of a host room for `max(coreCount, 100 * gpuCount)` tasks, so a host
+     *  without GPUs cannot run more tasks than it has cores. Starting the second task throws a `NoSuchElementException`
+     *  in `FlowDistributor.addConsumerEdge`, after which the task is lost and the simulation runs out of memory instead
+     *  of failing. With a single GPU on the host, the same scenario works.
+     */
+    @Disabled("A host without GPUs cannot run more tasks than it has CPU cores, see the TODO")
+    @Test
+    fun `two tasks share a single CPU core when the scheduler over-commits`() {
+        val allocationPolicy =
+            FilterAllocationPolicySpec(
+                filters = listOf(ComputeHostFilterSpec, VCpuFilterSpec(2.0), RamFilterSpec(1.0)),
+                weighers = listOf(CoreRamWeigherSpec(1.0)),
+            )
+        val workload =
+            listOf(
+                createTestTask(id = 0, fragments = listOf(fragment(10 * 60 * 1000, 1000.0))),
+                createTestTask(id = 1, fragments = listOf(fragment(10 * 60 * 1000, 1000.0))),
+            )
+        val topology = createTopology("single_1_2000.json")
+
+        val monitor = runTest(topology, workload, allocationPolicy = allocationPolicy)
+
+        assertAll(
+            { assertEquals(10 * 60 * 1000L, monitor.maxTimestamp) { "Total runtime incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied.getValue(0)[0]) { "CPU supply of task 0 incorrect" } },
+            { assertEquals(1000.0, monitor.taskCpuSupplied.getValue(1)[0]) { "CPU supply of task 1 incorrect" } },
+            { assertEquals(2000.0, monitor.hostCpuSupplied.getValue("H01")[0]) { "CPU supply of the host incorrect" } },
         )
     }
 }
