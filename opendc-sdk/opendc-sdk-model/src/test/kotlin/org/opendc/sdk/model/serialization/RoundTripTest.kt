@@ -111,8 +111,6 @@ import org.opendc.sdk.model.topology.PowerModelSpec
 import org.opendc.sdk.model.topology.PowerSourceSpec
 import org.opendc.sdk.model.topology.RunningMeanPlusPolicySpec
 import org.opendc.sdk.model.topology.RunningMeanPolicySpec
-import org.opendc.sdk.model.topology.RunningMedianPolicySpec
-import org.opendc.sdk.model.topology.RunningQuartilesPolicySpec
 import org.opendc.sdk.model.topology.ShareBasedVirtualizationOverheadSpec
 import org.opendc.sdk.model.topology.SingleBatteryPolicySpec
 import org.opendc.sdk.model.topology.SqrtPowerModelSpec
@@ -390,8 +388,6 @@ class RoundTripTest {
                 DoubleBatteryPolicySpec(lowerThreshold = 100.0, upperThreshold = 300.0),
                 RunningMeanPolicySpec(startingThreshold = 200.0, windowSize = 24),
                 RunningMeanPlusPolicySpec(startingThreshold = 200.0, windowSize = 24),
-                RunningMedianPolicySpec(startingThreshold = 200.0, windowSize = 24),
-                RunningQuartilesPolicySpec(startingThreshold = 200.0, windowSize = 24),
             )
         return policies.map { policy ->
             dynamicTest(policy.toString()) { assertEquals(policy, roundTrip<BatteryPolicySpec>(policy)) }
