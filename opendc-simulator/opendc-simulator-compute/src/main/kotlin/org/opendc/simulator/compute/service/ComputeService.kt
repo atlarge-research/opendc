@@ -48,6 +48,7 @@ import java.time.Duration
 import java.time.InstantSource
 import java.util.ArrayDeque
 import java.util.Collections
+import java.util.TreeSet
 
 /**
  * The [ComputeService] hosts the API implementation of the OpenDC Compute Engine.
@@ -113,10 +114,29 @@ public class ComputeService(
      */
     private val _batteries = HashSet<BatteryNode>()
 
+    /** The priority of waiting tasks, or null to place them first in, first out. */
+    private val taskPriority = scheduler.taskPriority
+
     /**
-     * The tasks that should be launched by the service.
+     * The tasks that should be launched by the service: first in, first out, or from the highest to the lowest
+     * [ComputeScheduler.taskPriority], with equal tasks in the order they were queued.
      */
-    private val taskQueue = ArrayDeque<SchedulingRequest>()
+    private val taskQueue: MutableCollection<SchedulingRequest> =
+        if (taskPriority == null) {
+            ArrayDeque()
+        } else {
+            TreeSet(compareByDescending<SchedulingRequest> { it.priority }.thenBy { it.sequence })
+        }
+
+    /**
+     * With a task priority: the requests queued since the last scheduling cycle. Their priority is read when the cycle
+     * starts, after every task submitted at the same moment is known, and it then stays fixed while they wait.
+     */
+    private val arrivals = ArrayDeque<SchedulingRequest>()
+
+    /** The sequence numbers given to the next request queued at the front and at the back. */
+    private var frontSequence = 0L
+    private var backSequence = 0L
 
     private val blockedTasks = HashMap<Int, SchedulingRequest>()
 
@@ -358,7 +378,7 @@ public class ComputeService(
     public var tasksTotal: Int = 0
         private set
 
-    public val tasksPending: Int get() = taskQueue.size
+    public val tasksPending: Int get() = taskQueue.size + arrivals.size
 
     public val tasksActive: Int get() = activeTasks.size
 
@@ -481,15 +501,37 @@ public class ComputeService(
             return null
         }
 
-        // Add the request at the front or the back of the queue
-        if (atFront) {
-            taskQueue.addFirst(request)
-        } else {
-            taskQueue.add(request)
-        }
+        enqueue(request, atFront)
 
         requestSchedulingCycle()
         return request
+    }
+
+    /**
+     * Add [request] to the queue, ahead of the requests with the same priority if [atFront], else behind them. Without a
+     * task priority, that is the front or the back of the queue.
+     */
+    private fun enqueue(
+        request: SchedulingRequest,
+        atFront: Boolean,
+    ) {
+        request.sequence = if (atFront) --frontSequence else ++backSequence
+        val queue = taskQueue
+        when {
+            taskPriority != null -> arrivals.add(request)
+            atFront && queue is ArrayDeque -> queue.addFirst(request)
+            else -> queue.add(request)
+        }
+    }
+
+    /** Give the requests queued since the last cycle their priority, and move them into the ordered queue. */
+    private fun admitArrivals() {
+        val priority = taskPriority ?: return
+        while (arrivals.isNotEmpty()) {
+            val request = arrivals.poll()
+            request.priority = priority.of(request.task)
+            taskQueue.add(request)
+        }
     }
 
     private fun addCompletedTask(completedTask: SimTask) {
@@ -503,7 +545,7 @@ public class ComputeService(
 
             // If the child task has no more parents, it can be scheduled
             if (!childTask.hasParents()) {
-                taskQueue.add(childRequest)
+                enqueue(childRequest, atFront = false)
                 blockedTasks.remove(childTaskId)
             }
         }
@@ -539,7 +581,7 @@ public class ComputeService(
      */
     private fun requestSchedulingCycle() {
         // Bail out in case the queue is empty.
-        if (taskQueue.isEmpty()) {
+        if (taskQueue.isEmpty() && arrivals.isEmpty()) {
             return
         }
 
@@ -550,6 +592,8 @@ public class ComputeService(
      * Run a single scheduling iteration.
      */
     private fun doSchedule() {
+        admitArrivals()
+
         // The scheduler may remove requests from the queue, so every selection gets a fresh iterator.
         while (taskQueue.isNotEmpty()) {
             val result = scheduler.select(taskQueue.iterator())
@@ -586,6 +630,7 @@ public class ComputeService(
     ) {
         // Remove the incoming image
         taskQueue.remove(req)
+        arrivals.remove(req)
         tasksTerminated++
 
         LOGGER.warn { "Failed to spawn $task: does not fit" }

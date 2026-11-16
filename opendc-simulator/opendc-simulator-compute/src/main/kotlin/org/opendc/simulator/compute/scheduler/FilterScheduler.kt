@@ -26,9 +26,9 @@ import org.opendc.simulator.compute.infrastructure.SimHost
 import org.opendc.simulator.compute.models.HostModel
 import org.opendc.simulator.compute.models.HostState
 import org.opendc.simulator.compute.scheduler.filters.HostFilter
+import org.opendc.simulator.compute.scheduler.priority.TaskPriority
 import org.opendc.simulator.compute.scheduler.timeshift.Timeshifter
 import org.opendc.simulator.compute.scheduler.weights.HostWeigher
-import org.opendc.simulator.compute.task.SimTask
 import java.util.TreeSet
 
 /**
@@ -61,6 +61,8 @@ import java.util.TreeSet
  * @param numHosts The expected number of hosts.
  * @param blockSize The number of hosts a block of the ranking aims for.
  * @param timeshifter Decides which tasks wait instead of being placed now, or null to place every task right away.
+ * @param taskPriority The priority of waiting tasks, or null to place them first in, first out. See
+ *   [ComputeScheduler.taskPriority].
  */
 public class FilterScheduler internal constructor(
     private val filters: List<HostFilter>,
@@ -68,13 +70,15 @@ public class FilterScheduler internal constructor(
     numHosts: Int,
     blockSize: Int,
     public val timeshifter: Timeshifter? = null,
+    override val taskPriority: TaskPriority? = null,
 ) : ComputeScheduler {
     public constructor(
         filters: List<HostFilter>,
         weighers: List<HostWeigher>,
         numHosts: Int = 1000,
         timeshifter: Timeshifter? = null,
-    ) : this(filters, weighers, numHosts, DEFAULT_BLOCK_SIZE, timeshifter)
+        taskPriority: TaskPriority? = null,
+    ) : this(filters, weighers, numHosts, DEFAULT_BLOCK_SIZE, timeshifter, taskPriority)
 
     /**
      * The hosts [select] chooses from, from the highest score to the lowest: every used host, and the first host of every

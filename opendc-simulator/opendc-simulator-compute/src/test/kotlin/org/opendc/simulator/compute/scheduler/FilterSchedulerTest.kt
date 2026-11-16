@@ -50,6 +50,7 @@ import org.opendc.simulator.compute.scheduler.filters.VCpuCapacityFilter
 import org.opendc.simulator.compute.scheduler.filters.VCpuFilter
 import org.opendc.simulator.compute.scheduler.filters.VGpuCapacityFilter
 import org.opendc.simulator.compute.scheduler.filters.VGpuFilter
+import org.opendc.simulator.compute.scheduler.priority.ScorePriority
 import org.opendc.simulator.compute.scheduler.weights.CoreRamWeigher
 import org.opendc.simulator.compute.scheduler.weights.HostWeigher
 import org.opendc.simulator.compute.scheduler.weights.InstanceCountWeigher
@@ -556,6 +557,15 @@ internal class FilterSchedulerTest {
         every { req.isCancelled } returns false
 
         assertEquals(hostA, scheduler.select(mutableListOf(req).iterator()).host)
+    }
+
+    @Test
+    fun testTaskPriority() {
+        val priority = ScorePriority(mapOf(1 to 1.0))
+        val scheduler = FilterScheduler(filters = emptyList(), weighers = emptyList(), taskPriority = priority)
+
+        assertEquals(priority, scheduler.taskPriority)
+        assertEquals(null, FilterScheduler(filters = emptyList(), weighers = emptyList()).taskPriority)
     }
 
     @Test
