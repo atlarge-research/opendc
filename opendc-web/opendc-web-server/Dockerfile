@@ -15,9 +15,10 @@ ENV OPENDC_AUTH0_AUDIENCE=$OPENDC_AUTH0_AUDIENCE
 ENV OPENDC_AUTH0_DOCS_CLIENT_ID=$OPENDC_AUTH0_DOCS_CLIENT_ID
 
 COPY ./ /app/
+# Node 26 (LTS since October 2026) needs libatomic, which this image does not have, so stay on Node 24
 RUN curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash && \
     . ~/.nvm/nvm.sh && \
-    nvm install --lts && \
+    nvm install 24 && \
     ./gradlew --no-daemon :opendc-web:opendc-web-server:quarkusBuild -Dquarkus.profile=docker
 
 FROM eclipse-temurin:21-jdk-jammy
