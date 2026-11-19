@@ -28,6 +28,10 @@ import org.opendc.common.units.DataSize
 import org.opendc.common.units.Frequency
 import org.opendc.common.units.Power
 import org.opendc.common.units.TimeDelta
+import org.opendc.common.units.Timestamp
+import org.opendc.sdk.model.carbon.CarbonIntensitySpec
+import org.opendc.sdk.model.carbon.CarbonModelSpec
+import org.opendc.sdk.model.carbon.InlineTraceBasedCarbonSpec
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.FailureSpec
@@ -135,6 +139,27 @@ internal fun singleClusterTopology(
                 ),
             ),
     )
+
+/** A [singleClusterTopology] with [hostCount] hosts, whose power source follows [carbon], with an optional [battery]. */
+internal fun carbonTopology(
+    carbon: CarbonModelSpec,
+    battery: BatterySpec? = null,
+    hostCount: Int = 1,
+): TopologySpec = singleClusterTopology(hostCount = hostCount, powerSource = PowerSourceSpec(carbon = carbon), battery = battery)
+
+/**
+ * An inline carbon trace in which the carbon intensity in gCO2/kWh changes at the given times in ms. The tasks of
+ * [createTestTask] are submitted at the Unix epoch by default, so the simulation starts at the Unix epoch, and the times
+ * are both in ms after the start of the simulation and in ms since the epoch.
+ */
+internal fun carbonTrace(vararg intensities: Pair<Long, Double>): InlineTraceBasedCarbonSpec =
+    InlineTraceBasedCarbonSpec(intensities.map { (time, intensity) -> CarbonIntensitySpec(Timestamp.ofEpochMs(time), intensity) })
+
+/** The carbon emission in g of using [energyUsage] J at a carbon intensity of [intensity] gCO2/kWh. */
+internal fun carbonEmission(
+    energyUsage: Double,
+    intensity: Double,
+): Double = energyUsage / 3_600_000 * intensity
 
 /** The host fails after 5 min, for 5 min. */
 internal val singleFailure =
