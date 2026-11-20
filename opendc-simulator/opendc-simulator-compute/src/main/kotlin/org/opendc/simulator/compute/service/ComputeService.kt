@@ -117,13 +117,16 @@ public class ComputeService(
     /** The priority of waiting tasks, or null to place them first in, first out. */
     private val taskPriority = scheduler.taskPriority
 
+    /** The waiting tasks in the order they were queued, used when there is no task priority. */
+    private val fifoQueue = ArrayDeque<SchedulingRequest>()
+
     /**
      * The tasks that should be launched by the service: first in, first out, or from the highest to the lowest
      * [ComputeScheduler.taskPriority], with equal tasks in the order they were queued.
      */
     private val taskQueue: MutableCollection<SchedulingRequest> =
         if (taskPriority == null) {
-            ArrayDeque()
+            fifoQueue
         } else {
             TreeSet(compareByDescending<SchedulingRequest> { it.priority }.thenBy { it.sequence })
         }
@@ -516,11 +519,10 @@ public class ComputeService(
         atFront: Boolean,
     ) {
         request.sequence = if (atFront) --frontSequence else ++backSequence
-        val queue = taskQueue
         when {
             taskPriority != null -> arrivals.add(request)
-            atFront && queue is ArrayDeque -> queue.addFirst(request)
-            else -> queue.add(request)
+            atFront -> fifoQueue.addFirst(request)
+            else -> fifoQueue.add(request)
         }
     }
 
