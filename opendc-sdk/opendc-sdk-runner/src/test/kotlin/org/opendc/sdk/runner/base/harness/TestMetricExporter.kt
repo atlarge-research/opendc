@@ -24,6 +24,8 @@ package org.opendc.sdk.runner.base.harness
 
 import org.opendc.sdk.runner.telemetry.MetricExporter
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
+import org.opendc.sdk.runner.telemetry.table.cluster.ClusterSample
+import org.opendc.sdk.runner.telemetry.table.datacenter.DataCenterSample
 import org.opendc.sdk.runner.telemetry.table.host.HostSample
 import org.opendc.sdk.runner.telemetry.table.powerSource.PowerSourceSample
 import org.opendc.sdk.runner.telemetry.table.service.ServiceSample
@@ -193,6 +195,25 @@ class TestMetricExporter : MetricExporter, TaskListener {
 
         carbonIntensities.add(reader.carbonIntensity)
         carbonEmissions.add(reader.carbonEmission)
+    }
+
+    /**
+     * The carbon series of the clusters and data centers. Like the power source series, these are not split per cluster
+     * or data center, so they assume a topology with a single cluster in a single data center.
+     */
+    var clusterCarbonIntensities = ArrayList<Double>()
+    var clusterCarbonEmissions = ArrayList<Double>()
+    var dataCenterCarbonIntensities = ArrayList<Double>()
+    var dataCenterCarbonEmissions = ArrayList<Double>()
+
+    override fun export(reader: ClusterSample) {
+        clusterCarbonIntensities.add(reader.carbonIntensity)
+        clusterCarbonEmissions.add(reader.carbonEmission)
+    }
+
+    override fun export(reader: DataCenterSample) {
+        dataCenterCarbonIntensities.add(reader.carbonIntensity)
+        dataCenterCarbonEmissions.add(reader.carbonEmission)
     }
 
     /**
