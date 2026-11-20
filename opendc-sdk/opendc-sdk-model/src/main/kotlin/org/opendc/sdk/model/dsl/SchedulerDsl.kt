@@ -28,6 +28,7 @@ import org.opendc.sdk.model.scheduler.HostFilterSpec
 import org.opendc.sdk.model.scheduler.HostWeigherSpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
+import org.opendc.sdk.model.scheduler.TaskOrderSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.scheduler.TimeshiftSpec
 
@@ -54,6 +55,7 @@ public class FilterSchedulerBuilder {
     private val weighers = mutableListOf<HostWeigherSpec>()
 
     private var timeshift: TimeshiftSpec? = null
+    private var taskOrder: TaskOrderSpec? = null
 
     public fun filter(filter: HostFilterSpec) {
         filters += filter
@@ -63,6 +65,11 @@ public class FilterSchedulerBuilder {
         weighers += weigher
     }
 
+    /** Places waiting tasks by a priority per task, instead of first in, first out. */
+    public fun taskOrder(order: TaskOrderSpec) {
+        taskOrder = order
+    }
+
     /** Delay deferrable tasks while the carbon intensity is high. */
     public fun timeshift(block: TimeshiftBuilder.() -> Unit = {}) {
         timeshift = TimeshiftBuilder().apply(block).build()
@@ -70,7 +77,7 @@ public class FilterSchedulerBuilder {
 
     internal fun build(): FilterAllocationPolicySpec {
         val resolvedFilters = filters.ifEmpty { listOf(ComputeHostFilterSpec) }
-        return FilterAllocationPolicySpec(resolvedFilters, weighers.toList(), timeshift)
+        return FilterAllocationPolicySpec(resolvedFilters, weighers.toList(), timeshift, taskOrder)
     }
 }
 

@@ -24,6 +24,7 @@ package org.opendc.simulator.compute.scheduler
 
 import org.opendc.common.units.Timestamp
 import org.opendc.simulator.compute.infrastructure.SimHost
+import org.opendc.simulator.compute.scheduler.priority.TaskPriority
 import org.opendc.simulator.compute.task.SimTask
 
 /**
@@ -67,6 +68,14 @@ public interface ComputeScheduler {
      *   no request should be placed now.
      */
     public fun select(iter: MutableIterator<SchedulingRequest>): SchedulingResult
+
+    /**
+     * The priority of the tasks waiting to be placed, or `null` (the default) to place them first in, first out. The
+     * service keeps waiting tasks from the highest to the lowest priority, and tasks with equal priority in their order
+     * of arrival. It reads the priority of a task once, in the first scheduling cycle after the task is queued, so
+     * tasks submitted at the same moment are all known by then.
+     */
+    public val taskPriority: TaskPriority? get() = null
 }
 
 /**
@@ -77,6 +86,17 @@ public data class SchedulingRequest internal constructor(
     public val submitTime: Timestamp,
 ) {
     public var isCancelled: Boolean = false
+
+    /**
+     * The position of the request among requests with the same priority: lower goes first. Set by the service when
+     * the request is queued.
+     */
+    internal var sequence: Long = 0
+
+    /**
+     * The [ComputeScheduler.taskPriority] of the task, read once when the request enters the ordered queue.
+     */
+    internal var priority: Double = 0.0
 }
 
 public enum class SchedulingResultType {

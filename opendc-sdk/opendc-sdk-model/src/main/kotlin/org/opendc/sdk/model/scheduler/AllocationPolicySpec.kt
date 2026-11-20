@@ -53,6 +53,7 @@ public data class PrefabAllocationPolicySpec(public val prefabName: SchedulerPre
  * @property weighers The scorers used to rank the remaining candidates; each task is placed on the best-ranked host.
  * @property timeshift Delays deferrable tasks while the carbon intensity is high, or null to place every task right
  *   away.
+ * @property taskOrder Places waiting tasks by a priority per task, or null to place them first in, first out.
  */
 @Serializable
 @SerialName("filter")
@@ -60,11 +61,13 @@ public data class FilterAllocationPolicySpec(
     public val filters: List<HostFilterSpec> = listOf(ComputeHostFilterSpec),
     public val weighers: List<HostWeigherSpec> = emptyList(),
     public val timeshift: TimeshiftSpec? = null,
+    public val taskOrder: TaskOrderSpec? = null,
 ) : AllocationPolicySpec {
     override fun validate(): List<ValidationIssue> =
         buildList {
             addAll(filters.validateEach("filters"))
             addAll(weighers.validateEach("weighers"))
             addAll(timeshift?.validate().orEmpty().prefixed("timeshift"))
+            addAll(taskOrder?.validate().orEmpty().prefixed("taskOrder"))
         }
 }

@@ -45,7 +45,10 @@ import org.opendc.sdk.model.scheduler.VGpuWeigherSpec
 import org.opendc.simulator.compute.scheduler.ComputeScheduler
 import org.opendc.simulator.compute.scheduler.FilterScheduler
 import org.opendc.simulator.compute.scheduler.filters.ComputeFilter
+import org.opendc.simulator.compute.scheduler.priority.ScorePriority
 import org.opendc.simulator.compute.scheduler.timeshift.CarbonTimeshifter
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.InstantSource
 import java.util.random.RandomGenerator
 import kotlin.coroutines.CoroutineContext
@@ -80,8 +83,30 @@ public fun AllocationPolicySpec.toScheduler(
     when (this) {
         is PrefabAllocationPolicySpec -> prefabName.policy.toScheduler(seeder, clock, numHosts)
         is FilterAllocationPolicySpec ->
-            FilterScheduler(filters.map { it.toEngine() }, weighers.map { it.toEngine() }, numHosts, timeshift?.toEngine(clock))
+            FilterScheduler(
+                filters.map { it.toEngine() },
+                weighers.map { it.toEngine() },
+                numHosts,
+                timeshift?.toEngine(clock),
+                taskOrder?.let { ScorePriority(readScores(Path.of(it.scoresPath))) },
+            )
     }
+
+/** Read the `task_id,score` CSV file at [path], which starts with a header line. */
+internal fun readScores(path: Path): Map<Int, Double> {
+    val scores = HashMap<Int, Double>()
+    Files.newBufferedReader(path).useLines { lines ->
+        for ((index, line) in lines.withIndex()) {
+            if (index == 0 || line.isBlank()) {
+                continue
+            }
+            val parts = line.split(',')
+            require(parts.size >= 2) { "Line ${index + 1} of $path does not have the columns task_id,score" }
+            scores[parts[0].trim().toInt()] = parts[1].trim().toDouble()
+        }
+    }
+    return scores
+}
 
 /** Builds the engine [EngineTaskStopper] carried by timeshift settings, or null when absent. */
 internal fun SdkTaskStopper?.toEngine(
