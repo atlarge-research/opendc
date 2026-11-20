@@ -41,6 +41,7 @@ import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.scheduler.RamFilterSpec
 import org.opendc.sdk.model.scheduler.RamWeigherSpec
 import org.opendc.sdk.model.scheduler.SchedulerPrefabSpec
+import org.opendc.sdk.model.scheduler.TaskOrderSpec
 import org.opendc.sdk.model.scheduler.TaskStopperSpec
 import org.opendc.sdk.model.scheduler.TimeshiftSpec
 import org.opendc.sdk.model.scheduler.VCpuFilterSpec
@@ -166,6 +167,14 @@ class DslTest {
                     ),
             )
         assertEquals(expected, built)
+    }
+
+    @Test
+    fun `task order DSL equals constructor-built policy`() {
+        assertEquals(
+            FilterAllocationPolicySpec(taskOrder = TaskOrderSpec("priorities.csv")),
+            filterScheduler { taskOrder(TaskOrderSpec("priorities.csv")) },
+        )
     }
 
     @Test

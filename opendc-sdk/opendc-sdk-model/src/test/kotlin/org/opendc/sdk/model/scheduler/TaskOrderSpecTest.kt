@@ -22,9 +22,12 @@
 
 package org.opendc.sdk.model.scheduler
 
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.encodeToString
 import org.junit.jupiter.api.Test
 import org.opendc.sdk.model.serialization.SdkJson
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class TaskOrderSpecTest {
@@ -51,5 +54,19 @@ class TaskOrderSpecTest {
         val policy = FilterAllocationPolicySpec(taskOrder = TaskOrderSpec(" "))
 
         assertEquals(listOf("taskOrder.scoresPath"), policy.validate().map { it.path })
+    }
+
+    @Test
+    fun `task order needs a scores path`() {
+        val text = """{"type": "filter", "taskOrder": {}}"""
+
+        assertFailsWith<SerializationException> { SdkJson.json.decodeFromString<AllocationPolicySpec>(text) }
+    }
+
+    @Test
+    fun `task order survives a JSON round trip`() {
+        val policy: AllocationPolicySpec = FilterAllocationPolicySpec(taskOrder = TaskOrderSpec("scores.csv"))
+
+        assertEquals(policy, SdkJson.json.decodeFromString<AllocationPolicySpec>(SdkJson.json.encodeToString(policy)))
     }
 }

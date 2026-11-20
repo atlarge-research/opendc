@@ -48,6 +48,7 @@ internal class ScorePriorityTest {
             { assertEquals(2.0, priority.of(task(1))) },
             // Tasks without a score get the default
             { assertEquals(1.0, priority.of(task(2))) },
+            { assertEquals("ScorePriority(2 tasks)", priority.toString()) },
         )
     }
 }
